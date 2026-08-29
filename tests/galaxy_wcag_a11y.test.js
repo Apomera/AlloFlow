@@ -51,7 +51,11 @@ describe('galaxy WCAG interaction contracts', () => {
     expect(source).toContain('galaxy-real-sky-surveys-label');
     expect(source).toContain('galaxy-real-sky-catalogs-label');
     expect(source).toContain('Interactive real-sky survey atlas');
-    expect(source).toContain('"aria-busy": realSkyStatus !==');
+    expect(source).toContain('"aria-busy": realSkyStatus === \'idle\' || realSkyStatus === \'loading\'');
+    expect(source).toContain('role: realSkyStatus === \'error\' ? "alert" : "status"');
+    expect(source).toContain('"aria-live": realSkyStatus === \'error\' ? "assertive" : "polite"');
+    expect(source).toContain('"data-galaxy-real-sky-retry": "true"');
+    expect(source).toContain('"aria-controls": "galaxy-real-sky-aladin"');
     expect(source).toContain('id: "galaxy-real-sky-status"');
     expect(source).toContain('d.quizFeedback && React.createElement("div", { role: "status"');
     expect(source).toContain('"aria-atomic": "true"');

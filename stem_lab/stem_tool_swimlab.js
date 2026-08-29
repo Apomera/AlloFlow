@@ -333,7 +333,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
       }
 
       function disclaimerFooter() {
-        return h('div', { role: 'contentinfo', 'aria-label': __alloT('stem.swimlab.educational_disclaimer', 'Educational disclaimer'),
+        return h('div', { role: 'note', 'aria-label': __alloT('stem.swimlab.educational_disclaimer', 'Educational disclaimer'),
           style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
           __alloT('stem.swimlab.educational_only_to_learn_to_swim_find', 'Educational only. To learn to swim, find a certified Water Safety Instructor at '),
           h('a', { href: 'https://www.redcross.org/take-a-class/swimming', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.swimlab.red_cross', 'Red Cross')),

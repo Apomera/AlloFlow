@@ -94,13 +94,13 @@ window.StemLab = window.StemLab || {
       '.dna-mission-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(350px,.9fr);border-top:1px solid var(--dna-line)}',
       '.dna-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:17px;background:#f8faf8}',
       '.dna-stat{min-width:0;padding:11px 12px;border:1px solid #e1e7e4;border-radius:10px;background:#fff}',
-      '.dna-stat-label{color:#778583;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}',
+      '.dna-stat-label{color:#475569;font-size:8px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}',
       '.dna-stat-value{margin-top:4px;overflow:hidden;color:#182d31;font-size:17px;font-weight:950;letter-spacing:-.025em;text-overflow:ellipsis;white-space:nowrap}',
-      '.dna-stat-sub{margin-top:2px;overflow:hidden;color:#7a8787;font-size:9px;text-overflow:ellipsis;white-space:nowrap}',
+      '.dna-stat-sub{margin-top:2px;overflow:hidden;color:#4b5563;font-size:9px;text-overflow:ellipsis;white-space:nowrap}',
       '.dna-route-panel{padding:14px 16px;border-left:1px solid var(--dna-line);background:#fff}',
       '.dna-route-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}',
       '.dna-route-heading strong{color:#23383d;font-size:10px;font-weight:950}',
-      '.dna-route-heading span{color:#7a8787;font-size:8px}',
+      '.dna-route-heading span{color:#4b5563;font-size:8px}',
       '.dna-route-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}',
       '.dna-route-card{min-height:68px!important;padding:9px;border:1px solid var(--route-soft);border-left:4px solid var(--route-accent);border-radius:9px;background:#fff;text-align:left;transition:transform .17s ease,box-shadow .17s ease,background .17s ease}',
       '.dna-route-card:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,23,42,.08)}',
@@ -108,7 +108,7 @@ window.StemLab = window.StemLab || {
       '.dna-route-top{display:flex;align-items:center;justify-content:space-between;gap:7px}',
       '.dna-route-name{color:#1f3035;font-size:10px;font-weight:950}',
       '.dna-route-state{color:var(--route-accent);font-size:7px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}',
-      '.dna-route-tools{display:block;margin-top:5px;overflow:hidden;color:#69777a;font-size:8px;text-overflow:ellipsis;white-space:nowrap}',
+      '.dna-route-tools{display:block;margin-top:5px;overflow:hidden;color:#475569;font-size:8px;text-overflow:ellipsis;white-space:nowrap}',
       '.dna-tool-rail{position:sticky;top:0;z-index:6;display:flex;width:100%;max-width:100%;box-sizing:border-box;gap:6px;overflow-x:auto;padding:7px;border:1px solid #273548;border-radius:13px;background:#111c2b;box-shadow:0 10px 24px rgba(15,23,42,.16);scroll-snap-type:x proximity;scrollbar-width:thin}',
       '.dna-tool-tab{position:relative;flex:1 0 88px;min-height:50px!important;display:flex;align-items:center;justify-content:center;gap:7px;padding:6px 9px;border:1px solid transparent;border-radius:9px;background:transparent;color:#aeb9c8;font-size:10px;font-weight:850;scroll-snap-align:start}',
       '.dna-tool-tab:hover{background:#1e2b3d;color:#fff}',
@@ -125,7 +125,7 @@ window.StemLab = window.StemLab || {
       '.dna-badge{display:grid;grid-template-columns:30px 1fr;align-items:center;gap:8px;min-height:47px;padding:6px;border:1px solid #e2e8f0;border-radius:9px;background:#f8fafc}',
       '.dna-badge[data-earned="true"]{border-color:#facc15;background:#fefce8}',
       '.dna-badge-icon{width:30px;height:30px;display:grid;place-items:center;border-radius:8px;background:#fff;font-size:14px}',
-      '.dna-badge strong{display:block;color:#334155;font-size:9px}.dna-badge small{display:block;margin-top:2px;color:#77818d;font-size:8px;line-height:1.25}',
+      '.dna-badge strong{display:block;color:#334155;font-size:9px}.dna-badge small{display:block;margin-top:2px;color:#4b5563;font-size:8px;line-height:1.25}',
       '[data-dna-topic]{border-radius:12px!important;box-shadow:0 8px 18px rgba(15,23,42,.05)}',
       '[data-dna-workspace]{padding:14px;border:1px solid var(--dna-line);border-radius:15px;background:#f8fafc;box-shadow:0 12px 28px rgba(15,23,42,.05)}',
       '[data-dna-molecular-frame]{border-radius:13px!important;box-shadow:0 18px 38px rgba(15,23,42,.16)!important}',
@@ -4160,7 +4160,7 @@ window.StemLab = window.StemLab || {
                     h("div", { className: "flex flex-wrap gap-2", role: 'radiogroup', 'aria-label': guidedStep.prompt },
                       guidedStep.choices.map(function(choice) {
                         var selected = guidedSelectedAnswer === choice;
-                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, 'aria-pressed': selected, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[11px] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
+                        return h("button", { type: 'button', key: choice, role: 'radio', 'aria-checked': selected, onClick: function() { upd('guidedSelectedAnswer', choice); }, className: "rounded-lg border px-3 py-2 text-[11px] font-bold " + (selected ? 'border-violet-600 bg-violet-600 text-white' : 'border-slate-300 bg-white text-slate-700 hover:bg-violet-100') }, choice);
                       })
                     ),
                     h("div", { className: "flex flex-wrap items-center gap-2" },
@@ -4533,7 +4533,7 @@ window.StemLab = window.StemLab || {
               dnaReadingFrames.map(function(frame) {
                 var isSelected = frame.frame === dnaSelectedReadingFrame.frame;
                 var statusTone = frame.status === 'complete' ? "bg-emerald-100 text-emerald-800" : frame.status === 'open' ? "bg-amber-100 text-amber-900" : "bg-slate-100 text-slate-700";
-                return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, "aria-pressed": isSelected, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
+                return h("button", { key: frame.frame, type: "button", role: "radio", "aria-checked": isSelected, onClick: function() { selectDnaReadingFrame(frame.frame); }, className: "relative min-w-[210px] flex-1 snap-start overflow-hidden rounded-xl border p-3 pt-4 text-left shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 md:min-w-0 " + (isSelected ? "border-indigo-500 bg-white ring-2 ring-indigo-100" : "border-slate-200 bg-white/80 hover:border-indigo-300 hover:shadow-md"), "data-dna-reading-frame": frame.frame, "data-frame-status": frame.status, "data-frame-selected": isSelected ? "true" : "false" },
                   h("span", { className: "absolute inset-x-0 top-0 h-1 " + (frame.status === 'complete' ? "bg-emerald-500" : frame.status === 'open' ? "bg-amber-500" : "bg-slate-300"), "aria-hidden": "true" }),
                   h("div", { className: "flex items-center justify-between gap-2" },
                     h("span", { className: "text-[12px] font-black text-slate-900" }, "Frame +" + frame.frame),
@@ -4562,10 +4562,10 @@ window.StemLab = window.StemLab || {
               h("div", { className: "mt-3 overflow-x-auto rounded-lg pb-1 focus:outline-none focus:ring-2 focus:ring-sky-400", tabIndex: 0, role: "img", "aria-label": "Reading-frame alignment. Frame plus " + dnaSelectedReadingFrame.frame + " is selected. The same mRNA bases are grouped into different triplets in frames plus one, plus two, and plus three." },
                 h("div", { className: "space-y-2", style: { minWidth: Math.max(580, 54 + fullMRNA.length * 28) + "px" }, "aria-hidden": "true" },
                   h("div", { className: "grid items-end gap-1", style: { gridTemplateColumns: "46px repeat(" + fullMRNA.length + ", 24px)" } },
-                    h("div", { className: "pb-1 text-right text-[8px] font-black uppercase tracking-wide text-slate-500" }, "Base"),
+                    h("div", { className: "pb-1 text-right text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Base"),
                     fullMRNA.split('').map(function(base, baseIndex) {
                       return h("div", { key: baseIndex, className: "text-center" },
-                        h("div", { className: "text-[7px] font-bold text-slate-500" }, String(baseIndex + 1)),
+                        h("div", { className: "text-[7px] font-bold text-slate-400" }, String(baseIndex + 1)),
                         h("div", { className: "mt-0.5 grid h-6 place-items-center rounded font-mono text-[10px] font-black text-white", style: { background: BASE_DARK_COLORS[base] || '#334155' } }, base)
                       );
                     })
@@ -4576,7 +4576,7 @@ window.StemLab = window.StemLab || {
                       h("div", { className: "pl-2 text-[10px] font-black " + (frameSelected ? "text-sky-200" : "text-slate-400") }, "+" + frame.frame),
                       frame.codons.map(function(entry, entryIndex) {
                         var alignmentState = frame.startIndex < 0 ? "untranslated" : entryIndex === frame.startIndex ? "start" : entryIndex === frame.stopIndex ? "stop" : entryIndex < frame.startIndex ? "before-start" : "coding";
-                        var alignmentTone = alignmentState === "start" ? "border-emerald-400 bg-emerald-500 text-emerald-950" : alignmentState === "stop" ? "border-rose-400 bg-rose-500 text-rose-950" : alignmentState === "coding" ? "border-indigo-400 bg-indigo-500 text-white" : "border-slate-700 bg-slate-800 text-slate-400";
+                        var alignmentTone = alignmentState === "start" ? "border-emerald-400 bg-emerald-500 text-emerald-950" : alignmentState === "stop" ? "border-rose-400 bg-rose-400 text-rose-950" : alignmentState === "coding" ? "border-indigo-400 bg-indigo-600 text-white" : "border-slate-700 bg-slate-800 text-slate-400";
                         return h("div", { key: entry.pos, className: "grid h-7 place-items-center rounded border font-mono text-[9px] font-black shadow-sm " + alignmentTone, style: { gridColumn: (entry.pos + 2) + " / span 3" }, "data-frame-codon-state": alignmentState }, entry.codon);
                       })
                     );
@@ -4635,9 +4635,10 @@ window.StemLab = window.StemLab || {
                 return h("span", { key: idx, className: "inline-block px-1 py-0.5 mx-0.5 rounded text-xs font-bold " + (isActive ? "bg-violet-600 text-white scale-110" : isPast ? "bg-violet-100 text-violet-700" : "bg-slate-100 text-slate-600"), title: codon + ' \u2192 ' + (CODON_TABLE[codon] || '?') }, codon);
               })
             ),
-            h("div", { className: "flex flex-wrap gap-1 items-center mb-3", role: "list" },
+            h("div", { className: "flex flex-wrap gap-1 items-center mb-3" },
               h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "Protein:"),
-              builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[11px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); }),
+              h("div", { className: "flex flex-wrap gap-1 items-center", role: "list", "aria-label": t("stem.dna.protein_chain", "Protein chain") },
+              builtProtein.map(function(p, idx) { var pr = AA_PROPS[p.aa] || { color: '#888', full: p.aa }; return h("span", { key: idx, role: "listitem", className: "px-1.5 py-0.5 rounded-md text-[11px] font-bold text-white", style: { background: pr.color }, title: pr.full }, p.aa); })),
               builtProtein.length === 0 && h("span", { className: "text-[11px] text-slate-600 italic" }, t('stem.dna.press_start_to_begin', "Press Start to begin..."))
             ),
             dnaInstrumentFrame(
@@ -4683,7 +4684,7 @@ window.StemLab = window.StemLab || {
               h("button", { onClick: function() { applyMutation('deletion'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-red-700 text-white hover:bg-red-600 shadow-md transition-all active:scale-[0.97]" }, t('stem.dna.deletion', "\u2796 Deletion")),
               h("button", { onClick: function() { updMulti({ dnaSequence: 'ATGCGTACCTGAAACTGA', mRNA: '', protein: [], animStep: 0, mutationLog: [] }); addToast('\u21BA Reset to original', 'success'); }, className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-600 hover:bg-slate-300 transition-all active:scale-[0.97]" }, t('stem.dna.reset_4', "\u21BA Reset")),
               h("button", { onClick: undoLatestMutation, disabled: !(d.mutationLog && d.mutationLog.length), className: "px-3 py-2 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 transition-all active:scale-[0.97]" }, "Undo last"),
-              h("button", { onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-600 text-white hover:bg-amber-700 transition-all active:scale-[0.97]" }, "Save experiment")
+              h("button", { onClick: saveDnaExperiment, className: "px-3 py-2 rounded-xl text-xs font-bold bg-amber-700 text-white hover:bg-amber-800 transition-all active:scale-[0.97]" }, "Save experiment")
             ),
             h("div", { className: "bg-white rounded-lg p-3 border" },
               h("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, "Current Sequence (" + dnaSeq.length + " bp):"),
@@ -5154,17 +5155,17 @@ window.StemLab = window.StemLab || {
                 h("div", { className: "bg-blue-50 rounded-lg p-2 border border-blue-100" },
                   h("p", { className: "text-[11px] font-bold text-blue-700 uppercase" }, t('stem.dna.polar_hydrophilic', 'Polar (Hydrophilic)')),
                   h("p", { className: "text-sm font-black text-blue-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'polar'; }).length),
-                  h("p", { className: "text-[11px] text-blue-500" }, t('stem.dna.ser_thr_cys_tyr_asn_gln', 'Ser, Thr, Cys, Tyr, Asn, Gln'))
+                  h("p", { className: "text-[11px] text-blue-700" }, t('stem.dna.ser_thr_cys_tyr_asn_gln', 'Ser, Thr, Cys, Tyr, Asn, Gln'))
                 ),
                 h("div", { className: "bg-red-50 rounded-lg p-2 border border-red-100" },
                   h("p", { className: "text-[11px] font-bold text-red-700 uppercase" }, t('stem.dna.positively_charged', 'Positively Charged')),
                   h("p", { className: "text-sm font-black text-red-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'positive'; }).length),
-                  h("p", { className: "text-[11px] text-red-500" }, t('stem.dna.arg_lys_his', 'Arg, Lys, His'))
+                  h("p", { className: "text-[11px] text-red-700" }, t('stem.dna.arg_lys_his', 'Arg, Lys, His'))
                 ),
                 h("div", { className: "bg-purple-50 rounded-lg p-2 border border-purple-100" },
                   h("p", { className: "text-[11px] font-bold text-purple-700 uppercase" }, t('stem.dna.negatively_charged', 'Negatively Charged')),
                   h("p", { className: "text-sm font-black text-purple-600" }, fullProtein.filter(function(p) { return (AA_PROPS[p.aa] || {}).type === 'negative'; }).length),
-                  h("p", { className: "text-[11px] text-purple-500" }, t('stem.dna.asp_glu', 'Asp, Glu'))
+                  h("p", { className: "text-[11px] text-purple-700" }, t('stem.dna.asp_glu', 'Asp, Glu'))
                 )
               ),
               h("div", { className: "bg-slate-50 rounded-lg p-2 border border-slate-400 mt-1" },
@@ -5443,7 +5444,7 @@ window.StemLab = window.StemLab || {
             h("div", { className: "bg-white rounded-lg p-3 border" },
               h("p", { className: "text-xs font-bold text-slate-700" }, currentCase.name),
               h("p", { className: "text-[11px] text-slate-600 mt-1" }, currentCase.desc),
-              h("p", { className: "text-[11px] text-cyan-600 mt-1" }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
+              h("p", { className: "text-[11px] text-cyan-700 mt-1" }, '\uD83E\uDDEC Restriction enzyme: ' + currentCase.enzyme)
             ),
 
             // Run gel button

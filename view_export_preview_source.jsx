@@ -7583,7 +7583,8 @@ function ExportPreviewView(props) {
       const liveRoot = exportPreviewRef.current?.contentDocument?.documentElement;
       resumeTrackedChanges = _builderSuspendTrackedChanges(liveRoot);
       resumeReviewComments = _builderSuspendReviewComments(liveRoot);
-      await executeExportFromPreview();
+      const exported = await executeExportFromPreview();
+      if (exported !== true) return;
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'builder', format: exportPreviewMode }); } catch (_) {}
     } catch (error) {
       if (mountedRef.current) addToast && addToast('Export failed. The builder is still open so you can try again.', 'error');
@@ -8042,6 +8043,21 @@ function ExportPreviewView(props) {
                       ))}
                     </div>
                   </div>
+                  {exportPreviewMode === 'worksheet' && (
+                    <label className="flex items-center gap-2 mt-2 text-xs text-slate-700" htmlFor="alloflow-worksheet-response-space">
+                      <span className="text-[11px] text-slate-600 shrink-0">Writing space:</span>
+                      <select
+                        id="alloflow-worksheet-response-space"
+                        value={['compact', 'standard', 'extended'].includes(exportConfig.worksheetResponseSpace) ? exportConfig.worksheetResponseSpace : 'standard'}
+                        onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, worksheetResponseSpace: e.target.value }))}
+                        className="flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+                      >
+                        <option value="compact">Compact — fewer pages</option>
+                        <option value="standard">Standard</option>
+                        <option value="extended">Extended — more room</option>
+                      </select>
+                    </label>
+                  )}
                 </div>
 
                 {/* Word count + goal */}

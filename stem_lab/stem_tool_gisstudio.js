@@ -3572,7 +3572,7 @@
             ? 'Interactive map unavailable. The equivalent data table remains available.'
             : 'Preparing interactive map?';
           return h('div', { style: { position: 'relative', height: height, borderRadius: 14, overflow: 'hidden', border: '1px solid #28516a', background: '#102c3b' } },
-            h('div', { ref: ref, tabIndex: 0, role: 'application', 'aria-label': label, 'aria-busy': pending ? 'true' : 'false', style: { height: '100%', overflow: 'hidden', background: '#102c3b' } }),
+            h('div', { ref: ref, tabIndex: pending || unavailable ? -1 : 0, role: 'application', 'aria-label': label, 'aria-busy': pending ? 'true' : 'false', style: { height: '100%', overflow: 'hidden', background: '#102c3b' } }),
             (pending || unavailable) && h('div', { role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 18, boxSizing: 'border-box', background: 'linear-gradient(135deg,#102c3b,#173e4d)', color: '#cfe8f3', fontSize: 12, fontWeight: 700, textAlign: 'center' } },
               h('div', null, message,
                 (unavailable || pending) && h('button', { type: 'button', onClick: retryLeaflet, style: Object.assign({}, control, { display: 'block', margin: '12px auto 0', cursor: 'pointer' }) }, unavailable ? 'Try online basemap again' : 'Retry loading'))));
@@ -4676,7 +4676,7 @@
             h('p', { id: 'gis-data-explorer-status', role: tableRangeInvalid ? 'alert' : 'status', 'aria-live': 'polite', style: { margin: '0 0 4px', color: tableRangeInvalid ? '#fde68a' : '#86efac', fontSize: 11, fontWeight: 700 } }, resultMessage),
             h('p', { id: 'gis-data-explorer-note', style: { margin: '0 0 10px', color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, 'These controls change only this table view. The map, analysis, project, and exports retain the complete mapped dataset.'),
             exploredRecords.length > 0
-              ? h('div', { style: { overflowX: 'auto' } },
+              ? h('div', { role: 'region', 'aria-label': 'Scrollable GIS data table', tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
                   h('table', { id: 'gis-data-explorer-table', style: { width: '100%', borderCollapse: 'collapse', fontSize: 12 } },
                     h('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, metricLabel + ' by location; ' + resultMessage),
                     h('thead', null, h('tr', null, ['Location', 'Latitude', 'Longitude', metricLabel, 'Class', 'Analysis selection'].map(function (heading) {
@@ -4912,7 +4912,7 @@
                   h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('import'); } }), ' My CSV')),
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
-                  h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: control, 'aria-describedby': 'gis-region-pack-note' },
+                  h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: Object.assign({}, control, { width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }), 'aria-describedby': 'gis-region-pack-note' },
                     GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
                   h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote)),
                 h('details', {

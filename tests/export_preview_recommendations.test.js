@@ -1026,7 +1026,9 @@ describe('Document Builder export recommendations', () => {
   it('persists margins in versioned presets and refreshes live document statistics', () => {
     expect(host).toContain("pageMargin: '1in'");
     expect(host).toContain("vennExportMode: 'completed'");
-    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 5');
+    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 6');
+    expect(host).toContain("worksheetResponseSpace: 'standard'");
+    expect(source).toContain('alloflow-worksheet-response-space');
     expect(source).toContain("name=\"vennExportMode\"");
     expect(source).toContain('Concept sort: interactive tap/select sorting');
     expect(source).toContain("setExportConfigAndRefresh(p => ({ ...p, pageMargin: m.val }))");

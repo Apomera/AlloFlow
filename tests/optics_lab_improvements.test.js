@@ -85,11 +85,35 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain('if (S.animate) scheduleFrame();');
   });
 
+  it('makes the polarization 3D outcome explain each intensity projection', () => {
+    expect(source).toContain("var polStageLine = 'I\\u2080 100.0% \\u2192 P\\u2081 '");
+    expect(source).toContain('var polProjectionLine = useP3');
+    expect(source).toContain("'data-op-polarization-3d-host': 'true'");
+    expect(source).toContain("'aria-roledescription': 'interactive 3D model'");
+    expect(source).toContain("'data-after-p1': afterP1.toFixed(6)");
+    expect(source).toContain("'data-p2-relative-transmission': polP2Transmission.toFixed(6)");
+    expect(source).toContain("'data-op-polarization-stage-trail': 'true'");
+    expect(source).toContain("'data-op-polarization-rule': 'true'");
+    expect(source).toContain("role: 'progressbar', 'aria-label': 'Final transmitted intensity'");
+    expect(source).toContain('Press zero to reset the camera.');
+    const keyStart = source.indexOf('function keyPolView(event)');
+    const keyEnd = source.indexOf('var segs =', keyStart);
+    expect(keyStart).toBeGreaterThan(-1);
+    expect(keyEnd).toBeGreaterThan(keyStart);
+    expect(source.slice(keyStart, keyEnd)).toContain('event.stopPropagation();');
+  });
+
   it('adds an accessible, demand-rendered 3D lens bench with exact thin-lens outcomes', () => {
     expect(source).toContain('var OpticsLensGL = (function ()');
     expect(source).toContain("canvas.setAttribute('data-optics-lens-gl', 'true')");
     expect(source).toContain("failMessage: '3D lens bench unavailable'");
     expect(source).toContain('imageDistance: d_i, imageHeight: hImg');
+    expect(source).toContain("'data-op-lens-3d-outcome': lensImageType");
+    expect(source).toContain("'data-image-orientation': lensImageOrientation");
+    expect(source).toContain("'data-image-height': hImg == null");
+    expect(source).toContain("'data-op-lens-3d-host': 'true'");
+    expect(source).toContain("'data-screen-offset-cm': screenDelta == null ? 'none' : screenDelta.toFixed(3)");
+    expect(source).toContain("var screenRelationShort = screenFocused ? 'sharp focus");
     expect(source).toContain('S.resizeObserver.disconnect()');
     expect(source).toContain("window.__alloOpticsLensGL = OpticsLensGL");
 
@@ -102,8 +126,10 @@ describe('Optics Lab improvement regressions', () => {
     });
     expect(expanded).toContain('Loading 3D lens bench');
     expect(expanded).toContain('Dashed pink lines are backward extensions');
-    expect(expanded).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + -"');
+    expect(expanded).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
+    expect(expanded).toContain('Press zero to reset the camera.');
     expect(expanded).toContain('virtual, upright image');
+    expect(expanded).toContain('The object tip is 5.0 centimeters above the optical axis; the image tip is 1.6 centimeters above the optical axis.');
 
     const focalPlane = render({
       mode: 'lenses', lensShow3D: true, lensShowMath: true,
@@ -114,13 +140,28 @@ describe('Optics Lab improvement regressions', () => {
     expect(focalPlane).toContain('Parallel / collimated after lens');
     expect(focalPlane).toContain('1/d_i = 0');
     expect(focalPlane).toContain('no screen at a finite distance');
-    expect(focalPlane).toContain('aria-label="Object height"');
+    expect(focalPlane).toContain('aria-label="Lens object height"');
     expect(focalPlane).toContain('Outgoing bundle angle');
+    expect(focalPlane).toContain('The object tip is 6.0 centimeters above the optical axis.');
 
     const finiteImage = render({
-      mode: 'lenses', lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 7
+      mode: 'lenses', lensShow3D: true,
+      lensType: 'converging', lensFocal: 12, lensDo: 25, lensObjH: 7
     });
-    expect(finiteImage).toContain('7.0 cm object height. Image height');
+    expect(finiteImage).toContain('7.0 cm object height. Image tip 6.5 cm below the optical axis.');
+    expect(finiteImage).toContain('The object tip is 7.0 centimeters above the optical axis; the image tip is 6.5 centimeters below the optical axis.');
+  });
+
+  it('tightens ray-space framing and labels physical versus construction rays', () => {
+    expect(source).toContain('function _fitOptics3DModelBounds(THREE, model, target, half)');
+    expect(source.match(/_fitOptics3DModelBounds\(THREE, S\.model, S\.target, S\.half\);/g)).toHaveLength(2);
+    expect(source).toMatch(/ref: opticsMirrorGlRef, role: 'group'/);
+    expect(source).toMatch(/ref: opticsLensGlRef,[\s\S]*?role: 'group'/);
+    expect(source).toMatch(/data-op-mirror-3d-ray-key/);
+    expect(source).toMatch(/data-op-lens-3d-ray-key/);
+    expect(source).toMatch(/mirrorImageType === 'virtual'[\s\S]*?virtual extensions/);
+    expect(source).toMatch(/lensImageType === 'virtual'[\s\S]*?virtual extensions/);
+    expect(source).toContain('cameraDistance: S ? S.camera.position.distanceTo(S.target) : null');
   });
 
   it('adds an opt-in 3D refraction ray bench with TIR-aware geometry', () => {
@@ -130,6 +171,9 @@ describe('Optics Lab improvement regressions', () => {
     expect(source).toContain('theta1Deg: S ? S.theta1Deg : null');
     expect(source).toContain('function addArrowHead(THREE, from, to, color, opacity)');
     expect(source).toContain('S.visibilityHandler = function() { if (!document.hidden) scheduleFrame(); };');
+    expect(source).toContain('Math.atan2(-dx, dy) / DEG');
+    expect(source).toContain("'data-op-refraction-3d-outcome': refractionOutcomeState");
+    expect(source).toContain("'data-critical-offset-deg': criticalOffsetDeg == null ? 'none' : criticalOffsetDeg.toFixed(3)");
 
     const collapsed = render({ mode: 'refraction', refrShow3D: false });
     expect(collapsed).toContain('Ray-space bench (3D');
@@ -139,12 +183,43 @@ describe('Optics Lab improvement regressions', () => {
     expect(refracted).toContain('Loading 3D ray bench');
     expect(refracted).toContain('Gold enters, cyan refracts');
     expect(refracted).toContain('refracts into index 1.520 at 19.2 degrees');
+    expect(refracted).toContain('The transmitted ray bends toward the normal because the second refractive index is higher.');
+    expect(refracted).toContain('No critical angle exists in this direction because the first refractive index is not greater than the second.');
     expect(refracted).toContain('data-op-refraction-3d-control="true"');
     expect(refracted).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
     expect(refracted).toContain('data-op-refraction-3d-reset="true"');
 
+    const away = render({ mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 40 });
+    expect(away).toContain('The transmitted ray bends away from the normal because the second refractive index is lower.');
+    expect(away).toContain('1.8 degrees below the critical angle of 41.8 degrees.');
+
     const tir = render({ mode: 'refraction', refrShow3D: true, refrN1: 1.5, refrN2: 1, refrTheta1: 60 });
     expect(tir).toContain('totally internally reflects into the first medium');
+    expect(tir).toContain('No transmitted ray leaves the interface.');
+    expect(tir).toContain('18.2 degrees above the critical angle of 41.8 degrees.');
+  });
+
+  it('makes Snell\'s window geometry explicit and keeps its controls local', () => {
+    expect(source).toContain('var windowDiameterDeg = windowPossible ? windowConeDeg * 2 : null;');
+    expect(source).toContain('var windowRadiusModel = windowPossible ? OW_DEPTH * Math.tan(theta_c) : null;');
+    expect(source).toMatch(/data-op-snell-window-3d-host/);
+    expect(source).toMatch(/data-op-snell-window-3d-outcome/);
+    expect(source).toMatch(/data-window-radius-model/);
+    expect(source).toMatch(/ev\.preventDefault\(\); ev\.stopPropagation\(\); setWindowCamera\('oblique'\); return;/);
+
+    const water = render({
+      mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1
+    });
+    expect(water).toMatch(/data-op-snell-window-3d-scene=.true./);
+    expect(water).toMatch(/data-op-snell-window-3d-outcome=.active./);
+    expect(water).toMatch(/data-cone-half-angle-deg=.48\.607./);
+    expect(water).toMatch(/data-window-diameter-deg=.97\.213./);
+    expect(water).toMatch(/data-index-ratio=.0\.750188./);
+    expect(water).toMatch(/data-window-radius-model=.6\.807./);
+    expect(water).toMatch(/data-op-snell-window-angle=.true./);
+    expect(water).toMatch(/data-op-snell-window-diameter=.true./);
+    expect(water).toContain('Sky inside cone');
+    expect(water).toContain('mirror outside');
   });
 
   it('keeps long-distance mirror samples inside the range control domain', () => {

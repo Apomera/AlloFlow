@@ -1930,7 +1930,7 @@ window.StemLab = window.StemLab || {
             results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: __alloT('stem.statslab.interpret_ai_graded_write_up', 'Interpret + AI-graded write-up'),              hint: __alloT('stem.statslab.effect_size_context_cohen_band_labels_', 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.') },
             power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: __alloT('stem.statslab.sample_size_power_calculator', 'Sample-size + power calculator'),              hint: __alloT('stem.statslab.how_many_subjects_do_you_need_to_detec', 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.') },
             mastery: { accent: '#eab308', soft: 'rgba(234,179,8,0.10)',   icon: '🏅', title: __alloT('stem.statslab.concept_mastery_tracker', 'Concept mastery tracker'),                    hint: __alloT('stem.statslab.track_your_progress_through_ap_style_q', 'Track your progress through AP-style quiz concepts.') },
-            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha', 'Inquiry sandbox — power × effect × alpha'),   hint: __alloT('stem.statslab.move_three_sliders_predict_where_a_stu', 'Move three sliders and observe where the study moves from underpowered to well-powered to wasteful. The result updates live; record a hypothesis or pattern you notice.') }
+            inquiry: { accent: '#14b8a6', soft: 'rgba(20,184,166,0.10)',  icon: '🔬', title: __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha', 'Inquiry sandbox — power × effect × alpha'),   hint: __alloT('stem.statslab.observe_power_effect_alpha_live_evidence', 'Move three sliders and observe how assumed effect size, two-sided alpha, and sample size change approximate power. This is live evidence: log designs and explain a pattern.') }
           };
           var meta = TAB_META[d.mode] || TAB_META.home;
           var semanticTopicColors = {
@@ -1975,99 +1975,258 @@ window.StemLab = window.StemLab || {
         d.mode === 'power' && _renderPower(d, upd, h, addToast),
         d.mode === 'mastery' && _renderStatsMasteryPanel(d, upd, h),
         d.mode === 'inquiry' && (function() {
-          var iq = d.inquiry || { effect: 0.5, alpha: 0.05, nGroup: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var inquiryDefaults = { effect: 0.5, alpha: 0.05, nGroup: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+          var iq = Object.assign({}, inquiryDefaults, d.inquiry || {});
+          var inquiryLog = Array.isArray(iq.log) ? iq.log : [];
           function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-          // approximate power for two-sample t-test (z-approx, large-N)
-          var n = iq.nGroup;
-          var zalpha = iq.alpha <= 0.001 ? 3.29 : iq.alpha <= 0.01 ? 2.58 : iq.alpha <= 0.05 ? 1.96 : iq.alpha <= 0.10 ? 1.64 : 1.28;
-          var ncp = iq.effect * Math.sqrt(n / 2);
-          // power ≈ Φ(ncp − zalpha)
-          function normCdf(z) {
-            var t = 1 / (1 + 0.2316419 * Math.abs(z));
-            var d = 0.3989423 * Math.exp(-z * z / 2);
-            var p = d * t * ((((1.330274 * t - 1.821256) * t + 1.781478) * t - 0.356538) * t + 0.319382);
-            return z > 0 ? 1 - p : p;
+          function designValue(entry, key) {
+            if (key === 'effect') return Number(entry && entry.effect != null ? entry.effect : entry && entry.d);
+            if (key === 'alpha') return Number(entry && entry.alpha != null ? entry.alpha : entry && entry.a);
+            return Number(entry && entry.nGroup != null ? entry.nGroup : entry && entry.n);
           }
-          var power = Math.max(0, Math.min(1, normCdf(ncp - zalpha)));
+          function stableDesignNumber(value, digits) {
+            return isFinite(value) ? Number(value).toFixed(digits) : 'na';
+          }
+          function designSignature(entry) {
+            return [
+              stableDesignNumber(designValue(entry, 'effect'), 3),
+              stableDesignNumber(designValue(entry, 'alpha'), 4),
+              stableDesignNumber(designValue(entry, 'nGroup'), 0)
+            ].join('|');
+          }
+
+          var powerModel = _statsInquiryPowerModel(iq.effect, iq.alpha, iq.nGroup);
+          var power = powerModel.power;
           var state = power < 0.30 ? 'futile' : power < 0.60 ? 'underpowered' : power < 0.80 ? 'borderline' : power < 0.95 ? 'wellpowered' : 'overkill';
           var sm = ({
-            futile: { label: __alloT('stem.statslab.futile', 'Futile'), color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: __alloT('stem.statslab.power_30_most_replications_will_miss_t', 'Power < 30% — most replications will miss the effect even if it is real.') },
-            underpowered: { label: __alloT('stem.statslab.underpowered', 'Underpowered'), color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: __alloT('stem.statslab.power_30_60_coin_flip_like_ability_to_', 'Power 30–60% — coin-flip-like ability to detect a true effect. Common in psych replications.') },
-            borderline: { label: __alloT('stem.statslab.borderline', 'Borderline'), color: '#facc15', bg: '#2a2410', border: '#eab308', desc: __alloT('stem.statslab.power_60_80_typical_funded_study_but_c', 'Power 60–80% — typical funded study, but Cohen recommended ≥80%.') },
-            wellpowered: { label: 'Well-powered', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: __alloT('stem.statslab.power_80_95_sound_design_effect_if_rea', 'Power 80–95% — sound design. Effect, if real, will likely be detected.') },
-            overkill: { label: __alloT('stem.statslab.overkill', 'Overkill'), color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: __alloT('stem.statslab.power_95_diminishing_returns_consider_', 'Power > 95% — diminishing returns; consider tightening alpha or splitting cohort.') }
+            futile: {
+              label: __alloT('stem.statslab.power_band_very_low', 'Very low modeled power'),
+              color: '#f87171', bg: '#2a0a0a', border: '#dc2626',
+              desc: __alloT('stem.statslab.power_band_very_low_desc', 'Approximate power is below 30%. Under the stated effect and model assumptions, the test has a low chance of rejecting the null.')
+            },
+            underpowered: {
+              label: __alloT('stem.statslab.power_band_low', 'Low modeled power'),
+              color: '#fb923c', bg: '#2a1a0a', border: '#ea580c',
+              desc: __alloT('stem.statslab.power_band_low_desc', 'Approximate power is 30% to 60%. A real effect of the assumed size would often go undetected in repeated studies under this model.')
+            },
+            borderline: {
+              label: __alloT('stem.statslab.power_band_moderate', 'Moderate modeled power'),
+              color: '#facc15', bg: '#2a2410', border: '#eab308',
+              desc: __alloT('stem.statslab.power_band_moderate_desc', 'Approximate power is 60% to 80%. Compare the design with your planning target, costs, and desired precision.')
+            },
+            wellpowered: {
+              label: __alloT('stem.statslab.power_band_high', 'High modeled power'),
+              color: '#4ade80', bg: '#0a2e1a', border: '#16a34a',
+              desc: __alloT('stem.statslab.power_band_high_desc', 'Approximate power is 80% to 95%. Eighty percent is a common planning target, not a universal guarantee of study quality.')
+            },
+            overkill: {
+              label: __alloT('stem.statslab.power_band_very_high', 'Very high modeled power'),
+              color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2',
+              desc: __alloT('stem.statslab.power_band_very_high_desc', 'Approximate power is above 95%. Whether additional sample size is justified depends on precision, ethics, feasibility, and cost.')
+            }
           })[state];
-          // SVG: power curve over n at fixed effect & alpha
+
+          var controlLabels = {
+            effect: __alloT('stem.statslab.assumed_effect_size', 'Assumed effect size'),
+            alpha: __alloT('stem.statslab.two_sided_alpha', 'Two-sided alpha'),
+            nGroup: __alloT('stem.statslab.participants_per_group', 'Participants per group')
+          };
+          var loggedSignatures = {};
+          inquiryLog.forEach(function(entry) { loggedSignatures[designSignature(entry)] = true; });
+          var currentSignature = designSignature({ effect: iq.effect, alpha: iq.alpha, nGroup: iq.nGroup });
+          var currentAlreadyLogged = !!loggedSignatures[currentSignature];
+          var distinctDesignCount = Object.keys(loggedSignatures).length;
+          var comparisonEntries = inquiryLog.slice(-2);
+          var changedControls = [];
+          if (comparisonEntries.length === 2) {
+            Object.keys(controlLabels).forEach(function(key) {
+              var digits = key === 'alpha' ? 4 : key === 'effect' ? 3 : 0;
+              if (stableDesignNumber(designValue(comparisonEntries[0], key), digits) !== stableDesignNumber(designValue(comparisonEntries[1], key), digits)) changedControls.push(key);
+            });
+          }
+          var fairTestState = comparisonEntries.length < 2
+            ? 'needs-two-designs'
+            : changedControls.length === 1
+              ? 'one-variable'
+              : changedControls.length === 0
+                ? 'duplicate'
+                : 'multiple-variables';
+          var fairTestText = comparisonEntries.length < 2
+            ? __alloT('stem.statslab.fair_test_needs_two', 'Fair-test check: log two different designs to compare them.')
+            : changedControls.length === 1
+              ? __alloT('stem.statslab.fair_test_one_variable', 'Fair-test check: one control changed') + ' (' + controlLabels[changedControls[0]] + ').'
+              : changedControls.length === 0
+                ? __alloT('stem.statslab.fair_test_duplicate', 'Fair-test check: the last two logs use the same design; change one control for the next log.')
+                : __alloT('stem.statslab.fair_test_multiple', 'Fair-test check: several controls changed. That comparison cannot isolate one control; change only one next.');
+          var explanationText = String(iq.explanation || iq.hypothesis || '');
+          var evidenceReady = distinctDesignCount >= 2;
+          var explanationComplete = evidenceReady && !!explanationText.trim();
+
           var ns = [];
-          for (var nn = 5; nn <= 200; nn += 5) { ns.push(nn); }
+          for (var nn = 5; nn <= 200; nn += 5) ns.push(nn);
           var pts = ns.map(function(nv) {
-            var nc = iq.effect * Math.sqrt(nv / 2);
-            var p = Math.max(0, Math.min(1, normCdf(nc - zalpha)));
+            var pointPower = _statsInquiryPowerModel(iq.effect, iq.alpha, nv).power;
             var x = ((nv - 5) / 195) * 260 + 36;
-            var y = 130 - p * 110;
+            var y = 130 - pointPower * 110;
             return x + ',' + y;
           }).join(' ');
-          var hereX = ((Math.min(200, n) - 5) / 195) * 260 + 36;
+          var hereX = ((Math.min(200, Math.max(5, iq.nGroup)) - 5) / 195) * 260 + 36;
           var hereY = 130 - power * 110;
-          return h('div', { style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
-            h('h3', { style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha_2', '🔬 Inquiry Sandbox — Power, Effect, Alpha')),
-            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.statslab.set_true_effect_size_alpha_and_per_gro', 'Set effect size, alpha, and per-group sample size, then observe how the power band changes. The result updates live; record a hypothesis or pattern you notice.')),
-            h('div', { style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label + ' (Power ≈ ' + (power * 100).toFixed(0) + '%)'),
-            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { role: 'img', 'aria-label': __alloT('stem.statslab.dist_img', 'Sampling distribution chart'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
+
+          return h('div', {
+            style: { padding: 16, borderRadius: 12, background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' },
+            'data-statslab-live-inquiry': 'observe-log-explain',
+            'data-statslab-inquiry-credit': 'two-distinct-designs-plus-explanation',
+            'data-statslab-power-model': 'two-sided-normal-z-approximation',
+            'aria-labelledby': 'statslab-inquiry-title'
+          },
+            h('div', { style: { color: '#99f6e4', fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 3 } }, __alloT('stem.statslab.inquiry_widget_live_evidence', 'Inquiry widget · live evidence')),
+            h('h3', { id: 'statslab-inquiry-title', style: { margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, __alloT('stem.statslab.inquiry_sandbox_power_effect_alpha_2', 'Inquiry Sandbox — Power, Effect, Alpha')),
+            h('p', { style: { margin: '0 0 10px', fontSize: 12, opacity: 0.9, lineHeight: 1.45 } }, __alloT('stem.statslab.live_evidence_instructions', 'Approximate power is visible and updates live, so this is an observe–log–explain investigation, not a prediction quiz. Change one control at a time, log two different designs, then explain the evidence.')),
+            h('div', {
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              'data-statslab-live-power': 'visible-model-output',
+              style: { display: 'inline-block', padding: '4px 12px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 }
+            }, sm.label + ' (Approximate power ' + (power * 100).toFixed(0) + '%)'),
+            h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.85, lineHeight: 1.45 } }, sm.desc),
+            h('div', {
+              'data-statslab-model-boundary': 'conditional-power-not-replication-probability',
+              style: { marginBottom: 10, padding: '9px 10px', borderRadius: 8, background: '#0a0a1a', border: '1px solid #334155', color: '#cbd5e1', fontSize: 10, lineHeight: 1.45 }
+            },
+              h('strong', { style: { color: '#e2e8f0' } }, __alloT('stem.statslab.model_boundary_label', 'Model boundary: ')),
+              __alloT('stem.statslab.model_boundary_copy', 'This is a two-sided, large-sample normal approximation for two independent, equal-size groups. Power is conditional on the assumed effect and alpha; it is not the probability that a hypothesis is true or a guaranteed replication rate. Small samples need a noncentral-t calculation.')
+            ),
+            h('svg', { role: 'img', 'aria-label': __alloT('stem.statslab.inquiry_power_curve_a11y', 'Approximate two-sided power curve across per-group sample sizes'), width: '100%', height: 160, viewBox: '0 0 320 160', style: { background: 'var(--sl-chart-bg)', borderRadius: 6, marginBottom: 10 } },
               h('line', { x1: 36, y1: 130, x2: 296, y2: 130, stroke: 'var(--sl-chart-axis)' }),
               h('line', { x1: 36, y1: 18, x2: 36, y2: 130, stroke: 'var(--sl-chart-axis)' }),
-              h('line', { x1: 36, y1: 130 - 0.8 * 110, x2: 296, y2: 130 - 0.8 * 110, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
-              h('text', { x: 296, y: 130 - 0.8 * 110 - 2, fill: 'var(--sl-chart-secondary)', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.power_80', 'power = 80%')),
-              [0, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
+              h('line', { x1: 36, y1: 42, x2: 296, y2: 42, stroke: 'var(--sl-chart-secondary)', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+              h('text', { x: 296, y: 39, fill: 'var(--sl-chart-secondary)', fontSize: 8, textAnchor: 'end' }, __alloT('stem.statslab.common_planning_reference', '80% planning reference')),
+              [5, 50, 100, 150, 200].map(function(nv, i) { return h('text', { key: 'nx' + i, x: 36 + ((nv - 5) / 195) * 260, y: 145, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'middle' }, 'n=' + nv); }),
               [0, 0.25, 0.5, 0.75, 1.0].map(function(p, i) { return h('text', { key: 'py' + i, x: 30, y: 132 - p * 110, fill: 'var(--sl-chart-label)', fontSize: 8, textAnchor: 'end' }, (p * 100).toFixed(0) + '%'); }),
               h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px ' + sm.color + ')' } }),
               h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: 'var(--sl-chart-point-stroke)', strokeWidth: 1.5 }),
-              h('text', { x: 160, y: 156, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at d=' + iq.effect.toFixed(2) + ', α=' + iq.alpha)
+              h('text', { x: 160, y: 156, fill: 'var(--sl-chart-label)', fontSize: 9, textAnchor: 'middle' }, 'Power vs n at assumed d=' + iq.effect.toFixed(2) + ', two-sided alpha=' + iq.alpha.toFixed(3))
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 10 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, marginBottom: 10 } },
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.true_effect_cohen_d', 'True effect (Cohen d)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
-                h('input', { type: 'range', min: 0.05, max: 1.5, step: 0.05, value: iq.effect, onChange: function(e) { setKey('effect', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between', gap: 5 } }, h('span', null, controlLabels.effect), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.effect.toFixed(2))),
+                h('input', { type: 'range', min: 0.05, max: 1.5, step: 0.05, value: iq.effect, 'aria-label': controlLabels.effect, 'aria-describedby': 'statslab-effect-hint', onChange: function(e) { setKey('effect', parseFloat(e.target.value)); }, style: { width: '100%' } }),
+                h('span', { id: 'statslab-effect-hint', style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 9, lineHeight: 1.35 } }, __alloT('stem.statslab.effect_hint', 'Larger assumed effects are easier to detect at fixed alpha and n.'))
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.alpha', 'Alpha')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha)),
-                h('input', { type: 'range', min: 0.001, max: 0.2, step: 0.001, value: iq.alpha, onChange: function(e) { setKey('alpha', parseFloat(e.target.value)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between', gap: 5 } }, h('span', null, controlLabels.alpha), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.alpha.toFixed(3))),
+                h('input', { type: 'range', min: 0.001, max: 0.2, step: 0.001, value: iq.alpha, 'aria-label': controlLabels.alpha, 'aria-describedby': 'statslab-alpha-hint', onChange: function(e) { setKey('alpha', parseFloat(e.target.value)); }, style: { width: '100%' } }),
+                h('span', { id: 'statslab-alpha-hint', style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 9, lineHeight: 1.35 } }, __alloT('stem.statslab.alpha_hint', 'At fixed effect and n, a smaller alpha lowers Type I error but also lowers power.'))
               ),
               h('label', null,
-                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between' } }, h('span', null, __alloT('stem.statslab.n_per_group', 'n per group')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
-                h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.nGroup, onChange: function(e) { setKey('nGroup', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                h('div', { style: { fontSize: 12, marginBottom: 2, display: 'flex', justifyContent: 'space-between', gap: 5 } }, h('span', null, controlLabels.nGroup), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.nGroup)),
+                h('input', { type: 'range', min: 5, max: 200, step: 1, value: iq.nGroup, 'aria-label': controlLabels.nGroup, 'aria-describedby': 'statslab-n-hint', onChange: function(e) { setKey('nGroup', parseInt(e.target.value, 10)); }, style: { width: '100%' } }),
+                h('span', { id: 'statslab-n-hint', style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 9, lineHeight: 1.35 } }, __alloT('stem.statslab.n_hint', 'More participants per group increase modeled power, while cost and feasibility also matter.'))
               )
             ),
-            h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },
-              h('button', { onClick: function() {
-                var t = new Date().toISOString().slice(11, 19);
-                setIQ({ log: iq.log.concat([{ t: t, d: iq.effect.toFixed(2), a: iq.alpha, n: iq.nGroup, power: (power * 100).toFixed(0) + '%', state: sm.label }]) });
-              }, style: { flex: 1, padding: 8, fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, __alloT('stem.statslab.log_this_design', '📋 Log this design')),
-              h('button', { 'data-sl-focusable': 'true', onClick: function() { setIQ({ effect: 0.5, alpha: 0.05, nGroup: 30 }); }, style: { padding: '8px 12px', fontSize: 12, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, __alloT('stem.statslab.reset', 'Reset'))
+            h('div', {
+              'data-statslab-evidence-log': 'distinct-designs',
+              style: { padding: 10, borderRadius: 8, background: '#0a0a1a', border: '1px solid #334155', marginBottom: 10 }
+            },
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 8 } },
+                h('div', null,
+                  h('div', { style: { color: '#e2e8f0', fontSize: 12, fontWeight: 850 } }, __alloT('stem.statslab.evidence_log', 'Evidence log') + ' · ' + distinctDesignCount + '/2 ' + __alloT('stem.statslab.distinct_designs', 'distinct designs')),
+                  h('div', { style: { marginTop: 2, color: '#cbd5e1', fontSize: 9, lineHeight: 1.35 } }, __alloT('stem.statslab.log_hint', 'For a fair comparison, keep two controls fixed and change one.'))
+                ),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                  h('button', {
+                    type: 'button',
+                    disabled: currentAlreadyLogged,
+                    'aria-disabled': currentAlreadyLogged ? 'true' : 'false',
+                    'aria-label': currentAlreadyLogged ? __alloT('stem.statslab.design_logged_a11y', 'Current power design already logged') : __alloT('stem.statslab.log_design_a11y', 'Log current power design as evidence'),
+                    onClick: function() {
+                      if (currentAlreadyLogged) return;
+                      var stamp = new Date().toISOString().slice(11, 19);
+                      setIQ({ log: inquiryLog.concat([{
+                        t: stamp,
+                        effect: iq.effect,
+                        alpha: iq.alpha,
+                        nGroup: iq.nGroup,
+                        d: iq.effect.toFixed(2),
+                        a: iq.alpha,
+                        n: iq.nGroup,
+                        powerValue: power,
+                        power: (power * 100).toFixed(0) + '%',
+                        state: sm.label
+                      }]) });
+                    },
+                    style: { padding: '7px 10px', fontSize: 11, fontWeight: 800, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: currentAlreadyLogged ? 'not-allowed' : 'pointer', opacity: currentAlreadyLogged ? 0.68 : 1 }
+                  }, currentAlreadyLogged ? __alloT('stem.statslab.design_already_logged', 'Design already logged') : __alloT('stem.statslab.log_this_design', 'Log this design')),
+                  inquiryLog.length > 0 && h('button', {
+                    type: 'button',
+                    'data-sl-focusable': 'true',
+                    'aria-label': __alloT('stem.statslab.clear_evidence_a11y', 'Clear power evidence log and explanation'),
+                    onClick: function() { setIQ({ log: [], explanation: '', hypothesis: '', understood: false }); },
+                    style: { padding: '7px 10px', fontSize: 11, borderRadius: 6, border: '1px solid #475569', background: '#0f172a', color: '#cbd5e1', cursor: 'pointer' }
+                  }, __alloT('stem.statslab.clear_evidence', 'Clear evidence'))
+                )
+              ),
+              inquiryLog.length > 0 && h('div', { role: 'list', 'aria-label': __alloT('stem.statslab.logged_power_designs', 'Logged power-design evidence'), style: { maxHeight: 110, overflow: 'auto', padding: 7, borderRadius: 6, background: '#020617', border: '1px solid #1e293b', marginTop: 8, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.45 } },
+                inquiryLog.slice(-6).map(function(entry, index) {
+                  var entryEffect = designValue(entry, 'effect');
+                  var entryAlpha = designValue(entry, 'alpha');
+                  var entryN = designValue(entry, 'nGroup');
+                  var entryPower = entry.power || (isFinite(entry.powerValue) ? (entry.powerValue * 100).toFixed(0) + '%' : 'not recorded');
+                  var entryText = entry.t + '  ' + entry.state + ' · d ' + stableDesignNumber(entryEffect, 2) + ' · alpha ' + stableDesignNumber(entryAlpha, 3) + ' · n/group ' + stableDesignNumber(entryN, 0) + ' · power ' + entryPower;
+                  return h('div', { key: designSignature(entry) + '-' + index, role: 'listitem', 'aria-label': entryText }, entryText);
+                })
+              ),
+              h('p', { role: 'status', 'aria-live': 'polite', 'data-statslab-fair-test-check': fairTestState, style: { margin: '8px 0 0', color: changedControls.length === 1 ? '#bbf7d0' : '#fde68a', fontSize: 10, fontWeight: 750, lineHeight: 1.4 } }, fairTestText)
             ),
-            iq.log.length > 0 && h('div', { style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
-              iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · d' + e.d + ' α' + e.a + ' n' + e.n + ' → ' + e.power); })
-            ),
-            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, __alloT('stem.statslab.your_hypothesis_which_slider_has_the_b', 'Your hypothesis (which slider has the biggest leverage in your range?)')),
-            h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.e_g_halving_alpha_needs_almost_double_', 'e.g., halving alpha needs almost double n to recover the same power...'), 'aria-label': __alloT('stem.statslab.hypothesis_input', 'Power-design hypothesis'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 10, resize: 'vertical' } }),
-            !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 12px', fontSize: 12, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, __alloT('stem.statslab.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
-            iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 12, marginBottom: 10, lineHeight: 1.5 } },
-              h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, __alloT('stem.statslab.open_questions_no_answer_key', 'Open questions (no answer key)')),
+            h('button', {
+              type: 'button',
+              'aria-expanded': iq.stuckRevealed ? 'true' : 'false',
+              'aria-controls': 'statslab-investigation-prompts',
+              onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); },
+              style: { padding: '6px 10px', fontSize: 11, fontWeight: 750, borderRadius: 6, border: '1px solid #334155', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 8 }
+            }, iq.stuckRevealed ? __alloT('stem.statslab.hide_investigation_prompts', 'Hide investigation prompts') : __alloT('stem.statslab.show_investigation_prompts', "I'm stuck — show investigation prompts")),
+            iq.stuckRevealed && h('div', { id: 'statslab-investigation-prompts', role: 'note', 'data-statslab-investigation-prompts': 'scaffold-only', style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+              h('div', { style: { fontWeight: 800, color: sm.color, marginBottom: 4 } }, __alloT('stem.statslab.investigation_prompts_no_key', 'Investigation prompts — no answer key')),
               h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                h('li', null, __alloT('stem.statslab.if_your_effect_is_d_0_2_small_what_n_p', 'If your effect is d=0.2 (small), what n per group do you need for 80% power at α=.05?')),
-                h('li', null, __alloT('stem.statslab.a_study_with_n_20_per_group_and_d_0_5_', 'A study with n=20 per group and d=0.5 — what is its replication probability?')),
-                h('li', null, __alloT('stem.statslab.when_does_it_make_sense_to_lower_power', 'When does it make sense to *lower* power on purpose (e.g., pilot, screening)?')),
-                h('li', null, __alloT('stem.statslab.how_does_tightening_e_g_for_multiple_c', 'How does tightening α (e.g., for multiple comparisons) trade off against n?'))
+                h('li', null, __alloT('stem.statslab.prompt_small_effect', 'For an assumed small effect, how does n per group change the approximate power?')),
+                h('li', null, __alloT('stem.statslab.prompt_alpha_tradeoff', 'At fixed effect and n, what happens when you tighten alpha?')),
+                h('li', null, __alloT('stem.statslab.prompt_same_power', 'Can two different designs reach a similar power band? Which tradeoff produced it?')),
+                h('li', null, __alloT('stem.statslab.prompt_limits', 'Which real design assumptions are missing from this simplified model?'))
               )
             ),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
-              h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-              h('span', null, __alloT('stem.statslab.i_can_explain_why_this_d_n_combination', 'I can explain why this d × α × n combination yields this power state.'))
+            h('label', { style: { display: 'block', fontSize: 12, fontWeight: 750, opacity: 0.92, marginBottom: 4 } },
+              __alloT('stem.statslab.evidence_explanation_label', 'Evidence-based explanation from your logged designs'),
+              h('textarea', {
+                value: explanationText,
+                disabled: !evidenceReady,
+                'aria-disabled': evidenceReady ? 'false' : 'true',
+                'aria-label': __alloT('stem.statslab.evidence_explanation_input', 'Power-model evidence explanation'),
+                'aria-describedby': 'statslab-evidence-explanation-help',
+                onChange: function(e) { setIQ({ explanation: e.target.value, hypothesis: '' }); },
+                rows: 3,
+                placeholder: __alloT('stem.statslab.evidence_explanation_placeholder', 'What changed, what stayed fixed, and how did approximate power respond? Cite both logged designs.'),
+                style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginTop: 4, marginBottom: 5, resize: 'vertical', opacity: evidenceReady ? 1 : 0.66 }
+              })
             ),
-            iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.statslab.explain_in_your_own_words', 'Explain in your own words...'), 'aria-label': __alloT('stem.statslab.explanation_input', 'Power-state explanation'), style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 12, marginBottom: 6, resize: 'vertical' } }),
-            h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.statslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Power approximated via normal-z; for small n, true power from non-central t will differ slightly (use the Power tab for the formal calc).'))
+            h('p', { id: 'statslab-evidence-explanation-help', style: { margin: '0 0 8px', fontSize: 10, opacity: 0.8, lineHeight: 1.4 } },
+              evidenceReady
+                ? __alloT('stem.statslab.explanation_ready', 'Use the log to identify the one control you changed and the direction of the modeled response.')
+                : __alloT('stem.statslab.explanation_locked', 'Log two distinct designs before writing the explanation.')
+            ),
+            h('p', {
+              role: 'status',
+              'aria-live': 'polite',
+              'data-statslab-inquiry-progress': explanationComplete ? 'complete' : evidenceReady ? 'explain' : 'collect-evidence',
+              style: { margin: 0, fontSize: 10, fontWeight: 800, color: explanationComplete ? '#bbf7d0' : '#dbeafe', lineHeight: 1.45 }
+            }, explanationComplete
+              ? __alloT('stem.statslab.inquiry_complete', 'Evidence explanation recorded. Investigation complete; no answer is scored for agreement.')
+              : evidenceReady
+                ? __alloT('stem.statslab.inquiry_explain_next', 'Evidence collected. Explain the comparison to complete the investigation.')
+                : __alloT('stem.statslab.inquiry_collect_next', 'Collect two distinct designs. Completion depends on logging and explaining, not matching a hidden answer.')
+            )
           );
         })(),
         // Concept-mastery celebration overlay — same shape as Optics/Pets/BirdLab.
@@ -4256,6 +4415,28 @@ window.StemLab = window.StemLab || {
               / (((((b[0] * r + b[1]) * r + b[2]) * r + b[3]) * r + b[4]) * r + 1);
   }
 
+  function _statsInquiryPowerModel(effect, alpha, nPerGroup) {
+    var safeEffect = Math.abs(Number(effect));
+    var safeAlpha = Number(alpha);
+    var safeN = Number(nPerGroup);
+    if (!isFinite(safeEffect)) safeEffect = 0;
+    if (!isFinite(safeAlpha)) safeAlpha = 0.05;
+    if (!isFinite(safeN)) safeN = 2;
+    safeAlpha = Math.max(0.000001, Math.min(0.5, safeAlpha));
+    safeN = Math.max(2, safeN);
+    var ncp = safeEffect * Math.sqrt(safeN / 2);
+    var criticalZ = _normalInv(1 - safeAlpha / 2);
+    var upperTail = 1 - _normalCdf(criticalZ, ncp, 1);
+    var lowerTail = _normalCdf(-criticalZ, ncp, 1);
+    return {
+      power: Math.max(0, Math.min(1, upperTail + lowerTail)),
+      ncp: ncp,
+      criticalZ: criticalZ,
+      alpha: safeAlpha,
+      nPerGroup: safeN,
+      effect: safeEffect
+    };
+  }
   function _renderTypeErrorViz(d_eff, alpha, n, h) {
     // Two-sample t-test, equal n: under H₀ → test stat ~ N(0, 1),
     // under H₁ → N(d × √(n/2), 1). For display we show standardized stats.

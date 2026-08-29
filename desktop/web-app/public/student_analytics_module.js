@@ -943,8 +943,26 @@ try {
   var safeSetItem = window.safeSetItem || function(key, val) {
     try { localStorage.setItem(key, val); } catch(e) {}
   };
+  var safeRemoveItem = window.safeRemoveItem || function(key) {
+    try { localStorage.removeItem(key); } catch(e) {}
+  };
+  var safeSessionGetItem = function(key) {
+    try { return sessionStorage.getItem(key); } catch(e) { return null; }
+  };
+  var safeSessionSetItem = function(key, val) {
+    try { sessionStorage.setItem(key, val); } catch(e) {}
+  };
+  var safeSessionRemoveItem = function(key) {
+    try { sessionStorage.removeItem(key); } catch(e) {}
+  };
+  // Assessment-owned and deliberately separate from alloflow_roster_key.
+  // Keys are one-way fingerprints of imported names; values are codenames.
+  // The store is still confidential assessment metadata and is cleared by
+  // the records manager, but raw names never need to re-enter the safe roster.
+  var AC_IDENTITY_LINK_STORE_KEY = 'alloflow_ac_identity_links_v1';
   var AC_ROSTER_STORE_KEY = 'alloflow_ac_imported_students';
   var AC_LINK_UNDO_KEY = 'alloflow_ac_last_link_undo';
+  var AC_LINK_UNDO_TTL_MS = 30 * 60 * 1000;
   // What survives a reload (finding 4, 2026-08-23): everything the table, the
   // research views and the detail drill-down read, minus the fat fields
   // (word-level fluency data, audio) and minus live-session rows, capped so a
@@ -983,12 +1001,16 @@ try {
     return out;
   }
   function _acPersistableStudent(s) {
+    var linked = s && s.linkedToRoster === true;
     return {
       id: s.id || null,
       name: s.name,
-      nickname: s.nickname || null,
-      filename: s.filename || null,
-      importedName: s.importedName || null,
+      // Linked durable rows need only the codename. Original import identity
+      // metadata remains in memory just long enough for the short-lived undo.
+      nickname: linked ? null : (s.nickname || null),
+      filename: linked ? null : (s.filename || null),
+      importedName: linked ? null : (s.importedName || null),
+      linkedToRoster: linked,
       stats: s.stats || {},
       safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags.slice(0, 50) : [],
       lastSession: s.lastSession || null,
@@ -1013,6 +1035,47 @@ try {
       });
     } catch (e) { return []; }
   }
+  function _acRestoreIdentityLinks(raw) {
+    try {
+      var parsed = JSON.parse(raw || '{}');
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+      var out = {};
+      Object.keys(parsed).slice(0, 1000).forEach(function(key) {
+        var target = parsed[key];
+        if (!/^(sha256|fallback-v1):[a-f0-9]+$/.test(key)) return;
+        if (typeof target !== 'string' || !target.trim()) return;
+        out[key] = target.trim();
+      });
+      return out;
+    } catch (e) { return {}; }
+  }
+  function _acNormalizeIdentityName(rawName) {
+    var value = String(rawName || '').trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+    try { return value.normalize('NFKC'); } catch (e) { return value; }
+  }
+  async function _acIdentityLinkKey(rawName) {
+    var normalized = _acNormalizeIdentityName(rawName);
+    if (!normalized) return '';
+    try {
+      var cryptoApi = (typeof globalThis !== 'undefined' && globalThis.crypto) || (typeof window !== 'undefined' && window.crypto);
+      var Encoder = (typeof TextEncoder !== 'undefined' && TextEncoder) || (typeof window !== 'undefined' && window.TextEncoder);
+      if (cryptoApi && cryptoApi.subtle && Encoder) {
+        var digest = await cryptoApi.subtle.digest('SHA-256', new Encoder().encode(normalized));
+        var hex = Array.from(new Uint8Array(digest)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+        return 'sha256:' + hex;
+      }
+    } catch (e) {}
+    // Restricted-browser fallback: stable and non-plaintext. This is a
+    // pseudonymous lookup key, not encryption; Assessment Center data remains
+    // confidential local student-record data either way.
+    var h1 = 0x811c9dc5, h2 = 0x9e3779b9;
+    for (var i = 0; i < normalized.length; i++) {
+      var code = normalized.charCodeAt(i);
+      h1 = Math.imul(h1 ^ code, 0x01000193);
+      h2 = Math.imul(h2 ^ code, 0x85ebca6b);
+    }
+    return 'fallback-v1:' + (h1 >>> 0).toString(16).padStart(8, '0') + (h2 >>> 0).toString(16).padStart(8, '0');
+  }
   // Two-field codenames: roster identities are "<Adjective> <Animal>" from the
   // StudentEntryModal's two dropdowns, so an imported name can differ from the
   // roster key only in case, spacing or punctuation. Resolution order: exact
@@ -1022,13 +1085,14 @@ try {
   // ambiguous or empty normalized form returns the raw name unchanged rather
   // than guessing (localized codename lists can normalize to '' — never match
   // on that).
-  function _acCanonicalStudentName(rawName, rosterKeyValue) {
+  async function _acCanonicalStudentName(rawName, rosterKeyValue, identityLinksValue) {
     var name = String(rawName || '').trim();
     if (!name) return name;
     var students = (rosterKeyValue && rosterKeyValue.students) || {};
     if (students[name] !== undefined) return name;
-    var aliases = (rosterKeyValue && rosterKeyValue.importAliases) || {};
-    var viaAlias = aliases[name];
+    var aliases = identityLinksValue && typeof identityLinksValue === 'object' ? identityLinksValue : {};
+    var identityKey = await _acIdentityLinkKey(name);
+    var viaAlias = identityKey ? aliases[identityKey] : null;
     if (typeof viaAlias === 'string' && students[viaAlias] !== undefined) return viaAlias;
     var norm = function(v) { return String(v || '').toLowerCase().replace(/[^a-z0-9]/g, ''); };
     var target = norm(name);
@@ -1427,6 +1491,35 @@ try {
     onOpenAlloSheet
   }) => {
     const [importedStudents, setImportedStudents] = React.useState(() => _acRestoreImportedStudents(safeGetItem(AC_ROSTER_STORE_KEY)));
+    const [identityLinks, setIdentityLinks] = React.useState(() => _acRestoreIdentityLinks(safeGetItem(AC_IDENTITY_LINK_STORE_KEY)));
+    React.useEffect(() => {
+      try {
+        if (Object.keys(identityLinks).length) safeSetItem(AC_IDENTITY_LINK_STORE_KEY, JSON.stringify(identityLinks));
+        else safeRemoveItem(AC_IDENTITY_LINK_STORE_KEY);
+      } catch (e) {}
+    }, [identityLinks]);
+    // Migrate already-linked durable rows from the older shape: once the row's
+    // current name is a roster codename, raw import identity metadata is no
+    // longer needed in localStorage.
+    React.useEffect(() => {
+      var students = rosterKey && rosterKey.students;
+      if (!students || typeof students !== 'object') return;
+      setImportedStudents(function(prev) {
+        var changed = false;
+        var next = prev.map(function(student) {
+          if (!student || students[student.name] === undefined) return student;
+          if (student.linkedToRoster === true && !student.importedName && !student.filename && !student.nickname) return student;
+          changed = true;
+          return Object.assign({}, student, {
+            linkedToRoster: true,
+            importedName: null,
+            filename: null,
+            nickname: null
+          });
+        });
+        return changed ? next : prev;
+      });
+    }, [rosterKey && rosterKey.students]);
     // Persist the imported roster (finding 4): until 2026-08-23 this list reset
     // to [] every session, so Student Data and Research opened empty each
     // morning until the teacher re-imported every JSON file. Live-session rows
@@ -1832,16 +1925,18 @@ try {
             const text = await file.text();
             const data = JSON.parse(text);
             const studentName = data.studentNickname || data.profile?.name || file.name.replace('.json', '').replace(/_/g, ' ');
-            // Canonicalize against the roster (two-field codenames + recorded
-            // aliases) so a re-imported file lands under the SAME identity its
+            // Canonicalize against the roster (two-field codenames + the
+            // Assessment Center fingerprint map) so a re-imported file lands under the SAME identity its
             // records already live under, instead of minting a split.
-            const canonicalName = _acCanonicalStudentName(studentName, rosterKey);
+            const canonicalName = await _acCanonicalStudentName(studentName, rosterKey, identityLinks);
+            const linkedToRoster = !!(rosterKey && rosterKey.students && rosterKey.students[canonicalName] !== undefined);
             const stats = calculateStudentStats(data);
             chunkStudents.push({
               id: `student-${Date.now()}-${Math.random().toString(36).slice(2)}`,
               name: canonicalName,
-              importedName: studentName,
-              filename: file.name,
+              importedName: linkedToRoster ? null : studentName,
+              linkedToRoster: linkedToRoster,
+              filename: linkedToRoster ? null : file.name,
               data: data,
               stats: stats,
               safetyFlags: extractSafetyFlags(data),
@@ -3048,10 +3143,11 @@ try {
       const name = recordsRemovalTarget;
       if (!name) return;
       const confirmed = await askStudentAnalyticsConfirmation(
-        'This permanently deletes ' + name + "'s probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and imported row from this device.\n\nRoster membership is kept. Files already exported are not affected. This cannot be undone.",
+        'This permanently deletes ' + name + "'s probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, imported row, and saved Assessment Center link from this device.\n\nRoster membership is kept. Files already exported are not affected. This cannot be undone.",
         { title: 'Remove student records', confirmText: 'Delete records' }
       );
       if (!confirmed) return;
+      const removalIdentityKey = await _acIdentityLinkKey(name);
       if (typeof deleteStudentRecords === 'function') deleteStudentRecords(name);
       setExternalCBMScores(prev => {
         if (!(name in prev)) return prev;
@@ -3068,6 +3164,18 @@ try {
         return { ...prev, progressHistory: history };
       });
       setImportedStudents(prev => prev.filter(s => (s.nickname || s.name) !== name));
+      setIdentityLinks(prev => {
+        const next = {};
+        Object.keys(prev).forEach(key => {
+          if (key !== removalIdentityKey && prev[key] !== name) next[key] = prev[key];
+        });
+        return next;
+      });
+      if (lastLinkUndo && (lastLinkUndo.fromName === name || lastLinkUndo.toName === name)) {
+        safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+        safeRemoveItem(AC_LINK_UNDO_KEY);
+        setLastLinkUndo(null);
+      }
       if (selectedStudent && (selectedStudent.nickname || selectedStudent.name) === name) setSelectedStudent(null);
       if (researchStudent === name) setResearchStudent(null);
       if (activeStudent === name) { setActiveStudent(null); setProbeTargetStudent(null); }
@@ -3076,30 +3184,53 @@ try {
     };
     // ── Roster linkage (finding 5): one child, one identity ──
     // Rewrites the row's name to the codename (every record lookup keys off
-    // name, so no read path changes), keeps the file-derived original as
-    // importedName, records the alias so re-imports auto-resolve, and merges
-    // any records already split across the two identities.
+    // name, so no read path changes), then drops raw import identity metadata.
+    // A fingerprint link in confidential Assessment Center storage makes later
+    // re-imports resolve to the same codename; split record stores are merged.
     // One-step link undo (Aaron's decision 2026-08-23): a merge cannot be
     // mechanically unpicked, so every link snapshots the exact pre-link slices
     // of every store it touches. One deep — each link overwrites the last
     // snapshot — and meant for immediate mistake recovery, not general unlink.
     const [lastLinkUndo, setLastLinkUndo] = React.useState(() => {
-      try { return JSON.parse(safeGetItem(AC_LINK_UNDO_KEY) || 'null'); } catch (e) { return null; }
+      // Purge the old localStorage form, which could retain real names forever.
+      safeRemoveItem(AC_LINK_UNDO_KEY);
+      try {
+        const snap = JSON.parse(safeSessionGetItem(AC_LINK_UNDO_KEY) || 'null');
+        if (snap && snap.at && Date.now() - Number(snap.at) < AC_LINK_UNDO_TTL_MS) return snap;
+      } catch (e) {}
+      safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+      return null;
     });
+    React.useEffect(() => {
+      if (!lastLinkUndo || !lastLinkUndo.at) return;
+      const remaining = AC_LINK_UNDO_TTL_MS - (Date.now() - Number(lastLinkUndo.at));
+      if (remaining <= 0) {
+        safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+        setLastLinkUndo(null);
+        return;
+      }
+      const timer = window.setTimeout(() => {
+        safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+        setLastLinkUndo(null);
+      }, remaining);
+      return () => window.clearTimeout(timer);
+    }, [lastLinkUndo]);
     const handleLinkImportedStudent = async (student, codename) => {
       if (!student || !codename) return;
       const fromName = student.nickname || student.name;
       if (!fromName || fromName === codename) return;
       const confirmed = await askStudentAnalyticsConfirmation(
-        'Link "' + fromName + '" to roster student "' + codename + '"?\n\nProbe history, intervention logs, RTI goals, CBM scores and progress snapshots recorded under "' + fromName + '" move under the codename, merging with anything already there. Future imports of this file will link automatically.',
+        'Link "' + fromName + '" to roster student "' + codename + '"?\n\nProbe history, intervention logs, RTI goals, CBM scores and progress snapshots recorded under "' + fromName + '" move under the codename, merging with anything already there. Future imports on this device will link through a pseudonymous Assessment Center fingerprint; the real name is not added to the roster.',
         { title: 'Link to roster student', confirmText: 'Link records' }
       );
       if (!confirmed) return;
+      const identityKey = await _acIdentityLinkKey(fromName);
       const undoSnapshot = {
         at: Date.now(), fromName: fromName, toName: codename,
         rowId: student.id || null,
-        row: _acPersistableStudent(student),
-        priorAlias: (rosterKey && rosterKey.importAliases && rosterKey.importAliases[fromName] !== undefined) ? rosterKey.importAliases[fromName] : null,
+        row: _acPersistableStudent(Object.assign({}, student, { linkedToRoster: false })),
+        identityKey: identityKey,
+        priorLink: identityKey && identityLinks[identityKey] !== undefined ? identityLinks[identityKey] : null,
         stores: {
           alloflow_probe_history: { from: (probeHistory || {})[fromName], to: (probeHistory || {})[codename] },
           alloflow_intervention_logs: { from: (interventionLogs || {})[fromName], to: (interventionLogs || {})[codename] },
@@ -3121,10 +3252,9 @@ try {
         return updated;
       });
       try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (identityKey) setIdentityLinks(prev => ({ ...prev, [identityKey]: codename }));
       if (typeof setRosterKey === 'function') setRosterKey(prev => {
         if (!prev) return prev;
-        const aliases = { ...(prev.importAliases || {}) };
-        aliases[fromName] = codename;
         let history = prev.progressHistory;
         if (history && history[fromName]) {
           history = { ...history };
@@ -3133,15 +3263,16 @@ try {
           history[codename] = merged;
           delete history[fromName];
         }
-        return { ...prev, importAliases: aliases, progressHistory: history };
+        return { ...prev, progressHistory: history };
       });
-      setImportedStudents(prev => prev.map(s => (s.nickname || s.name) === fromName ? { ...s, name: codename, nickname: null, importedName: s.importedName || s.name } : s));
+      const linkedRow = s => ({ ...s, name: codename, nickname: null, importedName: null, filename: null, linkedToRoster: true });
+      setImportedStudents(prev => prev.map(s => (s.nickname || s.name) === fromName ? linkedRow(s) : s));
       if (selectedStudent && (selectedStudent.nickname || selectedStudent.name) === fromName) {
-        setSelectedStudent(prev => prev ? { ...prev, name: codename, nickname: null, importedName: prev.importedName || prev.name } : prev);
+        setSelectedStudent(prev => prev ? linkedRow(prev) : prev);
       }
       if (researchStudent === fromName) setResearchStudent(codename);
       if (activeStudent === fromName) { setActiveStudent(codename); setProbeTargetStudent(codename); }
-      try { safeSetItem(AC_LINK_UNDO_KEY, JSON.stringify(undoSnapshot)); } catch (e) {}
+      safeSessionSetItem(AC_LINK_UNDO_KEY, JSON.stringify(undoSnapshot));
       setLastLinkUndo(undoSnapshot);
       addToast((t('toasts.student_records_linked') || 'Records linked: ') + fromName + ' \u2192 ' + codename, 'success');
     };
@@ -3165,18 +3296,23 @@ try {
       // Host and module state both re-read from what was just written.
       try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'link-undo' } })); } catch (e) {}
       try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
+      if (snap.identityKey) setIdentityLinks(prev => {
+        const next = { ...prev };
+        if (snap.priorLink === null || snap.priorLink === undefined) delete next[snap.identityKey];
+        else next[snap.identityKey] = snap.priorLink;
+        return next;
+      });
       if (typeof setRosterKey === 'function') setRosterKey(prev => {
         if (!prev) return prev;
-        const aliases = { ...(prev.importAliases || {}) };
-        if (snap.priorAlias === null || snap.priorAlias === undefined) delete aliases[snap.fromName]; else aliases[snap.fromName] = snap.priorAlias;
         const history = { ...(prev.progressHistory || {}) };
         const ph = snap.progressHistory || {};
         if (ph.from === undefined) delete history[snap.fromName]; else history[snap.fromName] = ph.from;
         if (ph.to === undefined) delete history[snap.toName]; else history[snap.toName] = ph.to;
-        return { ...prev, importAliases: aliases, progressHistory: history };
+        return { ...prev, progressHistory: history };
       });
       if (snap.row && snap.rowId) setImportedStudents(prev => prev.map(s => s.id === snap.rowId ? snap.row : s));
-      try { localStorage.removeItem(AC_LINK_UNDO_KEY); } catch (e) {}
+      safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+      safeRemoveItem(AC_LINK_UNDO_KEY);
       setLastLinkUndo(null);
       addToast((t('toasts.link_undone') || 'Link undone: ') + snap.fromName + ' and ' + snap.toName + ' are separate again.', 'success');
     };
@@ -3205,15 +3341,21 @@ try {
     };
     const handleClearAllStudentRecords = async () => {
       const count = listRecordIdentities().length;
-      if (!await askStudentAnalyticsConfirmation('This permanently deletes EVERY student record on this device' + (count ? ' (' + count + ' student' + (count === 1 ? '' : 's') + ')' : '') + ': probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and the imported student list.\n\nRoster membership is kept. Download the year archive FIRST if you have not already. This cannot be undone.', { title: 'Clear all student records', confirmText: 'Delete everything' })) return;
+      if (!await askStudentAnalyticsConfirmation('This permanently deletes EVERY student record on this device' + (count ? ' (' + count + ' student' + (count === 1 ? '' : 's') + ')' : '') + ': probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, imported students, saved identity links, and any pending link undo.\n\nRoster membership is kept. Download the year archive FIRST if you have not already. This cannot be undone.', { title: 'Clear all student records', confirmText: 'Delete everything' })) return;
       if (typeof clearAllStudentRecords === 'function') clearAllStudentRecords();
       setExternalCBMScores(() => {
         try { localStorage.setItem('alloflow_external_cbm', '{}'); } catch {}
         return {};
       });
       try { window.dispatchEvent(new CustomEvent('alloflow:external-cbm-updated')); } catch (e) {}
-      if (typeof setRosterKey === 'function') setRosterKey(prev => prev ? { ...prev, progressHistory: {}, importAliases: {} } : prev);
+      if (typeof setRosterKey === 'function') setRosterKey(prev => prev ? { ...prev, progressHistory: {} } : prev);
       setImportedStudents([]);
+      setIdentityLinks({});
+      safeRemoveItem(AC_IDENTITY_LINK_STORE_KEY);
+      safeRemoveItem(AC_ROSTER_STORE_KEY);
+      safeSessionRemoveItem(AC_LINK_UNDO_KEY);
+      safeRemoveItem(AC_LINK_UNDO_KEY);
+      setLastLinkUndo(null);
       setSelectedStudent(null);
       setResearchStudent(null);
       setActiveStudent(null);
@@ -6402,7 +6544,12 @@ try {
       className: "w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-4 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-200"
     }, /*#__PURE__*/React.createElement(Download, {
       size: 18
-    }), " ", t('learner.download_progress_report')))), !isIndependentMode && /*#__PURE__*/React.createElement("div", {
+    }), " ", t('learner.download_progress_report')))),
+    !isIndependentMode && /*#__PURE__*/React.createElement("div", {
+      role: "note",
+      className: "mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950"
+    }, /*#__PURE__*/React.createElement("strong", null, "Confidential Assessment Center storage. "), "Imported files may contain real names and are saved on this device. They stay separate from the codename-only roster and its export; use the records manager below to remove them."),
+    !isIndependentMode && /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-3 mb-4"
     }, /*#__PURE__*/React.createElement("label", {
       className: "cursor-pointer"
@@ -9979,7 +10126,7 @@ try {
         className: "mt-4 bg-white rounded-xl border border-rose-300 p-4"
       },
         React.createElement("h4", { className: "text-sm font-bold text-rose-800" }, '\uD83D\uDDD1 Remove a student\'s records'),
-        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Permanently deletes the student's probe history, intervention logs, RTI goals, imported CBM scores, progress snapshots, and imported row from this device. Roster membership is kept; exported files are not affected."),
+        React.createElement("p", { className: "text-xs text-slate-600 mt-1" }, "Permanently deletes the student's records, imported row, saved Assessment Center link, and matching pending link undo from this device. Roster membership is kept; exported files are not affected."),
         React.createElement("div", { className: "flex items-center gap-2 mt-3 flex-wrap" },
           React.createElement("select", {
             "aria-label": "Student whose records to remove",
@@ -9998,7 +10145,7 @@ try {
           }, 'Remove records\u2026')
         ),
         React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
-          React.createElement("p", { className: "text-xs text-slate-600 w-full" }, 'School-year boundary: download the full archive first, then clear every student record on this device in one step. Roster membership is kept.'),
+          React.createElement("p", { className: "text-xs text-slate-600 w-full" }, 'School-year boundary: download the full archive first, then clear every student record, saved identity link, and pending link undo on this device in one step. Roster membership is kept.'),
           React.createElement("button", {
             type: "button",
             onClick: handleDownloadYearArchive,
@@ -10011,7 +10158,7 @@ try {
           }, '\u26A0 Clear ALL student records\u2026')
         ),
         lastLinkUndo && React.createElement("div", { className: "flex items-center gap-2 mt-3 pt-3 border-t border-slate-200 flex-wrap" },
-          React.createElement("p", { className: "text-xs text-slate-600 flex-1 min-w-[200px]" }, (t('class_analytics.undo_link_hint') || 'Last roster link: ') + lastLinkUndo.fromName + ' \u2192 ' + lastLinkUndo.toName),
+          React.createElement("p", { className: "text-xs text-slate-600 flex-1 min-w-[200px]" }, (t('class_analytics.undo_link_hint') || 'Last roster link: ') + lastLinkUndo.fromName + ' \u2192 ' + lastLinkUndo.toName + ' (available in this tab for up to 30 minutes)'),
           React.createElement("button", {
             type: "button",
             onClick: handleUndoLastLink,

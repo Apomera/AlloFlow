@@ -277,6 +277,11 @@ describe('body 3D — 30:2 timing and breath coach', () => {
     expect(SRC).toContain("sceneKey: tab + ':' + sceneAge");
     expect(SRC).toContain("if (!reduced && mode === 'coach')");
   });
+  it('lets a mounted tool update shared 3D motion without rebuilding WebGL', () => {
+    expect(HOST).toContain("typeof props.reduced === 'boolean' ? props.reduced");
+    expect(HOST).toContain("if (S && typeof props.reduced === 'boolean') S.reduced = props.reduced");
+  });
+
   it('locks each breath through chest rise and fall and resets interrupted sessions', () => {
     expect(SRC).toContain('breathLockMs: 1500');
     expect(SRC).toContain("session.phase = 'breathRecovery'");

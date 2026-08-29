@@ -568,14 +568,14 @@ describe('Shared UI modals rendered accessibility', () => {
       onSelect: vi.fn(),
       onGateRequired: vi.fn(),
     }));
-    const micButton = Array.from(host.querySelectorAll('button'))
-      .find((button) => button.textContent.includes('roles.mic_enable'));
+    const micButton = host.querySelector('[data-help-key="role_voice_access"]');
+    expect(micButton).toBeTruthy();
     act(() => micButton.click());
     await act(async () => { await Promise.resolve(); });
     expect(micButton.getAttribute('aria-busy')).toBe('false');
-    expect(micButton.textContent).toContain('roles.voice_not_supported');
+    expect(micButton.textContent).toContain('Voice features are not supported in this browser.');
     const status = host.querySelector('#role-mic-status');
-    expect(status.textContent).toContain('roles.voice_not_supported');
+    expect(status.textContent).toContain('Voice features are not supported in this browser.');
     expect(micButton.contains(status)).toBe(false);
   });
 });

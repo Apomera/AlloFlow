@@ -37,14 +37,15 @@ describe('Trajectory Computing Lab', () => {
     expect(core.expected.inZone).toBe(true);
     const replayQuest = tool.questHooks.find((quest) => quest.id === 'mission_replay_prediction');
     expect(replayQuest.check({ _trajectoryComputing: {} })).toBe(false);
-    expect(replayQuest.check({ _trajectoryComputing: { replayResult: core.evaluateReplayPrediction('meridian-5', 'shorter') } })).toBe(true);
-    expect(replayQuest.progress({ _trajectoryComputing: { replayResult: core.evaluateReplayPrediction('meridian-5', 'longer') } })).toBe('Prediction revised');
+    const legacyReplay = { replayResult: core.evaluateReplayPrediction('meridian-5', 'longer') };
+    expect(replayQuest.check({ _trajectoryComputing: legacyReplay })).toBe(true);
+    expect(replayQuest.progress({ _trajectoryComputing: legacyReplay })).toBe('Replay recorded');
     const angleQuest = tool.questHooks.find((quest) => quest.id === 'angle_reasoning');
     expect(angleQuest.check({ _trajectoryComputing: { studyExplanationResult: core.checkAngleExplanation('components') } })).toBe(true);
     expect(angleQuest.progress({ _trajectoryComputing: { studyResult: core.classifyAngleStudy(46) } })).toBe('Explain the result');
     const safeguardQuest = tool.questHooks.find((quest) => quest.id === 'safeguard_reasoning');
     expect(safeguardQuest.check({ _trajectoryComputing: { safeguardResult: core.evaluateSafeguardPrediction('misspelled-variable', 'compiler') } })).toBe(true);
-    expect(core.missionVariants.map((mission) => mission.id)).toEqual(['aurora-3', 'meridian-5', 'horizon-8']);
+    expect(core.missionVariants.map((mission) => mission.id)).toEqual(['aurora-3', 'meridian-5', 'horizon-8', 'aurora-control-3b']);
     for (const mission of core.missionVariants) {
       expect(core.computeTrajectory(core.getMissionVariant(mission.id))).toEqual(core.computeTrajectory(core.getMissionVariant(mission.id)));
     }
@@ -182,9 +183,69 @@ describe('Trajectory Computing Lab', () => {
     };
     const fingerprint = core.createEvidenceFingerprint(state);
     expect(fingerprint).toMatch(/^tc-[0-9a-f]{8}$/);
-    expect(core.createEvidenceFingerprint({ ...state, stage: 'verify', reportOpen: true, extensionView: 'menu', lastSnapshotAt: 99 })).toBe(fingerprint);
+    expect(core.createEvidenceFingerprint({ ...state, stage: 'verify', reportOpen: true, restartConfirmOpen: true, extensionView: 'menu', lastSnapshotAt: 99 })).toBe(fingerprint);
     expect(core.createEvidenceFingerprint({ ...state, connectionNotes: { verify: 'A revised connection.' } })).not.toBe(fingerprint);
     expect(core.createEvidenceFingerprint({ ...state, worksheet: { range: '4610.1' } })).not.toBe(fingerprint);
+  });
+
+  it('classifies report provenance as unsaved, current, or outdated', () => {
+    loadTool(FILE, ID);
+    const core = window.TrajectoryComputingCore;
+    const state = {
+      worksheet: { range: '4607.7' },
+      connectionNotes: { verify: 'Independent checking supports the decision.' },
+    };
+    const currentFingerprint = core.createEvidenceFingerprint(state);
+
+    expect(core.createEvidenceProvenance(state)).toEqual({
+      currentFingerprint,
+      savedFingerprint: '',
+      savedAt: null,
+      status: 'unsaved',
+    });
+
+    const saved = { ...state, lastSnapshotAt: 123, lastSnapshotFingerprint: currentFingerprint };
+    expect(core.createEvidenceProvenance({ ...saved, reportOpen: true })).toEqual({
+      currentFingerprint,
+      savedFingerprint: currentFingerprint,
+      savedAt: 123,
+      status: 'current',
+    });
+
+    expect(core.createEvidenceProvenance(saved, [])).toEqual({
+      currentFingerprint,
+      savedFingerprint: '',
+      savedAt: null,
+      status: 'unsaved',
+    });
+    expect(core.createEvidenceProvenance(saved, [{ tool: 'anotherTool', timestamp: 400, fingerprint: currentFingerprint }]).status).toBe('unsaved');
+
+    const matchingSnapshot = { tool: ID, timestamp: 321, fingerprint: currentFingerprint };
+    expect(core.createEvidenceProvenance(state, [matchingSnapshot])).toEqual({
+      currentFingerprint,
+      savedFingerprint: currentFingerprint,
+      savedAt: 321,
+      status: 'current',
+    });
+
+    const changed = { ...saved, connectionNotes: { verify: 'A revised connection.' } };
+    const changedProvenance = core.createEvidenceProvenance(changed);
+    expect(changedProvenance).toEqual(expect.objectContaining({
+      savedFingerprint: currentFingerprint,
+      savedAt: 123,
+      status: 'outdated',
+    }));
+    expect(changedProvenance.currentFingerprint).not.toBe(currentFingerprint);
+    expect(core.createEvidenceProvenance(state, [matchingSnapshot, {
+      tool: ID,
+      timestamp: 500,
+      fingerprint: changedProvenance.currentFingerprint,
+    }])).toEqual({
+      currentFingerprint,
+      savedFingerprint: changedProvenance.currentFingerprint,
+      savedAt: 500,
+      status: 'outdated',
+    });
   });
 
   it('makes the batch-machine pipeline inspectable before, after, and on rejection', () => {
@@ -452,6 +513,209 @@ describe('Trajectory Computing Lab', () => {
     expect(core.reconcileRangeEvidence({ worksheet: { range: reference } }).complete).toBe(false);
   });
 
+  it('distinguishes replay mistakes, genuine revisions, and supported comparison reasoning', () => {
+    const tool = loadTool(FILE, ID);
+    const core = window.TrajectoryComputingCore;
+    const replayQuest = tool.questHooks.find((quest) => quest.id === 'mission_replay_prediction');
+    const firstWrong = {
+      replayVariantId: 'meridian-5',
+      replayPrediction: 'longer',
+      replayResult: core.evaluateReplayPrediction('meridian-5', 'longer'),
+      replayLearning: {
+        initialPrediction: 'longer',
+        reasoningClaim: '',
+        reasoningAttempts: 0,
+        reasoningChecked: false,
+      },
+    };
+
+    expect(core.getReplayLearningStatus(firstWrong)).toEqual(expect.objectContaining({
+      hasRun: true,
+      wrongPrediction: true,
+      revisionOccurred: false,
+      revisionSupported: false,
+      phase: 'Revise prediction',
+      complete: false,
+      questComplete: false,
+      progress: 'Revise prediction',
+    }));
+    expect(replayQuest.check({ _trajectoryComputing: firstWrong })).toBe(false);
+    expect(replayQuest.progress({ _trajectoryComputing: firstWrong })).toBe('Revise prediction');
+
+    const selectedRevision = { ...firstWrong, replayPrediction: 'shorter', replayResult: null };
+    expect(core.getReplayLearningStatus(selectedRevision)).toEqual(expect.objectContaining({
+      hasRun: false,
+      revisionOccurred: false,
+      phase: 'Run revised prediction',
+      progress: 'Run revised prediction',
+    }));
+
+    const revised = {
+      ...selectedRevision,
+      replayResult: core.evaluateReplayPrediction('meridian-5', 'shorter'),
+    };
+    expect(core.getReplayLearningStatus(revised)).toEqual(expect.objectContaining({
+      wrongPrediction: false,
+      revisionOccurred: true,
+      revisionSupported: true,
+      phase: 'Explain comparison',
+      complete: false,
+      progress: 'Explain comparison',
+    }));
+
+    expect(core.evaluateReplayReasoning('meridian-5', 'isolated-change', 1)).toEqual(expect.objectContaining({
+      expectedClaim: 'combined-not-isolated',
+      correct: false,
+      changedInputs: ['speed', 'angle', 'height'],
+      changedInputCount: 3,
+      hintTier: 1,
+    }));
+    expect(core.evaluateReplayReasoning('meridian-5', 'isolated-change', 2)).toEqual(expect.objectContaining({
+      correct: false,
+      hintTier: 2,
+    }));
+    expect(core.evaluateReplayReasoning('meridian-5', 'combined-not-isolated', 1)).toEqual(expect.objectContaining({
+      correct: true,
+      expectedClaim: 'combined-not-isolated',
+    }));
+    expect(core.evaluateReplayReasoning('aurora-3', 'reproducible', 1)).toEqual(expect.objectContaining({
+      correct: true,
+      expectedClaim: 'reproducible',
+      changedInputCount: 0,
+    }));
+    expect(core.getReplayComparisonProfile('aurora-3')).toEqual(expect.objectContaining({
+      type: 'reproduction', expectedClaim: 'reproducible', changedInputCount: 0, fixedInputCount: 4,
+    }));
+    expect(core.getReplayComparisonProfile('meridian-5')).toEqual(expect.objectContaining({
+      type: 'combined', expectedClaim: 'combined-not-isolated', changedInputCount: 3, fixedInputCount: 1,
+    }));
+
+    const controlMission = core.getMissionVariant('aurora-control-3b');
+    expect(controlMission).toEqual(expect.objectContaining({
+      speed: 210, angle: core.mission.angle, height: core.mission.height, gravity: core.mission.gravity,
+      zoneMin: core.mission.zoneMin, zoneMax: core.mission.zoneMax,
+    }));
+    const controlComparison = core.compareMissionVariant('aurora-control-3b');
+    expect(controlComparison.changedInputs).toEqual(['speed']);
+    expect(controlComparison.relation).toBe('shorter');
+    expect(controlComparison.result.flightTime).toBeCloseTo(26.5886262612, 8);
+    expect(controlComparison.result.peakHeight).toBeCloseTo(881.9685118261, 8);
+    expect(controlComparison.result.range).toBeCloseTo(4399.9459176704, 8);
+    expect(controlComparison.rangeDifference).toBeCloseTo(-210.19630767, 8);
+    expect(controlComparison.result.inZone).toBe(false);
+    expect(core.getReplayComparisonProfile('aurora-control-3b')).toEqual({
+      missionId: 'aurora-control-3b',
+      type: 'controlled',
+      expectedClaim: 'isolated-change',
+      changedInputs: ['speed'],
+      changedInputCount: 1,
+      fixedInputs: ['angle', 'height', 'gravity'],
+      fixedInputCount: 3,
+      totalInputs: 4,
+    });
+    expect(core.evaluateReplayReasoning('aurora-control-3b', 'isolated-change', 1)).toEqual(expect.objectContaining({
+      correct: true, expectedClaim: 'isolated-change', changedInputs: ['speed'], changedInputCount: 1,
+    }));
+    expect(core.evaluateReplayReasoning('aurora-control-3b', 'combined-not-isolated', 2).message).toContain('Only launch speed changed');
+    expect(core.evaluateReplayReasoning('aurora-3', 'isolated-change', 2).message).toContain('No launch inputs changed');
+    expect(core.evaluateReplayReasoning('meridian-5', 'isolated-change', 2).message).toContain('More than one input changed');
+
+    const correctButUnchecked = {
+      ...revised,
+      replayLearning: {
+        initialPrediction: 'longer',
+        reasoningClaim: 'combined-not-isolated',
+        reasoningAttempts: 1,
+        reasoningChecked: false,
+      },
+    };
+    expect(core.getReplayLearningStatus(correctButUnchecked)).toEqual(expect.objectContaining({
+      phase: 'Explain comparison',
+      complete: false,
+      questComplete: false,
+    }));
+
+    const completedRevision = {
+      ...correctButUnchecked,
+      replayLearning: { ...correctButUnchecked.replayLearning, reasoningChecked: true },
+    };
+    expect(core.getReplayLearningStatus(completedRevision)).toEqual(expect.objectContaining({
+      revisionOccurred: true,
+      revisionSupported: true,
+      phase: 'Revision supported',
+      complete: true,
+      questComplete: true,
+      progress: 'Revision supported',
+    }));
+    expect(replayQuest.check({ _trajectoryComputing: completedRevision })).toBe(true);
+    expect(replayQuest.progress({ _trajectoryComputing: completedRevision })).toBe('Revision supported');
+
+    const supportedFirstPass = {
+      replayVariantId: 'meridian-5',
+      replayPrediction: 'shorter',
+      replayResult: core.evaluateReplayPrediction('meridian-5', 'shorter'),
+      replayLearning: {
+        initialPrediction: 'shorter',
+        reasoningClaim: 'combined-not-isolated',
+        reasoningAttempts: 1,
+        reasoningChecked: true,
+      },
+    };
+    expect(core.getReplayLearningStatus(supportedFirstPass)).toEqual(expect.objectContaining({
+      supportedOnFirstRun: true,
+      revisionOccurred: false,
+      complete: true,
+      progress: 'Evidence supported',
+    }));
+
+    const controlledFirstPass = {
+      replayVariantId: 'aurora-control-3b',
+      replayPrediction: 'shorter',
+      replayResult: core.evaluateReplayPrediction('aurora-control-3b', 'shorter'),
+      replayLearning: {
+        initialPrediction: 'shorter',
+        reasoningClaim: 'isolated-change',
+        reasoningAttempts: 1,
+        reasoningChecked: true,
+      },
+    };
+    expect(core.getReplayLearningStatus(controlledFirstPass)).toEqual(expect.objectContaining({
+      supportedOnFirstRun: true,
+      revisionOccurred: false,
+      complete: true,
+      progress: 'Evidence supported',
+    }));
+    const controlledEvidence = core.createEvidenceRecord(controlledFirstPass, 222);
+    expect(controlledEvidence.data.replayCard).toEqual(expect.objectContaining({
+      id: 'aurora-control-3b',
+      changedInputs: ['speed'],
+      initialPrediction: 'shorter',
+      finalPrediction: 'shorter',
+      revisionOccurred: false,
+      reasoningClaim: 'isolated-change',
+      reasoningCorrect: true,
+    }));
+    expect(core.createEvidenceFingerprint({ replayVariantId: 'aurora-control-3b' })).toBe(core.createEvidenceFingerprint({ replayVariantId: 'meridian-5' }));
+    expect(core.createEvidenceFingerprint(controlledFirstPass)).not.toBe(core.createEvidenceFingerprint({ replayVariantId: 'aurora-control-3b' }));
+
+    expect(core.normalizeMissionVariantId('retired-card', 'meridian-5')).toBe('meridian-5');
+    const unavailable = core.getReplayLearningStatus({
+      replayVariantId: 'retired-card',
+      replayResult: { mission: { id: 'retired-card' }, prediction: 'shorter' },
+    });
+    expect(unavailable).toEqual(expect.objectContaining({ unavailableReplay: true, questComplete: false, progress: 'Replay unavailable' }));
+    expect(replayQuest.check({ _trajectoryComputing: { replayVariantId: 'retired-card', replayResult: { mission: { id: 'retired-card' }, prediction: 'shorter' } } })).toBe(false);
+
+    const legacyState = { replayResult: core.evaluateReplayPrediction('meridian-5', 'longer') };
+    expect(core.getReplayLearningStatus(legacyState)).toEqual(expect.objectContaining({
+      legacyRecorded: true,
+      complete: false,
+      questComplete: true,
+      progress: 'Replay recorded',
+    }));
+    expect(replayQuest.check({ _trajectoryComputing: legacyState })).toBe(true);
+  });
+
   it('supports a predict-before-compute angle study', () => {
     loadTool(FILE, ID);
     const core = window.TrajectoryComputingCore;
@@ -506,6 +770,7 @@ describe('Trajectory Computing Lab', () => {
       attempts: { worksheet: 2, compile: 3, format: 1, deck: 2, readback: 1, verification: 1 },
       diagnosticHistory: ['D203', 'N301', 'M403'],
       replayResult: core.evaluateReplayPrediction('meridian-5', 'shorter'),
+      replayLearning: { initialPrediction: 'longer', reasoningClaim: 'combined-not-isolated', reasoningAttempts: 2, reasoningChecked: true },
       safeguardResult: core.evaluateSafeguardPrediction('misspelled-variable', 'compiler'),
       connectionNotes: { worksheet: 'The hand calculation gave the machine result an independent reference.', program: 'Programmers used mathematical knowledge to diagnose the listing.', unexpected: 'discard this' },
       reflection: { errorId: 'variable-name', safeguardId: 'compiler', note: 'The compiler caught a spelling error before computation.' },
@@ -543,6 +808,12 @@ describe('Trajectory Computing Lab', () => {
       prediction: 'shorter',
       predictionCorrect: true,
       changedInputs: ['speed', 'angle', 'height'],
+      initialPrediction: 'longer',
+      finalPrediction: 'shorter',
+      revisionOccurred: true,
+      reasoningClaim: 'combined-not-isolated',
+      reasoningCorrect: true,
+      reasoningAttempts: 2,
     }));
     expect(evidence.data.angleStudy).toEqual(expect.objectContaining({ explanation: 'components', explanationCorrect: true }));
     expect(evidence.data.connectionNotes).toEqual({
@@ -567,7 +838,16 @@ describe('Trajectory Computing Lab', () => {
     expect(report.safeguards).toEqual(expect.objectContaining({ passed: 5, total: 5 }));
     expect(report.safeguards.checks.every((check) => check.pass)).toBe(true);
     expect(report.revisionEvidence.totalAttempts).toBe(10);
-    expect(report.replayCard).toEqual(expect.objectContaining({ prediction: 'shorter', correct: true }));
+    expect(report.replayCard).toEqual(expect.objectContaining({
+      prediction: 'shorter',
+      correct: true,
+      initialPrediction: 'longer',
+      finalPrediction: 'shorter',
+      revisionOccurred: true,
+      reasoningClaim: 'combined-not-isolated',
+      reasoningCorrect: true,
+      reasoningAttempts: 2,
+    }));
     expect(report.angleStudy).toEqual(expect.objectContaining({ explanation: 'components', explanationCorrect: true }));
     expect(report.connectionNotes).toEqual(evidence.data.connectionNotes);
     expect(report.rangeReconciliation).toEqual(expect.objectContaining({ complete: true, pass: true, spread: 2.4 }));
@@ -617,6 +897,8 @@ describe('Trajectory Computing Lab', () => {
       expect(html).toContain('class="tc-skip-link"');
       expect(html).toContain('href="#tc-main-content"');
       expect(html).toContain('id="tc-main-content"');
+      expect(html).toContain('id="tc-stage-heading-' + stage + '"');
+      expect(html).toContain('id="tc-stage-heading-' + stage + '" class="tc-heading" tabindex="-1"');
       expect(html).toContain('id="tc-tabs-help"');
       expect(html).toContain('aria-describedby="tc-tabs-help"');
       expect(html).toContain('Press Home for the briefing or End for the last unlocked station.');
@@ -718,6 +1000,7 @@ describe('Trajectory Computing Lab', () => {
         replayVariantId: 'meridian-5',
         replayPrediction: 'shorter',
         replayResult: window.TrajectoryComputingCore.evaluateReplayPrediction('meridian-5', 'shorter'),
+        replayLearning: { initialPrediction: 'longer', reasoningClaim: 'combined-not-isolated', reasoningAttempts: 2, reasoningChecked: true },
         safeguardCaseId: 'misspelled-variable',
         safeguardPrediction: 'compiler',
         safeguardResult: window.TrajectoryComputingCore.evaluateSafeguardPrediction('misspelled-variable', 'compiler'),
@@ -732,11 +1015,44 @@ describe('Trajectory Computing Lab', () => {
     };
     verifiedState.lastSnapshotAt = 123;
     verifiedState.lastSnapshotFingerprint = window.TrajectoryComputingCore.createEvidenceFingerprint(verifiedState);
-    const menuHtml = renderTool(ID, { _trajectoryComputing: verifiedState });
-    const staleSnapshotHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, connectionNotes: { ...verifiedState.connectionNotes, verify: 'This connection changed after the snapshot.' } } });
-    const angleHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'angle' } });
-    const replayHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'replay' } });
-    const safeguardHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'safeguard' } });
+    const savedFingerprint = verifiedState.lastSnapshotFingerprint;
+    const savedSnapshots = [{ tool: ID, timestamp: 123, fingerprint: savedFingerprint }];
+    const staleState = { ...verifiedState, connectionNotes: { ...verifiedState.connectionNotes, verify: 'This connection changed after the snapshot.' } };
+    const staleFingerprint = window.TrajectoryComputingCore.createEvidenceFingerprint(staleState);
+    const menuHtml = renderTool(ID, { _trajectoryComputing: verifiedState }, { toolSnapshots: savedSnapshots });
+    const staleSnapshotHtml = renderTool(ID, { _trajectoryComputing: staleState }, { toolSnapshots: savedSnapshots });
+    const currentRestartHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, restartConfirmOpen: true } }, { toolSnapshots: savedSnapshots });
+    const staleRestartHtml = renderTool(ID, { _trajectoryComputing: { ...staleState, restartConfirmOpen: true } }, { toolSnapshots: savedSnapshots });
+    const unsavedRestartHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, restartConfirmOpen: true } }, { toolSnapshots: [] });
+    const angleHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'angle' } }, { toolSnapshots: savedSnapshots });
+    const replayHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'replay' } }, { toolSnapshots: savedSnapshots });
+    const controlledReplayHtml = renderTool(ID, { _trajectoryComputing: {
+      ...verifiedState,
+      extensionView: 'replay',
+      reportOpen: false,
+      replayVariantId: 'aurora-control-3b',
+      replayPrediction: 'shorter',
+      replayResult: window.TrajectoryComputingCore.evaluateReplayPrediction('aurora-control-3b', 'shorter'),
+      replayLearning: { initialPrediction: 'shorter', reasoningClaim: 'isolated-change', reasoningAttempts: 1, reasoningChecked: true },
+    } });
+    const pendingReplayHtml = renderTool(ID, { _trajectoryComputing: {
+      ...verifiedState,
+      extensionView: 'menu',
+      reportOpen: false,
+      replayPrediction: 'longer',
+      replayResult: window.TrajectoryComputingCore.evaluateReplayPrediction('meridian-5', 'longer'),
+      replayLearning: { initialPrediction: 'longer', reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false },
+    } });
+    const unknownReplayHtml = renderTool(ID, { _trajectoryComputing: {
+      ...verifiedState,
+      extensionView: 'replay',
+      reportOpen: false,
+      replayVariantId: 'retired-card',
+      replayPrediction: '',
+      replayResult: null,
+      replayLearning: null,
+    } });
+    const safeguardHtml = renderTool(ID, { _trajectoryComputing: { ...verifiedState, extensionView: 'safeguard' } }, { toolSnapshots: savedSnapshots });
     const html = menuHtml + angleHtml + replayHtml + safeguardHtml;
 
     expect(menuHtml).toContain('Choose your next challenge.');
@@ -750,9 +1066,20 @@ describe('Trajectory Computing Lab', () => {
     expect(menuHtml).toContain('Optional explorations');
     expect(menuHtml).toContain('3 of 3 complete');
     expect(menuHtml).toContain('✓ Completed');
+    expect(pendingReplayHtml).toContain('2 of 3 complete');
+    expect(pendingReplayHtml).toContain('◐ Revise prediction');
     expect(menuHtml).toContain('Ready to review');
     expect(menuHtml).toContain('Evidence snapshot includes the latest work.');
+    expect(menuHtml).toContain('Evidence record ID ' + savedFingerprint + ' matches the latest saved snapshot.');
     expect(staleSnapshotHtml).toContain('Work changed after the last snapshot. Save a new snapshot to include it.');
+    expect(staleSnapshotHtml).toContain('Current report ID ' + staleFingerprint + ' does not match saved snapshot ID ' + savedFingerprint + '. Save a new snapshot before sharing.');
+    expect(currentRestartHtml).toContain('Your latest work matches the saved evidence snapshot.');
+    expect(staleRestartHtml).toContain('The saved snapshot does not include the latest work.');
+    expect(unsavedRestartHtml).toContain('No evidence snapshot has been saved.');
+    expect(unsavedRestartHtml).toContain('has no matching saved snapshot. Save a snapshot before sharing.');
+    expect(unsavedRestartHtml).not.toContain('Your latest work matches the saved evidence snapshot.');
+    expect(currentRestartHtml).toContain('Start new mission');
+    expect(currentRestartHtml).toContain('Press Escape to cancel');
     expect(menuHtml).toContain('Evidence file — 6 of 6 recorded');
     expect(menuHtml).not.toContain('Change one variable. Predict before computing.');
     expect(menuHtml).not.toContain('Deterministic mission replay cards');
@@ -840,7 +1167,26 @@ describe('Trajectory Computing Lab', () => {
     expect(html).toContain('speed, angle, height');
     expect(html).toContain('Before computing, predict the replay landing range');
     expect(html).toContain('name="tc-replay-prediction"');
-    expect(html).toContain('Replay prediction supported.');
+    expect(html).toContain('Revised prediction supported.');
+    expect(replayHtml).toContain('What conclusion is supported by this replay?');
+    expect(replayHtml).toContain('Several inputs changed together, so this replay cannot isolate one cause.');
+    expect(replayHtml).toContain('Comparison reasoning supported.');
+    expect(replayHtml).toContain('Comparison evidence');
+    expect(replayHtml).toContain('Combined changes');
+    expect(replayHtml).toContain('Current replay - 3 inputs changed');
+    expect(replayHtml).toContain('cannot isolate one cause');
+    expect(replayHtml).toContain('role="region" tabindex="0" aria-label="Scrollable Aurora and Meridian Test 5 comparison table"');
+    expect(replayHtml).toContain('aria-describedby="tc-replay-evidence-summary"');
+    expect(controlledReplayHtml).toContain('Aurora Control 3B: 1 of 4 modeled launch inputs differ from Aurora.');
+    expect(controlledReplayHtml).toContain('Changed from baseline');
+    expect(controlledReplayHtml).toContain('Same as baseline');
+    expect(controlledReplayHtml).toContain('One controlled change');
+    expect(controlledReplayHtml).toContain('Current replay - 1 input changed');
+    expect(controlledReplayHtml).toContain('One controlled change (launch speed).');
+    expect(controlledReplayHtml).toContain('One changed input was isolated, so its effect can be compared.');
+    expect(controlledReplayHtml.match(/aria-current="true"/g)).toHaveLength(1);
+    expect(unknownReplayHtml).toContain('Meridian Test 5: 3 of 4 modeled launch inputs differ from Aurora.');
+    expect(unknownReplayHtml).not.toContain('retired-card');
     expect(html).toContain('Aurora baseline compared with selected replay card');
     expect(html).toContain('scope="row"');
     expect(html).toContain('Peak height');
@@ -925,6 +1271,8 @@ describe('Trajectory Computing Lab', () => {
     expect(toolSource).toContain("'aria-labelledby': 'tc-comparison-title tc-comparison-desc'");
     expect(toolSource).toContain("strokeDasharray: '10 7'");
     expect(toolSource).toContain('.tc-chart-frame .tc-chart{min-width:620px}');
+    expect(toolSource).toContain('.tc-replay-table-wrap:focus-visible');
+    expect(toolSource).toContain('.tc-replay-evidence-key li.is-current{outline:3px solid Highlight');
     expect(toolSource).toContain("lowDistraction: lowDistraction, orientationDismissed: orientationDismissed");
     expect(toolSource).toContain('.tc-completion-surfaces>*:not(.tc-report)');
   });

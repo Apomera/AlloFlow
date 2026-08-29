@@ -65,11 +65,15 @@ describe('Art Studio animated stereogram accessibility', () => {
     vi.restoreAllMocks();
   });
 
-  async function mount(initial, onState) {
+  async function mount(initial, onState, overrides) {
     function Harness() {
       const [toolData, setToolData] = React.useState({ artStudio: initial });
       if (onState) onState(toolData);
-      return config.render(makeCtx({ toolData, setToolData, announceToSR: announce }));
+      return config.render(makeCtx(Object.assign({}, overrides || {}, {
+        toolData,
+        setToolData,
+        announceToSR: announce,
+      })));
     }
     await act(async () => {
       root.render(React.createElement(Harness));
@@ -205,8 +209,143 @@ describe('Art Studio animated stereogram accessibility', () => {
     expect(latest.artStudio.stereoStaticDepthSnapshot).toMatchObject({
       width: 400,
       height: 400,
-      data: [7, 8, 9, 255],
     });
+    expect(latest.artStudio.stereoStaticDepthSnapshot.data).toBeInstanceOf(Uint8ClampedArray);
+    expect(Array.from(latest.artStudio.stereoStaticDepthSnapshot.data)).toEqual([7, 8, 9, 255]);
+  });
+
+  it('stores keyframes in compact typed buffers and enforces the capture limit', async () => {
+    let latest;
+    const toast = vi.fn();
+    drawContext.getImageData.mockReturnValue({
+      data: new Uint8ClampedArray([11, 22, 33, 255]),
+      width: 400,
+      height: 400,
+    });
+    const existing = Array.from({ length: 11 }, () => ({
+      width: 1,
+      height: 1,
+      data: new Uint8ClampedArray([0, 0, 0, 255]),
+    }));
+    await mount({
+      tab: 'stereogram',
+      stereoAnimMode: 'animate',
+      stereoAnimSource: 'draw',
+      stereoAnimKeyframes: existing,
+    }, (toolData) => {
+      latest = toolData;
+    }, { addToast: toast });
+
+    const capture = host.querySelector('button[aria-label="Capture Keyframe"]');
+    await act(async () => {
+      capture.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(latest.artStudio.stereoAnimKeyframes).toHaveLength(12);
+    expect(latest.artStudio.stereoAnimKeyframes[11].data).toBeInstanceOf(Uint8ClampedArray);
+    expect(Array.from(latest.artStudio.stereoAnimKeyframes[11].data)).toEqual([11, 22, 33, 255]);
+
+    await act(async () => {
+      capture.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.artStudio.stereoAnimKeyframes).toHaveLength(12);
+    expect(toast).toHaveBeenCalledWith(
+      'Keep up to 12 keyframes. Remove one before capturing another.',
+      'warning',
+    );
+  });
+
+  it('keeps the playback timer reachable after render-progress state updates', async () => {
+    const animationFrames = [];
+    window.requestAnimationFrame.mockImplementation((callback) => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+    const setTimer = vi.spyOn(globalThis, 'setInterval').mockImplementation(() => 321);
+    const clearTimer = vi.spyOn(globalThis, 'clearInterval').mockImplementation(() => {});
+    let latest;
+    await mount({
+      tab: 'stereogram',
+      stereoAnimMode: 'animate',
+      stereoAnimSource: 'preset',
+      stereoAnimPreset: 'floatText',
+      stereoAnimFrameCount: 2,
+      stereoAnimSpeed: 8,
+    }, (toolData) => {
+      latest = toolData;
+    });
+
+    const render = host.querySelector('button[aria-label="Render Animated Stereogram"]');
+    await act(async () => {
+      render.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    let frameNumber = 0;
+    while (animationFrames.length && frameNumber < 10) {
+      const callback = animationFrames.shift();
+      frameNumber += 1;
+      await act(async () => {
+        callback(frameNumber * 16);
+        await Promise.resolve();
+      });
+    }
+
+    expect(latest.artStudio.stereoAnimHasFrames).toBe(true);
+    expect(latest.artStudio.stereoAnimPlaying).toBe(true);
+    expect(setTimer).toHaveBeenCalled();
+
+    const pause = host.querySelector('button[aria-label="Pause animated stereogram"]');
+    await act(async () => {
+      pause.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(clearTimer).toHaveBeenCalledWith(321);
+    expect(latest.artStudio.stereoAnimPlaying).toBe(false);
+  });
+
+  it('ignores queued render work after returning to the Studio home', async () => {
+    const animationFrames = [];
+    window.requestAnimationFrame.mockImplementation((callback) => {
+      animationFrames.push(callback);
+      return animationFrames.length;
+    });
+    let latest;
+    await mount({
+      tab: 'stereogram',
+      studioHome: false,
+      studioStarted: true,
+      stereoAnimMode: 'animate',
+      stereoAnimSource: 'preset',
+      stereoAnimPreset: 'floatText',
+      stereoAnimFrameCount: 2,
+    }, (toolData) => {
+      latest = toolData;
+    });
+
+    const render = host.querySelector('button[aria-label="Render Animated Stereogram"]');
+    await act(async () => {
+      render.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    const queuedRender = animationFrames.shift();
+    expect(queuedRender).toBeTypeOf('function');
+
+    const homeButton = host.querySelector('button[aria-label="Open Studio home"]');
+    await act(async () => {
+      homeButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await act(async () => {
+      queuedRender(16);
+      await Promise.resolve();
+    });
+
+    expect(latest.artStudio.studioHome).toBe(true);
+    expect(latest.artStudio.stereoAnimRendering).toBe(false);
+    expect(latest.artStudio.stereoAnimHasFrames).toBe(false);
+    expect(animationFrames).toHaveLength(0);
   });
 
   it('keeps reduced-motion users paused after all three rendering completion paths', () => {

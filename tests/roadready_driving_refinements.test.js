@@ -29,12 +29,14 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain("if (kEditing || (kActionControl && (keyName === ' ' || keyName === 'enter'))) return");
     expect(src).toContain('var pauseForInterruption = function()');
     expect(src).toContain("rrAnnounce('Drive paused because the simulator lost focus.')");
-    expect(src).toContain('if (pNext) keysRef.current = {}');
+    expect(src).toContain('keysRef.current = clearDrivingMovementInputs(keysRef.current)');
+    expect(src).toContain('gamepadNeedsNeutralRef.current = true');
     expect(src).toContain('var rideAlongManagedKeys = [');
     expect(src).toContain("if (rideAlongControlsLocked() && rideAlongManagedKeys.indexOf(keyName) !== -1)");
     expect(src).toContain("if (keyName === 'p') attemptDriveGear('P', true)");
     expect(src).toContain('var gpRideAlongLocked = rideAlongControlsLocked()');
-    expect(src).toContain('k._gpThrottle = gpRideAlongLocked ? 0 : rtVal');
+    expect(src).toContain('var gpMovementLocked = gpRideAlongLocked || pausedRef.current || gpRearmBlocked');
+    expect(src).toContain('k._gpThrottle = gpMovementLocked ? 0 : rtVal');
     expect(src).toContain('isTouchDeviceRef.current && !rideAlongActiveUi');
   });
 
@@ -50,14 +52,26 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain('startedAtSim: timeRef.current');
     expect(src).toContain('timeRef.current - (tr.startedAtSim || 0)');
     expect(src).toContain('function evaluationElapsedSeconds(state, simTime)');
-    expect(src).toContain('function shouldHoldStartupWorld(seatbeltFastened, simTime, graceUntil, gear)');
+    expect(src).toContain('function startupSequenceActive(seatbeltFastened, simTime, graceUntil)');
+    expect(src).toContain('function shouldHoldStartupWorld(seatbeltFastened, simTime, graceUntil, gear, requireNeutral)');
     expect(src).toContain('if (seatbeltRef.current.fastened) timeRef.current += dt');
     expect(src).toContain('var holdStartupWorld = shouldHoldStartupWorld(');
+    const startupWorldGateStart = src.indexOf('if (!holdStartupWorld) {');
+    const startupWorldGate = src.slice(startupWorldGateStart,
+      src.indexOf('updateAudio();', startupWorldGateStart));
+    expect(startupWorldGate).toContain('updateCyclists(dt);');
+    expect(startupWorldGate).toContain('checkCollisions();');
     expect(src).toContain('graceRef.current.until = timeRef.current + 4');
+    expect(src).toContain('var autoBeltSafetyScan = rideAlongActive');
+    expect(src).toContain('var startupControlsLocked = startupSequenceActive(');
+    expect(src).toContain("gearRef.current = gear = 'P'");
+    expect(src).toContain("if (gear === 'P') { car.speed = 0; accel = 0; }");
     expect(src).toContain('startFormalEvaluationClocks()');
     expect(src).toContain('roadTestRef.current.startedAtSim != null');
-    expect(src).toContain('var rtCompleted = rtElapsed >=');
-    expect(src).toContain('var rtPassed = rtCompleted && rtFinalScore >= 90');
+    expect(src).toContain('var rtOutcome = roadTestRef.current.completedOutcome ||');
+    expect(src).toContain('roadTestOutcome(roadTestRef.current, s, timeRef.current)');
+    expect(src).toContain('roadTestRef.current.completedOutcome = Object.assign(');
+    expect(src).not.toContain('var rtPassed = rtCompleted && rtFinalScore >= 90');
     expect(src).toContain('var blinkerCancelRef = useRef({ armed: false, dir: 0 })');
     expect(src).toContain('car.steering * blinkerRef.current > 0.28');
     expect(src).toContain("rrAnnounce('Camera view: ' + nextMode + '.')");
@@ -79,6 +93,8 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain('env(safe-area-inset-bottom, 0px)');
     expect(src).toContain("role: 'timer', 'aria-live': 'off'");
     expect(src).toContain("top: 'clamp(78px, 24%, 172px)'");
+    expect(src).toContain('.rr-road-test-meter{top:84px!important');
+    expect(src).toContain('.touch-controls button{min-width:44px;min-height:44px}');
     expect(src).toContain("role: 'region', 'aria-label': 'Road trip progress'");
     expect(src).toContain("d.coachMode && !d.parentRideMode && d.roadTestStage !== 'drive'");
   });
@@ -89,12 +105,56 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).toContain('var gaugeX = hudCompact ? 55 : 62');
     expect(src).toContain('if (!hudCompact && blink !== 0 && blinkOn)');
     expect(src).toContain("hudCompact ? 'GEAR' : 'F=D G=R P=Park'");
-    expect(src).toContain('var hcPanelY = hudCompact ? Math.max(hudTopStackY + 64, H - 150) : 60');
+    expect(src).toContain('var gearHudX = hudCompact ? 140 : 130');
+    expect(src).toContain('var hcPanelY = hudCompact ? Math.max(hudTopStackY + 64, H - 190) : 60');
     expect(src).toContain('var hudTopStackY = Math.max(72, Math.ceil(H * 0.14))');
-    expect(src).toContain('var hudStartupScan = !!rideAlongRef.current');
+    expect(src).toContain('var hudStartupScan = startupSequenceActive(');
     expect(src).toContain('if (!hudStartupScan && !hudPersistentOverlay) {');
     expect(src).toContain('var hudInfoW = W < 520 ? Math.min(190, W - 90) : 220');
-    expect(src).toContain('var signX = W - 70, signY2 = hudTopStackY');
+    expect(src).toMatch(/if \(!hudCompact\) \{\s+var signX = W - 70, signY2 = hudTopStackY/);
+    expect(src).toContain('H, hudTopStackY, hudPersistentOverlay, hudCompact && hudFormalOverlay');
+    expect(src).toContain("className: 'rr-road-test-label'");
+    expect(src).toContain("className: 'rr-road-test-score'");
+    expect(src).toContain("bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))'");
+    expect(src).toContain('var netForce = longitudinalNetForce(');
+    expect(src).not.toContain('gradeForce * resistSign');
+    expect(src).toContain('Math.abs(car.speed) > statsRef.current.maxSpeed');
+    expect(src).toContain('var cyclistImpactState = roadUserImpactClosingState(car, cy)');
+    expect(src).toContain('cyclistImpactState.closingSpeed > 0.5');
+    expect(src).toContain("cyclistImpactAttribution === 'road_user'");
+    expect(src).toContain('(statsRef.current.aiCausedCrashes || 0) + 1');
+    expect(src).toContain('vulnerableRoadUserStartupClearance(cy.type, riderClosing)');
+    expect(src).toContain('safeStartPushActor(cy, riderClearance.radius, riderClearance.push)');
+    expect(src).toContain('cyRespawnSide * cyRespawnDir < 0');
+    expect(src).toContain('vulnerableRoadUserClosingRespawnMin(');
+    expect(src).toContain('vulnerableRoadUserFollowingControl(');
+    expect(src).toContain('applyRiderFollowingControl(cy);');
+    expect(src).toContain('roadAwareRelativePosition(');
+    expect(src).toContain('cy._brakingForPlayer = cyFollow.braking');
+    expect(src).toContain('cy.speed = cyFollow.targetSpeed');
+    expect(src).toContain('vulnerableRoadUserLaneOffset(');
+    expect(src).toContain("roadUserType !== 'motorcycle'");
+    expect(src).toContain('if (dist > Math.max(4, cyclistCollisionReach)) return');
+    expect(src).not.toContain('(18 + Math.random() * MAP_SIZE * 0.35)');
+    const trafficCollisionStart = src.indexOf('var checkCollisions = function()');
+    const trafficCollisionBranch = src.slice(trafficCollisionStart,
+      src.indexOf('// Following distance check', trafficCollisionStart));
+    expect(trafficCollisionBranch).toContain(
+      'var trafficImpactState = roadUserImpactClosingState(car, t)');
+    expect(trafficCollisionBranch).toContain(
+      'trafficImpactState.closingSpeed > 0.5');
+    expect(trafficCollisionBranch).toContain("trafficImpactAttribution === 'road_user'");
+    expect(trafficCollisionBranch).toContain(
+      '(statsRef.current.aiCausedCrashes || 0) + 1');
+    expect(trafficCollisionBranch).toContain('statsRef.current.safetyScore -= 2');
+    expect(src).toContain('trafficFollowingControl(');
+    expect(src).toContain('var playerFollowLaneTolerance =');
+    expect(src).toContain('playerFollowControl.targetSpeed');
+    expect(src).toContain('var bloomStrength = isNight && !isDawn');
+    expect(src).toContain('var bloomThreshold = isNight && !isDawn ? 0.8');
+    expect(src).not.toContain('lp?0.49:0.7');
+    expect(src).toContain("var rearLabelW = gfx.measureText('REARVIEW').width + 12");
+    expect(src).toContain('var sideMirrorLabelW = gfx.measureText(sideMirrorLabel).width + 10');
     expect(src).toContain('var compassY = mirrorY + Math.max(4, mirrorH - 20)');
     expect(src).toContain('var dashboardInstrumentGroup = new T.Group()');
     expect(src).toContain("s3.dashboardInstrumentGroup.visible = camMode === 'cockpit'");
@@ -103,12 +163,73 @@ describe('RoadReady driving-view refinements', () => {
     expect(src).not.toContain("'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0");
   });
 
+  it.each(ROADREADY_FILES)('%s keeps mobile startup clear and emergency response physically fair', (relPath) => {
+    const src = sourceFor(relPath);
+    expect(src).toContain('var fastenSeatbelt = function()');
+    expect(src).toContain('onClick: fastenSeatbelt');
+    expect(src).toContain("className: 'rr-seatbelt-prompt'");
+    expect(src).toContain('Buckle up first. The car stays in Park during your mirror scan.');
+    expect(src).toContain("'aria-label': 'Fasten seatbelt'");
+    expect(src).toContain("animation: 'none'");
+    expect(src).toContain("}, 'GO')");
+    expect(src).toContain("}, 'BRAKE')");
+    expect(src).toContain('var touchControlsLockedUi = startupOverlayVisibleUi');
+    expect(src).toContain("'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'");
+    expect(src).toContain('var drivingHoldProps = function(keyName, label, shortcut)');
+    expect(src).toContain('onPointerCancel: function(e) { releaseDrivingHoldUi(keyName, e); }');
+    expect(src).toContain('onLostPointerCapture: function(e) { setDrivingHoldUi(keyName, false, e); }');
+    expect(src).toContain("['P', 'D', 'R'].map(function(touchGear)");
+    expect(src).toContain("setDriveGearUi('D')");
+    expect(src).toContain("drivingHoldProps('z', 'Look over left shoulder");
+    expect(src).toContain("drivingHoldProps('x', 'Look over right shoulder");
+    expect(src).toContain('Driving controls unlock after the scan.');
+    expect(src).toContain('Release throttle, brake, and steering. Then accelerate again');
+    expect(src).toContain('movingRoadUserBlockedByStoppedVehicle(');
+    expect(src).toContain('p._blockedByStoppedVehicle = true');
+    expect(src).toContain('w._blockedByStoppedVehicle = true');
+    expect(src).toContain('var smVanishX = smX + smW * (isLeft ? 0.56 : 0.44)');
+    expect(src).toContain('gfx.setLineDash([3, 3])');
+
+    const emergencyUpdateStart = src.indexOf('var updateEmergency = function(dt)');
+    const emergencyUpdate = src.slice(emergencyUpdateStart,
+      src.indexOf('var updateCyclists = function(dt)', emergencyUpdateStart));
+    expect(emergencyUpdateStart).toBeGreaterThan(-1);
+    expect(emergencyUpdate).toContain('_cruiseSpeed: emCruiseSpeed');
+    expect(emergencyUpdate).toContain('emergencyFollowingControl(');
+    expect(emergencyUpdate).toContain('if (emFollow.following)');
+    expect(emergencyUpdate).toContain('em.speed = emFollow.targetSpeed');
+    expect(emergencyUpdate).toContain('var emResponseDistance = Math.max(6, emFollow.holdGap + 0.25)');
+    expect(emergencyUpdate).toContain('emRoadAhead > -emResponseDistance');
+    expect(emergencyUpdate).toContain('_travelSign: emTravelSign');
+    expect(emergencyUpdate).toContain('mainRoadTravelSign(infiniteWorldRef.current, car)');
+    expect(emergencyUpdate).toContain('emergencyPullOverAssessment(');
+    expect(emergencyUpdate).toContain('em._responseWindowStartedAt >= 8');
+    expect(emergencyUpdate).toContain('setEmergencyPassLane()');
+    expect(emergencyUpdate).toContain('em.life += dt');
+    expect(src).toContain("if (type === 'firetruck') return { length: 7.5, width: 2.4 }");
+    expect(src).toContain("var bodyLen = isTruck ? 7.5 : em.kind === 'ambulance' ? 5.0 : 4.8");
+
+    const emergencyCollisionStart = src.indexOf('var emergencyImpactAttribution');
+    const emergencyCollision = src.slice(emergencyCollisionStart,
+      src.indexOf('\n        };', emergencyCollisionStart));
+    expect(emergencyCollisionStart).toBeGreaterThan(-1);
+    expect(emergencyCollision).toContain(
+      'vulnerableRoadUserImpactAttribution(\n              car.speed, em.speed)');
+    expect(emergencyCollision).toContain("emergencyImpactAttribution === 'road_user'");
+    expect(emergencyCollision).toContain(
+      '(statsRef.current.aiCausedCrashes || 0) + 1');
+    expect(emergencyCollision).toContain('No learner-fault penalty.');
+    expect(emergencyCollision).toContain(
+      "severity: emergencyImpactAttribution === 'road_user' ? 1 : 3");
+  });
+
   it.each(ROADREADY_FILES)('%s makes Ride-Along staged, visible, and rule-aware', (relPath) => {
     const src = sourceFor(relPath);
     expect(src).toContain('function rideAlongSupportsScenario(scenarioId, freeExplore)');
     expect(src).toContain('function rideAlongApproachSpeedMph(distanceWorldUnits, weather, clearanceWorldUnits)');
     expect(src).toContain("var autoBelt = rideAlongActive ||");
-    expect(src).toContain("if (gear === 'P' && !raStartup) gearRef.current = gear = 'D'");
+    expect(src).toContain("if (gear === 'P' && !raStartup) {");
+    expect(src).toContain("gearRef.current = gear = 'D'");
     expect(src).toContain("['light', 'flagger', 'stop'].indexOf(sig.type)");
     expect(src).toContain('recommendedFollowingMeters(raSpeedMps, scn.weather, 1)');
     expect(src).toContain('schoolBusStopRequirement(raWorld, raLiveProfile, car, tc)');

@@ -2677,7 +2677,7 @@
 
         return h('div', { className: 'relative w-full', style: { maxWidth: '520px' } },
           h('div', { className: 'grid gap-0', style: { gridTemplateColumns: 'repeat(12, 1fr)' } }, cells),
-          h('div', { 'aria-hidden': 'true', className: 'absolute inset-0' }, lines)
+          h('div', { 'aria-hidden': 'true', className: 'absolute inset-0', style: { pointerEvents: 'none' } }, lines)
         );
       }
 

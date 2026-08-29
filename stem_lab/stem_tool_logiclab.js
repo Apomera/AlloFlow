@@ -1015,7 +1015,7 @@ window.StemLab = window.StemLab || {
 
                     onClick: function() { upd({ mode: m[0] }); },
 
-                    className: "px-3 py-2.5 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg scale-105" : "text-violet-600 bg-violet-50 hover:bg-violet-100"),
+                    className: "px-3 py-2.5 rounded-xl text-sm font-bold transition-all " + (active ? "text-white shadow-lg sm:scale-105" : "text-violet-600 bg-violet-50 hover:bg-violet-100"),
 
                     style: active ? { background: _gViolet, boxShadow: '0 4px 14px rgba(124,58,237,0.3)', minHeight: 44 } : { minHeight: 44 }
 
@@ -1150,7 +1150,7 @@ window.StemLab = window.StemLab || {
                     onChange: function(e) { upd({ expression: e.target.value }); },
                     placeholder: t('stem.logiclab.or_type_p_q', "Or type: P \u2192 Q"),
                     'aria-label': t('stem.logiclab.logic_expression_input', 'Logic expression input'),
-                    className: "flex-1 px-3 py-2 rounded-lg border border-violet-500 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
+                    className: "min-w-0 flex-1 px-3 py-2 rounded-lg border border-violet-500 text-sm font-mono text-violet-800 bg-white focus:ring-2 focus:ring-violet-400 outline-none"
                   }),
                   React.createElement("button", { "aria-label": t('stem.logiclab.backspace_last_symbol', "Backspace last symbol"),
                     onClick: function() { upd({ expression: expr.slice(0,-1).trimEnd() }); },
@@ -2508,6 +2508,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('button', { onClick: function() { setIQ({ pTrue: 70, qTrue: 70, threshold: 80, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.logiclab.reset_3', '↺ Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Hypothesis: When does P(P∧Q) ≈ P(P)·P(Q)?'),
+                  'aria-label': t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q', 'Probability logic hypothesis'),
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.logiclab.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
@@ -2518,6 +2519,7 @@ window.StemLab = window.StemLab || {
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.logiclab.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.logiclab.explain_probability_logic', 'Explain probability logic.'),
+                  'aria-label': t('stem.logiclab.explain_probability_logic', 'Explain probability logic'),
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 React.createElement('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.logiclab.design_note_discrete_4_state_inference', 'Design note: discrete 4-state inference marker; no probability score; no reveal — by design.'))
               );

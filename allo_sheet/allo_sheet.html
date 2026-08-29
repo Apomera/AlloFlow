@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
   <title>AlloSheet — Agentic Educator Spreadsheet</title>
-  <link rel="stylesheet" href="allo_sheet.css?v=8">
+  <link rel="stylesheet" href="allo_sheet.css?v=9">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to workbook</a>
@@ -86,6 +86,7 @@
           <p id="canvasModeDescription">Create a new sheet or import a CSV to use direct editing, the accessible table, local audit, and human-reviewed AI plans. Data stays in this popup until you download a CSV or an AlloSheet workspace file.</p>
           <div class="canvas-start-actions">
             <button id="showNewSheetButton" type="button" aria-expanded="false" aria-controls="newSheetForm">Start a new sheet</button>
+            <button id="showCasebookButton" type="button" class="quiet-button">Create an observation casebook</button>
             <label class="file-button" for="canvasCsvInput">
               Import a CSV
               <input id="canvasCsvInput" type="file" accept=".csv,text/csv" aria-describedby="canvasFileStatus">
@@ -184,6 +185,7 @@ Column 3</textarea>
         <button id="tableTab" type="button" role="tab" aria-selected="false" aria-controls="tableView" tabindex="-1">Accessible table mirror <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
         <button id="auditTab" type="button" role="tab" aria-selected="false" aria-controls="auditView" tabindex="-1">Data audit <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
         <button id="analysisTab" type="button" role="tab" aria-selected="false" aria-controls="analysisView" tabindex="-1">Local analysis <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
+        <button id="casebookTab" type="button" role="tab" aria-selected="false" aria-controls="casebookView" tabindex="-1">Observation casebook <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
       </nav>
 
       <section id="editorView" class="work-view" role="tabpanel" aria-labelledby="editorTab">
@@ -324,6 +326,232 @@ Column 3</textarea>
           </table>
         </div>
       </section>
+
+      <section id="casebookView" class="work-view casebook-view" role="tabpanel" aria-labelledby="casebookTab" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Observe, organize, reflect</p>
+            <h2>Observation casebook</h2>
+            <p>Define cases and parameters once, then turn typed or dictated observations into structured, reviewable entries.</p>
+          </div>
+          <span id="casebookModeBadge" class="badge neutral">Builder</span>
+        </div>
+
+        <section id="casebookSetup" class="casebook-card" aria-labelledby="casebookSetupTitle">
+          <h3 id="casebookSetupTitle">Create a casebook</h3>
+          <p>Start from a pattern or define your own. Everything remains a browser-local AlloSheet workspace until you explicitly download it.</p>
+          <div class="casebook-template-row" role="group" aria-label="Casebook starters">
+            <button type="button" class="quiet-button casebook-template-button" data-casebook-template="aquarium">Aquarium study</button>
+            <button type="button" class="quiet-button casebook-template-button" data-casebook-template="specimens">Specimens</button>
+            <button type="button" class="quiet-button casebook-template-button" data-casebook-template="learner_support">Learner support</button>
+          </div>
+
+          <form id="casebookSetupForm" class="casebook-setup-form" novalidate>
+            <div class="form-grid">
+              <label>
+                Casebook title
+                <input id="casebookTitleInput" type="text" maxlength="120" value="My observation casebook" required aria-describedby="casebookSetupError">
+              </label>
+              <label>
+                What is one case called?
+                <input id="casebookCaseLabelInput" type="text" maxlength="40" value="Case" required aria-describedby="casebookSetupError">
+              </label>
+            </div>
+            <label>
+              What are you tracking, and why?
+              <textarea id="casebookDescriptionInput" rows="3" maxlength="500" aria-describedby="casebookSetupError" placeholder="Example: Compare water conditions and observable fish activity across tanks."></textarea>
+            </label>
+            <div class="form-grid">
+              <label>
+                Cases, one per line
+                <textarea id="casebookCasesInput" rows="5" maxlength="20200" required aria-describedby="casebookSetupError">Case 1
+Case 2</textarea>
+              </label>
+              <label>
+                Information boundary
+                <select id="casebookPrivacyModeInput" aria-describedby="casebookPrivacyHint casebookSetupError">
+                  <option value="general">General observation</option>
+                  <option value="learner-support">Learner support records</option>
+                </select>
+                <span id="casebookPrivacyHint" class="field-hint">Learner-support mode adds reminders to use coded identifiers, observable evidence, and approved storage.</span>
+              </label>
+            </div>
+
+            <fieldset class="casebook-parameter-builder">
+              <legend>Parameters to track</legend>
+              <div class="casebook-parameter-grid">
+                <label>
+                  Parameter name
+                  <input id="casebookParameterLabel" type="text" maxlength="80" placeholder="Temperature">
+                </label>
+                <label>
+                  Value type
+                  <select id="casebookParameterType">
+                    <option value="number">Number</option>
+                    <option value="category">Category</option>
+                    <option value="text">Text</option>
+                    <option value="boolean">Yes / no</option>
+                  </select>
+                </label>
+                <label>
+                  Unit, if any
+                  <input id="casebookParameterUnit" type="text" maxlength="24" placeholder="°F, cm, ppm">
+                </label>
+                <label>
+                  Expected minimum
+                  <input id="casebookParameterMinimum" type="number" step="any" inputmode="decimal">
+                </label>
+                <label>
+                  Expected maximum
+                  <input id="casebookParameterMaximum" type="number" step="any" inputmode="decimal">
+                </label>
+              </div>
+              <label>
+                Optional observation prompt
+                <input id="casebookParameterPrompt" type="text" maxlength="180" placeholder="What should the observer notice or measure?">
+              </label>
+              <button id="addCasebookParameterButton" type="button" class="quiet-button">Add parameter</button>
+              <p class="field-hint">Expected ranges are context entered by you. AlloSheet uses them only to invite verification, never to diagnose or claim a cause.</p>
+              <ol id="casebookParameterList" class="casebook-parameter-list" aria-live="polite"></ol>
+            </fieldset>
+
+            <p id="casebookSetupError" class="form-error" role="alert" tabindex="-1" hidden></p>
+            <div class="button-row">
+              <button id="createCasebookButton" type="submit">Create local casebook</button>
+              <button id="resetCasebookBuilderButton" type="button" class="quiet-button">Reset builder</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="casebookWorkspace" aria-labelledby="casebookWorkspaceTitle" hidden>
+          <div class="casebook-card casebook-workspace-heading">
+            <div>
+              <h3 id="casebookWorkspaceTitle">Casebook</h3>
+              <p id="casebookWorkspaceDescription"></p>
+            </div>
+            <p id="casebookWorkspaceSummary" class="casebook-summary" role="status" aria-live="polite"></p>
+            <p id="casebookRecordNotice" class="privacy-detail"></p>
+          </div>
+
+          <div class="casebook-layout">
+            <section class="casebook-card" aria-labelledby="casebookCaseTitle">
+              <h3 id="casebookCaseTitle">Choose a case</h3>
+              <label>
+                Active case
+                <select id="casebookCaseSelect"></select>
+              </label>
+              <div class="casebook-inline-add">
+                <label>
+                  Add another case
+                  <input id="casebookNewCaseName" type="text" maxlength="100" aria-describedby="casebookCaseError">
+                </label>
+                <button id="casebookAddCaseButton" type="button" class="quiet-button">Add case</button>
+              </div>
+              <p id="casebookCaseError" class="form-error" role="alert" aria-atomic="true" tabindex="-1" hidden></p>
+            </section>
+
+            <section class="casebook-card" aria-labelledby="casebookCaptureTitle">
+              <h3 id="casebookCaptureTitle">Log an observation</h3>
+              <form id="casebookCaptureForm" novalidate>
+                <label>
+                  Observed date and time
+                  <input id="casebookObservedAt" type="datetime-local" step="60" required aria-describedby="casebookCaptureError">
+                </label>
+                <label>
+                  Tell AlloSheet what you observed
+                  <textarea id="casebookNarrative" rows="5" maxlength="1200" required aria-describedby="casebookVoiceDisclosure casebookCaptureError" placeholder="Example: Tank 1 at 78 degrees, pH 7.4. Activity: lower than yesterday; one fish stayed near the filter."></textarea>
+                </label>
+                <div class="button-row">
+                  <button id="casebookVoiceButton" type="button" class="quiet-button" aria-pressed="false" aria-controls="casebookNarrative" aria-describedby="casebookVoiceDisclosure casebookCaptureStatus casebookCaptureError">Dictate observation</button>
+                  <button id="casebookDraftButton" type="submit">Create review draft</button>
+                </div>
+                <p id="casebookVoiceDisclosure" class="field-hint">Dictation never saves automatically. Availability and audio processing depend on the voice engine configured in this browser; type instead when policy requires on-device-only capture.</p>
+                <p id="casebookCaptureStatus" class="field-hint" role="status" aria-live="polite" aria-atomic="true"></p>
+                <p id="casebookCaptureError" class="form-error" role="alert" aria-atomic="true" tabindex="-1" hidden></p>
+              </form>
+            </section>
+          </div>
+
+          <section id="casebookDraftReview" class="casebook-card casebook-draft-review" aria-labelledby="casebookDraftTitle" hidden>
+            <p class="eyebrow">Draft - not yet recorded</p>
+            <h3 id="casebookDraftTitle" tabindex="-1">Review the structured entry</h3>
+            <p>Check every value. The original narrative is preserved as evidence; your interpretation stays in a separate field.</p>
+            <dl class="casebook-draft-context" aria-label="Draft target and observation time">
+              <div>
+                <dt>Target</dt>
+                <dd id="casebookDraftCaseLabel"></dd>
+              </div>
+              <div>
+                <dt>Observed</dt>
+                <dd><time id="casebookDraftObservedAt"></time></dd>
+              </div>
+            </dl>
+            <p class="field-hint">Discard this draft before changing its case or observation time.</p>
+            <div id="casebookDraftFields" class="casebook-draft-fields"></div>
+            <label>
+              Qualitative note (recorded evidence)
+              <textarea id="casebookDraftNote" rows="4" maxlength="1200"></textarea>
+            </label>
+            <label>
+              Human interpretation (optional)
+              <textarea id="casebookDraftInterpretation" rows="3" maxlength="1200" placeholder="Keep your interpretation separate from what was directly observed."></textarea>
+            </label>
+            <ul id="casebookDraftWarnings" class="warning-list" aria-label="Checks to review"></ul>
+            <p id="casebookDraftError" class="form-error" role="alert" tabindex="-1" hidden></p>
+            <div class="button-row">
+              <button id="saveCasebookObservationButton" type="button">Record reviewed entry</button>
+              <button id="discardCasebookDraftButton" type="button" class="quiet-button">Discard draft</button>
+            </div>
+          </section>
+
+          <div class="casebook-layout casebook-results-layout">
+            <section class="casebook-card" aria-labelledby="casebookTimelineTitle">
+              <div class="section-heading">
+                <div>
+                  <h3 id="casebookTimelineTitle">Observation timeline</h3>
+                  <p id="casebookTimelineSummary"></p>
+                </div>
+                <button id="prepareCasebookAgentButton" type="button" class="quiet-button" disabled>Prepare agent reflection</button>
+              </div>
+              <p class="field-hint">Preparing an agent reflection selects up to three recent entries and moves them to the existing assistant review. Nothing is sent until you inspect the rows and approve that request.</p>
+              <ol id="casebookTimelineList" class="casebook-timeline-list"></ol>
+            </section>
+
+            <section class="casebook-card" aria-labelledby="casebookReflectionTitle">
+              <h3 id="casebookReflectionTitle">Questions to investigate</h3>
+              <p>These local prompts describe gaps or changes. They are not conclusions and do not use AI.</p>
+              <ul id="casebookReflectionList" class="casebook-reflection-list"></ul>
+            </section>
+          </div>
+
+          <section class="casebook-card" aria-labelledby="casebookCompareTitle">
+            <div class="section-heading">
+              <div>
+                <h3 id="casebookCompareTitle">Compare latest observations</h3>
+                <p>Review the latest recorded value for each case without ranking cases or claiming a cause.</p>
+              </div>
+              <label class="casebook-compare-picker">
+                Parameter
+                <select id="casebookCompareParameter"></select>
+              </label>
+            </div>
+            <div class="table-scroll" tabindex="0" role="region" aria-label="Latest case comparison table">
+              <table id="casebookComparisonTable">
+                <caption id="casebookComparisonCaption">Choose a parameter to compare cases.</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Case</th>
+                    <th scope="col">Latest value</th>
+                    <th scope="col">Observed</th>
+                    <th scope="col">Context check</th>
+                  </tr>
+                </thead>
+                <tbody id="casebookComparisonBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
     </main>
 
     <aside class="agent-panel" aria-labelledby="agentTitle">
@@ -409,9 +637,12 @@ Column 3</textarea>
     <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
   </footer>
 
-  <script src="allo_sheet_adapter.js?v=8"></script>
-  <script src="allo_sheet_analysis.js?v=8"></script>
-  <script src="allo_sheet_workspace.js?v=8"></script>
-  <script src="allo_sheet.js?v=8"></script>
+  <script src="allo_sheet_adapter.js?v=9"></script>
+  <script src="allo_sheet_analysis.js?v=9"></script>
+  <script src="allo_sheet_workspace.js?v=9"></script>
+  <script src="allo_sheet_casebook.js?v=1"></script>
+  <script src="../voice_module.js?v=740290f90"></script>
+  <script src="allo_sheet_casebook_ui.js?v=1"></script>
+  <script src="allo_sheet.js?v=9"></script>
 </body>
 </html>

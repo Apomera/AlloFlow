@@ -64,17 +64,18 @@ describe('Document Builder export handoff', () => {
     let resolveFonts;
     let imageLoad;
     const decode = vi.fn().mockResolvedValue(undefined);
+    const image = {
+      complete: false,
+      decode,
+      addEventListener: vi.fn((type, handler) => { if (type === 'load') imageLoad = handler; }),
+    };
     const popup = {
       document: {
         write: vi.fn(),
         close: vi.fn(),
         readyState: 'complete',
         fonts: { ready: new Promise((resolve) => { resolveFonts = resolve; }) },
-        images: [{
-          complete: false,
-          decode,
-          addEventListener: vi.fn((type, handler) => { if (type === 'load') imageLoad = handler; }),
-        }],
+        images: [image],
       },
       requestAnimationFrame: vi.fn((callback) => callback()),
       focus: vi.fn(),
@@ -90,7 +91,35 @@ describe('Document Builder export handoff', () => {
     imageLoad();
     await expect(pending).resolves.toBe(true);
     expect(decode).toHaveBeenCalledOnce();
+    expect(image.loading).toBe('eager');
     expect(popup.focus).toHaveBeenCalledBefore(popup.print);
+    open.mockRestore();
+  });
+
+  it('still opens print but clearly warns when an image fails to load', async () => {
+    let imageError;
+    const popup = {
+      document: {
+        write: vi.fn(),
+        close: vi.fn(),
+        readyState: 'complete',
+        fonts: { ready: Promise.resolve() },
+        images: [{
+          complete: false,
+          addEventListener: vi.fn((type, handler) => { if (type === 'error') imageError = handler; }),
+        }],
+      },
+      requestAnimationFrame: vi.fn((callback) => callback()),
+      focus: vi.fn(),
+      print: vi.fn(),
+    };
+    const open = vi.spyOn(window, 'open').mockReturnValue(popup);
+    const pending = executeExportFromPreview(deps());
+    await Promise.resolve();
+    imageError();
+    await expect(pending).resolves.toBe(true);
+    expect(popup.print).toHaveBeenCalledOnce();
+    expect(window.AlloFlowUX.toast).toHaveBeenCalledWith(expect.stringContaining('fonts or images were still loading'), 'info');
     open.mockRestore();
   });
 

@@ -1032,6 +1032,67 @@ function AIBackendModalBody(props) {
     t,
     GEMINI_MODELS
   } = props;
+  const launchPadActive = typeof document !== "undefined" && !!document.body && document.body.classList.contains("alloflow-launchpad-active");
+  const aiBackendOverlayZ = launchPadActive ? 2147483002 : props.showStemLab ? 10490 : void 0;
+  const aiBackendDialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = aiBackendDialogRef.current;
+    if (!dialog) return void 0;
+    const previouslyFocused = document.activeElement;
+    try {
+      dialog.focus({ preventScroll: true });
+    } catch (_) {
+      try {
+        dialog.focus();
+      } catch (_2) {
+      }
+    }
+    return () => {
+      if (previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === "function") {
+        try {
+          previouslyFocused.focus({ preventScroll: true });
+        } catch (_) {
+          try {
+            previouslyFocused.focus();
+          } catch (_2) {
+          }
+        }
+      }
+    };
+  }, []);
+  const handleAIBackendDialogKeyDown = (event) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setShowAIBackendModal(false);
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const dialog = aiBackendDialogRef.current;
+    if (!dialog) return;
+    const focusable = Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === "function" ? window.getComputedStyle(element) : null;
+      return !style || style.display !== "none" && style.visibility !== "hidden";
+    });
+    if (!focusable.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === dialog || !dialog.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || active === dialog || !dialog.contains(active))) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
   const isStudentAiSetup = Boolean(typeof window !== "undefined" && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
   const requestedSettingsSection = (() => {
     try {
@@ -1593,13 +1654,12 @@ function AIBackendModalBody(props) {
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      style: { zIndex: props.showStemLab ? 10490 : void 0 },
+      "data-ai-backend-modal-overlay": "true",
+      style: { zIndex: aiBackendOverlayZ },
       className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300",
       onClick: () => setShowAIBackendModal(false)
     },
-    /* @__PURE__ */ React.createElement("div", { "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: (e) => {
-      if (e.key === "Escape") setShowAIBackendModal(false);
-    }, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
+    /* @__PURE__ */ React.createElement("div", { ref: aiBackendDialogRef, "data-help-key": "ai_backend_modal_panel", "data-student-ai-setup": isStudentAiSetup ? "true" : "false", className: "bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto", role: "dialog", "aria-modal": "true", "aria-labelledby": "ai-backend-title", tabIndex: -1, onKeyDown: handleAIBackendDialogKeyDown, onClick: (e) => e.stopPropagation() }, isStudentAiSetup && /* @__PURE__ */ React.createElement("style", null, `
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
               [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,
               [data-student-ai-setup="true"] div:has(> #ai-backend-wolfram),

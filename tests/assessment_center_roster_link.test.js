@@ -42,51 +42,62 @@ function extractDecl(src, marker) {
 
 describe('two-field codename resolution', () => {
   function loadResolver() {
-    const fnSrc = extractDecl(ac, 'function _acCanonicalStudentName(rawName, rosterKeyValue)');
+    const helpers =
+      extractDecl(ac, 'function _acNormalizeIdentityName(rawName)') +
+      extractDecl(ac, 'async function _acIdentityLinkKey(rawName)') +
+      extractDecl(ac, 'async function _acCanonicalStudentName(rawName, rosterKeyValue, identityLinksValue)');
     // eslint-disable-next-line no-new-func
-    return new Function(fnSrc + ' return _acCanonicalStudentName;')();
+    return new Function(helpers + ' return { resolve: _acCanonicalStudentName, keyFor: _acIdentityLinkKey };')();
   }
   const roster = {
     students: { 'Swift Falcon': {}, 'Quiet Heron': {}, 'Bright Owl': {} },
-    importAliases: { 'Marcus Reyes': 'Swift Falcon' },
   };
 
-  it('an exact codename passes through', () => {
-    expect(loadResolver()('Swift Falcon', roster)).toBe('Swift Falcon');
+  it('an exact codename passes through', async () => {
+    expect(await loadResolver().resolve('Swift Falcon', roster, {})).toBe('Swift Falcon');
   });
 
-  it('a recorded alias resolves — re-imports auto-link', () => {
-    expect(loadResolver()('Marcus Reyes', roster)).toBe('Swift Falcon');
+  it('a fingerprinted Assessment Center link resolves after reload without a roster alias', async () => {
+    const { resolve, keyFor } = loadResolver();
+    const key = await keyFor('Marcus Reyes');
+    expect(key).toMatch(/^(sha256|fallback-v1):[a-f0-9]+$/);
+    expect(key.toLowerCase()).not.toContain('marcus');
+    expect(await resolve('Marcus Reyes', roster, { [key]: 'Swift Falcon' })).toBe('Swift Falcon');
   });
 
-  it('two-field variance (case, spacing, punctuation) resolves on a UNIQUE normalized match', () => {
-    const resolve = loadResolver();
-    expect(resolve('swift falcon', roster)).toBe('Swift Falcon');
-    expect(resolve('SwiftFalcon', roster)).toBe('Swift Falcon');
-    expect(resolve('swift_falcon', roster)).toBe('Swift Falcon');
-    expect(resolve('  Swift  Falcon ', roster)).toBe('Swift Falcon');
+  it('two-field variance (case, spacing, punctuation) resolves on a UNIQUE normalized match', async () => {
+    const { resolve } = loadResolver();
+    expect(await resolve('swift falcon', roster, {})).toBe('Swift Falcon');
+    expect(await resolve('SwiftFalcon', roster, {})).toBe('Swift Falcon');
+    expect(await resolve('swift_falcon', roster, {})).toBe('Swift Falcon');
+    expect(await resolve('  Swift  Falcon ', roster, {})).toBe('Swift Falcon');
   });
 
-  it('ambiguity refuses to guess', () => {
+  it('ambiguity refuses to guess', async () => {
     const ambiguous = { students: { 'Swift Falcon': {}, 'SWIFT falcon': {} } };
-    expect(loadResolver()('swiftfalcon', ambiguous)).toBe('swiftfalcon');
+    expect(await loadResolver().resolve('swiftfalcon', ambiguous, {})).toBe('swiftfalcon');
   });
 
-  it('an unknown real name passes through unchanged', () => {
-    expect(loadResolver()('Jamie Alvarez', roster)).toBe('Jamie Alvarez');
-    expect(loadResolver()('', roster)).toBe('');
-    expect(loadResolver()('Anyone', null)).toBe('Anyone');
+  it('an unknown real name passes through unchanged', async () => {
+    const { resolve } = loadResolver();
+    expect(await resolve('Jamie Alvarez', roster, {})).toBe('Jamie Alvarez');
+    expect(await resolve('', roster, {})).toBe('');
+    expect(await resolve('Anyone', null, {})).toBe('Anyone');
   });
 
-  it('a stale alias pointing at a removed roster student is ignored', () => {
-    const stale = { students: { 'Quiet Heron': {} }, importAliases: { 'Marcus Reyes': 'Swift Falcon' } };
-    expect(loadResolver()('Marcus Reyes', stale)).toBe('Marcus Reyes');
+  it('a stale link pointing at a removed roster student is ignored', async () => {
+    const { resolve, keyFor } = loadResolver();
+    const key = await keyFor('Marcus Reyes');
+    const staleRoster = { students: { 'Quiet Heron': {} } };
+    expect(await resolve('Marcus Reyes', staleRoster, { [key]: 'Swift Falcon' })).toBe('Marcus Reyes');
   });
 
-  it('the import path canonicalizes and keeps the original as importedName', () => {
-    expect(ac).toContain('const canonicalName = _acCanonicalStudentName(studentName, rosterKey);');
+  it('the import path awaits fingerprint resolution and marks roster-linked rows', () => {
+    expect(ac).toContain('const canonicalName = await _acCanonicalStudentName(studentName, rosterKey, identityLinks);');
     expect(ac).toContain('name: canonicalName,');
-    expect(ac).toContain('importedName: studentName,');
+    expect(ac).toContain('importedName: linkedToRoster ? null : studentName,');
+    expect(ac).toContain('const linkedToRoster = !!(rosterKey && rosterKey.students');
+    expect(ac).not.toContain('prev.importAliases');
   });
 });
 
@@ -137,21 +148,22 @@ describe('host mergeStudentRecords', () => {
 });
 
 describe('module handleLinkImportedStudent', () => {
-  // 2026-08-23: the handler now snapshots every store slice for one-step
-  // undo, so the extraction supplies the stores it reads and the undo plumbing.
   const PARAMS = ['askStudentAnalyticsConfirmation', 'mergeStudentRecords', 'setExternalCBMScores',
-    'setRosterKey', 'setImportedStudents', 'selectedStudent', 'setSelectedStudent', 'researchStudent',
-    'setResearchStudent', 'activeStudent', 'setActiveStudent', 'setProbeTargetStudent', 'addToast', 't',
-    'localStorage', 'window', 'rosterKey', 'probeHistory', 'interventionLogs', 'rtiGoals',
-    'externalCBMScores', '_acPersistableStudent', 'safeSetItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo'];
+    'setIdentityLinks', 'setRosterKey', 'setImportedStudents', 'selectedStudent', 'setSelectedStudent',
+    'researchStudent', 'setResearchStudent', 'activeStudent', 'setActiveStudent', 'setProbeTargetStudent',
+    'addToast', 't', 'localStorage', 'window', 'rosterKey', 'probeHistory', 'interventionLogs', 'rtiGoals',
+    'externalCBMScores', '_acIdentityLinkKey', '_acPersistableStudent', 'identityLinks',
+    'safeSessionSetItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo'];
 
   async function runLink(student, codename, confirmAnswer, world = {}) {
     const fnSrc = extractDecl(ac, 'const handleLinkImportedStudent = async (student, codename) => {');
     const calls = { merges: [], toasts: [], repointed: [] };
+    const fingerprint = 'sha256:' + 'a'.repeat(64);
     let cbm = world.cbm || { 'Marcus Reyes': [{ score: 88 }], 'Swift Falcon': [{ score: 91 }] };
+    let links = world.identityLinks || {};
     let roster = world.roster || { students: { 'Swift Falcon': {} }, progressHistory: { 'Marcus Reyes': [{ date: '2026-05-01' }], 'Swift Falcon': [{ date: '2026-04-01' }] } };
-    let imported = world.imported || [{ name: 'Marcus Reyes', stats: {} }, { name: 'Quiet Heron', stats: {} }];
-    let selected = world.selectedStudent !== undefined ? world.selectedStudent : { name: 'Marcus Reyes' };
+    let imported = world.imported || [{ name: 'Marcus Reyes', filename: 'Marcus_Reyes.json', importedName: 'Marcus Reyes', stats: {} }, { name: 'Quiet Heron', stats: {} }];
+    let selected = world.selectedStudent !== undefined ? world.selectedStudent : { name: 'Marcus Reyes', importedName: 'Marcus Reyes' };
     // eslint-disable-next-line no-new-func
     const link = new Function('student', 'codename', ...PARAMS,
       fnSrc + ' return handleLinkImportedStudent(student, codename);');
@@ -159,6 +171,7 @@ describe('module handleLinkImportedStudent', () => {
       async () => confirmAnswer,
       (from, to) => calls.merges.push([from, to]),
       (u) => { cbm = typeof u === 'function' ? u(cbm) : u; },
+      (u) => { links = typeof u === 'function' ? u(links) : u; },
       (u) => { roster = typeof u === 'function' ? u(roster) : u; },
       (u) => { imported = typeof u === 'function' ? u(imported) : u; },
       selected,
@@ -177,44 +190,49 @@ describe('module handleLinkImportedStudent', () => {
       world.logs || {},
       world.goals || {},
       cbm,
-      (st) => st,
-      (k, v) => calls.undoSaved = { k, v },
+      async () => fingerprint,
+      (st) => ({ ...st, restored: true }),
+      links,
+      (k, v) => { calls.undoSaved = { k, v }; },
       'undo-key',
-      (snap) => calls.undoState = snap,
+      (snap) => { calls.undoState = snap; },
     );
-    return { calls, cbm, roster, imported, selected };
+    return { calls, cbm, links, fingerprint, roster, imported, selected };
   }
 
-  it('a confirmed link merges, aliases, rekeys the row, and repoints every selection', async () => {
-    const { calls, cbm, roster, imported, selected } = await runLink({ name: 'Marcus Reyes' }, 'Swift Falcon', true);
+  it('a confirmed link merges, fingerprints, rekeys the row, and repoints every selection', async () => {
+    const { calls, cbm, links, fingerprint, roster, imported, selected } = await runLink({ name: 'Marcus Reyes' }, 'Swift Falcon', true);
     expect(calls.merges).toEqual([['Marcus Reyes', 'Swift Falcon']]);
     expect(cbm['Marcus Reyes']).toBeUndefined();
     expect(cbm['Swift Falcon'].map(e => e.score).sort()).toEqual([88, 91]);
-    expect(roster.importAliases).toEqual({ 'Marcus Reyes': 'Swift Falcon' });
+    expect(links).toEqual({ [fingerprint]: 'Swift Falcon' });
+    expect(roster).not.toHaveProperty('importAliases');
     expect(roster.progressHistory['Marcus Reyes']).toBeUndefined();
     expect(roster.progressHistory['Swift Falcon'].map(s => s.date)).toEqual(['2026-04-01', '2026-05-01']);
     const row = imported.find(s => s.name === 'Swift Falcon');
-    expect(row).toBeDefined();
-    expect(row.importedName).toBe('Marcus Reyes');
+    expect(row).toMatchObject({ importedName: null, filename: null, linkedToRoster: true });
     expect(imported.find(s => s.name === 'Marcus Reyes')).toBeUndefined();
     expect(imported.find(s => s.name === 'Quiet Heron')).toBeDefined();
-    expect(selected.name).toBe('Swift Falcon');
+    expect(selected).toMatchObject({ name: 'Swift Falcon', importedName: null, linkedToRoster: true });
     expect(calls.repointed).toEqual(expect.arrayContaining([['research', 'Swift Falcon'], ['active', 'Swift Falcon'], ['probeTarget', 'Swift Falcon']]));
     expect(calls.toasts.some(x => x.level === 'success')).toBe(true);
-    // The one-step undo snapshot captured the exact pre-link slices.
     expect(calls.undoState).toBeDefined();
     expect(calls.undoState.fromName).toBe('Marcus Reyes');
     expect(calls.undoState.toName).toBe('Swift Falcon');
+    expect(calls.undoState.identityKey).toBe(fingerprint);
+    expect(calls.undoState.priorLink).toBe(null);
     expect(calls.undoState.stores.alloflow_probe_history.from).toEqual([{ wcpm: 42 }]);
     expect(calls.undoState.stores.alloflow_external_cbm.to).toEqual([{ score: 91 }]);
     expect(calls.undoSaved.k).toBe('undo-key');
+    expect(calls.undoSaved.v).toContain('Marcus Reyes');
   });
 
   it('cancel changes nothing', async () => {
-    const { calls, cbm, imported } = await runLink({ name: 'Marcus Reyes' }, 'Swift Falcon', false);
+    const { calls, cbm, imported, links } = await runLink({ name: 'Marcus Reyes' }, 'Swift Falcon', false);
     expect(calls.merges).toHaveLength(0);
     expect(cbm['Marcus Reyes']).toBeDefined();
     expect(imported.find(s => s.name === 'Marcus Reyes')).toBeDefined();
+    expect(links).toEqual({});
   });
 
   it('empty codename and already-linked are early no-ops (no confirmation shown)', async () => {
@@ -249,6 +267,24 @@ describe('year boundary', () => {
     expect(archive.importedStudents[0].restored).toBe(true);
   });
 
+  it('linked durable rows omit the original name and filename', () => {
+    const helpers = extractDecl(ac, 'function _acTrimStudentData(data)') + extractDecl(ac, 'function _acPersistableStudent(s)');
+    // eslint-disable-next-line no-new-func
+    const persist = new Function(helpers + ' return _acPersistableStudent;')();
+    const linked = persist({
+      id: 'row-1', name: 'Swift Falcon', importedName: 'Marcus Reyes',
+      filename: 'Marcus_Reyes.json', linkedToRoster: true, stats: {},
+    });
+    expect(linked).toMatchObject({
+      name: 'Swift Falcon', importedName: null, filename: null, nickname: null, linkedToRoster: true,
+    });
+    expect(JSON.stringify(linked)).not.toContain('Marcus');
+    const unlinked = persist({ name: 'Marcus Reyes', importedName: 'Marcus Reyes', filename: 'Marcus.json', stats: {} });
+    expect(unlinked.importedName).toBe('Marcus Reyes');
+    expect(unlinked.linkedToRoster).toBe(false);
+  });
+
+
   it('host clearAllStudentRecords empties and flushes all three stores', () => {
     const fnSrc = extractDecl(anti, 'const clearAllStudentRecords = () => {');
     const state = { probe: { A: [] }, logs: { A: [] }, goals: { A: {} } };
@@ -262,16 +298,22 @@ describe('year boundary', () => {
     expect(writes.every(([, v]) => v === '{}')).toBe(true);
   });
 
-  it('the module clear keeps roster MEMBERSHIP while clearing snapshots and aliases', async () => {
+  it('the module clear keeps roster MEMBERSHIP while clearing snapshots, links, and undo data', async () => {
     const fnSrc = extractDecl(ac, 'const handleClearAllStudentRecords = async () => {');
-    let roster = { students: { 'Swift Falcon': {} }, learnerIds: { 'Swift Falcon': 'LRN-1' }, progressHistory: { 'Swift Falcon': [{}] }, importAliases: { 'Marcus Reyes': 'Swift Falcon' } };
+    let roster = { students: { 'Swift Falcon': {} }, learnerIds: { 'Swift Falcon': 'LRN-1' }, progressHistory: { 'Swift Falcon': [{}] } };
     let cbm = { 'Swift Falcon': [{}] };
     let imported = [{ name: 'Swift Falcon', stats: {} }];
+    let links = { ['sha256:' + 'a'.repeat(64)]: 'Swift Falcon' };
+    let undoState = { fromName: 'Marcus Reyes' };
     const cleared = [];
+    const localRemoved = [];
+    const sessionRemoved = [];
     // eslint-disable-next-line no-new-func
     const run = new Function('listRecordIdentities', 'askStudentAnalyticsConfirmation', 'clearAllStudentRecords',
       'setExternalCBMScores', 'setRosterKey', 'setImportedStudents', 'setSelectedStudent', 'setResearchStudent',
       'setActiveStudent', 'setProbeTargetStudent', 'setRecordsRemovalTarget', 'addToast', 't', 'localStorage', 'window',
+      'setIdentityLinks', 'safeRemoveItem', 'AC_IDENTITY_LINK_STORE_KEY', 'AC_ROSTER_STORE_KEY',
+      'safeSessionRemoveItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo',
       fnSrc + ' return handleClearAllStudentRecords();');
     await run(
       () => ['Swift Falcon'],
@@ -283,14 +325,22 @@ describe('year boundary', () => {
       () => cleared.push('selected'), () => cleared.push('research'),
       () => cleared.push('active'), () => cleared.push('probeTarget'), () => cleared.push('target'),
       () => {}, () => undefined, { setItem: () => {} }, { dispatchEvent: () => {} },
+      (u) => { links = typeof u === 'function' ? u(links) : u; },
+      (key) => localRemoved.push(key), 'identity-key', 'roster-key',
+      (key) => sessionRemoved.push(key), 'undo-key',
+      (u) => { undoState = u; },
     );
     expect(cleared).toContain('host');
     expect(cbm).toEqual({});
     expect(imported).toEqual([]);
-    expect(roster.students).toEqual({ 'Swift Falcon': {} });   // membership kept
+    expect(links).toEqual({});
+    expect(undoState).toBeNull();
+    expect(localRemoved).toEqual(expect.arrayContaining(['identity-key', 'roster-key', 'undo-key']));
+    expect(sessionRemoved).toEqual(['undo-key']);
+    expect(roster.students).toEqual({ 'Swift Falcon': {} });
     expect(roster.learnerIds).toEqual({ 'Swift Falcon': 'LRN-1' });
     expect(roster.progressHistory).toEqual({});
-    expect(roster.importAliases).toEqual({});
+    expect(roster).not.toHaveProperty('importAliases');
   });
 
   it('the wiring: props reach the module, and the table has the link column', () => {
@@ -303,18 +353,20 @@ describe('year boundary', () => {
 });
 
 describe('one-step link undo', () => {
-  const UNDO_PARAMS = ['lastLinkUndo', 'askStudentAnalyticsConfirmation', 'setRosterKey', 'setImportedStudents',
-    'addToast', 't', 'localStorage', 'window', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo'];
+  const fingerprint = 'sha256:' + 'a'.repeat(64);
+  const UNDO_PARAMS = ['lastLinkUndo', 'askStudentAnalyticsConfirmation', 'setIdentityLinks', 'setRosterKey',
+    'setImportedStudents', 'addToast', 't', 'localStorage', 'window', 'safeSessionRemoveItem',
+    'safeRemoveItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo'];
 
   function makeSnap() {
     return {
-      at: 1, fromName: 'Marcus Reyes', toName: 'Swift Falcon', rowId: 'row-1',
+      at: Date.now(), fromName: 'Marcus Reyes', toName: 'Swift Falcon', rowId: 'row-1',
+      identityKey: fingerprint, priorLink: null,
       row: { id: 'row-1', name: 'Marcus Reyes', importedName: 'Marcus Reyes', stats: {}, restored: true },
-      priorAlias: null,
       stores: {
         alloflow_probe_history: { from: [{ wcpm: 42 }], to: [{ wcpm: 38 }] },
-        alloflow_intervention_logs: { from: [{ id: 'a' }] },            // 'to' was absent pre-link
-        alloflow_rti_goals: { to: { fluencyGoal: 90 } },                // 'from' was absent pre-link
+        alloflow_intervention_logs: { from: [{ id: 'a' }] },
+        alloflow_rti_goals: { to: { fluencyGoal: 90 } },
         alloflow_external_cbm: { from: [{ score: 88 }], to: [{ score: 91 }] },
       },
       progressHistory: { from: [{ date: '2026-05-01' }], to: [{ date: '2026-04-01' }] },
@@ -323,7 +375,6 @@ describe('one-step link undo', () => {
 
   async function runUndo(snap, confirmAnswer) {
     const fnSrc = extractDecl(ac, 'const handleUndoLastLink = async () => {');
-    // The post-merge world the undo has to unwind.
     const backing = {
       alloflow_probe_history: JSON.stringify({ 'Swift Falcon': [{ wcpm: 38 }, { wcpm: 42 }] }),
       alloflow_intervention_logs: JSON.stringify({ 'Swift Falcon': [{ id: 'a' }] }),
@@ -333,48 +384,55 @@ describe('one-step link undo', () => {
     const fakeLS = {
       getItem: (k) => (k in backing ? backing[k] : null),
       setItem: (k, v) => { backing[k] = v; },
-      removeItem: (k) => { delete backing[k]; },
     };
-    let roster = { students: { 'Swift Falcon': {} }, importAliases: { 'Marcus Reyes': 'Swift Falcon' }, progressHistory: { 'Swift Falcon': [{ date: '2026-04-01' }, { date: '2026-05-01' }] } };
-    let imported = [{ id: 'row-1', name: 'Swift Falcon', importedName: 'Marcus Reyes', stats: {} }];
+    let links = { [fingerprint]: 'Swift Falcon' };
+    let roster = { students: { 'Swift Falcon': {} }, progressHistory: { 'Swift Falcon': [{ date: '2026-04-01' }, { date: '2026-05-01' }] } };
+    let imported = [{ id: 'row-1', name: 'Swift Falcon', importedName: null, filename: null, linkedToRoster: true, stats: {} }];
     const events = [];
-    const calls = { toasts: [], cleared: false };
+    const calls = { toasts: [], cleared: false, sessionRemoved: [], localRemoved: [] };
     // eslint-disable-next-line no-new-func
     const run = new Function(...UNDO_PARAMS, fnSrc + ' return handleUndoLastLink();');
     await run(
       snap,
       async () => confirmAnswer,
+      (u) => { links = typeof u === 'function' ? u(links) : u; },
       (u) => { roster = typeof u === 'function' ? u(roster) : u; },
       (u) => { imported = typeof u === 'function' ? u(imported) : u; },
       (msg, level) => calls.toasts.push({ msg, level }),
       () => undefined,
       fakeLS,
       { dispatchEvent: (e) => events.push(e && e.type) },
+      (key) => calls.sessionRemoved.push(key),
+      (key) => calls.localRemoved.push(key),
       'undo-key',
       (v) => { if (v === null) calls.cleared = true; },
     );
-    return { backing, roster, imported, events, calls };
+    return { backing, links, roster, imported, events, calls };
   }
 
-  it('restores every store slice exactly; a slice absent pre-link means delete', async () => {
-    const { backing, roster, imported, events, calls } = await runUndo(makeSnap(), true);
+  it('restores every store slice, the fingerprint map, and the original row exactly', async () => {
+    const { backing, links, roster, imported, events, calls } = await runUndo(makeSnap(), true);
     expect(JSON.parse(backing.alloflow_probe_history)).toEqual({ 'Marcus Reyes': [{ wcpm: 42 }], 'Swift Falcon': [{ wcpm: 38 }] });
     expect(JSON.parse(backing.alloflow_intervention_logs)).toEqual({ 'Marcus Reyes': [{ id: 'a' }] });
     expect(JSON.parse(backing.alloflow_rti_goals)).toEqual({ 'Swift Falcon': { fluencyGoal: 90 } });
     expect(JSON.parse(backing.alloflow_external_cbm)).toEqual({ 'Marcus Reyes': [{ score: 88 }], 'Swift Falcon': [{ score: 91 }] });
-    expect(roster.importAliases).toEqual({});
+    expect(links).toEqual({});
+    expect(roster).not.toHaveProperty('importAliases');
     expect(roster.progressHistory).toEqual({ 'Marcus Reyes': [{ date: '2026-05-01' }], 'Swift Falcon': [{ date: '2026-04-01' }] });
     expect(imported[0].name).toBe('Marcus Reyes');
-    expect(events).toContain('alloflow:study-bundle-imported'); // host + module re-read from localStorage
-    expect(backing['undo-key']).toBeUndefined();
+    expect(imported[0].importedName).toBe('Marcus Reyes');
+    expect(events).toContain('alloflow:study-bundle-imported');
+    expect(calls.sessionRemoved).toEqual(['undo-key']);
+    expect(calls.localRemoved).toEqual(['undo-key']);
     expect(calls.cleared).toBe(true);
     expect(calls.toasts.some(x => x.level === 'success')).toBe(true);
   });
 
-  it('cancel keeps the merged world', async () => {
-    const { backing, roster } = await runUndo(makeSnap(), false);
+  it('cancel keeps the merged world and its fingerprint link', async () => {
+    const { backing, links, roster } = await runUndo(makeSnap(), false);
     expect(JSON.parse(backing.alloflow_probe_history)['Swift Falcon']).toHaveLength(2);
-    expect(roster.importAliases['Marcus Reyes']).toBe('Swift Falcon');
+    expect(links[fingerprint]).toBe('Swift Falcon');
+    expect(roster).not.toHaveProperty('importAliases');
   });
 
   it('no snapshot means a silent no-op', async () => {
@@ -382,8 +440,11 @@ describe('one-step link undo', () => {
     expect(calls.toasts).toHaveLength(0);
   });
 
-  it('the undo row ships with its honest scope warning', () => {
+  it('the undo row discloses its scope and expires instead of persisting', () => {
     expect(ac).toContain("'\\u21A9 Undo last link'");
     expect(ac).toContain('use this immediately after a mistaken link, not as a general unlink');
+    expect(ac).toContain('available in this tab for up to 30 minutes');
+    expect(ac).toContain('safeSessionSetItem(AC_LINK_UNDO_KEY');
+    expect(ac).not.toContain('safeSetItem(AC_LINK_UNDO_KEY');
   });
 });

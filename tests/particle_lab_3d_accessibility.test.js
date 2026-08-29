@@ -11,7 +11,9 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
   const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
 
   it('puts focus and interactive semantics on the actual canvas', () => {
-    expect(source).toContain("h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application'");
+    expect(source).toContain("h('canvas', { ref: canvasRef, tabIndex: ready ? 0 : -1, role: 'application'");
+    expect(source).toContain("'aria-hidden': ready ? undefined : 'true'");
+    expect(source).toContain("'aria-busy': ready ? 'false' : 'true'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
     expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
     expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H ? Escape'");

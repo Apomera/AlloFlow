@@ -17,15 +17,15 @@ describe('Goal Setter control accessibility', () => {
     expect(text).toContain("'aria-label': tb.label");
     expect(text).toContain("'aria-label': 'Add goal template: ' + tmpl.text");
     expect(text).toContain("'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal')");
-    expect(text).toContain("'aria-label': 'Share goal: ' + (goal.text || 'unnamed goal')");
-    expect(text).toContain("'aria-label': 'Delete goal: ' + (goal.text || 'unnamed goal')");
+    expect(text).toContain("'aria-label': 'Share goal: ' + goalLabel");
+    expect(text).toContain("'aria-label': 'Delete goal: ' + goalLabel");
     expect(text).not.toContain("'aria-label': 'nowrap'");
     expect(text).not.toContain("'aria-label': 'Difficulty:'");
   });
 
   it('targets add-step actions to their own goal card', () => {
     const text = source();
-    expect(text).toContain("var stepInputId = 'goal-step-input-' + goal.id;");
+    expect(text).toContain("var stepInputId = 'goal-step-input-' + goalDomId;");
     expect(text).toContain("id: stepInputId");
     expect(text).toContain('document.getElementById(stepInputId)');
     expect(text).not.toContain('document.querySelector(\'[placeholder*="step"]\')');

@@ -21,11 +21,9 @@ describe('Probability Lab accessibility', () => {
     expect(text).toContain("role: \"img\", 'aria-label': 'Monte Carlo pi scatter plot with '");
   });
 
-  it('exposes an explicit pause control for automatic trials', () => {
+  it('exposes a stable pressed-state control for automatic trials', () => {
     const text = source();
-    expect(text).toContain('"aria-label": d._autoRunning ?');
-    expect(text).toContain('"Pause automatic simulation"');
-    expect(text).toContain('"Start automatic simulation"');
+    expect(text).toContain('"aria-label": "Automatic simulation"');
     expect(text).toContain('"aria-pressed": d._autoRunning ? "true" : "false"');
     expect(text).toContain("d._autoRunning ? '\\u23F8 Pause' : '\\u25B6 Auto-Run'");
   });

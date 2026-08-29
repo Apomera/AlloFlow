@@ -655,7 +655,7 @@ const _projectDiagnosticErrorSummary = typeof _miscDiagnosticErrorSummary === 'f
     };
 
 const handleLoadProject = (e, deps) => {
-  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, setStickers, setConceptMasteryLocal, bankImportedConceptMastery, onProjectLoadStart, onProjectLoadComplete } = deps;
+  const { setStudentProgressLog, setStudentProjectSettings, setIsIndependentMode, setIsTeacherMode, setIsParentMode, setIsStudentLinkMode, setAdventureDifficulty, setAdventureInputMode, setAdventureLanguageMode, setAdventureCustomInstructions, setAdventureChanceMode, setAdventureFreeResponseEnabled, setAdventureTypingPaceEnabled, setAdventureFluencyEnabled, setAdventureConsistentCharacters, setIsAdventureStoryMode, setIsSocialStoryMode, setSocialStoryFocus, setAdventureArtStyle, setAdventureCustomArtStyle, setUseLowQualityVisuals, setEnableFactionResources, setFactionResourceMode, setStudentNickname, setAdventureState, setHasSavedAdventure, setGameCompletions, setLabelChallengeResults, setSocraticMessages, setWordSoundsHistory, setWordSoundsFamilies, setWordSoundsAudioLibrary, setWordSoundsBadges, setPhonemeMastery, setWordSoundsDailyProgress, setWordSoundsConfusionPatterns, setFluencyAssessments, setFlashcardEngagement, setTimeOnTask, setGlobalPoints, setPointHistory, setCompletedActivities, setProbeHistory, setInterventionLogs, setSurveyResponses, setFidelityLog, setSessionCounter, setExternalCBMScores, setResearchMode, setHistory, setGeneratedContent, setActiveView, setIsMapLocked, setIsFullscreen, setLeftWidth, projectFileInputRef, t, addToast, warnLog, hydrateHistory, normalizeArtifactInstanceIds, setStickers, setConceptMasteryLocal, bankImportedConceptMastery, onProjectLoadStart, onProjectLoadComplete } = deps;
   try { if (window._DEBUG_MISC_HANDLERS) console.log("[MiscHandlers] handleLoadProject fired"); } catch(_) {}
     const file = e.target.files[0];
     if (!file) return;
@@ -943,15 +943,21 @@ const handleLoadProject = (e, deps) => {
                     window.dispatchEvent(new CustomEvent('alloflow-birdlab-restored'));
                 } catch (e) { warnLog && warnLog('BirdLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             }
-            // PetsLab persistent state (module visits, badges, decoder mastery).
-            // Same Canvas-survival flow as SEL engagement and BirdLab above.
-            if (rawData.petsLab && typeof rawData.petsLab === 'object') {
+            // PetsLab project state is replacement-scoped, not merged with a
+            // previous learner's browser cache. A Pets-free project therefore
+            // restores an explicit empty record and clears the open tool too.
+            try {
+                var restoredPetsLab = rawData.petsLab && typeof rawData.petsLab === 'object'
+                    ? Object.assign({}, rawData.petsLab)
+                    : {};
+                restoredPetsLab._replace = true;
+                window.__alloflowPetsLab = restoredPetsLab;
                 try {
-                    window.__alloflowPetsLab = rawData.petsLab;
-                    try { localStorage.setItem('petsLab.state.v1', JSON.stringify(rawData.petsLab)); } catch (e) {}
-                    window.dispatchEvent(new CustomEvent('alloflow-petslab-restored'));
-                } catch (e) { warnLog && warnLog('PetsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
-            }
+                    localStorage.setItem('petsLab.state.v2', JSON.stringify(restoredPetsLab));
+                    localStorage.setItem('petsLab.state.v1', JSON.stringify(restoredPetsLab));
+                } catch (e) {}
+                window.dispatchEvent(new CustomEvent('alloflow-petslab-restored'));
+            } catch (e) { warnLog && warnLog('PetsLab restore failed:', _projectDiagnosticErrorSummary(e)); }
             // OpticsLab AP-quiz concept mastery. Mirrors the rest of the
             // STEAM Lab tool persistence chain.
             if (rawData.opticsLab && typeof rawData.opticsLab === 'object') {
@@ -1106,7 +1112,10 @@ const handleLoadProject = (e, deps) => {
                 setStickers(Array.isArray(rawData.stickers) ? rawData.stickers : []);
             }
             if (Array.isArray(loadedHistory)) {
-                const hydratedHistory = hydrateHistory(loadedHistory);
+                const hydrated = hydrateHistory(loadedHistory);
+                const hydratedHistory = typeof normalizeArtifactInstanceIds === 'function'
+                    ? normalizeArtifactInstanceIds(hydrated)
+                    : hydrated;
                 setHistory(hydratedHistory);
                 // Restore only after the loaded resource list is known. The
                 // host validates the draft envelope against this exact history,

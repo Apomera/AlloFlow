@@ -140,6 +140,16 @@ window.StemLab = window.StemLab || {
             max: Number.isFinite(rawRange.max) ? rawRange.max : 20
           };
           if (!(range.max > range.min)) range = { min: 0, max: 20 };
+          var rangeDraftState = React.useState({ min: String(range.min), max: String(range.max) });
+          var rangeDrafts = rangeDraftState[0];
+          var setRangeDrafts = rangeDraftState[1];
+          React.useEffect(function() {
+            var nextMin = String(range.min);
+            var nextMax = String(range.max);
+            setRangeDrafts(function(current) {
+              return current.min === nextMin && current.max === nextMax ? current : { min: nextMin, max: nextMax };
+            });
+          }, [range.min, range.max]);
           var markers = _n.markers || [];
           var challenge = _n.challenge || null;
           var answer = _n.answer || '';
@@ -204,19 +214,50 @@ window.StemLab = window.StemLab || {
           var randInt = function(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; };
           var pick = function(arr) { return arr[Math.floor(Math.random() * arr.length)]; };
 
+          var parseRangeDraft = function(rawValue) {
+            var text = String(rawValue == null ? '' : rawValue).trim().replace(/\u2212/g, '-');
+            if (text === '' || text === '+' || text === '-' || text === '.' || text === '+.' || text === '-.') {
+              return { valid: false, complete: false, value: NaN };
+            }
+            if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(text)) return { valid: false, complete: true, value: NaN };
+            var value = Number(text);
+            return Number.isFinite(value) ? { valid: true, complete: true, value: value } : { valid: false, complete: true, value: NaN };
+          };
+
+          var minRangeDraft = parseRangeDraft(rangeDrafts.min);
+          var maxRangeDraft = parseRangeDraft(rangeDrafts.max);
+          var rangeDraftsNumeric = minRangeDraft.valid && maxRangeDraft.valid;
+          var rangeDraftsOrdered = rangeDraftsNumeric && maxRangeDraft.value > minRangeDraft.value;
+          var rangeDraftMessage = !rangeDraftsNumeric
+            ? t('stem.numberline.finish_range_value', 'Finish entering a number for both range bounds.')
+            : !rangeDraftsOrdered
+              ? t('stem.numberline.invalid_range', 'Minimum value must be less than maximum value.')
+              : '';
+
           var updateExploreRangeBound = function(key, rawValue) {
-            if (String(rawValue).trim() === '') return;
-            var value = Number(rawValue);
-            if (!Number.isFinite(value)) return;
-            var nextRange = { min: range.min, max: range.max };
-            nextRange[key] = value;
-            if (!(nextRange.max > nextRange.min)) {
-              var message = t('stem.numberline.invalid_range', 'Minimum value must be less than maximum value.');
-              if (addToast) addToast(message, 'warning');
-              if (announceToSR) announceToSR(message);
+            var nextDrafts = { min: rangeDrafts.min, max: rangeDrafts.max };
+            nextDrafts[key] = String(rawValue);
+            setRangeDrafts(nextDrafts);
+            var nextMin = parseRangeDraft(nextDrafts.min);
+            var nextMax = parseRangeDraft(nextDrafts.max);
+            if (nextMin.valid && nextMax.valid && nextMax.value > nextMin.value) {
+              upd({ range: { min: nextMin.value, max: nextMax.value } });
+            }
+          };
+
+          var commitExploreRangeDraft = function() {
+            if (rangeDraftsOrdered) {
+              upd({ range: { min: minRangeDraft.value, max: maxRangeDraft.value } });
               return;
             }
-            upd({ range: nextRange });
+            if (!rangeDraftsNumeric) {
+              setRangeDrafts({
+                min: minRangeDraft.valid ? rangeDrafts.min : String(range.min),
+                max: maxRangeDraft.valid ? rangeDrafts.max : String(range.max)
+              });
+            }
+            if (addToast) addToast(rangeDraftMessage, 'warning');
+            if (announceToSR) announceToSR(rangeDraftMessage);
           };
 
           // ═══ BADGE SYSTEM ═══
@@ -655,28 +696,46 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
                   h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.min_value', 'Min Value')),
                   h('input', {
-                    type: 'number', step: 'any', value: range.min,
+                    type: 'text', inputMode: 'decimal', value: rangeDrafts.min,
                     onChange: function(e) { updateExploreRangeBound('min', e.target.value); },
+                    onBlur: commitExploreRangeDraft,
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); commitExploreRangeDraft(); } },
                     'aria-label': t('stem.numberline.minimum_value', 'Minimum value'),
+                    'aria-invalid': !minRangeDraft.valid || !rangeDraftsOrdered ? 'true' : undefined,
+                    'aria-describedby': rangeDraftMessage ? 'numberline-range-error' : undefined,
+                    autoComplete: 'off', spellCheck: false,
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 ),
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
                   h('label', { className: 'block text-xs text-blue-700 mb-1 font-bold' }, t('stem.numberline.max_value', 'Max Value')),
                   h('input', {
-                    type: 'number', step: 'any', value: range.max,
+                    type: 'text', inputMode: 'decimal', value: rangeDrafts.max,
                     onChange: function(e) { updateExploreRangeBound('max', e.target.value); },
+                    onBlur: commitExploreRangeDraft,
+                    onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); commitExploreRangeDraft(); } },
                     'aria-label': t('stem.numberline.maximum_value', 'Maximum value'),
+                    'aria-invalid': !maxRangeDraft.valid || !rangeDraftsOrdered ? 'true' : undefined,
+                    'aria-describedby': rangeDraftMessage ? 'numberline-range-error' : undefined,
+                    autoComplete: 'off', spellCheck: false,
                     className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 )
               ),
+              rangeDraftMessage && h('p', {
+                id: 'numberline-range-error', role: 'status', 'aria-live': 'polite',
+                className: 'text-xs font-bold text-red-700'
+              }, rangeDraftMessage),
               // Quick range presets
               h('div', { className: 'flex flex-wrap gap-1.5' },
                 h('span', { className: 'text-[11px] font-bold text-slate-600 self-center' }, 'Presets:'),
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', { key: pr.join('-'),
-                    onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
+                    onClick: function() {
+                      sfxClick();
+                      setRangeDrafts({ min: String(pr[0]), max: String(pr[1]) });
+                      upd({ range: { min: pr[0], max: pr[1] } });
+                    },
                     className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-600 hover:bg-blue-100 transition-all'
                   }, pr[0] + ' to ' + pr[1]);
                 })

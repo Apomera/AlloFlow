@@ -368,6 +368,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '@media (max-width:560px), (any-pointer:coarse){.anatomy-view-toggle button,.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-clinical-pack-switcher select,.anatomy-controls-bar button,.anatomy-controls-bar summary,.anatomy-clinical-concept,.anatomy-clinical-locator button,.anatomy-model-source button,.anatomy-model-source label,.anatomy-model-source select{min-height:44px}}',
       '.anatomy-tool-shell[data-reading-mode=true] .anatomy-model-source-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher label,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-pack-switcher>span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-structures-head span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-locator p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-selection,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:13px;line-height:1.55}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong{font-size:13px;line-height:1.4}.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span{font-size:11px;line-height:1.4}',
       '.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-provenance,.anatomy-tool-shell[data-reading-mode=true] .anatomy-atlas-scope-note,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-concept span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-head p,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu figcaption,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-cell span,.anatomy-tool-shell[data-reading-mode=true] .anatomy-clinical-ftu-note{font-size:12px;line-height:1.55}',
+      '.theme-dark .anatomy-tool-shell{color:#e2e8f0}.theme-dark .anatomy-tool-shell .anatomy-topbar{background:rgba(15,23,42,.96);border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-tab-strip,.theme-dark .anatomy-tool-shell .anatomy-system-rail,.theme-dark .anatomy-tool-shell .anatomy-layer-bar,.theme-dark .anatomy-tool-shell .anatomy-controls-bar{background:rgba(15,23,42,.94);border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-system-count{color:#94a3b8}.theme-dark .anatomy-tool-shell .anatomy-progress-row{background:#1e293b;border-color:#64748b}.theme-dark .anatomy-tool-shell .anatomy-progress-row [role="progressbar"]{background:#64748b!important}.theme-dark .anatomy-tool-shell .anatomy-structure-panel{background:#1e293b;border-color:#64748b}.theme-dark .anatomy-tool-shell button.bg-green-50{background:#14532d!important;color:#dcfce7!important;border-color:#22c55e!important}',
+      '.theme-dark .anatomy-tool-shell .anatomy-system-button[aria-pressed="true"] .anatomy-system-count{color:inherit}.theme-dark .anatomy-tool-shell .anatomy-progress-row>span:last-child{color:#fcd34d!important}',
       '@media (forced-colors:active){.anatomy-body-shell,.anatomy-canvas-frame,.anatomy-view-toggle,.anatomy-canvas-mode-chip,.anatomy-model-focus-toggle,.anatomy-clinical-pack-switcher,.anatomy-canvas-guide,.anatomy-learning-tools{forced-color-adjust:auto;border:1px solid CanvasText}.anatomy-view-toggle button[aria-pressed="true"],.anatomy-model-focus-toggle[aria-pressed="true"]{background:Highlight;color:HighlightText}}',
       '@media (max-width:560px){.anatomy-review-queue{align-items:stretch;flex-direction:column}.anatomy-review-queue button{width:100%;min-height:40px;}}',
     ].join('');
@@ -10836,7 +10838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Fun fact banner (Always visible) ──
-          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'anatomy-fact-card mb-3 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-2' },
+          !focusedAnatomyWorkspace && currentFact ? h('div', { className: 'anatomy-fact-card mb-3 px-3 py-2 rounded-lg border border-amber-200 flex items-start gap-2', style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
             h('span', { className: 'text-base flex-shrink-0' }, '\uD83D\uDCA1'),
             h('div', { className: 'flex-1' },
               h('span', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, t('stem.anatomy.did_you_know', 'Did you know?')),
@@ -10844,7 +10846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             h('button', { 'aria-label': t('stem.anatomy.next', 'Next'),
               onClick: function() { upd('_factIdx', (factIdx + 1) % sysFacts.length); playSound('funFact'); },
-              className: 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 hover:bg-amber-200 transition-all flex-shrink-0 active:scale-[0.97]'
+              className: 'px-2 py-0.5 rounded text-[11px] font-bold transition-all flex-shrink-0 active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
             }, t('stem.anatomy.next_2', 'Next \u2192'))
           ) : null,
 
@@ -10852,7 +10854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           !focusedAnatomyWorkspace && MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'anatomy-mnemonics-card mb-3' },
             h('button', { onClick: function() { upd('_showMnemonics', !showMnemonics); },
               'aria-expanded': showMnemonics, 'aria-controls': 'anatomy-mnemonics-panel',
-              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-600 hover:bg-purple-100 transition-all active:scale-[0.97]'
+              className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg border border-purple-600 transition-all active:scale-[0.97]', style: { background: 'var(--allo-stem-panel, #f8fafc)' }
             },
               h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
               h('span', { className: 'text-[11px] text-purple-500' }, showMnemonics ? '\u25B2' : '\u25BC')
@@ -12894,12 +12896,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Clinical Cases section (advanced only) ──
-          !focusedAnatomyWorkspace && complexity >= 3 ? h('div', { className: 'mt-4 bg-rose-50 rounded-xl border border-rose-200 p-3' },
+          !focusedAnatomyWorkspace && complexity >= 3 ? h('div', { className: 'mt-4 rounded-xl border border-rose-200 p-3', style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-rose-700 uppercase tracking-wider' }, '\uD83E\uDE7A Clinical Cases (' + clinicalSolved + ' reviewed)'),
               h('button', { onClick: function() { upd('_showClinical', !showClinical); },
                 'aria-expanded': showClinical, 'aria-controls': 'anatomy-clinical-cases',
-                className: 'text-[11px] font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 hover:bg-rose-200 transition-all active:scale-[0.97]'
+                className: 'text-[11px] font-bold px-2 py-0.5 rounded transition-all active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
               }, showClinical ? 'Hide' : 'Show Cases')
             ),
             showClinical ? h('div', { id: 'anatomy-clinical-cases', className: 'space-y-2' },

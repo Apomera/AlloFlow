@@ -2932,7 +2932,7 @@
           h('div', { key: 'eqlabel', style: { fontSize: 11, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', color: INK, opacity: 0.75, marginBottom: 4 } }, t('arccity.your_function', 'Your function')),
           h('div', { key: 'eq', 'aria-label': describeEquation(level, P), style: { fontSize: 16, color: INK, marginBottom: 8, padding: '10px 12px', borderRadius: 10, border: '1px solid ' + GRID, background: 'rgba(255,255,255,0.05)', fontVariantNumeric: 'tabular-nums' } },
             equationEls),
-          tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.6, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
+          tier === 'practice' ? h('div', { key: 'draghint', style: { fontSize: 11, color: INK, opacity: 0.65, marginBottom: 10 } }, handleEls.length ? t('arccity.drag_hint', 'Tip: drag the glowing handle on the grid — the highlighted numbers update. Or use the sliders.') : t('arccity.slider_hint', 'Tip: use the sliders (or the +/− buttons and arrow keys) to shape the beam.')) : null,
           h('div', { key: 'rows' }, paramRows),
           h('div', { key: 'btns', className: 'arc-play-actions', style: { display: 'flex', gap: 10, marginTop: 8 } },
             h('button', { key: 'fire', type: 'button', className: 'arc-fire-btn', ref: focusFireRef, onClick: fire, style: fireBtnStyle }, '⚡ ' + t('arccity.fire', 'Fire beam')),
@@ -3057,7 +3057,7 @@
         var tierBar = h('div', { key: 'tierbar', role: 'group', 'aria-label': t('arccity.tier_select', 'Authoring tier'), style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', marginBottom: 12 } },
           [h('span', { key: 'tlab', style: { fontSize: 12, color: INK, opacity: 0.7 } }, t('arccity.tier', 'Tier:'))]
             .concat(tierBtns)
-            .concat([h('span', { key: 'tblurb', style: { fontSize: 11, color: INK, opacity: 0.6 } }, tierBlurb(tier))]));
+            .concat([h('span', { key: 'tblurb', style: { fontSize: 11, color: INK, opacity: 0.65 } }, tierBlurb(tier))]));
 
         // ── Badge case. Earned badges came first; the ones still out there were
         // invisible, so the set read as "whatever happened to turn up" rather than as

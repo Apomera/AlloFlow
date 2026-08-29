@@ -103,7 +103,7 @@ describe('AlloSheet companion accessibility in a real browser', () => {
         targets: violation.nodes.map((node) => node.target),
       }))).toEqual([]);
       expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
-      expect(metrics.tabCount).toBe(4);
+      expect(metrics.tabCount).toBe(5);
       expect(metrics.liveRegion).toBe('polite');
       expect(metrics.engineLiveRegion).toBe('polite');
       expect(metrics.advancedOpen).toBe(false);

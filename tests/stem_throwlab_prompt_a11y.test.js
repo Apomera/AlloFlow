@@ -523,7 +523,7 @@ describe('Throw Lab prompt accessibility', () => {
     expect(loop).toBeTruthy();
     expect(Array.from(loop.querySelectorAll('.throwlab-loop-step')).map((step) => step.textContent)).toEqual([
       '1ChoosePick a sport and setup',
-      '2PredictCall the outcome',
+      '2HypothesizeMake an ungraded call',
       '3LaunchWatch the evidence',
       '4CompareChange one variable',
     ]);
@@ -544,6 +544,8 @@ describe('Throw Lab prompt accessibility', () => {
 
     const prediction = container.querySelector('fieldset[data-throwlab-prediction="true"]');
     expect(prediction.querySelector('legend').textContent).toContain('Call your shot');
+    expect(prediction.querySelector('legend').textContent).toContain('ungraded hypothesis');
+    expect(prediction.textContent).toContain('A match is not a score');
     expect(prediction.querySelectorAll('button[aria-pressed]')).toHaveLength(3);
   });
 
@@ -570,9 +572,11 @@ describe('Throw Lab prompt accessibility', () => {
 
     const feedback = container.querySelector('[data-throwlab-prediction-result]');
     expect(feedback).toBeTruthy();
+    expect(feedback.textContent).toMatch(/Evidence (matched|differed from) your call/);
     expect(feedback.textContent).toContain('You called Strike');
     expect(['matched', 'surprised']).toContain(feedback.getAttribute('data-throwlab-prediction-result'));
     expect(Array.from(container.querySelectorAll('[data-throwlab-prediction] button')).every((button) => button.getAttribute('aria-pressed') === 'false')).toBe(true);
+    expect(container.querySelector('[data-throwlab-prediction]').textContent).toContain('descriptive, not scored');
   });
 
   it('loads a scientifically controlled next rep by changing exactly one launched variable', async () => {

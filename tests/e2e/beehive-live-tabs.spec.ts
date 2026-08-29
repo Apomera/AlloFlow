@@ -78,15 +78,19 @@ test.describe('Beehive tool live tabs interaction', () => {
       console.log('Taking screenshot of Beekeeper mode...');
       await page.screenshot({ path: 'test-results/beehive-beekeeper.png' });
 
-      // Look for tabs. Let's find buttons with role='tab' or text 'Queen RTS' and 'Drone Flight'
-      const queenTab = page.locator('button, [role="tab"]').filter({ hasText: /Queen RTS/i }).first();
-      const droneTab = page.locator('button, [role="tab"]').filter({ hasText: /Drone Flight/i }).first();
-      const beekeeperTab = page.locator('button, [role="tab"]').filter({ hasText: /Beekeeper/i }).first();
+      // Perspectives use an ARIA radio group, so the live test verifies the same
+      // selected-state contract a screen reader receives.
+      const queenTab = page.getByRole('radio', { name: /Colony Network/i });
+      const droneTab = page.getByRole('radio', { name: /Drone Flight/i });
+      const beekeeperTab = page.getByRole('radio', { name: /Beekeeper/i });
+      await expect(beekeeperTab).toHaveAttribute('aria-checked', 'true');
+      await expect(queenTab).toHaveAttribute('aria-checked', 'false');
 
-      console.log('Clicking Queen RTS tab...');
+      console.log('Clicking Colony Network perspective...');
       await queenTab.waitFor({ state: 'visible', timeout: 15000 });
       await page.waitForTimeout(2000);
       await queenTab.click({ force: true });
+      await expect(queenTab).toHaveAttribute('aria-checked', 'true');
       await page.waitForTimeout(3000);
       await page.screenshot({ path: 'test-results/beehive-queen.png' });
 
@@ -94,6 +98,8 @@ test.describe('Beehive tool live tabs interaction', () => {
       await droneTab.waitFor({ state: 'visible', timeout: 15000 });
       await page.waitForTimeout(2000);
       await droneTab.click({ force: true });
+      await expect(droneTab).toHaveAttribute('aria-checked', 'true');
+      await expect(queenTab).toHaveAttribute('aria-checked', 'false');
       await page.waitForTimeout(3000);
       await page.screenshot({ path: 'test-results/beehive-drone.png' });
 
@@ -101,6 +107,7 @@ test.describe('Beehive tool live tabs interaction', () => {
       await beekeeperTab.waitFor({ state: 'visible', timeout: 15000 });
       await page.waitForTimeout(2000);
       await beekeeperTab.click({ force: true });
+      await expect(beekeeperTab).toHaveAttribute('aria-checked', 'true');
       await page.waitForTimeout(2000);
     } finally {
       console.log('E2E execution logs:');

@@ -70,7 +70,7 @@ describe('Probability Lab custom distributions', () => {
     expect(html).toContain('role="alert"');
     expect(html).toContain('Custom model not ready: Probabilities total 90.0%');
     expect(html).toMatch(/aria-label="Run 10 trials"[^>]*disabled/);
-    expect(html).toMatch(/aria-label="Start automatic simulation"[^>]*disabled/);
+    expect(html).toMatch(/aria-label="Automatic simulation"[^>]*aria-pressed="false"[^>]*disabled/);
   });
 
   it('shares preparation and reset behavior across manual edits and Auto-Run', () => {

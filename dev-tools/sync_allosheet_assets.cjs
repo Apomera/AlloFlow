@@ -17,6 +17,8 @@ const files = [
   'allo_sheet_adapter.js',
   'allo_sheet_analysis.js',
   'allo_sheet_workspace.js',
+  'allo_sheet_casebook.js',
+  'allo_sheet_casebook_ui.js',
   'transfer_adapter.js',
   'host_bridge.js',
   'README.md',

@@ -1025,7 +1025,7 @@
             }))
           )
         ]),
-        h('main', { key: 'main', id: 'ap-mode-panel', role: 'tabpanel', tabIndex: 0, 'aria-labelledby': 'ap-tab-' + mode }, activeView),
+        h('div', { key: 'main', id: 'ap-mode-panel', role: 'tabpanel', tabIndex: 0, 'aria-labelledby': 'ap-tab-' + mode }, activeView),
         h('footer', { key: 'footer', style: { marginTop: '15px', padding: '12px 14px', borderRadius: '12px', border: '1px solid ' + COLORS.border, background: COLORS.panel, color: COLORS.muted, fontSize: '0.9rem', lineHeight: 1.5 } }, [
           h('strong', { key: 'label', style: { color: COLORS.text } }, t('stem.areaperimeter.measurement_reminder', "Measurement reminder: ")),
           t('stem.areaperimeter.area_uses_square_units_because_it_cove', "Area uses square units because it covers a surface. Perimeter uses linear units because it traces a boundary.")

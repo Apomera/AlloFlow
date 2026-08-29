@@ -3456,6 +3456,131 @@
         var leftCompounds = eqParts[0].split('+').map(function(s) { return s.trim(); });
         var rightCompounds = eqParts[1] ? eqParts[1].split('+').map(function(s) { return s.trim(); }) : [];
 
+        // ── Particle view + conservation ledger helpers ──────────────────────
+        // The balance scale counts loose atoms; the particle view shows the
+        // MOLECULES those atoms live in, because the classic balancing error is
+        // editing a subscript (which changes the substance) instead of the
+        // coefficient (which changes how many molecules there are). Clusters
+        // show atoms-per-molecule only — not real geometry (see the Molecular tab).
+        var pvSlotAtoms = function(slot) {
+          var out = [];
+          Object.keys(preset.atoms).forEach(function(el) {
+            var n = (preset.atoms[el] || [])[slot] || 0;
+            if (n > 0) out.push({ el: el, n: n });
+          });
+          // Heavy atoms first, hydrogens on the rim: how most small molecules pack.
+          out.sort(function(a, b) { return (a.el === 'H' ? 1 : 0) - (b.el === 'H' ? 1 : 0); });
+          return out;
+        };
+        var pvExpand = function(list) {
+          var els = [];
+          list.forEach(function(a) { for (var k = 0; k < a.n; k++) els.push(a.el); });
+          return els;
+        };
+        // Concentric packing in units of the atom radius: 1 centre, then ring r at
+        // radius 2r holding 6r atoms (its circumference just fits them). Capacity
+        // after R rings is 1 + 3R(R+1), so BOTH helpers below derive from that one
+        // formula and add rings for as long as atoms remain.
+        //
+        // They used to be two hand-written tables - rings capped at 3, positions
+        // capped at [6,12,18] - which silently DROPPED any atom past the 37th
+        // instead of failing. Nothing would have caught it: the picture would just
+        // have been quietly wrong. The bank's biggest molecule is glucose at 24
+        // atoms today, but this bank has been extended before.
+        var pvRings = function(k) {
+          var R = 0;
+          while (1 + 3 * R * (R + 1) < k) R++;
+          return R;
+        };
+        var pvPositions = function(k) {
+          if (k <= 1) return [[0, 0]];
+          if (k === 2) return [[-1, 0], [1, 0]];
+          if (k === 3) return [[0, -1.15], [-1, 0.6], [1, 0.6]];
+          var pos = [[0, 0]];
+          var left = k - 1;
+          for (var ring = 1; left > 0; ring++) {
+            var count = Math.min(6 * ring, left);
+            var rad = 2 * ring;
+            for (var j = 0; j < count; j++) {
+              var ang = -Math.PI / 2 + (2 * Math.PI * j) / count;
+              pos.push([rad * Math.cos(ang), rad * Math.sin(ang)]);
+            }
+            left -= count;
+          }
+          return pos;   // length === k, always
+        };
+        // Label ink chosen by relative luminance (WCAG), not by a hand-kept list of
+        // "light" elements — the palette has 19 entries and a list drifts out of date.
+        var pvInk = function(hex) {
+          var c = String(hex || '').replace('#', '');
+          if (c.length !== 6) return '#ffffff';
+          var ch = [0, 2, 4].map(function(i) {
+            var v = parseInt(c.slice(i, i + 2), 16) / 255;
+            return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+          });
+          var L = 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+          return (L + 0.05) / 0.05 > 4.5 ? '#0f172a' : '#ffffff';
+        };
+        var pvSlotMass = function(slot) {
+          var m = 0;
+          Object.keys(preset.atoms).forEach(function(el) {
+            var n = (preset.atoms[el] || [])[slot] || 0;
+            m += n * ((ELEMENTS[el] && ELEMENTS[el].m) || 0);
+          });
+          return m;
+        };
+        var massLeft = 0, massRight = 0;
+        for (var pmi = 0; pmi < numSlots; pmi++) {
+          if (pmi < leftCompounds.length) massLeft += coeffs[pmi] * pvSlotMass(pmi);
+          else massRight += coeffs[pmi] * pvSlotMass(pmi);
+        }
+
+        // ── Reaction-type particle pictograms (the 5 patterns, drawn) ────────
+        // Letters are the textbook placeholders (A, B, C, D). Combustion uses the
+        // real methane equation so the picture is balanced, not just a pattern.
+        var RXN_GLYPHS = {
+          synthesis:     { left: [['A'], ['B']],                                   right: [['A', 'B']] },
+          decomposition: { left: [['A', 'B']],                                     right: [['A'], ['B']] },
+          single:        { left: [['A'], ['B', 'C']],                              right: [['A', 'C'], ['B']] },
+          double:        { left: [['A', 'B'], ['C', 'D']],                         right: [['A', 'D'], ['C', 'B']] },
+          combustion:    { left: [['H', 'H', 'C', 'H', 'H'], ['O', 'O'], ['O', 'O']], right: [['O', 'C', 'O'], ['H', 'O', 'H'], ['H', 'O', 'H']] }
+        };
+        // Darkened from the tool's usual tints: these carry white 9px labels, which need 4.5:1.
+        var RXN_GLYPH_FILL = { A: '#047857', B: '#0369a1', C: '#b45309', D: '#6d28d9' };
+        var renderReactionPattern = function(rt) {
+          var spec = RXN_GLYPHS[rt.id];
+          if (!spec) return null;
+          var R = 9, STEP = 16, GAP_PLUS = 18, GAP_ARROW = 30, PAD = 6, Hh = 30;
+          var isCombustion = rt.id === 'combustion';
+          var fillFor = function(letter) { return isCombustion ? (atomColors[letter] || '#94a3b8') : (RXN_GLYPH_FILL[letter] || '#94a3b8'); };
+          var kids = [];
+          var x = PAD;
+          var draw = function(groups, side) {
+            groups.forEach(function(g, gi) {
+              if (gi > 0) {
+                kids.push(h('text', { key: side + 'p' + gi, x: x + GAP_PLUS / 2, y: Hh / 2 + 5, textAnchor: 'middle', fill: '#64748b', style: { fontSize: '14px', fontWeight: 'bold' } }, '+'));
+                x += GAP_PLUS;
+              }
+              var w = R * 2 + (g.length - 1) * STEP;
+              g.forEach(function(letter, li) {
+                var cx = x + R + li * STEP;
+                kids.push(h('circle', { key: side + gi + 'c' + li, cx: cx, cy: Hh / 2, r: R, fill: fillFor(letter), stroke: '#1e293b', strokeWidth: 1 }));
+                kids.push(h('text', { key: side + gi + 't' + li, x: cx, y: Hh / 2 + 3.5, textAnchor: 'middle', fill: pvInk(fillFor(letter)), style: { fontSize: '9px', fontWeight: 'bold' } }, letter));
+              });
+              x += w;
+            });
+          };
+          draw(spec.left, 'l');
+          kids.push(h('text', { key: 'arrow', x: x + GAP_ARROW / 2, y: Hh / 2 + 6, textAnchor: 'middle', fill: '#65a30d', style: { fontSize: '18px', fontWeight: 'bold' } }, '→'));
+          x += GAP_ARROW;
+          draw(spec.right, 'r');
+          var W = x + PAD;
+          var eqText = isCombustion ? 'CH₄ + 2 O₂ → CO₂ + 2 H₂O' : rt.pattern;
+          return h('div', { className: 'mb-2 rounded-lg bg-white border border-slate-200 px-2 py-1 inline-block max-w-full', 'data-testid': 'chem-rxn-pattern-' + rt.id },
+            h('svg', { viewBox: '0 0 ' + W + ' ' + Hh, role: 'img', 'aria-label': __alloT('stem.chembalance.reaction_pattern_sr', 'Particle diagram of the pattern') + ' ' + rt.label + ': ' + eqText + '. ' + __alloT('stem.chembalance.reaction_pattern_sr_note', 'Each circle is an atom; touching circles are one molecule.'), style: { width: W + 'px', maxWidth: '100%', height: 'auto', display: 'block' } }, kids)
+          );
+        };
+
         var getAtomCounts = function(side) {
           var result = {};
           var atomKeys = Object.keys(preset.atoms);
@@ -4523,6 +4648,93 @@
               h('text', { x: 300, y: 15, textAnchor: 'middle', style: { fontSize: '11px', fontWeight: 'bold' }, fill: '#475569' }, __alloT('stem.chembalance.products', 'Products')),
               isBalanced && h('text', { x: 200, y: 15, textAnchor: 'middle', style: { fontSize: '10px', fontWeight: 'bold' }, fill: '#22c55e' }, __alloT('stem.chembalance.balanced', '\u2705 Balanced!'))
             ),
+            // ── Particle view: coefficients multiply whole molecules ──
+            (function() {
+              var maxRings = 0;
+              for (var s0 = 0; s0 < numSlots; s0++) maxRings = Math.max(maxRings, pvRings(pvExpand(pvSlotAtoms(s0)).length));
+              var CELL = 36 + 12 * Math.max(0, maxRings - 1);
+              var GAP_PLUS = 22, GAP_ARROW = 36, PAD = 8, LABEL_H = 30;
+              var groups = [];
+              var maxRows = 1;
+              for (var s = 0; s < numSlots; s++) {
+                var els = pvExpand(pvSlotAtoms(s));
+                var copies = coeffs[s];
+                var cols = Math.min(copies, 3);
+                var rows = Math.ceil(copies / 3);
+                maxRows = Math.max(maxRows, rows);
+                var side = s < leftCompounds.length ? 'left' : 'right';
+                var label = side === 'left' ? leftCompounds[s] : rightCompounds[s - leftCompounds.length];
+                groups.push({ slot: s, els: els, copies: copies, cols: cols, rows: rows, side: side, label: label, w: Math.max(cols * CELL, 52) });
+              }
+              var W = PAD * 2;
+              groups.forEach(function(g, gi) {
+                if (gi > 0) W += (groups[gi - 1].side !== g.side) ? GAP_ARROW : GAP_PLUS;
+                W += g.w;
+              });
+              var H = maxRows * CELL + LABEL_H + 6;
+              var kids = [];
+              var srParts = { left: [], right: [] };
+              var x = PAD;
+              groups.forEach(function(g, gi) {
+                if (gi > 0) {
+                  var isArrow = groups[gi - 1].side !== g.side;
+                  var sepW = isArrow ? GAP_ARROW : GAP_PLUS;
+                  kids.push(h('text', { key: 'sep' + gi, x: x + sepW / 2, y: (maxRows * CELL) / 2 + 6, textAnchor: 'middle', fill: isArrow ? '#65a30d' : '#64748b', style: { fontSize: isArrow ? '22px' : '18px', fontWeight: 'bold' } }, isArrow ? '→' : '+'));
+                  x += sepW;
+                }
+                var k = g.els.length;
+                var rings = pvRings(k);
+                var r = Math.max(3, Math.floor(CELL / 2 / (2 * rings + 1)) - 1);
+                var pos = pvPositions(k);
+                var gx = x + (g.w - g.cols * CELL) / 2;
+                var gy = (maxRows * CELL - g.rows * CELL) / 2;
+                for (var c = 0; c < g.copies; c++) {
+                  var cx = gx + (c % 3) * CELL + CELL / 2;
+                  var cy = gy + Math.floor(c / 3) * CELL + CELL / 2;
+                  kids.push(h('g', { key: 'm' + g.slot + '_' + c, 'data-pv-slot': g.slot, 'data-pv-copy': c, 'data-pv-atoms': k },
+                    h('circle', { cx: cx, cy: cy, r: CELL / 2 - 1, fill: g.side === 'left' ? 'rgba(148,163,184,0.10)' : 'rgba(101,163,13,0.10)', stroke: 'rgba(100,116,139,0.35)', strokeWidth: 1, strokeDasharray: '3,2' }),
+                    pos.map(function(p, pi) {
+                      var el = g.els[pi];
+                      return h('g', { key: pi },
+                        h('circle', { cx: cx + p[0] * r, cy: cy + p[1] * r, r: r, fill: atomColors[el] || '#94a3b8', stroke: '#1e293b', strokeWidth: 0.8 }),
+                        r >= 6 ? h('text', { x: cx + p[0] * r, y: cy + p[1] * r + r * 0.4, textAnchor: 'middle', fill: pvInk(atomColors[el]), style: { fontSize: (r * 1.1) + 'px', fontWeight: 'bold' } }, el) : null
+                      );
+                    })
+                  ));
+                }
+                kids.push(h('text', { key: 'n' + g.slot, x: x + g.w / 2, y: maxRows * CELL + 13, textAnchor: 'middle', fill: g.side === 'left' ? '#334155' : '#3f6212', style: { fontSize: '11px', fontWeight: 'bold' } }, '×' + g.copies));
+                kids.push(h('text', { key: 'f' + g.slot, x: x + g.w / 2, y: maxRows * CELL + 26, textAnchor: 'middle', fill: '#475569', style: { fontSize: '10px' } }, g.label));
+                var perMol = pvSlotAtoms(g.slot).map(function(a) { return a.n + ' ' + a.el; }).join(', ');
+                srParts[g.side].push(g.copies + ' × ' + g.label + ' (' + perMol + ' per molecule)');
+                x += g.w;
+              });
+              var srLabel = __alloT('stem.chembalance.particle_view_sr', 'Particle view of the equation as written') + '. '
+                + __alloT('stem.chembalance.reactants', 'Reactants') + ': ' + srParts.left.join('; ') + '. '
+                + __alloT('stem.chembalance.products', 'Products') + ': ' + srParts.right.join('; ') + '. '
+                + __alloT('stem.chembalance.particle_view_sr_rule', 'Coefficients count whole molecules; subscripts count atoms inside each molecule.');
+              var massDiff = Math.abs(massLeft - massRight);
+              return h('div', { className: 'bg-white rounded-xl border border-slate-200 p-3 mb-3', 'data-testid': 'chem-particle-view' },
+                h('div', { className: 'flex flex-wrap items-center gap-2 mb-1' },
+                  h('h4', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.chembalance.particle_view_title', 'Particle view — what the coefficients really count')),
+                  h('span', { className: 'ml-auto text-[11px] text-slate-500 italic' }, __alloT('stem.chembalance.particle_view_note', 'Clusters show atoms per molecule, not true shapes'))
+                ),
+                h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': srLabel, style: { width: '100%', maxWidth: Math.round(W * 1.4) + 'px', height: 'auto', display: 'block', margin: '0 auto' } }, kids),
+                // Conservation-of-mass ledger: the atoms above, weighed.
+                h('div', { role: 'status', 'aria-live': 'polite', 'data-testid': 'chem-mass-ledger', className: 'mt-2 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs font-bold rounded-lg px-3 py-2 border ' + (isBalanced ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : 'bg-amber-50 border-amber-200 text-amber-800') },
+                  h('span', null, __alloT('stem.chembalance.mass_reactants', 'Reactant mass') + ' ' + massLeft.toFixed(2) + ' g'),
+                  h('span', { 'aria-hidden': 'true', className: 'text-base' }, isBalanced ? '=' : '≠'),
+                  h('span', null, __alloT('stem.chembalance.mass_products', 'Product mass') + ' ' + massRight.toFixed(2) + ' g'),
+                  h('span', { className: 'w-full text-center font-medium ' + (isBalanced ? 'text-emerald-700' : 'text-amber-700') },
+                    isBalanced
+                      ? __alloT('stem.chembalance.mass_conserved', '✓ Mass is conserved — every atom that goes in comes out (Lavoisier, 1789).')
+                      : (__alloT('stem.chembalance.mass_not_conserved', 'Not balanced yet: as written, the equation would create or destroy') + ' ' + massDiff.toFixed(2) + ' g. ' + __alloT('stem.chembalance.mass_never_lost', 'Real reactions never create or destroy mass — fix the coefficients.')))
+                ),
+                h('details', { className: 'mt-2 text-xs text-slate-700' },
+                  h('summary', { className: 'cursor-pointer font-bold text-indigo-700' }, __alloT('stem.chembalance.subscript_why_summary', 'Why can’t I just change the small numbers?')),
+                  h('p', { className: 'mt-1 leading-relaxed' }, __alloT('stem.chembalance.subscript_why_body', 'A subscript is part of what the substance IS: H₂O is water, H₂O₂ is hydrogen peroxide — a bleach. Change a subscript and you have changed the chemical, not balanced it. A coefficient only says how many copies of that molecule take part, so coefficients are the only numbers balancing is allowed to touch.'))
+                )
+              );
+            })(),
             // Equation card
             h('div', { className: 'bg-white rounded-xl border-2 p-5 text-center transition-colors ' + (isBalanced ? 'border-emerald-300 bg-emerald-50/30' : 'border-lime-200') },
               // Name + tier + reaction-type header. Type chip renders only for presets
@@ -4701,6 +4913,7 @@
                   ),
                   isOpen && h('div', { className: 'px-3 pb-3' },
                     h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.' + (rt.id) + '_desc', rt.desc)),
+                    renderReactionPattern(rt),
                     h('div', { className: 'space-y-1' },
                       rt.examples.map(function(ex, ei) {
                         return h('div', { key: ei, className: 'flex items-center gap-2 bg-' + rt.color + '-50 rounded-lg p-2 border border-' + rt.color + '-100' },

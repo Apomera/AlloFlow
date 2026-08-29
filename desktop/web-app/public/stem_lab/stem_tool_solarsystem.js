@@ -980,6 +980,45 @@ const d = labToolData.solarSystem || {};
             solarVisualCss.id = solarVisualCssId;
             solarVisualCss.textContent = [
               '.solar-cosmos{position:relative;isolation:isolate;--solar-glow:#6366f1}',
+              '.solar-cosmos .solar-tutorial-backdrop{background:radial-gradient(circle at 18% 12%,rgba(56,189,248,.18),transparent 31%),radial-gradient(circle at 82% 84%,rgba(139,92,246,.22),transparent 34%),rgba(2,6,23,.80);backdrop-filter:blur(13px) saturate(.88)}',
+              '.solar-cosmos .solar-tutorial-card{position:relative;isolation:isolate;overflow-y:auto;border:1px solid rgba(165,180,252,.34);background:linear-gradient(155deg,rgba(5,10,28,.98),rgba(15,23,42,.98) 56%,rgba(35,25,82,.96));color:#f8fafc;box-shadow:0 30px 90px rgba(2,6,23,.78),0 0 0 1px rgba(255,255,255,.035),0 0 55px rgba(99,102,241,.20)}',
+              '.solar-cosmos .solar-tutorial-card::before{content:"";position:absolute;z-index:-1;inset:0;pointer-events:none;opacity:.66;background:radial-gradient(1px 1px at 8% 18%,#fff,transparent 65%),radial-gradient(1px 1px at 21% 72%,#a5f3fc,transparent 65%),radial-gradient(1.4px 1.4px at 43% 12%,#fde68a,transparent 65%),radial-gradient(1px 1px at 66% 68%,#fff,transparent 65%),radial-gradient(1.3px 1.3px at 86% 22%,#c4b5fd,transparent 65%),radial-gradient(1px 1px at 94% 78%,#fff,transparent 65%)}',
+              '.solar-cosmos .solar-tutorial-card::after{content:"";position:absolute;z-index:-1;left:-18%;right:-18%;bottom:-38%;height:64%;pointer-events:none;background:radial-gradient(ellipse,rgba(79,70,229,.22),transparent 68%)}',
+              '.solar-cosmos .solar-tutorial-card--contrast{border-color:#fff;box-shadow:0 0 0 3px #000,0 0 0 5px #fff}',
+              '.solar-cosmos .solar-tutorial-orbit{position:relative;height:132px;overflow:hidden;border-bottom:1px solid rgba(165,180,252,.18);background:radial-gradient(circle at 50% 54%,rgba(251,191,36,.20),transparent 16%),radial-gradient(circle at 76% 18%,rgba(56,189,248,.13),transparent 28%),linear-gradient(180deg,rgba(15,23,42,.24),rgba(2,6,23,.54))}',
+              '.solar-cosmos .solar-tutorial-orbit::before{content:"";position:absolute;inset:0;opacity:.72;background:radial-gradient(1px 1px at 7% 28%,#fff,transparent 65%),radial-gradient(1px 1px at 18% 72%,#93c5fd,transparent 65%),radial-gradient(1.3px 1.3px at 32% 16%,#fff,transparent 65%),radial-gradient(1px 1px at 61% 22%,#fde68a,transparent 65%),radial-gradient(1.2px 1.2px at 78% 76%,#c4b5fd,transparent 65%),radial-gradient(1px 1px at 93% 34%,#fff,transparent 65%)}',
+              '.solar-cosmos .solar-tutorial-orbit-line{position:absolute;left:50%;top:54%;border:1px solid rgba(165,180,252,.28);border-radius:50%;transform:translate(-50%,-50%) rotate(-8deg)}',
+              '.solar-cosmos .solar-tutorial-orbit-line--one{width:142px;height:50px}',
+              '.solar-cosmos .solar-tutorial-orbit-line--two{width:224px;height:78px;border-color:rgba(103,232,249,.24)}',
+              '.solar-cosmos .solar-tutorial-orbit-line--three{width:312px;height:108px;border-color:rgba(196,181,253,.18)}',
+              '.solar-cosmos .solar-tutorial-sun{position:absolute;left:50%;top:54%;width:46px;height:46px;border:2px solid rgba(255,251,235,.92);border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff7c2 0 8%,#fbbf24 32%,#f97316 72%,#b45309 100%);box-shadow:0 0 13px #fde68a,0 0 34px rgba(251,191,36,.82),0 0 60px rgba(249,115,22,.34);transform:translate(-50%,-50%);animation:solarTutorialPulse 4.2s ease-in-out infinite}',
+              '.solar-cosmos .solar-tutorial-planet{position:absolute;border:1px solid rgba(255,255,255,.58);border-radius:50%;box-shadow:inset -4px -3px 6px rgba(2,6,23,.52),0 0 12px var(--tutorial-planet-glow)}',
+              '.solar-cosmos .solar-tutorial-earth{left:calc(50% + 63px);top:35px;width:21px;height:21px;--tutorial-planet-glow:rgba(56,189,248,.88);background:radial-gradient(ellipse at 34% 42%,#4ade80 0 18%,transparent 20%),radial-gradient(ellipse at 68% 66%,#a3e635 0 11%,transparent 13%),radial-gradient(circle at 34% 28%,#bae6fd,#3b82f6 58%,#172554 100%);animation:solarTutorialFloat 3.8s ease-in-out infinite}',
+              '.solar-cosmos .solar-tutorial-mars{left:calc(50% - 116px);top:75px;width:15px;height:15px;--tutorial-planet-glow:rgba(248,113,113,.82);background:radial-gradient(circle at 35% 30%,#fdba74,#dc5b36 58%,#7f1d1d 100%);animation:solarTutorialFloat 4.6s ease-in-out -1.1s infinite}',
+              '.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 132px);top:78px;width:27px;height:27px;--tutorial-planet-glow:rgba(251,146,60,.75);background:repeating-linear-gradient(0deg,#7c3f2d 0 3px,#e8c38c 3px 7px,#f4ddae 7px 10px,#b9653d 10px 13px);animation:solarTutorialFloat 5.1s ease-in-out -.6s infinite}',
+              '.solar-cosmos .solar-tutorial-craft{position:absolute;left:calc(50% - 88px);top:19px;font-size:20px;line-height:1;filter:drop-shadow(0 0 8px rgba(196,181,253,.75));transform:rotate(-10deg);animation:solarTutorialCraft 4.4s ease-in-out infinite}',
+              '.solar-cosmos .solar-tutorial-content{position:relative;z-index:2;padding:20px 22px 22px}',
+              '.solar-cosmos .solar-tutorial-eyebrow{display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:900;letter-spacing:.20em;text-transform:uppercase}',
+              '.solar-cosmos .solar-tutorial-eyebrow::before,.solar-cosmos .solar-tutorial-eyebrow::after{content:"";width:34px;height:1px;background:linear-gradient(90deg,transparent,#67e8f9)}',
+              '.solar-cosmos .solar-tutorial-eyebrow::after{transform:rotate(180deg)}',
+              '.solar-cosmos .solar-tutorial-title{color:#fff;font-size:22px;line-height:1.14;letter-spacing:-.025em;text-shadow:0 0 22px rgba(165,180,252,.32)}',
+              '.solar-cosmos .solar-tutorial-title:focus{outline:none}',
+              '.solar-cosmos .solar-tutorial-description{color:#cbd5e1;line-height:1.5}',
+              '.solar-cosmos .solar-tutorial-steps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px}',
+              '.solar-cosmos .solar-tutorial-step{position:relative;display:flex;min-width:0;min-height:66px;align-items:center;gap:9px;overflow:hidden;padding:9px 26px 9px 9px;border:1px solid color-mix(in srgb,var(--tutorial-accent) 34%,transparent);border-radius:12px;background:linear-gradient(135deg,color-mix(in srgb,var(--tutorial-accent) 12%,rgba(15,23,42,.82)),rgba(15,23,42,.62));box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}',
+              '.solar-cosmos .solar-tutorial-step::after{content:attr(data-step);position:absolute;right:8px;top:7px;color:color-mix(in srgb,var(--tutorial-accent) 72%,#fff);font:900 9px ui-monospace,SFMono-Regular,Menlo,monospace;opacity:.70}',
+              '.solar-cosmos .solar-tutorial-step-icon{display:grid;width:34px;height:34px;flex:0 0 34px;place-items:center;border:1px solid color-mix(in srgb,var(--tutorial-accent) 48%,transparent);border-radius:10px;background:color-mix(in srgb,var(--tutorial-accent) 14%,#0f172a);font-size:18px;box-shadow:0 0 18px color-mix(in srgb,var(--tutorial-accent) 16%,transparent)}',
+              '.solar-cosmos .solar-tutorial-step-copy{color:#e2e8f0;font-size:11px;font-weight:650;line-height:1.38}',
+              '.solar-cosmos .solar-tutorial-launch{position:relative;display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;border:1px solid rgba(196,181,253,.58);background:linear-gradient(100deg,#4338ca,#7c3aed 54%,#c026d3);box-shadow:0 12px 28px rgba(76,29,149,.38),inset 0 1px 0 rgba(255,255,255,.22);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}',
+              '.solar-cosmos .solar-tutorial-launch::before{content:"";position:absolute;inset:-2px auto -2px -42%;width:34%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.30),transparent);transform:skewX(-18deg);transition:left .48s ease}',
+              '.solar-cosmos .solar-tutorial-launch:hover{transform:translateY(-1px);filter:saturate(1.08);box-shadow:0 16px 34px rgba(76,29,149,.46),0 0 24px rgba(168,85,247,.25)}',
+              '.solar-cosmos .solar-tutorial-launch:hover::before{left:112%}',
+              '.solar-cosmos .solar-tutorial-launch-icon{filter:drop-shadow(0 0 7px rgba(255,255,255,.35))}',
+              '.solar-cosmos .solar-tutorial-launch-arrow{position:absolute;right:16px;font-size:18px;transition:transform .18s ease}',
+              '.solar-cosmos .solar-tutorial-launch:hover .solar-tutorial-launch-arrow{transform:translateX(2px)}',
+              '@keyframes solarTutorialPulse{0%,100%{transform:translate(-50%,-50%) scale(1)}50%{transform:translate(-50%,-50%) scale(1.06)}}',
+              '@keyframes solarTutorialFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}',
+              '@keyframes solarTutorialCraft{0%,100%{transform:translate(0,0) rotate(-10deg)}50%{transform:translate(7px,-4px) rotate(-4deg)}}',
               '.solar-cosmos .solar-tool-heading{position:relative;overflow:hidden;padding:10px 12px;border:1px solid ' + (isDark ? 'rgba(129,140,248,.26)' : 'rgba(99,102,241,.16)') + ';border-radius:14px;background:' + (isDark ? 'linear-gradient(135deg,rgba(15,23,42,.96),rgba(30,27,75,.78))' : 'linear-gradient(135deg,rgba(255,255,255,.96),rgba(238,242,255,.94))') + ';box-shadow:' + (isDark ? '0 10px 28px rgba(2,6,23,.34)' : '0 8px 24px rgba(79,70,229,.09)') + '}',
               '.solar-cosmos [data-solarsystem-command-center]{position:relative;isolation:isolate}',
               '.solar-cosmos [data-solarsystem-command-center]::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:' + (isDark ? '.48' : '.22') + ';background:radial-gradient(1px 1px at 8% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 31% 74%,#a5f3fc,transparent 60%),radial-gradient(1.5px 1.5px at 69% 18%,#c4b5fd,transparent 60%),radial-gradient(1px 1px at 91% 62%,#fde68a,transparent 60%),radial-gradient(ellipse at 80% 0%,rgba(99,102,241,.18),transparent 48%)}',
@@ -990,6 +1029,8 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-model-note strong{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#a5f3fc}',
               '.solar-cosmos .solar-model-note span{display:block;margin-top:3px;font-size:10px;line-height:1.38;color:#cbd5e1}',
               '.solar-cosmos .solar-model-note .solar-model-layers{margin-top:5px;padding-top:5px;border-top:1px solid rgba(165,180,252,.15);color:#a5f3fc}',
+              '.solar-cosmos .solar-orbit-label--selected::before{content:"TARGET";display:inline-flex;align-items:center;margin:-1px 6px -1px -4px;padding:2px 5px;border-radius:999px;background:#111827;color:#fef08a;font-size:7px;font-weight:900;letter-spacing:.12em;line-height:1}',
+              '.solar-cosmos .solar-orbit-label--selected{filter:drop-shadow(0 0 7px rgba(250,204,21,.34))}',
               '.solar-cosmos .solar-world-card{position:relative;overflow:hidden;isolation:isolate;min-width:0;width:100%}',
               '.solar-cosmos .solar-world-card::before{content:"";position:absolute;z-index:-1;left:8px;right:8px;top:29px;height:1px;background:linear-gradient(90deg,transparent,rgba(129,140,248,.30),transparent)}',
               '.solar-cosmos .solar-world-thumb-wrap{position:relative;display:grid;width:36px;height:36px;place-items:center;flex:0 0 auto}',
@@ -998,6 +1039,38 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos .solar-world-ring{position:absolute;z-index:1;left:0;top:14px;width:36px;height:10px;border:2px solid var(--ring-color);border-radius:50%;transform:rotate(-14deg);box-shadow:0 0 7px var(--planet-glow);pointer-events:none}',
               '.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb{transform:scale(1.12);filter:saturate(1.12)}',
               '.solar-cosmos .solar-world-kind{display:block;margin-top:2px;font-size:8px;font-weight:800;letter-spacing:.055em;text-transform:uppercase;opacity:.72}',
+              '.solar-cosmos .solar-command-primary{display:flex;min-width:0;flex-direction:column;gap:1rem}',
+              '.solar-cosmos .solar-world-spotlight{position:relative;isolation:isolate;overflow:hidden;display:flex;flex:1;min-height:430px;flex-direction:column;border:1px solid rgba(129,140,248,.30);border-radius:16px;background:linear-gradient(155deg,#050a1c,#0f172a 56%,#211952);color:#f8fafc;box-shadow:0 18px 42px rgba(2,6,23,.30),inset 0 1px 0 rgba(255,255,255,.05)}',
+              '.solar-cosmos .solar-world-spotlight::before{content:"";position:absolute;z-index:-2;inset:0;pointer-events:none;opacity:.72;background:radial-gradient(1px 1px at 7% 16%,#fff,transparent 65%),radial-gradient(1px 1px at 18% 68%,#a5f3fc,transparent 65%),radial-gradient(1.3px 1.3px at 36% 26%,#fde68a,transparent 65%),radial-gradient(1px 1px at 58% 78%,#fff,transparent 65%),radial-gradient(1.2px 1.2px at 79% 18%,#c4b5fd,transparent 65%),radial-gradient(1px 1px at 94% 62%,#fff,transparent 65%)}',
+              '.solar-cosmos .solar-world-spotlight::after{content:"";position:absolute;z-index:-1;right:-16%;top:5%;width:72%;height:62%;pointer-events:none;background:radial-gradient(circle,color-mix(in srgb,var(--spotlight-color) 24%,transparent),transparent 68%);filter:blur(9px)}',
+              '.solar-cosmos .solar-world-spotlight-header{position:relative;z-index:3;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 16px 0}',
+              '.solar-cosmos .solar-world-spotlight-eyebrow{color:#a5f3fc;font-size:9px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-name{margin-top:3px;color:#fff;font-size:22px;font-weight:950;line-height:1.1;letter-spacing:-.025em;text-shadow:0 0 20px color-mix(in srgb,var(--spotlight-color) 44%,transparent)}',
+              '.solar-cosmos .solar-world-spotlight-kind{flex:0 0 auto;border:1px solid color-mix(in srgb,var(--spotlight-color) 46%,transparent);border-radius:999px;background:color-mix(in srgb,var(--spotlight-color) 13%,rgba(15,23,42,.76));padding:5px 8px;color:#e2e8f0;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-stage{position:relative;z-index:1;flex:1;min-height:260px;overflow:hidden;margin:10px 12px 0;border:1px solid rgba(165,180,252,.15);border-radius:14px;background:radial-gradient(circle at 50% 50%,color-mix(in srgb,var(--spotlight-color) 15%,transparent),transparent 25%),linear-gradient(180deg,rgba(2,6,23,.38),rgba(15,23,42,.18))}',
+              '.solar-cosmos .solar-world-spotlight-stage::after{content:"";position:absolute;inset:auto 7% 13px;height:1px;background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--spotlight-color) 62%,#fff),transparent);opacity:.56}',
+              '.solar-cosmos .solar-spotlight-orbit{position:absolute;left:50%;top:50%;border:1px solid rgba(165,180,252,.23);border-radius:50%;transform:translate(-50%,-50%) rotate(-9deg)}',
+              '.solar-cosmos .solar-spotlight-orbit--one{width:44%;height:33%;border-color:color-mix(in srgb,var(--spotlight-color) 36%,transparent)}',
+              '.solar-cosmos .solar-spotlight-orbit--two{width:68%;height:51%}',
+              '.solar-cosmos .solar-spotlight-orbit--three{width:92%;height:70%;border-color:rgba(103,232,249,.16)}',
+              '.solar-cosmos .solar-spotlight-body-wrap{position:absolute;left:50%;top:50%;width:172px;height:172px;transform:translate(-50%,-50%)}',
+              '.solar-cosmos .solar-spotlight-body{position:absolute;z-index:3;inset:8px;border:1px solid rgba(255,255,255,.52);border-radius:50%;background:var(--spotlight-portrait);box-shadow:inset -25px -18px 34px rgba(2,6,23,.62),inset 13px 10px 22px rgba(255,255,255,.17),0 0 24px var(--spotlight-color),0 0 58px color-mix(in srgb,var(--spotlight-color) 34%,transparent)}',
+              '.solar-cosmos .solar-spotlight-body::after{content:"";position:absolute;inset:10px 22px 88px 24px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.28),transparent);filter:blur(3px)}',
+              '.solar-cosmos .solar-spotlight-ring{position:absolute;z-index:4;left:50%;top:50%;width:214px;height:58px;border:5px double var(--spotlight-ring);border-radius:50%;box-shadow:0 0 13px color-mix(in srgb,var(--spotlight-ring) 42%,transparent);transform:translate(-50%,-50%) rotate(-14deg);pointer-events:none}',
+              '.solar-cosmos .solar-spotlight-moon{position:absolute;z-index:5;width:9px;height:9px;border:1px solid rgba(255,255,255,.72);border-radius:50%;background:#cbd5e1;box-shadow:inset -2px -2px 3px rgba(2,6,23,.62),0 0 8px rgba(226,232,240,.55)}',
+              '.solar-cosmos .solar-spotlight-moon--0{left:18%;top:38%}.solar-cosmos .solar-spotlight-moon--1{right:16%;top:62%;width:7px;height:7px}.solar-cosmos .solar-spotlight-moon--2{left:29%;bottom:17%;width:6px;height:6px}',
+              '.solar-cosmos .solar-world-spotlight-watermark{position:absolute;z-index:2;left:50%;bottom:15px;max-width:90%;overflow:hidden;color:rgba(226,232,240,.10);font-size:44px;font-weight:950;letter-spacing:.08em;line-height:1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap;transform:translateX(-50%)}',
+              '.solar-cosmos .solar-world-spotlight-caption{position:absolute;z-index:6;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#cbd5e1;font-size:9px;font-weight:800;letter-spacing:.045em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-caption span{border-radius:999px;background:rgba(2,6,23,.70);padding:4px 7px;backdrop-filter:blur(8px)}',
+              '.solar-cosmos .solar-world-spotlight-stats{position:relative;z-index:3;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px 12px 0}',
+              '.solar-cosmos .solar-world-spotlight-stat{min-width:0;border:1px solid rgba(148,163,184,.18);border-radius:10px;background:rgba(15,23,42,.74);padding:8px;text-align:center}',
+              '.solar-cosmos .solar-world-spotlight-stat-label{color:#94a3b8;font-size:8px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-stat-value{margin-top:3px;overflow:hidden;color:#f8fafc;font-size:11px;font-weight:900;line-height:1.2;text-overflow:ellipsis}',
+              '.solar-cosmos .solar-world-spotlight-environment{position:relative;z-index:3;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px 12px 12px}',
+              '.solar-cosmos .solar-world-spotlight-environment>div{min-width:0;border-left:2px solid var(--spotlight-color);border-radius:8px;background:rgba(15,23,42,.66);padding:8px 9px}',
+              '.solar-cosmos .solar-world-spotlight-environment strong{display:block;color:#a5f3fc;font-size:8px;letter-spacing:.10em;text-transform:uppercase}',
+              '.solar-cosmos .solar-world-spotlight-environment span{display:block;margin-top:3px;color:#cbd5e1;font-size:10px;line-height:1.35}',
+              '@media(max-width:640px){.solar-cosmos .solar-world-spotlight{min-height:0}.solar-cosmos .solar-world-spotlight-stage{flex:none;min-height:190px}.solar-cosmos .solar-spotlight-body-wrap{width:124px;height:124px}.solar-cosmos .solar-spotlight-ring{width:156px;height:44px;border-width:4px}.solar-cosmos .solar-world-spotlight-watermark{font-size:30px}.solar-cosmos .solar-world-spotlight-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.solar-cosmos .solar-world-spotlight-environment{grid-template-columns:1fr}}',
               '.solar-cosmos .solar-compare-stage{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:174px;padding:14px 12px 10px;border:1px solid rgba(129,140,248,.28);border-radius:14px;background:radial-gradient(circle at 50% 30%,rgba(67,56,202,.25),transparent 48%),linear-gradient(145deg,#070b1c,#111a34 62%,#081020);box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 24px rgba(2,6,23,.24)}',
               '.solar-cosmos .solar-compare-stage::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.46;background:radial-gradient(1px 1px at 12% 22%,#fff,transparent 60%),radial-gradient(1px 1px at 41% 14%,#a5f3fc,transparent 60%),radial-gradient(1.5px 1.5px at 72% 32%,#fde68a,transparent 60%),radial-gradient(1px 1px at 91% 12%,#fff,transparent 60%)}',
               '.solar-cosmos .solar-compare-world{position:relative;z-index:1;display:flex;min-width:0;flex-direction:column;align-items:center;justify-content:flex-end;color:#f8fafc;text-align:center}',
@@ -1048,7 +1121,11 @@ const d = labToolData.solarSystem || {};
               '.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:translateY(-1px);box-shadow:0 18px 42px rgba(2,6,23,.38),0 0 30px rgba(99,102,241,.14)}',
               '.solar-cosmos canvas[role="img"]{box-shadow:inset 0 0 42px rgba(2,6,23,.28)}',
               '.solar-cosmos button:focus-visible,.solar-cosmos summary:focus-visible{outline:3px solid #67e8f9!important;outline-offset:3px}',
+              '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
+              '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
               '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{top:auto;left:10px;right:10px;bottom:58px;max-width:none;padding:6px 8px}.solar-cosmos .solar-model-note span{font-size:9px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
+              '@media(max-width:640px){.solar-cosmos .rover-hud{top:8px!important;left:8px!important;width:min(220px,calc(100% - 160px))!important;max-width:none!important;max-height:154px!important;overflow:hidden!important;padding:8px 10px!important;border-radius:10px!important}.solar-cosmos .rover-hud #hud-mode{font-size:10px!important;margin-bottom:3px!important}.solar-cosmos .rover-hud #hud-world-context,.solar-cosmos .rover-hud #hud-notable,.solar-cosmos .rover-hud #hud-shortcuts,.solar-cosmos .rover-hud #hud-ocean-panel,.solar-cosmos .rover-hud #hud-atmo-panel{display:none!important}.solar-cosmos .rover-hud #hud-simple-row{gap:1px 6px!important;margin-bottom:3px!important;padding-top:3px!important;font-size:9px!important}.solar-cosmos .rover-hud #hud-science-focus{padding-top:3px!important;margin-bottom:0!important}.solar-cosmos .rover-hud #hud-science-focus>div:nth-child(2){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.solar-cosmos .rover-hud #hud-science-reading{font-size:9px!important}.solar-cosmos [data-drone-fullscreen-toggle],.solar-cosmos [data-rover-sound-toggle],.solar-cosmos [data-drone-compass]{top:8px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important}.solar-cosmos [data-drone-compass]{right:8px!important}.solar-cosmos [data-drone-fullscreen-toggle]{right:56px!important;font-size:20px!important}.solar-cosmos [data-rover-sound-toggle]{right:104px!important;font-size:18px!important}.solar-cosmos [data-drone-depth-gauge]{top:60px!important;right:8px!important;width:24px!important;height:142px!important}.solar-cosmos [data-drone-action-dock]{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.solar-cosmos [data-drone-action-dock] button{min-height:44px!important;padding:4px 2px!important;flex-direction:column!important;justify-content:center!important;gap:1px!important;border-radius:9px!important;font-size:9px!important}.solar-cosmos [data-drone-action-dock] kbd{display:none!important}.solar-cosmos [data-drone-minimap]{right:8px!important;bottom:64px!important;width:84px!important;height:84px!important}.solar-cosmos #rover-traverse-panel{left:8px!important;right:8px!important;bottom:60px!important;width:auto!important;max-height:calc(100% - 128px)!important;padding:0!important;overflow:auto!important;border-radius:10px!important}.solar-cosmos #rover-traverse-panel[data-collapsed="true"]{right:auto!important;width:min(220px,calc(100% - 112px))!important;overflow:hidden!important}.solar-cosmos #rover-traverse-toggle{display:flex!important}.solar-cosmos #rover-traverse-details{padding:0 10px 10px}.solar-cosmos #rover-traverse-panel[data-collapsed="true"] #rover-traverse-details{display:none!important}}',
+              '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:168px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker]{display:none!important}}',
                '@media(prefers-reduced-motion:reduce){.solar-cosmos svg[viewBox],.solar-cosmos .solar-world-thumb,.solar-cosmos .solar-season-bar,.solar-cosmos .solar-moon-moving,.solar-cosmos .solar-moon-phase-disk,.solar-cosmos .solar-evidence-fill,.solar-cosmos .solar-evidence-node,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]){transition:none!important}.solar-cosmos .solar-season-sun,.solar-cosmos .solar-season-beam,.solar-cosmos .solar-signal-line,.solar-cosmos .solar-signal-pulse,.solar-cosmos .solar-drop-ball{animation:none!important}.solar-cosmos .solar-signal-pulse{left:90%;opacity:1}.solar-cosmos .solar-drop-ball{top:146px}.solar-cosmos .solar-evidence-node[data-current="true"],.solar-cosmos .solar-evidence-node[data-recommended="true"]{transform:none}.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:none}}'
             ].join('\n');
             document.head.appendChild(solarVisualCss);
@@ -1873,6 +1950,10 @@ const d = labToolData.solarSystem || {};
             ? 'Open ' + ((d.viewTab || 'overview') === 'overview' ? 'surface' : (d.viewTab || 'overview')) + ' evidence for ' + sel.name
             : 'Select ' + (nextWorld ? nextWorld.name : 'a world') + ' to begin the tour';
           var missionEarth = PLANETS.find(function(p) { return p.key === 'Earth'; }) || PLANETS[2];
+          var spotlightPlanet = sel || missionEarth;
+          var spotlightIsReference = !sel;
+          var spotlightMoonCount = Math.min(3, Number(spotlightPlanet.moons) || 0);
+          var spotlightRingColor = spotlightPlanet.key === 'Saturn' ? 'rgba(250,219,140,.92)' : (spotlightPlanet.key === 'Uranus' ? 'rgba(165,243,252,.56)' : (spotlightPlanet.key === 'Neptune' ? 'rgba(147,197,253,.48)' : 'rgba(231,210,167,.40)'));
           var missionJupiter = PLANETS.find(function(p) { return p.key === 'Jupiter'; }) || PLANETS[4];
           var evidenceMissionActive = !!d.evidenceMissionActive;
           var evidenceJournalDone = evidenceMissionActive && journalEntries.some(function(entry) {
@@ -2012,9 +2093,9 @@ const d = labToolData.solarSystem || {};
 
             function initScene(THREE) {
 
-              const W = canvas.clientWidth || 600;
+              let W = canvas.clientWidth || 600;
 
-              const H = canvas.clientHeight || 340;
+              let H = canvas.clientHeight || 340;
 
               const scene = new THREE.Scene();
 
@@ -3450,6 +3531,11 @@ const d = labToolData.solarSystem || {};
                   // translate3d, eased toward the projected point, and decluttered.
                   var labelCache = labelContainer._solarLabelCache;
                   if (!labelCache) { labelCache = labelContainer._solarLabelCache = {}; }
+                  var compactLabelMode = W <= 640;
+                  var selectedLabelName = canvas.dataset.selected || '';
+                  var labelTelemetry = canvas.parentElement ? canvas.parentElement.querySelector('.solar-telemetry') : null;
+                  var telemetryClearY = labelTelemetry ? labelTelemetry.offsetTop + labelTelemetry.offsetHeight + 6 : 72;
+                  var telemetryClearX = labelTelemetry ? labelTelemetry.offsetLeft + labelTelemetry.offsetWidth + 6 : 220;
                   var liveLabels = [];
                   var cachedName;
                   for (cachedName in labelCache) { labelCache[cachedName].live = false; }
@@ -3475,6 +3561,14 @@ const d = labToolData.solarSystem || {};
                       return;
                     }
 
+                    var projectedSelected = selectedLabelName === name;
+                    var compactBodyIndex = Number(mesh.userData.idx);
+                    var compactAnchor = compactBodyIndex === 2 || compactBodyIndex === 4 || compactBodyIndex === 7;
+                    // A phone-sized overview needs orientation, not ten competing
+                    // callouts. Earth, Jupiter, and Neptune span the system; a selected
+                    // body is always added to that stable, localization-safe set.
+                    if (compactLabelMode && !projectedSelected && !compactAnchor) return;
+
                     var lx = (pos.x * 0.5 + 0.5) * W;
                     var ly = (-pos.y * 0.5 + 0.5) * H;
                     var entry = labelCache[name];
@@ -3486,7 +3580,12 @@ const d = labToolData.solarSystem || {};
                       entry = labelCache[name] = { el: el, x: lx, y: ly, sel: null, seeded: true };
                     }
 
-                    if (!entry.seeded) {
+                    if (projectedSelected) {
+                      // During a cinematic fly-to the projected body can cross much of
+                      // the screen in a few frames. The target pill must stay attached
+                      // to the world instead of visibly trailing its old overview slot.
+                      entry.x = lx; entry.y = ly; entry.seeded = true;
+                    } else if (!entry.seeded) {
                       // Reappearing from behind the Sun: snap, do not fly in.
                       entry.x = lx; entry.y = ly; entry.seeded = true;
                     } else {
@@ -3498,6 +3597,9 @@ const d = labToolData.solarSystem || {};
                     }
 
                     entry.live = true;
+                    entry.isSelected = projectedSelected;
+                    entry.suppressed = false;
+                    entry.labelWidth = entry.labelWidth || Math.min(W - 12, Math.max(44, name.length * 6.2 + 16));
                     liveLabels.push(entry);
                   });
 
@@ -3505,22 +3607,42 @@ const d = labToolData.solarSystem || {};
                   liveLabels.sort(function (a, b) { return a.y - b.y; });
                   for (var li = 1; li < liveLabels.length; li++) {
                     var prevLabel = liveLabels[li - 1], curLabel = liveLabels[li];
-                    if (Math.abs(curLabel.x - prevLabel.x) < 64 && curLabel.y - prevLabel.y < 16) {
-                      curLabel.y = prevLabel.y + 16;
+                    var collisionSpan = ((prevLabel.labelWidth || 80) + (curLabel.labelWidth || 80)) * 0.5 + 8;
+                    if (Math.abs(curLabel.x - prevLabel.x) < collisionSpan && curLabel.y - prevLabel.y < 18) {
+                      if (compactLabelMode && (prevLabel.isSelected || curLabel.isSelected)) {
+                        (prevLabel.isSelected ? curLabel : prevLabel).suppressed = true;
+                      } else {
+                        curLabel.y = prevLabel.y + 18;
+                      }
                     }
                   }
 
                   for (var lj = 0; lj < liveLabels.length; lj++) {
                     var live = liveLabels[lj];
-                    var isSelected = canvas.dataset.selected === live.el.textContent;
+                    var isSelected = live.isSelected;
                     if (live.sel !== isSelected) {
                       live.sel = isSelected;
+                      live.el.className = isSelected ? 'solar-orbit-label solar-orbit-label--selected' : 'solar-orbit-label';
                       // Rewritten only when selection changes, never per frame, and
                       // deliberately free of `transform` so the per-frame write below
                       // is the single owner of position.
-                      live.el.style.cssText = 'position:absolute;left:0;top:0;will-change:transform;font-size:10px;font-weight:800;letter-spacing:0.02em;pointer-events:none;color:' + (isSelected ? '#111827' : '#0f172a') + ';background:' + (isSelected ? 'rgba(254,240,138,0.96)' : 'rgba(248,250,252,0.92)') + ';border:1px solid ' + (isSelected ? 'rgba(251,191,36,0.95)' : 'rgba(148,163,184,0.55)') + ';border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(2,6,23,0.45),0 0 0 1px rgba(255,255,255,0.12);white-space:nowrap;transition:background 0.2s,color 0.2s,border-color 0.2s;';
+                      live.el.style.cssText = 'position:absolute;left:0;top:0;will-change:transform;font-size:10px;font-weight:800;letter-spacing:0.02em;pointer-events:none;color:' + (isSelected ? '#111827' : '#0f172a') + ';background:' + (isSelected ? 'rgba(254,240,138,0.96)' : 'rgba(248,250,252,0.92)') + ';border:1px solid ' + (isSelected ? 'rgba(251,191,36,0.95)' : 'rgba(148,163,184,0.55)') + ';border-radius:999px;padding:3px 7px;box-shadow:0 2px 8px rgba(2,6,23,0.45),0 0 0 1px rgba(255,255,255,0.12);max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;transition:background 0.2s,color 0.2s,border-color 0.2s;';
+                      live.labelWidth = Math.min(W - 12, live.el.offsetWidth || live.labelWidth || 80);
+                      live.labelHeight = live.el.offsetHeight || 20;
                     }
-                    live.el.style.transform = 'translate(-50%,-100%) translate3d(' + Math.round(live.x) + 'px,' + Math.round(live.y) + 'px,0)';
+                    if (live.suppressed) { live.el.style.display = 'none'; continue; }
+                    var labelWidth = Math.min(W - 12, live.labelWidth || 80);
+                    var labelHalfWidth = labelWidth * 0.5;
+                    var labelHeight = live.labelHeight || 20;
+                    var labelX = Math.max(labelHalfWidth + 6, Math.min(W - labelHalfWidth - 6, live.x));
+                    var labelBottomLimit = compactLabelMode ? H - 142 : H - 46;
+                    var labelY = Math.max(labelHeight + 8, Math.min(labelBottomLimit, live.y));
+                    // Keep a top-left label clear of the live telemetry card,
+                    // using its measured footprint so translated text can grow safely.
+                    if (compactLabelMode && labelY - labelHeight < telemetryClearY && labelX - labelHalfWidth < telemetryClearX) {
+                      labelY = Math.min(labelBottomLimit, telemetryClearY + labelHeight);
+                    }
+                    live.el.style.transform = 'translate(-50%,-100%) translate3d(' + Math.round(labelX) + 'px,' + Math.round(labelY) + 'px,0)';
                     live.el.style.display = '';
                   }
 
@@ -3572,7 +3694,14 @@ const d = labToolData.solarSystem || {};
                   solarResizePending = false;
                   if (!solarAlive || !canvas.isConnected) return;
                   const w = canvas.clientWidth; const h = canvas.clientHeight;
-                  if (w && h) { camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h, false); if (composer) { try { composer.setSize(w, h); } catch (e) {} } }
+                  if (w && h) {
+                    // Keep DOM label projection on the same live logical size as
+                    // the resized WebGL buffer; stale mount dimensions pushed phone
+                    // labels hundreds of pixels beyond the visible stage.
+                    W = w; H = h;
+                    camera.aspect = w / h; camera.updateProjectionMatrix(); renderer.setSize(w, h, false);
+                    if (composer) { try { composer.setSize(w, h); } catch (e) {} }
+                  }
                 });
 
               });
@@ -3789,7 +3918,7 @@ const d = labToolData.solarSystem || {};
                 }
               },
                 React.createElement("div", { className: "grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)] items-stretch" },
-                  React.createElement("div", { className: "space-y-4" },
+                  React.createElement("div", { className: "solar-command-primary" },
                     React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" },
                       React.createElement("div", null,
                         React.createElement("div", { className: "text-[11px] font-black uppercase " + (isDark ? 'text-indigo-300' : 'text-indigo-600') }, "Start here"),
@@ -3899,6 +4028,62 @@ const d = labToolData.solarSystem || {};
                         React.createElement("span", null, "Illustrative portraits · not to scale"),
                         React.createElement("span", null, "Rings shown on all four giant planets"),
                         React.createElement("span", null, "Green dot = visited")
+                      )
+                    ),
+                    React.createElement("section", {
+                      "data-solarsystem-world-spotlight": spotlightPlanet.key,
+                      role: "figure",
+                      "aria-label": (spotlightIsReference ? "Reference world spotlight for " : "Selected world spotlight for ") + spotlightPlanet.name,
+                      className: "solar-world-spotlight",
+                      style: { "--spotlight-color": spotlightPlanet.color, "--spotlight-portrait": PLANET_PORTRAITS[spotlightPlanet.key], "--spotlight-ring": spotlightRingColor }
+                    },
+                      React.createElement("div", { className: "solar-world-spotlight-header" },
+                        React.createElement("div", { className: "min-w-0" },
+                          React.createElement("div", { className: "solar-world-spotlight-eyebrow" }, spotlightIsReference ? __alloT('stem.solarsystem.reference_world', "Reference world") : __alloT('stem.solarsystem.selected_world', "Selected world")),
+                          React.createElement("h5", { className: "solar-world-spotlight-name" }, spotlightPlanet.name),
+                          React.createElement("p", { className: "mt-1 max-w-xl text-[11px] leading-relaxed text-slate-300" }, spotlightIsReference ? __alloT('stem.solarsystem.earth_reference_hint', "Earth is shown as a familiar reference. Select any destination above to focus this display.") : spotlightPlanet.fact)
+                        ),
+                        React.createElement("span", { className: "solar-world-spotlight-kind" }, PLANET_KINDS[spotlightPlanet.key])
+                      ),
+                      React.createElement("div", { className: "solar-world-spotlight-stage", "aria-hidden": "true" },
+                        React.createElement("span", { className: "solar-spotlight-orbit solar-spotlight-orbit--three" }),
+                        React.createElement("span", { className: "solar-spotlight-orbit solar-spotlight-orbit--two" }),
+                        React.createElement("span", { className: "solar-spotlight-orbit solar-spotlight-orbit--one" }),
+                        React.createElement("span", { className: "solar-spotlight-body-wrap" },
+                          React.createElement("span", { className: "solar-spotlight-body" }),
+                          RINGED_GIANTS[spotlightPlanet.key] ? React.createElement("span", { className: "solar-spotlight-ring" }) : null
+                        ),
+                        [0, 1, 2].slice(0, spotlightMoonCount).map(function(moonIndex) {
+                          return React.createElement("span", { key: "spotlight-moon-" + moonIndex, className: "solar-spotlight-moon solar-spotlight-moon--" + moonIndex });
+                        }),
+                        React.createElement("span", { className: "solar-world-spotlight-watermark" }, spotlightPlanet.name),
+                        React.createElement("div", { className: "solar-world-spotlight-caption" },
+                          React.createElement("span", null, __alloT('stem.solarsystem.illustrative_spotlight_note', "Illustrative portrait \u00b7 not to scale")),
+                          React.createElement("span", null, spotlightPlanet.moons ? spotlightPlanet.moons + " " + __alloT('stem.solarsystem.moons_lowercase', "moons") : __alloT('stem.solarsystem.no_moons', "No moons"))
+                        )
+                      ),
+                      React.createElement("div", { className: "solar-world-spotlight-stats" },
+                        [
+                          { label: __alloT('stem.solarsystem.diameter', "Diameter"), value: spotlightPlanet.diameter },
+                          { label: __alloT('stem.solarsystem.gravity', "Gravity"), value: spotlightPlanet.gravity },
+                          { label: __alloT('stem.solarsystem.day_length', "Day"), value: spotlightPlanet.dayLen },
+                          { label: __alloT('stem.solarsystem.year_length', "Year"), value: spotlightPlanet.yearLen }
+                        ].map(function(stat) {
+                          return React.createElement("div", { key: stat.label, className: "solar-world-spotlight-stat" },
+                            React.createElement("div", { className: "solar-world-spotlight-stat-label" }, stat.label),
+                            React.createElement("div", { className: "solar-world-spotlight-stat-value", title: stat.value }, stat.value)
+                          );
+                        })
+                      ),
+                      React.createElement("div", { className: "solar-world-spotlight-environment" },
+                        React.createElement("div", null,
+                          React.createElement("strong", null, __alloT('stem.solarsystem.atmosphere', "Atmosphere")),
+                          React.createElement("span", null, spotlightPlanet.atmosphere)
+                        ),
+                        React.createElement("div", null,
+                          React.createElement("strong", null, __alloT('stem.solarsystem.surface', "Surface")),
+                          React.createElement("span", null, spotlightPlanet.surface)
+                        )
                       )
                     )
                   ),
@@ -11630,7 +11815,7 @@ const d = labToolData.solarSystem || {};
                     className: "rounded-xl p-4 text-white",
                     style: {
                       position: "relative", overflow: "hidden",
-                      background: "linear-gradient(135deg," + palette.from + " 0%," + palette.to + " 100%)",
+                      background: "linear-gradient(135deg," + palette.from + " 0%," + palette.to + " 100%),#0f172a",
                       border: "1px solid " + palette.accent + "55",
                       boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px " + palette.accent + "22,0 6px 18px rgba(7,11,24,0.55)"
                     }
@@ -11652,9 +11837,18 @@ const d = labToolData.solarSystem || {};
                   );
                 })(),
                 // Cutaway canvas
-                React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-orange-300 shadow-lg", style: { height: '420px' } },
+                React.createElement("div", {
+                  className: "relative rounded-xl overflow-hidden border-2 shadow-lg",
+                  "data-solar-interior-cutaway": sel.key,
+                  style: {
+                    height: '420px',
+                    borderColor: sel.terrainType === 'icegiant' ? 'rgba(125,211,252,0.72)' : sel.terrainType === 'iceworld' ? 'rgba(196,181,253,0.72)' : sel.terrainType === 'gasgiant' ? 'rgba(251,191,36,0.72)' : 'rgba(251,146,60,0.72)',
+                    boxShadow: "0 14px 34px rgba(2,6,23,0.34),inset 0 0 32px rgba(56,189,248,0.05)"
+                  }
+                },
                   React.createElement("canvas", {
                     role: "img",
+                    "data-solar-interior-canvas": sel.key,
                     "aria-label": "Interior cutaway diagram of " + sel.name,
                     style: { width: '100%', height: '100%', display: 'block', background: '#0a0a20' },
                     ref: function(canvasEl) {
@@ -11669,8 +11863,11 @@ const d = labToolData.solarSystem || {};
                       // the bitmap each time. It is conditional now, so clear explicitly:
                       // site 1 only fills much later, site 2 can return before drawing.
                       ctx2.clearRect(0, 0, cw, ch);
-                      var cx = cw / 2; var cy = ch / 2;
-                      var maxR = Math.min(cw, ch) * 0.38;
+                      var compactInterior = cw < 560;
+                      canvasEl.setAttribute('data-solar-interior-layout', compactInterior ? 'compact-key' : 'wide-callouts');
+                      var cx = cw / 2;
+                      var cy = compactInterior ? 160 : ch / 2;
+                      var maxR = compactInterior ? Math.min(cw * 0.31, 108) : Math.min(cw, ch) * 0.38;
 
                       // Planet interior layers by type
                       var layers;
@@ -11749,8 +11946,11 @@ const d = labToolData.solarSystem || {};
                       for (var si = 0; si < 120; si++) {
                         var sx = (Math.sin(si * 137.508 + 42) * 0.5 + 0.5) * cw;
                         var sy = (Math.cos(si * 91.3 + 17) * 0.5 + 0.5) * ch;
-                        ctx2.fillStyle = 'rgba(255,255,255,' + (0.2 + Math.random() * 0.5) + ')';
-                        ctx2.fillRect(sx, sy, 1, 1);
+                        // Stable brightness prevents the star field from shimmering on state updates.
+                        var starAlpha = 0.18 + (Math.sin(si * 47.71 + 9.2) * 0.5 + 0.5) * 0.48;
+                        ctx2.fillStyle = 'rgba(255,255,255,' + starAlpha.toFixed(3) + ')';
+                        var starSize = si % 17 === 0 ? 1.6 : 1;
+                        ctx2.fillRect(sx, sy, starSize, starSize);
                       }
 
                       // Draw half-circle cutaway (right half = full planet, left half = cross-section)
@@ -11796,38 +11996,76 @@ const d = labToolData.solarSystem || {};
                       ctx2.fillStyle = glowGrad;
                       ctx2.fillRect(0, 0, cw, ch);
 
-                      // Labels on left side (cross-section callouts)
-                      ctx2.textAlign = 'right';
-                      ctx2.textBaseline = 'middle';
-                      for (var li3 = 0; li3 < layers.length; li3++) {
-                        var layer = layers[li3];
-                        var nextR = li3 < layers.length - 1 ? layers[li3 + 1].r : 0;
-                        var midR = ((layer.r + nextR) / 2) * maxR;
-                        var labelY = cy - midR * 0.7; // spread labels vertically
-                        var labelX = cx - maxR - 20;
+                      // Wide canvases use leader-line callouts. Compact canvases move the
+                      // labels below the planet so translated names never clip off-screen.
+                      if (compactInterior) {
+                        var legendTop = cy + maxR + 27;
+                        var legendBottom = ch - 8;
+                        var legendRowH = (legendBottom - legendTop) / layers.length;
+                        ctx2.textAlign = 'left';
+                        ctx2.textBaseline = 'middle';
+                        ctx2.font = 'bold 9px sans-serif';
+                        ctx2.fillStyle = 'rgba(165,243,252,0.82)';
+                        ctx2.fillText('LAYER KEY', 12, legendTop - 11);
+                        for (var li3 = 0; li3 < layers.length; li3++) {
+                          var compactLayer = layers[li3];
+                          var legendY = legendTop + (li3 + 0.5) * legendRowH;
+                          if (li3 > 0) {
+                            ctx2.beginPath();
+                            ctx2.moveTo(12, legendY - legendRowH / 2);
+                            ctx2.lineTo(cw - 12, legendY - legendRowH / 2);
+                            ctx2.strokeStyle = 'rgba(148,163,184,0.16)';
+                            ctx2.lineWidth = 1;
+                            ctx2.stroke();
+                          }
+                          ctx2.beginPath();
+                          ctx2.arc(17, legendY, 4.5, 0, Math.PI * 2);
+                          ctx2.fillStyle = compactLayer.color;
+                          ctx2.fill();
+                          ctx2.strokeStyle = 'rgba(255,255,255,0.52)';
+                          ctx2.stroke();
+                          ctx2.font = 'bold 10px sans-serif';
+                          ctx2.fillStyle = '#f8fafc';
+                          ctx2.fillText(compactLayer.label, 30, legendY, Math.max(72, cw - 132));
+                          ctx2.textAlign = 'right';
+                          ctx2.font = '9px sans-serif';
+                          ctx2.fillStyle = '#cbd5e1';
+                          ctx2.fillText(compactLayer.thick, cw - 12, legendY);
+                          ctx2.textAlign = 'left';
+                        }
+                      } else {
+                        ctx2.textAlign = 'right';
+                        ctx2.textBaseline = 'middle';
+                        var labelTop = cy - maxR * 0.70;
+                        var labelBottom = cy + maxR * 0.70;
+                        for (var li4 = 0; li4 < layers.length; li4++) {
+                          var wideLayer = layers[li4];
+                          var nextR = li4 < layers.length - 1 ? layers[li4 + 1].r : 0;
+                          var midR = ((wideLayer.r + nextR) / 2) * maxR;
+                          var labelY = layers.length > 1 ? labelTop + li4 * (labelBottom - labelTop) / (layers.length - 1) : cy;
+                          var labelX = Math.max(116, cx - maxR - 20);
 
-                        // Connector line
-                        ctx2.beginPath();
-                        ctx2.moveTo(labelX + 5, labelY);
-                        ctx2.lineTo(cx - midR, cy);
-                        ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
-                        ctx2.lineWidth = 1;
-                        ctx2.setLineDash([3, 3]);
-                        ctx2.stroke();
-                        ctx2.setLineDash([]);
+                          ctx2.beginPath();
+                          ctx2.moveTo(labelX + 5, labelY);
+                          ctx2.lineTo(cx - midR, cy);
+                          ctx2.strokeStyle = 'rgba(255,255,255,0.25)';
+                          ctx2.lineWidth = 1;
+                          ctx2.setLineDash([3, 3]);
+                          ctx2.stroke();
+                          ctx2.setLineDash([]);
 
-                        // Label text
-                        ctx2.font = 'bold 11px sans-serif';
-                        ctx2.fillStyle = '#fff';
-                        ctx2.fillText(layer.label, labelX, labelY - 7);
-                        ctx2.font = '9px sans-serif';
-                        ctx2.fillStyle = '#ccc';
-                        ctx2.fillText(layer.thick, labelX, labelY + 7);
+                          ctx2.font = 'bold 11px sans-serif';
+                          ctx2.fillStyle = '#fff';
+                          ctx2.fillText(wideLayer.label, labelX, labelY - 7);
+                          ctx2.font = '9px sans-serif';
+                          ctx2.fillStyle = '#cbd5e1';
+                          ctx2.fillText(wideLayer.thick, labelX, labelY + 7);
+                        }
                       }
-
                       // Title
                       ctx2.textAlign = 'center';
-                      ctx2.font = 'bold 14px sans-serif';
+                      ctx2.textBaseline = 'alphabetic';
+                      ctx2.font = compactInterior ? 'bold 13px sans-serif' : 'bold 14px sans-serif';
                       ctx2.fillStyle = '#fff';
                       ctx2.fillText(sel.name + ' Interior', cx, 24);
                       ctx2.font = '10px sans-serif';
@@ -11837,7 +12075,7 @@ const d = labToolData.solarSystem || {};
                   })
                 ),
                 // Layer details grid
-                React.createElement("div", { className: "space-y-2" },
+                React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-2", "data-solar-interior-layer-grid": "true" },
                   (function() {
                     var interiorLayers;
                     if (sel.key === 'Mercury') interiorLayers = [
@@ -11892,11 +12130,12 @@ const d = labToolData.solarSystem || {};
                       { label: __alloT('stem.solarsystem.rocky_core_10', 'Rocky Core'), thick: '~850 km', desc: __alloT('stem.solarsystem.silicate_rock_core_makes_up_70_of_plut', 'Silicate rock core makes up ~70% of Pluto\'s mass'), icon: '\uD83E\uDEA8', color: '#605040' }
                     ];
                     return interiorLayers.map(function(layer, li) {
-                      return React.createElement("div", {
+                      return React.createElement("article", {
                         key: li,
+                        "data-solar-interior-layer": layer.label,
                         className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all hover:-translate-y-0.5",
                         style: {
-                          background: "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                          background: "linear-gradient(135deg," + layer.color + "38 0%," + layer.color + "18 54%,rgba(7,11,24,0.96) 100%),#0f172a",
                           borderColor: layer.color + '40',
                           boxShadow: "0 2px 6px rgba(15,23,42,0.30),inset 0 1px 0 rgba(255,255,255,0.04)"
                         }
@@ -11920,17 +12159,17 @@ const d = labToolData.solarSystem || {};
                           }, layer.icon),
                           React.createElement("div", { className: "flex-1 min-w-0" },
                             React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
-                              React.createElement("span", { className: "text-xs font-bold", style: { color: 'var(--allo-stem-text, #ffffff)', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
+                              React.createElement("span", { className: "text-xs font-bold", style: { color: '#f8fafc', textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
                               React.createElement("span", {
                                 className: "text-[10px] px-1.5 py-0.5 rounded font-mono",
                                 style: {
-                                  color: layer.color,
+                                  color: '#f8fafc',
                                   background: layer.color + '22',
                                   border: '1px solid ' + layer.color + '55'
                                 }
                               }, layer.thick)
                             ),
-                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: 'var(--allo-stem-text, #e2e8f0)' } }, layer.desc)
+                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#cbd5e1' } }, layer.desc)
                           )
                         )
                       );
@@ -14962,8 +15201,11 @@ const d = labToolData.solarSystem || {};
 
                         function updateRoverSoundButton() {
                           if (!roverSoundButton) return;
+                          var roverSoundLabel = roverSoundEnabled ? 'Rover audio on' : 'Rover audio off';
+                          var compactRoverSound = (canvasEl.clientWidth || 0) <= 640;
                           roverSoundButton.setAttribute('aria-pressed', roverSoundEnabled ? 'true' : 'false');
-                          roverSoundButton.textContent = roverSoundEnabled ? '\uD83D\uDD0A Rover audio: On' : '\uD83D\uDD07 Rover audio: Off';
+                          roverSoundButton.setAttribute('aria-label', roverSoundLabel + ', keyboard shortcut B');
+                          roverSoundButton.textContent = compactRoverSound ? (roverSoundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07') : (roverSoundEnabled ? '\uD83D\uDD0A Rover audio: On' : '\uD83D\uDD07 Rover audio: Off');
                           roverSoundButton.title = roverSoundEnabled ? 'Mute drive sonification (B)' : 'Sonify rover speed and traction (B)';
                         }
 
@@ -15171,8 +15413,12 @@ const d = labToolData.solarSystem || {};
                         var hud = document.createElement('div');
 
                         hud.className = 'rover-hud';
+                        hud.setAttribute('data-drone-hud', 'true');
 
-                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.86) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.35);max-width:290px;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 22px rgba(56,189,248,0.10),0 6px 18px rgba(7,11,24,0.55)';
+                        // The tall HUD sits directly over WebGL. A backdrop blur here can
+                        // produce pale compositor tiles under software rendering; the
+                        // high-opacity observatory gradient already supplies the contrast.
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.35);max-width:290px;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 22px rgba(56,189,248,0.10),0 6px 18px rgba(7,11,24,0.55)';
 
                         var modeLabel = isOcean ? '\uD83D\uDEA4 DEEP-SEA SUBMERSIBLE' : isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
 
@@ -15192,7 +15438,7 @@ const d = labToolData.solarSystem || {};
 
                         fsToggle.type = 'button';
                         fsToggle.setAttribute('data-drone-fullscreen-toggle', 'true');
-                        fsToggle.style.cssText = 'position:absolute;top:8px;right:64px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:8px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:24px;border:1px solid rgba(56,189,248,0.3);cursor:pointer;z-index:15;transition:background 0.2s';
+                        fsToggle.style.cssText = 'position:absolute;top:8px;right:64px;background:rgba(0,0,0,0.6);border-radius:8px;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:24px;border:1px solid rgba(56,189,248,0.3);cursor:pointer;z-index:15;transition:background 0.2s';
 
                         var getDroneFullscreenContainer = function() {
                           return document.getElementById('drone-fullscreen-container') || canvasEl.parentElement;
@@ -15323,6 +15569,7 @@ const d = labToolData.solarSystem || {};
                             try { if (droneBloomPass && droneBloomPass.setSize) droneBloomPass.setSize(w, h2); } catch (e) {}
                           }
                           syncDroneFullscreenButton();
+                          updateRoverSoundButton();
                         }
                         // Track on a separate doc map so cleanup can target the right node.
                         function onDroneFullscreenChange() { resizeDroneCanvas(true); }
@@ -15368,7 +15615,7 @@ const d = labToolData.solarSystem || {};
 
                           '<div style="font-weight:bold;font-size:12px;margin-bottom:6px;color:#7dd3fc;letter-spacing:1px" id="hud-mode">' + modeLabel + '</div>' +
 
-                          '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:4px">' +
+                          '<div id="hud-world-context" style="display:grid;grid-template-columns:auto 1fr;gap:2px 8px;margin-bottom:4px">' +
 
                           '<span style="color:#64748b">' + t('stem.planet_view.planet') + '</span><span style="color:#e2e8f0;font-weight:bold">' + sel.name + ' ' + sel.emoji + '</span>' +
 
@@ -15441,9 +15688,9 @@ const d = labToolData.solarSystem || {};
                           '<span style="color:#64748b">\uD83C\uDF0A Zones</span><span id="hud-zones-visited" style="color:#4ade80">0 / 5</span>' +
                           '</div></div>' : '') +
 
-                          (featList ? '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
+                          (featList ? '<div id="hud-notable" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;margin-bottom:3px"><span style="color:#7dd3fc;font-weight:bold;font-size:9px">\uD83D\uDD2D NOTABLE</span>' + featList + '</div>' : '') +
 
-                          '<div style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#a5b4fc">\u2191\u2193\u2190\u2192</span> look \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
+                          '<div id="hud-shortcuts" style="border-top:1px solid rgba(56,189,248,0.12);padding-top:3px;color:#94a3b8;font-size:9px">' + (isFluid ? 'WASD move \u2022 Q/E ' + (isOcean ? 'depth' : 'altitude') + ' \u2022 <span style="color:#fbbf24">F</span> ' + (isOcean ? 'collect' : 'sample') : 'WASD drive \u2022 <span style="color:#fbbf24">F</span> collect') + ' \u2022 <span style="color:#a5b4fc">\u2191\u2193\u2190\u2192</span> look \u2022 <span style="color:#22d3ee">G</span> scan \u2022 <span style="color:#f472b6">C</span> photo \u2022 J journal \u2022 M mission \u2022 H hud \u2022 N nav \u2022 P plot</div>';
 
                         hud.innerHTML = hudStaticHTML;
 
@@ -15495,7 +15742,7 @@ const d = labToolData.solarSystem || {};
                         if (isGas) {
                           var invPanel = document.createElement('div');
                           invPanel.id = 'gas-sample-inventory';
-                          invPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(15,23,42,0.95);backdrop-filter:blur(12px);border:2px solid rgba(251,191,36,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
+                          invPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(15,23,42,0.95);border:2px solid rgba(251,191,36,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
                           invPanel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:bold;font-size:16px;color:#fbbf24">\uD83E\uDDEA Gas Sample Collection</div><div style="font-size:11px;color:#94a3b8">Press TAB to close</div></div>' +
                             '<div style="font-size:11px;color:#94a3b8;margin-bottom:12px">Fly through the atmosphere and press <span style="color:#fbbf24;font-weight:bold">F</span> near glowing orbs to collect gas samples. Descend deeper for rarer specimens!</div>' +
                             '<div id="gas-sample-list" style="space-y:8px"></div>' +
@@ -15506,7 +15753,7 @@ const d = labToolData.solarSystem || {};
                         if (isOcean) {
                           var oceanInvPanel = document.createElement('div');
                           oceanInvPanel.id = 'ocean-sample-inventory';
-                          oceanInvPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(5,20,45,0.95);backdrop-filter:blur(12px);border:2px solid rgba(0,180,255,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
+                          oceanInvPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:420px;max-width:90%;max-height:80%;overflow-y:auto;background:rgba(5,20,45,0.95);border:2px solid rgba(0,180,255,0.3);border-radius:16px;padding:20px;z-index:30;color:#e2e8f0;font-family:system-ui';
                           oceanInvPanel.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-weight:bold;font-size:16px;color:#00b4ff">\uD83E\uDDEB Marine Specimen Collection</div><div style="font-size:11px;color:#94a3b8">Press TAB to close</div></div>' +
                             '<div style="font-size:11px;color:#94a3b8;margin-bottom:12px">Dive through the ocean and press <span style="color:#00b4ff;font-weight:bold">F</span> near glowing specimens to collect them. Descend deeper for rarer life forms!</div>' +
                             '<div id="ocean-sample-list" style="space-y:8px"></div>' +
@@ -15517,8 +15764,9 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ Hazard Warning Strip â"€â"€
 
                         var hazardEl = document.createElement('div');
+                        hazardEl.setAttribute('data-drone-hazard', 'true');
 
-                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(239,68,68,0.92) 0%,rgba(185,28,28,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,140,140,0.55);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px;box-shadow:inset 0 1px 0 rgba(255,200,200,0.40),0 0 18px rgba(239,68,68,0.40),0 4px 14px rgba(7,11,24,0.50);text-shadow:0 1px 2px rgba(0,0,0,0.5)';
+                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(239,68,68,0.92) 0%,rgba(185,28,28,0.92) 100%);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,140,140,0.55);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px;box-shadow:inset 0 1px 0 rgba(255,200,200,0.40),0 0 18px rgba(239,68,68,0.40),0 4px 14px rgba(7,11,24,0.50);text-shadow:0 1px 2px rgba(0,0,0,0.5)';
 
                         var hazardMsgs = {
 
@@ -15772,7 +16020,7 @@ const d = labToolData.solarSystem || {};
 
                         var discCard = document.createElement('div');
 
-                        discCard.style.cssText = 'position:absolute;bottom:56px;right:8px;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);border-radius:12px;padding:12px 16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:11;border:1px solid rgba(251,191,36,0.4);max-width:280px;opacity:0;transition:opacity 0.5s,transform 0.5s;transform:translateY(10px)';
+                        discCard.style.cssText = 'position:absolute;bottom:56px;right:8px;background:rgba(0,0,0,0.85);border-radius:12px;padding:12px 16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:11;border:1px solid rgba(251,191,36,0.4);max-width:280px;opacity:0;transition:opacity 0.5s,transform 0.5s;transform:translateY(10px)';
 
                         canvasEl.parentElement.appendChild(discCard);
 
@@ -15840,7 +16088,7 @@ const d = labToolData.solarSystem || {};
 
                         var missionCard = document.createElement('div');
 
-                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:440px;width:90%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
+                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:440px;width:90%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
 
                         var missionIcon = isOcean ? '\uD83D\uDEA4' : isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
 
@@ -15943,7 +16191,7 @@ const d = labToolData.solarSystem || {};
                         }
 
                         var journalPanel = document.createElement('div');
-                        journalPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,24,0.98));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:18px;color:#e2e8f0;font-family:system-ui;font-size:12px;pointer-events:auto;z-index:16;border:1px solid rgba(52,211,153,0.38);max-width:520px;width:92%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(52,211,153,0.24),0 14px 34px rgba(7,11,24,0.72)';
+                        journalPanel.style.cssText = 'display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.96),rgba(7,11,24,0.98));border-radius:16px;padding:18px;color:#e2e8f0;font-family:system-ui;font-size:12px;pointer-events:auto;z-index:16;border:1px solid rgba(52,211,153,0.38);max-width:520px;width:92%;max-height:78vh;overflow-y:auto;opacity:0;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(52,211,153,0.24),0 14px 34px rgba(7,11,24,0.72)';
                         canvasEl.parentElement.appendChild(journalPanel);
                         var journalVisible = false;
 
@@ -16130,8 +16378,9 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ Science Fact Ticker (bottom of canvas, expanded) â"€â"€
 
                         var ticker = document.createElement('div');
+                        ticker.setAttribute('data-drone-ticker', 'true');
 
-                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
+                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
 
                         // Categorized facts with icons
 
@@ -16196,8 +16445,9 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ Compass / bearing indicator (top-right) â"€â"€
 
                         var compass = document.createElement('div');
+                        compass.setAttribute('data-drone-compass', 'true');
 
-                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:radial-gradient(circle,rgba(15,23,42,0.85) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.40);box-shadow:inset 0 1px 0 rgba(56,189,248,0.35),0 0 16px rgba(56,189,248,0.15),0 4px 12px rgba(7,11,24,0.50)';
+                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:radial-gradient(circle,rgba(15,23,42,0.85) 0%,rgba(7,11,24,0.92) 100%);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.40);box-shadow:inset 0 1px 0 rgba(56,189,248,0.35),0 0 16px rgba(56,189,248,0.15),0 4px 12px rgba(7,11,24,0.50)';
 
                         compass.innerHTML = '\uD83E\uDDED';
 
@@ -16205,7 +16455,8 @@ const d = labToolData.solarSystem || {};
 
                         // ── Vertical Depth/Altitude Gauge (right side) ──
                         var depthGauge = document.createElement('div');
-                        depthGauge.style.cssText = 'position:absolute;top:64px;right:12px;width:28px;height:200px;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);border-radius:14px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.2);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:4px 0';
+                        depthGauge.setAttribute('data-drone-depth-gauge', 'true');
+                        depthGauge.style.cssText = 'position:absolute;top:64px;right:12px;width:28px;height:200px;background:rgba(0,0,0,0.5);border-radius:14px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.2);overflow:hidden;display:flex;flex-direction:column;align-items:center;padding:4px 0';
                         depthGauge.innerHTML =
                           '<div style="font-size:6px;color:#94a3b8;margin-bottom:2px">' + (isOcean ? '\u2191 SURF' : isGas ? '\u2191 HIGH' : '\u2191 UP') + '</div>' +
                           '<div style="flex:1;width:8px;background:rgba(30,41,59,0.8);border-radius:4px;position:relative;overflow:hidden">' +
@@ -16227,10 +16478,11 @@ const d = labToolData.solarSystem || {};
 
                         // ── Mini-Map Radar (bottom-right) ──
                         var miniMap = document.createElement('canvas');
+                        miniMap.setAttribute('data-drone-minimap', 'true');
                         miniMap.setAttribute('role', 'img');
                         miniMap.setAttribute('aria-label', 'Radar map showing the vehicle position and nearby points of interest');
                         miniMap.width = 120; miniMap.height = 120;
-                        miniMap.style.cssText = 'position:absolute;bottom:12px;right:12px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(56,189,248,0.3);background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);pointer-events:none;z-index:10';
+                        miniMap.style.cssText = 'position:absolute;bottom:12px;right:12px;width:120px;height:120px;border-radius:50%;border:2px solid rgba(56,189,248,0.3);background:rgba(0,0,0,0.6);pointer-events:none;z-index:10';
                         canvasEl.parentElement.appendChild(miniMap);
                         var mmCtx = miniMap.getContext('2d');
 
@@ -16299,7 +16551,7 @@ const d = labToolData.solarSystem || {};
                           // Scanning sweep line
                           '<div id="scan-sweep" style="position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(to right,transparent,rgba(56,189,248,0.6),transparent);transition:left 1.5s linear"></div>' +
                           // Scan result card
-                          '<div id="scan-result" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;max-height:82%;overflow-y:auto;pointer-events:auto;scrollbar-width:thin;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s">' +
+                          '<div id="scan-result" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,20,0.92);border:1px solid rgba(56,189,248,0.4);border-radius:14px;padding:16px 20px;max-width:340px;width:85%;max-height:82%;overflow-y:auto;pointer-events:auto;scrollbar-width:thin;color:#e2e8f0;font-family:system-ui;text-align:center;opacity:0;transition:opacity 0.5s 0.8s">' +
                             '<div style="font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:6px;letter-spacing:1px">\uD83D\uDD2C ENVIRONMENT SCAN</div>' +
                             '<div id="scan-body" style="font-size:11px;line-height:1.6"></div>' +
                           '</div>';
@@ -16770,7 +17022,7 @@ const d = labToolData.solarSystem || {};
 
                             // Photo card overlay with real screenshot thumbnail
                             var photoCard = document.createElement('div');
-                            photoCard.style.cssText = 'position:absolute;bottom:70px;right:12px;background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);border:2px solid rgba(56,189,248,0.4);border-radius:14px;padding:10px;z-index:25;pointer-events:auto;color:#e2e8f0;font-family:system-ui;max-width:260px;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px)';
+                            photoCard.style.cssText = 'position:absolute;bottom:70px;right:12px;background:rgba(0,0,0,0.92);border:2px solid rgba(56,189,248,0.4);border-radius:14px;padding:10px;z-index:25;pointer-events:auto;color:#e2e8f0;font-family:system-ui;max-width:260px;opacity:0;transition:opacity 0.3s,transform 0.3s;transform:translateY(10px)';
                             var photoLabel = isOcean ? 'DEPTH ' + Math.abs(playerPos.y * scaleFactor).toFixed(0) + 'm' : isGas ? 'ALT ' + (playerPos.y * scaleFactor).toFixed(0) + 'm' : 'ELEV ' + ((playerPos.y - 1.6) * scaleFactor).toFixed(0) + 'm';
                             var timestamp = new Date().toLocaleTimeString();
                             var thumbHtml = thumbDataUrl ? '<img src="' + thumbDataUrl + '" style="width:100%;height:100px;object-fit:cover;border-radius:8px;border:1px solid rgba(56,189,248,0.2);margin-bottom:6px" alt="Photo of ' + sel.name + '" />' : '';
@@ -16863,7 +17115,7 @@ const d = labToolData.solarSystem || {};
                           roverSoundButton.setAttribute('data-rover-sound-toggle', 'true');
                           roverSoundButton.setAttribute('aria-keyshortcuts', 'B');
                           roverSoundButton.setAttribute('aria-pressed', 'false');
-                          roverSoundButton.style.cssText = 'position:absolute;top:8px;right:120px;z-index:16;min-height:48px;padding:7px 11px;border:1px solid rgba(56,189,248,0.38);border-radius:8px;background:rgba(2,6,23,0.82);color:#bae6fd;font:700 11px system-ui;cursor:pointer;backdrop-filter:blur(6px);box-shadow:0 4px 12px rgba(2,6,23,0.4)';
+                          roverSoundButton.style.cssText = 'position:absolute;top:8px;right:120px;z-index:16;min-height:48px;padding:7px 11px;border:1px solid rgba(56,189,248,0.38);border-radius:8px;background:rgba(2,6,23,0.82);color:#bae6fd;font:700 11px system-ui;cursor:pointer;box-shadow:0 4px 12px rgba(2,6,23,0.4)';
                           roverSoundButton.addEventListener('click', function () {
                             var soundIsOn = toggleRoverSound();
                             if (typeof announceToSR === 'function') announceToSR(soundIsOn ? 'Rover drive sonification on.' : 'Rover drive sonification off.');
@@ -16877,6 +17129,10 @@ const d = labToolData.solarSystem || {};
                         // This authored route sits on top of free roam: it observes the same
                         // terrain/drive state, never takes control, and can be reset at will.
                         var roverTraversePanel = null;
+                        var roverTraverseToggle = null;
+                        var roverTraverseToggleSummary = null;
+                        var roverTraverseToggleArrow = null;
+                        var roverTraverseDetails = null;
                         var roverTraverseStepEl = null;
                         var roverTraverseProgressEl = null;
                         var roverTraverseDetailEl = null;
@@ -16953,11 +17209,30 @@ const d = labToolData.solarSystem || {};
                           roverTraversePanel = document.createElement('section');
                           roverTraversePanel.id = 'rover-traverse-panel';
                           roverTraversePanel.setAttribute('aria-label', 'Planetary Field Traverse mission');
-                          roverTraversePanel.style.cssText = 'position:absolute;right:12px;bottom:12px;z-index:15;width:min(310px,calc(100% - 24px));padding:11px 12px;border:1px solid rgba(45,212,191,0.48);border-radius:11px;background:rgba(7,18,28,0.92);color:#dbeafe;font:11px/1.35 system-ui;box-shadow:0 8px 22px rgba(2,6,23,0.48);pointer-events:auto';
-                          roverTraversePanel.innerHTML = '<div style="font-size:12px;font-weight:800;color:#5eead4;letter-spacing:.04em">PLANETARY FIELD TRAVERSE</div>' +
+                          roverTraversePanel.style.cssText = 'position:absolute;right:144px;bottom:12px;z-index:15;width:min(310px,calc(100% - 24px));padding:11px 12px;border:1px solid rgba(45,212,191,0.48);border-radius:11px;background:rgba(7,18,28,0.92);color:#dbeafe;font:11px/1.35 system-ui;box-shadow:0 8px 22px rgba(2,6,23,0.48);pointer-events:auto';
+                          roverTraversePanel.innerHTML = '<button id="rover-traverse-toggle" type="button" aria-expanded="true" aria-controls="rover-traverse-details" style="display:none;width:100%;min-height:44px;padding:7px 10px;border:0;background:linear-gradient(90deg,rgba(13,45,52,.98),rgba(7,18,28,.96));color:#ccfbf1;align-items:center;justify-content:space-between;gap:8px;text-align:left;cursor:pointer"><span style="min-width:0"><span style="display:block;font:800 9px/1.1 system-ui;letter-spacing:.12em;color:#5eead4">FIELD MISSION</span><span id="rover-traverse-toggle-summary" style="display:block;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:700 10px/1.2 system-ui">Deployment in progress</span></span><span id="rover-traverse-toggle-arrow" aria-hidden="true" style="font-size:18px;color:#5eead4">&#9656;</span></button>' +
+                            '<div id="rover-traverse-details" data-rover-traverse-details="true"><div style="font-size:12px;font-weight:800;color:#5eead4;letter-spacing:.04em">PLANETARY FIELD TRAVERSE</div>' +
                             '<div id="rover-traverse-step" style="font-weight:700;margin-top:4px">Deployment in progress</div>' +
                             '<div id="rover-traverse-progress" style="color:#fbbf24;margin-top:2px">Step 0 of 5</div>' +
-                            '<div id="rover-traverse-detail" style="color:#cbd5e1;margin-top:3px">Free roam remains available.</div>';
+                            '<div id="rover-traverse-detail" style="color:#cbd5e1;margin-top:3px">Free roam remains available.</div></div>';
+                          roverTraverseToggle = roverTraversePanel.querySelector('#rover-traverse-toggle');
+                          roverTraverseToggleSummary = roverTraversePanel.querySelector('#rover-traverse-toggle-summary');
+                          roverTraverseToggleArrow = roverTraversePanel.querySelector('#rover-traverse-toggle-arrow');
+                          roverTraverseDetails = roverTraversePanel.querySelector('#rover-traverse-details');
+                          var roverTraverseStartsCollapsed = !!(window.matchMedia && window.matchMedia('(max-width: 640px)').matches);
+                          function syncRoverTraverseDisclosure() {
+                            var collapsed = roverTraversePanel.getAttribute('data-collapsed') === 'true';
+                            roverTraverseToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+                            roverTraverseToggle.setAttribute('aria-label', collapsed ? 'Expand planetary field traverse mission' : 'Collapse planetary field traverse mission');
+                            roverTraverseToggleArrow.textContent = collapsed ? '\u25B8' : '\u25BE';
+                          }
+                          roverTraversePanel.setAttribute('data-collapsed', roverTraverseStartsCollapsed ? 'true' : 'false');
+                          roverTraverseToggle.addEventListener('click', function() {
+                            var collapsed = roverTraversePanel.getAttribute('data-collapsed') === 'true';
+                            roverTraversePanel.setAttribute('data-collapsed', collapsed ? 'false' : 'true');
+                            syncRoverTraverseDisclosure();
+                          });
+                          syncRoverTraverseDisclosure();
                           roverTraverseStepEl = roverTraversePanel.querySelector('#rover-traverse-step');
                           roverTraverseProgressEl = roverTraversePanel.querySelector('#rover-traverse-progress');
                           roverTraverseDetailEl = roverTraversePanel.querySelector('#rover-traverse-detail');
@@ -16967,7 +17242,7 @@ const d = labToolData.solarSystem || {};
                           roverTraverseButton.textContent = 'Start traverse';
                           roverTraverseButton.disabled = true;
                           roverTraverseButton.style.cssText = 'margin-top:8px;min-height:34px;padding:6px 10px;border:1px solid rgba(94,234,212,.55);border-radius:7px;background:#12313a;color:#ccfbf1;font:700 11px system-ui;cursor:pointer';
-                          roverTraversePanel.appendChild(roverTraverseButton);
+                          roverTraverseDetails.appendChild(roverTraverseButton);
                           canvasEl.parentElement.appendChild(roverTraversePanel);
 
                           roverTraverseRingGeo = new THREE.RingGeometry(1.85, 2.15, 32);
@@ -17085,6 +17360,11 @@ const d = labToolData.solarSystem || {};
                           if (force || roverTraverseLastDetail !== detailText) {
                             roverTraverseLastDetail = detailText;
                             roverTraverseDetailEl.textContent = detailText;
+                          }
+                          var traverseCompactProgress = roverTraverse.status === 'ready' ? '0/5 optional' : (roverTraverse.status === 'unavailable' ? 'free roam' : (roverTraverse.step === 'complete' ? '5/5 complete' : 'step ' + stepNumber + '/5'));
+                          var traverseCompactSummary = stepText + ' \u00b7 ' + traverseCompactProgress;
+                          if (roverTraverseToggleSummary && (force || roverTraverseToggleSummary.textContent !== traverseCompactSummary)) {
+                            roverTraverseToggleSummary.textContent = traverseCompactSummary;
                           }
                           canvasEl.dataset.roverMissionStatus = roverTraverse.status.replace('_', '-');
                           canvasEl.dataset.roverMissionStep = roverTraverse.step.replace('_', '-');
@@ -17266,7 +17546,7 @@ const d = labToolData.solarSystem || {};
 
                         var navCard = document.createElement('div');
 
-                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.92) 0%,rgba(7,11,24,0.95) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.50);max-width:280px;opacity:0;transition:opacity 0.4s;display:none;box-shadow:inset 0 1px 0 rgba(167,139,250,0.35),0 0 22px rgba(167,139,250,0.12),0 6px 18px rgba(7,11,24,0.60)';
+                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.92) 0%,rgba(7,11,24,0.95) 100%);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.50);max-width:280px;opacity:0;transition:opacity 0.4s;display:none;box-shadow:inset 0 1px 0 rgba(167,139,250,0.35),0 0 22px rgba(167,139,250,0.12),0 6px 18px rgba(7,11,24,0.60)';
 
                         canvasEl.parentElement.appendChild(navCard);
 
@@ -17434,7 +17714,7 @@ const d = labToolData.solarSystem || {};
 
                         var plotterPanel = document.createElement('div');
 
-                        plotterPanel.style.cssText = 'position:absolute;top:50%;right:8px;transform:translateY(-50%);background:rgba(0,0,0,0.92);backdrop-filter:blur(12px);border-radius:14px;padding:16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:auto;z-index:14;border:1px solid rgba(56,189,248,0.3);width:260px;opacity:0;transition:opacity 0.3s;display:none';
+                        plotterPanel.style.cssText = 'position:absolute;top:50%;right:8px;transform:translateY(-50%);background:rgba(0,0,0,0.92);border-radius:14px;padding:16px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:auto;z-index:14;border:1px solid rgba(56,189,248,0.3);width:260px;opacity:0;transition:opacity 0.3s;display:none';
 
                         plotterPanel.innerHTML = '<div style="font-weight:bold;font-size:14px;color:#38bdf8;margin-bottom:8px;letter-spacing:1px">\uD83D\uDDFA\uFE0F COURSE PLOTTER</div>' +
 
@@ -17465,7 +17745,7 @@ const d = labToolData.solarSystem || {};
                         canvasEl.parentElement.appendChild(plotterPanel);
 
                         var routeCoach = document.createElement('div');
-                        routeCoach.style.cssText = 'position:absolute;top:74px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(15,23,42,0.92),rgba(7,11,24,0.95));backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;color:#e2e8f0;font-family:system-ui;font-size:10px;pointer-events:none;z-index:12;border:1px solid rgba(129,140,248,0.38);max-width:320px;width:70%;display:none;opacity:0;transition:opacity 0.25s;box-shadow:inset 0 1px 0 rgba(129,140,248,0.25),0 8px 24px rgba(7,11,24,0.58)';
+                        routeCoach.style.cssText = 'position:absolute;top:74px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(15,23,42,0.92),rgba(7,11,24,0.95));border-radius:12px;padding:10px 14px;color:#e2e8f0;font-family:system-ui;font-size:10px;pointer-events:none;z-index:12;border:1px solid rgba(129,140,248,0.38);max-width:320px;width:70%;display:none;opacity:0;transition:opacity 0.25s;box-shadow:inset 0 1px 0 rgba(129,140,248,0.25),0 8px 24px rgba(7,11,24,0.58)';
                         canvasEl.parentElement.appendChild(routeCoach);
 
 
@@ -27734,7 +28014,7 @@ const d = labToolData.solarSystem || {};
 
               // === TUTORIAL OVERLAY (first visit) ===
               !d.tutorialDismissed && React.createElement("div", {
-                className: "fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4",
+                className: "solar-tutorial-backdrop fixed inset-0 flex items-center justify-center z-50 p-4",
                 ref: tutorialDialogRef,
                 "data-solarsystem-tutorial": true,
                 role: "dialog",
@@ -27744,31 +28024,47 @@ const d = labToolData.solarSystem || {};
                 onKeyDown: handleTutorialKeyDown,
                 onClick: function(e) { if (e.target === e.currentTarget) upd('tutorialDismissed', true); }
               },
-                React.createElement("div", { className: "rounded-2xl p-6 max-w-md w-full max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl " + (isDark ? 'bg-slate-800 border border-slate-700' : 'bg-white') },
-                  React.createElement("div", { className: "text-center mb-4" },
-                    React.createElement("div", { "aria-hidden": "true", className: "text-4xl mb-2" }, "\u2600\uFE0F\uD83C\uDF0D\uD83D\uDE80"),
-                    React.createElement("h2", { ref: tutorialTitleRef, id: "solar-system-tutorial-title", tabIndex: -1, className: "text-lg font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded " + (isDark ? 'text-slate-100' : 'text-slate-800') }, __alloT('stem.solarsystem.welcome_to_solar_system_explorer', "Welcome to Solar System Explorer!")),
-                    React.createElement("p", { id: "solar-system-tutorial-description", className: "text-sm mt-1 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.solarsystem.your_interactive_guide_to_our_cosmic_n', "Your interactive guide to our cosmic neighborhood"))
+                React.createElement("div", { className: "solar-tutorial-card rounded-2xl max-w-xl w-full max-h-[calc(100vh-2rem)] shadow-2xl " + (isContrast ? "solar-tutorial-card--contrast" : "") },
+                  React.createElement("div", { className: "solar-tutorial-orbit", "aria-hidden": "true" },
+                    React.createElement("span", { className: "solar-tutorial-orbit-line solar-tutorial-orbit-line--three" }),
+                    React.createElement("span", { className: "solar-tutorial-orbit-line solar-tutorial-orbit-line--two" }),
+                    React.createElement("span", { className: "solar-tutorial-orbit-line solar-tutorial-orbit-line--one" }),
+                    React.createElement("span", { className: "solar-tutorial-sun" }),
+                    React.createElement("span", { className: "solar-tutorial-planet solar-tutorial-earth" }),
+                    React.createElement("span", { className: "solar-tutorial-planet solar-tutorial-mars" }),
+                    React.createElement("span", { className: "solar-tutorial-planet solar-tutorial-jupiter" }),
+                    React.createElement("span", { className: "solar-tutorial-craft" }, "\uD83D\uDE80")
                   ),
-                  React.createElement("div", { className: "space-y-2 text-xs " + (isDark ? 'text-slate-300' : 'text-slate-600') },
-                    [
-                      { icon: '\uD83C\uDF0D', text: __alloT('stem.solarsystem.click_any_planet_in_the_3d_view_to_sel', 'Click any planet in the 3D view to select it') },
-                      { icon: '\uD83C\uDF05', text: __alloT('stem.solarsystem.surface_view_shows_the_planet_with_orb', 'Surface View shows the planet with orbiting moons') },
-                      { icon: '\uD83C\uDF0B', text: __alloT('stem.solarsystem.interior_view_reveals_the_hidden_layer', 'Interior View reveals the hidden layers inside each planet') },
-                      { icon: '\uD83D\uDE97', text: __alloT('stem.solarsystem.deploy_a_rover_probe_to_explore_planet', 'Deploy a rover/probe to explore planet surfaces in 3D') },
-                      { icon: '\u2B50', text: __alloT('stem.solarsystem.earn_research_points_by_completing_exp', 'Earn Research Points by completing exploration challenges') },
-                      { icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', text: __alloT('stem.solarsystem.ask_the_ai_space_tutor_any_question_ab', 'Ask the AI Space Tutor any question about the cosmos') }
-                    ].map(function(step, si) {
-                      return React.createElement("div", { key: si, className: "flex items-center gap-2" },
-                        React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, step.icon),
-                        React.createElement("span", null, step.text)
-                      );
-                    })
-                  ),
-                  React.createElement("button", { type: "button", "aria-label": __alloT('stem.solarsystem.start_exploring', "Start Exploring!"),
-                    onClick: function() { upd('tutorialDismissed', true); playBeep(); },
-                    className: "mt-4 w-full min-h-[44px] py-2 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-600 hover:to-purple-600 shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-                  }, __alloT('stem.solarsystem.start_exploring_2', "\uD83D\uDE80 Start Exploring!"))
+                  React.createElement("div", { className: "solar-tutorial-content" },
+                    React.createElement("div", { className: "text-center" },
+                      React.createElement("div", { className: "solar-tutorial-eyebrow" }, __alloT('stem.solarsystem.solar_system_explorer_2', "Solar System Explorer")),
+                      React.createElement("h2", { ref: tutorialTitleRef, id: "solar-system-tutorial-title", tabIndex: -1, className: "solar-tutorial-title font-black rounded" }, __alloT('stem.solarsystem.welcome_to_solar_system_explorer', "Welcome to Solar System Explorer!")),
+                      React.createElement("p", { id: "solar-system-tutorial-description", className: "solar-tutorial-description text-sm mt-1" }, __alloT('stem.solarsystem.your_interactive_guide_to_our_cosmic_n', "Your interactive guide to our cosmic neighborhood"))
+                    ),
+                    React.createElement("div", { className: "solar-tutorial-steps", role: "list" },
+                      [
+                        { icon: '\uD83C\uDF0D', accent: '#38bdf8', text: __alloT('stem.solarsystem.click_any_planet_in_the_3d_view_to_sel', 'Click any planet in the 3D view to select it') },
+                        { icon: '\uD83C\uDF05', accent: '#f59e0b', text: __alloT('stem.solarsystem.surface_view_shows_the_planet_with_orb', 'Surface View shows the planet with orbiting moons') },
+                        { icon: '\uD83C\uDF0B', accent: '#fb7185', text: __alloT('stem.solarsystem.interior_view_reveals_the_hidden_layer', 'Interior View reveals the hidden layers inside each planet') },
+                        { icon: '\uD83D\uDE97', accent: '#34d399', text: __alloT('stem.solarsystem.deploy_a_rover_probe_to_explore_planet', 'Deploy a rover/probe to explore planet surfaces in 3D') },
+                        { icon: '\u2B50', accent: '#fbbf24', text: __alloT('stem.solarsystem.earn_research_points_by_completing_exp', 'Earn Research Points by completing exploration challenges') },
+                        { icon: '\uD83E\uDDD1\u200D\uD83D\uDE80', accent: '#c084fc', text: __alloT('stem.solarsystem.ask_the_ai_space_tutor_any_question_ab', 'Ask the AI Space Tutor any question about the cosmos') }
+                      ].map(function(step, si) {
+                        return React.createElement("div", { key: si, role: "listitem", "data-step": String(si + 1), className: "solar-tutorial-step", style: { "--tutorial-accent": step.accent } },
+                          React.createElement("span", { "aria-hidden": "true", className: "solar-tutorial-step-icon" }, step.icon),
+                          React.createElement("span", { className: "solar-tutorial-step-copy" }, step.text)
+                        );
+                      })
+                    ),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.solarsystem.start_exploring', "Start Exploring!"),
+                      onClick: function() { upd('tutorialDismissed', true); playBeep(); },
+                      className: "solar-tutorial-launch mt-5 w-full min-h-[44px] py-2 rounded-xl text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
+                    },
+                      React.createElement("span", { className: "solar-tutorial-launch-icon", "aria-hidden": "true" }, "\uD83D\uDE80"),
+                      React.createElement("span", null, __alloT('stem.solarsystem.start_exploring', "Start Exploring!")),
+                      React.createElement("span", { className: "solar-tutorial-launch-arrow", "aria-hidden": "true" }, "\u2192")
+                    )
+                  )
                 )
               ),
 

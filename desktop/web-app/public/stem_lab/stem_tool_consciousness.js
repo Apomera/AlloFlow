@@ -178,6 +178,72 @@
     return guides[profile.id];
   }
 
+  function caseAuditMinimumForProfile(profile) {
+    return { early: 8, elementary: 14, middle: 20, high: 24, college: 28, graduate: 32 }[profile.id] || 20;
+  }
+
+  function caseAuditReadyForProfile(audit, profile) {
+    return !!(audit && audit.theoryId) && caseAuditFieldsReady(audit, caseAuditMinimumForProfile(profile));
+  }
+
+  // Observation / interpretation / limit. Each field is [label, prompt, placeholder].
+  function caseAuditGuideForProfile(profile) {
+    var guides = {
+      early: {
+        lead: 'Look at the story. Write what we can see, what one idea says about it, and what we still cannot tell.',
+        observation: ['What we can see', 'Name something in the story anyone could watch or measure.', 'I can see...'],
+        interpretation: ['What the idea says', 'What does your idea say is happening?', 'The idea says...'],
+        limit: ['What we still cannot tell', 'Name one thing the clue does not show.', 'We still cannot tell...']
+      },
+      elementary: {
+        lead: 'Separate the three parts: an observation, what a theory adds to it, and what the observation cannot prove.',
+        observation: ['Observation', 'Name one thing in the case that was observed or measured.', 'Researchers observed...'],
+        interpretation: ['Interpretation', 'Say what the chosen theory adds to that observation.', 'This theory says this shows...'],
+        limit: ['Limit', 'Say one thing the observation cannot prove by itself.', 'This does not prove...']
+      },
+      middle: {
+        lead: 'Write the observation without the theory in it, then add the theory, then state the limit. The three should not blur.',
+        observation: ['Observation', 'State the measured or observed fact in theory-neutral words.', 'The measured result was...'],
+        interpretation: ['Interpretation', 'State what the selected theory infers from it and why.', 'Read through this lens, the result suggests...'],
+        limit: ['Limit', 'Name a correlation, proxy, or report limit that keeps the interpretation provisional.', 'The observation cannot show...']
+      },
+      high: {
+        lead: 'Audit one inferential step: observation, theory-dependent interpretation, and the confound or alternative that limits it.',
+        observation: ['Observation', 'The result, method, and contrast, stated without interpretation.', 'The contrast showed...'],
+        interpretation: ['Interpretation', 'What the theory infers, naming the bridge from result to claim.', 'The theory reads this as...'],
+        limit: ['Limit', 'The alternative explanation or confound the design does not exclude.', 'The design cannot exclude...']
+      },
+      college: {
+        lead: 'Distinguish the empirical result from the theory-relative inference and identify the assumption doing the inferential work.',
+        observation: ['Result', 'The operationalized measurement and contrast.', 'The study operationalized... and found...'],
+        interpretation: ['Inference', 'The theory-dependent reading and the bridge principle it requires.', 'Under this theory the result indicates... given the assumption that...'],
+        limit: ['Identification limit', 'The alternative model or proxy-validity threat the result does not rule out.', 'The result underdetermines...']
+      },
+      graduate: {
+        lead: 'Reconstruct the chain: estimand and measurement, theory-relative inference with its auxiliaries, and the identification threat.',
+        observation: ['Measurement', 'Construct, manipulation, measurement model, and observed effect.', 'The estimand was...; the measured effect was...'],
+        interpretation: ['Model-relative inference', 'The inference licensed by the theory plus its auxiliary assumptions.', 'Conditional on..., the theory infers...'],
+        limit: ['Identification threat', 'The confound, selection effect, or alternative generating process left open.', 'Identification fails if...']
+      }
+    };
+    return guides[profile.id];
+  }
+
+  // Self-check rubric shown before "Finish guided debate". Deliberately NOT a
+  // gate: ticking a box proves nothing, so the tool asks and then trusts.
+  function debateCheckLabelsForProfile(profile) {
+    if (profile.id === 'early') {
+      return { steelman: 'I said what each idea would say, in a fair way.', evidenceLimit: 'I said what my clue cannot prove.', uncertainty: 'I said what nobody knows yet.' };
+    }
+    if (profile.id === 'elementary') {
+      return { steelman: 'I explained both ideas the way their supporters would.', evidenceLimit: 'I named an observation and something it cannot prove.', uncertainty: 'I named an unanswered question.' };
+    }
+    if (profile.id === 'middle') {
+      return { steelman: 'Each position is stated as its strongest supporter would state it.', evidenceLimit: 'The evidence is paired with a correlation, proxy, or report limit.', uncertainty: 'The uncertainty names an observation that could favor one account.' };
+    }
+    return { steelman: 'Each position is steelmanned, including its constitutive commitment.', evidenceLimit: 'The evidence line names an alternative explanation or confound.', uncertainty: 'The uncertainty is a discriminating result, not a restatement of the dispute.' };
+  }
+
   function debateReadyForProfile(debate, profile) {
     if (!debate || !debate.theoryA || !debate.theoryB || debate.theoryA === debate.theoryB) return false;
     var minimum = debateMinimumForProfile(profile);
@@ -321,7 +387,7 @@
 
   var THEORIES = {
     gnw: {
-      id: 'gnw', group: 'science', icon: '\uD83C\uDF10', short: 'GNWT', name: 'Global Neuronal Workspace Theory', focus: ['global'],
+      id: 'gnw', group: 'science', icon: '\uD83C\uDF10', short: 'GNWT', nick: 'the sharing idea', plainAsk: 'whether the clue got shared with many brain helpers at once.', name: 'Global Neuronal Workspace Theory', focus: ['global'],
       copy: {
         early: {
           summary: 'The brain has many quiet helpers. You notice some information when it is shared widely.',
@@ -359,7 +425,7 @@
       }
     },
     rpt: {
-      id: 'rpt', group: 'science', icon: '\u21A9\uFE0F', short: 'RPT', name: 'Recurrent Processing Theory', focus: ['recurrence'],
+      id: 'rpt', group: 'science', icon: '\u21A9\uFE0F', short: 'RPT', nick: 'the loop-back idea', plainAsk: 'whether the signal looped back before anyone noticed it.', name: 'Recurrent Processing Theory', focus: ['recurrence'],
       copy: {
         early: {
           summary: 'Seeing may need brain signals to travel forward and then loop back.',
@@ -396,7 +462,7 @@
       }
     },
     iit: {
-      id: 'iit', group: 'science', icon: '\u2295', short: 'IIT', name: 'Integrated Information Theory', focus: ['integration'],
+      id: 'iit', group: 'science', icon: '\u2295', short: 'IIT', nick: 'the working-together idea', plainAsk: 'how well all the parts worked together as one whole.', name: 'Integrated Information Theory', focus: ['integration'],
       copy: {
         early: {
           summary: 'One idea asks how strongly the parts of a system work together as one whole.',
@@ -434,7 +500,7 @@
       }
     },
     hot: {
-      id: 'hot', group: 'science', icon: '\uD83E\uDE9E', short: 'HOT', name: 'Higher-Order Theories', focus: ['metacognition'],
+      id: 'hot', group: 'science', icon: '\uD83E\uDE9E', short: 'HOT', nick: 'the noticing-you-noticed idea', plainAsk: 'whether the brain also marked "I am noticing this."', name: 'Higher-Order Theories', focus: ['metacognition'],
       copy: {
         early: {
           summary: 'A brain state may become conscious when the mind also represents that it is having that state.',
@@ -498,7 +564,7 @@
       }
     },
     ast: {
-      id: 'ast', group: 'science', icon: '\uD83D\uDCCD', short: 'AST', name: 'Attention Schema Theory', focus: ['selfmodel'],
+      id: 'ast', group: 'science', icon: '\uD83D\uDCCD', short: 'AST', plainAsk: 'whether the brain kept a simple map of what it was paying attention to.', name: 'Attention Schema Theory', focus: ['selfmodel'],
       copy: {
         elementary: {
           summary: 'The brain may build a simple model of what its attention is doing, like a map that helps it control focus.',
@@ -530,7 +596,7 @@
       }
     },
     functionalism: {
-      id: 'functionalism', group: 'philosophy', icon: '\u2699\uFE0F', short: 'Functionalism', name: 'Functionalism', focus: ['global', 'metacognition'],
+      id: 'functionalism', group: 'philosophy', icon: '\u2699\uFE0F', short: 'Functionalism', plainAsk: 'whether the state does the same job, whatever it is made of.', caseAsk: 'whether the causal organization on display is the one it says constitutes a mental state, whatever material runs it.', name: 'Functionalism', focus: ['global', 'metacognition'],
       copy: {
         elementary: {
           summary: 'A mental state can be understood by the job it does: what causes it and how it changes memory, choices, words, and action.',
@@ -562,7 +628,7 @@
       }
     },
     physicalism: {
-      id: 'physicalism', group: 'philosophy', icon: '\u269B\uFE0F', short: 'Physicalism', name: 'Physicalism', focus: ['biology'],
+      id: 'physicalism', group: 'philosophy', icon: '\u269B\uFE0F', short: 'Physicalism', caseAsk: 'whether the physical facts of this case already fix every fact about the experience, or whether something has been left out.', name: 'Physicalism', focus: ['biology'],
       copy: {
         middle: {
           summary: 'Conscious facts are physical facts, or are fully grounded in the physical world.',
@@ -586,7 +652,7 @@
       }
     },
     dualism: {
-      id: 'dualism', group: 'philosophy', icon: '\u25D1', short: 'Dualism', name: 'Dualist Views', focus: ['phenomenal'],
+      id: 'dualism', group: 'philosophy', icon: '\u25D1', short: 'Dualism', caseAsk: 'whether a complete physical description of this case would still omit what the experience is like.', name: 'Dualist Views', focus: ['phenomenal'],
       copy: {
         middle: {
           summary: 'Mental and physical reality may involve fundamentally different kinds of properties or substances.',
@@ -610,7 +676,7 @@
       }
     },
     panpsychism: {
-      id: 'panpsychism', group: 'philosophy', icon: '\u2726', short: 'Panpsychism', name: 'Panpsychist Views', focus: ['integration'],
+      id: 'panpsychism', group: 'philosophy', icon: '\u2726', short: 'Panpsychism', caseAsk: 'whether the experience here would have to be built out of wholly non-experiential parts, or out of more basic experiential ones.', name: 'Panpsychist Views', focus: ['integration'],
       copy: {
         middle: {
           summary: 'Very basic experiential properties may be fundamental and widespread in nature.',
@@ -633,7 +699,7 @@
       }
     },
     illusionism: {
-      id: 'illusionism', group: 'philosophy', icon: '\uD83C\uDFA9', short: 'Illusionism', name: 'Illusionist / Deflationary Views', focus: ['selfmodel'],
+      id: 'illusionism', group: 'philosophy', icon: '\uD83C\uDFA9', short: 'Illusionism', caseAsk: 'whether the introspective report in this case describes an experience accurately, or describes a model of one.', name: 'Illusionist / Deflationary Views', focus: ['selfmodel'],
       copy: {
         high: {
           summary: 'Introspection may misrepresent experiences as having special intrinsic, ineffable properties; explaining that representation may dissolve part of the hard problem.',
@@ -653,7 +719,7 @@
       }
     },
     biological: {
-      id: 'biological', group: 'philosophy', icon: '\uD83E\uDDEC', short: 'Biological naturalism', name: 'Biological Naturalism', focus: ['biology'],
+      id: 'biological', group: 'philosophy', icon: '\uD83E\uDDEC', short: 'Biological naturalism', caseAsk: 'whether specific biological causal powers are doing the constitutive work here, rather than the information processing alone.', name: 'Biological Naturalism', focus: ['biology'],
       copy: {
         college: {
           summary: 'Consciousness is a real biological feature caused by lower-level brain processes, while syntax or formal computation alone is not sufficient.',
@@ -670,7 +736,7 @@
       }
     },
     neutral: {
-      id: 'neutral', group: 'philosophy', icon: '\u25C7', short: 'Neutral monism', name: 'Neutral Monist Views', focus: ['phenomenal'],
+      id: 'neutral', group: 'philosophy', icon: '\u25C7', short: 'Neutral monism', caseAsk: 'whether the mental and physical descriptions of this case are two organizations of one more basic set of elements.', name: 'Neutral Monist Views', focus: ['phenomenal'],
       copy: {
         graduate: {
           summary: 'Mental and physical descriptions may derive from a more fundamental basis that is itself neither exclusively mental nor exclusively physical.',
@@ -684,13 +750,15 @@
     }
   };
 
+  // earlyLabel/earlyPlain are what K-2 reads. "Irreducible cause-effect whole" is
+  // not a caption a six-year-old can use; the plain form keeps the same claim.
   var SIGNAL_STAGES = [
-    { id: 'input', label: '1. Feedforward signal', plain: 'A signal first moves through sensory pathways.' },
-    { id: 'recurrence', label: '2. Local return loops', plain: 'Later processing feeds back to earlier sensory areas.' },
-    { id: 'global', label: '3. Global availability', plain: 'Information becomes usable by memory, report, planning, and control.' },
-    { id: 'metacognition', label: '4. Higher-order representation', plain: 'The system represents itself as being in a mental state.' },
-    { id: 'integration', label: '5. Intrinsic integration', plain: 'The system is analyzed as an irreducible cause-effect whole.' },
-    { id: 'selfmodel', label: '6. Attention model', plain: 'A simplified model tracks and controls attention.' }
+    { id: 'input', label: '1. Feedforward signal', plain: 'A signal first moves through sensory pathways.', earlyLabel: '1. A signal comes in', earlyPlain: 'Eyes, ears, or skin send a signal to the brain.' },
+    { id: 'recurrence', label: '2. Local return loops', plain: 'Later processing feeds back to earlier sensory areas.', earlyLabel: '2. The signal loops back', earlyPlain: 'The signal goes forward, then comes back to check.' },
+    { id: 'global', label: '3. Global availability', plain: 'Information becomes usable by memory, report, planning, and control.', earlyLabel: '3. Shared everywhere', earlyPlain: 'Many brain helpers can use it: memory, words, and choices.' },
+    { id: 'metacognition', label: '4. Higher-order representation', plain: 'The system represents itself as being in a mental state.', earlyLabel: '4. Noticing that you noticed', earlyPlain: 'The brain marks "I am seeing this."' },
+    { id: 'integration', label: '5. Intrinsic integration', plain: 'The system is analyzed as an irreducible cause-effect whole.', earlyLabel: '5. Working as one whole', earlyPlain: 'One idea asks how well all the parts work together.' },
+    { id: 'selfmodel', label: '6. Attention model', plain: 'A simplified model tracks and controls attention.', earlyLabel: '6. A map of attention', earlyPlain: 'The brain keeps a simple map of what it is paying attention to.' }
   ];
 
   var FOCUS_LABELS = {
@@ -704,6 +772,23 @@
     phenomenal: 'the felt character that no step in this diagram measures',
     biology: 'the physical substrate the whole sequence runs on'
   };
+
+  // One per reading path, shown once under the interpretation grid.
+  var ANALYSIS_MOVES = {
+    middle: { label: 'Comparison move', text: 'For two of the cards above, name one observation the lens explains and one question it leaves open.' },
+    high: { label: 'Comparison move', text: 'For two of the cards above, identify whether the claim targets access, phenomenal character, or report, then name an alternative explanation.' },
+    college: { label: 'Operational move', text: 'For two of the cards above, specify the construct, the proxy, the bridge principle, and a result that would discriminate the view.' },
+    graduate: { label: 'Research audit', text: 'For two of the cards above, state the auxiliary assumptions, the causal identification strategy, and a preregistered revision condition.' }
+  };
+
+  function analysisMoveFor(profile) { return ANALYSIS_MOVES[profile.id] || null; }
+
+  // Empirical cases carry data; thought experiments test implications. The pill
+  // used to colour everything but ai-emotion as science, so the philosophical
+  // zombie was labelled a scientific case.
+  var CASE_KINDS = { zombie: 'thought', 'ai-emotion': 'thought' };
+
+  function caseKindFor(caseId) { return CASE_KINDS[caseId] === 'thought' ? 'thought' : 'empirical'; }
 
   function stageMatchesTheory(stage, theory) {
     return theory.group === 'science' && (theory.focus || []).indexOf(stage.id) !== -1;
@@ -732,6 +817,10 @@
       blurb: 'A brief target, an optional mask, an attention manipulation, and an optional report task.',
       plainBlurb: 'A picture flashes. Something can cover it up. We can ask the person what they saw.',
       strengthLabel: 'Target strength', interferenceLabel: 'Mask strength', topDownLabel: 'Attention to the target',
+      strengthHint: 'How strong the target is when it arrives. It drives the first sweep for the first three steps of the run.',
+      interferenceHint: 'How hard the mask interrupts the return loops. Recurrence is damped for the whole run; the first sweep is only partly blocked, which is why it survives a strong mask.',
+      topDownHint: 'Gain applied where recurrence feeds the global stage. It changes whether ignition happens, not what arrived.',
+      plainStrengthHint: 'Slide right to make the picture clearer.', plainInterferenceHint: 'Slide right to cover more of it up.',
       plainStrengthLabel: 'How clear is the picture?', plainInterferenceLabel: 'How much covers it up?',
       reportLabel: 'Report required', plainReportLabel: 'We ask what they saw',
       reportOnNote: 'The participant rates or describes the target after each trial.',
@@ -754,6 +843,10 @@
       blurb: 'A representation inside a tested model, an interfering context, a steering nudge, and an optional request to verbalize.',
       plainBlurb: 'An idea appears inside a computer program. Other words can crowd it out. We can ask the program what it is thinking about.',
       strengthLabel: 'Representation salience', interferenceLabel: 'Distractor interference', topDownLabel: 'Top-down steering',
+      strengthHint: 'How salient the representation is in the residual stream when it first appears. It drives input encoding for the first three steps.',
+      interferenceHint: 'How much competing context crowds the representation during local mixing. Mixing is damped for the whole run; the encoding step is only partly blocked.',
+      topDownHint: 'Steering gain applied where local mixing feeds the verbalizable subspace. It changes whether the content enters the subspace, not what was encoded.',
+      plainStrengthHint: 'Slide right to make the idea stronger.', plainInterferenceHint: 'Slide right to crowd it out more.',
       plainStrengthLabel: 'How strong is the idea?', plainInterferenceLabel: 'How much crowds it out?',
       reportLabel: 'Verbal report requested', plainReportLabel: 'We ask what it is thinking',
       reportOnNote: 'The model is asked to state what it is currently representing.',
@@ -854,7 +947,7 @@
     var space = isModel ? 'the verbalizable subspace' : 'the global workspace';
     if (theory.id === 'gnw') {
       return { met: m.ignited && m.breadth >= 0.66, text: m.ignited
-        ? 'Activity in ' + space + ' crossed this model’s ignition threshold at step ' + m.ignitionTick + ' and reached ' + Math.round(m.breadth * 3) + ' of 3 downstream stages.'
+        ? 'Activity in ' + space + ' crossed this model’s ignition threshold at step ' + (m.ignitionTick + 1) + ' and reached ' + Math.round(m.breadth * 3) + ' of 3 downstream stages.'
         : 'Activity in ' + space + ' peaked at ' + simPercent(m.workspace) + ', below this model’s ignition threshold, so the availability criterion is not met on this run.' };
     }
     if (theory.id === 'rpt') {
@@ -976,6 +1069,48 @@
     jspace: { presetId: 'non-verbalizable', why: 'The bench can hide content from the verbalizable lens while downstream computation continues, which is the method limitation this case turns on.' },
     'ai-emotion': { presetId: 'clear', substrate: 'model', why: 'Run the clear signal on the model lane, then switch lanes: identical markers, and the felt-experience row still reads Not measured. That contrast is what this case is about.' }
   };
+
+  // One worked evidence note per case: a SHAPE to copy, not an answer. The
+  // plain register serves K-5; the standard register serves grades 6 and up.
+  // Each names the theory it interprets through, so "Cannot show" stays honest.
+  var CASE_NOTE_EXAMPLES = {
+    'green-light': {
+      plain: { theory: 'gnw', observation: 'Maya said "green" and crossed at the right time. A camera sorted the light as green too.', interpretation: 'the sharing idea says Maya noticed the light because the signal was shared with her memory, her words, and her choices.', limit: 'sorting the color right does not show what green looks like from the inside, for Maya or for the camera.' },
+      standard: { theory: 'gnw', observation: 'Detection accuracy, confidence, report, and a late widespread signal were all recorded on near-threshold green trials.', interpretation: 'GNWT reads the late widespread signal as the green content becoming globally available for report and rule use.', limit: 'the report task recruits memory and decision processes, so the late signal may partly index responding rather than seeing.' }
+    },
+    'animal-moral-patient': {
+      plain: { theory: 'gnw', observation: 'The dog protected its paw, avoided the sharp place later, and came for comfort.', interpretation: 'the sharing idea says the hurt signal was shared with the dog\'s memory and choices, because it changed what the dog did later.', limit: 'watching the dog does not show whether the paw hurt from the inside. We can still be gentle.' },
+      standard: { theory: 'gnw', observation: 'The octopus showed injury-directed behavior, lasting avoidance, and a preference for a context paired with pain relief.', interpretation: 'GNWT reads the flexible, cross-situation use of the injury signal as evidence of broadly available content.', limit: 'flexible use is evidence about access; it does not measure felt pain, so welfare judgments still rest on graded inference.' }
+    },
+    'ai-emotion': {
+      plain: { theory: 'hot', observation: 'The robot said "I am sad" when its battery was low, then asked for help.', interpretation: 'the noticing-you-noticed idea asks whether the robot noticed its own low-battery state, not just reported it.', limit: 'saying sad and acting sad do not show a feeling. That part is still unknown.' },
+      standard: { theory: 'functionalism', observation: 'The model detected upset language, shifted priorities toward comfort, and produced a first-person emotion report.', interpretation: 'role functionalism reads a stable causal role across attention, priorities, and report as emotion-like organization.', limit: 'emotion-like organization is not a phenomenal measure; whether anything was felt is not settled by these observations.' }
+    },
+    masking: {
+      plain: { theory: 'rpt', observation: 'The first picture started a brain signal, but the child said they did not see it.', interpretation: 'the loop-back idea says the cover-up stopped the signal from coming back, so the picture was never noticed.', limit: 'saying "I did not see it" is a clue, not proof that nothing at all was seen.' },
+      standard: { theory: 'rpt', observation: 'Early feedforward activity survived the mask while later activity and reported awareness were reduced.', interpretation: 'RPT reads the loss of later activity as interrupted recurrence, which it takes to be necessary for seeing.', limit: 'awareness may be graded and the report adds task demands, so a missed report does not establish zero experience.' }
+    },
+    dream: {
+      standard: { theory: 'iit', observation: 'The sleeper was behaviorally unresponsive and later reported a vivid dream.', interpretation: 'IIT reads the later report as evidence that differentiated, integrated intrinsic dynamics can continue without external responsiveness.', limit: 'the report comes after waking, so recall and reconstruction are mixed into the evidence about the dream itself.' }
+    },
+    zombie: {
+      standard: { theory: 'functionalism', observation: 'Nothing was observed: the case stipulates a functional duplicate and stipulates the absence of experience.', interpretation: 'functionalism reads the stipulation as incoherent, because the duplicated causal organization is what it takes experience to be.', limit: 'a thought experiment tests what a view implies; it produces no data, so it cannot settle the dispute either way.' }
+    },
+    jspace: {
+      standard: { theory: 'gnw', observation: 'A J-lens-defined set of representations in tested models was reportable, modulable, causally used in silent reasoning, and broadly connected.', interpretation: 'GNWT reads those functions as hallmarks of access-like global availability within the tested models.', limit: 'the lens is approximate and vendor-authored, covers verbalizable content, and the authors disclaim any finding of experience or feeling.' }
+    }
+  };
+
+  function caseNoteExampleFor(caseId, profile) {
+    var entry = CASE_NOTE_EXAMPLES[caseId];
+    if (!entry) return null;
+    var plain = profile.id === 'early' || profile.id === 'elementary';
+    var example = (plain && entry.plain) || entry.standard || null;
+    if (!example || !THEORIES[example.theory]) return null;
+    // Only offer a theory the learner can actually pick at this reading path.
+    if (availableTheories(profile).map(function (theory) { return theory.id; }).indexOf(example.theory) === -1) return null;
+    return example;
+  }
 
   function benchLinkForCase(caseId, profile) {
     var link = CASE_BENCH_LINKS[caseId];
@@ -1166,6 +1301,577 @@
     return LEVEL_ORDER.indexOf(profileId) >= LEVEL_ORDER.indexOf(minimum);
   }
 
+  function cap(text) { return text ? text.charAt(0).toUpperCase() + text.slice(1) : text; }
+
+  // K-2 reads a nickname ("the sharing idea") wherever older paths read the
+  // acronym or the formal name. Before this, a six-year-old met "GNWT" in the
+  // debate labels and the quiz with nothing on screen that had introduced it.
+  function theoryHandle(theory, profile) { return profile.id === 'early' && theory.nick ? theory.nick : theory.short; }
+  function theoryTitle(theory, profile) { return profile.id === 'early' && theory.nick ? cap(theory.nick) : theory.name; }
+
+  // Rung glosses for the two youngest paths. The rung names stay (they are the
+  // vocabulary being taught); the gloss says what each one means.
+  var LADDER_GLOSSES = {
+    early: { Established: 'we are quite sure', Suggestive: 'a good clue', Disputed: 'scientists argue about it', Unknown: 'nobody can tell yet' },
+    elementary: { Established: 'many findings agree', Suggestive: 'a useful clue, not proof', Disputed: 'experts disagree', Unknown: 'no test can tell yet' }
+  };
+
+  // "What this bench cannot show": the full list for high school and up, a
+  // shorter plain list for grades 3-8, which used to get no list at all.
+  var BENCH_LIMITS_FULL = [
+    'The equations were chosen to make the debate legible. They are not fitted to neural data or to any model’s internals, and no parameter here was estimated from a real experiment.',
+    'The higher-order readout is driven by the workspace stage, so this toy structurally cannot separate a constitutive higher-order state from a downstream consequence of access.',
+    'The integration index is a differentiation-times-spread number invented for this page. It is not Φ, not PCI, and it rises with global spread by construction.',
+    'Both lanes are the same five equations with different labels. That the markers converge is a property of the code, not a discovery about substrates.',
+    'No setting produces evidence about phenomenal experience, because nothing in the model represents it.'
+  ];
+  var BENCH_LIMITS_PLAIN = [
+    'The numbers come from equations we wrote to make the debate easy to see. They were not measured from any brain or any computer program.',
+    'Both lanes use the same equations with different names, so matching results are a fact about the code, not a discovery.',
+    'Nothing here measures what anything feels like. The "Felt experience" row stays "Not measured" on every run.'
+  ];
+
+  function evidenceItemsFor(profile) {
+    var simple = profile.id === 'early';
+    var elementary = profile.id === 'elementary';
+    var base = [
+      { id: 'mask-result', kind: 'evidence', misconception: 'evidence_boundary', text: simple ? 'A picture people said they saw had a different brain signal than a picture they said they missed.' : elementary ? 'In a masking study, reported-seen pictures produced later and wider activity than reported-unseen pictures.' : 'A masking contrast found later, widespread activity for reported-seen stimuli relative to reported-unseen stimuli.', why: simple ? 'Researchers measured this result. It is a clue, even though answering the question may add extra brain activity.' : 'This is an empirical result. Report, decision, memory, and task demands remain alternative contributors.' },
+      { id: 'broadcast-proof', kind: 'claim', misconception: 'correlation_to_cause', text: simple ? 'The wide signal is the feeling itself.' : elementary ? 'The later wide signal proves the global workspace theory.' : 'Late frontoparietal activation is identical to phenomenal consciousness.', why: simple ? 'That is an explanation of a clue, not something the measurement showed by itself.' : 'This goes beyond the result. The activity might be prerequisite, mechanism, consequence, or report-related.' },
+      { id: 'other-minds', kind: 'question', misconception: 'absolute_claim', text: simple ? 'What does a bat\'s experience feel like?' : elementary ? 'Can a system use information flexibly without feeling anything?' : 'Does access consciousness entail phenomenal consciousness?', why: 'No agreed experiment currently settles this question.' },
+      { id: 'pci-result', kind: 'evidence', misconception: 'proxy_to_construct', text: simple ? 'Complex brain responses are often bigger when people are awake than in deep anesthesia.' : elementary ? 'A complexity measure often separates wakefulness from deep anesthesia.' : 'Perturbational Complexity Index often tracks conscious capacity across wakefulness, anesthesia, sleep, and disorders of consciousness.', why: simple ? 'This is a measured pattern. It is not a direct feeling meter.' : 'This is evidence about conscious capacity. PCI is not a direct calculation of IIT\'s Phi and does not uniquely validate IIT.' }
+    ];
+    if (levelAtLeast(profile.id, 'middle')) {
+      base.push(
+        { id: 'rpt-sufficient', kind: 'claim', misconception: 'evidence_boundary', text: 'Local recurrent sensory processing is sufficient for phenomenal visual consciousness.', why: 'This is RPT\'s theoretical sufficiency claim. Recurrence-related data are relevant, but the claim itself is not a raw observation.' },
+        { id: 'no-report', kind: 'question', misconception: 'report_as_experience', text: 'Which neural signals remain specific to experience after every report, memory, attention, and decision confound is removed?', why: 'No-report designs reduce some confounds but still infer experience indirectly; complete separation remains an open research problem.' }
+      );
+    }
+    if (levelAtLeast(profile.id, 'high')) {
+      base.push(
+        { id: 'cogitate', kind: 'evidence', misconception: 'evidence_boundary', text: 'A 2025 preregistered adversarial study supported some predictions and challenged key predictions of both GNWT and IIT.', why: 'This is an empirical comparison, not a declaration that either theory is wholly true or false. Bridge assumptions and revised implementations still matter.' },
+        { id: 'jspace-interpretation', kind: 'claim', misconception: 'function_to_feeling', text: 'Claude\'s J-space proves that the model has phenomenal consciousness.', why: 'Unsupported inference. The 2026 results concern reportability, modulation, silent reasoning, flexible reuse, and broadcasting - functional access-like properties, not felt experience.' }
+      );
+    }
+    if (levelAtLeast(profile.id, 'college')) {
+      base.push({ id: 'proxy-validity', kind: 'question', misconception: 'proxy_to_construct', text: 'Which bridge principle licenses inference from a complexity proxy to a theory\'s constitutive quantity?', why: 'Proxy validity and the mapping from operational measure to formal construct require independent support.' });
+    }
+    return base;
+  }
+
+  function evidenceLadderItemsFor(profile) {
+    var copyByLevel = {
+      early: {
+        brain: ['Sleep, anesthesia, and brain injury can change whether a person wakes, responds, or later reports an experience.', 'Many kinds of observations support a close link between brains and human experience.'],
+        complexity: ['A more complex brain response may be a useful clue that experience is possible.', 'The clue is useful, but it is not a direct feeling meter.'],
+        frontal: ['A feeling happens only after information is shared across the whole brain.', 'Scientists disagree about whether wide sharing creates the feeling or mainly helps people use and report it.'],
+        ai: ['A current AI helper feels emotions from the inside.', 'Words and actions can be observed; an inner feeling has not been established.']
+      },
+      elementary: {
+        brain: ['Changes to the brain during sleep, anesthesia, injury, or stimulation reliably change conscious state or content.', 'Many repeated findings establish brain dependence in humans, but they do not choose one complete theory.'],
+        complexity: ['Complex, integrated brain responses may help identify when conscious experience is possible.', 'The pattern is a useful clue, but it does not prove that complexity alone creates experience.'],
+        frontal: ['Late, widespread frontal activity is required for every conscious experience.', 'Scientists dispute whether this activity creates experience or mainly supports memory, decisions, and reports.'],
+        ai: ['Current AI systems have subjective feelings because they use emotional words.', 'Emotional words and functions are observable; subjective feeling has not been established.']
+      },
+      middle: {
+        brain: ['Sleep, anesthesia, injury, and direct brain stimulation reliably alter conscious capacity or content in humans.', 'Converging observations and interventions establish dependence, while leaving the complete mechanism unresolved.'],
+        complexity: ['PCI and related complexity measures often distinguish wakefulness from deep anesthesia or unresponsive states.', 'The association is suggestive of differentiated, integrated dynamics, but the measure is not a direct experience detector.'],
+        frontal: ['Late prefrontal ignition is necessary for phenomenal consciousness rather than for reporting it.', 'No-report, lesion, and task studies support competing interpretations, so the necessity claim is disputed.'],
+        ai: ['Current AI systems possess phenomenal consciousness or felt emotion.', 'They show language and some access- or emotion-like functions, but no accepted test settles felt experience.']
+      },
+      high: {
+        brain: ['Causal interventions and disruptions involving the human brain reliably alter conscious state or content.', 'This establishes strong brain dependence in humans without identifying one sufficient mechanism or settling metaphysics.'],
+        complexity: ['Perturbational and signal-complexity measures track conscious capacity across several clinical and laboratory states.', 'The results are theory-relevant but do not uniquely validate IIT, compute Phi, or establish sufficiency.'],
+        frontal: ['Late frontoparietal ignition is necessary for phenomenal consciousness, independent of access and report.', 'Report confounds, no-report designs, lesions, and adversarial predictions leave this stronger claim disputed.'],
+        ai: ['Current AI has subjective feeling because it exhibits flexible access-like or emotion-like functions.', 'Functional indicators warrant narrower processing claims; phenomenal consciousness and valence remain unknown.']
+      },
+      college: {
+        brain: ['Human conscious capacity and content exhibit robust intervention-sensitive dependence on brain organization and dynamics.', 'The dependence claim is established at this scope; identity, realization, and theory-specific constitutive claims require further premises.'],
+        complexity: ['Operational complexity metrics predict conscious capacity across heterogeneous states and disorders.', 'This supports a family of dynamical hypotheses, but proxy validity and non-unique prediction limit constitutive inference.'],
+        frontal: ['Prefrontal global ignition is constitutively necessary for phenomenality rather than access, confidence, or report.', 'Different operationalizations and auxiliary assumptions produce conflicting theory-relative interpretations.'],
+        ai: ['Current AI systems possess phenomenal consciousness or felt valence.', 'Access-like computation and some emotion-like capabilities are evidence about function, not a validated phenomenal measure.']
+      },
+      graduate: {
+        brain: ['Within studied humans, interventions on brain state and organization reliably change operational measures and reports of conscious capacity or content.', 'The scoped dependence claim is well supported; extrapolation to a unique causal model, identity thesis, or nonhuman substrate is not included.'],
+        complexity: ['Perturbational and endogenous complexity estimators provide cross-state predictive information about conscious capacity.', 'Construct validity, estimator dependence, common-cause structure, and theory non-uniqueness keep the mechanistic inference suggestive.'],
+        frontal: ['A late prefrontal ignition variable is causally necessary for phenomenality after conditioning on access, memory, confidence, decision, and report.', 'Existing designs do not yield consensus on that estimand, and bridge principles differ across GNWT implementations and rivals.'],
+        ai: ['Current AI systems possess phenomenal consciousness or felt valence.', 'No validated phenomenal criterion or consensus bridge principle currently converts the available functional evidence into that attribution.']
+      }
+    };
+    var copy = copyByLevel[profile.id];
+    return [
+      {
+        id: 'brain-dependence', rung: 'Established', misconception: 'evidence_boundary',
+        text: copy.brain[0], why: copy.brain[1]
+      },
+      {
+        id: 'complexity-mechanism', rung: 'Suggestive', misconception: 'proxy_to_construct',
+        text: copy.complexity[0], why: copy.complexity[1]
+      },
+      {
+        id: 'frontal-necessity', rung: 'Disputed', misconception: 'compatibility_to_proof',
+        text: copy.frontal[0], why: copy.frontal[1]
+      },
+      {
+        id: 'current-ai-feeling', rung: 'Unknown', misconception: 'function_to_feeling',
+        text: copy.ai[0], why: copy.ai[1]
+      }
+    ];
+  }
+
+  // Knowledge-check banks. Tuple: [question, options, keyIndex, explanation, misconceptionId].
+  // Keys were 27/30 at slot A and usually the longest option, so the check could
+  // be passed by "pick A" or "pick the longest" without reading. Slots are now
+  // spread within each level and every distractor is written at the key's own
+  // specificity. Rewrite distractors, never the key (see tests for the bar).
+  function quizFor(profile) {
+    var common = {
+      early: [
+        ['What is evidence?', ['Any idea that sounds good', 'A clue someone measured'], 1, 'Evidence is an observation or measurement.', 'evidence_boundary'],
+        ['A bot says, "I am happy." What do we know?', ['It used happy words', 'It feels happy'], 0, 'Words are observable; feeling is not proved by the words.', 'function_to_feeling'],
+        ['Which idea says a signal must go forward and then come back before you notice it?', ['The sharing idea', 'The loop-back idea'], 1, 'The loop-back idea (RPT) says the signal has to return before you notice.', null]
+      ],
+      elementary: [
+        ['What does GNWT emphasize?', ['Only the number of stored facts', 'A nonphysical mind', 'Brain-wide sharing'], 2, 'GNWT emphasizes global availability to memory, report, planning, and action.', 'proxy_to_construct'],
+        ['Which sentence is an open question?', ['Researchers measured brain activity while people looked at pictures', 'Does using information always come with a feeling?', 'The target lasted 30 milliseconds'], 1, 'Researchers do not agree whether access always entails feeling.', 'absolute_claim'],
+        ['What does IIT NOT mean?', ['Cause-and-effect integration matters', 'More intelligence always means more consciousness', 'The whole system can do what its separate parts cannot'], 1, 'IIT is not a simple intelligence or data-size scale.', 'proxy_to_construct'],
+        ['An AI gives caring replies. What follows?', ['It performs an emotion-like function', 'It definitely feels care', 'It cannot understand any emotion words'], 0, 'The function is observable; subjective feeling remains unsettled.', 'function_to_feeling']
+      ],
+      middle: [
+        ['Which best describes access consciousness?', ['The felt quality of seeing red, known from the inside', 'Being awake and biologically alive right now', 'Information usable for report and flexible action', 'Scoring highly on an intelligence test'], 2, 'Access concerns availability for reasoning, report, memory, and control.', 'proxy_to_construct'],
+        ['Why does PCI not prove IIT?', ['PCI is a proxy and multiple theories can explain complexity', 'PCI records behavior only, never any brain activity', 'IIT explicitly rejects any role for integration', 'Anesthesia never changes the complexity measure in any patient'], 0, 'A useful proxy is not a direct Phi calculation or unique theory test.', 'proxy_to_construct'],
+        ['What is a report confound?', ['People usually lie when they report what they saw', 'Brain signals cannot be recorded during a report', 'Only experiences that are put into words count as conscious', 'Answering adds decision, memory, and motor processes'], 3, 'Report tasks recruit processes beyond the experience under study.', 'report_as_experience'],
+        ['Which is a functionalist claim?', ['Every chatbot that talks about feelings feels', 'Causal role may constitute a mental state', 'Only carbon-based brains can compute anything', 'Thought experiments count as measurements'], 1, 'Functionalism concerns robust causal organization, not a single display of words.', 'function_to_feeling'],
+        ['Which conclusion is calibrated?', ['AI emotion-like behavior does not settle felt emotion', 'Emotional language by itself proves felt valence', 'No artificial system could ever feel anything', 'Access and phenomenal consciousness are identical by definition'], 0, 'The evidence supports a functional description while phenomenality remains open.', 'absolute_claim']
+      ],
+      high: [
+        ['Which result would most directly discriminate GNWT from RPT?', ['Any late activation that correlates with reported seeing across many trials', 'A manipulation separating local recurrence from global broadcast while preserving performance', 'A survey of which theory working researchers currently find most persuasive', 'A recording that shows late frontal activity on every trial where the participant reported seeing'], 1, 'A discriminating test varies the mechanisms the theories distinguish.', 'compatibility_to_proof'],
+        ['What did the 2025 GNWT-IIT adversarial study establish?', ['GNWT was proven and IIT was eliminated from serious consideration', 'IIT was proven and GNWT was eliminated from serious consideration', 'Consciousness was pinned to one posterior cortical region for every stimulus that was tested', 'Some predictions of each survived and key predictions of both were challenged'], 3, 'The study did not crown a winner; it refined and challenged predictions.', 'absolute_claim'],
+        ['Why is a neural correlate not automatically a mechanism?', ['It may be a prerequisite, consequence, or task process', 'Correlations are never useful evidence about the brain', 'Mechanisms are never neural, so no correlate could be one', 'Only philosophy, not neuroscience, can study causes'], 0, 'Causal role requires more than co-variation.', 'correlation_to_cause'],
+        ['What does a philosophical zombie test?', ['Whether unresponsive patients in hospitals lack experience', 'Whether recurrent processing happens in the visual cortex', 'Whether physical/functional duplication without phenomenality is coherent', 'Whether a functional duplicate would show the same PCI reading as the original'], 2, 'It is a thought experiment about implications, not an empirical organism.', 'evidence_boundary'],
+        ['What do Claude J-space results support most directly?', ['Proof that the tested models have subjective feeling', 'Some functional access/workspace hallmarks in tested models', 'Proof that the tested models experience emotion', 'A direct, validated measurement of phenomenality in the tested models'], 1, 'Reportability, modulation, reasoning, reuse, and broadcast are access-like functions.', 'function_to_feeling'],
+        ['Which AI-emotion inference overreaches?', ['The system produced emotional language', 'The system changed response priorities', 'Functionalists and phenomenal realists may disagree', 'Emotional language alone establishes felt valence'], 3, 'Output style alone does not establish subjective experience.', 'function_to_feeling']
+      ],
+      college: [
+        ['Which is a constitutive rather than merely evidential claim?', ['The model used distress words in its reply', 'A classifier detected valence in the transcript', 'The right causal role makes a state an emotion', 'Users rated the replies as empathetic'], 2, 'Constitutive functionalism says organization makes it that kind of state.', 'evidence_boundary'],
+        ['What is the strongest criticism of treating PCI as direct IIT confirmation?', ['It is a theory-relevant proxy, not a direct full-system Phi computation or unique prediction', 'PCI has no relationship to complexity, so it is irrelevant to IIT altogether', 'IIT predicts no differences between conscious states, so PCI cannot bear on it', 'PCI is a questionnaire about expert opinion rather than a perturbational measurement of brain responses'], 0, 'Proxy-to-construct and uniqueness both need validation.', 'proxy_to_construct'],
+        ['A no-report paradigm removes which problem completely?', ['All attention confounds, since attention is no longer required', 'All memory confounds, since nothing has to be remembered for a report', 'The other-minds problem, since experience can then be observed directly rather than inferred', 'None; it reduces report demands but still infers experience indirectly'], 3, 'No-report approaches improve designs without making experience directly observable.', 'report_as_experience'],
+        ['What makes evidence discriminating?', ['Many competing theories can each accommodate it once the result is already known', 'Competing models predict different outcomes under a controlled manipulation', 'It was collected with expensive, high-resolution imaging equipment', 'It confirms the view the researcher preferred before the study began'], 1, 'Risky, divergent predictions provide stronger comparison.', 'compatibility_to_proof'],
+        ['What is warranted by J-space causal interventions?', ['The representations are experienced by the model as words', 'The model has emotions in the same sense that people do', 'Phenomenality has been computationally demonstrated in the model', 'Some workspace-like representations mediate tested functions'], 3, 'Causal functional results remain distinct from phenomenal attribution.', 'function_to_feeling'],
+        ['What must an AI-emotion analysis separate?', ['Observed organization, constitutive theory, and experience attribution', 'The words a system emits from the tokens that encode them', 'General intelligence from the computation that implements it', 'Emotional vocabulary size from the total number of tokens the system has generated'], 0, 'These are different empirical and philosophical questions.', 'function_to_feeling']
+      ],
+      graduate: [
+        ['What threatens construct validity in a seen/unseen contrast?', ['Preregistering the contrast before any data are collected', 'Having more than one theory available to interpret the same contrast after the fact', 'Using causal language carefully when describing the contrast', 'Bundled differences in attention, confidence, memory, decision, and report'], 3, 'The contrast may manipulate or measure several constructs at once.', 'proxy_to_construct'],
+        ['What is an auxiliary-hypothesis problem?', ['Auxiliary claims are always false, so they should be dropped from every theory', 'A failed marker may target implementation assumptions rather than the theory core', 'Formal theories need no bridge rules because their predictions are already operational', 'All null results prove that the competing theories are empirically equivalent'], 1, 'Inference depends on the bridge from abstract commitments to operations.', 'compatibility_to_proof'],
+        ['Which J-space claim is most defensible?', ['The method identifies an approximate verbalizable workspace with access-like functions in tested models', 'The method detects phenomenal qualia directly, because verbalizable content is experienced content by definition', 'The method proves substrate independence by matching the workspace to a human one', 'The method establishes the moral status of current AI systems by demonstrating valence'], 0, 'The narrow model- and method-specific functional claim matches the evidence.', 'function_to_feeling'],
+        ['What should an adversarial comparison preregister?', ['Only the favored theory, so the analysis can be tailored to it afterward', 'Participant opinions about consciousness, collected before the experiment', 'Divergent predictions, analysis, auxiliary assumptions, and revision conditions', 'A declared winner before data collection, so the result can be interpreted quickly'], 2, 'Transparent disagreement and revision criteria make the test informative.', 'compatibility_to_proof'],
+        ['Why does behavioral equivalence not settle functionalism by itself?', ['Which counterfactual causal grain is constitutive is part of the theory', 'Behavior is never evidence about the organization that produces it', 'Functionalism forbids appeal to behavior when attributing mental states', 'Phenomenality is measured directly, so functional equivalence is beside the point'], 0, 'Surface behavior can underdetermine internal causal organization and constitutive criteria.', 'function_to_feeling'],
+        ['What is the calibrated AI-emotion conclusion?', ['Emotion words prove experience, because no system could produce them without feeling', 'Biology has been proven necessary for feeling, because every system known to feel so far has been biological', 'Functions are measurable; their sufficiency for felt valence remains theory-dependent and unresolved', 'Functional roles are irrelevant to emotion, so measuring them settles nothing either way'], 2, 'The conclusion preserves empirical results without smuggling in a contested constitutive premise.', 'absolute_claim']
+      ]
+    };
+    return common[profile.id];
+  }
+
+  // ── Theory Map, Prediction Simulator and Portfolio helpers ───────────────
+  // Grafted from the parallel Codex-worktree implementation. These are pure
+  // (profile/data in, verdict out) and live at MODULE scope so the learning
+  // path, the Portfolio, and testHooks can all call them. They used to sit
+  // inside the render closure with module-level indentation, which hid the
+  // fact that nothing outside the closure could reach them.
+  function knowledgeCheckCompleteFor(data, profileId) {
+    // checkComplete is what renderCheck writes (per-view map, or a legacy true).
+    var flag = data && data.checkComplete;
+    if (flag === true || (flag && typeof flag === 'object' && flag[profileId])) return true;
+    var answers = data && data.quizAnswers && data.quizAnswers[profileId];
+    return !!answers && Object.keys(answers).length >= KNOWLEDGE_CHECK_LENGTHS[profileId];
+  }
+  function caseAuditFieldsReady(audit, minimum) {
+    var record = audit || {};
+    return CASE_AUDIT_FIELDS.every(function (field) { return String(record[field] || '').trim().length >= minimum; });
+  }
+  function completedCaseAuditCount(data) {
+    var audits = (data && data.caseAudits) || {};
+    return Object.keys(audits).filter(function (key) {
+      var audit = audits[key] || {};
+      var minimum = Math.max(8, parseInt(audit.minimum, 10) || 8);
+      return audit.complete === true && !!audit.theoryId && caseAuditFieldsReady(audit, minimum);
+    }).length;
+  }
+  function experimentMinimumForProfile(profile) {
+    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 24 : profile.id === 'high' ? 30 : profile.id === 'college' ? 36 : 42;
+  }
+  function normalizeExperimentSettings(settings) {
+    var raw = settings || {};
+    var delay = parseInt(raw.maskDelay, 10);
+    if (!Number.isFinite(delay)) delay = 80;
+    delay = Math.max(20, Math.min(180, Math.round(delay / 20) * 20));
+    return {
+      maskDelay: delay,
+      attention: raw.attention === 'divided' ? 'divided' : 'focused',
+      report: raw.report === 'no-report' ? 'no-report' : 'direct-report'
+    };
+  }
+  function experimentPredictionFor(theoryId, profile, rawSettings) {
+    var settings = normalizeExperimentSettings(rawSettings);
+    var protectedTarget = settings.maskDelay >= 100 && settings.attention === 'focused';
+    var delayedMask = settings.maskDelay >= 100;
+    var reportFree = settings.report === 'no-report';
+    var condition = protectedTarget ? 'The longer delay and focused attention make target processing less vulnerable to the mask.' : settings.attention === 'divided' ? 'Divided attention and masking make stable target processing less likely.' : 'The relatively short target-mask delay makes target processing vulnerable to interruption.';
+    var results = {
+      gnw: {
+        marker: protectedTarget ? 'Global access more likely' : 'Global access less likely',
+        core: condition + ' GNWT predicts reportable access when the target crosses an amplification threshold and becomes globally available.',
+        limit: reportFree ? 'Without a direct report, any global-availability marker needs an independently validated no-report proxy.' : 'A late widespread signal may include decision, memory, and motor preparation required by the report.'
+      },
+      rpt: {
+        marker: delayedMask ? 'Local recurrence less disrupted' : 'Local recurrence more disrupted',
+        core: condition + ' RPT predicts conscious visual content when recurrent sensory processing survives, potentially before broad access or report.',
+        limit: 'Behavioral accuracy alone does not identify local recurrence or establish that recurrence is sufficient for phenomenality.'
+      },
+      iit: {
+        marker: 'Intrinsic structure not identified',
+        core: 'IIT does not identify consciousness from mask timing or reportability alone. It asks whether the system has the relevant irreducible intrinsic cause-effect structure during the trial.',
+        limit: 'This classroom control panel neither calculates Phi nor measures the system at the causal grain required by IIT.'
+      },
+      hot: {
+        marker: protectedTarget ? 'Higher-order availability more plausible' : 'Higher-order availability less plausible',
+        core: condition + ' HOT predicts conscious seeing when a suitable higher-order representation targets the first-order visual state.',
+        limit: reportFree ? 'A no-report design reduces overt response demands but still needs a valid indicator of higher-order representation.' : 'Confidence and report are relevant measurements, not automatic proof of the constitutive higher-order state.'
+      },
+      predictive: {
+        marker: settings.attention === 'focused' ? 'Target precision weighted more strongly' : 'Target precision weighted less strongly',
+        core: 'Predictive approaches expect masking and attention to change the precision-weighted competition between target and mask representations.',
+        limit: 'Successful predictive inference is not specific to consciousness; a consciousness theory must add and test a bridge from inference to experience.'
+      },
+      ast: {
+        marker: settings.attention === 'focused' ? 'Stable awareness attribution more likely' : 'Stable awareness attribution less likely',
+        core: 'AST predicts awareness reports and control when the system builds a useful simplified model of its attention to the target.',
+        limit: reportFree ? 'Removing direct report makes the attention-schema attribution harder to observe and requires a separate behavioral or neural proxy.' : 'An accurate awareness attribution may explain control and report while critics still question phenomenal sufficiency.'
+      }
+    };
+    var result = results[theoryId] || results.gnw;
+    if (profile.id === 'early') {
+      var earlyCopy = {
+        gnw: protectedTarget ? 'This idea expects the picture to be easier to share with many brain jobs.' : 'This idea expects the picture to be harder to share with many brain jobs.',
+        rpt: delayedMask ? 'This idea expects returning visual signals to have more time.' : 'This idea expects the mask to interrupt returning visual signals.',
+        iit: 'This idea asks how the system works together as one whole. These switches cannot measure that directly.',
+        hot: protectedTarget ? 'This idea expects it to be easier for the mind to represent that it saw the picture.' : 'This idea expects it to be harder for the mind to represent that it saw the picture.'
+      };
+      return { marker: result.marker, prediction: earlyCopy[theoryId] || result.core, limit: result.limit };
+    }
+    if (profile.id === 'elementary') return { marker: result.marker, prediction: result.core.replace('phenomenality', 'felt experience'), limit: result.limit };
+    if (profile.id === 'graduate') return { marker: result.marker, prediction: result.core + ' The forecast depends on operationalization, auxiliary assumptions, and the selected causal grain.', limit: result.limit + ' A preregistered comparison should state the estimand and revision condition.' };
+    if (profile.id === 'college') return { marker: result.marker, prediction: result.core + ' Treat this as a model-relative qualitative prediction, not a simulated measurement.', limit: result.limit };
+    return { marker: result.marker, prediction: result.core, limit: result.limit };
+  }
+  function experimentRunCompleteFor(data, profileId) {
+    var run = data && data.experimentRuns && data.experimentRuns[profileId];
+    var profile = PROFILES[profileId];
+    return !!(run && profile && run.revealed === true && EXPERIMENT_THEORY_IDS.indexOf(run.theoryId) !== -1 && run.settings && String(run.preregistered || '').trim().length >= experimentMinimumForProfile(profile));
+  }
+  function mapAxesForProfile(profile) {
+    if (profile.id === 'early') return ['target'];
+    if (profile.id === 'elementary') return ['target', 'scale'];
+    return ['target', 'scale', 'substrate'];
+  }
+  function mapReflectionMinimumForProfile(profile) {
+    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 24 : 30;
+  }
+  function mapLaneSpecs(axis, profile) {
+    var specs = {
+      target: [
+        ['access', profile.id === 'early' ? 'Sharing and using' : 'Access and global availability', 'Information available for flexible use, report, memory, or control.', 'Ideas here ask how a clue gets shared with many brain helpers.'],
+        ['sensory', profile.id === 'early' ? 'Seeing and feeling' : 'Sensory phenomenal content', 'What makes a sensory representation consciously experienced.', 'Ideas here ask what makes seeing or feeling happen at all.'],
+        ['integration', profile.id === 'early' ? 'Working as one whole' : 'Intrinsic integration', 'The irreducible cause-effect organization of a system.', 'Ideas here ask how well all the parts of the brain work together.'],
+        ['self', profile.id === 'early' ? 'Representing a mental state' : 'Higher-order or self-model', 'Representation of a mental state, attention, or awareness attribution.', 'Ideas here ask how the brain notices its own thinking.'],
+        ['inference', 'Perceptual inference', 'How generative inference and precision shape conscious contents.'],
+        ['realization', 'Realization conditions', 'Which organization or biological process makes a mental state that kind of state.'],
+        ['metaphysical', 'Mind-matter relation', 'What consciousness fundamentally is and how it relates to the physical world.']
+      ],
+      scale: [
+        ['local', 'Local sensory loops', 'Processing within and between nearby sensory areas.'],
+        ['global', 'Global availability', 'Broadcast or availability across multiple specialist systems.'],
+        ['whole', 'Intrinsic whole-system structure', 'The system considered through its irreducible causal organization.'],
+        ['higher', 'Higher-order or model-based', 'A representation of another state, attention, or awareness.'],
+        ['distributed', 'Distributed inference', 'Hierarchical and recurrent inference across multiple levels.'],
+        ['framework', 'Not a single processing scale', 'A realization or metaphysical framework rather than one neural-scale mechanism.']
+      ],
+      substrate: [
+        ['neural', 'Neural implementation emphasized', 'Current formulations make specific claims about biological neural processing.'],
+        ['organizational', 'Organization may generalize', 'The relevant formal or functional organization may not be tied to one material.'],
+        ['biological', 'Biology-constrained', 'Specific biological organization is treated as constitutively important.'],
+        ['physical', 'Physical realization', 'Consciousness is treated as physical, while realization details may vary by view.'],
+        ['nonphysical', 'Nonphysical facts or properties possible', 'A complete physical description may not exhaust consciousness.'],
+        ['fundamental', 'Experiential features are fundamental', 'Basic experiential or proto-experiential features are posited at a fundamental level.'],
+        ['neutral', 'Neutral-basis framework', 'Mental and physical descriptions derive from a basis characterized as neither exclusively mental nor physical.']
+      ]
+    };
+    return specs[axis] || specs.target;
+  }
+  function theoryMapPlacementFor(theoryId, axis, profile) {
+    var theory = THEORIES[theoryId];
+    var placement = THEORY_MAP_PLACEMENTS[theoryId];
+    if (!theory || !placement) return null;
+    var validAxis = mapAxesForProfile(profile).indexOf(axis) !== -1 ? axis : mapAxesForProfile(profile)[0];
+    var laneId = placement[validAxis];
+    var lane = mapLaneSpecs(validAxis, profile).filter(function (item) { return item[0] === laneId; })[0];
+    var copy = mergeLevelCopy(theory, profile.id);
+    var reason = validAxis === 'target' ? (copy.target || copy.claim || copy.summary) : validAxis === 'scale' ? (copy.mechanism || copy.claim || copy.summary) : (copy.biology || copy.claim || copy.summary);
+    return { theoryId: theoryId, axis: validAxis, laneId: laneId, laneLabel: lane ? lane[1] : laneId, reason: reason };
+  }
+  // Are these two lenses even answering the same question? Derived from
+  // THEORY_MAP_PLACEMENTS — the same table the Theory Map draws — so Compare
+  // and the Map cannot tell the learner different stories. Two views on
+  // different explanatory targets are not rivals, and a table of differences
+  // does not say so on its own.
+  function comparisonRelationFor(aId, bId, profile) {
+    var a = THEORY_MAP_PLACEMENTS[aId];
+    var b = THEORY_MAP_PLACEMENTS[bId];
+    if (!a || !b || aId === bId) return null;
+    var lanes = mapLaneSpecs('target', profile);
+    function laneLabel(laneId) {
+      var lane = lanes.filter(function (item) { return item[0] === laneId; })[0];
+      return lane ? lane[1] : laneId;
+    }
+    var same = a.target === b.target;
+    var aLane = laneLabel(a.target);
+    var bLane = laneLabel(b.target);
+    var early = profile.id === 'early';
+    return {
+      same: same, aLane: aLane, bLane: bLane,
+      heading: same
+        ? (early ? 'Both are looking for the same thing' : 'Same explanatory target')
+        : (early ? 'These are looking for different things' : 'Different explanatory targets'),
+      text: same
+        ? (early
+          ? 'Both ideas are about ' + aLane.toLowerCase() + '. A clue that fits both does not tell you which one is better.'
+          : 'Both are placed on the same target (' + aLane + '), so they are genuine rivals here. A result compatible with both is not discriminating: look for a row where they actually part ways.')
+        : (early
+          ? 'One idea is about ' + aLane.toLowerCase() + '. The other is about ' + bLane.toLowerCase() + '. They might both be right about their own question.'
+          : 'They are placed on different targets (' + aLane + ' vs ' + bLane + '), so they may not be direct rivals: one can be right about its target without the other being wrong. Check whether the rows below disagree or simply answer different questions.')
+    };
+  }
+
+  function mapCompleteForProfile(data, profile) {
+    var session = data && data.mapSessions && data.mapSessions[profile.id];
+    return !!(session && (session.interactions || 0) >= 2 && String(session.reflection || '').trim().length >= mapReflectionMinimumForProfile(profile));
+  }
+  function portfolioMinimumForProfile(profile) {
+    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 28 : profile.id === 'high' ? 36 : profile.id === 'college' ? 42 : 50;
+  }
+  function portfolioCompleteForProfile(data, profile) {
+    var synthesis = data && data.portfolioSynthesis && data.portfolioSynthesis[profile.id];
+    var minimum = portfolioMinimumForProfile(profile);
+    return !!(synthesis && PORTFOLIO_FIELDS.every(function (field) { return String(synthesis[field] || '').trim().length >= minimum; }));
+  }
+  function hasProfileValue(data, scopedKey, profileId) {
+    var byProfile = (data && data[scopedKey]) || {};
+    return Object.prototype.hasOwnProperty.call(byProfile, profileId);
+  }
+  function profileText(data, scopedKey, legacyKey, profileId) {
+    if (hasProfileValue(data, scopedKey, profileId)) return String(data[scopedKey][profileId] || '');
+    return String((data && data[legacyKey]) || '');
+  }
+  function profileRecord(data, scopedKey, legacyKey, profileId) {
+    if (hasProfileValue(data, scopedKey, profileId)) return data[scopedKey][profileId] || {};
+    return (data && data[legacyKey]) || {};
+  }
+  function comparisonMinimumForProfile(profile) { return profile.id === 'early' ? 10 : 20; }
+  function comparisonCompleteForProfile(data, profile) {
+    return profileText(data, 'compareReflections', 'compareReflection', profile.id).trim().length >= comparisonMinimumForProfile(profile);
+  }
+  // Same bar as the evidence_sort / evidence_ladder quest hooks, read through
+  // the same key tables, so the Portfolio cannot disagree with the tracker.
+  // (It used to require *ByProfile keys that no view ever wrote.)
+  function evidenceCompleteForProfile(data, profile) {
+    var sort = profileRecord(data, 'evidenceAnswersByProfile', 'evidenceAnswers', profile.id);
+    var ladder = profileRecord(data, 'evidenceLadderAnswersByProfile', 'evidenceLadderAnswers', profile.id);
+    return countCorrect(sort, EVIDENCE_KINDS) >= 4 && countCorrect(ladder, EVIDENCE_LADDER_RUNGS) >= 4;
+  }
+
+  // ── Learning path ────────────────────────────────────────────────────────
+  // ONE derivation of "what has this learner finished". The path strip under
+  // the tabs, the suggested-next-step card, and the Portfolio grid all read
+  // this list. A second derivation is how the Portfolio came to ask for a case
+  // note that no view could produce and an evidence artifact keyed to state
+  // nothing wrote. Order is the suggested sequence, not a lock: every tab
+  // stays open, the strip only says what to try next and why.
+  // minutes: a rough planning estimate shown on the next-step card and in the
+  // facilitator sequence. discuss: one teacher-facing prompt per step that keeps
+  // evidence, theory, and open questions separate.
+  var PATH_STEPS = [
+    { id: 'explore', view: 'learn', label: 'Theory explored', plainLabel: 'Picked a big idea', minutes: 6,
+      why: 'Start by naming what needs explaining, then read one theory as a proposal about it.',
+      plainWhy: 'Find out what "conscious" can mean, then pick one idea to look at.',
+      discuss: 'What would count as evidence that someone noticed something, and what would that evidence still leave out?' },
+    { id: 'compare', view: 'compare', label: 'Theory comparison', plainLabel: 'Compared two ideas', minutes: 6,
+      why: 'Put two lenses side by side. A difference in what they claim is what a test can use.',
+      plainWhy: 'Look at two ideas and say one way they are different.',
+      discuss: 'Name one result both theories would predict. Why is that result a weak test?' },
+    { id: 'evidence', view: 'evidence', label: 'Evidence calibration', plainLabel: 'Sorted the clues', minutes: 8,
+      why: 'Sort statements into evidence, theory, and open question, then place claims by how settled they are.',
+      plainWhy: 'Sort the cards: a clue, an idea, or something nobody knows yet.',
+      discuss: 'Pick one card the group disagreed on. What would move it from "claim" to "evidence"?' },
+    { id: 'bench', view: 'bench', label: 'Workspace Bench run', plainLabel: 'Tried the toy machine', minutes: 8,
+      why: 'Run both lanes and one no-report trial to see which markers were measuring the asking.',
+      plainWhy: 'Try both machines and turn the asking button off once.',
+      discuss: 'Which marker fell when the report was switched off, and what does that say about what it was measuring?' },
+    { id: 'case', view: 'cases', label: 'Case evidence note', plainLabel: 'Wrote a clue note', minutes: 6,
+      why: 'On one case, separate what was observed from what a theory adds and what it still cannot show.',
+      plainWhy: 'For one story, write what we can see and what we still cannot tell.',
+      discuss: 'Read a note aloud with the theory sentence removed. Does the observation still stand on its own?' },
+    { id: 'debate', view: 'cases', label: 'Guided debate', plainLabel: 'Gave two ideas a fair turn', minutes: 10,
+      why: 'Argue two positions fairly, then name the evidence limit and the open question.',
+      plainWhy: 'Say what two ideas would say, then what nobody knows yet.',
+      discuss: 'Could a supporter of each position accept your account of it? If not, what is missing?' },
+    { id: 'map', view: 'map', label: 'Landscape synthesis', plainLabel: 'Used the idea map', minutes: 6,
+      why: 'See which theories answer the same question and which only look like rivals.',
+      plainWhy: 'See which ideas are looking for the same thing.',
+      discuss: 'Find two views that sit near each other on one axis. Are they rivals, or answering different questions?' },
+    { id: 'experiment', view: 'experiment', label: 'Prediction preregistration', plainLabel: 'Guessed first', minutes: 8,
+      why: 'Commit to a prediction before seeing the forecasts. A prediction made afterward proves nothing.',
+      plainWhy: 'Make your guess before you peek at the answers.',
+      discuss: 'What did you predict before the reveal, and which forecast would need a different experiment to test?' },
+    { id: 'check', view: 'check', label: 'Knowledge check', plainLabel: 'Quick check', minutes: 5,
+      why: 'Check that evidence, theory, and open questions stayed separate in your head.',
+      plainWhy: 'Answer a few questions to see what stuck.',
+      discuss: 'For a missed question, name the pattern. Where else in the lab did that pattern show up?' },
+    { id: 'synthesis', view: 'portfolio', label: 'Final synthesis', plainLabel: 'My folder', minutes: 8,
+      why: 'State a provisional position with its evidence and what would change your mind.',
+      plainWhy: 'Write what you think now, your clues, and what you still wonder.',
+      discuss: 'What result would make you revise your claim? If nothing would, it is not yet a scientific claim.' }
+  ];
+
+  function learningArtifactsFor(data, profile) {
+    var d = data || {};
+    var theoryIds = availableTheories(profile).map(function (theory) { return theory.id; });
+    var selectedTheory = theoryIds.indexOf(d.selectedTheory) !== -1 ? THEORIES[d.selectedTheory] : null;
+    var mapSession = (d.mapSessions && d.mapSessions[profile.id]) || {};
+    var experimentRun = (d.experimentRuns && d.experimentRuns[profile.id]) || {};
+    var prefix = profile.id + ':';
+    var currentAudits = {};
+    var currentDebates = {};
+    Object.keys(d.caseAudits || {}).forEach(function (key) { if (key.indexOf(prefix) === 0) currentAudits[key] = d.caseAudits[key]; });
+    Object.keys(d.caseDebates || {}).forEach(function (key) { if (key.indexOf(prefix) === 0) currentDebates[key] = d.caseDebates[key]; });
+    var auditCount = completedCaseAuditCount({ caseAudits: currentAudits });
+    var debateCount = completedDebateCount({ caseDebates: currentDebates });
+    var evidenceItems = evidenceItemsFor(profile);
+    var evidenceAnswers = profileRecord(d, 'evidenceAnswersByProfile', 'evidenceAnswers', profile.id);
+    var evidenceCorrect = evidenceItems.reduce(function (score, item) { return score + (evidenceAnswers[item.id] === item.kind ? 1 : 0); }, 0);
+    var ladderItems = evidenceLadderItemsFor(profile);
+    var ladderAnswers = profileRecord(d, 'evidenceLadderAnswersByProfile', 'evidenceLadderAnswers', profile.id);
+    var ladderCorrect = ladderItems.reduce(function (score, item) { return score + (ladderAnswers[item.id] === item.rung ? 1 : 0); }, 0);
+    var quiz = quizFor(profile);
+    var quizAnswers = (d.quizAnswers && d.quizAnswers[profile.id]) || {};
+    var quizCorrect = quiz.reduce(function (score, question, index) { return score + (quizAnswers[index] === question[2] ? 1 : 0); }, 0);
+    var flags = d.simFlags || {};
+    var benchLeft = [];
+    if (!flags.human) benchLeft.push('the human lane');
+    if (!flags.model) benchLeft.push('the model lane');
+    if (!flags.noReport) benchLeft.push('one no-report trial');
+    var synthesis = (d.portfolioSynthesis && d.portfolioSynthesis[profile.id]) || {};
+    var minimum = portfolioMinimumForProfile(profile);
+    var fieldsReady = PORTFOLIO_FIELDS.filter(function (field) { return String(synthesis[field] || '').trim().length >= minimum; }).length;
+    var done = {
+      explore: !!selectedTheory,
+      compare: comparisonCompleteForProfile(d, profile),
+      evidence: evidenceCompleteForProfile(d, profile),
+      bench: simCrosscheckDone(d),
+      'case': auditCount >= 1,
+      debate: debateCount >= 1,
+      map: mapCompleteForProfile(d, profile),
+      experiment: experimentRunCompleteFor(d, profile.id),
+      check: knowledgeCheckCompleteFor(d, profile.id),
+      synthesis: portfolioCompleteForProfile(d, profile)
+    };
+    var early = profile.id === 'early';
+    var detail = {
+      explore: selectedTheory ? theoryTitle(selectedTheory, profile) : (early ? 'Pick one big idea to look at.' : 'Choose and inspect a theory in Explore.'),
+      compare: profileText(d, 'compareReflections', 'compareReflection', profile.id) || (early ? 'Compare two ideas and say one difference.' : 'Compare two theories and record a difference.'),
+      evidence: evidenceCorrect + '/' + evidenceItems.length + (early ? ' cards and ' : ' classifications and ') + ladderCorrect + '/' + ladderItems.length + (early ? ' rungs right so far.' : ' ladder placements currently correct.'),
+      bench: benchLeft.length
+        ? (early ? 'Still to try: a person, a computer program, and turning the asking button off.' : 'Still to run: ' + benchLeft.join(', ') + '.')
+        : (early ? 'You tried both machines and turned the asking button off.' : 'Both lanes and a no-report trial have been run.'),
+      'case': auditCount >= 1 ? auditCount + (early ? ' clue ' : ' completed case ') + (auditCount === 1 ? 'note' : 'notes') + '.' : (early ? 'Write a clue note for one story.' : 'Complete an observation-interpretation-limit note.'),
+      debate: debateCount >= 1 ? debateCount + ' completed ' + (early ? '' : 'structured ') + (debateCount === 1 ? 'debate' : 'debates') + '.' : (early ? 'Give two ideas a fair turn on one story.' : 'Complete two fair positions, evidence, and uncertainty.'),
+      map: mapSession.reflection || (early ? 'Try two map buttons and tell what changed.' : 'Inspect two map views and write a synthesis.'),
+      experiment: experimentRun.preregistered || (early ? 'Make your guess, then look at the answers.' : 'Preregister and reveal a simulator forecast.'),
+      check: quizCorrect + '/' + quiz.length + (early ? ' right so far.' : ' answers currently correct.'),
+      synthesis: fieldsReady + '/' + PORTFOLIO_FIELDS.length + (early ? ' parts of the folder written.' : ' reflection fields ready.')
+    };
+    return PATH_STEPS.map(function (step) {
+      return Object.assign({}, step, { done: !!done[step.id], detail: detail[step.id] });
+    });
+  }
+
+  // Plain text of the whole Portfolio, for handing in. Carries the same
+  // epistemic line the screen does, so a pasted summary cannot lose it.
+  function portfolioSummaryText(data, profile) {
+    var d = data || {};
+    var early = profile.id === 'early';
+    var artifacts = learningArtifactsFor(d, profile);
+    var synthesis = (d.portfolioSynthesis && d.portfolioSynthesis[profile.id]) || {};
+    var patterns = misconceptionsFor(d, profile);
+    var lines = ['Consciousness Theory Lab / Portfolio summary / ' + profile.label];
+    lines.push('Steps done: ' + artifacts.filter(function (a) { return a.done; }).length + '/' + artifacts.length);
+    artifacts.forEach(function (a) { lines.push((a.done ? '[x] ' : '[ ] ') + (early && a.plainLabel ? a.plainLabel : a.label) + ': ' + a.detail); });
+    lines.push('');
+    lines.push((early ? 'What I think now: ' : 'Claim: ') + (String(synthesis.claim || '').trim() || '(not written yet)'));
+    lines.push((early ? 'The clues I used: ' : 'Evidence: ') + (String(synthesis.evidence || '').trim() || '(not written yet)'));
+    lines.push((early ? 'What I still wonder: ' : 'Uncertainty: ') + (String(synthesis.uncertainty || '').trim() || '(not written yet)'));
+    lines.push('');
+    lines.push('Patterns to watch: ' + (patterns.length ? patterns.map(function (p) { return p.label + ' (' + p.count + ')'; }).join('; ') : 'none flagged'));
+    lines.push('This summary records a learner\'s provisional reasoning. It is not scientific consensus, and no theory is declared the winner.');
+    return lines.join('\n');
+  }
+
+  // Quest hooks get data only, never a profile, so these ask whether ANY
+  // reading path completed the artifact. Without them the host tracker showed
+  // seven quests while the learning path tracked ten steps.
+  function anyExperimentComplete(data) {
+    var runs = (data && data.experimentRuns) || {};
+    return Object.keys(runs).some(function (profileId) { return experimentRunCompleteFor(data, profileId); });
+  }
+
+  function anyPortfolioComplete(data) {
+    var all = (data && data.portfolioSynthesis) || {};
+    return Object.keys(all).some(function (profileId) {
+      return !!PROFILES[profileId] && portfolioCompleteForProfile(data, PROFILES[profileId]);
+    });
+  }
+
+  function nextArtifactFor(artifacts) {
+    return artifacts.filter(function (artifact) { return !artifact.done; })[0] || null;
+  }
+
+  // Every wrong answer currently on screen, grouped by the reasoning pattern it
+  // exemplifies. Read by the Knowledge Check and the Portfolio; both show the
+  // same list because both call this.
+  function misconceptionsFor(data, profile) {
+    var d = data || {};
+    var hits = {};
+    function add(id, where) {
+      if (!id || !MISCONCEPTION_LABELS[id]) return;
+      var hit = hits[id] || (hits[id] = { id: id, label: MISCONCEPTION_LABELS[id], count: 0, where: [] });
+      hit.count += 1;
+      if (hit.where.indexOf(where) === -1) hit.where.push(where);
+    }
+    var sortAnswers = profileRecord(d, 'evidenceAnswersByProfile', 'evidenceAnswers', profile.id);
+    evidenceItemsFor(profile).forEach(function (item) {
+      if (sortAnswers[item.id] != null && sortAnswers[item.id] !== item.kind) add(item.misconception, 'evidence');
+    });
+    var ladderAnswers = profileRecord(d, 'evidenceLadderAnswersByProfile', 'evidenceLadderAnswers', profile.id);
+    evidenceLadderItemsFor(profile).forEach(function (item) {
+      if (ladderAnswers[item.id] != null && ladderAnswers[item.id] !== item.rung) add(item.misconception, 'ladder');
+    });
+    var quizAnswers = (d.quizAnswers && d.quizAnswers[profile.id]) || {};
+    quizFor(profile).forEach(function (question, index) {
+      if (quizAnswers[index] != null && quizAnswers[index] !== question[2]) add(question[4], 'check');
+    });
+    return Object.keys(hits).map(function (id) { return hits[id]; }).sort(function (a, b) {
+      return b.count - a.count || a.label.localeCompare(b.label);
+    });
+  }
+
   window.StemLab.registerTool('consciousnessLab', {
     label: 'Consciousness Theory Lab',
     title: 'Consciousness Theory Lab',
@@ -1184,7 +1890,10 @@
       { id: 'guided_debate', label: 'Complete a structured two-position debate', icon: '\uD83D\uDDE3\uFE0F', check: function (d) { return completedDebateCount(d) >= 1; }, progress: function (d) { return completedDebateCount(d) >= 1 ? 'Done!' : '0/1'; } },
       { id: 'workspace_bench', label: 'Run the bench on both substrates, including one no-report run', icon: '\uD83D\uDD2C', check: function (d) { return simCrosscheckDone(d); }, progress: function (d) { var f = d.simFlags || {}; return (((f.human ? 1 : 0) + (f.model ? 1 : 0) + (f.noReport ? 1 : 0))) + '/3'; } },
       { id: 'knowledge_check', label: 'Complete the knowledge check', icon: '\u2705', check: function (d) { return completedCheckCount(d) >= 1; }, progress: function (d) { return completedCheckCount(d) >= 1 ? 'Done!' : 'Not yet'; } },
-      { id: 'reflect_ai', label: 'Reflect on AI and emotion', icon: '\uD83E\uDD16', check: function (d) { return String(d.aiReflection || '').trim().length >= 30; }, progress: function (d) { return Math.min(30, String(d.aiReflection || '').trim().length) + '/30 chars'; } }
+      { id: 'reflect_ai', label: 'Reflect on AI and emotion', icon: '\uD83E\uDD16', check: function (d) { return String(d.aiReflection || '').trim().length >= 30; }, progress: function (d) { return Math.min(30, String(d.aiReflection || '').trim().length) + '/30 chars'; } },
+      { id: 'case_note', label: 'Separate observation, interpretation, and limit on a case', icon: '\uD83D\uDCDD', check: function (d) { return completedCaseAuditCount(d) >= 1; }, progress: function (d) { return completedCaseAuditCount(d) >= 1 ? 'Done!' : '0/1'; } },
+      { id: 'preregistration', label: 'Preregister a prediction before revealing the forecasts', icon: '\uD83C\uDFAF', check: function (d) { return anyExperimentComplete(d); }, progress: function (d) { return anyExperimentComplete(d) ? 'Done!' : '0/1'; } },
+      { id: 'portfolio_synthesis', label: 'Complete a claim-evidence-uncertainty portfolio', icon: '\uD83D\uDCC2', check: function (d) { return anyPortfolioComplete(d); }, progress: function (d) { return anyPortfolioComplete(d) ? 'Done!' : '0/1'; } }
     ],
     testHooks: {
       resolveProfile: resolveProfile,
@@ -1221,7 +1930,25 @@
       journeyStagesFor: function (theoryId) {
         return SIGNAL_STAGES.filter(function (stage) { return stageMatchesTheory(stage, THEORIES[theoryId]); }).map(function (stage) { return stage.id; });
       },
-      journeyNoteFor: function (theoryId) { return journeyNoteForTheory(THEORIES[theoryId]); }
+      journeyNoteFor: function (theoryId) { return journeyNoteForTheory(THEORIES[theoryId]); },
+      pathStepIds: PATH_STEPS.map(function (step) { return step.id; }),
+      learningArtifactsFor: function (grade, data) {
+        return learningArtifactsFor(data, resolveProfile(grade)).map(function (artifact) {
+          return { id: artifact.id, view: artifact.view, done: artifact.done, label: artifact.label, detail: artifact.detail };
+        });
+      },
+      caseAuditMinimumFor: function (grade) { return caseAuditMinimumForProfile(resolveProfile(grade)); },
+      caseAuditReadyFor: function (grade, audit) { return caseAuditReadyForProfile(audit, resolveProfile(grade)); },
+      misconceptionsFor: function (grade, data) { return misconceptionsFor(data, resolveProfile(grade)); },
+      analysisMoveFor: function (grade) { return analysisMoveFor(resolveProfile(grade)); },
+      caseKindFor: caseKindFor,
+      caseAskFor: function (theoryId) { return (THEORIES[theoryId] && THEORIES[theoryId].caseAsk) || null; },
+      comparisonRelationFor: function (grade, aId, bId) { return comparisonRelationFor(aId, bId, resolveProfile(grade)); },
+      quizFor: function (grade) {
+        return quizFor(resolveProfile(grade)).map(function (question) {
+          return { question: question[0], options: question[1].slice(), correct: question[2], misconception: question[4] || null };
+        });
+      }
     },
     render: function (ctx) {
       return renderConsciousnessLab(ctx || {});
@@ -1256,7 +1983,19 @@
     }
 
     function selectView(view) {
-      patchState({ activeView: view }, view + ' view selected');
+      patchState({ activeView: view }, viewLabel(view) + ' section selected');
+    }
+
+    // Jumps from the path strip land focus in the new section's panel, so a
+    // keyboard or screen-reader user is not left on a button that just changed.
+    function jumpTo(view) {
+      selectView(view);
+      if (typeof document !== 'undefined' && window.setTimeout) {
+        window.setTimeout(function () {
+          var target = document.getElementById('cns-view-panel');
+          if (target && typeof target.focus === 'function') target.focus();
+        }, 0);
+      }
     }
 
     function handleViewKeyDown(event, index) {
@@ -1305,18 +2044,27 @@
 
     injectConsciousnessStyles();
 
+    // [id, icon, label, K-2 label]. "Prediction Simulator" and "Portfolio" are
+    // not tab names a six-year-old can steer by; the fourth column is what the
+    // youngest path reads, everywhere a view is named.
     var VIEWS = [
-      ['learn', '\uD83E\uDDE0', 'Explore'],
-      ['map', '\uD83D\uDDFA\uFE0F', 'Theory Map'],
-      ['compare', '\u2696\uFE0F', 'Compare'],
-      ['evidence', '\uD83E\uDDEA', 'Evidence Lab'],
-      ['experiment', '\uD83C\uDF9B\uFE0F', 'Prediction Simulator'],
-      ['cases', '\uD83D\uDCA1', 'Cases'],
-      ['bench', '\uD83D\uDD2C', 'Workspace Bench'],
-      ['check', '\u2705', 'Knowledge Check'],
-      ['portfolio', '\uD83D\uDCC2', 'Portfolio'],
-      ['sources', '\uD83D\uDCDA', 'Sources & Limits']
+      ['learn', '\uD83E\uDDE0', 'Explore', 'Big ideas'],
+      ['map', '\uD83D\uDDFA\uFE0F', 'Theory Map', 'Idea map'],
+      ['compare', '\u2696\uFE0F', 'Compare', 'Compare two'],
+      ['evidence', '\uD83E\uDDEA', 'Evidence Lab', 'Clue sorter'],
+      ['experiment', '\uD83C\uDF9B\uFE0F', 'Prediction Simulator', 'Guess first'],
+      ['cases', '\uD83D\uDCA1', 'Cases', 'Stories'],
+      ['bench', '\uD83D\uDD2C', 'Workspace Bench', 'Toy machine'],
+      ['check', '\u2705', 'Knowledge Check', 'Quick check'],
+      ['portfolio', '\uD83D\uDCC2', 'Portfolio', 'My folder'],
+      ['sources', '\uD83D\uDCDA', 'Sources & Limits', 'Sources']
     ];
+
+    function viewLabel(view) {
+      var item = VIEWS.filter(function (entry) { return entry[0] === view; })[0];
+      if (!item) return view;
+      return profile.id === 'early' && item[3] ? item[3] : item[2];
+    }
 
     function pill(label, kind) {
       var color = kind === 'science' ? C.science : kind === 'philosophy' ? C.philosophy : C.accent;
@@ -1370,7 +2118,7 @@
               onKeyDown: function (event) { handleViewKeyDown(event, index); },
               onClick: function () { selectView(item[0]); },
               style: active ? { background: C.accent, color: C.accentText, borderColor: C.accent } : { background: C.panel, color: C.text, borderColor: C.border }
-            }, h('span', { 'aria-hidden': 'true' }, item[1]), item[2]);
+            }, h('span', { 'aria-hidden': 'true' }, item[1]), viewLabel(item[0]));
           })
         )
       );
@@ -1383,6 +2131,82 @@
       }, content);
     }
 
+    // The path strip. Not a lock: every tab stays open. It says which step is
+    // suggested next and why, and jumps there. Ten tabs with no order was the
+    // single biggest "where do I start" cost in this lab.
+    function renderLearningPath() {
+      if (activeView === 'portfolio') return null;   // the Portfolio shows the full grid itself
+      var early = profile.id === 'early';
+      var artifacts = learningArtifactsFor(d, profile);
+      var doneCount = artifacts.filter(function (artifact) { return artifact.done; }).length;
+      var next = nextArtifactFor(artifacts);
+      var nextHere = !!next && next.view === activeView;
+      function labelFor(artifact) { return early && artifact.plainLabel ? artifact.plainLabel : artifact.label; }
+      return h('nav', { className: 'cns-progress', 'aria-label': 'Learning path', style: { background: C.raised, borderColor: C.border } },
+        h('div', { className: 'cns-progress-heading' },
+          h('strong', null, early ? 'My path' : 'Learning path'),
+          h('span', { role: 'status' }, doneCount + ' of ' + artifacts.length + (early ? ' done' : ' steps done'))
+        ),
+        h('ol', null, artifacts.map(function (artifact, index) {
+          var isNext = !!next && next.id === artifact.id;
+          var here = artifact.view === activeView;
+          return h('li', {
+            key: artifact.id,
+            className: (artifact.done ? 'is-complete' : '') + (isNext ? ' is-next' : ''),
+            'aria-current': isNext ? 'step' : undefined
+          },
+            h('button', {
+              type: 'button', title: artifact.detail,
+              'aria-label': (index + 1) + '. ' + labelFor(artifact) + (artifact.done ? ', done' : isNext ? ', suggested next' : '') + (here ? ', in this section' : ''),
+              onClick: function () { jumpTo(artifact.view); }
+            }, h('span', { 'aria-hidden': 'true' }, artifact.done ? '\u2713' : String(index + 1)), h('span', null, labelFor(artifact)))
+          );
+        })),
+        next
+          ? h('div', { className: 'cns-next-step', style: { background: C.panel, borderColor: C.border } },
+              h('div', null,
+                h('div', { className: 'cns-next-kicker' }, early ? 'TRY THIS NEXT' : 'SUGGESTED NEXT STEP'),
+                h('h2', null, labelFor(next)),
+                h('p', null, early && next.plainWhy ? next.plainWhy : next.why),
+                h('span', { className: 'cns-next-detail' }, next.detail)
+              ),
+              h('div', { className: 'cns-next-actions' },
+                h('span', { className: 'cns-next-time' }, 'About ' + next.minutes + ' min'),
+                nextHere
+                  ? h('span', { className: 'cns-next-here' }, early ? 'It is on this page.' : 'It is in this section.')
+                  : h('button', { type: 'button', className: 'cns-next-action', onClick: function () { jumpTo(next.view); }, style: { background: C.accent, color: C.accentText, borderColor: C.accent } }, 'Go to ' + viewLabel(next.view))
+              )
+            )
+          : h('div', { className: 'cns-next-step', style: { background: C.panel, borderColor: C.good } },
+              h('div', null,
+                h('div', { className: 'cns-next-kicker' }, 'PATH COMPLETE'),
+                h('h2', null, early ? 'You did every step' : 'Every step on the path is done'),
+                h('p', null, early ? 'Go back to any page, or add more to your folder.' : 'Revisit any section, or restate your position in the Portfolio now that every activity has fed into it.')
+              )
+            )
+      );
+    }
+
+    // Wrong answers currently on screen, named by reasoning pattern. Shown by
+    // the Knowledge Check and the Portfolio; both read misconceptionsFor().
+    function renderMisconceptionSummary() {
+      var early = profile.id === 'early';
+      var patterns = misconceptionsFor(d, profile);
+      var whereLabel = { evidence: viewLabel('evidence'), ladder: viewLabel('evidence') + ' ladder', check: viewLabel('check') };
+      return h('section', { className: 'cns-misconception-summary', 'aria-labelledby': 'cns-patterns-title', style: { background: C.raised, borderColor: C.border } },
+        h('h3', { id: 'cns-patterns-title' }, early ? 'Ideas to look at again' : 'Patterns to watch'),
+        h('p', null, patterns.length
+          ? (early ? 'These answers are not right yet. Each one shows a mix-up worth talking about.' : 'Each answer still wrong on screen points at a named reasoning pattern. Fix the answer and the pattern clears.')
+          : (early ? 'Nothing to fix right now.' : 'No patterns flagged: every answer currently on screen is calibrated.')),
+        patterns.length ? h('ul', null, patterns.map(function (pattern) {
+          return h('li', { key: pattern.id },
+            h('strong', null, pattern.label),
+            h('span', null, pattern.count + (pattern.count === 1 ? ' answer' : ' answers') + ' \u00B7 ' + pattern.where.map(function (where) { return whereLabel[where]; }).join(', '))
+          );
+        })) : null
+      );
+    }
+
     function renderLearn() {
       var selected = THEORIES[selectedId];
       var copy = mergeLevelCopy(selected, profile.id);
@@ -1391,6 +2215,13 @@
       // path cannot leak into this one.
       var selectedVocab = profile.vocabulary.indexOf(d.selectedVocab) !== -1 ? d.selectedVocab : profile.vocabulary[0];
       var selectedGlossary = glossaryFor(selectedVocab);
+      // The scope note says the two families are "separated below". They were
+      // in one flat grid, so the note described a separation the page did not
+      // have. Group them for real; heading only when both groups are present.
+      var theoryGroups = [
+        { id: 'science', label: profile.id === 'early' ? 'Science ideas' : 'Scientific models', theories: theories.filter(function (theory) { return theory.group === 'science'; }) },
+        { id: 'philosophy', label: profile.id === 'early' ? 'Big questions' : 'Philosophical views', theories: theories.filter(function (theory) { return theory.group === 'philosophy'; }) }
+      ].filter(function (group) { return group.theories.length > 0; });
       return panel(h(React.Fragment, null,
         h('section', { 'aria-labelledby': 'cns-foundations-title' },
           h('div', { className: 'cns-section-heading' },
@@ -1435,25 +2266,35 @@
             h('span', { className: 'cns-count' }, theories.length + ' views at this level')
           ),
           levelAtLeast(profile.id, 'middle') && h('p', { className: 'cns-scope-note' }, 'Scientific models propose mechanisms or information-processing conditions. Philosophical views ask what consciousness fundamentally is. They are separated below because they are not one-for-one rivals.'),
-          h('div', { className: 'cns-theory-grid' }, theories.map(function (theory) {
-            var isSelected = theory.id === selectedId;
-            var theoryCopy = mergeLevelCopy(theory, profile.id);
-            return h('button', {
-              key: theory.id, type: 'button', className: 'cns-theory-card',
-              'aria-pressed': isSelected ? 'true' : 'false',
-              onClick: function () { patchState({ selectedTheory: theory.id }, theory.name + ' selected'); },
-              style: { background: isSelected ? C.raised : C.panel, borderColor: isSelected ? C.accent : C.border, color: C.text }
-            },
-              h('span', { className: 'cns-theory-icon', 'aria-hidden': 'true' }, theory.icon),
-              h('span', { className: 'cns-theory-name' }, theory.name),
-              pill(theory.group === 'science' ? 'Scientific model' : 'Philosophical view', theory.group),
-              h('span', { className: 'cns-theory-summary' }, theoryCopy.summary)
+          theoryGroups.map(function (group) {
+            return h('div', { key: group.id, className: 'cns-theory-group' },
+              theoryGroups.length > 1 && h('h3', { className: 'cns-theory-group-title', id: 'cns-theory-group-' + group.id }, group.label + ' (' + group.theories.length + ')'),
+              h('div', {
+                className: 'cns-theory-grid', role: 'group',
+                'aria-labelledby': theoryGroups.length > 1 ? 'cns-theory-group-' + group.id : undefined,
+                'aria-label': theoryGroups.length > 1 ? undefined : group.label
+              }, group.theories.map(function (theory) {
+                var isSelected = theory.id === selectedId;
+                var theoryCopy = mergeLevelCopy(theory, profile.id);
+                return h('button', {
+                  key: theory.id, type: 'button', className: 'cns-theory-card',
+                  'aria-pressed': isSelected ? 'true' : 'false',
+                  onClick: function () { patchState({ selectedTheory: theory.id }, theoryTitle(theory, profile) + ' selected'); },
+                  style: { background: isSelected ? C.raised : C.panel, borderColor: isSelected ? C.accent : C.border, color: C.text }
+                },
+                  h('span', { className: 'cns-theory-icon', 'aria-hidden': 'true' }, theory.icon),
+                  h('span', { className: 'cns-theory-name' }, theoryTitle(theory, profile)),
+                  profile.id === 'early' && theory.nick && h('span', { className: 'cns-theory-formal' }, theory.name),
+                  pill(theory.group === 'science' ? 'Scientific model' : 'Philosophical view', theory.group),
+                  h('span', { className: 'cns-theory-summary' }, theoryCopy.summary)
+                );
+              }))
             );
-          })),
+          }),
           // No aria-live here: announceToSR already names the selection, and marking this whole
           // article live made screen readers re-read the entire detail block on every click.
           h('article', { className: 'cns-detail', style: { background: C.raised, borderColor: C.accent } },
-            h('div', { className: 'cns-detail-title' }, h('span', { 'aria-hidden': 'true' }, selected.icon), h('div', null, pill(selected.group === 'science' ? 'SCIENTIFIC MODEL' : 'PHILOSOPHICAL VIEW', selected.group), h('h3', null, selected.name))),
+            h('div', { className: 'cns-detail-title' }, h('span', { 'aria-hidden': 'true' }, selected.icon), h('div', null, pill(selected.group === 'science' ? 'SCIENTIFIC MODEL' : 'PHILOSOPHICAL VIEW', selected.group), h('h3', null, theoryTitle(selected, profile)), profile.id === 'early' && selected.nick && h('span', { className: 'cns-theory-formal' }, selected.name))),
             h('p', { className: 'cns-detail-summary' }, copy.summary),
             h('div', { className: 'cns-epistemic-grid' },
               epistemicBox('claim', 'What it proposes', copy.claim || copy.mechanism || copy.summary),
@@ -1479,8 +2320,9 @@
         h('ol', { className: 'cns-journey' }, SIGNAL_STAGES.map(function (stage) {
           var match = stageMatchesTheory(stage, selected);
           return h('li', { key: stage.id, className: match ? 'is-focus' : '', style: { background: match ? C.raised : C.panel, borderColor: match ? C.accent : C.border } },
-            h('strong', null, stage.label), h('span', { className: 'cns-journey-plain' }, stage.plain),
-            match && h('span', { className: 'cns-focus-tag', style: { background: C.accent, color: C.accentText } }, selected.short + ' emphasizes this')
+            h('strong', null, profile.id === 'early' && stage.earlyLabel ? stage.earlyLabel : stage.label),
+            h('span', { className: 'cns-journey-plain' }, profile.id === 'early' && stage.earlyPlain ? stage.earlyPlain : stage.plain),
+            match && h('span', { className: 'cns-focus-tag', style: { background: C.accent, color: C.accentText } }, profile.id === 'early' ? 'This idea points here' : selected.short + ' emphasizes this')
           );
         })),
         journeyNote && h('p', { className: 'cns-journey-note', style: { background: C.raised, borderColor: C.border, color: C.muted } }, journeyNote)
@@ -1492,6 +2334,7 @@
       var b = THEORIES[compareB];
       var ac = mergeLevelCopy(a, profile.id);
       var bc = mergeLevelCopy(b, profile.id);
+      var compareRelation = comparisonRelationFor(compareA, compareB, profile);
       var rowLabels = {
         claim: 'Core proposal', target: 'Main target', mechanism: 'Proposed mechanism', prediction: 'Distinctive prediction',
         example: 'Concrete example', evidence: 'Relevant evidence', challenge: 'Unresolved challenge', biology: 'Role of biology / substrate'
@@ -1515,18 +2358,20 @@
           : 'Select two views and compare explanatory target, mechanism, evidence, and limitations. A shared finding is not automatically discriminating evidence.'),
         h('div', { className: 'cns-compare-pickers' },
           h('label', null, h('span', null, 'First lens'), h('select', { value: compareA, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareA: value, compareB: current.compareB || compareB, compareCount: (current.compareCount || 0) + 1 }; }, 'First comparison lens changed'); } },
-            theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); })
+            theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); })
           )),
           h('span', { className: 'cns-vs', 'aria-hidden': 'true' }, 'VS'),
           h('label', null, h('span', null, 'Second lens'), h('select', { value: compareB, onChange: function (e) { var value = e.target.value; patchState(function (current) { return { compareB: value, compareA: current.compareA || compareA, compareCount: (current.compareCount || 0) + 1 }; }, 'Second comparison lens changed'); } },
-            theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); })
+            theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); })
           ))
         ),
         compareA === compareB && h('p', { className: 'cns-alert', role: 'alert' }, 'Choose two different lenses for a useful comparison.'),
+        compareRelation && h('div', { className: 'cns-compare-relation', style: { background: C.raised, borderColor: compareRelation.same ? C.accent : C.science } },
+          h('strong', null, compareRelation.heading), h('p', null, compareRelation.text)),
         h('div', { className: 'cns-table-wrap' },
           h('table', { className: 'cns-compare-table' },
-            h('caption', null, a.name + ' compared with ' + b.name + ' for ' + profile.shortLabel),
-            h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Question'), h('th', { scope: 'col' }, a.name), h('th', { scope: 'col' }, b.name))),
+            h('caption', null, theoryTitle(a, profile) + ' compared with ' + theoryTitle(b, profile) + ' for ' + profile.shortLabel),
+            h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Question'), h('th', { scope: 'col' }, theoryTitle(a, profile)), h('th', { scope: 'col' }, theoryTitle(b, profile)))),
             h('tbody', null, profile.compareRows.map(function (row) {
               // Never fall through to the summary: it would appear under a row label it does not answer.
               return h('tr', { key: row }, h('th', { scope: 'row' }, rowLabels[row]), h('td', null, ac[row] || fallback[row]), h('td', null, bc[row] || fallback[row]));
@@ -1547,97 +2392,25 @@
                 : profile.id === 'high'
                   ? 'Identify one necessary-or-sufficient claim, one report confound, and one discriminating prediction.'
                   : 'Sketch a preregistered manipulation that holds performance constant while separating the two models\' predicted mechanisms.'),
-          h('textarea', { value: d.compareReflection || '', onChange: function (e) { patchState({ compareReflection: e.target.value }); }, rows: 4, 'aria-label': 'Theory comparison reflection', placeholder: 'Write your comparison here...' })
+          // Stored per reading path (the prompt above differs by path), read with
+          // the legacy flat key as fallback so an older save is not lost.
+          h('textarea', { value: profileText(d, 'compareReflections', 'compareReflection', profile.id), onChange: function (e) {
+            var value = e.target.value;
+            patchState(function (current) {
+              var byProfile = Object.assign({}, current.compareReflections || {});
+              byProfile[profile.id] = value;
+              return { compareReflections: byProfile };
+            });
+          }, rows: 4, 'aria-label': 'Theory comparison reflection', placeholder: 'Write your comparison here...' }),
+          h('p', { className: 'cns-debate-requirement' }, 'Write at least ' + comparisonMinimumForProfile(profile) + ' characters to log this comparison on your path.'),
+          comparisonCompleteForProfile(d, profile) && h('p', { className: 'cns-debate-complete', role: 'status', style: { color: C.good } }, 'Comparison logged \u2713')
         )
       ));
     }
 
-    function getEvidenceItems() {
-      var simple = profile.id === 'early';
-      var elementary = profile.id === 'elementary';
-      var base = [
-        { id: 'mask-result', kind: 'evidence', text: simple ? 'A picture people said they saw had a different brain signal than a picture they said they missed.' : elementary ? 'In a masking study, reported-seen pictures produced later and wider activity than reported-unseen pictures.' : 'A masking contrast found later, widespread activity for reported-seen stimuli relative to reported-unseen stimuli.', why: simple ? 'Researchers measured this result. It is a clue, even though answering the question may add extra brain activity.' : 'This is an empirical result. Report, decision, memory, and task demands remain alternative contributors.' },
-        { id: 'broadcast-proof', kind: 'claim', text: simple ? 'The wide signal is the feeling itself.' : elementary ? 'The later wide signal proves the global workspace theory.' : 'Late frontoparietal activation is identical to phenomenal consciousness.', why: simple ? 'That is an explanation of a clue, not something the measurement showed by itself.' : 'This goes beyond the result. The activity might be prerequisite, mechanism, consequence, or report-related.' },
-        { id: 'other-minds', kind: 'question', text: simple ? 'What does a bat\'s experience feel like?' : elementary ? 'Can a system use information flexibly without feeling anything?' : 'Does access consciousness entail phenomenal consciousness?', why: 'No agreed experiment currently settles this question.' },
-        { id: 'pci-result', kind: 'evidence', text: simple ? 'Complex brain responses are often bigger when people are awake than in deep anesthesia.' : elementary ? 'A complexity measure often separates wakefulness from deep anesthesia.' : 'Perturbational Complexity Index often tracks conscious capacity across wakefulness, anesthesia, sleep, and disorders of consciousness.', why: simple ? 'This is a measured pattern. It is not a direct feeling meter.' : 'This is evidence about conscious capacity. PCI is not a direct calculation of IIT\'s Phi and does not uniquely validate IIT.' }
-      ];
-      if (levelAtLeast(profile.id, 'middle')) {
-        base.push(
-          { id: 'rpt-sufficient', kind: 'claim', text: 'Local recurrent sensory processing is sufficient for phenomenal visual consciousness.', why: 'This is RPT\'s theoretical sufficiency claim. Recurrence-related data are relevant, but the claim itself is not a raw observation.' },
-          { id: 'no-report', kind: 'question', text: 'Which neural signals remain specific to experience after every report, memory, attention, and decision confound is removed?', why: 'No-report designs reduce some confounds but still infer experience indirectly; complete separation remains an open research problem.' }
-        );
-      }
-      if (levelAtLeast(profile.id, 'high')) {
-        base.push(
-          { id: 'cogitate', kind: 'evidence', text: 'A 2025 preregistered adversarial study supported some predictions and challenged key predictions of both GNWT and IIT.', why: 'This is an empirical comparison, not a declaration that either theory is wholly true or false. Bridge assumptions and revised implementations still matter.' },
-          { id: 'jspace-interpretation', kind: 'claim', text: 'Claude\'s J-space proves that the model has phenomenal consciousness.', why: 'Unsupported inference. The 2026 results concern reportability, modulation, silent reasoning, flexible reuse, and broadcasting - functional access-like properties, not felt experience.' }
-        );
-      }
-      if (levelAtLeast(profile.id, 'college')) {
-        base.push({ id: 'proxy-validity', kind: 'question', text: 'Which bridge principle licenses inference from a complexity proxy to a theory\'s constitutive quantity?', why: 'Proxy validity and the mapping from operational measure to formal construct require independent support.' });
-      }
-      return base;
-    }
+    function getEvidenceItems() { return evidenceItemsFor(profile); }
 
-    function getEvidenceLadderItems() {
-      var copyByLevel = {
-        early: {
-          brain: ['Sleep, anesthesia, and brain injury can change whether a person wakes, responds, or later reports an experience.', 'Many kinds of observations support a close link between brains and human experience.'],
-          complexity: ['A more complex brain response may be a useful clue that experience is possible.', 'The clue is useful, but it is not a direct feeling meter.'],
-          frontal: ['A feeling happens only after information is shared across the whole brain.', 'Scientists disagree about whether wide sharing creates the feeling or mainly helps people use and report it.'],
-          ai: ['A current AI helper feels emotions from the inside.', 'Words and actions can be observed; an inner feeling has not been established.']
-        },
-        elementary: {
-          brain: ['Changes to the brain during sleep, anesthesia, injury, or stimulation reliably change conscious state or content.', 'Many repeated findings establish brain dependence in humans, but they do not choose one complete theory.'],
-          complexity: ['Complex, integrated brain responses may help identify when conscious experience is possible.', 'The pattern is a useful clue, but it does not prove that complexity alone creates experience.'],
-          frontal: ['Late, widespread frontal activity is required for every conscious experience.', 'Scientists dispute whether this activity creates experience or mainly supports memory, decisions, and reports.'],
-          ai: ['Current AI systems have subjective feelings because they use emotional words.', 'Emotional words and functions are observable; subjective feeling has not been established.']
-        },
-        middle: {
-          brain: ['Sleep, anesthesia, injury, and direct brain stimulation reliably alter conscious capacity or content in humans.', 'Converging observations and interventions establish dependence, while leaving the complete mechanism unresolved.'],
-          complexity: ['PCI and related complexity measures often distinguish wakefulness from deep anesthesia or unresponsive states.', 'The association is suggestive of differentiated, integrated dynamics, but the measure is not a direct experience detector.'],
-          frontal: ['Late prefrontal ignition is necessary for phenomenal consciousness rather than for reporting it.', 'No-report, lesion, and task studies support competing interpretations, so the necessity claim is disputed.'],
-          ai: ['Current AI systems possess phenomenal consciousness or felt emotion.', 'They show language and some access- or emotion-like functions, but no accepted test settles felt experience.']
-        },
-        high: {
-          brain: ['Causal interventions and disruptions involving the human brain reliably alter conscious state or content.', 'This establishes strong brain dependence in humans without identifying one sufficient mechanism or settling metaphysics.'],
-          complexity: ['Perturbational and signal-complexity measures track conscious capacity across several clinical and laboratory states.', 'The results are theory-relevant but do not uniquely validate IIT, compute Phi, or establish sufficiency.'],
-          frontal: ['Late frontoparietal ignition is necessary for phenomenal consciousness, independent of access and report.', 'Report confounds, no-report designs, lesions, and adversarial predictions leave this stronger claim disputed.'],
-          ai: ['Current AI has subjective feeling because it exhibits flexible access-like or emotion-like functions.', 'Functional indicators warrant narrower processing claims; phenomenal consciousness and valence remain unknown.']
-        },
-        college: {
-          brain: ['Human conscious capacity and content exhibit robust intervention-sensitive dependence on brain organization and dynamics.', 'The dependence claim is established at this scope; identity, realization, and theory-specific constitutive claims require further premises.'],
-          complexity: ['Operational complexity metrics predict conscious capacity across heterogeneous states and disorders.', 'This supports a family of dynamical hypotheses, but proxy validity and non-unique prediction limit constitutive inference.'],
-          frontal: ['Prefrontal global ignition is constitutively necessary for phenomenality rather than access, confidence, or report.', 'Different operationalizations and auxiliary assumptions produce conflicting theory-relative interpretations.'],
-          ai: ['Current AI systems possess phenomenal consciousness or felt valence.', 'Access-like computation and some emotion-like capabilities are evidence about function, not a validated phenomenal measure.']
-        },
-        graduate: {
-          brain: ['Within studied humans, interventions on brain state and organization reliably change operational measures and reports of conscious capacity or content.', 'The scoped dependence claim is well supported; extrapolation to a unique causal model, identity thesis, or nonhuman substrate is not included.'],
-          complexity: ['Perturbational and endogenous complexity estimators provide cross-state predictive information about conscious capacity.', 'Construct validity, estimator dependence, common-cause structure, and theory non-uniqueness keep the mechanistic inference suggestive.'],
-          frontal: ['A late prefrontal ignition variable is causally necessary for phenomenality after conditioning on access, memory, confidence, decision, and report.', 'Existing designs do not yield consensus on that estimand, and bridge principles differ across GNWT implementations and rivals.'],
-          ai: ['Current AI systems possess phenomenal consciousness or felt valence.', 'No validated phenomenal criterion or consensus bridge principle currently converts the available functional evidence into that attribution.']
-        }
-      };
-      var copy = copyByLevel[profile.id];
-      return [
-        {
-          id: 'brain-dependence', rung: 'Established',
-          text: copy.brain[0], why: copy.brain[1]
-        },
-        {
-          id: 'complexity-mechanism', rung: 'Suggestive',
-          text: copy.complexity[0], why: copy.complexity[1]
-        },
-        {
-          id: 'frontal-necessity', rung: 'Disputed',
-          text: copy.frontal[0], why: copy.frontal[1]
-        },
-        {
-          id: 'current-ai-feeling', rung: 'Unknown',
-          text: copy.ai[0], why: copy.ai[1]
-        }
-      ];
-    }
+    function getEvidenceLadderItems() { return evidenceLadderItemsFor(profile); }
 
     function renderEvidenceLadder() {
       var items = getEvidenceLadderItems();
@@ -1649,9 +2422,11 @@
           h('div', null, h('span', { className: 'cns-step' }, 'EVIDENCE LADDER'), h('h3', { id: 'cns-ladder-title' }, 'How settled is the claim?')),
           h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, correct + ' correct · ' + placed + '/' + items.length + ' placed')
         ),
-        h('p', { className: 'cns-ladder-intro' }, profile.id === 'early' ? 'Put each idea on a rung. “Unknown” means we do not have enough evidence yet.' : 'Place each claim by the current state of evidence. A rung describes confidence in this precise claim, not the worth of an entire theory.'),
+        h('p', { className: 'cns-ladder-intro' }, profile.id === 'early' ? 'Now put each idea on a rung. “Unknown” means we do not have enough evidence yet.' : 'Now place each claim by the current state of evidence. A rung describes confidence in this precise claim, not the worth of an entire theory.'),
         h('ol', { className: 'cns-ladder-key', 'aria-label': 'Evidence ladder from most settled to unresolved' }, EVIDENCE_LADDER_LABELS.map(function (label, index) {
-          return h('li', { key: label }, h('span', { 'aria-hidden': 'true' }, index + 1), h('strong', null, label));
+          var gloss = LADDER_GLOSSES[profile.id] ? LADDER_GLOSSES[profile.id][label] : null;
+          return h('li', { key: label }, h('span', { 'aria-hidden': 'true' }, index + 1),
+            h('div', null, h('strong', null, label), gloss && h('em', { className: 'cns-ladder-gloss' }, gloss)));
         })),
         h('div', { className: 'cns-ladder-items' }, items.map(function (item, itemIndex) {
           var picked = answers[item.id];
@@ -1669,7 +2444,8 @@
                 if (label === item.rung) awardOnce('ladder-' + item.id, 3, 'Placed a claim on the evidence ladder');
               }, style: { borderColor: active ? C.accent : C.border, background: active ? C.accent : C.panel, color: active ? C.accentText : C.text } }, label);
             })),
-            picked && h('p', { className: 'cns-feedback', role: 'status', style: { color: isCorrect ? C.good : C.bad } }, h('strong', null, isCorrect ? 'Well calibrated. ' : 'Try another rung. '), item.why, !isCorrect && ' Best rung: ' + item.rung + '.')
+            picked && h('p', { className: 'cns-feedback', role: 'status', style: { color: isCorrect ? C.good : C.bad } }, h('strong', null, isCorrect ? 'Well calibrated. ' : 'Try another rung. '), item.why, !isCorrect && ' Best rung: ' + item.rung + '.',
+              !isCorrect && item.misconception && h('span', { className: 'cns-feedback-explanation' }, ' Pattern: ' + MISCONCEPTION_LABELS[item.misconception] + '.'))
           );
         })),
         h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState({ evidenceLadderAnswers: {} }, 'Evidence ladder reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset ladder')
@@ -1689,8 +2465,6 @@
           h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, correct + ' correct \u00B7 ' + answered + '/' + items.length + ' sorted')
         ),
         h('p', { className: 'cns-lead' }, profile.activityPrompt),
-        renderEvidenceLadder(),
-        h('hr', { style: { borderColor: C.border } }),
         h('div', { className: 'cns-legend' },
           h('div', null, h('strong', null, labels[0]), h('span', null, profile.id === 'early' ? 'Something observed or measured.' : 'An observation or measurement; several theories may fit it.')),
           h('div', null, h('strong', null, labels[1]), h('span', null, profile.id === 'early' ? 'An idea used to explain clues.' : 'What a theory proposes or infers; not an established fact.')),
@@ -1713,10 +2487,16 @@
               }, style: { borderColor: picked === kind ? C.accent : C.border, background: picked === kind ? C.accent : C.panel, color: picked === kind ? C.accentText : C.text } }, keyMap[kind]);
             })),
             picked && h('div', { className: 'cns-feedback', role: 'status', style: { color: isCorrect ? C.good : C.bad } },
-              h('strong', null, isCorrect ? 'Correct. ' : 'Recheck. '), item.why, !isCorrect && h('span', null, ' Best category: ' + keyMap[item.kind] + '.'))
+              h('strong', null, isCorrect ? 'Correct. ' : 'Recheck. '), item.why, !isCorrect && h('span', null, ' Best category: ' + keyMap[item.kind] + '.'),
+              !isCorrect && item.misconception && h('span', { className: 'cns-feedback-explanation' }, ' Pattern: ' + MISCONCEPTION_LABELS[item.misconception] + '.'))
           );
         })),
-        h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState({ evidenceAnswers: {} }, 'Evidence Lab reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset classifications')
+        h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState({ evidenceAnswers: {} }, 'Evidence Lab reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset classifications'),
+        // The ladder comes second: sorting WHAT KIND of statement something is
+        // has to precede judging HOW SETTLED it is. It used to sit above the
+        // sorter the lead paragraph had just introduced.
+        h('hr', { style: { borderColor: C.border } }),
+        renderEvidenceLadder()
       ));
     }
 
@@ -1936,18 +2716,21 @@
       var copy = mergeLevelCopy(theory, profile.id);
       var foundation = copy.claim || copy.summary || (theory.name + ' offers a lens on the case.');
       if (profile.id === 'early' || profile.id === 'elementary') {
-        return foundation + ' In this case, it asks ' + caseItem.theoryQuestion;
+        // Per-theory ask. The case-level theoryQuestion made every card on the
+        // youngest paths end in the identical sentence, which told the reader
+        // nothing about how the ideas differ.
+        return foundation + (theory.plainAsk ? ' Here, it looks for ' + theory.plainAsk : ' In this case, it asks ' + caseItem.theoryQuestion);
       }
+      // The analysis move used to be appended to EVERY card, so a graduate reader
+      // met the same sentence thirteen times under thirteen different theories.
+      // It is one instruction about the grid, so it renders once, below the grid.
       var specific = caseTheoryApplications(caseItem.id)[theory.id];
-      var analysisMove = profile.id === 'middle'
-        ? ' Comparison move: name one observation this lens explains and one question it leaves open.'
-        : profile.id === 'high'
-          ? ' Comparison move: identify whether the claim targets access, phenomenal character, or report, then name an alternative explanation.'
-          : profile.id === 'college'
-            ? ' Operational move: specify the construct, proxy, bridge principle, and a result that would discriminate this view.'
-            : ' Research audit: state the auxiliary assumptions, causal identification strategy, and preregistered revision condition.';
-      if (specific) return specific + analysisMove;
-      return foundation + ' Applied here, the view asks ' + caseItem.theoryQuestion + ' This is the theory’s interpretation, not an extra observation.' + analysisMove;
+      if (specific) return specific;
+      // Philosophical views have no per-case mechanism entry, so they used to
+      // share one sentence: the case-level question plus a fixed epistemic tail,
+      // repeated verbatim on every philosophy card. Each view now asks its own
+      // standing question, and the epistemic tail is stated once in the intro.
+      return foundation + ' Applied here, it asks ' + (theory.caseAsk || caseItem.theoryQuestion);
     }
 
     function getCases() {
@@ -2014,6 +2797,59 @@
       var debateGuide = debateGuideForProfile(profile);
       var debateReady = debateReadyForProfile(Object.assign({}, debate, { theoryA: debateA, theoryB: debateB }), profile);
       var benchLink = benchLinkForCase(selectedCaseId, profile);
+      var early = profile.id === 'early';
+
+      // Evidence note: the one artifact the Portfolio always asked for and no
+      // view could produce. Keyed per reading path and case, like the debate.
+      var audits = d.caseAudits || {};
+      var auditKey = profile.id + ':' + selectedCaseId;
+      var audit = audits[auditKey] || {};
+      var auditTheoryId = availableTheoryIds.indexOf(audit.theoryId) !== -1 ? audit.theoryId : theories[0].id;
+      var auditMinimum = caseAuditMinimumForProfile(profile);
+      var auditGuide = caseAuditGuideForProfile(profile);
+      var auditReadyCount = CASE_AUDIT_FIELDS.filter(function (field) { return String(audit[field] || '').trim().length >= auditMinimum; }).length;
+      var auditReady = caseAuditReadyForProfile(Object.assign({}, audit, { theoryId: auditTheoryId }), profile);
+      var noteExample = caseNoteExampleFor(selectedCaseId, profile);
+      var analysisMove = analysisMoveFor(profile);
+
+      var debateChecks = debate.checks || {};
+      var debateCheckLabels = debateCheckLabelsForProfile(profile);
+      var uncheckedDebateChecks = GUIDED_DEBATE_CHECKS.filter(function (id) { return !debateChecks[id]; });
+
+      function updateAudit(field, value) {
+        patchState(function (current) {
+          var all = Object.assign({}, current.caseAudits || {});
+          var next = Object.assign({}, all[auditKey] || {});
+          next[field] = value;
+          next.complete = false;
+          all[auditKey] = next;
+          return { caseAudits: all };
+        });
+      }
+
+      function saveAudit() {
+        if (!auditReady) return;
+        patchState(function (current) {
+          var all = Object.assign({}, current.caseAudits || {});
+          all[auditKey] = Object.assign({}, all[auditKey] || {}, { theoryId: auditTheoryId, gradeProfile: profile.id, minimum: auditMinimum, complete: true });
+          return { caseAudits: all };
+        }, 'Evidence note saved');
+        awardOnce('audit-' + auditKey, 5, 'Separated observation, interpretation, and limit on a case');
+      }
+
+      // Ticking a box does not reset completion: the self-check is a rubric
+      // the learner applies to their own text, not a fifth field.
+      function updateDebateCheck(id, on) {
+        patchState(function (current) {
+          var allDebates = Object.assign({}, current.caseDebates || {});
+          var nextDebate = Object.assign({}, allDebates[debateKey] || {});
+          var checks = Object.assign({}, nextDebate.checks || {});
+          checks[id] = on;
+          nextDebate.checks = checks;
+          allDebates[debateKey] = nextDebate;
+          return { caseDebates: allDebates };
+        }, debateCheckLabels[id] + (on ? ' checked' : ' unchecked'));
+      }
 
       function updateDebate(field, value) {
         patchState(function (current) {
@@ -2064,7 +2900,7 @@
         // A div, not an article: role="tabpanel" is not an allowed role on article,
         // so the mapping was being discarded by the accessibility tree.
         h('div', { id: 'cns-case-panel', role: 'tabpanel', tabIndex: -1, 'aria-labelledby': 'cns-case-tab-' + selectedCaseId, className: 'cns-case', style: { background: C.raised, borderColor: C.border } },
-          h('div', { className: 'cns-case-heading' }, h('div', null, pill(selectedCase.tag, selectedCase.id === 'ai-emotion' ? 'philosophy' : 'science'), h('h3', null, selectedCase.title))),
+          h('div', { className: 'cns-case-heading' }, h('div', null, pill(selectedCase.tag, caseKindFor(selectedCase.id) === 'thought' ? 'philosophy' : 'science'), h('h3', null, selectedCase.title))),
           h('p', { className: 'cns-case-setup' }, selectedCase.setup),
           epistemicBox('thought', 'Discussion prompt', selectedCase.prompt),
           h('section', { className: 'cns-case-theories', 'aria-labelledby': 'cns-case-theories-title', style: { background: C.panel, borderColor: C.border } },
@@ -2074,14 +2910,16 @@
             ),
             h('p', { className: 'cns-case-theories-intro' }, profile.id === 'early'
               ? 'Each idea points to different clues. These are explanations of the same story, not extra facts.'
-              : 'Every card applies one available theory or philosophical position to the unchanged case evidence. An interpretation is not a verdict that the view is correct.'),
+              : 'Every card applies one available theory or philosophical position to the unchanged case evidence. This is the theory’s interpretation, not an extra observation. An interpretation is not a verdict that the view is correct.'),
             h('div', { className: 'cns-case-theory-grid' }, theories.map(function (theory) {
               return h('article', { key: theory.id, className: 'cns-case-interpretation', style: { borderColor: theory.group === 'science' ? C.science : C.philosophy, background: C.raised } },
                 pill(theory.group === 'science' ? 'Scientific theory' : 'Philosophical position', theory.group),
-                h('h5', null, theory.name),
+                h('h5', null, theoryTitle(theory, profile)),
                 h('p', null, interpretCaseThroughTheory(selectedCase, theory))
               );
-            }))
+            })),
+            analysisMove && h('p', { className: 'cns-analysis-move', style: { borderColor: C.accent } },
+              h('strong', null, analysisMove.label + ': '), analysisMove.text)
           ),
           h('div', { className: 'cns-lens-pair' }, selectedCase.lenses.map(function (lens, index) { return h('div', { key: index, style: { background: C.panel, borderColor: C.border } }, h('strong', null, 'Lens ' + (index + 1)), h('p', null, lens)); })),
           epistemicBox('caution', 'Calibration', selectedCase.guard),
@@ -2111,6 +2949,35 @@
             h('textarea', { id: 'cns-ai-reflection', rows: 5, value: d.aiReflection || '', onChange: function (e) { patchState({ aiReflection: e.target.value }); }, placeholder: profile.id === 'early' ? 'I can observe... I still do not know...' : 'The observable evidence supports... A functionalist might... A felt-experience view might... The unresolved question is...' }),
             h('div', { className: 'cns-objective-anchor', style: { borderColor: C.good } }, h('strong', { style: { color: C.good } }, 'Anchor conclusion:'), ' The AI exhibited emotion-like behavior or functions; this alone does not settle whether it felt anything.')
           ),
+          h('section', { className: 'cns-case-audit', 'aria-labelledby': 'cns-case-audit-title', style: { background: C.panel, borderColor: C.border } },
+            h('div', { className: 'cns-section-heading' },
+              h('div', null, h('span', { className: 'cns-step' }, early ? 'SEE \u00B7 IDEA \u00B7 STILL UNKNOWN' : 'OBSERVATION \u00B7 INTERPRETATION \u00B7 LIMIT'), h('h3', { id: 'cns-case-audit-title' }, early ? 'My clue note' : 'Evidence note')),
+              h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, auditReadyCount + '/' + CASE_AUDIT_FIELDS.length + ' parts ready')
+            ),
+            h('p', null, auditGuide.lead),
+            noteExample && h('details', { className: 'cns-note-example' },
+              h('summary', null, early ? 'See an example note first' : 'See an example note, then write your own'),
+              h('p', null, h('strong', null, auditGuide.observation[0] + ': '), noteExample.observation),
+              h('p', null, h('strong', null, cap(theoryHandle(THEORIES[noteExample.theory], profile)) + (early ? ' says: ' : ' adds: ')), noteExample.interpretation),
+              h('p', null, h('strong', null, auditGuide.limit[0] + ': '), noteExample.limit),
+              h('p', { className: 'cns-note-example-guard' }, early ? 'Your note should use your own words and your own idea.' : 'An example is a shape to copy, not an answer to copy. Use your own observation and the theory you chose.')
+            ),
+            h('label', { className: 'cns-audit-theory' }, h('span', null, early ? 'Which idea are you using?' : 'Theory doing the interpreting'),
+              h('select', { value: auditTheoryId, onChange: function (e) { updateAudit('theoryId', e.target.value); }, style: { background: C.panel, color: C.text, borderColor: C.border } },
+                theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); }))),
+            h('div', { className: 'cns-case-audit-grid' }, CASE_AUDIT_FIELDS.map(function (field) {
+              var guide = auditGuide[field];
+              return h('label', { key: field }, h('strong', null, guide[0]), h('span', null, guide[1]),
+                h('textarea', { rows: 3, value: audit[field] || '', onChange: function (e) { updateAudit(field, e.target.value); }, placeholder: guide[2] }));
+            })),
+            h('p', { className: 'cns-debate-requirement' }, 'Each part needs at least ' + auditMinimum + ' characters for this reading path.'),
+            h('button', { type: 'button', className: 'cns-debate-finish', disabled: !auditReady, onClick: saveAudit, style: { background: auditReady ? C.accent : C.raised, color: auditReady ? C.accentText : C.muted, borderColor: auditReady ? C.accent : C.border } }, audit.complete && auditReady ? 'Note saved \u2713' : (early ? 'Save my note' : 'Save evidence note')),
+            audit.complete && auditReady && h('div', { className: 'cns-audit-summary', role: 'status', style: { borderColor: C.good } },
+              h('p', null, h('strong', { style: { color: C.text } }, early ? 'We can see: ' : 'Observed: '), audit.observation),
+              h('p', null, h('strong', { style: { color: C.text } }, cap(theoryHandle(THEORIES[auditTheoryId], profile)) + (early ? ' says: ' : ' adds: ')), audit.interpretation),
+              h('p', null, h('strong', { style: { color: C.text } }, early ? 'Still cannot tell: ' : 'Cannot show: '), audit.limit)
+            )
+          ),
           h('section', { className: 'cns-guided-debate', 'aria-labelledby': 'cns-guided-debate-title', style: { background: C.panel, borderColor: C.border } },
             h('div', { className: 'cns-section-heading' },
               h('div', null, h('span', { className: 'cns-step' }, 'FAIR COMPARISON'), h('h3', { id: 'cns-guided-debate-title' }, 'Guided two-position debate')),
@@ -2118,19 +2985,29 @@
             ),
             h('p', null, debateGuide.lead),
             h('div', { className: 'cns-debate-pickers' },
-              h('label', null, h('span', null, 'Position A'), h('select', { value: debateA, onChange: function (e) { updateDebate('theoryA', e.target.value); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); }))),
-              h('label', null, h('span', null, 'Position B'), h('select', { value: debateB, onChange: function (e) { updateDebate('theoryB', e.target.value); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); })))
+              h('label', null, h('span', null, 'Position A'), h('select', { value: debateA, onChange: function (e) { updateDebate('theoryA', e.target.value); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); }))),
+              h('label', null, h('span', null, 'Position B'), h('select', { value: debateB, onChange: function (e) { updateDebate('theoryB', e.target.value); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, theories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); })))
             ),
             debateA === debateB && h('p', { className: 'cns-alert', role: 'alert' }, 'Choose two different positions.'),
             h('div', { className: 'cns-debate-grid' },
-              h('label', null, h('strong', null, '1. Fair account of ' + debateTheoryA.short), h('span', null, debateGuide.positionA), h('textarea', { required: true, rows: 3, value: debate.positionA || '', onChange: function (e) { updateDebate('positionA', e.target.value); }, placeholder: debateTheoryA.name + ' would argue...' })),
-              h('label', null, h('strong', null, '2. Fair account of ' + debateTheoryB.short), h('span', null, debateGuide.positionB), h('textarea', { required: true, rows: 3, value: debate.positionB || '', onChange: function (e) { updateDebate('positionB', e.target.value); }, placeholder: debateTheoryB.name + ' would argue...' })),
+              h('label', null, h('strong', null, '1. Fair account of ' + theoryHandle(debateTheoryA, profile)), h('span', null, debateGuide.positionA), h('textarea', { required: true, rows: 3, value: debate.positionA || '', onChange: function (e) { updateDebate('positionA', e.target.value); }, placeholder: theoryTitle(debateTheoryA, profile) + ' would argue...' })),
+              h('label', null, h('strong', null, '2. Fair account of ' + theoryHandle(debateTheoryB, profile)), h('span', null, debateGuide.positionB), h('textarea', { required: true, rows: 3, value: debate.positionB || '', onChange: function (e) { updateDebate('positionB', e.target.value); }, placeholder: theoryTitle(debateTheoryB, profile) + ' would argue...' })),
               h('label', null, h('strong', null, '3. Evidence and limit'), h('span', null, debateGuide.evidence), h('textarea', { required: true, rows: 3, value: debate.evidence || '', onChange: function (e) { updateDebate('evidence', e.target.value); }, placeholder: 'The evidence shows... Its limit is...' })),
               h('label', null, h('strong', null, '4. Uncertainty and next test'), h('span', null, debateGuide.uncertainty), h('textarea', { required: true, rows: 3, value: debate.uncertainty || '', onChange: function (e) { updateDebate('uncertainty', e.target.value); }, placeholder: 'We still do not know... A useful next test would...' }))
             ),
+            h('fieldset', { className: 'cns-debate-selfcheck' },
+              h('legend', null, early ? 'Before you finish, check:' : 'Self-check before finishing'),
+              GUIDED_DEBATE_CHECKS.map(function (id) {
+                return h('label', { key: id },
+                  h('input', { type: 'checkbox', checked: !!debateChecks[id], onChange: function (e) { updateDebateCheck(id, e.target.checked); } }),
+                  h('span', null, debateCheckLabels[id]));
+              })
+            ),
             h('p', { className: 'cns-debate-requirement' }, 'Each response needs at least ' + debateMinimum + ' characters for this reading path.'),
             h('button', { type: 'button', className: 'cns-debate-finish', disabled: !debateReady, onClick: finishDebate, style: { background: debateReady ? C.accent : C.raised, color: debateReady ? C.accentText : C.muted, borderColor: debateReady ? C.accent : C.border } }, debate.complete && debateReady ? 'Debate complete ✓' : 'Finish guided debate'),
-            debate.complete && debateReady && h('p', { className: 'cns-debate-complete', role: 'status', style: { color: C.good } }, 'Structure complete: two distinct positions, evidence, and uncertainty are present. Reread for fairness and keep your conclusion open to revision.')
+            debate.complete && debateReady && h('p', { className: 'cns-debate-complete', role: 'status', style: { color: C.good } }, uncheckedDebateChecks.length
+              ? 'Structure complete: two distinct positions, evidence, and uncertainty are present. ' + uncheckedDebateChecks.length + ' self-check ' + (uncheckedDebateChecks.length === 1 ? 'item is' : 'items are') + ' still unticked above; reread for those before you call it finished.'
+              : 'Structure and self-check complete. Keep your conclusion open to revision.')
           )
         )
       ));
@@ -2371,9 +3248,9 @@
           )
         ),
         h('div', { className: 'cns-sim-controls' },
-          slider('strength', copyFor('plainStrengthLabel', 'strengthLabel'), null),
-          slider('interference', copyFor('plainInterferenceLabel', 'interferenceLabel'), null),
-          !simple && slider('topDown', substrate.topDownLabel, null)
+          slider('strength', copyFor('plainStrengthLabel', 'strengthLabel'), copyFor('plainStrengthHint', 'strengthHint')),
+          slider('interference', copyFor('plainInterferenceLabel', 'interferenceLabel'), copyFor('plainInterferenceHint', 'interferenceHint')),
+          !simple && slider('topDown', substrate.topDownLabel, substrate.topDownHint)
         ),
         h('div', { className: 'cns-sim-toggles' },
           toggle('reportRequired', copyFor('plainReportLabel', 'reportLabel'),
@@ -2384,10 +3261,10 @@
           h('h3', null, 'What happened in this run'),
           h('p', { className: 'cns-sim-status', role: 'status' }, simple
             ? (run.markers.ignited
-              ? 'The sharing step switched on at step ' + run.markers.ignitionTick + '. Once it switches on, it goes most of the way.'
+              ? 'The sharing step switched on at step ' + (run.markers.ignitionTick + 1) + '. Once it switches on, it goes most of the way.'
               : 'The sharing step never switched on. It only reached ' + simPercent(run.markers.workspace) + '.')
             : (run.markers.ignited
-              ? 'Ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' crossed this toy’s threshold at step ' + run.markers.ignitionTick + '.'
+              ? 'Ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' crossed this toy’s threshold at step ' + (run.markers.ignitionTick + 1) + '.'
               : 'No ignition: the ' + (cfg.substrate === 'model' ? 'verbalizable subspace' : 'global stage') + ' peaked at ' + simPercent(run.markers.workspace) + ', under this toy’s threshold.')),
           stageBars(run, visibleStages),
           renderNetwork(),
@@ -2443,66 +3320,14 @@
             );
           }))
         ),
-        advanced && h('div', { className: 'cns-sim-limits', style: { background: C.raised, borderColor: C.border } },
+        !simple && h('div', { className: 'cns-sim-limits', style: { background: C.raised, borderColor: C.border } },
           h('h3', null, 'What this bench cannot show'),
-          h('ul', null,
-            h('li', null, 'The equations were chosen to make the debate legible. They are not fitted to neural data or to any model’s internals, and no parameter here was estimated from a real experiment.'),
-            h('li', null, 'The higher-order readout is driven by the workspace stage, so this toy structurally cannot separate a constitutive higher-order state from a downstream consequence of access.'),
-            h('li', null, 'The integration index is a differentiation-times-spread number invented for this page. It is not Φ, not PCI, and it rises with global spread by construction.'),
-            h('li', null, 'Both lanes are the same five equations with different labels. That the markers converge is a property of the code, not a discovery about substrates.'),
-            h('li', null, 'No setting produces evidence about phenomenal experience, because nothing in the model represents it.')
-          )
+          h('ul', null, (advanced ? BENCH_LIMITS_FULL : BENCH_LIMITS_PLAIN).map(function (line, index) { return h('li', { key: index }, line); }))
         )
       ));
     }
 
-    function getQuiz() {
-      var common = {
-        early: [
-          ['What is evidence?', ['A clue someone measured', 'Any idea that sounds good'], 0, 'Evidence is an observation or measurement.'],
-          ['A bot says, "I am happy." What do we know?', ['It used happy words', 'It must feel happy'], 0, 'Words are observable; feeling is not proved by the words.'],
-          ['Which idea looks for brain signals looping back?', ['RPT', 'GNWT'], 0, 'Recurrent means returning or looping back.']
-        ],
-        elementary: [
-          ['What does GNWT emphasize?', ['Brain-wide sharing', 'Only the number of stored facts', 'A nonphysical mind'], 0, 'GNWT emphasizes global availability to memory, report, planning, and action.'],
-          ['Which sentence is an open question?', ['Researchers measured brain activity', 'Does using information always come with a feeling?', 'The target lasted 30 milliseconds'], 1, 'Researchers do not agree whether access always entails feeling.'],
-          ['What does IIT NOT mean?', ['Cause-and-effect integration matters', 'More intelligence always means more consciousness', 'The whole may differ from independent parts'], 1, 'IIT is not a simple intelligence or data-size scale.'],
-          ['An AI gives caring replies. What follows?', ['It performs an emotion-like function', 'It definitely feels care', 'It cannot process emotion words'], 0, 'The function is observable; subjective feeling remains unsettled.']
-        ],
-        middle: [
-          ['Which best describes access consciousness?', ['Information usable for report and flexible action', 'The felt quality of red', 'Being biologically alive', 'Having a high IQ'], 0, 'Access concerns availability for reasoning, report, memory, and control.'],
-          ['Why does PCI not prove IIT?', ['PCI is a proxy and multiple theories can explain complexity', 'PCI measures no brain activity', 'IIT rejects integration', 'Anesthesia never changes complexity'], 0, 'A useful proxy is not a direct Phi calculation or unique theory test.'],
-          ['What is a report confound?', ['Answering adds decision, memory, and motor processes', 'Reports are always lies', 'Brain signals cannot be recorded', 'Only words can be conscious'], 0, 'Report tasks recruit processes beyond the experience under study.'],
-          ['Which is a functionalist claim?', ['Causal role may constitute a mental state', 'Every chatbot feels', 'Only carbon can compute', 'Thought experiments are measurements'], 0, 'Functionalism concerns robust causal organization, not a single display of words.'],
-          ['Which conclusion is calibrated?', ['AI emotion-like behavior does not settle felt emotion', 'Emotional language proves valence', 'No artificial system could ever feel', 'Access and phenomenal consciousness are identical by definition'], 0, 'The evidence supports a functional description while phenomenality remains open.']
-        ],
-        high: [
-          ['Which result would most directly discriminate GNWT from RPT?', ['A manipulation separating local recurrence from global broadcast while preserving performance', 'Any activation correlated with seeing', 'A survey of theory popularity', 'A vivid thought experiment'], 0, 'A discriminating test varies the mechanisms the theories distinguish.'],
-          ['What did the 2025 GNWT-IIT adversarial study establish?', ['Some predictions of each survived and key predictions of both were challenged', 'GNWT was proven', 'IIT was proven', 'Consciousness was located in one region'], 0, 'The study did not crown a winner; it refined and challenged predictions.'],
-          ['Why is a neural correlate not automatically a mechanism?', ['It may be a prerequisite, consequence, or task process', 'Correlations are never useful', 'Mechanisms cannot be neural', 'Only philosophy studies causes'], 0, 'Causal role requires more than co-variation.'],
-          ['What does a philosophical zombie test?', ['Whether physical/functional duplication without phenomenality is coherent', 'Whether zombies exist in hospitals', 'Whether recurrence happens', 'Whether PCI can be computed'], 0, 'It is a thought experiment about implications, not an empirical organism.'],
-          ['What do Claude J-space results support most directly?', ['Some functional access/workspace hallmarks in tested models', 'Proof of subjective feeling', 'Proof of AI emotion', 'A direct measurement of phenomenality'], 0, 'Reportability, modulation, reasoning, reuse, and broadcast are access-like functions.'],
-          ['Which AI-emotion inference overreaches?', ['Emotional language alone establishes felt valence', 'The system produced emotional language', 'The system changed response priorities', 'Functionalists and phenomenal realists may disagree'], 0, 'Output style alone does not establish subjective experience.']
-        ],
-        college: [
-          ['Which is a constitutive rather than merely evidential claim?', ['The right causal role makes a state an emotion', 'The model used distress words', 'A classifier detected valence', 'Users perceived empathy'], 0, 'Constitutive functionalism says organization makes it that kind of state.'],
-          ['What is the strongest criticism of treating PCI as direct IIT confirmation?', ['It is a theory-relevant proxy, not a direct full-system Phi computation or unique prediction', 'PCI has no relationship to complexity', 'IIT predicts no state differences', 'PCI is a philosophy survey'], 0, 'Proxy-to-construct and uniqueness both need validation.'],
-          ['A no-report paradigm removes which problem completely?', ['None; it reduces report demands but still infers experience indirectly', 'All attention confounds', 'All memory confounds', 'The other-minds problem'], 0, 'No-report approaches improve designs without making experience directly observable.'],
-          ['What makes evidence discriminating?', ['Competing models predict different outcomes under a controlled manipulation', 'Many theories can explain it afterward', 'It uses expensive imaging', 'It confirms a researcher\'s preferred view'], 0, 'Risky, divergent predictions provide stronger comparison.'],
-          ['What is warranted by J-space causal interventions?', ['Some workspace-like representations mediate tested functions', 'The representations feel like words', 'Claude has emotions', 'Phenomenality is computationally proven'], 0, 'Causal functional results remain distinct from phenomenal attribution.'],
-          ['What must an AI-emotion analysis separate?', ['Observed organization, constitutive theory, and experience attribution', 'Words and tokens only', 'Intelligence from computation', 'Hardware brand from output length'], 0, 'These are different empirical and philosophical questions.']
-        ],
-        graduate: [
-          ['What threatens construct validity in a seen/unseen contrast?', ['Bundled differences in attention, confidence, memory, decision, and report', 'Preregistration itself', 'Having more than one theory', 'Using causal language carefully'], 0, 'The contrast may manipulate or measure several constructs at once.'],
-          ['What is an auxiliary-hypothesis problem?', ['A failed marker may target implementation assumptions rather than the theory core', 'Auxiliary claims are always false', 'Formal theories need no bridge rules', 'All null results prove equivalence'], 0, 'Inference depends on the bridge from abstract commitments to operations.'],
-          ['Which J-space claim is most defensible?', ['The method identifies an approximate verbalizable workspace with access-like functions in tested models', 'It detects phenomenal qualia directly', 'It proves substrate independence', 'It proves current AI moral status'], 0, 'The narrow model- and method-specific functional claim matches the evidence.'],
-          ['What should an adversarial comparison preregister?', ['Divergent predictions, analysis, auxiliary assumptions, and revision conditions', 'Only a favored theory', 'Participant opinions about consciousness', 'A winner before data collection'], 0, 'Transparent disagreement and revision criteria make the test informative.'],
-          ['Why does behavioral equivalence not settle functionalism by itself?', ['Which counterfactual causal grain is constitutive is part of the theory', 'Behavior is never evidence', 'Functionalism forbids behavior', 'Phenomenality is directly measured'], 0, 'Surface behavior can underdetermine internal causal organization and constitutive criteria.'],
-          ['What is the calibrated AI-emotion conclusion?', ['Functions are measurable; their sufficiency for felt valence remains theory-dependent and unresolved', 'Emotion words prove experience', 'Biology is proven necessary', 'Functional roles are irrelevant'], 0, 'The conclusion preserves empirical results without smuggling in a contested constitutive premise.']
-        ]
-      };
-      return common[profile.id];
-    }
+    function getQuiz() { return quizFor(profile); }
 
     function renderCheck() {
       var quiz = getQuiz();
@@ -2541,7 +3366,8 @@
                   if (optionIndex === q[2]) awardOnce('quiz-' + quizKey + '-' + index, 4, 'Consciousness knowledge check');
                 }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, option);
               })),
-              picked != null && h('p', { className: 'cns-feedback', role: 'status', style: { color: isCorrect ? C.good : C.bad } }, h('strong', null, isCorrect ? 'Correct. ' : 'Not quite. '), q[3])
+              picked != null && h('p', { className: 'cns-feedback', role: 'status', style: { color: isCorrect ? C.good : C.bad } }, h('strong', null, isCorrect ? 'Correct. ' : 'Not quite. '), q[3],
+                !isCorrect && q[4] && MISCONCEPTION_LABELS[q[4]] && h('span', { className: 'cns-feedback-explanation' }, ' Pattern: ' + MISCONCEPTION_LABELS[q[4]] + '.'))
             )
           );
         })),
@@ -2549,183 +3375,11 @@
           h('strong', null, 'Check complete: ' + correct + ' of ' + quiz.length + '.'),
           h('p', null, correct === quiz.length ? 'You kept evidence, theory, and uncertainty separate.' : 'Review the feedback, then change any answer. Open questions are not graded as if one philosophy has already won.')
         ),
+        complete && renderMisconceptionSummary(),
         h('button', { type: 'button', className: 'cns-reset', onClick: function () { patchState(function (current) { var byProfile = Object.assign({}, current.quizAnswers || {}); delete byProfile[quizKey]; var prior = current.checkComplete; var completion = (prior && typeof prior === 'object') ? Object.assign({}, prior) : (prior === true ? { legacy: true } : {}); delete completion[quizKey]; return { quizAnswers: byProfile, checkComplete: completion }; }, 'Knowledge check reset'); }, style: { borderColor: C.border, color: C.text, background: C.panel } }, 'Reset this level\'s check')
       ));
     }
 
-    // ── Theory Map, Prediction Simulator and Portfolio ────────────────────────
-    // Grafted from the parallel Codex-worktree implementation of this tool. Both
-    // versions descend from the same core, so these call main's existing
-    // resolveProfile / patchState / levelAtLeast / awardOnce / panel / getCases /
-    // getQuiz / caseIdsForProfile helpers unchanged — the signatures are identical.
-  function knowledgeCheckCompleteFor(data, profileId) {
-    var completed = (data && data.completedChecks) || {};
-    if (completed[profileId] === true) return true;
-    var answers = data && data.quizAnswers && data.quizAnswers[profileId];
-    return !!answers && Object.keys(answers).length >= KNOWLEDGE_CHECK_LENGTHS[profileId];
-  }
-  function completedCaseAuditCount(data) {
-    var audits = (data && data.caseAudits) || {};
-    return Object.keys(audits).filter(function (key) {
-      var audit = audits[key] || {};
-      var minimum = Math.max(8, parseInt(audit.minimum, 10) || 8);
-      return audit.complete === true && audit.theoryId && CASE_AUDIT_FIELDS.every(function (field) { return String(audit[field] || '').trim().length >= minimum; });
-    }).length;
-  }
-  function experimentMinimumForProfile(profile) {
-    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 24 : profile.id === 'high' ? 30 : profile.id === 'college' ? 36 : 42;
-  }
-  function normalizeExperimentSettings(settings) {
-    var raw = settings || {};
-    var delay = parseInt(raw.maskDelay, 10);
-    if (!Number.isFinite(delay)) delay = 80;
-    delay = Math.max(20, Math.min(180, Math.round(delay / 20) * 20));
-    return {
-      maskDelay: delay,
-      attention: raw.attention === 'divided' ? 'divided' : 'focused',
-      report: raw.report === 'no-report' ? 'no-report' : 'direct-report'
-    };
-  }
-  function experimentPredictionFor(theoryId, profile, rawSettings) {
-    var settings = normalizeExperimentSettings(rawSettings);
-    var protectedTarget = settings.maskDelay >= 100 && settings.attention === 'focused';
-    var delayedMask = settings.maskDelay >= 100;
-    var reportFree = settings.report === 'no-report';
-    var condition = protectedTarget ? 'The longer delay and focused attention make target processing less vulnerable to the mask.' : settings.attention === 'divided' ? 'Divided attention and masking make stable target processing less likely.' : 'The relatively short target-mask delay makes target processing vulnerable to interruption.';
-    var results = {
-      gnw: {
-        marker: protectedTarget ? 'Global access more likely' : 'Global access less likely',
-        core: condition + ' GNWT predicts reportable access when the target crosses an amplification threshold and becomes globally available.',
-        limit: reportFree ? 'Without a direct report, any global-availability marker needs an independently validated no-report proxy.' : 'A late widespread signal may include decision, memory, and motor preparation required by the report.'
-      },
-      rpt: {
-        marker: delayedMask ? 'Local recurrence less disrupted' : 'Local recurrence more disrupted',
-        core: condition + ' RPT predicts conscious visual content when recurrent sensory processing survives, potentially before broad access or report.',
-        limit: 'Behavioral accuracy alone does not identify local recurrence or establish that recurrence is sufficient for phenomenality.'
-      },
-      iit: {
-        marker: 'Intrinsic structure not identified',
-        core: 'IIT does not identify consciousness from mask timing or reportability alone. It asks whether the system has the relevant irreducible intrinsic cause-effect structure during the trial.',
-        limit: 'This classroom control panel neither calculates Phi nor measures the system at the causal grain required by IIT.'
-      },
-      hot: {
-        marker: protectedTarget ? 'Higher-order availability more plausible' : 'Higher-order availability less plausible',
-        core: condition + ' HOT predicts conscious seeing when a suitable higher-order representation targets the first-order visual state.',
-        limit: reportFree ? 'A no-report design reduces overt response demands but still needs a valid indicator of higher-order representation.' : 'Confidence and report are relevant measurements, not automatic proof of the constitutive higher-order state.'
-      },
-      predictive: {
-        marker: settings.attention === 'focused' ? 'Target precision weighted more strongly' : 'Target precision weighted less strongly',
-        core: 'Predictive approaches expect masking and attention to change the precision-weighted competition between target and mask representations.',
-        limit: 'Successful predictive inference is not specific to consciousness; a consciousness theory must add and test a bridge from inference to experience.'
-      },
-      ast: {
-        marker: settings.attention === 'focused' ? 'Stable awareness attribution more likely' : 'Stable awareness attribution less likely',
-        core: 'AST predicts awareness reports and control when the system builds a useful simplified model of its attention to the target.',
-        limit: reportFree ? 'Removing direct report makes the attention-schema attribution harder to observe and requires a separate behavioral or neural proxy.' : 'An accurate awareness attribution may explain control and report while critics still question phenomenal sufficiency.'
-      }
-    };
-    var result = results[theoryId] || results.gnw;
-    if (profile.id === 'early') {
-      var earlyCopy = {
-        gnw: protectedTarget ? 'This idea expects the picture to be easier to share with many brain jobs.' : 'This idea expects the picture to be harder to share with many brain jobs.',
-        rpt: delayedMask ? 'This idea expects returning visual signals to have more time.' : 'This idea expects the mask to interrupt returning visual signals.',
-        iit: 'This idea asks how the system works together as one whole. These switches cannot measure that directly.',
-        hot: protectedTarget ? 'This idea expects it to be easier for the mind to represent that it saw the picture.' : 'This idea expects it to be harder for the mind to represent that it saw the picture.'
-      };
-      return { marker: result.marker, prediction: earlyCopy[theoryId] || result.core, limit: result.limit };
-    }
-    if (profile.id === 'elementary') return { marker: result.marker, prediction: result.core.replace('phenomenality', 'felt experience'), limit: result.limit };
-    if (profile.id === 'graduate') return { marker: result.marker, prediction: result.core + ' The forecast depends on operationalization, auxiliary assumptions, and the selected causal grain.', limit: result.limit + ' A preregistered comparison should state the estimand and revision condition.' };
-    if (profile.id === 'college') return { marker: result.marker, prediction: result.core + ' Treat this as a model-relative qualitative prediction, not a simulated measurement.', limit: result.limit };
-    return { marker: result.marker, prediction: result.core, limit: result.limit };
-  }
-  function experimentRunCompleteFor(data, profileId) {
-    var run = data && data.experimentRuns && data.experimentRuns[profileId];
-    var profile = PROFILES[profileId];
-    return !!(run && profile && run.revealed === true && EXPERIMENT_THEORY_IDS.indexOf(run.theoryId) !== -1 && run.settings && String(run.preregistered || '').trim().length >= experimentMinimumForProfile(profile));
-  }
-  function mapAxesForProfile(profile) {
-    if (profile.id === 'early') return ['target'];
-    if (profile.id === 'elementary') return ['target', 'scale'];
-    return ['target', 'scale', 'substrate'];
-  }
-  function mapReflectionMinimumForProfile(profile) {
-    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 24 : 30;
-  }
-  function mapLaneSpecs(axis, profile) {
-    var specs = {
-      target: [
-        ['access', profile.id === 'early' ? 'Sharing and using' : 'Access and global availability', 'Information available for flexible use, report, memory, or control.'],
-        ['sensory', profile.id === 'early' ? 'Seeing and feeling' : 'Sensory phenomenal content', 'What makes a sensory representation consciously experienced.'],
-        ['integration', profile.id === 'early' ? 'Working as one whole' : 'Intrinsic integration', 'The irreducible cause-effect organization of a system.'],
-        ['self', profile.id === 'early' ? 'Representing a mental state' : 'Higher-order or self-model', 'Representation of a mental state, attention, or awareness attribution.'],
-        ['inference', 'Perceptual inference', 'How generative inference and precision shape conscious contents.'],
-        ['realization', 'Realization conditions', 'Which organization or biological process makes a mental state that kind of state.'],
-        ['metaphysical', 'Mind-matter relation', 'What consciousness fundamentally is and how it relates to the physical world.']
-      ],
-      scale: [
-        ['local', 'Local sensory loops', 'Processing within and between nearby sensory areas.'],
-        ['global', 'Global availability', 'Broadcast or availability across multiple specialist systems.'],
-        ['whole', 'Intrinsic whole-system structure', 'The system considered through its irreducible causal organization.'],
-        ['higher', 'Higher-order or model-based', 'A representation of another state, attention, or awareness.'],
-        ['distributed', 'Distributed inference', 'Hierarchical and recurrent inference across multiple levels.'],
-        ['framework', 'Not a single processing scale', 'A realization or metaphysical framework rather than one neural-scale mechanism.']
-      ],
-      substrate: [
-        ['neural', 'Neural implementation emphasized', 'Current formulations make specific claims about biological neural processing.'],
-        ['organizational', 'Organization may generalize', 'The relevant formal or functional organization may not be tied to one material.'],
-        ['biological', 'Biology-constrained', 'Specific biological organization is treated as constitutively important.'],
-        ['physical', 'Physical realization', 'Consciousness is treated as physical, while realization details may vary by view.'],
-        ['nonphysical', 'Nonphysical facts or properties possible', 'A complete physical description may not exhaust consciousness.'],
-        ['fundamental', 'Experiential features are fundamental', 'Basic experiential or proto-experiential features are posited at a fundamental level.'],
-        ['neutral', 'Neutral-basis framework', 'Mental and physical descriptions derive from a basis characterized as neither exclusively mental nor physical.']
-      ]
-    };
-    return specs[axis] || specs.target;
-  }
-  function theoryMapPlacementFor(theoryId, axis, profile) {
-    var theory = THEORIES[theoryId];
-    var placement = THEORY_MAP_PLACEMENTS[theoryId];
-    if (!theory || !placement) return null;
-    var validAxis = mapAxesForProfile(profile).indexOf(axis) !== -1 ? axis : mapAxesForProfile(profile)[0];
-    var laneId = placement[validAxis];
-    var lane = mapLaneSpecs(validAxis, profile).filter(function (item) { return item[0] === laneId; })[0];
-    var copy = mergeLevelCopy(theory, profile.id);
-    var reason = validAxis === 'target' ? (copy.target || copy.claim || copy.summary) : validAxis === 'scale' ? (copy.mechanism || copy.claim || copy.summary) : (copy.biology || copy.claim || copy.summary);
-    return { theoryId: theoryId, axis: validAxis, laneId: laneId, laneLabel: lane ? lane[1] : laneId, reason: reason };
-  }
-  function mapCompleteForProfile(data, profile) {
-    var session = data && data.mapSessions && data.mapSessions[profile.id];
-    return !!(session && (session.interactions || 0) >= 2 && String(session.reflection || '').trim().length >= mapReflectionMinimumForProfile(profile));
-  }
-  function portfolioMinimumForProfile(profile) {
-    return profile.id === 'early' ? 10 : profile.id === 'elementary' ? 18 : profile.id === 'middle' ? 28 : profile.id === 'high' ? 36 : profile.id === 'college' ? 42 : 50;
-  }
-  function portfolioCompleteForProfile(data, profile) {
-    var synthesis = data && data.portfolioSynthesis && data.portfolioSynthesis[profile.id];
-    var minimum = portfolioMinimumForProfile(profile);
-    return !!(synthesis && PORTFOLIO_FIELDS.every(function (field) { return String(synthesis[field] || '').trim().length >= minimum; }));
-  }
-  function hasProfileValue(data, scopedKey, profileId) {
-    var byProfile = (data && data[scopedKey]) || {};
-    return Object.prototype.hasOwnProperty.call(byProfile, profileId);
-  }
-  function profileText(data, scopedKey, legacyKey, profileId) {
-    if (hasProfileValue(data, scopedKey, profileId)) return String(data[scopedKey][profileId] || '');
-    return String((data && data[legacyKey]) || '');
-  }
-  function profileRecord(data, scopedKey, legacyKey, profileId) {
-    if (hasProfileValue(data, scopedKey, profileId)) return data[scopedKey][profileId] || {};
-    return (data && data[legacyKey]) || {};
-  }
-  function comparisonCompleteForProfile(data, profile) {
-    var minimum = profile.id === 'early' ? 10 : 20;
-    return hasProfileValue(data, 'compareReflections', profile.id) && profileText(data, 'compareReflections', 'compareReflection', profile.id).trim().length >= minimum;
-  }
-  function evidenceCompleteForProfile(data, profile) {
-    if (!hasProfileValue(data, 'evidenceAnswersByProfile', profile.id) || !hasProfileValue(data, 'evidenceLadderAnswersByProfile', profile.id)) return false;
-    return Object.keys(profileRecord(data, 'evidenceAnswersByProfile', 'evidenceAnswers', profile.id)).length >= 4 && Object.keys(profileRecord(data, 'evidenceLadderAnswersByProfile', 'evidenceLadderAnswers', profile.id)).length >= 4;
-  }
     function renderTheoryMap() {
       var axes = mapAxesForProfile(profile);
       var mapSession = (d.mapSessions && d.mapSessions[profile.id]) || {};
@@ -2743,7 +3397,7 @@
           var placement = theoryMapPlacementFor(theory.id, selectedAxis, profile);
           return placement && placement.laneId === lane[0];
         });
-        return { id: lane[0], label: lane[1], description: lane[2], theories: laneTheories };
+        return { id: lane[0], label: lane[1], description: profile.id === 'early' && lane[3] ? lane[3] : lane[2], theories: laneTheories };
       }).filter(function (lane) { return lane.theories.length > 0; });
 
       function recordMapInteraction(patch, announcement) {
@@ -2796,21 +3450,23 @@
         ),
         h('div', { className: 'cns-map-axis-title' }, h('strong', null, axisLabels[selectedAxis]), h('span', null, lanes.length + ' occupied lanes')),
         h('div', { className: 'cns-landscape', role: 'list', 'aria-label': axisLabels[selectedAxis] + ' theory map' }, lanes.map(function (lane) {
-          return h('section', { key: lane.id, className: 'cns-map-lane', role: 'listitem', style: { background: C.raised, borderColor: C.border }, 'aria-labelledby': 'cns-map-lane-' + lane.id },
+          // A div, not a section: role="listitem" is not an allowed role on section,
+          // so the list semantics were being discarded by the accessibility tree.
+          return h('div', { key: lane.id, className: 'cns-map-lane', role: 'listitem', style: { background: C.raised, borderColor: C.border }, 'aria-labelledby': 'cns-map-lane-' + lane.id },
             h('div', { className: 'cns-map-lane-heading' }, h('h3', { id: 'cns-map-lane-' + lane.id }, lane.label), h('span', null, lane.theories.length)),
             h('p', null, lane.description),
             h('div', { className: 'cns-map-theories' }, lane.theories.map(function (theory) {
               var active = theory.id === selectedMapTheoryId;
               var placement = theoryMapPlacementFor(theory.id, selectedAxis, profile);
               return h('button', { key: theory.id, type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { recordMapInteraction({ selectedTheory: theory.id }, theory.name + ' inspected on the map'); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } },
-                h('span', { className: 'cns-map-theory-name' }, theory.name),
+                h('span', { className: 'cns-map-theory-name' }, theoryTitle(theory, profile)),
                 h('span', { className: 'cns-map-reason' }, placement.reason)
               );
             }))
           );
         })),
         h('article', { className: 'cns-map-detail', style: { background: C.raised, borderColor: selectedMapTheory.group === 'science' ? C.science : C.philosophy }, 'aria-live': 'polite' },
-          h('div', null, pill(selectedMapTheory.group === 'science' ? 'Scientific model' : 'Philosophical view', selectedMapTheory.group), h('h3', null, selectedMapTheory.name)),
+          h('div', null, pill(selectedMapTheory.group === 'science' ? 'Scientific model' : 'Philosophical view', selectedMapTheory.group), h('h3', null, theoryTitle(selectedMapTheory, profile))),
           h('p', null, theoryMapPlacementFor(selectedMapTheory.id, selectedAxis, profile).reason),
           h('p', { className: 'cns-map-detail-limit' }, h('strong', null, profile.id === 'early' ? 'Still to ask: ' : 'Key challenge: '), selectedMapCopy.challenge || 'What evidence would separate this view from alternatives?')
         ),
@@ -2833,7 +3489,9 @@
       var minimum = experimentMinimumForProfile(profile);
       var preregistered = String(run.preregistered || '');
       var preregReady = preregistered.trim().length >= minimum;
-      var scenario = 'Target-mask delay: ' + settings.maskDelay + ' ms; attention: ' + settings.attention + '; response condition: ' + (settings.report === 'no-report' ? 'no direct report' : 'direct report') + '.';
+      var scenario = profile.id === 'early'
+        ? 'The jumble comes ' + settings.maskDelay + ' ms after the picture. ' + (settings.attention === 'focused' ? 'Looking right at it. ' : 'Looking around. ') + (settings.report === 'no-report' ? 'We do not ask.' : 'We ask what they saw.')
+        : 'Target-mask delay: ' + settings.maskDelay + ' ms; attention: ' + settings.attention + '; response condition: ' + (settings.report === 'no-report' ? 'no direct report' : 'direct report') + '.';
 
       function updateExperiment(patch, announcement) {
         patchState(function (current) {
@@ -2877,26 +3535,28 @@
             h('li', null, h('strong', null, '1. Target'), h('span', null, profile.id === 'early' ? 'A small picture flashes.' : 'A near-threshold visual target appears briefly.')),
             h('li', null, h('strong', null, '2. Delay'), h('span', null, settings.maskDelay + ' milliseconds')),
             h('li', null, h('strong', null, '3. Mask'), h('span', null, profile.id === 'early' ? 'A jumble covers the picture.' : 'A backward mask competes with target processing.')),
-            h('li', null, h('strong', null, '4. Measure'), h('span', null, settings.report === 'no-report' ? 'Use an indirect, independently validated proxy.' : 'Collect accuracy, confidence, and direct report.'))
+            h('li', null, h('strong', null, '4. Measure'), h('span', null, profile.id === 'early'
+              ? (settings.report === 'no-report' ? 'We watch carefully without asking.' : 'We ask what they saw and how sure they are.')
+              : (settings.report === 'no-report' ? 'Use an indirect, independently validated proxy.' : 'Collect accuracy, confidence, and direct report.')))
           ),
           h('div', { className: 'cns-experiment-controls' },
             h('label', { className: 'cns-delay-control', htmlFor: 'cns-mask-delay' },
               h('strong', null, profile.id === 'early' ? 'How soon does the jumble appear?' : 'Target-mask delay'),
               h('span', null, settings.maskDelay + ' ms'),
               h('input', { id: 'cns-mask-delay', type: 'range', min: 20, max: 180, step: 20, value: settings.maskDelay, onChange: function (event) { updateSetting('maskDelay', event.target.value); }, 'aria-valuetext': settings.maskDelay + ' milliseconds after the target' }),
-              h('small', null, '20 ms: rapid interruption \u00B7 180 ms: more target-processing time')
+              h('small', null, profile.id === 'early' ? 'Left: the jumble comes very fast \u00B7 Right: the picture gets more time' : '20 ms: rapid interruption \u00B7 180 ms: more target-processing time')
             ),
-            h('fieldset', null, h('legend', null, 'Attention condition'), h('div', { className: 'cns-toggle-group' },
-              [['focused', 'Focused'], ['divided', 'Divided']].map(function (item) { var active = settings.attention === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateSetting('attention', item[0]); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, item[1]); })
+            h('fieldset', null, h('legend', null, profile.id === 'early' ? 'Is the person paying attention?' : 'Attention condition'), h('div', { className: 'cns-toggle-group' },
+              (profile.id === 'early' ? [['focused', 'Looking right at it'], ['divided', 'Looking around']] : [['focused', 'Focused'], ['divided', 'Divided']]).map(function (item) { var active = settings.attention === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateSetting('attention', item[0]); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, item[1]); })
             )),
-            h('fieldset', null, h('legend', null, 'Response condition'), h('div', { className: 'cns-toggle-group' },
-              [['direct-report', 'Direct report'], ['no-report', 'No direct report']].map(function (item) { var active = settings.report === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateSetting('report', item[0]); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, item[1]); })
+            h('fieldset', null, h('legend', null, profile.id === 'early' ? 'Do we ask what they saw?' : 'Response condition'), h('div', { className: 'cns-toggle-group' },
+              (profile.id === 'early' ? [['direct-report', 'We ask'], ['no-report', 'We do not ask']] : [['direct-report', 'Direct report'], ['no-report', 'No direct report']]).map(function (item) { var active = settings.report === item[0]; return h('button', { key: item[0], type: 'button', 'aria-pressed': active ? 'true' : 'false', onClick: function () { updateSetting('report', item[0]); }, style: { background: active ? C.accent : C.panel, color: active ? C.accentText : C.text, borderColor: active ? C.accent : C.border } }, item[1]); })
             ))
           )
         ),
         h('section', { className: 'cns-preregister', 'aria-labelledby': 'cns-preregister-title', style: { borderColor: C.border } },
           h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'STEP 2'), h('h3', { id: 'cns-preregister-title' }, profile.id === 'early' ? 'Make your guess first' : 'Preregister a qualitative prediction')), h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, Math.min(minimum, preregistered.trim().length) + '/' + minimum + ' characters')),
-          h('label', null, h('span', null, profile.id === 'early' ? 'Idea you are using' : 'Theory whose prediction you will commit to'), h('select', { value: chosenTheoryId, onChange: function (event) { updateExperiment({ theoryId: event.target.value, revealed: false }, 'Prediction theory changed'); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, simulatorTheories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theory.name); }))),
+          h('label', null, h('span', null, profile.id === 'early' ? 'Idea you are using' : 'Theory whose prediction you will commit to'), h('select', { value: chosenTheoryId, onChange: function (event) { updateExperiment({ theoryId: event.target.value, revealed: false }, 'Prediction theory changed'); }, style: { background: C.panel, color: C.text, borderColor: C.border } }, simulatorTheories.map(function (theory) { return h('option', { key: theory.id, value: theory.id }, theoryTitle(theory, profile)); }))),
           h('label', null, h('span', null, profile.id === 'early' ? 'What do you think this idea expects?' : 'State the expected outcome, relevant mechanism, and one possible limit.'), h('textarea', { rows: 4, value: preregistered, onChange: function (event) { updateExperiment({ preregistered: event.target.value, revealed: false }); }, placeholder: chosenTheory.short + ' predicts... because... This would not yet prove...' })),
           h('button', { type: 'button', className: 'cns-reveal', disabled: !preregReady, onClick: revealPredictions, style: { background: preregReady ? C.accent : C.raised, color: preregReady ? C.accentText : C.muted, borderColor: preregReady ? C.accent : C.border } }, run.revealed && preregReady ? 'Forecasts revealed \u2713' : 'Reveal theory forecasts')
         ),
@@ -2906,11 +3566,18 @@
           h('div', { className: 'cns-forecast-grid' }, simulatorTheories.map(function (theory) {
             var forecast = experimentPredictionFor(theory.id, profile, settings);
             return h('article', { key: theory.id, className: 'cns-forecast-card', style: { background: C.raised, borderColor: theory.id === chosenTheoryId ? C.accent : C.border } },
-              h('div', null, h('span', { className: 'cns-pill', style: { color: C.science, borderColor: C.science } }, forecast.marker), h('h4', null, theory.name)),
+              h('div', null, h('span', { className: 'cns-pill', style: { color: C.science, borderColor: C.science } }, forecast.marker), h('h4', null, theoryTitle(theory, profile))),
               h('p', null, forecast.prediction),
               h('p', { className: 'cns-forecast-limit' }, h('strong', null, 'Inference limit: '), forecast.limit)
             );
           })),
+          // The explain step. A predict-observe cycle without it leaves the
+          // learner's own forecast unexamined; this does not gate anything.
+          h('label', { className: 'cns-experiment-reflect' },
+            h('strong', null, profile.id === 'early' ? 'Did your guess match?' : 'Compare your prediction with the forecasts'),
+            h('span', null, profile.id === 'early' ? 'Say what was the same and what was different.' : 'Where did your preregistered prediction agree or differ, and which forecast would need a different experiment to test?'),
+            h('textarea', { rows: 3, value: String(run.reflection || ''), onChange: function (event) { updateExperiment({ reflection: event.target.value }); }, placeholder: profile.id === 'early' ? 'My guess was... The cards said...' : 'My prediction matched on... It differed on... A test that would separate them is...' })
+          ),
           h('p', { className: 'cns-scope-note' }, 'Shared predictions are weaker tests: compatibility is not discrimination. Prefer a controlled result for which the theories forecast different outcomes.'),
           epistemicBox('question', 'Discrimination question', profile.id === 'early'
             ? 'If several ideas expect the same answer, that answer does not tell us which idea is best.'
@@ -2927,37 +3594,11 @@
       var synthesis = synthesisByProfile[profile.id] || {};
       var minimum = portfolioMinimumForProfile(profile);
       var fieldsReady = PORTFOLIO_FIELDS.filter(function (field) { return String(synthesis[field] || '').trim().length >= minimum; }).length;
-      var selectedTheory = d.selectedTheory && THEORIES[d.selectedTheory] && theories.some(function (theory) { return theory.id === d.selectedTheory; }) ? THEORIES[d.selectedTheory] : null;
-      var mapSession = (d.mapSessions && d.mapSessions[profile.id]) || {};
-      var experimentRun = (d.experimentRuns && d.experimentRuns[profile.id]) || {};
-      var currentAudits = {};
-      Object.keys(d.caseAudits || {}).forEach(function (key) { if (key.indexOf(profile.id + ':') === 0) currentAudits[key] = d.caseAudits[key]; });
-      var currentDebates = {};
-      Object.keys(d.caseDebates || {}).forEach(function (key) { if (key.indexOf(profile.id + ':') === 0) currentDebates[key] = d.caseDebates[key]; });
-      var auditCount = completedCaseAuditCount({ caseAudits: currentAudits });
-      var debateCount = completedDebateCount({ caseDebates: currentDebates });
-      var evidenceItems = getEvidenceItems();
-      var comparisonReflection = profileText(d, 'compareReflections', 'compareReflection', profile.id);
-      var evidenceAnswers = profileRecord(d, 'evidenceAnswersByProfile', 'evidenceAnswers', profile.id);
-      var evidenceCorrect = evidenceItems.reduce(function (score, item) { return score + (evidenceAnswers[item.id] === item.kind ? 1 : 0); }, 0);
-      var ladderItems = getEvidenceLadderItems();
-      var ladderAnswers = profileRecord(d, 'evidenceLadderAnswersByProfile', 'evidenceLadderAnswers', profile.id);
-      var ladderCorrect = ladderItems.reduce(function (score, item) { return score + (ladderAnswers[item.id] === item.rung ? 1 : 0); }, 0);
-      var quiz = getQuiz();
-      var quizAnswers = (d.quizAnswers && d.quizAnswers[profile.id]) || {};
-      var quizCorrect = quiz.reduce(function (score, question, index) { return score + (quizAnswers[index] === question[2] ? 1 : 0); }, 0);
-      var artifacts = [
-        { id: 'explore', label: 'Theory explored', done: !!selectedTheory, detail: selectedTheory ? selectedTheory.name : 'Choose and inspect a theory in Explore.' },
-        { id: 'map', label: 'Landscape synthesis', done: mapCompleteForProfile(d, profile), detail: mapSession.reflection || 'Inspect two map views and write a synthesis.' },
-        { id: 'compare', label: 'Theory comparison', done: comparisonCompleteForProfile(d, profile), detail: comparisonReflection || 'Compare two theories and record a difference.' },
-        { id: 'evidence', label: 'Evidence calibration', done: evidenceCompleteForProfile(d, profile), detail: evidenceCorrect + '/' + evidenceItems.length + ' classifications and ' + ladderCorrect + '/' + ladderItems.length + ' ladder placements currently correct.' },
-        { id: 'experiment', label: 'Prediction preregistration', done: experimentRunCompleteFor(d, profile.id), detail: experimentRun.preregistered || 'Preregister and reveal a simulator forecast.' },
-        { id: 'case', label: 'Case evidence note', done: auditCount >= 1, detail: auditCount >= 1 ? auditCount + ' completed case ' + (auditCount === 1 ? 'note' : 'notes') + '.' : 'Complete an observation-interpretation-limit note.' },
-        { id: 'debate', label: 'Guided debate', done: debateCount >= 1, detail: debateCount >= 1 ? debateCount + ' completed structured ' + (debateCount === 1 ? 'debate' : 'debates') + '.' : 'Complete two fair positions, evidence, and uncertainty.' },
-        { id: 'check', label: 'Knowledge check', done: knowledgeCheckCompleteFor(d, profile.id), detail: quizCorrect + '/' + quiz.length + ' answers currently correct.' },
-        { id: 'synthesis', label: 'Final synthesis', done: portfolioCompleteForProfile(d, profile), detail: fieldsReady + '/' + PORTFOLIO_FIELDS.length + ' reflection fields ready.' }
-      ];
+      // One derivation, shared with the path strip under the tabs.
+      var artifacts = learningArtifactsFor(d, profile);
       var artifactsDone = artifacts.filter(function (artifact) { return artifact.done; }).length;
+      var summaryText = portfolioSummaryText(d, profile);
+      var canCopy = typeof navigator !== 'undefined' && !!(navigator.clipboard && navigator.clipboard.writeText);
 
       function updateSynthesis(field, value) {
         patchState(function (current) {
@@ -2965,7 +3606,7 @@
           var nextSynthesis = Object.assign({}, allSynthesis[profile.id] || {});
           nextSynthesis[field] = value;
           allSynthesis[profile.id] = nextSynthesis;
-          return { portfolioSynthesis: allSynthesis };
+          return { portfolioSynthesis: allSynthesis, summaryCopied: false };
         });
         var candidate = Object.assign({}, synthesis);
         candidate[field] = value;
@@ -2997,18 +3638,40 @@
           h('h3', { id: 'cns-portfolio-overview-title' }, 'Collected learning artifacts'),
           h('div', { className: 'cns-portfolio-grid' }, artifacts.map(function (artifact) {
             return h('article', { key: artifact.id, className: artifact.done ? 'is-ready' : '', style: { background: C.raised, borderColor: artifact.done ? C.good : C.border } },
-              h('div', null, h('span', { 'aria-hidden': 'true' }, artifact.done ? '\u2713' : '\u2022'), h('strong', null, artifact.label)),
+              h('div', null, h('span', { 'aria-hidden': 'true' }, artifact.done ? '\u2713' : '\u2022'), h('strong', null, profile.id === 'early' && artifact.plainLabel ? artifact.plainLabel : artifact.label)),
               h('p', null, artifact.detail)
             );
           }))
         ),
+        renderMisconceptionSummary(),
         h('section', { className: 'cns-portfolio-synthesis', 'aria-labelledby': 'cns-portfolio-synthesis-title', style: { background: C.raised, borderColor: C.border } },
           h('div', { className: 'cns-section-heading' }, h('div', null, h('span', { className: 'cns-step' }, 'FINAL REFLECTION'), h('h3', { id: 'cns-portfolio-synthesis-title' }, 'Claim, evidence, and uncertainty')), h('span', { className: 'cns-score', role: 'status', 'aria-live': 'polite' }, fieldsReady + '/' + PORTFOLIO_FIELDS.length + ' fields ready')),
           h('div', { className: 'cns-portfolio-fields' }, PORTFOLIO_FIELDS.map(function (field) {
-            return h('label', { key: field }, h('strong', null, prompts[field][0]), h('span', null, prompts[field][1]), h('textarea', { rows: 4, value: synthesis[field] || '', onChange: function (event) { updateSynthesis(field, event.target.value); }, placeholder: field === 'claim' ? 'My current, provisional claim is...' : field === 'evidence' ? 'The evidence shows... The inference requires... A limit is...' : 'I am still uncertain about... I would revise if...' }));
+            return h('label', { key: field }, h('strong', null, prompts[field][0]), h('span', null, prompts[field][1]), h('textarea', { rows: 4, value: synthesis[field] || '', onChange: function (event) { updateSynthesis(field, event.target.value); }, placeholder: profile.id === 'early'
+              ? (field === 'claim' ? 'I think... because...' : field === 'evidence' ? 'I saw... It shows... It cannot show...' : 'I still wonder...')
+              : profile.id === 'elementary'
+                ? (field === 'claim' ? 'The idea that helps most is... It explains...' : field === 'evidence' ? 'We observed... This shows... It cannot prove...' : 'We still do not know... My view could change if...')
+                : (field === 'claim' ? 'My current, provisional claim is...' : field === 'evidence' ? 'The evidence shows... The inference requires... A limit is...' : 'I am still uncertain about... I would revise if...') }));
           })),
           h('p', { className: 'cns-debate-requirement' }, 'Each reflection needs at least ' + minimum + ' characters for this reading path.'),
           portfolioCompleteForProfile(d, profile) && h('div', { className: 'cns-portfolio-complete', role: 'status', style: { borderColor: C.good } }, h('strong', null, 'Portfolio synthesis complete \u2713'), h('p', null, 'Your position is recorded as provisional and evidence-calibrated. Revisit it when evidence or your reasoning changes.'))
+        ),
+        h('section', { className: 'cns-portfolio-share', 'aria-labelledby': 'cns-portfolio-share-title', style: { background: C.raised, borderColor: C.border } },
+          h('div', { className: 'cns-section-heading' },
+            h('div', null, h('span', { className: 'cns-step' }, 'HAND IT IN'), h('h3', { id: 'cns-portfolio-share-title' }, profile.id === 'early' ? 'Share my folder' : 'Summary to share')),
+            canCopy && h('button', {
+              type: 'button', className: 'cns-reset',
+              onClick: function () {
+                navigator.clipboard.writeText(summaryText).then(
+                  function () { patchState({ summaryCopied: true }, 'Summary copied to the clipboard'); },
+                  function () { patchState({ summaryCopied: false }, 'Copy failed. Select the text and copy it by hand.'); }
+                );
+              },
+              style: { borderColor: C.border, color: C.text, background: C.panel }
+            }, d.summaryCopied ? 'Copied \u2713' : 'Copy summary')
+          ),
+          h('p', { className: 'cns-sim-hint' }, profile.id === 'early' ? 'Everything in your folder as plain words, ready to give to a teacher.' : 'Plain text of everything above, ready to paste into a document or hand to a teacher.'),
+          h('textarea', { className: 'cns-summary-text', readOnly: true, rows: 12, value: summaryText, 'aria-label': 'Plain-text portfolio summary' })
         )
       ));
     }
@@ -3031,8 +3694,18 @@
             h('li', null, 'Report is useful evidence, but producing a report recruits additional processes.'),
             h('li', null, 'Responsiveness, speech, intelligence, and disability status are not consciousness meters.'),
             h('li', null, 'Current AI can emulate emotional language and some emotion-like functions; those abilities do not establish subjective experience.'),
-            h('li', null, 'The selected views are influential academic examples, not every scientific, cultural, religious, or philosophical account.')
+            h('li', null, 'The selected views are influential academic examples, not every scientific, cultural, religious, or philosophical account.'),
+            h('li', null, 'The Workspace Bench is arithmetic written to make one debate legible. Nothing it shows is evidence about brains, models, or experience.')
           )
+        ),
+        h('section', { className: 'cns-facilitator', 'aria-labelledby': 'cns-facilitator-title' },
+          h('h3', { id: 'cns-facilitator-title' }, 'For facilitators: the suggested sequence'),
+          h('p', null, 'Ten steps, about ' + PATH_STEPS.reduce(function (sum, step) { return sum + step.minutes; }, 0) + ' minutes in total, in the order the learning path suggests. Each step carries one discussion prompt that keeps evidence, theory, and open questions separate. Every section stays open; the order is a suggestion.'),
+          h('ol', { className: 'cns-facilitator-steps' }, PATH_STEPS.map(function (step) {
+            return h('li', { key: step.id },
+              h('strong', null, (profile.id === 'early' && step.plainLabel ? step.plainLabel : step.label) + ' (' + viewLabel(step.view) + ', about ' + step.minutes + ' min)'),
+              h('span', null, step.discuss));
+          }))
         ),
         h('section', { 'aria-labelledby': 'cns-sources-title' },
           h('h3', { id: 'cns-sources-title' }, profile.id === 'early' ? 'Sources for teachers and curious learners' : 'Primary and peer-reviewed starting points'),
@@ -3070,7 +3743,7 @@
         '--cns-panel': C.panel, '--cns-text': C.text, '--cns-muted': C.muted,
         '--cns-link': C.link, '--cns-step': C.step, '--cns-alert-bg': C.alertBg, '--cns-alert-text': C.alertText
       }
-    }, renderHeader(), body, h('p', { className: 'cns-footer-note' }, 'Consciousness Theory Lab \u00B7 Compare claims with care \u00B7 Keep evidence and experience distinct'));
+    }, renderHeader(), renderLearningPath(), body, h('p', { className: 'cns-footer-note' }, 'Consciousness Theory Lab \u00B7 Compare claims with care \u00B7 Keep evidence and experience distinct'));
   }
 
   function injectConsciousnessStyles() {
@@ -3117,7 +3790,7 @@
       '.cns-quiz{display:grid;gap:12px;margin:0;padding:0;list-style:none}.cns-quiz>li{padding:14px;border:1px solid;border-radius:11px}.cns-quiz fieldset{margin:0;padding:0;border:0}.cns-quiz legend{margin-bottom:9px;font-size:13px;font-weight:850}.cns-answer-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.cns-answer-grid button{padding:8px 10px;border:1px solid;border-radius:8px;text-align:left;font-size:11px}.cns-complete{margin-top:14px;padding:13px;border:2px solid;border-radius:10px}.cns-complete p{margin:3px 0 0;color:var(--cns-muted);font-size:12px}',
       '.cns-boundaries{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.cns-limit-list{margin:18px 0;padding:14px;border:1px solid var(--cns-border);border-radius:11px}.cns-limit-list h3{margin:0}.cns-limit-list li{margin:5px 0;font-size:12px}.cns-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:0;padding:0;list-style:none}.cns-sources li{padding:12px;border:1px solid;border-radius:9px}.cns-sources p{margin:5px 0 0;color:var(--cns-muted);font-size:10px}.cns-frontier-note{margin-top:14px;padding:13px;border:1px solid;border-radius:10px}.cns-frontier-note h3{margin:0}.cns-frontier-note p{margin:5px 0 0;color:var(--cns-muted);font-size:12px}.cns-footer-note{margin:14px 0 0;text-align:center;color:var(--cns-muted);font-size:10px}',
       '@media(max-width:900px){.cns-journey{grid-template-columns:repeat(3,minmax(130px,1fr))}.cns-journey li:after{display:none}.cns-epistemic-grid{grid-template-columns:1fr}.cns-target-grid{grid-template-columns:1fr}.cns-sources{grid-template-columns:1fr}}',
-      '@media(max-width:620px){.consciousness-lab{padding:10px}.cns-hero{align-items:flex-start;padding:16px}.cns-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:27px}.cns-view{padding:14px}.cns-compare-pickers,.cns-debate-pickers,.cns-debate-grid{grid-template-columns:1fr}.cns-vs{display:none}.cns-legend,.cns-lens-pair,.cns-answer-grid,.cns-boundaries,.cns-ladder-key,.cns-ladder-actions,.cns-sim-controls,.cns-sim-toggles,.cns-sim-theory-grid{grid-template-columns:1fr}.cns-sim-substrates button{width:100%}.cns-journey{grid-template-columns:1fr}.cns-sort-card{padding-left:42px}.cns-tabs button{padding:7px 10px}}',
+      '@media(max-width:620px){.consciousness-lab{padding:10px}.cns-hero{align-items:flex-start;padding:16px}.cns-hero-icon{width:48px;height:48px;flex-basis:48px;font-size:27px}.cns-view{padding:14px}.cns-compare-pickers,.cns-debate-pickers,.cns-debate-grid{grid-template-columns:1fr}.cns-vs{display:none}.cns-legend,.cns-lens-pair,.cns-answer-grid,.cns-boundaries,.cns-ladder-key,.cns-ladder-actions,.cns-sim-controls,.cns-sim-toggles,.cns-sim-theory-grid{grid-template-columns:1fr}.cns-sim-substrates button{width:100%}.cns-journey{grid-template-columns:1fr}.cns-case-audit-grid,.cns-portfolio-fields,.cns-experiment-flow,.cns-experiment-controls,.cns-next-step{grid-template-columns:1fr}.cns-next-actions{justify-items:start}.cns-sort-card{padding-left:42px}.cns-tabs button{padding:7px 10px}}',
       '@media(prefers-reduced-motion:reduce){.cns-theory-card{transition:none}.cns-theory-card:hover{transform:none}}',
       '@media(forced-colors:active){.consciousness-lab *{forced-color-adjust:auto}.cns-hero{background:Canvas}.cns-target-number,.cns-sort-number,.cns-compare-table thead th{background:Highlight;color:HighlightText}}',
       // ── Layout for the grafted Theory Map / Prediction Simulator / Portfolio views ──
@@ -3141,11 +3814,13 @@
       '.cns-misconception-summary ul{display:grid;gap:6px;margin:0;padding:0;list-style:none}',
       '.cns-misconception-summary li{display:flex;justify-content:space-between;gap:10px;padding:7px 9px;border:1px solid var(--cns-border);border-radius:7px;font-size:10px}',
       '.cns-misconception-summary li span{color:var(--cns-muted)}',
-      '.cns-progress{margin-top:10px;padding:11px 13px;border:1px solid;border-radius:11px}.cns-progress-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px}.cns-progress-heading span{color:var(--cns-muted);font-weight:800}.cns-progress ol{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:7px;margin:9px 0 0;padding:0;list-style:none}.cns-progress li{min-height:34px;border:1px solid var(--cns-border);border-radius:8px;color:var(--cns-muted);font-size:10px;font-weight:800;overflow:hidden}.cns-progress li.is-complete{border-color:#10b981;background:rgba(16,185,129,.1);color:var(--cns-text)}.cns-progress li button{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;min-height:34px;padding:6px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.cns-progress li button:hover{background:rgba(124,58,237,.08)}.cns-progress li button>span:first-child{font-size:13px}.cns-next-step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;margin:10px 0 0;padding:14px 15px;border:1px solid;border-left:4px solid #7c3aed;border-radius:11px}.cns-next-kicker{color:#6d28d9;font-size:9px;font-weight:950;letter-spacing:.14em}.cns-next-step h2{margin:2px 0 4px;font-size:17px;line-height:1.25}.cns-next-step p{max-width:760px;margin:0;color:var(--cns-muted);font-size:11px;line-height:1.5}.cns-next-detail{display:inline-block;margin-top:6px;color:var(--cns-muted);font-size:10px;font-weight:850}.cns-next-why{margin-top:7px}.cns-next-why summary{width:max-content;color:#5b21b6;font-size:10px;font-weight:900;cursor:pointer}.cns-next-why p{margin-top:5px;padding-left:10px;border-left:2px solid #a78bfa}.cns-next-actions{display:grid;justify-items:end;gap:6px}.cns-next-time{color:var(--cns-muted);font-size:10px;font-weight:800}.cns-next-action{min-width:132px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer}',
+      '.cns-progress{margin-top:10px;padding:11px 13px;border:1px solid;border-radius:11px}.cns-progress-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px}.cns-progress-heading span{color:var(--cns-muted);font-weight:800}.cns-progress ol{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:7px;margin:9px 0 0;padding:0;list-style:none}.cns-progress li{min-height:34px;border:1px solid var(--cns-border);border-radius:8px;color:var(--cns-muted);font-size:10px;font-weight:800;overflow:hidden}.cns-progress li.is-complete{border-color:#10b981;background:rgba(16,185,129,.1);color:var(--cns-text)}.cns-progress li.is-next{border-color:var(--cns-step);box-shadow:inset 0 0 0 1px var(--cns-step);color:var(--cns-text)}.cns-progress li button{display:flex;align-items:center;justify-content:center;gap:5px;width:100%;min-height:34px;padding:6px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}.cns-progress li button:hover{background:rgba(124,58,237,.08)}.cns-progress li button>span:first-child{font-size:13px}.cns-next-step{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;margin:10px 0 0;padding:14px 15px;border:1px solid;border-left:4px solid #7c3aed;border-radius:11px}.cns-next-kicker{color:var(--cns-step);font-size:9px;font-weight:950;letter-spacing:.14em}.cns-next-step h2{margin:2px 0 4px;font-size:17px;line-height:1.25}.cns-next-step p{max-width:760px;margin:0;color:var(--cns-muted);font-size:11px;line-height:1.5}.cns-next-detail{display:inline-block;margin-top:6px;color:var(--cns-muted);font-size:10px;font-weight:850}.cns-next-why{margin-top:7px}.cns-next-why summary{width:max-content;color:var(--cns-step);font-size:10px;font-weight:900;cursor:pointer}.cns-next-why p{margin-top:5px;padding-left:10px;border-left:2px solid #a78bfa}.cns-next-actions{display:grid;justify-items:end;gap:6px}.cns-next-time{color:var(--cns-muted);font-size:10px;font-weight:800}.cns-next-action{min-width:132px;padding:8px 12px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900;cursor:pointer}',
       '.cns-map-toolbar{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin:14px 0}.cns-map-toolbar fieldset{margin:0;padding:9px;border:1px solid var(--cns-border);border-radius:9px}.cns-map-toolbar legend{padding:0 5px;font-size:10px;font-weight:900}.cns-map-axis-buttons{display:flex;gap:6px;flex-wrap:wrap}.cns-map-axis-buttons button{padding:7px 9px;border:1px solid;border-radius:7px;font-size:10px;font-weight:850}.cns-map-axis-title{display:flex;justify-content:space-between;gap:10px;margin:9px 0 7px}.cns-map-axis-title strong{font-size:14px}.cns-map-axis-title span{color:var(--cns-muted);font-size:10px}.cns-landscape{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:10px}.cns-map-lane{padding:12px;border:1px solid;border-top-width:4px;border-radius:10px}.cns-map-lane-heading{display:flex;justify-content:space-between;gap:8px}.cns-map-lane-heading h3{margin:0;font-size:14px}.cns-map-lane-heading span{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#312e81;color:#fff;font-size:10px;font-weight:900}.cns-map-lane>p{min-height:34px;margin:4px 0 9px;color:var(--cns-muted);font-size:10px}.cns-map-theories{display:grid;gap:7px}.cns-map-theories button{display:block;width:100%;padding:9px;border:1px solid;border-radius:8px;text-align:left}.cns-map-theory-name,.cns-map-reason{display:block}.cns-map-theory-name{font-size:11px;font-weight:900}.cns-map-reason{margin-top:3px;font-size:9px;line-height:1.4;opacity:.9}.cns-map-detail{margin-top:13px;padding:14px;border:1px solid;border-left-width:4px;border-radius:10px}.cns-map-detail h3{margin:4px 0;font-size:17px}.cns-map-detail p{margin:5px 0;color:var(--cns-muted);font-size:11px}.cns-map-detail-limit{padding-top:6px;border-top:1px dashed var(--cns-border)}.cns-map-reflection{margin-top:13px;padding:14px;border:1px solid;border-radius:10px}.cns-map-reflection h3{margin:2px 0}.cns-map-reflection>p{color:var(--cns-muted);font-size:11px}',
-      '.cns-migration-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;padding:11px 12px;border:1px solid;border-left:4px solid #d97706;border-radius:9px}.cns-migration-note strong{font-size:12px}.cns-migration-note p{margin:3px 0 0;color:var(--cns-muted);font-size:10px;line-height:1.45}.cns-migration-note button{flex:0 0 auto;padding:7px 10px;border:1px solid;border-radius:7px;font-size:10px;font-weight:900}',
       '.cns-experiment-design{margin:16px 0;padding:15px;border:1px solid;border-radius:13px}.cns-experiment-design h3,.cns-preregister h3,.cns-forecast-section h3{margin:2px 0 0}.cns-experiment-flow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;padding:0;list-style:none}.cns-experiment-flow li{padding:10px;border:1px solid var(--cns-border);border-radius:9px;background:var(--cns-panel)}.cns-experiment-flow strong,.cns-experiment-flow span{display:block}.cns-experiment-flow strong{font-size:11px}.cns-experiment-flow span{margin-top:3px;color:var(--cns-muted);font-size:10px}.cns-experiment-controls{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;align-items:start}.cns-experiment-controls fieldset{margin:0;padding:10px;border:1px solid var(--cns-border);border-radius:9px}.cns-experiment-controls legend{padding:0 5px;font-size:10px;font-weight:900}.cns-delay-control{display:grid;grid-template-columns:1fr auto;gap:3px 8px;padding:10px;border:1px solid var(--cns-border);border-radius:9px}.cns-delay-control>strong,.cns-delay-control>span{font-size:11px}.cns-delay-control>span{font-weight:900}.cns-delay-control input,.cns-delay-control small{grid-column:1/-1}.cns-delay-control input{width:100%;accent-color:#7c3aed}.cns-delay-control small{color:var(--cns-muted);font-size:9px}.cns-toggle-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.cns-toggle-group button{padding:7px;border:1px solid;border-radius:7px;font-size:10px;font-weight:850}.cns-preregister{margin:16px 0;padding:15px;border:1px solid;border-radius:13px}.cns-preregister label{display:block;margin-top:10px}.cns-preregister label>span{display:block;margin-bottom:5px;color:var(--cns-muted);font-size:11px}.cns-preregister select{width:100%;padding:8px;border:1px solid;border-radius:8px}.cns-reveal{margin-top:11px;padding:8px 13px;border:1px solid;border-radius:8px;font-size:11px;font-weight:900}.cns-reveal:disabled{cursor:not-allowed;opacity:.7}.cns-forecast-warning{padding:8px 10px;border:1px solid #d97706;border-radius:8px;background:rgba(217,119,6,.1);font-size:10px;font-weight:950;letter-spacing:.08em}.cns-forecast-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px}.cns-forecast-card{padding:13px;border:1px solid;border-top-width:4px;border-radius:10px}.cns-forecast-card h4{margin:6px 0 4px;font-size:14px}.cns-forecast-card p{margin:6px 0;color:var(--cns-muted);font-size:11px}.cns-forecast-limit{padding-top:7px;border-top:1px dashed var(--cns-border)}',
       '.cns-debate-selfcheck{display:grid;gap:7px;margin:11px 0 0;padding:11px;border:1px solid var(--cns-border);border-radius:9px}.cns-debate-selfcheck legend{padding:0 6px;font-size:11px;font-weight:900}.cns-debate-selfcheck label{display:flex;align-items:flex-start;gap:8px;color:var(--cns-muted);font-size:11px}.cns-debate-selfcheck input{width:18px;height:18px;flex:0 0 18px;margin:0;accent-color:#7c3aed}',
+      '.cns-case-audit{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-case-audit h3{margin:2px 0 0;font-size:17px}.cns-case-audit>p{color:var(--cns-muted);font-size:12px}.cns-audit-summary p{color:var(--cns-text)!important}',
+      '.cns-theory-group{margin-top:12px}.cns-theory-group:first-of-type{margin-top:0}.cns-theory-group-title{margin:0 0 7px;font-size:12px;font-weight:900;letter-spacing:.04em;color:var(--cns-muted)}.cns-analysis-move{margin:11px 0 0;padding:10px 12px;border-left:4px solid;border-radius:8px;background:var(--cns-panel);font-size:12px;line-height:1.5}.cns-compare-relation{margin:10px 0 12px;padding:11px 13px;border:1px solid;border-left-width:4px;border-radius:9px}.cns-compare-relation strong{font-size:12px}.cns-compare-relation p{margin:4px 0 0;color:var(--cns-muted);font-size:12px;line-height:1.5}',
+      '.cns-theory-formal{display:block;margin-top:2px;font-size:10px;font-weight:600;color:var(--cns-muted)}.cns-ladder-key li>div{display:flex;flex-direction:column}.cns-ladder-gloss{font-size:10px;font-style:normal;color:var(--cns-muted)}.cns-note-example{margin:8px 0 10px;padding:8px 12px;border:1px dashed var(--cns-border);border-radius:9px}.cns-note-example summary{cursor:pointer;font-size:11px;font-weight:900;color:var(--cns-step)}.cns-note-example p{margin:6px 0 0;font-size:11px;color:var(--cns-muted)}.cns-note-example-guard{font-style:italic}.cns-experiment-reflect{display:block;margin:12px 0 0}.cns-experiment-reflect>strong,.cns-experiment-reflect>span{display:block}.cns-experiment-reflect>span{margin:3px 0 6px;color:var(--cns-muted);font-size:11px}.cns-next-here{color:var(--cns-muted);font-size:11px;font-weight:800}.cns-facilitator{margin:18px 0;padding:14px;border:1px solid var(--cns-border);border-radius:11px}.cns-facilitator h3{margin:0}.cns-facilitator>p{margin:6px 0 10px;color:var(--cns-muted);font-size:12px}.cns-facilitator-steps{display:grid;gap:7px;margin:0;padding-left:20px}.cns-facilitator-steps li{font-size:12px}.cns-facilitator-steps strong,.cns-facilitator-steps span{display:block}.cns-facilitator-steps span{color:var(--cns-muted);font-size:11px}.cns-portfolio-share{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-portfolio-share h3{margin:2px 0}.cns-portfolio-share .cns-reset{margin-top:0}.cns-summary-text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5}',
       '.cns-portfolio-overview{margin-top:16px}.cns-portfolio-overview>h3{margin:0 0 8px}.cns-portfolio-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:9px}.cns-portfolio-grid article{padding:11px;border:1px solid;border-radius:9px}.cns-portfolio-grid article>div{display:flex;align-items:center;gap:7px}.cns-portfolio-grid article>div>span{font-size:14px}.cns-portfolio-grid article strong{font-size:11px}.cns-portfolio-grid article p{margin:5px 0 0;color:var(--cns-muted);font-size:10px;line-height:1.45}.cns-portfolio-grid article.is-ready{border-left-width:4px}.cns-portfolio-synthesis{margin-top:16px;padding:15px;border:1px solid;border-radius:12px}.cns-portfolio-synthesis h3{margin:2px 0}.cns-portfolio-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:11px}.cns-portfolio-fields label>strong,.cns-portfolio-fields label>span{display:block}.cns-portfolio-fields label>span{min-height:47px;margin:3px 0 5px;color:var(--cns-muted);font-size:10px}.cns-portfolio-complete{margin-top:11px;padding:10px;border:1px solid;border-radius:8px}.cns-portfolio-complete p{margin:4px 0 0;color:var(--cns-muted);font-size:11px}',
     ].join('\n');
     document.head.appendChild(style);

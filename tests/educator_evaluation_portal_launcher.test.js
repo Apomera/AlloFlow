@@ -68,11 +68,19 @@ describe('district evaluation portal launcher', () => {
     ]) expect(normalize(invalid)).toBe('');
   });
 
-  it('bundles the content-free email RPC into the generated repository bridge', () => {
+  it('bundles the reviewed content-free email RPCs into the repository bridge', () => {
     const builder = readFileSync(resolve(process.cwd(), '_build_educator_evaluation_apps_script.js'), 'utf8');
     const portal = readFileSync(resolve(process.cwd(), 'apps_script/educator_evaluation/Portal.html'), 'utf8');
+    expect(builder).toContain("reviewNotification: (request) => callPortalAdminRpc('reviewPortalNotification', request)");
     expect(builder).toContain('sendNotification: sendPortalNotification');
+    expect(builder).toContain("getNotificationOutcome: (request) => callPortalAdminRpc('getPortalNotificationOutcome', request)");
+    expect(builder).toContain("typeof value.preDispatch === 'boolean'");
+    expect(builder).toContain('error.preDispatch = value.preDispatch');
+    expect(builder).toContain("typeof detail.preDispatch === 'boolean'");
+    expect(builder).toContain('error.preDispatch = detail.preDispatch');
     expect(builder).toContain('.sendPortalNotification(request)');
+    // Generated Portal.html is intentionally rebuilt only after source and
+    // bridge changes from the parallel implementation work have converged.
     expect(portal).toContain('sendPortalNotification');
     expect(portal).toContain('__alloEvaluationRepository');
   });

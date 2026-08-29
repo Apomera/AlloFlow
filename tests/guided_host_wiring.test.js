@@ -232,13 +232,17 @@ describe('Guided Mode improvement wiring', () => {
 
   it('builds a validated, review-first AI Guided path with a local fallback', () => {
     expect(app).toContain('const generateGuidedPlanFromGoal = async (rawGoal, refinementContext = null) =>');
-    expect(app).toContain("const validStepIds = new Set(selectableSteps.map(step => step.id))");
-    expect(app).toContain("stepIds.filter(id => validStepIds.has(id))");
-    expect(app).toContain("deliverySetting: allowedSettings.has(raw.deliverySetting)");
-    expect(app).toContain("return { ...fallbackPlan(), fallbackReason:");
-    expect(app).toContain("const refinement = cleanText(refinementContext?.refinement, 500)");
-    expect(app).toContain("CURRENT REVIEWED PLAN:");
-    expect(app).toContain("TEACHER'S NEW REFINEMENT:");
+    expect(app).toContain("typeof config.generateGuidedPlanFromGoal === 'function'");
+    expect(app).toContain('config.generateGuidedPlanFromGoal(rawGoal, refinementContext');
+    // Planner policy belongs to GuidedModeConfig; the host retains only the
+    // dependency-injecting wrapper. Guard both sides of that extraction.
+    expect(config).toContain("const validStepIds = new Set(selectableSteps.map(step => step.id))");
+    expect(config).toContain("stepIds.filter(id => validStepIds.has(id))");
+    expect(config).toContain("deliverySetting: allowedSettings.has(raw.deliverySetting)");
+    expect(config).toContain("return { ...fallbackPlan(), fallbackReason:");
+    expect(config).toContain("const refinement = cleanText(refinementContext?.refinement, 500)");
+    expect(config).toContain("CURRENT REVIEWED PLAN:");
+    expect(config).toContain("TEACHER'S NEW REFINEMENT:");
     expect(app).toContain('generateGuidedPlanFromGoal={generateGuidedPlanFromGoal}');
     expect(banner).toContain("t('guided.ai_plan_privacy')");
     expect(banner).toContain('applyGuidedPreset(appliedAiPlanPayload())');

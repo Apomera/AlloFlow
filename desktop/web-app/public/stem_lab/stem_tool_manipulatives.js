@@ -1071,19 +1071,19 @@ window.StemLab = window.StemLab || {
         },
           h('div', { className: 'text-xs font-bold uppercase mb-1', style: { color: color } }, symbol + ' ' + label),
           h('div', { className: 'flex justify-center gap-1 mb-2 min-h-[58px] flex-wrap items-center' }, renderBlock3D(color, lightColor, bw, bh, b10[place], gridC, gridR)),
-          h('div', { className: 'flex items-center justify-center gap-2' },
+          h('div', { className: 'flex items-center justify-center gap-1 sm:gap-2' },
             h('button', { 'aria-label': __alloT('stem.manipulatives.remove_one_place', 'Remove one ') + place,
               onClick: function() { var n = Object.assign({}, b10); n[place] = Math.max(0, n[place] - 1); upd({ b10: n }); if (soundEnabled) sfxClick(); },
-              className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
+              className: 'w-8 h-8 shrink-0 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '\u2212'),
-            h('span', { className: 'text-2xl font-bold w-8 text-center', style: { color: color } }, b10[place]),
+            h('span', { className: 'text-2xl font-bold w-8 shrink-0 text-center', style: { color: color } }, b10[place]),
             h('button', { 'aria-label': 'Add',
               onClick: function() {
                 var n = Object.assign({}, b10); n[place] = Math.min(20, n[place] + 1); upd({ b10: n }); if (soundEnabled) sfxClick();
                 if (n[place] + n.tens * 10 + n.hundreds * 100 + n.thousands * 1000 + (place === 'ones' ? n[place] : b10.ones) >= 0) checkBadges({ totalValue: n.ones + n.tens * 10 + n.hundreds * 100 + n.thousands * 1000 });
               },
-              className: 'w-8 h-8 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
+              className: 'w-8 h-8 shrink-0 rounded-full font-bold text-lg hover:opacity-80 transition-all flex items-center justify-center',
               style: { background: lightColor + '33', color: color }
             }, '+')
           ),
@@ -1220,7 +1220,7 @@ window.StemLab = window.StemLab || {
 
         // v3: Mode tabs (12 modes \u2014 wraps to multiple lines on small screens).
         // Organized into 2 rows: classic manipulatives first, then v3 additions.
-        h('div', { className: 'flex gap-1 overflow-x-auto bg-slate-100 rounded-xl p-1' },
+        h('div', { className: 'flex gap-1 overflow-x-auto bg-slate-100 rounded-xl p-1', style: { scrollPaddingInline: 12 } },
           [{ id: 'blocks',        icon: '\uD83E\uDDF1', label: __alloT('stem.manipulatives.base_10_blocks', 'Base-10 Blocks') },
            { id: 'abacus',        icon: '\uD83E\uDDEE', label: __alloT('stem.manipulatives.abacus', 'Abacus') },
            { id: 'slideRule',     icon: '\uD83D\uDCCF', label: __alloT('stem.manipulatives.slide_rule', 'Slide Rule') },
@@ -1379,7 +1379,7 @@ window.StemLab = window.StemLab || {
               h('span', null, __alloT('stem.manipulatives.cube_1000', '\u25A0 Cube = 1000')), h('span', null, __alloT('stem.manipulatives.flat_100', '\u25AC Flat = 100')), h('span', null, __alloT('stem.manipulatives.rod_10', '\u2503 Rod = 10')), h('span', null, __alloT('stem.manipulatives.unit_1', '\u25AA Unit = 1'))
             ),
             // Place value columns
-            h('div', { className: 'grid grid-cols-4 gap-3' },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
               placeCol('Thousands', '\u25A0', 'thousands', '#be185d', '#f472b6', 56, 56, 10, 10),
               placeCol('Hundreds', '\u25AC', 'hundreds', '#1d4ed8', '#60a5fa', 48, 48, 10, 10),
               placeCol('Tens', '\u2503', 'tens', '#047857', '#34d399', 10, 48, 1, 10),

@@ -41,12 +41,29 @@ describe('perf-pdffix-snapshots — the undo handler frees the full-doc snapshot
 });
 
 describe('sec-annot-storekey — per-student namespace on shared devices', () => {
-  it('both exported-doc storage keys fold in the ?nickname= namespace (absent → unscoped, no orphaning)', () => {
-    // annotation runtime STORE_KEY
-    expect(docSrc).toContain("+ (_annoNick ? '|u:' + _annoNick : '')");
-    // interactive-textarea/box autosave _docKey (the twin defect)
-    expect(docSrc).toContain("+ (_docNick ? '|u:' + _docNick : '')");
-    // both read the nickname from the URL param the submission flow already uses
-    expect((docSrc.match(/URLSearchParams\(window\.location\.search\)\.get\('nickname'\)/g) || []).length).toBeGreaterThanOrEqual(2);
+  it('uses one privacy gate before answer or annotation storage is restored', () => {
+    expect(docSrc).toContain('window.__alloflowGetLearnerWorkspace = (function ()');
+    expect((docSrc.match(/await window\.__alloflowGetLearnerWorkspace\(\)/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(docSrc).toContain("var STORE_KEY = (_workspacePersist && _annoDocId) ? ('alloflow-annotations:v2|'");
+    expect(docSrc).toContain("'allo-response:v2:' + _documentId + ':u:' + encodeURIComponent(_docNick)");
+    expect(docSrc).toContain('alloflow-storage-migration:v2:annotations:');
+    expect(docSrc).toContain('alloflow-storage-migration:v2:responses:');
+    expect(docSrc).toContain('if (current !== null) return current;');
+    expect(docSrc).not.toContain("+ (_annoNick ? '|u:' + _annoNick : '')");
+    expect(docSrc).not.toContain("+ (_docNick ? '|u:' + _docNick : '')");
+  });
+
+  it('keeps one-time sessions out of learner-work storage while preserving live collection', () => {
+    expect(docSrc).toContain('var saved = STORE_KEY ? localStorage.getItem(STORE_KEY) : null;');
+    expect(docSrc).toContain('if (!STORE_KEY) return;');
+    expect((docSrc.match(/if \(!_storageEnabled\) return;/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect(docSrc).toContain("localStorage.setItem(storageKey, value && value !== '[]' ? value : '')");
+    expect(docSrc).toContain("const value = String(tx.value == null ? '' : tx.value);");
+    expect(docSrc).toContain("const value = String(bx.value == null ? '' : bx.value);");
+  });
+
+  it('bypasses the learner prompt for worksheets and dedicated print windows', () => {
+    expect(docSrc).toContain("window.__alloflowPrintExport === true");
+    expect(docSrc).toContain("workspacePromise = Promise.resolve(publish('', false));");
   });
 });

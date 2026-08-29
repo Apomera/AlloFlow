@@ -369,8 +369,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '@keyframes birdlab-clean-celebrate {',
       '  0%   { transform: scale(0.55) translateY(20px); opacity: 0; }',
       '  18%  { transform: scale(1.08) translateY(0);    opacity: 1; }',
-      '  30%  { transform: scale(1);    translateY(0);   opacity: 1; }',
-      '  82%  { transform: scale(1);    translateY(0);   opacity: 1; }',
+      '  30%  { transform: scale(1) translateY(0);   opacity: 1; }',
+      '  82%  { transform: scale(1) translateY(0);   opacity: 1; }',
       '  100% { transform: scale(0.95) translateY(-12px); opacity: 0; }',
       '}',
       '.birdlab-clean-celebrate { animation: birdlab-clean-celebrate 3.6s ease-out forwards; }',
@@ -13419,7 +13419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             // Title overlay (positioned over the SVG)
             h('div', { className: 'absolute inset-0 flex flex-col justify-center pointer-events-none px-8' },
               h('div', { style: { textShadow: '0 2px 8px rgba(0,0,0,0.55), 0 0 24px rgba(0,0,0,0.35)' } },
-                h('h1', { className: 'text-5xl md:text-6xl font-black text-white tracking-tight leading-none' }, __alloT('stem.birdlab.birdlab', '🪶 BirdLab')),
+                h('h1', { className: 'text-3xl sm:text-4xl md:text-6xl font-black text-white tracking-tight leading-none' }, __alloT('stem.birdlab.birdlab', '🪶 BirdLab')),
                 h('p', { className: 'text-base md:text-lg text-amber-50 mt-2 max-w-2xl font-semibold' },
                   __alloT('stem.birdlab.i_spy_ornithology_real_movement_real_f', 'I-Spy ornithology. Real movement, real field marks, real Cornell Lab science.'))
               )
@@ -13481,7 +13481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   )
                 ),
                 // Name + status
-                h('div', { className: 'flex-1 min-w-0' },
+                h('div', { className: 'min-w-0', style: { flex: '1 1 180px' } },
                   h('h3', {
                     style: {
                       fontSize: '1.25rem', fontWeight: 900, color: '#1e293b',
@@ -13641,9 +13641,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           // Progress banner
           h('div', {
             'aria-live': 'polite',
-            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
+            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex flex-wrap items-center justify-between gap-4'
           },
-            h('div', { className: 'flex items-center gap-3' },
+            h('div', { className: 'flex min-w-0 flex-1 items-center gap-3' },
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🌿'),
               h('div', null,
                 h('div', { className: 'font-bold text-slate-800' },

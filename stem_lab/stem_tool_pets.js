@@ -107,7 +107,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     if (document.getElementById('allo-pets-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-pets-focus-css';
-    st.textContent = '[data-pets-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    st.textContent = '[data-pets-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}' +
+      '.petslab-choice-pill:focus-within{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:999rem}' +
+      '@media (forced-colors:active){.petslab-choice-pill:focus-within{outline:3px solid Highlight!important;}}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -145,6 +147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-menu-tile-progress{margin-top:auto;padding-top:5px;color:#a89180;font-size:9px;font-weight:900;line-height:1.3;text-transform:uppercase;letter-spacing:.04em;}',
       '.petslab-menu-tile-progress.is-started{color:#fbbf24;}',
       '.petslab-menu-tile-progress.is-complete{color:#bef264;}',
+      '.petslab-menu-tile-progress.is-needs-practice{color:#fdba74;}',
       '.petslab-crosslink-action{min-height:40px;}',
       '.petslab-featured-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin:4px 0 10px;}',
       '.petslab-featured-heading h3{margin:0;color:#fef3e2;font-size:15px;}',
@@ -206,6 +209,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '@media (max-width:480px){.petslab-genetics-view{padding:12px!important;}.petslab-punnett-lab{padding:11px!important;}.petslab-gene-parent-card{padding:10px;}.petslab-gene-parent-visual{grid-template-columns:78px minmax(0,1fr);gap:9px;}.petslab-outcome-heading{display:block;}.petslab-outcome-heading span{display:block;margin-top:2px;}.petslab-outcome-legend{grid-template-columns:1fr;}.petslab-outcome-card{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;}.petslab-outcome-card-count{margin-top:0;font-size:17px;}.petslab-punnett-table{min-width:450px;}}',
       '@media (forced-colors:active){.petslab-gene-parent-card,.petslab-outcome,.petslab-outcome-card,.petslab-coat-swatch,.petslab-cell-phenotype{border:1px solid CanvasText;}.petslab-outcome-segment{border-right:2px solid CanvasText;forced-color-adjust:none;}}',
       '.petslab-cost-view *{box-sizing:border-box;}',
+      '.petslab-cost-basis{margin:0 0 14px;padding:14px;border:1px solid rgba(232,213,183,.2);border-radius:12px;background:rgba(30,22,18,.72);}',
+      '.petslab-cost-basis legend{padding:0 5px;color:#fef3e2;font-size:13px;font-weight:850;}',
+      '.petslab-cost-mode-options{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:9px;}',
+      '.petslab-cost-research-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:10px;}',
+      '.petslab-cost-research-field{display:grid;gap:5px;min-width:0;color:#ead8c6;font-size:11px;font-weight:800;}',
+      '.petslab-cost-research-field input{width:100%;min-height:44px;padding:8px 10px;border:1px solid rgba(232,213,183,.34);border-radius:8px;background:#100b09;color:#fef3e2;font:800 15px/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;}',
+      '.petslab-cost-research-field input:focus-visible{outline:3px solid #fbbf24;outline-offset:2px;}',
+      '.petslab-cost-source-status{margin-top:9px;padding:9px 10px;border-left:4px solid #f59e0b;border-radius:7px;background:rgba(15,10,8,.48);color:#d8c3ad;font-size:11px;line-height:1.5;}',
+      '.petslab-cost-source-status[data-pets-cost-source-status="researched"]{border-left-color:#22c55e;}',
+      '.petslab-cost-reset{min-height:44px;margin-top:9px;padding:8px 11px;border:1px solid rgba(232,213,183,.34);border-radius:8px;background:#2d2019;color:#fef3e2;font-weight:800;cursor:pointer;}',
       '.petslab-cost-summary{overflow:hidden;background:radial-gradient(circle at 94% 4%,rgba(245,158,11,.12),transparent 34%),linear-gradient(155deg,rgba(45,32,24,.98),rgba(24,18,16,.98))!important;box-shadow:0 16px 38px rgba(0,0,0,.18);}',
       '.petslab-cost-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:12px;}',
       '.petslab-cost-burden{margin-top:14px;padding-top:12px;border-top:1px solid rgba(232,213,183,.18);}',
@@ -228,11 +241,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-cost-allocation-segment{display:flex;align-items:center;justify-content:center;min-width:0;overflow:hidden;color:#fff;font-size:clamp(11px,2vw,12px);font-weight:950;text-shadow:0 1px 2px rgba(0,0,0,.68);white-space:nowrap;}',
       '.petslab-cost-allocation-segment--setup{background:repeating-linear-gradient(135deg,#a94f0b 0,#a94f0b 8px,#f59e0b 8px,#f59e0b 12px);}',
       '.petslab-cost-allocation-segment--ongoing{background:repeating-linear-gradient(45deg,#075985 0,#075985 8px,#0891b2 8px,#0891b2 12px);}',
-      '.petslab-cost-allocation-segment--reserve{background:radial-gradient(circle at 4px 4px,rgba(255,255,255,.28) 0 1.4px,transparent 1.6px),#a71919;background-size:10px 10px;}',
-      '.petslab-cost-allocation-legend{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;margin-top:9px;}',
+      '.petslab-cost-allocation-legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 12px;margin-top:9px;}',
       '.petslab-cost-allocation-item{display:grid;grid-template-columns:26px minmax(0,1fr);gap:7px;align-items:start;min-width:0;color:#d8c3ad;font-size:clamp(11px,2.2vw,12px);line-height:1.4;}',
       '.petslab-cost-allocation-mark{display:grid;place-items:center;width:24px;height:24px;border:1px solid currentColor;border-radius:7px;background:#2d2019;color:#fff;font-size:11px;font-weight:950;}',
       '.petslab-cost-allocation-item strong{display:block;color:#fef3e2;}',
+      '.petslab-cost-contingency{margin-top:12px;padding:11px 12px;border:1px solid rgba(248,113,113,.42);border-radius:10px;background:rgba(127,29,29,.16);color:#ead8c6;font-size:11px;line-height:1.55;}',
+      '.petslab-cost-contingency strong{display:block;margin-bottom:3px;color:#fecaca;font-size:12px;}',
       '.petslab-life-view *{box-sizing:border-box;}',
       '.petslab-life-stage{width:100%;margin-top:10px;padding:10px;border:1px solid rgba(14,165,233,.28);border-radius:12px;background:linear-gradient(145deg,rgba(14,165,233,.08),rgba(15,23,42,.2));}',
       '.petslab-life-stage-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:7px;}',
@@ -286,9 +300,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '@media (max-width:380px){.petslab-picker-results{padding:9px;}.petslab-picker-card{padding:9px;}.petslab-picker-card-head{grid-template-columns:auto minmax(0,1fr);}.petslab-picker-status{grid-column:2;text-align:left;white-space:normal;}.petslab-picker-reason{border-radius:7px;}}' ,
       '.reduce-motion .petslab-picker-fit-segment,.reduce-motion .petslab-picker-fit-marker{transition:none!important;}' ,
       '@media (prefers-reduced-motion:reduce){.petslab-picker-fit-segment,.petslab-picker-fit-marker{transition:none!important;}}' ,
-      '@media (max-width:600px){.petslab-cost-allocation-legend{grid-template-columns:1fr;}.petslab-life-compare-row{grid-template-columns:1fr auto;gap:3px 8px;}.petslab-life-compare-track{grid-column:1/-1;grid-row:2;}.petslab-life-compare-range{grid-column:2;grid-row:1;}}',
+      '@media (max-width:600px){.petslab-cost-allocation-legend{grid-template-columns:1fr;}.petslab-cost-research-fields{grid-template-columns:1fr;}.petslab-life-compare-row{grid-template-columns:1fr auto;gap:3px 8px;}.petslab-life-compare-track{grid-column:1/-1;grid-row:2;}.petslab-life-compare-range{grid-column:2;grid-row:1;}}',
       '@media (max-width:480px){.petslab-cost-view,.petslab-life-view{padding:12px!important;}.petslab-cost-summary{padding:12px!important;}.petslab-cost-burden-heading,.petslab-life-stage-heading{display:block;}.petslab-cost-burden-heading span,.petslab-life-stage-heading span{display:block;margin-top:2px;text-align:left;}.petslab-cost-burden-row{grid-template-columns:1fr auto;gap:4px 8px;}.petslab-cost-burden-track{grid-column:1/-1;grid-row:2;}.petslab-cost-burden-value{grid-column:2;grid-row:1;}.petslab-cost-timeline-labels{align-items:flex-start;}.petslab-cost-allocation{padding-top:10px;}}',
-      '@media (forced-colors:active){.petslab-cost-summary,.petslab-cost-timeline,.petslab-cost-allocation-bar,.petslab-cost-burden-track,.petslab-life-stage,.petslab-life-comparison,.petslab-life-bucket-mark{border:1px solid CanvasText;}.petslab-cost-allocation-segment{border-right:2px solid CanvasText;forced-color-adjust:none;}}',
+      '@media (forced-colors:active){.petslab-cost-basis,.petslab-cost-research-field input,.petslab-cost-source-status,.petslab-cost-reset,.petslab-cost-summary,.petslab-cost-timeline,.petslab-cost-allocation-bar,.petslab-cost-burden-track,.petslab-cost-contingency,.petslab-life-stage,.petslab-life-comparison,.petslab-life-bucket-mark{border:1px solid CanvasText;}.petslab-cost-allocation-segment{border-right:2px solid CanvasText;forced-color-adjust:none;}}',
       '.reduce-motion .petslab-life-view *{transition:none!important;animation:none!important;}',
       '@media (prefers-reduced-motion:reduce){.petslab-life-view *{transition:none!important;animation:none!important;}}',
       '.petslab-tradeoff-dashboard{display:grid;grid-template-columns:minmax(0,1.28fr) minmax(250px,.72fr);gap:12px;align-items:stretch;margin:10px 0 12px;}',
@@ -479,15 +493,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       '.petslab-action-pop{animation:petslab-action-pop 1.35s ease-out forwards;}',
       '@media (max-width:920px){.petslab-featured-grid{grid-template-columns:repeat(3,minmax(0,1fr));}.petslab-catalog-grid,.petslab-filtered-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (max-width:680px){.petslab-command-stats{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-featured-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.petslab-sensory-stage{height:400px;}.petslab-stage-hud--bottom{display:none;}.petslab-hud-objective{max-width:190px;}.petslab-control-dock{align-items:stretch;}.petslab-control-cluster{flex:1 1 100%;}.petslab-care-stage{min-height:260px;}}',
-      '@media (max-width:480px){.petslab-menu-shell{padding:0!important;}.petslab-command{padding:13px!important;border-radius:14px!important;}.petslab-featured-grid,.petslab-catalog-grid,.petslab-filtered-grid{grid-template-columns:1fr;}.petslab-menu-tile{min-height:96px!important;}.petslab-featured-heading{align-items:flex-start;}.petslab-menu-finder{padding:10px;}.petslab-menu-search-row input,.petslab-menu-search-row button,.petslab-menu-filter-row button,.petslab-crosslink-action{min-height:44px!important;}.petslab-menu-filter-row button{flex:1 1 calc(50% - 4px);}.petslab-inquiry-body [style*="flex:0 0 160px"]{flex:1 1 100%!important;}.petslab-sensory-stage{height:340px;min-height:340px;border-radius:14px!important;}.petslab-sensory-stage canvas{border-radius:14px!important;}.petslab-stage-hud--top{left:9px;right:9px;top:9px;}.petslab-hud-objective{display:none;}.petslab-hud-chip{font-size:9px;min-height:25px;padding:4px 7px;}.petslab-control-dock{padding:8px;border-radius:12px;}.petslab-trainer-stage{min-height:220px;}.petslab-metric-grid{grid-template-columns:1fr;}.petslab-care-zone{width:36px!important;height:36px!important;font-size:15px!important;}.petslab-care-chips{left:8px!important;right:8px!important;bottom:8px!important;}}',
-      '@media (max-width:680px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:10px!important;transform:none!important;width:38px!important;height:38px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
-      '@media (max-width:480px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:8px!important;transform:none!important;width:34px!important;height:34px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
+      '@media (max-width:480px){.petslab-menu-shell{padding:0!important;}.petslab-command{padding:13px!important;border-radius:14px!important;}.petslab-featured-grid,.petslab-catalog-grid,.petslab-filtered-grid{grid-template-columns:1fr;}.petslab-menu-tile{min-height:96px!important;}.petslab-featured-heading{align-items:flex-start;}.petslab-menu-finder{padding:10px;}.petslab-menu-search-row input,.petslab-menu-search-row button,.petslab-menu-filter-row button,.petslab-crosslink-action{min-height:44px!important;}.petslab-menu-filter-row button{flex:1 1 calc(50% - 4px);}.petslab-inquiry-body [style*="flex:0 0 160px"]{flex:1 1 100%!important;}.petslab-sensory-stage{height:340px;min-height:340px;border-radius:14px!important;}.petslab-sensory-stage canvas{border-radius:14px!important;}.petslab-stage-hud--top{left:9px;right:9px;top:9px;}.petslab-hud-objective{display:none;}.petslab-hud-chip{font-size:9px;min-height:25px;padding:4px 7px;}.petslab-control-dock{padding:8px;border-radius:12px;}.petslab-trainer-stage{min-height:220px;}.petslab-metric-grid{grid-template-columns:1fr;}.petslab-care-zone{width:44px!important;height:44px!important;font-size:17px!important;}.petslab-care-chips{left:8px!important;right:8px!important;bottom:8px!important;}}',
+      '@media (max-width:680px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:10px!important;transform:none!important;width:44px!important;height:44px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
+      '@media (max-width:480px){.petslab-care-chips{display:none!important;}.petslab-care-zone{top:auto!important;bottom:8px!important;transform:none!important;width:44px!important;height:44px!important;}.petslab-care-zone--pet{left:3%!important;}.petslab-care-zone--feed{left:23%!important;}.petslab-care-zone--water{left:43%!important;}.petslab-care-zone--play{left:63%!important;}.petslab-care-zone--clean{left:83%!important;}}',
       '@media (max-width:680px){.petslab-care-stage{aspect-ratio:auto;height:260px;min-height:260px;min-width:0;width:100%;}}',
-      '.reduce-motion .petslab-action-pop{display:none!important;}.reduce-motion .petslab-trainer-tail,.reduce-motion .petslab-trainer-reward{animation:none!important;}.reduce-motion .petslab-sim-choice:hover,.reduce-motion .petslab-sim-button:hover{transform:none;}',
+      '.reduce-motion [class*="petslab-"],.reduce-motion [class*="petslab-"] *{animation:none!important;transition:none!important;scroll-behavior:auto!important;}.reduce-motion .petslab-action-pop{display:none!important;}.reduce-motion .petslab-sim-choice:hover,.reduce-motion .petslab-sim-button:hover,.reduce-motion .petslab-menu-tile:hover{transform:none;}',
       '@media (max-width:480px){.petslab-care-decision{display:none!important;}}',
       '@media (max-width:680px){.petslab-trainer-stage{height:clamp(220px,44vw,300px);min-height:220px;}}',
       '@media (max-width:480px){.petslab-trainer-stage{height:clamp(160px,45vw,220px);min-height:160px;}}',
-      '@media (prefers-reduced-motion:reduce){.petslab-menu-tile,.petslab-sim-button,.petslab-care-zone,.petslab-sim-choice,.petslab-meter-fill,.petslab-quiz-progress span{transition:none!important;}.petslab-action-pop{display:none!important;}.petslab-trainer-tail,.petslab-trainer-reward{animation:none!important;}.petslab-menu-tile:hover,.petslab-sim-button:hover,.petslab-sim-choice:hover{transform:none;}}',
+      '@media (prefers-reduced-motion:reduce){.petslab-menu-tile,.petslab-sim-button,.petslab-care-zone,.petslab-sim-choice,.petslab-meter-fill,.petslab-quiz-progress span{transition:none!important;}.petslab-action-pop{display:none!important;}.petslab-trainer-tail,.petslab-trainer-reward,.petslab-decoder-celeb{animation:none!important;}.petslab-menu-tile:hover,.petslab-sim-button:hover,.petslab-sim-choice:hover{transform:none;}}',
       '.theme-contrast .petslab-command,.theme-contrast .petslab-start-card,.theme-contrast .petslab-menu-tile{box-shadow:none;}'
     ].join('\n');
     document.head.appendChild(petsWorkspaceStyle);
@@ -527,7 +541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     smallMammals: {
       icon: '🐹', name: 'Small mammals (rabbit, guinea pig, hamster, ferret)',
       principle: 'Highly variable physiology + social needs',
-      oneLiner: 'Often bought as "starter pets" but most are LESS forgiving than dogs/cats. Rabbits + guinea pigs are prey species (stress-fragile, hide illness); hamsters are strictly solitary (housing two = fights to death); ferrets are obligate carnivores like cats.',
+      oneLiner: 'Often bought as "starter pets," but small does not mean simple. Rabbits + guinea pigs are prey species that may hide illness; hamsters are generally solitary and need species-appropriate housing; ferrets are obligate carnivores like cats.',
       lifespan: 'hamster 2–3 yr · guinea pig 5–8 yr · rabbit 8–12 yr · ferret 6–10 yr',
       cite: 'House Rabbit Society + AVMA Companion Animal'
     },
@@ -541,59 +555,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     reptiles: {
       icon: '🦎', name: 'Reptiles & amphibians',
       principle: 'Ectothermic — body temperature follows environment',
-      oneLiner: 'Most pet-trade reptiles die young from incorrect husbandry, not disease. They need species-specific UVB lighting + heat gradients (basking spot + cool zone). Salmonella shedding is universal — handwashing required. Amphibians have permeable skin; soap residue on hands kills them.',
+      oneLiner: 'Most pet-trade reptiles die young from incorrect husbandry, not disease. They need species-specific UVB lighting + heat gradients (basking spot + cool zone). Salmonella carriage is common and shedding can be intermittent — handwashing required. Amphibians have permeable skin; soap residue on hands kills them.',
       lifespan: 'leopard gecko 15–20 yr · ball python 20–30 yr · tortoise 40–80+ yr',
       cite: 'ARAV + CDC One Health'
     }
   };
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 2: NUTRITION (toxic foods + species requirements)
-  // Citations: AVMA Pet Toxin database + AAFCO + ASPCA Animal Poison Control.
+  // SECTION 2: NUTRITION (household hazards + species requirements)
+  // Citations: FDA, AVMA, Merck Veterinary Manual, ASPCA Animal Poison Control,
+  // and Cornell Feline Health Center. Dose figures are intentionally omitted:
+  // product concentration, species, body size, amount, and timing require
+  // case-specific veterinary toxicology triage rather than home calculation.
   // ─────────────────────────────────────────────────────────
   var TOXIC_FOODS = [
-    { id: 'chocolate', icon: '🍫', name: 'Chocolate', species: 'dogs (worst), cats, ferrets, birds',
-      mechanism: 'Theobromine + caffeine. Dogs metabolize theobromine slowly → toxic. Dark chocolate is far worse than milk.',
-      thresholdNote: '~20 mg/kg theobromine = mild signs; 60 mg/kg = severe; 200 mg/kg potentially lethal.',
-      cite: 'ASPCA APCC' },
-    { id: 'grapes', icon: '🍇', name: 'Grapes & raisins', species: 'dogs (mechanism unclear), cats',
-      mechanism: 'Tartaric acid likely culprit (ASPCA 2021). Causes acute kidney failure unpredictably — even tiny amounts can kill some dogs.',
-      thresholdNote: 'No safe threshold identified. Treat ANY ingestion as emergency.',
-      cite: 'ASPCA APCC 2021' },
+    { id: 'chocolate', icon: '🍫', name: 'Chocolate', species: 'dogs (common exposure), cats, ferrets, birds',
+      mechanism: 'Theobromine and caffeine can affect the heart and nervous system. Risk varies with the animal, product, amount, and time since exposure.',
+      riskNote: 'Dark chocolate, baking chocolate, and cocoa powder are more concentrated than milk chocolate. Keep the wrapper and call for case-specific triage.',
+      cite: 'Merck Veterinary Manual + FDA' },
+    { id: 'grapes', icon: '🍇', name: 'Grapes & raisins', species: 'dogs (best-documented risk)',
+      mechanism: 'Can cause acute kidney injury in dogs. Susceptibility varies, so appearance, grape count, and an initially normal pet cannot predict outcome.',
+      riskNote: 'Do not use a memorized grape count as a home cutoff. Call a veterinarian or animal poison service for any suspected dog exposure.',
+      cite: 'Merck Veterinary Manual + FDA' },
     { id: 'xylitol', icon: '🧪', name: 'Xylitol (sugar substitute)', species: 'dogs, ferrets',
-      mechanism: 'Triggers massive insulin release → hypoglycemia + liver failure. Found in sugar-free gum, peanut butter, candy, some children\'s vitamins.',
-      thresholdNote: '0.1 g/kg causes hypoglycemia; 0.5 g/kg causes liver failure.',
-      cite: 'AVMA 2023' },
+      mechanism: 'Can trigger rapid insulin release and dangerously low blood sugar in dogs; liver injury may also occur. It appears in some gums, candies, nut butters, medicines, and dental products.',
+      riskNote: 'Concentration varies widely by product and signs can begin quickly. Check the ingredient label, keep the package, and call immediately.',
+      cite: 'FDA + Merck Veterinary Manual' },
     { id: 'onions', icon: '🧅', name: 'Onions / garlic / leeks (Allium)', species: 'dogs, cats (cats more sensitive)',
-      mechanism: 'N-propyl disulfide damages red blood cell membranes → hemolytic anemia. Cooking does NOT inactivate.',
-      thresholdNote: '15–30 g/kg toxic in dogs; cats much more sensitive.',
-      cite: 'Merck Vet Manual' },
+      mechanism: 'Allium compounds can damage red blood cells and cause anemia. Fresh, cooked, dried, and powdered forms can matter.',
+      riskNote: 'Repeated exposures count too. Cats are especially sensitive, and dogs can also be affected; call for case-specific advice.',
+      cite: 'Merck Veterinary Manual + FDA' },
     { id: 'macadamia', icon: '🥜', name: 'Macadamia nuts', species: 'dogs',
-      mechanism: 'Unknown mechanism. Causes weakness, tremors, hyperthermia, hind-limb ataxia within 12 hr. Usually self-resolves but distressing.',
-      thresholdNote: '~2 g/kg.',
-      cite: 'ASPCA' },
-    { id: 'lily', icon: '🌸', name: 'Lilies (Lilium spp.)', species: 'cats',
-      mechanism: 'ALL parts toxic: leaves, petals, pollen, vase water. Causes acute kidney failure. Even pollen brushed off on fur and groomed off can be fatal.',
-      thresholdNote: 'No safe exposure. Easter / Tiger / Asiatic lilies all dangerous.',
-      cite: 'ASPCA' },
-    { id: 'avocado', icon: '🥑', name: 'Avocado', species: 'birds (worst), rabbits',
-      mechanism: 'Persin causes cardiac muscle damage in birds; can kill within 24 hr. Dogs/cats relatively tolerant of flesh but pit is GI obstruction risk.',
-      cite: 'Avian Welfare Coalition' },
-    { id: 'teflon', icon: '🍳', name: 'Teflon (PTFE) fumes', species: 'birds (FATAL)',
-      mechanism: 'Overheated nonstick cookware (>500°F) releases polymer fumes that kill birds in MINUTES. Also: scented candles, aerosol cleaners, cigarette smoke.',
-      cite: 'AAV' }
+      mechanism: 'Reported illness is primarily in dogs and may include weakness, tremors, vomiting, or trouble walking. Individual signs and timing vary.',
+      riskNote: 'Do not use a nut count or body-weight calculation to decide whether to wait. Keep the package and call for advice.',
+      cite: 'Merck Veterinary Manual + FDA' },
+    { id: 'lily', icon: '🌸', name: 'True lilies & daylilies', species: 'cats',
+      mechanism: 'True lilies and daylilies can cause acute kidney injury in cats. Leaves, petals, pollen, and vase water can all matter.',
+      riskNote: 'Treat a suspected cat exposure as urgent even if the cat looks normal. Call immediately and identify or photograph the plant if safe.',
+      cite: 'Cornell Feline Health Center + FDA' },
+    { id: 'avocado', icon: '🥑', name: 'Avocado', species: 'birds (highest concern), rabbits',
+      mechanism: 'Avocado can be severely toxic to birds and rabbits. In other pets, the pit can create a separate choking or gastrointestinal-obstruction hazard.',
+      riskNote: 'Species and plant part matter. Keep a sample or photo if safe and call rather than assuming the flesh, skin, or pit has the same risk.',
+      cite: 'FDA' },
+    { id: 'teflon', icon: '🍳', name: 'Overheated PTFE/nonstick fumes', species: 'birds (highest concern)',
+      mechanism: 'Overheated PTFE-coated products can release fumes that cause sudden, severe respiratory injury in birds.',
+      riskNote: 'This is an inhalation emergency, not a food dose problem. Leave the exposure area if safe and seek emergency veterinary help immediately.',
+      cite: 'Association of Avian Veterinarians' }
   ];
   var SPECIES_NUTRITION = [
-    { id: 'cat', name: 'Cats', icon: '🐈', need: 'TAURINE (essential — deficiency → dilated cardiomyopathy + retinal degeneration). Cannot synthesize from precursors. Vegan diet for cats = cruelty + medical neglect.',
-      cite: 'AAFP nutrition guidelines' },
-    { id: 'dog', name: 'Dogs', icon: '🐕', need: 'Omnivorous. Can thrive on properly-formulated diets including some plant matter. AAFCO statement on label = nutritionally complete + balanced for life stage.',
-      cite: 'AAFCO + AVMA' },
-    { id: 'rabbit', name: 'Rabbits', icon: '🐰', need: '~80% grass hay (timothy/orchard for adults; alfalfa for young). Pellets are SUPPLEMENT not staple. Iceberg lettuce is mostly water + dangerous in volume.',
+    { id: 'cat', name: 'Cats', icon: '🐈',
+      need: 'Cats are obligate carnivores with species-specific nutrient requirements, including taurine and preformed vitamin A. Nutrient adequacy depends on the finished diet—not a single ingredient or marketing identity.',
+      verify: 'For commercial cat food, match the nutritional-adequacy statement to the cat\'s life stage. Home-prepared or unconventional diets need formulation and follow-up from a veterinarian with nutrition expertise.',
+      cite: 'FDA + AAFCO' },
+    { id: 'dog', name: 'Dogs', icon: '🐕',
+      need: 'Dogs need a complete nutrient profile appropriate to life stage and condition. Both animal- and plant-derived ingredients can contribute nutrients when the finished diet is properly formulated.',
+      verify: 'Look for the intended species, the nutritional-adequacy statement, and the life stage—not a first-ingredient rule. Feeding directions are a starting point that may need adjustment for the individual dog.',
+      cite: 'FDA + AAFCO' },
+    { id: 'rabbit', name: 'Rabbits', icon: '🐰',
+      need: 'For most healthy adult rabbits, unlimited grass hay is the dietary foundation, with appropriate leafy greens and a measured amount of suitable pellets. Age and health can change the plan.',
+      verify: 'Make diet changes gradually with rabbit-savvy guidance. A sudden appetite change or fewer droppings is urgent and should not be treated as a nutrition experiment.',
       cite: 'House Rabbit Society' },
-    { id: 'parrot', name: 'Parrots', icon: '🦜', need: 'Pellet base + fresh veg + small amount fruit. AVOID all-seed diets (cause obesity + fatty liver disease). NO avocado, chocolate, caffeine, onion, alcohol.',
-      cite: 'AAV' },
-    { id: 'reptile', name: 'Reptiles', icon: '🦎', need: 'Hugely species-specific. Bearded dragons = omnivore (insects + greens; calcium dusting essential to prevent metabolic bone disease). Ball pythons = strict carnivore (mice).',
-      cite: 'ARAV' }
+    { id: 'parrot', name: 'Parrots', icon: '🦜',
+      need: 'Parrot nutrition varies by species, but seed-only feeding can be nutritionally incomplete. A balanced formulated food plus species-appropriate fresh foods is a common veterinary starting point.',
+      verify: 'Ask an avian veterinarian about species, life stage, body condition, and safe food proportions. Keep known household hazards such as avocado and overheated PTFE fumes out of reach or exposure range.',
+      cite: 'Association of Avian Veterinarians' },
+    { id: 'reptile', name: 'Reptiles', icon: '🦎',
+      need: '“Reptile diet” is not one diet: prey type, plant matter, calcium needs, feeding frequency, temperature, and UVB requirements vary substantially by species and life stage.',
+      verify: 'Use a species-specific husbandry plan from a reptile-experienced veterinarian or authoritative care source. Nutrition cannot be evaluated separately from heat, light, hydration, and enclosure conditions.',
+      cite: 'Association of Reptile and Amphibian Veterinarians' }
+  ];
+  var PET_FOOD_LABEL_CHECKS = [
+    { id: 'species', title: '1. Confirm the intended species',
+      detail: 'A dog or cat picture is not enough. The label should identify the species the food is formulated for.' },
+    { id: 'adequacy', title: '2. Find the nutritional-adequacy statement',
+      detail: 'For dog and cat foods, look for how a “complete and balanced” claim is substantiated and which life stage it covers.' },
+    { id: 'purpose', title: '3. Check the feeding purpose',
+      detail: '“For intermittent or supplemental feeding only” means the product is not represented as a complete sole diet. Treats and toppers commonly use this language.' },
+    { id: 'energy', title: '4. Read calories and feeding directions',
+      detail: 'Find calories per familiar unit and use feeding directions as a starting estimate. Activity, body condition, and health may require professional adjustment.' },
+    { id: 'questions', title: '5. Keep the company contact—and ask questions',
+      detail: 'The label should identify the manufacturer or distributor. Ask about formulation expertise, quality control, nutrient analysis, and any information the label does not answer.' }
+  ];
+  var PET_FOOD_LABEL_CASES = [
+    { id: 'adult-cat', name: 'Adult cat entrée', icon: '🐈',
+      question: 'Sole-diet candidate for a healthy adult cat?',
+      statement: '“Mews & More Adult Cat Food is formulated to meet the nutritional levels established by the AAFCO Cat Food Nutrient Profiles for maintenance.”',
+      answer: 'Potentially, by label evidence: it identifies cats, states how adequacy is substantiated, and names adult maintenance. That does not guarantee a fit for every cat or replace veterinary guidance for a medical condition.' },
+    { id: 'dog-treat', name: 'Soft dog training bites', icon: '🦴',
+      question: 'Complete daily diet?',
+      statement: '“For intermittent or supplemental feeding only.”',
+      answer: 'No. The label describes a supplemental product, not a nutritionally complete sole diet. Count its calories within the dog\'s overall intake.' },
+    { id: 'adult-dog', name: 'Adult dog recipe', icon: '🐕',
+      question: 'Right label evidence for a growing puppy?',
+      statement: '“Formulated to meet the nutritional levels established by the AAFCO Dog Food Nutrient Profiles for maintenance.”',
+      answer: 'No for this scenario: “maintenance” identifies an adult life stage, while a growing puppy has different requirements. Look for growth—or applicable all-life-stages—labeling and individual guidance.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -665,7 +720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       truth: 'Cats train readily with positive reinforcement — they just don\'t train via social pressure (don\'t care if you\'re disappointed). Use food rewards, short sessions, and target training. Cats can learn sit, high-five, recall, target-touch, even agility. Karen Pryor + John Bradshaw both detail this.',
       source: 'Bradshaw 2013 + Pryor "Reaching the Animal Mind"' },
     { myth: '"Rabbits are easy starter pets for kids."',
-      truth: 'Rabbits are arguably the WORST starter pet. Prey-animal nature makes them stress-fragile. They live 8–12 years, need pair bonding, dedicated rabbit-savvy vet care (often >2x dog/cat costs), large enclosures (cages = inhumane), and don\'t generally enjoy being held. House Rabbit Society advises against rabbits for households with young children.',
+      truth: 'Rabbits are not low-maintenance pets for a child to manage. They may hide illness, need spacious indoor housing, species-appropriate food and enrichment, and rabbit-experienced veterinary care. An adult must be the primary caregiver, while children participate through supervised, rabbit-respecting interaction.',
       source: 'House Rabbit Society + AVMA Companion Animal' },
     { myth: '"Tail wagging means a happy dog."',
       truth: 'Tail wagging means AROUSAL — could be happy, anxious, fearful, or about-to-bite. Read full body language: loose body + soft eyes + relaxed mouth = happy. Stiff body + hard eyes + closed mouth + slow high wag = warning. Whale-eye (whites showing) = fear/discomfort, not playfulness.',
@@ -741,9 +796,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         how: 'Food puzzles, scent work, training sessions (5 min beats 30), window perches for cats, foraging toys for parrots. Boredom drives most "bad" pet behavior.',
         impact: 'A puzzle-fed cat / dog has measurably lower stress hormones (Ellis 2009, J Feline Med Surg).',
         url: null },
-      { id: 'firstAid', icon: '🚑', what: 'Memorize ASPCA Animal Poison Control: (888) 426-4435',
-        how: 'Save the number in your phone NOW. $95 consult fee, available 24/7. Faster than driving to ER for many ingestions.',
-        impact: 'The 30 seconds you save by knowing exactly who to call can change the outcome.',
+      { id: 'firstAid', icon: '🚑', what: 'Save two 24/7 animal poison numbers',
+        how: 'ASPCA Animal Poison Control: (888) 426-4435. Pet Poison Helpline: (855) 764-7661. Consultation fees may apply; verify current terms when you call.',
+        impact: 'Call a veterinarian, emergency hospital, or animal poison service immediately. Having the species, weight, package, amount, and time ready supports case-specific triage.',
         url: 'https://www.aspca.org/pet-care/animal-poison-control' },
       { id: 'tickPrevention', icon: '🕷️', what: 'Year-round tick prevention for any dog spending time outside',
         how: 'Talk to your vet about oral (NexGard, Bravecto, Credelio, Simparica) vs topical (Frontline). Adult ticks active any day above ~40°F — Maine winter is NOT a safety period.',
@@ -842,8 +897,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       prompt: 'A family is considering their first pet. Two kids (ages 4 and 7), a parent with mild cat allergies, an apartment in Portland ME, both parents work 9–5. Budget is moderate. They\'re drawn to "a cute small dog" they saw on Instagram. Help them think through this honestly.',
       rubric: [
         'Acknowledges the cat-allergy + apartment + work-hours constraints',
-        'Considers a small dog HONESTLY (still needs daily walks, training, ~$1500–2500/yr; alone-time challenge with both parents working)',
-        'Considers alternatives that might fit better (guinea pig pair, fish tank, rabbit pair if they can do exotic-vet costs, pursuing the dog plan with specific accommodations)',
+        'Considers a small dog honestly: daily exercise, training, time alone, housing rules, veterinary care, and ongoing costs still matter',
+        'Compares realistic options — including waiting, fostering, or pursuing a well-researched dog plan with specific accommodations — rather than treating a smaller species as automatically easier',
         'Mentions that "cute on Instagram" is a poor selection criterion and asks what they\'ve actually researched',
         'Suggests concrete next steps (visit shelter, talk to allergist, meet specific breeds in person)'
       ],
@@ -854,65 +909,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       rubric: [
         'Distinguishes diabetic-alert dog vs medical-alert task vs ESA vs therapy animal correctly',
         'Acknowledges that CGM (continuous glucose monitor) and a service dog are NOT mutually exclusive — both can be part of a diabetes-care plan',
-        'Notes the cost + commitment reality (DAD program waitlists are 2–5 years; placement costs $20–50K; lifespan 8–12 yr)',
-        'Mentions seizure-alert science: predictive ability is real but variable; some dogs alert reliably, others don\'t',
-        'Suggests connecting with disability + diabetes organizations (ADA + JDRF + Diabetes Alert Dog programs like Can Do Canines)'
+        'Explains that program eligibility, access, wait time, fundraising or placement costs, and long-term dog care vary; the family must verify them directly',
+        'Distinguishes trained response tasks from unguaranteed advance seizure alerts; individual reliability varies and medical monitoring remains essential',
+        'Suggests checking official ADA guidance, Breakthrough T1D, and Assistance Dogs International\'s accredited-member search'
       ],
       hint: 'A service dog is not a replacement for a CGM, and vice versa. The honest framing helps the classmate avoid framing it as either-or in a parent conversation.' },
     { id: 'cat-litter', icon: '🐈',
       title: 'Cat behavior crisis',
       prompt: 'Your friend\'s 5-year-old indoor cat has started peeing OUTSIDE the litter box for the past 2 weeks. They\'re thinking about rehoming the cat. Walk them through what to actually do.',
       rubric: [
-        'FIRST recommends a vet visit to rule out UTI, crystals, FLUTD — sudden behavior change in cats is medical until proven otherwise',
-        'After medical clearance, considers stress / environmental triggers (new pet, new schedule, litter brand change, dirty box, box location)',
-        'Litter-box rules: number of boxes = cats + 1; daily scooping; uncovered + low-sided for older cats; quiet location',
+        'FIRST recommends a veterinary exam because sudden house-soiling can have urinary or other medical causes',
+        'After medical causes are assessed, considers stress and environmental triggers (new pet, new schedule, litter change, dirty box, box location)',
+        'Reviews litter setup: one box per cat plus one extra; frequent scooping; accessible boxes; quiet locations; and litter or box preferences',
         'Advises against punishment / yelling — increases stress + makes elimination problems worse',
-        'Mentions that rehoming for litter problems is a common and tragic shelter intake reason — almost always solvable with vet + management'
+        'Does not jump straight to rehoming; proposes veterinary and environmental assessment plus qualified behavior support if the problem continues'
       ],
-      hint: 'Vet first. Don\'t skip it. ~60% of "behavior" cases in cats turn out to have a medical driver.' },
+      hint: 'Sudden house-soiling can have medical and environmental causes. Start with a veterinary exam, then review litter access, location, substrate, cleanliness, and stressors.' },
     { id: 'rabbit-stasis', icon: '🐰',
       title: 'Rabbit emergency triage',
       prompt: 'Your friend texts you at 9 PM: "My rabbit hasn\'t eaten anything since this morning and is just sitting hunched in the corner. Should I just wait until morning to call the vet?"',
       rubric: [
-        'Identifies this as a likely GI STASIS emergency — life-threatening within hours',
-        'Says GO TO AN EMERGENCY EXOTIC VET TONIGHT, not wait for morning',
-        'Notes that rabbit GI is fragile + bacteria overgrowth happens fast when motility stops',
-        'Tells friend to bring fresh hay + water on the trip (some vets OK gut-stim massage but only if vet-trained)',
-        'Provides Maine-specific pointer if possible — most regular vets don\'t do exotics; refer to a real exotic-vet clinic'
+        'Treats not eating plus hunched posture as an urgent emergency signal that can reflect GI slowdown, pain, blockage, or another serious cause',
+        'Says to call an emergency rabbit-experienced or exotics veterinarian now, follow their triage instructions, and not wait until morning',
+        'Avoids diagnosing by text or assuming every case is GI stasis; blockage and other causes require veterinary assessment',
+        'Keeps the rabbit quiet and warm for transport and does not force-feed, massage, or give home treatment unless a veterinarian specifically instructs after assessing blockage risk',
+        'Helps locate a rabbit-experienced emergency clinic and encourages making an emergency plan before the next crisis'
       ],
-      hint: 'Rabbit GI stasis is the equivalent of a heart attack timing. Hours matter. "Wait until morning" is the wrong answer.' },
+      hint: 'Not eating plus hunching is an emergency signal, not a diagnosis. Call a rabbit-experienced veterinarian now; do not force-feed before blockage risk is assessed.' },
     { id: 'parrot-tiktok', icon: '🦜',
       title: 'Talking your friend out of a TikTok parrot',
       prompt: 'Your neighbor wants to buy a baby cockatoo from a local breeder because they keep going viral on TikTok. They have a 1-bedroom apartment, work 50-hour weeks, and admit they "don\'t really know much about birds." Help them think this through.',
       rubric: [
-        'States the lifespan reality clearly: cockatoos live 50–80 years — outliving most owners; rehoming is the rule, not exception',
+        'States the commitment reality clearly: many cockatoos can live for decades, so species-specific research and a successor-care plan are essential',
         'Notes the noise + mess reality (cockatoos are LOUD; landlord + neighbor problems are routine)',
-        'Mentions the time + attention need: highly social birds, will scream/pluck when ignored',
+        'Mentions the time, social, training, and enrichment needs and the welfare problems that chronic isolation can create',
         'Brings up the Teflon + scented-candle + smoke risks — kitchen overlap with bird = potential death',
-        'Suggests alternatives: budgie or cockatiel (smaller, shorter-lived, quieter), or fostering through an avian rescue first'
+        'Suggests learning before buying: consult an avian veterinarian, volunteer or foster through an avian rescue, meet adult birds, and delay until a realistic care plan exists'
       ],
-      hint: 'Cockatoos are arguably the most surrendered companion bird species precisely because of the gap between TikTok-cuteness and real-life demands.' },
+      hint: 'Viral clips hide the noise, enrichment, specialized veterinary, housing, and successor-care demands. A smaller bird is not automatically an easy bird.' },
     { id: 'senior-dog', icon: '👴',
       title: 'Senior dog cognitive change',
       prompt: 'Your family\'s 14-year-old labrador-mix has started sleeping more than usual, sometimes seems lost in the kitchen at night, and pees on the floor occasionally even though she\'s house-trained. Your dad says "she\'s just old." Help your family think about this better.',
       rubric: [
-        'Identifies these signs as possible Canine Cognitive Dysfunction (CCD) — the dog version of dementia',
-        'Recommends vet visit FIRST to rule out medical causes (kidney disease, diabetes, UTI, arthritis, vision loss)',
-        'Mentions that early intervention with diet (Hill\'s b/d, Purina Bright Mind), supplements (SAMe, antioxidants), enrichment, and possibly anti-anxiety meds can slow progression',
-        'Notes that "she\'s just old" while sometimes true, often misses treatable conditions in seniors',
-        'Acknowledges the harder conversation: as a 14-yo Lab she\'s past average lifespan, and quality-of-life planning is appropriate even if she has more years'
+        'Recognizes that the signs could fit canine cognitive dysfunction (CCD) without diagnosing it; medical, pain, and sensory causes can look similar',
+        'For this senior dog, recommends veterinary evaluation of house-soiling and nighttime disorientation, including urinary, metabolic, mobility, pain, vision, and hearing possibilities',
+        'Tracks changes in sleep and wake cycles, disorientation, interactions, house-soiling, activity, and anxiety so the veterinarian can compare patterns over time',
+        'Discusses individualized management, environmental support, enrichment, and follow-up with the veterinarian rather than prescribing a diet, supplement, or medication',
+        'Starts a compassionate quality-of-life plan based on comfort and function rather than dismissing every change as "just old"'
       ],
-      hint: 'Senior pets get a lot of "she\'s just old" dismissal. Many "old age" symptoms are partially treatable, and intervention now extends both lifespan + quality.' }
+      hint: 'Track what changed and when, then bring that record to a veterinarian. Early evaluation can separate cognitive change from pain, sensory loss, or other medical causes and support an individualized care plan.' }
   ];
   var AI_GROUND_TRUTH = [
     'Dogs: 15,000–40,000 years from Pleistocene wolf. Olfactory ~300M receptors vs 5M human. Lifespan inversely correlated with size (small 14–16 yr; giant 6–8 yr).',
     'Cats: obligate carnivores requiring taurine, vitamin A, arginine, arachidonic acid from animal protein. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
-    'Rabbits: GI stasis is a TRUE EMERGENCY (hours matter). Need exotic-savvy vet. House Rabbit Society advises against rabbits for households with young children.',
-    'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, smoke. Cockatoos + macaws live 50–80 years.',
-    'Reptiles: ALL shed Salmonella. CDC: no reptiles in households with children under 5. Husbandry (UVB + heat gradient) is most reptile-death cause.',
+    'Rabbits: not eating plus hunched posture is an urgent emergency signal. Call a rabbit-experienced veterinarian now; do not force-feed or start home treatment unless a veterinarian has assessed blockage risk and specifically instructs it. An adult should be the primary caregiver; children need supervised, rabbit-respecting interaction.',
+    'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, and smoke. Many parrots can require care for decades; lifespan varies by species, husbandry, and individual, so successor-care planning matters.',
+    'Reptiles: commonly carry and can shed Salmonella while appearing healthy; shedding may be intermittent, so a negative sample does not clear the animal. CDC: no reptiles in households with children under 5. Husbandry (UVB + heat gradient) is a major preventable cause of reptile illness and death.',
     'Service dog (ADA): individually task-trained for a disability; full public access; only 2 questions allowed (1) is it a service animal because of a disability (2) what task. ESA: comfort by presence; FHA only; no public access. Therapy: visit-based, no automatic access.',
-    'Toxic to dogs: chocolate (theobromine), grapes/raisins, xylitol, onions/garlic, macadamia. Toxic to cats: lilies (any part), onions/garlic. Toxic to birds: avocado, Teflon fumes.',
-    'ASPCA Animal Poison Control: (888) 426-4435 ($95 24/7). Pet Poison Helpline: (855) 764-7661.',
+    'Service-dog program eligibility, availability, wait times, and costs vary. Verify current details directly with an Assistance Dogs International accredited program; an alert dog complements rather than replaces medical monitoring.',
+    'Cat house-soiling: sudden changes warrant veterinary evaluation. After medical causes are assessed, review box number, access, location, substrate, cleanliness, and stress; do not punish.',
+    'Senior dogs: changes in disorientation, sleep and wake cycles, interactions, house-soiling, activity, or anxiety can fit CCD but overlap with medical, pain, and sensory causes. Veterinary evaluation and longitudinal tracking come before individualized management.',
+    'Common hazard patterns: chocolate can affect multiple species; grape/raisin and macadamia illness are best documented in dogs; xylitol is dog-focused and ferrets may also be at risk; Allium plants affect dogs and cats; true lilies/daylilies are a cat emergency; avocado can severely harm birds and rabbits; overheated PTFE fumes are a bird emergency. These are teaching patterns, not clearance for unlisted species.',
+    'Suspected poisoning: call a veterinarian, emergency veterinary hospital, or animal poison service immediately; do not wait for symptoms. Do not induce vomiting or give medication or home remedies unless a veterinarian or animal poison expert directs you.',
+    'ASPCA Animal Poison Control: (888) 426-4435 (24/7; consultation fee may apply). Pet Poison Helpline: (855) 764-7661 (24/7). Have the species, weight, product or plant information, estimated amount and time, symptoms, and packaging or a photo ready.',
     'Maine: among the top few US states for Lyme + anaplasmosis incidence, trading the lead year to year with Vermont and New Hampshire — do not assert a flat national #1. Year-round tick prevention is standard veterinary care. ARLGP, Bangor Humane, Avian Haven are major Maine resources.',
     'Operant theory (covered in BehaviorLab): positive reinforcement is primary modality; AVSAB + AVMA oppose dominance-based / punishment-based training.',
     'NEVER recommend specific medications, dosages, or procedures — refer to a veterinarian.',
@@ -1061,15 +1120,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Calming signals are early warnings. Ignored, they often progress to destruction or vocalization. Worth catching early.' }
         ]
       },
-      { day: 4, label: 'Day 4 — vet bill arrives',
-        prompt: 'Routine annual vet visit + shots due. The estimate is $280. Your dog also has a small lump the vet wants to aspirate ($80 add-on, peace of mind).',
+      { day: 4, label: 'Day 4 — vet visit planning',
+        prompt: 'A routine veterinary visit is due. During the exam, the veterinarian recommends sampling a small lump and provides a separate estimate.',
         choices: [
-          { id: 'all', label: 'Do everything including the aspiration',
+          { id: 'all', label: 'Approve the recommended visit and lump sampling',
             effects: { phys: +10, ment: +1, soc: +1, env: +1, en: -5, money: -360 },
-            note: 'Lumps in middle-aged + senior dogs are usually benign, but aspiration costs $80 and rules out the bad outcome with confidence.' },
-          { id: 'core_only', label: 'Just the routine visit + shots; skip the aspiration this year',
+            note: 'Sampling can help distinguish possible causes, but no single test guarantees an outcome. Ask what this test can show, what it cannot, and what follow-up may be needed.' },
+          { id: 'core_only', label: 'Keep the visit; discuss whether and how sampling can safely wait',
             effects: { phys: +5, ment: 0, soc: 0, env: 0, en: -3, money: -280 },
-            note: 'Reasonable if budget is tight, BUT make a calendar reminder: any change in lump size = aspirate. Mast-cell tumors mimic fatty lumps.' },
+            note: 'Cost concerns deserve a direct conversation. A veterinarian can explain monitoring limits, urgency, alternatives, and signs that should prompt an earlier recheck.' },
           { id: 'skip', label: 'Skip vet entirely — they seem fine',
             effects: { phys: -8, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
             note: 'Annual exams catch dental, weight, joint, organ, parasite, vaccine, and tumor issues early. Skipping costs more long-term.' }
@@ -1111,7 +1170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Theobromine in chocolate is metabolized too slowly by dogs — a brownie can be life-threatening for a small dog. You also taught the guest, kindly.' },
           { id: 'allow', label: 'Let them have it. "It\'s just a little."',
             effects: { phys: -10, ment: 0, soc: 0, env: 0, en: 0, money: -200 },
-            note: 'Vet emergency call ($95–$200 advice line) likely. Dark chocolate is significantly worse than milk; smaller dogs at higher risk per gram. Chocolate is the #1 reason dogs end up in pet poison hotlines.' },
+            note: 'If an exposure occurs, call immediately with the dog\'s weight, product label, estimated amount, and time. Product concentration and body size matter; do not wait for symptoms or calculate a home cutoff.' },
           { id: 'shoo', label: 'Just put the dog outside while you eat',
             effects: { phys: -1, ment: -3, soc: -4, env: 0, en: -1, money: 0 },
             note: 'Fine in a pinch but the dog learns that family events = exclusion. With a bit of training, dogs can lie on a mat during meals.' }
@@ -1175,18 +1234,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Declawing is amputation of the last bone of every toe (P3). AVMA + AAFP oppose. Banned in most of Europe + NY/MD. ~3× higher chronic-pain rate, 7× higher rate of biting + litter-box problems (Martell-Moran 2018). See Welfare & Ethics.' }
         ]
       },
-      { day: 5, label: 'Day 5 — sudden vet visit',
-        prompt: 'Your cat hasn\'t eaten in 24 hours and has been hiding more than usual. They\'re a 5-year-old indoor cat.',
+      { day: 5, label: 'Day 5 — sudden illness signs',
+        prompt: 'Your cat has skipped meals and is hiding more than usual. This is a sudden change from their normal behavior.',
         choices: [
-          { id: 'vet_today', label: 'Vet appointment same day ($120 visit + $80 bloodwork)',
+          { id: 'vet_today', label: 'Call the veterinarian now for same-day guidance',
             effects: { phys: +12, ment: +2, soc: +2, env: 0, en: -5, money: -200 },
-            note: 'Cats hide illness — appetite loss + hiding for 24+ hr is a red flag, especially in cats prone to hepatic lipidosis. Catching urinary blockage in male cats is a 24-hour emergency.' },
+            note: 'Sudden appetite and behavior changes need prompt veterinary advice because many causes look alike at home. Straining to urinate or producing little or no urine is an immediate emergency.' },
           { id: 'wait_24', label: 'Wait another day; offer different food',
             effects: { phys: -3, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
-            note: 'Risky in cats. They develop "fatty liver" (hepatic lipidosis) within 48–72 hr of food refusal — life-threatening cascade. 24 hr is the max-watch window.' },
+            note: 'A food change does not identify the cause or create a safe waiting window. Call now and follow the veterinarian\'s case-specific instructions.' },
           { id: 'wait_week', label: '"Cats are like that" — wait a week',
             effects: { phys: -15, ment: -5, soc: -3, env: 0, en: 0, money: -800 },
-            note: 'You\'ll likely face an emergency vet bill (~$800–$2,000) in 2–3 days, plus risk of permanent damage. Cats hide illness as prey-animal instinct.' }
+            note: 'A long delay can allow serious illness to worsen. The diagnosis, timing, outcome, and cost cannot be forecast from this scenario; the safe next step is prompt veterinary contact.' }
         ]
       },
       { day: 6, label: 'Day 6 — vacation: 3 days',
@@ -1244,7 +1303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Causes obesity, dental disease (rabbit teeth grow forever — they need hay\'s grinding action), and GI stasis. Surprisingly common cause of vet visits.' },
           { id: 'free_food', label: 'Free-fed pellets, occasional hay',
             effects: { phys: -12, ment: -4, soc: 0, env: 0, en: 0, money: -20 },
-            note: 'GI stasis emergency likely within months. The #1 cause of rabbit ER visits. Vet bill ~$300–$1,500 if caught early; fatal if not.' }
+            note: 'A low-hay diet raises the risk of dental and gastrointestinal disease, but timing and outcome cannot be predicted. Seek rabbit-savvy guidance for diet changes and any appetite or dropping change.' }
         ]
       },
       { day: 3, label: 'Day 3 — pair bonding',
@@ -1275,18 +1334,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             note: 'Far higher cancer mortality. Also: hormones in unspayed females cause aggression + spraying that often gets rabbits surrendered. See Welfare & Ethics for the broader picture.' }
         ]
       },
-      { day: 5, label: 'Day 5 — GI stasis warning',
-        prompt: 'Your rabbit hasn\'t pooped in 12 hours and is hunched in the corner. (See Body Language: tooth grinding, hunched posture.) What now?',
+      { day: 5, label: 'Day 5 — urgent appetite change',
+        prompt: 'Your rabbit refuses a favorite food, has produced fewer droppings for several hours, and is hunched in the corner. What now?',
         choices: [
-          { id: 'er', label: 'Exotic vet ER visit IMMEDIATELY ($300+ overnight)',
+          { id: 'er', label: 'Call a rabbit-savvy veterinarian or emergency clinic now',
             effects: { phys: +20, ment: +2, soc: +2, env: 0, en: -8, money: -350 },
-            note: 'GI stasis (gut shutdown) is THE rabbit emergency. 12 hours without pooping = TIME-SENSITIVE. Subcutaneous fluids, motility drugs, pain control. Caught early: ~85% recovery. Caught late: high mortality.' },
+            note: 'Loss of appetite, reduced droppings, and hunching are urgent. Call ahead because not every emergency clinic treats rabbits; a clinician must assess causes such as obstruction before directing feeding or treatment.' },
           { id: 'wait_morning', label: 'Wait until morning to call',
             effects: { phys: -20, ment: -3, soc: 0, env: 0, en: 0, money: -1200 },
-            note: 'You may face a much larger bill (or worse). GI stasis cascades fast. The 12-hr rule from House Rabbit Society is non-negotiable.' },
-          { id: 'home_remedy', label: 'Try gentle tummy massage + offer treats',
+            note: 'Do not wait for a 12-hour cutoff before asking for help. Rabbits can worsen quickly, and only a veterinary assessment can identify the cause and safe next step.' },
+          { id: 'home_remedy', label: 'Try massage and syringe-feeding before calling',
             effects: { phys: -15, ment: -2, soc: 0, env: 0, en: -3, money: 0 },
-            note: 'Massage is fine but not a treatment. Stasis usually has an underlying cause (dental, blockage, stress, poor diet). Vet diagnosis matters.' }
+            note: 'Home treatment can delay care, and force-feeding can worsen an obstruction. Do not force-feed or give medication unless a rabbit-savvy veterinarian has assessed the risk and directs you.' }
         ]
       },
       { day: 6, label: 'Day 6 — kid wants to hold',
@@ -1308,10 +1367,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: [
           { id: 'honest', label: '"They\'re wonderful but high-effort. Plan 8–12 years, exotic vets, daily greens + hay, free-roam space, almost certainly pair-bonded. Read House Rabbit Society first."',
             effects: { phys: +5, ment: +5, soc: +5, env: +3, en: -2, money: 0 },
-            note: 'Honest counsel. Rabbits are surrendered to shelters at high rates because they\'re the third-most popular pet sold and routinely sold without honest expectations.' },
+            note: 'Honest counsel. Rabbit care needs an adult primary caregiver, indoor space, daily observation, species-appropriate food, enrichment, and access to a rabbit-experienced veterinarian.' },
           { id: 'easy', label: '"Yeah easy starter pet — basically a vegetarian cat"',
             effects: { phys: -5, ment: -5, soc: 0, env: -3, en: 0, money: 0 },
-            note: 'You just contributed to a future shelter rabbit. House Rabbit Society explicitly says rabbits are NOT good first pets for kids. The friend\'s rabbit will pay the price.' },
+            note: 'This advice hides the adult responsibility and specialized care a rabbit needs. Without an adult-led plan, subtle illness and daily welfare needs are more likely to be missed.' },
           { id: 'unsure', label: '"Honestly, no. They\'re harder than I thought."',
             effects: { phys: 0, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
             note: 'Also valid. Rabbits aren\'t for everyone. Honest about your experience saves the friend from making the same surprise.' }
@@ -1729,6 +1788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // first-person scene. When reduced, the scene renders only when the
     // student actually changes something.
     var reduced = false;
+    var requestFrame = function () {};
     // Comparison capture locks navigation after the first frame so human,
     // dog and cat images share one camera position and heading. Species eye
     // height and FOV still change because those are the variables being taught.
@@ -1742,7 +1802,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
     // Marks the scene as needing one more frame. In reduced-motion mode this
     // is the only thing that causes a render.
-    function invalidate() { if (S) S.dirty = true; }
+    function invalidate() {
+      if (!S) return;
+      S.dirty = true;
+      requestFrame();
+    }
 
     function applySpecies() {
       if (!S) return;
@@ -1780,7 +1844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       if (dusk && sp.lowLightFactor === 1) filters.push('brightness(0.62)');
       S.renderer.domElement.style.filter = filters.length ? filters.join(' ') : 'none';
       S.built.scentGroup.visible = (speciesId === 'dog');
-      S.dirty = true;
+      invalidate();
     }
 
     function resize() {
@@ -1790,7 +1854,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       S.renderer.setSize(w, h, false);
       S.camera.aspect = w / Math.max(1, h);
       S.camera.updateProjectionMatrix();
-      S.dirty = true;
+      invalidate();
     }
 
     var api = {
@@ -1860,18 +1924,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           if (!S || !S.drag || inputLocked) return;
           api.look((e.clientX - S.drag.x) * 0.4, (e.clientY - S.drag.y) * 0.3);
           S.drag = { x: e.clientX, y: e.clientY };
-          S.dirty = true;
+          invalidate();
         });
         on(renderer.domElement, 'pointerup', function () { if (S) S.drag = null; });
         on(renderer.domElement, 'pointercancel', function () { if (S) S.drag = null; });
 
-        applySpecies();
-        setStatus('ready');
-
         var clock = 0;
+        function ensureFrame() {
+          if (!S || S.raf) return;
+          S.raf = window.requestAnimationFrame(frame);
+        }
         function frame(ts) {
           if (!S) return;
-          S.raf = window.requestAnimationFrame(frame);
+          S.raf = 0;
           var dt = S.t0 ? Math.min(0.05, (ts - S.t0) / 1000) : 0.016;
           S.t0 = ts;
           clock += dt;
@@ -1917,8 +1982,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.camera.rotateX(S.pitch);
           S.renderer.render(S.scene, S.camera);
           if (S.renderer.shadowMap && S.renderer.shadowMap.autoUpdate) S.renderer.shadowMap.autoUpdate = false;
+          if (fwd || strafe || turn || scentAnimating) ensureFrame();
         }
-        S.raf = window.requestAnimationFrame(frame);
+        requestFrame = ensureFrame;
+        applySpecies();
+        setStatus('ready');
+        ensureFrame();
       },
 
       // Movement is clamped inside the room so a student can't walk out
@@ -1979,6 +2048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       setKey: function (name, down) {
         if (!S || inputLocked) return;
         S.keys[name] = !!down;
+        invalidate();
       },
 
       getPose: function () {
@@ -2016,6 +2086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var limit = Math.max(240, Math.min(640, Number(maxWidth) || 480));
           var scale = Math.min(1, limit / Math.max(1, source.width));
           var out = document.createElement('canvas');
+          out.setAttribute('aria-hidden', 'true');
           out.width = Math.max(1, Math.round(source.width * scale));
           out.height = Math.max(1, Math.round(source.height * scale));
           var ctx2 = out.getContext('2d');
@@ -2047,6 +2118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
         }
         S = null;
+        requestFrame = function () {};
         setStatus('idle');
       }
     };
@@ -2122,6 +2194,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       pets_trainer: 12, pets_caregiver: 15, pets_ai_designer: 5,
       pets_sensory: 12
     };
+    var PETS_BADGE_DISPLAY_LABELS = {
+      pets_explorer: 'Module Explorer (5 completed)',
+      pets_pro: 'Lab Pathfinder (12 completed)',
+      pets_welfare_aware: 'Welfare-Aware',
+      pets_decoder_5: 'Signal Spotter (5 logged)',
+      pets_decoder_15: 'Signal Sampler (15 logged)',
+      pets_decoder_all: 'All Signals Logged (27)',
+      pets_body_lang: 'Body Language Reader',
+      pets_quiz_pass: 'Pets Quiz Passed',
+      pets_quiz_ace: 'Pets Quiz Ace',
+      pets_trainer: 'Reinforcement Trainer',
+      pets_caregiver: 'Caring Pet-Owner (week complete)',
+      pets_ai_designer: 'AI Practice (response checked)',
+      pets_sensory: 'Saw It Their Way (all three viewpoints)'
+    };
 
     // ── Hydration + Canvas-survival persistence ──
     // Read priority: window slot (set by host's handleLoadProject) → localStorage
@@ -2130,38 +2217,1006 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // Keep the stored surface intentional: student work and progress survive,
     // transient UI/bitmap state does not. v2 reads v1 as a migration fallback.
     var PETS_PERSIST_KEYS = [
-      'badges', 'modulesVisited', 'modulesCompleted', 'decoderMastery',
+      'badges', 'modulesVisited', 'modulesCompleted', 'evidenceRecords', 'decoderMastery',
       'quizState', 'careSim', 'careTradeoff',
-      'aiScenarioId', 'aiDrafts', 'aiResponse',
-      'pickHousing', 'pickKids', 'pickKidAge', 'pickAllergies',
+      'aiScenarioId', 'aiDrafts', 'aiCritiques', 'aiRevisionNotes', 'aiResponse',
+      'pickHousing', 'pickKids', 'pickKidAge', 'pickAllergies', 'pickReadiness',
       'pickHoursHome', 'pickBudget', 'pickExperience',
-      'costSpecies', 'costYears', 'blMode', 'blQuiz', 'trMode', 'trSim',
+      'costSpecies', 'costYears', 'costMode', 'costEstimates',
+      'blMode', 'blQuiz', 'blTransfer', 'blSeenKeys', 'blMissedKeys', 'trMode', 'trSim',
       'lsAns', 'lsBest', 'lsIdx', 'lsPick', 'lsRounds', 'lsScore',
-      'lsSeed', 'lsShown', 'lsStreak', 'tfsAns', 'tfsBest', 'tfsIdx',
+      'lsSeed', 'lsShown', 'lsStreak', 'lsMissed', 'lsReview', 'tfsAns', 'tfsBest', 'tfsIdx',
       'tfsOpen', 'tfsPick', 'tfsRounds', 'tfsScore', 'tfsSeed',
-      'tfsShown', 'tfsStreak', 'diagramView', 'famousFilter',
-      'welfareSec', 'welfareVisited', 'sensoryDusk',
+      'tfsShown', 'tfsStreak', 'tfsMissed', 'tfsReview', 'diagramView', 'famousFilter',
+      'welfareSec', 'welfareVisited', 'litterYears', 'sensoryDusk',
       'sensoryReduceMotion', 'sensorySeen', 'sensorySpecies', 'lastView'
     ];
+    var PETS_EVIDENCE_MODULE_LABELS = {
+      dogs: 'Dogs',
+      cats: 'Cats',
+      smallMammals: 'Small mammals',
+      birds: 'Birds',
+      reptiles: 'Reptiles & amphibians',
+      training: 'Pet Training (applied)',
+      nutrition: 'Nutrition Science',
+      genetics: 'Domestication & Breeding',
+      zoonoses: 'Zoonoses & One Health',
+      service: 'Service & Support Animals',
+      welfare: 'Welfare & Ethics',
+      careSim: 'Pet-Care Week (sim)',
+      sensory: 'Through Their Eyes (3D)',
+      picker: 'Pet Picker',
+      bodyLang: 'Body Language Decoder',
+      decoderMastery: 'Decoder Signal Log',
+      cost: 'Lifetime Cost Calc',
+      lifespan: 'Lifespan Match',
+      diagrams: 'Diagrams',
+      aiPractice: 'AI Practice',
+      famous: 'Famous Animals',
+      glossary: 'Glossary',
+      myths: 'Myths Busted',
+      careers: 'Career Pathways',
+      action: 'Take Action',
+      quiz: '15-question quiz'
+    };
+    var PETS_EVIDENCE_ACTIVITY_FIELDS = {
+      training: ['rounds', 'behaviorPct', 'trustPct', 'criterionMet'],
+      nutrition: ['score', 'total', 'scorePct', 'needsPractice', 'criterionMet'],
+      bodyLang: ['score', 'total', 'scorePct', 'practiceMode', 'decoderMastery', 'needsPractice', 'criterionMet'],
+      decoderMastery: ['score', 'total', 'scorePct', 'coverageComplete'],
+      lifespan: ['score', 'total', 'scorePct', 'needsPractice', 'criterionMet'],
+      quiz: ['score', 'total', 'scorePct', 'bestPct', 'strandsMet', 'strandsTotal',
+        'biologyCorrect', 'biologyTotal', 'behaviorCorrect', 'behaviorTotal',
+        'healthCorrect', 'healthTotal', 'welfareCorrect', 'welfareTotal', 'criterionMet'],
+      aiPractice: ['scenarioId', 'draftChars', 'feedbackSource', 'reviewStatus', 'revisionMade', 'revisionNoteChars'],
+      careSim: ['species', 'days', 'physical', 'mental', 'social', 'environmental', 'weakestDomain', 'weakestPct', 'moneyLeft', 'avoidedNegativeBalance', 'stayedInBudget', 'energyLeft', 'finishedAboveEnergyTarget', 'avoidedExhaustedCare', 'caregiverSustainable', 'criterionMet'],
+      sensory: ['perspectives', 'criterionMet']
+    };
+    var PETS_EVIDENCE_ACTIVITY_SUMMARIES = {
+      training: 'Completed the reinforcement trainer',
+      nutrition: 'Completed the Household Hazard Sleuth',
+      bodyLang: 'Completed body-language decoder practice',
+      decoderMastery: 'Logged every body-language signal at least once',
+      lifespan: 'Completed the lifespan match',
+      quiz: 'Completed the knowledge quiz',
+      aiPractice: 'Completed a response and feedback check',
+      careSim: 'Completed the seven-day care simulation',
+      sensory: 'Compared the sensory perspectives'
+    };
+    var PETS_ACTIVITY_COMPLETION_REASONS = {
+      training: ['Finished the 10-round reinforcement trainer'],
+      nutrition: ['Finished all 10 Household Hazard Sleuth vignettes', 'Finished all 10 Toxic Foods Sleuth vignettes'],
+      decoderMastery: ['Logged all 27 body-language signals at least once'],
+      lifespan: ['Finished all 10 lifespan matches'],
+      quiz: ['Finished all quiz questions'],
+      aiPractice: [
+        'Wrote a response and completed a rubric check',
+        'Wrote a response and received critique',
+        'Revised a response and explained the change'
+      ],
+      careSim: ['Finished the seven-day pet-care simulation'],
+      sensory: ['Compared all three visual perspectives']
+    };
+    function normalizePetsActivityCompletionReason(moduleId, reason) {
+      var authored = PETS_ACTIVITY_COMPLETION_REASONS[moduleId] || [];
+      if (authored.indexOf(reason) >= 0) return reason;
+      if (moduleId === 'bodyLang' &&
+          /^Finished a (?:[1-9]|10)-signal (?:random|unseen|missed) decoder practice set$/.test(reason)) {
+        return reason;
+      }
+      return 'Activity completed';
+    }
+    function normalizeEvidenceTimestamp(value) {
+      var parsed = Date.parse(String(value || ''));
+      return isFinite(parsed) ? new Date(parsed).toISOString() : '';
+    }
+    function petsOwn(object, key) {
+      return !!object && Object.prototype.hasOwnProperty.call(object, key);
+    }
+    function normalizePetsView(value) {
+      if (value === 'menu' || value === 'resources' || value === 'teacher') return value;
+      return typeof value === 'string' && petsOwn(PETS_EVIDENCE_MODULE_LABELS, value)
+        ? value : 'menu';
+    }
+    function normalizeCareTradeoffState(raw) {
+      var source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+      var allowedSpecies = ['dog', 'cat', 'rabbit', 'parrot', 'reptile'];
+      var allowedStates = [
+        'Close model fit', 'Small model gaps', 'Mixed model fit',
+        'Large model gaps', 'Very large model gaps'
+      ];
+      var allowedDomains = [
+        'Food/nutrition', 'Exercise', 'Social contact', 'Vet care',
+        'Training/enrichment'
+      ];
+      function slider(key) {
+        if (source[key] == null || source[key] === '') return 50;
+        var value = Number(source[key]);
+        if (!isFinite(value)) return 50;
+        return Math.max(0, Math.min(100, Math.round(value / 5) * 5));
+      }
+      function savedText(key) {
+        return typeof source[key] === 'string' ? source[key].slice(0, 1200) : '';
+      }
+      var safeLog = [];
+      (Array.isArray(source.log) ? source.log : []).slice(-40).forEach(function(entry) {
+        if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+        var time = typeof entry.t === 'string' ? entry.t.slice(0, 8) : '';
+        var species = typeof entry.sp === 'string' ? entry.sp : '';
+        var state = typeof entry.state === 'string' ? entry.state : '';
+        var worst = typeof entry.worst === 'string' ? entry.worst : '';
+        var gap = Number(entry.gap);
+        var provided = Number(entry.provided);
+        var need = Number(entry.need);
+        if (!/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/.test(time) ||
+            allowedSpecies.indexOf(species) < 0 ||
+            allowedStates.indexOf(state) < 0 ||
+            allowedDomains.indexOf(worst) < 0 ||
+            !isFinite(gap) || !isFinite(provided) || !isFinite(need)) return;
+        safeLog.push({
+          t: time,
+          sp: species,
+          gap: Math.max(0, Math.min(500, gap)).toFixed(1),
+          state: state,
+          worst: worst,
+          provided: String(Math.max(0, Math.min(100, Math.round(provided)))),
+          need: String(Math.max(0, Math.min(100, Math.round(need))))
+        });
+      });
+      return {
+        food: slider('food'),
+        exercise: slider('exercise'),
+        social: slider('social'),
+        vet: slider('vet'),
+        training: slider('training'),
+        species: allowedSpecies.indexOf(source.species) >= 0 ? source.species : 'dog',
+        hypothesis: savedText('hypothesis'),
+        stuckRevealed: source.stuckRevealed === true,
+        understood: source.understood === true,
+        explanation: savedText('explanation'),
+        log: safeLog.slice(-8)
+      };
+    }
+    function aiDraftReadiness(value) {
+      var text = typeof value === 'string' ? value.trim() : '';
+      var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      var minChars = 80;
+      var minWords = 12;
+      return {
+        chars: text.length,
+        words: words,
+        minChars: minChars,
+        minWords: minWords,
+        ready: text.length >= minChars && words >= minWords
+      };
+    }
+    function normalizeAiScenarioId(value) {
+      if (typeof value !== 'string') return null;
+      return AI_SCENARIOS.some(function(item) { return item.id === value; })
+        ? value : null;
+    }
+    function normalizeAiDrafts(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      AI_SCENARIOS.forEach(function(scenario) {
+        if (!Object.prototype.hasOwnProperty.call(raw, scenario.id)) return;
+        if (typeof raw[scenario.id] !== 'string') return;
+        safe[scenario.id] = raw[scenario.id].slice(0, 4000);
+      });
+      return safe;
+    }
+    function normalizeAiCritiqueRecord(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw) ||
+          typeof raw.text !== 'string' || !raw.text.trim()) return null;
+      return {
+        text: raw.text.slice(0, 6000),
+        source: raw.source === 'ai' ? 'ai' : 'local',
+        draftSnapshot: typeof raw.draftSnapshot === 'string'
+          ? raw.draftSnapshot.slice(0, 4000) : '',
+        createdAt: normalizeEvidenceTimestamp(raw.createdAt)
+      };
+    }
+    function normalizeAiCritiques(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      AI_SCENARIOS.forEach(function(scenario) {
+        var record = normalizeAiCritiqueRecord(raw[scenario.id]);
+        if (record) safe[scenario.id] = record;
+      });
+      return safe;
+    }
+    function normalizeAiRevisionNotes(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      AI_SCENARIOS.forEach(function(scenario) {
+        if (!Object.prototype.hasOwnProperty.call(raw, scenario.id)) return;
+        if (typeof raw[scenario.id] !== 'string') return;
+        safe[scenario.id] = raw[scenario.id].slice(0, 1200);
+      });
+      return safe;
+    }
+    function normalizePetsProgressMap(raw, completed) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      Object.keys(raw).forEach(function(moduleId) {
+        if (!petsOwn(PETS_EVIDENCE_MODULE_LABELS, moduleId)) return;
+        if (completed) {
+          var record = raw[moduleId];
+          if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+          var completedAt = normalizeEvidenceTimestamp(record.completed);
+          if (!completedAt) return;
+          var evidenceUpdated = normalizeEvidenceTimestamp(record.evidenceUpdated);
+          var activityModule = Array.isArray(PETS_EVIDENCE_ACTIVITY_FIELDS[moduleId]);
+          var originalReason = String(record.reason || '');
+          var explicitlyReviewed = originalReason === 'Marked complete by learner' ||
+            originalReason === 'Reviewed by learner';
+          safe[moduleId] = {
+            completed: completedAt,
+            reason: explicitlyReviewed || !activityModule
+              ? 'Reviewed by learner'
+              : normalizePetsActivityCompletionReason(moduleId, originalReason)
+          };
+          if (evidenceUpdated) safe[moduleId].evidenceUpdated = evidenceUpdated;
+        } else {
+          var visitedAt = normalizeEvidenceTimestamp(raw[moduleId]);
+          if (visitedAt) safe[moduleId] = visitedAt;
+        }
+      });
+      return safe;
+    }
+    function normalizePetsBadges(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var safe = {};
+      Object.keys(raw).forEach(function(badgeId) {
+        if (!petsOwn(PETS_BADGE_DISPLAY_LABELS, badgeId)) return;
+        var label = PETS_BADGE_DISPLAY_LABELS[badgeId];
+        var record = raw[badgeId];
+        if (!label || !record || typeof record !== 'object' || Array.isArray(record)) return;
+        var earnedAt = normalizeEvidenceTimestamp(record.earned);
+        if (!earnedAt) return;
+        safe[badgeId] = {
+          earned: earnedAt,
+          label: label
+        };
+      });
+      return safe;
+    }
+    function normalizeEvidenceDetailValue(key, value) {
+      var percentKeys = ['behaviorPct', 'trustPct', 'scorePct', 'bestPct', 'physical', 'mental', 'social', 'environmental', 'weakestPct', 'energyLeft'];
+      if (percentKeys.indexOf(key) >= 0 && typeof value === 'number' && isFinite(value)) {
+        return Math.max(0, Math.min(100, Math.round(value)));
+      }
+      if (key === 'moneyLeft' && typeof value === 'number' && isFinite(value)) {
+        return Math.max(-1000000, Math.min(1000000, Math.round(value)));
+      }
+      var countLimits = {
+        rounds: 100, score: 100, total: 100, decoderMastery: 27, needsPractice: 27,
+        strandsMet: 4, strandsTotal: 4,
+        biologyCorrect: 3, biologyTotal: 3,
+        behaviorCorrect: 3, behaviorTotal: 3,
+        healthCorrect: 6, healthTotal: 6,
+        welfareCorrect: 3, welfareTotal: 3,
+        draftChars: 4000, revisionNoteChars: 1200, days: 7, perspectives: 3
+      };
+      if (Object.prototype.hasOwnProperty.call(countLimits, key) && typeof value === 'number' && isFinite(value)) {
+        return Math.max(0, Math.min(countLimits[key], Math.round(value)));
+      }
+      if ((key === 'criterionMet' || key === 'coverageComplete' ||
+          key === 'avoidedNegativeBalance' || key === 'stayedInBudget' ||
+          key === 'finishedAboveEnergyTarget' || key === 'avoidedExhaustedCare' ||
+          key === 'caregiverSustainable' || key === 'revisionMade') &&
+          typeof value === 'boolean') return value;
+      if (key === 'practiceMode' && ['random', 'unseen', 'missed', 'context'].indexOf(value) >= 0) return value;
+      if (key === 'feedbackSource' && ['local', 'ai'].indexOf(value) >= 0) return value;
+      if (key === 'reviewStatus' && value === 'teacher-review') return value;
+      if (key === 'species' && ['dog', 'cat', 'rabbit'].indexOf(value) >= 0) return value;
+      if (key === 'weakestDomain' && ['Physical', 'Mental', 'Social', 'Environmental'].indexOf(value) >= 0) return value;
+      if (key === 'scenarioId' && Array.isArray(AI_SCENARIOS) && AI_SCENARIOS.some(function(item) { return item.id === value; })) return value;
+      return undefined;
+    }
+    function reconcileActivityEvidence(moduleId, rawDetails) {
+      var details = Object.assign({}, rawDetails || {});
+      function hasNumber(key) {
+        return typeof details[key] === 'number' && isFinite(details[key]);
+      }
+      function reconcileScore(expectedTotal) {
+        if (!hasNumber('score') || !hasNumber('total')) {
+          delete details.scorePct;
+          return false;
+        }
+        if (expectedTotal != null && details.total !== expectedTotal) {
+          delete details.scorePct;
+          return false;
+        }
+        details.score = Math.max(0, Math.min(details.total, Math.round(details.score)));
+        details.scorePct = details.total > 0
+          ? Math.round((details.score / details.total) * 100)
+          : 0;
+        return details.total > 0;
+      }
+      if (moduleId === 'training') {
+        var trainingComplete = details.rounds === 10 &&
+          hasNumber('behaviorPct') && hasNumber('trustPct');
+        if (trainingComplete) {
+          details.criterionMet = details.behaviorPct >= 70 && details.trustPct >= 80;
+        } else {
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'nutrition' || moduleId === 'lifespan') {
+        var miniComplete = reconcileScore(10);
+        if (miniComplete) {
+          details.needsPractice = details.total - details.score;
+          details.criterionMet = details.scorePct >= 80;
+        } else {
+          delete details.needsPractice;
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'bodyLang') {
+        var bodyScoreValid = reconcileScore(null);
+        if (details.practiceMode === 'random' && details.total === 10 && bodyScoreValid) {
+          details.criterionMet = details.scorePct >= 80;
+        } else {
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'decoderMastery') {
+        var coverageShape = reconcileScore(27);
+        details.coverageComplete = !!(coverageShape && details.score === 27);
+      } else if (moduleId === 'quiz') {
+        var quizComplete = reconcileScore(15);
+        var strandSpecs = [
+          ['biology', 3], ['behavior', 3], ['health', 6], ['welfare', 3]
+        ];
+        var detailedStrands = strandSpecs.every(function(spec) {
+          return hasNumber(spec[0] + 'Correct') && details[spec[0] + 'Total'] === spec[1];
+        });
+        if (detailedStrands) {
+          var met = 0;
+          strandSpecs.forEach(function(spec) {
+            var correctKey = spec[0] + 'Correct';
+            details[correctKey] = Math.max(0, Math.min(spec[1], Math.round(details[correctKey])));
+            if (details[correctKey] / spec[1] >= 0.5) met += 1;
+          });
+          details.strandsMet = met;
+          details.strandsTotal = strandSpecs.length;
+        }
+        var strandShape = details.strandsTotal === 4 &&
+          hasNumber('strandsMet') && details.strandsMet >= 0 && details.strandsMet <= 4;
+        if (quizComplete && strandShape) {
+          details.criterionMet = details.scorePct >= 70 && details.strandsMet === 4;
+        } else {
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'careSim') {
+        var domains = [
+          ['Physical', 'physical'], ['Mental', 'mental'],
+          ['Social', 'social'], ['Environmental', 'environmental']
+        ];
+        var careComplete = details.days === 7 && domains.every(function(domain) {
+          return hasNumber(domain[1]);
+        });
+        if (careComplete) {
+          var weakest = domains.reduce(function(current, domain) {
+            return details[domain[1]] < details[current[1]] ? domain : current;
+          }, domains[0]);
+          details.weakestDomain = weakest[0];
+          details.weakestPct = details[weakest[1]];
+          if (hasNumber('moneyLeft')) {
+            details.stayedInBudget = details.moneyLeft >= 0 &&
+              details.avoidedNegativeBalance !== false;
+          }
+          if (hasNumber('energyLeft')) {
+            details.finishedAboveEnergyTarget = details.energyLeft > 20;
+            if (typeof details.avoidedExhaustedCare === 'boolean') {
+              details.caregiverSustainable =
+                details.finishedAboveEnergyTarget && details.avoidedExhaustedCare;
+            }
+          }
+          details.criterionMet = domains.every(function(domain) {
+            return details[domain[1]] >= 70;
+          }) && details.stayedInBudget === true &&
+            hasNumber('energyLeft') && details.energyLeft > 20 &&
+            details.caregiverSustainable === true;
+        } else {
+          delete details.criterionMet;
+        }
+      } else if (moduleId === 'sensory') {
+        if (hasNumber('perspectives')) {
+          details.criterionMet = details.perspectives === 3;
+        } else {
+          delete details.criterionMet;
+        }
+      }
+      return details;
+    }
+    function normalizeEvidenceRecords(raw) {
+      if (!Array.isArray(raw)) return [];
+      var safeRows = [];
+      raw.slice(-500).forEach(function(record, sourceIndex) {
+        if (!record || typeof record !== 'object') return;
+        var moduleId = String(record.moduleId || '');
+        if (!petsOwn(PETS_EVIDENCE_MODULE_LABELS, moduleId)) return;
+        var moduleLabel = PETS_EVIDENCE_MODULE_LABELS[moduleId];
+        var requestedKind = record.kind === 'activity' ? 'activity' : 'self-review';
+        var allowedFields = PETS_EVIDENCE_ACTIVITY_FIELDS[moduleId];
+        var kind = requestedKind === 'activity' && Array.isArray(allowedFields) ? 'activity' : 'self-review';
+        var safeDetails = {};
+        if (kind === 'activity' && record.details && typeof record.details === 'object') {
+          allowedFields.forEach(function(key) {
+            var value = normalizeEvidenceDetailValue(key, record.details[key]);
+            if (value !== undefined) safeDetails[key] = value;
+          });
+          // Recompute dependent fields and criteria from canonical bounded
+          // inputs. A restored payload cannot pair contradictory totals,
+          // percentages, or booleans to manufacture a target result.
+          safeDetails = reconcileActivityEvidence(moduleId, safeDetails);
+        }
+        var recordedAt = normalizeEvidenceTimestamp(record.recordedAt);
+        safeRows.push({
+          id: moduleId + ':' + (recordedAt || 'undated') + ':' + sourceIndex,
+          moduleId: moduleId,
+          moduleLabel: moduleLabel,
+          kind: kind,
+          summary: kind === 'activity'
+            ? PETS_EVIDENCE_ACTIVITY_SUMMARIES[moduleId]
+            : 'Reviewed by learner',
+          recordedAt: recordedAt,
+          details: safeDetails
+        });
+      });
+      if (safeRows.length <= 80) return safeRows;
+      var keep = {};
+      var newestByModule = {};
+      var newestMilestone = {};
+      var i;
+      for (i = safeRows.length - 1; i >= 0; i--) {
+        if (!newestByModule[safeRows[i].moduleId]) {
+          newestByModule[safeRows[i].moduleId] = true;
+          keep[i] = true;
+        }
+        var details = safeRows[i].details || {};
+        var milestoneKey = '';
+        if (typeof details.criterionMet === 'boolean') {
+          milestoneKey = safeRows[i].moduleId + ':criterion:' + String(details.criterionMet);
+        } else if (details.coverageComplete === true) {
+          milestoneKey = safeRows[i].moduleId + ':coverage';
+        }
+        if (milestoneKey && !newestMilestone[milestoneKey]) {
+          newestMilestone[milestoneKey] = true;
+          keep[i] = true;
+        }
+      }
+      var keptCount = Object.keys(keep).length;
+      for (i = safeRows.length - 1; i >= 0 && keptCount < 80; i--) {
+        if (keep[i]) continue;
+        keep[i] = true;
+        keptCount++;
+      }
+      return safeRows.filter(function(_, index) { return !!keep[index]; });
+    }
+    function normalizeTrainerState(raw) {
+      if (raw == null) return null;
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      var rawIdx = Number(raw.idx);
+      if (!isFinite(rawIdx) || Math.floor(rawIdx) !== rawIdx || rawIdx < 0 || rawIdx >= 10) return null;
+      var allowedResponses = { treat3s: true, click: true, wait: true, correct: true };
+      var choices = Array.isArray(raw.choices) ? raw.choices.slice(0, 10).map(function(choice) {
+        if (!choice || typeof choice !== 'object' || !allowedResponses[choice.rxn]) return null;
+        var dProb = Number(choice.dProb);
+        var dTrust = Number(choice.dTrust);
+        return {
+          rxn: choice.rxn,
+          dProb: isFinite(dProb) ? Math.max(-1, Math.min(1, dProb)) : 0,
+          dTrust: isFinite(dTrust) ? Math.max(-1, Math.min(1, dTrust)) : 0,
+          verdict: String(choice.verdict || '').slice(0, 800),
+          momentLabel: String(choice.momentLabel || '').slice(0, 160),
+          momentType: ['target', 'almost', 'wrong'].indexOf(choice.momentType) >= 0 ? choice.momentType : ''
+        };
+      }) : [];
+      var prob = Number(raw.prob);
+      var trust = Number(raw.trust);
+      var log = Array.isArray(raw.log) ? raw.log.slice(-10).map(function(entry, index) {
+        entry = entry && typeof entry === 'object' ? entry : {};
+        var entryProb = Number(entry.prob);
+        var entryTrust = Number(entry.trust);
+        var entryDelta = Number(entry.dProb);
+        return {
+          rd: Math.max(1, Math.min(10, Math.floor(Number(entry.rd) || index + 1))),
+          prob: isFinite(entryProb) ? Math.max(0, Math.min(1, entryProb)) : 0,
+          trust: isFinite(entryTrust) ? Math.max(0, Math.min(1, entryTrust)) : 0,
+          dProb: isFinite(entryDelta) ? Math.max(-1, Math.min(1, entryDelta)) : 0
+        };
+      }) : [];
+      return {
+        idx: rawIdx,
+        choices: choices,
+        prob: isFinite(prob) ? Math.max(0, Math.min(1, prob)) : 0.20,
+        trust: isFinite(trust) ? Math.max(0, Math.min(1, trust)) : 1,
+        done: raw.done === true,
+        log: log
+      };
+    }
+    function normalizePetsMiniGameState(src, prefix, total, validPicks) {
+      src = src && typeof src === 'object' ? src : {};
+      function boundedInteger(value, fallback, max) {
+        var parsed = Number(value);
+        if (!isFinite(parsed)) return fallback;
+        return Math.max(0, Math.min(max, Math.floor(parsed)));
+      }
+      var rawIdx = Number(src[prefix + 'Idx']);
+      var idx = isFinite(rawIdx) && Math.floor(rawIdx) === rawIdx && rawIdx >= 0 && rawIdx < total
+        ? rawIdx
+        : -1;
+      var seen = {};
+      var shown = Array.isArray(src[prefix + 'Shown'])
+        ? src[prefix + 'Shown'].filter(function(value) {
+            var item = Number(value);
+            if (!isFinite(item) || Math.floor(item) !== item || item < 0 || item >= total || seen[item]) return false;
+            seen[item] = true;
+            return true;
+          }).slice(0, total).map(Number)
+        : [];
+      if (idx >= 0 && shown.indexOf(idx) < 0) shown.push(idx);
+      // An inactive screen is a clean attempt boundary. If a corrupt or
+      // removed question index is recovered to -1, keeping stale score,
+      // round, streak, or shown values would present a fresh Start button
+      // backed by an impossible 10/10 attempt. Historical best is separate
+      // and remains safe to preserve.
+      if (idx < 0) shown = [];
+      var pick = validPicks.indexOf(src[prefix + 'Pick']) >= 0 ? src[prefix + 'Pick'] : null;
+      var answered = idx >= 0 && src[prefix + 'Ans'] === true && !!pick;
+      var rounds = idx < 0 ? 0 : boundedInteger(src[prefix + 'Rounds'], 0, total);
+      var score = boundedInteger(src[prefix + 'Score'], 0, rounds);
+      // A valid one-shot sequence has exactly one shown item per answered
+      // round, plus the current unanswered item while awaiting a choice.
+      // Reject mismatched legacy/corrupt counters instead of letting a
+      // ten-item shown array manufacture a closing score or evidence row.
+      var expectedRounds = idx < 0 ? 0 : Math.max(0, shown.length - (answered ? 0 : 1));
+      var progressInvalid = idx >= 0 && rounds !== expectedRounds;
+      if (progressInvalid) {
+        idx = -1;
+        shown = [];
+        rounds = 0;
+        score = 0;
+        answered = false;
+        pick = null;
+      }
+      var seed = Number(src[prefix + 'Seed']);
+      seed = isFinite(seed) && seed > 0
+        ? Math.max(1, Math.min(2147483646, Math.floor(seed)))
+        : 1;
+      return {
+        idx: idx,
+        seed: seed,
+        ans: answered,
+        pick: answered ? pick : null,
+        score: score,
+        rounds: rounds,
+        streak: idx < 0 ? 0 : boundedInteger(src[prefix + 'Streak'], 0, rounds),
+        best: boundedInteger(src[prefix + 'Best'], 0, total),
+        shown: shown
+      };
+    }
+    function normalizePetsReviewIndices(value, total) {
+      var seen = {};
+      return (Array.isArray(value) ? value : []).filter(function(raw) {
+        var index = Number(raw);
+        if (!isFinite(index) || Math.floor(index) !== index || index < 0 || index >= total || seen[index]) return false;
+        seen[index] = true;
+        return true;
+      }).slice(0, total).map(Number);
+    }
+    function normalizePetsFocusedReviewState(raw, missed, total, validPicks) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      var ids = normalizePetsReviewIndices(missed, total);
+      if (!ids.length) return null;
+      var allowed = {};
+      ids.forEach(function(index) { allowed[index] = true; });
+      var queue = normalizePetsReviewIndices(raw.queue, total).filter(function(index) { return allowed[index]; });
+      var done = raw.done === true && queue.length === 0;
+      if (!queue.length && !done) return null;
+      var pick = !done && validPicks.indexOf(raw.pick) >= 0 ? raw.pick : null;
+      return { ids: ids, queue: queue, pick: pick, done: done };
+    }
+    function normalizeToxicFoodIndices(value) {
+      return normalizePetsReviewIndices(value, 10);
+    }
+    function normalizeToxicFoodReviewState(raw, missed) {
+      return normalizePetsFocusedReviewState(raw, missed, 10,
+        ['safe', 'toxicDogs', 'toxicCats', 'toxicBirds', 'toxicMulti']);
+    }
+    function normalizeLifespanIndices(value) {
+      return normalizePetsReviewIndices(value, 10);
+    }
+    function normalizeLifespanReviewState(raw, missed) {
+      return normalizePetsFocusedReviewState(raw, missed, 10, ['b1', 'b2', 'b3', 'b4', 'b5']);
+    }
+    function knowledgeQuizQuestionIds() {
+      return ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'q9', 'q10', 'q11', 'q12', 'q13', 'q14', 'q15'];
+    }
+    function normalizeKnowledgeQuizState(raw) {
+      raw = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+      var canonicalIds = knowledgeQuizQuestionIds();
+      var allowed = {};
+      canonicalIds.forEach(function(id) { allowed[id] = true; });
+      function uniqueIds(value) {
+        var seen = {};
+        return (Array.isArray(value) ? value : []).filter(function(id) {
+          id = String(id || '');
+          if (!allowed[id] || seen[id]) return false;
+          seen[id] = true;
+          return true;
+        }).slice(0, canonicalIds.length);
+      }
+      function bounded(value, fallback, max) {
+        var parsed = Number(value);
+        if (!isFinite(parsed)) return fallback;
+        return Math.max(0, Math.min(max, Math.floor(parsed)));
+      }
+      var missedIds = uniqueIds(raw.missedIds);
+      var reviewIds = uniqueIds(raw.reviewIds);
+      var mode = raw.mode === 'missed' && reviewIds.length ? 'missed' : 'all';
+      var total = mode === 'missed' ? reviewIds.length : canonicalIds.length;
+      var rawIndex = Number(raw.idx);
+      var structurallyInvalid = !isFinite(rawIndex) || Math.floor(rawIndex) !== rawIndex || rawIndex < 0 || rawIndex > total;
+      var idx = structurallyInvalid ? 0 : rawIndex;
+      var answered = !structurallyInvalid && idx < total && raw.answered === true;
+      var rawChoice = Number(raw.lastChoice);
+      var lastChoice = answered && raw.lastChoice != null && isFinite(rawChoice) && Math.floor(rawChoice) === rawChoice && rawChoice >= 0 && rawChoice <= 3
+        ? rawChoice
+        : null;
+      if (lastChoice == null) {
+        answered = false;
+        lastChoice = null;
+      }
+      var answeredCount = structurallyInvalid ? 0 : Math.min(total, idx + (answered ? 1 : 0));
+      var score = structurallyInvalid ? 0 : bounded(raw.score, 0, answeredCount);
+      var responses = {};
+      if (raw.responses && typeof raw.responses === 'object' && !Array.isArray(raw.responses)) {
+        canonicalIds.forEach(function(id) {
+          if (typeof raw.responses[id] === 'boolean') responses[id] = raw.responses[id];
+        });
+      }
+      return {
+        idx: idx,
+        score: score,
+        answered: answered,
+        lastChoice: lastChoice,
+        missedIds: missedIds,
+        reviewIds: reviewIds,
+        mode: mode,
+        bestPct: bounded(raw.bestPct, 0, 100),
+        responses: responses
+      };
+    }
+    function bodyLanguageContextChallenges() {
+      return [
+        {
+          id: 'cat-pupils',
+          species: 'Cats',
+          scenario: 'A cat\'s pupils widen while she chases a wand toy. A few minutes later, the same pupils widen when a vacuum starts and she crouches under a chair.',
+          question: 'What is the safest interpretation?',
+          choices: [
+            'Wide pupils always mean aggression',
+            'Wide pupils show arousal; the toy and the crouching context suggest different causes',
+            'Wide pupils always mean happiness',
+            'Pupil size is never useful'
+          ],
+          correct: 1,
+          feedback: [
+            'A single cue cannot prove aggression; posture, trigger, light, and movement change its meaning.',
+            'Yes. The shared cue is arousal, while play behavior versus hiding changes the likely cause and safest response.',
+            'Play can widen pupils, but fear and defensive arousal can too.',
+            'Pupil size is useful when it is combined with lighting, posture, trigger, and movement.'
+          ],
+          why: 'Treat pupil dilation as arousal, then use the whole body and situation. Continue consensual play in the first case; reduce the vacuum stress and give space in the second.'
+        },
+        {
+          id: 'bird-eye-pin',
+          species: 'Birds',
+          scenario: 'A parrot eye-pins as a familiar person offers a favorite toy. Later the bird eye-pins, leans away, and raises neck feathers when an unfamiliar hand reaches into the cage.',
+          question: 'What should the person do in the second situation?',
+          choices: [
+            'Keep reaching until the bird learns the hand is safe',
+            'Punish the bird for threatening behavior',
+            'Pause, withdraw the hand, and read the whole posture before trying a consent-based approach',
+            'Assume eye-pinning means excitement and continue'
+          ],
+          correct: 2,
+          feedback: [
+            'Continuing pressure can turn warning signals into a bite and does not build consent.',
+            'Punishment adds threat and can suppress warnings without reducing fear.',
+            'Yes. Eye-pinning is ambiguous; leaning away and raised feathers make space the safer next step.',
+            'Eye-pinning can accompany excitement or aggression, so the rest of the body must decide the response.'
+          ],
+          why: 'Eye-pinning alone is ambiguous. The unfamiliar hand, leaning away, and raised feathers support pausing and giving space.'
+        },
+        {
+          id: 'dog-belly',
+          species: 'Dogs',
+          scenario: 'One dog rolls onto her back with a loose body and wiggly hips during play. Another rolls back while stiff, turning his head away and showing eye whites.',
+          question: 'Which response best transfers the cue to both contexts?',
+          choices: [
+            'Rub both bellies because rolling over is always an invitation',
+            'Ignore all belly exposure because it always means fear',
+            'Continue only when the dog approaches again; give the stiff dog space',
+            'Hold the stiff dog still so he learns handling'
+          ],
+          correct: 2,
+          feedback: [
+            'Belly exposure is not automatic consent; stiffness and avoidance change the interpretation.',
+            'A loose, playful roll can be social, so the cue is not always fear either.',
+            'Yes. Let the animal\'s whole body and voluntary re-approach guide contact.',
+            'Restraint removes choice and can escalate fear or defensive behavior.'
+          ],
+          why: 'The loose dog may be playing; the stiff dog is showing appeasement or fear. Whole-body tension and voluntary approach matter more than the belly cue alone.'
+        },
+        {
+          id: 'dog-wag',
+          species: 'Dogs',
+          scenario: 'A dog at a gate wags high and slowly while staring with a closed mouth and stiff legs.',
+          question: 'What is the safest next step?',
+          choices: [
+            'Enter because any wag means friendly',
+            'Move closer but avoid eye contact',
+            'Pause and create distance; the stiff whole-body pattern is a warning',
+            'Offer food through the gate with your fingers'
+          ],
+          correct: 2,
+          feedback: [
+            'A wag shows arousal, not guaranteed friendliness. Height, speed, tension, eyes, and mouth matter.',
+            'Moving closer still adds pressure when the body is warning for space.',
+            'Yes. The high slow wag plus stiffness, stare, and closed mouth supports distance.',
+            'Reaching through a barrier puts fingers inside the dog\'s defensive space.'
+          ],
+          why: 'Tail movement must be read with the whole body. Here the high slow wag, hard stare, closed mouth, and stiff legs support backing off.'
+        },
+        {
+          id: 'cat-tail',
+          species: 'Cats',
+          scenario: 'A cat begins flicking her tail faster while being petted. Her ears rotate sideways and the skin along her back twitches.',
+          question: 'What action best respects the accumulating signals?',
+          choices: [
+            'Pet faster so she becomes used to it',
+            'Stop touching and let the cat choose whether to re-approach',
+            'Pick her up before she can leave',
+            'Only stop if she hisses'
+          ],
+          correct: 1,
+          feedback: [
+            'More stimulation can push an already aroused cat toward swatting or biting.',
+            'Yes. Pausing early respects the lower-level signals and gives the cat control.',
+            'Picking up removes escape and can intensify defensive behavior.',
+            'Waiting for a hiss ignores earlier, quieter signals.'
+          ],
+          why: 'Tail flicking, sideways ears, and skin twitching can stack before a stronger reaction. Stop early and allow choice.'
+        },
+        {
+          id: 'rabbit-pain',
+          species: 'Rabbits',
+          scenario: 'A rabbit sits hunched, refuses food, produces no droppings, and makes loud grinding sounds with his teeth.',
+          question: 'What is the safest response?',
+          choices: [
+            'Wait until tomorrow because tooth sounds usually mean contentment',
+            'Offer a new toy and see whether boredom improves',
+            'Seek an emergency rabbit-savvy veterinarian now',
+            'Hold the rabbit on his back to inspect him'
+          ],
+          correct: 2,
+          feedback: [
+            'Soft tooth chattering can mean contentment, but loud grinding plus anorexia and no droppings signals pain and possible GI stasis.',
+            'Enrichment does not address this urgent cluster of physical signs.',
+            'Yes. The combined signs are an emergency, and rabbits can decline quickly.',
+            'Forced restraint adds stress and delays veterinary care.'
+          ],
+          why: 'Context separates soft contented tooth purring from painful grinding. Hunching, not eating, and absent droppings make this an emergency.'
+        }
+      ];
+    }
+    function normalizeBodyLanguageTransfer(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      var cases = bodyLanguageContextChallenges();
+      var allowed = {};
+      cases.forEach(function(item) { allowed[item.id] = item; });
+      var seen = {};
+      var ids = (Array.isArray(raw.ids) ? raw.ids : []).filter(function(id) {
+        id = String(id || '');
+        if (!allowed[id] || seen[id]) return false;
+        seen[id] = true;
+        return true;
+      }).slice(0, 4);
+      if (ids.length !== 4) return null;
+      var rawAnswers = Array.isArray(raw.answers) ? raw.answers : [];
+      var answers = [];
+      var score = 0;
+      ids.forEach(function(id, index) {
+        var choice = Number(rawAnswers[index]);
+        var item = allowed[id];
+        if (!isFinite(choice) || Math.floor(choice) !== choice || choice < 0 || choice >= item.choices.length) return;
+        answers[index] = choice;
+        if (choice === item.correct) score += 1;
+      });
+      var rawIndex = Number(raw.idx);
+      var done = raw.done === true || (isFinite(rawIndex) && rawIndex >= ids.length);
+      var idx = done
+        ? ids.length
+        : (isFinite(rawIndex) && Math.floor(rawIndex) === rawIndex && rawIndex >= 0 && rawIndex < ids.length ? rawIndex : 0);
+      var bestPct = Number(raw.bestPct);
+      bestPct = isFinite(bestPct) ? Math.max(0, Math.min(100, Math.round(bestPct))) : 0;
+      return { idx: idx, ids: ids, answers: answers, score: score, done: done, bestPct: bestPct };
+    }
+    function writePetsMiniGameState(target, prefix, state) {
+      target[prefix + 'Idx'] = state.idx;
+      target[prefix + 'Seed'] = state.seed;
+      target[prefix + 'Ans'] = state.ans;
+      target[prefix + 'Pick'] = state.pick;
+      target[prefix + 'Score'] = state.score;
+      target[prefix + 'Rounds'] = state.rounds;
+      target[prefix + 'Streak'] = state.streak;
+      target[prefix + 'Best'] = state.best;
+      target[prefix + 'Shown'] = state.shown;
+    }
+    function normalizeCostEstimates(raw) {
+      var speciesIds = [
+        'dog-large', 'dog-small', 'cat-indoor', 'rabbit-pair',
+        'guinea-pair', 'reptile', 'parrot-medium'
+      ];
+      var fields = ['firstYear', 'annual', 'emergencyFund'];
+      var safe = {};
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return safe;
+      speciesIds.forEach(function(speciesId) {
+        var source = raw[speciesId];
+        if (!source || typeof source !== 'object' || Array.isArray(source)) return;
+        var record = {};
+        fields.forEach(function(field) {
+          if (!Object.prototype.hasOwnProperty.call(source, field)) return;
+          var rawValue = source[field];
+          if ((typeof rawValue !== 'number' && typeof rawValue !== 'string') ||
+              (typeof rawValue === 'string' && !rawValue.trim())) return;
+          var value = Number(rawValue);
+          if (!isFinite(value)) return;
+          record[field] = Math.max(0, Math.min(100000, Math.round(value)));
+        });
+        if (Object.keys(record).length) safe[speciesId] = record;
+      });
+      return safe;
+    }
     function petsPersistentSnapshot(src) {
       var snapshot = { version: 2, _ts: Date.now() };
       PETS_PERSIST_KEYS.forEach(function(key) {
         if (!Object.prototype.hasOwnProperty.call(src || {}, key)) return;
         snapshot[key] = src[key];
       });
-      // Written responses are useful; runaway or bitmap strings are not.
-      if (snapshot.aiDrafts && typeof snapshot.aiDrafts === 'object') {
-        var safeDrafts = {};
-        Object.keys(snapshot.aiDrafts).slice(0, 12).forEach(function(key) {
-          safeDrafts[key] = String(snapshot.aiDrafts[key] || '').slice(0, 4000);
-        });
-        snapshot.aiDrafts = safeDrafts;
+      // Host dashboards should never have to infer mastery from arbitrary
+      // persisted object keys. Publish the canonical count with every v2
+      // snapshot while keeping the detailed records for the mastery view.
+      snapshot.decoderCanonicalCount = canonicalDecoderMasteryCount(snapshot.decoderMastery || {});
+      // Keep written work only for authored scenarios. Requiring text values
+      // prevents restored objects from reaching textarea/trim/render paths,
+      // and drops unknown keys that could otherwise retain unrelated private
+      // content in the project snapshot.
+      snapshot.aiScenarioId = normalizeAiScenarioId(snapshot.aiScenarioId);
+      snapshot.aiDrafts = normalizeAiDrafts(snapshot.aiDrafts);
+      snapshot.aiCritiques = normalizeAiCritiques(snapshot.aiCritiques);
+      snapshot.aiRevisionNotes = normalizeAiRevisionNotes(snapshot.aiRevisionNotes);
+      snapshot.aiResponse = typeof snapshot.aiResponse === 'string'
+        ? snapshot.aiResponse.slice(0, 4000) : '';
+      ['blSeenKeys', 'blMissedKeys'].forEach(function(listKey) {
+        if (!Array.isArray(snapshot[listKey])) return;
+        var seenSignalKeys = {};
+        snapshot[listKey] = snapshot[listKey].filter(function(key) {
+          key = String(key || '').slice(0, 500);
+          if (!key || seenSignalKeys[key]) return false;
+          seenSignalKeys[key] = true;
+          return true;
+        }).slice(-27);
+      });
+      if (snapshot.blQuiz) snapshot.blQuiz = normalizeBodyLanguageQuiz(snapshot.blQuiz);
+      if (snapshot.blTransfer) snapshot.blTransfer = normalizeBodyLanguageTransfer(snapshot.blTransfer);
+      if (snapshot.quizState) snapshot.quizState = normalizeKnowledgeQuizState(snapshot.quizState);
+      var welfareKeys = ['spayNeuter', 'adoption', 'declawing', 'outdoorCats'];
+      snapshot.welfareSec = welfareKeys.indexOf(snapshot.welfareSec) >= 0
+        ? snapshot.welfareSec : 'spayNeuter';
+      var safeWelfareVisited = {};
+      Object.keys(snapshot.welfareVisited && typeof snapshot.welfareVisited === 'object'
+        ? snapshot.welfareVisited : {}).forEach(function(key) {
+        if (welfareKeys.indexOf(key) >= 0 && snapshot.welfareVisited[key] === true) {
+          safeWelfareVisited[key] = true;
+        }
+      });
+      snapshot.welfareVisited = safeWelfareVisited;
+      var litterYears = Number(snapshot.litterYears);
+      snapshot.litterYears = isFinite(litterYears)
+        ? Math.max(1, Math.min(7, Math.floor(litterYears)))
+        : 5;
+      snapshot.trMode = snapshot.trMode === 'sim' ? 'sim' : 'read';
+      snapshot.blMode = snapshot.blMode === 'quiz' || snapshot.blMode === 'context'
+        ? snapshot.blMode : 'read';
+      snapshot.diagramView = ['skull', 'airsac', 'operant', 'bodylang'].indexOf(snapshot.diagramView) >= 0
+        ? snapshot.diagramView : 'skull';
+      snapshot.sensorySpecies = ['human', 'dog', 'cat'].indexOf(snapshot.sensorySpecies) >= 0
+        ? snapshot.sensorySpecies : 'human';
+      snapshot.sensoryDusk = snapshot.sensoryDusk === true;
+      if (Object.prototype.hasOwnProperty.call(snapshot, 'sensoryReduceMotion')) {
+        snapshot.sensoryReduceMotion = snapshot.sensoryReduceMotion === true;
       }
-      if (typeof snapshot.aiResponse === 'string') snapshot.aiResponse = snapshot.aiResponse.slice(0, 4000);
-      if (snapshot.careTradeoff && Array.isArray(snapshot.careTradeoff.log)) {
-        snapshot.careTradeoff = Object.assign({}, snapshot.careTradeoff, { log: snapshot.careTradeoff.log.slice(-40) });
+      var safeSensorySeen = {};
+      ['human', 'dog', 'cat'].forEach(function(id) {
+        if (snapshot.sensorySeen && snapshot.sensorySeen[id] === true) safeSensorySeen[id] = true;
+      });
+      snapshot.sensorySeen = safeSensorySeen;
+      snapshot.costSpecies = [
+        'dog-large', 'dog-small', 'cat-indoor', 'rabbit-pair',
+        'guinea-pair', 'reptile', 'parrot-medium'
+      ].indexOf(snapshot.costSpecies) >= 0 ? snapshot.costSpecies : 'cat-indoor';
+      var costYears = Number(snapshot.costYears);
+      snapshot.costYears = isFinite(costYears)
+        ? Math.max(1, Math.min(30, Math.floor(costYears)))
+        : 12;
+      snapshot.costMode = snapshot.costMode === 'local' ? 'local' : 'illustrative';
+      snapshot.costEstimates = normalizeCostEstimates(snapshot.costEstimates);
+      snapshot.famousFilter = ['all', 'science', 'cognition', 'service', 'culture']
+        .indexOf(snapshot.famousFilter) >= 0 ? snapshot.famousFilter : 'all';
+      snapshot.pickHousing = ['apartment', 'house', 'rural'].indexOf(snapshot.pickHousing) >= 0
+        ? snapshot.pickHousing : 'house';
+      snapshot.pickKidAge = ['none', 'under5', '5to9', '10plus'].indexOf(snapshot.pickKidAge) >= 0
+        ? snapshot.pickKidAge : 'none';
+      snapshot.pickKids = snapshot.pickKidAge !== 'none';
+      snapshot.pickAllergies = snapshot.pickAllergies === true;
+      var safePickReadiness = {};
+      ['housing', 'caregiver', 'budget', 'backup'].forEach(function(key) {
+        if (snapshot.pickReadiness && typeof snapshot.pickReadiness === 'object' &&
+            !Array.isArray(snapshot.pickReadiness) &&
+            snapshot.pickReadiness[key] === true) {
+          safePickReadiness[key] = true;
+        }
+      });
+      snapshot.pickReadiness = safePickReadiness;
+      var pickHours = Number(snapshot.pickHoursHome);
+      snapshot.pickHoursHome = isFinite(pickHours)
+        ? Math.max(0, Math.min(14, Math.floor(pickHours)))
+        : 8;
+      snapshot.pickBudget = ['low', 'medium', 'high'].indexOf(snapshot.pickBudget) >= 0
+        ? snapshot.pickBudget : 'medium';
+      snapshot.pickExperience = ['first', 'some', 'lots'].indexOf(snapshot.pickExperience) >= 0
+        ? snapshot.pickExperience : 'some';
+      snapshot.lastView = petsOwn(PETS_EVIDENCE_MODULE_LABELS, snapshot.lastView)
+        ? snapshot.lastView : null;
+      snapshot.badges = normalizePetsBadges(snapshot.badges);
+      snapshot.modulesVisited = normalizePetsProgressMap(snapshot.modulesVisited, false);
+      snapshot.modulesCompleted = normalizePetsProgressMap(snapshot.modulesCompleted, true);
+      snapshot.decoderMastery = normalizeDecoderMasteryState(snapshot.decoderMastery);
+      snapshot.evidenceRecords = normalizeEvidenceRecords(snapshot.evidenceRecords);
+      if (Object.prototype.hasOwnProperty.call(snapshot, 'careTradeoff')) {
+        snapshot.careTradeoff = normalizeCareTradeoffState(snapshot.careTradeoff);
       }
+      snapshot.trSim = normalizeTrainerState(snapshot.trSim);
+      snapshot.careSim = normalizeCareSimState(snapshot.careSim);
+      writePetsMiniGameState(snapshot, 'tfs', normalizePetsMiniGameState(snapshot, 'tfs', 10,
+        ['safe', 'toxicDogs', 'toxicCats', 'toxicBirds', 'toxicMulti']));
+      snapshot.tfsOpen = snapshot.tfsOpen === true;
+      snapshot.tfsMissed = normalizeToxicFoodIndices(snapshot.tfsMissed);
+      snapshot.tfsReview = normalizeToxicFoodReviewState(snapshot.tfsReview, snapshot.tfsMissed);
+      writePetsMiniGameState(snapshot, 'ls', normalizePetsMiniGameState(snapshot, 'ls', 10,
+        ['b1', 'b2', 'b3', 'b4', 'b5']));
+      snapshot.lsMissed = normalizeLifespanIndices(snapshot.lsMissed);
+      snapshot.lsReview = normalizeLifespanReviewState(snapshot.lsReview, snapshot.lsMissed);
       return snapshot;
+    }
+    function writePetsLocalSnapshot(snapshot) {
+      try {
+        localStorage.setItem('petsLab.state.v2', JSON.stringify(snapshot));
+        // A small compatibility record keeps older builds and existing
+        // project readers working while v2 rolls out.
+        localStorage.setItem('petsLab.state.v1', JSON.stringify({
+          badges: snapshot.badges || {},
+          modulesVisited: snapshot.modulesVisited || {},
+          decoderMastery: snapshot.decoderMastery || {},
+          decoderCanonicalCount: snapshot.decoderCanonicalCount || 0,
+          _ts: snapshot._ts
+        }));
+      } catch (e) {
+        try { console.warn('[Pets] local snapshot write failed.', e); } catch (ignore) {}
+      }
     }
     var _hydratedRef = React.useRef(false);
     // Badges already awarded by THIS mount — survives across renders, so an
@@ -2169,6 +3224,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // state write commits. Declared here, unconditionally, to keep hook order
     // stable across every view this tool dispatches to.
     var _awardedBadgesRef = React.useRef({});
+    var _latestPersistRef = React.useRef(null);
+    var _aiRequestRef = React.useRef({ seq: 0 });
     if (!_hydratedRef.current) {
       _hydratedRef.current = true;
       try {
@@ -2177,15 +3234,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var lsStateV1 = null;
         try { lsStateV2 = JSON.parse(localStorage.getItem('petsLab.state.v2') || 'null'); } catch (e) {}
         try { lsStateV1 = JSON.parse(localStorage.getItem('petsLab.state.v1') || 'null'); } catch (e) {}
-        var initial = Object.assign({}, lsStateV1 || {}, lsStateV2 || {}, winState || {});
+        // A project load is authoritative. Its _replace marker prevents a
+        // Pets-free or partial project from inheriting another learner's
+        // warm-cache fields.
+        var replaceFromWindow = !!(winState && winState._replace === true);
+        var initial = replaceFromWindow
+          ? Object.assign({}, winState)
+          : Object.assign({}, lsStateV1 || {}, lsStateV2 || {}, winState || {});
         if (initial && typeof initial === 'object') {
+          var safeInitial = petsPersistentSnapshot(initial);
           var hydrationPatch = {};
           PETS_PERSIST_KEYS.forEach(function(key) {
-            if (Object.prototype.hasOwnProperty.call(initial, key) && d[key] === undefined) hydrationPatch[key] = initial[key];
+            if (replaceFromWindow) {
+              // Project snapshots replace the current learner record. Copy
+              // present values AND explicitly clear absent ones, even when
+              // the host's toolData still contains the previous project.
+              hydrationPatch[key] = Object.prototype.hasOwnProperty.call(initial, key)
+                ? safeInitial[key]
+                : undefined;
+            } else if (Object.prototype.hasOwnProperty.call(initial, key) && d[key] === undefined) {
+              hydrationPatch[key] = safeInitial[key];
+            }
           });
+          if (replaceFromWindow) {
+            // These request-only fields are intentionally not persisted, but
+            // an already-mounted host record can still contain them.
+            hydrationPatch.aiLoadingCritique = false;
+            hydrationPatch.aiCritiqueRequest = null;
+            hydrationPatch.aiCritique = null;
+          }
+          // No provider request survives a component unmount. Clear a busy
+          // flag left in host toolData on every fresh mount so reopening AI
+          // Practice can never strand its critique button in a loading state.
+          if (d.aiLoadingCritique || d.aiCritiqueRequest) {
+            hydrationPatch.aiLoadingCritique = false;
+            hydrationPatch.aiCritiqueRequest = null;
+          }
           if (Object.keys(hydrationPatch).length) updMulti(hydrationPatch);
         }
-      } catch (e) {}
+      } catch (e) {
+        try { console.warn('[Pets] initial state hydration failed.', e); } catch (ignore) {}
+      }
     }
 
     // Decoder-mastery celebration state — fires once when a body-language
@@ -2195,6 +3284,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _decoderCelebState = React.useState(null);
     var decoderCeleb = _decoderCelebState[0];
     var setDecoderCeleb = _decoderCelebState[1];
+    var _decoderCelebTimerRef = React.useRef(null);
 
     // ── Sensory-perspective 3D. Hooks live HERE, at the top of the render
     // function and outside every conditional, because renderSensory() is
@@ -2224,17 +3314,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var _menuProgressFilterState = React.useState('all');
     var menuProgressFilter = _menuProgressFilterState[0];
     var setMenuProgressFilter = _menuProgressFilterState[1];
+    var _teacherShowAllEvidenceState = React.useState(false);
+    var teacherShowAllEvidence = _teacherShowAllEvidenceState[0];
+    var setTeacherShowAllEvidence = _teacherShowAllEvidenceState[1];
+    var _bodyStepHeadingRef = React.useRef(null);
+    var _bodyFeedbackRef = React.useRef(null);
+    var _trainingQuestionRef = React.useRef(null);
+    var _trainingFeedbackRef = React.useRef(null);
+    var _toxinQuestionRef = React.useRef(null);
+    var _toxinFeedbackRef = React.useRef(null);
+    var _lifespanQuestionRef = React.useRef(null);
+    var _lifespanFeedbackRef = React.useRef(null);
+    var _careQuestionRef = React.useRef(null);
+    var _careFeedbackRef = React.useRef(null);
+    var _quizQuestionRef = React.useRef(null);
+    var _quizFeedbackRef = React.useRef(null);
+    var _aiCritiqueRef = React.useRef(null);
+    var _aiResponseRef = React.useRef(null);
+    var _aiCritiqueFocusPendingRef = React.useRef(false);
+    var _menuSearchRef = React.useRef(null);
+    var _toxinToggleRef = React.useRef(null);
 
-    var view = d.view || 'menu';
-    var modulesVisited = d.modulesVisited || {};
-    var modulesCompleted = d.modulesCompleted || {};
-    var badges = d.badges || {};
-    var decoderMastery = d.decoderMastery || {};
-    var quizState = Object.assign({ idx: 0, score: 0, answered: false, lastChoice: null, missedIds: [], reviewIds: [], mode: 'all', bestPct: 0 }, d.quizState || {});
-    if (!Array.isArray(quizState.missedIds)) quizState.missedIds = [];
-    if (!Array.isArray(quizState.reviewIds)) quizState.reviewIds = [];
-    var lastView = d.lastView || null;
+    function focusPetsTarget(ref) {
+      try {
+        setTimeout(function () {
+          if (ref && ref.current && ref.current.focus) ref.current.focus();
+        }, 0);
+      } catch (e) {}
+    }
+
+    var view = normalizePetsView(d.view);
+    var modulesVisited = normalizePetsProgressMap(d.modulesVisited, false);
+    var modulesCompleted = normalizePetsProgressMap(d.modulesCompleted, true);
+    var evidenceRecords = normalizeEvidenceRecords(d.evidenceRecords);
+    var badges = normalizePetsBadges(d.badges);
+    var decoderMastery = normalizeDecoderMasteryState(d.decoderMastery);
+    var quizState = normalizeKnowledgeQuizState(d.quizState);
+    var careSimState = normalizeCareSimState(d.careSim);
+    var careTradeoffState = normalizeCareTradeoffState(d.careTradeoff);
+    var aiScenarioId = normalizeAiScenarioId(d.aiScenarioId);
+    var aiDrafts = normalizeAiDrafts(d.aiDrafts);
+    var legacyAiResponse = typeof d.aiResponse === 'string'
+      ? d.aiResponse.slice(0, 4000) : '';
+    var aiResponse = aiScenarioId && Object.prototype.hasOwnProperty.call(aiDrafts, aiScenarioId)
+      ? aiDrafts[aiScenarioId]
+      : legacyAiResponse;
+    var aiCritiques = normalizeAiCritiques(d.aiCritiques);
+    var aiRevisionNotes = normalizeAiRevisionNotes(d.aiRevisionNotes);
+    var legacyAiCritique = normalizeAiCritiqueRecord(d.aiCritique);
+    var aiCritique = aiScenarioId
+      ? (aiCritiques[aiScenarioId] ||
+          (!Object.keys(aiCritiques).length ? legacyAiCritique : null))
+      : null;
+    var aiCritiqueStale = !!(aiCritique &&
+      aiCritique.draftSnapshot !== String(aiResponse || ''));
+    var aiLoadingCritique = d.aiLoadingCritique === true;
+    var lastView = petsOwn(PETS_EVIDENCE_MODULE_LABELS, d.lastView) ? d.lastView : null;
+    var welfareSec = petsOwn(WELFARE_DATA, d.welfareSec) ? d.welfareSec : 'spayNeuter';
+    var welfareVisited = {};
+    Object.keys(d.welfareVisited && typeof d.welfareVisited === 'object' ? d.welfareVisited : {}).forEach(function(key) {
+      if (petsOwn(WELFARE_DATA, key) && d.welfareVisited[key] === true) welfareVisited[key] = true;
+    });
     var _previousViewRef = React.useRef(view);
+
+    // Heal malformed host toolData as well as the disk snapshot. Rendering
+    // already uses the normalized value, so this write cannot flash an
+    // impossible score or award; it simply makes the safe recovery durable.
+    React.useEffect(function() {
+      var healPatch = {};
+      function addIfChanged(key, raw, safe) {
+        if (raw == null) return;
+        try {
+          if (JSON.stringify(raw) !== JSON.stringify(safe)) healPatch[key] = safe;
+        } catch (e) {
+          healPatch[key] = safe;
+        }
+      }
+      addIfChanged('quizState', d.quizState, quizState);
+      addIfChanged('view', d.view, view);
+      addIfChanged('badges', d.badges, badges);
+      addIfChanged('modulesVisited', d.modulesVisited, modulesVisited);
+      addIfChanged('modulesCompleted', d.modulesCompleted, modulesCompleted);
+      addIfChanged('evidenceRecords', d.evidenceRecords, evidenceRecords);
+      addIfChanged('decoderMastery', d.decoderMastery, decoderMastery);
+      addIfChanged('careSim', d.careSim, careSimState);
+      addIfChanged('careTradeoff', d.careTradeoff, careTradeoffState);
+      addIfChanged('lastView', d.lastView, lastView);
+      addIfChanged('welfareSec', d.welfareSec, welfareSec);
+      addIfChanged('welfareVisited', d.welfareVisited, welfareVisited);
+      addIfChanged('aiScenarioId', d.aiScenarioId, aiScenarioId);
+      addIfChanged('aiDrafts', d.aiDrafts, aiDrafts);
+      addIfChanged('aiCritiques', d.aiCritiques, aiCritiques);
+      addIfChanged('aiRevisionNotes', d.aiRevisionNotes, aiRevisionNotes);
+      addIfChanged('aiResponse', d.aiResponse, aiResponse);
+      if (Object.keys(healPatch).length) updMulti(healPatch);
+    }, [
+      d.quizState, d.view, d.badges, d.modulesVisited, d.modulesCompleted,
+      d.evidenceRecords, d.decoderMastery, d.careSim, d.careTradeoff,
+      d.lastView, d.welfareSec, d.welfareVisited, d.aiScenarioId, d.aiDrafts,
+      d.aiCritiques, d.aiRevisionNotes, d.aiResponse
+    ]);
 
     // Mirror persistent state to window slot (for executeSaveFile pickup) +
     // localStorage (for non-Canvas across-session warm cache). Keep the window
@@ -2242,40 +3421,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     React.useEffect(function () {
       try {
         var snapshot = petsPersistentSnapshot(d);
+        _latestPersistRef.current = snapshot;
         window.__alloflowPetsLab = snapshot;
         var persistTimer = setTimeout(function() {
-          try {
-            localStorage.setItem('petsLab.state.v2', JSON.stringify(snapshot));
-            // A small compatibility record keeps older builds and existing
-            // project readers working while v2 rolls out.
-            localStorage.setItem('petsLab.state.v1', JSON.stringify({
-              badges: snapshot.badges || {},
-              modulesVisited: snapshot.modulesVisited || {},
-              decoderMastery: snapshot.decoderMastery || {},
-              _ts: snapshot._ts
-            }));
-          } catch (e) {}
+          writePetsLocalSnapshot(snapshot);
         }, 160);
         return function() { clearTimeout(persistTimer); };
       } catch (e) {}
       return undefined;
     }, [d]);
 
+    // Flush the latest snapshot if the tool unmounts or the page closes before
+    // the typing debounce fires. This preserves the final answer/choice rather
+    // than requiring a learner to wait before closing or loading a project.
+    React.useEffect(function () {
+      function flushPetsSnapshot() {
+        if (_latestPersistRef.current) writePetsLocalSnapshot(_latestPersistRef.current);
+      }
+      window.addEventListener('pagehide', flushPetsSnapshot);
+      return function () {
+        window.removeEventListener('pagehide', flushPetsSnapshot);
+        // Ignore any AI promise that resolves after this tool is gone.
+        _aiRequestRef.current.seq += 1;
+        if (_decoderCelebTimerRef.current) {
+          clearTimeout(_decoderCelebTimerRef.current);
+          _decoderCelebTimerRef.current = null;
+        }
+        flushPetsSnapshot();
+      };
+    }, []);
+
     // Hot-reload from a project-JSON load mid-session.
     React.useEffect(function () {
       function onRestore() {
         try {
           var w = window.__alloflowPetsLab || {};
+          var safeRestore = petsPersistentSnapshot(w);
           var restorePatch = {};
+          var replace = w._replace === true;
           PETS_PERSIST_KEYS.forEach(function(key) {
-            if (Object.prototype.hasOwnProperty.call(w, key)) restorePatch[key] = w[key];
+            if (Object.prototype.hasOwnProperty.call(w, key)) restorePatch[key] = safeRestore[key];
+            else if (replace) restorePatch[key] = undefined;
           });
+          if (replace) {
+            _awardedBadgesRef.current = {};
+            _aiRequestRef.current.seq += 1;
+            if (_decoderCelebTimerRef.current) {
+              clearTimeout(_decoderCelebTimerRef.current);
+              _decoderCelebTimerRef.current = null;
+            }
+            setDecoderCeleb(null);
+            setSensoryCaptures({});
+            _sensoryCompareAnchorRef.current = null;
+            _sensoryCompareLightRef.current = null;
+            setSensoryStatus('idle');
+            restorePatch.aiLoadingCritique = false;
+            restorePatch.aiCritiqueRequest = null;
+            restorePatch.aiCritique = null;
+            // The WebGL engine and comparison bitmaps are session resources,
+            // not project data. Force the old viewer through its cleanup even
+            // when the newly loaded project leaves the learner on the same
+            // route.
+            restorePatch.sensoryActive = false;
+            restorePatch._threeLoaded = false;
+            restorePatch._threeLoading = false;
+            restorePatch._threeError = false;
+            // Seed the flush guard before scheduling the host state update.
+            // An immediate unmount must not write the previous project back
+            // over the authoritative snapshot supplied by the loader.
+            _latestPersistRef.current = petsPersistentSnapshot(w);
+          }
           if (Object.keys(restorePatch).length) updMulti(restorePatch);
-        } catch (e) {}
+          // A replacement can remove the focused question or feedback node
+          // without changing routes. Restore a stable focus target after the
+          // new project state commits.
+          focusPetsTarget(_viewHeadingRef);
+        } catch (e) {
+          try { console.warn('[Pets] project restore failed.', e); } catch (ignore) {}
+        }
       }
       window.addEventListener('alloflow-petslab-restored', onRestore);
       return function () { window.removeEventListener('alloflow-petslab-restored', onRestore); };
     }, []);
+
+    // Leaving AI Practice logically cancels its request. The underlying
+    // provider may not expose AbortController, so the request token prevents
+    // a late response from mutating another view or announcing stale work.
+    React.useEffect(function () {
+      if (view === 'aiPractice') return;
+      if (!d.aiLoadingCritique && !d.aiCritiqueRequest) return;
+      _aiRequestRef.current.seq += 1;
+      updMulti({ aiLoadingCritique: false, aiCritiqueRequest: null });
+    }, [view]);
+
+    // Track Welfare sections after commit. The old render-phase setTimeout
+    // captured stale maps, so rapid tab visits overwrote each other and could
+    // make the four-section badge unreachable.
+    React.useEffect(function () {
+      if (view !== 'welfare') return;
+      upd('welfareVisited', function(current) {
+        var next = Object.assign({}, current || {});
+        if (next[welfareSec]) return current || next;
+        next[welfareSec] = true;
+        return next;
+      });
+    }, [view, welfareSec]);
+
+    React.useEffect(function () {
+      var validVisited = Object.keys(welfareVisited).filter(function(key) {
+        return petsOwn(WELFARE_DATA, key);
+      }).length;
+      if (validVisited >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware');
+    }, [welfareVisited, badges.pets_welfare_aware]);
 
     // Focus follows the route. Entering a module lands on its heading; coming
     // back opens the relevant catalog disclosure (if needed) and restores the
@@ -2311,10 +3568,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     }, [view, careInquiryOpen]);
 
     // ── Sensory-perspective lifecycle ──
-    var sensorySpecies = d.sensorySpecies || 'human';
-    var sensoryDusk = !!d.sensoryDusk;
-    var sensoryActive = !!d.sensoryActive;
-    var sensoryThreeReady = !!d._threeLoaded;
+    var sensorySpecies = ['human', 'dog', 'cat'].indexOf(d.sensorySpecies) >= 0
+      ? d.sensorySpecies : 'human';
+    var sensoryDusk = d.sensoryDusk === true;
+    var sensoryActive = d.sensoryActive === true;
+    var sensoryThreeReady = d._threeLoaded === true;
     var sensoryCompareCount = Object.keys(sensoryCaptures || {}).length;
     var sensoryCompareActive = sensoryCompareCount > 0;
 
@@ -2340,10 +3598,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       _sensoryViewerRef.current = viewer;
       viewer.onStatus(function (s) { setSensoryStatus(s); });
       viewer.attach(THREE, node);
-      viewer.setSpecies(d.sensorySpecies || 'human');
-      viewer.setDusk(!!d.sensoryDusk);
+      viewer.setSpecies(sensorySpecies);
+      viewer.setDusk(sensoryDusk);
       viewer.setReducedMotion(d.sensoryReduceMotion != null
-        ? !!d.sensoryReduceMotion
+        ? d.sensoryReduceMotion === true
         : petsPrefersReducedMotion());
       return function () {
         try { viewer.detach(); } catch (e) {}
@@ -2364,7 +3622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       } catch (e) { return false; }
     }
     var sensoryReduceMotion = d.sensoryReduceMotion != null
-      ? !!d.sensoryReduceMotion
+      ? d.sensoryReduceMotion === true
       : petsPrefersReducedMotion();
 
     // Push species / lighting / motion changes to the live scene without
@@ -2378,10 +3636,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       viewer.setInputLocked(sensoryCompareActive);
     }, [sensorySpecies, sensoryDusk, sensoryReduceMotion, sensoryCompareActive]);
 
-    // Keyboard walk. Bound to the window only while the sim is on screen, and
-    // only for the movement keys, so it never swallows Tab or a screen-reader
-    // shortcut. Arrow keys are preventDefault-ed to stop the page scrolling
-    // under the student while they turn.
+    // Keyboard walk. The listener is active only while the sim is on screen,
+    // and accepts movement events only when they bubble from the focusable 3D
+    // stage. Arrow keys on species radios and other controls keep their native
+    // navigation behavior and never move the camera.
     React.useEffect(function () {
       if (view !== 'sensory' || !sensoryActive || sensoryCompareActive) return undefined;
       var MAP = {
@@ -2391,6 +3649,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function key(e, down) {
         var name = MAP[e.code];
         if (!name) return;
+        var target = e.target;
+        var stage = target && target.closest ? target.closest('.petslab-sensory-stage') : null;
+        if (!stage) return;
         var viewer = _sensoryViewerRef.current;
         if (!viewer) return;
         if (e.code.indexOf('Arrow') === 0) e.preventDefault();
@@ -2398,15 +3659,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function kd(e) { key(e, true); }
       function ku(e) { key(e, false); }
+      function clearMovementKeys() {
+        var viewer = _sensoryViewerRef.current;
+        if (!viewer) return;
+        ['w', 's', 'a', 'd', 'left', 'right'].forEach(function(name) {
+          viewer.setKey(name, false);
+        });
+      }
+      function onVisibilityChange() {
+        if (document.hidden) clearMovementKeys();
+      }
       window.addEventListener('keydown', kd);
       window.addEventListener('keyup', ku);
+      window.addEventListener('blur', clearMovementKeys);
+      document.addEventListener('visibilitychange', onVisibilityChange);
       return function () {
+        clearMovementKeys();
         window.removeEventListener('keydown', kd);
         window.removeEventListener('keyup', ku);
+        window.removeEventListener('blur', clearMovementKeys);
+        document.removeEventListener('visibilitychange', onVisibilityChange);
       };
     }, [view, sensoryActive, sensoryCompareActive]);
 
-    // ESC dismisses the Toxic Foods Sleuth modal (keyboard accessibility).
+    // ESC dismisses the Household Hazard Sleuth inline game (keyboard accessibility).
     // Hoisted here from renderNutrition(): that helper only runs on the
     // 'nutrition' branch of the view switch, and a hook inside it changed the
     // host's hook count on navigation (React #310) — exactly the rule the
@@ -2414,27 +3690,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     React.useEffect(function() {
       if (view !== 'nutrition' || !d.tfsOpen) return undefined;
       function onEsc(e) {
-        if (e.key === 'Escape') { e.preventDefault(); upd('tfsOpen', false); }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          upd('tfsOpen', false);
+          focusPetsTarget(_toxinToggleRef);
+        }
       }
       document.addEventListener('keydown', onEsc);
       return function() { document.removeEventListener('keydown', onEsc); };
     }, [view, d.tfsOpen]);
 
     // Pet Picker state
-    var pickHousing = d.pickHousing || 'house';
-    var pickKids = d.pickKids != null ? d.pickKids : false;
+    var pickHousing = ['apartment', 'house', 'rural'].indexOf(d.pickHousing) >= 0 ? d.pickHousing : 'house';
+    var pickKids = d.pickKids === true;
     // Youngest child's age BAND, not a yes/no. The picker's own scoring asks
     // whether a child is under 5 (CDC: no reptiles) and under 8 (House Rabbit
     // Society), but the old boolean pinned every household with children to a
     // hardcoded age of 6 — so the under-5 reptile rule could never fire and a
     // family with a toddler was shown a gecko with no caution at all. A single
     // checkbox cannot answer a question the scoring asks in two thresholds.
-    var pickKidAge = d.pickKidAge || (pickKids ? '5to9' : 'none');
+    var pickKidAge = ['none', 'under5', '5to9', '10plus'].indexOf(d.pickKidAge) >= 0
+      ? d.pickKidAge : (pickKids ? '5to9' : 'none');
     var PICK_KID_BANDS = [
       { id: 'none', label: 'No children at home', age: 99 },
       { id: 'under5', label: 'Youngest is under 5', age: 3 },
       { id: '5to9', label: 'Youngest is 5–9', age: 7 },
       { id: '10plus', label: 'Youngest is 10 or older', age: 12 }
+    ];
+    var PICK_READINESS_ITEMS = [
+      {
+        id: 'housing',
+        label: 'Housing rules checked',
+        detail: 'Current housing permits the species, and likely future housing restrictions have been considered.'
+      },
+      {
+        id: 'caregiver',
+        label: 'Primary caregiver confirmed',
+        detail: 'A responsible primary caregiver—not a child—accepts daily care and health monitoring.'
+      },
+      {
+        id: 'budget',
+        label: 'Routine and emergency budget researched',
+        detail: 'Species-specific food, supplies, routine veterinary care, and an emergency plan fit the household.'
+      },
+      {
+        id: 'backup',
+        label: 'Daily, travel, and veterinary access planned',
+        detail: 'The schedule, backup care, transport, and access to an appropriate veterinarian are workable.'
+      }
     ];
     function pickKidBand(id) {
       for (var i = 0; i < PICK_KID_BANDS.length; i++) {
@@ -2442,25 +3745,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       return PICK_KID_BANDS[0];
     }
-    var pickAllergies = d.pickAllergies != null ? d.pickAllergies : false;
-    var pickHoursHome = d.pickHoursHome != null ? d.pickHoursHome : 8;
-    var pickBudget = d.pickBudget || 'medium';
-    var pickExperience = d.pickExperience || 'some';
+    var pickReadiness = {};
+    PICK_READINESS_ITEMS.forEach(function(item) {
+      if (d.pickReadiness && typeof d.pickReadiness === 'object' &&
+          !Array.isArray(d.pickReadiness) &&
+          d.pickReadiness[item.id] === true) {
+        pickReadiness[item.id] = true;
+      }
+    });
+    var pickAllergies = d.pickAllergies === true;
+    var rawPickHours = Number(d.pickHoursHome);
+    var pickHoursHome = isFinite(rawPickHours) ? Math.max(0, Math.min(14, Math.floor(rawPickHours))) : 8;
+    var pickBudget = ['low', 'medium', 'high'].indexOf(d.pickBudget) >= 0 ? d.pickBudget : 'medium';
+    var pickExperience = ['first', 'some', 'lots'].indexOf(d.pickExperience) >= 0 ? d.pickExperience : 'some';
     // Lifetime cost state
-    var costSpecies = d.costSpecies || 'dog-medium';
-    var costYears = d.costYears != null ? d.costYears : 12;
+    var costSpecies = [
+      'dog-large', 'dog-small', 'cat-indoor', 'rabbit-pair',
+      'guinea-pair', 'reptile', 'parrot-medium'
+    ].indexOf(d.costSpecies) >= 0 ? d.costSpecies : 'cat-indoor';
+    var rawCostYears = Number(d.costYears);
+    var costYears = isFinite(rawCostYears) ? Math.max(1, Math.min(30, Math.floor(rawCostYears))) : 12;
+    var costMode = d.costMode === 'local' ? 'local' : 'illustrative';
+    var costEstimates = normalizeCostEstimates(d.costEstimates);
     // Famous animals filter
-    var famousFilter = d.famousFilter || 'all';
-    // AI Practice state
-    var aiScenarioId = d.aiScenarioId || null;
-    var aiDrafts = (d.aiDrafts && typeof d.aiDrafts === 'object') ? d.aiDrafts : {};
-    var aiResponse = aiScenarioId && Object.prototype.hasOwnProperty.call(aiDrafts, aiScenarioId)
-      ? String(aiDrafts[aiScenarioId] || '')
-      : (d.aiResponse || '');
-    var aiCritique = d.aiCritique || null; // { text, source }
-    var aiLoadingCritique = !!d.aiLoadingCritique;
+    var famousFilter = FAMOUS_FILTERS.some(function(item) { return item.id === d.famousFilter; })
+      ? d.famousFilter : 'all';
+    // AI Practice focus follows the sanitized, scenario-scoped critique.
+    React.useEffect(function() {
+      if (!_aiCritiqueFocusPendingRef.current || !aiCritique) return;
+      _aiCritiqueFocusPendingRef.current = false;
+      focusPetsTarget(_aiCritiqueRef);
+    }, [aiScenarioId, aiCritique && aiCritique.createdAt]);
     // Diagrams view
-    var diagramView = d.diagramView || 'skull';
+    var diagramView = ['skull', 'airsac', 'operant', 'bodylang'].indexOf(d.diagramView) >= 0
+      ? d.diagramView : 'skull';
 
     function awardBadge(id, label) {
       // `badges` is the render snapshot, so it cannot see an award made
@@ -2494,13 +3812,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function completedModuleCount(map) {
       return Object.keys(map || {}).filter(isTrackableModule).length;
     }
-    function completeModule(modId, reason) {
+    var PETS_ACTIVITY_COMPLETION_MODULES = {
+      training: true,
+      nutrition: true,
+      bodyLang: true,
+      decoderMastery: true,
+      lifespan: true,
+      quiz: true,
+      aiPractice: true,
+      careSim: true,
+      sensory: true
+    };
+    function requiresActivityCompletion(modId) {
+      return !!PETS_ACTIVITY_COMPLETION_MODULES[modId];
+    }
+    function recordEvidence(modId, reason, details, kind) {
+      var nowIso = new Date().toISOString();
+      var safeDetails = {};
+      // The schema normalizer below owns the allowlist. Do not cap keys here:
+      // Care Sim intentionally records more than 12 bounded metadata fields.
+      Object.keys(details && typeof details === 'object' ? details : {}).forEach(function(key) {
+        var value = details[key];
+        if (typeof value === 'number' && isFinite(value)) safeDetails[key] = value;
+        else if (typeof value === 'boolean' || typeof value === 'string') safeDetails[key] = value;
+      });
+      upd('evidenceRecords', function(current) {
+        var rows = normalizeEvidenceRecords(current);
+        var candidate = normalizeEvidenceRecords([{
+          id: modId + ':' + nowIso + ':' + rows.length,
+          moduleId: modId,
+          moduleLabel: PETS_EVIDENCE_MODULE_LABELS[modId] || modId,
+          kind: kind === 'self-review' ? 'self-review' : 'activity',
+          summary: reason,
+          recordedAt: nowIso,
+          details: safeDetails
+        }])[0];
+        if (!candidate) return rows;
+        var previous = rows.length ? rows[rows.length - 1] : null;
+        var elapsed = previous
+          ? Date.parse(candidate.recordedAt) - Date.parse(previous.recordedAt)
+          : Infinity;
+        if (previous &&
+            previous.moduleId === candidate.moduleId &&
+            previous.kind === candidate.kind &&
+            JSON.stringify(previous.details || {}) === JSON.stringify(candidate.details || {}) &&
+            elapsed >= 0 && elapsed <= 2000) {
+          return rows;
+        }
+        return normalizeEvidenceRecords(rows.concat([candidate]));
+      });
+    }
+    function completeModule(modId, reason, evidenceDetails) {
       if (!isTrackableModule(modId)) return;
-      if (modulesCompleted[modId]) return;
+      var currentCompletion = modulesCompleted[modId];
+      var evidenceReason = reason || 'Reviewed by learner';
+      recordEvidence(modId, evidenceReason, evidenceDetails, reason ? 'activity' : 'self-review');
+      if (currentCompletion) {
+        var priorReason = currentCompletion && typeof currentCompletion === 'object'
+          ? String(currentCompletion.reason || '')
+          : '';
+        var canUpgrade = !!reason && (!priorReason ||
+          priorReason === 'Marked complete by learner' ||
+          priorReason === 'Reviewed by learner');
+        if (!canUpgrade) return;
+        var upgraded = Object.assign({}, modulesCompleted);
+        upgraded[modId] = {
+          completed: (currentCompletion && currentCompletion.completed) || new Date().toISOString(),
+          evidenceUpdated: new Date().toISOString(),
+          reason: evidenceReason
+        };
+        upd('modulesCompleted', upgraded);
+        petsAnnounce('Completion updated with activity evidence.');
+        return;
+      }
       var nextCompleted = Object.assign({}, modulesCompleted);
       nextCompleted[modId] = {
         completed: new Date().toISOString(),
-        reason: reason || 'Marked complete by learner'
+        reason: evidenceReason
       };
       var completionPatch = { modulesCompleted: nextCompleted };
       if (!modulesVisited[modId]) {
@@ -2510,18 +3898,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       updMulti(completionPatch);
       var count = completedModuleCount(nextCompleted);
-      if (count >= 5) awardBadge('pets_explorer', 'Pet Science Explorer');
-      if (count >= 12) awardBadge('pets_pro', 'Pet Science Pro');
+      if (count >= 5) awardBadge('pets_explorer', 'Module Explorer (5 completed)');
+      if (count >= 12) awardBadge('pets_pro', 'Lab Pathfinder (12 completed)');
       petsAnnounce('Module marked complete. ' + count + ' completed.');
     }
     function goToView(nextView, label) {
+      var leavingAiPractice = view === 'aiPractice' && nextView !== 'aiPractice';
+      if (leavingAiPractice) _aiRequestRef.current.seq += 1;
       if (nextView === 'menu') {
         _returnFocusRef.current = view;
-        upd('view', 'menu');
+        updMulti(leavingAiPractice
+          ? { view: 'menu', aiLoadingCritique: false, aiCritiqueRequest: null }
+          : { view: 'menu' });
         petsAnnounce('Back to menu');
         return;
       }
-      updMulti({ view: nextView, lastView: nextView });
+      var navigationPatch = { view: nextView, lastView: nextView };
+      if (leavingAiPractice) {
+        navigationPatch.aiLoadingCritique = false;
+        navigationPatch.aiCritiqueRequest = null;
+      }
+      updMulti(navigationPatch);
       markVisited(nextView);
       petsAnnounce('Opening ' + (label || nextView));
     }
@@ -2565,19 +3962,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 20, color: T.text, flex: '1 1 220px' } }, title),
         isTrackableModule(view) && (moduleComplete
           ? h('span', { className: 'petslab-complete-status', role: 'status' }, '✓ Complete')
+          : requiresActivityCompletion(view)
+            ? h('span', {
+                className: 'petslab-activity-completion-hint',
+                role: 'note',
+                title: 'Finish the module activity to record completion.',
+                style: { color: T.muted, fontSize: 11, fontWeight: 700 }
+              }, 'Activity completion required')
           : h('button', {
               type: 'button',
               className: 'petslab-complete-button',
               'data-pets-focusable': true,
-              onClick: function() { completeModule(view); },
+              onClick: function() {
+                completeModule(view);
+                focusPetsTarget(_viewHeadingRef);
+              },
               style: btn({ padding: '7px 12px', fontSize: 12 })
-            }, 'Mark complete'))
+            }, 'I reviewed this module'))
       );
     }
     function footer() {
-      return h('div', { role: 'contentinfo', 'aria-label': 'Source attribution',
+      return h('div', { role: 'note', 'aria-label': 'Source attribution',
         style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
         'Citations: AVMA · AAFP · AAFCO · IAADP · ASAB · CDC · House Rabbit Society · ASPCA · Bradshaw 2013 · Mech 2000. Educational only — for medical questions, see your veterinarian.');
+    }
+    function learningModelNote(title, body) {
+      return h('div', {
+        className: 'petslab-model-note',
+        role: 'note',
+        style: { marginTop: 10, padding: '9px 11px', borderRadius: 8, background: '#17100d', border: '1px dashed ' + T.warm, color: T.muted, fontSize: 11, lineHeight: 1.55 }
+      },
+        h('strong', { style: { color: T.warm } }, title + ': '),
+        body
+      );
     }
     function sourceCard(srcKey) {
       var s = SOURCE_CARDS[srcKey]; if (!s) return null;
@@ -2625,9 +4042,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'welfare',      icon: '🛡️', label: 'Welfare & Ethics',     desc: 'Spay/neuter, adoption vs breeding, declawing, outdoor cats. Sourced inline.' },
       { id: 'careSim',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters.' },
       { id: 'sensory',      icon: '👁️', label: 'Through Their Eyes (3D)', desc: 'Walk a room as a human, dog, or cat. Colour, acuity, eye height, night vision, and a dog\'s scent world.' },
-      { id: 'picker',       icon: '🏠', label: 'Pet Picker',           desc: 'Match species/breed-class to your housing + lifestyle.' },
-      { id: 'bodyLang',     icon: '👀', label: 'Body Language Decoder', desc: 'Read dogs, cats, rabbits, birds. Stress + appeasement signals.' },
-      { id: 'decoderMastery', icon: '🏅', label: 'Decoder Mastery',   desc: 'Your personal log of every body-language signal you have decoded across species.' },
+      { id: 'picker',       icon: '🏠', label: 'Pet Picker',           desc: 'Compare species classes, verify readiness, and inspect the model’s tradeoffs.' },
+      { id: 'bodyLang',     icon: '👀', label: 'Body Language Decoder', desc: 'Recognize whole-body cues, then apply them in cautious context challenges.' },
+      { id: 'decoderMastery', icon: '🗂️', label: 'Decoder Signal Log', desc: 'A coverage log of signals correctly identified at least once—not a mastery or handling assessment.' },
       { id: 'cost',         icon: '💵', label: 'Lifetime Cost Calc',   desc: 'First-year + annual + emergency fund. Time + space too.' },
       { id: 'lifespan',     icon: '⏳', label: 'Lifespan Match',       desc: '10 species/breeds. Pick the typical lifespan range from 5 buckets (under 3 yrs through 50+ yrs). Surfaces the surprising spread — hamsters die in 2–3 yrs while macaws and tortoises outlive their owners.' },
       { id: 'diagrams',     icon: '🔬', label: 'Diagrams',             desc: '4 SVG schematics: dog vs cat skull, bird air sacs, operant loop, body language.' },
@@ -2639,49 +4056,132 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'action',       icon: '🌱', label: 'Take Action',          desc: 'Concrete steps at home, school, community, civically.' },
       { id: 'quiz',         icon: '📝', label: '15-question quiz',     desc: 'Test your understanding across the lab.' },
       { id: 'resources',    icon: '📚', label: 'Resources',            desc: 'Every org cited in this tool.' },
-      { id: 'teacher',      icon: '🎓', label: 'Teacher Guide',        desc: 'NGSS alignment, prompts, hands-on activities.' }
+      { id: 'teacher',      icon: '🎓', label: 'Teacher Guide',        desc: 'Potential NGSS connections, prompts, hands-on activities.' }
     ];
 
     function renderMenu() {
       var trackableTotal = MENU_TILES.filter(function(tile) { return isTrackableModule(tile.id); }).length;
       var visitedCount = Object.keys(modulesVisited).filter(isTrackableModule).length;
       var completedCount = completedModuleCount(modulesCompleted);
-      var resumeTile = MENU_TILES.filter(function(tile) { return tile.id === lastView && isTrackableModule(tile.id); })[0] || null;
-      function startHereCard() {
-        var s;
-        if (visitedCount === 0 && completedCount === 0) {
-          s = { header: '👋 First time here? Try this 5-tile path:',
-                body: 'Start with 🐕 Dogs (most familiar), then 🐈 Cats, then 🦠 Zoonoses (Maine ticks!), then ♿ Service & Support Animals, then 📝 the quiz. About 30 minutes.' };
-        } else if (completedCount < 5) {
-          s = { header: '👍 Turn exploration into completed work:',
-                body: 'Return to a started module, use its activity or evidence, then mark it complete. Training and domestication show how learning and selection shape modern pets.' };
-        } else if (completedCount < 12) {
-          s = { header: '🚀 Branch into applied + values:',
-                body: '🏠 Pet Picker (find your match), 💵 Lifetime Cost Calc (be honest with yourself), 🌱 Take Action.' };
-        } else {
-          s = { header: '🏁 You\'ve gone broad — capstone moves:',
-                body: '📝 the 15-Q quiz, 🎓 Teacher Guide, and the 🧐 Myths page if you haven\'t.' };
+      var latestCriterionByModule = {};
+      evidenceRecords.forEach(function(record) {
+        if (!record || record.kind !== 'activity' || !record.details ||
+            typeof record.details.criterionMet !== 'boolean') return;
+        var current = latestCriterionByModule[record.moduleId];
+        if (!current || String(record.recordedAt || '') >= String(current.recordedAt || '')) {
+          latestCriterionByModule[record.moduleId] = record;
         }
+      });
+      function needsTargetPractice(moduleId) {
+        var record = latestCriterionByModule[moduleId];
+        if (record && record.details) return record.details.criterionMet === false;
+        if (moduleId === 'bodyLang') {
+          return evidenceRecords.some(function(item) {
+            return item && item.moduleId === 'bodyLang' && item.kind === 'activity';
+          });
+        }
+        return false;
+      }
+      var needsPracticeCount = MENU_TILES.filter(function(tile) {
+        return isTrackableModule(tile.id) && needsTargetPractice(tile.id);
+      }).length;
+      var resumeTile = MENU_TILES.filter(function(tile) {
+        return tile.id === lastView && isTrackableModule(tile.id) && !!modulesVisited[tile.id] && !modulesCompleted[tile.id];
+      })[0] || null;
+      var guidedPaths = [
+        {
+          name: 'Pet-science foundations',
+          why: 'Build from familiar species into health, human-animal roles, and a knowledge check.',
+          ids: ['dogs', 'cats', 'zoonoses', 'service', 'quiz']
+        },
+        {
+          name: 'Applied care and welfare',
+          why: 'Turn the science into decisions about training, communication, fit, cost, and daily care.',
+          ids: ['training', 'bodyLang', 'picker', 'cost', 'welfare', 'careSim', 'action']
+        },
+        {
+          name: 'Fluency and capstone',
+          why: 'Strengthen weak spots, explain your reasoning, and finish the broad lab challenge.',
+          ids: ['decoderMastery', 'myths', 'aiPractice', 'quiz']
+        }
+      ];
+      var path = guidedPaths.filter(function(candidate) {
+        return candidate.ids.some(function(id) {
+          return !modulesCompleted[id] || needsTargetPractice(id);
+        });
+      })[0];
+      if (!path) {
+        path = {
+          name: 'Independent exploration',
+          why: 'The guided routes are complete. Choose any remaining species, science, or career module.',
+          ids: MENU_TILES.filter(function(tile) {
+            return isTrackableModule(tile.id) &&
+              (!modulesCompleted[tile.id] || needsTargetPractice(tile.id));
+          }).map(function(tile) { return tile.id; })
+        };
+      }
+      var pathTiles = path.ids.map(function(id) {
+        return MENU_TILES.filter(function(tile) { return tile.id === id; })[0];
+      }).filter(Boolean);
+      var pathCompleted = pathTiles.filter(function(tile) {
+        return !!modulesCompleted[tile.id] && !needsTargetPractice(tile.id);
+      }).length;
+      var nextPathTile = pathTiles.filter(function(tile) {
+        return !modulesCompleted[tile.id] || needsTargetPractice(tile.id);
+      })[0] || null;
+      var fallbackTile = MENU_TILES.filter(function(tile) {
+        return isTrackableModule(tile.id) &&
+          (!modulesCompleted[tile.id] || needsTargetPractice(tile.id));
+      })[0] || null;
+      var recommendedTile = resumeTile || nextPathTile || fallbackTile;
+      function startHereCard() {
+        var allDone = completedCount >= trackableTotal && needsPracticeCount === 0;
+        var recommendedNeedsPractice = !resumeTile && recommendedTile &&
+          needsTargetPractice(recommendedTile.id);
+        var header = allDone
+          ? '🏆 Every trackable module is complete'
+          : resumeTile
+            ? '↩️ Best next move: finish what you started'
+            : recommendedNeedsPractice
+              ? '🎯 Best next move: strengthen a learning target'
+            : visitedCount === 0
+              ? '👋 Start with a guided route'
+              : '🧭 Best next move on your route';
+        var body = allDone
+          ? 'Your record shows broad completion. Revisit any activity for retrieval practice or use the Teacher Guide to review the evidence summary.'
+          : resumeTile
+            ? resumeTile.label + ' is already in progress. Continue there before opening another module, then return for the next route step.'
+            : recommendedNeedsPractice
+              ? recommendedTile.label + ' is complete, but its most recent scored target was not yet met. Practice it again, then return for the next route step.'
+            : path.why;
         return h('div', { className: 'petslab-start-card', role: 'region', 'aria-label': 'Recommended path through the lab',
           style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-          h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, s.header),
-          h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, s.body),
-          resumeTile && h('button', {
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
+            h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi } }, header),
+            !allDone && !resumeTile && h('span', { className: 'petslab-route-progress',
+              style: { color: T.dim, fontSize: 10, fontWeight: 800 } },
+              path.name + ' · ' + pathCompleted + ' / ' + pathTiles.length)),
+          h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, body),
+          recommendedTile && h('button', {
             type: 'button',
             className: 'petslab-resume-button',
             'data-pets-focusable': true,
-            onClick: function() { goToView(resumeTile.id, resumeTile.label); },
+            'data-pets-next-module-id': recommendedTile.id,
+            onClick: function() { goToView(recommendedTile.id, recommendedTile.label); },
             style: btnPrimary({ marginTop: 10, padding: '8px 12px', fontSize: 12 })
-          }, 'Continue: ' + resumeTile.label));
+          }, (resumeTile ? 'Continue: ' : recommendedNeedsPractice ? 'Practice target: ' : 'Start next: ') + recommendedTile.label));
       }
       function renderMenuTile(tile, compact) {
         var visited = !!modulesVisited[tile.id];
         var completed = !!modulesCompleted[tile.id];
+        var needsPractice = needsTargetPractice(tile.id);
         var completion = modulesCompleted[tile.id];
         var completionReason = completed && completion && typeof completion === 'object'
           ? (completion.reason || 'Completed')
           : 'Completed';
-        var progressLabel = completed ? ' (completed)' : visited ? ' (started)' : '';
+        var progressLabel = needsPractice
+          ? ' (completed; learning target needs practice)'
+          : completed ? ' (completed)' : visited ? ' (started)' : '';
         return h('div', { key: tile.id, role: 'listitem', className: 'petslab-tile-wrap' },
           h('button', {
             type: 'button', 'data-pets-focusable': true,
@@ -2689,7 +4189,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             className: 'petslab-menu-tile' + (compact ? ' petslab-menu-tile--compact' : ''),
             'aria-label': tile.label + progressLabel,
             onClick: function() { goToView(tile.id, tile.label); },
-            style: btn({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: 14, background: T.card, cursor: 'pointer', borderColor: completed ? T.ok : visited ? T.accent : T.border })
+            style: btn({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6, padding: 14, background: T.card, cursor: 'pointer', borderColor: needsPractice ? T.warm : completed ? T.ok : visited ? T.accent : T.border })
           },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
               h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, tile.icon),
@@ -2700,9 +4200,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, tile.desc),
             isTrackableModule(tile.id) && h('div', {
-              className: 'petslab-menu-tile-progress' + (completed ? ' is-complete' : visited ? ' is-started' : ''),
-              title: completed ? completionReason : null
-            }, completed ? '✓ ' + completionReason : visited ? '• In progress' : 'Not started')
+              className: 'petslab-menu-tile-progress' + (needsPractice ? ' is-needs-practice' : completed ? ' is-complete' : visited ? ' is-started' : ''),
+              title: needsPractice ? completionReason + '; most recent learning target needs practice' : completed ? completionReason : null
+            }, needsPractice ? '↻ Target needs practice' : completed ? '✓ ' + completionReason : visited ? '• In progress' : 'Not started')
           )
         );
       }
@@ -2714,6 +4214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var filteredTiles = MENU_TILES.filter(function(tile) {
         var matchesProgress = menuProgressFilter === 'all'
           || (menuProgressFilter === 'completed' && isTrackableModule(tile.id) && !!modulesCompleted[tile.id])
+          || (menuProgressFilter === 'needsPractice' && isTrackableModule(tile.id) && needsTargetPractice(tile.id))
           || (menuProgressFilter === 'inProgress' && isTrackableModule(tile.id) && !!modulesVisited[tile.id] && !modulesCompleted[tile.id])
           || (menuProgressFilter === 'notStarted' && isTrackableModule(tile.id) && !modulesVisited[tile.id]);
         if (!matchesProgress) return false;
@@ -2725,17 +4226,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 'all', label: 'All modules' },
         { id: 'notStarted', label: 'Not started' },
         { id: 'inProgress', label: 'In progress' },
+        { id: 'needsPractice', label: 'Needs practice' },
         { id: 'completed', label: 'Completed' }
       ];
-      var _decoderUnique = Object.keys(decoderMastery || {}).length;
+      var _decoderUnique = canonicalDecoderMasteryCount(decoderMastery);
       return h('main', { className: 'petslab-menu-shell', 'data-petslab-tool': 'true' },
-        decoderCelebOverlay(),
         h('header', { className: 'petslab-command', 'data-petslab-mission': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
           h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🐾 Science of Pets Lab'),
           h('div', { className: 'petslab-command-stats' },
             h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Started'), h('strong', { className: 'petslab-command-stat-value' }, visitedCount + ' / ' + trackableTotal)),
             h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Completed'), h('strong', { className: 'petslab-command-stat-value' }, completedCount + ' / ' + trackableTotal)),
-            h('div', { className: 'petslab-command-stat', 'aria-label': 'Decoder mastery: ' + _decoderUnique + ' of 27 signals decoded' }, h('span', { className: 'petslab-command-stat-label' }, 'Decoder mastery'),
+            needsPracticeCount > 0 && h('div', { className: 'petslab-command-stat' }, h('span', { className: 'petslab-command-stat-label' }, 'Needs practice'), h('strong', { className: 'petslab-command-stat-value', style: { color: T.warm } }, String(needsPracticeCount))),
+            h('div', { className: 'petslab-command-stat', 'aria-label': 'Signal log coverage: ' + _decoderUnique + ' of 27 identified at least once' }, h('span', { className: 'petslab-command-stat-label' }, 'Signal log'),
               h('span', { 'aria-hidden': 'true' }, '🏅 '),
               h('strong', { className: 'petslab-command-stat-value', style: { color: _decoderUnique > 0 ? T.accentHi : T.text } }, _decoderUnique + ' / 27')
             ),
@@ -2759,6 +4261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { className: 'petslab-menu-search-row' },
             h('label', { htmlFor: 'petslab-menu-search' }, 'Search modules'),
             h('input', {
+              ref: _menuSearchRef,
               id: 'petslab-menu-search',
               type: 'search',
               value: menuQuery,
@@ -2770,7 +4273,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             menuQuery && h('button', {
               type: 'button',
               'data-pets-focusable': true,
-              onClick: function() { setMenuQuery(''); },
+              onClick: function() {
+                setMenuQuery('');
+                focusPetsTarget(_menuSearchRef);
+              },
               style: btn({ padding: '8px 11px', fontSize: 12 })
             }, 'Clear')
           ),
@@ -2818,7 +4324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.muted, marginBottom: 6 } }, '🏅 Badges earned'),
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             Object.keys(badges).map(function(bid) {
-              return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: T.accent, color: '#1f1612', fontWeight: 700 } }, badges[bid].label || bid);
+              return h('span', { key: bid, style: { fontSize: 11, padding: '4px 10px', borderRadius: '999rem', background: T.accent, color: '#1f1612', fontWeight: 700 } }, PETS_BADGE_DISPLAY_LABELS[bid] || badges[bid].label || bid);
             }))),
         // ═══ CARE TRADEOFF inquiry widget (H7b'') ═══
         h('details', {
@@ -2828,8 +4334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('summary', null, 'Advanced inquiry: model a care tradeoff'),
           careInquiryOpen && h('div', { id: 'petslab-care-tradeoff-body', className: 'petslab-inquiry-body' },
         (function() {
-          var iq = Object.assign({ food: 50, exercise: 50, social: 50, vet: 50, training: 50, species: 'dog', hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] }, d.careTradeoff || {});
-          if (!Array.isArray(iq.log)) iq.log = [];
+          var iq = careTradeoffState;
           function setIQ(patch) { upd('careTradeoff', Object.assign({}, iq, patch)); }
           function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
           // species multipliers
@@ -2840,7 +4345,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             parrot: { food: 0.4, exercise: 0.6, social: 1.3, vet: 1.2, training: 1.0, label: '🦜 Parrot' },
             reptile: { food: 0.2, exercise: 0.2, social: 0.1, vet: 0.8, training: 0.3, label: '🦎 Reptile' }
           })[iq.species] || { food: 1, exercise: 1, social: 1, vet: 1, training: 1, label: '🐾 Pet' };
-          // welfare score (each is need_provided vs need_required)
+          // Illustrative learning-model mismatch. These hand-authored targets
+          // are not validated husbandry requirements or an animal assessment.
           function gap(provided, mult) { var need = mult * 50; return Math.max(0, need - provided) + Math.max(0, provided - need - 20) * 0.3; }
           var gFood = gap(iq.food, sp.food);
           var gEx = gap(iq.exercise, sp.exercise);
@@ -2850,11 +4356,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var totalGap = gFood + gEx + gSoc + gVet + gTrain;
           var state = totalGap < 15 ? 'thriving' : totalGap < 40 ? 'healthy' : totalGap < 80 ? 'compromised' : totalGap < 130 ? 'atrisk' : 'crisis';
           var sm = ({
-            thriving: { label: 'Thriving', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'All five welfare domains met. Animal is comfortable, expressing natural behavior.' },
-            healthy: { label: 'Healthy', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Minor mismatches — adjust one or two domains for optimal welfare.' },
-            compromised: { label: 'Compromised', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Visible welfare concerns — likely behavioral or physical signs of unmet needs.' },
-            atrisk: { label: 'At risk', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Serious deficits across multiple domains. Long-term harm if not addressed.' },
-            crisis: { label: 'Welfare crisis', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Severe neglect or overprovision pattern. Veterinary/behavioral intervention indicated.' }
+            thriving: { label: 'Close model fit', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Provided levels sit close to this activity\'s illustrative targets.' },
+            healthy: { label: 'Small model gaps', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'One or two provided levels differ modestly from the model targets.' },
+            compromised: { label: 'Mixed model fit', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Several differences are visible. Compare domains and revise your hypothesis.' },
+            atrisk: { label: 'Large model gaps', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Large differences make this a useful scenario to investigate and revise.' },
+            crisis: { label: 'Very large model gaps', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'The provided pattern differs sharply from this activity\'s targets. This is not a diagnosis.' }
           })[state];
           var domains = [
             { k: 'food', label: 'Food/nutrition', provided: iq.food, gap: gFood, need: sp.food * 50 },
@@ -2895,7 +4401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             return domain.gap > worst.gap ? domain : worst;
           }, domains[0]);
           var radarSummary = domains.map(function(domain) {
-            return domain.label + ': provided ' + domain.provided + ', species need ' + domain.need.toFixed(0);
+            return domain.label + ': provided ' + domain.provided + ', model target ' + domain.need.toFixed(0);
           }).join('. ') + '. Welfare state: ' + sm.label + '.';
           function provisionOpacity(value) {
             return 0.18 + (Math.min(100, value) / 100) * 0.82;
@@ -3096,7 +4602,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }
           return h('div', { className: 'petslab-care-tradeoff', style: { marginTop: 14, padding: 14, borderRadius: 12, background: 'linear-gradient(145deg, #2d2018 0%, ' + sm.bg + ' 100%)', border: '1px solid ' + sm.border, color: '#e8f0f5' } },
             h('h4', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '⚖️ Care Tradeoff — Inquiry Widget'),
-            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a species, adjust the five care domains, and observe where they mismatch species-typical needs. The result updates live; record a hypothesis or pattern you notice.'),
+            h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Pick a species, adjust the five care domains, and observe how they compare with this activity\'s illustrative targets. Record a hypothesis or pattern you notice.'),
+            learningModelNote('Exploration model', 'The species weights and thresholds are hand-authored for comparing tradeoffs. They are not validated care requirements, a welfare diagnosis, or individualized veterinary advice.'),
             h('div', { className: 'petslab-tradeoff-species', style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 8 } },
               ['dog', 'cat', 'rabbit', 'parrot', 'reptile'].map(function(s) {
                 var active = iq.species === s;
@@ -3187,7 +4694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                       vectorEffect: 'non-scaling-stroke'
                     });
                   }),
-                  // Full labels and P/N values remain readable without the legend color.
+                  // Full labels and P/T values remain readable without the legend color.
                   labelPts.map(function(lp, i) {
                     var anchor = i === 0 ? 'middle' : (i === 1 || i === 2 ? 'start' : 'end');
                     var lines = radarLabelLines[i];
@@ -3207,7 +4714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                       h('tspan', {
                         className: 'petslab-tradeoff-radar-value',
                         x: lp[0], dy: 20, fill: sm.color, fontSize: 12, fontWeight: 900
-                      }, 'P ' + domains[i].provided + ' / N ' + domains[i].need.toFixed(0))
+                      }, 'P ' + domains[i].provided + ' / T ' + domains[i].need.toFixed(0))
                     );
                   })
                 ),
@@ -3218,29 +4725,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   ),
                   h('span', { className: 'petslab-tradeoff-legend-item', role: 'listitem' },
                     h('span', { className: 'petslab-tradeoff-legend-swatch is-need', 'aria-hidden': 'true' }),
-                    h('span', null, 'Square + dashed = species need')
+                    h('span', null, 'Square + dashed = model target')
                   )
                 )
               ),
               renderTradeoffVignette()
             ),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
-              h('div', { style: { fontWeight: 800, fontSize: 11, color: '#fef3e2' } }, 'Gap analysis (provided vs species need)'),
-              h('span', { style: { color: '#bda891', fontSize: 9 } }, 'P = provided / N = need')
+              h('div', { style: { fontWeight: 800, fontSize: 11, color: '#fef3e2' } }, 'Gap analysis (provided vs model target)'),
+              h('span', { style: { color: '#bda891', fontSize: 9 } }, 'P = provided / T = target')
             ),
             h('div', { className: 'petslab-tradeoff-domain-grid' },
               domains.map(function(domain) {
                 var sev = domain.gap < 5 ? '#4ade80' : domain.gap < 15 ? '#facc15' : domain.gap < 30 ? '#fb923c' : '#f87171';
                 var severityText = domain.gap < 5 ? 'low mismatch' : domain.gap < 15 ? 'moderate mismatch' : domain.gap < 30 ? 'large mismatch' : 'critical mismatch';
                 var delta = domain.provided - domain.need;
-                var relation = Math.abs(delta) < 0.5 ? 'at need'
-                  : delta < 0 ? Math.abs(delta).toFixed(0) + ' below need'
-                  : delta.toFixed(0) + ' above need';
+                var relation = Math.abs(delta) < 0.5 ? 'at model target'
+                  : delta < 0 ? Math.abs(delta).toFixed(0) + ' below model target'
+                  : delta.toFixed(0) + ' above model target';
                 return h('div', { key: domain.k, className: 'petslab-tradeoff-domain' },
                   h('strong', null, domain.label),
                   h('div', { className: 'petslab-tradeoff-values' },
                     h('span', null, 'Provided', h('b', null, domain.provided)),
-                    h('span', null, 'Need', h('b', null, domain.need.toFixed(0)))
+                    h('span', null, 'Model target', h('b', null, domain.need.toFixed(0)))
                   ),
                   h('div', { style: { marginTop: 6, color: sev, fontSize: 9, fontWeight: 800, lineHeight: 1.3 } },
                     'Gap ' + domain.gap.toFixed(1) + ' - ' + severityText
@@ -3252,7 +4759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               )
             ),
             h('div', { id: 'pets-care-tradeoff-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: '8px 10px', marginBottom: 10, borderRadius: 9, background: 'rgba(18,13,11,.66)', border: '1px solid ' + sm.border, fontSize: 10 } },
-              h('span', { style: { color: '#e8d5b7', fontWeight: 800 } }, 'Total mismatch:'),
+              h('span', { style: { color: '#e8d5b7', fontWeight: 800 } }, 'Total model mismatch:'),
               h('span', { style: { color: sm.color, font: '900 15px/1 monospace' } }, totalGap.toFixed(1) + ' - ' + sm.label)
             ),
             h('div', { className: 'petslab-tradeoff-sliders', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 10px', marginBottom: 10 } },
@@ -3262,7 +4769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     h('span', null, s.label),
                     h('span', { style: { fontFamily: 'monospace', color: sm.color, fontWeight: 700 } }, s.provided)
                   ),
-                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: s.provided, 'aria-label': s.label + ' provided level', 'aria-valuetext': s.provided + ' provided; ' + s.need.toFixed(0) + ' needed for ' + sp.label, 'aria-describedby': 'pets-care-tradeoff-status', onChange: function(e) { setKey(s.k, parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+                  h('input', { type: 'range', min: 0, max: 100, step: 5, value: s.provided, 'aria-label': s.label + ' provided level', 'aria-valuetext': s.provided + ' provided; illustrative model target ' + s.need.toFixed(0) + ' for ' + sp.label, 'aria-describedby': 'pets-care-tradeoff-status', onChange: function(e) { setKey(s.k, parseInt(e.target.value, 10)); }, style: { width: '100%' } })
                 );
               })
             ),
@@ -3277,12 +4784,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Logged care scenarios', tabIndex: 0, 'data-pets-focusable': true, style: { maxHeight: 96, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) {
-                var detail = e.worst ? ' · largest ' + e.worst + ' P' + e.provided + '/N' + e.need : '';
+                var detail = e.worst ? ' · largest ' + e.worst + ' P' + e.provided + '/T' + e.need : '';
                 return h('div', { key: (e.t || 'entry') + '-' + i }, e.t + '  ' + e.sp + ' · ' + e.state + ' · gap ' + e.gap + detail);
               })
             ),
-            h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which species is hardest to keep thriving — and why?)'),
-            h('textarea', { value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare hypothesis', placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' } }),
+            h('label', { htmlFor: 'pets-care-inquiry-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which species is hardest to keep thriving — and why?)'),
+            h('textarea', { id: 'pets-care-inquiry-hypothesis', value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare hypothesis', 'aria-describedby': 'pets-care-inquiry-hypothesis-count pets-care-inquiry-privacy-note', placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            h('div', { id: 'pets-care-inquiry-hypothesis-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.hypothesis.length + ' / 1200 characters'),
+            h('p', { id: 'pets-care-inquiry-privacy-note', role: 'note', style: { margin: '0 0 10px', color: '#bda891', fontSize: 9, lineHeight: 1.45 } },
+              'Your hypothesis, explanation, and scenario log save with this project. Do not include names or identifying details.'),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
             iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
               h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
@@ -3297,7 +4807,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
               h('span', null, 'I can explain why this species shows this welfare state at these slider settings.')
             ),
-            iq.understood && h('textarea', { value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare explanation', placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+            iq.understood && h('label', { htmlFor: 'pets-care-inquiry-explanation', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your explanation'),
+            iq.understood && h('textarea', { id: 'pets-care-inquiry-explanation', value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare explanation', 'aria-describedby': 'pets-care-inquiry-explanation-count pets-care-inquiry-privacy-note', placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            iq.understood && h('div', { id: 'pets-care-inquiry-explanation-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.explanation.length + ' / 1200 characters'),
             h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
           );
         })()
@@ -3360,14 +4872,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🥩 Obligate carnivore biochemistry'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Cats lost the metabolic ability to synthesize key nutrients during their evolution as strict meat-eaters. They MUST consume animal protein to obtain:'),
+            'Cats are obligate carnivores because their metabolism requires a nutrient profile shaped by animal-tissue diets. In a formulated food, some requirements may be supplied through purified or synthesized nutrients. Key examples include:'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
-            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Taurine'), ' — deficiency causes dilated cardiomyopathy + retinal degeneration. AAFCO commercial cat food guarantees minimums.'),
-            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Vitamin A'), ' — cats can\'t convert beta-carotene from plants to vitamin A like dogs/humans do.'),
-            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Arachidonic acid'), ' — required for inflammatory + reproductive function; absent in plant fats.'),
-            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Arginine'), ' — without it, ammonia builds up dangerously after a single meat-free meal.')),
+            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Taurine'), ' — cats have a dietary requirement; severe deficiency can damage the heart and retina.'),
+            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Vitamin A'), ' — cats require preformed vitamin A and cannot rely on converting beta-carotene alone to meet the requirement.'),
+            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Arachidonic acid'), ' — cats have limited ability to synthesize this fatty acid and require an adequate dietary source.'),
+            h('li', null, h('strong', { style: { color: T.accentHi } }, 'Arginine'), ' — cats have a high dietary requirement; severe deficiency can cause dangerous ammonia buildup.')),
           h('p', { style: { margin: '8px 0 0', color: T.warm, fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } },
-            'Vegan diets for cats are not an ethical choice — they\'re medical neglect. (AAFP 2017 position statement.)')),
+            'Ingredient identity alone cannot establish nutritional adequacy. Match a food\'s nutritional-adequacy statement to the cat\'s life stage; unconventional or home-prepared diets should be formulated and monitored with a veterinarian who has nutrition expertise. (FDA + AAFCO)')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '👁️ Sensory world: built for low-light hunting'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
@@ -3399,7 +4911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('strong', { style: { color: T.text } }, 'declawing'),
           ' (it\'s amputation of the last bone of every toe — not nail trimming — and there are alternatives that work) and ',
           h('strong', { style: { color: T.text } }, 'outdoor vs indoor'),
-          ' (free-roaming cats are the #1 human-caused source of US bird mortality, AND outdoor cats live ~3× shorter lives than indoor). See the ',
+          ' (free-roaming cats are the #1 human-caused source of US bird mortality, and outdoor access exposes cats to traffic, predators, disease, and weather that shorten life). See the ',
           h('strong', { style: { color: T.accentHi } }, 'Welfare & Ethics'),
           ' tile for the data + sources + practical alternatives.'),
           { view: 'welfare', label: 'Welfare & Ethics', action: 'Open Welfare & Ethics' }),
@@ -3413,7 +4925,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var list = [
         { name: 'Rabbit', icon: '🐰', life: '8–12 yr (indoor)',
           social: 'Bonded pair (rarely solo). Bonding takes weeks of supervised intros.',
-          pitfall: 'Cages are inhumane — need a free-roam area or ≥4×4 ft pen. GI stasis is a real emergency: any rabbit not eating for 12+ hr needs a vet IMMEDIATELY.',
+          pitfall: 'Cages are inhumane — need a free-roam area or ≥4×4 ft pen. A sudden appetite change, fewer droppings, hunching, or lethargy is urgent: call a rabbit-experienced veterinarian right away rather than waiting for a 12-hour cutoff.',
           chow: 'Unlimited grass hay (timothy / orchard). Limited pellets. Fresh leafy greens (NOT iceberg). No carrots as staple — too sugary.',
           cite: 'House Rabbit Society' },
         { name: 'Guinea pig', icon: '🐹', life: '5–8 yr',
@@ -3437,7 +4949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         sourceCard('smallMammals'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.6 } },
-            'Often marketed as "starter pets" but most are LESS forgiving than dogs/cats: prey-species stress, fragile GI tracts, narrow diet windows, and species-specific social rules that the pet-store sells you wrong.')),
+            'Often marketed as "starter pets," but small does not mean simple: prey-species behavior, fragile GI systems, narrow diet needs, and species-specific social and housing rules all require adult planning.')),
         list.map(function(p) {
           return h('div', { key: p.name, style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10 } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
@@ -3520,8 +5032,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🦠 Salmonella: not optional'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'CDC: ',
-            h('strong', { style: { color: T.accentHi } }, 'all reptiles + amphibians shed Salmonella'),
-            ' regardless of how clean they appear. Shedding is intermittent, so a lab test that comes back negative does NOT clear the animal — it only means it was not shedding that day. Treat every reptile as positive, every time. Wash hands after every handling. CDC actively recommends ',
+            h('strong', { style: { color: T.accentHi } }, 'reptiles + amphibians commonly carry Salmonella and can shed it while looking healthy'),
+            '. Shedding is intermittent, so a lab test that comes back negative does NOT clear the animal — it only means Salmonella was not detected in that sample. Treat every reptile as potentially positive. Wash hands after every handling. CDC actively recommends ',
             h('strong', { style: { color: T.warm } }, 'no reptiles in households with children under 5'),
             ' or immunocompromised members. Don\'t let reptiles roam in food-prep areas. Don\'t kiss your turtle.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -3570,8 +5082,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           species: 'Parrots' }
       ];
       // Sub-mode: 'read' (default scenario listing) or 'sim' (operant trainer game)
-      var trMode = d.trMode || 'read';
-      function setTrMode(m) { upd('trMode', m); petsAnnounce(m === 'sim' ? 'Operant trainer simulator' : 'Reading mode'); }
+      var trMode = d.trMode === 'sim' ? 'sim' : 'read';
+      function setTrMode(m) {
+        var nextMode = m === 'sim' ? 'sim' : 'read';
+        upd('trMode', nextMode);
+        petsAnnounce(nextMode === 'sim' ? 'Operant trainer simulator' : 'Reading mode');
+        try {
+          setTimeout(function() {
+            var tab = document.getElementById('pets-training-tab-' + nextMode);
+            if (tab && tab.focus) tab.focus();
+          }, 0);
+        } catch (e) {}
+      }
       // ── Operant trainer game ──
       // Goal: train "sit" over 10 rounds. Each round, the dog does something
       // (sometimes the target, sometimes random). Student picks a response
@@ -3593,9 +5115,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { type: 'wrong',   desc: 'The puppy starts barking at a noise outside.', label: '× Barking at noise' },
         { type: 'target',  desc: 'You say "sit." The puppy holds the sit for 3 seconds.', label: '✓ Sustained sit' }
       ];
-      var trSim = d.trSim || null;  // { idx, choices, prob, trust, log }
+      var trSim = normalizeTrainerState(d.trSim);  // { idx, choices, prob, trust, log }
       function startTrSim() {
         upd('trSim', { idx: 0, choices: [], prob: 0.20, trust: 1.00, done: false, log: [] });
+        focusPetsTarget(_trainingQuestionRef);
       }
       function newTrSim() { upd('trSim', null); startTrSim(); }
       function pickResponse(rxn) {
@@ -3632,6 +5155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           trust: newTrust,
           log: (trSim.log || []).concat([{ rd: trSim.idx + 1, prob: newProb, trust: newTrust, dProb: dProb }])
         }));
+        focusPetsTarget(_trainingFeedbackRef);
       }
       function nextTrRound() {
         if (!trSim) return;
@@ -3642,9 +5166,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var finalScore = Math.round(trSim.prob * 100);
           var trustScore = Math.round(trSim.trust * 100);
           if (finalScore >= 70 && trustScore >= 80) awardBadge('pets_trainer', 'Reinforcement Trainer');
-          completeModule('training', 'Finished the 10-round reinforcement trainer');
+          completeModule('training', 'Finished the 10-round reinforcement trainer', {
+            rounds: 10,
+            behaviorPct: finalScore,
+            trustPct: trustScore,
+            criterionMet: finalScore >= 70 && trustScore >= 80
+          });
           upd('trSim', Object.assign({}, trSim, { done: true }));
         }
+        focusPetsTarget(_trainingQuestionRef);
       }
       function renderTrainerStage(moment, thisChoice, revealed, probPct, trustPct) {
         var round = trSim.idx + 1;
@@ -3955,7 +5485,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'The behavior goal is 70 percent and the trust goal is 80 percent. Final behavior probability is ' +
             finalScore + ' percent and final trust is ' + trustScore + ' percent.';
           return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (finalScore >= 70 && trustScore >= 80 ? T.ok : T.accent) } },
-            h('div', { style: { fontSize: 18, fontWeight: 900, color: T.text, marginBottom: 6 } }, headline),
+            h('div', { ref: _trainingQuestionRef, tabIndex: -1,
+              style: { fontSize: 18, fontWeight: 900, color: T.text, marginBottom: 6 } }, headline),
             h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 8px' } }, trustNote),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 12 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
@@ -4151,18 +5682,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // The moment
           h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
             h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, '🐕 What the puppy does'),
-            h('div', { style: { fontSize: 16, color: T.text, fontWeight: 600, lineHeight: 1.5 } }, moment.desc),
+            h('div', { ref: _trainingQuestionRef, tabIndex: -1,
+              style: { fontSize: 16, color: T.text, fontWeight: 600, lineHeight: 1.5 } }, moment.desc),
             h('div', { style: { fontSize: 11, color: T.dim, marginTop: 8, fontStyle: 'italic' } }, 'You have ~3 seconds in real life — pick your response now.')
           ),
           // Response choices
-          h('div', { role: 'radiogroup', 'aria-label': 'Choose your response',
+          h('div', { role: 'group', 'aria-label': 'Choose your response',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 12 } },
             responseBtns.map(function(b) {
               var isPicked = revealed && thisChoice.rxn === b.id;
               return h('button', {
-                key: b.id, className: 'petslab-sim-choice', role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+                key: b.id, className: 'petslab-sim-choice',
+                'aria-pressed': isPicked ? 'true' : 'false',
+                'aria-disabled': revealed ? 'true' : undefined,
+                tabIndex: revealed ? -1 : 0,
                 'data-pets-focusable': true,
-                disabled: revealed,
                 onClick: function() { pickResponse(b.id); },
                 style: btn({
                   padding: '12px 14px', fontSize: 13,
@@ -4179,7 +5713,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ),
           // Reveal + next
           revealed && h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt,
+            h('div', { ref: _trainingFeedbackRef, tabIndex: -1,
+              role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+              style: { padding: 14, borderRadius: 10, background: T.cardAlt,
               borderLeft: '4px solid ' + (thisChoice.dProb > 0 ? T.ok : thisChoice.dProb < 0 ? T.danger : T.dim),
               marginBottom: 12 } },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
@@ -4199,15 +5735,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         );
       }
       // Mode toggle
+      var trainingModes = ['read', 'sim'];
+      function trainingModeKeyDown(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % trainingModes.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + trainingModes.length - 1) % trainingModes.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = trainingModes.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var nextTab = e.currentTarget.parentNode.querySelectorAll('[role="tab"]')[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      }
       var trModeBar = h('div', { role: 'tablist', 'aria-label': 'Training mode',
         style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-        ['read', 'sim'].map(function(m) {
+        trainingModes.map(function(m, tabIndex) {
           var sel = trMode === m;
           return h('button', {
-            key: m, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            key: m, id: 'pets-training-tab-' + m, role: 'tab',
+            'aria-selected': sel ? 'true' : 'false',
+            'aria-controls': 'pets-training-panel-' + m,
+            tabIndex: sel ? 0 : -1,
             'data-pets-focusable': true,
             'aria-label': m === 'read' ? 'Reading mode — scenarios reference' : 'Simulator mode — operant trainer game',
             onClick: function() { setTrMode(m); },
+            onKeyDown: function(e) { trainingModeKeyDown(e, tabIndex); },
             style: btn({
               padding: '8px 14px', fontSize: 13,
               background: sel ? T.accent : T.card,
@@ -4222,18 +5774,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('🎯 Pet Training (applied)'),
           trModeBar,
-          renderTrainerSim(),
-          crossLink('Theory deep-dive: BehaviorLab', h('span', null,
-            'For interactive operant conditioning theory (reinforcement schedules, shaping, extinction, chains), open ',
-            h('strong', { style: { color: T.text } }, 'BehaviorLab'),
-            '. This trainer applies that theory to a puppy in a kitchen.'),
-            { tool: 'behaviorLab', label: 'BehaviorLab', action: 'Open BehaviorLab' }),
+          h('div', { id: 'pets-training-panel-sim', role: 'tabpanel',
+            'aria-labelledby': 'pets-training-tab-sim' },
+            renderTrainerSim(),
+            crossLink('Theory deep-dive: BehaviorLab', h('span', null,
+              'For interactive operant conditioning theory (reinforcement schedules, shaping, extinction, chains), open ',
+              h('strong', { style: { color: T.text } }, 'BehaviorLab'),
+              '. This trainer applies that theory to a puppy in a kitchen.'),
+              { tool: 'behaviorLab', label: 'BehaviorLab', action: 'Open BehaviorLab' })
+          ),
           footer()
         );
       }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🎯 Pet Training (applied)'),
         trModeBar,
+        h('div', { id: 'pets-training-panel-read', role: 'tabpanel',
+          'aria-labelledby': 'pets-training-tab-read' },
         h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, 'This tile assumes the operant theory'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -4270,7 +5827,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           'For interactive operant conditioning (reinforcement, schedules, shaping, extinction, chains, discrimination), open ',
           h('strong', { style: { color: T.text } }, 'BehaviorLab'),
           '. This Pet Training tile assumes you have that theory and shows how to apply it to real animals in real homes.'),
-          { tool: 'behaviorLab', label: 'BehaviorLab', action: 'Open BehaviorLab' }),
+          { tool: 'behaviorLab', label: 'BehaviorLab', action: 'Open BehaviorLab' })
+        ),
         footer());
     }
 
@@ -4291,91 +5849,215 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, n.icon),
                   h('strong', { style: { color: T.accentHi, fontSize: 13 } }, n.name)),
                 h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } }, n.need),
+                h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
+                  h('strong', { style: { color: T.warm } }, 'What to verify: '), n.verify),
                 h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Cite: ' + n.cite));
             }))),
+        h('section', {
+          className: 'petslab-food-label-decoder',
+          'data-pets-food-label-decoder': 'evidence-first',
+          'aria-labelledby': 'pets-food-label-heading',
+          style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-food-label-heading', style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔎 Pet Food Label Decoder'),
+          h('p', { id: 'pets-food-label-scope', style: { margin: '0 0 11px', color: T.muted, fontSize: 12, lineHeight: 1.6 } },
+            'For dog and cat foods, read the regulated evidence before the front-of-package story. Specialty-species products do not use the same dog/cat nutrient profiles, so rabbits, birds, reptiles, and other animals need species-specific evaluation.'),
+          h('ol', {
+            'data-pets-label-checklist': 'five-checks',
+            style: { margin: '0 0 12px', paddingLeft: 22, color: T.text, fontSize: 12, lineHeight: 1.55 }
+          }, PET_FOOD_LABEL_CHECKS.map(function(item) {
+            return h('li', { key: item.id, 'data-pets-label-check': item.id, style: { marginBottom: 7, paddingLeft: 2 } },
+              h('strong', { style: { color: T.accentHi } }, item.title),
+              h('div', { style: { color: T.muted, marginTop: 2 } }, item.detail));
+          })),
+          h('div', {
+            'data-pets-label-evidence-contrast': 'shown',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 9, marginBottom: 10 }
+          },
+            h('article', { style: { padding: 10, borderRadius: 9, background: T.cardAlt, borderLeft: '4px solid ' + T.ok } },
+              h('h4', { style: { margin: '0 0 5px', color: T.ok, fontSize: 12 } }, 'Stronger label evidence'),
+              h('ul', { style: { margin: 0, paddingLeft: 17, color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+                h('li', null, 'Intended species and life stage'),
+                h('li', null, 'Nutritional-adequacy and feeding-purpose statement'),
+                h('li', null, 'Calories per cup, can, or other familiar unit'),
+                h('li', null, 'Feeding directions plus manufacturer or distributor contact'))),
+            h('article', { style: { padding: 10, borderRadius: 9, background: T.cardAlt, borderLeft: '4px solid ' + T.warm } },
+              h('h4', { style: { margin: '0 0 5px', color: T.warm, fontSize: 12 } }, 'Cannot establish adequacy by itself'),
+              h('ul', { style: { margin: 0, paddingLeft: 17, color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+                h('li', null, 'Package photos, slogans, or a familiar-sounding recipe name'),
+                h('li', null, 'One ingredient\'s position in the ingredient list'),
+                h('li', null, 'A seal or endorsement unrelated to nutritional adequacy'),
+                h('li', null, 'A raw guaranteed-analysis number compared across foods with very different moisture')))),
+          h('div', {
+            role: 'note',
+            'data-pets-label-moisture-note': 'as-fed-warning',
+            style: { marginBottom: 12, padding: '9px 10px', borderRadius: 8, background: 'rgba(14,165,233,0.10)', border: '1px solid rgba(14,165,233,0.42)', color: T.text, fontSize: 11, lineHeight: 1.55 }
+          },
+            h('strong', { style: { color: '#7dd3fc' } }, 'Wet-versus-dry comparison trap: '),
+            'Guaranteed-analysis values are listed “as fed.” Foods with very different moisture cannot be compared directly without converting to a dry-matter basis. A higher-looking protein percentage on the package may not be higher after that adjustment.'),
+          h('h4', { style: { margin: '0 0 7px', color: T.text, fontSize: 13 } }, 'Try three mock labels'),
+          h('div', { role: 'list', 'aria-label': 'Pet food label practice cases', style: { display: 'grid', gap: 7 } },
+            PET_FOOD_LABEL_CASES.map(function(item) {
+              return h('details', {
+                key: item.id,
+                role: 'listitem',
+                'data-pets-label-case': item.id,
+                style: { borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, overflow: 'hidden' }
+              },
+                h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '10px 11px', cursor: 'pointer', color: T.accentHi, fontSize: 12, fontWeight: 800, lineHeight: 1.45 } },
+                  item.icon + ' ' + item.name + ' — ' + item.question),
+                h('div', { style: { padding: '0 11px 11px' } },
+                  h('div', { style: { padding: 8, borderRadius: 7, background: T.bg, color: T.text, fontSize: 11, lineHeight: 1.5, fontStyle: 'italic', marginBottom: 7 } }, item.statement),
+                  h('div', { style: { color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+                    h('strong', { style: { color: T.ok } }, 'Readout: '), item.answer)));
+            })),
+          h('p', { style: { margin: '10px 0 0', color: T.dim, fontSize: 10, lineHeight: 1.5 } },
+            'Sources: ',
+            h('a', { href: 'https://www.fda.gov/animal-veterinary/animal-health-literacy/complete-and-balanced-pet-food', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'FDA — Complete and Balanced Pet Food'),
+            ' · ',
+            h('a', { href: 'https://www.aafco.org/consumers/understanding-pet-food/reading-labels/', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'AAFCO — Reading Labels'),
+            ' · ',
+            h('a', { href: 'https://wsava.org/wp-content/uploads/2021/04/Selecting-a-pet-food-for-your-pet-updated-2021_WSAVA-Global-Nutrition-Toolkit.pdf', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'WSAVA — Selecting a Pet Food'))),
+        h('section', {
+          className: 'petslab-poison-protocol',
+          'data-pets-poison-protocol': 'ready',
+          'aria-labelledby': 'pets-poison-protocol-heading',
+          style: { padding: 16, borderRadius: 10, background: '#321616', border: '2px solid ' + T.danger, marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-poison-protocol-heading', style: { margin: '0 0 7px', fontSize: 16, color: '#fecaca' } }, '🚑 Suspected poisoning: act now'),
+          h('p', { style: { margin: '0 0 10px', color: '#fff1f2', fontSize: 13, lineHeight: 1.6 } },
+            h('strong', null, 'Do not wait for symptoms.'),
+            ' Call your veterinarian, an emergency veterinary hospital, or an animal poison service immediately.'),
+          h('ol', { style: { margin: '0 0 12px', paddingLeft: 22, color: '#fff1f2', fontSize: 12, lineHeight: 1.65 } },
+            h('li', null, h('strong', null, 'Prevent more exposure if it is safe.'), ' Move the pet away from the source without exposing yourself to fumes, liquids, or unknown material.'),
+            h('li', null, h('strong', null, 'Call now.'), ' Describe the exposure and follow the professional\'s case-specific directions.'),
+            h('li', null, h('strong', null, 'Do not improvise treatment.'), ' Do not induce vomiting or give medication, activated charcoal, or another home remedy unless a veterinarian or animal poison expert directs you.'),
+            h('li', null, h('strong', null, 'Gather the case facts.'), ' Have the species, approximate weight, product or plant, ingredient list, estimated amount and time, symptoms, and package, sample, or photo ready.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(240px, 100%), 1fr))', gap: 8, marginBottom: 10 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(254,202,202,0.45)' } },
+              h('strong', { style: { display: 'block', color: '#fecaca', fontSize: 12, marginBottom: 3 } }, 'ASPCA Animal Poison Control · 24/7'),
+              h('a', { href: 'tel:+18884264435', style: { color: '#fff1f2', fontSize: 15, fontWeight: 900 } }, '(888) 426-4435')),
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(254,202,202,0.45)' } },
+              h('strong', { style: { display: 'block', color: '#fecaca', fontSize: 12, marginBottom: 3 } }, 'Pet Poison Helpline · 24/7'),
+              h('a', { href: 'tel:+18557647661', style: { color: '#fff1f2', fontSize: 15, fontWeight: 900 } }, '(855) 764-7661'))),
+          h('p', { style: { margin: '0 0 7px', color: '#fff1f2', fontSize: 12, lineHeight: 1.55 } },
+            h('strong', null, 'Collapse, seizure, trouble breathing, or unresponsiveness: '),
+            'go to an emergency veterinary hospital now; if possible, have another person call while you travel.'),
+          h('p', { style: { margin: '0 0 7px', color: '#fecaca', fontSize: 11, lineHeight: 1.5 } },
+            'Consultation fees may apply and service terms can change; verify current details when calling. This learning tool cannot diagnose or clear an exposure.'),
+          h('div', { style: { color: '#fecaca', fontSize: 10, lineHeight: 1.5 } },
+            'Protocol sources: ',
+            h('a', { href: 'https://www.fda.gov/animal-veterinary/animal-health-literacy/potentially-dangerous-items-your-pet', target: '_blank', rel: 'noopener', style: { color: '#fde68a' } }, 'FDA pet hazards'),
+            ' · ',
+            h('a', { href: 'https://ebusiness.avma.org/files/ProductDownloads/mcm-client-brochures-pet-first-aid-2025.pdf', target: '_blank', rel: 'noopener', style: { color: '#fde68a' } }, 'AVMA Pet First Aid'))),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, '☠️ 8 common toxic foods'),
+          h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚠️ 8 household hazards to recognize'),
+          h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 11, lineHeight: 1.5 } }, 'These cards explain why a hazard matters. They do not supply a safe dose or authorize home observation.'),
           TOXIC_FOODS.map(function(f) {
-            return h('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
+            return h('div', { key: f.id, 'data-pets-hazard-card': f.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                 h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, f.icon),
                 h('strong', { style: { color: T.accentHi, fontSize: 14 } }, f.name),
                 h('span', { style: { marginLeft: 'auto', fontSize: 10, color: T.warm, fontFamily: 'monospace' } }, '→ ' + f.species)),
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
-                h('strong', { style: { color: T.text } }, 'Mechanism: '), f.mechanism),
-              f.thresholdNote && h('div', { style: { fontSize: 11, color: T.warm, marginBottom: 3 } },
-                h('strong', null, 'Threshold: '), f.thresholdNote),
+                h('strong', { style: { color: T.text } }, 'Why it matters: '), f.mechanism),
+              f.riskNote && h('div', { style: { fontSize: 11, color: T.warm, marginBottom: 3, lineHeight: 1.5 } },
+                h('strong', null, 'Risk context: '), f.riskNote),
               h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Cite: ' + f.cite));
           })),
-        h('div', { style: { padding: 14, borderRadius: 10, background: '#3a1a1a', border: '1px solid ' + T.danger } },
-          h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.warm } }, '🚑 If you suspect ingestion'),
-          h('p', { style: { margin: 0, color: '#fde2e2', fontSize: 13, lineHeight: 1.55 } },
-            h('strong', null, 'ASPCA Animal Poison Control: (888) 426-4435'),
-            ' — $95 consult, 24/7. Often faster than driving to ER and they\'ll triage whether home observation is enough or vet is needed. ',
-            h('strong', null, 'Pet Poison Helpline: (855) 764-7661'),
-            ' is an alternative.')),
 
-        // ─── TOXIC FOODS SLEUTH (net-new mini-game) ───
-        // 10 vignettes; player picks the species at risk from 5 options.
-        // Tests the discrimination between commonly-confused cases (chocolate
-        // vs xylitol, lily-cat vs grape-dog, avocado vs teflon-fume birds).
-        // Lifts data from the 8 toxic foods reference card above + safe distractors.
+        // ─── HOUSEHOLD HAZARD SLEUTH mini-game ───
+        // 10 vignettes; player picks the best hazard pattern from 5 options.
+        // Categories identify a primary teaching pattern without clearing
+        // unselected species or replacing case-specific toxicology triage.
         (function() {
           var TFS_OPTIONS = [
-            { id: 'safe',        label: 'Safe for both',     color: '#22c55e', icon: '✅', def: 'No documented toxicity for either dogs or cats at typical exposure.' },
-            { id: 'toxicDogs',   label: 'Toxic — dogs',      color: '#dc2626', icon: '🐕', def: 'Primarily affects dogs (cats may be theoretical risk but not the canonical poisoning case).' },
-            { id: 'toxicCats',   label: 'Toxic — cats',      color: '#a855f7', icon: '🐈', def: 'Primarily affects cats (dogs less commonly affected).' },
-            { id: 'toxicBirds',  label: 'Toxic — birds',     color: '#0ea5e9', icon: '🦜', def: 'Primarily affects birds (often fatal; respiratory or cardiac mechanism).' },
-            { id: 'toxicMulti',  label: 'Toxic — multiple', color: '#f59e0b', icon: '⚠️', def: 'Toxic to multiple species — dogs + cats both at risk, sometimes ferrets and birds too.' }
+            { id: 'safe',        label: 'No listed toxin',      color: '#22c55e', icon: '✅', def: 'No listed toxin is present in the scenario as written. This is not a diet recommendation or safety guarantee.' },
+            { id: 'toxicDogs',   label: 'Dog-focused hazard',   color: '#dc2626', icon: '🐕', def: 'Dogs are the clearest teaching case here; the category does not prove another species is safe.' },
+            { id: 'toxicCats',   label: 'Cat-focused hazard',   color: '#a855f7', icon: '🐈', def: 'Cats are the clearest teaching case here; the category does not prove another species is safe.' },
+            { id: 'toxicBirds',  label: 'Bird-focused hazard',  color: '#0ea5e9', icon: '🦜', def: 'Birds are the clearest teaching case here; the category does not prove another species is safe.' },
+            { id: 'toxicMulti',  label: 'Multi-species hazard', color: '#f59e0b', icon: '⚠️', def: 'More than one species is a central concern in this scenario.' }
           ];
           var TFS_VIGNETTES = [
-            { id: 1, food: 'Dark chocolate (~1 oz)', icon: '🍫', correct: 'toxicMulti',
-              why: 'Theobromine + caffeine. Dogs metabolize theobromine very slowly (canonical poisoning case), but cats, ferrets, AND birds are also at risk. Dark chocolate is far worse than milk; baker\'s chocolate is the worst.' },
+            { id: 1, food: 'Dark chocolate from an open package', icon: '🍫', correct: 'toxicMulti',
+              why: 'Chocolate methylxanthines can harm several species; dogs are a common exposure case. Product type, cocoa concentration, body size, amount, and timing matter, so keep the wrapper and call rather than calculating at home.' },
             { id: 2, food: 'Easter lily petals + pollen', icon: '🌸', correct: 'toxicCats',
-              why: 'CATS only at clinical risk. ALL parts of true lilies (Lilium spp.) cause acute kidney failure in cats — even pollen brushed off on fur and groomed off. Dogs are essentially unaffected.' },
+              why: 'This is a cat-focused emergency: true lilies and daylilies can cause acute kidney injury, and petals, pollen, or vase water can matter. A cat may look normal early; call immediately.' },
             { id: 3, food: 'Sugar-free gum (xylitol)', icon: '🧪', correct: 'toxicDogs',
-              why: 'Xylitol triggers massive insulin release in dogs → hypoglycemia + liver failure. As little as 1–2 pieces of gum can poison a small dog. Cats are largely unaffected because their insulin response differs.' },
+              why: 'This is dog-focused, with ferrets also potentially at risk. Xylitol concentration varies widely by product and signs can start quickly, so check the label and call immediately.' },
             { id: 4, food: 'Grapes / raisins (any amount)', icon: '🍇', correct: 'toxicDogs',
-              why: 'Tartaric acid (ASPCA 2021) causes acute kidney failure in dogs, unpredictably — even tiny amounts can kill. Cats theoretical but no confirmed cases. Treat ANY ingestion in a dog as emergency.' },
+              why: 'This is dog-focused: grape and raisin exposures can cause acute kidney injury, but individual susceptibility is unpredictable. Do not use a grape count as a home cutoff; call for any suspected dog exposure.' },
             { id: 5, food: 'Cooked onions in food scraps', icon: '🧅', correct: 'toxicMulti',
-              why: 'N-propyl disulfide damages red blood cells in BOTH dogs and cats → hemolytic anemia. Cats are MORE sensitive than dogs. Cooking does NOT inactivate. Garlic and leeks (same Allium family) work the same way.' },
-            { id: 6, food: 'Avocado flesh + skin', icon: '🥑', correct: 'toxicBirds',
-              why: 'Persin causes cardiac muscle damage in BIRDS — can kill within 24 hours. Parrots, cockatiels, and canaries are especially vulnerable. Dogs and cats are relatively tolerant of avocado flesh (the pit is a GI obstruction risk, but not chemically toxic).' },
+              why: 'Allium compounds can damage red blood cells in both dogs and cats; cats are especially sensitive. Cooked, dried, and powdered forms can still matter, and repeated exposures count.' },
+            { id: 6, food: 'Avocado flesh + skin', icon: '🥑', correct: 'toxicMulti',
+              why: 'FDA guidance identifies severe avocado risk for birds and rabbits. In other pets, a swallowed pit creates a separate obstruction hazard. Species and plant part matter, so call with a sample or photo if safe.' },
             { id: 7, food: 'Overheated nonstick (Teflon) pan fumes', icon: '🍳', correct: 'toxicBirds',
-              why: 'Polymer fumes from PTFE > 500°F kill BIRDS in MINUTES — respiratory system shuts down. Cats and dogs are not at clinical risk. Why pet birds should never be in the kitchen during cooking. Same risk: scented candles, aerosol cleaners, cigarette smoke.' },
+              why: 'This is a bird-focused inhalation emergency. Overheated PTFE-coated products can release fumes that cause sudden respiratory injury; leave the exposure area if safe and seek emergency veterinary help.' },
             { id: 8, food: 'A handful of macadamia nuts', icon: '🥜', correct: 'toxicDogs',
-              why: 'Mechanism unknown but causes weakness, tremors, hyperthermia, hind-limb ataxia in DOGS within 12 hours. Cats are unaffected. Usually self-resolves but distressing. ~2 g/kg toxic dose.' },
+              why: 'Reported macadamia illness is dog-focused and can include weakness, tremors, vomiting, or trouble walking. Amount, timing, and outcome vary; do not use a nut-count rule to decide whether to wait.' },
             { id: 9, food: 'Plain cooked chicken (boneless, unseasoned)', icon: '🍗', correct: 'safe',
-              why: 'Plain protein, no Allium seasoning, no bones (cooked bones splinter). Safe for both dogs and cats — and a common ER vet recommendation as a bland diet for upset stomachs.' },
+              why: 'As written, this scenario contains no listed toxin: the chicken is boneless, cooked, and unseasoned. That does not make it a treatment or complete diet; allergies, portions, and individual conditions still matter.' },
             { id: 10, food: 'Raw carrot sticks', icon: '🥕', correct: 'safe',
-              why: 'Carrots are safe and even beneficial (low-calorie chewing) for dogs and cats. Some cats ignore them entirely, but no toxicity. Crunchy texture also helps with dental plaque in dogs.' }
+              why: 'As written, this scenario contains no listed toxin. Piece size and portions can still matter, and this classification is not an individualized diet recommendation.' }
           ];
 
-          var tfsIdx = d.tfsIdx == null ? -1 : d.tfsIdx;
-          var tfsSeed = d.tfsSeed || 1;
-          var tfsAns = !!d.tfsAns;
-          var tfsPick = d.tfsPick;
-          var tfsScore = d.tfsScore || 0;
-          var tfsRounds = d.tfsRounds || 0;
-          var tfsStreak = d.tfsStreak || 0;
-          var tfsBest = d.tfsBest || 0;
-          var tfsShown = d.tfsShown || [];
-          var tfsOpen = !!d.tfsOpen;
+          var tfsState = normalizePetsMiniGameState(d, 'tfs', TFS_VIGNETTES.length,
+            TFS_OPTIONS.map(function(option) { return option.id; }));
+          var tfsIdx = tfsState.idx;
+          var tfsSeed = tfsState.seed;
+          var tfsAns = tfsState.ans;
+          var tfsPick = tfsState.pick;
+          var tfsScore = tfsState.score;
+          var tfsRounds = tfsState.rounds;
+          var tfsStreak = tfsState.streak;
+          var tfsBest = tfsState.best;
+          var tfsShown = tfsState.shown;
+          var tfsOpen = d.tfsOpen === true;
+          var tfsMissed = normalizeToxicFoodIndices(d.tfsMissed);
+          var tfsReview = normalizeToxicFoodReviewState(d.tfsReview, tfsMissed);
           // The ESC-dismiss effect for this modal lives in the fixed hook
           // budget at the top of _renderPets — hooks may not be declared here,
           // because this function only runs on the 'nutrition' branch.
 
-          function startTfs() {
+          function chooseNextTfs(seen, seed) {
             var pool = [];
-            for (var i = 0; i < TFS_VIGNETTES.length; i++) if (tfsShown.indexOf(i) < 0) pool.push(i);
-            if (pool.length === 0) { pool = []; for (var j = 0; j < TFS_VIGNETTES.length; j++) pool.push(j); tfsShown = []; }
-            var seedNext = ((tfsSeed * 16807 + 11) % 2147483647) || 7;
+            for (var i = 0; i < TFS_VIGNETTES.length; i++) {
+              if (seen.indexOf(i) < 0) pool.push(i);
+            }
+            if (!pool.length) return null;
+            var seedNext = ((seed * 16807 + 11) % 2147483647) || 7;
             var pick = pool[seedNext % pool.length];
-            upd('tfsSeed', seedNext);
-            upd('tfsIdx', pick);
-            upd('tfsAns', false);
-            upd('tfsPick', null);
-            upd('tfsShown', tfsShown.concat([pick]));
+            return { seed: seedNext, pick: pick };
+          }
+          function beginTfsAttempt() {
+            var selected = chooseNextTfs([], tfsSeed);
+            if (!selected) return;
+            updMulti({
+              tfsSeed: selected.seed,
+              tfsIdx: selected.pick,
+              tfsAns: false,
+              tfsPick: null,
+              tfsScore: 0,
+              tfsRounds: 0,
+              tfsStreak: 0,
+              tfsShown: [selected.pick],
+              tfsMissed: [],
+              tfsReview: null
+            });
+            focusPetsTarget(_toxinQuestionRef);
+          }
+          function advanceTfs() {
+            if (!tfsAns || tfsRounds >= TFS_VIGNETTES.length) return;
+            var selected = chooseNextTfs(tfsShown, tfsSeed);
+            if (!selected) return;
+            updMulti({
+              tfsSeed: selected.seed,
+              tfsIdx: selected.pick,
+              tfsAns: false,
+              tfsPick: null,
+              tfsShown: tfsShown.concat([selected.pick])
+            });
+            focusPetsTarget(_toxinQuestionRef);
           }
           function pickTfs(optId) {
             if (tfsAns) return;
@@ -4384,12 +6066,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             var newScore = tfsScore + (correct ? 1 : 0);
             var newStreak = correct ? (tfsStreak + 1) : 0;
             var newBest = Math.max(tfsBest, newStreak);
-            upd('tfsAns', true);
-            upd('tfsPick', optId);
-            upd('tfsScore', newScore);
-            upd('tfsRounds', tfsRounds + 1);
-            upd('tfsStreak', newStreak);
-            upd('tfsBest', newBest);
+            var newRounds = tfsRounds + 1;
+            var newMissed = correct ? tfsMissed : normalizeToxicFoodIndices(tfsMissed.concat([tfsIdx]));
+            updMulti({
+              tfsAns: true,
+              tfsPick: optId,
+              tfsScore: newScore,
+              tfsRounds: newRounds,
+              tfsStreak: newStreak,
+              tfsBest: newBest,
+              tfsMissed: newMissed,
+              tfsReview: null
+            });
+            if (newRounds === TFS_VIGNETTES.length &&
+                tfsShown.length === TFS_VIGNETTES.length) {
+              var finalPct = Math.round((newScore / TFS_VIGNETTES.length) * 100);
+              completeModule('nutrition', 'Finished all 10 Household Hazard Sleuth vignettes', {
+                score: newScore,
+                total: TFS_VIGNETTES.length,
+                scorePct: finalPct,
+                needsPractice: TFS_VIGNETTES.length - newScore,
+                criterionMet: finalPct >= 80
+              });
+            }
+            focusPetsTarget(_toxinFeedbackRef);
+          }
+          function beginTfsReview() {
+            if (!tfsMissed.length) return;
+            upd('tfsReview', {
+              ids: tfsMissed.slice(),
+              queue: tfsMissed.slice(),
+              pick: null,
+              done: false
+            });
+            focusPetsTarget(_toxinQuestionRef);
+          }
+          function pickTfsReview(optId) {
+            if (!tfsReview || tfsReview.done || tfsReview.pick || !tfsReview.queue.length) return;
+            if (TFS_OPTIONS.map(function(option) { return option.id; }).indexOf(optId) < 0) return;
+            upd('tfsReview', {
+              ids: tfsReview.ids.slice(),
+              queue: tfsReview.queue.slice(),
+              pick: optId,
+              done: false
+            });
+            focusPetsTarget(_toxinFeedbackRef);
+          }
+          function advanceTfsReview() {
+            if (!tfsReview || tfsReview.done || !tfsReview.pick || !tfsReview.queue.length) return;
+            var reviewIndex = tfsReview.queue[0];
+            var reviewCorrect = tfsReview.pick === TFS_VIGNETTES[reviewIndex].correct;
+            var nextQueue = tfsReview.queue.slice(1);
+            if (!reviewCorrect) nextQueue.push(reviewIndex);
+            upd('tfsReview', {
+              ids: tfsReview.ids.slice(),
+              queue: nextQueue,
+              pick: null,
+              done: nextQueue.length === 0
+            });
+            focusPetsTarget(nextQueue.length ? _toxinQuestionRef : _toxinFeedbackRef);
           }
 
           return h('div', { style: { padding: 14, marginTop: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent + '88' } },
@@ -4397,24 +6132,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
                 h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
                 h('div', null,
-                  h('div', { style: { color: T.accentHi, fontSize: 14, fontWeight: 900 } }, 'Toxic Foods Sleuth'),
-                  h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, '10 vignettes — pick the species at risk. Builds the "could this kill the pet?" reflex.')
+                  h('div', { style: { color: T.accentHi, fontSize: 14, fontWeight: 900 } }, 'Household Hazard Sleuth'),
+                  h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, '10 vignettes · target 8/10 — identify the clearest hazard pattern, then revisit every miss.')
                 )
               ),
               h('button', {
-                'aria-label': tfsOpen ? 'Close Toxic Foods Sleuth quiz' : 'Open Toxic Foods Sleuth quiz',
+                ref: _toxinToggleRef,
+                'aria-label': tfsOpen ? 'Close Household Hazard Sleuth quiz' : 'Open Household Hazard Sleuth quiz',
                 'aria-expanded': tfsOpen,
                 onClick: function() { upd('tfsOpen', !tfsOpen); },
                 style: { padding: '6px 12px', borderRadius: 8, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, tfsOpen ? 'Hide ▴' : 'Play →')
             ),
-            tfsOpen && h('div', { role: 'region', 'aria-label': 'Toxic Foods Sleuth quiz game', tabIndex: 0, style: { marginTop: 12 } },
+            tfsOpen && h('div', { role: 'region', 'aria-label': 'Household Hazard Sleuth quiz game', tabIndex: 0, style: { marginTop: 12 } },
+              h('div', { role: 'note', 'data-pets-hazard-boundary': 'classification-only', style: { marginBottom: 10, padding: 9, borderRadius: 8, color: '#fde68a', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.45)', fontSize: 11, lineHeight: 1.5 } },
+                'Pattern-recognition practice only: this activity cannot rule out poisoning, calculate a safe dose, or replace case-specific advice. For a real exposure, stop and use the response protocol above.'),
               tfsIdx < 0
                 ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
                     h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
-                      '10 food + species vignettes. For each, pick which species (if any) is at primary risk. After picking, a coaching block names what makes this species the canonical poisoning case and what the others would or would not experience.'),
+                      '10 food + species vignettes. Reach 8/10 to meet the activity target. After each choice, coaching names what makes that species the canonical poisoning case; at the end, every missed case stays available for review and focused retry.'),
                     h('button', {
-                      onClick: startTfs,
+                      ref: _toxinQuestionRef,
+                      onClick: beginTfsAttempt,
                       style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
                     }, '🕵️ Start — vignette 1 of 10')
                   )
@@ -4422,7 +6161,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     var v = TFS_VIGNETTES[tfsIdx];
                     var pickedCorrect = tfsAns && tfsPick === v.correct;
                     var pct = tfsRounds > 0 ? Math.round((tfsScore / tfsRounds) * 100) : 0;
-                    var allDone = tfsShown.length >= TFS_VIGNETTES.length && tfsAns;
+                    var allDone = tfsShown.length === TFS_VIGNETTES.length &&
+                      tfsRounds === TFS_VIGNETTES.length && tfsAns;
+                    var targetMet = tfsScore >= 8;
+                    var missedDetailsAvailable = !allDone || tfsMissed.length === TFS_VIGNETTES.length - tfsScore;
+                    var missedCases = missedDetailsAvailable ? tfsMissed.map(function(index) {
+                      return { index: index, vignette: TFS_VIGNETTES[index] };
+                    }) : [];
+                    var reviewActive = allDone && missedDetailsAvailable && !!tfsReview &&
+                      !tfsReview.done && tfsReview.queue.length > 0;
+                    var reviewDone = allDone && missedDetailsAvailable && !!tfsReview && tfsReview.done;
+                    var reviewIndex = reviewActive ? tfsReview.queue[0] : -1;
+                    var reviewVignette = reviewIndex >= 0 ? TFS_VIGNETTES[reviewIndex] : null;
+                    var reviewAnswered = reviewActive && !!tfsReview.pick;
+                    var reviewCorrect = reviewAnswered && tfsReview.pick === reviewVignette.correct;
+                    var reviewCorrectOption = reviewVignette ? TFS_OPTIONS.filter(function(option) {
+                      return option.id === reviewVignette.correct;
+                    })[0] : null;
                     return h('div', null,
                       // Score header
                       h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: T.dim, marginBottom: 8 } },
@@ -4437,11 +6192,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                         h('div', { style: { fontSize: 36, flexShrink: 0 }, 'aria-hidden': 'true' }, v.icon),
                         h('div', { style: { flex: 1, minWidth: 200 } },
                           h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Vignette ' + tfsShown.length + ' of ' + TFS_VIGNETTES.length),
-                          h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text } }, v.food)
+                          h('div', { ref: reviewActive ? undefined : _toxinQuestionRef, tabIndex: -1,
+                            style: { fontSize: 14, fontWeight: 700, color: T.text } }, v.food)
                         )
                       ),
                       // 5 picker buttons
-                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the species at risk' },
+                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': 'Choose the best hazard pattern' },
                         TFS_OPTIONS.map(function(opt) {
                           var picked = tfsAns && tfsPick === opt.id;
                           var isRight = tfsAns && opt.id === v.correct;
@@ -4454,10 +6210,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                             bg = opt.color + '20'; border = opt.color + '60'; color = T.text;
                           }
                           return h('button', {
-                            key: opt.id, role: 'radio',
-                            'aria-checked': picked ? 'true' : 'false',
+                            key: opt.id,
+                            'aria-pressed': picked ? 'true' : 'false',
+                            'aria-disabled': tfsAns ? 'true' : undefined,
+                            tabIndex: tfsAns ? -1 : 0,
+                            'data-pets-focusable': true,
                             'aria-label': opt.label,
-                            disabled: tfsAns,
                             onClick: function() { pickTfs(opt.id); },
                             style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: tfsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 60, transition: 'all 0.15s' }
                           },
@@ -4471,6 +6229,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                       ),
                       // Feedback
                       tfsAns && h('div', {
+                        ref: reviewActive ? undefined : _toxinFeedbackRef, tabIndex: -1,
+                        role: allDone ? 'region' : 'status',
+                        'aria-label': allDone ? 'Toxic Foods result and review' : undefined,
+                        'aria-live': allDone ? undefined : 'polite',
+                        'aria-atomic': allDone ? undefined : 'true',
                         style: {
                           marginTop: 10, padding: '10px 12px', borderRadius: 8,
                           background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
@@ -4484,22 +6247,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                         ),
                         h('p', { style: { color: T.text, fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, v.why),
                         allDone
-                          ? h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent } },
+                          ? h('div', {
+                              'data-pets-toxic-result': 'complete',
+                              style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent }
+                            },
                               h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
                               h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
                                 'Final: ', h('strong', null, tfsScore + ' / ' + TFS_VIGNETTES.length + ' (' + Math.round((tfsScore / TFS_VIGNETTES.length) * 100) + '%)'),
-                                tfsScore === TFS_VIGNETTES.length ? ' — every species-specific risk correctly identified. Save the ASPCA poison control number above to your phone now.' :
-                                tfsScore >= 8 ? ' — strong species-discrimination reasoning. The most-confused pair is usually grapes vs onions (one is dogs-only, the other affects both).' :
-                                tfsScore >= 6 ? ' — solid baseline. The discriminator to remember: lily kills CATS only; xylitol/grapes/macadamia kill DOGS; teflon/avocado kill BIRDS; chocolate + onions affect ALL.' :
-                                ' — these patterns matter at 2 AM when a kid texts you "my dog ate X." Save the poison control number AND retake.'
+                                tfsScore === TFS_VIGNETTES.length ? ' — every hazard pattern identified. Classification is not case-specific triage; use the response protocol above for any suspected exposure.' :
+                                tfsScore >= 8 ? ' — strong hazard-pattern reasoning. A category highlights the clearest teaching case; it never clears another species.' :
+                                tfsScore >= 6 ? ' — useful baseline. Review product, species, amount, timing, and symptoms with a veterinary professional; do not rely on a memorized dose or species label.' :
+                                ' — retake after reviewing the hazard cards. In a real exposure, call first rather than using this score to decide what is safe.'
                               ),
+                              h('div', {
+                                'data-pets-target-status': targetMet ? 'met' : 'needs-practice',
+                                style: {
+                                  marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 800,
+                                  color: targetMet ? '#bbf7d0' : '#fde68a',
+                                  background: targetMet ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+                                  border: '1px solid ' + (targetMet ? 'rgba(34,197,94,0.5)' : 'rgba(245,158,11,0.5)')
+                                }
+                              }, targetMet
+                                ? '✅ Activity target met: 8/10 or higher.'
+                                : '↻ Activity target needs practice: reach 8/10 or higher.'),
+                              !missedDetailsAvailable
+                                ? h('div', {
+                                    'data-pets-toxic-review': 'unavailable',
+                                    style: { marginTop: 10, padding: 10, borderRadius: 8, color: T.muted, background: T.card, border: '1px solid ' + T.border, fontSize: 11, lineHeight: 1.5 }
+                                  }, 'Missed-case details were not stored for this earlier attempt. Restart the full 10 to build a review set.')
+                                : missedCases.length
+                                  ? h('section', {
+                                      'aria-label': 'Missed hazard case review',
+                                      'data-pets-toxic-review': 'available',
+                                      style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border }
+                                    },
+                                      h('div', { style: { color: T.text, fontSize: 12, fontWeight: 800 } },
+                                        'Review your ' + missedCases.length + ' missed hazard ' + (missedCases.length === 1 ? 'case' : 'cases')),
+                                      h('p', { style: { color: T.dim, fontSize: 10, lineHeight: 1.45, margin: '4px 0 8px' } },
+                                        'Open each case to compare the correct species risk with the clinical reason. These details stay on this device and are not added to teacher evidence.'),
+                                      missedCases.map(function(item) {
+                                        var correctOption = TFS_OPTIONS.filter(function(option) {
+                                          return option.id === item.vignette.correct;
+                                        })[0];
+                                        return h('details', {
+                                          key: item.index,
+                                          'data-pets-toxic-review-item': String(item.index),
+                                          style: { marginTop: 6, padding: '7px 9px', borderRadius: 7, background: T.cardAlt, border: '1px solid ' + T.border }
+                                        },
+                                          h('summary', { style: { color: T.text, fontSize: 11, fontWeight: 750, cursor: 'pointer' } },
+                                            item.vignette.icon + ' ' + item.vignette.food),
+                                          h('div', { style: { paddingTop: 7 } },
+                                            h('div', { style: { color: correctOption.color, fontSize: 11, fontWeight: 800 } },
+                                              'Correct pattern: ' + correctOption.label),
+                                            h('p', { style: { color: T.text, fontSize: 11, lineHeight: 1.5, margin: '4px 0 0' } }, item.vignette.why)
+                                          )
+                                        );
+                                      })
+                                    )
+                                  : h('div', {
+                                      'data-pets-toxic-review': 'clear',
+                                      style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 700 }
+                                    }, '✅ No missed hazard cases — every vignette was identified correctly.'),
+                              reviewActive
+                                ? h('section', {
+                                    'aria-label': 'Focused missed-case retry',
+                                    'data-pets-toxic-retry': 'active',
+                                    style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.08)', border: '2px solid rgba(14,165,233,0.45)' }
+                                  },
+                                    h('div', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 900, marginBottom: 3 } },
+                                      'Focused retry · ' + tfsReview.queue.length + ' ' + (tfsReview.queue.length === 1 ? 'case' : 'cases') + ' still in rotation'),
+                                    h('p', { style: { color: T.dim, fontSize: 10, lineHeight: 1.45, margin: '0 0 8px' } },
+                                      'Each case leaves the rotation only after a correct identification.'),
+                                    h('div', {
+                                      ref: _toxinQuestionRef,
+                                      tabIndex: -1,
+                                      style: { color: T.text, fontSize: 13, fontWeight: 800, marginBottom: 8 }
+                                    }, reviewVignette.icon + ' ' + reviewVignette.food + ' — which species is at primary risk?'),
+                                    h('div', {
+                                      role: 'group',
+                                      'aria-label': 'Retry the missed hazard case',
+                                      style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6 }
+                                    }, TFS_OPTIONS.map(function(option) {
+                                      var selected = reviewAnswered && tfsReview.pick === option.id;
+                                      var correctChoice = reviewAnswered && reviewVignette.correct === option.id;
+                                      return h('button', {
+                                        key: option.id,
+                                        'aria-label': option.label,
+                                        'aria-pressed': selected ? 'true' : 'false',
+                                        disabled: reviewAnswered,
+                                        onClick: function() { pickTfsReview(option.id); },
+                                        style: {
+                                          padding: '8px 9px', borderRadius: 7, textAlign: 'left', fontSize: 10, fontWeight: 750,
+                                          color: correctChoice ? '#bbf7d0' : selected ? '#fecaca' : T.text,
+                                          background: correctChoice ? 'rgba(34,197,94,0.14)' : selected ? 'rgba(239,68,68,0.14)' : T.cardAlt,
+                                          border: '1px solid ' + (correctChoice ? T.ok : selected ? T.danger : T.border),
+                                          cursor: reviewAnswered ? 'default' : 'pointer'
+                                        }
+                                      }, option.icon + ' ' + option.label);
+                                    })),
+                                    reviewAnswered && h('div', {
+                                      ref: _toxinFeedbackRef,
+                                      tabIndex: -1,
+                                      role: 'status',
+                                      'aria-live': 'polite',
+                                      'aria-atomic': 'true',
+                                      style: {
+                                        marginTop: 8, padding: 9, borderRadius: 7,
+                                        color: reviewCorrect ? '#bbf7d0' : '#fecaca',
+                                        background: reviewCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                                        border: '1px solid ' + (reviewCorrect ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)')
+                                      }
+                                    },
+                                      h('div', { style: { fontSize: 11, fontWeight: 900 } }, reviewCorrect
+                                        ? '✅ Correct — ' + reviewCorrectOption.label
+                                        : 'Not yet — correct pattern: ' + reviewCorrectOption.label + '. This case stays in the rotation.'),
+                                      h('p', { style: { color: T.text, fontSize: 10, lineHeight: 1.5, margin: '4px 0 7px' } }, reviewVignette.why),
+                                      h('button', {
+                                        onClick: advanceTfsReview,
+                                        style: { padding: '6px 10px', borderRadius: 7, border: 'none', background: T.link, color: '#082f49', fontSize: 10, fontWeight: 850, cursor: 'pointer' }
+                                      }, reviewCorrect
+                                        ? (tfsReview.queue.length === 1 ? 'Finish focused retry' : 'Next missed case')
+                                        : (tfsReview.queue.length === 1 ? 'Try this case again' : 'Review next case'))
+                                    )
+                                  )
+                                : reviewDone
+                                  ? h('div', {
+                                      'data-pets-toxic-retry': 'complete',
+                                      style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 800 }
+                                    }, '✅ Focused retry complete — every missed hazard case was identified correctly.')
+                                  : missedCases.length
+                                    ? h('button', {
+                                        onClick: beginTfsReview,
+                                        style: { marginTop: 10, marginRight: 8, padding: '7px 11px', borderRadius: 8, border: '1px solid ' + T.link, background: 'rgba(14,165,233,0.12)', color: '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+                                      }, 'Retry ' + missedCases.length + ' missed ' + (missedCases.length === 1 ? 'case' : 'cases'))
+                                    : null,
                               h('button', {
-                                onClick: function() { upd('tfsIdx', -1); upd('tfsShown', []); upd('tfsScore', 0); upd('tfsRounds', 0); upd('tfsStreak', 0); },
+                                onClick: function() {
+                                  updMulti({
+                                    tfsIdx: -1, tfsShown: [], tfsAns: false, tfsPick: null,
+                                    tfsScore: 0, tfsRounds: 0, tfsStreak: 0,
+                                    tfsMissed: [], tfsReview: null
+                                  });
+                                  focusPetsTarget(_toxinQuestionRef);
+                                },
                                 style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                              }, '🔄 Restart')
+                              }, '🔄 Restart full 10')
                             )
                           : h('button', {
-                              onClick: startTfs,
+                              onClick: advanceTfs,
                               style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                             }, '➡️ Next vignette')
                       )
@@ -5047,59 +6942,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             if (o.allergies) s -= 2;
             return s;
           },
-          note: 'Needs 1–2 hr/day exercise. Will shed and slobber. Good with kids when raised right.' },
+          note: 'Needs substantial daily exercise and training. Individual temperament, history, size, and active supervision all matter around children.' },
         { id: 'dog-small', name: 'Small dog (terrier, dachshund, toy-class)', icon: '🐕‍🦺',
           fit: function(o) {
             var s = 0;
             if (o.housing === 'apartment') s += 2; else s += 1;
             if (o.hours <= 6) s += 2;
-            if (o.experience === 'first') s += 1; // small dogs more first-time-owner friendly
             if (o.budget === 'low') s -= 1;
             if (o.allergies) s -= 2;
-            if (o.kids) s -= 1; // small dogs often less kid-tolerant
             return s;
           },
-          note: 'Less exercise need but still daily walks + training. Often longer-lived (14–16 yr).' },
+          note: 'Small size does not guarantee low exercise, training, grooming, or child-supervision needs. Research the individual dog, not size alone.' },
         { id: 'cat', name: 'Cat (indoor)', icon: '🐈',
           fit: function(o) {
-            var s = 2; // generally easy
+            var s = 2; // adaptable indoor-care baseline, not an "easy pet" claim
             if (o.housing === 'apartment') s += 1;
             if (o.hours >= 6) s += 1;
             if (o.experience === 'first') s += 1;
-            if (o.budget === 'low') s += 1;
+            if (o.budget === 'low') s -= 1;
             if (o.allergies) s -= 3; // cats are biggest allergy risk
             return s;
           },
-          note: 'Great match for many lifestyles. Provide vertical space, enrichment, two cats often happier than one.' },
+          note: 'Indoor cats still need veterinary care, play, scratching and vertical space, litter maintenance, and emergency planning. Social preferences vary by individual.' },
         { id: 'rabbit-pair', name: 'Bonded rabbit pair', icon: '🐰',
           fit: function(o) {
             var s = 0;
             if (o.housing === 'house') s += 2; else s += 1;
             if (o.experience === 'first') s -= 1;
             if (o.budget === 'low') s -= 2;
-            if (o.kids && o.kidAge < 8) s -= 2; // small kids + rabbits rarely work
+            if (o.kids && o.kidAge < 8) s -= 1; // extra handling/supervision planning
             return s;
           },
-          note: 'Need a rabbit-savvy vet (limited in rural Maine). Free-roam or large pen. NOT a starter pet.' },
+          note: 'Need a rabbit-experienced veterinarian and spacious indoor housing. An adult must be the primary caregiver; young children need supervised, floor-level interaction.' },
         { id: 'guinea-pair', name: 'Bonded guinea pig pair', icon: '🐹',
           fit: function(o) {
             var s = 1;
-            if (o.experience !== 'lots') s += 1; // forgiving for new owners
-            if (o.budget === 'low') s += 0;
-            if (o.kids) s += 1; // generally kid-tolerant
+            if (o.kids && o.kidAge < 5) s -= 6; // CDC: under-5s should avoid rodent contact
             return s;
           },
-          note: 'Need vitamin C daily, hay-heavy diet, weekly cage cleaning. Pair MUST be same sex or neutered.' },
+          note: 'Fragile prey animals needing an adult caregiver, supervised gentle handling, vitamin C, hay, and regular habitat cleaning. Children under 5 should avoid rodent contact.' },
         { id: 'reptile-beginner', name: 'Beginner reptile (leopard gecko, corn snake)', icon: '🦎',
           fit: function(o) {
             var s = 0;
             if (o.housing === 'apartment') s += 1; // small footprint
             if (o.allergies) s += 2; // no fur
-            if (o.kids && o.kidAge < 5) s -= 3; // CDC says no
+            if (o.kids && o.kidAge < 5) s -= 6; // CDC: not recommended in under-5 households
             if (o.experience === 'first') s -= 1; // husbandry steep learning curve
             return s;
           },
-          note: 'Salmonella shedding (handwashing required). UVB / heat gradient critical. Long-lived (15–25 yr).' },
+          note: 'Can carry Salmonella while appearing healthy. Species-specific heat, lighting, habitat, hygiene, diet, lifespan, and exotic-vet access must be researched.' },
         { id: 'fish-tank', name: 'Freshwater aquarium', icon: '🐠',
           fit: function(o) {
             var s = 1;
@@ -5108,7 +6999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             if (o.experience === 'first') s += 0;
             return s;
           },
-          note: 'See AlloFlow Aquarium tile for ecosystem science. Tank-cycling takes 4–6 weeks BEFORE adding fish.' },
+          note: 'See AlloFlow Aquarium for ecosystem science. A suitable tank must be cycled and water-tested before animals are added.' },
         { id: 'cockatiel', name: 'Cockatiel or budgie (small parrot)', icon: '🦜',
           fit: function(o) {
             var s = 0;
@@ -5118,7 +7009,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             if (o.experience !== 'first') s += 1;
             return s;
           },
-          note: 'Need flight-time outside cage daily. Lifespan 15–25 yr. Toxic to Teflon + scented candles.' }
+          note: 'Need daily flight, social time, enrichment, safe air, and an avian veterinarian. Lifespan and care demands vary by species and individual.' }
       ];
       var kidBand = pickKidBand(pickKidAge);
       var inputs = {
@@ -5135,6 +7026,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return { id: c.id, name: c.name, icon: c.icon, score: score, note: c.note,
           reasons: pickerReasonCues(c.id, inputs, score) };
       }).sort(function(a, b) { return b.score - a.score; });
+      var topScore = scored.length ? scored[0].score : 0;
+      var modelLeaders = scored.filter(function(candidate) {
+        return candidate.score === topScore;
+      });
+      var leadMargin = modelLeaders.length === 1 && scored.length > 1
+        ? topScore - scored[1].score : 0;
+      var readinessMissing = PICK_READINESS_ITEMS.filter(function(item) {
+        return pickReadiness[item.id] !== true;
+      });
+      var readinessConfirmed = PICK_READINESS_ITEMS.length - readinessMissing.length;
+      var signedTopScore = topScore > 0 ? '+' + topScore : String(topScore);
+      var modelResultHeading;
+      var modelResultDetail;
+      if (topScore < 2) {
+        modelResultHeading = 'No option reaches the model’s +2 comparison threshold.';
+        modelResultDetail = 'Pause and change the plan rather than treating the least-low score as a recommendation.';
+      } else if (modelLeaders.length > 1) {
+        modelResultHeading = 'No single model leader: ' + modelLeaders.length +
+          ' options tie at ' + signedTopScore + '.';
+        modelResultDetail = modelLeaders.map(function(candidate) { return candidate.name; }).join('; ') +
+          '. Compare their needs directly instead of breaking the tie by rank order.';
+      } else if (leadMargin <= 1) {
+        modelResultHeading = 'Close model result: ' + modelLeaders[0].name +
+          ' leads by only ' + leadMargin + ' point.';
+        modelResultDetail = 'A small input or weight change can reorder the result, so compare the next option too.';
+      } else {
+        modelResultHeading = 'Current model leader: ' + modelLeaders[0].name +
+          ' leads the next option by ' + leadMargin + ' points.';
+        modelResultDetail = 'Use the lead to decide what to investigate first, not what to adopt.';
+      }
 
       function pickerReasonCues(candidateId, o, expectedScore) {
         var factors = [];
@@ -5154,30 +7075,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         } else if (candidateId === 'dog-small') {
           add(o.housing === 'apartment' ? 'Apartment selected' : 'Non-apartment setting', o.housing === 'apartment' ? 2 : 1);
           if (o.hours <= 6) add(o.hours + ' hr alone', 2);
-          if (o.experience === 'first') add('First-time selection', 1);
           if (o.budget === 'low') add('Low budget', -1);
           if (o.allergies) add('Allergies selected', -2);
-          if (o.kids) add('Children at home', -1);
         } else if (candidateId === 'cat') {
           add('Base score', 2);
           if (o.housing === 'apartment') add('Apartment selected', 1);
           if (o.hours >= 6) add(o.hours + ' hr alone', 1);
           if (o.experience === 'first') add('First-time selection', 1);
-          if (o.budget === 'low') add('Low budget', 1);
+          if (o.budget === 'low') add('Low budget', -1);
           if (o.allergies) add('Allergies selected', -3);
         } else if (candidateId === 'rabbit-pair') {
           add(o.housing === 'house' ? 'House selected' : 'Non-house setting', o.housing === 'house' ? 2 : 1);
           if (o.experience === 'first') add('First-time selection', -1);
           if (o.budget === 'low') add('Low budget', -2);
-          if (o.kids && o.kidAge < 8) add('Youngest child under 8', -2);
+          if (o.kids && o.kidAge < 8) add('Young child supervision plan needed', -1);
         } else if (candidateId === 'guinea-pair') {
           add('Base score', 1);
-          if (o.experience !== 'lots') add('First/some experience', 1);
-          if (o.kids) add('Children at home', 1);
+          if (o.kids && o.kidAge < 5) add('CDC: under-5 rodent contact caution', -6);
         } else if (candidateId === 'reptile-beginner') {
           if (o.housing === 'apartment') add('Apartment selected', 1);
           if (o.allergies) add('Allergies selected', 2);
-          if (o.kids && o.kidAge < 5) add('Youngest child under 5', -3);
+          if (o.kids && o.kidAge < 5) add('CDC: not recommended with children under 5', -6);
           if (o.experience === 'first') add('First-time selection', -1);
         } else if (candidateId === 'fish-tank') {
           add('Base score', 1);
@@ -5276,8 +7194,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           focusable: 'false',
           'aria-labelledby': titleId + ' ' + descId
         },
-          h('title', { id: titleId }, 'Top match: ' + candidate.name),
-          h('desc', { id: descId }, 'Simplified ' + candidate.name + ' silhouette highlighting the current top-ranked match.'),
+          h('title', { id: titleId }, 'Current model leader: ' + candidate.name),
+          h('desc', { id: descId }, 'Simplified ' + candidate.name + ' silhouette highlighting the first top-ranked option in this fixed educational model.'),
           h('g', { fill: 'currentColor', stroke: '#3b2419', strokeWidth: 2, strokeLinejoin: 'round' }, drawing)
         );
       }
@@ -5318,7 +7236,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function radio(name, val, current, label, onChange) {
         var picked = current === val;
-        return h('label', { htmlFor: 'pp-' + name + '-' + val,
+        return h('label', { htmlFor: 'pp-' + name + '-' + val, className: 'petslab-choice-pill',
           style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: picked ? T.accent : T.cardAlt, color: picked ? '#1f1612' : T.text,
             border: '1px solid ' + (picked ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
@@ -5329,7 +7247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           label);
       }
       function checkbox(name, current, label, onChange) {
-        return h('label', { htmlFor: 'pp-' + name,
+        return h('label', { htmlFor: 'pp-' + name, className: 'petslab-choice-pill',
           style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: current ? T.accent : T.cardAlt, color: current ? '#1f1612' : T.text,
             border: '1px solid ' + (current ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
@@ -5338,11 +7256,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: { marginRight: 4, accentColor: T.accent } }),
           label);
       }
+      function setPickerReadiness(itemId, checked) {
+        var next = {};
+        PICK_READINESS_ITEMS.forEach(function(item) {
+          if (pickReadiness[item.id] === true) next[item.id] = true;
+        });
+        if (checked) next[itemId] = true;
+        else delete next[itemId];
+        upd('pickReadiness', next);
+      }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🏠 Pet Picker'),
         h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Tell us about your situation; we\'ll suggest species/breed-class matches with honest tradeoffs. This is a science-based matchmaker, not a quiz that always finds you a "winner" — sometimes the right answer is "wait until your situation changes."')),
+            'Describe a real or fictional household; we\'ll rank species-class comparisons and make the tradeoffs visible. A high score is a question to investigate, not a pet recommendation, and sometimes the responsible answer is to wait.'),
+          learningModelNote('Decision-support model', 'The fit scores come from fixed educational weights, not a validated matching instrument. Use them to surface questions for a shelter, veterinarian, or experienced caregiver—not as an adoption decision.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🏘️ Housing'),
           h('div', { role: 'radiogroup', 'aria-label': 'Housing type' },
@@ -5358,7 +7286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               });
             })),
           h('div', { style: { fontSize: 11, color: T.dim, marginTop: 4, marginBottom: 4, lineHeight: 1.5 } },
-            'Age matters, not just presence: the CDC advises against reptiles in homes with children under 5, and the House Rabbit Society advises against rabbits with young children.'),
+            'Age matters, not just presence: the CDC does not recommend reptiles in households with young children and advises children under 5 to avoid rodent contact. Rabbit care must remain an adult responsibility, with supervised interaction.'),
           h('div', null,
             checkbox('allergies', pickAllergies, 'Allergies in household', function(v) { upd('pickAllergies', v); })),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } },
@@ -5379,20 +7307,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             radio('exp', 'first', pickExperience, 'First-time owner', function(v) { upd('pickExperience', v); }),
             radio('exp', 'some', pickExperience, 'Some experience', function(v) { upd('pickExperience', v); }),
             radio('exp', 'lots', pickExperience, 'Experienced (multiple species)', function(v) { upd('pickExperience', v); }))),
+        h('fieldset', {
+          className: 'petslab-picker-readiness',
+          style: {
+            minWidth: 0,
+            padding: 14,
+            borderRadius: 10,
+            background: T.card,
+            border: '1px solid ' + T.border,
+            margin: '0 0 14px'
+          }
+        },
+          h('legend', { style: { padding: '0 6px', color: T.text, fontSize: 14, fontWeight: 800 } },
+            'Decision-readiness checkpoint'),
+          h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+            'For a real or fictional household, mark an item only when it has actually been checked. Rankings remain comparison prompts until every essential is confirmed.'),
+          h('div', {
+            role: 'list',
+            style: {
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))',
+              gap: 8
+            }
+          }, PICK_READINESS_ITEMS.map(function(item) {
+            var confirmed = pickReadiness[item.id] === true;
+            return h('label', {
+              key: item.id,
+              role: 'listitem',
+              htmlFor: 'pets-picker-ready-' + item.id,
+              'data-pets-picker-readiness': item.id,
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'auto minmax(0, 1fr)',
+                gap: 8,
+                alignItems: 'start',
+                padding: 9,
+                borderRadius: 8,
+                background: confirmed ? 'rgba(132,204,22,.08)' : T.bg,
+                border: '1px solid ' + (confirmed ? T.ok : T.border),
+                cursor: 'pointer'
+              }
+            },
+              h('input', {
+                id: 'pets-picker-ready-' + item.id,
+                type: 'checkbox',
+                'data-pets-focusable': true,
+                checked: confirmed,
+                onChange: function(e) { setPickerReadiness(item.id, e.target.checked); },
+                style: { marginTop: 2, accentColor: T.ok }
+              }),
+              h('span', { style: { minWidth: 0 } },
+                h('strong', { style: { display: 'block', color: T.text, fontSize: 11, lineHeight: 1.4 } }, item.label),
+                h('span', { style: { display: 'block', marginTop: 2, color: T.muted, fontSize: 10, lineHeight: 1.45 } }, item.detail)));
+          })),
+          h('div', {
+            className: 'petslab-picker-readiness-status',
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            'data-pets-picker-readiness-status': readinessMissing.length ? 'pause' : 'research',
+            style: {
+              marginTop: 10,
+              padding: 9,
+              borderRadius: 8,
+              background: readinessMissing.length ? 'rgba(251,191,36,.08)' : 'rgba(132,204,22,.08)',
+              border: '1px solid ' + (readinessMissing.length ? T.warm : T.ok),
+              color: readinessMissing.length ? T.warm : T.ok,
+              fontSize: 11,
+              lineHeight: 1.5
+            }
+          },
+            h('strong', null, readinessMissing.length
+              ? 'Pause before choosing — ' + readinessMissing.length + ' of ' +
+                PICK_READINESS_ITEMS.length + ' readiness checks still unverified.'
+              : 'Ready to research — all ' + PICK_READINESS_ITEMS.length + ' readiness checks confirmed.'),
+            h('span', { style: { display: 'block', marginTop: 2, color: T.muted } },
+              readinessMissing.length
+                ? 'Waiting is the responsible outcome until the missing essentials are checked; the rankings below do not override them.'
+                : 'Use the model leaders to plan meetings and expert questions. This checkpoint still does not approve an adoption.'),
+            h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              onClick: function() { goToView('cost', 'Lifetime Cost from Pet Picker'); },
+              style: btn({ display: 'block', marginTop: 8, padding: '6px 10px', fontSize: 10 })
+            }, 'Open illustrative lifetime costs'))),
         h('section', {
           className: 'petslab-picker-results',
           role: 'region',
           'aria-labelledby': 'pets-picker-results-title'
         },
           h('div', { className: 'petslab-picker-results-head' },
-            h('h3', { id: 'pets-picker-results-title' }, '\uD83C\uDFAF Your matches'),
+            h('h3', { id: 'pets-picker-results-title' }, '\uD83C\uDFAF Ranked comparison'),
             h('div', { className: 'petslab-picker-scale-copy' }, 'Fixed fit scale: -7 to +7')),
+          h('div', {
+            className: 'petslab-picker-model-result',
+            role: 'note',
+            style: {
+              marginBottom: 10,
+              padding: 9,
+              borderRadius: 8,
+              background: T.bg,
+              border: '1px solid ' + T.border,
+              color: T.muted,
+              fontSize: 11,
+              lineHeight: 1.5
+            }
+          },
+            h('strong', { style: { display: 'block', color: T.accentHi, marginBottom: 2 } }, modelResultHeading),
+            h('span', null, modelResultDetail + ' The point gap comes from fixed educational weights; it is not confidence or proof of suitability.')),
           h('ol', { className: 'petslab-picker-list' },
             scored.slice(0, 5).map(function(s, i) {
               var isTopScore = s.score === scored[0].score;
               var topScoreIsTied = scored.length > 1 && scored[1].score === scored[0].score;
               var label = isTopScore
-                ? (topScoreIsTied ? 'TIED TOP' : 'TOP MATCH')
+                ? (topScoreIsTied ? 'TIED MODEL LEADER' : 'MODEL LEADER')
                 : (s.score >= 2 ? 'good' : (s.score >= 0 ? 'consider' : 'probably not'));
               return h('li', {
                 key: s.id,
@@ -5426,7 +7454,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🤔 Honest checks before any pet'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
             h('li', null, 'Will you (and your circumstances) still want this animal in 5, 10, 15+ years? Pets aren\'t for "right now" only.'),
-            h('li', null, 'Have you priced an emergency vet visit ($1K–5K typical)? Do you have a fund or pet insurance for that?'),
+            h('li', null, 'Have you priced routine and emergency veterinary care for this species and built a realistic reserve or insurance plan?'),
             h('li', null, 'Who cares for them when you travel? Boarding + petsitter costs add up.'),
             h('li', null, 'Are you allowed pets where you live (and where you might live next)?'),
             h('li', null, 'Have you actually met the species? Many people get a breed they\'ve only seen on Instagram.'))),
@@ -5436,8 +7464,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // ─────────────────────────────────────────
     // BODY LANGUAGE DECODER
     // ─────────────────────────────────────────
-    function renderBodyLang() {
-      var sets = [
+    function bodyLanguageSignalSets(signalTheme) {
+      // Persistence and project hydration use this catalog before the view
+      // palette is initialized. Signal identity must not depend on render
+      // timing, so the catalog owns stable semantic colors and may accept the
+      // live palette later when a caller wants it.
+      var T = signalTheme || {
+        ok: '#84cc16',
+        warm: '#fb923c',
+        accentHi: '#fbbf24',
+        danger: '#dc2626'
+      };
+      return [
         { species: '🐕 Dogs', items: [
           { signal: 'Loose body + soft eyes + open mouth + wagging mid-height tail', meaning: 'Relaxed + happy', color: T.ok },
           { signal: 'Stiff body + closed mouth + hard stare + slow high tail wag', meaning: 'WARNING — back off', color: T.warm },
@@ -5474,6 +7512,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { signal: 'Feather plucking / overgrooming', meaning: 'Boredom / stress / medical — needs investigation', color: T.warm }
         ]}
       ];
+    }
+    function canonicalBodyLanguageSignalKeys() {
+      var canonicalKeys = {};
+      bodyLanguageSignalSets().forEach(function(group) {
+        group.items.forEach(function(item) {
+          canonicalKeys[group.species + '|' + item.signal] = true;
+        });
+      });
+      return canonicalKeys;
+    }
+    function normalizeDecoderMasteryState(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+      var signalLookup = {};
+      bodyLanguageSignalSets().forEach(function(group) {
+        group.items.forEach(function(item) {
+          signalLookup[group.species + '|' + item.signal] = {
+            species: group.species,
+            signal: item.signal,
+            meaning: item.meaning
+          };
+        });
+      });
+      var safe = {};
+      Object.keys(raw).forEach(function(key) {
+        var source = signalLookup[key];
+        var record = raw[key];
+        if (!source || !record || typeof record !== 'object' || Array.isArray(record)) return;
+        var count = Number(record.correctCount);
+        count = isFinite(count) ? Math.max(1, Math.min(10000, Math.floor(count))) : 1;
+        safe[key] = {
+          firstCorrectAt: normalizeEvidenceTimestamp(record.firstCorrectAt),
+          lastCorrectAt: normalizeEvidenceTimestamp(record.lastCorrectAt),
+          correctCount: count,
+          species: source.species,
+          signal: source.signal,
+          meaning: source.meaning
+        };
+      });
+      return safe;
+    }
+    function canonicalDecoderMasteryCount(map) {
+      var canonicalKeys = canonicalBodyLanguageSignalKeys();
+      return Object.keys(map || {}).filter(function(key) {
+        return !!canonicalKeys[key];
+      }).length;
+    }
+    function normalizeBodyLanguageQuiz(raw) {
+      if (!raw || typeof raw !== 'object' || !Array.isArray(raw.qs) || raw.qs.length < 1 || raw.qs.length > 10) return null;
+      var signalLookup = {};
+      bodyLanguageSignalSets().forEach(function(group) {
+        group.items.forEach(function(item) {
+          signalLookup[group.species + '|' + item.signal] = item;
+        });
+      });
+      var usedKeys = {};
+      var qs = [];
+      for (var qi = 0; qi < raw.qs.length; qi++) {
+        var question = raw.qs[qi];
+        if (!question || typeof question !== 'object') return null;
+        var species = String(question.species || '').slice(0, 80);
+        var signal = String(question.signal || '').slice(0, 500);
+        var key = species + '|' + signal;
+        var source = signalLookup[key];
+        if (!source || usedKeys[key] || !Array.isArray(question.choices) || question.choices.length < 2 || question.choices.length > 6) return null;
+        var correct = Number(question.correct);
+        if (!isFinite(correct) || Math.floor(correct) !== correct || correct < 0 || correct >= question.choices.length) return null;
+        var choices = question.choices.map(function(choice) { return String(choice || '').slice(0, 500); });
+        if (choices[correct] !== source.meaning || choices.some(function(choice, choiceIndex) {
+          return choices.indexOf(choice) !== choiceIndex;
+        })) return null;
+        usedKeys[key] = true;
+        var cues = Array.isArray(question.cues) ? question.cues.slice(0, 5).filter(function(cue) {
+          return Array.isArray(cue) && typeof cue[0] === 'string';
+        }).map(function(cue) {
+          return [String(cue[0]).slice(0, 120), Number(cue[1]) || 0, Number(cue[2]) || 0];
+        }) : [];
+        qs.push({
+          species: species,
+          signal: signal,
+          key: key,
+          meaning: source.meaning,
+          pose: String(question.pose || '').slice(0, 100),
+          cues: cues,
+          choices: choices,
+          correct: correct,
+          color: source.color
+        });
+      }
+      var rawAnswers = Array.isArray(raw.answers) ? raw.answers : [];
+      var answers = [];
+      var score = 0;
+      qs.forEach(function(question, answerIndex) {
+        var answer = Number(rawAnswers[answerIndex]);
+        if (!isFinite(answer) || Math.floor(answer) !== answer || answer < 0 || answer >= question.choices.length) return;
+        answers[answerIndex] = answer;
+        if (answer === question.correct) score += 1;
+      });
+      var rawIndex = Number(raw.idx);
+      if (!isFinite(rawIndex)) rawIndex = 0;
+      var done = raw.done === true || rawIndex >= qs.length;
+      var idx = done ? qs.length : Math.max(0, Math.min(qs.length - 1, Math.floor(rawIndex)));
+      var mode = raw.mode === 'unseen' || raw.mode === 'missed' ? raw.mode : 'random';
+      var sourceCount = Number(raw.sourceCount);
+      if (!isFinite(sourceCount)) sourceCount = qs.length;
+      sourceCount = Math.max(qs.length, Math.min(27, Math.floor(sourceCount)));
+      return { idx: idx, qs: qs, answers: answers, score: score, done: done, mode: mode, sourceCount: sourceCount };
+    }
+    function bodyQuizMeetsBadgeStandard(quiz) {
+      var total = quiz && Array.isArray(quiz.qs) ? quiz.qs.length : 0;
+      var pct = total ? Math.round(((Number(quiz.score) || 0) / total) * 100) : 0;
+      return (quiz && quiz.mode || 'random') === 'random' && total === 10 && pct >= 80;
+    }
+    function renderBodyLang() {
+      var sets = bodyLanguageSignalSets();
       // Flatten all signals for quiz mode
       // Observable pose metadata drives the quiz illustration without changing
       // the canonical signal or meaning text used by scoring and mastery.
@@ -5516,10 +7668,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             color: it.color, pose: poseMeta.pose, cues: poseMeta.cues });
         });
       });
-      var blMode = d.blMode || 'read';
-      // Quiz state
-      var blQuiz = d.blQuiz || null;  // { idx, qs, answers, score }
-      function setMode(m) { upd('blMode', m); petsAnnounce(m === 'quiz' ? 'Body language quiz mode' : 'Reference reading mode'); }
+      var canonicalSignalKeys = canonicalBodyLanguageSignalKeys();
+      function bodySignalKey(item) { return item.species + '|' + item.signal; }
+      var blMissedKeys = Array.isArray(d.blMissedKeys)
+        ? d.blMissedKeys.filter(function(key) { return !!canonicalSignalKeys[key]; })
+        : [];
+      var blMissedLookup = {};
+      blMissedKeys.forEach(function(key) { blMissedLookup[key] = true; });
+      var blQuiz = normalizeBodyLanguageQuiz(d.blQuiz);  // null when absent or unsafe to resume
+      var blTransfer = normalizeBodyLanguageTransfer(d.blTransfer);
+      var bodyContextCases = bodyLanguageContextChallenges();
+      var bodyContextLookup = {};
+      bodyContextCases.forEach(function(item) { bodyContextLookup[item.id] = item; });
+      var blSeenLookup = {};
+      (Array.isArray(d.blSeenKeys) ? d.blSeenKeys : []).forEach(function(key) {
+        if (canonicalSignalKeys[key]) blSeenLookup[key] = true;
+      });
+      // Correctly decoded and unresolved missed signals necessarily appeared
+      // in an earlier attempt, including saves from before blSeenKeys existed.
+      Object.keys(decoderMastery || {}).forEach(function(key) {
+        if (canonicalSignalKeys[key]) blSeenLookup[key] = true;
+      });
+      blMissedKeys.forEach(function(key) { blSeenLookup[key] = true; });
+      if (blQuiz) {
+        blQuiz.qs.forEach(function(question, questionIndex) {
+          if ((blQuiz.answers || [])[questionIndex] != null) blSeenLookup[question.key] = true;
+        });
+      }
+      var unseenSignals = allSignals.filter(function(item) { return !blSeenLookup[bodySignalKey(item)]; });
+      var needsPracticeSignals = allSignals.filter(function(item) { return !!blMissedLookup[bodySignalKey(item)]; });
+      var blMode = d.blMode === 'quiz' || d.blMode === 'context' ? d.blMode : 'read';
+      function setMode(m) {
+        var nextMode = m === 'quiz' || m === 'context' ? m : 'read';
+        upd('blMode', nextMode);
+        petsAnnounce(nextMode === 'quiz'
+          ? 'Body language signal practice mode'
+          : nextMode === 'context'
+            ? 'Body language context challenge mode'
+            : 'Reference reading mode');
+        try {
+          setTimeout(function() {
+            var tab = document.getElementById('pets-body-mode-' + nextMode);
+            if (tab && tab.focus) tab.focus();
+          }, 0);
+        } catch (e) {}
+      }
+      function focusBodyTarget(ref) {
+        try {
+          setTimeout(function() {
+            if (ref && ref.current && ref.current.focus) ref.current.focus();
+          }, 0);
+        } catch (e) {}
+      }
       function bodySpeciesKey(species) {
         var name = String(species || '');
         if (name.indexOf('Cats') !== -1) return 'cat';
@@ -5817,9 +8017,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           )
         );
       }
-      function startQuiz() {
-        // Pick 10 distinct signals at random; each becomes a question with 1 correct + 3 distractors from same species (where possible)
-        var pool = allSignals.slice();
+      function startContextChallenge() {
+        var ids = bodyContextCases.map(function(item) { return item.id; });
+        for (var i = ids.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = ids[i]; ids[i] = ids[j]; ids[j] = temp;
+        }
+        upd('blTransfer', { idx: 0, ids: ids.slice(0, 4), answers: [], score: 0, done: false, bestPct: blTransfer ? blTransfer.bestPct : 0 });
+        petsAnnounce('Starting a four-case body language context challenge.');
+        focusBodyTarget(_bodyStepHeadingRef);
+      }
+      function answerContextChallenge(choiceIndex) {
+        if (!blTransfer || blTransfer.done) return;
+        var existing = blTransfer.answers || [];
+        if (existing[blTransfer.idx] != null) return;
+        var item = bodyContextLookup[blTransfer.ids[blTransfer.idx]];
+        if (!item || choiceIndex < 0 || choiceIndex >= item.choices.length) return;
+        var answers = existing.slice();
+        answers[blTransfer.idx] = choiceIndex;
+        upd('blTransfer', Object.assign({}, blTransfer, {
+          answers: answers,
+          score: blTransfer.score + (choiceIndex === item.correct ? 1 : 0)
+        }));
+        focusBodyTarget(_bodyFeedbackRef);
+      }
+      function nextContextChallenge() {
+        if (!blTransfer || blTransfer.done) return;
+        if (blTransfer.idx < blTransfer.ids.length - 1) {
+          upd('blTransfer', Object.assign({}, blTransfer, { idx: blTransfer.idx + 1 }));
+          focusBodyTarget(_bodyStepHeadingRef);
+          return;
+        }
+        var total = blTransfer.ids.length;
+        var pct = total ? Math.round((blTransfer.score / total) * 100) : 0;
+        var bestPct = Math.max(blTransfer.bestPct || 0, pct);
+        recordEvidence('bodyLang', 'Finished a context transfer check', {
+          score: blTransfer.score,
+          total: total,
+          scorePct: pct,
+          practiceMode: 'context'
+        });
+        upd('blTransfer', Object.assign({}, blTransfer, {
+          idx: total,
+          done: true,
+          bestPct: bestPct
+        }));
+        petsAnnounce('Context challenge complete. ' + blTransfer.score + ' of ' + total + ' safest responses selected.');
+        focusBodyTarget(_bodyStepHeadingRef);
+      }
+      function startQuiz(practiceMode, exactKeys) {
+        var selectedMode = practiceMode === 'unseen' || practiceMode === 'missed' ? practiceMode : 'random';
+        var hasExactRequest = Array.isArray(exactKeys);
+        var exactLookup = {};
+        (hasExactRequest ? exactKeys : []).forEach(function(key) {
+          if (canonicalSignalKeys[key]) exactLookup[key] = true;
+        });
+        var pool = hasExactRequest
+          ? allSignals.filter(function(item) { return !!exactLookup[bodySignalKey(item)]; })
+          : selectedMode === 'unseen'
+            ? unseenSignals.slice()
+            : selectedMode === 'missed'
+              ? needsPracticeSignals.slice()
+              : allSignals.slice();
+        if (!pool.length) {
+          petsAnnounce(selectedMode === 'unseen'
+            ? 'No unseen signals remain.'
+            : selectedMode === 'missed'
+              ? 'No signals currently need practice.'
+              : 'No body-language signals are available.');
+          return;
+        }
         for (var i = pool.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
           var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
@@ -5848,10 +8115,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           return {
             species: item.species, signal: item.signal,
             pose: item.pose, cues: item.cues,
+            meaning: item.meaning, key: bodySignalKey(item),
             choices: choices, correct: correctIdx, color: item.color
           };
         });
-        upd('blQuiz', { idx: 0, qs: qs, answers: [], score: 0 });
+        upd('blQuiz', { idx: 0, qs: qs, answers: [], score: 0, mode: selectedMode, sourceCount: pool.length });
+        petsAnnounce('Starting ' + selectedMode + ' practice with ' + qs.length + ' signals.');
+        focusBodyTarget(_bodyStepHeadingRef);
       }
       function answerQuiz(choiceIdx) {
         if (!blQuiz) return;
@@ -5861,59 +8131,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         nextAns[blQuiz.idx] = choiceIdx;
         var q = blQuiz.qs[blQuiz.idx];
         var isCorrect = choiceIdx === q.correct;
+        var sigKey = q.key || (q.species + '|' + q.signal);
         upd('blQuiz', Object.assign({}, blQuiz, {
           answers: nextAns,
           score: blQuiz.score + (isCorrect ? 1 : 0)
         }));
+        upd('blSeenKeys', function(current) {
+          var nextSeen = Array.isArray(current) ? current.filter(function(key) { return !!canonicalSignalKeys[key]; }) : [];
+          if (nextSeen.indexOf(sigKey) < 0) nextSeen.push(sigKey);
+          return nextSeen.slice(-27);
+        });
+        upd('blMissedKeys', function(current) {
+          var nextKeys = Array.isArray(current) ? current.filter(function(key) { return !!canonicalSignalKeys[key]; }) : [];
+          var at = nextKeys.indexOf(sigKey);
+          if (isCorrect) {
+            if (at >= 0) nextKeys.splice(at, 1);
+          } else if (at < 0) {
+            nextKeys.push(sigKey);
+          }
+          return nextKeys.slice(-27);
+        });
         // Decoder Mastery: log unique signals correctly identified across
         // every attempt. First-correct fires a celebration overlay.
         if (isCorrect) {
-          var sigKey = q.species + '|' + q.signal;
-          var prevMastery = (d.decoderMastery && typeof d.decoderMastery === 'object') ? d.decoderMastery : {};
+          var prevMastery = decoderMastery;
           var existingEntry = prevMastery[sigKey];
           var isFirstCorrect = !existingEntry;
           var nowIso = new Date().toISOString();
           var nextEntry = isFirstCorrect
-            ? { firstCorrectAt: nowIso, lastCorrectAt: nowIso, correctCount: 1, species: q.species, signal: q.signal, meaning: q.qs ? null : null }
+            ? { firstCorrectAt: nowIso, lastCorrectAt: nowIso, correctCount: 1, species: q.species, signal: q.signal, meaning: q.meaning || q.choices[q.correct] }
             : Object.assign({}, existingEntry, { lastCorrectAt: nowIso, correctCount: (existingEntry.correctCount || 0) + 1 });
           var nextMastery = Object.assign({}, prevMastery);
           nextMastery[sigKey] = nextEntry;
           upd('decoderMastery', nextMastery);
           if (isFirstCorrect) {
             try { setDecoderCeleb({ species: q.species, signal: q.signal, at: Date.now() }); } catch (e) {}
-            try { setTimeout(function () { setDecoderCeleb(null); }, 3200); } catch (e) {}
+            try {
+              if (_decoderCelebTimerRef.current) clearTimeout(_decoderCelebTimerRef.current);
+              _decoderCelebTimerRef.current = setTimeout(function () {
+                _decoderCelebTimerRef.current = null;
+                setDecoderCeleb(null);
+              }, 3200);
+            } catch (e) {}
             // Award progressive badges based on unique signals decoded
-            var uniqueCount = Object.keys(nextMastery).length;
-            if (uniqueCount >= 5) awardBadge('pets_decoder_5', 'Signal Reader (5 decoded)');
-            if (uniqueCount >= 15) awardBadge('pets_decoder_15', 'Fluent Decoder (15 decoded)');
-            if (uniqueCount >= 27) awardBadge('pets_decoder_all', 'Master Decoder (all signals)');
-            if (uniqueCount >= 27) completeModule('decoderMastery', 'Decoded all 27 body-language signals');
+            var uniqueCount = Object.keys(nextMastery).filter(function(key) {
+              return !!canonicalSignalKeys[key];
+            }).length;
+            if (uniqueCount >= 5) awardBadge('pets_decoder_5', PETS_BADGE_DISPLAY_LABELS.pets_decoder_5);
+            if (uniqueCount >= 15) awardBadge('pets_decoder_15', PETS_BADGE_DISPLAY_LABELS.pets_decoder_15);
+            if (uniqueCount >= 27) awardBadge('pets_decoder_all', PETS_BADGE_DISPLAY_LABELS.pets_decoder_all);
+          if (uniqueCount >= 27) completeModule('decoderMastery', 'Logged all 27 body-language signals at least once', {
+              score: 27, total: 27, scorePct: 100, coverageComplete: true
+            });
           }
         }
-        petsAnnounce(isCorrect ? 'Correct.' : 'Not quite — see explanation.');
+        focusBodyTarget(_bodyFeedbackRef);
       }
       function nextQuiz() {
         if (!blQuiz) return;
         if (blQuiz.idx < blQuiz.qs.length - 1) {
           upd('blQuiz', Object.assign({}, blQuiz, { idx: blQuiz.idx + 1 }));
+          focusBodyTarget(_bodyStepHeadingRef);
         } else {
-          // Done — award badge if score ≥ 8
-          if (blQuiz.score >= 8) awardBadge('pets_body_lang', 'Body Language Reader');
-          completeModule('bodyLang', 'Finished the 10-signal decoder quiz');
+          var quizTotal = blQuiz.qs.length;
+          var scorePct = quizTotal ? Math.round((blQuiz.score / quizTotal) * 100) : 0;
+          if (bodyQuizMeetsBadgeStandard(blQuiz)) awardBadge('pets_body_lang', 'Body Language Reader');
+          completeModule('bodyLang',
+            'Finished a ' + quizTotal + '-signal ' + (blQuiz.mode || 'random') + ' decoder practice set',
+            {
+              score: blQuiz.score,
+              total: quizTotal,
+              scorePct: scorePct,
+              practiceMode: blQuiz.mode || 'random',
+              decoderMastery: canonicalDecoderMasteryCount(decoderMastery),
+              needsPractice: blMissedKeys.length,
+              criterionMet: (blQuiz.mode || 'random') === 'random' && quizTotal === 10
+                ? scorePct >= 80
+                : undefined
+            });
           upd('blQuiz', Object.assign({}, blQuiz, { idx: blQuiz.qs.length, done: true }));
+          focusBodyTarget(_bodyStepHeadingRef);
         }
       }
-      function newQuiz() { upd('blQuiz', null); startQuiz(); }
+      function newQuiz() { startQuiz('random'); }
       // Mode switcher UI
       var modeBar = h('div', { role: 'tablist', 'aria-label': 'Body language mode',
         style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
-        ['read', 'quiz'].map(function(m) {
+        ['read', 'quiz', 'context'].map(function(m) {
           var sel = blMode === m;
           return h('button', {
-            key: m, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            key: m, id: 'pets-body-mode-' + m, role: 'tab',
+            'aria-selected': sel ? 'true' : 'false',
+            'aria-controls': 'pets-body-panel-' + m,
+            'data-pets-body-mode': m,
             'data-pets-focusable': true,
-            'aria-label': m === 'read' ? 'Reference reading mode' : 'Quiz mode',
+            tabIndex: sel ? 0 : -1,
+            'aria-label': m === 'read' ? 'Reference reading mode' : m === 'quiz' ? 'Signal practice mode' : 'Context challenge mode',
             onClick: function() { setMode(m); },
+            onKeyDown: function(e) {
+              var modes = ['read', 'quiz', 'context'];
+              var at = modes.indexOf(m);
+              var nextAt = null;
+              if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextAt = (at + 1) % modes.length;
+              else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextAt = (at - 1 + modes.length) % modes.length;
+              else if (e.key === 'Home') nextAt = 0;
+              else if (e.key === 'End') nextAt = modes.length - 1;
+              if (nextAt == null) return;
+              e.preventDefault();
+              var nextMode = modes[nextAt];
+              setMode(nextMode);
+              var target = e.currentTarget.parentElement && e.currentTarget.parentElement.querySelector('[data-pets-body-mode="' + nextMode + '"]');
+              if (target && target.focus) target.focus();
+            },
             style: btn({
               padding: '8px 14px', fontSize: 13,
               background: sel ? T.accent : T.card,
@@ -5921,30 +8250,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               border: '2px solid ' + (sel ? T.accent : T.border),
               fontWeight: sel ? 800 : 600
             })
-          }, (m === 'read' ? '📚 Read (reference)' : '🎯 Quiz mode'));
+          }, (m === 'read' ? '📚 Read (reference)' : m === 'quiz' ? '🎯 Signal practice' : '🧭 Context challenge'));
         })
       );
       // Quiz mode rendering
       function renderQuizMode() {
         if (!blQuiz) {
-          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
+          var decodedCount = canonicalDecoderMasteryCount(decoderMastery);
+          return h('div', { className: 'petslab-body-practice-start',
+            style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
             h('div', { style: { fontSize: 32, marginBottom: 8 } }, '🎯'),
-            h('h3', { style: { margin: '0 0 8px', color: T.accentHi, fontSize: 17 } }, 'Body Language Quiz'),
+            h('h3', { style: { margin: '0 0 8px', color: T.accentHi, fontSize: 17 } }, 'Choose your practice set'),
             h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 14px' } },
-              '10 signals across 4 species. For each, pick the most likely meaning. Score 8/10 or higher to earn the Body Language Reader badge.'
+              'Pick the most likely meaning from observable cues. Random practice uses 10 signals and can earn the 8/10 Body Language Reader badge; focused sets may be shorter.'
             ),
-            h('button', { 'data-pets-focusable': true,
-              onClick: startQuiz,
-              style: btnPrimary({ padding: '12px 22px', fontSize: 14 })
-            }, '▶ Start 10-question quiz')
+            h('div', { className: 'petslab-body-practice-counts', role: 'status',
+              style: { display: 'flex', justifyContent: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 14, color: T.muted, fontSize: 11 } },
+              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, decodedCount + ' / 27 logged once'),
+              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, unseenSignals.length + ' unseen'),
+              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, needsPracticeSignals.length + ' need practice')),
+            h('div', { role: 'group', 'aria-label': 'Choose a body-language practice set',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(190px, 100%), 1fr))', gap: 8 } },
+              h('button', { type: 'button', 'data-pets-focusable': true,
+                onClick: function() { startQuiz('random'); },
+                style: btnPrimary({ padding: '12px 14px', fontSize: 13, textAlign: 'center' })
+              }, '🎲 Random 10'),
+              h('button', { type: 'button', 'data-pets-focusable': true,
+                disabled: unseenSignals.length === 0,
+                onClick: function() { startQuiz('unseen'); },
+                style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'center', opacity: unseenSignals.length ? 1 : 0.55 })
+              }, unseenSignals.length ? '✨ Unseen (up to 10 of ' + unseenSignals.length + ')' : '✓ No unseen signals'),
+              h('button', { type: 'button', 'data-pets-focusable': true,
+                disabled: needsPracticeSignals.length === 0,
+                onClick: function() { startQuiz('missed'); },
+                style: btn({ padding: '12px 14px', fontSize: 13, textAlign: 'center', opacity: needsPracticeSignals.length ? 1 : 0.55 })
+              }, needsPracticeSignals.length ? '🧠 Needs practice (up to 10 of ' + needsPracticeSignals.length + ')' : '✓ Nothing needs practice'))
           );
         }
         if (blQuiz.done) {
           var pct = Math.round(blQuiz.score / blQuiz.qs.length * 100);
+          var ans = blQuiz.answers || [];
+          var missedQuestions = blQuiz.qs.filter(function(qq, qi) { return ans[qi] !== qq.correct; });
+          var missedQuestionKeys = missedQuestions.map(function(qq) { return qq.key || (qq.species + '|' + qq.signal); });
           var tier = blQuiz.score === blQuiz.qs.length ? 'perfect'
-                     : blQuiz.score >= 9 ? 'outstanding'
-                     : blQuiz.score >= 7 ? 'strong'
-                     : blQuiz.score >= 5 ? 'learning'
+                     : pct >= 90 ? 'outstanding'
+                     : pct >= 70 ? 'strong'
+                     : pct >= 50 ? 'learning'
                      : 'review';
           var tierColor = tier === 'perfect' ? '#fbbf24'
                           : tier === 'outstanding' ? T.ok
@@ -5953,28 +8304,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                           : T.danger;
           var tierIcon = tier === 'perfect' ? '🏆' : tier === 'outstanding' ? '🎯' : tier === 'strong' ? '👊' : tier === 'learning' ? '📚' : '📖';
           var tierTitle = tier === 'perfect' ? 'Perfect — every signal read'
-                          : tier === 'outstanding' ? 'Outstanding — you can read pets like a pro'
-                          : tier === 'strong' ? 'Strong — you will spot most danger signals before they escalate'
+                          : tier === 'outstanding' ? 'Outstanding recall'
+                          : tier === 'strong' ? 'Strong pattern recognition'
                           : tier === 'learning' ? 'Solid foundation'
                           : 'These signals take practice';
           var tierMsg = tier === 'perfect'
-                        ? 'You read every species cleanly. Bring this skill to a real shelter — most volunteers can read 3 of 4 species at this level after weeks of work.'
+                        ? 'You identified every signal in this set. Keep mixing species and contexts so the cues stay flexible.'
                         : tier === 'outstanding'
-                          ? 'You read all 4 species at near-expert level. The signal most volunteers miss is whale eye in cats — you got it.'
+                          ? 'Nearly all cues were matched correctly. Use the focused review below for the one that changed the score.'
                           : tier === 'strong'
-                            ? 'Strong overall. Re-read the species you missed (most likely cats or rabbits — they have the most-misread signals).'
+                            ? 'Most patterns are in place. Practice the exact missed signals, then return to a mixed set.'
                             : tier === 'learning'
-                              ? 'Solid foundation — review the Read tab to sharpen specific species. Most miss-prone: cat whale eye, rabbit thumping, dog calming signals.'
-                              : 'Re-read the species sections, then try again. Body language fluency is muscle memory; one quiz pass isn\'t enough.';
+                              ? 'Use each cue list to connect posture details with meaning before trying those signals again.'
+                              : 'Move slowly through the cue lists below, compare them with the Reference tab, then retry the focused set.';
           var rad = 36, circ = 2 * Math.PI * rad;
           var dashOff = circ - (pct / 100) * circ;
-          var ans = blQuiz.answers || [];
           return h('div', { style: { borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
             h('div', { style: { padding: 18, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
               // Score donut
               h('div', { style: { position: 'relative', width: 96, height: 96, flexShrink: 0 } },
                 h('svg', { viewBox: '0 0 100 100', width: 96, height: 96,
-                  'aria-label': 'Score: ' + blQuiz.score + ' out of ' + blQuiz.qs.length
+                  'aria-hidden': 'true', focusable: 'false'
                 },
                   h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
                   h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
@@ -5986,37 +8336,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 )
               ),
               h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { color: T.dim, fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } },
+                  (blQuiz.mode === 'unseen' ? 'Unseen' : blQuiz.mode === 'missed' ? 'Needs-practice' : 'Random') + ' set · ' + blQuiz.qs.length + ' signals' +
+                  (blQuiz.sourceCount > blQuiz.qs.length ? ' drawn from ' + blQuiz.sourceCount + ' available' : '')),
                 h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
-                h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                h('h3', { ref: _bodyStepHeadingRef, tabIndex: -1, className: 'petslab-body-result-heading',
+                  style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
                 h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
               )
             ),
             // Per-question result strip
             h('div', { style: { padding: '0 18px 8px' } },
               h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Your answers'),
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+              h('div', { role: 'list', 'aria-label': 'Question results',
+                style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 blQuiz.qs.map(function(qq, qi) {
                   var picked = ans[qi];
                   var isCorrect = picked === qq.correct;
-                  return h('div', { key: qi,
+                  return h('div', { key: qi, role: 'listitem',
                     title: 'Q' + (qi + 1) + ' (' + qq.species + ')' + (isCorrect ? ' correct ✓' : ' incorrect'),
                     style: {
-                      width: 14, height: 14, borderRadius: 3,
+                      minWidth: 30, minHeight: 22, padding: '2px 5px', borderRadius: 4,
                       background: isCorrect ? T.ok : T.danger,
                       border: '1.5px solid ' + (isCorrect ? '#15803d' : '#7f1d1d'),
-                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)',
+                      color: '#fff', fontSize: 10, fontWeight: 900,
+                      display: 'inline-flex', alignItems: 'center', justifyContent: 'center'
                     },
                     'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
-                  });
+                  }, 'Q' + (qi + 1) + ' ' + (isCorrect ? '✓' : '×'));
                 })
               )
             ),
-            blQuiz.score >= 8 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.ok, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Body Language Reader'),
+            missedQuestions.length > 0 && h('section', { className: 'petslab-body-review',
+              'aria-labelledby': 'pets-body-review-heading',
+              style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
+              h('h4', { id: 'pets-body-review-heading', style: { margin: '0 0 8px', color: T.accentHi, fontSize: 14 } },
+                'Review ' + missedQuestions.length + ' signal' + (missedQuestions.length === 1 ? '' : 's')),
+              h('div', { role: 'list', style: { display: 'grid', gap: 8 } },
+                missedQuestions.map(function(qq) {
+                  return h('article', { key: qq.key || qq.signal, role: 'listitem',
+                    style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, textAlign: 'left' } },
+                    h('div', { style: { color: T.accentHi, fontSize: 10, fontWeight: 800, textTransform: 'uppercase' } }, qq.species),
+                    h('div', { style: { marginTop: 3, color: T.text, fontSize: 12, fontWeight: 800, lineHeight: 1.45 } }, qq.signal),
+                    h('div', { style: { marginTop: 5, color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+                      h('strong', { style: { color: T.text } }, 'Watch: '),
+                      (qq.cues || []).map(function(cue) { return cue[0]; }).join(' · ')),
+                    h('div', { style: { marginTop: 3, color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+                      h('strong', { style: { color: qq.color || T.accentHi } }, 'Most likely meaning: '),
+                      qq.meaning || qq.choices[qq.correct])
+                  );
+                }))),
+            bodyQuizMeetsBadgeStandard(blQuiz) && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.ok, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Body Language Reader'),
             h('div', { style: { padding: '12px 18px', display: 'flex', gap: 8, flexWrap: 'wrap', borderTop: '1px solid ' + T.border } },
+              missedQuestions.length > 0 && h('button', { type: 'button', 'data-pets-focusable': true,
+                onClick: function() { startQuiz('missed', missedQuestionKeys); },
+                style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
+              }, '🧠 Practice these ' + missedQuestions.length + ' signal' + (missedQuestions.length === 1 ? '' : 's')),
+              unseenSignals.length > 0 && h('button', { type: 'button', 'data-pets-focusable': true,
+                onClick: function() { startQuiz('unseen'); },
+                style: missedQuestions.length ? btn({ padding: '10px 18px', fontSize: 13 }) : btnPrimary({ padding: '10px 18px', fontSize: 13 })
+              }, '✨ Practice unseen (up to 10 of ' + unseenSignals.length + ')'),
               h('button', { 'data-pets-focusable': true,
                 onClick: newQuiz,
-                style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
-              }, '🔁 New quiz'),
+                style: btn({ padding: '10px 18px', fontSize: 13 })
+              }, '🎲 Random 10'),
               h('button', { 'data-pets-focusable': true,
                 onClick: function() { setMode('read'); },
                 style: btn({ padding: '10px 18px', fontSize: 13 })
@@ -6030,7 +8414,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return h('div', null,
           // Progress + score
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
-            h('div', { style: { fontSize: 12, color: T.dim } }, 'Question ' + (blQuiz.idx + 1) + ' / ' + blQuiz.qs.length),
+            h('div', { style: { fontSize: 12, color: T.dim } },
+              (blQuiz.mode === 'unseen' ? 'Unseen' : blQuiz.mode === 'missed' ? 'Needs practice' : 'Random') + ' · Question ' + (blQuiz.idx + 1) + ' / ' + blQuiz.qs.length +
+              (blQuiz.sourceCount > blQuiz.qs.length ? ' · ' + blQuiz.qs.length + ' drawn from ' + blQuiz.sourceCount : '')),
             h('div', { style: { flex: 1, height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden' }, 'aria-hidden': 'true' },
               h('div', { style: { width: ((blQuiz.idx + (revealed ? 1 : 0)) / blQuiz.qs.length * 100) + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
             ),
@@ -6039,12 +8425,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // The signal
           h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, q.species),
-            h('div', { style: { fontSize: 16, color: T.text, fontWeight: 700, lineHeight: 1.5 } }, q.signal),
+            h('div', { ref: _bodyStepHeadingRef, tabIndex: -1, className: 'petslab-body-question-heading',
+              style: { fontSize: 16, color: T.text, fontWeight: 700, lineHeight: 1.5 } }, q.signal),
             renderBodyLanguagePose(q),
             h('div', { style: { fontSize: 12, color: T.muted, marginTop: 8, fontStyle: 'italic' } }, 'What is this animal most likely communicating?')
           ),
           // Choices
-          h('div', { role: 'radiogroup', 'aria-label': 'Choose the most likely meaning',
+          h('div', { role: 'group', 'aria-label': 'Choose the most likely meaning',
             style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
             q.choices.map(function(choice, ci) {
               var isPicked = picked === ci;
@@ -6057,10 +8444,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 bg = 'rgba(245,158,11,0.18)'; border = T.accent;
               }
               return h('button', {
-                key: ci, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+                key: ci, type: 'button',
+                'aria-pressed': isPicked ? 'true' : 'false',
+                'aria-disabled': revealed ? 'true' : 'false',
                 'data-pets-focusable': true,
-                disabled: revealed,
-                onClick: function() { answerQuiz(ci); },
+                tabIndex: revealed ? -1 : 0,
+                onClick: function() { if (!revealed) answerQuiz(ci); },
                 style: btn({
                   padding: '12px 14px', fontSize: 13,
                   background: bg, color: text,
@@ -6077,14 +8466,158 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             })
           ),
           // Reveal + next
-          revealed && h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, borderLeft: '3px solid ' + q.color, marginBottom: 12 } },
-            h('div', { style: { fontSize: 12, fontWeight: 800, color: q.color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Why'),
-            h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, q.choices[q.correct])
+          revealed && h('div', { className: 'petslab-body-answer-feedback',
+            ref: _bodyFeedbackRef, tabIndex: -1,
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            style: { padding: 14, borderRadius: 10, background: T.cardAlt, borderLeft: '3px solid ' + q.color, marginBottom: 12 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: picked === q.correct ? T.ok : T.warm, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } },
+              picked === q.correct ? 'Correct — connect the cues' : 'Not quite — connect the cues'),
+            h('p', { style: { margin: '0 0 7px', fontSize: 13, color: T.text, lineHeight: 1.6 } },
+              q.meaning || q.choices[q.correct]),
+            h('ul', { style: { margin: 0, paddingLeft: 18, color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+              (q.cues || []).map(function(cue, cueIndex) {
+                return h('li', { key: cueIndex }, 'Cue ' + (cueIndex + 1) + ': ' + cue[0]);
+              }))
           ),
           revealed && h('button', { 'data-pets-focusable': true,
             onClick: nextQuiz,
             style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
           }, blQuiz.idx < blQuiz.qs.length - 1 ? 'Next signal →' : 'See score ✓')
+        );
+      }
+      function renderContextMode() {
+        if (!blTransfer) {
+          return h('div', {
+            className: 'petslab-body-context-start',
+            'data-pets-body-practice': 'context',
+            style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' }
+          },
+            h('div', { style: { fontSize: 32, marginBottom: 8 }, 'aria-hidden': 'true' }, '🧭'),
+            h('h3', { style: { margin: '0 0 8px', color: T.accentHi, fontSize: 17 } }, 'Apply cues in a new context'),
+            h('p', { style: { margin: '0 auto 8px', maxWidth: 650, color: T.text, fontSize: 13, lineHeight: 1.6 } },
+              'Four short cases ask for the safest interpretation or next step. The same cue can mean different things when posture, trigger, lighting, health, or choice changes.'),
+            h('p', { role: 'note', style: { margin: '0 auto 14px', maxWidth: 650, color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+              'This is a formative transfer check—not a handling certification. It does not award the 8/10 signal-recognition badge or add signals to the Signal Log.'),
+            h('button', {
+              type: 'button', 'data-pets-focusable': true, 'data-pets-start-context': true,
+              onClick: startContextChallenge,
+              style: btnPrimary({ padding: '11px 20px', fontSize: 13 })
+            }, 'Start 4-case context challenge')
+          );
+        }
+        if (blTransfer.done) {
+          var resultPct = blTransfer.ids.length ? Math.round(blTransfer.score / blTransfer.ids.length * 100) : 0;
+          var missedCases = blTransfer.ids.map(function(id, index) {
+            return { item: bodyContextLookup[id], picked: blTransfer.answers[index] };
+          }).filter(function(row) {
+            return row.item && row.picked !== row.item.correct;
+          });
+          return h('div', {
+            className: 'petslab-body-context-results',
+            style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (resultPct >= 75 ? T.ok : T.warm) }
+          },
+            h('h3', {
+              ref: _bodyStepHeadingRef, tabIndex: -1,
+              className: 'petslab-body-context-result-heading',
+              style: { margin: '0 0 5px', color: resultPct >= 75 ? T.ok : T.warm, fontSize: 19 }
+            }, blTransfer.score + ' / ' + blTransfer.ids.length + ' safest responses'),
+            h('p', { style: { margin: '0 0 7px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              resultPct >= 75
+                ? 'Strong context application. Keep pausing for the whole body and the animal’s ability to opt out.'
+                : 'Use the repairs below, then try new cases. Safety decisions should stay cautious when a cue is ambiguous.'),
+            h('p', { role: 'note', style: { margin: '0 0 12px', color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+              'Formative context result: ' + resultPct + '%. This does not replace the random 8/10 recognition target or demonstrate real-animal handling competency.'),
+            missedCases.length > 0 && h('section', {
+              className: 'petslab-body-context-review',
+              'aria-labelledby': 'pets-body-context-review-heading',
+              style: { marginBottom: 12, padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.border }
+            },
+              h('h4', { id: 'pets-body-context-review-heading', style: { margin: '0 0 7px', color: T.accentHi, fontSize: 13 } },
+                'Review ' + missedCases.length + ' cautious response' + (missedCases.length === 1 ? '' : 's')),
+              h('div', { role: 'list', style: { display: 'grid', gap: 7 } },
+                missedCases.map(function(row) {
+                  return h('article', { key: row.item.id, role: 'listitem',
+                    style: { padding: 8, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                    h('strong', { style: { display: 'block', color: T.text, fontSize: 11 } }, row.item.species + ': ' + row.item.question),
+                    h('span', { style: { display: 'block', marginTop: 3, color: T.muted, fontSize: 10, lineHeight: 1.5 } }, row.item.why)
+                  );
+                }))
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              h('button', { type: 'button', 'data-pets-focusable': true, onClick: startContextChallenge,
+                style: btnPrimary({ padding: '9px 14px', fontSize: 12 }) }, 'Try 4 new cases'),
+              h('button', { type: 'button', 'data-pets-focusable': true, onClick: function() { setMode('quiz'); },
+                style: btn({ padding: '9px 14px', fontSize: 12 }) }, 'Practice signal recognition'),
+              h('button', { type: 'button', 'data-pets-focusable': true, onClick: function() { setMode('read'); },
+                style: btn({ padding: '9px 14px', fontSize: 12 }) }, 'Back to reference')
+            )
+          );
+        }
+        var contextItem = bodyContextLookup[blTransfer.ids[blTransfer.idx]];
+        if (!contextItem) {
+          return h('div', { role: 'alert', style: { padding: 14, color: T.warm } },
+            'This saved context case is no longer available. ',
+            h('button', { type: 'button', 'data-pets-focusable': true, onClick: startContextChallenge, style: btnPrimary() }, 'Start a fresh challenge'));
+        }
+        var contextPicked = (blTransfer.answers || [])[blTransfer.idx];
+        var contextRevealed = contextPicked != null;
+        var contextAnswered = blTransfer.idx + (contextRevealed ? 1 : 0);
+        return h('div', { className: 'petslab-body-context-attempt' },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
+            h('div', { style: { color: T.dim, fontSize: 11 } }, 'Context case ' + (blTransfer.idx + 1) + ' / ' + blTransfer.ids.length),
+            h('div', {
+              role: 'progressbar',
+              'aria-label': contextAnswered + ' of ' + blTransfer.ids.length + ' context cases answered',
+              'aria-valuemin': 0, 'aria-valuemax': blTransfer.ids.length, 'aria-valuenow': contextAnswered,
+              style: { flex: 1, height: 6, overflow: 'hidden', borderRadius: 3, background: T.cardAlt }
+            }, h('span', { style: { display: 'block', width: (contextAnswered / blTransfer.ids.length * 100) + '%', height: '100%', background: T.accent } })),
+            h('strong', { style: { color: T.accentHi, fontSize: 11 } }, blTransfer.score + ' safest')
+          ),
+          h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('div', { style: { color: T.accentHi, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, contextItem.species + ' · whole-body context'),
+            h('p', {
+              ref: _bodyStepHeadingRef, tabIndex: -1,
+              className: 'petslab-body-context-question-heading',
+              style: { margin: '7px 0', color: T.text, fontSize: 14, lineHeight: 1.6 }
+            }, contextItem.scenario),
+            h('div', { style: { color: T.text, fontSize: 13, fontWeight: 800, lineHeight: 1.5 } }, contextItem.question)
+          ),
+          h('div', { role: 'group', 'aria-label': 'Choose the safest next step',
+            style: { display: 'grid', gap: 8, marginBottom: 12 } },
+            contextItem.choices.map(function(choice, choiceIndex) {
+              var isPicked = contextPicked === choiceIndex;
+              var isCorrect = contextItem.correct === choiceIndex;
+              var bg = T.cardAlt;
+              var border = T.border;
+              if (contextRevealed && isCorrect) { bg = 'rgba(132,204,22,0.18)'; border = T.ok; }
+              else if (contextRevealed && isPicked) { bg = 'rgba(220,38,38,0.18)'; border = T.danger; }
+              return h('button', {
+                key: choiceIndex, type: 'button', 'data-pets-focusable': true,
+                'aria-pressed': isPicked ? 'true' : 'false',
+                'aria-disabled': contextRevealed ? 'true' : 'false',
+                tabIndex: contextRevealed ? -1 : 0,
+                onClick: function() { if (!contextRevealed) answerContextChallenge(choiceIndex); },
+                style: btn({ width: '100%', padding: '11px 13px', textAlign: 'left', fontSize: 12, lineHeight: 1.5,
+                  background: bg, border: '2px solid ' + border, cursor: contextRevealed ? 'default' : 'pointer' })
+              }, choice);
+            })),
+          contextRevealed && h('div', {
+            ref: _bodyFeedbackRef, tabIndex: -1,
+            className: 'petslab-body-context-feedback',
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            style: { padding: 12, borderRadius: 9, background: T.cardAlt, borderLeft: '3px solid ' + (contextPicked === contextItem.correct ? T.ok : T.warm), marginBottom: 12 }
+          },
+            h('strong', { style: { display: 'block', color: contextPicked === contextItem.correct ? T.ok : T.warm, fontSize: 12, marginBottom: 4 } },
+              contextPicked === contextItem.correct ? 'Safest response — connect the context' : 'Pause and repair this decision'),
+            h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.55, marginBottom: 5 } }, contextItem.feedback[contextPicked]),
+            h('div', { style: { color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, 'Why: '), contextItem.why)
+          ),
+          contextRevealed && h('button', {
+            type: 'button', 'data-pets-focusable': true,
+            onClick: nextContextChallenge,
+            style: btnPrimary({ width: '100%', padding: '10px 16px', fontSize: 13 })
+          }, blTransfer.idx < blTransfer.ids.length - 1 ? 'Next context case →' : 'See context result ✓')
         );
       }
       // Read mode: the same observable poses used by the quiz, arranged as a
@@ -6120,9 +8653,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('👀 Body Language Decoder'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Most pet bites + stress incidents are predictable from body language minutes in advance. Learning to read these signals is the single highest-impact thing a pet-owning household can do.')),
+            'Animals often show posture, facial, and movement cues before stress escalates. Reading the whole body in context helps people give space and seek help; it cannot guarantee that an interaction is safe.')),
         modeBar,
-        blMode === 'quiz' ? renderQuizMode() : readContent,
+        h('div', {
+          id: 'pets-body-panel-' + blMode,
+          role: 'tabpanel',
+          'aria-labelledby': 'pets-body-mode-' + blMode
+        }, blMode === 'quiz' ? renderQuizMode() : blMode === 'context' ? renderContextMode() : readContent),
         footer());
     }
 
@@ -6139,21 +8676,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           notes: 'Lower food cost; small-breed dental needs raise lifetime vet costs.' },
         'cat-indoor': { name: 'Cat (indoor)', icon: '🐈',
           firstYear: 1800, annual: 1100, emergencyFund: 2500, lifespan: 15, timeDaily: 0.75,
-          notes: 'Litter + food + vet + enrichment. Pair of cats often costs less than 2× single (shared resources).' },
+          notes: 'Price litter, food, routine veterinary care, scratching and climbing options, and enrichment.' },
         'rabbit-pair': { name: 'Bonded rabbit pair', icon: '🐰',
           firstYear: 1200, annual: 900, emergencyFund: 2000, lifespan: 10, timeDaily: 1.5,
-          notes: 'Hay + greens + pellets + exotic-vet visits. Spay/neuter mandatory + can be expensive.' },
+          notes: 'Price hay, greens, pellets, spacious indoor housing, enrichment, sterilization, and rabbit-experienced veterinary care.' },
         'guinea-pair': { name: 'Bonded GP pair', icon: '🐹',
           firstYear: 600, annual: 700, emergencyFund: 1000, lifespan: 6, timeDaily: 1,
           notes: 'Vitamin-C-stable pellets + daily fresh veg + cage cleaning.' },
         'reptile': { name: 'Beginner reptile (gecko)', icon: '🦎',
           firstYear: 800, annual: 250, emergencyFund: 800, lifespan: 18, timeDaily: 0.25,
-          notes: 'Front-loaded setup cost (enclosure + UVB + heat). Low ongoing cost. Exotic vets rare.' },
+          notes: 'Price the species-specific enclosure, heat and lighting, replacement equipment, food, and access to an appropriate veterinarian.' },
         'parrot-medium': { name: 'Medium parrot (Conure)', icon: '🦜',
           firstYear: 2500, annual: 1200, emergencyFund: 2000, lifespan: 25, timeDaily: 2,
-          notes: 'Cage + food + toys (replaced often) + avian vet. NEEDS daily out-of-cage time.' }
+          notes: 'Price spacious housing, food, frequently replaced enrichment, avian veterinary care, and daily social and out-of-cage time.' }
       };
-      var p = profiles[costSpecies] || profiles['cat-indoor'];
+      var baseProfile = profiles[costSpecies] || profiles['cat-indoor'];
+      var selectedEstimate = costEstimates[costSpecies] || {};
+      var researchedFieldCount = ['firstYear', 'annual', 'emergencyFund'].filter(function(field) {
+        return Object.prototype.hasOwnProperty.call(selectedEstimate, field);
+      }).length;
+      var zeroEstimateFields = ['firstYear', 'annual', 'emergencyFund'].filter(function(field) {
+        return Object.prototype.hasOwnProperty.call(selectedEstimate, field) && selectedEstimate[field] === 0;
+      });
+      var researchedScenarioReady = researchedFieldCount === 3 && zeroEstimateFields.length === 0;
+      var usingLocalEstimate = costMode === 'local';
+      var p = usingLocalEstimate
+        ? Object.assign({}, baseProfile, selectedEstimate)
+        : baseProfile;
       // The slider runs to 30 years but a guinea pig pair lives ~6, so a
       // student can ask for a span covering several successive animals. The
       // panel used to call that "Lifetime cost" regardless, which is the wrong
@@ -6161,14 +8710,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // only once, when in reality each new animal brings its own.
       var costAnimals = Math.max(1, Math.ceil(costYears / (p.lifespan || costYears)));
       var multiGen = costAnimals > 1;
-      var lifetimeCost = multiGen
+      var plannedCost = multiGen
         ? (costAnimals * p.firstYear) + (p.annual * Math.max(0, costYears - costAnimals))
         : p.firstYear + (p.annual * (costYears - 1));
       var lifetimeHours = p.timeDaily * 365 * costYears;
-      var dollarsPerYear = lifetimeCost / costYears;
+      var dollarsPerYear = plannedCost / costYears;
 
       function renderCostScale() {
-        var annualShare = lifetimeCost > 0 ? (p.annual / lifetimeCost * 100) : 100;
+        var annualShare = plannedCost > 0 ? (p.annual / plannedCost * 100) : 0;
         var spans = [];
         for (var animalIndex = 0; animalIndex < costAnimals; animalIndex++) {
           var startYear = animalIndex * p.lifespan;
@@ -6194,8 +8743,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ' The selected plan ends after ' + costYears + ' years.';
         return h('div', { className: 'petslab-cost-burden' },
           h('div', { className: 'petslab-cost-burden-heading' },
-            h('strong', null, 'Annual cost versus the selected span'),
-            h('span', null, 'Same scale: one ongoing year compared with the full plan')
+            h('strong', null, 'Annual planned spending versus the selected span'),
+            h('span', null, 'Same scale: one ongoing year compared with the baseline plan')
           ),
           h('div', { className: 'petslab-cost-burden-row' },
             h('span', { className: 'petslab-cost-burden-label' }, 'One ongoing year'),
@@ -6203,7 +8752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               className: 'petslab-cost-burden-track',
               role: 'img',
               'aria-label': 'One ongoing year is $' + p.annual.toLocaleString() +
-                ', about ' + Math.round(annualShare) + ' percent of the selected-span cost.'
+                ', about ' + Math.round(annualShare) + ' percent of the selected-span baseline cost.'
             },
               h('div', {
                 className: 'petslab-cost-burden-fill petslab-cost-burden-fill--annual',
@@ -6213,15 +8762,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('span', { className: 'petslab-cost-burden-value' }, '$' + p.annual.toLocaleString())
           ),
           h('div', { className: 'petslab-cost-burden-row' },
-            h('span', { className: 'petslab-cost-burden-label' }, costYears + '-year plan'),
+            h('span', { className: 'petslab-cost-burden-label' }, costYears + '-year baseline plan'),
             h('div', {
               className: 'petslab-cost-burden-track',
               role: 'img',
-              'aria-label': 'The selected ' + costYears + '-year cost is $' + lifetimeCost.toLocaleString() + '.'
+              'aria-label': 'The selected ' + costYears + '-year baseline planned cost is $' + plannedCost.toLocaleString() + '.'
             },
               h('div', { className: 'petslab-cost-burden-fill petslab-cost-burden-fill--span', style: { width: '100%' } })
             ),
-            h('span', { className: 'petslab-cost-burden-value' }, '$' + lifetimeCost.toLocaleString())
+            h('span', { className: 'petslab-cost-burden-value' }, '$' + plannedCost.toLocaleString())
           ),
           h('div', { className: 'petslab-cost-timeline' },
             h('svg', {
@@ -6283,7 +8832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
       function radioCost(val, label) {
         var picked = costSpecies === val;
-        return h('label', { htmlFor: 'cs-' + val,
+        return h('label', { htmlFor: 'cs-' + val, className: 'petslab-choice-pill',
           style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 12px', marginRight: 6, marginBottom: 4, borderRadius: '999rem',
             background: picked ? T.accent : T.cardAlt, color: picked ? '#1f1612' : T.text,
             border: '1px solid ' + (picked ? T.accent : T.border), fontSize: 12, fontWeight: 600, cursor: 'pointer' } },
@@ -6293,11 +8842,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: { position: 'absolute', opacity: 0, pointerEvents: 'none' } }),
           label);
       }
+      function costModeRadio(val, label) {
+        var picked = costMode === val;
+        return h('label', { htmlFor: 'cs-mode-' + val, className: 'petslab-choice-pill',
+          style: { display: 'inline-flex', alignItems: 'center', gap: 6, padding: '7px 12px', borderRadius: '999rem',
+            background: picked ? T.accent : T.cardAlt, color: picked ? '#1f1612' : T.text,
+            border: '1px solid ' + (picked ? T.accent : T.border), fontSize: 12, fontWeight: 700, cursor: 'pointer' } },
+          h('input', { id: 'cs-mode-' + val, 'data-pets-focusable': true, type: 'radio',
+            name: 'cost-mode', checked: picked,
+            onChange: function() { upd('costMode', val); },
+            style: { position: 'absolute', opacity: 0, pointerEvents: 'none' } }),
+          label);
+      }
+      function updateCostEstimate(field, rawValue) {
+        var value = Number(rawValue);
+        if (!isFinite(value)) return;
+        value = Math.max(0, Math.min(100000, Math.round(value)));
+        upd('costEstimates', function(current) {
+          var next = normalizeCostEstimates(current);
+          var record = Object.assign({}, next[costSpecies] || {});
+          record[field] = value;
+          next[costSpecies] = record;
+          return next;
+        });
+      }
+      function resetCostEstimate() {
+        upd('costEstimates', function(current) {
+          var next = normalizeCostEstimates(current);
+          delete next[costSpecies];
+          return next;
+        });
+        petsAnnounce('Local estimates for ' + baseProfile.name + ' reset to the illustrative starting values.');
+      }
+      var costResearchStatus = !usingLocalEstimate
+        ? 'Illustrative mode: these classroom starting values are not local quotes or a forecast.'
+        : researchedFieldCount === 3 && zeroEstimateFields.length
+          ? 'Research scenario needs review: all 3 values were replaced, but ' + zeroEstimateFields.length +
+            (zeroEstimateFields.length === 1 ? ' is' : ' are') + ' $0. Confirm that each zero is documented rather than a missing cost.'
+        : researchedScenarioReady
+          ? 'Research scenario: all 3 dollar values have been replaced. Verify each source and date; this remains an estimate.'
+          : 'Research mode: ' + researchedFieldCount + ' of 3 dollar values replaced. Starter values remain for the other ' +
+            (3 - researchedFieldCount) + '.';
       return h('div', { className: 'petslab-cost-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('💵 Lifetime Cost & Commitment'),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'These are illustrative US averages from AVMA + ASPCA + APPA surveys (2023–2024). Actual costs vary widely by region — Maine rural exotic-vet care can be limited or require driving to Boston. Use as ballpark, not exact estimate.')),
+            'Start with an illustrative classroom scenario or replace it with current local research. Costs vary by animal, health, provider, housing, region, and time. Dollar projections use today’s values: future price changes and unexpected treatment are not forecast.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, 'Pick a species'),
           h('div', { role: 'radiogroup', 'aria-label': 'Species' },
@@ -6308,6 +8898,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             radioCost('guinea-pair', '🐹 Guinea pigs'),
             radioCost('reptile', '🦎 Gecko'),
             radioCost('parrot-medium', '🦜 Conure'))),
+        h('fieldset', { className: 'petslab-cost-basis' },
+          h('legend', null, 'Choose the estimate basis'),
+          h('div', { className: 'petslab-cost-mode-options', role: 'radiogroup', 'aria-label': 'Estimate basis' },
+            costModeRadio('illustrative', 'Illustrative starting values'),
+            costModeRadio('local', 'My researched estimates')),
+          h('p', { id: 'pets-cost-research-help', style: { margin: 0, color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+            'For local research, compare current food and supply prices with routine and emergency veterinary information for this species. Do not enter names, account details, or other private information.'),
+          usingLocalEstimate && h('div', { className: 'petslab-cost-research-fields' },
+            [
+              { id: 'firstYear', label: 'First-year planned spending (USD)' },
+              { id: 'annual', label: 'Annual planned spending (USD)' },
+              { id: 'emergencyFund', label: 'Contingency savings target (USD)' }
+            ].map(function(field) {
+              var isResearched = Object.prototype.hasOwnProperty.call(selectedEstimate, field.id);
+              return h('label', { key: field.id, className: 'petslab-cost-research-field', htmlFor: 'cs-estimate-' + field.id },
+                h('span', null, field.label),
+                h('input', {
+                  id: 'cs-estimate-' + field.id,
+                  'data-pets-focusable': true,
+                  'data-pets-cost-input': field.id,
+                  'data-pets-cost-input-source': isResearched ? 'local' : 'starter',
+                  type: 'number', min: 0, max: 100000, step: 1,
+                  inputMode: 'numeric', value: p[field.id],
+                  'aria-describedby': 'pets-cost-research-help pets-cost-source-status',
+                  onChange: function(e) { updateCostEstimate(field.id, e.target.value); }
+                }),
+                h('span', { style: { color: isResearched ? T.ok : T.dim, fontSize: 10, fontWeight: 700 } },
+                  isResearched ? 'Local value entered' : 'Illustrative starter value'));
+            })),
+          h('div', {
+            id: 'pets-cost-source-status',
+            className: 'petslab-cost-source-status',
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            'data-pets-cost-source-status': usingLocalEstimate && researchedScenarioReady ? 'researched' :
+              (usingLocalEstimate && researchedFieldCount === 3 ? 'review' : 'starter')
+          }, costResearchStatus),
+          usingLocalEstimate && h('button', {
+            type: 'button',
+            className: 'petslab-cost-reset',
+            disabled: researchedFieldCount === 0,
+            onClick: resetCostEstimate
+          }, 'Reset this species to starter values')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 4 } },
             'Years of commitment: ',
@@ -6319,22 +8953,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             onChange: function(e) { upd('costYears', parseInt(e.target.value, 10)); },
             style: { width: '100%', accentColor: T.accent } })),
         h('div', { className: 'petslab-cost-summary', style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, p.icon + ' ' + p.name + ' over ' + costYears + ' years'),
+          h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } },
+            p.icon + ' ' + p.name + ': ' + costYears + '-year ' +
+            (usingLocalEstimate ? 'research scenario' : 'illustrative scenario')),
           h('div', { className: 'petslab-cost-metrics' },
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, 'First year'),
+              h('div', { style: { fontSize: 11, color: T.dim } }, 'First-year planned spending'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.warm, fontFamily: 'monospace' } }, '$' + p.firstYear.toLocaleString())),
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, 'Annual ongoing'),
+              h('div', { style: { fontSize: 11, color: T.dim } }, 'Annual planned spending'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } }, '$' + p.annual.toLocaleString())),
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, 'Emergency fund'),
+              h('div', { style: { fontSize: 11, color: T.dim } }, 'Contingency target (separate)'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.danger, fontFamily: 'monospace' } }, '$' + p.emergencyFund.toLocaleString())),
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, multiGen ? 'Cost over ' + costYears + ' yr' : 'Lifetime cost'),
-              h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accent, fontFamily: 'monospace' } }, '$' + lifetimeCost.toLocaleString())),
+              h('div', { style: { fontSize: 11, color: T.dim } }, 'Baseline planned cost'),
+              h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accent, fontFamily: 'monospace' } }, '$' + plannedCost.toLocaleString())),
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, '$ per year'),
+              h('div', { style: { fontSize: 11, color: T.dim } }, 'Baseline $ per year'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, '$' + Math.round(dollarsPerYear).toLocaleString())),
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Total time'),
@@ -6358,25 +8994,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ' than a single long-lived animal would ask of you — often a child\'s first experience of losing someone. ' +
               'If you want one animal for the whole span, compare against a species whose lifespan already covers it.')
           ),
-          // Lifetime-cost composition — setup vs ongoing vs the emergency reserve people forget.
+          // Baseline spending composition. Contingency savings are displayed
+          // separately because cash capacity is not guaranteed expenditure.
           (function() {
             // Must track the headline figure above: with successive animals
             // the setup slice is paid once per animal, not once overall.
             var setup = p.firstYear * costAnimals;
             var ongoing = p.annual * Math.max(0, costYears - costAnimals);
-            var reserve = p.emergencyFund;
-            var total = setup + ongoing + reserve || 1;
+            var total = setup + ongoing || 1;
             var segs = [
               { id: 'setup', mark: 'SET', label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
-              { id: 'ongoing', mark: 'RUN', label: 'Ongoing (' + Math.max(0, costYears - costAnimals) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' },
-              { id: 'reserve', mark: 'SAFE', label: 'Emergency reserve', v: reserve, color: T.danger || '#dc2626' }
+              { id: 'ongoing', mark: 'RUN', label: 'Ongoing (' + Math.max(0, costYears - costAnimals) + ' yr × $' + p.annual.toLocaleString() + ')', v: ongoing, color: T.accentHi || '#0891b2' }
             ];
-            var allocationLabel = 'True total commitment $' + total.toLocaleString() + ': ' +
+            var allocationLabel = 'Baseline planned spending $' + plannedCost.toLocaleString() + ': ' +
               segs.map(function(s) {
                 return s.label + ' $' + s.v.toLocaleString() + ', ' + Math.round(s.v / total * 100) + ' percent';
               }).join('; ') + '.';
             return h('div', { className: 'petslab-cost-allocation' },
-              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'True total commitment: $' + total.toLocaleString()),
+              h('div', { style: { fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 6 } },
+                'Where baseline planned spending goes: $' + plannedCost.toLocaleString()),
               h('div', {
                 className: 'petslab-cost-allocation-bar',
                 role: 'img',
@@ -6404,18 +9040,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   );
                 })
               ),
-              h('div', { style: { marginTop: 6, fontSize: 11, color: T.muted, fontStyle: 'italic' } }, 'The "lifetime cost" figure above leaves out the emergency reserve — a real cost you should bank before adopting.')
+              h('div', { className: 'petslab-cost-contingency', role: 'note' },
+                h('strong', null, 'Separate contingency savings target: $' + p.emergencyFund.toLocaleString()),
+                'This reserve is cash set aside for unplanned expenses, not predicted spending, so it is not added to the baseline total. If it is used, the expense becomes real and the reserve may need to be rebuilt. Verify an appropriate target using current local emergency-veterinary information and household circumstances.')
             );
           })(),
           h('p', { style: { margin: '12px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55, fontStyle: 'italic' } }, p.notes)),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'What\'s NOT in these numbers'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-            h('li', null, 'Damage to your stuff (chewed shoes, scratched furniture, accidents on rugs)'),
-            h('li', null, 'Pet sitters / boarding when you travel'),
-            h('li', null, 'Higher rent / pet-deposit costs'),
-            h('li', null, 'Senior-pet costs (last 2–3 years often double the annual budget)'),
-            h('li', null, 'Specialty vet care (cardiology, oncology, behaviorist)'))),
+            h('li', null, 'Future price changes or inflation'),
+            h('li', null, 'Damage, pet sitters, boarding, higher rent, and pet deposits'),
+            h('li', null, 'Unplanned treatment; the contingency target is savings capacity, not a forecast of what care will cost'),
+            h('li', null, 'Potentially higher or more variable senior and specialty veterinary care'),
+            h('li', null, 'Insurance premiums, exclusions, deductibles, financing charges, or replenishing a used reserve'))),
         footer());
     }
 
@@ -6567,74 +9205,159 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // QUIZ — 15 questions across the lab
     // ─────────────────────────────────────────
     var QUIZ = [
-      { id: 'q1', icon: '🐕', module: 'dogs',
+      { id: 'q1', icon: '🐕', module: 'dogs', strand: 'biology',
         stem: 'Roughly how long ago do current genetic studies suggest dogs were domesticated from a now-extinct Pleistocene wolf population?',
-        choices: ['~500 years', '~3,000 years', '~15,000–40,000 years', '~200,000–300,000 years'],
+        choices: ['~500 years, near the age of modern breed registries', '~3,000 years, after the first cities formed', '~15,000–40,000 years', '~200,000–300,000 years, near the emergence of early Homo sapiens'],
         correct: 2, why: 'Multiple genome studies (Frantz 2016, Botigué 2017) point to a single domestication event between 15,000 and 40,000 years ago, possibly in eastern Eurasia.' },
-      { id: 'q2', icon: '🐈', module: 'cats',
+      { id: 'q2', icon: '🐈', module: 'cats', strand: 'biology',
         stem: 'Why do cats need taurine in their diet but dogs don\'t?',
-        choices: ['Taurine is a vitamin only cats need', 'Cats lost the metabolic ability to synthesize taurine; they\'re obligate carnivores', 'Cats absorb taurine through their paw pads, which is why indoor cats on smooth floors run short of it', 'Cats convert taurine from sunlight'],
+        choices: ['Taurine is a vitamin only cats need', 'Cats lost the metabolic ability to synthesize taurine; they\'re obligate carnivores', 'Cats absorb taurine through their paw pads when they walk on natural surfaces', 'Cats convert taurine from sunlight'],
         correct: 1, why: 'Cats lost the synthesis pathway during their evolution as strict meat-eaters. Without dietary taurine, cats develop dilated cardiomyopathy + retinal degeneration. AAFCO commercial cat foods guarantee minimums.' },
-      { id: 'q3', icon: '🐺', module: 'training',
+      { id: 'q3', icon: '🐺', module: 'training', strand: 'behavior',
         stem: 'What\'s the modern scientific status of "alpha wolf" / dominance theory for dog training?',
-        choices: ['Confirmed by recent wolf studies', 'Discredited — wild wolf packs are families, not status hierarchies', 'Only applies to certain breeds', 'Still used by all major veterinary associations as the standard model of canine social behavior'],
+        choices: ['Confirmed by recent wolf studies', 'Discredited — wild wolf packs are families, not status hierarchies', 'Only applies to certain breeds', 'Still the standard model used by veterinary associations'],
         correct: 1, why: 'L. David Mech (whose work popularized "alpha") spent decades trying to retract it. Wild wolf packs are family units. AVSAB + AVMA position statements oppose dominance-based training.' },
-      { id: 'q4', icon: '🐹', module: 'smallMammals',
+      { id: 'q4', icon: '🐹', module: 'smallMammals', strand: 'behavior',
         stem: 'You\'re considering housing two Syrian hamsters together to keep each other company. What does the science say?',
-        choices: ['Great idea, as long as they are introduced young: hamsters raised together stay bonded for life', 'Only safe if same sex', 'Strictly solitary — two adult hamsters in one cage = serious fighting', 'Only safe with food puzzles'],
+        choices: ['Safe when littermates are introduced while young', 'Only safe if same sex', 'Strictly solitary — two adult hamsters in one cage = serious fighting', 'Only safe with food puzzles'],
         correct: 2, why: 'Syrian (golden) hamsters are strictly solitary. Cohabiting adults typically results in fighting, often fatal. Pet stores often house them together as juveniles, then sell them with bad advice.' },
-      { id: 'q5', icon: '🦜', module: 'birds',
+      { id: 'q5', icon: '🦜', module: 'birds', strand: 'health',
         stem: 'Why are pet birds so vulnerable to overheated nonstick (Teflon/PTFE) cookware?',
-        choices: ['Birds are allergic to PTFE molecules, which trigger an anaphylactic reaction in the same way peanuts do in some people', 'Bird respiratory anatomy uses one-way air sacs that exchange far more air per kg than mammal lungs', 'Bird feathers absorb PTFE fumes', 'Birds have no sense of smell'],
+        choices: ['Birds are allergic to PTFE molecules, which trigger an anaphylactic reaction in the same way peanuts do in some people', 'Bird respiratory anatomy uses one-way air sacs that exchange far more air per kg than mammal lungs', 'PTFE fumes bind to bird feathers, and preening then carries concentrated toxin through the skin and into the bloodstream', 'Birds have no sense of smell'],
         correct: 1, why: 'Birds have 9 air sacs and one-way airflow through their lungs — vastly more efficient gas exchange than mammals. Same physiology that makes them sensitive coal-mine canaries makes them die in minutes from PTFE fumes.' },
-      { id: 'q6', icon: '🦎', module: 'reptiles',
+      { id: 'q6', icon: '🦎', module: 'reptiles', strand: 'health',
         stem: 'A reptile owner has a leopard gecko that won\'t eat. Most likely first thing to check?',
-        choices: ['Whether they\'re lonely', 'Husbandry — temperature gradient + UVB lighting + substrate', 'Whether they want a friend, since solitary geckos stop eating from loneliness', 'Whether they need a bath'],
+        choices: ['Whether they\'re lonely', 'Husbandry — temperature gradient + UVB lighting + substrate', 'Whether they want a friend, since solitary geckos stop eating from loneliness', 'Whether a warm bath will stimulate appetite and replace the missing environmental heat'],
         correct: 1, why: 'Most pet-reptile illness is husbandry-driven. Wrong temperature → can\'t digest. Old or missing UVB → metabolic bone disease. Substrate-impaction risks. Always check husbandry before assuming disease.' },
-      { id: 'q7', icon: '♿', module: 'service',
+      { id: 'q7', icon: '♿', module: 'service', strand: 'welfare',
         stem: 'Under federal law (ADA), what\'s the SCIENTIFIC distinction between a service dog and an emotional support animal?',
-        choices: ['Size of the animal', 'Service dog is task-trained for a disability; ESA provides comfort by presence (no task training)', 'ESA wears a vest and carries a registration card; a service dog is certified by a federal registry', 'Service dogs are larger breeds'],
+        choices: ['Federal law sets a minimum body size because only large animals can perform disability-related service work in public', 'Service dog is task-trained for a disability; ESA provides comfort by presence (no task training)', 'ESA wears a vest and carries a registration card; a service dog is certified by a federal registry', 'Service dogs are larger breeds'],
         correct: 1, why: 'A service dog is INDIVIDUALLY TRAINED to perform tasks for a person with a disability (mobility brace, medical alert, deep pressure, retrieval, etc.). An ESA provides comfort through presence — no specific tasks. ESAs are not service animals under the ADA.' },
-      { id: 'q8', icon: '🥩', module: 'nutrition',
+      { id: 'q8', icon: '🥩', module: 'nutrition', strand: 'health',
         stem: 'Which of these foods is most universally toxic to dogs, cats, AND ferrets?',
-        choices: ['Carrots', 'Bananas', 'Chocolate', 'Plain cooked chicken'],
+        choices: ['Plain carrot pieces', 'Plain banana slices', 'Chocolate', 'Plain cooked chicken'],
         correct: 2, why: 'Theobromine + caffeine in chocolate are toxic across many mammals because they metabolize them slowly. Dogs are most affected; cats + ferrets vulnerable too. Dark chocolate is far worse than milk.' },
-      { id: 'q9', icon: '🤰', module: 'zoonoses',
+      { id: 'q9', icon: '🤰', module: 'zoonoses', strand: 'health',
         stem: 'A pregnant person has an indoor cat. What does the science say about toxoplasmosis risk?',
-        choices: ['Rehome the cat immediately: toxoplasmosis passes to the fetus through ordinary contact with cat fur and saliva, and no litter-box precaution reduces that risk enough to justify keeping the animal in the home', 'Indoor cats fed only commercial food are very low risk; pregnant person should avoid scooping (or wear gloves + scoop daily, since oocysts take 24+ hr to become infective)', 'Cat must be tested daily', 'No risk at all'],
+        choices: ['Rehome the cat because ordinary contact with fur or saliva cannot be made safe during pregnancy', 'Indoor cats fed only commercial food are very low risk; pregnant person should avoid scooping (or wear gloves + scoop daily, since oocysts take 24+ hr to become infective)', 'Cat must be tested daily', 'No risk at all'],
         correct: 1, why: 'Toxoplasmosis is a real concern, but the risk from an indoor commercial-food-fed cat is low. CDC + ACOG guidance: someone else handles the litter, OR daily cleaning with gloves. Higher risks: undercooked meat, unwashed produce.' },
-      { id: 'q10', icon: '🧬', module: 'genetics',
+      { id: 'q10', icon: '🧬', module: 'genetics', strand: 'biology',
         stem: 'A "purebred" dog from a 200-year-old closed studbook is more likely to have which of the following compared to mixed-breed dogs?',
-        choices: ['Stronger immune system', 'Concentrated genetic disorders (hip dysplasia, brachycephaly, etc.)', 'Longer lifespan automatically, because closed studbooks weed out weak lines over generations', 'Better behavior automatically'],
+        choices: ['Stronger immune function because the closed pedigree removes harmful variants over time', 'Concentrated genetic disorders (hip dysplasia, brachycephaly, etc.)', 'Longer lifespan automatically, because closed studbooks weed out weak lines over generations', 'Better behavior automatically'],
         correct: 1, why: 'Closed studbooks limit the gene pool. Selecting for extreme features (flat faces, certain proportions) concentrates problems. Reputable breeders screen for known conditions (OFA hips, cardiac, eyes), but the structural risks of pedigree breeding are real.' },
-      { id: 'q11', icon: '🐈', module: 'welfare',
+      { id: 'q11', icon: '🐈', module: 'welfare', strand: 'welfare',
         stem: 'A friend says "outdoor cats are happier than indoor cats." What\'s the actual data?',
-        choices: ['Outdoor cats live LONGER than indoor cats because daily hunting and roaming keep them fit and prevent the obesity that shortens indoor lives', 'Indoor cats live substantially longer on average; enrichment — not outdoor access — is what solves boredom', 'Lifespan is the same', 'Outdoor cats only kill rats'],
+        choices: ['Outdoor cats live LONGER than indoor cats because daily hunting and roaming keep them fit and prevent the obesity that shortens indoor lives', 'Indoor cats live substantially longer on average; enrichment — not outdoor access — is what solves boredom', 'Owned indoor and outdoor cats have the same lifespan once diet, exercise, veterinary care, and population differences are controlled', 'Outdoor cats only kill rats'],
         correct: 1, why: 'Cats with outdoor access face traffic, predators, disease, and weather, and they die younger — that much is well established. The exact multiplier is not: the popular "12–18 years indoors vs 2–5 outdoors" contrast leans on feral-colony data rather than owned cats, so treat it as a rough illustration, not a measurement. Free-roaming cats also kill an estimated 1.3–4 billion birds per year in the US (Loss et al. 2013 — a wide range, mostly unowned cats). Indoor cats + environmental enrichment is the welfare-positive answer.' },
-      { id: 'q12', icon: '🐰', module: 'smallMammals',
+      { id: 'q12', icon: '🐰', module: 'smallMammals', strand: 'welfare',
         stem: 'Your friend says "rabbits are easy starter pets for kids." Which is the MOST accurate response?',
-        choices: ['Yes, hardy + easy: rabbits need only a hutch, pellets, and water, tolerate being carried around by children, and rarely need a vet in their 3-4 year lifespan', 'Rabbits are arguably the WORST starter pet — prey-animal stress, fragile GI, 8–12 yr lifespan, exotic-vet costs, dislike being held', 'Only large rabbits are hard', 'Only baby rabbits are hard'],
-        correct: 1, why: 'House Rabbit Society advises against rabbits in homes with young children. Rabbits hide illness (prey instinct), need exotic vets (limited in rural Maine), and most don\'t enjoy handling.' },
-      { id: 'q13', icon: '🐾', module: 'bodyLang',
+        choices: ['Yes. A hutch, pellets, and a child caregiver make rabbits hardy, low-maintenance pets that rarely need specialized veterinary care', 'No. Rabbits need an adult primary caregiver, spacious indoor housing, species-appropriate food and enrichment, rabbit-experienced veterinary care, and supervised interaction with children', 'Only large rabbits need adult care', 'Only baby rabbits need specialized care'],
+        correct: 1, why: 'House Rabbit Society says an adult should be the primary caretaker. Rabbits may hide illness, need specialized veterinary access, and are safest with supervised, rabbit-respecting interaction rather than being treated as a child-owned starter pet.' },
+      { id: 'q13', icon: '🐾', module: 'bodyLang', strand: 'behavior',
         stem: 'During a tense interaction between two dogs, one yawns + licks her lips repeatedly. What\'s she communicating?',
-        choices: ['She\'s hungry', 'She\'s sleepy', 'A "calming signal" — trying to defuse the social tension', 'She\'s about to bite: lip-licking and yawning are the last warnings before a snap'],
+        choices: ['She is hungry and asking the other dog to move away from nearby food', 'She is sleepy and disengaging because the interaction interrupted a nap', 'A "calming signal" — trying to defuse the social tension', 'She\'s about to bite: lip-licking and yawning are the last warnings before a snap'],
         correct: 2, why: 'Lip licking, yawning, head turning, and ground sniffing in a tense moment are appeasement / calming signals. Dogs use them to defuse. Recognizing them helps owners intervene before stacked stress becomes a bite.' },
-      { id: 'q14', icon: '🦠', module: 'zoonoses',
+      { id: 'q14', icon: '🦠', module: 'zoonoses', strand: 'health',
         stem: 'Why does the CDC recommend NO reptiles in households with children under 5?',
-        choices: ['Reptiles bite easily', 'Reptiles universally shed Salmonella', 'Reptiles need expensive vets', 'Children under 5 are allergic to reptile scales'],
-        correct: 1, why: 'Salmonella shedding is universal in reptiles + amphibians (no matter how clean they look). Young children don\'t reliably wash hands and have higher infection-severity risk. Same logic for immunocompromised + pregnant people.' },
-      { id: 'q15', icon: '🌲', module: 'zoonoses',
+        choices: ['Reptiles bite easily', 'Healthy-looking reptiles commonly carry and can shed Salmonella', 'Reptiles need expensive vets', 'Children under 5 are allergic to reptile scales'],
+        correct: 1, why: 'Reptiles and amphibians commonly carry Salmonella even when healthy and clean-looking. Young children are less reliable hand-washers and have higher risk of severe infection. CDC guidance also calls for extra caution around immunocompromised and pregnant people.' },
+      { id: 'q15', icon: '🌲', module: 'zoonoses', strand: 'health',
         stem: 'Why do Maine vets push year-round tick prevention even in winter?',
         choices: ['Tradition', 'Adult deer ticks (Ixodes scapularis) are active any day above ~40°F — Maine has many such days even in January / February', 'Vets need year-round revenue', 'Lyme bacteria mutate in cold weather into a hardier winter strain that spreads faster, so prevention has to run through the coldest months'],
         correct: 1, why: 'Adult Ixodes ticks emerge whenever temperatures briefly rise above ~40°F. Maine has plenty of warm days mid-winter. Year-round prevention has become standard for Maine dogs given Lyme + anaplasmosis density.' }
     ];
 
+    // Key coaching by authored choice text, so deterministic option rotation
+    // cannot detach a misconception repair from the choice that prompted it.
+    // Correct choices intentionally use the shared evidence model (`why`);
+    // every distractor has its own concise repair.
+    var QUIZ_CHOICE_FEEDBACK = {
+      q1: {
+        '~500 years, near the age of modern breed registries': 'Five hundred years is closer to the age of some modern breed records, not the origin of domesticated dogs.',
+        '~3,000 years, after the first cities formed': 'Dogs were already living with people well before 3,000 years ago.',
+        '~200,000–300,000 years, near the emergence of early Homo sapiens': 'That range is far older than the archaeological and genomic evidence for dog domestication.'
+      },
+      q2: {
+        'Taurine is a vitamin only cats need': 'Taurine is not a cat-only vitamin; the important difference is the cat\'s limited ability to make enough of it.',
+        'Cats absorb taurine through their paw pads when they walk on natural surfaces': 'Paw pads do not supply dietary nutrients. Cats must obtain enough taurine through food.',
+        'Cats convert taurine from sunlight': 'Sunlight does not supply taurine; this confuses a dietary amino compound with vitamin-D biology.'
+      },
+      q3: {
+        'Confirmed by recent wolf studies': 'The classic hierarchy came largely from unrelated captive wolves; long-term field studies of wild family groups changed the model.',
+        'Only applies to certain breeds': 'The evidence problem is not breed-specific; dominance is a poor default training framework across dogs.',
+        'Still the standard model used by veterinary associations': 'Major veterinary behavior organizations recommend reward-based methods and explicitly warn against dominance-based approaches.'
+      },
+      q4: {
+        'Safe when littermates are introduced while young': 'Young hamsters may be displayed together temporarily, but that does not create a safe lifelong bond in territorial Syrian adults.',
+        'Only safe if same sex': 'Same-sex housing prevents breeding, not territorial fighting.',
+        'Only safe with food puzzles': 'Food puzzles support enrichment but do not remove the species\' territorial housing risk.'
+      },
+      q5: {
+        'Birds are allergic to PTFE molecules, which trigger an anaphylactic reaction in the same way peanuts do in some people': 'PTFE toxicosis is not a peanut-like allergy; inhaled breakdown fumes damage a bird\'s highly efficient respiratory system.',
+        'PTFE fumes bind to bird feathers, and preening then carries concentrated toxin through the skin and into the bloodstream': 'The dangerous route is inhalation through the respiratory tract, not fumes soaking into feathers.',
+        'Birds have no sense of smell': 'A weak or absent smell would not protect an animal from an inhaled toxin.'
+      },
+      q6: {
+        'Whether they\'re lonely': 'Leopard geckos are solitary; appetite loss is not best explained by loneliness.',
+        'Whether they want a friend, since solitary geckos stop eating from loneliness': 'Adding another gecko can create competition or injury and does not correct poor husbandry.',
+        'Whether a warm bath will stimulate appetite and replace the missing environmental heat': 'A bath does not fix an unsafe temperature gradient, lighting problem, or impaction risk.'
+      },
+      q7: {
+        'Federal law sets a minimum body size because only large animals can perform disability-related service work in public': 'Body size does not determine service-animal status; trained work tied to a disability does.',
+        'ESA wears a vest and carries a registration card; a service dog is certified by a federal registry': 'There is no federal service-dog registry or required certification card, and a vest does not create legal status.',
+        'Service dogs are larger breeds': 'Many breeds and sizes can perform disability-related tasks; breed size is not the defining criterion.'
+      },
+      q8: {
+        'Plain carrot pieces': 'Plain carrots are generally safe in suitable portions; they are not the cross-species toxin in this list.',
+        'Plain banana slices': 'Plain banana is not the cross-species toxin, though sugary treats should remain limited.',
+        'Plain cooked chicken': 'Plain, boneless, unseasoned cooked chicken is not universally toxic, though it is not a complete diet by itself.'
+      },
+      q9: {
+        'Rehome the cat because ordinary contact with fur or saliva cannot be made safe during pregnancy': 'Routine fur or saliva contact is not the main route described by public-health guidance, and rehoming is not the default recommendation.',
+        'Cat must be tested daily': 'Daily cat testing is neither practical nor the recommended prevention strategy.',
+        'No risk at all': '“No risk” is too absolute: prevention matters even though an indoor commercial-food-fed cat is low risk.'
+      },
+      q10: {
+        'Stronger immune function because the closed pedigree removes harmful variants over time': 'A closed gene pool does not automatically strengthen immunity and can increase homozygosity for harmful variants.',
+        'Longer lifespan automatically, because closed studbooks weed out weak lines over generations': 'Closed studbooks do not automatically remove harmful alleles, especially when desired appearance traits are linked to health costs.',
+        'Better behavior automatically': 'Behavior depends on genetics, development, socialization, learning, health, and context—not pedigree alone.'
+      },
+      q11: {
+        'Outdoor cats live LONGER than indoor cats because daily hunting and roaming keep them fit and prevent the obesity that shortens indoor lives': 'Outdoor access adds traffic, infectious disease, predation, and weather hazards; exercise does not erase those risks.',
+        'Owned indoor and outdoor cats have the same lifespan once diet, exercise, veterinary care, and population differences are controlled': 'The risks are not equivalent, although exact lifespan multipliers vary across study populations.',
+        'Outdoor cats only kill rats': 'Free-roaming cats take many wildlife species, especially birds and small mammals—not only rats.'
+      },
+      q12: {
+        'Yes. A hutch, pellets, and a child caregiver make rabbits hardy, low-maintenance pets that rarely need specialized veterinary care': 'Rabbits need adult-led daily care, spacious indoor housing, species-appropriate food and enrichment, and access to a rabbit-experienced veterinarian.',
+        'Only large rabbits need adult care': 'Body size does not remove the core health-monitoring, handling, housing, diet, and veterinary-care needs.',
+        'Only baby rabbits need specialized care': 'Baby rabbits quickly become adults; age at adoption does not make the long-term responsibility simple.'
+      },
+      q13: {
+        'She is hungry and asking the other dog to move away from nearby food': 'A single lick near food could be appetite, but repeated lip licking and yawning during tension points to social stress.',
+        'She is sleepy and disengaging because the interaction interrupted a nap': 'The tense interaction changes the meaning; this is not ordinary sleepiness.',
+        'She\'s about to bite: lip-licking and yawning are the last warnings before a snap': 'These are important lower-level stress signals to heed, but they do not prove a bite is the inevitable next act.'
+      },
+      q14: {
+        'Reptiles bite easily': 'Bites are possible, but Salmonella exposure and young children\'s infection risk drive this CDC household guidance.',
+        'Reptiles need expensive vets': 'Veterinary cost is a real ownership issue but not the public-health reason for the under-five guidance.',
+        'Children under 5 are allergic to reptile scales': 'The concern is infection from Salmonella exposure, not a universal allergy to scales.'
+      },
+      q15: {
+        'Tradition': 'The recommendation follows tick activity and local disease exposure, not tradition alone.',
+        'Vets need year-round revenue': 'A revenue motive does not explain the temperature-dependent activity or Maine\'s Lyme and anaplasmosis burden.',
+        'Lyme bacteria mutate in cold weather into a hardier winter strain that spreads faster, so prevention has to run through the coldest months': 'The bacteria do not need a special winter mutation; the vector can become active whenever conditions warm enough.'
+      }
+    };
+    QUIZ.forEach(function(item) {
+      item.choiceFeedback = QUIZ_CHOICE_FEEDBACK[item.id] || {};
+    });
+
     // The authored bank put 73% of correct answers in slot 2 (measured
     // 0/11/4/0, slots 1 and 4 never) — passable by position. Rotate each
     // question ONCE here: renderQuiz re-reads QUIZ[qIdx] on every render,
     // so a random shuffle would deal new options mid-question. Grading is
-    // by index, so `correct` is remapped with the choices; `why` is one
-    // string. (The body-language quiz already shuffles at generation time
+    // by index, so `correct` is remapped with the choices. Choice coaching
+    // is keyed by text and `why` is one shared model. (The body-language quiz already shuffles at generation time
     // and is untouched.)
     (function () {
       for (var qi = 0; qi < QUIZ.length; qi++) {
@@ -6649,6 +9372,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         q.correct = (q.correct + shift) % n;
       }
     })();
+
+    var QUIZ_STRAND_LABELS = {
+      biology: 'Biology & adaptation',
+      behavior: 'Behavior & communication',
+      health: 'Health & safety',
+      welfare: 'Welfare & human responsibility'
+    };
+    function knowledgeQuizStrandSummary(responses) {
+      var rows = {};
+      Object.keys(QUIZ_STRAND_LABELS).forEach(function(id) {
+        rows[id] = { id: id, label: QUIZ_STRAND_LABELS[id], correct: 0, total: 0, answered: 0, met: false };
+      });
+      QUIZ.forEach(function(item) {
+        var row = rows[item.strand];
+        if (!row) return;
+        row.total += 1;
+        if (responses && typeof responses[item.id] === 'boolean') {
+          row.answered += 1;
+          if (responses[item.id]) row.correct += 1;
+        }
+      });
+      var list = Object.keys(QUIZ_STRAND_LABELS).map(function(id) {
+        var row = rows[id];
+        row.met = row.answered === row.total && row.total > 0 && row.correct / row.total >= 0.5;
+        return row;
+      });
+      return {
+        rows: list,
+        met: list.filter(function(row) { return row.met; }).length,
+        total: list.length,
+        complete: list.every(function(row) { return row.answered === row.total; })
+      };
+    }
 
     function renderQuiz() {
       var isReview = quizState.mode === 'missed' && quizState.reviewIds.length > 0;
@@ -6669,26 +9425,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var score = quizState.score || 0;
         var total = quizPool.length || 1;
         var pct = Math.round((score / total) * 100);
+        var strandSummary = knowledgeQuizStrandSummary(quizState.responses);
+        var fullTargetMet = !isReview && strandSummary.complete && pct >= 70 && strandSummary.met === strandSummary.total;
         var label = isReview
-          ? (missedNow.length ? 'A few concepts still need another look' : 'Every reviewed concept is now correct')
-          : pct >= 90 ? 'Pet Science Pro' : pct >= 70 ? 'Pet Science Apprentice' : pct >= 50 ? 'Keep going' : 'Back to the source modules';
-        if (!isReview && pct >= 70) awardBadge('pets_quiz_pass', 'Pets Quiz Passed');
-        if (!isReview && pct >= 90) awardBadge('pets_quiz_ace', 'Pets Quiz Ace');
+          ? (missedNow.length ? 'A few questions still need another retry' : 'Every retried question is now correct')
+          : !strandSummary.complete ? 'Overall score saved — strand target unverified'
+            : fullTargetMet && pct >= 90 ? 'Quiz target exceeded'
+              : fullTargetMet ? 'Quiz target met'
+                : pct >= 50 ? 'Keep going' : 'Back to the source modules';
         var reviewModules = [];
         missedNow.forEach(function(id) {
           var item = QUIZ.filter(function(candidate) { return candidate.id === id; })[0];
           if (item && reviewModules.indexOf(item.module) < 0) reviewModules.push(item.module);
         });
         return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto', color: T.text } },
-          backBar(isReview ? '📝 Missed-concept review — Results' : '📝 Quiz — Results'),
+          backBar(isReview ? '📝 Missed-question retry — Results' : '📝 Quiz — Results'),
           h('div', { style: { padding: 24, borderRadius: 14, background: T.card, border: '2px solid ' + T.accent, textAlign: 'center', marginBottom: 14 } },
-            h('div', { style: { fontSize: 42, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } }, score + ' / ' + total),
+            h('div', { ref: _quizQuestionRef, tabIndex: -1, className: 'petslab-quiz-result-heading',
+              style: { fontSize: 42, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } }, score + ' / ' + total),
             h('div', { style: { fontSize: 18, color: T.text, marginTop: 6 } }, pct + '%'),
             h('div', { style: { fontSize: 14, color: T.accentHi, fontWeight: 700, marginTop: 8 } }, label),
+            !isReview && strandSummary.complete && h('div', {
+              className: 'petslab-quiz-target-status',
+              style: { marginTop: 7, color: fullTargetMet ? T.ok : T.warm, fontSize: 11, fontWeight: 800 }
+            }, fullTargetMet
+              ? '✓ Full-quiz target met: 70%+ overall and at least half correct in every strand'
+              : 'Target needs practice: reach 70% overall and at least half correct in every strand'),
+            !isReview && !strandSummary.complete && h('div', {
+              className: 'petslab-quiz-target-status',
+              style: { marginTop: 7, color: T.muted, fontSize: 11 }
+            }, 'Earlier attempt: strand detail was not saved; the overall score remains available.'),
             !isReview && quizState.bestPct > 0 && h('div', { style: { marginTop: 7, color: T.muted, fontSize: 11 } }, 'Best full-quiz score: ' + Math.max(quizState.bestPct || 0, pct) + '%')),
+          !isReview && strandSummary.complete && h('section', {
+            className: 'petslab-quiz-strands',
+            'aria-labelledby': 'petslab-quiz-strands-heading',
+            style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 }
+          },
+            h('h3', { id: 'petslab-quiz-strands-heading', style: { margin: '0 0 8px', color: T.text, fontSize: 14 } }, 'Concept-strand check'),
+            h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+              'The overall score can hide a whole-area gap. Each strand needs at least half correct for the full activity target.'),
+            h('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(190px, 100%), 1fr))', gap: 7 } },
+              strandSummary.rows.map(function(row) {
+                return h('div', { key: row.id, role: 'listitem',
+                  style: { padding: 8, borderRadius: 8, background: T.card, border: '1px solid ' + (row.met ? T.ok : T.warm) } },
+                  h('strong', { style: { display: 'block', color: T.text, fontSize: 11 } }, row.label),
+                  h('span', { style: { color: row.met ? T.ok : T.warm, fontSize: 10, fontWeight: 800 } },
+                    row.correct + ' / ' + row.total + (row.met ? ' · ready' : ' · revisit'))
+                );
+              }))
+          ),
           missedNow.length > 0 && h('section', { 'aria-labelledby': 'petslab-review-plan', style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('h3', { id: 'petslab-review-plan', style: { margin: '0 0 5px', color: T.text, fontSize: 14 } }, 'Review plan'),
-            h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 12, lineHeight: 1.5 } }, missedNow.length + ' missed ' + (missedNow.length === 1 ? 'concept remains' : 'concepts remain') + '. Revisit the source modules or retry only these questions.'),
+            h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 12, lineHeight: 1.5 } }, missedNow.length + ' missed ' + (missedNow.length === 1 ? 'question remains' : 'questions remain') + '. Revisit the source concepts or retry only these questions.'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
               reviewModules.map(function(moduleId) {
                 var tile = tileForModule(moduleId);
@@ -6705,16 +9493,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
             h('button', { 'data-pets-focusable': true,
               onClick: function() {
-                upd('quizState', Object.assign({}, quizState, { idx: 0, score: 0, answered: false, lastChoice: null, missedIds: [], reviewIds: [], mode: 'all' }));
+                upd('quizState', Object.assign({}, quizState, {
+                  idx: 0, score: 0, answered: false, lastChoice: null,
+                  missedIds: missedNow.slice(), reviewIds: [], mode: 'all', responses: {}
+                }));
                 petsAnnounce('Full quiz reset');
+                focusPetsTarget(_quizQuestionRef);
               },
               style: btn() }, '🔄 Try full quiz'),
             missedNow.length > 0 && h('button', { 'data-pets-focusable': true,
               onClick: function() {
                 upd('quizState', Object.assign({}, quizState, { idx: 0, score: 0, answered: false, lastChoice: null, reviewIds: missedNow.slice(), mode: 'missed' }));
-                petsAnnounce('Reviewing ' + missedNow.length + ' missed concepts');
+                petsAnnounce('Retrying ' + missedNow.length + ' missed questions');
+                focusPetsTarget(_quizQuestionRef);
               },
-              style: btnPrimary() }, '🎯 Review ' + missedNow.length + ' missed ' + (missedNow.length === 1 ? 'concept' : 'concepts')),
+              style: btnPrimary() }, '🎯 Retry ' + missedNow.length + ' missed ' + (missedNow.length === 1 ? 'question' : 'questions')),
             h('button', { 'data-pets-focusable': true,
               onClick: function() { goToView('menu'); }, style: btn() }, '← Back to menu')),
           footer());
@@ -6724,7 +9517,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var answeredCount = qIdx + (quizState.answered ? 1 : 0);
       var progressPct = Math.round((answeredCount / quizPool.length) * 100);
       return h('div', { style: { padding: 20, maxWidth: 720, margin: '0 auto', color: T.text } },
-        backBar(isReview ? '📝 Missed-concept review' : '📝 Quiz'),
+        backBar(isReview ? '📝 Missed-question retry' : '📝 Quiz'),
         h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 8 } },
           'Question ', h('strong', { style: { color: T.text } }, (qIdx + 1) + ' of ' + quizPool.length),
           '  ·  Score: ', h('strong', { style: { color: T.accentHi } }, (quizState.score || 0))),
@@ -6741,51 +9534,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('span', { 'aria-hidden': 'true', style: { fontSize: 26 } }, q.icon),
             h('div', null,
               sourceTile && h('div', { style: { marginBottom: 3, color: T.accentHi, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.04em' } }, 'Concept: ' + sourceTile.label),
-              h('div', { style: { fontSize: 14, color: T.text, lineHeight: 1.55, fontWeight: 600 } }, q.stem)
+              h('div', { ref: _quizQuestionRef, tabIndex: -1, className: 'petslab-quiz-question-heading',
+                style: { fontSize: 14, color: T.text, lineHeight: 1.55, fontWeight: 600 } }, q.stem)
             )),
-          q.choices.map(function(c, i) {
-            var picked = quizState.lastChoice === i;
-            var correct = q.correct === i;
-            var bg = T.cardAlt, bd = T.border;
-            if (quizState.answered) {
-              if (correct) { bg = '#1a3320'; bd = T.ok; }
-              else if (picked) { bg = '#3a1a1a'; bd = T.danger; }
-            } else if (picked) { bg = T.cardAlt; bd = T.accentHi; }
-            return h('button', { key: i, 'data-pets-focusable': true,
-              disabled: quizState.answered,
-              'aria-label': 'Choice ' + (i + 1) + ': ' + c + (quizState.answered && correct ? ' (correct)' : '') + (quizState.answered && picked && !correct ? ' (your answer, incorrect)' : ''),
-              onClick: function() {
-                if (quizState.answered) return;
-                var isCorrect = i === q.correct;
-                var nextMissed = quizState.missedIds.slice();
-                var missedIndex = nextMissed.indexOf(q.id);
-                if (isCorrect && missedIndex >= 0) nextMissed.splice(missedIndex, 1);
-                if (!isCorrect && missedIndex < 0) nextMissed.push(q.id);
-                var history = Object.assign({}, quizState.history || {});
-                history[q.id] = { correct: isCorrect, choice: i, answeredAt: new Date().toISOString() };
-                upd('quizState', Object.assign({}, quizState, {
-                  idx: qIdx,
-                  score: (quizState.score || 0) + (isCorrect ? 1 : 0),
-                  answered: true,
-                  lastChoice: i,
-                  missedIds: nextMissed,
-                  history: history
-                }));
-                petsAnnounce(isCorrect ? 'Correct!' : 'Not quite. ' + q.why);
-              },
-              style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: bg, border: '2px solid ' + bd, color: T.text, fontSize: 13, cursor: quizState.answered ? 'default' : 'pointer' } }, c);
-          }),
-          quizState.answered && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.accent } },
-            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, 'Why:'),
+          h('div', { role: 'group', 'aria-label': 'Choose the best answer' },
+            q.choices.map(function(c, i) {
+              var picked = quizState.lastChoice === i;
+              var correct = q.correct === i;
+              var bg = T.cardAlt, bd = T.border;
+              if (quizState.answered) {
+                if (correct) { bg = '#1a3320'; bd = T.ok; }
+                else if (picked) { bg = '#3a1a1a'; bd = T.danger; }
+              } else if (picked) { bg = T.cardAlt; bd = T.accentHi; }
+              return h('button', { key: i, 'data-pets-focusable': true,
+                'aria-pressed': picked ? 'true' : 'false',
+                'aria-disabled': quizState.answered ? 'true' : undefined,
+                tabIndex: quizState.answered ? -1 : 0,
+                'aria-label': 'Choice ' + (i + 1) + ': ' + c + (quizState.answered && correct ? ' (correct)' : '') + (quizState.answered && picked && !correct ? ' (your answer, incorrect)' : ''),
+                onClick: function() {
+                  if (quizState.answered) return;
+                  var isCorrect = i === q.correct;
+                  var nextMissed = quizState.missedIds.slice();
+                  var missedIndex = nextMissed.indexOf(q.id);
+                  if (isCorrect && missedIndex >= 0) nextMissed.splice(missedIndex, 1);
+                  if (!isCorrect && missedIndex < 0) nextMissed.push(q.id);
+                  var responses = Object.assign({}, quizState.responses || {});
+                  if (!isReview) responses[q.id] = isCorrect;
+                  upd('quizState', Object.assign({}, quizState, {
+                    idx: qIdx,
+                    score: (quizState.score || 0) + (isCorrect ? 1 : 0),
+                    answered: true,
+                    lastChoice: i,
+                    missedIds: nextMissed,
+                    responses: responses
+                  }));
+                  focusPetsTarget(_quizFeedbackRef);
+                },
+                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: bg, border: '2px solid ' + bd, color: T.text, fontSize: 13, cursor: quizState.answered ? 'default' : 'pointer' } }, c);
+            })
+          ),
+          quizState.answered && h('div', { ref: _quizFeedbackRef, tabIndex: -1,
+            className: 'petslab-quiz-feedback',
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.accent } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: quizState.lastChoice === q.correct ? T.ok : T.warm, marginBottom: 4 } },
+              quizState.lastChoice === q.correct ? 'Correct — review why' : 'Not quite — check this choice'),
+            quizState.lastChoice !== q.correct && h('div', {
+              className: 'petslab-quiz-choice-coaching',
+              style: { margin: '5px 0 8px', padding: 8, borderRadius: 7, background: T.card, color: T.text, fontSize: 12, lineHeight: 1.55 }
+            },
+              h('strong', { style: { color: T.warm } }, 'Why this choice misses: '),
+              (q.choiceFeedback && q.choiceFeedback[q.choices[quizState.lastChoice]]) ||
+                'This choice does not fit all of the evidence in the scenario. Compare it with the model below.'),
+            h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, 'Evidence-based model:'),
             h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55 } }, q.why))),
         quizState.answered && h('button', { 'data-pets-focusable': true,
           onClick: function() {
             var nextIdx = qIdx + 1;
+            var attemptPct = !isReview && nextIdx >= quizPool.length
+              ? Math.round(((quizState.score || 0) / quizPool.length) * 100)
+              : 0;
             var nextBest = isReview
               ? (quizState.bestPct || 0)
-              : Math.max(quizState.bestPct || 0, nextIdx >= quizPool.length ? Math.round(((quizState.score || 0) / quizPool.length) * 100) : 0);
+              : Math.max(quizState.bestPct || 0, attemptPct);
             upd('quizState', Object.assign({}, quizState, { idx: nextIdx, score: quizState.score || 0, answered: false, lastChoice: null, bestPct: nextBest }));
-            if (nextIdx >= quizPool.length && !isReview) completeModule('quiz', 'Finished all quiz questions');
+            if (nextIdx >= quizPool.length && !isReview) {
+              var attemptStrands = knowledgeQuizStrandSummary(quizState.responses);
+              var attemptTargetMet = attemptPct >= 70 && attemptStrands.complete && attemptStrands.met === attemptStrands.total;
+              var attemptEvidence = {
+                score: quizState.score || 0,
+                total: quizPool.length,
+                scorePct: attemptPct,
+                bestPct: nextBest,
+                strandsMet: attemptStrands.met,
+                strandsTotal: attemptStrands.total,
+                criterionMet: attemptTargetMet
+              };
+              attemptStrands.rows.forEach(function(row) {
+                attemptEvidence[row.id + 'Correct'] = row.correct;
+                attemptEvidence[row.id + 'Total'] = row.total;
+              });
+              if (attemptTargetMet) awardBadge('pets_quiz_pass', 'Pets Quiz Passed');
+              if (attemptTargetMet && attemptPct >= 90) awardBadge('pets_quiz_ace', 'Pets Quiz Ace');
+              completeModule('quiz', 'Finished all quiz questions', attemptEvidence);
+            }
+            focusPetsTarget(_quizQuestionRef);
           },
           style: btnPrimary({ width: '100%' }) }, qIdx + 1 >= quizPool.length ? '🏁 See results' : 'Next question →'),
         footer());
@@ -6818,7 +9651,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { title: '🦠 Public health + zoonoses', items: [
           { name: 'CDC One Health', url: 'https://www.cdc.gov/onehealth', desc: 'Federal zoonoses + animal-human-environment health.' },
           { name: 'Maine CDC Vector-Borne Disease', url: 'https://www.maine.gov/dhhs/mecdc/infectious-disease/epi/vector-borne/', desc: 'Maine-specific Lyme + anaplasmosis surveillance.' },
-          { name: 'ASPCA Animal Poison Control: (888) 426-4435', url: 'https://www.aspca.org/pet-care/animal-poison-control', desc: '$95 24/7 consult for suspected ingestions.' }
+          { name: 'ASPCA Animal Poison Control: (888) 426-4435', url: 'https://www.aspca.org/pet-care/animal-poison-control', desc: '24/7 case-specific poison guidance; a consultation fee may apply.' },
+          { name: 'FDA — Potentially Dangerous Items for Your Pet', url: 'https://www.fda.gov/animal-veterinary/animal-health-literacy/potentially-dangerous-items-your-pet', desc: 'Federal household-hazard overview, response guidance, and current poison-center contacts.' },
+          { name: 'AVMA — Pet First Aid', url: 'https://ebusiness.avma.org/files/ProductDownloads/mcm-client-brochures-pet-first-aid-2025.pdf', desc: 'Veterinary first-aid guidance, including what to collect and what not to do after a suspected poisoning.' }
         ]},
         { title: '🐰 Species-specific welfare', items: [
           { name: 'House Rabbit Society', url: 'https://rabbit.org', desc: 'Definitive rabbit-welfare resource.' },
@@ -6857,12 +9692,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // ─────────────────────────────────────────
     function renderTeacher() {
       var ngss = [
-        { mod: 'Dogs / Cats / Small mammals / Birds / Reptiles', std: 'MS-LS1-4 (structure + function), HS-LS1 (structure + function in living systems)' },
-        { mod: 'Domestication & Breeding', std: 'MS-LS3 (heredity), HS-LS3 (heredity), HS-LS4 (selection — both natural + artificial)' },
-        { mod: 'Pet Training (applied)', std: 'MS-LS1-8 (sensory processing → memory → response), HS-LS1-3 (homeostasis + feedback)' },
-        { mod: 'Nutrition Science', std: 'MS-LS1-7 (matter + energy in organisms), HS-LS1-6 (carbon-based molecules)' },
-        { mod: 'Zoonoses', std: 'MS-LS2 (interdependent relationships), HS-LS2-7 (human impact)' },
-        { mod: 'Service Animals', std: 'Cross-cutting: science + society + ethics + disability studies' }
+        { mod: 'Species modules', std: 'Possible MS-LS1-4 connection only when learners construct an evidence-based argument about how behavior or structure affects reproductive success; reading the module alone does not meet the PE.' },
+        { mod: 'Domestication & Breeding', std: 'Potential MS-LS3 / HS-LS3 heredity and HS-LS4 selection connection. Add a model, data analysis, or evidence-based argument to address the relevant practice.' },
+        { mod: 'Pet Training (applied)', std: 'Potential MS-LS1-8 sensory-processing connection. The simulation alone is not an HS-LS1-3 homeostasis investigation.' },
+        { mod: 'Nutrition Science', std: 'Potential MS-LS1-7 / HS-LS1-6 content connection. Add a matter-and-energy model or investigation for PE-level evidence.' },
+        { mod: 'Zoonoses', std: 'Potential systems and interdependence connection. Add local data analysis or a design task before claiming performance-expectation alignment.' },
+        { mod: 'Service Animals', std: 'Science-and-society connection spanning evidence, ethics, and disability studies; not a standalone NGSS performance expectation.' }
       ];
       var prompts = [
         { topic: 'Dogs', items: [
@@ -6873,7 +9708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { topic: 'Cats', items: [
           'Cats can\'t make taurine. What does that tell you about whether a vegan diet is ethical for cats?',
           'Adult-cat meowing only happens at humans. What does that suggest about the evolution of domestication?',
-          'Indoor cats live ~3× longer than outdoor cats AND outdoor cats kill billions of birds. What\'s the welfare-positive recommendation, and why is it controversial?'
+          'Cats with outdoor access face traffic, predators, disease, and weather and die younger; free-roaming cats also kill billions of birds. What is the welfare-positive recommendation, and why is it controversial?'
         ]},
         { topic: 'Service Animals', items: [
           'Why is the legal distinction between service dog, ESA, and therapy animal scientifically meaningful — not just legal hairsplitting?',
@@ -6895,7 +9730,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { name: 'Clicker training a stuffed animal', grade: 'K-5',
           what: 'Use a clicker + treats to "train" a stuffed dog: click when it\'s in the right pose, "treat" with a chip. Teaches the timing + mechanics of operant conditioning before live animals.', url: null },
         { name: 'Body-language flash cards', grade: '3-12',
-          what: 'Print or draw 12 dog/cat body postures. Students sort into "happy / stressed / warning / neutral." Discuss what cue made them decide.', url: null },
+          what: 'Print or draw 12 dog/cat body postures. For each, list observable cues, two plausible interpretations, context still needed, and the safest next step. Avoid diagnosing an emotion from one frozen pose.', url: null },
         { name: 'Breed-trait heritability puzzle', grade: '6-12',
           what: 'Punnett-square exercise crossing two coat-color carriers. Apply to actual breed examples (Labrador yellow vs chocolate vs black).', url: null },
         { name: 'Pet-budget design', grade: '6-12',
@@ -6910,19 +9745,386 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { label: '2-week unit', body: 'Week 1 same as 1-week, slower. Week 2 adds Domestication & Breeding, Service Animals, Lifetime Cost, Take Action, Career Pathways.' },
         { label: 'Sub day', body: 'Body Language Decoder + Myths Busted + Quiz. Three modules students run independently. Print Pet Picker as a worksheet.' }
       ];
+      var learningTargets = [
+        { module: 'Pet Training', target: 'I can choose reinforcement timing that builds behavior without sacrificing trust.', success: 'Finish 10 rounds with behavior at 70%+ and trust at 80%+.' },
+        { module: 'Household Hazard Sleuth', target: 'I can recognize common food, plant, and fume hazard patterns and use a call-first response protocol.', success: 'Finish all 10 vignettes; 8/10 meets the activity target. Classification never replaces case-specific veterinary or poison-control advice.' },
+        { module: 'Body Language', target: 'I can recognize observable whole-body cues and use context to choose a cautious next step.', success: 'Score 8/10 on a random recognition set for the activity target. The four-case Context Challenge adds separate formative transfer evidence; neither result certifies real-animal handling.' },
+        { module: 'Decoder Signal Log', target: 'I can broaden the range of body-language signals I have practiced.', success: 'A signal is logged after one correct identification. 27/27 is coverage—not durable mastery or a context assessment.' },
+        { module: 'Lifespan Match', target: 'I can estimate the scale of a companion animal’s lifetime commitment.', success: 'Finish all 10 species; 8/10 meets the activity target. Missed species stay local for review and focused retry, while the full comparison remains available after the attempt.' },
+        { module: 'Knowledge Quiz', target: 'I can answer a formative sample across pet biology, behavior, health, and welfare.', success: 'Finish all 15 questions with 70%+ overall and at least half correct in each of the four concept strands.' },
+        { module: 'AI Practice', target: 'I can explain a welfare decision with relevant evidence, use feedback, and explain a revision.', success: 'Write a response and complete a rubric check or critique. Revising the draft and explaining one change adds stronger evidence; every record still requires teacher review.' },
+        { module: 'Pet-Care Week', target: 'I can balance all four welfare domains with caregiver time and money.', success: 'Finish seven days with every domain at 70%+, never let money drop below $0, energy above 20%, and no care tasks attempted while exhausted (defined here as starting a routine task below 25% energy).' }
+      ];
+      var evidenceCounts = {};
+      var latestEvidence = {};
+      var latestCriterionEvidence = {};
+      var activityHistory = {};
+      evidenceRecords.forEach(function(record) {
+        if (!record || !record.moduleId) return;
+        if (record.kind === 'activity') {
+          evidenceCounts[record.moduleId] = (evidenceCounts[record.moduleId] || 0) + 1;
+          if (!activityHistory[record.moduleId]) activityHistory[record.moduleId] = [];
+          activityHistory[record.moduleId].push(record);
+          if (record.details && Object.prototype.hasOwnProperty.call(record.details, 'criterionMet')) {
+            var currentCriterion = latestCriterionEvidence[record.moduleId];
+            if (!currentCriterion || String(record.recordedAt || '') >= String(currentCriterion.recordedAt || '')) {
+              latestCriterionEvidence[record.moduleId] = record;
+            }
+          }
+        }
+        var currentLatest = latestEvidence[record.moduleId];
+        if (!currentLatest || String(record.recordedAt || '') >= String(currentLatest.recordedAt || '')) {
+          latestEvidence[record.moduleId] = record;
+        }
+      });
+      Object.keys(activityHistory).forEach(function(moduleId) {
+        activityHistory[moduleId].sort(function(a, b) {
+          return String(a.recordedAt || '').localeCompare(String(b.recordedAt || ''));
+        });
+      });
+      // Older project files predate structured evidence. Preserve their honest
+      // completion record without inventing a score or criterion result.
+      Object.keys(modulesCompleted || {}).forEach(function(moduleId) {
+        if (!isTrackableModule(moduleId)) return;
+        if (latestEvidence[moduleId]) return;
+        var completion = modulesCompleted[moduleId];
+        latestEvidence[moduleId] = {
+          id: 'legacy-' + moduleId,
+          moduleId: moduleId,
+          moduleLabel: PETS_EVIDENCE_MODULE_LABELS[moduleId] || moduleId,
+          kind: 'legacy-completion',
+          summary: 'Completed in an earlier project',
+          recordedAt: completion && typeof completion === 'object'
+            ? normalizeEvidenceTimestamp(completion.evidenceUpdated || completion.completed || '')
+            : '',
+          details: {},
+          legacy: true
+        };
+        evidenceCounts[moduleId] = 0;
+      });
+      var allEvidenceRows = Object.keys(latestEvidence).map(function(moduleId) {
+        return latestEvidence[moduleId];
+      }).sort(function(a, b) {
+        return String(b.recordedAt || '').localeCompare(String(a.recordedAt || ''));
+      });
+      var evidenceRows = teacherShowAllEvidence ? allEvidenceRows : allEvidenceRows.slice(0, 10);
+      var teachingPriorities = [];
+      var priorityModules = {};
+      function addTeachingPriority(moduleId, reason, actionLabel, recordedAt) {
+        if (!moduleId || priorityModules[moduleId]) return;
+        var tile = MENU_TILES.filter(function(item) { return item.id === moduleId; })[0];
+        if (!tile) return;
+        priorityModules[moduleId] = true;
+        teachingPriorities.push({
+          moduleId: moduleId,
+          moduleLabel: tile.label,
+          icon: tile.icon,
+          reason: reason,
+          actionLabel: actionLabel || 'Open activity',
+          recordedAt: recordedAt || ''
+        });
+      }
+      Object.keys(latestCriterionEvidence).forEach(function(moduleId) {
+        var criterion = latestCriterionEvidence[moduleId];
+        if (!criterion || !criterion.details || criterion.details.criterionMet !== false) return;
+        var earlierMet = (activityHistory[moduleId] || []).some(function(attempt) {
+          return attempt.id !== criterion.id && attempt.details && attempt.details.criterionMet === true &&
+            String(attempt.recordedAt || '') < String(criterion.recordedAt || '');
+        });
+        var reason;
+        if (moduleId === 'quiz' && criterion.details.strandsTotal != null) {
+          var weakStrands = [
+            ['biology', 3], ['behavior', 3], ['health', 6], ['welfare', 3]
+          ].filter(function(spec) {
+            return typeof criterion.details[spec[0] + 'Correct'] === 'number' &&
+              criterion.details[spec[0] + 'Correct'] / spec[1] < 0.5;
+          }).map(function(spec) {
+            return QUIZ_STRAND_LABELS[spec[0]];
+          });
+          reason = 'Latest full quiz is below target: ' + criterion.details.strandsMet + ' of ' + criterion.details.strandsTotal +
+            ' concept strands are ready.' +
+            (weakStrands.length ? ' Prioritize ' + weakStrands.join(' and ') + '.' : '') +
+            ' Revisit the missed source modules, then try a fresh full quiz.';
+        } else if (moduleId === 'bodyLang') {
+          reason = 'Latest random signal set is below 8/10. Use focused signal practice, then check a fresh random set; context practice remains separate.';
+        } else {
+          reason = 'Latest activity result is below its stated target. Review the evidence card, reteach the weakest area, then retry.';
+        }
+        if (earlierMet) reason += ' An earlier target success remains in the record.';
+        addTeachingPriority(moduleId, reason, 'Open for reteach or retry', criterion.recordedAt);
+      });
+      var latestAi = latestEvidence.aiPractice;
+      if (latestAi && latestAi.details && latestAi.details.reviewStatus === 'teacher-review') {
+        addTeachingPriority('aiPractice',
+          latestAi.details.revisionMade === true
+            ? 'A response, feedback check, and revision reflection are ready for teacher review. The summary keeps the learner’s raw writing private.'
+            : 'A response and feedback check are ready for teacher review. Ask the learner to explain one evidence-based revision.',
+          'Open AI Practice',
+          latestAi.recordedAt);
+      }
+      var latestBody = latestEvidence.bodyLang;
+      if (latestBody && latestBody.details && latestBody.details.practiceMode !== 'random' && !latestCriterionEvidence.bodyLang) {
+        addTeachingPriority('bodyLang',
+          latestBody.details.practiceMode === 'context'
+            ? 'Context transfer practice is recorded, but the random 8/10 recognition target has not been checked.'
+            : 'Focused signal practice is recorded, but the random 8/10 recognition target has not been checked.',
+          'Open signal practice',
+          latestBody.recordedAt);
+      }
+      teachingPriorities.sort(function(a, b) {
+        return String(b.recordedAt || '').localeCompare(String(a.recordedAt || ''));
+      });
+      function evidenceStatus(record, criterionRecord) {
+        var details = record.details || {};
+        if (record.legacy || record.kind === 'legacy-completion') return 'Earlier completion — criterion result unavailable';
+        if (record.kind === 'self-review') return 'Learner reviewed — no activity criterion recorded';
+        if (details.reviewStatus === 'teacher-review') return 'Evidence collected — teacher review needed';
+        if (record.moduleId === 'decoderMastery' && details.coverageComplete === true) {
+          return 'All signals logged once — coverage only';
+        }
+        if (details.criterionMet === true) return 'Activity target met';
+        if (details.criterionMet === false) {
+          var earlierMet = (activityHistory[record.moduleId] || []).some(function(attempt) {
+            return attempt.id !== record.id && attempt.details && attempt.details.criterionMet === true &&
+              String(attempt.recordedAt || '') < String(record.recordedAt || '');
+          });
+          return earlierMet
+            ? 'Latest target needs practice — target met on an earlier attempt'
+            : 'Revise and retry';
+        }
+        if (record.moduleId === 'bodyLang') {
+          var practiceLabel = details.practiceMode === 'context' ? 'Context transfer practice' : 'Focused signal practice';
+          if (criterionRecord && criterionRecord.details) {
+            return criterionRecord.details.criterionMet === true
+              ? 'Random 8/10 target met — ' + practiceLabel.toLowerCase() + ' recorded'
+              : 'Random 8/10 target needs practice — ' + practiceLabel.toLowerCase() + ' recorded';
+          }
+          return practiceLabel + ' recorded — random 8/10 target not yet checked';
+        }
+        return 'Activity evidence recorded';
+      }
+      function evidenceOutcome(record) {
+        var x = record.details || {};
+        if (record.legacy || record.kind === 'legacy-completion') return 'Completed in an earlier project; no activity score was saved';
+        if (record.moduleId === 'training' && x.behaviorPct != null) return 'Behavior ' + x.behaviorPct + '% · Trust ' + x.trustPct + '% · ' + x.rounds + ' rounds';
+        if ((record.moduleId === 'nutrition' || record.moduleId === 'lifespan') && x.score != null) {
+          return x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
+            (x.needsPractice != null ? ' · ' + x.needsPractice + ' case' + (x.needsPractice === 1 ? '' : 's') + ' to revisit' : '');
+        }
+        if (record.moduleId === 'bodyLang' && x.score != null) {
+          return (x.practiceMode === 'context' ? 'Context transfer ' : '') + x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
+            (x.practiceMode ? ' · ' + x.practiceMode + ' set' : '') +
+            (x.needsPractice != null ? ' · ' + x.needsPractice + ' signal' + (x.needsPractice === 1 ? '' : 's') + ' still need practice' : '');
+        }
+        if (record.moduleId === 'quiz' && x.score != null) {
+          return x.score + ' / ' + x.total + ' (' + x.scorePct + '%)' +
+            (x.strandsTotal != null ? ' · ' + x.strandsMet + ' / ' + x.strandsTotal + ' strands ready' : '');
+        }
+        if (record.moduleId === 'decoderMastery' && x.score != null) {
+          return x.score + ' / ' + x.total + ' signals identified correctly at least once · coverage only';
+        }
+        if (record.moduleId === 'aiPractice') {
+          var aiOutcome = 'Scenario ' + (x.scenarioId || 'saved') + ' · ' + (x.draftChars || 0) + ' draft characters · ' + (x.feedbackSource || 'saved') + ' feedback';
+          if (x.revisionMade === true) aiOutcome += ' · revision reflection saved (' + (x.revisionNoteChars || 0) + ' characters)';
+          return aiOutcome;
+        }
+        if (record.moduleId === 'careSim' && x.physical != null) {
+          var careOutcome = (x.species || 'Pet') + ' · Physical ' + x.physical + '% · Mental ' + x.mental + '% · Social ' + x.social + '% · Environmental ' + x.environmental + '% · Weakest: ' + x.weakestDomain + ' ' + x.weakestPct + '%';
+          if (x.moneyLeft != null && typeof x.stayedInBudget === 'boolean') {
+            careOutcome += ' · Budget ' + (x.stayedInBudget ? 'sustainable' : 'overdrawn') + ' ($' + x.moneyLeft + ' left)';
+            if (typeof x.avoidedNegativeBalance === 'boolean') {
+              careOutcome += ' · Balance ' + (x.avoidedNegativeBalance ? 'never negative' : 'went negative');
+            }
+          }
+          if (x.energyLeft != null && typeof x.caregiverSustainable === 'boolean') {
+            careOutcome += ' · Caregiver energy ' + x.energyLeft + '% (' + (x.caregiverSustainable ? 'sustainable' : 'strained') + ')';
+            if (typeof x.finishedAboveEnergyTarget === 'boolean') {
+              careOutcome += ' · Finish-energy target ' + (x.finishedAboveEnergyTarget ? 'met' : 'missed');
+            }
+            if (typeof x.avoidedExhaustedCare === 'boolean') {
+              careOutcome += ' · Exhausted-care target ' + (x.avoidedExhaustedCare ? 'met' : 'missed');
+            }
+          }
+          return careOutcome;
+        }
+        if (record.moduleId === 'sensory' && x.perspectives != null) return x.perspectives + ' visual perspectives compared';
+        return record.kind === 'self-review'
+          ? 'Module reviewed; no scored activity was recorded'
+          : 'Saved activity metadata';
+      }
+      function evidenceGrowth(record) {
+        if (!record || record.kind !== 'activity') return '';
+        var rows = (activityHistory[record.moduleId] || []).filter(function(attempt) {
+          var details = attempt.details || {};
+          if (record.moduleId === 'bodyLang' && details.practiceMode !== 'random') return false;
+          return typeof details.scorePct === 'number' ||
+            (record.moduleId === 'training' && typeof details.behaviorPct === 'number' && typeof details.trustPct === 'number') ||
+            (record.moduleId === 'careSim' && typeof details.weakestPct === 'number');
+        });
+        if (!rows.length) return '';
+        function metric(attempt) {
+          var details = attempt.details || {};
+          if (typeof details.scorePct === 'number') return details.scorePct;
+          if (attempt.moduleId === 'training') return Math.min(details.behaviorPct, details.trustPct);
+          if (attempt.moduleId === 'careSim') return details.weakestPct;
+          return null;
+        }
+        var values = rows.map(metric).filter(function(value) { return typeof value === 'number'; });
+        if (!values.length) return '';
+        var latest = values[values.length - 1];
+        var best = Math.max.apply(Math, values);
+        var recordedBest = record.details && typeof record.details.bestPct === 'number'
+          ? record.details.bestPct
+          : null;
+        if (recordedBest != null) best = Math.max(best, recordedBest);
+        var parts = ['Latest ' + latest + '%', 'Best ' + best + '%'];
+        if (values.length > 1) {
+          var previous = values[values.length - 2];
+          var delta = latest - previous;
+          if (delta > 0) parts.push('Improved ' + delta + ' points from previous');
+          else if (delta < 0) parts.push(Math.abs(delta) + ' points below previous');
+          else parts.push('No score change from previous');
+        }
+        var criterionRows = (activityHistory[record.moduleId] || []).filter(function(attempt) {
+          return attempt.details && typeof attempt.details.criterionMet === 'boolean';
+        });
+        if (criterionRows.length > 1) {
+          var latestCriterion = criterionRows[criterionRows.length - 1].details.criterionMet;
+          var earlierCriteria = criterionRows.slice(0, -1);
+          if (latestCriterion && earlierCriteria.some(function(attempt) { return attempt.details.criterionMet === false; })) {
+            parts.push('Target moved from needs practice to met');
+          } else if (!latestCriterion && earlierCriteria.some(function(attempt) { return attempt.details.criterionMet === true; })) {
+            parts.push('Earlier target success remains in the record');
+          }
+        }
+        return parts.join(' · ');
+      }
       return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
         backBar('🎓 Teacher Guide'),
         h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Resource page for educators. NGSS alignment per module, discussion prompts, hands-on activities, pacing options.')),
-        h('div', { role: 'region', 'aria-label': 'Scrollable NGSS alignment table', tabIndex: 0, 'data-pets-focusable': true, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
-          h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📐 NGSS alignment'),
-          h('table', { 'aria-label': 'NGSS standards alignment',
+            'Resource page for educators. Potential NGSS connections, discussion prompts, hands-on activities, pacing options. A topic connection is not full performance-expectation alignment.')),
+        h('section', {
+          className: 'petslab-teaching-priorities',
+          'aria-labelledby': 'pets-teaching-priorities-heading',
+          style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + (teachingPriorities.length ? T.warm : T.border), marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-teaching-priorities-heading', style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧭 Next teaching moves'),
+          h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+            'Derived only from bounded activity metadata in this project. These prompts are formative suggestions, not grades or diagnoses.'),
+          teachingPriorities.length
+            ? h('div', { role: 'list', style: { display: 'grid', gap: 8 } },
+                teachingPriorities.map(function(priority) {
+                  return h('article', { key: priority.moduleId, role: 'listitem',
+                    style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + T.warm } },
+                    h('strong', { style: { display: 'block', color: T.text, fontSize: 12 } }, priority.icon + ' ' + priority.moduleLabel),
+                    h('p', { style: { margin: '4px 0 8px', color: T.muted, fontSize: 10, lineHeight: 1.55 } }, priority.reason),
+                    h('button', {
+                      type: 'button',
+                      'data-pets-focusable': true,
+                      'data-pets-teacher-module-id': priority.moduleId,
+                      onClick: function() {
+                        if (priority.moduleId === 'bodyLang') {
+                          updMulti({ view: 'bodyLang', lastView: 'bodyLang', blMode: 'quiz' });
+                          markVisited('bodyLang');
+                          petsAnnounce('Opening Body Language signal practice.');
+                        } else {
+                          goToView(priority.moduleId, priority.moduleLabel);
+                        }
+                      },
+                      style: btn({ padding: '7px 10px', fontSize: 10 })
+                    }, priority.actionLabel)
+                  );
+                }))
+            : h('p', { style: { margin: 0, padding: 9, borderRadius: 8, background: T.cardAlt, color: T.muted, fontSize: 11 } },
+                allEvidenceRows.length
+                  ? 'No automatic reteach or review priority is indicated by the saved metadata. Use the evidence cards and learner conference to choose the next move.'
+                  : 'Complete an interactive activity to generate local, privacy-safe teaching prompts.')
+        ),
+        h('section', { className: 'petslab-evidence-report', 'aria-labelledby': 'pets-evidence-heading',
+          style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 6 } },
+            h('h3', { id: 'pets-evidence-heading', style: { margin: 0, fontSize: 15, color: T.text } }, '📋 Evidence saved with this Pets Lab project'),
+            h('span', { style: { color: T.dim, fontSize: 10, fontWeight: 800 } },
+              evidenceRows.length
+                ? 'Showing ' + evidenceRows.length + (allEvidenceRows.length > evidenceRows.length ? ' of ' + allEvidenceRows.length : '') +
+                  ' latest module record' + (allEvidenceRows.length === 1 ? '' : 's')
+                : 'No records yet')),
+          h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+            'Formative activity results are not grades, veterinary assessments, or proof that a learner can safely handle a real animal. Automated and AI feedback may be incomplete; teacher review is recommended.'),
+          h('div', { role: 'note', style: { marginBottom: 10, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 10, lineHeight: 1.55 } },
+            'Privacy: this summary reads the current project or browser record on this device. It does not collect a learner name, send work, or share anything automatically. Raw AI drafts, critiques, revision reflections, and care-decision logs may remain locally for resume, but they are excluded from this summary and its teaching priorities.'),
+          evidenceRows.length
+            ? h('div', null,
+              h('div', { id: 'pets-evidence-grid', role: 'list', className: 'petslab-evidence-grid',
+                style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))', gap: 8 } },
+                evidenceRows.map(function(record) {
+                  var criterionRecord = latestCriterionEvidence[record.moduleId] || null;
+                  var status = evidenceStatus(record, criterionRecord);
+                  var growth = evidenceGrowth(record);
+                  var targetMet = status.indexOf('Activity target met') === 0;
+                  var needsReview = status.indexOf('teacher review') >= 0 ||
+                    record.kind === 'self-review' || record.kind === 'legacy-completion';
+                  var priorCriterion = record.moduleId === 'bodyLang' && criterionRecord && criterionRecord.id !== record.id
+                    ? criterionRecord.details
+                    : null;
+                  return h('article', { key: record.id || record.moduleId, role: 'listitem',
+                    style: { padding: 10, borderRadius: 9, background: T.cardAlt, border: '1px solid ' + (targetMet ? T.ok : needsReview ? T.accent : T.warm) } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'baseline' } },
+                      h('strong', { style: { color: T.text, fontSize: 12 } }, record.moduleLabel || record.moduleId),
+                      h('span', { style: { color: T.dim, fontSize: 9 } },
+                        evidenceCounts[record.moduleId]
+                          ? evidenceCounts[record.moduleId] + ' attempt' + (evidenceCounts[record.moduleId] === 1 ? '' : 's')
+                          : record.kind === 'legacy-completion' ? 'earlier save' : 'review record')),
+                    h('div', { className: 'petslab-evidence-status', style: { marginTop: 5, color: targetMet ? T.ok : needsReview ? T.accentHi : T.warm, fontSize: 11, fontWeight: 800 } }, status),
+                    h('div', { style: { marginTop: 4, color: T.muted, fontSize: 10, lineHeight: 1.5 } }, evidenceOutcome(record)),
+                    growth && h('div', { className: 'petslab-evidence-growth', style: { marginTop: 5, paddingTop: 5, borderTop: '1px dashed ' + T.border, color: T.accentHi, fontSize: 9, lineHeight: 1.5 } }, 'Growth: ' + growth),
+                    priorCriterion && priorCriterion.score != null && h('div', { style: { marginTop: 4, color: T.dim, fontSize: 9, lineHeight: 1.45 } },
+                      'Random target record: ' + priorCriterion.score + ' / ' + priorCriterion.total + ' (' + priorCriterion.scorePct + '%).'),
+                    record.recordedAt && h('time', { dateTime: record.recordedAt, style: { display: 'block', marginTop: 5, color: T.dim, fontSize: 9 } },
+                      new Date(record.recordedAt).toLocaleString())
+                  );
+                })),
+              allEvidenceRows.length > 10 && h('button', {
+                type: 'button',
+                className: 'petslab-evidence-expand',
+                'data-pets-focusable': true,
+                'aria-controls': 'pets-evidence-grid',
+                'aria-expanded': teacherShowAllEvidence ? 'true' : 'false',
+                onClick: function() {
+                  setTeacherShowAllEvidence(!teacherShowAllEvidence);
+                  petsAnnounce(teacherShowAllEvidence
+                    ? 'Showing the latest 10 evidence cards.'
+                    : 'Showing all ' + allEvidenceRows.length + ' evidence cards.');
+                },
+                style: btn({ marginTop: 10, padding: '7px 11px', fontSize: 10 })
+              }, teacherShowAllEvidence
+                ? 'Show latest 10'
+                : 'Show all ' + allEvidenceRows.length + ' module records'))
+            : h('p', { style: { margin: 0, padding: 10, borderRadius: 8, background: T.cardAlt, color: T.muted, fontSize: 11, lineHeight: 1.5 } },
+                'No activity evidence has been recorded yet. Finish an interactive activity—or explicitly review a module—to begin a local record.')),
+        h('section', { 'aria-labelledby': 'pets-targets-heading',
+          style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+          h('h3', { id: 'pets-targets-heading', style: { margin: '0 0 9px', fontSize: 15, color: T.text } }, '🎯 Learning targets and success evidence'),
+          h('div', { role: 'list', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(270px, 100%), 1fr))', gap: 8 } },
+            learningTargets.map(function(item) {
+              return h('article', { key: item.module, role: 'listitem',
+                style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { color: T.accentHi, fontSize: 12 } }, item.module),
+                h('p', { style: { margin: '5px 0 3px', color: T.text, fontSize: 11, lineHeight: 1.5 } }, item.target),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.text } }, 'Success evidence: '), item.success));
+            }))),
+        h('div', { role: 'region', 'aria-label': 'Scrollable potential NGSS connections table', tabIndex: 0, 'data-pets-focusable': true, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
+          h('h3', { style: { margin: '0 0 5px', fontSize: 15, color: T.text } }, '📐 Potential NGSS connections'),
+          h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+            'Connection does not equal alignment. Each row names an additional science practice or performance task needed before treating the activity as evidence for a performance expectation.'),
+          h('table', { 'aria-label': 'Potential NGSS connections and additional evidence needed',
             style: { width: '100%', minWidth: 540, borderCollapse: 'collapse', fontSize: 12 } },
             h('thead', null,
               h('tr', { style: { background: T.cardAlt } },
                 h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi } }, 'Module'),
-                h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi } }, 'Standards'))),
+                h('th', { scope: 'col', style: { padding: '8px 10px', textAlign: 'left', color: T.accentHi } }, 'Connection and additional performance task'))),
             h('tbody', null,
               ngss.map(function(r, i) {
                 return h('tr', { key: i, style: { background: i % 2 === 0 ? T.cardAlt : T.card, borderBottom: '1px solid ' + T.border } },
@@ -7021,15 +10223,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         10: { min: 10, max: 20, label: '10-20 years' }
       };
 
-      var lsIdx = d.lsIdx == null ? -1 : d.lsIdx;
-      var lsSeed = d.lsSeed || 1;
-      var lsAns = !!d.lsAns;
-      var lsPick = d.lsPick;
-      var lsScore = d.lsScore || 0;
-      var lsRounds = d.lsRounds || 0;
-      var lsStreak = d.lsStreak || 0;
-      var lsBest = d.lsBest || 0;
-      var lsShown = d.lsShown || [];
+      var lsState = normalizePetsMiniGameState(d, 'ls', V.length,
+        BUCKETS.map(function(bucket) { return bucket.id; }));
+      var lsIdx = lsState.idx;
+      var lsSeed = lsState.seed;
+      var lsAns = lsState.ans;
+      var lsPick = lsState.pick;
+      var lsScore = lsState.score;
+      var lsRounds = lsState.rounds;
+      var lsStreak = lsState.streak;
+      var lsBest = lsState.best;
+      var lsShown = lsState.shown;
+      var lsMissed = normalizeLifespanIndices(d.lsMissed);
+      var lsReview = normalizeLifespanReviewState(d.lsReview, lsMissed);
 
       function bucketById(bucketId) {
         return BUCKETS.filter(function(bucket) { return bucket.id === bucketId; })[0];
@@ -7143,17 +10349,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         );
       }
 
-      function startLs() {
+      function chooseNextLs(seen, seed) {
         var pool = [];
-        for (var i = 0; i < V.length; i++) if (lsShown.indexOf(i) < 0) pool.push(i);
-        if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); lsShown = []; }
-        var seedNext = ((lsSeed * 16807 + 11) % 2147483647) || 7;
+        for (var i = 0; i < V.length; i++) {
+          if (seen.indexOf(i) < 0) pool.push(i);
+        }
+        if (!pool.length) return null;
+        var seedNext = ((seed * 16807 + 11) % 2147483647) || 7;
         var pick = pool[seedNext % pool.length];
-        upd('lsSeed', seedNext);
-        upd('lsIdx', pick);
-        upd('lsAns', false);
-        upd('lsPick', null);
-        upd('lsShown', lsShown.concat([pick]));
+        return { seed: seedNext, pick: pick };
+      }
+      function beginLsAttempt() {
+        var selected = chooseNextLs([], lsSeed);
+        if (!selected) return;
+        updMulti({
+          lsSeed: selected.seed,
+          lsIdx: selected.pick,
+          lsAns: false,
+          lsPick: null,
+          lsScore: 0,
+          lsRounds: 0,
+          lsStreak: 0,
+          lsShown: [selected.pick],
+          lsMissed: [],
+          lsReview: null
+        });
+        focusPetsTarget(_lifespanQuestionRef);
+      }
+      function advanceLs() {
+        if (!lsAns || lsRounds >= V.length) return;
+        var selected = chooseNextLs(lsShown, lsSeed);
+        if (!selected) return;
+        updMulti({
+          lsSeed: selected.seed,
+          lsIdx: selected.pick,
+          lsAns: false,
+          lsPick: null,
+          lsShown: lsShown.concat([selected.pick])
+        });
+        focusPetsTarget(_lifespanQuestionRef);
       }
       function pickLs(bId) {
         if (lsAns) return;
@@ -7162,21 +10396,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var newScore = lsScore + (correct ? 1 : 0);
         var newStreak = correct ? (lsStreak + 1) : 0;
         var newBest = Math.max(lsBest, newStreak);
-        upd('lsAns', true);
-        upd('lsPick', bId);
-        upd('lsScore', newScore);
-        upd('lsRounds', lsRounds + 1);
-        upd('lsStreak', newStreak);
-        upd('lsBest', newBest);
+        var newRounds = lsRounds + 1;
+        var newMissed = correct ? lsMissed : normalizeLifespanIndices(lsMissed.concat([lsIdx]));
+        updMulti({
+          lsAns: true,
+          lsPick: bId,
+          lsScore: newScore,
+          lsRounds: newRounds,
+          lsStreak: newStreak,
+          lsBest: newBest,
+          lsMissed: newMissed,
+          lsReview: null
+        });
+        if (newRounds === V.length && lsShown.length === V.length) {
+          var finalPct = Math.round((newScore / V.length) * 100);
+          completeModule('lifespan', 'Finished all 10 lifespan matches', {
+            score: newScore,
+            total: V.length,
+            scorePct: finalPct,
+            needsPractice: V.length - newScore,
+            criterionMet: finalPct >= 80
+          });
+        }
+        focusPetsTarget(_lifespanFeedbackRef);
+      }
+      function beginLsReview() {
+        if (!lsMissed.length) return;
+        upd('lsReview', {
+          ids: lsMissed.slice(),
+          queue: lsMissed.slice(),
+          pick: null,
+          done: false
+        });
+        focusPetsTarget(_lifespanQuestionRef);
+      }
+      function pickLsReview(bucketId) {
+        if (!lsReview || lsReview.done || lsReview.pick || !lsReview.queue.length) return;
+        if (BUCKETS.map(function(bucket) { return bucket.id; }).indexOf(bucketId) < 0) return;
+        upd('lsReview', {
+          ids: lsReview.ids.slice(),
+          queue: lsReview.queue.slice(),
+          pick: bucketId,
+          done: false
+        });
+        focusPetsTarget(_lifespanFeedbackRef);
+      }
+      function advanceLsReview() {
+        if (!lsReview || lsReview.done || !lsReview.pick || !lsReview.queue.length) return;
+        var reviewIndex = lsReview.queue[0];
+        var reviewCorrect = isAcceptedBucket(V[reviewIndex], lsReview.pick);
+        var nextQueue = lsReview.queue.slice(1);
+        if (!reviewCorrect) nextQueue.push(reviewIndex);
+        upd('lsReview', {
+          ids: lsReview.ids.slice(),
+          queue: nextQueue,
+          pick: null,
+          done: nextQueue.length === 0
+        });
+        focusPetsTarget(nextQueue.length ? _lifespanQuestionRef : _lifespanFeedbackRef);
       }
 
       if (lsIdx < 0) {
         return h('div', { className: 'petslab-life-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('⏳ Lifespan Match'),
           h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '⏳ 10 species/breeds — pick the typical lifespan range'),
+            h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '⏳ 10 species/breeds · target 8/10 — pick the typical lifespan range'),
             h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              'For each species, pick the lifespan bucket from 5 options (under 3 yrs through 50+ yrs). If a typical range crosses a bucket boundary, either adjacent answer earns credit. Coaching after each pick names what makes this species fall in that range and what shortens or extends typical lifespan.')
+              'For each species, pick the lifespan bucket from 5 options (under 3 yrs through 50+ yrs). Reach 8/10 to meet the activity target. If a typical range crosses a bucket boundary, either adjacent answer earns credit. Coaching follows every pick; at the end, missed species remain available for review and focused retry.')
           ),
           h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
             h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The five lifespan buckets'),
@@ -7193,7 +10479,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             )
           ),
           h('button', { 'data-pets-focusable': true,
-            onClick: startLs,
+            ref: _lifespanQuestionRef,
+            onClick: beginLsAttempt,
             style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
           }, '⏳ Start — vignette 1 of 10')
         );
@@ -7202,13 +10489,149 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var v = V[lsIdx];
       var pickedCorrect = lsAns && isAcceptedBucket(v, lsPick);
       var pct = lsRounds > 0 ? Math.round((lsScore / lsRounds) * 100) : 0;
-      var allDone = lsShown.length >= V.length && lsAns;
+      var allDone = lsShown.length === V.length && lsRounds === V.length && lsAns;
       var correctBucket = BUCKETS.filter(function(b) { return b.id === v.correct; })[0];
       var pickedBucket = lsPick ? BUCKETS.filter(function(b) { return b.id === lsPick; })[0] : null;
       var acceptedIds = acceptedBucketIds(v);
       var correctAnswerLabel = v.id === 7
         ? '10–20 years or 20–50 years; cockatiels commonly span 15–25 years, crossing this quiz’s 20-year boundary'
         : correctBucket.label;
+      var targetMet = lsScore >= 8;
+      var missedDetailsAvailable = !allDone || lsMissed.length === V.length - lsScore;
+      var missedCases = missedDetailsAvailable ? lsMissed.map(function(index) {
+        return { index: index, vignette: V[index] };
+      }) : [];
+      var reviewActive = allDone && missedDetailsAvailable && !!lsReview &&
+        !lsReview.done && lsReview.queue.length > 0;
+      var reviewDone = allDone && missedDetailsAvailable && !!lsReview && lsReview.done;
+      var reviewIndex = reviewActive ? lsReview.queue[0] : -1;
+      var reviewVignette = reviewIndex >= 0 ? V[reviewIndex] : null;
+      var reviewAnswered = reviewActive && !!lsReview.pick;
+      var reviewCorrect = reviewAnswered && isAcceptedBucket(reviewVignette, lsReview.pick);
+      var reviewAcceptedLabel = reviewVignette ? acceptedBucketLabel(reviewVignette) : '';
+
+      function renderLifespanMissReview() {
+        if (!missedDetailsAvailable) {
+          return h('div', {
+            'data-pets-lifespan-review': 'unavailable',
+            style: { marginTop: 10, padding: 10, borderRadius: 8, color: T.muted, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, lineHeight: 1.5 }
+          }, 'Missed-species details were not stored for this earlier attempt. Restart the full 10 to build a review set.');
+        }
+        if (!missedCases.length) {
+          return h('div', {
+            'data-pets-lifespan-review': 'clear',
+            style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 700 }
+          }, '✅ No missed species — every lifespan range was identified correctly.');
+        }
+        return h('section', {
+          'aria-label': 'Missed lifespan case review',
+          'data-pets-lifespan-review': 'available',
+          style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border }
+        },
+          h('div', { style: { color: T.text, fontSize: 12, fontWeight: 800 } },
+            'Review your ' + missedCases.length + ' missed ' + (missedCases.length === 1 ? 'species' : 'species')),
+          h('p', { style: { color: T.dim, fontSize: 10, lineHeight: 1.45, margin: '4px 0 8px' } },
+            'Open each species to compare the accepted bucket with its typical range and care-planning rationale. These details stay on this device and are not added to teacher evidence.'),
+          missedCases.map(function(item) {
+            var visual = LIFE_VISUALS[item.vignette.id];
+            return h('details', {
+              key: item.index,
+              'data-pets-lifespan-review-item': String(item.index),
+              style: { marginTop: 6, padding: '7px 9px', borderRadius: 7, background: T.card, border: '1px solid ' + T.border }
+            },
+              h('summary', { style: { color: T.text, fontSize: 11, fontWeight: 750, cursor: 'pointer' } },
+                item.vignette.icon + ' ' + item.vignette.species),
+              h('div', { style: { paddingTop: 7 } },
+                h('div', { style: { color: T.accentHi, fontSize: 11, fontWeight: 800 } },
+                  'Typical range: ' + visual.label),
+                h('div', { style: { color: T.link, fontSize: 10, fontWeight: 750, marginTop: 2 } },
+                  'Accepted bucket: ' + acceptedBucketLabel(item.vignette)),
+                h('p', { style: { color: T.text, fontSize: 11, lineHeight: 1.5, margin: '4px 0 0' } }, item.vignette.why)
+              )
+            );
+          })
+        );
+      }
+
+      function renderLifespanFocusedRetry() {
+        if (reviewActive) {
+          return h('section', {
+            'aria-label': 'Focused missed-species retry',
+            'data-pets-lifespan-retry': 'active',
+            style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.08)', border: '2px solid rgba(14,165,233,0.45)' }
+          },
+            h('div', { style: { color: '#bae6fd', fontSize: 12, fontWeight: 900, marginBottom: 3 } },
+              'Focused retry · ' + lsReview.queue.length + ' ' + (lsReview.queue.length === 1 ? 'species' : 'species') + ' still in rotation'),
+            h('p', { style: { color: T.dim, fontSize: 10, lineHeight: 1.45, margin: '0 0 8px' } },
+              'A species leaves the rotation only after an accepted lifespan bucket is chosen.'),
+            h('div', {
+              ref: _lifespanQuestionRef,
+              tabIndex: -1,
+              style: { color: T.text, fontSize: 13, fontWeight: 800, marginBottom: 8 }
+            }, reviewVignette.icon + ' ' + reviewVignette.species + ' — choose its typical lifespan bucket.'),
+            h('div', {
+              role: 'group',
+              'aria-label': 'Retry the missed lifespan case',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6 }
+            }, BUCKETS.map(function(bucket) {
+              var selected = reviewAnswered && lsReview.pick === bucket.id;
+              var acceptedChoice = reviewAnswered && acceptedBucketIds(reviewVignette).indexOf(bucket.id) >= 0;
+              return h('button', {
+                key: bucket.id,
+                'aria-label': bucket.label,
+                'aria-pressed': selected ? 'true' : 'false',
+                'data-pets-focusable': true,
+                disabled: reviewAnswered,
+                onClick: function() { pickLsReview(bucket.id); },
+                style: {
+                  padding: '8px 9px', borderRadius: 7, textAlign: 'left', fontSize: 10, fontWeight: 750,
+                  color: acceptedChoice ? '#bbf7d0' : selected ? '#fecaca' : T.text,
+                  background: acceptedChoice ? 'rgba(34,197,94,0.14)' : selected ? 'rgba(239,68,68,0.14)' : T.card,
+                  border: '1px solid ' + (acceptedChoice ? T.ok : selected ? T.danger : T.border),
+                  cursor: reviewAnswered ? 'default' : 'pointer'
+                }
+              }, bucket.icon + ' ' + bucket.label);
+            })),
+            reviewAnswered && h('div', {
+              ref: _lifespanFeedbackRef,
+              tabIndex: -1,
+              role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
+              style: {
+                marginTop: 8, padding: 9, borderRadius: 7,
+                color: reviewCorrect ? '#bbf7d0' : '#fecaca',
+                background: reviewCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                border: '1px solid ' + (reviewCorrect ? 'rgba(34,197,94,0.4)' : 'rgba(239,68,68,0.4)')
+              }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 900 } }, reviewCorrect
+                ? '✅ Accepted — ' + reviewAcceptedLabel
+                : 'Not yet — accepted bucket: ' + reviewAcceptedLabel + '. This species stays in the rotation.'),
+              h('p', { style: { color: T.text, fontSize: 10, lineHeight: 1.5, margin: '4px 0 7px' } },
+                'Typical range: ' + LIFE_VISUALS[reviewVignette.id].label + '. ' + reviewVignette.why),
+              h('button', {
+                'data-pets-focusable': true,
+                onClick: advanceLsReview,
+                style: { padding: '6px 10px', borderRadius: 7, border: 'none', background: T.link, color: '#082f49', fontSize: 10, fontWeight: 850, cursor: 'pointer' }
+              }, reviewCorrect
+                ? (lsReview.queue.length === 1 ? 'Finish focused retry' : 'Next missed species')
+                : (lsReview.queue.length === 1 ? 'Try this species again' : 'Review next species'))
+            )
+          );
+        }
+        if (reviewDone) {
+          return h('div', {
+            'data-pets-lifespan-retry': 'complete',
+            style: { marginTop: 10, padding: 9, borderRadius: 8, color: '#bbf7d0', background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.4)', fontSize: 11, fontWeight: 800 }
+          }, '✅ Focused retry complete — every missed species was matched to an accepted lifespan bucket.');
+        }
+        return missedCases.length ? h('button', {
+          'data-pets-focusable': true,
+          onClick: beginLsReview,
+          style: { marginTop: 10, marginRight: 8, padding: '7px 11px', borderRadius: 8, border: '1px solid ' + T.link, background: 'rgba(14,165,233,0.12)', color: '#bae6fd', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+        }, 'Retry ' + missedCases.length + ' missed ' + (missedCases.length === 1 ? 'species' : 'species')) : null;
+      }
 
       return h('div', { className: 'petslab-life-view', style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('⏳ Lifespan Match'),
@@ -7224,12 +10647,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { fontSize: 40, flexShrink: 0 }, 'aria-hidden': 'true' }, v.icon),
           h('div', { style: { flex: 1, minWidth: 220 } },
             h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Vignette ' + lsShown.length + ' of ' + V.length),
-            h('div', { style: { fontSize: 18, fontWeight: 800, color: T.text } }, v.species)
+            h('div', { ref: reviewActive ? undefined : _lifespanQuestionRef, tabIndex: -1,
+              style: { fontSize: 18, fontWeight: 800, color: T.text } }, v.species)
           ),
           renderLifeStage(v, lsAns)
         ),
         // 5 picker buttons
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the lifespan range' },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': 'Pick the lifespan range' },
           BUCKETS.map(function(b) {
             var picked = lsAns && lsPick === b.id;
             var isRight = lsAns && acceptedIds.indexOf(b.id) >= 0;
@@ -7241,10 +10665,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             } else {
               bg = b.color + '15'; border = b.color + '55'; color = T.text;
             }
-            return h('button', { key: b.id, role: 'radio',
-              'aria-checked': picked ? 'true' : 'false',
+            return h('button', { key: b.id,
+              'aria-pressed': picked ? 'true' : 'false',
+              'aria-disabled': lsAns ? 'true' : undefined,
+              tabIndex: lsAns ? -1 : 0,
               'aria-label': b.label + (lsAns && isRight ? ', accepted answer for ' + v.species : ''),
-              disabled: lsAns,
               'data-pets-focusable': true,
               onClick: function() { pickLs(b.id); },
               style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: lsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 64, transition: 'all 0.15s' }
@@ -7259,6 +10684,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ),
         // Feedback
         lsAns && h('section', {
+          ref: reviewActive ? undefined : _lifespanFeedbackRef, tabIndex: -1,
+          role: allDone ? 'region' : 'status',
+          'aria-label': allDone ? 'Lifespan Match result and review' : undefined,
+          'aria-live': allDone ? undefined : 'polite',
+          'aria-atomic': allDone ? undefined : 'true',
           style: {
             marginTop: 12, padding: '12px 14px', borderRadius: 10,
             background: pickedCorrect ? 'rgba(132,204,22,0.10)' : 'rgba(220,38,38,0.10)',
@@ -7272,23 +10702,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           ),
           h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
           allDone
-            ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
+            ? h('div', {
+                'data-pets-lifespan-result': 'complete',
+                style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent }
+              },
                 h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 species complete'),
                 h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
                   'Final: ', h('strong', null, lsScore + ' / ' + V.length + ' (' + Math.round((lsScore / V.length) * 100) + '%)'),
                   lsScore === V.length ? ' — every lifespan correctly identified. Use this when families ask "what pet should we adopt?"' :
                   lsScore >= 8 ? ' — strong lifespan intuition. The most-confused pair is usually goldfish (10–20 yr in proper tanks) vs cockatiel (15–25 yr) — both surprise people who expected shorter spans.' :
-                  lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, parrots = 15+ to 80, large dogs lose to small dogs by ~5 years, indoor cats outlive outdoor cats by 4–7×.' :
-                  ' — these matter at adoption. Re-read the rationales on misses, then retake. Lifespan-mismatch is the #1 cause of pet surrender after the first year.'
+                  lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, parrots = 15+ to 80, large dogs lose to small dogs by ~5 years, and cats with outdoor access face added risks and die younger on average.' :
+                  ' — these estimates matter at adoption. Review the missed species below, practice them, then retry the full set.'
                 ),
+                h('div', {
+                  'data-pets-target-status': targetMet ? 'met' : 'needs-practice',
+                  style: {
+                    marginTop: 8, padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 800,
+                    color: targetMet ? '#bbf7d0' : '#fde68a',
+                    background: targetMet ? 'rgba(34,197,94,0.12)' : 'rgba(245,158,11,0.12)',
+                    border: '1px solid ' + (targetMet ? 'rgba(34,197,94,0.5)' : 'rgba(245,158,11,0.5)')
+                  }
+                }, targetMet
+                  ? '✅ Activity target met: 8/10 or higher.'
+                  : '↻ Activity target needs practice: reach 8/10 or higher.'),
+                renderLifespanMissReview(),
                 renderSpeciesComparison(),
+                renderLifespanFocusedRetry(),
                 h('button', { 'data-pets-focusable': true,
-                  onClick: function() { upd('lsIdx', -1); upd('lsShown', []); upd('lsScore', 0); upd('lsRounds', 0); upd('lsStreak', 0); },
+                  onClick: function() {
+                    updMulti({
+                      lsIdx: -1, lsShown: [], lsAns: false, lsPick: null,
+                      lsScore: 0, lsRounds: 0, lsStreak: 0,
+                      lsMissed: [], lsReview: null
+                    });
+                    focusPetsTarget(_lifespanQuestionRef);
+                  },
                   style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
-                }, '🔄 Restart')
+                }, '🔄 Restart full 10')
               )
             : h('button', { 'data-pets-focusable': true,
-                onClick: startLs,
+                onClick: advanceLs,
                 style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
               }, '➡️ Next species')
         ),
@@ -7346,13 +10799,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function renderAiPractice() {
       var callGemini = ctx.callGemini || null;
       var scenario = AI_SCENARIOS.filter(function(s) { return s.id === aiScenarioId; })[0] || null;
+      var revisionNote = scenario ? String(aiRevisionNotes[scenario.id] || '') : '';
+      var draftReadiness = aiDraftReadiness(aiResponse);
+      var hasScenarioSavedWork = !!(scenario && (
+        String(aiResponse || '').length ||
+        aiCritiques[scenario.id] ||
+        aiRevisionNotes[scenario.id] ||
+        aiLoadingCritique
+      ));
+      var revisionRecorded = !!(scenario && evidenceRecords.slice().reverse().some(function(record) {
+        var details = record && record.details;
+        return record && record.moduleId === 'aiPractice' && record.kind === 'activity' &&
+          details && details.scenarioId === scenario.id && details.revisionMade === true &&
+          details.draftChars === String(aiResponse || '').length &&
+          details.revisionNoteChars === revisionNote.trim().length;
+      }));
+      var aiPathCurrentIndex = !scenario ? 0
+        : !draftReadiness.ready ? 1
+        : !aiCritique ? 2
+        : !revisionRecorded ? 3
+        : -1;
+      var aiPathSteps = [
+        {
+          id: 'scenario',
+          label: 'Choose a scenario',
+          done: !!scenario,
+          detail: scenario ? scenario.title + ' selected.' : 'Pick one situation to investigate.'
+        },
+        {
+          id: 'draft',
+          label: 'Write a feedback-ready draft',
+          done: !!(scenario && draftReadiness.ready),
+          detail: !scenario
+            ? 'Available after you choose a scenario.'
+            : draftReadiness.ready
+              ? draftReadiness.words + ' words and ' + draftReadiness.chars + ' characters provide enough context for a check.'
+              : 'Reach at least 12 words and 80 characters; length does not prove correctness.'
+        },
+        {
+          id: 'feedback',
+          label: 'Run a critique or rubric check',
+          done: !!aiCritique,
+          detail: aiCritique
+            ? (aiCritiqueStale ? 'Feedback was received for an earlier draft.' : 'Feedback is current for this draft.')
+            : (aiLoadingCritique ? 'The feedback check is running.' : 'This completes the activity checkpoint; teacher review is still required.')
+        },
+        {
+          id: 'revision',
+          label: 'Revise and explain one change',
+          done: revisionRecorded,
+          detail: revisionRecorded
+            ? 'Stronger revision evidence is saved as metadata for teacher review.'
+            : 'Optional stronger evidence after feedback; your raw writing is not copied into the teacher record.'
+        }
+      ];
 
       function selectScenario(id) {
+        _aiRequestRef.current.seq += 1;
+        _aiCritiqueFocusPendingRef.current = false;
         var nextDrafts = Object.assign({}, aiDrafts);
         if (aiScenarioId) nextDrafts[aiScenarioId] = String(aiResponse || '').slice(0, 4000);
         var nextResponse = Object.prototype.hasOwnProperty.call(nextDrafts, id) ? nextDrafts[id] : '';
-        updMulti({ aiScenarioId: id, aiDrafts: nextDrafts, aiResponse: nextResponse, aiCritique: null });
+        updMulti({
+          aiScenarioId: id,
+          aiDrafts: nextDrafts,
+          aiResponse: nextResponse,
+          aiCritique: null,
+          aiLoadingCritique: false,
+          aiCritiqueRequest: null
+        });
         petsAnnounce('Scenario loaded. ' + (nextResponse ? 'Saved draft restored.' : 'Ready for your response.'));
+      }
+
+      function clearScenarioWork() {
+        if (!scenario || !hasScenarioSavedWork) return;
+        var confirmed = true;
+        try {
+          if (typeof window !== 'undefined' && typeof window.confirm === 'function') {
+            confirmed = window.confirm(
+              'Clear the saved draft, critique, and revision note for “' +
+              scenario.title + '”? Aggregate completion and evidence metadata will remain.'
+            );
+          }
+        } catch (e) {}
+        if (!confirmed) return;
+        _aiRequestRef.current.seq += 1;
+        _aiCritiqueFocusPendingRef.current = false;
+        var nextDrafts = Object.assign({}, aiDrafts);
+        var nextCritiques = Object.assign({}, aiCritiques);
+        var nextNotes = Object.assign({}, aiRevisionNotes);
+        delete nextDrafts[scenario.id];
+        delete nextCritiques[scenario.id];
+        delete nextNotes[scenario.id];
+        updMulti({
+          aiDrafts: nextDrafts,
+          aiCritiques: nextCritiques,
+          aiRevisionNotes: nextNotes,
+          aiResponse: '',
+          aiCritique: null,
+          aiLoadingCritique: false,
+          aiCritiqueRequest: null
+        });
+        petsAnnounce('Saved work cleared for ' + scenario.title + '.');
+        focusPetsTarget(_aiResponseRef);
       }
 
       // Words that appear in almost any fluent English sentence. The old check
@@ -7378,9 +10927,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // and the result is three-state so a partial hit never renders as a
       // checkmark. It also shows its own hit counts, which makes the
       // crudeness legible instead of merely asserted.
-      function localRubricCheck() {
-        var resp = ' ' + String(aiResponse).toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
-        var checks = scenario.rubric.map(function(r) {
+      function storeCritique(targetScenarioId, targetDraft, text, source) {
+        _aiCritiqueFocusPendingRef.current = true;
+        var nextCritiques = Object.assign({}, aiCritiques);
+        nextCritiques[targetScenarioId] = {
+          text: String(text || '').slice(0, 6000),
+          source: source === 'ai' ? 'ai' : 'local',
+          draftSnapshot: String(targetDraft || '').slice(0, 4000),
+          createdAt: new Date().toISOString()
+        };
+        updMulti({
+          aiCritiques: nextCritiques,
+          aiCritique: null,
+          aiLoadingCritique: false,
+          aiCritiqueRequest: null
+        });
+      }
+
+      function localRubricCheck(targetScenario, targetDraft) {
+        var checkedScenario = targetScenario || scenario;
+        var checkedDraft = targetDraft == null ? aiResponse : String(targetDraft);
+        if (!checkedScenario || !aiDraftReadiness(String(checkedDraft)).ready) return;
+        var resp = ' ' + String(checkedDraft).toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+        var checks = checkedScenario.rubric.map(function(r) {
           var seen = {};
           (r.toLowerCase().match(/[a-z][a-z\-]{3,}/g) || []).forEach(function(w) {
             if (!RUBRIC_STOPWORDS[w]) seen[w] = 1;
@@ -7404,24 +10973,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           '"Likely covered" means you used related words — NOT that you got it right.\n\n' +
           lines.join('\n\n') +
           '\n\nUse this to find criteria you did not address at all. For judgement on the ones you did address, ask a teacher — or try again when AI is available.';
-        updMulti({ aiCritique: { text: summary, source: 'local' }, aiLoadingCritique: false });
+        storeCritique(checkedScenario.id, checkedDraft, summary, 'local');
         // Earned for doing the work, not for having a network. Awarding this
         // only on the AI path made the badge unreachable in an offline
         // classroom, with no way for the student to find out why.
         awardBadge('pets_ai_designer', 'AI Practice (wrote and checked a response)');
-        completeModule('aiPractice', 'Wrote a response and completed a rubric check');
+        completeModule('aiPractice', 'Wrote a response and completed a rubric check', {
+          scenarioId: checkedScenario.id,
+          draftChars: checkedDraft.length,
+          feedbackSource: 'local',
+          reviewStatus: 'teacher-review'
+        });
         petsAnnounce('Offline rubric check ready.');
       }
 
       function getCritique() {
-        if (!scenario || !aiResponse.trim()) return;
-        if (!callGemini) { localRubricCheck(); return; }
-        upd('aiLoadingCritique', true);
+        if (!scenario || !aiDraftReadiness(aiResponse).ready) return;
+        var requestScenario = scenario;
+        var requestDraft = String(aiResponse);
+        if (!callGemini) { localRubricCheck(requestScenario, requestDraft); return; }
+        var requestId = _aiRequestRef.current.seq + 1;
+        _aiRequestRef.current.seq = requestId;
+        updMulti({
+          aiLoadingCritique: true,
+          aiCritiqueRequest: {
+            id: requestId,
+            scenarioId: requestScenario.id,
+            draftSnapshot: requestDraft
+          }
+        });
         petsAnnounce('Getting critique...');
         var prompt = 'You are a veterinary + animal-welfare educator reviewing a student\'s response to a real-world pet-care scenario.\n\n' +
-          'SCENARIO:\n' + scenario.prompt + '\n\n' +
-          'STUDENT RESPONSE:\n' + aiResponse + '\n\n' +
-          'RUBRIC (criteria a sound response hits):\n' + scenario.rubric.map(function(r, i) { return (i + 1) + '. ' + r; }).join('\n') + '\n\n' +
+          'SCENARIO:\n' + requestScenario.prompt + '\n\n' +
+          'STUDENT RESPONSE:\n' + requestDraft + '\n\n' +
+          'RUBRIC (criteria a sound response hits):\n' + requestScenario.rubric.map(function(r, i) { return (i + 1) + '. ' + r; }).join('\n') + '\n\n' +
           'GROUND-TRUTH FACTS (do not deviate; if student response conflicts, flag):\n' +
           AI_GROUND_TRUTH.map(function(p, i) { return (i + 1) + '. ' + p; }).join('\n') + '\n\n' +
           'CRITIQUE specifically:\n' +
@@ -7434,22 +11019,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           'End with: "Educational only — for medical decisions see your veterinarian."';
         callGemini(prompt, { maxOutputTokens: 500 })
           .then(function(text) {
+            if (_aiRequestRef.current.seq !== requestId) return;
             var clean = String(text || '').trim();
             if (!clean) throw new Error('Empty response');
-            updMulti({ aiCritique: { text: clean, source: 'ai' }, aiLoadingCritique: false });
+            storeCritique(requestScenario.id, requestDraft, clean, 'ai');
             awardBadge('pets_ai_designer', 'AI Practice (got a response critiqued)');
-            completeModule('aiPractice', 'Wrote a response and received critique');
+            completeModule('aiPractice', 'Wrote a response and received critique', {
+              scenarioId: requestScenario.id,
+              draftChars: requestDraft.length,
+              feedbackSource: 'ai',
+              reviewStatus: 'teacher-review'
+            });
             petsAnnounce('Critique ready.');
           })
           .catch(function(e) {
+            if (_aiRequestRef.current.seq !== requestId) return;
             console.warn('[Pets] AI critique failed; falling back.', e);
             // Actually fall back. This used to toast "try the local check"
             // while offering no such control: when callGemini EXISTS the only
             // button reads "Get AI critique", so the advice pointed at a
             // button that is not on the screen and the student dead-ended.
             addToast('AI unavailable — ran the offline check instead.');
-            localRubricCheck();
+            localRubricCheck(requestScenario, requestDraft);
           });
+      }
+
+      function saveRevisionReflection() {
+        var trimmedNote = revisionNote.trim();
+        if (!scenario || !aiCritique || !aiCritiqueStale || trimmedNote.length < 20) return;
+        completeModule('aiPractice', 'Revised a response and explained the change', {
+          scenarioId: scenario.id,
+          draftChars: String(aiResponse || '').length,
+          feedbackSource: aiCritique.source === 'ai' ? 'ai' : 'local',
+          reviewStatus: 'teacher-review',
+          revisionMade: true,
+          revisionNoteChars: trimmedNote.length
+        });
+        petsAnnounce('Revision reflection saved for teacher review.');
       }
 
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -7457,15 +11063,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             'Pick a scenario. Write 4–8 sentences walking a friend (or yourself) through what you\'d actually do. ',
-            h('strong', { style: { color: T.accentHi } }, 'AI critiques your reasoning'),
+            h('strong', { style: { color: T.accentHi } }, 'A critique or local rubric check reviews your response'),
             ' against a welfare-science rubric and the same ground-truth facts taught throughout this lab.')),
+        h('section', {
+          className: 'petslab-ai-pathway',
+          'aria-labelledby': 'pets-ai-pathway-heading',
+          style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-ai-pathway-heading', style: { margin: '0 0 6px', color: T.text, fontSize: 14 } },
+            'Your practice pathway'),
+          h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 11, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, 'Completion checkpoint: '),
+            'choose a scenario, write enough context, and run a critique or rubric check. Every result still needs teacher review. ',
+            h('strong', { style: { color: T.warm } }, 'Stronger evidence: '),
+            'revise after feedback and explain one change.'),
+          h('ol', {
+            style: {
+              listStyle: 'none',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+              gap: 8,
+              padding: 0,
+              margin: 0
+            }
+          }, aiPathSteps.map(function(step, index) {
+            var status = step.done ? 'complete' : (index === aiPathCurrentIndex ? 'current' : 'upcoming');
+            var statusLabel = status === 'complete' ? 'Complete' : (status === 'current' ? 'Current' : 'Later');
+            var statusColor = status === 'complete' ? T.ok : (status === 'current' ? T.warm : T.dim);
+            return h('li', {
+              key: step.id,
+              'data-pets-ai-path-step': step.id,
+              'data-pets-ai-path-status': status,
+              'aria-current': status === 'current' ? 'step' : undefined,
+              style: {
+                minWidth: 0,
+                padding: 9,
+                borderRadius: 8,
+                background: status === 'current' ? 'rgba(251,191,36,.08)' : T.bg,
+                border: '1px solid ' + (status === 'current' ? T.warm : T.border)
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 6, fontSize: 11, fontWeight: 800, color: T.text } },
+                h('span', { 'aria-hidden': 'true', style: { color: statusColor } }, status === 'complete' ? '✓' : (index + 1) + '.'),
+                h('span', null, step.label)),
+              h('div', { style: { marginTop: 4, color: statusColor, fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' } },
+                statusLabel),
+              h('div', { style: { marginTop: 3, color: T.muted, fontSize: 10, lineHeight: 1.4 } }, step.detail));
+          }))),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.text } }, '📋 Pick a scenario'),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 } },
             AI_SCENARIOS.map(function(s) {
               var picked = aiScenarioId === s.id;
-              return h('div', { key: s.id, role: 'listitem' }, h('button', { 'data-pets-focusable': true,
+              return h('div', { key: s.id, role: 'listitem' }, h('button', { type: 'button', 'data-pets-focusable': true,
                 'aria-label': s.title + (picked ? ' (selected)' : ''),
                 'aria-pressed': picked ? 'true' : 'false',
                 onClick: function() { selectScenario(s.id); },
@@ -7484,38 +11135,160 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, scenario.icon + ' ' + scenario.title),
           h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.6 } }, scenario.prompt),
           h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px dashed ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
-            h('strong', { style: { color: T.warm } }, '💡 Hint: '), scenario.hint)),
+            h('strong', { style: { color: T.warm } }, '💡 Hint: '), scenario.hint),
+          h('details', {
+            className: 'petslab-ai-planning-criteria',
+            style: { marginTop: 9, padding: 8, borderRadius: 7, background: T.bg, border: '1px solid ' + T.border }
+          },
+            h('summary', {
+              'data-pets-focusable': true,
+              style: { cursor: 'pointer', color: T.accentHi, fontSize: 11, fontWeight: 800, lineHeight: 1.45 }
+            }, 'Planning criteria (' + scenario.rubric.length + ') — review before writing'),
+            h('p', { style: { margin: '8px 0 6px', color: T.muted, fontSize: 10, lineHeight: 1.5 } },
+              'These criteria guide feedback. Using a matching phrase does not prove your reasoning is correct; explain the connections in your own words.'),
+            h('ol', { style: { margin: 0, paddingLeft: 22, color: T.text, fontSize: 11, lineHeight: 1.55 } },
+              scenario.rubric.map(function(item, index) {
+                return h('li', { key: scenario.id + '-criterion-' + index, style: { marginBottom: 5 } }, item);
+              })))),
         scenario && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('label', { htmlFor: 'pets-ai-response', style: { display: 'block', fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 6 } },
             '✏️ Your response (4–8 sentences)'),
-          h('textarea', { id: 'pets-ai-response', 'data-pets-focusable': true,
+          h('textarea', { id: 'pets-ai-response', ref: _aiResponseRef, 'data-pets-focusable': true,
             value: aiResponse,
             maxLength: 4000,
             onChange: function(e) {
+              _aiRequestRef.current.seq += 1;
               var value = e.target.value;
               var nextDrafts = Object.assign({}, aiDrafts);
               nextDrafts[scenario.id] = value;
-              updMulti({ aiResponse: value, aiDrafts: nextDrafts, aiCritique: null });
+              updMulti({
+                aiResponse: value,
+                aiDrafts: nextDrafts,
+                aiCritique: null,
+                aiLoadingCritique: false,
+                aiCritiqueRequest: null
+              });
             },
             placeholder: 'Walk through what you\'d do or say. What do you ask first? What do you recommend? What would change your recommendation?',
             'aria-label': 'Your response',
-            'aria-describedby': 'pets-ai-response-count',
+            'aria-describedby': 'pets-ai-response-count pets-ai-feedback-readiness pets-ai-privacy-note',
             rows: 6,
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, lineHeight: 1.55, fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' } }),
           h('div', { id: 'pets-ai-response-count', style: { marginTop: 6, fontSize: 11, color: T.dim, marginBottom: 10 } },
-            aiResponse.length, ' / 4000 characters. Drafts save separately for each scenario. Aim for ~300–800.'),
-          h('button', { 'data-pets-focusable': true,
-            'aria-label': aiLoadingCritique ? 'Getting critique' : 'Get critique of your response',
-            'aria-busy': aiLoadingCritique ? 'true' : 'false',
-            disabled: aiLoadingCritique || !aiResponse.trim(),
-            onClick: getCritique,
-            style: btnPrimary({ opacity: (aiLoadingCritique || !aiResponse.trim()) ? 0.6 : 1 })
-          }, aiLoadingCritique ? '⏳ Critiquing...' : (callGemini ? '🎓 Get AI critique' : '📋 Local rubric check'))),
-        aiCritique && h('div', { style: { padding: 14, borderRadius: 10, background: '#3a2a1a', border: '1px solid ' + T.accent, color: '#fef3e2', marginBottom: 14 } },
-          h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, '🎓 Critique'),
-          h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6 } }, aiCritique.text),
+            aiResponse.length, ' / 4000 characters · ', draftReadiness.words, ' words. Drafts save separately for each scenario. Aim for ~300–800 characters.'),
+          h('div', {
+            id: 'pets-ai-feedback-readiness',
+            role: 'note',
+            style: {
+              margin: '-4px 0 10px',
+              padding: '7px 9px',
+              borderRadius: 7,
+              background: draftReadiness.ready ? 'rgba(34,197,94,.10)' : 'rgba(251,191,36,.08)',
+              border: '1px solid ' + (draftReadiness.ready ? T.ok : T.warm),
+              color: draftReadiness.ready ? T.ok : T.warm,
+              fontSize: 10,
+              lineHeight: 1.45
+            }
+          }, draftReadiness.ready
+            ? 'Ready for feedback. The length check does not judge whether the reasoning is correct.'
+            : 'Feedback unlocks at 12 words and 80 characters after trimming. Keep adding enough context for useful feedback.'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            h('button', { type: 'button', 'data-pets-focusable': true,
+              'aria-label': aiLoadingCritique ? 'Getting critique' : 'Get critique of your response',
+              'aria-describedby': 'pets-ai-feedback-readiness pets-ai-privacy-note',
+              'aria-busy': aiLoadingCritique ? 'true' : 'false',
+              disabled: aiLoadingCritique || !draftReadiness.ready,
+              onClick: getCritique,
+              style: btnPrimary({ opacity: (aiLoadingCritique || !draftReadiness.ready) ? 0.6 : 1 })
+            }, aiLoadingCritique ? '⏳ Critiquing...' : (callGemini ? '🎓 Get AI critique' : '📋 Local rubric check')),
+            callGemini && h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              'aria-label': 'Run offline rubric check',
+              'aria-describedby': 'pets-ai-feedback-readiness pets-ai-privacy-note',
+              disabled: aiLoadingCritique || !draftReadiness.ready,
+              onClick: function() { localRubricCheck(scenario, aiResponse.trim()); },
+              style: btn({ opacity: (aiLoadingCritique || !draftReadiness.ready) ? 0.6 : 1 })
+            }, '📋 Check locally instead')
+          ),
+          hasScenarioSavedWork && h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 9 } },
+            h('button', {
+              type: 'button',
+              className: 'petslab-ai-clear-work',
+              'data-pets-focusable': true,
+              onClick: clearScenarioWork,
+              style: btn({ borderColor: '#dc2626', color: '#fecaca', padding: '6px 10px', fontSize: 10 })
+            }, 'Clear this scenario’s saved work'),
+            h('span', { style: { color: T.dim, fontSize: 10, lineHeight: 1.4 } },
+              'Removes the draft, critique, and revision note; aggregate completion metadata remains.')
+          ),
+          h('p', {
+            id: 'pets-ai-privacy-note',
+            role: 'note',
+            style: { margin: '9px 0 0', color: T.dim, fontSize: 10, lineHeight: 1.5 }
+          }, callGemini
+            ? 'AI critique sends this draft to the configured AI service. Do not include names or identifying details. “Check locally instead” keeps the rubric check in this browser. Drafts remain saved with this project for resume; use the clear control above to remove this scenario’s saved writing and feedback.'
+            : 'This offline rubric check stays in this browser. Drafts remain saved with this project for resume; do not include names or identifying details. Use the clear control above to remove this scenario’s saved writing and feedback.')),
+        aiCritique && h('section', {
+          ref: _aiCritiqueRef,
+          role: 'region',
+          tabIndex: -1,
+          'aria-labelledby': 'pets-ai-critique-heading',
+          'aria-busy': 'false',
+          className: 'petslab-ai-critique' + (aiCritiqueStale ? ' is-stale' : ''),
+          style: { padding: 14, borderRadius: 10, background: '#3a2a1a', border: '1px solid ' + (aiCritiqueStale ? T.warm : T.accent), color: '#fef3e2', marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-ai-critique-heading', style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, '🎓 Critique'),
+          aiCritiqueStale && h('div', { className: 'petslab-ai-critique-stale', role: 'status', style: { marginBottom: 9, padding: 8, borderRadius: 7, background: '#4a2117', color: '#fed7aa', fontSize: 12, lineHeight: 1.5 } },
+            'Draft changed after this critique. Keep it for comparison, but run the check again before treating it as current feedback.'),
+          h('div', { style: {
+            whiteSpace: 'pre-wrap',
+            overflowWrap: 'anywhere',
+            wordBreak: 'break-word',
+            minWidth: 0,
+            fontSize: 13,
+            lineHeight: 1.6
+          } }, aiCritique.text),
           h('div', { style: { marginTop: 10, fontSize: 10, opacity: 0.75, fontStyle: 'italic' } },
             aiCritique.source === 'ai' ? 'Critique from AI; constrained against this lab\'s ground-truth.' : 'Offline word-match check — it did not read your reasoning, only your vocabulary.')),
+        scenario && aiCritique && aiCritiqueStale && h('section', {
+          className: 'petslab-ai-revision',
+          'aria-labelledby': 'pets-ai-revision-heading',
+          style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 }
+        },
+          h('h3', { id: 'pets-ai-revision-heading', style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, '🔁 Explain your revision'),
+          h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+            'Your response changed after feedback. Name one change you made and why it improves the welfare reasoning. This reflection records revision effort; it does not automatically prove the answer is correct.'),
+          h('label', { htmlFor: 'pets-ai-revision-note', style: { display: 'block', color: T.text, fontSize: 12, fontWeight: 800, marginBottom: 5 } },
+            'What did you change, and why?'),
+          h('textarea', {
+            id: 'pets-ai-revision-note',
+            className: 'petslab-ai-revision-note',
+            'data-pets-focusable': true,
+            value: revisionNote,
+            maxLength: 1200,
+            rows: 3,
+            'aria-describedby': 'pets-ai-revision-count',
+            onChange: function(e) {
+              var nextNotes = Object.assign({}, aiRevisionNotes);
+              nextNotes[scenario.id] = e.target.value;
+              upd('aiRevisionNotes', nextNotes);
+            },
+            style: { width: '100%', boxSizing: 'border-box', padding: 9, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 12, lineHeight: 1.5, fontFamily: 'inherit', resize: 'vertical' }
+          }),
+          h('div', { id: 'pets-ai-revision-count', style: { marginTop: 5, color: T.dim, fontSize: 10 } },
+            revisionNote.length + ' / 1200 characters · write at least 20 characters.'),
+          h('div', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 9 } },
+            h('button', {
+              type: 'button',
+              'data-pets-focusable': true,
+              disabled: revisionNote.trim().length < 20 || revisionRecorded,
+              onClick: saveRevisionReflection,
+              style: btnPrimary({ opacity: revisionNote.trim().length < 20 || revisionRecorded ? 0.6 : 1 })
+            }, revisionRecorded ? '✓ Revision reflection saved' : 'Save revision for teacher review'),
+            h('span', { style: { color: T.dim, fontSize: 10, lineHeight: 1.4 } }, 'Run the critique again when you want feedback on the revised draft.')
+          )
+        ),
         footer());
     }
 
@@ -8274,24 +12047,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // WELFARE & ETHICS
     // ─────────────────────────────────────────
     function renderWelfare() {
-      var welfareSec = d.welfareSec || 'spayNeuter';
       function setSec(id) { upd('welfareSec', id); petsAnnounce(WELFARE_DATA[id].label); }
-      // Track which sections have been visited for the welfare-aware badge
-      var welfareVisited = d.welfareVisited || {};
-      if (!welfareVisited[welfareSec]) {
-        var nv = Object.assign({}, welfareVisited); nv[welfareSec] = true;
-        // Deferred out of the render phase — calling upd()/awardBadge() during render risks a
-        // "cannot update while rendering" warning / extra render pass.
-        setTimeout(function() { upd('welfareVisited', nv); if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware'); }, 0);
+      var welfareKeys = Object.keys(WELFARE_DATA);
+      function welfareTabKeyDown(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % welfareKeys.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + welfareKeys.length - 1) % welfareKeys.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = welfareKeys.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var nextTab = e.currentTarget.parentNode.querySelectorAll('[role="tab"]')[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
       }
       var sectionTabs = h('div', { role: 'tablist', 'aria-label': 'Welfare topic',
         style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
-        Object.keys(WELFARE_DATA).map(function(k) {
+        welfareKeys.map(function(k, tabIndex) {
           var s = WELFARE_DATA[k];
           var sel = welfareSec === k;
           var visited = !!welfareVisited[k];
           return h('button', {
             key: k, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            id: 'pets-welfare-tab-' + k,
+            'aria-controls': 'pets-welfare-panel-' + k,
+            tabIndex: sel ? 0 : -1,
+            onKeyDown: function(e) { welfareTabKeyDown(e, tabIndex); },
             'data-pets-focusable': true,
             'aria-label': s.label + (visited ? ' (visited)' : ''),
             onClick: function() { setSec(k); },
@@ -8308,7 +12088,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var sec = WELFARE_DATA[welfareSec];
       var body;
       if (welfareSec === 'spayNeuter') {
-        var years = d.litterYears != null ? d.litterYears : 5;
+        var rawYears = Number(d.litterYears);
+        var years = isFinite(rawYears) ? Math.max(1, Math.min(7, Math.floor(rawYears))) : 5;
         // Compound: each generation produces 2 litters/yr × 4 kittens × 50% female × ~80% survive to reproduce
         // Simplified: total cats(t) ≈ Σ generation cats. Use HSUS-style estimate.
         // Females per generation grow by factor ~3.2/year (2 litters × 4 × 0.5 × 0.8)
@@ -8485,7 +12266,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           )
         ),
         sectionTabs,
-        body,
+        h('div', {
+          role: 'tabpanel',
+          id: 'pets-welfare-panel-' + welfareSec,
+          'aria-labelledby': 'pets-welfare-tab-' + welfareSec,
+          tabIndex: 0
+        }, body),
         crossLink('Apply this — practical actions',
           h('span', null,
             'See ', h('strong', { style: { color: T.text } }, '🌱 Take Action'),
@@ -8613,13 +12399,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
     }
 
+    function evaluateCareWelfare(careState) {
+      var domainRows = [
+        { key: 'phys', label: 'Physical', value: Number(careState.phys) || 0 },
+        { key: 'ment', label: 'Mental', value: Number(careState.ment) || 0 },
+        { key: 'soc', label: 'Social', value: Number(careState.soc) || 0 },
+        { key: 'env', label: 'Environmental', value: Number(careState.env) || 0 }
+      ];
+      var weakest = domainRows.slice().sort(function(a, b) { return a.value - b.value; })[0];
+      var minimum = weakest.value;
+      var average = domainRows.reduce(function(sum, row) { return sum + row.value; }, 0) / domainRows.length;
+      var mood = minimum >= 75 ? 'happy' : minimum >= 55 ? 'content' : minimum >= 35 ? 'stressed' : 'distressed';
+      var moneySustainable = !careState.lowMoney && Number(careState.money) >= 0;
+      var finishedAboveEnergyTarget = Number(careState.en) > 20;
+      var avoidedExhaustedCare = !(Number(careState.tiredCare) > 0);
+      var energySustainable = finishedAboveEnergyTarget && avoidedExhaustedCare;
+      var sustainable = moneySustainable && energySustainable;
+      var verdict;
+      if (minimum >= 80 && sustainable) {
+        verdict = '🌟 Excellent week. Every welfare domain finished strong, and the care plan remained sustainable.';
+      } else if (minimum >= 70 && sustainable) {
+        verdict = '✅ Badge target met. All four welfare domains and every caregiver-sustainability requirement finished on target.';
+      } else if (minimum >= 70 && !moneySustainable && !energySustainable) {
+        verdict = '⚖️ The animal-welfare target was met, but both the budget and caregiver-sustainability targets were missed.';
+      } else if (minimum >= 70 && !moneySustainable) {
+        verdict = '⚖️ The pet-welfare domains finished strong, but the care plan was not financially sustainable.';
+      } else if (minimum >= 70) {
+        verdict = '😮‍💨 The animal-welfare target was met, but the caregiver-sustainability target was missed.';
+      } else if (minimum >= 45) {
+        verdict = '😬 Mixed week. ' + weakest.label + ' was the limiting welfare domain at ' + Math.round(minimum) + '%.';
+      } else {
+        verdict = '🚨 Critical ' + weakest.label.toLowerCase() + ' gap. High scores in other domains do not cancel one severely unmet domain.';
+      }
+      return {
+        domains: domainRows,
+        weakest: weakest,
+        minimum: minimum,
+        average: average,
+        mood: mood,
+        sustainable: sustainable,
+        moneySustainable: moneySustainable,
+        finishedAboveEnergyTarget: finishedAboveEnergyTarget,
+        avoidedExhaustedCare: avoidedExhaustedCare,
+        energySustainable: energySustainable,
+        verdict: verdict
+      };
+    }
+
     function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen, onInteract) {
-      // Mood from average welfare. The 4 pet-welfare meters drive
+      // Mood follows the WEAKEST pet-welfare domain. The 4 meters drive
       // posture; the OWNER meters (energy/money) don't change the
       // animal's behavior — they only affect what the student can
-      // do next. So we ignore them here.
-      var avg = (careSim.phys + careSim.ment + careSim.soc + careSim.env) / 4;
-      var mood = avg >= 75 ? 'happy' : avg >= 55 ? 'content' : avg >= 35 ? 'stressed' : 'distressed';
+      // do next. Strong domains cannot visually hide one critical gap.
+      var careOutcome = evaluateCareWelfare(careSim);
+      var mood = careOutcome.mood;
       var sceneEvent = ((CARE_SCENE_EVENTS[species] || [])[dayIdx]) || { icon: '\u2022', label: 'Daily care', detail: 'Notice what your pet needs', kind: 'routine' };
 
       // Time-of-day across the week. Day 0 = early dawn; final day
@@ -9075,6 +12908,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       ];
 
       return h('div', { className: 'petslab-sim-stage petslab-care-stage',
+        'data-pets-care-mood': mood,
+        'data-pets-care-weakest': careOutcome.weakest.key,
         style: {
           position: 'relative',
           borderRadius: 14,
@@ -9286,8 +13121,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
     }
 
+    function normalizeCareSimState(raw) {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+      var species = String(raw.species || '');
+      var days = CARE_SIM_DAYS[species];
+      if (!Array.isArray(days) || !days.length) return null;
+      var speciesBudget = CARE_SIM_START_MONEY[species] != null ? CARE_SIM_START_MONEY[species] : 500;
+      function numberOr(value, fallback) {
+        if (value == null || value === '') return fallback;
+        var parsed = Number(value);
+        return isFinite(parsed) ? parsed : fallback;
+      }
+      function meter(value, fallback) {
+        return Math.max(0, Math.min(100, numberOr(value, fallback)));
+      }
+      var safeChoices = [];
+      var answeredCount = 0;
+      for (var dayIndex = 0; dayIndex < days.length; dayIndex++) {
+        var rawChoice = Array.isArray(raw.choices) ? raw.choices[dayIndex] : null;
+        var choiceId = rawChoice && typeof rawChoice === 'object'
+          ? String(rawChoice.choiceId || '') : '';
+        var authoredChoice = null;
+        for (var choiceIndex = 0; choiceIndex < days[dayIndex].choices.length; choiceIndex++) {
+          if (days[dayIndex].choices[choiceIndex].id === choiceId) {
+            authoredChoice = days[dayIndex].choices[choiceIndex];
+            break;
+          }
+        }
+        if (!authoredChoice) break;
+        answeredCount += 1;
+        safeChoices.push({
+          dayLabel: days[dayIndex].label,
+          choiceId: authoredChoice.id,
+          choiceLabel: authoredChoice.label,
+          note: authoredChoice.note,
+          effects: Object.assign({}, authoredChoice.effects)
+        });
+      }
+      var requestedDay = Math.max(0, Math.min(days.length - 1,
+        Math.floor(numberOr(raw.day, 0))));
+      var earliestCoherentDay = Math.max(0, answeredCount - 1);
+      var latestCoherentDay = Math.min(days.length - 1, answeredCount);
+      var day = requestedDay >= earliestCoherentDay && requestedDay <= latestCoherentDay
+        ? requestedDay
+        : latestCoherentDay;
+      var money = Math.max(-10000, Math.min(10000, numberOr(raw.money, speciesBudget)));
+      var safeInteractions = {};
+      var interactionKinds = ['pet', 'feed', 'water', 'play', 'clean'];
+      Object.keys(raw.dailyInteractions && typeof raw.dailyInteractions === 'object'
+        ? raw.dailyInteractions : {}).forEach(function(dayKey) {
+        var parsedDay = Number(dayKey);
+        if (!Number.isInteger(parsedDay) || parsedDay < 0 || parsedDay >= days.length) return;
+        if (parsedDay > day) return;
+        var source = raw.dailyInteractions[dayKey];
+        if (!source || typeof source !== 'object' || Array.isArray(source)) return;
+        var safeDay = {};
+        interactionKinds.forEach(function(kind) {
+          if (source[kind] === true) safeDay[kind] = true;
+        });
+        if (Object.keys(safeDay).length) safeInteractions[parsedDay] = safeDay;
+      });
+      var safeLastInteract = null;
+      if (raw.lastInteract && typeof raw.lastInteract === 'object' && !Array.isArray(raw.lastInteract)) {
+        var lastKind = String(raw.lastInteract.kind || '');
+        var lastTime = Number(raw.lastInteract.t);
+        if (interactionKinds.indexOf(lastKind) >= 0 && isFinite(lastTime) && lastTime >= 0 &&
+            safeInteractions[day] && safeInteractions[day][lastKind] === true) {
+          safeLastInteract = { kind: lastKind, t: Math.floor(lastTime) };
+        }
+      }
+      var done = raw.done === true && answeredCount === days.length;
+      return {
+        species: species,
+        day: day,
+        choices: safeChoices,
+        phys: meter(raw.phys, 50),
+        ment: meter(raw.ment, 50),
+        soc: meter(raw.soc, 50),
+        env: meter(raw.env, 50),
+        en: meter(raw.en, 100),
+        money: money,
+        startMoney: speciesBudget,
+        // Every authored money effect is zero or a cost, so the final balance
+        // canonically proves whether this week ever crossed below zero. Ignore
+        // a restored raw flag that contradicts the bounded balance.
+        lowMoney: money < 0,
+        tiredCare: Math.max(0, Math.min(days.length * interactionKinds.length,
+          Math.floor(numberOr(raw.tiredCare, 0)))),
+        done: done,
+        badgeEarned: done && raw.badgeEarned === true,
+        dailyInteractions: safeInteractions,
+        lastInteract: safeLastInteract
+      };
+    }
+
     function renderCareSim() {
-      var careSim = d.careSim || null;
+      var careSim = careSimState;
       function startSim(species) {
         var startMoney = CARE_SIM_START_MONEY[species] != null ? CARE_SIM_START_MONEY[species] : 500;
         upd('careSim', {
@@ -9296,6 +13225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           en: 100, money: startMoney, startMoney: startMoney,
           lowMoney: false, tiredCare: 0, done: false
         });
+        focusPetsTarget(_careQuestionRef);
       }
       function chooseAction(choiceId) {
         if (!careSim || careSim.done) return;
@@ -9320,6 +13250,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           en: newEn, money: newMoney,
           lowMoney: careSim.lowMoney || newMoney < 0
         }));
+        focusPetsTarget(_careFeedbackRef);
       }
       function nextDay() {
         if (!careSim) return;
@@ -9328,20 +13259,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // drain — a week of full care stays sustainable, but stacking
           // energy-expensive days on top of full care still wears you down.
           var rested = Math.max(0, Math.min(100, careSim.en + CARE_SIM_ENERGY_RECOVERY));
-          upd('careSim', Object.assign({}, careSim, { day: careSim.day + 1, en: rested }));
+          upd('careSim', Object.assign({}, careSim, {
+            day: careSim.day + 1,
+            en: rested,
+            lastInteract: null
+          }));
         } else {
           // Done — assess + award badge if criteria met.
-          // All FOUR welfare domains gate the badge. Environmental was
+          // All FOUR welfare domains plus sustainable caregiver resources
+          // gate the badge. Environmental was
           // previously omitted, which let a student earn "Caring Pet-Owner"
           // while the animal's housing was neglected — incoherent with the
           // Five Domains framing this tool teaches elsewhere, and worst for
           // exactly the caged species where habitat matters most.
           var c = careSim;
-          var earned = (c.phys >= 70 && c.ment >= 70 && c.soc >= 70 && c.env >= 70 && !c.lowMoney);
+          var finalWelfare = evaluateCareWelfare(c);
+          var earned = (finalWelfare.minimum >= 70 && finalWelfare.sustainable);
           if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
-          completeModule('careSim', 'Finished the seven-day pet-care simulation');
+          completeModule('careSim', 'Finished the seven-day pet-care simulation', {
+            species: c.species,
+            days: 7,
+            physical: Math.round(c.phys),
+            mental: Math.round(c.ment),
+            social: Math.round(c.soc),
+            environmental: Math.round(c.env),
+            weakestDomain: finalWelfare.weakest.label,
+            weakestPct: Math.round(finalWelfare.minimum),
+            moneyLeft: Math.round(c.money),
+            avoidedNegativeBalance: !c.lowMoney,
+            stayedInBudget: finalWelfare.moneySustainable,
+            energyLeft: Math.round(c.en),
+            finishedAboveEnergyTarget: finalWelfare.finishedAboveEnergyTarget,
+            avoidedExhaustedCare: finalWelfare.avoidedExhaustedCare,
+            caregiverSustainable: finalWelfare.energySustainable,
+            criterionMet: earned
+          });
           upd('careSim', Object.assign({}, careSim, { done: true, badgeEarned: earned }));
         }
+        focusPetsTarget(_careQuestionRef);
       }
 
       // Routine-care interactions. Each can be done ONCE per day. The
@@ -9398,6 +13353,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
       }
       function reset() { upd('careSim', null); }
+      function renderCareBadgeTarget(targetState, isFinal) {
+        var targetOutcome = evaluateCareWelfare(targetState);
+        var tiredCareCount = Math.max(0, Number(targetState.tiredCare) || 0);
+        var rows = [
+          {
+            key: 'welfare',
+            met: targetOutcome.minimum >= 70,
+            label: 'All four welfare domains finish at 70% or higher',
+            detail: (isFinal ? 'Final weakest: ' : 'Weakest now: ') +
+              targetOutcome.weakest.label + ' ' + Math.round(targetOutcome.minimum) + '%.'
+          },
+          {
+            key: 'budget',
+            met: targetOutcome.moneySustainable,
+            label: 'Money never goes below $0',
+            detail: targetOutcome.moneySustainable
+              ? (isFinal ? 'Balance stayed nonnegative; ' : 'Protected so far; ') +
+                '$' + Math.round(Number(targetState.money) || 0) + ' left.'
+              : 'The balance went below $0 during this week.'
+          },
+          {
+            key: 'energy',
+            met: targetOutcome.finishedAboveEnergyTarget,
+            label: 'Finish with more than 20% caregiver energy',
+            detail: (isFinal ? 'Final energy: ' : 'Current energy: ') +
+              Math.round(Number(targetState.en) || 0) + '%.'
+          },
+          {
+            key: 'fatigue',
+            met: targetOutcome.avoidedExhaustedCare,
+            label: 'No routine care task started below 25% energy',
+            detail: tiredCareCount > 0
+              ? tiredCareCount + ' routine care task' + (tiredCareCount === 1 ? '' : 's') +
+                ' started below 25% energy.'
+              : (isFinal ? 'No exhausted routine care was recorded.' : 'Protected so far.')
+          }
+        ];
+        var metCount = rows.filter(function(row) { return row.met; }).length;
+        var targetMet = metCount === rows.length;
+        var headingId = isFinal
+          ? 'petslab-care-targets-final-heading'
+          : 'petslab-care-targets-current-heading';
+        return h('section', {
+          className: 'petslab-care-targets',
+          'data-pets-care-target-met': targetMet ? 'true' : 'false',
+          'data-pets-care-target-count': String(metCount),
+          'aria-labelledby': headingId,
+          style: {
+            padding: 12, borderRadius: 10, background: T.cardAlt,
+            border: '1px solid ' + (targetMet ? T.ok : T.border),
+            marginBottom: 12
+          }
+        },
+          h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 10, flexWrap: 'wrap', marginBottom: 5
+            }
+          },
+            h('h4', {
+              id: headingId,
+              style: { margin: 0, fontSize: 14, color: T.text }
+            }, isFinal ? 'Caring Pet-Owner badge result' : 'Current badge check'),
+            h('strong', {
+              className: 'petslab-care-target-count',
+              style: { color: targetMet ? T.ok : T.accentHi, fontSize: 13 }
+            }, metCount + ' / ' + rows.length + ' requirements met')
+          ),
+          h('p', {
+            style: { margin: '0 0 9px', color: T.dim, fontSize: 11, lineHeight: 1.5 }
+          }, isFinal
+            ? (targetMet
+              ? 'Target met: animal welfare and the caregiver plan both finished sustainably.'
+              : 'Target not met yet. Use the checks below to plan the next attempt.')
+            : 'This check is provisional until the week ends; later choices can change it.'),
+          h('ul', {
+            style: {
+              listStyle: 'none', padding: 0, margin: 0, display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 7
+            }
+          }, rows.map(function(row) {
+            return h('li', {
+              key: row.key,
+              className: 'petslab-care-target petslab-care-target--' + row.key,
+              'data-pets-care-target-status': row.met ? 'met' : 'needs-attention',
+              style: {
+                padding: 9, borderRadius: 8, background: T.card,
+                border: '1px solid ' + (row.met ? T.ok : T.border)
+              }
+            },
+              h('div', {
+                style: {
+                  display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+                  gap: 8, marginBottom: 3
+                }
+              },
+                h('strong', { style: { color: T.text, fontSize: 11, lineHeight: 1.4 } }, row.label),
+                h('span', {
+                  style: {
+                    flex: '0 0 auto', color: row.met ? T.ok : T.warm,
+                    fontSize: 10, fontWeight: 800
+                  }
+                }, row.met ? '✓ Met' : '○ Needs attention')
+              ),
+              h('div', { style: { color: T.dim, fontSize: 10, lineHeight: 1.45 } }, row.detail)
+            );
+          }))
+        );
+      }
       // Species picker
       if (!careSim) {
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -9408,8 +13472,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing.'
             ),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-              'Earn the Caring Pet-Owner badge for a week where all four welfare domains — Physical, Mental, Social, and Environmental — stay ≥70% AND money never goes negative. Your starting budget depends on the species, because their real costs do.'
-            )
+              'Earn the Caring Pet-Owner badge when all four welfare domains — Physical, Mental, Social, and Environmental — finish at 70% or higher; money never drops below $0; you finish with more than 20% energy; and you never start a routine care task below 25% energy. Your starting budget depends on the species, because their real costs do.'
+            ),
+            learningModelNote('Simulation model', 'The scores and scenarios are simplified for comparing consequences. They are not a welfare diagnosis, budget forecast, or substitute for species-specific advice from a veterinarian or qualified caregiver.')
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
             [
@@ -9442,16 +13507,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       // End of week
       if (careSim.done) {
         var c = careSim;
-        var avg = (c.phys + c.ment + c.soc + c.env) / 4;
-        var verdict = avg >= 80 ? '🌟 Excellent week. Your pet is thriving — and you stayed sustainable.'
-          : avg >= 65 ? '👍 Solid. A few rough decisions but the pet is broadly healthy and safe.'
-          : avg >= 45 ? '😬 Mixed week. Real welfare gaps. Notice where the meters dropped.'
-          : '🚨 Welfare crisis. This pet would likely need rehoming — and that\'s often a moral injury for both pet and owner.';
+        var outcome = evaluateCareWelfare(c);
+        var careTargetMet = outcome.minimum >= 70 && outcome.sustainable;
+        var earnedCareBadge = !!(c.badgeEarned && careTargetMet);
+        var weakestContributors = (c.choices || []).filter(function(choice) {
+          return choice && choice.effects && Number(choice.effects[outcome.weakest.key]) < 0;
+        });
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('📅 Pet-Care Week — Reflection'),
-          h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + (avg >= 70 ? T.ok : T.accent), marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: T.text } }, verdict),
-            c.badgeEarned && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
+          h('div', {
+            className: 'petslab-care-reflection',
+            'data-pets-care-target-met': careTargetMet ? 'true' : 'false',
+            style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + (careTargetMet ? T.ok : T.accent), marginBottom: 14 }
+          },
+            h('h3', { ref: _careQuestionRef, tabIndex: -1,
+              style: { margin: '0 0 6px', fontSize: 18, color: T.text } }, outcome.verdict),
+            h('div', { className: 'petslab-care-weakest', role: 'status', style: { padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (outcome.minimum >= 70 ? T.ok : T.warm), color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 8 } },
+              h('strong', { style: { color: T.text } }, 'Weakest domain: ' + outcome.weakest.label + ' ' + Math.round(outcome.minimum) + '%. '),
+              'Animal welfare is multidimensional: high scores elsewhere do not erase this domain.',
+              weakestContributors.length > 0 && h('span', null,
+                ' Decisions that reduced it: ',
+                weakestContributors.map(function(choice) { return choice.dayLabel + ' — ' + choice.choiceLabel; }).join('; '),
+                '.')
+            ),
+            renderCareBadgeTarget(c, true),
+            earnedCareBadge && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
             c.lowMoney && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } }, '⚠ Money went negative this week. In real life this often forces hard choices — surrendering the pet, skipping vet care, or going into debt.'),
             (c.tiredCare > 0 || c.en <= 20) && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } },
               c.tiredCare > 0
@@ -9499,9 +13579,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             })
           ),
           h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
-            h('button', { 'data-pets-focusable': true, onClick: reset,
+            h('button', { 'data-pets-focusable': true, onClick: function() { startSim(c.species); },
               style: btnPrimary({ padding: '10px 18px' })
-            }, '🔁 Try a different species'),
+            }, '🔁 Retry this species'),
+            h('button', { 'data-pets-focusable': true, onClick: reset,
+              style: btn({ padding: '10px 18px' })
+            }, '🐾 Change species'),
             h('button', { 'data-pets-focusable': true,
               onClick: function() { goToView('welfare', 'Welfare & Ethics'); },
               style: btn({ padding: '10px 18px' })
@@ -9608,18 +13691,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         // scene for keyboard / touch users who'd rather see the menu.
         careTrack,
         meters,
+        renderCareBadgeTarget(careSim, false),
         h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' } }, dayObj.label),
-          h('p', { style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt)
+          h('p', { ref: _careQuestionRef, tabIndex: -1,
+            style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt)
         ),
-        h('div', { role: 'radiogroup', 'aria-label': 'Choose your action',
+        h('div', { role: 'group', 'aria-label': 'Choose your action',
           style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
           dayObj.choices.map(function(ch) {
             var isPicked = hasChosen && thisChoice.choiceId === ch.id;
             return h('button', {
-              key: ch.id, className: 'petslab-sim-choice', role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+              key: ch.id, className: 'petslab-sim-choice',
+              'aria-pressed': isPicked ? 'true' : 'false',
+              'aria-disabled': hasChosen ? 'true' : undefined,
+              tabIndex: hasChosen ? -1 : 0,
               'data-pets-focusable': true,
-              disabled: hasChosen,
               onClick: function() { chooseAction(ch.id); },
               style: btn({
                 padding: '12px 14px', fontSize: 13,
@@ -9632,7 +13719,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           })
         ),
         hasChosen && h('div', null,
-          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, borderLeft: '4px solid ' + T.accentHi, marginBottom: 12 } },
+          h('div', { ref: _careFeedbackRef, tabIndex: -1,
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            style: { padding: 12, borderRadius: 10, background: T.cardAlt, borderLeft: '4px solid ' + T.accentHi, marginBottom: 12 } },
             h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'What happens'),
             h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.note)
           ),
@@ -9652,12 +13741,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function renderSensory() {
       var sp = _petsSensorySpecies(sensorySpecies);
       var threeErr = !!d._threeError;
-      var threeLoading = !!d._threeLoading;
+      var threeLoading = d._threeLoading === true;
 
       // The badge is for COMPARING, not for arriving. Seeing one viewpoint
       // teaches nothing on its own — the lesson is the difference between
       // them, so the award tracks how many of the three have been stood in.
-      var sensorySeen = d.sensorySeen || {};
+      var sensorySeen = {};
+      ['human', 'dog', 'cat'].forEach(function(id) {
+        if (d.sensorySeen && d.sensorySeen[id] === true) sensorySeen[id] = true;
+      });
       function markSeen(id) {
         if (sensorySeen[id]) return;
         upd('sensorySeen', function (cur) {
@@ -9668,7 +13760,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var seenCount = Object.keys(sensorySeen).length + 1;
         if (seenCount >= SENSORY_SPECIES.length) {
           awardBadge('pets_sensory', 'Saw It Their Way (all three viewpoints)');
-          completeModule('sensory', 'Compared all three visual perspectives');
+          completeModule('sensory', 'Compared all three visual perspectives', {
+            perspectives: SENSORY_SPECIES.length,
+            criterionMet: true
+          });
         }
       }
       function pickSpecies(id) {
@@ -9935,6 +14030,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             )
           ),
           sensoryCompareActive && h('div', {
+            id: 'petslab-sensory-lock-note',
             className: 'petslab-sensory-lock-note',
             role: 'status'
           }, '🔒 Position, heading, and lighting are locked. Eye height and field of view still change by species.'),
@@ -9988,8 +14084,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             return h('button', {
               key: s.id, role: 'radio', 'aria-checked': on ? 'true' : 'false',
               'data-pets-focusable': true,
+              'data-pets-sensory-species': s.id,
+              tabIndex: on ? 0 : -1,
               'aria-label': s.name + (seen ? ' (already compared)' : ' (not yet seen)'),
               onClick: function () { pickSpecies(s.id); },
+              onKeyDown: function (e) {
+                var currentIndex = SENSORY_SPECIES.indexOf(s);
+                var nextIndex = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (currentIndex + 1) % SENSORY_SPECIES.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (currentIndex - 1 + SENSORY_SPECIES.length) % SENSORY_SPECIES.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = SENSORY_SPECIES.length - 1;
+                if (nextIndex == null) return;
+                e.preventDefault();
+                var groupNode = e.currentTarget && e.currentTarget.parentNode;
+                var nextSpecies = SENSORY_SPECIES[nextIndex];
+                pickSpecies(nextSpecies.id);
+                setTimeout(function () {
+                  var target = groupNode && groupNode.querySelector
+                    ? groupNode.querySelector('[data-pets-sensory-species="' + nextSpecies.id + '"]')
+                    : null;
+                  if (target && target.focus) target.focus();
+                }, 0);
+              },
               style: btn({
                 padding: '8px 14px', fontSize: 13, fontWeight: 800,
                 background: on ? 'rgba(245,158,11,0.16)' : T.card,
@@ -10064,7 +14181,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             style: btnPrimary({ padding: '12px 26px', fontSize: 14 })
           }, '🚪 Step into the room')
         ) : h('div', { style: { marginBottom: 12 } },
-          h('div', { className: 'petslab-sim-stage petslab-sensory-stage' },
+          h('div', {
+            className: 'petslab-sim-stage petslab-sensory-stage',
+            role: 'region',
+            tabIndex: 0,
+            'aria-label': sensoryCompareActive
+              ? 'Interactive 3D room. Camera locked for comparison. Clear the comparison to move again.'
+              : 'Interactive 3D room. Use arrow keys or W A S D to move.',
+            'aria-describedby': sensoryCompareActive ? 'petslab-sensory-lock-note' : undefined,
+            onBlur: function () {
+              ['w', 's', 'a', 'd', 'left', 'right'].forEach(function(name) {
+                var viewer = _sensoryViewerRef.current;
+                if (viewer) viewer.setKey(name, false);
+              });
+            }
+          },
             h('div', {
               ref: _sensoryMountRef,
               style: { position: 'absolute', inset: 0, overflow: 'hidden', background: '#1a1410' }
@@ -10087,7 +14218,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             h('span', { className: 'petslab-reticle', 'aria-hidden': 'true' }),
             h('div', { className: 'petslab-stage-hud petslab-stage-hud--bottom' },
-              h('span', { className: 'petslab-hud-chip' }, 'Drag to look \u00b7 W A S D to walk'),
+              h('span', { className: 'petslab-hud-chip' },
+                sensoryCompareActive
+                  ? 'Camera locked \u00b7 clear comparison to move'
+                  : 'Drag to look \u00b7 W A S D to walk'),
               sensorySpecies === 'dog' && h('span', { className: 'petslab-hud-chip' }, '\uD83D\uDC43 ', h('strong', null, 'Scent field visible'))
             )
           ),
@@ -10155,7 +14289,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               onClick: function () { clearSensoryComparison(false); upd('sensoryActive', false); petsAnnounce('Left the room.'); },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
             h('span', { style: { fontSize: 11, color: T.dim } },
-              'Arrow keys or W A S D to move · drag the view to look around')
+              sensoryCompareActive
+                ? 'Camera and lighting locked · clear the comparison to move again'
+                : 'Arrow keys or W A S D to move · drag the view to look around')
           ),
           renderSensoryComparison(),
           sensorySpecies === 'dog' && h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.45)' } },
@@ -10200,8 +14336,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // of any view if the celebration state is set; auto-clears after 3.2s.
     function decoderCelebOverlay() {
       if (!decoderCeleb) return null;
-      var unique = Object.keys(decoderMastery || {}).length;
+      var unique = canonicalDecoderMasteryCount(decoderMastery);
       return h('div', {
+        className: 'petslab-decoder-celeb',
         role: 'status',
         'aria-live': 'assertive',
         style: {
@@ -10225,75 +14362,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         },
           h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🎉'),
           h('div', null,
-            h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Signal decoded'),
+            h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'First correct logged'),
             h('div', { style: { fontSize: 15, fontWeight: 800, lineHeight: 1.2 } }, decoderCeleb.species + ' — ' + decoderCeleb.signal),
-            h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, unique + ' / 27 unique signals decoded')
+            h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, unique + ' / 27 signals identified at least once')
           )
         )
       );
     }
 
-    // ── DECODER MASTERY VIEW ─────────────────────────────────
+    // ── DECODER SIGNAL LOG VIEW ───────────────────────────────
     // Cross-species log of body-language signals correctly identified at
     // least once in the quiz. Mirrors BirdLab's life-list pattern: tracks
-    // mastery across attempts, not per-attempt score.
+    // first-correct coverage across attempts, not per-attempt mastery.
     function renderDecoderMastery() {
-      // Re-derive the canonical signal list (same source as renderBodyLang).
-      var sets = [
-        { species: '🐕 Dogs', items: [
-          { signal: 'Loose body + soft eyes + open mouth + wagging mid-height tail', meaning: 'Relaxed + happy' },
-          { signal: 'Stiff body + closed mouth + hard stare + slow high tail wag', meaning: 'WARNING — back off' },
-          { signal: '"Whale eye" (whites of eyes showing as head turns away)', meaning: 'Stress / fear / discomfort — give space' },
-          { signal: 'Lip licking / yawning / sniffing the ground in a tense moment', meaning: 'Calming signal — dog is trying to defuse' },
-          { signal: 'Play bow (front low, butt up)', meaning: 'Invitation to play / "what comes next is fun"' },
-          { signal: 'Tucked tail + low body + ears back', meaning: 'Fear / appeasement — do NOT push interaction' },
-          { signal: 'Showing belly with relaxed body', meaning: 'Trust / play (not always "rub me!")' },
-          { signal: 'Showing teeth + low growl + freeze', meaning: 'CLEAR warning — bite is the next step if pressure continues' }
-        ]},
-        { species: '🐈 Cats', items: [
-          { signal: 'Slow blink toward you', meaning: '"Cat kiss" — affection / trust' },
-          { signal: 'Tail held straight up (sometimes with curve at tip)', meaning: 'Friendly greeting' },
-          { signal: 'Tail flicking back and forth', meaning: 'Annoyed / about to react — back off' },
-          { signal: 'Pupils dilated wide in normal light', meaning: 'Aroused (could be play, fear, or aggression — read context)' },
-          { signal: 'Ears flattened back / sideways', meaning: 'Fear or aggression' },
-          { signal: 'Crouched + tail wrapped tight', meaning: 'Stressed / unwell' },
-          { signal: 'Kneading paws + purring', meaning: 'Content (kitten-nursing leftover behavior)' },
-          { signal: 'Loud meowing AT you specifically', meaning: 'Demand — for food, attention, or door opening' }
-        ]},
-        { species: '🐰 Rabbits', items: [
-          { signal: '"Binky" (sudden midair leap + twist)', meaning: 'Pure joy' },
-          { signal: 'Loud thump with hind feet', meaning: 'Alarm — perceived threat (rabbits HEAR something)' },
-          { signal: 'Tooth purring (soft chattering)', meaning: 'Content' },
-          { signal: 'Tooth grinding (loud grating)', meaning: 'PAIN — vet visit' },
-          { signal: 'Flopping over on side', meaning: 'Trust / relaxation (NOT injured)' },
-          { signal: 'Hunched + not eating + closed eyes', meaning: 'GI stasis or other illness — EMERGENCY' }
-        ]},
-        { species: '🦜 Birds', items: [
-          { signal: 'Crest feathers raised + relaxed posture', meaning: 'Curious / engaged (in cockatiels)' },
-          { signal: 'Eye-pinning (rapid pupil contraction)', meaning: 'Excitement OR aggression — read context' },
-          { signal: 'Beak grinding', meaning: 'Content (often before sleep)' },
-          { signal: 'Tail bobbing while breathing', meaning: 'Respiratory distress — vet now' },
-          { signal: 'Feather plucking / overgrooming', meaning: 'Boredom / stress / medical — needs investigation' }
-        ]}
-      ];
+      var sets = bodyLanguageSignalSets();
       var totalSignals = 0;
-      sets.forEach(function (s) { totalSignals += s.items.length; });
-      var unique = Object.keys(decoderMastery || {}).length;
+      var canonicalMasteryKeys = {};
+      sets.forEach(function (s) {
+        totalSignals += s.items.length;
+        s.items.forEach(function(it) {
+          canonicalMasteryKeys[s.species + '|' + it.signal] = true;
+        });
+      });
+      var unique = Object.keys(decoderMastery || {}).filter(function(key) {
+        return !!canonicalMasteryKeys[key];
+      }).length;
       var pctOverall = totalSignals > 0 ? Math.round((unique / totalSignals) * 100) : 0;
 
       return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
-        decoderCelebOverlay(),
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
-          h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🏅 Decoder Mastery'),
+          h('h2', { ref: _viewHeadingRef, tabIndex: -1, className: 'petslab-view-title', style: { margin: 0, fontSize: 22 } }, '🗂️ Decoder Signal Log'),
           modulesCompleted.decoderMastery
             ? h('span', { className: 'petslab-complete-status', role: 'status' }, '✓ Complete')
-            : h('button', {
-                type: 'button',
-                className: 'petslab-complete-button',
-                'data-pets-focusable': true,
-                onClick: function() { completeModule('decoderMastery'); },
-                style: btn({ padding: '8px 12px', fontSize: 12 })
-              }, 'Mark complete'),
+            : h('span', {
+                className: 'petslab-mastery-goal',
+                title: 'Signal Log coverage completes automatically after all 27 canonical signals are identified correctly at least once.',
+                style: { color: T.muted, fontSize: 11, fontWeight: 700 }
+              }, 'Coverage completes at 27 / 27'),
           h('button', { 'data-pets-focusable': true,
             onClick: function () { goToView('menu'); },
             style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
@@ -10304,11 +14409,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
             h('div', { style: { textAlign: 'center', minWidth: 110 } },
               h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, unique + ' / ' + totalSignals),
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Signals decoded')
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Identified at least once')
             ),
             h('div', { style: { flex: 1, minWidth: 220 } },
               h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-                'Every body-language signal you correctly identify in the quiz lands here permanently. Read animals confidently — across species — and the meter fills. Quiz scores reset; mastery sticks.'
+                'Every signal correctly identified in practice is logged here once. This is a coverage record—not proof of durable mastery, context transfer, safe handling, or a real-animal assessment. Quiz scores reset; the first-correct log remains.'
               ),
               h('div', { style: { marginTop: 8, height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
                 h('div', { style: { width: pctOverall + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
@@ -10327,7 +14432,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                 h('div', { style: { fontSize: 16, fontWeight: 800 } }, s.species),
-                h('div', { style: { fontSize: 12, color: T.dim } }, decodedItems.length + ' of ' + total + ' decoded'),
+                h('div', { style: { fontSize: 12, color: T.dim } }, decodedItems.length + ' of ' + total + ' logged'),
                 h('div', { style: { flex: 1, minWidth: 80, height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden' }, 'aria-hidden': 'true' },
                   h('div', { style: { width: pct + '%', height: '100%', background: T.accent } })
                 )
@@ -10359,9 +14464,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         ),
         h('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
           h('button', { 'data-pets-focusable': true,
-            onClick: function () { goToView('bodyLang', 'Body Language Decoder'); },
+            onClick: function () {
+              updMulti({ view: 'bodyLang', lastView: 'bodyLang', blMode: 'quiz', blQuiz: null });
+              markVisited('bodyLang');
+              petsAnnounce('Opening Body Language Decoder practice.');
+            },
             style: btnPrimary({ padding: '10px 18px', fontSize: 13, width: '100%' })
-          }, unique === 0 ? '🎯 Take the decoder quiz to start your mastery log' : (unique === totalSignals ? '🏆 All signals decoded — review or retry the quiz' : '🎯 Keep going — open the decoder quiz'))
+          }, unique === 0
+            ? '🎯 Start signal practice — 27 not-yet-logged signals'
+            : (unique === totalSignals
+              ? '✓ All signals logged once — keep using mixed and context practice'
+              : '🎯 Practice the ' + (totalSignals - unique) + ' not-yet-logged signal' + ((totalSignals - unique) === 1 ? '' : 's')))
         )
       );
     }

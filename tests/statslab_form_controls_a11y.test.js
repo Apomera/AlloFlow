@@ -10,9 +10,13 @@ describe('Stats Lab inquiry form accessibility', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
 
-  it('provides accessible names for power-design reflection fields', () => {
+  it('names the power controls and evidence explanation field', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': __alloT('stem.statslab.hypothesis_input', 'Power-design hypothesis')");
-    expect(source).toContain("'aria-label': __alloT('stem.statslab.explanation_input', 'Power-state explanation')");
+    expect(source).toContain("'aria-label': controlLabels.effect");
+    expect(source).toContain("'aria-label': controlLabels.alpha");
+    expect(source).toContain("'aria-label': controlLabels.nGroup");
+    expect(source).toContain("'aria-label': __alloT('stem.statslab.evidence_explanation_input', 'Power-model evidence explanation')");
+    expect(source).not.toContain("'Power-design hypothesis'");
+    expect(source).not.toContain("'Power-state explanation'");
   });
 });

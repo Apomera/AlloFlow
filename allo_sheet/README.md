@@ -167,6 +167,47 @@ education records. Educators must store and share it only through an approved
 secure location. AlloSheet does not place a workspace in localStorage,
 IndexedDB, a URL, an AI request, or a source-system writeback.
 
+### Observation Casebook v1
+
+The **Observation casebook** is a configurable, browser-local lens over the
+same AlloSheet workspace primitive. An educator or learner can start from the
+Aquarium, Specimens, or Learner support template, or define custom cases and up
+to 12 number, text, category, or boolean parameters. Its portable wide schema
+uses four ordinary AlloSheet tables:
+
+- `casebook_definition` records the title, case label, description, privacy
+  mode, schema version, and creation time;
+- `casebook_cases` assigns a local case code, name, status, and context to each
+  tank, specimen, learner, or other case;
+- `casebook_parameters` records each parameter's key, label, type, unit,
+  expected context, prompt, and recognition aliases; and
+- `casebook_observations` stores one time-stamped row per entry, with one typed
+  column per configured parameter plus separate qualitative evidence, human
+  interpretation, and capture-source fields.
+
+Typed text or shared voice dictation produces only a local, editable draft.
+The observer reviews the recognized parameter values, note, interpretation,
+time, and warnings before choosing **Record reviewed entry**; dictation never
+saves automatically and AlloSheet does not retain raw audio. Recorded entries
+feed a per-case timeline, latest-value comparisons across cases, and
+deterministic local questions about patterns, limitations, and useful next
+observations. These local prompts do not establish cause.
+
+**Prepare agent reflection** only selects recent observation rows and prepares
+a bounded reflection request. It does not send data or enable AI. The educator
+must still review the selected rows and complete AlloSheet's normal
+selected-value consent step before any values can reach the configured AI
+provider. Agent output remains reflection or brainstorming, not recorded
+evidence, and must not infer a diagnosis, disability, placement, grade, cause,
+or hidden learner trait.
+
+Casebooks exist only in the current popup until explicitly downloaded as an
+AlloSheet workspace. That file is unencrypted, and every table, including the
+observation timeline, is limited to 200 rows. Learner-support casebooks may
+contain sensitive education records: use coded identifiers when possible, keep
+observable evidence separate from interpretation, and save or share downloads
+only through an approved secure location.
+
 ### Reviewed handoffs from educator tools
 
 BehaviorLens supports a reviewed **Open in AlloSheet** handoff. Its source

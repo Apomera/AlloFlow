@@ -34,8 +34,18 @@ const PEDAGOGY_TARGETS = [
   'stem_tool_dna.js',
   'stem_tool_circuit.js',
   'stem_tool_aquarium.js',
+  'stem_tool_calculus.js',
   'stem_tool_physics.js',
-  'stem_tool_heatlab.js'
+  'stem_tool_heatlab.js',
+  'stem_tool_skatelab.js',
+  'stem_tool_cell.js',
+  'stem_tool_throwlab.js',
+  'stem_tool_magnetism.js',
+  'stem_tool_watercycle.js',
+  'stem_tool_coasterlab.js',
+  'stem_tool_ecosystem.js',
+  'stem_tool_epidemic.js',
+  'stem_tool_geometryworld.js'
 ];
 
 function source(name) {
@@ -145,6 +155,119 @@ describe('STEM prediction semantics', () => {
     expect(heat).toContain('reflection credit never depends on matching the model');
     expect(heat).toContain("disabled: !mixEstimateReady || revealed");
     expect(heat).toContain('This completion credit is independent of accuracy.');
+  });
+
+  it('distinguishes numerical estimates, concept checks, and ungraded hypotheses', () => {
+    const skate = source('stem_tool_skatelab.js');
+    expect(skate).toContain("data-skatelab-overhaul': 'physics-first'");
+    expect(skate).toContain('estimateChallenge');
+    expect(skate).toContain('Require estimate');
+    expect(skate).toContain('Enter an estimate of zero or greater before running.');
+    expect(skate).toContain('errorPct');
+    expect(skate).toContain('stats.withinTen');
+    expect(skate).toContain('Skate flight hang-time hypothesis');
+    expect(skate).toContain('Your hypothesis: what controls hang time most?');
+    expect(skate).not.toContain('callGemini');
+
+    const cell = source('stem_tool_cell.js');
+    expect(cell).toContain('data-cell-concept-check');
+    expect(cell).toContain('data-cell-concept-feedback');
+    expect(cell).toContain('This is a concept check, not an experiment prediction.');
+    expect(cell).toContain('Check your reasoning before reveal');
+    expect(cell).not.toContain('data-cell-prediction-check');
+
+    const throwlab = source('stem_tool_throwlab.js');
+    expect(throwlab).toContain('ungraded hypothesis · optional');
+    expect(throwlab).toContain('A match is not a score; both matches and surprises can guide the next test.');
+    expect(throwlab).toContain('descriptive, not scored');
+    expect(throwlab).toContain('Call compared with the evidence');
+    expect(throwlab).not.toContain('Prediction matched the evidence');
+  });
+
+  it('keeps the Magnetism distance estimate ungraded and hides explanatory evidence until the test', () => {
+    const magnetism = source('stem_tool_magnetism.js');
+    const optionStart = magnetism.indexOf('var FORCE_BENCH_PREDICTIONS = [');
+    const optionEnd = magnetism.indexOf('function forceBenchEvidenceState', optionStart);
+    const optionBlock = magnetism.slice(optionStart, optionEnd);
+
+    expect(magnetism).toContain("'data-magnetism-estimation-inquiry': 'true'");
+    expect(magnetism).toContain('Make an ungraded estimate. Then reveal the controlled evidence.');
+    expect(magnetism).toContain('Completion counts the controlled comparison, not whether the estimate matched.');
+    expect(optionBlock).not.toMatch(/fourth power|inverse-fourth|2⁴/i);
+    expect(magnetism).toContain("evidence.resultCaptured ? h('polyline', { className: 'mag-force-distance-curve'");
+    expect(magnetism).toContain("evidence.resultCaptured ? h('div', { className: 'mag-force-metric', 'data-metric': 'comparison'");
+    expect(magnetism).toContain("slider(evidence.resultCaptured ? 'Gap between magnets' : 'Gap between magnets · locked for estimate'");
+    expect(magnetism).toContain('!evidence.resultCaptured),');
+  });
+
+  it('identifies Water Cycle as a post-evidence interpretation rather than a scored prediction', () => {
+    const water = source('stem_tool_watercycle.js');
+    const interpretationIndex = water.indexOf('"data-watercycle-evidence-interpretation": "true"');
+
+    expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Evaporation baseline '));
+    expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Runoff baseline '));
+    expect(interpretationIndex).toBeGreaterThan(water.indexOf('"aria-label": "Infiltration baseline '));
+    expect(water).toContain('Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score.');
+    expect(water).toContain('wcPredictionMatched ? "is-agrees" : "is-differs"');
+    expect(water).not.toContain('"aria-label": "Prediction check"');
+    expect(water).not.toContain('"Predict first"');
+  });
+
+  it('awards CoasterLab hypothesis credit for the inquiry cycle, not agreement', () => {
+    const coaster = source('stem_tool_coasterlab.js');
+    const inquiryStart = coaster.indexOf('function guidedInquiryCycleEvidence');
+    const inquiryEnd = coaster.indexOf('/* @clab-inquiry-rubric-end */', inquiryStart);
+    const inquiryBlock = coaster.slice(inquiryStart, inquiryEnd);
+
+    expect(coaster).toContain('data-clab-hypothesis-credit="commit-test-explain-revise"');
+    expect(coaster).toContain('data-clab-explore-inquiry="commit-test-explain-revise"');
+    expect(coaster).toContain('Commit an ungraded hypothesis first. Match or difference is evidence, not a score.');
+    expect(inquiryBlock).toContain("typeof entry.speedCorrect === 'boolean' && typeof entry.forceCorrect === 'boolean'");
+    expect(inquiryBlock).toContain('score: compared ? (revisionCount > 0 || explained ? 2 : 1) : 0');
+    expect(inquiryBlock).not.toContain('entry.speedCorrect && entry.forceCorrect');
+    expect(coaster).toContain('Agreement is ungraded.');
+    expect(coaster).toContain('Explore = ungraded pre-ride hypotheses, Engineer = calculation concept checks.');
+    expect(coaster).toContain("rq.tag.textContent = 'Concept check · '");
+  });
+
+  it('requires an immutable Ecosystem commitment before graph evidence', () => {
+    const ecosystem = source('stem_tool_ecosystem.js');
+
+    expect(ecosystem).toContain("'data-ecosystem-committed-inquiry': 'true'");
+    expect(ecosystem).toContain("'data-ecosystem-commit-prediction': 'true'");
+    expect(ecosystem).toContain("'data-ecosystem-run-committed': 'true'");
+    expect(ecosystem).toContain("'data-ecosystem-plan-next': 'true'");
+    expect(ecosystem).toContain('runEcoPopulationModel(runCommitment.parameters)');
+    expect(ecosystem).toContain('var completedCommitment = Object.assign({}, runCommitment');
+    expect(ecosystem).toContain('Agreement is not a score');
+    expect(ecosystem).toContain("'data-ecosystem-prediction-comparison': 'descriptive-ungraded'");
+    expect(ecosystem).toContain('var reportCommitment = completedRunCommitment || null');
+    expect(ecosystem).toContain("evidenceMode: 'post-observation-pattern-explanation'");
+    expect(ecosystem).toContain('This map displays evidence from 121 completed runs');
+    expect(ecosystem).toContain('Your evidence-based pattern explanation (not a prediction)');
+    expect(ecosystem).not.toContain('Select a cell, make a prediction, then open that exact setup in Explore.');
+  });
+
+  it('binds each Geometry World estimate to an unmeasured structure before reveal', () => {
+    const geometry = source('stem_tool_geometryworld.js');
+
+    expect(geometry).toContain("'data-geometry-estimation-challenge': 'draft-commit-measure-reflect'");
+    expect(geometry).toContain('This is an ungraded estimate. Aim at one unmeasured structure');
+    expect(geometry).toContain("'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit'");
+    expect(geometry).toContain('function commitVolumeEstimateDraft(draft, targetKey, observedTargetKeys)');
+    expect(geometry).toContain('function resolveVolumeEstimateMeasurement(measurement, commitment, observedTargetKeys)');
+    expect(geometry).toContain("status: 'target_mismatch'");
+    expect(geometry).toContain("status: 'already_observed'");
+    expect(geometry).toContain('Difference is described only for an estimate committed before measurement; it is not scored.');
+    expect(geometry).toContain("'data-geometry-estimate-result': 'committed-before-measurement'");
+    expect(geometry).toContain("'Committed estimate ' + formatVolume(predictionResult.prediction) + ' \\u2192 Measured '");
+    expect(geometry).toContain("policy: 'descriptive-ungraded'");
+    expect(geometry).toContain("engine.performMeasurement('surface')");
+    expect(geometry).toContain("'aria-describedby': 'gw-volume-estimate-status'");
+    expect(geometry).toContain("'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid");
+    expect(geometry).not.toContain('Predictions within 10%');
+    expect(geometry).not.toContain('Avg prediction error');
+    expect(geometry).not.toContain("'aria-label': 'Predicted volume in cubic units'");
   });
 
   it('keeps every changed source file synchronized with its desktop mirror', () => {

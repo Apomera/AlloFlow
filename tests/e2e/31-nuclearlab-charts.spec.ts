@@ -157,6 +157,12 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
       },
     });
 
+    // The reactor canvas deliberately parks while it is far below the viewport.
+    // Bring it into view before sampling pixels so this assertion tests the
+    // resting frame, not the race between requestAnimationFrame and the first
+    // IntersectionObserver callback.
+    await page.getByRole('img', { name: /Reactor control panel/ }).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(250);
     const stats = await canvasStats(page);
     console.log('DARK canvas stats:\n' + stats.map((s) => JSON.stringify(s)).join('\n'));
     await shootCanvases(page, 'dark');
@@ -291,6 +297,24 @@ test.describe('Nuclear Lab — charts in a real browser', () => {
           // A route-active index was never audited: its pills, its step
           // buttons and its category row only exist in this state.
           nkPath: 'me', nkOpen: true,
+          nkRouteSeen: {
+            me: ['weighting', 'biohalf', 'mydose', 'doseladder', 'lowdose', 'evidence'],
+          },
+          pathsCompleted: ['me'],
+          evidenceMastered: [
+            'reactor-bomb',
+            'inverse-square',
+            'low-dose-zero',
+            'neutron-layers',
+            'short-count',
+          ],
+          nkReflections: {
+            me: {
+              confidence: 'growing',
+              idea: 'Dose needs a unit, a pathway, and a timescale.',
+              question: 'Which uncertainty matters most here?',
+            },
+          },
         },
       });
       if (theme === 'light') await setTheme(page, 'light');

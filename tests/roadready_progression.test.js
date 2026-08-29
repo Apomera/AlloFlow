@@ -46,6 +46,44 @@ describe('RoadReady mission evidence and safety-aware progression', () => {
     expect(RR.rrSessionEvidence({ distance: 10 }, 2, { formalResult: true }).qualifying).toBe(false);
   });
 
+  it('requires duration, distance, score, and a critical-event-free formal road test', () => {
+    const testState = { startedAtSim: 10, durationSec: 240, score: 90 };
+    const exactPass = RR.roadTestOutcome(testState, { ...safeStats, distance: 300 }, 250);
+    expect(RR.ROAD_TEST_MIN_DISTANCE_METERS).toBe(300);
+    expect(exactPass).toMatchObject({
+      passed: true, completed: true, evidenceMet: true, critical: false,
+      reason: 'passed', distanceMeters: 300,
+    });
+
+    expect(RR.roadTestOutcome(testState, { ...safeStats, distance: 0 }, 250))
+      .toMatchObject({ passed: false, completed: true, evidenceMet: false, reason: 'distance' });
+    expect(RR.roadTestOutcome(testState, { ...safeStats, distance: 299 }, 250).passed).toBe(false);
+    expect(RR.roadTestOutcome({ ...testState, score: 89 }, { ...safeStats, distance: 300 }, 250))
+      .toMatchObject({ passed: false, reason: 'score' });
+    expect(RR.roadTestOutcome(testState, { ...safeStats, distance: 300 }, 249.99))
+      .toMatchObject({ passed: false, completed: false, reason: 'duration' });
+  });
+
+  it('keeps formal critical status visible and does not blame AI-caused rear ends', () => {
+    const testState = { startedAtSim: 0, durationSec: 240, score: 100 };
+    for (const criticalStats of [
+      { crashes: 1 },
+      { majorViolations: 1 },
+      { childStrike: 1 },
+      { wrongSideViolations: 1 },
+    ]) {
+      expect(RR.roadTestOutcome(testState,
+        { ...safeStats, distance: 300, ...criticalStats }, 240))
+        .toMatchObject({ passed: false, completed: true, evidenceMet: true, critical: true });
+    }
+    expect(RR.roadTestOutcome(testState,
+      { ...safeStats, distance: 20, crashes: 1 }, 240))
+      .toMatchObject({ passed: false, evidenceMet: false, critical: true, reason: 'distance' });
+    expect(RR.roadTestOutcome(testState,
+      { ...safeStats, distance: 300, crashes: 1, aiCausedCrashes: 1 }, 240))
+      .toMatchObject({ passed: true, critical: false, reason: 'passed' });
+  });
+
   it('caps a critical result so efficiency cannot erase a collision', () => {
     const evidence = RR.rrSessionEvidence(safeStats, 90);
     const result = RR.rrDriveOutcome({ ...safeStats, safetyScore: 100, efficiencyScore: 100, crashes: 1 }, evidence);

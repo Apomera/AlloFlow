@@ -154,7 +154,8 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
 
   it('keeps export toolbars and save controls inside landmarks', () => {
     expect(html).toContain('class="alloflow-reading-tools-shell expanded" aria-label="Reading and annotation tools"');
-    expect(html).toContain('<aside class="alloflow-export-save-tools" aria-label="Save your work">');
+    expect(html).toContain('<aside class="alloflow-export-save-tools" aria-label="Save and submit your work">');
+    expect(html).toContain('<section id="alloflow-print-link-reference" class="alloflow-print-link-reference" aria-label="Web links for this resource">');
   });
 
   it('ships exported reading tools for font, spacing, and pointer-guided reading', () => {
@@ -202,7 +203,7 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
     const dom = new JSDOM(html, {
       runScripts: 'dangerously',
       pretendToBeVisual: true,
-      url: 'https://example.test/export.html',
+      url: 'https://example.test/export.html?nickname=TestLearner',
       virtualConsole,
     });
     await waitForExportRuntime(dom.window);
@@ -294,7 +295,8 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
   it('keeps default downloaded HTML useful offline and printable for long sections', () => {
     expect(html).not.toContain('fonts.googleapis.com/css2?family=Inter');
     expect(html).toContain('.section { margin-bottom: 2rem; page-break-inside: auto; break-inside: auto;');
-    expect(html).toContain('.resource-header, .card, .quiz-box, .question, .reflection-block, figure');
+    expect(html).toContain('.resource-header, .card, .question, .reflection-block, figure');
+    expect(html).toContain('.quiz-box, .alloflow-dbq-synthesis-worksheet');
   });
 
   it('read-aloud controls support pause/resume without stealing text clicks from annotations', () => {
@@ -375,7 +377,10 @@ describe('HTML export · axe-core WCAG 2.2 A+AA self-audit gate', () => {
         ],
       },
     }], 'Compare', false, {}, { includeOutline: true, vennExportMode: 'activity' });
-    const dom = new JSDOM(standalone, { runScripts: 'dangerously', pretendToBeVisual: true });
+    const dom = new JSDOM(standalone, {
+      runScripts: 'dangerously', pretendToBeVisual: true,
+      url: 'https://example.test/venn-export.html?nickname=TestLearner',
+    });
     await waitForExportRuntime(dom.window);
     const doc = dom.window.document;
     const card = doc.querySelector('.alloflow-venn-card');

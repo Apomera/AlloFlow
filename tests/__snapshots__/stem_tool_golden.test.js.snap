@@ -12,10 +12,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for aquacultureLab 1`] = `
 {
-  "buttons": 183,
+  "buttons": 182,
   "inputs": 2,
-  "lengthBucket": 568,
-  "sha": "061659a6ea6ea06d",
+  "lengthBucket": 574,
+  "sha": "393a4871d4401774",
   "svgs": 0,
 }
 `;
@@ -75,7 +75,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 28,
   "inputs": 0,
   "lengthBucket": 191,
-  "sha": "92affb71574c30bf",
+  "sha": "7b6c554a15d311b5",
   "svgs": 0,
 }
 `;

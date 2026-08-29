@@ -19,13 +19,25 @@ describe('Code.gs — sharePortalReleasedEvaluation', () => {
   });
 
   it('shares a single file view-only inside the district domain, never the folder', () => {
-    expect(gs).toMatch(/grantReleasedDocAccess_\(file, accessEmails\)/);
-    expect(gs).toMatch(/file\.addViewer\(email\)/);
-    expect(gs).toMatch(/fileHasAccess_\(file, email\)/);
+    expect(gs).toMatch(/reconcileReleasedDocAccess_\(file, teacherId/);
+    expect(gs).toMatch(/file\.addViewer\(expected\[x\]\)/);
+    expect(gs).toMatch(/var verifiedFile = DriveApp\.getFileById\(file\.getId\(\)\)/);
     expect(gs).toMatch(/setShareableByEditors\(false\)/);
     expect(gs).toMatch(/emailDomain_\(recipient\) !== allowedDomain/);
     // the folder itself is never shared
     expect(gs).not.toMatch(/releasedEvaluationsFolder_\(\)\.addViewer/);
+  });
+
+  it('reconciles to a re-read exact PRIVATE named-viewer ACL with no named editors', () => {
+    expect(gs).toMatch(/getViewers\(\)/);
+    expect(gs).toMatch(/getEditors\(\)/);
+    expect(gs).toMatch(/removeViewer/);
+    expect(gs).toMatch(/removeEditor/);
+    expect(gs).toMatch(/getSharingAccess\(\)/);
+    expect(gs).toMatch(/DriveApp\.Access\.PRIVATE/);
+    expect(gs).toMatch(/getParents\(\)/);
+    expect(gs).toMatch(/EE_RELEASED_FOLDER_ID/);
+    expect(gs).toMatch(/release_recovery_required/);
   });
 
   it('strengths come first and are the evaluator\'s own words, never generated', () => {
@@ -67,7 +79,10 @@ describe('Code.gs — sharePortalReleasedEvaluation', () => {
     expect(gs).toMatch(/requireReleaseReview_\(request, actor, teacher, recipient, state\.revision\)/);
     expect(gs).toMatch(/review\.actorEmail !== actor\.email/);
     expect(gs).toMatch(/cache\.remove\(key\)/);
-    expect(gs).toMatch(/teacher\.releasedDoc \? \(existingId && existingAccessible \? 'verify_existing' : 'replace_unavailable'\) : 'create'/);
+    expect(gs).toMatch(/releaseAction\s*=\s*existingFile\.isTrashed\(\)\s*\?\s*'replace_trashed'\s*:\s*'verify_existing'/);
+    expect(gs).toMatch(/try\s*\{\s*existingFile\s*=\s*DriveApp\.getFileById\(existingId\)/);
+    expect(gs).toMatch(/stage:\s*'release_file_lookup'/);
+    expect(gs).toMatch(/throw eeError_\('release_recovery_required',[\s\S]*existing released summary could not be opened/);
     expect(gs).toMatch(/idempotent: !created/);
     expect(gs).toMatch(/RELEASED_DOC_ACCESS_VERIFIED/);
   });
@@ -92,6 +107,26 @@ describe('Code.gs — 2026-08-16 refinement batch', () => {
     expect(sanitizer).toMatch(/educatorStatement:sanitizeEducatorStatement_\(v\.educatorStatement\)/);
   });
 
+  it('persists bounded server-owned ACL evidence and a durable release registry', () => {
+    const releasedDocSanitizer = gs.slice(gs.indexOf('function sanitizeReleasedDoc_'), gs.indexOf('function sanitizeEducatorStatement_'));
+    expect(releasedDocSanitizer).toMatch(/grants/);
+    expect(releasedDocSanitizer).toMatch(/aclVerifiedAt/);
+    expect(releasedDocSanitizer).toMatch(/aclMode/);
+    expect(releasedDocSanitizer).toMatch(/aclVersion/);
+    expect(gs).toMatch(/function sanitizeReleaseRegistryEntry_/);
+    expect(gs).toMatch(/releaseRegistry\s*:/);
+    expect(gs).toMatch(/teacherId/);
+  });
+
+  it('redacts ACL grants and the release registry from non-admin workspace projections', () => {
+    const filterStart = gs.indexOf('function filterWorkspaceForActor_');
+    const filterEnd = gs.indexOf('function emptyPrework_', filterStart);
+    const filter = gs.slice(filterStart, filterEnd);
+    expect(filter).toMatch(/releaseRegistry/);
+    expect(filter).toMatch(/grants/);
+    expect(filter).toMatch(/actor\.role/);
+  });
+
   it('educator statement is teacher-owned: adopted only from the educator\'s own pre-finalization saves', () => {
     expect(gs).toMatch(/actor\.teacherId === id && !old\.finalizedAt/);
     // evaluator saves overwrite the client copy back to the stored value
@@ -112,8 +147,12 @@ describe('Code.gs — 2026-08-16 refinement batch', () => {
     expect(fn).not.toMatch(/m\.email|member\.email|\.email\b.*push/);
   });
 
-  it('notification deep link carries only opaque identifiers', () => {
-    expect(gs).toMatch(/view=overview&teacher=' \+ encodeURIComponent\(teacherId\)/);
+  it('notification email uses only the validated generic portal root', () => {
+    const fn = gs.slice(gs.indexOf('function notificationPortalBody_'), gs.indexOf('function notificationAuditEntry_'));
+    expect(fn).toMatch(/var url = safePortalUrl_\(configured \|\| fallback\)/);
+    expect(fn).toMatch(/\+ url;/);
+    expect(fn).toMatch(/no evaluation content, ratings, evidence, comments, educator name, or record identifier/);
+    expect(fn).not.toMatch(/teacherId|view=|teacher=/);
   });
 
   it('the summary leads with the educator\'s own words and mines published walkthroughs only', () => {

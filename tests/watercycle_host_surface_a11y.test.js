@@ -12,7 +12,11 @@ describe.each(WATER_CYCLE_PATHS)('Water Cycle host-surface accessibility in %s',
 
   it('keeps simulation theming independent from the light host chrome', () => {
     expect(source).toContain('var isDark = !!(ctx && ctx.isDark) || isContrast;');
-    expect(source).toContain('var isHeaderSurfaceDark = isContrast;');
+    // The explorer root paints its own #0f172a ground in dark theme (2026-08-25 depth
+    // contrast pass): before that, body inks followed the dark theme while the header
+    // assumed the host's light card, so the header surface flag now follows the theme.
+    expect(source).toContain('var isHeaderSurfaceDark = isContrast || isDark;');
+    expect(source).toContain('style: isDark ? { background: "#0f172a", borderRadius: 12 } : undefined,');
     expect(source).toContain('backgroundColor: isHeaderSurfaceDark ? "#000000" : "#e0f2fe"');
     expect(source).toContain('backgroundColor: isHeaderSurfaceDark ? "#000000" : "#eef2ff"');
     expect(source).toContain('text-slate-700 hover:bg-indigo-50');

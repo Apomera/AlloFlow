@@ -60,15 +60,17 @@ describe('Beehive seeded daily model', () => {
   });
 
   it('creates replayable new colonies with normalized seed metadata', () => {
-    const state = BH.bhCreateNewColonyState(4294967301);
+    const state = BH.bhCreateNewColonyState(4294967301, 3);
     expect(state.modelVersion).toBe(BH.BEEHIVE_COLONY_MODEL_VERSION);
     expect(state.simulationSeed).toBe(5);
     expect(state.randomState).toBe(5);
+    expect(state.experimentRunSerial).toBe(3);
     expect(state.seededFromDay).toBe(0);
     expect(BH.bhExperimentProvenance(state)).toMatchObject({
       modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION,
       simulationSeed: 5,
       randomState: 5,
+      runSerial: 3,
       seededFromDay: 0,
       exactFromStart: true,
     });
@@ -78,8 +80,299 @@ describe('Beehive seeded daily model', () => {
     const provenance = BH.bhExperimentProvenance({ day: 47 });
     expect(provenance.simulationSeed).toBe(BH.BEEHIVE_DEFAULT_SEED);
     expect(provenance.randomState).toBe(BH.BEEHIVE_DEFAULT_SEED);
+    expect(provenance.runSerial).toBe(1);
     expect(provenance.seededFromDay).toBe(47);
     expect(provenance.exactFromStart).toBe(false);
+  });
+  it('creates a compact, bounded, non-mutating experiment checkpoint', () => {
+    const state = {
+      day: 12,
+      modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION,
+      simulationSeed: 99,
+      randomState: 123,
+      experimentRunSerial: 7,
+      seededFromDay: 0,
+      subspecies: 'russian',
+      apiarySite: 'forest',
+      workers: 12345.6,
+      honey: -4,
+      varroaLevel: 140,
+      history: Array.from({ length: 120 }, (_, day) => ({ day })),
+      journal: [{ text: 'large transient record' }],
+      managementTrail: Array.from({ length: 30 }, (_, index) => ({
+        day: index + 1,
+        label: `Choice ${index + 1}`,
+        cost: '1 AP',
+        summary: 'x'.repeat(400),
+      })),
+    };
+    const before = JSON.parse(JSON.stringify(state));
+
+    const snapshot = BH.bhCreateExperimentSnapshot(state);
+
+    expect(snapshot).toMatchObject({
+      schemaVersion: BH.BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION,
+      modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION,
+      simulationSeed: 99,
+      runSerial: 7,
+      seededFromDay: 0,
+      exactFromStart: true,
+      capturedDay: 12,
+      stockId: 'russian',
+      siteId: 'forest',
+    });
+    expect(snapshot.metrics.workers).toBe(12346);
+    expect(snapshot.metrics.honey).toBe(0);
+    expect(snapshot.metrics.varroaLevel).toBe(100);
+    expect(snapshot.managementTrail).toHaveLength(24);
+    expect(snapshot.managementTrail[0].label).toBe('Choice 7');
+    expect(snapshot.managementTrail[0].summary).toHaveLength(220);
+    expect(snapshot).not.toHaveProperty('history');
+    expect(snapshot).not.toHaveProperty('journal');
+    expect(state).toEqual(before);
+    expect(BH.bhNormalizeExperimentSnapshot({ schemaVersion: 999, metrics: {} })).toBeNull();
+    expect(BH.bhNormalizeExperimentSnapshot(snapshot)).toEqual(snapshot);
+    const unverifiedTracking = { ...snapshot };
+    delete unverifiedTracking.exactFromStart;
+    expect(BH.bhNormalizeExperimentSnapshot(unverifiedTracking).exactFromStart).toBe(false);
+    expect(BH.bhNormalizeExperimentSnapshot({ ...snapshot, exactFromStart: false }).exactFromStart).toBe(false);
+    const legacyIdentity = { ...snapshot };
+    delete legacyIdentity.runSerial;
+    expect(BH.bhNormalizeExperimentSnapshot(legacyIdentity).runSerial).toBe(1);
+  });
+
+  it('distinguishes same-run, matched, timing-mismatched, and exploratory comparisons', () => {
+    const runA = BH.bhCreateExperimentSnapshot({
+      day: 20,
+      simulationSeed: 2468,
+      randomState: 1357,
+      seededFromDay: 0,
+      subspecies: 'russian',
+      apiarySite: 'forest',
+      workers: 18000,
+      honey: 20,
+      varroaLevel: 15,
+      managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }, { day: 15, label: 'Feed syrup', cost: '1 AP' }],
+    });
+    const matched = BH.bhCompareExperiments(runA, {
+      day: 20,
+      simulationSeed: 2468,
+      randomState: 9753,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      subspecies: 'russian',
+      apiarySite: 'forest',
+      workers: 19000,
+      honey: 28,
+      varroaLevel: 10,
+      managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }, { day: 15, label: 'Plant wildflowers', cost: '1 AP' }],
+      notebook: { experiment: { plannedActionId: 'plant_wildflowers', predictedMetricId: 'honey', predictedDirection: 'higher' } },
+    });
+    const timingMismatch = BH.bhCompareExperiments(runA, {
+      day: 10,
+      simulationSeed: 2468,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      subspecies: 'russian',
+      apiarySite: 'forest',
+      managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }],
+    });
+    const exploratory = BH.bhCompareExperiments(runA, {
+      day: 20,
+      simulationSeed: 2469,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      subspecies: 'italian',
+      apiarySite: 'meadow',
+    });
+    const sameRun = BH.bhCompareExperiments(runA, {
+      day: 20,
+      simulationSeed: 2468,
+      seededFromDay: 0,
+      subspecies: 'russian',
+      apiarySite: 'forest',
+      managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }, { day: 15, label: 'Feed syrup', cost: '1 AP' }],
+    });
+
+    expect(sameRun.status).toBe('same-run');
+    expect(sameRun.controlledSetup).toBe(true);
+    expect(sameRun.distinctRuns).toBe(false);
+    expect(sameRun.matchedCheckpoint).toBe(false);
+    expect(sameRun.checks.find((check) => check.id === 'run').matched).toBe(false);
+    expect(sameRun.management.status).toBe('identical');
+    expect(sameRun.interpretationReady).toBe(false);
+    expect(matched.status).toBe('matched');
+    expect(matched.controlledSetup).toBe(true);
+    expect(matched.distinctRuns).toBe(true);
+    expect(matched.matchedCheckpoint).toBe(true);
+    expect(matched.management).toMatchObject({ status: 'one-change', differenceCount: 1, comparedThroughDay: 20, checkpointAligned: true });
+    expect(matched.management.differences[0].type).toBe('changed');
+    expect(matched.plannedChoice).toMatchObject({ status: 'matched', plannedActionId: 'plant_wildflowers', observedActionId: 'plant_wildflowers' });
+    expect(matched.prediction).toMatchObject({ status: 'aligned', metricId: 'honey', directionId: 'higher', observedDirectionId: 'higher', delta: 8 });
+    expect(matched.interpretationReady).toBe(true);
+    expect(matched.metrics.find((metric) => metric.id === 'honey').delta).toBe(8);
+    expect(matched.metrics.find((metric) => metric.id === 'varroaLevel').delta).toBe(-5);
+    expect(timingMismatch.status).toBe('checkpoint');
+    expect(timingMismatch.controlledSetup).toBe(true);
+    expect(timingMismatch.matchedCheckpoint).toBe(false);
+    expect(timingMismatch.checks.find((check) => check.id === 'day').matched).toBe(false);
+    expect(timingMismatch.management).toMatchObject({ status: 'identical', differenceCount: 0, comparedThroughDay: 10, checkpointAligned: false });
+    expect(timingMismatch.interpretationReady).toBe(false);
+    expect(exploratory.status).toBe('exploratory');
+    expect(exploratory.controlledSetup).toBe(false);
+    expect(exploratory.checks.filter((check) => !check.matched).map((check) => check.id))
+      .toEqual(expect.arrayContaining(['seed', 'stock', 'site']));
+  });
+  it('audits identical, added, omitted, changed, and multiple management choices', () => {
+    const runA = [
+      { day: 2, label: 'Inspect brood', cost: '1 AP' },
+      { day: 8, label: 'Feed syrup', cost: '1 AP' },
+    ];
+    const identical = BH.bhCompareManagementTrails(runA, runA);
+    const changed = BH.bhCompareManagementTrails(runA, [
+      { day: 2, label: 'Inspect brood', cost: '1 AP' },
+      { day: 8, label: 'Plant wildflowers', cost: '1 AP' },
+    ]);
+    const added = BH.bhCompareManagementTrails(runA, runA.concat([{ day: 9, label: 'Treat mites', cost: '2 AP' }]));
+    const omitted = BH.bhCompareManagementTrails(runA, runA.slice(0, 1));
+    const multiple = BH.bhCompareManagementTrails(runA, [
+      { day: 1, label: 'Plant wildflowers', cost: '1 AP' },
+      { day: 4, label: 'Treat mites', cost: '2 AP' },
+      { day: 9, label: 'Harvest honey', cost: '1 AP' },
+    ]);
+
+    expect(identical).toMatchObject({ status: 'identical', differenceCount: 0, baselineCount: 2, currentCount: 2 });
+    expect(changed).toMatchObject({ status: 'one-change', differenceCount: 1 });
+    expect(changed.differences[0]).toMatchObject({ type: 'changed', baseline: { label: 'Feed syrup' }, current: { label: 'Plant wildflowers' } });
+    expect(added.differences[0]).toMatchObject({ type: 'added', current: { label: 'Treat mites' } });
+    expect(omitted.differences[0]).toMatchObject({ type: 'omitted', baseline: { label: 'Feed syrup' } });
+    expect(multiple.status).toBe('multiple-changes');
+    expect(multiple.differenceCount).toBeGreaterThan(1);
+
+    expect(BH.bhComparePlannedManagementChoice('plant_wildflowers', changed))
+      .toMatchObject({ status: 'matched', plannedActionLabel: 'Plant wildflowers', observedActionLabel: 'Plant wildflowers' });
+    expect(BH.bhComparePlannedManagementChoice('feed_bees', changed).status).toBe('mismatched');
+    expect(BH.bhComparePlannedManagementChoice('', changed).status).toBe('unplanned');
+    expect(BH.bhComparePlannedManagementChoice('plant_wildflowers', identical).status).toBe('waiting');
+    expect(BH.bhManagementActionPlanId({ choiceId: 'water_station', label: 'Localized label' })).toBe('water_station');
+    expect(BH.bhManagementActionPlanId({ label: 'Harvest Summer Wildflower' })).toBe('harvest_honey');
+    expect(BH.bhManagementActionPlanId({ label: 'Oxalic Acid Dribble' })).toBe('varroa_treatment');
+
+    const predictionComparison = { matchedCheckpoint: true, metrics: [
+      { id: 'honey', label: 'Honey', suffix: ' lb', precision: 1, baseline: 20, current: 28, delta: 8 },
+      { id: 'workers', label: 'Workers', suffix: '', precision: 0, baseline: 10000, current: 10000, delta: 0 },
+    ] };
+    expect(BH.bhEvaluateExperimentPrediction({ predictedMetricId: 'honey', predictedDirection: 'higher' }, predictionComparison))
+      .toMatchObject({ status: 'aligned', metricId: 'honey', observedDirectionId: 'higher' });
+    expect(BH.bhEvaluateExperimentPrediction({ predictedMetricId: 'honey', predictedDirection: 'lower' }, predictionComparison).status).toBe('not-aligned');
+    expect(BH.bhEvaluateExperimentPrediction({ predictedMetricId: 'workers', predictedDirection: 'same' }, predictionComparison))
+      .toMatchObject({ status: 'aligned', observedDirectionId: 'same', delta: 0 });
+    expect(BH.bhEvaluateExperimentPrediction({ predictedMetricId: 'honey', predictedDirection: 'higher' }, { ...predictionComparison, matchedCheckpoint: false }).status).toBe('waiting');
+    expect(BH.bhEvaluateExperimentPrediction({ predictedMetricId: '', predictedDirection: '' }, predictionComparison).status).toBe('unplanned');
+    expect(BH.bhExperimentPredictionMetric('honey').label).toBe('Honey');
+    expect(BH.bhExperimentPredictionMetric('unknown')).toBeNull();
+    expect(BH.bhExperimentPredictionDirection('HIGHER').id).toBe('higher');
+    expect(BH.bhExperimentPredictionDirection('unknown')).toBeNull();
+  });
+
+  it('normalizes bounded notebook evidence and exports comparison-aware reasoning', () => {
+    const rawNotebook = {
+      question: 'q'.repeat(500),
+      hypothesis: 'If habitat changes, honey will change because forage changes.',
+      plannedActionId: 'plant_wildflowers',
+      predictedMetricId: 'honey',
+      predictedDirection: 'higher',
+      changedVariable: 'Plant wildflowers once',
+      prediction: 'At Day 12, Run B honey will be higher.',
+      observations: 'Run B had more honey.',
+      alternativeExplanation: 'A later eligible event could also change stores.',
+      conclusion: 'The evidence supported the prediction with uncertainty.',
+      review: { singleVariable: true, numericEvidence: true, uncertainty: true },
+      ignored: 'transient',
+    };
+    const before = JSON.parse(JSON.stringify(rawNotebook));
+    const notebook = BH.bhNormalizeExperimentNotebook(rawNotebook);
+    expect(notebook.schemaVersion).toBe(BH.BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION);
+    expect(notebook.question).toHaveLength(300);
+    expect(notebook.plannedActionId).toBe('plant_wildflowers');
+    expect(notebook.predictedMetricId).toBe('honey');
+    expect(notebook.predictedDirection).toBe('higher');
+    expect(BH.bhNormalizeExperimentNotebook({ predictedMetricId: 'unknown', predictedDirection: 'sideways' }))
+      .toMatchObject({ predictedMetricId: '', predictedDirection: '' });
+    expect(notebook).not.toHaveProperty('ignored');
+    expect(notebook.review).toEqual({ singleVariable: true, numericEvidence: true, uncertainty: true });
+    expect(rawNotebook).toEqual(before);
+
+    const runA = BH.bhCreateExperimentSnapshot({
+      day: 12,
+      simulationSeed: 4321,
+      randomState: 777,
+      seededFromDay: 0,
+      honey: 20,
+      managementTrail: [{ day: 3, label: 'Inspect brood', cost: '1 AP' }],
+    });
+    const current = {
+      day: 12,
+      simulationSeed: 4321,
+      randomState: 888,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      honey: 28,
+      managementTrail: [{ day: 4, label: 'Plant wildflowers', cost: '1 AP' }],
+    };
+    const matchedRecord = BH.bhBuildExperimentEvidenceRecord(notebook, runA, current);
+    expect(matchedRecord).toContain('## Guided Experiment Notebook');
+    expect(matchedRecord).toContain('### Plan');
+    expect(matchedRecord).toContain('**One intended change:** Plant wildflowers once');
+    expect(matchedRecord).toContain('**Comparison status:** Planned comparison ready');
+    expect(matchedRecord).toContain('**Planned management choice:** Plant wildflowers');
+    expect(matchedRecord).toContain('**Prediction metric:** Honey');
+    expect(matchedRecord).toContain('**Expected direction:** Run B will be higher');
+    expect(matchedRecord).toContain('### Prediction audit');
+    expect(matchedRecord).toContain('**Observed direction:** Run B was higher (+8 lb)');
+    expect(matchedRecord).toContain('**Result:** Displayed numeric pattern aligns with the prediction');
+    expect(matchedRecord).toContain('does not prove the management choice caused the result');
+    expect(matchedRecord).toContain('| Honey | 20 lb | 28 lb | +8 lb |');
+    expect(matchedRecord).toContain('**Run A recent choices:** Day 3: Inspect brood (1 AP)');
+    expect(matchedRecord).toContain('**Run B recent choices:** Day 4: Plant wildflowers (1 AP)');
+    expect(matchedRecord).toContain('### Management-choice audit');
+    expect(matchedRecord).toContain('**Recorded-choice result:** One difference');
+    expect(matchedRecord).toContain('**Plan alignment:** Recorded change matches the plan');
+    expect(matchedRecord).toContain('**Difference 1 (changed):**');
+    expect(matchedRecord).toContain('**Same-checkpoint numeric evidence cited:** Checked');
+    expect(matchedRecord).toContain('one recorded choice difference');
+    expect(matchedRecord).toContain('does not prove causation by itself');
+
+    const directionMismatchRecord = BH.bhBuildExperimentEvidenceRecord({ ...notebook, predictedDirection: 'lower' }, runA, current);
+    expect(directionMismatchRecord).toContain('**Result:** Displayed numeric pattern does not align with the prediction');
+    const unstructuredPredictionRecord = BH.bhBuildExperimentEvidenceRecord({ ...notebook, predictedMetricId: '', predictedDirection: '' }, runA, current);
+    expect(unstructuredPredictionRecord).toContain('**Structured prediction:** Not selected');
+    expect(unstructuredPredictionRecord).toContain('Choose a metric and expected direction before evaluating the result');
+
+    const mismatchedRecord = BH.bhBuildExperimentEvidenceRecord({ ...notebook, plannedActionId: 'feed_bees' }, runA, current);
+    expect(mismatchedRecord).toContain('**Comparison status:** Matched checkpoint - recorded change differs from plan');
+    expect(mismatchedRecord).toContain('**Plan alignment:** Recorded change does not match the plan (Plant wildflowers)');
+    expect(mismatchedRecord).toContain('Treat this as an unplanned result');
+    const unplannedRecord = BH.bhBuildExperimentEvidenceRecord({ ...notebook, plannedActionId: '' }, runA, current);
+    expect(unplannedRecord).toContain('**Comparison status:** Matched checkpoint - planned choice not selected');
+    expect(unplannedRecord).toContain('No structured planned choice selected');
+
+    const noChangeRecord = BH.bhBuildExperimentEvidenceRecord(notebook, runA, { ...current, managementTrail: runA.managementTrail });
+    expect(noChangeRecord).toContain('**Comparison status:** Matched checkpoint - no recorded choice change');
+    expect(noChangeRecord).toContain('There is no changed variable to interpret');
+    const multipleRecord = BH.bhBuildExperimentEvidenceRecord(notebook, runA, { ...current, managementTrail: [
+      { day: 1, label: 'Feed syrup', cost: '1 AP' },
+      { day: 5, label: 'Treat mites', cost: '2 AP' },
+      { day: 9, label: 'Harvest honey', cost: '1 AP' },
+    ] });
+    expect(multipleRecord).toContain('**Comparison status:** Matched checkpoint - multiple recorded choice changes');
+    expect(multipleRecord).toContain('result cannot isolate one changed variable');
+
+    const exploratoryRecord = BH.bhBuildExperimentEvidenceRecord(notebook, runA, { ...current, simulationSeed: 9999 });
+    expect(exploratoryRecord).toContain('**Comparison status:** Exploratory comparison');
+    expect(exploratoryRecord).toContain('**Same-checkpoint numeric evidence cited:** Not checked');
+    expect(exploratoryRecord).toContain('Treat these differences as observations');
+    expect(BH.bhBuildExperimentEvidenceRecord(notebook, null, current)).toContain('Run A has not been saved yet');
   });
 });
 
@@ -119,9 +412,108 @@ describe('Beehive reproducibility surfaces', () => {
     expect(collapsed).toContain('Use a new seed');
   });
 
+  it('renders a clear, semantic Run A and Run B evidence workspace', () => {
+    const baseline = BH.bhCreateExperimentSnapshot({
+      day: 12,
+      simulationSeed: 4321,
+      randomState: 777,
+      seededFromDay: 0,
+      workers: 14000,
+      honey: 31,
+      managementTrail: [{ day: 4, label: 'Inspect brood', cost: '1 AP' }],
+    });
+    const html = renderTool('beehive', { beehive: {
+      viewMode: 'beekeeper',
+      day: 12,
+      simulationSeed: 4321,
+      randomState: 888,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      workers: 15000,
+      honey: 36,
+      experimentBaseline: baseline,
+      managementTrail: [{ day: 5, label: 'Plant wildflowers', cost: '1 AP' }],
+      notebook: { experiment: { plannedActionId: 'plant_wildflowers', predictedMetricId: 'honey', predictedDirection: 'higher' } },
+    } });
+
+    expect(html).toContain('data-beehive-experiment-compare="true"');
+    expect(html).toContain('data-experiment-compare-state="matched"');
+    expect(html).toContain('data-experiment-compare-table="true"');
+    expect(html).toContain('<caption');
+    expect(html).toContain('Run A at Day 12 and Run B at Day 12');
+    expect(html).toContain('Difference (B - A)');
+    expect(html).toContain('data-experiment-check="seed"');
+    expect(html).toContain('data-experiment-check-result="matched"');
+    expect(html).toContain('data-experiment-actions="baseline"');
+    expect(html).toContain('data-experiment-actions="current"');
+    expect(html).toContain('data-experiment-evidence-prompt="true"');
+    expect(html).toContain('data-experiment-protocol="true"');
+    expect(html.match(/data-experiment-protocol-step=/g)).toHaveLength(7);
+    expect(html).toContain('Start a separate Run B');
+    expect(html).toContain('data-experiment-check="run"');
+    expect(html).toContain('data-experiment-management-audit="true"');
+    expect(html).toContain('data-management-audit-status="one-change"');
+    expect(html).toContain('data-management-audit-final="true"');
+    expect(html).toContain('data-management-difference="changed"');
+    expect(html).toContain('data-experiment-plan-alignment="matched"');
+    expect(html).toContain('data-experiment-prediction-audit="true"');
+    expect(html).toContain('data-prediction-audit-status="aligned"');
+    expect(html).toContain('Numeric direction aligned');
+    expect(html).toContain('Planned comparison ready');
+    expect(html).toContain('Replace Run A with current');
+    expect(html).toContain('Clear Run A');
+  });
+  it('renders the guided evidence chain with progressive, semantic controls', () => {
+    const baseline = BH.bhCreateExperimentSnapshot({ day: 12, simulationSeed: 4321, seededFromDay: 0, honey: 20, managementTrail: [{ day: 4, label: 'Inspect brood', cost: '1 AP' }] });
+    const html = renderTool('beehive', { beehive: {
+      viewMode: 'beekeeper',
+      day: 12,
+      simulationSeed: 4321,
+      randomState: 888,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      honey: 28,
+      experimentBaseline: baseline,
+      managementTrail: [{ day: 4, label: 'Plant wildflowers', cost: '1 AP' }],
+      experimentNotebookOpen: true,
+      notebook: { experiment: {
+        plannedActionId: 'plant_wildflowers',
+        predictedMetricId: 'honey',
+        predictedDirection: 'higher',
+        question: 'Does forage support change honey stores?',
+        hypothesis: 'More forage will increase honey.',
+        changedVariable: 'Plant wildflowers once',
+        prediction: 'Run B honey will be higher at Day 12.',
+        observations: 'Run A had 20 lb and Run B had 28 lb.',
+      } },
+    } });
+
+    expect(html).toContain('data-beehive-experiment-notebook="true"');
+    expect(html).toContain('data-experiment-notebook-phase="plan"');
+    expect(html).toContain('data-experiment-notebook-phase="analyze"');
+    expect(html).toContain('data-experiment-notebook-review="true"');
+    expect(html).toContain('data-experiment-notebook-field="question"');
+    expect(html).toContain('data-experiment-notebook-field="alternativeExplanation"');
+    expect(html.match(/data-experiment-notebook-field=/g)).toHaveLength(7);
+    expect(html.match(/data-experiment-notebook-review-check=/g)).toHaveLength(3);
+    expect(html).toContain('data-experiment-notebook-capture="true"');
+    expect(html).toContain('data-experiment-planned-action="true"');
+    expect(html).toContain('data-experiment-structured-prediction="true"');
+    expect(html).toContain('data-experiment-prediction-metric="true"');
+    expect(html).toContain('data-experiment-prediction-direction="true"');
+    expect(html).toContain('data-experiment-protocol-step="choice"');
+    expect(html).toContain('data-experiment-protocol-step="prediction"');
+    expect(html).toContain('data-management-audit-status="one-change"');
+    expect(html).toContain('data-beehive-copy-experiment="true"');
+    expect(html).toContain('aria-valuemax="10"');
+    expect(html).toContain('aria-valuenow="8"');
+    expect(html).toContain('Plan, observe, explain, and export the evidence chain.');
+    expect(SOURCE.match(/lines\.push\(bhBuildExperimentEvidenceRecord/g)).toHaveLength(2);
+  });
   it('includes model, seed, cursor, migration day, scope, and replay requirements in exports', () => {
     [
       '## Repeatable Experiment Details',
+      '**Colony run:**',
       '**Event recipe (seed):**',
       '**Daily colony model:**',
       '**Resume code:**',

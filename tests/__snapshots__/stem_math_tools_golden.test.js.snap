@@ -89,9 +89,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 21,
   "circles": 0,
   "inputs": 5,
-  "lengthBucket": 85,
+  "lengthBucket": 86,
   "rects": 1,
-  "sha": "b2cb47d093cb07fa",
+  "sha": "bef193e416a6eb4b",
   "svgs": 2,
 }
 `;
@@ -101,9 +101,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 69,
   "circles": 3,
   "inputs": 4,
-  "lengthBucket": 160,
+  "lengthBucket": 162,
   "rects": 0,
-  "sha": "b9f2c143fd787487",
+  "sha": "82e057fdbb93bec7",
   "svgs": 1,
 }
 `;

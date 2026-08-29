@@ -1064,7 +1064,7 @@ window.StemLab = window.StemLab || {
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             // AI tutor button
             h('button', { onClick: askAI,
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full border border-purple-600 text-purple-600 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)' },
               title: t('stem.multtable.ai_tutor', 'AI Tutor (?)')
             }, t('stem.multtable.ai', '\uD83E\uDDE0 AI')),
             // Mute toggle (v3)
@@ -1093,7 +1093,7 @@ window.StemLab = window.StemLab || {
               },
               'aria-label': t('stem.multtable.reset', 'Reset'),
               title: t('stem.multtable.reset_all', 'Reset all'),
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 transition-all'
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full text-rose-700 border border-rose-200 hover:bg-slate-100 transition-all', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)' }
             }, t('stem.multtable.reset_2', '\u21BA Reset'))
         ),
 

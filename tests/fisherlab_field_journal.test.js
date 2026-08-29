@@ -90,6 +90,45 @@ describe('Fisher Lab field journal evidence model', () => {
     });
   });
 
+  it('preserves focused-practice transfer metadata through persistence and journal normalization', () => {
+    const { appendCoreJournalObservation, getCoreJournalRows } = window.__FisherLabCore;
+    const observation = {
+      observationId: 'haddock-transfer-practice',
+      speciesId: 'haddock',
+      label: 'Haddock',
+      length: 18,
+      action: 'release',
+      identificationCorrect: true,
+      ruleCorrect: true,
+      correct: true,
+      evidence: 'Applied the saved minimum-size correction on a newer catch.',
+      region: 'maine',
+      mission: 'focused-practice',
+      practiceTargetSpeciesId: 'haddock',
+      practiceFocusSkill: 'transfer',
+      correctionReviewedAt: 17000,
+      ts: 18000
+    };
+
+    const saved = appendCoreJournalObservation([], observation);
+    expect(saved).toHaveLength(1);
+    expect(saved[0]).toMatchObject({
+      practiceTargetSpeciesId: 'haddock',
+      practiceFocusSkill: 'transfer',
+      correctionReviewedAt: 17000
+    });
+
+    const rows = getCoreJournalRows(saved);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({
+      observationId: 'haddock-transfer-practice',
+      mission: 'focused-practice',
+      practiceTargetSpeciesId: 'haddock',
+      practiceFocusSkill: 'transfer',
+      correctionReviewedAt: 17000
+    });
+  });
+
   it('filters by water, disposition, and a case-insensitive evidence query', () => {
     const { getCoreJournalRows } = window.__FisherLabCore;
     const records = observations();
@@ -297,6 +336,49 @@ describe('Fisher Lab field journal evidence model', () => {
 
 });
 
+describe('Fisher Lab shellfish evidence separation', () => {
+  it('keeps an unassessed shellfish ID out of species mastery while retaining regulation evidence', () => {
+    const { appendCoreJournalObservation, getCoreJournalRows, getCoreSpeciesMastery } = window.__FisherLabCore;
+    let saved = [];
+    [1000, 2000].forEach((ts, index) => {
+      saved = appendCoreJournalObservation(saved, {
+        observationId: `shellfish-${index + 1}`,
+        speciesId: 'lobster',
+        action: 'release',
+        identificationCorrect: null,
+        ruleCorrect: true,
+        correct: true,
+        region: 'maine',
+        ts
+      });
+    });
+
+    expect(saved[0].identificationCorrect).toBeNull();
+    expect(getCoreJournalRows(saved)[0]).toMatchObject({
+      identificationCorrect: null,
+      ruleCorrect: true,
+      decisionCorrect: true
+    });
+    expect(getCoreSpeciesMastery(saved, { region: 'maine' }).rows.find((row) => row.speciesId === 'lobster')).toMatchObject({
+      attempts: 2,
+      identificationCorrect: 0,
+      identificationTotal: 0,
+      identificationAccuracy: null,
+      regulationCorrect: 2,
+      regulationTotal: 2,
+      stageId: 'building'
+    });
+  });
+
+  it('wires shellfish inspections as unassessed identification evidence', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const block = source.slice(source.indexOf('function submitShellfishDecision(action)'), source.indexOf('function continueAfterShellfishReview()'));
+
+    expect(block).toContain('identificationCorrect: null');
+    expect(block).not.toContain('identificationCorrect: true');
+  });
+});
+
 describe('Fisher Lab field journal UI wiring', () => {
   it('makes the journal discoverable, accessible, and exportable', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
@@ -371,4 +453,3 @@ describe('Fisher Lab field journal UI wiring', () => {
     expect(source).toContain('var caughtCount = regionJournalSummary.observations ? regionJournalSummary.uniqueSpecies : legacyCaughtCount');
   });
 });
-

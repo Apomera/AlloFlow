@@ -302,19 +302,25 @@ function EndSessionPreview({
     className: "cursor-pointer text-sm font-bold text-slate-700"
   }, tx('end_session.what_will_be_saved', 'What will be saved?')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-600 mt-2"
-  }, tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not saved.'))), /*#__PURE__*/React.createElement("label", {
+  }, tx('end_session.saved_summary_details', 'Date, duration, matched codenames, groups, response counts, organizer status and bounded score totals, and whether a resource was opened. A codename-only teacher note is saved if provided. Raw answers, organizer card text, resource IDs, account IDs, mailbox tokens, chat, and real names are not otherwise saved.'))), /*#__PURE__*/React.createElement("label", {
     className: "block text-xs font-bold text-slate-700 mb-1",
     htmlFor: "end-session-note"
-  }, tx('end_session.optional_teacher_note', 'Optional teacher note')), /*#__PURE__*/React.createElement("textarea", {
+  }, tx('end_session.optional_codename_note', 'Optional codename-only teacher note')), /*#__PURE__*/React.createElement("textarea", {
     id: "end-session-note",
+    "aria-describedby": "end-session-note-privacy",
     value: endSessionNote,
+    maxLength: 500,
     onChange: event => setEndSessionNote(event.target.value.slice(0, 500)),
     rows: 3,
-    placeholder: tx('end_session.teacher_note_placeholder', 'Example: Small-group review of fractions'),
+    placeholder: tx('end_session.teacher_note_placeholder', 'Example: Azure Fox may benefit from a fractions review'),
     className: "w-full rounded-xl border border-slate-300 p-3 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] text-slate-500 text-right"
-  }, endSessionNote.length, "/500"), !rosterKey && /*#__PURE__*/React.createElement("p", {
+    className: "flex items-start justify-between gap-3 text-[11px] text-slate-500"
+  }, /*#__PURE__*/React.createElement("span", {
+    id: "end-session-note-privacy"
+  }, tx('end_session.note_privacy_guidance', 'Use codenames only. This note is stored with the roster summary and included in roster backups.')), /*#__PURE__*/React.createElement("span", {
+    className: "shrink-0"
+  }, endSessionNote.length, "/500")), !rosterKey && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2"
   }, tx('end_session.roster_required_notice', 'Create or import a class roster to save longitudinal summaries. You can still end this session normally.')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col sm:flex-row gap-2 mt-5 justify-end"

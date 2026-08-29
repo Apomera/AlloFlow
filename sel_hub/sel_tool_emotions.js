@@ -18020,6 +18020,7 @@ window.SelHub = window.SelHub || {
       var checkinFeeling  = d.checkinFeeling || null;
       var checkinIntensity = d.checkinIntensity != null ? d.checkinIntensity : 5;
       var checkinNote     = d.checkinNote || '';
+      var checkinStrategy = d.checkinStrategy || null;
       var checkinHistory  = d.checkinHistory || [];
 
       // Face Reader state
@@ -18231,15 +18232,17 @@ window.SelHub = window.SelHub || {
         { id: 'history',   label: '\uD83D\uDCCA History' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Emotions Wheel tabs',
+      var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: ('1px solid ' + P.border), overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(tab) {
+        h('div', { role: 'tablist', 'aria-label': 'Emotions Wheel tabs', style: { display: 'flex', gap: 2 } },
+          tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', { 'aria-label': tab.label,
             key: tab.id,
             role: 'tab', 'aria-selected': isActive,
             onClick: function() { upd('activeTab', tab.id); if (soundEnabled) sfxClick(); },
+            onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
             style: {
               padding: '7px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
               background: isActive ? '#1d4ed8' : 'transparent',
@@ -18247,7 +18250,8 @@ window.SelHub = window.SelHub || {
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
-        }),
+          })
+        ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
@@ -18580,7 +18584,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Emotion family wheel (circular layout)
-          wheelMode === 'explore' && !selectedFamily && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, maxWidth: 400, margin: '0 auto 20px' } },
+          wheelMode === 'explore' && !selectedFamily && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 12, maxWidth: 400, margin: '0 auto 20px' } },
             EMOTION_FAMILIES.map(function(fam) {
               var explored = exploredFamilies[fam.id];
               return h('button', {
@@ -18699,6 +18703,28 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       var checkinContent = null;
       if (activeTab === 'checkin') {
+        var checkinFamilyStrategyMap = { happy: 'joy', sad: 'sadness', angry: 'anger', scared: 'fear', surprised: 'awe' };
+        var checkinExactStrategy = checkinFeeling && EMOTION_STRATEGIES.some(function(entry) { return entry.emotion === String(checkinFeeling).toLowerCase(); }) ? String(checkinFeeling).toLowerCase() : null;
+        var checkinStrategyEmotion = checkinExactStrategy || checkinFamilyStrategyMap[checkinFamily] || null;
+        var checkinStrategyTier = checkinIntensity <= 3 ? 'low' : (checkinIntensity <= 7 ? 'medium' : 'high');
+        var checkinStrategyEntry = checkinStrategyEmotion ? (EMOTION_STRATEGIES.find(function(entry) { return entry.emotion === checkinStrategyEmotion && entry.intensity === checkinStrategyTier; }) || EMOTION_STRATEGIES.find(function(entry) { return entry.emotion === checkinStrategyEmotion; })) : null;
+        var checkinChoices = [];
+        function addCheckinChoice(kind, icon, color, item) {
+          if (!item) return;
+          checkinChoices.push({ kind: kind, icon: icon, color: color, name: item.name, firstStep: item.steps && item.steps[0] ? item.steps[0] : '', duration: item.duration || '' });
+        }
+        if (checkinStrategyEntry) {
+          addCheckinChoice('Body-first', '\uD83E\uDEC1', '#f59e0b', checkinStrategyEntry.bodyFirstStrategies && checkinStrategyEntry.bodyFirstStrategies[0]);
+          addCheckinChoice('Thought-first', '\uD83E\uDDE0', '#8b5cf6', checkinStrategyEntry.thoughtFirstStrategies && checkinStrategyEntry.thoughtFirstStrategies[0]);
+          addCheckinChoice('Connection', '\uD83E\uDD1D', '#ec4899', checkinStrategyEntry.connectionStrategies && checkinStrategyEntry.connectionStrategies[0]);
+        }
+        if (!checkinChoices.length) {
+          checkinChoices = [
+            { kind: 'Body-first', icon: '\uD83E\uDEC1', color: '#f59e0b', name: 'Feet + long exhale', firstStep: 'Press both feet down and make the next exhale a little longer.', duration: '1 min' },
+            { kind: 'Thought-first', icon: '\uD83E\uDDE0', color: '#8b5cf6', name: 'Name without judging', firstStep: 'Say: “This feeling is here, and I do not have to solve it yet.”', duration: '1 min' },
+            { kind: 'Connection', icon: '\uD83E\uDD1D', color: '#ec4899', name: 'Ask for a check-in', firstStep: 'Tell one safe person: “I could use a little company.”', duration: '2 min' }
+          ];
+        }
         checkinContent = h('div', { style: { padding: 20, maxWidth: 550, margin: '0 auto' } },
           h('h3', { style: { textAlign: 'center', marginBottom: 8, color: P.text, fontSize: 18 } },
             band === 'elementary' ? 'How Are You Feeling?' : 'Emotion Check-In'
@@ -18708,17 +18734,31 @@ window.SelHub = window.SelHub || {
             'Identify your current emotional state with precision.'
           ),
 
+          h('div', { role: 'list', 'aria-label': 'Emotion check-in path', style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 7, padding: 9, borderRadius: 12, background: P.card, border: ('1px solid ' + P.border), marginBottom: 16 } },
+            [
+              { label: 'Name', value: checkinFeeling || 'Pick a feeling', done: !!checkinFeeling },
+              { label: 'Notice', value: checkinFeeling ? checkinIntensity + '/10 intensity' : 'Set intensity', done: !!checkinFeeling },
+              { label: 'Choose', value: checkinStrategy || (checkinFeeling ? 'Pick one next step' : 'After naming'), done: !!checkinStrategy }
+            ].map(function(step, index) {
+              return h('div', { key: step.label, role: 'listitem', style: { minHeight: 66, padding: 8, borderRadius: 9, background: step.done ? 'rgba(59,130,246,0.13)' : P.bg, border: '1px solid ' + (step.done ? '#3b82f6' : P.borderDim) } },
+                h('div', { style: { color: step.done ? ST('#60a5fa') : P.textMuted, fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 } }, (step.done ? '\u2713 ' : (index + 1) + '. ') + step.label),
+                h('div', { style: { color: P.text2, fontSize: 11, fontWeight: 650, lineHeight: 1.35, overflowWrap: 'anywhere' } }, step.value)
+              );
+            })
+          ),
+
           // Step 1: Pick emotion family
           h('div', { style: { marginBottom: 16 } },
             h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 8 } },
               '1. ' + (band === 'elementary' ? 'What\'s the main feeling?' : 'Primary emotion family')
             ),
-            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
+            h('div', { role: 'group', 'aria-label': 'Choose primary emotion family', style: { display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' } },
               EMOTION_FAMILIES.map(function(fam) {
                 var isSel = checkinFamily === fam.id;
                 return h('button', { 
                   key: fam.id,
-                  onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null }); if (soundEnabled) sfxClick(); },
+                  type: 'button', 'aria-pressed': isSel, 'aria-label': fam.label + ' emotion family',
+                  onClick: function() { upd({ checkinFamily: fam.id, checkinFeeling: null, checkinStrategy: null }); if (soundEnabled) sfxClick(); },
                   style: {
                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, padding: '12px 14px',
                     borderRadius: 12, border: isSel ? '2px solid ' + fam.color : ('1px solid ' + P.border),
@@ -18741,12 +18781,13 @@ window.SelHub = window.SelHub || {
               h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 8 } },
                 '2. ' + (band === 'elementary' ? 'Which kind of ' + fam.label.toLowerCase() + '?' : 'Specific feeling')
               ),
-              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              h('div', { role: 'group', 'aria-label': 'Choose specific feeling', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                 feelings.map(function(f) {
                   var isSel = checkinFeeling === f.word;
                   return h('button', {
                     key: f.word,
-                    onClick: function() { upd('checkinFeeling', f.word); if (soundEnabled) sfxClick(); },
+                    type: 'button', 'aria-pressed': isSel,
+                    onClick: function() { upd({ checkinFeeling: f.word, checkinStrategy: null }); if (soundEnabled) sfxClick(); },
                     style: {
                       padding: '6px 14px', borderRadius: 20, border: isSel ? '2px solid ' + fam.color : ('1px solid ' + P.border),
                       background: isSel ? fam.color + '22' : P.card, color: isSel ? fam.color : P.textMuted,
@@ -18758,7 +18799,7 @@ window.SelHub = window.SelHub || {
               h('input', {
                 type: 'text', value: checkinFeeling || '',
                 'aria-label': 'Type your own feeling word',
-                onChange: function(e) { upd('checkinFeeling', e.target.value); },
+                onChange: function(e) { upd({ checkinFeeling: e.target.value, checkinStrategy: null }); },
                 placeholder: 'Or type your own word...',
                 style: { width: '100%', marginTop: 8, padding: '8px 12px', borderRadius: 8, border: ('1px solid ' + P.border), background: P.bg, color: P.text, fontSize: 12, boxSizing: 'border-box' }
               })
@@ -18775,7 +18816,7 @@ window.SelHub = window.SelHub || {
               h('input', {
                 type: 'range', min: 1, max: 10, value: checkinIntensity,
                 'aria-label': 'Emotion intensity',
-                onChange: function(e) { upd('checkinIntensity', parseInt(e.target.value)); },
+                onChange: function(e) { upd({ checkinIntensity: parseInt(e.target.value), checkinStrategy: null }); },
                 style: { flex: 1, accentColor: '#3b82f6' }
               }),
               h('span', { style: { fontSize: 11, color: P.textMuted } }, band === 'elementary' ? 'HUGE' : '10'),
@@ -18787,10 +18828,31 @@ window.SelHub = window.SelHub || {
             )
           ),
 
+          checkinFeeling && h('section', { 'aria-labelledby': 'emotion-next-step-title', style: { padding: 14, borderRadius: 13, background: P.card, border: ('1px solid ' + P.border), marginBottom: 16 } },
+            h('div', { id: 'emotion-next-step-title', style: { color: P.text, fontSize: 13, fontWeight: 800, marginBottom: 3 } }, '4. Choose one next step'),
+            h('p', { style: { margin: '0 0 10px', color: P.textMuted, fontSize: 11, lineHeight: 1.45 } },
+              'Matched to ' + checkinStrategyTier + ' intensity. Pick the route that feels most doable; this is an invitation, not a prescription.'
+            ),
+            h('div', { role: 'group', 'aria-label': 'Choose a regulation next step', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 7 } },
+              checkinChoices.map(function(choice) {
+                var selected = checkinStrategy === choice.name;
+                return h('button', { key: choice.kind, type: 'button', 'aria-pressed': selected, onClick: function() { upd('checkinStrategy', choice.name); if (soundEnabled) sfxClick(); },
+                  style: { minHeight: 112, padding: 10, borderRadius: 10, textAlign: 'left', cursor: 'pointer', background: selected ? choice.color + '1f' : P.bg, border: '2px solid ' + (selected ? choice.color : P.borderDim), color: P.text2 } },
+                  h('div', { style: { color: selected ? INK(choice.color) : P.textMuted, fontSize: 9.5, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 5 } }, choice.icon + ' ' + choice.kind),
+                  h('div', { style: { color: P.text, fontSize: 12, fontWeight: 800, lineHeight: 1.3 } }, choice.name),
+                  h('div', { style: { color: P.textMuted, fontSize: 10.5, lineHeight: 1.4, marginTop: 5 } }, choice.firstStep),
+                  choice.duration ? h('div', { style: { color: INK(choice.color), fontSize: 9.5, fontWeight: 700, marginTop: 5 } }, choice.duration) : null
+                );
+              })
+            ),
+            checkinStrategyEmotion ? h('button', { type: 'button', onClick: function() { upd({ activeTab: 'strategies', stEmotion: checkinStrategyEmotion, stOpen: checkinStrategyEntry ? checkinStrategyEntry.id : null }); if (soundEnabled) sfxClick(); },
+              style: { marginTop: 9, padding: '6px 0', border: 'none', background: 'transparent', color: ST('#60a5fa'), fontSize: 10.5, fontWeight: 700, cursor: 'pointer' } }, 'Explore the full ' + checkinStrategyEmotion + ' toolkit \u2192') : null
+          ),
+
           // Step 4: Optional note
           checkinFeeling && h('div', { style: { marginBottom: 20 } },
             h('label', { style: { display: 'block', fontSize: 12, fontWeight: 700, color: P.text2, marginBottom: 8 } },
-              '4. ' + (band === 'elementary' ? 'What made you feel this way? (you can skip this)' : 'What triggered this? (optional)')
+              '5. ' + (band === 'elementary' ? 'What made you feel this way? (you can skip this)' : 'What triggered this? (optional)')
             ),
             h('textarea', {
               value: checkinNote,
@@ -18809,12 +18871,13 @@ window.SelHub = window.SelHub || {
                 feeling: checkinFeeling,
                 intensity: checkinIntensity,
                 note: checkinNote,
+                strategy: checkinStrategy,
                 timestamp: Date.now()
               };
               var newHistory = checkinHistory.concat([entry]);
               upd({
                 checkinHistory: newHistory,
-                checkinFamily: null, checkinFeeling: null, checkinIntensity: 5, checkinNote: ''
+                checkinFamily: null, checkinFeeling: null, checkinIntensity: 5, checkinNote: '', checkinStrategy: null
               });
               if (soundEnabled) sfxCheckin();
               celebrate();
@@ -18837,7 +18900,7 @@ window.SelHub = window.SelHub || {
               if (Object.keys(intensities).length >= 3) tryAwardBadge('intensity_range');
             },
             style: { width: '100%', padding: '14px 0', borderRadius: 10, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: 15, cursor: 'pointer' }
-          }, '\u2705 Log This Feeling'),
+          }, checkinStrategy ? '\u2705 Save Feeling + Next Step' : '\u2705 Log This Feeling'),
 
           // Body Sensations Map (shows when a family is selected)
           checkinFamily && BODY_SENSATIONS[checkinFamily] && h('div', { style: { marginTop: 16, padding: 16, borderRadius: 14, background: P.bg, border: ('1px solid ' + P.border) } },
@@ -18888,7 +18951,8 @@ window.SelHub = window.SelHub || {
                 h('span', { style: { fontSize: 20 } }, fam ? fam.emoji : '\uD83D\uDE0A'),
                 h('div', { style: { flex: 1 } },
                   h('span', { style: { fontSize: 13, fontWeight: 600, color: fam ? fam.color : P.text, textTransform: 'capitalize' } }, entry.feeling),
-                  h('span', { style: { fontSize: 10, color: P.textMuted, marginLeft: 8 } }, 'Intensity: ' + entry.intensity + '/10')
+                  h('span', { style: { fontSize: 10, color: P.textMuted, marginLeft: 8 } }, 'Intensity: ' + entry.intensity + '/10'),
+                  entry.strategy ? h('div', { style: { marginTop: 4, color: ST('#60a5fa'), fontSize: 10, fontWeight: 700 } }, '\u2192 Next: ' + entry.strategy) : null
                 ),
                 h('span', { style: { fontSize: 10, color: P.textMuted } }, new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))
               );

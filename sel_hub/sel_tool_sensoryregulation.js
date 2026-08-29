@@ -86,6 +86,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       regulatingActivities: [],   // [{label, system, when}]
       // Accommodations
       myAccommodations: [],       // [string]
+      currentNeed: null,          // 'less' | 'more' | 'control' | 'steady'
+      activeSupport: null,        // one activity chosen for right now
       lastUpdated: null
     };
   }
@@ -145,6 +147,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       var setLabToolData = ctx.setToolData;
       var setSelHubTool = ctx.setSelHubTool;
       var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
 
       var d = labToolData.sensoryRegulation || defaultState();
       function setSens(patch) {
@@ -205,6 +208,12 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
         var profileCount = Object.keys(d.profile || {}).filter(function(k) { return !!d.profile[k]; }).length;
         var activities = (d.regulatingActivities || []).length;
         var accommodations = (d.myAccommodations || []).length;
+        var profileMix = { seek: 0, avoid: 0, mixed: 0, typical: 0 };
+        Object.keys(d.profile || {}).forEach(function(k) {
+          var mode = d.profile[k];
+          if (profileMix[mode] !== undefined) profileMix[mode] += 1;
+        });
+        var needLabels = { less: 'Less input', more: 'More input', control: 'More control', steady: 'Steady enough' };
         function status(label, value, color) {
           return h('div', { style: { padding: 10, borderRadius: 8, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
             h('div', { style: { fontSize: 11, color: _senFg('#94a3b8'), fontWeight: 800, textTransform: 'uppercase', marginBottom: 3 } }, label),
@@ -243,7 +252,98 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
                 s.label
               );
             })
-          )
+          ),
+          profileCount ? h('div', { style: { marginTop: 10, padding: 10, borderRadius: 9, background: _senBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 7 } },
+              h('span', { style: { color: _senFg('#e2e8f0'), fontSize: 11.5, fontWeight: 900 } }, 'My profile mix'),
+              d.currentNeed ? h('span', { style: { padding: '4px 7px', borderRadius: 999, background: 'rgba(249,115,22,0.12)', border: '1px solid rgba(249,115,22,0.35)', color: _senFg('#fdba74'), fontSize: 10.5, fontWeight: 900 } }, 'Right now: ' + needLabels[d.currentNeed]) : null
+            ),
+            h('div', { role: 'img', 'aria-label': 'Sensory profile mix: ' + profileMix.seek + ' seeking, ' + profileMix.avoid + ' avoiding, ' + profileMix.mixed + ' mixed, and ' + profileMix.typical + ' typical',
+              style: { display: 'flex', width: '100%', height: 10, overflow: 'hidden', borderRadius: 999, background: _senBg('#1e293b'), border: '1px solid #334155', marginBottom: 7 } },
+              profileMix.seek ? h('span', { style: { flex: profileMix.seek, background: _senHC ? '#ffff00' : '#22c55e' } }) : null,
+              profileMix.avoid ? h('span', { style: { flex: profileMix.avoid, background: _senHC ? '#ffff00' : '#ef4444' } }) : null,
+              profileMix.mixed ? h('span', { style: { flex: profileMix.mixed, background: _senHC ? '#ffff00' : '#a855f7' } }) : null,
+              profileMix.typical ? h('span', { style: { flex: profileMix.typical, background: _senHC ? '#ffff00' : '#94a3b8' } }) : null
+            ),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: 10.5 } },
+              h('span', { style: { color: _senFg('#86efac'), fontWeight: 800 } }, '+ Seeking ' + profileMix.seek),
+              h('span', { style: { color: _senFg('#fecaca'), fontWeight: 800 } }, '− Avoiding ' + profileMix.avoid),
+              h('span', { style: { color: _senFg('#c7d2fe'), fontWeight: 800 } }, '↕ Mixed ' + profileMix.mixed),
+              h('span', { style: { color: _senFg('#94a3b8'), fontWeight: 800 } }, '≈ Typical ' + profileMix.typical)
+            )
+          ) : null
+        );
+      }
+
+      function sensoryCheckin() {
+        var NEEDS = [
+          { id: 'less', icon: '🔉', label: 'Less input', blurb: 'Things feel too loud, bright, busy, close, or intense.', border: '#0ea5e9', text: '#c7d2fe', cue: 'Lower one source of input or move toward a quieter edge.' },
+          { id: 'more', icon: '⚡', label: 'More input', blurb: 'I feel under-alert, restless, or need movement or pressure.', border: '#22c55e', text: '#86efac', cue: 'Add one safe source of movement, pressure, rhythm, or texture.' },
+          { id: 'control', icon: '🎛️', label: 'More control', blurb: 'Surprise or not being able to choose is the hardest part.', border: '#a855f7', text: '#c7d2fe', cue: 'Make one input predictable: choose where, when, or how much.' },
+          { id: 'steady', icon: '🌤️', label: 'Steady enough', blurb: 'The sensory load feels workable for this moment.', border: '#f59e0b', text: '#fde68a', cue: 'Notice what is helping and keep that support available.' }
+        ];
+        var current = d.currentNeed;
+        var info = NEEDS.find(function(item) { return item.id === current; }) || null;
+        var activities = d.regulatingActivities || [];
+        var chosenSupport = activities.find(function(item) { return item.label === d.activeSupport; }) || null;
+
+        function chooseNeed(id) {
+          setSens({ currentNeed: id, activeSupport: null });
+          var picked = NEEDS.find(function(item) { return item.id === id; });
+          if (announceToSR && picked) announceToSR(picked.label + ' selected for the sensory check-in');
+        }
+        function chooseSupport(activity) {
+          setSens({ activeSupport: activity.label });
+          if (announceToSR) announceToSR('Sensory support selected: ' + activity.label);
+        }
+        function step(number, label, value, color) {
+          return h('div', { style: { padding: 11, borderRadius: 9, minWidth: 0, background: _senBg('#0f172a'), border: '1px solid ' + (_senHC ? '#ffff00' : color + '55') } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 } },
+              h('span', { 'aria-hidden': 'true', style: { width: 21, height: 21, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: _senHC ? '#000000' : color + '22', border: '1px solid ' + color, color: color, fontSize: 10.5, fontWeight: 900 } }, number),
+              h('span', { style: { color: color, fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.55 } }, label)
+            ),
+            h('div', { style: { color: _senFg('#e2e8f0'), fontSize: 12, lineHeight: 1.5, fontWeight: 650 } }, value)
+          );
+        }
+
+        return h('section', { className: 'no-print', 'aria-label': 'Quick sensory check-in', style: { padding: 15, borderRadius: 13, background: _senHC ? '#000000' : 'linear-gradient(135deg, rgba(14,165,233,0.11), rgba(168,85,247,0.10) 52%, rgba(34,197,94,0.09))', border: '1px solid ' + (_senHC ? '#ffff00' : 'rgba(148,163,184,0.28)'), marginBottom: 14 } },
+          h('div', { style: { marginBottom: 10 } },
+            h('div', { style: { color: _senFg('#e2e8f0'), fontSize: 14, fontWeight: 900, marginBottom: 3 } }, '🎚️ Quick sensory check-in'),
+            h('div', { style: { color: _senFg('#94a3b8'), fontSize: 11.5, lineHeight: 1.5 } }, 'What kind of change would make this moment easier? Choose the closest fit.')
+          ),
+          h('div', { role: 'group', 'aria-label': 'Choose current sensory need', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: current ? 10 : 0 } },
+            NEEDS.map(function(item) {
+              var selected = current === item.id;
+              var textColor = _senFg(item.text);
+              return h('button', { key: item.id, onClick: function() { chooseNeed(item.id); }, 'aria-pressed': current === item.id, 'data-sensory-need': item.id,
+                style: { padding: 11, borderRadius: 10, textAlign: 'left', cursor: 'pointer', background: selected ? (_senHC ? '#000000' : item.border + '20') : _senBg('#0f172a'), border: '2px solid ' + (selected ? (_senHC ? '#ffff00' : item.border) : '#334155'), color: _senFg('#e2e8f0'), boxShadow: selected && !_senHC ? '0 9px 24px ' + item.border + '18' : 'none' } },
+                h('span', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, item.icon),
+                  h('strong', { style: { flex: 1, color: textColor, fontSize: 12.5 } }, item.label),
+                  selected ? h('span', { style: { color: textColor, fontSize: 10, fontWeight: 900 } }, '● HERE') : null
+                ),
+                h('span', { style: { display: 'block', color: _senFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45 } }, item.blurb)
+              );
+            })
+          ),
+          info ? h('section', { 'aria-label': 'Sensory next step', style: { padding: 12, borderRadius: 10, background: _senBg('#1e293b'), borderLeft: '4px solid ' + (_senHC ? '#ffff00' : info.border) } },
+            current !== 'steady' ? h('div', { style: { marginBottom: 10 } },
+              h('div', { style: { color: _senFg(info.text), fontSize: 12, fontWeight: 900, marginBottom: 6 } }, 'Choose one support for right now'),
+              activities.length ? h('div', { role: 'group', 'aria-label': 'Choose a support from my sensory plan', style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                activities.map(function(activity, index) {
+                  var selected = chosenSupport && chosenSupport.label === activity.label;
+                  return h('button', { key: index, onClick: function() { chooseSupport(activity); }, 'aria-pressed': selected,
+                    style: { padding: '6px 10px', borderRadius: 999, cursor: 'pointer', background: selected ? 'rgba(99,102,241,0.20)' : _senBg('#0f172a'), border: '1px solid ' + (selected ? '#818cf8' : '#475569'), color: selected ? _senFg('#c7d2fe') : _senFg('#cbd5e1'), fontSize: 11.5, fontWeight: selected ? 900 : 650 } },
+                    (selected ? '✓ ' : '') + activity.label);
+                })
+              ) : h('button', { onClick: function() { goto('diet'); }, 'aria-label': 'Build my sensory regulation plan', style: { padding: '7px 11px', borderRadius: 8, cursor: 'pointer', background: 'rgba(34,197,94,0.12)', border: '1px solid #22c55e', color: _senFg('#86efac'), fontSize: 11.5, fontWeight: 850 } }, '＋ Build my regulation plan')
+            ) : null,
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 7 } },
+              step(1, 'Notice', info.label + ' is the closest fit.', _senFg(info.text)),
+              step(2, current === 'steady' ? 'Protect' : 'Adjust', chosenSupport ? chosenSupport.label : info.cue, _senFg('#c7d2fe')),
+              step(3, 'Recheck', current === 'steady' ? 'Keep the next demand one step at a time.' : 'After 2–5 minutes, notice whether anything shifted.', _senFg('#86efac'))
+            )
+          ) : null
         );
       }
 
@@ -253,6 +353,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
       function renderHome() {
         return h('div', null,
           sensoryCommandPanel(),
+          sensoryCheckin(),
           h('div', { style: { padding: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(249,115,22,0.16) 0%, rgba(15,23,42,0.4) 60%)', border: '1px solid rgba(249,115,22,0.4)', marginBottom: 14 } },
             h('div', { style: { fontSize: 22, fontWeight: 900, color: _senFg('#fed7aa'), marginBottom: 4 } }, 'Sensory difference is identity, not deficit.'),
             h('p', { style: { margin: '0 0 8px', color: _senFg('#cbd5e1'), fontSize: 13.5, lineHeight: 1.7 } },
@@ -354,11 +455,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('sensoryRegulatio
               // Mode picker
               h('div', { style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' }, role: 'radiogroup', 'aria-label': s.label + ' profile' },
                 h('button', { onClick: function() { setSystem(s.id, 'seek'); }, role: 'radio', 'aria-checked': current === 'seek',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? '#22c55e' : _senFg('#475569')), background: current === 'seek' ? 'rgba(34,197,94,0.18)' : 'transparent', color: _senFg(current) === 'seek' ? _senFg('#bbf7d0') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'seek' ? '#22c55e' : _senFg('#475569')), background: current === 'seek' ? 'rgba(34,197,94,0.18)' : 'transparent', color: current === 'seek' ? _senFg('#86efac') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '+ Seeker'),
                 h('button', { onClick: function() { setSystem(s.id, 'avoid'); }, role: 'radio', 'aria-checked': current === 'avoid',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? '#ef4444' : _senFg('#475569')), background: current === 'avoid' ? 'rgba(239,68,68,0.18)' : 'transparent', color: _senFg(current) === 'avoid' ? _senFg('#fecaca') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'avoid' ? '#ef4444' : _senFg('#475569')), background: current === 'avoid' ? 'rgba(239,68,68,0.18)' : 'transparent', color: current === 'avoid' ? _senFg('#fecaca') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '✕ Avoider'),
                 h('button', { onClick: function() { setSystem(s.id, 'mixed'); }, role: 'radio', 'aria-checked': current === 'mixed',
-                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? '#a855f7' : _senFg('#475569')), background: current === 'mixed' ? 'rgba(168,85,247,0.18)' : 'transparent', color: _senFg(current) === 'mixed' ? '#e9d5ff' : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
+                  style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'mixed' ? '#a855f7' : _senFg('#475569')), background: current === 'mixed' ? 'rgba(168,85,247,0.18)' : 'transparent', color: current === 'mixed' ? _senFg('#c7d2fe') : _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '↕ Mixed'),
                 h('button', { onClick: function() { setSystem(s.id, 'typical'); }, role: 'radio', 'aria-checked': current === 'typical',
                   style: { flex: 1, minWidth: 100, padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (current === 'typical' ? _senFg('#94a3b8') : _senFg('#475569')), background: current === 'typical' ? _senFg('#475569') : 'transparent', color: _senFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '~ Typical')
               ),

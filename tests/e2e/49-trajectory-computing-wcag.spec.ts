@@ -89,7 +89,40 @@ const AXE_SURFACES: Array<[string, Record<string, unknown>]> = [
       verify: 'Independent checking made the final decision more trustworthy.',
     },
   }],
+  ['new-mission confirmation', { ...COMPLETED, extensionView: 'menu', restartConfirmOpen: true }],
   ['safeguard challenge', { ...COMPLETED, extensionView: 'safeguard' }],
+  ['replay with unsupported prediction', {
+    ...COMPLETED,
+    extensionView: 'replay',
+    replayVariantId: 'meridian-5',
+    replayPrediction: 'longer',
+    replayResult: { mission: { id: 'meridian-5' }, prediction: 'longer' },
+    replayLearning: { initialPrediction: 'longer', reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false },
+  }],
+  ['replay with checked reasoning to revise', {
+    ...COMPLETED,
+    extensionView: 'replay',
+    replayVariantId: 'meridian-5',
+    replayPrediction: 'shorter',
+    replayResult: { mission: { id: 'meridian-5' }, prediction: 'shorter' },
+    replayLearning: { initialPrediction: 'longer', reasoningClaim: 'reproducible', reasoningAttempts: 1, reasoningChecked: true },
+  }],
+  ['completed replay reasoning', {
+    ...COMPLETED,
+    extensionView: 'replay',
+    replayVariantId: 'meridian-5',
+    replayPrediction: 'shorter',
+    replayResult: { mission: { id: 'meridian-5' }, prediction: 'shorter' },
+    replayLearning: { initialPrediction: 'longer', reasoningClaim: 'combined-not-isolated', reasoningAttempts: 3, reasoningChecked: true },
+  }],
+  ['controlled replay reasoning', {
+    ...COMPLETED,
+    extensionView: 'replay',
+    replayVariantId: 'aurora-control-3b',
+    replayPrediction: 'shorter',
+    replayResult: { mission: { id: 'aurora-control-3b' }, prediction: 'shorter' },
+    replayLearning: { initialPrediction: 'shorter', reasoningClaim: 'isolated-change', reasoningAttempts: 1, reasoningChecked: true },
+  }],
   ['Angle Lab result', {
     ...COMPLETED,
     extensionView: 'angle',
@@ -204,6 +237,23 @@ test('supports skip navigation, roving station keys, and visible keyboard focus'
   expect(focus.width, `focus indicator: ${JSON.stringify(focus)}`).toBeGreaterThanOrEqual(2);
 });
 
+test('moves visible keyboard focus to a newly unlocked station', async ({ page }) => {
+  await mount(page, { stage: 'briefing', orientationDismissed: true });
+  const begin = page.getByRole('button', { name: 'Begin hand calculation' });
+  await begin.focus();
+  await page.keyboard.press('Enter');
+
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.stage)).toBe('worksheet');
+  const heading = page.locator('#tc-stage-heading-worksheet');
+  await expect(heading).toBeFocused();
+  const focus = await heading.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { style: style.outlineStyle, width: parseFloat(style.outlineWidth) || 0 };
+  });
+  expect(focus.style, `station-heading focus indicator: ${JSON.stringify(focus)}`).not.toBe('none');
+  expect(focus.width, `station-heading focus indicator: ${JSON.stringify(focus)}`).toBeGreaterThanOrEqual(2);
+});
+
 test('reads the current desk task, evidence, and readiness summary aloud', async ({ page }) => {
   await page.addInitScript(() => {
     (window as any).__spokenDeskSummaries = [];
@@ -232,29 +282,106 @@ test('records an optional station connection in evidence and the completion repo
   await mount(page, { ...COMPLETED, extensionView: 'menu' });
   const note = 'Independent checking kept the landing decision from relying on machine output alone.';
 
-  await page.evaluate(() => {
+  const savedId = await page.evaluate(() => {
     const core = (window as any).TrajectoryComputingCore;
     const state = (window as any).__toolData._trajectoryComputing;
     state.lastSnapshotAt = Date.now();
     state.lastSnapshotFingerprint = core.createEvidenceFingerprint(state);
+    (window as any).__ctx.toolSnapshots = [{
+      id: `trajectory-${state.lastSnapshotAt}`,
+      tool: 'trajectoryComputing',
+      timestamp: state.lastSnapshotAt,
+      fingerprint: state.lastSnapshotFingerprint,
+    }];
     (window as any).__rerender();
+    return state.lastSnapshotFingerprint as string;
   });
+  const report = page.locator('#tc-completion-report');
   await expect(page.getByText('Evidence snapshot includes the latest work.')).toBeVisible();
   await page.getByRole('button', { name: 'Review completion report' }).click();
   await expect(page.getByText('Evidence snapshot includes the latest work.')).toBeVisible();
+  await expect(report).toContainText(`Evidence record ID ${savedId} matches the latest saved snapshot.`);
   await page.getByRole('button', { name: 'Hide completion report' }).click();
 
   await page.getByLabel('Optional connection note').fill(note);
   await expect(page.getByText('Connection note recorded for this station.')).toBeVisible();
   await expect(page.getByText('Work changed after the last snapshot. Save a new snapshot to include it.')).toBeVisible();
   await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.connectionNotes.verify || '')).toBe(note);
+  const currentId = await page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    return core.createEvidenceFingerprint((window as any).__toolData._trajectoryComputing) as string;
+  });
 
   await page.getByRole('button', { name: 'Review completion report' }).click();
-  const report = page.locator('#tc-completion-report');
+  await expect(report).toContainText(`Current report ID ${currentId} does not match saved snapshot ID ${savedId}. Save a new snapshot before sharing.`);
   await expect(report.getByRole('heading', { name: 'Historical reasoning notes' })).toBeVisible();
   await expect(report).toContainText('1 of 6 station connections recorded.');
   await expect(report).toContainText('Verify');
   await expect(report).toContainText(note);
+});
+
+test('reconciles evidence provenance when the host snapshot is deleted', async ({ page }) => {
+  await mount(page, { ...COMPLETED, extensionView: 'menu' });
+  const savedId = await page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    const state = (window as any).__toolData._trajectoryComputing;
+    state.lastSnapshotAt = Date.now();
+    state.lastSnapshotFingerprint = core.createEvidenceFingerprint(state);
+    (window as any).__ctx.toolSnapshots = [{
+      id: `trajectory-${state.lastSnapshotAt}`,
+      tool: 'trajectoryComputing',
+      timestamp: state.lastSnapshotAt,
+      fingerprint: state.lastSnapshotFingerprint,
+    }];
+    (window as any).__rerender();
+    return state.lastSnapshotFingerprint as string;
+  });
+  await expect(page.getByText('Evidence snapshot includes the latest work.')).toBeVisible();
+
+  await page.evaluate(() => {
+    (window as any).__ctx.toolSnapshots = [];
+    (window as any).__rerender();
+  });
+  await expect(page.getByText('Evidence snapshot includes the latest work.')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Review completion report' }).click();
+  await expect(page.locator('#tc-completion-report')).toContainText(`Current report ID ${savedId} has no matching saved snapshot. Save a snapshot before sharing.`);
+  await page.getByRole('button', { name: 'Run mission again' }).click();
+  await expect(page.locator('#tc-restart-confirm')).toContainText('No evidence snapshot has been saved.');
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.lastSnapshotFingerprint)).toBe(savedId);
+});
+
+test('protects completed work with a keyboard-operable new-mission confirmation', async ({ page }) => {
+  const note = 'Keep this reasoning until the reset is confirmed.';
+  await mount(page, { ...COMPLETED, extensionView: 'menu', connectionNotes: { verify: note } });
+  const runAgain = page.getByRole('button', { name: 'Run mission again' });
+  const beforeFingerprint = await page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    return core.createEvidenceFingerprint((window as any).__toolData._trajectoryComputing) as string;
+  });
+
+  await runAgain.click();
+  const confirmation = page.locator('#tc-restart-confirm');
+  await expect(confirmation).toBeVisible();
+  await expect(confirmation).toBeFocused();
+  await expect(confirmation).toContainText('No evidence snapshot has been saved.');
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.stage)).toBe('verify');
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.connectionNotes.verify)).toBe(note);
+  await expect.poll(async () => page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    return core.createEvidenceFingerprint((window as any).__toolData._trajectoryComputing);
+  })).toBe(beforeFingerprint);
+
+  await page.keyboard.press('Escape');
+  await expect(confirmation).toBeHidden();
+  await expect(runAgain).toBeFocused();
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.stage)).toBe('verify');
+
+  await runAgain.click();
+  await page.getByRole('button', { name: 'Start new mission' }).click();
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.stage)).toBe('briefing');
+  await expect.poll(async () => page.evaluate(() => (window as any).__toolData._trajectoryComputing.connectionNotes)).toBeUndefined();
+  await expect(page.locator('#tc-stage-heading-briefing')).toBeFocused();
+  await expect(page.locator('#tc-tab-briefing')).toHaveAttribute('aria-selected', 'true');
 });
 
 test('turns signing prerequisites into a clear keyboard-operable readiness path', async ({ page }) => {
@@ -410,6 +537,166 @@ test('supports a prediction-first safeguard challenge', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: 'Prediction supported' })).toContainText('unknown variable');
 });
 
+test('requires replay revision and checked comparison reasoning before completion', async ({ page }) => {
+  await mount(page, { ...COMPLETED, extensionView: 'replay', replayVariantId: 'aurora-3' });
+
+  const replayCase = page.getByLabel('Replay case');
+  const runReplay = page.getByRole('button', { name: 'Run replay card' });
+  const predictionSummary = page.locator('#tc-replay-prediction-summary');
+  await replayCase.selectOption('meridian-5');
+  await page.getByRole('radio', { name: 'Longer than Aurora' }).check();
+  await runReplay.focus();
+  await page.keyboard.press('Enter');
+
+  await expect(predictionSummary).toBeFocused();
+  await expect(predictionSummary).toContainText('Comparison does not support this prediction');
+  await expect.poll(async () => page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    const state = (window as any).__toolData._trajectoryComputing;
+    return core.getReplayLearningStatus(state).questComplete;
+  })).toBe(false);
+
+  await page.getByRole('radio', { name: 'Shorter than Aurora' }).check();
+  await expect(page.getByRole('status').filter({ hasText: 'Revised prediction selected' })).toContainText('Run the same card to test it.');
+  await runReplay.focus();
+  await page.keyboard.press('Enter');
+  await expect(predictionSummary).toBeFocused();
+  await expect(predictionSummary).toContainText('Revised prediction supported');
+
+  const checkClaim = page.locator('#tc-check-replay-reasoning');
+  const reasoningSummary = page.locator('#tc-replay-reasoning-summary');
+  await page.getByRole('radio', { name: 'The same inputs reproduced the baseline result.' }).check();
+  await checkClaim.focus();
+  await page.keyboard.press('Enter');
+  await expect(checkClaim).toBeFocused();
+  await expect(reasoningSummary).toHaveText('Compare the input rows, not only the landing range.');
+
+  await page.getByRole('radio', { name: 'One changed input was isolated, so its effect can be compared.' }).check();
+  await expect(reasoningSummary).toHaveCount(0);
+  await checkClaim.focus();
+  await page.keyboard.press('Enter');
+  await expect(checkClaim).toBeFocused();
+  await expect(reasoningSummary).toHaveText('More than one input changed. A one-variable causal claim requires the other inputs to stay fixed.');
+
+  await page.getByRole('radio', { name: 'Several inputs changed together, so this replay cannot isolate one cause.' }).check();
+  await expect(reasoningSummary).toHaveCount(0);
+  await checkClaim.focus();
+  await page.keyboard.press('Enter');
+  await expect(checkClaim).toBeFocused();
+  await expect(reasoningSummary).toContainText('Comparison reasoning supported');
+  await expect.poll(async () => page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    const state = (window as any).__toolData._trajectoryComputing;
+    const status = core.getReplayLearningStatus(state);
+    return {
+      complete: status.complete,
+      questComplete: status.questComplete,
+      initialPrediction: status.initialPrediction,
+      finalPrediction: state.replayResult && state.replayResult.prediction,
+      reasoningClaim: state.replayLearning && state.replayLearning.reasoningClaim,
+      reasoningAttempts: state.replayLearning && state.replayLearning.reasoningAttempts,
+    };
+  })).toEqual({
+    complete: true,
+    questComplete: true,
+    initialPrediction: 'longer',
+    finalPrediction: 'shorter',
+    reasoningClaim: 'combined-not-isolated',
+    reasoningAttempts: 3,
+  });
+
+  await page.getByRole('button', { name: 'Review completion report' }).click();
+  const report = page.locator('#tc-completion-report');
+  await expect(report).toContainText('Initial prediction: longer than Aurora - not supported.');
+  await expect(report).toContainText('Final prediction: shorter than Aurora - supported.');
+  await expect(report).toContainText('Comparison claim: Several inputs changed together, so this replay cannot isolate one cause. - supported.');
+
+  await page.getByRole('button', { name: 'Hide completion report' }).click();
+  await replayCase.selectOption('horizon-8');
+  await expect.poll(async () => page.evaluate(() => {
+    const state = (window as any).__toolData._trajectoryComputing;
+    return {
+      replayPrediction: state.replayPrediction || '',
+      replayResult: state.replayResult == null ? null : state.replayResult,
+      replayLearning: state.replayLearning == null ? null : state.replayLearning,
+    };
+  })).toEqual({ replayPrediction: '', replayResult: null, replayLearning: null });
+});
+
+test('makes a one-variable replay clear, keyboard ordered, and contained on a phone', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 900 });
+  await mount(page, { ...COMPLETED, extensionView: 'replay', replayVariantId: 'meridian-5' });
+
+  const replayCase = page.getByLabel('Replay case');
+  await replayCase.selectOption('aurora-control-3b');
+
+  const inputCard = page.getByRole('region', { name: 'Aurora Control 3B input card' });
+  await expect(inputCard).toContainText('1 of 4 modeled launch inputs differ from Aurora');
+  await expect(inputCard.locator('.is-changed')).toHaveCount(1);
+  await expect(inputCard.locator('.is-changed')).toContainText('Launch speed');
+  await expect(inputCard.locator('.is-changed')).toContainText('Changed from baseline');
+  await expect(inputCard.locator('.is-fixed')).toHaveCount(3);
+  await expect(inputCard.locator('.is-fixed')).toContainText(['Launch angle', 'Release height', 'Gravity']);
+
+  await page.getByRole('radio', { name: 'Shorter than Aurora' }).check();
+  await page.getByRole('button', { name: 'Run replay card' }).click();
+
+  const predictionSummary = page.locator('#tc-replay-prediction-summary');
+  await expect(predictionSummary).toBeFocused();
+  await expect(predictionSummary).toHaveAttribute('aria-describedby', 'tc-replay-evidence-summary');
+  await expect(predictionSummary).toContainText('Prediction supported');
+
+  const evidence = page.getByRole('region', { name: 'Comparison evidence' });
+  await expect(evidence.getByRole('listitem')).toHaveCount(3);
+  await expect(evidence.locator('[aria-current="true"]')).toHaveCount(1);
+  await expect(evidence.locator('[aria-current="true"]')).toContainText('One controlled change');
+  await expect(evidence.locator('[aria-current="true"]')).toContainText('1 input changed');
+  await expect(evidence.locator('[role="status"]')).toHaveCount(0);
+  await expect(page.locator('#tc-replay-evidence-summary')).toContainText('One controlled change (launch speed)');
+  await expect(page.locator('#tc-replay-evidence-summary')).toContainText('the other inputs stayed fixed');
+
+  const tableRegion = page.getByRole('region', { name: 'Scrollable Aurora and Aurora Control 3B comparison table' });
+  await page.keyboard.press('Tab');
+  await expect(tableRegion).toBeFocused();
+  await expect(tableRegion).toHaveAttribute('aria-describedby', 'tc-replay-evidence-summary');
+  const focusAndLayout = await tableRegion.evaluate((node) => {
+    const element = node as HTMLElement;
+    const style = getComputedStyle(element);
+    const rect = element.getBoundingClientRect();
+    return {
+      outlineStyle: style.outlineStyle,
+      outlineWidth: parseFloat(style.outlineWidth) || 0,
+      left: rect.left,
+      right: rect.right,
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+      documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    };
+  });
+  expect(focusAndLayout.outlineStyle).not.toBe('none');
+  expect(focusAndLayout.outlineWidth).toBeGreaterThanOrEqual(2);
+  expect(focusAndLayout.left).toBeGreaterThanOrEqual(-1);
+  expect(focusAndLayout.right).toBeLessThanOrEqual(321);
+  expect(focusAndLayout.scrollWidth).toBeGreaterThan(focusAndLayout.clientWidth);
+  expect(focusAndLayout.documentOverflow).toBeLessThanOrEqual(1);
+
+  await page.keyboard.press('Tab');
+  const reproductionClaim = page.getByRole('radio', { name: 'The same inputs reproduced the baseline result.' });
+  const controlledClaim = page.getByRole('radio', { name: 'One changed input was isolated, so its effect can be compared.' });
+  await expect(reproductionClaim).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(controlledClaim).toBeFocused();
+  await page.getByRole('button', { name: 'Check comparison claim' }).click();
+  await expect(page.locator('#tc-replay-reasoning-summary')).toContainText('Comparison reasoning supported');
+  await expect.poll(async () => page.evaluate(() => {
+    const core = (window as any).TrajectoryComputingCore;
+    return core.getReplayLearningStatus((window as any).__toolData._trajectoryComputing).questComplete;
+  })).toBe(true);
+
+  await page.getByRole('button', { name: 'Choose another challenge' }).click();
+  await expect(page.getByRole('button', { name: /Replay mission/ })).toContainText('Completed');
+});
+
 test('records an optional privacy-guided reflection in the completion report', async ({ page }) => {
   await mount(page, { ...COMPLETED, extensionView: 'menu' });
   await page.getByLabel('Error that stood out').selectOption('variable-name');
@@ -472,6 +759,8 @@ test('prints the completion report while hiding interactive chrome', async ({ pa
     return {
       surfaces: display('.tc-completion-surfaces'),
       report: display('.tc-report'),
+      provenance: display('.tc-report-provenance'),
+      provenanceText: document.querySelector('.tc-report-provenance')?.textContent || '',
       top: display('.tc-top'),
       tabs: display('.tc-tabs-region'),
       side: display('.tc-side'),
@@ -479,6 +768,8 @@ test('prints the completion report while hiding interactive chrome', async ({ pa
   });
   expect(print.surfaces).not.toBe('none');
   expect(print.report).not.toBe('none');
+  expect(print.provenance).not.toBe('none');
+  expect(print.provenanceText).toContain('has no matching saved snapshot');
   expect(print.top).toBe('none');
   expect(print.tabs).toBe('none');
   expect(print.side).toBe('none');

@@ -194,12 +194,11 @@ describe('a negative Salmonella test does not clear a reptile', () => {
     expect(html).toMatch(/does NOT clear the animal/i);
   });
 
-  it('leaves the universal-shedding statement standing', () => {
-    // A quiz item is scored against it; weakening it here would make the
-    // keyed answer wrong.
+  it('uses CDC-style carriage language without claiming constant universal shedding', () => {
     const html = text(renderTool(ID, { [ID]: { view: 'reptiles' } }));
-    expect(html).toMatch(/all reptiles \+ amphibians shed Salmonella/i);
-    expect(SRC).toMatch(/Reptiles universally shed Salmonella/);
+    expect(html).toMatch(/reptiles \+ amphibians commonly carry Salmonella and can shed it/i);
+    expect(html).toMatch(/Treat every reptile as potentially positive/i);
+    expect(SRC).not.toMatch(/universally shed Salmonella|shedding is universal/i);
   });
 
   it('keeps the under-5 household guidance', () => {

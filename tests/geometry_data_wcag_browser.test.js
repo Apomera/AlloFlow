@@ -4,12 +4,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
 import {
   loadTool,
+  prepareStemBrowserRender,
   renderTool,
   resetStemLab,
 } from './helpers/stem_widgets_smoke_harness.js';
+import { auditTextSpacingReflow } from './helpers/stem_wcag_browser_checks.js';
 
 const root = process.cwd();
-const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/axe-core/axe.min.js'), 'utf8');
+const axeSource = fs.readFileSync(path.join(root, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const cssDirectory = path.join(root, 'app/static/css');
 const cssFile = fs.readdirSync(cssDirectory).find((file) => /^main\.[a-z0-9]+\.css$/i.test(file));
 if (!cssFile) throw new Error('Compiled application stylesheet was not found.');
@@ -56,6 +58,7 @@ const CASES = [
   { name: 'coordinate latitude-longitude map', file: 'stem_lab/stem_tool_coordgrid.js', id: 'coordinate', state: { _coordGrid: { cgTab: 'maps', mapScenario: 'world' } } },
   { name: 'coordinate quadrant hunt', file: 'stem_lab/stem_tool_coordgrid.js', id: 'coordinate', state: { _coordGrid: { cgTab: 'quadHunt' } } },
   { name: 'angle explorer', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'explore' } } },
+  { name: 'angle explorer second ray', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'explore', showSecondRay: true } } },
   { name: 'angle challenges', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'challenges' } } },
   { name: 'angle reference', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'reference' } } },
   { name: 'angle tools', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'tools' } } },
@@ -65,8 +68,9 @@ const CASES = [
   { name: 'geometry prover', file: 'stem_lab/stem_tool_geo.js', id: 'geometryProver', state: { geometryProver: {} } },
   { name: 'geometry prover discovery', file: 'stem_lab/stem_tool_geo.js', id: 'geometryProver', state: { geometryProver: { tab: 'discover' } } },
   { name: 'geometry prover challenge', file: 'stem_lab/stem_tool_geo.js', id: 'geometryProver', state: { geometryProver: { tab: 'challenge' } } },
-  { name: 'geometry world lesson picker', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', state: { geometryWorld: {} } },
-  { name: 'geometry world lesson intro', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', state: { geometryWorld: { showLessonIntro: true, activeLesson: 'volumeExplorer' } } },
+  { name: 'geometry world ready workspace', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', boundedWorkspace: true, state: { _threeLoaded: true, geometryWorld: { _introShownOnce: true } } },
+  { name: 'geometry world lesson intro', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', boundedWorkspace: true, state: { _threeLoaded: true, geometryWorld: { showLessonIntro: true, activeLesson: 'volumeExplorer' } } },
+  { name: 'logic lab probability discovery', file: 'stem_lab/stem_tool_logiclab.js', id: 'logicLab', state: { logicLab: {} } },
   { name: 'probability coin experiment', file: 'stem_lab/stem_tool_probability.js', id: 'probability', state: { probability: { mode: 'coin' } } },
   { name: 'probability die experiment', file: 'stem_lab/stem_tool_probability.js', id: 'probability', state: { probability: { mode: 'dice', diceSides: 20 } } },
   { name: 'probability spinner experiment', file: 'stem_lab/stem_tool_probability.js', id: 'probability', state: { probability: { mode: 'spinner' } } },
@@ -102,7 +106,7 @@ const CASES = [
   { name: 'angles dark theme', file: 'stem_lab/stem_tool_angles.js', id: 'protractor', state: { protractor: { activeTab: 'reference' } }, overrides: { isDark: true } },
   { name: 'geometry sandbox high contrast', file: 'stem_lab/stem_tool_geosandbox.js', id: 'geoSandbox', state: { _threeLoaded: true, geoSandbox: { mode: 'single', shape: 'sphere' } }, overrides: { isContrast: true } },
   { name: 'geometry prover dark theme', file: 'stem_lab/stem_tool_geo.js', id: 'geometryProver', state: { geometryProver: { tab: 'challenge' } }, overrides: { isDark: true } },
-  { name: 'geometry world high contrast', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', state: { geometryWorld: { showLessonIntro: true, activeLesson: 'areaSurface' } }, overrides: { isContrast: true } },
+  { name: 'geometry world high contrast', file: 'stem_lab/stem_tool_geometryworld.js', id: 'geometryWorld', boundedWorkspace: true, state: { _threeLoaded: true, geometryWorld: { showLessonIntro: true, activeLesson: 'areaSurface' } }, overrides: { isContrast: true } },
   { name: 'probability dark theme', file: 'stem_lab/stem_tool_probability.js', id: 'probability', state: { probability: { mode: 'marbleBag' } }, overrides: { isDark: true } },
   { name: 'statistics high contrast', file: 'stem_lab/stem_tool_statslab.js', id: 'statsLab', state: statsState('power'), overrides: { isContrast: true } },
   { name: 'data studio dark theme', file: 'stem_lab/stem_tool_datastudio.js', id: 'dataStudio', state: { _dataStudio: { chartType: 'scatter' } }, overrides: { isDark: true } },
@@ -113,9 +117,7 @@ function renderCase(testCase) {
   document.head.querySelectorAll('style').forEach((style) => style.remove());
   for (const dependency of testCase.dependencies || []) loadTool(dependency.file, dependency.id);
   loadTool(testCase.file, testCase.id);
-  const html = renderTool(testCase.id, testCase.state, testCase.overrides);
-  const toolCss = [...document.head.querySelectorAll('style')].map((style) => style.textContent || '').join('\n');
-  return { html, toolCss };
+  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides));
 }
 
 function compactViolations(violations) {
@@ -149,7 +151,7 @@ describe('Geometry and data tools WCAG regression in a real browser', () => {
   }, 30000);
 
   for (const testCase of CASES) {
-    it(testCase.name + ' passes WCAG A/AA and 320px reflow checks', async () => {
+    it(testCase.name + ' passes WCAG A/AA, 320px reflow, and text-spacing checks', async () => {
       const rendered = renderCase(testCase);
       expect(rendered.html.length, testCase.name + ' rendered an unexpectedly small surface').toBeGreaterThan(500);
 
@@ -158,17 +160,19 @@ describe('Geometry and data tools WCAG regression in a real browser', () => {
       await page.setContent(
         '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
           appCss +
-          '</style></head><body><main id="tool-root">' + rendered.html + '</main></body></html>',
+        '</style></head><body><main id="tool-root"' +
+          (testCase.boundedWorkspace ? ' style="height:100vh;min-height:100vh"' : '') +
+          '>' + rendered.html + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
-      if (rendered.toolCss) await page.addStyleTag({ content: rendered.toolCss });
+      for (const css of rendered.cssSheets) await page.addStyleTag({ content: css });
       await page.addScriptTag({ content: axeSource });
       await page.evaluate(() => {
         for (const animation of document.getAnimations()) animation.cancel();
       });
 
       const audit = await page.evaluate(async () => axe.run('#tool-root', {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
       }));
       const reflow = await page.evaluate(() => {
         const clientWidth = document.documentElement.clientWidth;
@@ -198,8 +202,10 @@ describe('Geometry and data tools WCAG regression in a real browser', () => {
         return { scrollWidth, clientWidth, offenders };
       });
 
+      const textSpacingReflow = await auditTextSpacingReflow(page);
       expect.soft(compactViolations(audit.violations)).toEqual([]);
       expect.soft(reflow.scrollWidth, JSON.stringify(reflow.offenders, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
+      expect.soft(textSpacingReflow.scrollWidth, JSON.stringify(textSpacingReflow.offenders, null, 2)).toBeLessThanOrEqual(textSpacingReflow.clientWidth);
       await page.close();
     }, 20000);
   }

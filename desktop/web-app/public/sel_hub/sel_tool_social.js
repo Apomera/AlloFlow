@@ -1044,10 +1044,11 @@ window.SelHub = window.SelHub || {
         { id: 'log',       label: '\uD83D\uDCCA Progress' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Social Skills tabs',
+      var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(tab) {
+        h('div', { role: 'tablist', 'aria-label': 'Social Skills tabs', style: { display: 'flex', gap: 2 } },
+          tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', {
             key: tab.id,
@@ -1070,7 +1071,8 @@ window.SelHub = window.SelHub || {
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
-        }),
+          })
+        ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           style: { marginLeft: 'auto', padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: _socFg('#94a3b8'), fontSize: 14, flexShrink: 0 }

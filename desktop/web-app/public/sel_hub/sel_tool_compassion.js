@@ -251,10 +251,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + PURPLE + ', #a78bfa)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Self-Compassion sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Self-Compassion sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t) {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
@@ -262,7 +262,8 @@ window.SelHub = window.SelHub || {
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#7c3aed', marginLeft: '2px' } }) : null
             );
-          }),
+            })
+          ),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: PD, fontWeight: 700, whiteSpace: 'nowrap', background: _coC('#ede9fe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, className: 'sel-btn', 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )
@@ -320,7 +321,7 @@ window.SelHub = window.SelHub || {
               : 'Kristin Neff\u2019s framework: the science of treating yourself like someone you love.')
           ),
           // Pillar selector
-          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px' } },
+          h('div', { role: 'tablist', 'aria-label': 'Self-compassion pillars', style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '16px' } },
             pillars.map(function(p, i) {
               var active = i === pillarIdx % pillars.length;
               return h('button', {

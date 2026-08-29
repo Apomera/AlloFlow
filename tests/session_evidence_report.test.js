@@ -14,7 +14,7 @@ const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 if (helperStart < 0 || helperEnd < 0) throw new Error('Roster session helper markers are missing');
 const shellHelpers = new Function(
   app.slice(helperStart, helperEnd)
-    + '\nreturn { normalizeRosterSessionCodename, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, normalizeQuizReceiptQuestionIndexes, classifyLiveRosterPresence, buildPublishedResourceFingerprintMap, enqueueLiveSessionResourcePublish, resolveRosterCodenamesToLiveUids, resolveSavedFollowUpLivePlanTarget };'
+    + '\nreturn { normalizeRosterSessionCodename, buildUniqueRosterSessionCodenameIndex, buildStudentResourcePatchBatches, resolveLiveStudentResourceTarget, summarizeLiveSessionResourceDelivery, mergeLiveQuizEvidenceResponse, buildLiveQuizResponseCounts, normalizeQuizReceiptQuestionIndexes, classifyLiveRosterPresence, buildPublishedResourceFingerprintMap, enqueueLiveSessionResourcePublish, resolveRosterCodenamesToLiveUids, resolveSavedFollowUpLivePlanTarget };'
 )();
 const helpers = { ...shellHelpers, ...loadSessionSummaryApi() };
 
@@ -264,6 +264,41 @@ describe('session evidence report contract', () => {
     expect(resolveCohortUids(['Brave Otter'], 1_000_000)).toEqual([]);
     expect(resolveCohortUids(['Calm Fox'], 1_000_000)).toEqual(['uniquePrivateUid']);
     expect(resolveCohortUids(['Brave Otter', 'Calm Fox'], 1_000_000)).toEqual(['uniquePrivateUid']);
+  });
+
+  it('matches canonically equivalent Unicode codenames for targeted live support', () => {
+    const now = 1_000_000;
+    expect(helpers.normalizeRosterSessionCodename(' A\u0301GIL-zorro ')).toBe(helpers.normalizeRosterSessionCodename('Ágil Zorro'));
+    expect(helpers.normalizeRosterSessionCodename('勇敢 熊')).toBe('勇敢熊');
+    expect(helpers.normalizeRosterSessionCodename('🐼')).toBe('');
+
+    const resolveCohortUids = makeCohortResolver({
+      roster: {
+        accentUid: { name: ' A\u0301GIL-ZORRO ', lastSeen: now },
+        cjkUid: { name: '勇敢-熊', lastSeen: now },
+      },
+    }, {
+      students: {
+        'Ágil Zorro': 'blue',
+        '勇敢 熊': 'green',
+      },
+    });
+    const resolved = resolveCohortUids(['Ágil Zorro', '勇敢 熊'], now);
+    expect(new Set(resolved)).toEqual(new Set(['accentUid', 'cjkUid']));
+    expect(resolved).toHaveLength(2);
+  });
+
+  it('fails closed when legacy roster codenames normalize to one key', () => {
+    const index = helpers.buildUniqueRosterSessionCodenameIndex({
+      'Ágil Zorro': 'blue',
+      'A\u0301gil-Zorro': 'green',
+      '勇敢 熊': 'gold',
+    });
+    const accentKey = helpers.normalizeRosterSessionCodename('Ágil Zorro');
+    expect(Object.getPrototypeOf(index)).toBeNull();
+    expect(Object.prototype.hasOwnProperty.call(index, accentKey)).toBe(false);
+    expect(index[helpers.normalizeRosterSessionCodename('勇敢 熊')]).toEqual({ name: '勇敢 熊', groupId: 'gold' });
+    expect(index.constructor).toBeUndefined();
   });
 
   it('shares one heartbeat classifier across the Live Dock and targeted delivery', () => {

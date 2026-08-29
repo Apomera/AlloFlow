@@ -28,13 +28,18 @@ const bootstrapFor = (email) => {
   return boot;
 };
 
-const harnessPage = (boot) => `<!doctype html>
+const harnessPage = (boot, options = {}) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>portal harness</title>
 <style>html,body,#educator-evaluation-root{min-height:100%;margin:0}</style></head>
 <body><div id="educator-evaluation-root"></div>
 <script>
   /* BOOTSTRAP_STUB_START */
   const BOOT = ${JSON.stringify(boot)};
+  const FAIL_SAVE = ${Boolean(options.failSave)};
+  const SLOW_RELEASE = ${Boolean(options.slowRelease)};
+  const FAIL_RELEASE = ${Boolean(options.failRelease)};
+  const HOLD_DIRECTORY_REVIEW = ${Boolean(options.holdDirectoryReview)};
+  window.__portalCalls = [];
   const chain = (resolve) => {
     const api = {
       withSuccessHandler(fn) { api._ok = fn; return api; },
@@ -47,7 +52,31 @@ const harnessPage = (boot) => `<!doctype html>
       'reviewPortalWorkspaceConfiguration','performPortalWorkspaceConfiguration',
       'getPortalAnnualArchives','reviewPortalArchiveRestoreRehearsal','performPortalArchiveRestoreRehearsal',
       'reviewPortalAnnualRollover','performPortalAnnualRollover','reconcilePortalAnnualRollover','getPortalCohortStats']) {
-      api[name] = function () { setTimeout(() => api._ok && api._ok(resolve(name)), 5); };
+      api[name] = function () {
+        const args = Array.from(arguments);
+        const onSuccess = api._ok;
+        const onFailure = api._fail;
+        window.__portalCalls.push(name);
+        if (name === 'reviewPortalDirectoryChange' && HOLD_DIRECTORY_REVIEW) {
+          window.__releaseHeldDirectoryReview = () => {
+            delete window.__releaseHeldDirectoryReview;
+            if (onSuccess) onSuccess(resolve(name, args));
+          };
+          return;
+        }
+        const delay = name === 'sharePortalReleasedEvaluation' && SLOW_RELEASE ? 400 : 5;
+        setTimeout(() => {
+          if (FAIL_SAVE && name === 'savePortalWorkspace') {
+            if (onFailure) onFailure({ message: 'Forced save failure for unavailable-panel regression.' });
+            return;
+          }
+          if (FAIL_RELEASE && name === 'sharePortalReleasedEvaluation') {
+            if (onFailure) onFailure({ message: 'Forced release failure for busy-focus regression.' });
+            return;
+          }
+          if (onSuccess) onSuccess(resolve(name, args));
+        }, delay);
+      };
     }
     return api;
   };
@@ -55,6 +84,12 @@ const harnessPage = (boot) => `<!doctype html>
     if (name === 'getPortalBootstrap') return BOOT;
     if (name === 'getPortalCohortStats') return { ok: true, suppressed: true, minimum: 10,
       metric: 'overall', source: 'finalized_formal_observations', selectedMean: 2.5 };
+    if (name === 'reviewPortalReleasedEvaluationShare') return { ok: true, review: {
+      token: 'release-review-browser', action: 'create', educatorName: 'Teacher One', recipient: '${TEACHER_ONE}',
+      finalizedAt: '2026-06-20T16:00:00.000Z', actorWillReceiveAccess: false,
+    } };
+    if (name === 'sharePortalReleasedEvaluation') return { ok: true, status: 'completed', recoveryPending: false,
+      idempotent: false, releasedDoc: { id: 'released-browser', url: 'https://docs.google.com/document/d/released-browser/edit' } };
     if (name === 'getPortalAdminOperations') return { ok: true, directory: {
       revision: BOOT.revision, academicYear: BOOT.workspace.config.academicYear,
       educators: BOOT.workspace.teachers.map((teacher) => ({ id: teacher.id, code: teacher.code, name: teacher.name, building: teacher.building, assignment: teacher.assignment, active: teacher.active !== false, dueDate: teacher.dueDate || '', finalized: !!teacher.finalizedAt })),
@@ -64,6 +99,15 @@ const harnessPage = (boot) => `<!doctype html>
         { email: '${TEACHER_ONE}', displayName: 'Teacher One', role: 'teacher', teacherId: 't1', active: true },
       ],
       assignments: [{ teacherId: 't1', evaluatorEmail: '${EVALUATOR}', active: true }],
+    } };
+    if (name === 'reviewPortalDirectoryChange') return { ok: true, review: {
+      token: 'directory-review-browser', expiresAt: '2026-08-13T17:25:30.000Z', kind: 'member', action: 'create',
+      candidate: { email: 'focus.teacher@example.edu', displayName: 'Focus Teacher', role: 'teacher', teacherId: 't1', active: true },
+      current: null, impacts: { removesPortalAccess: false, changesRole: false, activeEvaluatorAssignments: 0, removesEvaluatorAccess: false },
+    } };
+    if (name === 'reviewPortalCycleSchedule') return { ok: true, review: {
+      token: 'schedule-review-browser', expiresAt: '2026-08-13T17:25:30.000Z', affectedEducators: 2,
+      skippedFinalized: 1, dueDate: '2027-05-15', sample: [{ name: 'Teacher One', previousDueDate: '' }],
     } };
     if (name === 'reviewPortalWorkspaceConfiguration') return { ok: true, review: {
       token: 'config-review-browser', expiresAt: '2026-08-13T17:25:30.000Z',
@@ -77,12 +121,24 @@ const harnessPage = (boot) => `<!doctype html>
       purpose: 'Annual records handoff', teacherId: '', educatorName: '', activeEducators: BOOT.workspace.teachers.length,
       recordCounts: { walkthroughs: 1, observations: 1, spms: 1, comments: 1, total: 4 },
       destination: "Private Authorized exports folder in the deployment owner's Drive",
+      authorizedExportsAcl: { status: 'verified', inspectable: true, manualReviewRequired: false,
+        folderDrift: false, fileCount: 0, driftedFileCount: 0, explicitAccessCount: 0 },
     } };
     if (name === 'performPortalDistrictExport') return { ok: true, status: 'completed', export: {
       id: 'export-browser', url: 'https://drive.google.com/file/d/export-browser/view', scope: 'status_csv',
       createdAt: '2026-08-13T17:15:30.000Z', private: true, sha256: 'browser-export-sha256',
     } };
-    if (name === 'getPortalAnnualArchives') return { ok: true, archives: [] };
+    if (name === 'getPortalAnnualArchives') return { ok: true, archives: [{
+      id: 'annual-archive-browser', name: 'Annual archive 2025-26', url: 'https://drive.google.com/file/d/annual-archive-browser/view',
+      archivedAt: '2026-06-30T17:00:00.000Z', fromAcademicYear: '2025-26', plannedNextAcademicYear: '2026-27',
+      sourceRevision: 12, verified: true,
+    }] };
+    if (name === 'reviewPortalArchiveRestoreRehearsal') return { ok: true, review: {
+      token: 'rehearsal-review-browser', expiresAt: '2026-08-13T17:25:30.000Z', archiveId: 'annual-archive-browser',
+      fromAcademicYear: '2025-26', archivedRevision: 12, activeAcademicYear: '2026-27', activeRevision: BOOT.revision,
+      archivedCounts: { activeEducators: 2, records: { total: 4 } },
+      currentCounts: { activeEducators: BOOT.workspace.teachers.length, records: { total: 4 } },
+    } };
     if (name === 'reviewPortalAnnualRollover') return { ok: true, review: {
       token: 'rollover-review-browser', expiresAt: '2026-08-13T17:25:30.000Z',
       currentAcademicYear: '2026-27', nextAcademicYear: '2027-28',
@@ -119,9 +175,11 @@ describe('district portal bundle renders', () => {
     if (dir) fs.rmSync(dir, { recursive: true, force: true });
   }, 30000);
 
-  const render = async (email, name) => {
+  const render = async (email, name, options = {}) => {
     const file = path.join(dir, name + '.html');
-    fs.writeFileSync(file, harnessPage(bootstrapFor(email)), 'utf8');
+    const boot = bootstrapFor(email);
+    if (options.finalizeFirstTeacher && boot.workspace.teachers[0]) boot.workspace.teachers[0].finalizedAt = '2026-06-20T16:00:00.000Z';
+    fs.writeFileSync(file, harnessPage(boot, options), 'utf8');
     const page = await browser.newPage({ viewport: { width: 1180, height: 800 } });
     const errors = [];
     page.on('pageerror', (error) => errors.push(String(error)));
@@ -240,6 +298,205 @@ describe('district portal bundle renders', () => {
     await page.getByText('Verified private export created and audited.').waitFor();
     expect(await page.getByRole('link', { name: 'Open export in Drive' }).getAttribute('href')).toMatch(/drive\.google\.com/);
     expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
+  it('moves focus once to each newly prepared district-operations review', async () => {
+    const { page, errors } = await render(ADMIN, 'admin-operation-review-focus');
+    await page.getByRole('tab', { name: 'Setup' }).click();
+    await page.getByText('District operations center').waitFor();
+
+    const directory = page.locator('details').filter({ hasText: 'Accounts and evaluator assignments' });
+    await directory.getByLabel('Managed district email').fill('focus.teacher@example.edu');
+    await directory.getByLabel('Display name').fill('Focus Teacher');
+    await directory.getByLabel('Linked educator record').selectOption('t1');
+    await directory.getByRole('button', { name: 'Review member change' }).click();
+    const directoryHeading = directory.locator('.ae-review-heading');
+    await directoryHeading.waitFor();
+    expect(await directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    const directoryAck = directory.getByRole('checkbox').last();
+    await directoryAck.focus();
+    await page.waitForTimeout(50);
+    expect(await directoryAck.evaluate((element) => element === document.activeElement)).toBe(true);
+    await directory.getByRole('button', { name: 'Cancel' }).click();
+
+    const schedule = page.locator('details').filter({ hasText: 'Annual cycle due-date schedule' });
+    await schedule.locator('summary').click();
+    await schedule.getByLabel('Cycle due date').fill('2027-05-15');
+    await schedule.getByRole('button', { name: 'Review schedule impact' }).click();
+    const scheduleHeading = schedule.locator('.ae-review-heading');
+    await scheduleHeading.waitFor();
+    expect(await scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await schedule.getByRole('button', { name: 'Cancel' }).click();
+
+    const exports = page.locator('details').filter({ hasText: 'Audited private exports and official-record handoff' });
+    await exports.locator('summary').click();
+    await exports.getByLabel('Authorized purpose').fill('Annual records handoff');
+    await exports.getByRole('button', { name: 'Review private export' }).click();
+    const exportHeading = exports.locator('.ae-review-heading');
+    await exportHeading.waitFor();
+    expect(await exportHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await exports.getByRole('button', { name: 'Cancel' }).click();
+
+    const rehearsal = page.locator('details').filter({ hasText: 'Annual archive inventory and restore rehearsal' });
+    await rehearsal.locator('summary').click();
+    await rehearsal.getByRole('button', { name: 'Load and verify annual archives' }).click();
+    await rehearsal.getByRole('button', { name: 'Review rehearsal' }).click();
+    const rehearsalHeading = rehearsal.locator('.ae-review-heading');
+    await rehearsalHeading.waitFor();
+    expect(await rehearsalHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
+  it('serializes district-operation review preparation so late responses cannot steal focus', async () => {
+    const { page, errors } = await render(ADMIN, 'admin-operation-review-serialization', {
+      holdDirectoryReview: true,
+    });
+    await page.getByRole('tab', { name: 'Setup' }).click();
+    await page.getByText('District operations center').waitFor();
+
+    const directory = page.locator('details').filter({ hasText: 'Accounts and evaluator assignments' });
+    const schedule = page.locator('details').filter({ hasText: 'Annual cycle due-date schedule' });
+    const exports = page.locator('details').filter({ hasText: 'Audited private exports and official-record handoff' });
+    const rehearsal = page.locator('details').filter({ hasText: 'Annual archive inventory and restore rehearsal' });
+    await schedule.locator('summary').click();
+    await exports.locator('summary').click();
+    await rehearsal.locator('summary').click();
+    await schedule.getByLabel('Cycle due date').fill('2027-05-15');
+    await exports.getByLabel('Authorized purpose').fill('Annual records handoff');
+    await rehearsal.getByRole('button', { name: 'Load and verify annual archives' }).click();
+    await rehearsal.getByRole('button', { name: 'Review rehearsal' }).waitFor();
+    await directory.getByLabel('Managed district email').fill('focus.teacher@example.edu');
+    await directory.getByLabel('Display name').fill('Focus Teacher');
+    await directory.getByLabel('Linked educator record').selectOption('t1');
+
+    const directoryButton = directory.getByRole('button', { name: 'Review member change' });
+    const scheduleButton = schedule.getByRole('button', { name: 'Review schedule impact' });
+    await page.evaluate(() => {
+      const buttons = Array.from(document.querySelectorAll('button'));
+      buttons.find((button) => button.textContent.trim() === 'Review member change').click();
+      buttons.find((button) => button.textContent.trim() === 'Review schedule impact').click();
+    });
+    await page.waitForFunction(() => typeof window.__releaseHeldDirectoryReview === 'function');
+    const operationsBody = page.getByTestId('ae-operations-body');
+    expect(await operationsBody.evaluate((element) => element.disabled)).toBe(true);
+    expect(await operationsBody.getAttribute('aria-disabled')).toBe('true');
+
+    const competingButtons = [
+      scheduleButton,
+      exports.getByRole('button', { name: 'Review private export' }),
+      rehearsal.getByRole('button', { name: 'Review rehearsal' }),
+    ];
+    for (const button of competingButtons) {
+      expect(await button.evaluate((element) => element.matches(':disabled'))).toBe(true);
+      expect(await button.evaluate((element) => {
+        element.focus();
+        return element === document.activeElement;
+      })).toBe(false);
+    }
+    expect(await page.evaluate(() => window.__portalCalls.filter((name) => /^reviewPortal/.test(name)))).toEqual([
+      'reviewPortalDirectoryChange',
+    ]);
+    await directory.locator('summary').click();
+    expect(await directory.evaluate((element) => element.open)).toBe(false);
+
+    await page.evaluate(() => window.__releaseHeldDirectoryReview());
+    const directoryHeading = directory.locator('.ae-review-heading');
+    await directoryHeading.waitFor();
+    expect(await directory.evaluate((element) => element.open)).toBe(true);
+    expect(await directoryHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    await page.waitForFunction(() => !document.querySelector('[data-testid="ae-operations-body"]').disabled);
+
+    await scheduleButton.focus();
+    expect(await scheduleButton.evaluate((element) => element === document.activeElement)).toBe(true);
+    await scheduleButton.click();
+    const scheduleHeading = schedule.locator('.ae-review-heading');
+    await scheduleHeading.waitFor();
+    expect(await scheduleHeading.evaluate((element) => element === document.activeElement)).toBe(true);
+    expect(await page.evaluate(() => window.__portalCalls.filter((name) => /^reviewPortal/.test(name)))).toEqual([
+      'reviewPortalDirectoryChange',
+      'reviewPortalCycleSchedule',
+    ]);
+
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
+  it('removes an unavailable remote panel from keyboard and click interaction while keeping recovery reachable', async () => {
+    const { page, errors } = await render(ADMIN, 'admin-unavailable-panel', { failSave: true });
+    await page.getByRole('tab', { name: 'Staff' }).click();
+    await page.getByRole('button', { name: '+ Add educator' }).click();
+    const addEducator = page.getByRole('region', { name: 'Add an educator' });
+    await addEducator.getByLabel('Name', { exact: true }).fill('Unavailable State Test');
+    await addEducator.getByLabel('Unique staff code').fill('UST-1');
+    await addEducator.getByRole('button', { name: 'Save educator' }).click();
+    await page.getByText(/Last change is not confirmed:/).waitFor();
+
+    const panel = page.locator('#ae-panel');
+    expect(await panel.getAttribute('aria-disabled')).toBe('true');
+    expect(await panel.getAttribute('inert')).not.toBeNull();
+    expect(await page.evaluate(() => {
+      const root = document.getElementById('ae-panel');
+      const target = root && root.querySelector('button,input,select,textarea,a[href]');
+      if (!root || !target) return true;
+      target.focus();
+      return root.contains(document.activeElement);
+    })).toBe(false);
+    expect(await page.evaluate(() => {
+      const root = document.getElementById('ae-panel');
+      const target = root && root.querySelector('button');
+      if (!target) return true;
+      let reachedTarget = false;
+      target.addEventListener('click', () => { reachedTarget = true; }, { once: true });
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      return reachedTarget;
+    })).toBe(false);
+    const reload = page.getByRole('button', { name: 'Reload district copy' });
+    expect(await reload.isEnabled()).toBe(true);
+    await reload.focus();
+    expect(await reload.evaluate((element) => element === document.activeElement)).toBe(true);
+
+    expect(errors).toEqual([]);
+    await page.close();
+  }, 90000);
+
+  it('keeps focus and progress legible while released-summary access is being confirmed', async () => {
+    const { page, errors } = await render(ADMIN, 'admin-release-busy-focus', {
+      finalizeFirstTeacher: true,
+      slowRelease: true,
+      failRelease: true,
+    });
+    await page.getByRole('button', { name: 'Review & share released summary' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Confirm released-summary access' });
+    await dialog.waitFor();
+    const checkbox = dialog.getByRole('checkbox');
+    await checkbox.check();
+    await dialog.getByRole('button', { name: 'Confirm and grant access' }).click();
+
+    const card = dialog.locator('.ae-release-review');
+    await dialog.getByRole('status').waitFor();
+    expect(await dialog.getByRole('status').innerText()).toContain('Keep this review open');
+    expect(await card.getAttribute('aria-busy')).toBe('true');
+    expect(await card.evaluate((element) => element === document.activeElement)).toBe(true);
+    await page.keyboard.press('Tab');
+    expect(await card.evaluate((element) => element === document.activeElement)).toBe(true);
+    await page.keyboard.press('Shift+Tab');
+    expect(await card.evaluate((element) => element === document.activeElement)).toBe(true);
+
+    await dialog.getByRole('alert').filter({ hasText: 'Forced release failure' }).waitFor();
+    expect(await card.getAttribute('aria-busy')).toBeNull();
+    expect(await checkbox.isEnabled()).toBe(true);
+    expect(await dialog.getByRole('button', { name: 'Cancel' }).isEnabled()).toBe(true);
+    await page.keyboard.press('Tab');
+    expect(await checkbox.evaluate((element) => element === document.activeElement)).toBe(true);
+    await card.focus();
+    await page.keyboard.press('Shift+Tab');
+    expect(await dialog.getByRole('button', { name: 'Confirm and grant access' }).evaluate((element) => element === document.activeElement)).toBe(true);
+
+    expect(errors).toEqual([]);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
     await page.close();
   }, 90000);
 

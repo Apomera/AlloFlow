@@ -576,7 +576,9 @@ describe('Beehive refinement regressions', () => {
   it('uses the autumn reserve in the Harvest gate, preview, copy, and applied result', async () => {
     await mountBee(colony({ day: 60, honey: 59.9 }));
     let harvest = host.querySelector('[data-management-action="Harvest"]');
-    expect(harvest.disabled).toBe(true);
+    expect(harvest.disabled).toBe(false);
+    expect(harvest.getAttribute('aria-disabled')).toBe('true');
+    expect(harvest.getAttribute('data-unavailable-reason')).toMatch(/more than 60 lb/i);
     expect(harvest.getAttribute('aria-label')).toMatch(/60\s*lb/i);
     expect(harvest.getAttribute('aria-label')).not.toMatch(/leave 15 lb|more than 15 lb/i);
     expect(harvest.textContent).toMatch(/leave 60 lb/i);

@@ -105,6 +105,15 @@ const MANIFEST: ToolEntry[] = [
     preScripts: ['stem_lab/stem_lab_module.js'],
     note: 'reaches 3D on a default mount; also mounts 3 2D canvases',
   },
+  // Nutrient Body Map lives behind the hub; the glass figure builds on the
+  // shared bay viewer once view=bodyMap is set (verified by mounting).
+  {
+    id: 'nutritionLab',
+    file: 'stem_lab/stem_tool_nutritionlab.js',
+    state: { nutritionLab: { view: 'bodyMap', bm_nutrient: 'iron' } },
+    preScripts: ['stem_lab/stem_lab_module.js'],
+    note: 'body map on the shared viewer; hub view has no canvas',
+  },
   // Migration opens on its 3D Flight tab, so the corridor builds with no state.
   // NOT a bay-viewer tool: it constructs its own WebGLRenderer and only uses
   // StemLab.ensureThree to fetch three, so no preScripts are needed. Its GL

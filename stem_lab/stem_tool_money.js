@@ -3455,7 +3455,7 @@ window.StemLab = window.StemLab || {
                 React.createElement("h3", { className: "text-base font-bold text-indigo-800 mb-2" }, __alloT('stem.money.budget_planner', "\uD83D\uDCCA Budget Planner")),
                 React.createElement("p", { className: "text-xs text-indigo-700 mb-4" }, __alloT('stem.money.allocate_your_monthly_income_across_sp', "Allocate your monthly income across spending categories")),
                 // Income input
-                React.createElement("div", { className: "flex items-center gap-3 mb-4" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
                   React.createElement("label", { className: "text-sm font-bold text-slate-600" }, __alloT('stem.money.monthly_income', "Monthly Income:")),
                   React.createElement("input", { type: "number", value: budgetIncome,
                     'aria-label': __alloT('stem.money.monthly_income_2', 'Monthly income'),
@@ -4028,7 +4028,7 @@ window.StemLab = window.StemLab || {
                     "\uD83D\uDCA1 Compound earns " + cur.symbol + Math.round(ciCompoundInterest - ciSimpleInterest).toLocaleString() + " MORE than simple interest!"
                   ),
                   // Growth table
-                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-rose-400", role: "region", tabIndex: 0, "aria-label": __alloT('stem.money.compound_interest_growth_table', "Compound interest growth table") },
                     React.createElement("table", { className: "w-full text-xs" },
                       React.createElement("caption", { className: "sr-only" }, __alloT('stem.money.money_data_table', "money data table")), React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },
@@ -4150,7 +4150,7 @@ window.StemLab = window.StemLab || {
                     )
                   ),
                   // Results
-                  React.createElement("div", { className: "grid grid-cols-3 gap-3 mb-4" },
+                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4" },
                     React.createElement("div", { className: "bg-white rounded-xl p-3 text-center border border-rose-100" },
                       React.createElement("p", { className: "text-[11px] font-bold text-slate-600 uppercase" }, __alloT('stem.money.monthly_payment', "Monthly Payment")),
                       React.createElement("p", { className: "text-xl font-black text-rose-600" }, cur.symbol + Math.round(loanMonthly).toLocaleString())
@@ -4168,13 +4168,23 @@ window.StemLab = window.StemLab || {
                   // Visual bar
                   React.createElement("div", { className: "mb-4" },
                     React.createElement("p", { className: "text-[11px] font-bold text-slate-600 mb-1" }, __alloT('stem.money.what_you_re_really_paying', "What you're really paying:")),
-                    React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex" },
-                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full flex items-center justify-center text-[11px] text-white font-bold" }, __alloT('stem.money.principal_2', "Principal")),
-                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full flex items-center justify-center text-[11px] text-white font-bold" }, __alloT('stem.money.interest', "Interest"))
+                    React.createElement("div", { className: "h-6 rounded-full overflow-hidden flex", "aria-hidden": true },
+                      React.createElement("div", { style: { width: Math.round(loanAmt / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)' }, className: "h-full" }),
+                      React.createElement("div", { style: { width: Math.round(loanTotalInterest / loanTotalPaid * 100) + '%', background: 'linear-gradient(90deg, #ef4444, #dc2626)' }, className: "h-full" })
+                    ),
+                    React.createElement("div", { className: "mt-2 flex flex-wrap justify-between gap-2 text-[11px] font-bold text-slate-600" },
+                      React.createElement("span", { className: "inline-flex items-center gap-1" },
+                        React.createElement("span", { className: "inline-block h-3 w-3 rounded-sm", style: { background: '#4f46e5' }, "aria-hidden": true }),
+                        __alloT('stem.money.principal_2', "Principal") + ': ' + Math.round(loanAmt / loanTotalPaid * 100) + '%'
+                      ),
+                      React.createElement("span", { className: "inline-flex items-center gap-1" },
+                        React.createElement("span", { className: "inline-block h-3 w-3 rounded-sm", style: { background: '#dc2626' }, "aria-hidden": true }),
+                        __alloT('stem.money.interest', "Interest") + ': ' + Math.round(loanTotalInterest / loanTotalPaid * 100) + '%'
+                      )
                     )
                   ),
                   // Amortization highlights
-                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-hidden" },
+                  React.createElement("div", { className: "bg-white rounded-xl border border-slate-400 overflow-x-auto focus:outline-none focus:ring-2 focus:ring-rose-400", role: "region", tabIndex: 0, "aria-label": __alloT('stem.money.loan_amortization_schedule', "Loan amortization schedule") },
                     React.createElement("table", { className: "w-full text-xs" },
                       React.createElement("caption", { className: "sr-only" }, __alloT('stem.money.money_data_table_3', "money data table")), React.createElement("thead", null,
                         React.createElement("tr", { className: "bg-slate-50" },

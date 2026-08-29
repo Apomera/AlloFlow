@@ -26,6 +26,14 @@ describe('Shared UI modal accessibility', () => {
     expect(source).not.toContain("aria-label={t('common.confirm')}");
     expect(source).toContain('<p id="role-mic-status" className="sr-only" role="status" aria-live="polite" aria-atomic="true">');
     expect(source).toContain("micStatus === 'requesting' ? <RefreshCw aria-hidden=\"true\"");
+    for (const fallback of [
+      "roleCopy('roles.title', 'Welcome to AlloFlow')",
+      "roleCopy('roles.subtitle', 'How will you be using the app today?')",
+      "roleCopy('roles.student', 'Student')",
+      "roleCopy('roles.teacher', 'Teacher')",
+      "roleCopy('roles.parent', 'Parent')",
+      "roleCopy('roles.independent', 'Independent Learner')",
+    ]) expect(source).toContain(fallback);
   });
 
   it('hands role-selection Voice Access to the host coordinator without a second recognizer', () => {
@@ -52,7 +60,9 @@ describe('Shared UI modal accessibility', () => {
   });
 
   it('announces codename changes and preserves visible button names', () => {
-    expect(source).toContain('tracking-tight truncate mr-2" role="status" aria-live="polite"');
+    expect(source).toContain('min-w-0 flex-grow break-words text-start text-xl');
+    expect(source).toContain('tracking-tight me-2" role="status" aria-live="polite"');
+    expect(source).not.toContain('tracking-tight truncate mr-2" role="status"');
     expect(source).not.toContain("aria-label={t('common.generate')}");
     expect(source).not.toContain("aria-label={t('common.upload')}");
     expect(source).toContain('mt-4 min-h-6 inline-flex items-center');

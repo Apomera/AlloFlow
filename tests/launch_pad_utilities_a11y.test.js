@@ -10,6 +10,7 @@ describe('Launch-pad language and setup utility accessibility', () => {
     expect(source).toContain('aria-pressed={selected}');
     expect(source).not.toContain('role="listbox"');
     expect(source).not.toContain('role="option"');
+    expect(source).not.toContain('aria-haspopup="true"');
   });
 
   it('moves focus into the language list and returns it on dismissal', () => {
@@ -35,7 +36,7 @@ describe('Launch-pad language and setup utility accessibility', () => {
     expect(source).toContain('Microphone permission is ready, but Voice Access is not currently listening.');
     expect(source).toContain('browser or operating system may require microphone activation once');
     expect(source).toContain('Voice Access is optional; touch, pointer, and keyboard remain available.');
-    expect(source.match(/role="status" aria-live="polite" aria-atomic="true"/g)).toHaveLength(2);
+    expect(source.match(/role="status" aria-live="polite" aria-atomic="true"/g)).toHaveLength(3);
     expect(source).toContain("linear-gradient(135deg, #4f46e5, #3730a3)");
   });
 
@@ -44,7 +45,19 @@ describe('Launch-pad language and setup utility accessibility', () => {
     expect(source).toContain('.lp-lang-trigger:focus-visible, .lp-lang-item:focus-visible, .lp-mic-actions button:focus-visible, .lp-download-button:focus-visible, .lp-ai-settings:focus-visible');
     expect(source).toContain('.lp-lang-item, .lp-lang-trigger, .lp-mic-actions button, .lp-download-button, .lp-download-button:hover, .lp-ai-settings { animation: none !important;');
     expect(source).toContain('className="lp-ai-settings"');
-    expect(source).toMatch(/<button\s+type="button"\s+onClick=\{\(e\) => \{ e\.stopPropagation\(\); setShowAIBackendModal\(true\); \}\}/);
+    expect(source).toContain('onClick={openAIBackendSettings}');
+    expect(source).toContain("aria-busy={aiSettingsLoadStatus === 'loading'}");
+    expect(source).toContain("aria-disabled={aiSettingsLoadStatus === 'loading'}");
+  });
+
+  it('promotes the settings module on demand and exposes progress or retry feedback', () => {
+    expect(source).toContain('function ensureAIBackendModalModule()');
+    expect(source).toContain('view_misc_modals_module.js');
+    expect(source).toContain('window.__alloLaunchPadAIBackendModalPromise');
+    expect(source).toContain("script.setAttribute('data-alloflow-launchpad-ai-settings', 'true')");
+    expect(source).toContain('id="launch-pad-ai-settings-status"');
+    expect(source).toContain('AI Backend Settings could not open. Activate Retry AI Backend Settings to try again.');
+    expect(source).toContain('setShowAIBackendModal(true);');
   });
 
   it('offers accessible Whisper and Kokoro downloads below the four primary cards', () => {
@@ -67,7 +80,10 @@ describe('Launch-pad language and setup utility accessibility', () => {
     expect(rootModule).toContain('launch-pad-language-list');
     expect(rootModule).toContain('aria-pressed');
     expect(rootModule).toContain('Starting Voice Access...');
+    expect(rootModule).toContain('view_misc_modals_module.js');
+    expect(rootModule).toContain('__alloLaunchPadAIBackendModalPromise');
     expect(rootModule).not.toContain('role: "listbox"');
     expect(rootModule).not.toContain('role: "option"');
+    expect(rootModule).not.toContain('"aria-haspopup": "true"');
   });
 });

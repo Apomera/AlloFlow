@@ -11,6 +11,46 @@ beforeEach(() => {
 });
 
 describe('Fisher Lab direction-aware buoyage', () => {
+  it('uses coastal outbound marks but follows the authored Great Lakes conventional direction', () => {
+    const { getCoreVoyageBuoyageCheck } = window.__FisherLabCore;
+
+    ['maine', 'chesapeake', 'pnw'].forEach((region) => {
+      expect(getCoreVoyageBuoyageCheck(region)).toMatchObject({
+        region,
+        direction: 'outbound',
+        markType: 'green-can',
+        color: 'green',
+        expectedSide: 'starboard'
+      });
+    });
+    expect(getCoreVoyageBuoyageCheck('greatlakes')).toMatchObject({
+      region: 'greatlakes',
+      direction: 'conventional',
+      markType: 'red-nun',
+      color: 'red',
+      expectedSide: 'starboard'
+    });
+  });
+
+  it('places the checked lateral mark in the starboard lane for every regional voyage', () => {
+    const { getCoreVoyageBuoyageLayout } = window.__FisherLabCore;
+
+    ['maine', 'chesapeake', 'pnw'].forEach((region) => {
+      expect(getCoreVoyageBuoyageLayout(region)).toEqual({
+        region,
+        direction: 'outbound',
+        starboardMarkType: 'green-can',
+        portMarkType: 'red-nun'
+      });
+    });
+    expect(getCoreVoyageBuoyageLayout('greatlakes')).toEqual({
+      region: 'greatlakes',
+      direction: 'conventional',
+      starboardMarkType: 'red-nun',
+      portMarkType: 'green-can'
+    });
+  });
+
   it('keeps green to starboard and red to port while outbound', () => {
     const { evaluateCoreBuoyPass } = window.__FisherLabCore;
 
@@ -44,11 +84,165 @@ describe('Fisher Lab direction-aware buoyage', () => {
     expect(evaluateCoreBuoyPass('returning', 'red', 'port').correct).toBe(false);
   });
 
+  it('uses red to starboard and green to port in the charted conventional direction', () => {
+    const { evaluateCoreBuoyPass } = window.__FisherLabCore;
+
+    expect(evaluateCoreBuoyPass('conventional', 'red', 'starboard')).toMatchObject({
+      correct: true,
+      expectedSide: 'starboard'
+    });
+    expect(evaluateCoreBuoyPass('conventional', 'green', 'port')).toMatchObject({
+      correct: true,
+      expectedSide: 'port'
+    });
+    expect(evaluateCoreBuoyPass('conventional', 'red', 'port').correct).toBe(false);
+    expect(evaluateCoreBuoyPass('conventional', 'green', 'starboard').correct).toBe(false);
+    expect(evaluateCoreBuoyPass('conventional', 'red', 'starboard').ruleLabel).toMatch(/conventional/i);
+  });
+
+  it('lets the regional buoyage check name the first voyage objective', () => {
+    const {
+      getCoreEncounter,
+      getCoreObjective,
+      getCoreSimProfile,
+      getCoreVoyageBuoyageCheck
+    } = window.__FisherLabCore;
+    const greatLakesCheck = getCoreVoyageBuoyageCheck('greatlakes');
+
+    expect(getCoreObjective(
+      {},
+      getCoreSimProfile('greatlakes'),
+      getCoreEncounter('greatlakes'),
+      greatLakesCheck
+    )).toMatchObject({
+      id: 'buoy',
+      label: greatLakesCheck.objectiveLabel
+    });
+    expect(greatLakesCheck.objectiveLabel).toMatch(/red nun/i);
+  });
+
+  it('wires the simulator check and objective target to the regional buoyage contract', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const start = source.indexOf('function initHarborSim');
+    const end = source.indexOf('function _renderFisherLab', start);
+    const scene = source.slice(start, end);
+
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(scene).toContain('var buoyageCheck = getCoreVoyageBuoyageCheck(activeRegion)');
+    expect(scene).toContain('bb.userData.type !== buoyageCheck.markType');
+    expect(scene).toContain('evaluateCoreBuoyPass(buoyageCheck.direction, buoyageCheck.color');
+    expect(scene).toContain('buoys[ob].userData.type === buoyageCheck.markType');
+    expect(scene).not.toContain("bb.userData.type !== 'green-can'");
+    expect(scene).not.toContain("buoys[ob].userData.type === 'green-can'");
+  });
+
+  it('builds every lateral pair from the regional port and starboard lane layout', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const start = source.indexOf('function initHarborSim');
+    const end = source.indexOf('function _renderFisherLab', start);
+    const scene = source.slice(start, end);
+
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(scene).toContain('var buoyageLayout = getCoreVoyageBuoyageLayout(activeRegion)');
+    [
+      "addBuoy(6, -10, buoyageLayout.portMarkType)",
+      "addBuoy(-6, -10, buoyageLayout.starboardMarkType)",
+      "addBuoy(7, -30, buoyageLayout.portMarkType)",
+      "addBuoy(-7, -30, buoyageLayout.starboardMarkType)",
+      "addBuoy(9, -55, buoyageLayout.portMarkType)",
+      "addBuoy(-9, -55, buoyageLayout.starboardMarkType)"
+    ].forEach((placement) => expect(scene).toContain(placement));
+    expect(scene).not.toContain("addBuoy(6, -10, 'red-nun')");
+    expect(scene).not.toContain("addBuoy(-6, -10, 'green-can')");
+  });
+
   it('removes the backwards outbound instruction from the playable mission', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
 
     expect(source).not.toContain('Pass at least one red nun on your starboard side outbound');
     expect(source).not.toContain("label: 'Pass red nun on starboard'");
+  });
+});
+
+describe('Fisher Lab regional trap scene profile', () => {
+  const expectedProfiles = {
+    maine: {
+      region: 'maine',
+      specimenType: 'lobster',
+      gearLabel: 'lobster trap',
+      markerLabel: 'Lobster Trap',
+      actionLabel: 'Haul lobster trap',
+      showLobsterModel: true
+    },
+    chesapeake: {
+      region: 'chesapeake',
+      specimenType: 'crab',
+      gearLabel: 'blue crab pot',
+      markerLabel: 'Blue Crab Pot',
+      actionLabel: 'Haul blue crab pot',
+      showLobsterModel: false
+    },
+    pnw: {
+      region: 'pnw',
+      specimenType: 'crab',
+      gearLabel: 'Dungeness crab pot',
+      markerLabel: 'Dungeness Crab Pot',
+      actionLabel: 'Haul Dungeness crab pot',
+      showLobsterModel: false
+    },
+    greatlakes: {
+      region: 'greatlakes',
+      specimenType: 'crayfish',
+      gearLabel: 'crayfish gear',
+      markerLabel: 'Crayfish Gear',
+      actionLabel: 'Inspect crayfish gear',
+      showLobsterModel: false
+    }
+  };
+
+  it('describes truthful gear, marker, specimen, and model copy for every region', () => {
+    const { getCoreTrapActionLabel, getCoreTrapSceneProfile } = window.__FisherLabCore;
+
+    Object.entries(expectedProfiles).forEach(([region, expected]) => {
+      const profile = getCoreTrapSceneProfile(region);
+      expect(profile).toEqual(expected);
+      expect(profile.actionLabel).toBe(getCoreTrapActionLabel(region));
+    });
+  });
+
+  it('falls back to a fresh Maine-shaped profile for an invalid region', () => {
+    const { getCoreTrapActionLabel, getCoreTrapSceneProfile } = window.__FisherLabCore;
+    const fallback = getCoreTrapSceneProfile('not-a-region');
+    const maine = getCoreTrapSceneProfile('maine');
+
+    expect(fallback).toEqual(expectedProfiles.maine);
+    expect(fallback.actionLabel).toBe(getCoreTrapActionLabel('not-a-region'));
+    expect(fallback).not.toBe(maine);
+    fallback.markerLabel = 'Changed marker';
+    expect(getCoreTrapSceneProfile('maine')).toEqual(expectedProfiles.maine);
+  });
+
+  it('wires marker labels, haul copy, specimen type, and lobster visibility through the profile', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const start = source.indexOf('function initHarborSim');
+    const end = source.indexOf('function _renderFisherLab', start);
+    const scene = source.slice(start, end);
+
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(scene).toContain('var trapSceneProfile = getCoreTrapSceneProfile(activeRegion)');
+    ['#1', '#2', '#3'].forEach((number) => {
+      expect(scene).toContain("trapSceneProfile.markerLabel + ' " + number + "'");
+    });
+    expect(scene).toContain('lobsterGroup.visible = trapSceneProfile.showLobsterModel');
+    expect(scene).toContain("flAnnounce(trapSceneProfile.actionLabel + '...')");
+    expect(scene).toContain("statusCb({ type: 'haul-start', text: trapSceneProfile.actionLabel");
+    expect(scene).toContain('specimenType: trapSceneProfile.specimenType');
+    expect(scene).not.toContain("'Lobster Trap #1'");
+    expect(scene).not.toContain("flAnnounce('Hauling lobster trap...')");
+    expect(scene).not.toContain("specimenType: (activeRegion === 'chesapeake'");
   });
 });
 
@@ -117,6 +311,29 @@ describe('Fisher Lab challenge standards', () => {
     expect(evaluateCoreChallengeStandard('guided', 60, 15).met).toBe(true);
   });
 
+  it('requires a correct COLREGS decision and an on-time maneuver even when Guided accuracy passes', () => {
+    const { evaluateCoreVoyageStandard } = window.__FisherLabCore;
+
+    expect(evaluateCoreVoyageStandard('guided', 67, 100, true, false)).toMatchObject({
+      met: true,
+      accuracyMet: true,
+      fuelMet: true,
+      trafficDecisionMet: true,
+      maneuverMet: true
+    });
+    expect(evaluateCoreVoyageStandard('guided', 67, 100, false, false)).toMatchObject({
+      met: false,
+      accuracyMet: true,
+      trafficDecisionMet: false,
+      maneuverMet: true
+    });
+    expect(evaluateCoreVoyageStandard('guided', 67, 100, true, true)).toMatchObject({
+      met: false,
+      trafficDecisionMet: true,
+      maneuverMet: false
+    });
+  });
+
   it('gates mission completion in the safe-return path instead of using standards as display copy', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     const start = source.indexOf('// A safe return completes the run');
@@ -125,9 +342,11 @@ describe('Fisher Lab challenge standards', () => {
 
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
-    expect(completionBlock).toContain('evaluateCoreChallengeStandard');
+    expect(completionBlock).toContain('evaluateCoreVoyageStandard');
+    expect(completionBlock).toContain('boatState.trafficDecisionCorrect');
+    expect(completionBlock).toContain('boatState.trafficManeuverReviewed');
     expect(completionBlock).toMatch(/if\s*\([^)]*(?:challengeStandard\.met|standardMet)/);
-    expect(completionBlock.indexOf('evaluateCoreChallengeStandard')).toBeLessThan(
+    expect(completionBlock.indexOf('evaluateCoreVoyageStandard')).toBeLessThan(
       completionBlock.indexOf('missionComplete = true')
     );
   });
@@ -179,6 +398,14 @@ describe('Fisher Lab achievement and journal integrity', () => {
       cleanCoreTrips: 1,
       regsViolations: 2
     })).toMatchObject({ 'sustainable-fisher': true });
+
+    const unassessedIdentifications = Array.from({ length: 5 }, (_, index) => ({
+      speciesId: `unassessed-${index + 1}`,
+      identificationCorrect: null,
+      ruleCorrect: true,
+      correct: true
+    }));
+    expect(deriveCoreAchievements({ journal: unassessedIdentifications })).not.toMatchObject({ 'species-id-bronze': true });
   });
 
   it('logs retained, released, and review-needed observations exactly once', () => {
@@ -237,6 +464,88 @@ describe('Fisher Lab achievement and journal integrity', () => {
   });
 });
 
+describe('Fisher Lab persisted-state normalization', () => {
+  it('rebuilds safe defaults from valid but malformed saved shapes', () => {
+    const normalize = window.__FisherLabCore.normalizeFisherLabState;
+    const state = normalize({
+      region: 'toString',
+      currentMission: 'mission-999',
+      completedMissions: ['mission-1'],
+      speciesCaught: 'cod',
+      lifeLog: { speciesId: 'cod' },
+      regsViolations: -4,
+      coreVoyageMode: 'expert',
+      coreAttempts: 'bad',
+      coreTrips: Infinity,
+      achievements: null,
+      bestCoreScores: [],
+      bestCoreRanks: 'gold',
+      a11y: { staticCamera: 'yes', captionMode: true, largeText: 1 }
+    });
+
+    expect(state).toMatchObject({
+      region: 'maine',
+      currentMission: null,
+      regsViolations: 0,
+      coreVoyageMode: 'guided',
+      coreAttempts: 0,
+      coreTrips: 0,
+      a11y: { staticCamera: false, captionMode: true, largeText: false }
+    });
+    expect(state.completedMissions).toEqual({});
+    expect(state.speciesCaught).toEqual({});
+    expect(state.lifeLog).toEqual([]);
+  });
+
+  it('preserves valid progress as canonical detached data', () => {
+    const normalize = window.__FisherLabCore.normalizeFisherLabState;
+    const input = {
+      region: 'pnw',
+      currentMission: 'mission-1',
+      completedMissions: { 'mission-1': true, 'mission-2': 'true', constructor: true },
+      speciesCaught: { cod: '2', haddock: -1 },
+      lifeLog: [{ observationId: 'obs-1', speciesId: 'chinook' }],
+      regsViolations: '3',
+      coreVoyageMode: 'master',
+      coreAttempts: '7',
+      bestCoreScores: { pnw: '84' },
+      bestCoreRanks: { 'pnw:master': 'gold', 'pnw:guided': 'platinum' }
+    };
+
+    const state = normalize(input);
+    expect(state).toMatchObject({
+      region: 'pnw',
+      currentMission: 'mission-1',
+      regsViolations: 3,
+      coreVoyageMode: 'master',
+      coreAttempts: 7,
+      bestCoreScores: { pnw: 84 },
+      bestCoreRanks: { 'pnw:master': 'gold' }
+    });
+    expect(state.completedMissions).toEqual({ 'mission-1': true });
+    expect(state.speciesCaught).toEqual({ cod: 2 });
+
+    state.lifeLog[0].speciesId = 'mutated';
+    state.completedMissions['mission-1'] = false;
+    expect(input.lifeLog[0].speciesId).toBe('chinook');
+    expect(input.completedMissions['mission-1']).toBe(true);
+  });
+
+  it('normalizes storage reads and reports durable write outcomes', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const block = source.slice(source.indexOf("var FL_KEY = 'fisherLab.state.v1'"), source.indexOf('// THREE.JS LOADER'));
+
+    expect(block).toContain('return normalizeFisherLabState(raw ? JSON.parse(raw) : {});');
+    expect(block).toContain('return normalizeFisherLabState({});');
+    expect(block).toContain('function writeFisherLabState(storage, value)');
+    expect(block).toContain('var serialized = JSON.stringify(normalized);');
+    expect(block).toContain('storage.setItem(FL_KEY, serialized);');
+    expect(block).toContain("return { ok: true, state: normalized, bytes: serialized.length, error: null };");
+    expect(block).toContain("return { ok: false, state: normalized, bytes: 0, error: 'storage-unavailable' };");
+    expect(block).toContain('return writeFisherLabState(window.localStorage, s);');
+  });
+});
+
 describe('Fisher Lab replay and regional identity integrity', () => {
   it('resets voyage elapsed time when replaying a mission', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
@@ -247,6 +556,52 @@ describe('Fisher Lab replay and regional identity integrity', () => {
     expect(start).toBeGreaterThan(-1);
     expect(end).toBeGreaterThan(start);
     expect(restartBlock).toContain('elapsed = 0;');
+  });
+
+  it('fully resets replay state and cancels stale interactions before checkpointing', () => {
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    const initialStart = source.indexOf('    var boatState = {');
+    const initialBlock = source.slice(initialStart, source.indexOf('\n    };', initialStart));
+    const restartStart = source.indexOf('      restartMission: function()');
+    const restartBlock = source.slice(restartStart, source.indexOf('\n      }\n    };', restartStart));
+    const initialKeys = [...initialBlock.matchAll(/^\s+([A-Za-z][A-Za-z0-9]*):/gm)].map((match) => match[1]);
+    const resetKeys = new Set(
+      [...restartBlock.matchAll(/boatState\.([A-Za-z][A-Za-z0-9]*)\s*(?:=|\+=)/g)].map((match) => match[1])
+    );
+
+    if (restartBlock.includes('boatState.pos.set(')) resetKeys.add('pos');
+    if (restartBlock.includes('setPaused(false, false)')) resetKeys.add('paused');
+
+    expect(initialStart).toBeGreaterThan(-1);
+    expect(restartStart).toBeGreaterThan(-1);
+    expect(initialKeys.filter((key) => !resetKeys.has(key))).toEqual(['timeOfDay', 'weather', 'cameraView']);
+    expect(restartBlock).toContain('boat.rotation.set(0, boatState.heading, 0);');
+    expect(restartBlock).toContain('boat.position.y = 0;');
+
+    const checkpointAt = restartBlock.indexOf("emitVoyageCheckpoint('restart', true)");
+    expect(checkpointAt).toBeGreaterThan(-1);
+    [
+      'haulActive = false;',
+      'haulTimer = 0;',
+      'haulTrapId = null;',
+      'pendingInteraction = null;',
+      'haulTrapMesh.visible = false;'
+    ].forEach((marker) => {
+      const markerAt = restartBlock.indexOf(marker);
+      expect(markerAt).toBeGreaterThan(-1);
+      expect(markerAt).toBeLessThan(checkpointAt);
+    });
+
+    const hostStart = source.indexOf('      function restartCoreMission()');
+    const hostRestart = source.slice(hostStart, source.indexOf('      function resolveSimulatorTrafficChoice', hostStart));
+    [
+      'setActiveFishing(null);',
+      'setFishIdentification(null);',
+      'setFishEvidence(null);',
+      'setFishDecisionResult(null);',
+      'setCaliperCheck(null);',
+      'setShellfishDecisionResult(null);'
+    ].forEach((marker) => expect(hostRestart).toContain(marker));
   });
 
   it('uses a stable species ID for every regional trap catch', () => {

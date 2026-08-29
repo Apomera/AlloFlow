@@ -1039,8 +1039,17 @@ function _renderDiagramSvg(tool, state, titleText) {
     var fNum = Math.max(0, Math.min(fDen, Math.round(num(state.numerator, 0))));
     var fW = 320, fBarY = 12, fBarH = 38, fPadX = 10, fBarW = fW - 2 * fPadX, fpw = fBarW / fDen;
     var fCells = '';
-    for (var fi = 0; fi < fDen; fi++) {
-      fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + fBarY + '" width="' + fpw + '" height="' + fBarH + '" fill="' + (fi < fNum ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+    var maxFractionCells = 64;
+    if (fDen <= maxFractionCells) {
+      for (var fi = 0; fi < fDen; fi++) {
+        fCells += '<rect x="' + (fPadX + fi * fpw) + '" y="' + fBarY + '" width="' + fpw + '" height="' + fBarH + '" fill="' + (fi < fNum ? '#4f46e5' : '#ffffff') + '" stroke="#475569" stroke-width="1.5"/>';
+      }
+    } else {
+      // Restored/imported data can contain an enormous denominator. Preserve
+      // the exact ratio and label without creating one SVG node per part.
+      var filledWidth = fBarW * (fNum / fDen);
+      fCells = '<rect x="' + fPadX + '" y="' + fBarY + '" width="' + fBarW + '" height="' + fBarH + '" fill="#ffffff" stroke="#475569" stroke-width="1.5"/>'
+        + (filledWidth > 0 ? '<rect x="' + fPadX + '" y="' + fBarY + '" width="' + filledWidth + '" height="' + fBarH + '" fill="#4f46e5"/>' : '');
     }
     var frTitle = esc(titleText || ('Fraction ' + fNum + '/' + fDen));
     var frDesc = esc(fNum + ' of ' + fDen + ' equal parts shaded (' + fNum + '/' + fDen + ').');

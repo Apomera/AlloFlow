@@ -125,6 +125,29 @@ describe('privacy-safe roster session summaries', () => {
     expect(serialized).not.toContain(activityId);
   });
 
+
+  it('keeps unmatched learner-entered values out of durable roster history', () => {
+    const liveSummary = {
+      id: 'privacy-session',
+      endedAt: '2026-07-12T10:30:00.000Z',
+      participants: { 'Brave Otter': { responseCount: 1 } },
+      unmatchedCodenames: ['Jane Student', ' mistyped-fox '],
+      insightBrief: { nextMoves: [{ code: 'resolve-codenames', count: 2 }] },
+    };
+    const saved = helpers.saveRosterSessionSummary(
+      { students: { 'Brave Otter': '' }, sessionHistory: [], progressHistory: {} },
+      liveSummary,
+      '',
+      30,
+    );
+    expect(liveSummary.unmatchedCodenames).toEqual(['Jane Student', ' mistyped-fox ']);
+    expect(saved.sessionHistory[0]).not.toHaveProperty('unmatchedCodenames');
+    expect(saved.sessionHistory[0].unmatchedCount).toBe(2);
+    expect(JSON.stringify(saved)).not.toContain('Jane Student');
+    expect(JSON.stringify(saved)).not.toContain('mistyped-fox');
+    expect(helpers.buildRosterSessionInsightBrief(saved.sessionHistory[0]).nextMoves)
+      .toContainEqual(expect.objectContaining({ code: 'resolve-codenames', count: 2 }));
+  });
   it('handles reserved group identifiers without prototype collisions', () => {
     const brief = helpers.buildRosterSessionInsightBrief({
       participants: {
@@ -170,10 +193,16 @@ describe('privacy-safe roster session summaries', () => {
     expect(endSessionPreviewSource).toContain('Visual organizer evidence');
     expect(endSessionPreviewSource).toContain('organizer card text');
     expect(endSessionPreviewSource).toContain('Connections remain active during this review.');
+    expect(endSessionPreviewSource).toContain('Optional codename-only teacher note');
+    expect(endSessionPreviewSource).toContain('aria-describedby="end-session-note-privacy"');
+    expect(endSessionPreviewSource).toContain('maxLength={500}');
+    expect(endSessionPreviewSource).toContain('Use codenames only. This note is stored with the roster summary');
+    expect(endSessionPreviewSource).toContain('real names are not otherwise saved');
   });
 
   it('keeps history portable and removes deleted students from saved summaries', () => {
-    expect(teacher).toContain('sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : []');
+    expect(teacher).toContain('sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : []');
+    expect(teacher).toContain('alloTeacherSanitizeRosterSessionHistory');
     expect(teacher).toContain('delete participants[name]');
     expect(teacher).toContain('Saved session history ({rosterKey.sessionHistory.length})');
     expect(teacher).toContain('session.insightBrief.activityCount');

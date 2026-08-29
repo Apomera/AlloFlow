@@ -499,11 +499,52 @@ test.describe('Optics Lab polarization — real WebGL', () => {
   test('mounts a 3D view of the polarizer chain', async ({ page }) => {
     await mount(page, { polTheta2: 30 });
     const gl = await page.evaluate(() => (window as any).__gl());
+    const outcome = page.locator('[data-op-polarization-3d-outcome]');
+    const stageTrail = page.locator('[data-op-polarization-stage-trail="true"]');
+    const projectionRule = page.locator('[data-op-polarization-rule="true"]');
+    const throughput = page.locator('[data-op-polarization-throughput="true"]');
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
     expect(gl.mode).toBe('linear');
+    expect(gl.finalIntensity).toBeCloseTo(0.375, 6);
     expect(gl.discs).toBe(2);            // P1 and P2
     expect(gl.segments).toBeGreaterThan(2);
+    await expect(outcome).toHaveAttribute('data-op-polarization-3d-outcome', 'transmitting');
+    await expect(outcome).toHaveAttribute('data-polarization-mode', 'linear');
+    await expect(outcome).toHaveAttribute('data-final-intensity', '0.375000');
+    await expect(outcome).toHaveAttribute('data-input-intensity', '1.000000');
+    await expect(outcome).toHaveAttribute('data-after-p1', '0.500000');
+    await expect(outcome).toHaveAttribute('data-after-qwp', 'none');
+    await expect(outcome).toHaveAttribute('data-after-p2', '0.375000');
+    await expect(outcome).toHaveAttribute('data-after-p3', 'none');
+    await expect(outcome).toHaveAttribute('data-p2-relative-transmission', '0.750000');
+    await expect(outcome).toHaveAttribute('data-p3-relative-transmission', 'none');
+    await expect(outcome).toHaveAttribute('data-qwp-enabled', 'false');
+    await expect(outcome).toHaveAttribute('data-p3-enabled', 'false');
+    await expect(outcome).toContainText('Beam transmitting');
+    await expect(outcome).toContainText('I_out = 37.5% I₀');
+    await expect(stageTrail).toContainText('I₀ 100.0% → P₁ 50.0% → P₂ 37.5%');
+    await expect(projectionRule).toContainText('P₂ keeps 75.0% of P₁ · cos²(30°)');
+    await expect(throughput).toHaveAttribute('role', 'progressbar');
+    await expect(throughput).toHaveAttribute('aria-valuenow', '37.5');
+    await expect(throughput).toHaveAttribute('aria-valuetext', '37.5 percent of original intensity');
+
+    await page.setViewportSize({ width: 320, height: 760 });
+    await page.waitForTimeout(150);
+    const fit = await page.evaluate(() => {
+      const hud = document.querySelector('[data-op-polarization-3d-outcome]') as HTMLElement;
+      const scene = hud.parentElement as HTMLElement;
+      const h = hud.getBoundingClientRect();
+      const s = scene.getBoundingClientRect();
+      return {
+        hudInside: h.left >= s.left - 1 && h.right <= s.right + 1
+          && h.top >= s.top - 1 && h.bottom <= s.bottom + 1,
+        page: document.documentElement.scrollWidth,
+        viewport: document.documentElement.clientWidth
+      };
+    });
+    expect(fit.hudInside).toBe(true);
+    expect(fit.page).toBeLessThanOrEqual(fit.viewport + 1);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
@@ -536,8 +577,18 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     // been able to demonstrate. Crossed polarizers extinguish linear light;
     // circular light comes through at half, whatever the angle.
     await mount(page, { polTheta2: 90 });
+    const outcome = page.locator('[data-op-polarization-3d-outcome]');
+    const calculator = page.locator('[data-op-polarization-calc-mode]');
+    const stageTrail = page.locator('[data-op-polarization-stage-trail="true"]');
+    const projectionRule = page.locator('[data-op-polarization-rule="true"]');
     const linearCrossed = await page.evaluate(() => (window as any).__text());
     expect(linearCrossed).toContain('0.0% I₀');      // 90 deg = extinction
+    await expect(outcome).toHaveAttribute('data-op-polarization-3d-outcome', 'extinguished');
+    await expect(outcome).toHaveAttribute('data-final-intensity', '0.000000');
+    await expect(outcome).toHaveAttribute('data-p2-relative-transmission', '0.000000');
+    await expect(outcome).toContainText('Beam extinguished');
+    await expect(stageTrail).toContainText('I₀ 100.0% → P₁ 50.0% → P₂ 0.0%');
+    await expect(projectionRule).toContainText('P₂ keeps 0.0% of P₁ · cos²(90°)');
 
     await page.evaluate(() => (window as any).__set({ polQwp: true }));
     await page.waitForTimeout(400);
@@ -546,7 +597,19 @@ test.describe('Optics Lab polarization — real WebGL', () => {
       await page.waitForTimeout(250);
       const txt = await page.evaluate(() => (window as any).__text());
       expect(txt, `theta2=${angle}`).toContain('25.0% I₀');   // half of I0/2, always
+      await expect(outcome).toHaveAttribute('data-op-polarization-3d-outcome', 'angle-independent');
+      await expect(outcome).toHaveAttribute('data-polarization-mode', 'circular');
+      await expect(outcome).toHaveAttribute('data-final-intensity', '0.250000');
+      await expect(calculator).toHaveAttribute('data-op-polarization-calc-mode', 'circular');
+      await expect(calculator).toHaveAttribute('data-final-intensity', '0.250000');
     }
+    await expect(outcome).toHaveAttribute('data-after-qwp', '0.500000');
+    await expect(outcome).toHaveAttribute('data-after-p2', '0.250000');
+    await expect(outcome).toHaveAttribute('data-p2-relative-transmission', '0.500000');
+    await expect(outcome).toHaveAttribute('data-qwp-enabled', 'true');
+    await expect(outcome).toContainText('Axis-independent transmission');
+    await expect(stageTrail).toContainText('I₀ 100.0% → P₁ 50.0% → QWP 50.0% → P₂ 25.0%');
+    await expect(projectionRule).toContainText('P₂ keeps 50.0% of circular input · angle-independent');
   });
 
   test('the two transverse axes are really independent', async ({ page }) => {
@@ -575,6 +638,21 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     const gl = await page.evaluate(() => (window as any).__gl());
     expect(gl.discs).toBe(before + 1);
     expect(gl.spreads.p3).toBeTruthy();
+    expect(gl.finalIntensity).toBeCloseTo(0.125, 6);
+    const outcome = page.locator('[data-op-polarization-3d-outcome]');
+    await expect(outcome).toHaveAttribute('data-op-polarization-3d-outcome', 'transmitting');
+    await expect(outcome).toHaveAttribute('data-p3-axis', '90.0');
+    await expect(outcome).toHaveAttribute('data-final-intensity', '0.125000');
+    await expect(outcome).toHaveAttribute('data-after-p1', '0.500000');
+    await expect(outcome).toHaveAttribute('data-after-p2', '0.250000');
+    await expect(outcome).toHaveAttribute('data-after-p3', '0.125000');
+    await expect(outcome).toHaveAttribute('data-p2-relative-transmission', '0.500000');
+    await expect(outcome).toHaveAttribute('data-p3-relative-transmission', '0.500000');
+    await expect(outcome).toHaveAttribute('data-p3-enabled', 'true');
+    await expect(page.locator('[data-op-polarization-stage-trail="true"]'))
+      .toContainText('I₀ 100.0% → P₁ 50.0% → P₂ 25.0% → P₃ 12.5%');
+    await expect(page.locator('[data-op-polarization-rule="true"]'))
+      .toContainText('P₃ keeps 50.0% of P₂ · cos²(45°)');
     // The three-polarizer surprise: 0/45/90 passes light where 0/90 passes none.
     expect(await page.evaluate(() => (window as any).__text())).toContain('12.5% I₀');
   });
@@ -605,6 +683,27 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     await page.waitForTimeout(400);
     const after = await page.evaluate(() => (window as any).__bucket().polRot);
     expect(after.rotY).toBeGreaterThan((before?.rotY ?? 34) + 10);
+  });
+
+  test('supports keyboard orbit and a deterministic camera reset', async ({ page }) => {
+    await mount(page, { polTheta2: 30 });
+    const host = page.locator('[data-op-polarization-3d-host="true"]');
+    await expect(host).toHaveAttribute('aria-roledescription', 'interactive 3D model');
+    await expect(host).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0');
+    await expect(host).toHaveAttribute('aria-label', /Press zero to reset the camera/);
+
+    await host.press('ArrowRight');
+    await page.waitForFunction(() => (window as any).__bucket().polRot?.rotY === 38);
+    expect(await page.evaluate(() => (window as any).__bucket().polCamera)).toBe('custom');
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
+
+    await host.press('0');
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.polCamera === 'oblique' && bucket.polRot?.rotY === 34
+        && bucket.polRot?.rotX === 23 && bucket.polZoom === 1;
+    });
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('0');
   });
 
   test('sliding P2 does not remount the canvas', async ({ page }) => {
@@ -684,6 +783,7 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
 
   test('builds a spatial Snell ray fan with the calculated angle', async ({ page }) => {
     await mountRefraction(page);
+    const outcome = page.locator('[data-op-refraction-3d-outcome]');
     const gl = await page.evaluate(() => (window as any).__refr());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
@@ -691,6 +791,57 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     expect(gl.theta1Deg).toBeCloseTo(30, 2);
     expect(gl.theta2Deg).toBeCloseTo(19.2, 1);
     expect(gl.tir).toBe(false);
+    await expect(outcome).toHaveAttribute('data-op-refraction-3d-outcome', 'toward-normal');
+    await expect(outcome).toHaveAttribute('data-theta1-deg', '30.000');
+    await expect(outcome).toHaveAttribute('data-theta2-deg', /^19\.2/);
+    await expect(outcome).toHaveAttribute('data-critical-angle-deg', 'none');
+    await expect(outcome).toContainText('Bends toward normal');
+    await expect(outcome).toContainText('No critical angle in this direction');
+
+    // Pressing the visible +30-degree handle must preserve +30, not flip to -30.
+    await page.evaluate(() => {
+      const handle = document.querySelector('[data-op-direct-handle="incident-angle"]') as SVGGElement;
+      const circle = handle.querySelector('circle') as SVGCircleElement;
+      const rect = circle.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const send = (type: string) => handle.dispatchEvent(new PointerEvent(type, {
+        clientX: x, clientY: y, bubbles: true, cancelable: true, pointerId: 37
+      }));
+      send('pointerdown');
+      send('pointerup');
+    });
+    await page.waitForTimeout(150);
+    expect(await page.evaluate(() => (window as any).__bucket().refrTheta1)).toBe(30);
+
+    await page.evaluate(() => {
+      const handle = document.querySelector('[data-op-direct-handle="incident-angle"]') as SVGGElement;
+      const circle = handle.querySelector('circle') as SVGCircleElement;
+      const svg = handle.ownerSVGElement as SVGSVGElement;
+      const rect = circle.getBoundingClientRect();
+      const matrix = svg.getScreenCTM() as DOMMatrix;
+      const target = svg.createSVGPoint();
+      target.x = svg.viewBox.baseVal.width / 2 - 130 * Math.sin(Math.PI / 4);
+      target.y = svg.viewBox.baseVal.height / 2 - 130 * Math.cos(Math.PI / 4);
+      const screenTarget = target.matrixTransform(matrix);
+      const startX = rect.left + rect.width / 2;
+      const startY = rect.top + rect.height / 2;
+      const send = (type: string, x: number, y: number) => handle.dispatchEvent(new PointerEvent(type, {
+        clientX: x, clientY: y, bubbles: true, cancelable: true, pointerId: 38
+      }));
+      send('pointerdown', startX, startY);
+      send('pointermove', screenTarget.x, screenTarget.y);
+      send('pointerup', screenTarget.x, screenTarget.y);
+    });
+    await page.waitForFunction(() => (window as any).__bucket().refrTheta1 === 45);
+    await page.waitForFunction(() => Math.abs((window as any).__refr()?.theta1Deg - 45) < 0.01);
+    await expect(outcome).toHaveAttribute('data-theta1-deg', '45.000');
+    await page.setViewportSize({ width: 320, height: 720 });
+    await expect(outcome).toBeVisible();
+    const narrowBounds = await outcome.boundingBox();
+    expect(narrowBounds).not.toBeNull();
+    expect(narrowBounds!.x).toBeGreaterThanOrEqual(0);
+    expect(narrowBounds!.x + narrowBounds!.width).toBeLessThanOrEqual(320.5);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
@@ -699,11 +850,16 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     const split = page.locator('[data-op-fresnel-split="refraction"]');
     const reflectedRay = page.locator('[data-op-refraction-ray="reflected"]');
     const transmittedRay = page.locator('[data-op-refraction-ray="transmitted"]');
+    const outcome = page.locator('[data-op-refraction-3d-outcome]');
 
     await expect(split).toHaveAttribute('data-reflectance', '0.040000');
     await expect(split).toHaveAttribute('data-transmittance', '0.960000');
     await expect(reflectedRay).toHaveAttribute('data-power-fraction', '0.040000');
     await expect(transmittedRay).toHaveAttribute('data-power-fraction', '0.960000');
+    await expect(outcome).toHaveAttribute('data-op-refraction-3d-outcome', 'no-bend');
+    await expect(outcome).toHaveAttribute('data-theta1-deg', '0.000');
+    await expect(outcome).toContainText('No directional bend');
+    await expect(outcome).toContainText('No critical angle in this direction');
     await expect(page.locator('[data-op-refraction-3d-energy="true"]')).toContainText('R 4.0% · T 96.0%');
     let gl = await page.evaluate(() => (window as any).__refr());
     expect(gl.reflectance).toBeCloseTo(0.04, 6);
@@ -712,6 +868,11 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     await page.evaluate(() => (window as any).__set({ refrN1: 1.5, refrN2: 1, refrTheta1: 40 }));
     await page.waitForFunction(() => Math.abs((window as any).__refr()?.reflectance - 0.2452912043) < 1e-6);
     const belowCritical = await page.evaluate(() => (window as any).__refr().reflectance);
+    await expect(outcome).toHaveAttribute('data-op-refraction-3d-outcome', 'away-from-normal');
+    await expect(outcome).toHaveAttribute('data-critical-angle-deg', '41.810');
+    await expect(outcome).toHaveAttribute('data-critical-offset-deg', '-1.810');
+    await expect(outcome).toContainText('Bends away from normal');
+    await expect(outcome).toContainText('1.8° below critical');
 
     await page.evaluate(() => (window as any).__set({ refrTheta1: 41.7 }));
     await page.waitForFunction(() => (window as any).__refr()?.reflectance > 0.68);
@@ -719,6 +880,8 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     expect(gl.reflectance).toBeGreaterThan(belowCritical);
     expect(gl.reflectance + gl.transmittance).toBeCloseTo(1, 8);
     await expect(split).toHaveAttribute('data-reflectance', '0.689661');
+    await expect(outcome).toHaveAttribute('data-critical-offset-deg', '-0.110');
+    await expect(outcome).toContainText('0.1° below critical');
     await expect(page.locator('[data-op-refraction-3d-energy="true"]')).toContainText('R 69.0% · T 31.0%');
 
     await page.evaluate(() => (window as any).__set({ refrTheta1: 60 }));
@@ -727,6 +890,11 @@ test.describe('Optics Lab refraction ray-space bench — real WebGL', () => {
     await expect(split).toHaveAttribute('data-transmittance', '0.000000');
     await expect(split.locator('[data-op-fresnel-status="tir"]')).toContainText('100.0% reflected and 0.0% transmitted');
     await expect(page.locator('[data-op-refraction-ray="transmitted"]')).toHaveCount(0);
+    await expect(outcome).toHaveAttribute('data-op-refraction-3d-outcome', 'tir');
+    await expect(outcome).toHaveAttribute('data-theta2-deg', 'none');
+    await expect(outcome).toHaveAttribute('data-critical-offset-deg', '18.190');
+    await expect(outcome).toContainText('Total internal reflection');
+    await expect(outcome).toContainText('18.2° above critical');
     gl = await page.evaluate(() => (window as any).__refr());
     expect(gl.transmittance).toBe(0);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
@@ -809,8 +977,56 @@ test.describe("Optics Lab Snell's window — real WebGL", () => {
     expect(gl.windowRadius).toBeCloseTo(expected, 2);
   });
 
+  test('explains live geometry and keeps keyboard camera controls local', async ({ page }) => {
+    await mountWindow(page);
+    const scene = page.locator('[data-op-snell-window-3d-scene]');
+    const host = page.locator('[data-op-snell-window-3d-host]');
+    const outcome = page.locator('[data-op-snell-window-3d-outcome=active]');
+
+    await expect(host).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0');
+    await expect(host).toHaveAttribute('aria-label', /press 0 to reset the view/);
+    await expect(outcome).toHaveAttribute('role', 'status');
+    await expect(outcome).toHaveAttribute('aria-live', 'polite');
+    await expect(outcome).toHaveAttribute('data-cone-half-angle-deg', '48.607');
+    await expect(outcome).toHaveAttribute('data-window-diameter-deg', '97.213');
+    await expect(outcome).toHaveAttribute('data-index-ratio', '0.750188');
+    await expect(outcome).toHaveAttribute('data-window-radius-model', '6.807');
+    await expect(outcome).toContainText('48.6');
+    await expect(outcome).toContainText('97.2');
+    await expect(outcome).toContainText('Sky inside cone');
+    await expect(outcome).toContainText('mirror outside');
+
+    await host.focus();
+    await host.press('ArrowRight');
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.refrWinRot?.rotY === 34 && bucket.refrWinCamera === 'custom';
+    });
+    await host.press('0');
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.refrWinRot?.rotY === 28 && bucket.refrWinRot?.rotX === -18
+        && bucket.refrWinZoom === 1 && bucket.refrWinCamera === 'oblique';
+    });
+    const bubbled = await page.evaluate(() => (window as any).__bubbledKeys);
+    expect(bubbled).not.toContain('ArrowRight');
+    expect(bubbled).not.toContain('0');
+
+    await page.setViewportSize({ width: 320, height: 720 });
+    const sceneBox = await scene.boundingBox();
+    const outcomeBox = await outcome.boundingBox();
+    const cueBox = await page.locator('[data-op-snell-window-3d-cue]').boundingBox();
+    expect(sceneBox).not.toBeNull();
+    expect(outcomeBox).not.toBeNull();
+    expect(cueBox).not.toBeNull();
+    expect(outcomeBox!.x).toBeGreaterThanOrEqual(sceneBox!.x);
+    expect(outcomeBox!.x + outcomeBox!.width).toBeLessThanOrEqual(sceneBox!.x + sceneBox!.width + 0.5);
+    expect(outcomeBox!.y + outcomeBox!.height).toBeLessThan(cueBox!.y);
+  });
+
   test('a denser second medium narrows the window', async ({ page }) => {
     await mountWindow(page);
+    const outcome = page.locator('[data-op-snell-window-3d-outcome=active]');
     const water = await page.evaluate(() => (window as any).__win().coneDeg);
     // Diamond to air: asin(1/2.417) = 24.4 degrees, a much tighter cone.
     await page.evaluate(() => (window as any).__set({ refrN1: 2.417, refrN2: 1.0 }));
@@ -819,6 +1035,10 @@ test.describe("Optics Lab Snell's window — real WebGL", () => {
     expect(diamond).toBeLessThan(water);
     expect(diamond).toBeGreaterThan(24.2);
     expect(diamond).toBeLessThan(24.6);
+    const expectedDiamond = Math.asin(1 / 2.417) * 180 / Math.PI;
+    await expect(outcome).toHaveAttribute('data-cone-half-angle-deg', expectedDiamond.toFixed(3));
+    await expect(outcome).toHaveAttribute('data-window-diameter-deg', (expectedDiamond * 2).toFixed(3));
+    await expect(outcome).toContainText(expectedDiamond.toFixed(1));
   });
 
   test('★ refuses to draw a window that cannot exist, and offers the fix', async ({ page }) => {
@@ -883,11 +1103,21 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
 
   test('builds a full aperture bundle that converges to a real image', async ({ page }) => {
     await mountLens(page);
+    const host = page.locator('[data-op-lens-3d-host]');
+    const rayKey = page.locator('[data-op-lens-3d-ray-key]');
     const gl = await page.evaluate(() => (window as any).__lens());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
     expect(gl.rayCount).toBe(9);
     expect(gl.imageVisible).toBe(true);
+    expect(gl.fitHalf.x).toBeCloseTo(9.45, 2);
+    expect(gl.fitHalf.y).toBeLessThan(3.1);
+    expect(gl.fitHalf.z).toBeLessThan(3.1);
+    expect(gl.cameraDistance).toBeLessThan(23);
+    await expect(host).toHaveAttribute('role', 'group');
+    await expect(rayKey).toContainText('input rays');
+    await expect(rayKey).toContainText('physical rays');
+    await expect(rayKey).not.toContainText('virtual extensions');
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
     expect(await page.evaluate(() => (window as any).__lensCanvasCount())).toBe(1);
   });
@@ -899,10 +1129,48 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     const screenTest = page.locator('[data-op-lens-screen-test]');
     const screenRange = page.getByRole('slider', { name: 'Screen position' });
     const screenHandle = page.locator('[data-op-lens-screen-handle="true"]');
+    const heightRange = page.getByRole('slider', { name: 'Lens object height', exact: true });
+    const heightHandle = page.locator('[data-op-lens-height-handle="true"]');
+    const liveFormula = page.locator('[data-op-formula-context]');
+    const focusGuide = page.locator('[data-op-focus-guide="lens"]');
+    const focusMarker = focusGuide.locator('[data-op-focus-marker="true"]');
+    const lensOutcome = page.locator('[data-op-lens-3d-outcome]');
+    const mission = page.locator('.opticslab-mission');
 
+    await expect(mission).toContainText('Capture a sharp lens image');
+    await expect(mission).toHaveAttribute('data-complete', 'false');
     await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'blurred');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
     await expect(screenTest).toContainText('10.0 cm beyond the real image plane');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'blurred');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '10.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-relative', '0.666667');
+    await expect(focusGuide).toContainText('Offset +10.0 cm | blur 66.7% aperture');
+    await expect(focusMarker).toBeVisible();
+    await heightRange.focus();
+    await expect(liveFormula).toHaveAttribute('data-op-formula-context', 'lens-height');
+    await expect(liveFormula).toContainText('h_i = m h_o');
+    await heightHandle.focus();
+    await heightHandle.press('ArrowUp');
+    await page.waitForFunction(() => (window as any).__bucket().lensObjH === 5.5);
+    await page.waitForFunction(() => Math.abs((window as any).__lens()?.imageHeight + 2.75) < 1e-8);
+    await expect(lensOutcome).toHaveAttribute('data-op-lens-3d-outcome', 'real');
+    await expect(lensOutcome).toHaveAttribute('data-image-side', 'far-side');
+    await expect(lensOutcome).toHaveAttribute('data-image-orientation', 'inverted');
+    await expect(lensOutcome).toHaveAttribute('data-image-scale', 'reduced');
+    await expect(lensOutcome).toHaveAttribute('data-object-height', '5.500');
+    await expect(lensOutcome).toHaveAttribute('data-image-height', '-2.750');
+    await expect(lensOutcome).toHaveAttribute('role', 'status');
+    await expect(lensOutcome).toHaveAttribute('aria-live', 'polite');
+    await expect(lensOutcome).toHaveAttribute('data-image-distance-cm', '15.000');
+    await expect(lensOutcome).toHaveAttribute('data-magnification', '-0.500000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-state', 'blurred');
+    await expect(lensOutcome).toHaveAttribute('data-screen-distance-cm', '25.000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-offset-cm', '10.000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
+    await expect(lensOutcome).toContainText('real \u00b7 inverted \u00b7 reduced');
+    await expect(lensOutcome).toContainText('h_i = -2.8 cm');
+    await expect(lensOutcome).toContainText('screen 25.0 cm \u00b7 10.0 cm beyond focus \u00b7 blur 66.7%');
     let gl = await page.evaluate(() => (window as any).__lens());
     expect(gl.screenDistance).toBe(25);
     expect(gl.screenBundleRatio).toBeCloseTo(2 / 3, 6);
@@ -913,6 +1181,9 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     await screenRange.fill('20');
     await page.waitForFunction(() => Math.abs((window as any).__lens()?.screenBundleRatio - (1 / 3)) < 1e-6);
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.333333');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '5.000000');
+    await expect(liveFormula).toHaveAttribute('data-op-formula-context', 'lens-screen');
+    await expect(liveFormula).toContainText('blur / aperture');
     await screenHandle.focus();
     await screenHandle.press('ArrowLeft');
     await page.waitForFunction(() => (window as any).__bucket().lensScreenCm === 19.5);
@@ -922,19 +1193,54 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'sharp');
     await expect(screenTest).toHaveAttribute('data-screen-distance', '15.000000');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'sharp');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '0.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-relative', '0.000000');
+    await expect(focusGuide).toContainText('Aligned at focus | blur 0.0% aperture');
     await expect(page.locator('[data-op-lens-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'true');
+    await expect(lensOutcome).toHaveAttribute('data-screen-state', 'sharp');
+    await expect(lensOutcome).toHaveAttribute('data-screen-distance-cm', '15.000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-offset-cm', '0.000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
     await expect(page.locator('[data-op-lens-3d-screen="true"]')).toContainText('sharp focus');
+    await expect(lensOutcome).toContainText('screen 15.0 cm \u00b7 sharp focus \u00b7 blur 0.0%');
+    await expect(mission).toHaveAttribute('data-complete', 'true');
+    await expect(mission.getByRole('button', { name: 'Next mission' })).toBeVisible();
 
     await page.evaluate(() => (window as any).__set({ lensDo: 5, lensScreenCm: 20 }));
     await page.waitForFunction(() => (window as any).__lens()?.screenCapturable === false);
     await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'virtual');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'virtual');
+    await expect(focusGuide).toHaveAttribute('data-focus-capturable', 'false');
+    await expect(focusMarker).toHaveCount(0);
+    await expect(focusGuide.locator('[data-op-focus-no-target="true"]')).toBeVisible();
     await expect(page.locator('[data-op-place-screen-at-image="true"]')).toHaveCount(0);
+    await expect(lensOutcome).toHaveAttribute('data-op-lens-3d-outcome', 'virtual');
+    await expect(lensOutcome).toHaveAttribute('data-image-side', 'object-side');
+    await expect(lensOutcome).toHaveAttribute('data-image-orientation', 'upright');
+    await expect(lensOutcome).toHaveAttribute('data-image-scale', 'enlarged');
+    await expect(lensOutcome).toHaveAttribute('data-image-height', '11.000');
+    await expect(lensOutcome).toHaveAttribute('data-screen-state', 'virtual');
+    await expect(lensOutcome).toHaveAttribute('data-screen-offset-cm', 'none');
+    await expect(lensOutcome).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(lensOutcome).toContainText('virtual \u00b7 upright \u00b7 enlarged');
+    await expect(lensOutcome).toContainText('screen 20.0 cm \u00b7 virtual image \u00b7 no screen focus');
+    await expect(mission).toHaveAttribute('data-complete', 'false');
 
     await page.evaluate(() => (window as any).__set({ lensDo: 10 }));
     await page.waitForFunction(() => (window as any).__lens()?.screenBundleRatio === 1);
     await expect(screenTest).toHaveAttribute('data-op-lens-screen-test', 'infinity');
     await expect(screenTest).toContainText('No finite screen focus');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'infinity');
+    await expect(focusGuide).toContainText('No finite focus target');
+    await expect(lensOutcome).toHaveAttribute('data-op-lens-3d-outcome', 'infinity');
+    await expect(lensOutcome).toHaveAttribute('data-image-side', 'at-infinity');
+    await expect(lensOutcome).toHaveAttribute('data-image-height', 'infinity');
+    await expect(lensOutcome).toHaveAttribute('data-screen-state', 'infinity');
+    await expect(lensOutcome).toHaveAttribute('data-screen-offset-cm', 'none');
+    await expect(lensOutcome).toContainText('image at infinity \u00b7 parallel output');
+    await expect(lensOutcome).toContainText('screen 20.0 cm \u00b7 no finite focus \u00b7 parallel output');
 
     await page.setViewportSize({ width: 320, height: 760 });
     await page.waitForTimeout(150);
@@ -946,12 +1252,23 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     }));
     expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
     expect(widths.tool).toBeLessThanOrEqual(widths.toolClient + 1);
+    const lensOutcomeBounds = await lensOutcome.boundingBox();
+    const lensCueBounds = await page.locator('[data-op-lens-3d-cue]').boundingBox();
+    expect(lensOutcomeBounds).not.toBeNull();
+    expect(lensCueBounds).not.toBeNull();
+    expect(lensOutcomeBounds!.x).toBeGreaterThanOrEqual(0);
+    expect(lensOutcomeBounds!.x + lensOutcomeBounds!.width).toBeLessThanOrEqual(320.5);
+    expect(lensOutcomeBounds!.y + lensOutcomeBounds!.height).toBeLessThan(lensCueBounds!.y);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
   test('draws virtual-image extensions and handles the focal-plane limit', async ({ page }) => {
     await mountLens(page, { lensType: 'diverging' });
     expect(await page.evaluate(() => (window as any).__lens().rayCount)).toBe(9);
+    const virtualFrame = await page.evaluate(() => (window as any).__lens().fitHalf);
+    expect(virtualFrame.y).toBeGreaterThan(4.5);
+    expect(virtualFrame.z).toBeGreaterThan(3.2);
+    await expect(page.locator('[data-op-lens-3d-ray-key]')).toContainText('virtual extensions');
     expect(await page.evaluate(() => (window as any).__text())).toContain('Dashed pink lines are backward extensions');
 
     await page.evaluate(() => (window as any).__set({ lensType: 'converging', lensDo: 12, lensShowMath: true }));
@@ -976,7 +1293,7 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
     expect(outgoingSlopes).toHaveLength(3);
     expect(Math.max(...outgoingSlopes) - Math.min(...outgoingSlopes)).toBeLessThan(1e-9);
 
-    const height = page.getByLabel('Object height');
+    const height = page.getByRole('slider', { name: 'Lens object height', exact: true });
     await height.fill('7');
     await expect(height).toHaveValue('7');
     await expect(height).toHaveAttribute('aria-valuetext', /Outgoing bundle angle/);
@@ -985,12 +1302,23 @@ test.describe('Optics Lab thin-lens bench - real WebGL', () => {
 
   test('supports keyboard orbit and disposes when switched off', async ({ page }) => {
     await mountLens(page);
-    const host = page.locator('[aria-keyshortcuts*="ArrowLeft"]').first();
+    const host = page.locator('[data-op-lens-3d-host="true"]');
+    await expect(host).toHaveAttribute('aria-roledescription', 'interactive 3D model');
+    await expect(host).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0');
+    await expect(host).toHaveAttribute('aria-label', /Press zero to reset the camera/);
     await host.press('ArrowRight');
     await page.waitForTimeout(300);
     const rotation = await page.evaluate(() => (window as any).__bucket().lensGlRot);
     expect(rotation.rotY).toBe(40);
     expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
+
+    await host.press('0');
+    await page.waitForFunction(() => {
+      const bucket = (window as any).__bucket();
+      return bucket.lensGlCamera === 'oblique' && bucket.lensGlRot?.rotY === 34
+        && bucket.lensGlRot?.rotX === 20 && bucket.lensGlZoom === 1;
+    });
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('0');
 
     await page.evaluate(() => (window as any).__set({ lensShow3D: false }));
     await page.waitForTimeout(400);
@@ -1026,6 +1354,9 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
 
   test('builds a real concave-mirror bundle that crosses focus and continues', async ({ page }) => {
     await mountMirror(page);
+    const host = page.locator('[data-op-mirror-3d-host]');
+    const rayKey = page.locator('[data-op-mirror-3d-ray-key]');
+    const mirrorOutcome = page.locator('[data-op-mirror-3d-outcome="real"]');
     const gl = await page.evaluate(() => (window as any).__mirror());
     expect(gl.state).toBe('ready');
     expect(gl.contextLost).toBe(false);
@@ -1038,10 +1369,28 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     expect(gl.imageVisible).toBe(true);
     expect(gl.physicalRaysStayIncidentSide).toBe(true);
     expect(gl.realRaysContinuePastFocus).toBe(true);
+    expect(gl.fitHalf.x).toBeCloseTo(9.45, 2);
+    expect(gl.fitHalf.y).toBeLessThan(4.2);
+    expect(gl.fitHalf.z).toBeLessThan(3.1);
+    expect(gl.cameraDistance).toBeLessThan(24);
+    await expect(host).toHaveAttribute('role', 'group');
+    await expect(rayKey).toContainText('input rays');
+    await expect(rayKey).toContainText('physical rays');
+    await expect(rayKey).not.toContainText('virtual extensions');
     expect(await page.evaluate(() => (window as any).__mirrorCanvasCount())).toBe(1);
-    await expect(page.locator('[data-op-mirror-3d-outcome="real"]'))
-      .toHaveAttribute('data-image-side', 'incident');
-    await expect(page.locator('[data-op-mirror-3d-outcome="real"]')).toContainText('real · incident side · inverted');
+    await expect(mirrorOutcome).toHaveAttribute('data-image-side', 'incident');
+    await expect(mirrorOutcome).toHaveAttribute('role', 'status');
+    await expect(mirrorOutcome).toHaveAttribute('aria-live', 'polite');
+    await expect(mirrorOutcome).toHaveAttribute('data-mirror-type', 'concave');
+    await expect(mirrorOutcome).toHaveAttribute('data-object-height', '5.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-image-height', '-2.500');
+    await expect(mirrorOutcome).toHaveAttribute('data-image-distance-cm', '15.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-magnification', '-0.500000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-state', 'sharp');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-offset-cm', '0.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
+    await expect(mirrorOutcome).toContainText('real · incident side · inverted');
+    await expect(mirrorOutcome).toContainText('sample screen 15.0 cm · sharp focus · blur 0.0%');
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
@@ -1053,20 +1402,34 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     const screenTest = page.locator('[data-op-mirror-screen-test]');
     const screenRange = page.getByRole('slider', { name: 'Mirror sampling screen position' });
     const screenHandle = page.locator('[data-op-mirror-screen-handle="true"]');
+    const focusGuide = page.locator('[data-op-focus-guide="mirror"]');
+    const focusMarker = focusGuide.locator('[data-op-focus-marker="true"]');
+    const mirrorOutcome = page.locator('[data-op-mirror-3d-outcome]');
 
     await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'blurred');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
     await expect(screenTest).toContainText('10.0 cm beyond the real image plane');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'blurred');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '10.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-relative', '0.666667');
+    await expect(focusGuide).toContainText('Offset +10.0 cm | blur 66.7% aperture');
+    await expect(focusMarker).toBeVisible();
     let gl = await page.evaluate(() => (window as any).__mirror());
     expect(gl.screenDistance).toBe(25);
     expect(gl.screenBundleRatio).toBeCloseTo(2 / 3, 6);
     expect(gl.screenFocused).toBe(false);
     expect(gl.screenCapturable).toBe(true);
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-state', 'blurred');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-distance-cm', '25.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-offset-cm', '10.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-bundle-ratio', '0.666667');
+    await expect(mirrorOutcome).toContainText('sample screen 25.0 cm · 10.0 cm beyond focus · blur 66.7%');
     await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'false');
 
     await screenRange.fill('20');
     await page.waitForFunction(() => Math.abs((window as any).__mirror()?.screenBundleRatio - (1 / 3)) < 1e-6);
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.333333');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '5.000000');
     await screenHandle.focus();
     await screenHandle.press('ArrowLeft');
     await page.waitForFunction(() => (window as any).__bucket().reflScreenCm === 20.5);
@@ -1076,19 +1439,43 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'sharp');
     await expect(screenTest).toHaveAttribute('data-screen-distance', '15.000000');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'sharp');
+    await expect(focusGuide).toHaveAttribute('data-focus-offset-cm', '0.000000');
+    await expect(focusGuide).toContainText('Aligned at focus | blur 0.0% aperture');
     await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toHaveAttribute('data-screen-focused', 'true');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-state', 'sharp');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-distance-cm', '15.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-offset-cm', '0.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-bundle-ratio', '0.000000');
     await expect(page.locator('[data-op-mirror-3d-screen="true"]')).toContainText('sharp focus');
+    await expect(mirrorOutcome).toContainText('sample screen 15.0 cm · sharp focus · blur 0.0%');
 
     await page.evaluate(() => (window as any).__set({ reflDo: 5, reflScreenCm: 20 }));
     await page.waitForFunction(() => (window as any).__mirror()?.screenCapturable === false);
     await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'virtual');
     await expect(screenTest).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'virtual');
+    await expect(focusGuide).toHaveAttribute('data-focus-capturable', 'false');
+    await expect(focusMarker).toHaveCount(0);
     await expect(page.locator('[data-op-place-mirror-screen-at-image="true"]')).toHaveCount(0);
+    await expect(mirrorOutcome).toHaveAttribute('data-op-mirror-3d-outcome', 'virtual');
+    await expect(mirrorOutcome).toHaveAttribute('data-image-distance-cm', '-10.000');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-state', 'virtual');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-offset-cm', 'none');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-bundle-ratio', '3.000000');
+    await expect(mirrorOutcome).toContainText('sample screen 20.0 cm · virtual image · no screen focus');
 
     await page.evaluate(() => (window as any).__set({ reflDo: 10 }));
     await page.waitForFunction(() => (window as any).__mirror()?.screenBundleRatio === 1);
     await expect(screenTest).toHaveAttribute('data-op-mirror-screen-test', 'infinity');
     await expect(screenTest).toContainText('No finite screen focus');
+    await expect(focusGuide).toHaveAttribute('data-focus-state', 'infinity');
+    await expect(focusGuide).toContainText('No finite focus target');
+    await expect(mirrorOutcome).toHaveAttribute('data-op-mirror-3d-outcome', 'infinity');
+    await expect(mirrorOutcome).toHaveAttribute('data-image-distance-cm', 'infinity');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-state', 'infinity');
+    await expect(mirrorOutcome).toHaveAttribute('data-screen-offset-cm', 'none');
+    await expect(mirrorOutcome).toContainText('sample screen 20.0 cm · no finite focus · parallel output');
 
     await page.setViewportSize({ width: 320, height: 760 });
     await page.waitForTimeout(150);
@@ -1100,6 +1487,50 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     }));
     expect(widths.page).toBeLessThanOrEqual(widths.viewport + 1);
     expect(widths.tool).toBeLessThanOrEqual(widths.toolClient + 1);
+    const mirrorOutcomeBounds = await mirrorOutcome.boundingBox();
+    const mirrorCueBounds = await page.locator('[data-op-mirror-3d-cue]').boundingBox();
+    expect(mirrorOutcomeBounds).not.toBeNull();
+    expect(mirrorCueBounds).not.toBeNull();
+    expect(mirrorOutcomeBounds!.x).toBeGreaterThanOrEqual(0);
+    expect(mirrorOutcomeBounds!.x + mirrorOutcomeBounds!.width).toBeLessThanOrEqual(320.5);
+    expect(mirrorOutcomeBounds!.y + mirrorOutcomeBounds!.height).toBeLessThan(mirrorCueBounds!.y);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('scales mirror image height and teaches focus through formulas and missions', async ({ page }) => {
+    await mountMirror(page, {
+      reflMirrorType: 'concave', reflFocal: 10, reflDo: 30,
+      reflObjH: 5, reflScreenCm: 25
+    });
+    const heightRange = page.getByRole('slider', { name: 'Mirror object height', exact: true });
+    const heightHandle = page.locator('[data-op-mirror-height-handle="true"]');
+    const screenRange = page.getByRole('slider', { name: 'Mirror sampling screen position' });
+    const liveFormula = page.locator('[data-op-formula-context]');
+    const mission = page.locator('.opticslab-mission');
+
+    await expect(mission).toContainText('Capture a sharp mirror image');
+    await expect(mission).toHaveAttribute('data-complete', 'false');
+    await heightRange.fill('8');
+    await page.waitForFunction(() => (window as any).__mirror()?.objectHeight === 8);
+    let gl = await page.evaluate(() => (window as any).__mirror());
+    expect(gl.imageHeight).toBeCloseTo(-4, 8);
+    await expect(liveFormula).toHaveAttribute('data-op-formula-context', 'mirror-height');
+    await expect(liveFormula).toContainText('h_i = m h_o');
+
+    await heightHandle.focus();
+    await heightHandle.press('ArrowDown');
+    await page.waitForFunction(() => (window as any).__bucket().reflObjH === 7.5);
+    await page.waitForFunction(() => Math.abs((window as any).__mirror()?.imageHeight + 3.75) < 1e-8);
+
+    await screenRange.fill('20');
+    await expect(liveFormula).toHaveAttribute('data-op-formula-context', 'mirror-screen');
+    await expect(liveFormula).toContainText('blur / aperture');
+    await page.locator('[data-op-place-mirror-screen-at-image="true"]').click();
+    await expect(mission).toHaveAttribute('data-complete', 'true');
+    await expect(mission.getByRole('button', { name: 'Next mission' })).toBeVisible();
+
+    await page.evaluate(() => (window as any).__set({ reflDo: 5, reflScreenCm: 20 }));
+    await expect(mission).toHaveAttribute('data-complete', 'false');
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
@@ -1114,6 +1545,9 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     expect(gl.imageDistance).toBeCloseTo(-20 / 3, 8);
     expect(gl.physicalRaysStayIncidentSide).toBe(true);
     expect(gl.virtualExtensionsBehindMirror).toBe(true);
+    expect(gl.fitHalf.y).toBeGreaterThan(4.5);
+    expect(gl.fitHalf.z).toBeGreaterThan(3.2);
+    await expect(page.locator('[data-op-mirror-3d-ray-key]')).toContainText('virtual extensions');
     await expect(page.locator('[data-op-mirror-3d-outcome="virtual"]'))
       .toHaveAttribute('data-mirror-type', 'convex');
     expect(await page.evaluate(() => (window as any).__text())).toContain('Dashed pink lines are backward extensions behind the mirror');
@@ -1143,6 +1577,9 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
   test('supports camera presets and keyboard orbit, then disposes when hidden', async ({ page }) => {
     await mountMirror(page);
     const host = page.locator('[data-op-mirror-3d-host="true"]');
+    await expect(host).toHaveAttribute('aria-roledescription', 'interactive 3D model');
+    await expect(host).toHaveAttribute('aria-keyshortcuts', 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0');
+    await expect(host).toHaveAttribute('aria-label', /Press zero to reset the camera/);
     await host.press('ArrowRight');
     await page.waitForFunction(() => (window as any).__bucket().reflGlRot?.rotY === 40);
     expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('ArrowRight');
@@ -1153,6 +1590,7 @@ test.describe('Optics Lab mirror ray-space bench - real WebGL', () => {
     await host.press('0');
     await page.waitForFunction(() => (window as any).__bucket().reflGlCamera === 'oblique');
     expect(await page.evaluate(() => (window as any).__bucket().reflGlRot)).toEqual({ rotY: 34, rotX: 18 });
+    expect(await page.evaluate(() => (window as any).__bubbledKeys)).not.toContain('0');
 
     await page.evaluate(() => (window as any).__set({ reflShow3D: false }));
     await page.waitForTimeout(400);

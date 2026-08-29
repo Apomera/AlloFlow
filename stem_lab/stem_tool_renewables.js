@@ -1667,13 +1667,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         return h('div', { role: 'contentinfo', 'aria-label': __alloT('stem.renewables.source_attribution', 'Source attribution'),
           style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
           __alloT('stem.renewables.numbers_traced_to', 'Numbers traced to '),
-          h('a', { href: 'https://www.nrel.gov', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'NREL'),
+          h('a', { href: 'https://www.nrel.gov', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'NREL'),
           ' · ',
-          h('a', { href: 'https://www.iea.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'IEA'),
+          h('a', { href: 'https://www.iea.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'IEA'),
           ' · ',
-          h('a', { href: 'https://www.irena.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'IRENA'),
+          h('a', { href: 'https://www.irena.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'IRENA'),
           ' · ',
-          h('a', { href: 'https://www.eia.gov', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'EIA'),
+          h('a', { href: 'https://www.eia.gov', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'EIA'),
           __alloT('stem.renewables.sims_are_simplified_real_plants_involv', '. Sims are simplified — real plants involve additional losses (wake, transmission, parasitic load).')
         );
       }
@@ -5107,11 +5107,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px dashed ' + T.border } },
             h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, __alloT('stem.renewables.more_teacher_resources', '📚 More teacher resources')),
             h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
-              h('li', null, h('a', { href: 'https://www.need.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.need_project', 'NEED Project')), __alloT('stem.renewables.free_k_12_energy_curriculum_teacher_pd', ' — free K-12 energy curriculum + teacher PD')),
-              h('li', null, h('a', { href: 'https://www.kidwind.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'KidWind'), __alloT('stem.renewables.turbine_kits_lesson_plans_annual_chall', ' — turbine kits, lesson plans, annual challenge competition')),
-              h('li', null, h('a', { href: 'https://www.pbslearningmedia.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.pbs_learningmedia_energy', 'PBS LearningMedia — Energy')), __alloT('stem.renewables.standards_aligned_video_activities', ' — standards-aligned video + activities')),
-              h('li', null, h('a', { href: 'https://www.energy.gov/eere/education/energy-literacy-essential-principles-energy-education', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.doe_energy_literacy', 'DOE Energy Literacy')), __alloT('stem.renewables.7_essential_principles_framework', ' — 7 essential principles framework')),
-              h('li', null, h('a', { href: 'https://www.maine.gov/education/learning/standards', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.renewables.maine_learning_results', 'Maine Learning Results')), __alloT('stem.renewables.maine_s_state_science_standards_mlr_ad', ' — Maine\'s state science standards (MLR adopt NGSS as a base)'))
+              h('li', null, h('a', { href: 'https://www.need.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, __alloT('stem.renewables.need_project', 'NEED Project')), __alloT('stem.renewables.free_k_12_energy_curriculum_teacher_pd', ' — free K-12 energy curriculum + teacher PD')),
+              h('li', null, h('a', { href: 'https://www.kidwind.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'KidWind'), __alloT('stem.renewables.turbine_kits_lesson_plans_annual_chall', ' — turbine kits, lesson plans, annual challenge competition')),
+              h('li', null, h('a', { href: 'https://www.pbslearningmedia.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, __alloT('stem.renewables.pbs_learningmedia_energy', 'PBS LearningMedia — Energy')), __alloT('stem.renewables.standards_aligned_video_activities', ' — standards-aligned video + activities')),
+              h('li', null, h('a', { href: 'https://www.energy.gov/eere/education/energy-literacy-essential-principles-energy-education', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, __alloT('stem.renewables.doe_energy_literacy', 'DOE Energy Literacy')), __alloT('stem.renewables.7_essential_principles_framework', ' — 7 essential principles framework')),
+              h('li', null, h('a', { href: 'https://www.maine.gov/education/learning/standards', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, __alloT('stem.renewables.maine_learning_results', 'Maine Learning Results')), __alloT('stem.renewables.maine_s_state_science_standards_mlr_ad', ' — Maine\'s state science standards (MLR adopt NGSS as a base)'))
             )
           ),
           (function() { awardBadge('teacher_guide', 'Teacher Guide read'); return null; })(),

@@ -59,6 +59,7 @@ function flyCycle(K, scenarioId, surface, opts) {
     const next = K.step(state, input);
     if (next.form !== state.form) forms.push(next.form);
     state = next;
+    if (options.stopAtLandfall && state.note === 'landed') break;
     if (state.loops >= 1 && !K.isAirborne(state.form)) break;
   }
   return { forms, state, env };
@@ -79,6 +80,32 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
       expect(env.freezingM).toBeGreaterThanOrEqual(0);
       expect(env.freezingM).toBeLessThanOrEqual(K.CEILING_M);
     });
+  });
+
+  it('classifies one shared altitude consistently across all four climates', () => {
+    const tropical = K.climateProbe('tropicalOcean', 1500);
+    const temperate = K.climateProbe('temperateCoast', 1500);
+    const mountain = K.climateProbe('mountainWinter', 1500);
+    const desert = K.climateProbe('desertBasin', 1500);
+    expect(tropical.state).toBe('cloud');
+    expect(temperate.state).toBe('cloud');
+    expect(mountain.state).toBe('ice');
+    expect(desert.state).toBe('air');
+    expect(tropical.aboveCloudBase).toBe(true);
+    expect(tropical.atOrAboveFreezingLevel).toBe(false);
+    expect(mountain.aboveCloudBase).toBe(true);
+    expect(mountain.atOrAboveFreezingLevel).toBe(true);
+
+    const coldClearAir = K.climateProbe('mountainWinter', 600);
+    expect(coldClearAir.state).toBe('cold');
+    expect(coldClearAir.aboveCloudBase).toBe(false);
+    expect(coldClearAir.atOrAboveFreezingLevel).toBe(true);
+
+    const desertEnv = K.environment('desertBasin');
+    expect(K.climateProbe(desertEnv, -900).altitudeM).toBe(0);
+    const boundedHigh = K.climateProbe(desertEnv, 999999);
+    expect(boundedHigh.altitudeM).toBe(K.CEILING_M);
+    expect(boundedHigh.ambientTempC).toBeCloseTo(K.ambientTempC(desertEnv, K.CEILING_M), 8);
   });
 
   it('models the three-act buoyancy profile the mode is built to teach', () => {
@@ -136,11 +163,14 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
     expect(K.MASS_TO_FALL).toBeGreaterThan(0.12 + K.DROPLETS_FOR_CLOUD * 0.11);
   });
 
-  it('completes a full cycle from sea surface back to the ground', () => {
+  it('completes a full cycle from sea surface through the terminal watershed return', () => {
     const { forms, state } = flyCycle(K, 'tropicalOcean', 'permeable');
     expect(forms[0]).toBe('liquid');
     expect(forms).toContain('vapor');
     expect(forms).toContain('droplet');
+    expect(forms).toContain('soil');
+    expect(forms).toContain('groundwater');
+    expect(state.form).toBe('liquid');
     expect(state.loops).toBe(1);
     expect(K.isAirborne(state.form)).toBe(false);
   });
@@ -151,9 +181,78 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
     expect(K.landingForm('plant')).toBe('plant');
     expect(K.landingForm('hard')).toBe('runoff');
     ['water', 'permeable', 'plant', 'hard'].forEach((surface) => {
-      const { state } = flyCycle(K, 'tropicalOcean', surface);
+      const { state } = flyCycle(K, 'tropicalOcean', surface, { stopAtLandfall: true });
       expect(state.form).toBe(K.landingForm(surface));
     });
+  });
+
+  it('credits a loop only when the selected pathway actually completes', () => {
+    function landOn(surface) {
+      return K.step(Object.assign(K.initialState('tropicalOcean'), {
+        form: 'rain', altitudeM: 1, vy: -14, mass: K.MASS_TO_FALL,
+      }), { dt: 0.12, surface });
+    }
+
+    const water = landOn('water');
+    expect(water.form).toBe('liquid');
+    expect(water.note).toBe('landed');
+    expect(water.loops).toBe(1);
+    expect(K.step(water, { dt: 0.12, sunlit: false }).loops).toBe(1);
+
+    const routes = [
+      { surface: 'hard', landing: 'runoff', terminalFrom: 'runoff', terminalTo: 'liquid' },
+      { surface: 'permeable', landing: 'soil', terminalFrom: 'groundwater', terminalTo: 'liquid' },
+    ];
+    routes.forEach((route) => {
+      let state = landOn(route.surface);
+      expect(state.form).toBe(route.landing);
+      expect(state.note).toBe('landed');
+      expect(state.loops).toBe(0);
+      let previous = state;
+      for (let i = 0; i < 2000 && state.loops === 0; i += 1) {
+        previous = state;
+        state = K.step(state, {
+          dt: 0.12,
+          thrust: state.form === 'soil' ? -1 : state.form === 'plant' ? 1 : 0,
+          pathwayDrive: state.form === 'runoff' || state.form === 'groundwater' ? 1 : 0,
+        });
+      }
+      expect(previous.form).toBe(route.terminalFrom);
+      expect(previous.loops).toBe(0);
+      expect(state.form).toBe(route.terminalTo);
+      expect(state.loops).toBe(1);
+      expect(K.step(state, { dt: 0.12, sunlit: false }).loops).toBe(1);
+    });
+
+    let plantState = landOn('plant');
+    expect(plantState.note).toBe('landed');
+    let beforePlantVapor = plantState;
+    for (let i = 0; i < 2000 && plantState.form !== 'vapor'; i += 1) {
+      beforePlantVapor = plantState;
+      plantState = K.step(plantState, {
+        dt: 0.12,
+        thrust: plantState.form === 'plant' ? 1 : 0,
+      });
+    }
+    expect(beforePlantVapor.form).toBe('transpiring');
+    expect(plantState.form).toBe('vapor');
+    expect(plantState.loops).toBe(0);
+  });
+
+  it('credits only live transition frames after a canvas remount', () => {
+    const storedRain = { form: 'rain' };
+    expect(K.isLiveTransition(storedRain, {
+      form: 'liquid', reason: 'form', note: 'landed',
+    })).toBe(true);
+    expect(K.isLiveTransition(storedRain, {
+      form: 'liquid', reason: 'tick', note: '',
+    })).toBe(false);
+    expect(K.isLiveTransition(storedRain, {
+      form: 'liquid', reason: 'reset', note: '',
+    })).toBe(false);
+    expect(K.isLiveTransition({ form: 'liquid' }, {
+      form: 'liquid', reason: 'form', note: '',
+    })).toBe(false);
   });
 
   it('continues every landfall through a reachable watershed pathway', () => {
@@ -251,6 +350,37 @@ describe.each(WATER_CYCLE_PATHS)('Be the Water kernel (%s)', (filePath) => {
     expect(K.evaporationRate(arid, true)).toBeGreaterThan(K.evaporationRate(humid, true));
     // And nothing evaporates instantly: the charge must take real time.
     expect(K.evaporationRate(humid, true)).toBeLessThan(1);
+  });
+
+  it('produces virga in a dry desert layer while humid rain still reaches land', () => {
+    function descend(scenarioId, dt) {
+      const env = K.environment(scenarioId);
+      let state = Object.assign(K.initialState(scenarioId), {
+        form: 'rain', altitudeM: Math.min(1600, env.lclM - 60),
+        vy: -5, mass: K.MASS_TO_FALL,
+      });
+      let previous = state;
+      for (let i = 0; i < 6000 && state.form === 'rain'; i += 1) {
+        previous = state;
+        state = K.step(state, { dt, surface: 'hard' });
+      }
+      return { env, previous, state };
+    }
+
+    [0.02, 0.05, 0.1].forEach((dt) => {
+      const desert = descend('desertBasin', dt);
+      expect(desert.previous.form).toBe('rain');
+      expect(desert.state.form).toBe('vapor');
+      expect(desert.state.altitudeM).toBeGreaterThan(0);
+      expect(desert.state.loops).toBe(0);
+      expect(desert.state.dryAirExposure).toBe(1);
+
+      const humid = descend('tropicalOcean', dt);
+      expect(humid.state.form).toBe('runoff');
+      expect(humid.state.altitudeM).toBe(0);
+      expect(humid.state.loops).toBe(0);
+    });
+    expect(K.energyTransfer('rain', 'vapor')).toBe('absorbed');
   });
 
   it('is a pure function of its inputs', () => {

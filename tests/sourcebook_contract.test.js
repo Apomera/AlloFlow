@@ -64,6 +64,112 @@ function smkRecord(overrides = {}) {
   };
 }
 
+
+function yaleRecord(overrides = {}) {
+  const objectId = '111127';
+  return {
+    id: 'https://lux.collections.yale.edu/data/object/11111111-1111-4111-8111-111111111111',
+    type: 'HumanMadeObject',
+    _label: 'Textile fragment with repeating geometric pattern',
+    equivalent: [
+      { id: 'https://media.art.yale.edu/content/lux/obj/' + objectId + '.json' },
+      { id: 'https://artgallery.yale.edu/collections/objects/' + objectId },
+      { id: 'https://manifests.collections.yale.edu/yuag/obj/' + objectId }
+    ],
+    ...overrides
+  };
+}
+
+function yaleManifest(overrides = {}) {
+  const objectId = '111127';
+  const service = 'https://images.collections.yale.edu/iiif/2/yuag:22222222-2222-4222-8222-222222222222';
+  return {
+    id: 'https://manifests.collections.yale.edu/yuag/obj/' + objectId,
+    type: 'Manifest',
+    label: { en: ['Textile fragment'] },
+    rights: 'https://creativecommons.org/publicdomain/zero/1.0/',
+    requiredStatement: { label: { en: ['Usage'] }, value: { en: ['Image restrictions may apply.'] } },
+    homepage: [{ id: 'https://artgallery.yale.edu/collections/objects/' + objectId, type: 'Text', format: 'text/html' }],
+    metadata: [
+      { label: { en: ['Copyright Statement'] }, value: { en: ['Public domain'] } },
+      { label: { en: ['Artist/Maker'] }, value: { en: ['Unknown workshop'] } },
+      { label: { en: ['Date'] }, value: { en: ['18th century'] } },
+      { label: { en: ['Medium'] }, value: { en: ['Woven wool and silk'] } },
+      { label: { en: ['Classification'] }, value: { en: ['Textiles'] } }
+    ],
+    items: [{
+      id: 'https://manifests.collections.yale.edu/yuag/canvas/111127-1',
+      type: 'Canvas', width: 6146, height: 5191,
+      metadata: [{ label: { en: ['Image Use Rights'] }, value: { en: ['No Copyright - United States'] } }],
+      items: [{
+        id: 'https://manifests.collections.yale.edu/yuag/page/111127-1', type: 'AnnotationPage',
+        items: [{
+          id: 'https://manifests.collections.yale.edu/yuag/annotation/111127-1', type: 'Annotation', motivation: 'painting',
+          body: {
+            id: service + '/full/full/0/default.jpg', type: 'Image', format: 'image/jpeg', width: 6146, height: 5191,
+            service: [{ id: service, type: 'ImageService2', profile: 'level2' }]
+          }
+        }]
+      }]
+    }],
+    ...overrides
+  };
+}
+
+function museumsVictoriaMedia(id, licenceUri, shortName, rightsStatement, overrides = {}) {
+  const mediaId = String(id);
+  return {
+    type: 'image', id: 'media/' + mediaId,
+    caption: 'Measured architectural drawing ' + mediaId,
+    alternativeText: 'A precise historical plan with labels and dimensions.',
+    creators: ['Museums Victoria collections photographer'],
+    sources: ['Museums Victoria collection'],
+    credit: 'Museums Victoria',
+    rightsStatement,
+    licence: {
+      name: shortName === 'CC BY' ? 'Creative Commons Attribution 4.0 International' : shortName,
+      shortName, uri: licenceUri
+    },
+    medium: { uri: `https://collections.museumsvictoria.com.au/content/media/23/${mediaId}-medium.jpg`, width: 1200, height: 800 },
+    large: { uri: `https://collections.museumsvictoria.com.au/content/media/23/${mediaId}-large.jpg`, width: 3000, height: 2000 },
+    ...overrides
+  };
+}
+
+function museumsVictoriaRecord(overrides = {}) {
+  return {
+    id: 'items/1589497',
+    displayTitle: 'Pumping station architectural drawing',
+    date: 'circa 1910',
+    summary: 'A measured engineering plan from the Museums Victoria collection.',
+    category: 'Engineering drawings',
+    licence: { uri: 'https://creativecommons.org/publicdomain/zero/1.0/' },
+    media: [
+      museumsVictoriaMedia('599417', 'https://creativecommons.org/publicdomain/mark/1.0/', 'Public Domain', 'Public Domain'),
+      museumsVictoriaMedia('599418', 'https://creativecommons.org/publicdomain/zero/1.0/', 'Public Domain', 'Public Domain Dedication'),
+      museumsVictoriaMedia('599419', 'https://creativecommons.org/licenses/by/4.0', 'CC BY', 'CC BY 4.0'),
+      museumsVictoriaMedia('599420', 'https://rightsstatements.org/vocab/InC/1.0/', 'All Rights Reserved', 'All Rights Reserved')
+    ],
+    ...overrides
+  };
+}
+
+function aicPayload(count) {
+  return {
+    data: Array.from({ length: count }, (_, index) => ({
+      id: 91000 + index,
+      title: 'Public-domain textile ' + index,
+      artist_display: 'Open collection maker',
+      date_display: '1900',
+      medium_display: 'Woven textile',
+      classification_title: 'Textiles',
+      image_id: 'aic-cache-image-' + index,
+      is_public_domain: true
+    })),
+    config: { iiif_url: 'https://www.artic.edu/iiif/2' }
+  };
+}
+
 describe('Sourcebook initial feature contract', () => {
   it('registers as a standalone creative tool with no collage framing', () => {
     const window = loadSourcebook();
@@ -78,6 +184,104 @@ describe('Sourcebook initial feature contract', () => {
     expect(capabilityMode({})).toMatchObject({ mode: 'deterministic', textAi: false, visionAi: false, label: 'No-AI mode active' });
     expect(capabilityMode({ generateText() {} })).toMatchObject({ mode: 'ai-metadata', textAi: true, visionAi: false, label: 'AI metadata assist available' });
     expect(capabilityMode({ callGemini() {}, callGeminiVision() {} })).toMatchObject({ mode: 'ai-visual', textAi: true, visionAi: true, label: 'AI visual + metadata assist available' });
+  });
+
+  it('limits collection recovery to failed known providers and rechecks recovered-item rights', () => {
+    const window = loadSourcebook();
+    const providers = window.SourcebookProviders;
+    const failed = { provider: 'Art Institute of Chicago', status: 'error' };
+    expect(providers.providerReportCanRetry(failed)).toBe(true);
+    expect(providers.providerReportCanRetry({ provider: 'Wikimedia Commons', status: 'cancelled' })).toBe(true);
+    ['ready', 'cached', 'searching', 'retrying', 'cooldown'].forEach((status) => {
+      expect(providers.providerReportCanRetry({ provider: 'Art Institute of Chicago', status })).toBe(false);
+    });
+    expect(providers.providerReportCanRetry({ provider: 'Unknown collection', status: 'error' })).toBe(false);
+    expect(providers.providerReportCanRetry({ provider: 'All', status: 'error' })).toBe(false);
+
+    expect(providers.providerReportCanSearchDeeper({ provider: 'Art Institute of Chicago', status: 'ready', batch: 0 }, 0)).toBe(true);
+    expect(providers.providerReportCanSearchDeeper({ provider: 'Wikimedia Commons', status: 'cached', batch: 3 }, 1)).toBe(true);
+    ['error', 'cancelled', 'cooldown', 'searching', 'retrying'].forEach((status) => {
+      expect(providers.providerReportCanSearchDeeper({ provider: 'Art Institute of Chicago', status, batch: 0 }, 0)).toBe(false);
+    });
+    expect(providers.providerReportCanSearchDeeper({ provider: 'Unknown collection', status: 'ready', batch: 0 }, 0)).toBe(false);
+    expect(providers.providerReportCanSearchDeeper({ provider: 'Art Institute of Chicago', status: 'ready', batch: 40 }, 0)).toBe(false);
+    expect(providers.providerReportCanSearchDeeper({ provider: 'Art Institute of Chicago', status: 'ready', batch: 1 }, 40)).toBe(false);
+    expect(providers.providerReportTargetBatch({ batch: 0 }, 0, false)).toBe(1);
+    expect(providers.providerReportTargetBatch({ batch: 3 }, 1, false)).toBe(4);
+    expect(providers.providerReportTargetBatch({ batch: 2 }, 0, true)).toBe(2);
+    expect(providers.providerReportTargetBatch({}, 3, true)).toBe(3);
+    expect(providers.providerReportTargetBatch({ batch: 40 }, 40, false)).toBe(40);
+
+    const base = { ...Array.from(providers.materials)[0], id: 'recovery-existing-pd', rightsType: 'pd' };
+    const duplicate = { ...base, title: 'Duplicate should not replace the board item' };
+    const cc0 = { ...base, id: 'recovery-new-cc0', rightsType: 'cc0', rightsShort: 'CC0', license: 'CC0 1.0' };
+    const ccby = { ...base, id: 'recovery-out-of-scope-ccby', rightsType: 'ccby', rightsShort: 'CC BY', license: 'CC BY 4.0' };
+    const unknown = { ...base, id: 'recovery-unknown-rights', rightsType: 'unknown', rightsShort: 'Unknown' };
+    const recovery = providers.mergeRecoveredProviderItems([base], [duplicate, cc0, ccby, unknown], 'pd-cc0');
+    expect(Array.from(recovery.items, (item) => item.id)).toEqual(['recovery-existing-pd', 'recovery-new-cc0']);
+    expect(Array.from(recovery.additions, (item) => item.id)).toEqual(['recovery-new-cc0']);
+    expect(Array.from(recovery.items).every((item) => ['pd', 'cc0'].includes(item.rightsType))).toBe(true);
+  });
+
+  it('summarizes rights-verified collection coverage and routes the least-explored useful source', () => {
+    const window = loadSourcebook();
+    const providers = window.SourcebookProviders;
+    const base = { ...Array.from(providers.materials)[0], id: 'coverage-pd', provider: 'Wikimedia Commons', rightsType: 'pd' };
+    const reports = [
+      { provider: 'Wikimedia Commons', status: 'ready', batch: 0, count: 1 },
+      { provider: 'Library of Congress', status: 'ready', batch: 0, count: 0 },
+      { provider: 'U.S. National Archives', status: 'cached', batch: 0, count: 0 },
+      { provider: 'Art Institute of Chicago', status: 'error', batch: 0, count: 0 }
+    ];
+    const guide = providers.buildProviderCoverageGuide(reports, [
+      base,
+      { ...base, id: 'coverage-unknown', provider: 'Library of Congress', rightsType: 'unknown' }
+    ], 'Maps', 0);
+    expect(guide).toMatchObject({
+      totalCount: 4,
+      checkedCount: 3,
+      contributedCount: 1,
+      emptyCount: 2,
+      attentionCount: 1,
+      cooldownCount: 0,
+      workingCount: 0,
+      completionPercent: 100,
+      nextProvider: 'Library of Congress',
+      nextBatch: 1
+    });
+    expect(guide.reason).toContain('strong match for maps');
+
+    const balancedDepth = providers.buildProviderCoverageGuide(reports.map((report) => (
+      report.provider === 'Library of Congress' ? { ...report, batch: 1 } : report
+    )), [base], 'Maps', 0);
+    expect(balancedDepth.nextProvider).toBe('U.S. National Archives');
+    expect(balancedDepth.nextBatch).toBe(1);
+
+    const botanical = providers.buildProviderCoverageGuide([
+      { provider: 'Wellcome Collection', status: 'ready', batch: 0 },
+      { provider: 'Smithsonian Open Access', status: 'ready', batch: 0 },
+      { provider: 'Biodiversity Heritage Library', status: 'ready', batch: 0 }
+    ], [], 'Botanical', 0);
+    expect(botanical.nextProvider).toBe('Biodiversity Heritage Library');
+
+    const unavailable = providers.buildProviderCoverageGuide([
+      { provider: 'Library of Congress', status: 'cooldown', batch: 0 },
+      { provider: 'U.S. National Archives', status: 'error', batch: 0 },
+      { provider: 'Wikimedia Commons', status: 'ready', batch: 40 },
+      { provider: 'Art Institute of Chicago', status: 'searching', batch: 0 }
+    ], [{ ...base, rightsType: 'unknown' }], 'Maps', 0);
+    expect(unavailable).toMatchObject({
+      totalCount: 4,
+      checkedCount: 1,
+      contributedCount: 0,
+      emptyCount: 1,
+      attentionCount: 1,
+      cooldownCount: 1,
+      workingCount: 1,
+      completionPercent: 75,
+      nextProvider: '',
+      nextBatch: null
+    });
   });
 
   it('keeps persisted SMK session and palette metadata hidden while source revalidation is pending', async () => {
@@ -130,8 +334,8 @@ describe('Sourcebook initial feature contract', () => {
       expect(host.textContent).not.toContain('FORGED PERSISTED SMK BOARD TITLE');
       expect(host.querySelector('[data-sourcebook-smk-saved-status="loading"]')).toBeTruthy();
       expect(host.querySelector('[data-sourcebook-live-status="loading"]')).toBeTruthy();
-      expect(host.textContent).toContain('Checking saved SMK Open assets before showing them');
-      expect(host.textContent).toContain('Verifying saved SMK Open records before restoring this board');
+      expect(host.textContent).toContain('Checking saved source-verified assets before showing them');
+      expect(host.textContent).toContain('Verifying saved source records before restoring this board');
     } finally {
       if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
       host.remove();
@@ -493,6 +697,1137 @@ describe('Sourcebook initial feature contract', () => {
     expect(results[0].rightsMetadataSource).toContain('Wikimedia Commons imageinfo extmetadata');
     const session = window.SourcebookProviders.buildLiveSession(results, { query: 'historical technical drawing', provider: 'U.S. National Archives' });
     expect(window.SourcebookProviders.normalizeLiveSession(session)).toMatchObject({ provider: 'U.S. National Archives' });
+  });
+
+
+
+  it('makes provider, exact rights, and inspect preparation visible on result cards', async () => {
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    try {
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      const ctx = {
+        React: ReactLib, toolData: { sourcebook: {} },
+        updateMulti() {}, update() {}, announceToSR() {}, addToast() {}
+      };
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const card = host.querySelector('[data-sourcebook-result-card="cma-binakol"]');
+      expect(card).toBeTruthy();
+      expect(card.querySelector('[data-sourcebook-card-provider]')?.textContent).toBe('Cleveland Museum of Art');
+      expect(card.querySelectorAll('[data-sourcebook-card-rights="pd"]')).toHaveLength(1);
+      const inspect = card.querySelector('button[data-sourcebook-inspect="cma-binakol"]');
+      expect(inspect).toBeTruthy();
+      expect(inspect.getAttribute('aria-label')).toContain('Cleveland Museum of Art');
+      expect(inspect.getAttribute('aria-label')).toContain('Public domain');
+      expect(inspect.textContent).toContain('Inspect & prepare');
+      inspect.focus();
+      await ReactLib.act(async () => { inspect.click(); });
+      expect(host.querySelector('[data-sourcebook-result-card="cma-binakol"]')?.getAttribute('data-sourcebook-active')).toBe('true');
+      expect(host.querySelector('.sb-detail')?.textContent).toContain('Binakol textile fragment');
+      expect(host.querySelector('.sb-detail')?.textContent).toContain('Cleveland Museum of Art');
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('progressively reveals loaded results without starting another provider search', async () => {
+    const sourceWindow = loadSourcebook();
+    const payload = aicPayload(60);
+    const items = payload.data.map((record) => sourceWindow.SourcebookProviders.normalizeAicArtwork(
+      record, payload.config, 'public-domain textile', 'Patterns'
+    )).filter(Boolean);
+    const session = sourceWindow.SourcebookProviders.buildLiveSession(items, {
+      query: 'public-domain textile', kind: 'Patterns', provider: 'All', rightsScope: 'pd'
+    }, Date.now());
+    expect(items).toHaveLength(60);
+    expect(session.results).toHaveLength(60);
+
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    try {
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      const ctx = {
+        React: ReactLib, toolData: { sourcebook: { liveSession: session } },
+        updateMulti() {}, update() {}, announceToSR() {}, addToast() {}
+      };
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(24);
+      const firstInspect = host.querySelector('[data-sourcebook-result-card] [data-sourcebook-inspect]');
+      expect(firstInspect.getAttribute('aria-pressed')).toBe('false');
+      expect(firstInspect.getAttribute('aria-controls')).toBe('sourcebook-detail-panel');
+      await ReactLib.act(async () => { firstInspect.click(); });
+      expect(firstInspect.getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelector('#sourcebook-detail-panel')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-rights-evidence="true"]')?.textContent).toContain('Art Institute of Chicago API');
+      const reveal = host.querySelector('[data-sourcebook-show-more-loaded="true"]');
+      expect(reveal).toBeTruthy();
+      expect(reveal.textContent).toBe('Show 24 more loaded results');
+      expect(reveal.getAttribute('aria-controls')).toBe('sourcebook-results-board');
+      expect(host.querySelector('[data-sourcebook-loaded-results]')?.textContent).toContain('Showing 24 of');
+      await ReactLib.act(async () => { reveal.click(); });
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(48);
+      expect(host.querySelector('[data-sourcebook-loaded-results]')?.textContent).toContain('Showing 48 of');
+      expect(host.querySelector('[data-sourcebook-show-more-loaded="true"]')).toBe(reveal);
+      reveal.focus();
+      await ReactLib.act(async () => { reveal.click(); });
+      const finalLoadedState = host.querySelector('[data-sourcebook-loaded-results]').getAttribute('data-sourcebook-loaded-results').split('/').map(Number);
+      expect(finalLoadedState[0]).toBe(finalLoadedState[1]);
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(finalLoadedState[1]);
+      expect(reveal.textContent).toBe('All loaded results shown');
+      expect(reveal.getAttribute('aria-disabled')).toBe('true');
+      expect(document.activeElement).toBe(reveal);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('browses loaded collection, visual type, and reuse chips without another provider request', async () => {
+    const sourceWindow = loadSourcebook();
+    const payload = aicPayload(1);
+    const aic = sourceWindow.SourcebookProviders.normalizeAicArtwork(
+      payload.data[0], payload.config, 'zzzzloadedfacet', 'Blueprints'
+    );
+    const cma = sourceWindow.SourcebookProviders.normalizeCmaArtwork({
+      id: 9901,
+      share_license_status: 'CC0',
+      title: 'Verified local facet textile',
+      creation_date: '1700s',
+      creators: [{ description: 'Example Weaver' }],
+      technique: 'woven silk',
+      type: 'Textile',
+      department: 'Textiles',
+      tombstone: 'A repeating public-domain textile pattern.',
+      url: 'https://clevelandart.org/art/1920.1',
+      images: {
+        web: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_web.jpg' },
+        print: { url: 'https://openaccess-cdn.clevelandart.org/1920.1/1920.1_print.jpg' }
+      }
+    }, 'zzzzloadedfacet', 'Patterns');
+    const openverseId = 'a1111111-b222-4ccc-8ddd-e55555555555';
+    const openverseDetail = 'https://api.openverse.org/v1/images/' + openverseId + '/';
+    const openverse = sourceWindow.SourcebookProviders.normalizeOpenverseImage({
+      id: openverseId,
+      title: 'Verified CC0 wood texture',
+      creator: 'Open archive contributor',
+      license: 'cc0',
+      license_version: '1.0',
+      license_url: 'https://creativecommons.org/publicdomain/zero/1.0/',
+      foreign_landing_url: 'https://example.edu/source/verified-texture',
+      url: 'https://example.edu/media/verified-texture.jpg',
+      provider: 'Public archive',
+      source: 'public_archive',
+      attribution: 'Verified CC0 wood texture is dedicated to the public domain under CC0 1.0.',
+      mature: false,
+      unstable__sensitivity: [],
+      width: 1800,
+      height: 1200,
+      detail_url: openverseDetail,
+      thumbnail: openverseDetail + 'thumb/',
+      tags: [{ name: 'wood' }, { name: 'texture' }]
+    }, 'zzzzloadedfacet', 'Textures');
+    const session = sourceWindow.SourcebookProviders.buildLiveSession([aic, cma, openverse], {
+      query: 'zzzzloadedfacet', kind: 'All', provider: 'All', rightsScope: 'pd-cc0',
+      canLoadMore: false
+    }, Date.now());
+    expect(session.results).toHaveLength(3);
+
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousFetch = browserWindow.fetch;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let requests = 0;
+    try {
+      browserWindow.fetch = () => {
+        requests += 1;
+        return Promise.reject(new Error('Loaded facets must not fetch.'));
+      };
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      const ctx = {
+        React: ReactLib, toolData: { sourcebook: { liveSession: session } },
+        updateMulti() {}, update() {}, announceToSR() {}, addToast() {}
+      };
+      function Harness() { return tool.render(ctx); }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+
+      const facets = host.querySelector('[data-sourcebook-loaded-facets="true"]');
+      expect(facets).toBeTruthy();
+      const allChip = facets.querySelector('button[data-sourcebook-loaded-provider="All"]');
+      const aicChip = facets.querySelector('button[data-sourcebook-loaded-provider="Art Institute of Chicago"]');
+      const cmaChip = facets.querySelector('button[data-sourcebook-loaded-provider="Cleveland Museum of Art"]');
+      expect(allChip.textContent).toContain('3');
+      expect(aicChip.textContent).toContain('1');
+      expect(cmaChip.textContent).toContain('1');
+      expect(allChip.getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(3);
+      expect(facets.querySelector('button[data-sourcebook-loaded-kind="Blueprints"]').textContent).toContain('1');
+      expect(facets.querySelector('button[data-sourcebook-loaded-kind="Patterns"]').textContent).toContain('1');
+      expect(facets.querySelector('button[data-sourcebook-loaded-kind="Textures"]').textContent).toContain('1');
+      expect(facets.querySelector('button[data-sourcebook-loaded-rights="pd"]').textContent).toContain('2');
+      expect(facets.querySelector('button[data-sourcebook-loaded-rights="cc0"]').textContent).toContain('1');
+
+      await ReactLib.act(async () => { cmaChip.click(); });
+      expect(cmaChip.getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(1);
+      expect(host.querySelector('[data-sourcebook-card-provider]')?.textContent).toBe('Cleveland Museum of Art');
+      expect(requests).toBe(0);
+
+      await ReactLib.act(async () => {
+        facets.querySelector('button[data-sourcebook-loaded-provider="All"]').click();
+      });
+      const textureChip = facets.querySelector('button[data-sourcebook-loaded-kind="Textures"]');
+      await ReactLib.act(async () => { textureChip.click(); });
+      expect(textureChip.getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(1);
+      expect(host.querySelector('[data-sourcebook-card-provider]')?.textContent).toBe('Openverse');
+      expect(requests).toBe(0);
+
+      const clear = facets.querySelector('button[data-sourcebook-clear-loaded-filters="true"]');
+      expect(clear).toBeTruthy();
+      await ReactLib.act(async () => { clear.click(); });
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(3);
+
+      const cc0Chip = facets.querySelector('button[data-sourcebook-loaded-rights="cc0"]');
+      await ReactLib.act(async () => { cc0Chip.click(); });
+      expect(cc0Chip.getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]')).toHaveLength(1);
+      expect(host.querySelector('[data-sourcebook-card-provider]')?.textContent).toBe('Openverse');
+      expect(facets.querySelector('[data-sourcebook-loaded-facet-status="true"]').textContent).toContain('No provider request was made');
+      expect(requests).toBe(0);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.fetch = previousFetch;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+  it('admits Yale Gallery images only when record, manifest, canvas rights, and IIIF identity all agree', () => {
+    const window = loadSourcebook();
+    const normalize = window.SourcebookProviders.normalizeYaleManifest;
+    const record = yaleRecord();
+    const manifest = yaleManifest();
+    const item = normalize(record, manifest, 'geometric textile pattern', 'Patterns');
+    expect(item).toMatchObject({
+      provider: 'Yale University Art Gallery Open Access', providerRecordId: '111127',
+      rightsType: 'pd', rightsShort: 'Public domain', kind: 'Patterns',
+      pixelWidth: 6146, pixelHeight: 5191, yaleLuxId: '11111111-1111-4111-8111-111111111111'
+    });
+    expect(item.imageUrl).toContain('/full/!1200,1200/0/default.jpg');
+    expect(item.downloadUrl).toContain('/full/!3000,3000/0/default.jpg');
+    expect(item.rightsMetadataSource).toContain('Copyright Statement=Public domain');
+    expect(item.rightsMetadataSource).toContain('Image Use Rights=No Copyright - United States');
+
+    const clone = (value) => JSON.parse(JSON.stringify(value));
+    const topLevelCc0Only = clone(manifest);
+    topLevelCc0Only.metadata = topLevelCc0Only.metadata.filter((entry) => entry.label.en[0] !== 'Copyright Statement');
+    expect(normalize(record, topLevelCc0Only, 'textile', 'Patterns')).toBeNull();
+    const restrictedCanvas = clone(manifest);
+    restrictedCanvas.items[0].metadata[0].value.en = ['Copyrighted'];
+    expect(normalize(record, restrictedCanvas, 'textile', 'Patterns')).toBeNull();
+    const missingCanvasRights = clone(manifest);
+    missingCanvasRights.items[0].metadata = [];
+    expect(normalize(record, missingCanvasRights, 'textile', 'Patterns')).toBeNull();
+    const pngBody = clone(manifest);
+    pngBody.items[0].items[0].items[0].body.format = 'image/png';
+    expect(normalize(record, pngBody, 'textile', 'Patterns')).toBeNull();
+    const hostileService = clone(manifest);
+    hostileService.items[0].items[0].items[0].body.service[0].id = 'https://images.collections.yale.edu.evil.example/iiif/2/yuag:22222222-2222-4222-8222-222222222222';
+    expect(normalize(record, hostileService, 'textile', 'Patterns')).toBeNull();
+    const crossServiceBody = clone(manifest);
+    crossServiceBody.items[0].items[0].items[0].body.id = 'https://images.collections.yale.edu/iiif/2/yuag:33333333-3333-4333-8333-333333333333/full/full/0/default.jpg';
+    expect(normalize(record, crossServiceBody, 'textile', 'Patterns')).toBeNull();
+    const wrongHomepage = clone(manifest);
+    wrongHomepage.homepage[0].id = 'https://artgallery.yale.edu/collections/objects/999999';
+    expect(normalize(record, wrongHomepage, 'textile', 'Patterns')).toBeNull();
+    const mismatchedRecord = yaleRecord({ equivalent: [
+      { id: 'https://media.art.yale.edu/content/lux/obj/999999.json' },
+      { id: 'https://artgallery.yale.edu/collections/objects/111127' },
+      { id: 'https://manifests.collections.yale.edu/yuag/obj/111127' }
+    ] });
+    expect(normalize(mismatchedRecord, manifest, 'textile', 'Patterns')).toBeNull();
+  });
+
+  it('searches institution-scoped Yale LUX records and then verifies each exact IIIF manifest', async () => {
+    const requests = [];
+    const objectUrl = yaleRecord().id;
+    const manifestUrl = yaleManifest().id;
+    const window = loadSourcebook(async (url, options) => {
+      requests.push({ url: String(url), options });
+      if (String(url).includes('/api/search/item?')) return { ok: true, json: async () => ({
+        partOf: [{ totalItems: 5630 }], orderedItems: [{ id: objectUrl }]
+      }) };
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => yaleManifest() };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    const results = Array.from(await window.SourcebookProviders.searchYale('textile pattern', {
+      kind: 'Patterns', page: 1, limit: 4
+    }));
+    expect(results).toHaveLength(1);
+    expect(results[0]).toMatchObject({ provider: 'Yale University Art Gallery Open Access', rightsType: 'pd' });
+    const search = new URL(requests[0].url);
+    expect(search.origin + search.pathname).toBe('https://lux.collections.yale.edu/api/search/item');
+    expect(search.searchParams.get('page')).toBe('2');
+    expect(search.searchParams.get('pageLength')).toBe('4');
+    const scoped = JSON.parse(search.searchParams.get('q'));
+    expect(scoped.AND[0]).toEqual({ hasDigitalImage: 1 });
+    expect(JSON.stringify(scoped)).toContain('41310ca5-8137-45fe-ac2c-a6a04e2235f1');
+    expect(requests.slice(1).map((request) => request.url)).toEqual([objectUrl, manifestUrl]);
+    expect(requests.every((request) => request.options.mode === 'cors' && request.options.credentials === 'omit')).toBe(true);
+    expect(Array.from(window.SourcebookProviders.liveProviderNames)).toContain('Yale University Art Gallery Open Access');
+  });
+
+  it('restores serialized Yale sessions and palettes only after exact authoritative revalidation', async () => {
+    const objectUrl = yaleRecord().id;
+    const manifestUrl = yaleManifest().id;
+    const requests = [];
+    const window = loadSourcebook(async (url, options) => {
+      requests.push({ url: String(url), options });
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => yaleManifest() };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    const item = window.SourcebookProviders.normalizeYaleManifest(yaleRecord(), yaleManifest(), 'textile', 'Patterns');
+    const now = Date.UTC(2026, 7, 26, 12, 0, 0);
+    const session = window.SourcebookProviders.buildLiveSession([item], {
+      query: 'textile', kind: 'Patterns', provider: 'Yale University Art Gallery Open Access', rightsScope: 'pd'
+    }, now);
+    session.results[0].title = 'FORGED SAVED YALE TITLE';
+    expect(session.results[0]).toMatchObject({
+      providerRecordId: '111127',
+      yaleManifestUrl: manifestUrl,
+      yaleIiifServiceUrl: 'https://images.collections.yale.edu/iiif/2/yuag:22222222-2222-4222-8222-222222222222'
+    });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
+
+    const restored = await window.SourcebookProviders.revalidateLiveSession(session, {
+      nowValue: now + 1000, bypassCache: true
+    });
+    expect(restored.results).toHaveLength(1);
+    expect(restored.results[0]).toMatchObject({
+      title: 'Textile fragment', provider: 'Yale University Art Gallery Open Access',
+      rightsType: 'pd', providerRecordId: '111127', yaleManifestUrl: manifestUrl
+    });
+    expect(restored.results[0].title).not.toContain('FORGED');
+    expect(requests.map((request) => request.url)).toEqual([objectUrl, manifestUrl]);
+    expect(requests.every((request) => request.options.mode === 'cors' && request.options.credentials === 'omit')).toBe(true);
+
+    requests.length = 0;
+    const palette = window.SourcebookProviders.buildPalette([item.id], {}, 'Yale textile source', [item]);
+    palette.assets[0].title = 'FORGED IMPORTED YALE TITLE';
+    expect(window.SourcebookProviders.normalizePalette(palette)).toBeNull();
+    const restoredPalette = await window.SourcebookProviders.revalidatePalette(palette, { bypassCache: true });
+    expect(restoredPalette.assets).toHaveLength(1);
+    expect(restoredPalette.assets[0].title).toBe('Textile fragment');
+    expect(restoredPalette.assets[0].title).not.toContain('FORGED');
+    expect(requests.map((request) => request.url)).toEqual([objectUrl, manifestUrl]);
+  });
+
+  it('fails closed when a saved Yale identity or current canvas rights are incompatible', async () => {
+    const objectUrl = yaleRecord().id;
+    const manifestUrl = yaleManifest().id;
+    let requests = 0;
+    const restrictedManifest = yaleManifest();
+    restrictedManifest.items[0].metadata[0].value = { en: ['Copyrighted'] };
+    const window = loadSourcebook(async (url) => {
+      requests += 1;
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => restrictedManifest };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    const item = window.SourcebookProviders.normalizeYaleManifest(yaleRecord(), yaleManifest(), 'textile', 'Patterns');
+    await expect(window.SourcebookProviders.fetchYaleAssets([item], { bypassCache: true }))
+      .rejects.toThrow(/public-domain canvas rights|verified public-domain/i);
+    expect(requests).toBe(2);
+
+    requests = 0;
+    const mismatched = { ...item, providerRecordId: '111128' };
+    await expect(window.SourcebookProviders.fetchYaleAssets([mismatched], { bypassCache: true }))
+      .rejects.toThrow(/trustworthy.*identity/i);
+    expect(requests).toBe(0);
+
+    const swappedManifest = yaleManifest();
+    const swappedService = 'https://images.collections.yale.edu/iiif/2/yuag:33333333-3333-4333-8333-333333333333';
+    const swappedBody = swappedManifest.items[0].items[0].items[0].body;
+    swappedBody.id = swappedService + '/full/full/0/default.jpg';
+    swappedBody.service[0].id = swappedService;
+    let swapRequests = 0;
+    const swapWindow = loadSourcebook(async (url) => {
+      swapRequests += 1;
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => swappedManifest };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    await expect(swapWindow.SourcebookProviders.fetchYaleAssets([item], { bypassCache: true }))
+      .rejects.toThrow(/changed identity/i);
+    expect(swapRequests).toBe(2);
+  });
+
+  it('caches verified Yale records briefly while returning isolated snapshots', async () => {
+    const objectUrl = yaleRecord().id;
+    const manifestUrl = yaleManifest().id;
+    let requests = 0;
+    const window = loadSourcebook(async (url) => {
+      requests += 1;
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => yaleManifest() };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    const item = window.SourcebookProviders.normalizeYaleManifest(yaleRecord(), yaleManifest(), 'textile', 'Patterns');
+    const first = Array.from(await window.SourcebookProviders.fetchYaleAssets([item]));
+    expect(requests).toBe(2);
+    first[0].title = 'MUTATED RETURN';
+    first[0].tags.push('mutated-return');
+
+    const second = Array.from(await window.SourcebookProviders.fetchYaleAssets([item]));
+    expect(requests).toBe(2);
+    expect(second[0].title).toBe('Textile fragment');
+    expect(Array.from(second[0].tags)).not.toContain('mutated-return');
+
+    await window.SourcebookProviders.fetchYaleAssets([item], { bypassCache: true });
+    expect(requests).toBe(4);
+  });
+
+  it('expires Yale verification cache from the original check even when the record is reused', async () => {
+    const objectUrl = yaleRecord().id;
+    const manifestUrl = yaleManifest().id;
+    let requests = 0;
+    let clock = Date.UTC(2026, 7, 26, 12, 0, 0);
+    class FixedDate extends Date {
+      static now() { return clock; }
+    }
+    const window = loadSourcebook(async (url) => {
+      requests += 1;
+      if (String(url) === objectUrl) return { ok: true, json: async () => yaleRecord() };
+      if (String(url) === manifestUrl) return { ok: true, json: async () => yaleManifest() };
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    }, { Date: FixedDate });
+    const item = window.SourcebookProviders.normalizeYaleManifest(yaleRecord(), yaleManifest(), 'textile', 'Patterns');
+
+    await window.SourcebookProviders.fetchYaleAssets([item]);
+    expect(requests).toBe(2);
+    clock += 4 * 60 * 1000;
+    await window.SourcebookProviders.fetchYaleAssets([item]);
+    expect(requests).toBe(2);
+    clock += 2 * 60 * 1000;
+    await window.SourcebookProviders.fetchYaleAssets([item]);
+    expect(requests).toBe(4);
+  });
+
+  it('admits Museums Victoria images only from exact media-level PDM, CC0, or CC BY 4.0 records', () => {
+    const window = loadSourcebook();
+    const items = Array.from(window.SourcebookProviders.normalizeMuseumsVictoriaRecord(
+      museumsVictoriaRecord({ licence: { uri: 'https://rightsstatements.org/vocab/InC/1.0/' } }),
+      'architectural plan', 'Blueprints'
+    ));
+    expect(items).toHaveLength(3);
+    expect(items.map((item) => item.rightsType)).toEqual(['pd', 'cc0', 'ccby']);
+    expect(items.map((item) => item.id)).toEqual([
+      'mv-live-items-1589497-599417',
+      'mv-live-items-1589497-599418',
+      'mv-live-items-1589497-599419'
+    ]);
+    expect(items.every((item) => item.provider === 'Museums Victoria Collections')).toBe(true);
+    expect(items.every((item) => item.sourceUrl === 'https://collections.museumsvictoria.com.au/items/1589497')).toBe(true);
+    expect(items.every((item) => item.downloadUrl.endsWith('-large.jpg'))).toBe(true);
+    expect(items[0]).toMatchObject({ mvRecordPath: 'items/1589497', mvMediaId: '599417', pixelWidth: 3000, pixelHeight: 2000 });
+    expect(items[0].rightsMetadataSource).toContain('media/599417');
+    expect(items[2].rightsNote).toMatch(/attribution is required/i);
+  });
+
+  it('rejects hostile or ambiguous Museums Victoria media even when the parent record is CC0', () => {
+    const window = loadSourcebook();
+    const normalize = (media) => Array.from(window.SourcebookProviders.normalizeMuseumsVictoriaRecord(
+      museumsVictoriaRecord({ media: [media], licence: { uri: 'https://creativecommons.org/publicdomain/zero/1.0/' } }),
+      'diagram', 'Science'
+    ));
+    const ccBy = museumsVictoriaMedia('700001', 'https://creativecommons.org/licenses/by/4.0/', 'CC BY', 'CC BY 4.0');
+    const hostile = [
+      museumsVictoriaMedia('700002', 'https://creativecommons.org/licenses/by-nc/4.0/', 'CC BY-NC', 'CC BY-NC 4.0'),
+      { ...ccBy, rightsStatement: 'CC BY NC 4.0' },
+      { ...ccBy, rightsStatement: 'CC BY ND 4.0' },
+      { ...ccBy, rightsStatement: 'CC BY SA 4.0' },
+      { ...ccBy, rightsStatement: 'All Rights Reserved' },
+      { ...ccBy, licence: null },
+      { ...ccBy, type: 'audio' },
+      { ...ccBy, large: { ...ccBy.large, uri: 'https://example.com/content/media/23/700001-large.jpg' } },
+      { ...ccBy, large: { ...ccBy.large, uri: 'https://collections.museumsvictoria.com.au/content/media/23/999999-large.jpg' } },
+      { ...ccBy, licence: { name: 'Unknown', shortName: 'Unknown', uri: 'https://example.com/license' } }
+    ];
+    hostile.forEach((media) => expect(normalize(media)).toEqual([]));
+    expect(window.SourcebookProviders.normalizeMuseumsVictoriaRights(ccBy)).toMatchObject({ rightsType: 'ccby', license: 'CC BY 4.0' });
+  });
+
+  it('searches the credential-free Museums Victoria API with conservative facets and one-based paging', async () => {
+    const requests = [];
+    const window = loadSourcebook(async (url, options) => {
+      requests.push({ url: String(url), options });
+      return { ok: true, json: async () => ({ status: 200, headers: { totalResults: 4 }, response: [museumsVictoriaRecord()] }) };
+    });
+    const all = Array.from(await window.SourcebookProviders.searchMuseumsVictoria('architectural drawing', {
+      kind: 'Blueprints', rightsScope: 'all', limit: 4, page: 2
+    }));
+    expect(all).toHaveLength(3);
+    const allUrl = new URL(requests[0].url);
+    expect(allUrl.origin + allUrl.pathname).toBe('https://collections.museumsvictoria.com.au/api/search');
+    expect(allUrl.searchParams.get('query')).toBe('architectural drawing');
+    expect(allUrl.searchParams.get('hasimages')).toBe('yes');
+    expect(allUrl.searchParams.get('imagelicence')).toBe('public domain,cc by');
+    expect(allUrl.searchParams.get('page')).toBe('3');
+    expect(allUrl.searchParams.get('perpage')).toBe('8');
+    expect(allUrl.searchParams.get('envelope')).toBe('true');
+    expect(requests[0].options).toMatchObject({ method: 'GET', mode: 'cors', credentials: 'omit' });
+    expect(requests[0].options.headers).toBeUndefined();
+
+    const publicDomainOnly = Array.from(await window.SourcebookProviders.searchMuseumsVictoria('architectural drawing', {
+      kind: 'Blueprints', rightsScope: 'pd', limit: 4, page: 0
+    }));
+    expect(publicDomainOnly.map((item) => item.rightsType)).toEqual(['pd']);
+    expect(new URL(requests[1].url).searchParams.get('imagelicence')).toBe('public domain');
+  });
+
+  it('refetches the exact Museums Victoria record and media before restoring saved results', async () => {
+    const requests = [];
+    const window = loadSourcebook(async (url, options) => {
+      requests.push({ url: String(url), options });
+      if (String(url) === 'https://collections.museumsvictoria.com.au/api/items/1589497') {
+        return { ok: true, json: async () => museumsVictoriaRecord() };
+      }
+      return { ok: false, status: 404, headers: { get: () => '' } };
+    });
+    const item = Array.from(window.SourcebookProviders.normalizeMuseumsVictoriaRecord(museumsVictoriaRecord(), 'plan', 'Blueprints'))[0];
+    const now = Date.now();
+    const session = window.SourcebookProviders.buildLiveSession([item], {
+      query: 'pumping station plan', kind: 'Blueprints', provider: 'Museums Victoria Collections', rightsScope: 'pd'
+    }, now);
+    expect(session.results[0]).toMatchObject({ mvRecordPath: 'items/1589497', mvMediaId: '599417' });
+    expect(window.SourcebookProviders.normalizeLiveSession(session, now + 1000)).toBeNull();
+    session.results[0].title = 'FORGED SAVED TITLE';
+    const restored = await window.SourcebookProviders.revalidateLiveSession(session, { nowValue: now + 1000 });
+    expect(restored.results[0].title).toContain('Pumping station architectural drawing');
+    expect(restored.results[0].title).not.toContain('FORGED');
+    expect(requests[0].url).toBe('https://collections.museumsvictoria.com.au/api/items/1589497');
+    expect(requests[0].options).toMatchObject({ mode: 'cors', credentials: 'omit' });
+
+    const palette = window.SourcebookProviders.buildPalette([item.id], {}, 'Museums Victoria plan', [item]);
+    expect(window.SourcebookProviders.normalizePalette(palette)).toBeNull();
+    const restoredPalette = await window.SourcebookProviders.revalidatePalette(palette);
+    expect(restoredPalette.assets[0]).toMatchObject({ mvRecordPath: 'items/1589497', mvMediaId: '599417', rightsType: 'pd' });
+
+    const sameRecordItems = Array.from(window.SourcebookProviders.normalizeMuseumsVictoriaRecord(
+      museumsVictoriaRecord(), 'plan', 'Blueprints'
+    )).slice(0, 2);
+    const requestCountBeforeGroupedRestore = requests.length;
+    const groupedRestore = await window.SourcebookProviders.fetchMuseumsVictoriaAssets(sameRecordItems);
+    expect(groupedRestore.map((asset) => asset.mvMediaId)).toEqual(['599417', '599418']);
+    expect(requests).toHaveLength(requestCountBeforeGroupedRestore + 1);
+
+    let revokedRequests = 0;
+    const revokedWindow = loadSourcebook(async () => {
+      revokedRequests += 1;
+      const revoked = museumsVictoriaRecord();
+      revoked.media[0] = { ...revoked.media[0], rightsStatement: 'All Rights Reserved' };
+      return { ok: true, json: async () => revoked };
+    });
+    await expect(revokedWindow.SourcebookProviders.fetchMuseumsVictoriaAssets([item]))
+      .rejects.toThrow(/no longer has the saved image|allowed exact media licence/i);
+    expect(revokedRequests).toBe(1);
+
+    let malformedRequests = 0;
+    const malformedWindow = loadSourcebook(async () => { malformedRequests += 1; return { ok: true, json: async () => museumsVictoriaRecord() }; });
+    await expect(malformedWindow.SourcebookProviders.fetchMuseumsVictoriaAssets([{ ...item, mvMediaId: '999999' }]))
+      .rejects.toThrow(/trustworthy.*identity/i);
+    expect(malformedRequests).toBe(0);
+  });
+
+  it('keeps a verified Museums Victoria asset visible across palette mutations and surfaces its context check', async () => {
+    const sourceWindow = loadSourcebook();
+    const mvItem = Array.from(sourceWindow.SourcebookProviders.normalizeMuseumsVictoriaRecord(
+      museumsVictoriaRecord(), 'plan', 'Blueprints'
+    ))[0];
+    const curatedItem = Array.from(sourceWindow.SourcebookProviders.materials)[0];
+
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousFetch = browserWindow.fetch;
+    const previousAbortController = browserWindow.AbortController;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let latestState = null;
+    let requests = 0;
+    try {
+      browserWindow.fetch = async (url) => {
+        requests += 1;
+        if (String(url) === 'https://collections.museumsvictoria.com.au/api/items/1589497') {
+          return { ok: true, json: async () => museumsVictoriaRecord() };
+        }
+        return { ok: false, status: 404, headers: { get: () => '' } };
+      };
+      browserWindow.AbortController = AbortController;
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({
+          collection: [mvItem.id],
+          savedAssets: { [mvItem.id]: mvItem },
+          rightsScope: 'all'
+        });
+        latestState = state;
+        const ctx = {
+          React: ReactLib,
+          toolData: { sourcebook: state },
+          updateMulti(toolId, patch) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, ...patch }));
+          },
+          update(toolId, key, value) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, [key]: value }));
+          },
+          announceToSR() {}, addToast() {}
+        };
+        return tool.render(ctx);
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      await ReactLib.act(async () => {
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+      expect(requests).toBe(1);
+
+      const paletteToggle = () => Array.from(host.querySelectorAll('button')).find((button) => button.textContent.startsWith('Palette ('));
+      const resultsToggle = () => Array.from(host.querySelectorAll('button')).find((button) => button.textContent.startsWith('Results ('));
+      await ReactLib.act(async () => { paletteToggle().click(); });
+      let mvCard = host.querySelector('[data-sourcebook-result-card="' + mvItem.id + '"]');
+      expect(mvCard).toBeTruthy();
+      expect(mvCard.querySelector('[data-sourcebook-cultural-context="card"]')?.textContent).toContain('Review context');
+      const inspectMv = mvCard.querySelector('[data-sourcebook-inspect="' + mvItem.id + '"]');
+      expect(inspectMv.getAttribute('aria-label')).toContain('cultural context');
+      await ReactLib.act(async () => { inspectMv.click(); });
+      expect(host.querySelector('.sb-detail [data-sourcebook-cultural-context="detail"]')?.textContent).toContain('Reuse rights are verified');
+
+      await ReactLib.act(async () => { resultsToggle().click(); });
+      const curatedCard = host.querySelector('[data-sourcebook-result-card="' + curatedItem.id + '"]');
+      expect(curatedCard).toBeTruthy();
+      const saveCurated = Array.from(curatedCard.querySelectorAll('button')).find((button) => button.textContent.includes('Save to palette'));
+      await ReactLib.act(async () => { saveCurated.click(); });
+      await ReactLib.act(async () => { paletteToggle().click(); });
+
+      mvCard = host.querySelector('[data-sourcebook-result-card="' + mvItem.id + '"]');
+      expect(mvCard).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="' + curatedItem.id + '"]')).toBeTruthy();
+      expect(latestState.savedAssets[mvItem.id]).toMatchObject({ mvRecordPath: 'items/1589497', mvMediaId: '599417' });
+      expect(requests).toBe(1);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.fetch = previousFetch;
+      browserWindow.AbortController = previousAbortController;
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('switches a failed provider-specific search to All and keeps the curated fallback usable', async () => {
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousFetch = browserWindow.fetch;
+    const previousAbortController = browserWindow.AbortController;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let latestState = null;
+    const patches = [];
+    let requests = 0;
+    try {
+      browserWindow.fetch = async () => {
+        requests += 1;
+        const unavailable = new Error('Provider unavailable');
+        unavailable.retryable = false;
+        throw unavailable;
+      };
+      browserWindow.AbortController = AbortController;
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({
+          query: 'contour map',
+          provider: 'Museums Victoria Collections',
+          rightsScope: 'pd',
+          autoCurate: false
+        });
+        latestState = state;
+        const ctx = {
+          React: ReactLib,
+          toolData: { sourcebook: state },
+          updateMulti(toolId, patch) {
+            if (toolId !== 'sourcebook') return;
+            patches.push(patch);
+            setState((current) => ({ ...current, ...patch }));
+          },
+          update(toolId, key, value) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, [key]: value }));
+          },
+          announceToSR() {}, addToast() {}
+        };
+        return tool.render(ctx);
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const searchForm = host.querySelector('#sourcebook-search').closest('form');
+      await ReactLib.act(async () => {
+        searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+
+      const collectionSelect = Array.from(host.querySelectorAll('select')).find((select) =>
+        Array.from(select.options).some((option) => option.value === 'Museums Victoria Collections')
+      );
+      expect(requests).toBe(1);
+      expect(collectionSelect.value).toBe('All');
+      expect(host.querySelectorAll('[data-sourcebook-result-card]').length).toBeGreaterThan(0);
+      expect(host.querySelector('[data-sourcebook-live-status="error"]')?.textContent).toContain('collection filter switched to All');
+      expect(latestState).toMatchObject({ query: 'contour map', provider: 'All', rightsScope: 'pd' });
+      expect(patches.some((patch) => patch.provider === 'All' && patch.liveSession === null)).toBe(true);
+      expect(pluginSource).toContain('showCuratedFallback(activeProvider)');
+      expect(pluginSource).toContain('showCuratedFallback(value)');
+      expect(pluginSource).toContain('showCuratedFallback(provider)');
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.fetch = previousFetch;
+      browserWindow.AbortController = previousAbortController;
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('retries only a failed collection and merges its newly verified results into the current board', async () => {
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousProviders = browserWindow.SourcebookProviders;
+    const previousFetch = browserWindow.fetch;
+    const previousAbortController = browserWindow.AbortController;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let latestState = null;
+    const requests = [];
+    let aicRequests = 0;
+    const ok = (payload) => ({
+      ok: true, status: 200, headers: { get: () => '' }, json: async () => payload
+    });
+    const value = (text) => ({ value: text });
+    const commonsPayload = {
+      query: { pages: [{
+        pageid: 777,
+        title: 'File:Verified contour map.png',
+        imageinfo: [{
+          mediatype: 'BITMAP',
+          url: 'https://upload.wikimedia.org/verified-contour-map.png',
+          thumburl: 'https://upload.wikimedia.org/verified-contour-map-thumb.png',
+          descriptionurl: 'https://commons.wikimedia.org/wiki/File:Verified_contour_map.png',
+          width: 2400,
+          height: 1800,
+          extmetadata: {
+            LicenseShortName: value('Public domain'),
+            UsageTerms: value('Public domain'),
+            Artist: value('Public collection'),
+            ImageDescription: value('A verified contour map.')
+          }
+        }]
+      }] }
+    };
+    const recoveredPayload = aicPayload(1);
+    recoveredPayload.data[0] = {
+      ...recoveredPayload.data[0],
+      title: 'Recovered topographic contour study',
+      medium_display: 'Printed topographic map',
+      classification_title: 'Maps'
+    };
+    const deeperPayload = aicPayload(1);
+    deeperPayload.data[0] = {
+      ...deeperPayload.data[0],
+      id: 91001,
+      image_id: 'aic-deeper-image-1',
+      title: 'Deeper watershed contour survey',
+      medium_display: 'Printed watershed survey map',
+      classification_title: 'Maps'
+    };
+    async function settleUntil(predicate) {
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        if (predicate()) return true;
+        await ReactLib.act(async () => {
+          await new Promise((resolve) => setTimeout(resolve, 5));
+        });
+      }
+      return !!predicate();
+    }
+    try {
+      browserWindow.fetch = async (url) => {
+        const href = String(url);
+        requests.push(href);
+        if (href.includes('api.artic.edu')) {
+          aicRequests += 1;
+          if (aicRequests === 1) {
+            return { ok: false, status: 401, headers: { get: () => '' } };
+          }
+          return ok(aicRequests === 2 ? recoveredPayload : deeperPayload);
+        }
+        if (href.includes('commons.wikimedia.org')) return ok(commonsPayload);
+        if (href.includes('api.smk.dk')) return ok({ items: [] });
+        if (href.includes('lux.collections.yale.edu')) return ok({ orderedItems: [] });
+        if (href.includes('collectionapi.metmuseum.org')) return ok({ objectIDs: [] });
+        if (href.includes('openaccess-api.clevelandart.org')) return ok({ data: [] });
+        if (href.includes('www.loc.gov')) return ok({ results: [] });
+        if (href.includes('api.wellcomecollection.org')) return ok({ results: [] });
+        if (href.includes('data.getty.edu')) return ok({ results: { bindings: [] } });
+        if (href.includes('collections.museumsvictoria.com.au')) return ok({ status: 200, response: [] });
+        if (href.includes('api.openverse.org')) return ok({ results: [] });
+        const unexpected = new Error('Unexpected provider request: ' + href);
+        unexpected.retryable = false;
+        throw unexpected;
+      };
+      browserWindow.AbortController = AbortController;
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({
+          query: 'contour map',
+          kind: 'Maps',
+          provider: 'All',
+          rightsScope: 'pd',
+          autoCurate: false
+        });
+        latestState = state;
+        const ctx = {
+          React: ReactLib,
+          toolData: { sourcebook: state },
+          updateMulti(toolId, patch) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, ...patch }));
+          },
+          update(toolId, key, valueToStore) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, [key]: valueToStore }));
+          },
+          announceToSR() {}, addToast() {}
+        };
+        return tool.render(ctx);
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+      const searchForm = host.querySelector('#sourcebook-search').closest('form');
+      await ReactLib.act(async () => {
+        searchForm.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        await Promise.resolve();
+      });
+      expect(await settleUntil(() => !!host.querySelector('button[data-sourcebook-retry-provider="Art Institute of Chicago"]'))).toBe(true);
+
+      const retryButton = host.querySelector('button[data-sourcebook-retry-provider="Art Institute of Chicago"]');
+      const initialRequestCount = requests.length;
+      expect(aicRequests).toBe(1);
+      expect(host.querySelector('[data-sourcebook-result-card="commons-live-777"]')).toBeTruthy();
+      expect(retryButton.textContent).toContain('Retry collection');
+      expect(retryButton.closest('div').textContent).toContain('current verified board stays intact');
+
+      await ReactLib.act(async () => {
+        retryButton.click();
+        await Promise.resolve();
+      });
+      expect(await settleUntil(() =>
+        !!host.querySelector('[data-sourcebook-result-card="aic-live-91000"]')
+        && !host.querySelector('button[data-sourcebook-retry-provider="Art Institute of Chicago"]')
+      )).toBe(true);
+
+      const recoveryRequests = requests.slice(initialRequestCount);
+      expect(recoveryRequests).toHaveLength(1);
+      expect(recoveryRequests[0]).toContain('api.artic.edu');
+      expect(aicRequests).toBe(2);
+      expect(host.querySelector('[data-sourcebook-result-card="commons-live-777"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="aic-live-91000"] [data-sourcebook-card-rights="pd"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-live-status="ready"]')?.textContent).toContain('recovered 1 new rights-verified asset');
+      expect(latestState.provider).toBe('All');
+      expect(latestState.liveSession.results.map((item) => item.id)).toEqual(expect.arrayContaining(['commons-live-777', 'aic-live-91000']));
+      expect(latestState.liveSession.results.every((item) => item.rightsType === 'pd')).toBe(true);
+
+      const smartButton = host.querySelector('button[data-sourcebook-smart-expand="Library of Congress"]');
+      expect(smartButton).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-coverage-guide]')?.textContent).toContain('one collection request');
+      const beforeSmartRequestCount = requests.length;
+      await ReactLib.act(async () => {
+        smartButton.click();
+        await Promise.resolve();
+      });
+      expect(await settleUntil(() =>
+        host.querySelector('[data-sourcebook-provider-batch="Library of Congress"]')?.textContent.includes('Collection batch 2')
+        && !!host.querySelector('button[data-sourcebook-smart-expand="U.S. National Archives"]')
+      )).toBe(true);
+
+      const smartRequests = requests.slice(beforeSmartRequestCount);
+      expect(smartRequests).toHaveLength(1);
+      expect(smartRequests[0]).toContain('www.loc.gov');
+      expect(host.querySelector('[data-sourcebook-result-card="commons-live-777"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="aic-live-91000"] [data-sourcebook-card-rights="pd"]')).toBeTruthy();
+      expect(latestState.provider).toBe('All');
+      expect(latestState.liveSession.results.map((item) => item.id)).toEqual(expect.arrayContaining(['commons-live-777', 'aic-live-91000']));
+      expect(latestState.liveSession.results.every((item) => item.rightsType === 'pd')).toBe(true);
+
+      const deepenButton = host.querySelector('button[data-sourcebook-deepen-provider="Art Institute of Chicago"]');
+      expect(deepenButton).toBeTruthy();
+      expect(deepenButton.textContent).toContain('Search next batch');
+      expect(deepenButton.closest('div').textContent).toContain('other collections are not requested');
+      const beforeDeepRequestCount = requests.length;
+      const retryQuery = new URL(recoveryRequests[0]).searchParams.get('q');
+      await ReactLib.act(async () => {
+        deepenButton.click();
+        await Promise.resolve();
+      });
+      expect(await settleUntil(() =>
+        !!host.querySelector('[data-sourcebook-result-card="aic-live-91001"]')
+        && !!host.querySelector('button[data-sourcebook-deepen-provider="Art Institute of Chicago"]')
+      )).toBe(true);
+
+      const deeperRequests = requests.slice(beforeDeepRequestCount);
+      expect(deeperRequests).toHaveLength(1);
+      expect(deeperRequests[0]).toContain('api.artic.edu');
+      expect(new URL(deeperRequests[0]).searchParams.get('q')).not.toBe(retryQuery);
+      expect(aicRequests).toBe(3);
+      expect(host.querySelector('[data-sourcebook-result-card="commons-live-777"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="aic-live-91000"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-result-card="aic-live-91001"] [data-sourcebook-card-rights="pd"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-provider-batch="Art Institute of Chicago"]')?.textContent).toContain('Collection batch 2 / 2 loaded on board');
+      expect(host.querySelector('[data-sourcebook-live-status="ready"]')?.textContent).toContain('added 1 new rights-verified asset');
+      expect(host.textContent).toContain('open to search one collection deeper');
+      expect(latestState.provider).toBe('All');
+      expect(latestState.liveSession.results.map((item) => item.id)).toEqual(expect.arrayContaining(['commons-live-777', 'aic-live-91000', 'aic-live-91001']));
+      expect(latestState.liveSession.results.every((item) => item.rightsType === 'pd')).toBe(true);
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.fetch = previousFetch;
+      browserWindow.AbortController = previousAbortController;
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.SourcebookProviders = previousProviders;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
+  it('presents only known live provider identities and exposes Yale and Museums Victoria through the central registry', () => {
+    const window = loadSourcebook();
+    expect(window.SourcebookProviders.version).toBe(54);
+    expect(window.SourcebookProviders.providerPresentation('Yale University Art Gallery Open Access')).toEqual({
+      name: 'Yale University Art Gallery Open Access', mark: 'YUAG', known: true
+    });
+    expect(window.SourcebookProviders.providerPresentation('Museums Victoria Collections')).toEqual({
+      name: 'Museums Victoria Collections', mark: 'MV', known: true
+    });
+    expect(Array.from(window.SourcebookProviders.liveProviderNames)).toContain('Museums Victoria Collections');
+    expect(window.SourcebookProviders.liveProviderLimit('Museums Victoria Collections', 999)).toBe(24);
+    expect(pluginSource).toContain('data-sourcebook-more-from-provider');
+    expect(pluginSource).toContain("'More from ' + providerPresentation(item.provider).name");
+    expect(pluginSource).toContain("var focusedQuery = buildSimilarSearch(item) || String(item.title || '').trim() || String(query || '').trim();");
+    expect(pluginSource).toContain("announce('Searching only ' + item.provider)");
+    expect(window.SourcebookProviders.providerPresentation('National Gallery of Art Open Access')).toEqual({
+      name: 'National Gallery of Art Open Access', mark: 'NGA', known: true
+    });
+    expect(window.SourcebookProviders.providerPresentation('Unknown <script>collection')).toEqual({
+      name: 'Public collection', mark: 'SRC', known: false
+    });
+    expect(window.SourcebookProviders.providerPresentation('')).toEqual({ name: 'Public collection', mark: 'SRC', known: false });
+  });
+
+  it('keys cached searches by effective request limits and returns isolated snapshots', async () => {
+    const requestedLimits = [];
+    let fetches = 0;
+    const window = loadSourcebook(async (url) => {
+      fetches += 1;
+      const parsed = new URL(String(url));
+      const limit = Number(parsed.searchParams.get('limit'));
+      requestedLimits.push(limit);
+      return { ok: true, json: async () => aicPayload(limit) };
+    });
+    const base = { provider: 'Art Institute of Chicago', kind: 'Patterns', rightsScope: 'pd' };
+    const small = Array.from(await window.SourcebookProviders.searchOpen('cache shape textile', { ...base, limit: 4, resultLimit: 4 }));
+    const widerFetch = Array.from(await window.SourcebookProviders.searchOpen('cache shape textile', { ...base, limit: 12, resultLimit: 4 }));
+    const widerBoard = Array.from(await window.SourcebookProviders.searchOpen('cache shape textile', { ...base, limit: 12, resultLimit: 12 }));
+    const cachedBoard = Array.from(await window.SourcebookProviders.searchOpen('cache shape textile', { ...base, limit: 12, resultLimit: 12 }));
+    expect([small.length, widerFetch.length, widerBoard.length, cachedBoard.length]).toEqual([4, 4, 12, 12]);
+    expect(requestedLimits).toEqual([4, 12, 12]);
+    expect(fetches).toBe(3);
+
+    let partialTitle = '';
+    const isolated = loadSourcebook(async () => ({ ok: true, json: async () => aicPayload(4) }));
+    const first = Array.from(await isolated.SourcebookProviders.searchOpen('cache clone textile', {
+      ...base, limit: 4, resultLimit: 4,
+      onPartial: (items) => { items[0].title = 'MUTATED PARTIAL'; items[0].tags.push('mutated'); partialTitle = items[0].title; }
+    }));
+    expect(partialTitle).toBe('MUTATED PARTIAL');
+    expect(first[0].title).not.toBe('MUTATED PARTIAL');
+    first[0].title = 'MUTATED RETURN';
+    first[0].tags.push('returned-mutation');
+    const second = Array.from(await isolated.SourcebookProviders.searchOpen('cache clone textile', { ...base, limit: 4, resultLimit: 4 }));
+    expect(second[0].title).not.toMatch(/MUTATED/);
+    expect(Array.from(second[0].tags)).not.toEqual(expect.arrayContaining(['mutated', 'returned-mutation']));
+  });
+
+  it('expires cached searches and evicts the least recently used entry after 64 shapes', async () => {
+    let now = Date.UTC(2026, 7, 26, 12, 0, 0);
+    class FakeDate extends Date { static now() { return now; } }
+    let ttlFetches = 0;
+    const ttlWindow = loadSourcebook(async () => {
+      ttlFetches += 1;
+      return { ok: true, json: async () => aicPayload(0) };
+    }, { Date: FakeDate });
+    const options = { provider: 'Art Institute of Chicago', kind: 'Patterns', rightsScope: 'pd', limit: 4, resultLimit: 4 };
+    await ttlWindow.SourcebookProviders.searchOpen('ttl cache source', options);
+    await ttlWindow.SourcebookProviders.searchOpen('ttl cache source', options);
+    expect(ttlFetches).toBe(1);
+    now += 300001;
+    await ttlWindow.SourcebookProviders.searchOpen('ttl cache source', options);
+    expect(ttlFetches).toBe(2);
+
+    let lruFetches = 0;
+    const lruWindow = loadSourcebook(async () => {
+      lruFetches += 1;
+      return { ok: true, json: async () => aicPayload(0) };
+    });
+    for (let index = 0; index < 64; index += 1) await lruWindow.SourcebookProviders.searchOpen('lru source ' + index, options);
+    expect(lruFetches).toBe(64);
+    await lruWindow.SourcebookProviders.searchOpen('lru source 0', options);
+    expect(lruFetches).toBe(64);
+    await lruWindow.SourcebookProviders.searchOpen('lru source 64', options);
+    expect(lruFetches).toBe(65);
+    await lruWindow.SourcebookProviders.searchOpen('lru source 0', options);
+    expect(lruFetches).toBe(65);
+    await lruWindow.SourcebookProviders.searchOpen('lru source 1', options);
+    expect(lruFetches).toBe(66);
   });
 
   it('normalizes SMK Open records only through exact item rights, hosts, and provenance', () => {
@@ -1470,6 +2805,92 @@ describe('Sourcebook initial feature contract', () => {
     expect(Array.from(window.SourcebookProviders.mergePinnedSelection([b], [a, c], 1)).map((item) => item.id)).toEqual(['kept-b']);
   });
 
+  it('rotates every provider through the same discovery query before paging deeper', async () => {
+    const queries = [
+      'exact contour survey',
+      'topographic watershed atlas',
+      'historic relief map',
+      'geographic contour plate'
+    ];
+    const routeWindow = loadSourcebook();
+    const routes = [0, 1, 2, 3, 4].map((batch) => JSON.parse(JSON.stringify(
+      routeWindow.SourcebookProviders.discoveryBatchRoute(queries, queries[0], batch)
+    )));
+    expect(routes).toEqual([
+      { query: queries[0], providerPage: 0, variantIndex: 0, variantCount: 4, batch: 0 },
+      { query: queries[1], providerPage: 0, variantIndex: 1, variantCount: 4, batch: 1 },
+      { query: queries[2], providerPage: 0, variantIndex: 2, variantCount: 4, batch: 2 },
+      { query: queries[3], providerPage: 0, variantIndex: 3, variantCount: 4, batch: 3 },
+      { query: queries[0], providerPage: 1, variantIndex: 0, variantCount: 4, batch: 4 }
+    ]);
+
+    const urls = [];
+    const searchWindow = loadSourcebook(async (url) => {
+      urls.push(String(url));
+      return { ok: true, json: async () => ({ data: [], config: { iiif_url: 'https://www.artic.edu/iiif/2' } }) };
+    });
+    for (let batch = 0; batch < 5; batch += 1) {
+      await searchWindow.SourcebookProviders.searchOpen(queries[0], {
+        provider: 'Art Institute of Chicago', kind: 'All', rightsScope: 'pd',
+        queries, page: batch, limit: 4
+      });
+    }
+    expect(urls.map((url) => new URL(url).searchParams.get('q'))).toEqual([
+      queries[0], queries[1], queries[2], queries[3], queries[0]
+    ]);
+    expect(urls.map((url) => new URL(url).searchParams.get('page'))).toEqual(['1', '1', '1', '1', '2']);
+  });
+
+  it('filters loaded board facets locally with exact values and the active rights gate', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const board = [
+      { ...base, id: 'loaded-commons-pd', provider: 'Wikimedia Commons', kind: 'Maps', rightsType: 'pd' },
+      { ...base, id: 'loaded-aic-cc0', provider: 'Art Institute of Chicago', kind: 'Textures', rightsType: 'cc0' },
+      { ...base, id: 'loaded-cma-pd', provider: 'Cleveland Museum of Art', kind: 'Maps', rightsType: 'pd' },
+      { ...base, id: 'loaded-wellcome-by', provider: 'Wellcome Collection', kind: 'Science', rightsType: 'ccby' },
+      { ...base, id: 'loaded-unknown-rights', provider: 'Wikimedia Commons', kind: 'Blueprints', rightsType: 'unknown' }
+    ];
+    const providers = window.SourcebookProviders;
+    expect(Array.from(providers.filterLoadedResultsByProvider(board, 'All', 'pd')).map((item) => item.id)).toEqual([
+      'loaded-commons-pd', 'loaded-cma-pd'
+    ]);
+    expect(Array.from(providers.filterLoadedResultsByProvider(board, 'All', 'pd-cc0')).map((item) => item.id)).toEqual([
+      'loaded-commons-pd', 'loaded-aic-cc0', 'loaded-cma-pd'
+    ]);
+    expect(Array.from(providers.filterLoadedResultsByFacets(board, {
+      provider: 'Wikimedia Commons', kind: 'Maps', rightsType: 'pd'
+    }, 'all')).map((item) => item.id)).toEqual(['loaded-commons-pd']);
+    expect(Array.from(providers.filterLoadedResultsByFacets(board, {
+      kind: 'Textures', rightsType: 'cc0'
+    }, 'pd-cc0')).map((item) => item.id)).toEqual(['loaded-aic-cc0']);
+    expect(Array.from(providers.filterLoadedResultsByFacets(board, {
+      kind: 'Science', rightsType: 'ccby'
+    }, 'pd-cc0'))).toEqual([]);
+    expect(Array.from(providers.filterLoadedResultsByFacets(board, {
+      provider: 'Cleveland Museum', kind: 'Maps'
+    }, 'all'))).toEqual([]);
+    expect(Array.from(providers.filterLoadedResultsByFacets(board, {
+      kind: 'Map'
+    }, 'all'))).toEqual([]);
+    expect(Array.from(providers.loadedProviderCoverage(board, 'all')).map((entry) => [entry.provider, entry.count])).toEqual([
+      ['Wikimedia Commons', 1],
+      ['Art Institute of Chicago', 1],
+      ['Cleveland Museum of Art', 1],
+      ['Wellcome Collection', 1]
+    ]);
+    expect(Array.from(providers.loadedKindCoverage(board, 'all')).map((entry) => [entry.kind, entry.count])).toEqual([
+      ['Maps', 2],
+      ['Textures', 1],
+      ['Science', 1]
+    ]);
+    expect(Array.from(providers.loadedRightsCoverage(board, 'all')).map((entry) => [entry.rightsType, entry.label, entry.count])).toEqual([
+      ['pd', 'Public Domain', 2],
+      ['cc0', 'CC0', 1],
+      ['ccby', 'CC BY', 1]
+    ]);
+    expect(Array.from(providers.loadedRightsCoverage(board, 'pd-cc0')).map((entry) => entry.rightsType)).toEqual(['pd', 'cc0']);
+  });
   it('normalizes recent searches and refines a loaded board without another network request', () => {
     const window = loadSourcebook();
     expect(window.SourcebookProviders.normalizePaletteTarget(12)).toBe(12);
@@ -1728,7 +3149,7 @@ describe('Sourcebook initial feature contract', () => {
     const window = loadSourcebook();
     const materials = Array.from(window.SourcebookProviders.materials);
     const ids = materials.slice(0, 2).map((item) => item.id).reverse();
-    const manifest = window.SourcebookProviders.buildPalette(ids, { [ids[0]]: { mode: 'tile', aspect: 'landscape', tile: 120 } }, 'Lesson textures');
+    const manifest = window.SourcebookProviders.buildPalette(ids, { [ids[0]]: { mode: 'tile', aspect: 'landscape', tile: 120, usageIntent: 'texture' } }, 'Lesson textures');
     expect(manifest.schema).toBe('org.owlflow.sourcebook-palette');
     expect(manifest.version).toBe(1);
     expect(manifest.maximumAssets).toBe(48);
@@ -1737,9 +3158,10 @@ describe('Sourcebook initial feature contract', () => {
     expect(manifest.assets.map((asset) => asset.id)).toEqual(ids);
     expect(manifest.assets[0].preparation.mode).toBe('tile');
     expect(manifest.assets[0].preparation.aspect).toBe('landscape');
+    expect(manifest.assets[0].preparation.usageIntent).toBe('texture');
     expect(manifest.assets.every((asset) => asset.sourceUrl && asset.license && asset.rightsNote && asset.attribution)).toBe(true);
-    const bounded = window.SourcebookProviders.buildPalette([ids[1]], { [ids[1]]: { mode: 'unknown', zoom: 999, x: -20, tile: 1 } }, 'Bounded preparation');
-    expect(bounded.assets[0].preparation).toMatchObject({ mode: 'fit', zoom: 220, x: 0, tile: 60 });
+    const bounded = window.SourcebookProviders.buildPalette([ids[1]], { [ids[1]]: { mode: 'unknown', zoom: 999, x: -20, tile: 1, usageIntent: 'unknown' } }, 'Bounded preparation');
+    expect(bounded.assets[0].preparation).toMatchObject({ mode: 'fit', zoom: 220, x: 0, tile: 60, usageIntent: 'auto' });
   });
 
   it('caps portable palettes at the dependable import and print ceiling', () => {
@@ -1759,16 +3181,221 @@ describe('Sourcebook initial feature contract', () => {
     const window = loadSourcebook();
     const items = Array.from(window.SourcebookProviders.materials).slice(0, 2);
     const manifest = window.SourcebookProviders.buildPalette(items.map((item) => item.id), {
-      [items[0].id]: { mode: 'tile', aspect: 'banner', tile: 120 }
+      [items[0].id]: {
+        mode: 'tile', aspect: 'banner', tile: 120, usageIntent: 'reference', usagePlan: 'education', decorative: false,
+        altText: 'Topographic contour lines', altTextCustomized: true, altTextReviewed: true
+      }
     }, 'Imported geography set');
     const imported = window.SourcebookProviders.normalizePalette(manifest);
     expect(imported).toMatchObject({ schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Imported geography set' });
     expect(imported.assets).toHaveLength(2);
     expect(imported.assets.every((asset) => ['pd', 'cc0', 'ccby'].includes(asset.rightsType))).toBe(true);
-    expect(imported.preparation[items[0].id]).toMatchObject({ mode: 'tile', aspect: 'banner', tile: 120 });
+    expect(imported.preparation[items[0].id]).toMatchObject({
+      mode: 'tile', aspect: 'banner', tile: 120, usageIntent: 'reference', usagePlan: 'education', decorative: false,
+      altText: 'Topographic contour lines', altTextCustomized: true, altTextReviewed: true
+    });
     expect(window.SourcebookProviders.normalizePalette({ ...manifest, assets: [{ ...manifest.assets[0], sourceUrl: 'https://example.com/not-a-verified-source' }] })).toBeNull();
     expect(window.SourcebookProviders.normalizePalette({ ...manifest, assets: [{ ...manifest.assets[0], rightsType: 'unknown' }] })).toBeNull();
     expect(window.SourcebookProviders.normalizePalette({ ...manifest, schema: 'other.schema' })).toBeNull();
+  });
+
+  it('plans intended use transparently while preserving explicit reuse choices', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const map = { ...base, id: 'intent-map', kind: 'Maps' };
+    const texture = { ...base, id: 'intent-texture', kind: 'Textures' };
+    const archival = { ...base, id: 'intent-archive', kind: 'Archival' };
+
+    expect(window.SourcebookProviders.normalizeUsageIntent('REFERENCE')).toBe('reference');
+    expect(window.SourcebookProviders.normalizeUsageIntent('unknown')).toBe('auto');
+    expect(window.SourcebookProviders.resolveUsageIntent(map, {})).toMatchObject({
+      id: 'reference', label: 'Diagram or reference', suggested: true, selected: 'auto'
+    });
+    expect(window.SourcebookProviders.resolveUsageIntent(texture, { usageIntent: 'background' })).toMatchObject({
+      id: 'background', label: 'Page background', suggested: false, selected: 'background'
+    });
+    expect(window.SourcebookProviders.resolveUsageIntent(map, { mode: 'tile' })).toMatchObject({ id: 'texture', suggested: true });
+    expect(window.SourcebookProviders.resolveUsageIntent({ ...base, kind: 'Other' }, { aspect: 'banner' })).toMatchObject({ id: 'accent', suggested: true });
+    expect(window.SourcebookProviders.resolveUsageIntent(archival, {})).toMatchObject({ id: 'focal', suggested: true });
+
+    expect(window.SourcebookProviders.summarizeUsageIntents([map, texture, archival], {
+      'intent-map': { mode: 'tile' },
+      'intent-texture': { usageIntent: 'background' }
+    })).toMatchObject({
+      total: 3,
+      automatic: 2,
+      counts: { flexible: 0, background: 1, focal: 1, reference: 0, texture: 1, accent: 0 },
+      entries: [
+        { id: 'background', label: 'Background', count: 1 },
+        { id: 'focal', label: 'Main visual', count: 1 },
+        { id: 'texture', label: 'Texture', count: 1 }
+      ]
+    });
+  });
+
+  it('builds role-balanced educational and artwork sets without overwriting manual choices', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = [
+      { ...base, id: 'plan-map', title: 'Survey contour map', kind: 'Maps', description: 'Technical survey map.', tags: ['map', 'survey'], pixelWidth: 4200, pixelHeight: 3000 },
+      { ...base, id: 'plan-archive', title: 'Historic poster print', kind: 'Archival', description: 'Archival poster illustration.', tags: ['poster', 'print'], pixelWidth: 3000, pixelHeight: 4200 },
+      { ...base, id: 'plan-texture', title: 'Wood grain texture', kind: 'Textures', description: 'Wide wood surface texture.', tags: ['wood', 'grain', 'surface'], pixelWidth: 4200, pixelHeight: 2200 },
+      { ...base, id: 'plan-pattern', title: 'Decorative border motif', kind: 'Patterns', description: 'Wide ornamental border.', tags: ['border', 'motif'], pixelWidth: 3600, pixelHeight: 1200 }
+    ];
+
+    expect(window.SourcebookProviders.normalizeUsagePlan('EDUCATION')).toBe('education');
+    expect(window.SourcebookProviders.normalizeUsagePlan('unknown')).toBe('balanced');
+    const planned = window.SourcebookProviders.planPaletteUsage(items, {}, 'education');
+    expect(planned).toMatchObject({ planId: 'education', label: 'Educational set', planned: 4, changed: 4, preserved: 0 });
+    expect(planned.assignments).toEqual([
+      { id: 'plan-map', role: 'reference', label: 'Diagram or reference', preserved: false, sourceLabel: 'Sourcebook educational-set plan' },
+      { id: 'plan-archive', role: 'focal', label: 'Main visual', preserved: false, sourceLabel: 'Sourcebook educational-set plan' },
+      { id: 'plan-texture', role: 'background', label: 'Page background', preserved: false, sourceLabel: 'Sourcebook educational-set plan' },
+      { id: 'plan-pattern', role: 'accent', label: 'Accent or header', preserved: false, sourceLabel: 'Sourcebook educational-set plan' }
+    ]);
+    expect(planned.preparation['plan-map']).toMatchObject({ usageIntent: 'reference', usagePlan: 'education' });
+    expect(planned.preparation['plan-archive']).toMatchObject({ usageIntent: 'focal', usagePlan: 'education' });
+    expect(planned.preparation['plan-texture']).toMatchObject({ usageIntent: 'background', usagePlan: 'education' });
+    expect(planned.preparation['plan-pattern']).toMatchObject({ usageIntent: 'accent', usagePlan: 'education' });
+    expect(planned.summary).toMatchObject({
+      total: 4, automatic: 0, sourcebookPlanned: 4, manual: 0,
+      counts: { flexible: 0, background: 1, focal: 1, reference: 1, texture: 0, accent: 1 },
+      planCounts: { balanced: 0, education: 4, artwork: 0 }
+    });
+    expect(window.SourcebookProviders.resolveUsageIntent(items[0], planned.preparation['plan-map'])).toMatchObject({
+      id: 'reference', source: 'sourcebook-plan', sourceLabel: 'Sourcebook educational-set plan', planId: 'education'
+    });
+    expect(window.SourcebookProviders.normalizePreparation({ usageIntent: 'reference', usagePlan: 'education' })).toMatchObject({ usageIntent: 'reference', usagePlan: 'education' });
+    expect(window.SourcebookProviders.normalizePreparation({ usageIntent: 'auto', usagePlan: 'education' })).toMatchObject({ usageIntent: 'auto', usagePlan: '' });
+
+    const preserved = window.SourcebookProviders.planPaletteUsage(items, {
+      'plan-map': { usageIntent: 'accent' },
+      'plan-archive': { usageIntent: 'reference', usagePlan: 'artwork' }
+    }, 'balanced');
+    expect(preserved).toMatchObject({ planId: 'balanced', planned: 3, preserved: 1 });
+    expect(preserved.preparation['plan-map']).toMatchObject({ usageIntent: 'accent', usagePlan: '' });
+    expect(preserved.preparation['plan-archive'].usagePlan).toBe('balanced');
+    expect(window.SourcebookProviders.planPaletteUsage([{ ...items[0], rightsType: 'unknown' }], {}, 'education')).toMatchObject({ planned: 0, assignments: [] });
+
+    const report = window.SourcebookProviders.palettePreflightReport(items, planned.preparation, {}, 'Planned teaching set');
+    expect(report).toContain('Intended use: Diagram or reference - Sourcebook educational-set plan');
+    const packageHtml = window.SourcebookProviders.buildSourcePackage(items[0], planned.preparation['plan-map'], 'data:image/png;base64,AAAA');
+    expect(packageHtml).toContain('<dt>Intended use</dt><dd>Diagram or reference - Sourcebook educational-set plan</dd>');
+    expect(window.SourcebookProviders.buildPageDesignerArtwork(items[0], planned.preparation['plan-map'], 'data:image/png;base64,AAAA')).toMatchObject({
+      usageIntent: 'reference', usageIntentSource: 'Sourcebook educational-set plan', usagePlan: 'education',
+      preparation: { usageIntent: 'reference', usagePlan: 'education' }
+    });
+  });
+
+  it('builds an advisory visual set map from only reuse-allowed palette assets', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = [
+      { ...base, id: 'role-map', title: 'Survey contour map', kind: 'Maps', pixelWidth: 4200, pixelHeight: 3000 },
+      { ...base, id: 'role-focal', title: 'Historic teaching poster', kind: 'Archival', pixelWidth: 3000, pixelHeight: 4200 },
+      { ...base, id: 'role-background', title: 'Wide wood grain', kind: 'Textures', pixelWidth: 4200, pixelHeight: 2200 },
+      { ...base, id: 'role-accent', title: 'Decorative header border', kind: 'Patterns', pixelWidth: 3600, pixelHeight: 1200 }
+    ];
+    const planned = window.SourcebookProviders.planPaletteUsage(items, {}, 'education');
+    const board = window.SourcebookProviders.buildPaletteRoleBoard(items, planned.preparation);
+
+    expect(board).toMatchObject({
+      planId: 'education',
+      planLabel: 'Educational set',
+      total: 4,
+      requiredSlots: 4,
+      coveredSlots: 4,
+      coveragePercent: 100,
+      ready: true,
+      missing: [],
+      missingLabel: '',
+      summary: 'Educational set \\u00b7 100% role coverage'
+    });
+    expect(Array.from(board.groups).map((group) => ({
+      id: group.id, required: group.required, count: group.count, missing: group.missing
+    }))).toEqual([
+      { id: 'background', required: 1, count: 1, missing: 0 },
+      { id: 'focal', required: 1, count: 1, missing: 0 },
+      { id: 'reference', required: 1, count: 1, missing: 0 },
+      { id: 'accent', required: 1, count: 1, missing: 0 }
+    ]);
+    expect(Object.fromEntries(Array.from(board.groups).map((group) => [
+      group.id, Array.from(group.items).map((item) => item.id)
+    ]))).toEqual({
+      background: ['role-background'],
+      focal: ['role-focal'],
+      reference: ['role-map'],
+      accent: ['role-accent']
+    });
+
+    const referenceOnly = Object.fromEntries(items.map((item) => [item.id, { usageIntent: 'reference', usagePlan: 'education' }]));
+    const gaps = window.SourcebookProviders.buildPaletteRoleBoard(items, referenceOnly);
+    expect(gaps).toMatchObject({
+      planId: 'education', total: 4, requiredSlots: 4, coveredSlots: 1, coveragePercent: 25, ready: false,
+      missingLabel: 'Background 1, Main visual 1, Accent 1'
+    });
+    expect(Array.from(gaps.missing).map((group) => ({ id: group.id, missing: group.missing }))).toEqual([
+      { id: 'background', missing: 1 },
+      { id: 'focal', missing: 1 },
+      { id: 'accent', missing: 1 }
+    ]);
+    expect(window.SourcebookProviders.buildPaletteRoleBoard(
+      items.concat([{ ...base, id: 'blocked-role', rightsType: 'unknown' }]),
+      planned.preparation
+    ).total).toBe(4);
+    expect(window.SourcebookProviders.buildPaletteRoleBoard([items[0]], {
+      [items[0].id]: { usageIntent: 'reference' }
+    })).toMatchObject({ planId: 'balanced', total: 1 });
+
+    const report = window.SourcebookProviders.palettePreflightReport(items, planned.preparation, {}, 'Teaching visuals');
+    expect(report).toContain('Visual set (advisory): Educational set \\u00b7 100% role coverage');
+    expect(report).toContain('Visual-set guidance never blocks output.');
+    const images = Object.fromEntries(items.map((item) => [item.id, 'data:image/png;base64,AAAA']));
+    const packageHtml = window.SourcebookProviders.buildPalettePackage(items, planned.preparation, 'Teaching visuals', images);
+    expect(packageHtml).toContain('data-sourcebook-role-plan="education"');
+    expect(packageHtml).toContain('data-sourcebook-role-coverage="100"');
+    expect(packageHtml).toContain('Visual set map (advisory)');
+    expect(packageHtml).toContain('Missing roles never block output.');
+  });
+
+  it('creates sanitized, metadata-grounded accessibility descriptions without inventing visual claims', () => {
+    const window = loadSourcebook();
+    const item = Array.from(window.SourcebookProviders.materials)[0];
+    expect(window.SourcebookProviders.normalizeAltText('  Contour\nmap\u0000 with lines  ')).toBe('Contour map with lines');
+    expect(window.SourcebookProviders.normalizeAltText('x'.repeat(400))).toHaveLength(300);
+    expect(window.SourcebookProviders.suggestAltText(item)).toBe(item.description);
+    expect(window.SourcebookProviders.accessibilityDescription(item, {})).toMatchObject({
+      decorative: false, altText: item.description, source: 'catalog-metadata', reviewed: false
+    });
+    expect(window.SourcebookProviders.accessibilityDescription(item, {
+      altText: '  Map with tightly spaced contour lines.  ', altTextCustomized: true
+    })).toMatchObject({
+      decorative: false, altText: 'Map with tightly spaced contour lines.', source: 'user-edited', reviewed: true
+    });
+    expect(window.SourcebookProviders.accessibilityDescription(item, {
+      decorative: true, altText: 'Ignored text', altTextCustomized: true
+    })).toMatchObject({ decorative: true, altText: '', source: 'decorative-choice', reviewed: true });
+    expect(window.SourcebookProviders.accessibilityDescription(item, {
+      altTextReviewed: true
+    })).toMatchObject({ decorative: false, source: 'catalog-metadata', reviewed: true });
+  });
+
+  it('summarizes and filters a palette accessibility review queue without changing rights eligibility', () => {
+    const window = loadSourcebook();
+    const items = Array.from(window.SourcebookProviders.materials).slice(0, 3);
+    const preparation = {
+      [items[1].id]: { altText: 'Historic technical drawing.', altTextCustomized: true },
+      [items[2].id]: { decorative: true }
+    };
+    expect(window.SourcebookProviders.summarizeAccessibilityReview(items, preparation)).toEqual({
+      total: 3, suggested: 1, confirmed: 1, decorative: 1, userEdited: 1, reviewed: 2
+    });
+    expect(Array.from(window.SourcebookProviders.filterPaletteByAccessibility(items, preparation, 'suggested')).map((item) => item.id)).toEqual([items[0].id]);
+    expect(Array.from(window.SourcebookProviders.filterPaletteByAccessibility(items, preparation, 'confirmed')).map((item) => item.id)).toEqual([items[1].id]);
+    expect(Array.from(window.SourcebookProviders.filterPaletteByAccessibility(items, preparation, 'decorative')).map((item) => item.id)).toEqual([items[2].id]);
+    expect(Array.from(window.SourcebookProviders.filterPaletteByAccessibility(items, preparation, 'invalid'))).toHaveLength(3);
+    expect(window.SourcebookProviders.accessibilityReviewStatus(items[0], {})).toMatchObject({ status: 'suggested', reviewed: false });
+    expect(window.SourcebookProviders.accessibilityReviewStatus(items[1], preparation[items[1].id])).toMatchObject({ status: 'confirmed', source: 'user-edited' });
   });
 
   it('builds a rights-checked Page Designer handoff with preparation and provenance', () => {
@@ -1776,7 +3403,7 @@ describe('Sourcebook initial feature contract', () => {
     const item = Array.from(window.SourcebookProviders.materials)[0];
     const artwork = window.SourcebookProviders.buildPageDesignerArtwork(
       item,
-      { mode: 'crop', aspect: 'portrait', zoom: 145, x: 25, y: 80 },
+      { mode: 'crop', aspect: 'portrait', zoom: 145, x: 25, y: 80, usageIntent: 'reference', altText: 'Portrait crop of contour lines.', altTextCustomized: true },
       'data:image/png;base64,AAAA'
     );
     expect(artwork).toMatchObject({
@@ -1786,9 +3413,21 @@ describe('Sourcebook initial feature contract', () => {
       sourceUrl: item.sourceUrl,
       license: item.license,
       rightsType: item.rightsType,
-      preparation: { mode: 'crop', aspect: 'portrait', zoom: 145, x: 25, y: 80, tile: 180 }
+      altText: 'Portrait crop of contour lines.',
+      decorative: false,
+      altTextSource: 'user-edited',
+      altTextReviewed: true,
+      usageIntent: 'reference',
+      usageIntentLabel: 'Diagram or reference',
+      preparation: {
+        mode: 'crop', aspect: 'portrait', zoom: 145, x: 25, y: 80, tile: 180, usageIntent: 'reference',
+        decorative: false, altText: 'Portrait crop of contour lines.', altTextCustomized: true, altTextReviewed: true
+      }
     });
     expect(artwork.attribution).toContain(item.sourceUrl);
+    expect(window.SourcebookProviders.buildPageDesignerArtwork(
+      item, { decorative: true }, 'data:image/png;base64,AAAA'
+    )).toMatchObject({ altText: '', decorative: true, altTextSource: 'decorative-choice' });
     expect(window.SourcebookProviders.buildPageDesignerArtwork(item, { mode: 'crop', x: 0, y: 0 }, 'data:image/png;base64,AAAA').preparation).toMatchObject({ x: 0, y: 0 });
     expect(window.SourcebookProviders.buildPageDesignerArtwork({ ...item, rightsType: 'unknown' }, {}, 'data:image/png;base64,AAAA')).toBeNull();
     expect(window.SourcebookProviders.buildPageDesignerArtwork(item, {}, 'https://example.com/image.png')).toBeNull();
@@ -1873,6 +3512,113 @@ describe('Sourcebook initial feature contract', () => {
     expect(Array.from(window.SourcebookProviders.filterAndSortBoard([blurry, sharp], '', 'print')).map((item) => item.id)).toEqual(['print-ready', 'print-low']);
   });
 
+  it('summarizes a truthful output preflight across rights, accessibility, print evidence, and attribution', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = [
+      { ...base, id: 'preflight-ready', rightsType: 'pd', pixelWidth: 3600, pixelHeight: 2400 },
+      { ...base, id: 'preflight-usable', rightsType: 'ccby', pixelWidth: 1600, pixelHeight: 1200 },
+      { ...base, id: 'preflight-attention', rightsType: 'cc0', pixelWidth: 640, pixelHeight: 480 },
+      { ...base, id: 'preflight-verify', rightsType: 'pd', pixelWidth: 0, pixelHeight: 0 }
+    ];
+    const preparation = {
+      'preflight-ready': { altText: 'Detailed contour map.', altTextCustomized: true },
+      'preflight-usable': { altTextReviewed: true },
+      'preflight-attention': { decorative: true }
+    };
+    const summary = window.SourcebookProviders.summarizePalettePreflight(items, preparation);
+    expect(summary).toEqual({
+      total: 4,
+      rightsVerified: 4,
+      rightsBlocked: 0,
+      accessibilityReviewed: 3,
+      accessibilitySuggested: 1,
+      printReady: 1,
+      printUsable: 1,
+      printAttention: 1,
+      printVerify: 1,
+      attributionRequired: 1,
+      pendingChecks: 3,
+      ready: false
+    });
+    expect(window.SourcebookProviders.palettePreflightLabel(summary))
+      .toBe('4/4 rights verified; 3/4 accessibility reviewed; 2/4 print supported; 1 print attention; 1 verify full-size');
+    expect(window.SourcebookProviders.palettePreflightItem(
+      { ...items[0], rightsType: 'unknown' },
+      preparation['preflight-ready']
+    )).toMatchObject({ rightsVerified: false, issues: expect.arrayContaining(['rights']) });
+    expect(window.SourcebookProviders.summarizePalettePreflight(
+      [items[0]],
+      { 'preflight-ready': preparation['preflight-ready'] }
+    )).toMatchObject({ pendingChecks: 0, ready: true });
+  });
+  it('builds an actionable asset queue and copyable preflight report from observable evidence', () => {
+    const window = loadSourcebook();
+    const base = Array.from(window.SourcebookProviders.materials)[0];
+    const items = [
+      {
+        ...base,
+        id: 'queue-ready',
+        title: 'Ready contour map',
+        rightsType: 'pd',
+        rightsShort: 'Public domain',
+        pixelWidth: 3600,
+        pixelHeight: 2400,
+        sourceUrl: 'https://example.org/ready'
+      },
+      {
+        ...base,
+        id: 'queue-review',
+        title: 'Review blueprint',
+        provider: 'Open archive',
+        rightsType: 'ccby',
+        rightsShort: 'CC BY 4.0',
+        pixelWidth: 640,
+        pixelHeight: 480,
+        sourceUrl: 'https://example.org/review'
+      }
+    ];
+    const preparation = {
+      'queue-ready': { usageIntent: 'background', altText: 'Detailed contour map.', altTextCustomized: true }
+    };
+    const rows = window.SourcebookProviders.palettePreflightRows(items, preparation);
+    expect(rows).toHaveLength(2);
+    expect(rows[0]).toMatchObject({
+      number: 1,
+      id: 'queue-ready',
+      status: 'ready',
+      rightsVerified: true,
+      accessibilityReviewed: true,
+      printStatus: 'ready',
+      usageIntent: 'background',
+      usageIntentLabel: 'Page background',
+      usageIntentSuggested: false,
+      attributionRequired: false,
+      issues: [],
+      actions: []
+    });
+    expect(rows[1]).toMatchObject({
+      number: 2,
+      id: 'queue-review',
+      status: 'review',
+      rightsVerified: true,
+      accessibilityLabel: 'Review needed',
+      printStatus: 'attention',
+      attributionRequired: true,
+      issues: ['accessibility', 'print'],
+      actions: ['Review image purpose and alt text', 'Review print enlargement and fine detail']
+    });
+    const report = window.SourcebookProviders.palettePreflightReport(items, preparation, {}, 'Map lesson sources');
+    expect(report).toContain('SOURCEBOOK OUTPUT PREFLIGHT');
+    expect(report).toContain('Map lesson sources');
+    expect(report).toContain('Overall status: Review 2 remaining checks');
+    expect(report).toContain('Intended use: Page background - user planned');
+    expect(report).toContain('2. Review blueprint - Open archive');
+    expect(report).toContain('Rights: Verified - CC BY 4.0');
+    expect(report).toContain('Attribution: Required; credit is included in Sourcebook output');
+    expect(report).toContain('Next: Review image purpose and alt text; Review print enlargement and fine detail');
+    expect(report).toContain('Source: https://example.org/review');
+  });
   it('resolves curated Commons redirects through the official API before embedding', async () => {
     const requests = [];
     const window = loadSourcebook(async (url) => {
@@ -1895,11 +3641,19 @@ describe('Sourcebook initial feature contract', () => {
     const window = loadSourcebook();
     const item = { ...Array.from(window.SourcebookProviders.materials)[0], pixelWidth: 3600, pixelHeight: 2400 };
     const dataUrl = 'data:image/png;base64,AAAA';
-    const html = window.SourcebookProviders.buildSourcePackage(item, { mode: 'tile', aspect: 'banner', tile: 140 }, dataUrl);
-    expect(window.SourcebookProviders.version).toBe(38);
+    const html = window.SourcebookProviders.buildSourcePackage(item, {
+      mode: 'tile', aspect: 'banner', tile: 140, usageIntent: 'texture',
+      altText: 'Contour lines for a mountain region.', altTextCustomized: true
+    }, dataUrl);
+    expect(window.SourcebookProviders.version).toBe(54);
     expect(html).toContain('<!doctype html>');
     expect(html).toContain(`<img src="${dataUrl}"`);
     expect(html).toContain('download="contour-map-line-drawing.png"');
+    expect(html).toContain('alt="Contour lines for a mountain region."');
+    expect(html).toContain('<dt>Image purpose</dt><dd>Informative</dd>');
+    expect(html).toContain('<dt>Intended use</dt><dd>Texture or pattern - user planned</dd>');
+    expect(html).toContain('<dt>Alt text basis</dt><dd>User-edited</dd>');
+    expect(html).toContain('<dt>Alt text review</dt><dd>Confirmed in Sourcebook</dd>');
     expect(html).toContain('Repeat / tile at 140 px');
     expect(html).toContain('Header banner 8:3 (1600 x 600 px)');
     expect(html).toContain('<dt>Print readiness</dt>');
@@ -1908,6 +3662,13 @@ describe('Sourcebook initial feature contract', () => {
     expect(html).toContain(item.sourceUrl);
     expect(html).toContain('Credit and provenance');
     expect(html).not.toContain('<script');
+    const decorativeHtml = window.SourcebookProviders.buildSourcePackage(item, { decorative: true }, dataUrl);
+    expect(decorativeHtml).toContain('alt=""');
+    expect(decorativeHtml).toContain('<dt>Image purpose</dt><dd>Decorative</dd>');
+    expect(decorativeHtml).toContain('<dt>Alt text basis</dt><dd>User marked decorative</dd>');
+    expect(decorativeHtml).toContain('<dt>Alt text review</dt><dd>Decorative choice confirmed</dd>');
+    const suggestedHtml = window.SourcebookProviders.buildSourcePackage(item, {}, dataUrl);
+    expect(suggestedHtml).toContain('<dt>Alt text review</dt><dd>Review before publishing</dd>');
     expect(window.SourcebookProviders.buildSourcePackage({ ...item, rightsType: 'unknown' }, {}, dataUrl)).toBe('');
     expect(window.SourcebookProviders.buildSourcePackage(item, {}, 'data:image/png;base64,AAAA&quot; onerror=alert(1)')).toBe('');
   });
@@ -1920,17 +3681,34 @@ describe('Sourcebook initial feature contract', () => {
       [items[1].id]: 'data:image/jpeg;base64,BBBB'
     };
     const preparation = {
-      [items[0].id]: { mode: 'tile', aspect: 'square', tile: 125 },
-      [items[1].id]: { mode: 'crop', aspect: 'portrait', zoom: 135, x: 30, y: 70 }
+      [items[0].id]: {
+        mode: 'tile', aspect: 'square', tile: 125, usageIntent: 'texture',
+        altText: 'Repeating contour map pattern.', altTextCustomized: true
+      },
+      [items[1].id]: { mode: 'crop', aspect: 'portrait', zoom: 135, x: 30, y: 70, usageIntent: 'accent', decorative: true }
     };
     const html = window.SourcebookProviders.buildPalettePackage(items, preparation, 'Map study sources', images);
     const credits = window.SourcebookProviders.buildPaletteCredits(items);
     expect(html).toContain('data-sourcebook-schema="org.owlflow.sourcebook-palette-package"');
+    expect(html).toContain('data-sourcebook-preflight="review"');
+    expect(html).toContain('<strong>Output preflight:</strong>');
+    expect(html).toContain('<dt>Output preflight</dt>');
+    expect(html).toContain('rights verified;');
     expect(html).toContain('2 prepared visual assets');
     expect(html).toContain('Repeat / tile at 125 px');
     expect(html).toContain('Crop at 135% zoom, focus 30% horizontal / 70% vertical');
     expect(html).toContain('Portrait 3:4 (1200 x 1600 px)');
     expect(html).toContain('<dt>Print readiness</dt>');
+    expect(html).toContain('alt="Repeating contour map pattern."');
+    expect(html).toContain('alt=""');
+    expect(html).toContain('<dt>Image purpose</dt><dd>Informative</dd>');
+    expect(html).toContain('<dt>Image purpose</dt><dd>Decorative</dd>');
+    expect(html).toContain('<dt>Intended use</dt><dd>Texture or pattern - user planned</dd>');
+    expect(html).toContain('<dt>Intended use</dt><dd>Accent or header - user planned</dd>');
+    expect(html).toContain('<dt>Alt text basis</dt><dd>User-edited</dd>');
+    expect(html).toContain('<dt>Alt text basis</dt><dd>User marked decorative</dd>');
+    expect(html).toContain('<dt>Alt text review</dt><dd>Confirmed in Sourcebook</dd>');
+    expect(html).toContain('<dt>Alt text review</dt><dd>Decorative choice confirmed</dd>');
     expect(html).toContain(`download="contour-map-line-drawing.png"`);
     expect(html).toContain('data:image/jpeg;base64,BBBB');
     expect(items.every((item) => html.includes(item.license) && html.includes(item.sourceUrl))).toBe(true);
@@ -1942,15 +3720,200 @@ describe('Sourcebook initial feature contract', () => {
     expect(window.SourcebookProviders.buildPalettePackage([items[0]], {}, 'Malformed', { [items[0].id]: 'data:image/png;base64,AAAA" onerror=alert(1)' })).toBe('');
   });
 
+  it('compares a bounded rights-safe shortlist locally before changing the palette', async () => {
+    const browserWindow = globalThis.window;
+    const previousStemLab = browserWindow.StemLab;
+    const previousFetch = browserWindow.fetch;
+    const previousMatchMedia = browserWindow.matchMedia;
+    const previousActEnvironment = globalThis.IS_REACT_ACT_ENVIRONMENT;
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    let reactRoot = null;
+    let latestState = null;
+    let requestCount = 0;
+    const toasts = [];
+    try {
+      browserWindow.fetch = async () => {
+        requestCount += 1;
+        throw new Error('Comparison must not request a provider.');
+      };
+      browserWindow.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+      browserWindow.StemLab = {
+        _registry: {}, _order: [],
+        registerTool(id, config) { config.id = id; this._registry[id] = config; this._order.push(id); }
+      };
+      vm.runInNewContext(pluginSource, {
+        console, setTimeout, clearTimeout, AbortController,
+        document, navigator: browserWindow.navigator, Image: browserWindow.Image,
+        FileReader: browserWindow.FileReader, Blob: browserWindow.Blob, URL: browserWindow.URL,
+        window: browserWindow
+      }, { filename: pluginPath });
+      const tool = browserWindow.StemLab._registry.sourcebook;
+      function Harness() {
+        const [state, setState] = ReactLib.useState({
+          kind: 'All',
+          provider: 'All',
+          rightsScope: 'all',
+          autoCurate: false
+        });
+        latestState = state;
+        const ctx = {
+          React: ReactLib,
+          toolData: { sourcebook: state },
+          updateMulti(toolId, patch) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, ...patch }));
+          },
+          update(toolId, key, valueToStore) {
+            if (toolId === 'sourcebook') setState((current) => ({ ...current, [key]: valueToStore }));
+          },
+          announceToSR() {},
+          addToast(message, tone) { toasts.push({ message, tone }); }
+        };
+        return tool.render(ctx);
+      }
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+      await ReactLib.act(async () => {
+        reactRoot = ReactDOMClient.createRoot(host);
+        reactRoot.render(ReactLib.createElement(Harness));
+      });
+
+      const initialButtons = Array.from(host.querySelectorAll('button[data-sourcebook-compare-toggle]'));
+      expect(initialButtons.length).toBeGreaterThanOrEqual(5);
+      const ids = initialButtons.slice(0, 5).map((button) => button.getAttribute('data-sourcebook-compare-toggle'));
+      for (const id of ids.slice(0, 2)) {
+        await ReactLib.act(async () => {
+          host.querySelector('button[data-sourcebook-compare-toggle="' + id + '"]').click();
+        });
+      }
+
+      expect(host.querySelector('[data-sourcebook-comparison-tray="2"]')).toBeTruthy();
+      expect(host.querySelector('[data-sourcebook-comparison-panel]')).toBeFalsy();
+      expect(host.querySelector('[data-sourcebook-open-comparison]')?.disabled).toBe(false);
+      await ReactLib.act(async () => {
+        host.querySelector('[data-sourcebook-open-comparison]').click();
+      });
+
+      const firstPanel = host.querySelector('[data-sourcebook-comparison-panel="2"]');
+      expect(firstPanel).toBeTruthy();
+      expect(firstPanel.querySelectorAll('[data-sourcebook-comparison-item]')).toHaveLength(2);
+      expect(Array.from(firstPanel.querySelectorAll('[data-sourcebook-comparison-rights]')).every((node) => ['pd', 'cc0', 'ccby'].includes(node.getAttribute('data-sourcebook-comparison-rights')))).toBe(true);
+      expect(firstPanel.textContent).toContain('Print');
+      expect(firstPanel.textContent).toContain('Pixels');
+      expect(firstPanel.textContent).toContain('Reuse');
+      expect(firstPanel.textContent).toContain('Saving remains a separate, explicit action.');
+
+      for (const id of ids.slice(2, 4)) {
+        await ReactLib.act(async () => {
+          host.querySelector('button[data-sourcebook-compare-toggle="' + id + '"]').click();
+        });
+      }
+      expect(host.querySelector('[data-sourcebook-comparison-tray="4"]')).toBeTruthy();
+      await ReactLib.act(async () => {
+        host.querySelector('button[data-sourcebook-compare-toggle="' + ids[4] + '"]').click();
+      });
+      expect(host.querySelectorAll('button[data-sourcebook-compare-toggle][aria-pressed="true"]')).toHaveLength(4);
+      expect(toasts.some((entry) => entry.message.includes('up to four rights-verified assets'))).toBe(true);
+      expect(requestCount).toBe(0);
+
+      await ReactLib.act(async () => {
+        host.querySelector('[data-sourcebook-save-comparison]').click();
+      });
+      expect(latestState.collection).toHaveLength(4);
+      expect(latestState.collection).toEqual(expect.arrayContaining(ids.slice(0, 4)));
+      expect(requestCount).toBe(0);
+
+      await ReactLib.act(async () => {
+        host.querySelector('[data-sourcebook-clear-comparison]').click();
+      });
+      expect(host.querySelector('[data-sourcebook-comparison-tray]')).toBeFalsy();
+      expect(host.querySelector('[data-sourcebook-comparison-panel]')).toBeFalsy();
+    } finally {
+      if (reactRoot) await ReactLib.act(async () => { reactRoot.unmount(); });
+      host.remove();
+      browserWindow.fetch = previousFetch;
+      browserWindow.StemLab = previousStemLab;
+      browserWindow.matchMedia = previousMatchMedia;
+      globalThis.IS_REACT_ACT_ENVIRONMENT = previousActEnvironment;
+    }
+  });
+
   it('supports two-axis crop preparation and attribution copying in the UI', () => {
     expect(pluginSource).toContain("'aria-label': 'Horizontal crop focus'");
     expect(pluginSource).toContain("'aria-label': 'Vertical crop focus'");
     expect(pluginSource).toContain("'Copy credit'");
     expect(pluginSource).toContain("'Open in Page Designer'");
+    expect(pluginSource).toContain("'Accessibility for reuse'");
+    expect(pluginSource).toContain("'data-sourcebook-accessibility': 'editor'");
+    expect(pluginSource).toContain("'data-sourcebook-image-purpose': 'informative'");
+    expect(pluginSource).toContain("'data-sourcebook-image-purpose': 'decorative'");
+    expect(pluginSource).toContain("'data-sourcebook-alt-text': 'editor'");
+    expect(pluginSource).toContain("'Decorative: empty alt text'");
+    expect(pluginSource).toContain('not a visual AI description');
+    expect(pluginSource).toContain("'Confirm this alt text'");
+    expect(pluginSource).toContain("'data-sourcebook-confirm-alt-text': item.id");
+    expect(pluginSource).toContain("'data-sourcebook-palette-accessibility': 'review'");
+    expect(pluginSource).toContain("'Accessibility review queue'");
+    expect(pluginSource).toContain("'Plan how each asset will be used'");
+    expect(pluginSource).toContain("'data-sourcebook-usage-plan': paletteUsageSummary.total");
+    expect(pluginSource).toContain("'One-click role planning'");
+    expect(pluginSource).toContain("'data-sourcebook-usage-plan-action': planId");
+    expect(pluginSource).toContain("'Visual set map'");
+    expect(pluginSource).toContain("'data-sourcebook-role-map': paletteRoleBoard.planId");
+    expect(pluginSource).toContain("'data-sourcebook-role-coverage': paletteRoleBoard.coveragePercent");
+    expect(pluginSource).toContain("'data-sourcebook-role-group': group.id");
+    expect(pluginSource).toContain("'data-sourcebook-role-asset': roleItem.id");
+    expect(pluginSource).toContain("'data-sourcebook-role-gap': group.id");
+    expect(pluginSource).toContain('group.items.slice(0, 4)');
+    expect(pluginSource).toContain('inspectSourcebookItem(roleItem)');
+    expect(pluginSource).toContain("'Advisory only - missing roles never block output.'");
+    expect(pluginSource).toContain('buildPaletteRoleBoard(selectedItems, preparation)');
+    expect(pluginSource).toContain("buttonLabel: 'Plan for teaching'");
+    expect(pluginSource).toContain("buttonLabel: 'Plan for artwork'");
+    expect(pluginSource).toContain("buttonLabel: 'Balance roles'");
+    expect(pluginSource).toContain('no new search or AI request is made.');
+    expect(pluginSource).toContain('paletteUsageSummary.sourcebookPlanned');
+    expect(pluginSource).toContain('usageIntentSourceLabel: usageIntent.sourceLabel');
+    expect(pluginSource).toContain("'data-sourcebook-bulk-usage-intent': checkedPaletteItems.length || selectedItems.length");
+    expect(pluginSource).toContain("'data-sourcebook-usage-intent': activeUsageIntent.id");
+    expect(pluginSource).toContain("'data-sourcebook-card-usage-intent': cardUsageIntent.id");
+    expect(pluginSource).toContain("'Intended use'");
+    expect(pluginSource).toContain("'data-sourcebook-accessibility-filter': entry.id");
+    expect(pluginSource).toContain("'data-sourcebook-review-next': nextAccessibilityReviewItem");
+    expect(pluginSource).toContain("'Review next suggestion'");
     expect(pluginSource).toContain("'Download source package'");
     expect(pluginSource).toContain("'Download package'");
     expect(pluginSource).toContain("'Copy credits'");
     expect(pluginSource).toContain("'Rights check passed:'");
+    expect(pluginSource).toContain("'Source record ↗'");
+    expect(pluginSource).toContain('Public domain — No Copyright in the United States');
+    expect(pluginSource).not.toContain("details.join(' ? ')");
+    expect(pluginSource).not.toContain("cardPresentation.mark + ' ? '");
+    expect(pluginSource).not.toContain("item.creator + ' ? ' + item.year");
+    expect(pluginSource).not.toContain("match.matches.length ? ' ? '");
+    expect(pluginSource).not.toContain(' ? exact ');
+    expect(pluginSource).not.toContain(' ? No Copyright');
+    expect(pluginSource).not.toContain("'Source ?'");
+    expect(pluginSource).not.toContain('Sourcebook?s curated shelf.');
+    expect(pluginSource).not.toContain("'? ' + item.rightsShort");
+    expect(pluginSource).not.toContain("saved ? '? Saved'");
+    expect(pluginSource).toContain('Sourcebook’s curated shelf.');
+    expect(pluginSource).toContain("'✓ ' + item.rightsShort");
+    expect(pluginSource).toContain("saved ? '✓ Saved'");
+    expect(pluginSource).toContain("'Output preflight'");
+    expect(pluginSource).toContain("'data-sourcebook-output-preflight': outputPreflightSummary.ready ? 'ready' : 'review'");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-rights': outputPreflightSummary.rightsVerified");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-accessibility': outputPreflightSummary.accessibilityReviewed");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-print': outputPrintSupported");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-attribution': outputPreflightSummary.attributionRequired");
+    expect(pluginSource).toContain("'data-sourcebook-review-print-issue': nextOutputPrintIssue");
+    expect(pluginSource).toContain("'data-sourcebook-review-next-check': nextOutputReviewItem");
+    expect(pluginSource).toContain("'data-sourcebook-copy-preflight': outputPreflightRows.length");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-queue': outputReviewRows.length");
+    expect(pluginSource).toContain("'data-sourcebook-preflight-row': row.id");
+    expect(pluginSource).toContain("'Copy preflight report'");
+    expect(pluginSource).toContain("'Asset review queue · '");
+    expect(pluginSource).toContain("'Review next check'");
+    expect(pluginSource).toContain('printPreflightSummary');
     expect(pluginSource).toContain("'Import .json'");
     expect(pluginSource).toContain('FileReader');
     expect(pluginSource).toContain("rawSavedSmkKeys.length && savedSmkVerificationStatus !== 'ready'");
@@ -1958,7 +3921,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain('++savedSmkRequestRef.current');
     expect(pluginSource).toContain("'Find & save ' + paletteTarget");
     expect(pluginSource).toContain("'Search verified visuals'");
-    expect(pluginSource).toContain("'Save picks'");
+    expect(pluginSource).toContain("'Save picks to palette'");
     expect(pluginSource).toContain("'Find more verified assets'");
     expect(pluginSource).toContain("'Re-curate matches'");
     expect(pluginSource).toContain("'Save recommendations ('");
@@ -1990,6 +3953,16 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'Clear recent'");
     expect(pluginSource).toContain("'Filter loaded results'");
     expect(pluginSource).toContain("'Sort loaded results'");
+    expect(pluginSource).toContain("'Explore loaded board'");
+    expect(pluginSource).toContain("'Instant filters · no new search'");
+    expect(pluginSource).toContain("'Search scope '");
+    expect(pluginSource).toContain("'Changing this starts a new collection search.'");
+    expect(pluginSource).toContain("'data-sourcebook-search-settings-note': 'true'");
+    expect(pluginSource).toContain("'data-sourcebook-loaded-provider-filter': 'true'");
+    expect(pluginSource).toContain("'data-sourcebook-loaded-facets': 'true'");
+    expect(pluginSource).toContain("'data-sourcebook-loaded-kind': entry.kind");
+    expect(pluginSource).toContain("'data-sourcebook-loaded-rights': entry.rightsType");
+    expect(pluginSource).toContain("'data-sourcebook-clear-loaded-filters': 'true'");
     expect(pluginSource).toContain("'Filters and search options'");
     expect(pluginSource).toContain("'Gallery'");
     expect(pluginSource).toContain("'Research'");
@@ -2014,7 +3987,9 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'aria-label': 'Provider search progress'");
     expect(pluginSource).toContain("'Cooling down'");
     expect(pluginSource).toContain("'Retrying once'");
-    expect(pluginSource).toContain('onProgress: trackProviderProgress');
+    expect(pluginSource).toContain('onProgress: providerProgressForBatch(0)');
+    expect(pluginSource).toContain('onProgress: providerProgressForBatch(nextPage)');
+    expect(pluginSource).toContain('onProgress: providerProgressForBatch(targetBatch)');
     expect(pluginSource).toContain("'aria-label': 'Stop the active Sourcebook search'");
     expect(pluginSource).toContain("'Stop search'");
     expect(pluginSource).toContain('signal: liveRequest.signal');
@@ -2035,7 +4010,7 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'SMK Open'");
     expect(pluginSource).toContain("'[public_domain:true],[has_image:true]'");
     expect(pluginSource).toContain("'qfields=titles,content_subject,tags,techniques,materials,medium'");
-    expect(pluginSource).toContain("'13 collections'");
+    expect(pluginSource).toContain("LIVE_PROVIDER_NAMES.length + ' collections'");
     expect(pluginSource).toContain('COMMONS_PROVIDER_PROFILES');
     expect(pluginSource).toContain('lg:overflow-y-auto');
     expect(pluginSource).toContain("tabIndex: 0");
@@ -2098,6 +4073,11 @@ describe('Sourcebook initial feature contract', () => {
     expect(pluginSource).toContain("'aria-pressed': pinned");
     expect(pluginSource).toContain('pinnedRecommendationIds');
     expect(pluginSource).toContain("'Kept by you'");
+    expect(pluginSource).toContain("'data-sourcebook-comparison-tray': comparisonItems.length");
+    expect(pluginSource).toContain("'data-sourcebook-comparison-panel': comparisonItems.length");
+    expect(pluginSource).toContain("'data-sourcebook-compare-toggle': item.id");
+    expect(pluginSource).toContain("'Local evaluation / no new provider request'");
+    expect(pluginSource).toContain('COMPARISON_MAX_ASSETS');
   });
 
   it('routes the prepared asset through the existing host handoff and retains its credit in Page Designer', () => {
@@ -2105,7 +4085,11 @@ describe('Sourcebook initial feature contract', () => {
     const studioSource = fs.readFileSync(path.join(root, 'studio_module.js'), 'utf8');
     expect(appSource).toContain("setAlloStudioInitialAction('insert-visual-asset')");
     expect(appSource).toContain('attribution: String(artwork.attribution');
+    expect(appSource).toContain("usageIntent: ['flexible', 'background', 'focal', 'reference', 'texture', 'accent'].includes(prepared.usageIntent)");
     expect(studioSource).toContain("template: isSourcebook ? 'sourcebook-asset' : 'artstudio-artwork'");
+    expect(studioSource).toContain("usageIntent === 'background' || usageIntent === 'texture'");
+    expect(studioSource).toContain("usageIntent === 'accent'");
+    expect(studioSource).toContain('usageIntent: usageIntent');
     expect(studioSource).toContain("origin: 'stem-sourcebook-credit'");
     expect(studioSource).toContain('Sourcebook asset added with its source and reuse information');
   });

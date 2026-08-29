@@ -14,9 +14,25 @@
   var MISSION_VARIANTS = Object.freeze([
     Object.freeze({ id: 'aurora-3', name: 'Aurora Test 3', facility: 'National Aeronautics Laboratory', year: 1962, speed: 215, angle: 38, height: 30, gravity: 9.81, zoneMin: 4550, zoneMax: 4700 }),
     Object.freeze({ id: 'meridian-5', name: 'Meridian Test 5', facility: 'National Aeronautics Laboratory', year: 1963, speed: 198, angle: 44, height: 24, gravity: 9.81, zoneMin: 3950, zoneMax: 4100 }),
-    Object.freeze({ id: 'horizon-8', name: 'Horizon Test 8', facility: 'National Aeronautics Laboratory', year: 1964, speed: 230, angle: 32, height: 45, gravity: 9.81, zoneMin: 4850, zoneMax: 5000 })
+    Object.freeze({ id: 'horizon-8', name: 'Horizon Test 8', facility: 'National Aeronautics Laboratory', year: 1964, speed: 230, angle: 32, height: 45, gravity: 9.81, zoneMin: 4850, zoneMax: 5000 }),
+    Object.freeze({ id: 'aurora-control-3b', name: 'Aurora Control 3B', facility: 'National Aeronautics Laboratory', year: 1962, speed: 210, angle: 38, height: 30, gravity: 9.81, zoneMin: 4550, zoneMax: 4700 })
   ]);
   var MISSION = MISSION_VARIANTS[0];
+  var REPLAY_REASONING_OPTIONS = Object.freeze([
+    Object.freeze({ id: 'reproducible', label: 'The same inputs reproduced the baseline result.' }),
+    Object.freeze({ id: 'isolated-change', label: 'One changed input was isolated, so its effect can be compared.' }),
+    Object.freeze({ id: 'combined-not-isolated', label: 'Several inputs changed together, so this replay cannot isolate one cause.' })
+  ]);
+
+  function hasMissionVariant(id) {
+    return MISSION_VARIANTS.some(function (item) { return item.id === id; });
+  }
+
+  function normalizeMissionVariantId(id, fallbackId) {
+    if (hasMissionVariant(id)) return id;
+    if (hasMissionVariant(fallbackId)) return fallbackId;
+    return MISSION.id;
+  }
 
   function getMissionVariant(id) {
     var selected = MISSION_VARIANTS.find(function (item) { return item.id === id; }) || MISSION;
@@ -160,11 +176,134 @@
     };
   }
 
+  function getReplayComparisonProfile(id) {
+    var comparison = compareMissionVariant(id);
+    var inputKeys = ['speed', 'angle', 'height', 'gravity'];
+    var changedInputs = comparison.changedInputs.slice();
+    var type = changedInputs.length === 0 ? 'reproduction' : (changedInputs.length === 1 ? 'controlled' : 'combined');
+    return {
+      missionId: comparison.mission.id,
+      type: type,
+      expectedClaim: type === 'reproduction' ? 'reproducible' : (type === 'controlled' ? 'isolated-change' : 'combined-not-isolated'),
+      changedInputs: changedInputs,
+      changedInputCount: changedInputs.length,
+      fixedInputs: inputKeys.filter(function (key) { return changedInputs.indexOf(key) < 0; }),
+      fixedInputCount: inputKeys.length - changedInputs.length,
+      totalInputs: inputKeys.length
+    };
+  }
+
   function evaluateReplayPrediction(id, prediction) {
     var comparison = compareMissionVariant(id);
     comparison.prediction = ['shorter', 'about', 'longer'].indexOf(prediction) >= 0 ? prediction : '';
     comparison.correct = !!comparison.prediction && comparison.prediction === comparison.relation;
     return comparison;
+  }
+
+  function getReplayReasoningOption(id) {
+    var option = REPLAY_REASONING_OPTIONS.find(function (item) { return item.id === id; });
+    return option ? Object.assign({}, option) : null;
+  }
+
+  function normalizeReplayLearning(value) {
+    value = value || {};
+    var initialPrediction = ['shorter', 'about', 'longer'].indexOf(value.initialPrediction) >= 0 ? value.initialPrediction : '';
+    if (!initialPrediction) return null;
+    var reasoningClaim = getReplayReasoningOption(value.reasoningClaim) ? value.reasoningClaim : '';
+    var attempts = Number(value.reasoningAttempts);
+    return {
+      initialPrediction: initialPrediction,
+      reasoningClaim: reasoningClaim,
+      reasoningAttempts: Number.isFinite(attempts) && attempts > 0 ? Math.min(99, Math.floor(attempts)) : 0,
+      reasoningChecked: value.reasoningChecked === true && !!reasoningClaim
+    };
+  }
+
+  function evaluateReplayReasoning(missionId, claim, attemptCount) {
+    var profile = getReplayComparisonProfile(missionId);
+    var normalizedClaim = getReplayReasoningOption(claim) ? claim : '';
+    var attempts = Number(attemptCount);
+    attempts = Number.isFinite(attempts) && attempts > 0 ? Math.min(99, Math.floor(attempts)) : 0;
+    var expectedClaim = profile.expectedClaim;
+    var correct = !!normalizedClaim && normalizedClaim === expectedClaim;
+    var hintTier = correct ? 0 : (attempts >= 2 ? 2 : (attempts >= 1 ? 1 : 0));
+    var tierTwoHint = expectedClaim === 'reproducible'
+      ? 'No launch inputs changed. This replay tests whether identical inputs reproduce the baseline result.'
+      : (expectedClaim === 'isolated-change'
+        ? 'Only launch speed changed; launch angle, release height, and gravity stayed fixed, so the launch speed effect can be compared.'
+        : 'More than one input changed. A one-variable causal claim requires the other inputs to stay fixed.');
+    var message = !normalizedClaim
+      ? 'Choose the conclusion supported by the replay comparison.'
+      : (correct
+        ? (expectedClaim === 'combined-not-isolated'
+          ? 'Comparison reasoning supported. You distinguished a combined comparison from a controlled one-variable test.'
+          : (expectedClaim === 'isolated-change'
+            ? 'Comparison reasoning supported. One changed input was isolated while the other inputs stayed fixed.'
+            : 'Comparison reasoning supported. The unchanged inputs reproduced the baseline result.'))
+        : (hintTier >= 2 ? tierTwoHint : 'Compare the input rows, not only the landing range.'));
+    return {
+      claim: normalizedClaim,
+      expectedClaim: expectedClaim,
+      correct: correct,
+      pass: correct,
+      changedInputs: profile.changedInputs.slice(),
+      changedInputCount: profile.changedInputCount,
+      hintTier: hintTier,
+      message: message
+    };
+  }
+
+  function getReplayLearningStatus(state) {
+    state = state || {};
+    var rawResult = state.replayResult || null;
+    var requestedResultMissionId = rawResult && rawResult.mission && rawResult.mission.id || state.replayVariantId || MISSION.id;
+    var resultMissionKnown = hasMissionVariant(requestedResultMissionId);
+    var resultMissionId = resultMissionKnown ? requestedResultMissionId : '';
+    var resultPrediction = rawResult && ['shorter', 'about', 'longer'].indexOf(rawResult.prediction) >= 0 ? rawResult.prediction : '';
+    var comparison = rawResult && resultMissionKnown ? evaluateReplayPrediction(resultMissionId, resultPrediction) : null;
+    var unavailableReplay = !!(rawResult && !resultMissionKnown);
+    var learning = normalizeReplayLearning(state.replayLearning);
+    var currentPrediction = ['shorter', 'about', 'longer'].indexOf(state.replayPrediction) >= 0
+      ? state.replayPrediction
+      : (comparison && comparison.prediction || resultPrediction);
+    var hasRun = !!(comparison && comparison.prediction);
+    var legacyRecorded = !!(hasRun && !learning);
+    var initialPrediction = learning ? learning.initialPrediction : (comparison && comparison.prediction || resultPrediction);
+    var revisionOccurred = !!(learning && hasRun && comparison.prediction !== learning.initialPrediction);
+    var reasoning = learning && resultMissionKnown ? evaluateReplayReasoning(resultMissionId, learning.reasoningClaim, learning.reasoningAttempts) : null;
+    if (reasoning) {
+      reasoning.checked = learning.reasoningChecked;
+      reasoning.correct = !!(learning.reasoningChecked && reasoning.correct);
+      reasoning.pass = reasoning.correct;
+    }
+    var complete = !!(learning && hasRun && comparison.correct && reasoning && reasoning.correct);
+    var phase;
+    if (unavailableReplay) phase = 'Replay unavailable';
+    else if (legacyRecorded) phase = 'Replay recorded';
+    else if (complete) phase = revisionOccurred ? 'Revision supported' : 'Evidence supported';
+    else if (!hasRun && learning && currentPrediction && currentPrediction !== learning.initialPrediction) phase = 'Run revised prediction';
+    else if (!hasRun) phase = 'Predict then replay';
+    else if (!comparison.correct) phase = 'Revise prediction';
+    else if (!reasoning || !reasoning.checked) phase = 'Explain comparison';
+    else phase = 'Revise reasoning';
+    return {
+      comparison: comparison,
+      unavailableReplay: unavailableReplay,
+      legacyRecorded: legacyRecorded,
+      learningRecorded: !!learning,
+      hasRun: hasRun,
+      initialPrediction: initialPrediction,
+      currentPrediction: currentPrediction,
+      wrongPrediction: !!(hasRun && !comparison.correct),
+      revisionOccurred: revisionOccurred,
+      revisionSupported: !!(revisionOccurred && comparison.correct),
+      supportedOnFirstRun: !!(learning && hasRun && comparison.correct && !revisionOccurred),
+      reasoning: reasoning,
+      phase: phase,
+      complete: complete,
+      questComplete: legacyRecorded || complete,
+      progress: phase
+    };
   }
 
   var TRIG_TABLE = Object.freeze([
@@ -922,6 +1061,7 @@
     next.studyResult = null;
     next.studyExplanationResult = null;
     next.replayResult = null;
+    next.replayLearning = null;
     next.safeguardResult = null;
     next.reflection = {};
     if (affectedStations.length) {
@@ -1028,13 +1168,77 @@
     return 'tc-' + ('00000000' + (hash >>> 0).toString(16)).slice(-8);
   }
 
+  function createEvidenceProvenance(state, snapshots) {
+    state = state || {};
+    var currentFingerprint = createEvidenceFingerprint(state);
+    var hasSavedSnapshot;
+    var savedAt;
+    var savedFingerprint;
+    if (Array.isArray(snapshots)) {
+      var latest = null;
+      var latestTime = -Infinity;
+      var latestIndex = -1;
+      snapshots.forEach(function (snapshot, index) {
+        if (!snapshot || snapshot.tool !== TOOL_ID) return;
+        var timestamp = Number.isFinite(snapshot.timestamp) ? snapshot.timestamp : -Infinity;
+        if (!latest || timestamp > latestTime || (timestamp === latestTime && index > latestIndex)) {
+          latest = snapshot;
+          latestTime = timestamp;
+          latestIndex = index;
+        }
+      });
+      hasSavedSnapshot = !!latest;
+      savedAt = latest && Number.isFinite(latest.timestamp) ? latest.timestamp : null;
+      savedFingerprint = latest && /^tc-[0-9a-f]{8}$/.test(String(latest.fingerprint || '')) ? String(latest.fingerprint) : '';
+    } else {
+      hasSavedSnapshot = Number.isFinite(state.lastSnapshotAt);
+      savedAt = hasSavedSnapshot ? state.lastSnapshotAt : null;
+      savedFingerprint = /^tc-[0-9a-f]{8}$/.test(String(state.lastSnapshotFingerprint || ''))
+        ? String(state.lastSnapshotFingerprint)
+        : '';
+    }
+    return {
+      currentFingerprint: currentFingerprint,
+      savedFingerprint: savedFingerprint,
+      savedAt: savedAt,
+      status: !hasSavedSnapshot ? 'unsaved' : (savedFingerprint === currentFingerprint ? 'current' : 'outdated')
+    };
+  }
+
   function createEvidenceRecord(state, timestamp) {
     state = state || {};
     var when = Number.isFinite(timestamp) ? timestamp : Date.now();
     var completed = state.completed || {};
     var revisionEvidence = summarizeRevisionEvidence(state.attempts, state.diagnosticHistory);
     var replayEvidence = state.replayResult || null;
-    if (replayEvidence && (!Array.isArray(replayEvidence.changedInputs) || !Number.isFinite(replayEvidence.rangeDifference))) replayEvidence = compareMissionVariant(replayEvidence.mission && replayEvidence.mission.id);
+    if (replayEvidence && (!Array.isArray(replayEvidence.changedInputs) || !Number.isFinite(replayEvidence.rangeDifference))) {
+      var recoveryMissionId = replayEvidence.mission && replayEvidence.mission.id;
+      var recoveredPrediction = ['shorter', 'about', 'longer'].indexOf(replayEvidence.prediction) >= 0 ? replayEvidence.prediction : '';
+      replayEvidence = hasMissionVariant(recoveryMissionId)
+        ? (recoveredPrediction ? evaluateReplayPrediction(recoveryMissionId, recoveredPrediction) : compareMissionVariant(recoveryMissionId))
+        : null;
+    }
+    var replayStatus = getReplayLearningStatus(state);
+    var replayLearning = normalizeReplayLearning(state.replayLearning);
+    var replayCardEvidence = replayEvidence ? {
+      id: replayEvidence.mission && replayEvidence.mission.id,
+      range: replayEvidence.result && replayEvidence.result.range,
+      inZone: !!(replayEvidence.result && replayEvidence.result.inZone),
+      relation: replayEvidence.relation || '',
+      prediction: replayEvidence.prediction || '',
+      predictionCorrect: !!replayEvidence.correct,
+      changedInputs: Array.isArray(replayEvidence.changedInputs) ? replayEvidence.changedInputs.slice() : [],
+      rangeDifference: replayEvidence.rangeDifference,
+      flightTimeDifference: replayEvidence.flightTimeDifference
+    } : null;
+    if (replayCardEvidence && replayLearning) {
+      replayCardEvidence.initialPrediction = replayLearning.initialPrediction;
+      replayCardEvidence.finalPrediction = replayEvidence.prediction || '';
+      replayCardEvidence.revisionOccurred = replayStatus.revisionOccurred;
+      replayCardEvidence.reasoningClaim = replayLearning.reasoningChecked ? replayLearning.reasoningClaim : '';
+      replayCardEvidence.reasoningCorrect = !!(replayStatus.reasoning && replayStatus.reasoning.correct);
+      replayCardEvidence.reasoningAttempts = replayLearning.reasoningAttempts;
+    }
     var completedStations = ['briefing', 'worksheet', 'program', 'cards', 'batch', 'verify'].filter(function (id) { return !!completed[id]; });
     return {
       id: 'trajectory-' + when,
@@ -1080,17 +1284,7 @@
           revisedStations: revisionEvidence.revisedStations,
           singleCheckStations: revisionEvidence.singleCheckStations
         },
-        replayCard: replayEvidence ? {
-          id: replayEvidence.mission && replayEvidence.mission.id,
-          range: replayEvidence.result && replayEvidence.result.range,
-          inZone: !!(replayEvidence.result && replayEvidence.result.inZone),
-          relation: replayEvidence.relation || '',
-          prediction: replayEvidence.prediction || '',
-          predictionCorrect: !!replayEvidence.correct,
-          changedInputs: Array.isArray(replayEvidence.changedInputs) ? replayEvidence.changedInputs.slice() : [],
-          rangeDifference: replayEvidence.rangeDifference,
-          flightTimeDifference: replayEvidence.flightTimeDifference
-        } : null,
+        replayCard: replayCardEvidence,
         angleStudy: state.studyResult ? {
           angle: state.studyResult.angle,
           relation: state.studyResult.relation,
@@ -1106,7 +1300,7 @@
     };
   }
 
-  function createCompletionReport(state) {
+  function createCompletionReport(state, snapshots) {
     state = state || {};
     var ledger = buildCalculationLedger(state.worksheet || {});
     var pattern = state.workPattern === 'solo' ? 'solo' : 'pair';
@@ -1114,7 +1308,26 @@
     var study = state.studyResult || null;
     var revisionEvidence = summarizeRevisionEvidence(state.attempts, state.diagnosticHistory);
     var replayEvidence = state.replayResult || null;
-    if (replayEvidence && (!Array.isArray(replayEvidence.changedInputs) || !Number.isFinite(replayEvidence.rangeDifference))) replayEvidence = compareMissionVariant(replayEvidence.mission && replayEvidence.mission.id);
+    if (replayEvidence && (!Array.isArray(replayEvidence.changedInputs) || !Number.isFinite(replayEvidence.rangeDifference))) {
+      var recoveryMissionId = replayEvidence.mission && replayEvidence.mission.id;
+      var recoveredPrediction = ['shorter', 'about', 'longer'].indexOf(replayEvidence.prediction) >= 0 ? replayEvidence.prediction : '';
+      replayEvidence = hasMissionVariant(recoveryMissionId)
+        ? (recoveredPrediction ? evaluateReplayPrediction(recoveryMissionId, recoveredPrediction) : compareMissionVariant(recoveryMissionId))
+        : null;
+    }
+    var replayStatus = getReplayLearningStatus(state);
+    var replayLearning = normalizeReplayLearning(state.replayLearning);
+    var replayReport = replayEvidence;
+    if (replayEvidence && replayLearning) {
+      replayReport = Object.assign({}, replayEvidence, {
+        initialPrediction: replayLearning.initialPrediction,
+        finalPrediction: replayEvidence.prediction || '',
+        revisionOccurred: replayStatus.revisionOccurred,
+        reasoningClaim: replayLearning.reasoningChecked ? replayLearning.reasoningClaim : '',
+        reasoningCorrect: !!(replayStatus.reasoning && replayStatus.reasoning.correct),
+        reasoningAttempts: replayLearning.reasoningAttempts
+      });
+    }
     return {
       title: 'Aurora Test 3 Completion Report',
       workOrder: '62-AUR-03',
@@ -1172,10 +1385,11 @@
         explanation: state.studyExplanation || '',
         explanationCorrect: !!(state.studyExplanationResult && state.studyExplanationResult.correct)
       } : null,
-      replayCard: replayEvidence,
+      replayCard: replayReport,
       safeguardChallenge: state.safeguardResult ? Object.assign({}, state.safeguardResult) : null,
       connectionNotes: normalizeConnectionNotes(state.connectionNotes),
       reflection: normalizeReflection(state.reflection),
+      evidenceProvenance: createEvidenceProvenance(state, snapshots),
       modelLimit: 'Two-dimensional ballistic approximation; air resistance, wind, Earth curvature, propulsion, and orbital mechanics are not modeled.'
     };
   }
@@ -1187,6 +1401,7 @@
   window.TrajectoryComputingCore = Object.freeze({
     mission: MISSION,
     missionVariants: MISSION_VARIANTS,
+    replayReasoningOptions: REPLAY_REASONING_OPTIONS,
     safeguardCases: SAFEGUARD_CASES,
     safeguardOptions: SAFEGUARD_OPTIONS,
     reflectionErrorOptions: REFLECTION_ERROR_OPTIONS,
@@ -1199,6 +1414,8 @@
     correctDeck: CORRECT_DECK.slice(),
     starterDeck: STARTER_DECK.slice(),
     computeTrajectory: computeTrajectory,
+    hasMissionVariant: hasMissionVariant,
+    normalizeMissionVariantId: normalizeMissionVariantId,
     getMissionVariant: getMissionVariant,
     getSupportProfile: getSupportProfile,
     getSafeguardCase: getSafeguardCase,
@@ -1212,7 +1429,12 @@
     mergeDiagnosticCodes: mergeDiagnosticCodes,
     summarizeRevisionEvidence: summarizeRevisionEvidence,
     compareMissionVariant: compareMissionVariant,
+    getReplayComparisonProfile: getReplayComparisonProfile,
     evaluateReplayPrediction: evaluateReplayPrediction,
+    getReplayReasoningOption: getReplayReasoningOption,
+    normalizeReplayLearning: normalizeReplayLearning,
+    evaluateReplayReasoning: evaluateReplayReasoning,
+    getReplayLearningStatus: getReplayLearningStatus,
     trajectoryPathFor: trajectoryPathFor,
     checkReferenceTable: checkReferenceTable,
     computeTableApproximation: computeTableApproximation,
@@ -1243,6 +1465,7 @@
     invalidateForRevision: invalidateForRevision,
     createEvidenceRecord: createEvidenceRecord,
     createEvidenceFingerprint: createEvidenceFingerprint,
+    createEvidenceProvenance: createEvidenceProvenance,
     createCompletionReport: createCompletionReport
   });
 
@@ -1266,7 +1489,7 @@
       '[data-trajectory-lab] .tc-progress-fill{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#9ad7c0,#ffbf47);transition:width .25s ease}',
       '[data-trajectory-lab] .tc-progress-route{margin:6px 0 0;color:#dcebe5;font-size:11px;line-height:1.35}',
       '[data-trajectory-lab] button,[data-trajectory-lab] input,[data-trajectory-lab] select,[data-trajectory-lab] textarea{font:inherit}',
-      '[data-trajectory-lab] button:focus-visible,[data-trajectory-lab] input:focus-visible,[data-trajectory-lab] select:focus-visible,[data-trajectory-lab] textarea:focus-visible,[data-trajectory-lab] summary:focus-visible,[data-trajectory-lab] a:focus-visible,[data-trajectory-lab] .tc-chart-frame:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px #173c32}',
+      '[data-trajectory-lab] button:focus-visible,[data-trajectory-lab] input:focus-visible,[data-trajectory-lab] select:focus-visible,[data-trajectory-lab] textarea:focus-visible,[data-trajectory-lab] summary:focus-visible,[data-trajectory-lab] a:focus-visible,[data-trajectory-lab] .tc-chart-frame:focus-visible,[data-trajectory-lab] .tc-heading:focus-visible,[data-trajectory-lab] .tc-replay-summary:focus-visible,[data-trajectory-lab] .tc-replay-table-wrap:focus-visible{outline:3px solid #fff;outline-offset:3px;box-shadow:0 0 0 6px #173c32}',
       '[data-trajectory-lab] .tc-back,[data-trajectory-lab] .tc-action,[data-trajectory-lab] .tc-small{border:0;border-radius:9px;font-weight:800;cursor:pointer}',
       '[data-trajectory-lab] .tc-back{min-height:44px;background:#f5efd9;color:#173c32;padding:9px 13px;white-space:nowrap}',
       '[data-trajectory-lab] .tc-action{min-height:44px;background:#a64220;color:#fff;padding:11px 16px;box-shadow:0 3px 0 #7b2f18}',
@@ -1366,10 +1589,27 @@
       '[data-trajectory-lab] .tc-exploration-fill{display:block;height:100%;background:#17633f}',
       '[data-trajectory-lab] .tc-support-cue{border-left:5px solid #a64220;background:#fff8df;padding:10px 12px;margin:12px 0;font-size:13px;line-height:1.45}',
       '[data-trajectory-lab] .tc-revision-summary,[data-trajectory-lab] .tc-replay-note{border-left:5px solid #17633f;background:#eef8f2;padding:10px 12px;margin:12px 0;text-align:left;font-size:13px;line-height:1.5}',
+      '[data-trajectory-lab] .tc-replay-card-brief{margin:14px 0;padding:13px;border:2px solid #917f49;border-radius:9px;background:#fff8df}',
+      '[data-trajectory-lab] .tc-replay-card-brief>p{margin:0 0 9px}',
+      '[data-trajectory-lab] .tc-replay-input-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:8px;margin:0}',
+      '[data-trajectory-lab] .tc-replay-input-grid div{min-width:0;border:1px solid #8f8461;border-left-width:5px;border-radius:7px;background:#fffdf4;padding:9px}',
+      '[data-trajectory-lab] .tc-replay-input-grid div.is-changed{border-left-color:#a64220;background:#fff0e8}',
+      '[data-trajectory-lab] .tc-replay-input-grid div.is-fixed{border-left-color:#17633f;background:#eef8f2}',
+      '[data-trajectory-lab] .tc-replay-input-grid dt{font-size:11px;font-weight:900}',
+      '[data-trajectory-lab] .tc-replay-input-grid dd{margin:3px 0;font:800 15px/1.25 ui-monospace,monospace}',
+      '[data-trajectory-lab] .tc-replay-input-state{display:block;font-size:11px;font-weight:800}',
+      '[data-trajectory-lab] .tc-replay-evidence{margin:15px 0;padding:13px 0;border-top:2px solid #2d6653;border-bottom:2px solid #2d6653}',
+      '[data-trajectory-lab] .tc-replay-evidence h5{margin:0 0 9px;color:#173c32;font:800 17px/1.2 Georgia,serif}',
+      '[data-trajectory-lab] .tc-replay-evidence-key{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;list-style:none;margin:0;padding:0}',
+      '[data-trajectory-lab] .tc-replay-evidence-key li{min-width:0;border:1px solid #91845d;border-radius:7px;background:#fffdf4;padding:9px;font-size:11px;line-height:1.4}',
+      '[data-trajectory-lab] .tc-replay-evidence-key li.is-current{border:3px solid #a64220;background:#fff0e8;padding:7px}',
+      '[data-trajectory-lab] .tc-replay-evidence-key strong,[data-trajectory-lab] .tc-replay-evidence-key span{display:block}',
+      '[data-trajectory-lab] .tc-replay-current{margin-top:6px;color:#712812;font:900 10px/1.3 ui-monospace,monospace;text-transform:uppercase}',
       '[data-trajectory-lab] .tc-history-checkpoint{margin-top:14px;border:2px solid #917f49;border-radius:9px;background:#fff8df;padding:12px;font-size:12px;line-height:1.5}',
       '[data-trajectory-lab] .tc-history-checkpoint h4{margin:0 0 6px;font:800 16px/1.2 Georgia,serif;color:#173c32}',
       '[data-trajectory-lab] .tc-history-checkpoint p{margin:6px 0}',
       '[data-trajectory-lab] .tc-history-checkpoint textarea{min-height:84px;resize:vertical}',
+      '[data-trajectory-lab] .tc-source-link{display:inline-flex;align-items:center;min-height:24px}',
       '[data-trajectory-lab] .tc-connection-list{margin:8px 0 14px}',
       '[data-trajectory-lab] .tc-connection-list dt{font-weight:900;color:#173c32;margin-top:8px}',
       '[data-trajectory-lab] .tc-connection-list dd{margin:2px 0 0;padding-left:12px;border-left:3px solid #2d6653}',
@@ -1380,7 +1620,7 @@
       '[data-trajectory-lab] .tc-rubric th,[data-trajectory-lab] .tc-rubric td{border:1px solid #91845d;padding:6px;text-align:left;vertical-align:top}',
       '[data-trajectory-lab] .tc-rubric caption{text-align:left;font-weight:900;padding:7px 0}',
       '[data-trajectory-lab] .tc-replay-table-wrap{overflow-x:auto;margin-top:14px;border:1px solid #91845d;border-radius:8px;background:#fffdf4}',
-      '[data-trajectory-lab] .tc-replay-table{width:100%;border-collapse:collapse;font-size:12px}',
+      '[data-trajectory-lab] .tc-replay-table{width:100%;min-width:620px;border-collapse:collapse;font-size:12px}',
       '[data-trajectory-lab] .tc-replay-table caption{text-align:left;font-weight:900;padding:10px}',
       '[data-trajectory-lab] .tc-replay-table th,[data-trajectory-lab] .tc-replay-table td{border-top:1px solid #c8bc96;padding:8px;text-align:left;white-space:nowrap}',
       '[data-trajectory-lab] .tc-replay-table thead th{background:#173c32;color:#fff}',
@@ -1446,9 +1686,9 @@
       '[data-trajectory-lab][data-low-distraction=true] .tc-paper{font-size:105%}',
       '[data-trajectory-lab][data-low-distraction=true] .tc-title,[data-trajectory-lab][data-low-distraction=true] .tc-subtitle{background:#173c32;color:#fff}',
       '@media(max-width:900px){[data-trajectory-lab] .tc-grid,[data-trajectory-lab] .tc-program-workspace{grid-template-columns:minmax(0,1fr)}[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-diagnostic-desk{position:static}[data-trajectory-lab] .tc-data,[data-trajectory-lab] .tc-batch-trace{grid-template-columns:repeat(2,1fr)}}',
-      '@media(max-width:560px){[data-trajectory-lab] .tc-top{flex-direction:column}[data-trajectory-lab] .tc-fields,[data-trajectory-lab] .tc-study-grid,[data-trajectory-lab] .tc-role-grid,[data-trajectory-lab] .tc-report-grid,[data-trajectory-lab] .tc-checklist,[data-trajectory-lab] .tc-signing-list,[data-trajectory-lab] .tc-challenge-grid,[data-trajectory-lab] .tc-stamps,[data-trajectory-lab] .tc-desk-brief,[data-trajectory-lab] .tc-orientation-steps,[data-trajectory-lab] .tc-batch-trace{grid-template-columns:1fr}[data-trajectory-lab] .tc-card{grid-template-columns:32px minmax(0,1fr) 66px}[data-trajectory-lab] .tc-card-actions{grid-column:2/4}[data-trajectory-lab] .tc-data{grid-template-columns:1fr 1fr}[data-trajectory-lab] .tc-result-grid{grid-template-columns:1fr}[data-trajectory-lab] .tc-report-head{display:block}[data-trajectory-lab] .tc-tabs-mobile-hint,[data-trajectory-lab] .tc-chart-mobile-hint{display:block}[data-trajectory-lab] .tc-chart-frame .tc-chart{min-width:620px}[data-trajectory-lab] .tc-batch-step-detail{min-height:0}}',
+      '@media(max-width:560px){[data-trajectory-lab] .tc-top{flex-direction:column}[data-trajectory-lab] .tc-fields,[data-trajectory-lab] .tc-study-grid,[data-trajectory-lab] .tc-role-grid,[data-trajectory-lab] .tc-report-grid,[data-trajectory-lab] .tc-checklist,[data-trajectory-lab] .tc-signing-list,[data-trajectory-lab] .tc-challenge-grid,[data-trajectory-lab] .tc-stamps,[data-trajectory-lab] .tc-desk-brief,[data-trajectory-lab] .tc-orientation-steps,[data-trajectory-lab] .tc-batch-trace,[data-trajectory-lab] .tc-replay-evidence-key{grid-template-columns:1fr}[data-trajectory-lab] .tc-card{grid-template-columns:32px minmax(0,1fr) 66px}[data-trajectory-lab] .tc-card-actions{grid-column:2/4}[data-trajectory-lab] .tc-data{grid-template-columns:1fr 1fr}[data-trajectory-lab] .tc-result-grid{grid-template-columns:1fr}[data-trajectory-lab] .tc-report-head{display:block}[data-trajectory-lab] .tc-tabs-mobile-hint,[data-trajectory-lab] .tc-chart-mobile-hint{display:block}[data-trajectory-lab] .tc-chart-frame .tc-chart{min-width:620px}[data-trajectory-lab] .tc-batch-step-detail{min-height:0}}',
       '@media(prefers-reduced-motion:reduce){[data-trajectory-lab] *{scroll-behavior:auto!important;animation:none!important;transition:none!important}}',
-      '@media(forced-colors:active){[data-trajectory-lab] .tc-paper,[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-machine{border:2px solid CanvasText}[data-trajectory-lab] .tc-action,[data-trajectory-lab] .tc-tab{forced-color-adjust:auto}}',
+      '@media(forced-colors:active){[data-trajectory-lab] .tc-paper,[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-machine{border:2px solid CanvasText}[data-trajectory-lab] .tc-action,[data-trajectory-lab] .tc-tab{forced-color-adjust:auto}[data-trajectory-lab] .tc-replay-evidence-key li.is-current{outline:3px solid Highlight;outline-offset:2px}}',
       '@media print{[data-trajectory-lab] .tc-top,[data-trajectory-lab] .tc-tabs-region,[data-trajectory-lab] .tc-desk-brief-block,[data-trajectory-lab] .tc-revision-alert,[data-trajectory-lab] .tc-side,[data-trajectory-lab] .tc-paper>section>*:not(.tc-completion-surfaces),[data-trajectory-lab] .tc-completion-surfaces>*:not(.tc-report){display:none!important}[data-trajectory-lab] .tc-shell{background:#fff;padding:0}[data-trajectory-lab] .tc-grid{display:block}[data-trajectory-lab] .tc-paper{border:0;box-shadow:none;background:#fff;padding:0;min-height:0}[data-trajectory-lab] .tc-completion-surfaces,[data-trajectory-lab] .tc-report{display:block!important}[data-trajectory-lab] .tc-report{border:1px solid #000;margin:0}[data-trajectory-lab] .tc-report .tc-action{display:none!important}}'
     ].join('');
     document.head.appendChild(style);
@@ -1566,10 +1806,9 @@
       },
       {
         id: 'mission_replay_prediction', label: 'Complete a mission replay prediction', icon: '\u2194\uFE0F',
-        check: function (data) { return !!((trajectoryQuestData(data).replayResult || {}).prediction); },
+        check: function (data) { return getReplayLearningStatus(trajectoryQuestData(data)).questComplete; },
         progress: function (data) {
-          var replay = trajectoryQuestData(data).replayResult || {};
-          return replay.prediction ? (replay.correct ? 'Prediction supported' : 'Prediction revised') : 'Predict then replay';
+          return getReplayLearningStatus(trajectoryQuestData(data)).progress;
         }
       },
       {
@@ -1627,9 +1866,10 @@
       var studyResult = d.studyResult || null;
       var studyExplanation = ['components', 'gravity', 'speed'].indexOf(d.studyExplanation) >= 0 ? d.studyExplanation : '';
       var studyExplanationResult = d.studyExplanationResult || null;
-      var replayVariantId = d.replayVariantId || 'meridian-5';
+      var replayVariantId = normalizeMissionVariantId(d.replayVariantId, 'meridian-5');
       var replayPrediction = d.replayPrediction || '';
       var replayResult = d.replayResult || null;
+      var replayLearning = normalizeReplayLearning(d.replayLearning);
       var safeguardCaseId = getSafeguardCase(d.safeguardCaseId).id;
       var selectedSafeguardCase = getSafeguardCase(safeguardCaseId);
       var safeguardPrediction = SAFEGUARD_OPTIONS.some(function (item) { return item.id === d.safeguardPrediction; }) ? d.safeguardPrediction : '';
@@ -1640,13 +1880,29 @@
       var reflectionRecord = normalizeReflection(reflection);
       var lowDistraction = d.lowDistraction === true;
       var orientationDismissed = d.orientationDismissed === true;
+      var restartConfirmOpen = d.restartConfirmOpen === true;
       var extensionView = ['menu', 'angle', 'replay', 'safeguard'].indexOf(d.extensionView) >= 0 ? d.extensionView : 'menu';
       var diagnosticCursor = Math.max(0, Math.floor(finiteNumber(d.diagnosticCursor) || 0));
-      if (replayResult && (!Array.isArray(replayResult.changedInputs) || !Number.isFinite(replayResult.rangeDifference))) replayResult = compareMissionVariant(replayResult.mission && replayResult.mission.id || replayVariantId);
+      if (replayResult && (!Array.isArray(replayResult.changedInputs) || !Number.isFinite(replayResult.rangeDifference))) {
+        var replayRecoveryMissionId = replayResult.mission && replayResult.mission.id || replayVariantId;
+        var recoveredReplayPrediction = ['shorter', 'about', 'longer'].indexOf(replayResult.prediction) >= 0 ? replayResult.prediction : '';
+        replayResult = hasMissionVariant(replayRecoveryMissionId)
+          ? (recoveredReplayPrediction ? evaluateReplayPrediction(replayRecoveryMissionId, recoveredReplayPrediction) : compareMissionVariant(replayRecoveryMissionId))
+          : null;
+      }
       if (!replayPrediction && replayResult && replayResult.prediction) replayPrediction = replayResult.prediction;
-      var currentEvidenceFingerprint = createEvidenceFingerprint(d);
-      var hasSavedSnapshot = Number.isFinite(d.lastSnapshotAt);
-      var snapshotFresh = hasSavedSnapshot && d.lastSnapshotFingerprint === currentEvidenceFingerprint;
+      var replayLearningStatus = getReplayLearningStatus(Object.assign({}, d, {
+        replayVariantId: replayVariantId,
+        replayPrediction: replayPrediction,
+        replayResult: replayResult,
+        replayLearning: replayLearning
+      }));
+      var selectedReplayMission = getMissionVariant(replayVariantId);
+      var selectedReplayProfile = getReplayComparisonProfile(replayVariantId);
+      var evidenceProvenance = createEvidenceProvenance(d, ctx.toolSnapshots);
+      var currentEvidenceFingerprint = evidenceProvenance.currentFingerprint;
+      var hasSavedSnapshot = evidenceProvenance.status !== 'unsaved';
+      var snapshotFresh = evidenceProvenance.status === 'current';
 
       function update(patch) {
         ctx.setToolData(function (prev) {
@@ -1674,6 +1930,7 @@
         var nextCompleted = Object.assign({}, completed); nextCompleted[id] = true;
         var nextAuditTrail = recordAuditHandoff(auditTrail, id, nextStage, Date.now());
         update(Object.assign({ completed: nextCompleted, stage: nextStage, auditTrail: nextAuditTrail, revisionNotice: null }, extra || {}));
+        focusResult('tc-stage-heading-' + nextStage);
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(id + t('stem.trajectorycomputing.station_complete_moving_to', ' station complete. Moving to ') + nextStage + '.');
       }
       function setWorksheetField(id, value) {
@@ -1734,7 +1991,12 @@
           next[STATE_KEY] = { mode: mode, workPattern: workPattern, stage: 'briefing', lowDistraction: lowDistraction, orientationDismissed: orientationDismissed };
           return next;
         });
+        focusResult('tc-stage-heading-briefing');
         if (typeof ctx.announceToSR === 'function') ctx.announceToSR(t('stem.trajectorycomputing.lab_reset_to_briefing', 'Trajectory Computing Lab reset to the briefing.'));
+      }
+      function closeRestartConfirmation() {
+        update({ restartConfirmOpen: false });
+        focusResult('tc-run-again');
       }
 
       var stages = [
@@ -1766,7 +2028,7 @@
       var recordedEvidenceCount = evidenceItems.filter(function (item) { return item.recorded; }).length;
       var angleInvestigationComplete = !!(studyResult && studyExplanationResult && studyExplanationResult.correct);
       var safeguardInvestigationComplete = !!(safeguardResult && safeguardResult.correct);
-      var explorationCount = (angleInvestigationComplete ? 1 : 0) + (replayResult && replayResult.prediction ? 1 : 0) + (safeguardInvestigationComplete ? 1 : 0);
+      var explorationCount = (angleInvestigationComplete ? 1 : 0) + (replayLearningStatus.questComplete ? 1 : 0) + (safeguardInvestigationComplete ? 1 : 0);
 
       function dataTile(label, value) {
         return h('div', { className: 'tc-datum' }, h('b', null, value), h('span', null, label));
@@ -1976,11 +2238,35 @@
       }
 
       function renderCompletionReport() {
-        var report = createCompletionReport(d);
+        var report = createCompletionReport(d, ctx.toolSnapshots);
         var formatFields = report.formatAudit && report.formatAudit.fields || {};
         var safeguards = report.safeguards || { checks: [], passed: 0, total: 0 };
         var reflectionError = REFLECTION_ERROR_OPTIONS.find(function (item) { return item.id === report.reflection.errorId; });
         var reflectionSafeguard = SAFEGUARD_OPTIONS.find(function (item) { return item.id === report.reflection.safeguardId; });
+        var provenance = report.evidenceProvenance;
+        var provenanceMessage = provenance.status === 'current'
+          ? t('stem.trajectorycomputing.report_evidence_current', 'Evidence record ID ') + provenance.currentFingerprint + t('stem.trajectorycomputing.report_evidence_current_suffix', ' matches the latest saved snapshot.')
+          : (provenance.status === 'outdated'
+            ? t('stem.trajectorycomputing.report_evidence_outdated', 'Current report ID ') + provenance.currentFingerprint + (provenance.savedFingerprint ? t('stem.trajectorycomputing.report_evidence_outdated_saved', ' does not match saved snapshot ID ') + provenance.savedFingerprint + '.' : t('stem.trajectorycomputing.report_evidence_outdated_legacy', ' does not match the latest saved snapshot.')) + t('stem.trajectorycomputing.report_evidence_outdated_action', ' Save a new snapshot before sharing.')
+            : t('stem.trajectorycomputing.report_evidence_unsaved', 'Current report ID ') + provenance.currentFingerprint + t('stem.trajectorycomputing.report_evidence_unsaved_suffix', ' has no matching saved snapshot. Save a snapshot before sharing.'));
+        var replayLearningSummary = '';
+        if (report.replayCard) {
+          if (!Object.prototype.hasOwnProperty.call(report.replayCard, 'initialPrediction')) {
+            replayLearningSummary = 'Earlier replay recorded. This record did not capture a revision or comparison-reasoning step.';
+          } else {
+            var initialSupported = report.replayCard.initialPrediction === report.replayCard.relation;
+            var finalSupported = report.replayCard.finalPrediction === report.replayCard.relation;
+            var reasoningOption = getReplayReasoningOption(report.replayCard.reasoningClaim);
+            var initialPredictionPhrase = report.replayCard.initialPrediction === 'about' ? 'about the same as Aurora' : report.replayCard.initialPrediction + ' than Aurora';
+            var finalPredictionPhrase = report.replayCard.finalPrediction === 'about' ? 'about the same as Aurora' : report.replayCard.finalPrediction + ' than Aurora';
+            replayLearningSummary = 'Initial prediction: ' + initialPredictionPhrase + ' - ' + (initialSupported ? 'supported.' : 'not supported.');
+            if (report.replayCard.revisionOccurred) replayLearningSummary += ' Final prediction: ' + finalPredictionPhrase + ' - ' + (finalSupported ? 'supported.' : 'not supported.');
+            else replayLearningSummary += initialSupported ? ' No revision was needed.' : ' No revised prediction was recorded.';
+            replayLearningSummary += reasoningOption
+              ? ' Comparison claim: ' + reasoningOption.label + ' - ' + (report.replayCard.reasoningCorrect ? 'supported.' : 'needs revision.')
+              : ' No checked comparison claim was recorded.';
+          }
+        }
         return h('section', { id: 'tc-completion-report', className: 'tc-report', tabIndex: -1, 'aria-labelledby': 'tc-report-title' },
           h('div', { className: 'tc-report-head' },
             h('div', null,
@@ -1990,6 +2276,7 @@
             ),
             h('strong', { style: { fontFamily: 'ui-monospace,monospace', color: '#17633f' } }, report.status)
           ),
+          h('p', { className: 'tc-report-provenance ' + (provenance.status === 'current' ? 'tc-ok' : 'tc-bad') }, provenanceMessage),
           h('div', { className: 'tc-report-grid' },
             h('div', { className: 'tc-report-card' }, h('b', null, report.workflow), t('stem.trajectorycomputing.verification_workflow', 'verification workflow')),
             h('div', { className: 'tc-report-card' }, h('b', null, round(report.output.range, 1) + ' m'), t('stem.trajectorycomputing.verified_landing_range', 'verified landing range')),
@@ -2031,7 +2318,8 @@
           h('p', null, h('strong', null, t('stem.trajectorycomputing.revision_evidence', 'Revision evidence: ')), report.revisionEvidence.totalAttempts + ' checks across the workflow; diagnostic categories recorded: ' + (report.revisionEvidence.diagnosticCodes.join(', ') || t('stem.trajectorycomputing.none', 'none')) + '. ' + t('stem.trajectorycomputing.revision_privacy_note', 'Discarded code and personal identifiers are not stored.')),
           report.angleStudy && h('p', null, h('strong', null, t('stem.trajectorycomputing.parameter_study', 'Parameter study: ')), report.angleStudy.angle + ' degrees produced ' + round(report.angleStudy.range, 1) + ' m, ' + report.angleStudy.relation + ' than baseline. Prediction ' + (report.angleStudy.correct ? 'supported.' : 'revised.') + ' Evidence explanation ' + (report.angleStudy.explanationCorrect ? 'supported.' : 'not yet confirmed.')),
           report.replayCard && h('div', null,
-            h('p', null, h('strong', null, t('stem.trajectorycomputing.mission_replay_evidence', 'Mission replay evidence: ')), report.replayCard.mission.name + ' produced ' + round(report.replayCard.result.range, 1) + ' m, ' + report.replayCard.relation + ' than Aurora. ' + (report.replayCard.prediction ? t('stem.trajectorycomputing.replay_prediction_was', 'Prediction was ') + (report.replayCard.correct ? t('stem.trajectorycomputing.supported', 'supported.') : t('stem.trajectorycomputing.revised', 'revised.')) : t('stem.trajectorycomputing.no_replay_prediction_recorded', 'No replay prediction was recorded.'))),
+            h('p', null, h('strong', null, t('stem.trajectorycomputing.mission_replay_evidence', 'Mission replay evidence: ')), report.replayCard.mission.name + ' produced ' + round(report.replayCard.result.range, 1) + ' m, ' + (report.replayCard.relation === 'about' ? 'about the same as Aurora' : report.replayCard.relation + ' than Aurora') + '.'),
+            h('p', null, replayLearningSummary),
             renderReplayComparisonTable(report.replayCard)
           ),
           report.safeguardChallenge && h('p', null, h('strong', null, t('stem.trajectorycomputing.safeguard_challenge_evidence', 'Safeguard challenge: ')), report.safeguardChallenge.message),
@@ -2106,7 +2394,7 @@
       function renderBriefing() {
         return h('section', { role: 'tabpanel', id: 'tc-panel-briefing', 'aria-labelledby': 'tc-tab-briefing' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.work_order_62_aur_03', 'Work order 62-AUR-03')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.the_answer_must_be_trusted_before_the_', 'The answer must be trusted before the vehicle flies.')),
+          h('h2', { id: 'tc-stage-heading-briefing', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.the_answer_must_be_trusted_before_the_', 'The answer must be trusted before the vehicle flies.')),
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.you_have_joined_the_fictional_national', 'You have joined the fictional National Aeronautics Laboratory as a computation specialist. Aurora Test 3 will release a research capsule from a 30-meter tower. Your team must predict where it lands, translate the method into early scientific code, prepare the card deck, and check the machine independently.')),
           !orientationDismissed && h('section', { className: 'tc-orientation', 'aria-labelledby': 'tc-orientation-title' },
             h('h3', { id: 'tc-orientation-title' }, t('stem.trajectorycomputing.how_the_mission_works', 'How the mission works')),
@@ -2157,7 +2445,7 @@
         ];
         return h('section', { role: 'tabpanel', id: 'tc-panel-worksheet', 'aria-labelledby': 'tc-tab-worksheet' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_02_desktop_calculation', 'Station 02 / desktop calculation')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.build_a_result_the_electronic_computer', 'Build a result the electronic computer can be checked against.')),
+          h('h2', { id: 'tc-stage-heading-worksheet', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.build_a_result_the_electronic_computer', 'Build a result the electronic computer can be checked against.')),
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.keep_units_beside_every_value_use_at_l', 'Keep units beside every value. Use at least two decimal places until the final step.')),
           renderSupportCue('worksheet'),
           renderReferenceTable(),
@@ -2202,7 +2490,7 @@
         var diagnosticSelection = activeDiagnostic ? getDiagnosticSelection(code, activeDiagnostic) : null;
         return h('section', { role: 'tabpanel', id: 'tc-panel-program', 'aria-labelledby': 'tc-tab-program' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_03_transcription_desk', 'Station 03 / transcription desk')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.debug_the_fortran_style_program', 'Debug the FORTRAN-style program.')),
+          h('h2', { id: 'tc-stage-heading-program', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.debug_the_fortran_style_program', 'Debug the FORTRAN-style program.')),
           h('p', { className: 'tc-lede' }, mode === 'expert' ? t('stem.trajectorycomputing.audit_listing_independently', 'Audit the listing against your worksheet and compile when ready.') : t('stem.trajectorycomputing.three_transcription_errors', 'Three transcription errors were introduced: one constant, one variable name, and one trigonometric function. Find and repair them.')),
           renderSupportCue('program'),
           completed.worksheet && h('details', null,
@@ -2332,7 +2620,7 @@
       function renderCards() {
         return h('section', { role: 'tabpanel', id: 'tc-panel-cards', 'aria-labelledby': 'tc-tab-cards' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_04_keypunch_room', 'Station 04 / keypunch room')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.put_the_card_deck_in_machine_order', 'Put the card deck in machine order.')),
+          h('h2', { id: 'tc-stage-heading-cards', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.put_the_card_deck_in_machine_order', 'Put the card deck in machine order.')),
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.a_dropped_deck_could_turn_a_correct_pr', 'A dropped deck could turn a correct program into a failed job. Use the printed sequence field from columns 73-80. One pair is out of order.')),
           h('div', { role: 'list', 'aria-label': t('stem.trajectorycomputing.punch_card_deck', 'Punch-card deck') }, deck.map(function (id, index) {
             var card = getCard(id);
@@ -2466,7 +2754,71 @@
         );
       }
 
-      function renderReplayComparisonTable(replay) {
+      function replayInputName(key) {
+        var names = {
+          speed: t('stem.trajectorycomputing.launch_speed', 'Launch speed'),
+          angle: t('stem.trajectorycomputing.launch_angle', 'Launch angle'),
+          height: t('stem.trajectorycomputing.release_height', 'Release height'),
+          gravity: t('stem.trajectorycomputing.gravity', 'Gravity')
+        };
+        return names[key] || key;
+      }
+
+      function replayInputValue(mission, key) {
+        if (key === 'speed') return mission.speed + ' m/s';
+        if (key === 'angle') return mission.angle + ' degrees';
+        if (key === 'height') return mission.height + ' m';
+        return mission.gravity + ' m/s2';
+      }
+
+      function renderReplayInputCard(mission, profile) {
+        return h('section', { className: 'tc-replay-card-brief', 'aria-label': mission.name + ' input card' },
+          h('p', null,
+            h('strong', null, mission.name + ': ' + profile.changedInputCount + ' of ' + profile.totalInputs + ' modeled launch inputs differ from Aurora.'),
+            ' Use these inputs to make an evidence-based prediction before computing.'
+          ),
+          h('dl', { className: 'tc-replay-input-grid' }, ['speed', 'angle', 'height', 'gravity'].map(function (key) {
+            var changed = profile.changedInputs.indexOf(key) >= 0;
+            return h('div', { key: key, className: changed ? 'is-changed' : 'is-fixed' },
+              h('dt', null, replayInputName(key)),
+              h('dd', null,
+                replayInputValue(mission, key),
+                h('span', { className: 'tc-replay-input-state' }, changed ? 'Changed from baseline' : 'Same as baseline')
+              )
+            );
+          }))
+        );
+      }
+
+      function renderReplayEvidenceKey(replay) {
+        var profile = getReplayComparisonProfile(replay.mission.id);
+        var states = [
+          { id: 'reproduction', title: 'Same inputs', subtitle: 'Reproducibility', pattern: '0 inputs changed' },
+          { id: 'controlled', title: 'One controlled change', subtitle: 'Isolated comparison', pattern: '1 input changed' },
+          { id: 'combined', title: 'Combined changes', subtitle: 'Outcome comparison only', pattern: '2 or more inputs changed' }
+        ];
+        var changedNames = profile.changedInputs.map(function (key) { return replayInputName(key).toLowerCase(); });
+        var summary = profile.type === 'reproduction'
+          ? 'Same inputs. This can test whether the same inputs reproduce the baseline result.'
+          : (profile.type === 'controlled'
+            ? 'One controlled change (' + changedNames[0] + '). This can isolate that input\'s effect in this model because the other inputs stayed fixed.'
+            : 'Combined changes (' + changedNames.join(', ') + '). This compares the overall outcome but cannot isolate one cause.');
+        return h('section', { className: 'tc-replay-evidence', role: 'region', 'aria-labelledby': 'tc-replay-evidence-title' },
+          h('h5', { id: 'tc-replay-evidence-title' }, 'Comparison evidence'),
+          h('ul', { className: 'tc-replay-evidence-key' }, states.map(function (item) {
+            var current = item.id === profile.type;
+            return h('li', { key: item.id, className: current ? 'is-current' : '', 'aria-current': current ? 'true' : undefined },
+              h('strong', null, item.title),
+              h('span', null, item.subtitle),
+              h('span', null, item.pattern),
+              current && h('span', { className: 'tc-replay-current' }, 'Current replay - ' + profile.changedInputCount + ' input' + (profile.changedInputCount === 1 ? '' : 's') + ' changed')
+            );
+          })),
+          h('p', { id: 'tc-replay-evidence-summary', className: 'tc-lede' }, summary)
+        );
+      }
+
+      function renderReplayComparisonTable(replay, describedBy) {
         function value(number, places, unit) { return round(number, places) + ' ' + unit; }
         function delta(number, places, unit) { return (number >= 0 ? '+' : '') + round(number, places) + ' ' + unit; }
         var rows = [
@@ -2477,18 +2829,23 @@
           [t('stem.trajectorycomputing.peak_height', 'Peak height'), value(EXPECTED.peakHeight, 1, 'm'), value(replay.result.peakHeight, 1, 'm'), delta(replay.peakHeightDifference, 1, 'm')],
           [t('stem.trajectorycomputing.landing_range', 'Landing range'), value(EXPECTED.range, 1, 'm'), value(replay.result.range, 1, 'm'), delta(replay.rangeDifference, 1, 'm')]
         ];
-        return h('div', { className: 'tc-replay-table-wrap' },
-          h('table', { className: 'tc-replay-table' },
-            h('caption', null, t('stem.trajectorycomputing.replay_comparison_caption', 'Aurora baseline compared with selected replay card')),
-            h('thead', null, h('tr', null,
-              h('th', { scope: 'col' }, t('stem.trajectorycomputing.measure', 'Measure')),
-              h('th', { scope: 'col' }, t('stem.trajectorycomputing.aurora_baseline', 'Aurora baseline')),
-              h('th', { scope: 'col' }, replay.mission.name),
-              h('th', { scope: 'col' }, t('stem.trajectorycomputing.change', 'Change'))
-            )),
-            h('tbody', null, rows.map(function (row) {
-              return h('tr', { key: row[0] }, h('th', { scope: 'row' }, row[0]), h('td', null, row[1]), h('td', null, row[2]), h('td', null, row[3]));
-            }))
+        var wrapperProps = { className: 'tc-replay-table-wrap', role: 'region', tabIndex: 0, 'aria-label': 'Scrollable Aurora and ' + replay.mission.name + ' comparison table' };
+        if (describedBy) wrapperProps['aria-describedby'] = describedBy;
+        return h('div', { className: 'tc-replay-table-region' },
+          h('p', { className: 'tc-chart-mobile-hint' }, '\u2194 Scroll horizontally to compare every column.'),
+          h('div', wrapperProps,
+            h('table', { className: 'tc-replay-table' },
+              h('caption', null, t('stem.trajectorycomputing.replay_comparison_caption', 'Aurora baseline compared with selected replay card')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col' }, t('stem.trajectorycomputing.measure', 'Measure')),
+                h('th', { scope: 'col' }, t('stem.trajectorycomputing.aurora_baseline', 'Aurora baseline')),
+                h('th', { scope: 'col' }, replay.mission.name),
+                h('th', { scope: 'col' }, t('stem.trajectorycomputing.change', 'Change'))
+              )),
+              h('tbody', null, rows.map(function (row) {
+                return h('tr', { key: row[0] }, h('th', { scope: 'row' }, row[0]), h('td', null, row[1]), h('td', null, row[2]), h('td', null, row[3]));
+              }))
+            )
           )
         );
       }
@@ -2515,7 +2872,7 @@
             ),
             connectionNotes.notes[stage] && h('p', { className: 'tc-ok' }, t('stem.trajectorycomputing.connection_note_recorded', 'Connection note recorded for this station.'))
           ),
-          h('a', { href: url, target: '_blank', rel: 'noreferrer' }, item[1])
+          h('a', { className: 'tc-source-link', href: url, target: '_blank', rel: 'noreferrer' }, item[1])
         );
       }
 
@@ -2524,7 +2881,7 @@
         var batchTrace = getBatchProcessTrace(runStatus, batchFailure && batchFailure.stage);
         return h('section', { role: 'tabpanel', id: 'tc-panel-batch', 'aria-labelledby': 'tc-tab-batch' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_05_electronic_computation_room', 'Station 05 / electronic computation room')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.submit_the_deck_as_a_batch_job', 'Submit the deck as a batch job.')),
+          h('h2', { id: 'tc-stage-heading-batch', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.submit_the_deck_as_a_batch_job', 'Submit the deck as a batch job.')),
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.early_programmers_did_not_receive_inst', 'Early programmers did not receive instant feedback. A prepared deck was read into the machine and the result returned as a printed listing.')),
           h('div', { className: 'tc-machine', role: 'region', 'aria-label': t('stem.trajectorycomputing.batch_computer_console', 'Batch computer console') },
             h('div', { className: 'tc-lights', 'aria-hidden': 'true' },
@@ -2630,7 +2987,7 @@
         ];
         return h('section', { role: 'tabpanel', id: 'tc-panel-verify', 'aria-labelledby': 'tc-tab-verify' },
           h('p', { className: 'tc-kicker', style: { color: '#9b3e21' } }, t('stem.trajectorycomputing.station_06_independent_check', 'Station 06 / independent check')),
-          h('h2', { className: 'tc-heading' }, t('stem.trajectorycomputing.never_let_the_machine_check_itself', 'Never let the machine check itself.')),
+          h('h2', { id: 'tc-stage-heading-verify', className: 'tc-heading', tabIndex: -1 }, t('stem.trajectorycomputing.never_let_the_machine_check_itself', 'Never let the machine check itself.')),
           h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.use_your_original_worksheet_not_the_pr', 'Use your original worksheet\u2014not the printout\u2014to record the independent range. Then decide whether the prediction falls inside the assigned landing zone.')),
           h('form', { onSubmit: function (event) {
             event.preventDefault();
@@ -2774,10 +3131,24 @@
               h('div', { className: 'tc-row', style: { justifyContent: 'center' } },
                 action('Save evidence snapshot', saveEvidenceSnapshot),
                 action(d.reportOpen ? 'Hide completion report' : 'Review completion report', function () { var opening = !d.reportOpen; update({ reportOpen: opening }); if (opening) focusResult('tc-completion-report'); }, true),
-                action('Run mission again', restartMission, true)
+                h('button', { id: 'tc-run-again', type: 'button', className: 'tc-action secondary', onClick: function () { update({ restartConfirmOpen: true }); focusResult('tc-restart-confirm'); }, 'aria-expanded': restartConfirmOpen, 'aria-controls': restartConfirmOpen ? 'tc-restart-confirm' : undefined }, t('stem.trajectorycomputing.run_mission_again', 'Run mission again'))
               ),
               snapshotFresh && h('p', { className: 'tc-ok', role: 'status' }, t('stem.trajectorycomputing.latest_evidence_saved', 'Evidence snapshot includes the latest work.')),
-              hasSavedSnapshot && !snapshotFresh && h('p', { className: 'tc-bad', role: 'status' }, t('stem.trajectorycomputing.evidence_snapshot_needs_update', 'Work changed after the last snapshot. Save a new snapshot to include it.'))
+              hasSavedSnapshot && !snapshotFresh && h('p', { className: 'tc-bad', role: 'status' }, t('stem.trajectorycomputing.evidence_snapshot_needs_update', 'Work changed after the last snapshot. Save a new snapshot to include it.')),
+              restartConfirmOpen && h('section', { id: 'tc-restart-confirm', className: 'tc-diag', role: 'alert', tabIndex: -1, onKeyDown: function (event) { if (event.key === 'Escape') { event.preventDefault(); closeRestartConfirmation(); } } },
+                h('h4', null, t('stem.trajectorycomputing.confirm_new_mission', 'Start a new mission?')),
+                h('p', null, evidenceProvenance.status === 'current'
+                  ? t('stem.trajectorycomputing.restart_current_snapshot', 'Your latest work matches the saved evidence snapshot. Starting a new mission clears the on-screen work, while the saved snapshot remains available.')
+                  : (evidenceProvenance.status === 'outdated'
+                    ? t('stem.trajectorycomputing.restart_outdated_snapshot', 'The saved snapshot does not include the latest work. Starting a new mission clears those newer changes from the lab.')
+                    : t('stem.trajectorycomputing.restart_unsaved_snapshot', 'No evidence snapshot has been saved. Starting a new mission clears this mission\'s work from the lab.'))),
+                h('div', { className: 'tc-row' },
+                  !snapshotFresh && typeof ctx.setToolSnapshots === 'function' && action(t('stem.trajectorycomputing.save_latest_evidence', 'Save latest evidence'), function () { saveEvidenceSnapshot(); focusResult('tc-restart-confirm'); }),
+                  action(t('stem.trajectorycomputing.cancel', 'Cancel'), closeRestartConfirmation, true),
+                  action(t('stem.trajectorycomputing.start_new_mission', 'Start new mission'), restartMission, true)
+                ),
+                h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.restart_escape_help', 'Press Escape to cancel and return to the Run mission again button.'))
+              )
             ),
             h('section', { className: 'tc-extension', 'aria-labelledby': extensionView === 'angle' ? 'tc-angle-study-title' : (extensionView === 'replay' ? 'tc-replay-title' : (extensionView === 'safeguard' ? 'tc-safeguard-title' : 'tc-challenge-title')) },
               extensionView === 'menu' && h('div', { className: 'tc-challenge-hub' },
@@ -2792,8 +3163,8 @@
                   h('button', { type: 'button', className: 'tc-challenge-card' + (angleInvestigationComplete ? ' is-complete' : ''), onClick: function () { update({ extensionView: 'angle' }); focusResult('tc-angle-study-title'); } },
                     h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\u2220'), h('strong', null, t('stem.trajectorycomputing.angle_lab', 'Angle lab')), h('span', { className: 'tc-challenge-status' }, angleInvestigationComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : (studyResult ? '\u25d0 ' + t('stem.trajectorycomputing.reasoning_check_pending', 'Reasoning check pending') : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.angle_lab_help', 'Change one variable, predict the result, and read an annotated trajectory chart.'))
                   ),
-                  h('button', { type: 'button', className: 'tc-challenge-card' + (replayResult && replayResult.prediction ? ' is-complete' : ''), onClick: function () { update({ extensionView: 'replay' }); focusResult('tc-replay-title'); } },
-                    h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\u2194'), h('strong', null, t('stem.trajectorycomputing.replay_mission', 'Replay mission')), h('span', { className: 'tc-challenge-status' }, replayResult && replayResult.prediction ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started')), h('span', null, t('stem.trajectorycomputing.replay_mission_help', 'Run a deterministic fictional case and compare each changed input and output.'))
+                  h('button', { type: 'button', className: 'tc-challenge-card' + (replayLearningStatus.questComplete ? ' is-complete' : ''), onClick: function () { update({ extensionView: 'replay' }); focusResult('tc-replay-title'); } },
+                    h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\u2194'), h('strong', null, t('stem.trajectorycomputing.replay_mission', 'Replay mission')), h('span', { className: 'tc-challenge-status' }, replayLearningStatus.questComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : ((replayLearningStatus.hasRun || replayLearningStatus.learningRecorded || replayLearningStatus.unavailableReplay) ? '\u25d0 ' + replayLearningStatus.progress : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.replay_mission_help', 'Run a deterministic fictional case and compare each changed input and output.'))
                   ),
                   h('button', { type: 'button', className: 'tc-challenge-card' + (safeguardInvestigationComplete ? ' is-complete' : ''), onClick: function () { update({ extensionView: 'safeguard' }); focusResult('tc-safeguard-title'); } },
                     h('span', { className: 'tc-challenge-icon', 'aria-hidden': 'true' }, '\uD83D\uDEE1'), h('strong', null, t('stem.trajectorycomputing.safeguard_lab', 'Safeguard lab')), h('span', { className: 'tc-challenge-status' }, safeguardInvestigationComplete ? '\u2713 ' + t('stem.trajectorycomputing.completed', 'Completed') : (safeguardResult ? '\u25d0 ' + t('stem.trajectorycomputing.revise_prediction', 'Revise prediction') : '\u25cb ' + t('stem.trajectorycomputing.not_started', 'Not started'))), h('span', null, t('stem.trajectorycomputing.safeguard_lab_help', 'Inspect an authentic workflow error and predict which human or machine check catches it.'))
@@ -2890,27 +3261,46 @@
                 h('h3', { id: 'tc-replay-title', tabIndex: -1 }, t('stem.trajectorycomputing.deterministic_replay_cards', 'Deterministic mission replay cards')),
                 h('p', { className: 'tc-lede' }, t('stem.trajectorycomputing.replay_card_explanation', 'Choose an original fictional case. The same card always produces the same inputs and output, making classroom comparisons reproducible.')),
                 h('label', { className: 'tc-field' }, t('stem.trajectorycomputing.replay_case', 'Replay case'),
-                  h('select', { value: replayVariantId, onChange: function (event) { update({ replayVariantId: event.target.value, replayPrediction: '', replayResult: null }); } }, MISSION_VARIANTS.map(function (mission) {
+                  h('select', { id: 'tc-replay-case', value: replayVariantId, onChange: function (event) { update({ replayVariantId: event.target.value, replayPrediction: '', replayResult: null, replayLearning: null }); } }, MISSION_VARIANTS.map(function (mission) {
                     return h('option', { key: mission.id, value: mission.id }, mission.name + ' / ' + mission.year);
                   }))
                 ),
+                renderReplayInputCard(selectedReplayMission, selectedReplayProfile),
                 h('fieldset', { className: 'tc-role-box' },
                   h('legend', { style: { fontWeight: 900 } }, t('stem.trajectorycomputing.replay_prediction_prompt', 'Before computing, predict the replay landing range')),
                   ['shorter', 'about', 'longer'].map(function (relation) {
                     var label = relation === 'shorter' ? t('stem.trajectorycomputing.shorter_than_aurora', 'Shorter than Aurora') : (relation === 'longer' ? t('stem.trajectorycomputing.longer_than_aurora', 'Longer than Aurora') : t('stem.trajectorycomputing.about_same_as_aurora', 'About the same as Aurora'));
                     return h('label', { key: 'replay-' + relation, style: { display: 'block', marginTop: 6 } },
-                      h('input', { type: 'radio', name: 'tc-replay-prediction', value: relation, checked: replayPrediction === relation, onChange: function () { update({ replayPrediction: relation, replayResult: null }); } }), ' ' + label
+                      h('input', { type: 'radio', name: 'tc-replay-prediction', value: relation, checked: replayPrediction === relation, onChange: function () {
+                        var nextReplayLearning = replayLearning;
+                        if (!nextReplayLearning && replayResult && replayResult.prediction) {
+                          nextReplayLearning = { initialPrediction: replayResult.prediction, reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false };
+                        }
+                        if (nextReplayLearning) nextReplayLearning = Object.assign({}, nextReplayLearning, { reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false });
+                        update({ replayPrediction: relation, replayResult: null, replayLearning: nextReplayLearning });
+                      } }), ' ' + label
                     );
                   })
                 ),
                 h('div', { className: 'tc-row' }, action(t('stem.trajectorycomputing.run_replay_card', 'Run replay card'), function () {
                   var replayMission = getMissionVariant(replayVariantId);
-                  update({ replayResult: evaluateReplayPrediction(replayMission.id, replayPrediction) });
+                  var nextReplayLearning = replayLearning || { initialPrediction: replayPrediction, reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false };
+                  update({
+                    replayResult: evaluateReplayPrediction(replayMission.id, replayPrediction),
+                    replayLearning: Object.assign({}, nextReplayLearning, { reasoningClaim: '', reasoningAttempts: 0, reasoningChecked: false })
+                  });
+                  focusResult('tc-replay-prediction-summary');
                 }, false, !replayPrediction)),
+                !replayResult && replayLearning && replayPrediction !== replayLearning.initialPrediction && h('p', { role: 'status', className: 'tc-check' }, 'Revised prediction selected. Run the same card to test it.'),
                 replayResult && h('div', { className: 'tc-replay-result' },
-                  replayResult.prediction && h('p', { role: 'status', className: replayResult.correct ? 'tc-check tc-ok' : 'tc-diag tc-bad' },
-                    h('strong', null, replayResult.correct ? t('stem.trajectorycomputing.replay_prediction_supported', 'Replay prediction supported. ') : t('stem.trajectorycomputing.replay_prediction_revised', 'Replay prediction revised. ')),
-                    t('stem.trajectorycomputing.replay_actual_relation', 'The selected case travels ') + replayResult.relation + t('stem.trajectorycomputing.than_aurora_baseline', ' than the Aurora baseline.')
+                  replayResult.prediction && h('h4', { id: 'tc-replay-prediction-summary', tabIndex: -1, 'aria-describedby': replayLearningStatus.unavailableReplay ? undefined : 'tc-replay-evidence-summary', className: 'tc-replay-summary ' + ((replayLearningStatus.unavailableReplay || replayLearningStatus.legacyRecorded) ? 'tc-replay-note' : (replayResult.correct ? 'tc-check tc-ok' : 'tc-diag tc-bad')) },
+                    replayLearningStatus.unavailableReplay
+                      ? 'This earlier replay card is not available in the current catalog. Its stored result remains visible, but it cannot complete the current reasoning check.'
+                      : replayLearningStatus.legacyRecorded
+                      ? 'Earlier replay recorded. This record did not capture a revision or comparison-reasoning step.'
+                      : (replayResult.correct
+                        ? (replayLearningStatus.revisionOccurred ? 'Revised prediction supported. Now explain what this comparison can establish.' : 'Prediction supported. Now explain what this comparison can establish.')
+                        : 'Comparison does not support this prediction. The replay traveled ' + (replayResult.relation === 'about' ? 'about the same distance as Aurora' : replayResult.relation + ' than Aurora') + '. Change your prediction, then run the same card again; seeing the result is not yet a revision.')
                   ),
                   h('div', { className: 'tc-result-grid' },
                     h('div', null, h('b', null, replayResult.mission.speed + ' m/s'), t('stem.trajectorycomputing.speed', 'Speed')),
@@ -2918,8 +3308,30 @@
                     h('div', null, h('b', null, round(replayResult.result.range, 1) + ' m'), replayResult.result.inZone ? t('stem.trajectorycomputing.inside_zone', 'inside zone') : t('stem.trajectorycomputing.outside_zone', 'outside zone')),
                     h('div', null, h('b', null, (replayResult.rangeDifference >= 0 ? '+' : '') + round(replayResult.rangeDifference, 1) + ' m'), t('stem.trajectorycomputing.range_change_from_aurora', 'range change from Aurora'))
                   ),
-                  h('p', { className: 'tc-replay-note' }, h('strong', null, t('stem.trajectorycomputing.changed_inputs', 'Changed inputs: ')), (replayResult.changedInputs.join(', ') || t('stem.trajectorycomputing.none_baseline_card', 'none (baseline card)')) + '. ', t('stem.trajectorycomputing.replay_interpretation', 'This case travels ') + replayResult.relation + t('stem.trajectorycomputing.than_aurora_baseline', ' than the Aurora baseline; flight-time change ') + (replayResult.flightTimeDifference >= 0 ? '+' : '') + round(replayResult.flightTimeDifference, 2) + ' s.'),
-                  renderReplayComparisonTable(replayResult)
+                  h('p', { className: 'tc-replay-note' }, h('strong', null, t('stem.trajectorycomputing.changed_inputs', 'Changed inputs: ')), (replayResult.changedInputs.join(', ') || t('stem.trajectorycomputing.none_baseline_card', 'none (baseline card)')) + '. Flight-time change: ' + (replayResult.flightTimeDifference >= 0 ? '+' : '') + round(replayResult.flightTimeDifference, 2) + ' s.'),
+                  !replayLearningStatus.unavailableReplay && renderReplayEvidenceKey(replayResult),
+                  renderReplayComparisonTable(replayResult, replayLearningStatus.unavailableReplay ? null : 'tc-replay-evidence-summary'),
+                  replayResult.correct && replayLearning && !replayLearningStatus.unavailableReplay && h('fieldset', { className: 'tc-role-box', 'aria-describedby': 'tc-replay-evidence-summary' },
+                    h('legend', { style: { fontWeight: 900 } }, 'What conclusion is supported by this replay?'),
+                    REPLAY_REASONING_OPTIONS.map(function (option) {
+                      return h('label', { key: option.id, style: { display: 'block', marginTop: 7 } },
+                        h('input', { type: 'radio', name: 'tc-replay-explanation', value: option.id, checked: replayLearning.reasoningClaim === option.id, onChange: function () {
+                          update({ replayLearning: Object.assign({}, replayLearning, { reasoningClaim: option.id, reasoningChecked: false }) });
+                        } }), ' ' + option.label
+                      );
+                    }),
+                    h('div', { className: 'tc-row' },
+                      h('button', { id: 'tc-check-replay-reasoning', type: 'button', className: 'tc-action', disabled: !replayLearning.reasoningClaim, onClick: function () {
+                        var attempts = replayLearning.reasoningAttempts + 1;
+                        update({ replayLearning: Object.assign({}, replayLearning, { reasoningAttempts: attempts, reasoningChecked: true }) });
+                      } }, 'Check comparison claim')
+                    ),
+                    replayLearningStatus.reasoning && replayLearningStatus.reasoning.checked && h('p', { id: 'tc-replay-reasoning-summary', role: 'status', 'aria-atomic': 'true', className: replayLearningStatus.reasoning.correct ? 'tc-check tc-ok' : 'tc-diag tc-bad' }, replayLearningStatus.reasoning.message)
+                  ),
+                  h('div', { className: 'tc-row' }, action('Start another replay', function () {
+                    update({ replayPrediction: '', replayResult: null, replayLearning: null });
+                    focusResult('tc-replay-case');
+                  }, true))
                 ),
                 h('div', { className: 'tc-row' }, action('\u2190 Choose another challenge', function () { update({ extensionView: 'menu' }); focusResult('tc-challenge-title'); }, true))
               )

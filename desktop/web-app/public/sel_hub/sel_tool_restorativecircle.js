@@ -1141,7 +1141,7 @@ window.SelHub = window.SelHub || {
               role: 'tab', 'aria-selected': tab === t, 'tabIndex': tab === t ? 0 : -1,
               onClick: function() { upd('tab', t); if (announceToSR) announceToSR(labels[t] + ' tab selected'); },
               className: 'flex-1 px-2 py-2 rounded-lg text-xs font-bold transition-all min-w-[70px] focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 ' +
-                (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-600/60 hover:text-amber-700')
+                (tab === t ? 'bg-white text-amber-700 shadow-sm' : 'text-amber-700 hover:text-amber-700')
             }, labels[t]);
           })
         ),

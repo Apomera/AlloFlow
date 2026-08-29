@@ -3097,6 +3097,15 @@ const d = labToolData.physics;
                 good:       { label: '\uD83D\uDFE1 ' + __alloT('stem.physics.iq_reasonable', 'Reasonable range'),   color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
                 suboptimal: { label: '\uD83D\uDD34 ' + __alloT('stem.physics.iq_far_from_optimal', 'Far from optimal'),   color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' }
               }[state];
+              if (isContrast) {
+                stateMeta = Object.assign({}, stateMeta, { color: '#ffff00', bg: '#000000', border: '#ffff00' });
+              } else if (isDark) {
+                stateMeta = Object.assign({}, stateMeta, {
+                  optimal: { color: '#6ee7b7', bg: '#052e2b', border: '#34d399' },
+                  good: { color: '#fcd34d', bg: '#422006', border: '#f59e0b' },
+                  suboptimal: { color: '#fca5a5', bg: '#450a0a', border: '#f87171' }
+                }[state]);
+              }
               function logObs() {
                 var obs = { g: iq.gravity, a: iq.angle, v: iq.velocity, r: parseFloat(range.toFixed(1)), st: state };
                 setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });

@@ -433,9 +433,9 @@
       '.wc-prediction-strip{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:0 0 12px;padding:9px 10px;border:1px solid rgba(245,158,11,.28);border-left:3px solid #f59e0b;border-radius:10px;background:linear-gradient(135deg,rgba(255,247,237,.82),rgba(254,249,195,.62));color:#334155}',
       '.wc-prediction-copy{min-width:0}.wc-prediction-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#b45309}.wc-prediction-copy strong{display:block;margin-top:2px;font-size:11px;line-height:1.25;color:#1e293b}.wc-prediction-copy span:last-child{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#64748b;overflow-wrap:anywhere}.wc-prediction-copy .wc-prediction-evidence{margin-top:4px;padding-top:4px;border-top:1px solid rgba(245,158,11,.22);color:#92400e}',
       '.wc-prediction-options{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;max-width:340px}.wc-prediction-option{display:inline-flex;align-items:center;gap:4px;min-height:30px;padding:5px 7px;border:1px solid rgba(245,158,11,.32);border-radius:8px;background:rgba(255,255,255,.78);color:#92400e;font-size:10px;font-weight:900;white-space:nowrap;transition:background 160ms ease,transform 160ms ease,box-shadow 160ms ease}.wc-prediction-option:hover{background:#fff7ed;transform:translateY(-1px);box-shadow:0 5px 12px rgba(245,158,11,.14)}.wc-prediction-option:focus-visible,.wc-prediction-reset:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-prediction-option span:first-child{font-size:13px}',
-      '.wc-prediction-result{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;max-width:340px;font-size:10px;color:#475569}.wc-prediction-result-badge{padding:4px 6px;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.wc-prediction-result-badge.is-match{background:#dcfce7;color:#166534}.wc-prediction-result-badge.is-mismatch{background:#fef3c7;color:#92400e}.wc-prediction-reset{min-height:27px;padding:4px 7px;border:1px solid rgba(245,158,11,.3);border-radius:7px;background:rgba(255,255,255,.74);color:#92400e;font-size:10px;font-weight:900}',
+      '.wc-prediction-result{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:5px;max-width:340px;font-size:10px;color:#475569}.wc-prediction-result-badge{padding:4px 6px;border-radius:7px;font-size:9px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.wc-prediction-result-badge.is-agrees{background:#e0f2fe;color:#075985}.wc-prediction-result-badge.is-differs{background:#ede9fe;color:#5b21b6}.wc-prediction-reset{min-height:27px;padding:4px 7px;border:1px solid rgba(245,158,11,.3);border-radius:7px;background:rgba(255,255,255,.74);color:#92400e;font-size:10px;font-weight:900}',
       '@media(max-width:680px){.wc-prediction-strip{grid-template-columns:1fr}.wc-prediction-options,.wc-prediction-result{justify-content:flex-start;max-width:none}}',
-      '.dark .wc-prediction-strip{background:linear-gradient(135deg,rgba(69,49,10,.42),rgba(8,47,73,.5));border-color:rgba(251,191,36,.3);border-left-color:#fbbf24;color:#cbd5e1}.dark .wc-prediction-kicker{color:#fbbf24}.dark .wc-prediction-copy strong{color:#f8fafc}.dark .wc-prediction-copy span:last-child{color:#94a3b8}.dark .wc-prediction-copy .wc-prediction-evidence{border-top-color:rgba(251,191,36,.22);color:#fde68a}.dark .wc-prediction-option{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}.dark .wc-prediction-option:hover{background:#78350f}.dark .wc-prediction-result{color:#cbd5e1}.dark .wc-prediction-result-badge.is-match{background:rgba(6,78,59,.6);color:#a7f3d0}.dark .wc-prediction-result-badge.is-mismatch{background:rgba(120,53,15,.62);color:#fde68a}.dark .wc-prediction-reset{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}',
+      '.dark .wc-prediction-strip{background:linear-gradient(135deg,rgba(69,49,10,.42),rgba(8,47,73,.5));border-color:rgba(251,191,36,.3);border-left-color:#fbbf24;color:#cbd5e1}.dark .wc-prediction-kicker{color:#fbbf24}.dark .wc-prediction-copy strong{color:#f8fafc}.dark .wc-prediction-copy span:last-child{color:#94a3b8}.dark .wc-prediction-copy .wc-prediction-evidence{border-top-color:rgba(251,191,36,.22);color:#fde68a}.dark .wc-prediction-option{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}.dark .wc-prediction-option:hover{background:#78350f}.dark .wc-prediction-result{color:#cbd5e1}.dark .wc-prediction-result-badge.is-agrees{background:rgba(7,89,133,.62);color:#bae6fd}.dark .wc-prediction-result-badge.is-differs{background:rgba(91,33,182,.62);color:#ddd6fe}.dark .wc-prediction-reset{background:rgba(69,49,10,.5);border-color:rgba(251,191,36,.34);color:#fde68a}',
       '.wc-data-view{margin:0 0 12px;border-top:1px solid rgba(14,165,233,.16);border-bottom:1px solid rgba(14,165,233,.16)}',
       '.wc-data-summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;padding:5px 2px;cursor:pointer;list-style:none;color:#075985}.wc-data-summary::-webkit-details-marker{display:none}.wc-data-summary::after{content:"+";display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:rgba(14,165,233,.12);color:#0369a1;font-size:16px;line-height:1}details[open].wc-data-view>.wc-data-summary::after{content:"\\2212";background:#0369a1;color:#fff}.wc-data-summary:focus-visible{outline:3px solid #facc15;outline-offset:2px}',
       '.wc-data-summary-title{font-size:11px;font-weight:900;letter-spacing:.02em}.wc-data-summary-note{margin-left:auto;font-size:10px;font-weight:700;color:#64748b}',
@@ -502,43 +502,109 @@
       // phantom shades (`text-slate-350`) and by unthemed `hover:` variants that
       // silently do nothing, and both classes are invisible here.
       ,'.wc-data-time-note{display:block;margin-top:4px;font-size:11px;line-height:1.45;color:#155e75}.dark .wc-data-time-note{color:#a5f3fc}'
-      ,'.wc-start-action-flagship{background:linear-gradient(135deg,rgba(2,132,199,.13),rgba(16,185,129,.13))!important;border-color:rgba(2,132,199,.42)!important}.dark .wc-start-action-flagship{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.16))!important;border-color:rgba(125,211,252,.44)!important}'
+      ,'.wc-start-action-pilot{background:linear-gradient(135deg,rgba(2,132,199,.13),rgba(16,185,129,.13))!important;border-color:rgba(2,132,199,.42)!important}.dark .wc-start-action-pilot{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.16))!important;border-color:rgba(125,211,252,.44)!important}'
       ,'.wc-section-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:6px;margin:16px 0 12px;padding:5px;border:1px solid rgba(148,163,184,.42);border-radius:13px;background:rgba(248,250,252,.9)}.wc-section-tab{display:flex;flex-direction:column;gap:1px;min-height:52px;padding:7px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:#334155;font:inherit;text-align:left;cursor:pointer}.wc-section-tab strong{font-size:12.5px;font-weight:900;line-height:1.2}.wc-section-tab small{font-size:11px;font-weight:600;color:#64748b;line-height:1.25}.wc-section-tab:hover{background:#e2e8f0}.wc-section-tab:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-section-tab[aria-pressed=true]{background:#334155;border-color:#1e293b;color:#f8fafc}.wc-section-tab[aria-pressed=true] small{color:#cbd5e1}.dark .wc-section-tabs{border-color:rgba(51,65,85,.9);background:rgba(15,23,42,.66)}.dark .wc-section-tab{color:#e2e8f0}.dark .wc-section-tab small{color:#94a3b8}.dark .wc-section-tab:hover{background:rgba(30,41,59,.9)}.dark .wc-section-tab[aria-pressed=true]{background:#e2e8f0;border-color:#f1f5f9;color:#0f172a}.dark .wc-section-tab[aria-pressed=true] small{color:#334155}.wc-section-body{display:block}@media(max-width:560px){.wc-section-tab small{display:none}.wc-section-tab{min-height:44px}}@media(forced-colors:active){.wc-section-tabs,.wc-section-tab{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-section-tab[aria-pressed=true]{background:Highlight;color:HighlightText}}'
       ,'.wc-stage-funfact-kicker{display:block;margin-bottom:3px;font-size:11px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#92400e}.dark .wc-stage-funfact-kicker{color:#fcd34d}.wc-stage-funfact-copy{margin:0;font-size:13px;line-height:1.5;color:#78350f}.dark .wc-stage-funfact-copy{color:#fde68a}'
       ,'.wc-mode-shell{max-width:62rem;margin:0 auto}.wc-mode-shell>.wc-mode-bar{margin-bottom:14px}.wc-precip-lab>.wc-mode-bar{margin-bottom:14px}'
-      ,'.wc-mode-bar{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;padding:5px;border:1px solid rgba(14,116,144,.28);border-radius:14px;background:rgba(240,249,255,.9);overflow-x:auto}.wc-mode-bar::-webkit-scrollbar{height:4px}.wc-mode-tab{flex:1 1 0;min-width:112px;min-height:56px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#0c4a6e;font:inherit;text-align:left;cursor:pointer}.wc-mode-tab strong{font-size:13px;font-weight:900;letter-spacing:.01em}.wc-mode-tab small{font-size:11px;font-weight:600;line-height:1.25;color:#0e7490}.wc-mode-tab:hover{background:rgba(224,242,254,.9);border-color:rgba(14,116,144,.3)}.wc-mode-tab:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-mode-tab[aria-pressed=true]{background:#0369a1;border-color:#075985;color:#fff;box-shadow:0 2px 8px rgba(3,105,161,.3)}.wc-mode-tab[aria-pressed=true] small{color:#e0f2fe}.wc-mode-tab.is-flagship{position:relative}.wc-mode-tab.is-flagship[aria-pressed=false]{background:linear-gradient(135deg,rgba(2,132,199,.14),rgba(16,185,129,.14));border-color:rgba(2,132,199,.42)}.wc-mode-tab.is-flagship[aria-pressed=true]{background:linear-gradient(135deg,#0369a1,#0f766e)}.wc-mode-flag{align-self:flex-start;margin-top:2px;padding:1px 6px;border-radius:999px;background:#0f766e;color:#ecfdf5;font-size:10px;font-weight:900;letter-spacing:.06em}.dark .wc-mode-bar{border-color:rgba(125,211,252,.26);background:rgba(2,20,35,.72)}.dark .wc-mode-tab{color:#e0f2fe}.dark .wc-mode-tab small{color:#7dd3fc}.dark .wc-mode-tab:hover{background:rgba(8,47,73,.86);border-color:rgba(125,211,252,.3)}.dark .wc-mode-tab[aria-pressed=true]{background:#0ea5e9;border-color:#7dd3fc;color:#062338}.dark .wc-mode-tab[aria-pressed=true] small{color:#083344}.dark .wc-mode-tab.is-flagship[aria-pressed=false]{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.18));border-color:rgba(125,211,252,.44)}.dark .wc-mode-flag{background:#5eead4;color:#042f2e}@media(max-width:640px){.wc-mode-bar{flex-wrap:wrap;overflow-x:visible}.wc-mode-tab{flex:1 1 calc(50% - 9px);min-width:0;min-height:48px}.wc-mode-tab small{display:none}}@media(forced-colors:active){.wc-mode-bar,.wc-mode-tab{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-mode-tab[aria-pressed=true]{background:Highlight;color:HighlightText}}'
+      ,'.wc-mode-bar{display:flex;align-items:stretch;gap:6px;margin:0 0 12px;padding:5px;border:1px solid rgba(14,116,144,.28);border-radius:14px;background:rgba(240,249,255,.9);overflow-x:auto}.wc-mode-bar::-webkit-scrollbar{height:4px}.wc-mode-tab{flex:1 1 0;min-width:112px;min-height:56px;display:flex;flex-direction:column;justify-content:center;gap:2px;padding:8px 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#0c4a6e;font:inherit;text-align:left;cursor:pointer}.wc-mode-tab strong{font-size:13px;font-weight:900;letter-spacing:.01em}.wc-mode-tab small{font-size:11px;font-weight:600;line-height:1.25;color:#0e7490}.wc-mode-tab:hover{background:rgba(224,242,254,.9);border-color:rgba(14,116,144,.3)}.wc-mode-tab:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-mode-tab[aria-pressed=true]{background:#0369a1;border-color:#075985;color:#fff;box-shadow:0 2px 8px rgba(3,105,161,.3)}.wc-mode-tab[aria-pressed=true] small{color:#e0f2fe}.wc-mode-tab.is-piloted-3d{position:relative}.wc-mode-tab.is-piloted-3d[aria-pressed=false]{background:linear-gradient(135deg,rgba(2,132,199,.14),rgba(16,185,129,.14));border-color:rgba(2,132,199,.42)}.wc-mode-tab.is-piloted-3d[aria-pressed=true]{background:linear-gradient(135deg,#0369a1,#0f766e)}.wc-mode-kind{align-self:flex-start;margin-top:2px;padding:1px 6px;border-radius:999px;background:#0f766e;color:#ecfdf5;font-size:10px;font-weight:900;letter-spacing:.06em}.dark .wc-mode-bar{border-color:rgba(125,211,252,.26);background:rgba(2,20,35,.72)}.dark .wc-mode-tab{color:#e0f2fe}.dark .wc-mode-tab small{color:#7dd3fc}.dark .wc-mode-tab:hover{background:rgba(8,47,73,.86);border-color:rgba(125,211,252,.3)}.dark .wc-mode-tab[aria-pressed=true]{background:#0ea5e9;border-color:#7dd3fc;color:#062338}.dark .wc-mode-tab[aria-pressed=true] small{color:#083344}.dark .wc-mode-tab.is-piloted-3d[aria-pressed=false]{background:linear-gradient(135deg,rgba(14,165,233,.2),rgba(45,212,191,.18));border-color:rgba(125,211,252,.44)}.dark .wc-mode-kind{background:#5eead4;color:#042f2e}@media(max-width:640px){.wc-mode-bar{flex-wrap:wrap;overflow-x:visible}.wc-mode-tab{flex:1 1 calc(50% - 9px);min-width:0;min-height:48px}.wc-mode-tab small{display:none}}@media(forced-colors:active){.wc-mode-bar,.wc-mode-tab{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-mode-tab[aria-pressed=true]{background:Highlight;color:HighlightText}}'
       ,'.wc-pilot-root{max-width:62rem;margin:0 auto;display:flex;flex-direction:column;gap:12px;color:#0f172a}.wc-pilot-root.is-dark{color:#e2e8f0}.wc-pilot-topbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.wc-pilot-back{min-height:38px;padding:7px 12px;border:1px solid rgba(14,116,144,.4);border-radius:9px;background:rgba(240,249,255,.9);color:#075985;font-size:13px;font-weight:800;cursor:pointer}.wc-pilot-back:hover{background:#e0f2fe}.wc-pilot-back:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.dark .wc-pilot-back{border-color:rgba(125,211,252,.36);background:rgba(8,47,73,.66);color:#bae6fd}.wc-pilot-title{display:flex;flex-direction:column;gap:1px;min-width:0}.wc-pilot-title strong{font-size:19px;font-weight:900;letter-spacing:-.01em}.wc-pilot-title span{font-size:12.5px;font-weight:600;color:#0e7490}.dark .wc-pilot-title span{color:#7dd3fc}.wc-pilot-loops{margin-left:auto;padding:5px 11px;border-radius:999px;background:rgba(2,132,199,.14);color:#075985;font-size:12px;font-weight:900}.dark .wc-pilot-loops{background:rgba(14,165,233,.2);color:#bae6fd}'
       ,'.wc-pilot-scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:7px}.wc-pilot-scenario{display:flex;flex-direction:column;gap:2px;min-height:56px;padding:8px 10px;border:1px solid rgba(14,116,144,.3);border-radius:11px;background:rgba(255,255,255,.86);color:#0c4a6e;text-align:left;cursor:pointer}.wc-pilot-scenario strong{font-size:13px;font-weight:900}.wc-pilot-scenario small{font-size:11px;font-weight:700;color:#0e7490}.wc-pilot-scenario:hover{background:#e0f2fe}.wc-pilot-scenario:focus-visible{outline:3px solid #0369a1;outline-offset:2px}.wc-pilot-scenario[aria-pressed=true]{background:#0369a1;border-color:#075985;color:#fff}.wc-pilot-scenario[aria-pressed=true] small{color:#e0f2fe}.dark .wc-pilot-scenario{border-color:rgba(125,211,252,.28);background:rgba(15,23,42,.72);color:#e0f2fe}.dark .wc-pilot-scenario small{color:#7dd3fc}.dark .wc-pilot-scenario:hover{background:rgba(8,47,73,.9)}.dark .wc-pilot-scenario[aria-pressed=true]{background:#0ea5e9;color:#062338}.dark .wc-pilot-scenario[aria-pressed=true] small{color:#083344}.wc-pilot-scenario-note{margin:0;font-size:13px;line-height:1.5;color:#155e75}.dark .wc-pilot-scenario-note{color:#a5f3fc}'
-      ,'.wc-pilot-stage{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(8,47,73,.5);background:#041a2b;box-shadow:0 10px 30px rgba(2,20,35,.28)}.wc-pilot-canvas{display:block;width:100%;height:clamp(340px,52vw,600px);min-height:340px;background:#08243a;touch-action:none;cursor:grab}.wc-pilot-canvas:active{cursor:grabbing}.wc-pilot-canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:-3px}.wc-pilot-fallback{padding:26px 20px;color:#e0f2fe;text-align:center}.wc-pilot-fallback strong{display:block;margin-bottom:6px;font-size:16px}.wc-pilot-fallback p{margin:0 0 12px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-btn{min-height:40px;padding:9px 15px;border:1px solid #7dd3fc;border-radius:10px;background:#0369a1;color:#fff;font-size:13px;font-weight:800;cursor:pointer}'
-      // Every HUD surface is a fixed dark glass panel with fixed light ink. The
-      // canvas behind it is dark in BOTH themes, so making these theme-reactive
-      // would produce dark-on-dark in light mode - the failure this tool has
-      // already had to fix four separate times.
-      ,'.wc-pilot-hud{position:absolute;z-index:3;padding:9px 11px;border:1px solid rgba(186,230,253,.26);border-radius:12px;background:rgba(3,18,31,.76);backdrop-filter:blur(10px);color:#e0f2fe;pointer-events:none}.wc-pilot-hud-left{top:10px;left:10px;display:grid;gap:7px;min-width:186px}.wc-pilot-hud-right{top:10px;right:10px;min-width:170px}.wc-pilot-form-badge{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:900;letter-spacing:.01em}.wc-pilot-form-dot{width:11px;height:11px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px rgba(56,189,248,.9)}.wc-pilot-form-badge[data-form=vapor] .wc-pilot-form-dot{background:#bae6fd}.wc-pilot-form-badge[data-form=droplet] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=cloud] .wc-pilot-form-dot{background:#f8fafc}.wc-pilot-form-badge[data-form=ice] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=snow] .wc-pilot-form-dot{background:#a5f3fc}.wc-pilot-form-badge[data-form=rain] .wc-pilot-form-dot{background:#60a5fa}.wc-pilot-form-badge[data-form=soil] .wc-pilot-form-dot{background:#bef264}.wc-pilot-form-badge[data-form=plant] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=transpiring] .wc-pilot-form-dot{background:#86efac}.wc-pilot-form-badge[data-form=groundwater] .wc-pilot-form-dot{background:#a5b4fc}.wc-pilot-readouts{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin:0}.wc-pilot-readouts div{display:flex;flex-direction:column}.wc-pilot-readouts dt{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-readouts dd{margin:0;font-size:13.5px;font-weight:900;color:#f0f9ff}.wc-pilot-buoy{padding:5px 7px;border-radius:8px;font-size:11px;font-weight:800;line-height:1.3;background:rgba(248,113,113,.18);color:#fecaca}.wc-pilot-buoy[data-state=rising]{background:rgba(52,211,153,.2);color:#bbf7d0}.wc-pilot-place{display:flex;align-items:center;justify-content:space-between;gap:5px 9px;flex-wrap:wrap;padding-top:5px;border-top:1px solid rgba(125,211,252,.2);font-size:9.5px;line-height:1.25}.wc-pilot-place span{color:#bae6fd;font-weight:800}.wc-pilot-place strong{color:#fef3c7;font-weight:900}'
+      ,'.wc-pilot-stage{position:relative;border-radius:16px;overflow:hidden;border:1px solid rgba(8,47,73,.5);background:#041a2b;box-shadow:0 10px 30px rgba(2,20,35,.28)}.wc-pilot-canvas{display:block;width:100%;height:clamp(340px,52vw,600px);min-height:340px;background:#08243a;touch-action:none;cursor:grab}.wc-pilot-canvas:active{cursor:grabbing}.wc-pilot-canvas:focus-visible{outline:3px solid #38bdf8;outline-offset:-3px}.wc-pilot-fallback{padding:26px 20px;color:#e0f2fe;text-align:center}.wc-pilot-fallback strong{display:block;margin-bottom:6px;font-size:16px}.wc-pilot-fallback p{margin:0 0 12px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-fallback-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.wc-pilot-btn{min-height:40px;padding:9px 15px;border:1px solid #7dd3fc;border-radius:10px;background:#0369a1;color:#fff;font-size:13px;font-weight:800;cursor:pointer}.wc-pilot-btn:hover{background:#075985}.wc-pilot-btn:focus-visible{outline:3px solid #38bdf8;outline-offset:2px}.wc-pilot-btn.is-secondary{background:transparent;color:#bae6fd;border-color:rgba(125,211,252,.62)}.wc-pilot-btn.is-secondary:hover{background:rgba(8,47,73,.72)}'
+      ,'.wc-pilot-rainbow-visual{position:absolute;z-index:2;inset:0;overflow:hidden;pointer-events:none;isolation:isolate}.wc-pilot-rainbow-visual::after{content:"";position:absolute;inset:18% 4% 0;background:radial-gradient(ellipse at 50% 100%,rgba(224,242,254,.2),transparent 62%);mix-blend-mode:screen}.wc-pilot-rainbow-svg{display:block;width:100%;height:100%;overflow:visible;mix-blend-mode:screen;filter:saturate(1.18) contrast(1.03)}.wc-pilot-rainbow-arc{fill:none;stroke-linecap:round;vector-effect:non-scaling-stroke}.wc-pilot-rainbow-primary{animation:wc-rainbow-breathe 4.8s ease-in-out infinite}.wc-pilot-rainbow-secondary{animation:wc-rainbow-breathe 6.4s ease-in-out infinite reverse}.wc-pilot-alexander-band{fill:none;stroke:#07162d;stroke-linecap:round;opacity:.28;vector-effect:non-scaling-stroke}.wc-pilot-rainbow-mist{fill:url(#wcPilotRainbowMist);opacity:.42}.wc-pilot-rainbow-label rect{fill:rgba(3,18,31,.82);stroke:rgba(224,242,254,.42);stroke-width:1}.wc-pilot-rainbow-label text{fill:#f8fafc;font-size:10px;font-weight:900;letter-spacing:.08em;text-anchor:middle;paint-order:stroke;stroke:rgba(3,18,31,.9);stroke-width:2px}.wc-pilot-rainbow-glint{fill:#fff;opacity:.72;transform-box:fill-box;transform-origin:center;animation:wc-rainbow-glint 3.2s ease-in-out infinite}.wc-pilot-rainbow-glint:nth-child(2){animation-delay:.8s}.wc-pilot-rainbow-glint:nth-child(3){animation-delay:1.6s}@keyframes wc-rainbow-breathe{0%,100%{opacity:.82}50%{opacity:1}}@keyframes wc-rainbow-glint{0%,100%{opacity:.25;transform:scale(.65)}50%{opacity:.9;transform:scale(1.25)}}'
+      ,'.wc-pilot-stage[data-optics-stage="3"],.wc-pilot-stage[data-optics-stage="4"]{border-color:rgba(125,211,252,.68);box-shadow:0 24px 58px rgba(2,12,27,.34),0 0 0 1px rgba(56,189,248,.18),inset 0 1px 0 rgba(255,255,255,.14)}.wc-pilot-stage[data-optics-stage="4"]{border-color:rgba(196,181,253,.76);box-shadow:0 26px 64px rgba(2,12,27,.38),0 0 0 1px rgba(168,85,247,.2),0 0 36px rgba(56,189,248,.12),inset 0 1px 0 rgba(255,255,255,.16)}.wc-pilot-rainbow-visual{background:radial-gradient(ellipse at 50% 100%,rgba(186,230,253,.15),transparent 52%),linear-gradient(110deg,rgba(14,165,233,.04),transparent 38%,rgba(139,92,246,.05))}.wc-pilot-rainbow-visual[data-double=true]{background:radial-gradient(ellipse at 50% 100%,rgba(224,242,254,.19),transparent 55%),linear-gradient(110deg,rgba(14,165,233,.07),transparent 38%,rgba(168,85,247,.09))}'
+      ,'.wc-pilot-rainbow-veil{fill:url(#wcPilotRainbowVeil);opacity:.3;animation:wc-pilot-prism-veil 8s ease-in-out infinite alternate}.wc-pilot-rainbow-horizon-haze{fill:url(#wcPilotRainbowHorizon);opacity:.58}.wc-pilot-rain-shaft{stroke:url(#wcPilotRainShaft);stroke-width:2.2;stroke-linecap:round;stroke-dasharray:11 14;opacity:.18;animation:wc-pilot-rain-shimmer 3.8s linear infinite}.wc-pilot-rain-shaft:nth-child(2n){animation-delay:-1.4s;opacity:.24}.wc-pilot-rain-shaft:nth-child(3n){animation-delay:-2.6s}.wc-pilot-rain-mote{fill:#e0f2fe;stroke:#fff;stroke-width:.7;opacity:.38;transform-box:fill-box;transform-origin:center;animation:wc-pilot-mote-float 4.6s ease-in-out infinite}.wc-pilot-rain-mote:nth-child(2n){animation-delay:-1.6s}.wc-pilot-rain-mote:nth-child(3n){animation-delay:-3.1s}'
+      ,'.wc-pilot-prism-sweep{fill:none;stroke:url(#wcPilotPrismSweep);stroke-width:2.4;stroke-linecap:round;stroke-dasharray:20 18;opacity:.62;animation:wc-pilot-prism-sweep 5.4s linear infinite}.wc-pilot-antisolar-line{stroke:rgba(186,230,253,.62);stroke-width:1.4;stroke-dasharray:4 5}.wc-pilot-antisolar-ring{fill:none;stroke:#7dd3fc;stroke-width:1.7;opacity:.7;transform-box:fill-box;transform-origin:center;animation:wc-pilot-antisolar-pulse 3.2s ease-in-out infinite}.wc-pilot-antisolar-core{fill:#f8fafc;stroke:#0ea5e9;stroke-width:2;filter:url(#wcPilotRainbowGlow)}.wc-pilot-antisolar-label-bg{fill:rgba(3,18,31,.78);stroke:rgba(186,230,253,.42);stroke-width:1}.wc-pilot-antisolar-label{fill:#e0f2fe;font-size:9px;font-weight:900;letter-spacing:.11em;text-anchor:middle}'
+      ,'.wc-pilot-optics-seal{transform-box:fill-box;transform-origin:center;animation:wc-pilot-optics-seal-in 500ms cubic-bezier(.2,.8,.2,1) both}.wc-pilot-optics-seal-panel{fill:rgba(3,18,31,.82);stroke:rgba(125,211,252,.58);stroke-width:1.2}.wc-pilot-optics-seal-ring{fill:rgba(14,165,233,.15);stroke:#7dd3fc;stroke-width:1.7}.wc-pilot-optics-seal-core{fill:#38bdf8;filter:url(#wcPilotRainbowGlow)}.wc-pilot-optics-seal-cross{stroke:#e0f2fe;stroke-width:1;stroke-linecap:round}.wc-pilot-optics-seal-kicker{fill:#7dd3fc;font-size:8.5px;font-weight:900;letter-spacing:.13em}.wc-pilot-optics-seal-value{fill:#fff;font-size:10.5px;font-weight:900;letter-spacing:.035em}.wc-pilot-rainbow-visual[data-double=true] .wc-pilot-optics-seal-panel{stroke:#c4b5fd;filter:url(#wcPilotRainbowGlow)}.wc-pilot-rainbow-visual[data-double=true] .wc-pilot-optics-seal-ring{fill:rgba(168,85,247,.18);stroke:#d8b4fe}.wc-pilot-rainbow-visual[data-double=true] .wc-pilot-optics-seal-core{fill:#facc15}.wc-pilot-rainbow-visual[data-double=true] .wc-pilot-optics-seal-kicker{fill:#e9d5ff}'
+      ,'.wc-pilot-rainbow-challenge>*{position:relative;z-index:1}.wc-pilot-rainbow-challenge::before{z-index:2}.wc-pilot-rainbow-challenge[data-stage="4"]::after{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:radial-gradient(circle at 8% 22%,rgba(250,204,21,.28) 0 2px,transparent 3px),radial-gradient(circle at 94% 35%,rgba(56,189,248,.28) 0 2px,transparent 3px),radial-gradient(circle at 84% 86%,rgba(192,132,252,.24) 0 2.5px,transparent 3.5px),linear-gradient(118deg,transparent 25%,rgba(255,255,255,.2) 46%,transparent 64%);background-size:auto,auto,auto,220% 100%;animation:wc-pilot-completion-glimmer 7s ease-in-out infinite}.wc-pilot-rainbow-progress i{position:relative;overflow:hidden}.wc-pilot-rainbow-progress i:nth-child(1)[data-complete=true]{background:linear-gradient(90deg,#0ea5e9,#67e8f9)}.wc-pilot-rainbow-progress i:nth-child(2)[data-complete=true]{background:linear-gradient(90deg,#f59e0b,#fde68a)}.wc-pilot-rainbow-progress i:nth-child(3)[data-complete=true]{background:linear-gradient(90deg,#ef4444,#facc15,#22c55e,#0ea5e9,#8b5cf6)}.wc-pilot-rainbow-progress i:nth-child(4)[data-complete=true]{background:linear-gradient(90deg,#8b5cf6,#0ea5e9,#22c55e,#facc15,#ef4444)}.wc-pilot-rainbow-progress i[data-complete=true]::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.72) 48%,transparent 72%);transform:translateX(-120%);animation:wc-pilot-progress-shine 3.6s ease-in-out infinite}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-orb{animation:wc-pilot-orb-celebrate 4.2s ease-in-out infinite}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-count{border-color:rgba(139,92,246,.42);box-shadow:0 0 0 3px rgba(196,181,253,.12),0 5px 16px rgba(109,40,217,.14)}'
+      ,'@keyframes wc-pilot-prism-veil{0%{opacity:.2}100%{opacity:.46}}@keyframes wc-pilot-rain-shimmer{to{stroke-dashoffset:-50}}@keyframes wc-pilot-mote-float{0%,100%{opacity:.22;transform:translateY(4px) scale(.82)}50%{opacity:.7;transform:translateY(-7px) scale(1.12)}}@keyframes wc-pilot-prism-sweep{to{stroke-dashoffset:-76}}@keyframes wc-pilot-antisolar-pulse{0%,100%{opacity:.42;transform:scale(.88)}50%{opacity:.9;transform:scale(1.12)}}@keyframes wc-pilot-optics-seal-in{from{opacity:0;transform:translateY(9px) scale(.96)}to{opacity:.94;transform:translateY(0) scale(1)}}@keyframes wc-pilot-progress-shine{0%,58%{transform:translateX(-120%)}82%,100%{transform:translateX(120%)}}@keyframes wc-pilot-completion-glimmer{0%,100%{background-position:0 0,0 0,0 0,120% 0}50%{background-position:0 0,0 0,0 0,-80% 0}}@keyframes wc-pilot-orb-celebrate{0%,100%{transform:scale(1);filter:saturate(1)}50%{transform:scale(1.06);filter:saturate(1.25) brightness(1.08)}}@media(prefers-reduced-motion:reduce){.wc-pilot-rainbow-veil,.wc-pilot-rain-shaft,.wc-pilot-rain-mote,.wc-pilot-prism-sweep,.wc-pilot-antisolar-ring,.wc-pilot-optics-seal,.wc-pilot-rainbow-progress i[data-complete=true]::after,.wc-pilot-rainbow-challenge[data-stage="4"]::after,.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-orb{animation:none!important;transform:none!important}}@media(forced-colors:active){.wc-pilot-stage[data-optics-stage="3"],.wc-pilot-stage[data-optics-stage="4"]{border-color:CanvasText;box-shadow:none}}'
+      ,'.wc-pilot-rainbow-challenge{position:relative;overflow:hidden;padding:16px;border:1px solid rgba(14,165,233,.34);border-radius:17px;background:radial-gradient(circle at 92% 4%,rgba(168,85,247,.16),transparent 30%),radial-gradient(circle at 5% 95%,rgba(34,211,238,.15),transparent 36%),linear-gradient(145deg,rgba(240,249,255,.96),rgba(245,243,255,.88));box-shadow:0 12px 32px rgba(15,23,42,.08)}.wc-pilot-rainbow-challenge::before{content:"";position:absolute;top:0;right:0;left:0;height:4px;background:linear-gradient(90deg,#ef4444,#f97316,#facc15,#22c55e,#0ea5e9,#6366f1,#a855f7)}.wc-pilot-rainbow-head{position:relative;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:11px}.wc-pilot-rainbow-orb{width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 50% 62%,#e0f2fe 0 33%,transparent 35%),conic-gradient(from 210deg,#ef4444,#facc15,#22c55e,#0ea5e9,#a855f7,#ef4444);box-shadow:inset 0 0 0 6px rgba(255,255,255,.76),0 6px 18px rgba(14,116,144,.18)}.wc-pilot-rainbow-copy{min-width:0}.wc-pilot-rainbow-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:#0369a1}.wc-pilot-rainbow-copy h3{margin:2px 0;font-size:18px;line-height:1.15;color:#0f172a}.wc-pilot-rainbow-copy p{margin:0;font-size:11px;line-height:1.4;color:#475569}.wc-pilot-rainbow-count{padding:5px 9px;border:1px solid rgba(2,132,199,.28);border-radius:999px;background:rgba(255,255,255,.72);color:#075985;font-size:11px;font-weight:900;white-space:nowrap}.wc-pilot-rainbow-progress{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:13px 0 8px}.wc-pilot-rainbow-progress i{height:7px;border-radius:999px;background:rgba(148,163,184,.26)}.wc-pilot-rainbow-progress i[data-complete=true]{background:linear-gradient(90deg,#0ea5e9,#8b5cf6);box-shadow:0 0 12px rgba(14,165,233,.22)}.wc-pilot-rainbow-status{margin:0 0 10px;padding:8px 10px;border-left:3px solid #0284c7;border-radius:0 9px 9px 0;background:rgba(224,242,254,.7);color:#0c4a6e;font-size:11px;font-weight:800;line-height:1.45}.wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-status{border-left-color:#16a34a;background:rgba(220,252,231,.72);color:#166534}.wc-pilot-rainbow-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-rainbow-step{min-width:0;padding:8px;border:1px solid rgba(148,163,184,.28);border-radius:10px;background:rgba(255,255,255,.7)}.wc-pilot-rainbow-step span{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:900;color:#334155}.wc-pilot-rainbow-step span::before{content:"";flex:0 0 auto;width:13px;height:13px;border:1px solid #94a3b8;border-radius:50%;background:#fff}.wc-pilot-rainbow-step[data-complete=true] span::before{content:"✓";display:grid;place-items:center;border-color:#059669;background:#059669;color:#fff;font-size:9px}.wc-pilot-rainbow-step small{display:block;margin-top:3px;font-size:9px;line-height:1.35;color:#64748b}.wc-pilot-rainbow-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-top:11px}.wc-pilot-rainbow-action{min-height:42px;padding:9px 13px;border:1px solid #0369a1;border-radius:10px;background:linear-gradient(135deg,#0284c7,#6d28d9);color:#fff;font-size:11px;font-weight:900;cursor:pointer;box-shadow:0 6px 16px rgba(3,105,161,.18)}.wc-pilot-rainbow-action:hover:not(:disabled){filter:brightness(1.08)}.wc-pilot-rainbow-action:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-rainbow-action:disabled{cursor:not-allowed;filter:grayscale(.35);opacity:.56;box-shadow:none}.wc-pilot-rainbow-alignment{font-size:10px;font-weight:800;color:#475569}.wc-pilot-rainbow-science{margin-top:11px;border-top:1px solid rgba(148,163,184,.28);padding-top:9px}.wc-pilot-rainbow-science summary{color:#075985;font-size:11px;font-weight:900;cursor:pointer}.wc-pilot-rainbow-science summary:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-rainbow-science-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}.wc-pilot-rainbow-science-grid>div{padding:8px;border-radius:9px;background:rgba(255,255,255,.66)}.wc-pilot-rainbow-science-grid strong{display:block;font-size:11px;color:#0f172a}.wc-pilot-rainbow-science-grid span{display:block;margin-top:2px;font-size:9.5px;line-height:1.4;color:#475569}.wc-pilot-rainbow-science-note{margin:8px 0 0;font-size:10px;line-height:1.45;color:#334155}'
+      ,'.wc-pilot-rainbow-geometry{position:relative;margin:11px 0;padding:7px;border:1px solid rgba(14,165,233,.25);border-radius:13px;background:linear-gradient(180deg,rgba(224,242,254,.72),rgba(255,255,255,.62));overflow:hidden}.wc-pilot-rainbow-geometry svg{display:block;width:100%;height:auto;max-height:132px}.wc-optics-sky{fill:url(#wcPilotOpticsSky)}.wc-optics-horizon{stroke:rgba(14,116,144,.24)}.wc-optics-sun-ray{stroke:#f59e0b;stroke-width:2;stroke-linecap:round;opacity:.5}.wc-optics-sun-core{fill:#fbbf24;stroke:#fff7cc;stroke-width:3}.wc-optics-light-path{fill:none;stroke:#fde68a;stroke-width:3;stroke-linecap:round;stroke-dasharray:7 7;opacity:.48}.wc-optics-observer-head{fill:#0f172a;stroke:#e0f2fe;stroke-width:2}.wc-optics-observer-body{fill:none;stroke:#0f172a;stroke-width:7;stroke-linecap:round}.wc-optics-eye{fill:#38bdf8;stroke:#fff;stroke-width:1.5}.wc-optics-aim{fill:none;stroke:#0ea5e9;stroke-width:3;stroke-linecap:round;stroke-dasharray:8 7;opacity:.42}.wc-optics-aim-arrow{fill:#0ea5e9;opacity:.56}.wc-optics-rain{stroke:#38bdf8;stroke-width:2.4;stroke-linecap:round;opacity:.42}.wc-optics-bow-primary,.wc-optics-bow-secondary{fill:none;stroke-linecap:round;stroke-width:5;opacity:.35}.wc-optics-bow-primary{stroke:#f97316}.wc-optics-bow-secondary{stroke:#8b5cf6}.wc-optics-label{fill:#0c4a6e;font-size:11px;font-weight:900;letter-spacing:.06em;text-anchor:middle}.wc-pilot-rainbow-geometry[data-sun-ready=true] .wc-optics-sun-core{filter:url(#wcPilotOpticsGlow)}.wc-pilot-rainbow-geometry[data-sun-ready=true] .wc-optics-light-path{opacity:1;animation:wc-optics-flow 2.8s linear infinite}.wc-pilot-rainbow-geometry[data-view-ready=true] .wc-optics-aim,.wc-pilot-rainbow-geometry[data-view-ready=true] .wc-optics-aim-arrow{opacity:1}.wc-pilot-rainbow-geometry[data-rain-ready=true] .wc-optics-rain,.wc-pilot-rainbow-geometry[data-rain-ready=true] .wc-optics-bow-primary{opacity:.92}.wc-pilot-rainbow-geometry[data-double-ready=true] .wc-optics-bow-secondary{opacity:.78;filter:url(#wcPilotOpticsGlow)}.wc-pilot-optics-caption{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:5px}.wc-pilot-optics-caption span{padding:4px 6px;border-radius:7px;background:rgba(255,255,255,.62);color:#64748b;font-size:9.5px;font-weight:800;text-align:center}.wc-pilot-optics-caption span[data-ready=true]{background:rgba(209,250,229,.78);color:#047857}@keyframes wc-optics-flow{to{stroke-dashoffset:-28}}'
+      ,'.wc-pilot-rainbow-raylab{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}.wc-pilot-rainbow-ray-card{min-width:0;padding:8px;border:1px solid rgba(148,163,184,.24);border-radius:10px;background:rgba(255,255,255,.68)}.wc-pilot-drop-diagram{display:block;width:100%;height:auto;max-height:118px;margin-bottom:5px;border-radius:8px;background:radial-gradient(circle at 50% 46%,rgba(186,230,253,.3),rgba(224,242,254,.08) 60%,transparent 61%)}.wc-pilot-drop-shell{fill:rgba(186,230,253,.2);stroke:#0284c7;stroke-width:2}.wc-pilot-drop-highlight{fill:none;stroke:rgba(255,255,255,.85);stroke-width:3;stroke-linecap:round}.wc-pilot-ray-sun{stroke:#facc15;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-inside{fill:none;stroke:#f8fafc;stroke-width:2.6;stroke-linejoin:round;stroke-linecap:round;stroke-dasharray:7 5;animation:wc-ray-travel 3s linear infinite}.wc-pilot-ray-red{stroke:#ef4444;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-violet{stroke:#8b5cf6;stroke-width:3;stroke-linecap:round}.wc-pilot-ray-bounce{fill:#facc15;stroke:#fff;stroke-width:1.5}.wc-pilot-ray-count{fill:#075985;font-size:13px;font-weight:900;text-anchor:middle}.wc-pilot-rainbow-ray-card strong{display:block;font-size:11px;color:#0f172a}.wc-pilot-rainbow-ray-card>span{display:block;margin-top:2px;font-size:9.5px;line-height:1.4;color:#475569}.wc-pilot-dark-band-mini{position:relative;height:72px;margin-bottom:8px;overflow:hidden;border-radius:8px;background:linear-gradient(180deg,rgba(224,242,254,.5),rgba(186,230,253,.2))}.wc-pilot-dark-band-mini span{position:absolute;left:50%;bottom:-47px;transform:translateX(-50%);border-radius:50% 50% 0 0}.wc-pilot-dark-band-mini .is-secondary{width:128px;height:105px;border:7px solid #8b5cf6;opacity:.5}.wc-pilot-dark-band-mini .is-band{bottom:-38px;width:109px;height:88px;border:15px solid rgba(15,23,42,.72)}.wc-pilot-dark-band-mini .is-primary{bottom:-27px;width:88px;height:69px;border:7px solid #f97316;opacity:.82}@keyframes wc-ray-travel{to{stroke-dashoffset:-36}}'
+      ,'.wc-pilot-rainbow-receipt{position:relative;margin-top:12px;padding:12px;border:1px solid rgba(16,185,129,.38);border-radius:13px;background:linear-gradient(145deg,rgba(236,253,245,.9),rgba(224,242,254,.78));box-shadow:0 8px 22px rgba(15,23,42,.06);overflow:hidden}.wc-pilot-rainbow-receipt::after{content:"✦";position:absolute;right:12px;top:5px;color:#8b5cf6;font-size:26px;opacity:.3}.wc-pilot-rainbow-receipt-head{display:flex;align-items:flex-start;gap:8px;padding-right:30px}.wc-pilot-rainbow-receipt-check{display:grid;place-items:center;flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:#059669;color:#fff;font-size:16px;font-weight:900}.wc-pilot-rainbow-receipt-head strong{display:block;color:#065f46;font-size:12px}.wc-pilot-rainbow-receipt-head span{display:block;margin-top:2px;color:#475569;font-size:9.5px;line-height:1.4}.wc-pilot-rainbow-receipt dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:9px 0}.wc-pilot-rainbow-receipt dl>div{padding:6px 7px;border-radius:8px;background:rgba(255,255,255,.68)}.wc-pilot-rainbow-receipt dt{font-size:8.5px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#64748b}.wc-pilot-rainbow-receipt dd{margin:2px 0 0;color:#075985;font-size:11px;font-weight:900;line-height:1.3}.wc-pilot-rainbow-receipt button{min-height:38px;padding:7px 10px;border:1px solid #0f766e;border-radius:9px;background:#0f766e;color:#fff;font-size:10px;font-weight:900;cursor:pointer}.wc-pilot-rainbow-receipt button:hover{background:#115e59}.wc-pilot-rainbow-receipt button:focus-visible{outline:3px solid #facc15;outline-offset:2px}'
+      ,'.dark .wc-pilot-rainbow-geometry{border-color:rgba(125,211,252,.25);background:linear-gradient(180deg,rgba(8,47,73,.68),rgba(15,23,42,.56))}.dark .wc-optics-observer-head{fill:#e2e8f0;stroke:#082f49}.dark .wc-optics-observer-body{stroke:#e2e8f0}.dark .wc-optics-label{fill:#bae6fd}.dark .wc-pilot-optics-caption span{background:rgba(15,23,42,.58);color:#94a3b8}.dark .wc-pilot-optics-caption span[data-ready=true]{background:rgba(6,78,59,.58);color:#a7f3d0}.dark .wc-pilot-rainbow-ray-card,.dark .wc-pilot-rainbow-receipt dl>div{border-color:rgba(71,85,105,.64);background:rgba(15,23,42,.58)}.dark .wc-pilot-rainbow-ray-card strong{color:#f8fafc}.dark .wc-pilot-rainbow-ray-card>span{color:#cbd5e1}.dark .wc-pilot-ray-count{fill:#bae6fd}.dark .wc-pilot-dark-band-mini{background:linear-gradient(180deg,rgba(8,47,73,.72),rgba(15,23,42,.62))}.dark .wc-pilot-rainbow-receipt{border-color:rgba(52,211,153,.34);background:linear-gradient(145deg,rgba(6,78,59,.56),rgba(8,47,73,.58))}.dark .wc-pilot-rainbow-receipt-head strong{color:#a7f3d0}.dark .wc-pilot-rainbow-receipt-head span{color:#cbd5e1}.dark .wc-pilot-rainbow-receipt dt{color:#94a3b8}.dark .wc-pilot-rainbow-receipt dd{color:#7dd3fc}'
+      ,'@media(max-width:700px){.wc-pilot-rainbow-raylab{grid-template-columns:1fr}.wc-pilot-rainbow-receipt dl{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.wc-pilot-optics-caption{grid-template-columns:1fr}.wc-optics-label{font-size:9px}}@media(prefers-reduced-motion:reduce){.wc-optics-light-path,.wc-pilot-ray-inside{animation:none!important}}@media(forced-colors:active){.wc-pilot-rainbow-geometry,.wc-pilot-rainbow-ray-card,.wc-pilot-rainbow-receipt,.wc-pilot-rainbow-receipt dl>div,.wc-pilot-rainbow-receipt button{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-optics-caption span,.wc-pilot-optics-caption span[data-ready=true],.wc-pilot-rainbow-ray-card strong,.wc-pilot-rainbow-ray-card>span,.wc-pilot-rainbow-receipt-head strong,.wc-pilot-rainbow-receipt-head span,.wc-pilot-rainbow-receipt dt,.wc-pilot-rainbow-receipt dd{color:CanvasText}}'
+      ,'.dark .wc-pilot-rainbow-challenge{border-color:rgba(125,211,252,.28);background:radial-gradient(circle at 92% 4%,rgba(168,85,247,.2),transparent 30%),radial-gradient(circle at 5% 95%,rgba(34,211,238,.14),transparent 36%),linear-gradient(145deg,rgba(8,47,73,.72),rgba(30,27,75,.58));box-shadow:0 16px 36px rgba(2,6,23,.28)}.dark .wc-pilot-rainbow-orb{box-shadow:inset 0 0 0 6px rgba(15,23,42,.74),0 6px 20px rgba(34,211,238,.18)}.dark .wc-pilot-rainbow-kicker,.dark .wc-pilot-rainbow-science summary{color:#7dd3fc}.dark .wc-pilot-rainbow-copy h3,.dark .wc-pilot-rainbow-science-grid strong{color:#f8fafc}.dark .wc-pilot-rainbow-copy p,.dark .wc-pilot-rainbow-alignment,.dark .wc-pilot-rainbow-science-grid span,.dark .wc-pilot-rainbow-science-note{color:#cbd5e1}.dark .wc-pilot-rainbow-count{border-color:rgba(125,211,252,.3);background:rgba(15,23,42,.6);color:#bae6fd}.dark .wc-pilot-rainbow-status{background:rgba(8,47,73,.68);color:#bae6fd}.dark .wc-pilot-rainbow-challenge[data-stage="4"] .wc-pilot-rainbow-status{background:rgba(6,78,59,.56);color:#a7f3d0}.dark .wc-pilot-rainbow-step,.dark .wc-pilot-rainbow-science-grid>div{border-color:rgba(71,85,105,.7);background:rgba(15,23,42,.56)}.dark .wc-pilot-rainbow-step span{color:#e2e8f0}.dark .wc-pilot-rainbow-step small{color:#94a3b8}.dark .wc-pilot-rainbow-step span::before{border-color:#64748b;background:#0f172a}'
+      ,'@media(max-width:700px){.wc-pilot-rainbow-challenge{padding:13px}.wc-pilot-rainbow-head{grid-template-columns:auto 1fr}.wc-pilot-rainbow-count{grid-column:2;justify-self:start}.wc-pilot-rainbow-steps{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-rainbow-science-grid{grid-template-columns:1fr}.wc-pilot-rainbow-label{display:none}}@media(max-width:420px){.wc-pilot-rainbow-orb{width:40px;height:40px}.wc-pilot-rainbow-copy h3{font-size:16px}.wc-pilot-rainbow-step{padding:7px}}'
+      ,'@media(prefers-reduced-motion:reduce){.wc-pilot-rainbow-primary,.wc-pilot-rainbow-secondary,.wc-pilot-rainbow-glint{animation:none!important}}@media(forced-colors:active){.wc-pilot-rainbow-visual{display:none}.wc-pilot-rainbow-challenge,.wc-pilot-rainbow-count,.wc-pilot-rainbow-status,.wc-pilot-rainbow-step,.wc-pilot-rainbow-action,.wc-pilot-rainbow-science-grid>div{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-rainbow-orb{border:2px solid CanvasText;background:Canvas}.wc-pilot-rainbow-kicker,.wc-pilot-rainbow-copy h3,.wc-pilot-rainbow-copy p,.wc-pilot-rainbow-status,.wc-pilot-rainbow-step span,.wc-pilot-rainbow-step small,.wc-pilot-rainbow-alignment,.wc-pilot-rainbow-science summary,.wc-pilot-rainbow-science-grid strong,.wc-pilot-rainbow-science-grid span,.wc-pilot-rainbow-science-note{color:CanvasText}.wc-pilot-rainbow-action:not(:disabled),.wc-pilot-rainbow-step[data-complete=true] span::before,.wc-pilot-rainbow-progress i[data-complete=true]{background:Highlight;color:HighlightText}}'
+      // Every HUD surface is a fixed dark panel with fixed light ink. Opaque
+      // fills keep glyphs crisp over the continuously repainted WebGL canvas and
+      // avoid expensive backdrop-filter compositor layers on mobile GPUs. The
+      // canvas is dark in both themes, so these panels stay theme-independent.
+      ,'.wc-pilot-hud{position:absolute;z-index:3;padding:9px 11px;border:1px solid rgba(186,230,253,.26);border-radius:12px;background:rgba(3,18,31,.92);color:#e0f2fe;pointer-events:none}.wc-pilot-hud-left{top:10px;left:10px;display:grid;gap:7px;min-width:186px}.wc-pilot-hud-right{top:10px;right:10px;min-width:170px}.wc-pilot-form-badge{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:900;letter-spacing:.01em}.wc-pilot-form-dot{width:11px;height:11px;border-radius:50%;background:#38bdf8;box-shadow:0 0 10px rgba(56,189,248,.9)}.wc-pilot-form-badge[data-form=vapor] .wc-pilot-form-dot{background:#bae6fd}.wc-pilot-form-badge[data-form=droplet] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=cloud] .wc-pilot-form-dot{background:#f8fafc}.wc-pilot-form-badge[data-form=ice] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=snow] .wc-pilot-form-dot{background:#a5f3fc}.wc-pilot-form-badge[data-form=rain] .wc-pilot-form-dot{background:#60a5fa}.wc-pilot-form-badge[data-form=soil] .wc-pilot-form-dot{background:#bef264}.wc-pilot-form-badge[data-form=plant] .wc-pilot-form-dot,.wc-pilot-form-badge[data-form=transpiring] .wc-pilot-form-dot{background:#86efac}.wc-pilot-form-badge[data-form=groundwater] .wc-pilot-form-dot{background:#a5b4fc}.wc-pilot-readouts{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px;margin:0}.wc-pilot-readouts div{display:flex;flex-direction:column}.wc-pilot-readouts dt{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-readouts dd{margin:0;font-size:13.5px;font-weight:900;color:#f0f9ff}.wc-pilot-buoy{padding:5px 7px;border-radius:8px;font-size:11px;font-weight:800;line-height:1.3;background:rgba(248,113,113,.18);color:#fecaca}.wc-pilot-buoy[data-state=rising]{background:rgba(52,211,153,.2);color:#bbf7d0}.wc-pilot-place{display:flex;align-items:center;justify-content:space-between;gap:5px 9px;flex-wrap:wrap;padding-top:5px;border-top:1px solid rgba(125,211,252,.2);font-size:9.5px;line-height:1.25}.wc-pilot-place span{color:#bae6fd;font-weight:800}.wc-pilot-place strong{color:#fef3c7;font-weight:900}'
       ,'.wc-pilot-gauge{display:grid;gap:4px}.wc-pilot-gauge>span{font-size:10px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-gauge-track{height:9px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-gauge-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#38bdf8,#a5f3fc);transition:width .18s linear}.wc-pilot-gauge small{font-size:11px;font-weight:700;line-height:1.3;color:#e0f2fe}.wc-pilot-micro{display:grid;gap:2px;margin-top:7px;padding-top:6px;border-top:1px solid rgba(125,211,252,.22)}.wc-pilot-micro span{font-size:9px;font-weight:900;letter-spacing:.055em;text-transform:uppercase;color:#7dd3fc}.wc-pilot-micro strong{max-width:190px;font-size:10.5px;font-weight:800;line-height:1.25;color:#f0f9ff}'
       ,'.wc-pilot-ladder{position:absolute;z-index:3;left:10px;bottom:78px;display:grid;justify-items:center;gap:4px;pointer-events:none}.wc-pilot-ladder-track{position:relative;width:5px;height:clamp(120px,22vw,210px);border-radius:999px;background:linear-gradient(180deg,rgba(30,58,138,.85),rgba(125,211,252,.6))}.wc-pilot-ladder-mark{position:absolute;left:9px;transform:translateY(50%);white-space:nowrap;padding:1px 5px;border-radius:5px;font-size:10px;font-weight:900;letter-spacing:.03em;background:rgba(3,105,161,.9);color:#f0f9ff}.wc-pilot-ladder-mark.is-freeze{background:rgba(21,94,117,.92);color:#ecfeff}.wc-pilot-ladder-mark.is-lfc{background:rgba(15,118,110,.92);color:#ecfdf5}.wc-pilot-ladder-mark::before{content:"";position:absolute;left:-9px;top:50%;width:9px;height:2px;background:currentColor;opacity:.7}.wc-pilot-ladder-you{position:absolute;left:-5px;width:15px;height:15px;transform:translateY(50%);border-radius:50%;border:2px solid #fff;background:#38bdf8;box-shadow:0 0 12px rgba(56,189,248,.9);transition:bottom .18s linear}.wc-pilot-ladder small{font-size:10px;font-weight:800;color:#bae6fd}'
-      ,'.wc-pilot-pad{position:absolute;z-index:4;left:50%;bottom:10px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding:6px;border:1px solid rgba(186,230,253,.26);border-radius:13px;background:rgba(3,18,31,.8);backdrop-filter:blur(10px)}.wc-pilot-key{min-width:46px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(7,89,133,.82);color:#f0f9ff;font-size:13px;font-weight:900;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}.wc-pilot-key.is-wide{min-width:82px;font-size:12px}.wc-pilot-key:hover{background:#0e7490}.wc-pilot-key:active{background:#38bdf8;color:#062338}.wc-pilot-key:focus-visible{outline:3px solid #7dd3fc;outline-offset:2px}.wc-pilot-key[aria-pressed=true]{background:#38bdf8;color:#062338}'
-      ,'.wc-pilot-objective{display:grid;gap:3px;padding:11px 13px;border:1px solid rgba(2,132,199,.3);border-left:4px solid #0284c7;border-radius:11px;background:rgba(224,242,254,.7)}.wc-pilot-objective-kicker{font-size:10.5px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#0369a1}.wc-pilot-objective p{margin:0;font-size:14.5px;line-height:1.5;font-weight:600;color:#0c4a6e}.dark .wc-pilot-objective{border-color:rgba(125,211,252,.28);border-left-color:#38bdf8;background:rgba(8,47,73,.6)}.dark .wc-pilot-objective-kicker{color:#7dd3fc}.dark .wc-pilot-objective p{color:#e0f2fe}'
+      ,'.wc-pilot-pad{position:absolute;z-index:4;left:50%;bottom:10px;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding:6px;border:1px solid rgba(186,230,253,.26);border-radius:13px;background:rgba(3,18,31,.94)}.wc-pilot-key{min-width:46px;min-height:44px;padding:6px 10px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(7,89,133,.82);color:#f0f9ff;font-size:13px;font-weight:900;cursor:pointer;touch-action:none;-webkit-user-select:none;user-select:none}.wc-pilot-key.is-wide{min-width:82px;font-size:12px}.wc-pilot-key:hover{background:#0e7490}.wc-pilot-key:active{background:#38bdf8;color:#062338}.wc-pilot-key:focus-visible{outline:3px solid #7dd3fc;outline-offset:2px}.wc-pilot-key[aria-pressed=true]{background:#38bdf8;color:#062338}'
+      ,'.wc-pilot-journey-guide{padding:10px 12px;border:1px solid rgba(2,132,199,.3);border-radius:12px;background:rgba(240,249,255,.78)}.wc-pilot-journey-guide>h4{margin:0 0 7px;font-size:11px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#075985}.wc-pilot-journey-steps{display:grid;grid-template-columns:minmax(128px,.9fr) minmax(128px,.9fr) minmax(210px,1.5fr);gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-journey-step{display:grid;align-content:start;gap:2px;min-width:0;padding:8px 10px;border:1px solid rgba(148,163,184,.34);border-radius:9px;background:rgba(255,255,255,.76)}.wc-pilot-journey-step>span{font-size:9.5px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b}.wc-pilot-journey-step>strong{font-size:12.5px;line-height:1.35;color:#1e293b;overflow-wrap:anywhere}.wc-pilot-journey-step>small{font-size:10.5px;line-height:1.35;color:#475569}.wc-pilot-journey-step.is-last{border-color:rgba(16,185,129,.34)}.wc-pilot-journey-step.is-last>span{color:#047857}.wc-pilot-journey-step.is-now{border-color:rgba(2,132,199,.46);background:rgba(224,242,254,.76)}.wc-pilot-journey-step.is-now>span{color:#0369a1}.wc-pilot-journey-step.is-next{border-color:rgba(245,158,11,.42);background:rgba(255,247,237,.82)}.wc-pilot-journey-step.is-next>span{color:#b45309}.wc-pilot-journey-step.is-next>strong{font-size:13.5px;color:#7c2d12}.dark .wc-pilot-journey-guide{border-color:rgba(125,211,252,.26);background:rgba(8,47,73,.48)}.dark .wc-pilot-journey-guide>h4{color:#7dd3fc}.dark .wc-pilot-journey-step{border-color:rgba(71,85,105,.82);background:rgba(15,23,42,.7)}.dark .wc-pilot-journey-step>span{color:#94a3b8}.dark .wc-pilot-journey-step>strong{color:#f1f5f9}.dark .wc-pilot-journey-step>small{color:#cbd5e1}.dark .wc-pilot-journey-step.is-last{border-color:rgba(52,211,153,.38)}.dark .wc-pilot-journey-step.is-last>span{color:#6ee7b7}.dark .wc-pilot-journey-step.is-now{border-color:rgba(56,189,248,.44);background:rgba(8,47,73,.72)}.dark .wc-pilot-journey-step.is-now>span{color:#7dd3fc}.dark .wc-pilot-journey-step.is-next{border-color:rgba(251,191,36,.42);background:rgba(69,49,10,.48)}.dark .wc-pilot-journey-step.is-next>span{color:#fbbf24}.dark .wc-pilot-journey-step.is-next>strong{color:#fef3c7}@media(max-width:700px){.wc-pilot-journey-steps{grid-template-columns:1fr}.wc-pilot-journey-step{min-height:0}}'
       ,'.wc-pilot-transition{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 14px;padding:11px 13px;border:1px solid rgba(16,185,129,.28);border-left:4px solid #10b981;border-radius:11px;background:linear-gradient(135deg,rgba(236,253,245,.88),rgba(224,242,254,.62))}.wc-pilot-transition-copy{min-width:0}.wc-pilot-transition-kicker{display:block;font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#047857}.wc-pilot-transition-flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:3px}.wc-pilot-transition-form{padding:3px 7px;border:1px solid rgba(5,150,105,.24);border-radius:999px;background:rgba(255,255,255,.72);color:#065f46;font-size:11px;font-weight:900}.wc-pilot-transition-arrow{color:#0284c7;font-size:14px;font-weight:900}.wc-pilot-transition p{grid-column:1/-1;margin:2px 0 0;font-size:12px;line-height:1.45;color:#334155}.wc-pilot-transition-evidence{align-self:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.7);color:#075985;font-size:10px;font-weight:900;line-height:1.35;text-align:right}.wc-pilot-transition-evidence strong,.wc-pilot-transition-evidence span{display:block}.wc-pilot-transition-evidence span{margin-top:2px;font-size:9px;font-weight:800;color:#0369a1}.dark .wc-pilot-transition{border-color:rgba(52,211,153,.28);border-left-color:#34d399;background:linear-gradient(135deg,rgba(6,78,59,.48),rgba(8,47,73,.5))}.dark .wc-pilot-transition-kicker{color:#6ee7b7}.dark .wc-pilot-transition-form,.dark .wc-pilot-transition-evidence{border-color:rgba(52,211,153,.22);background:rgba(15,23,42,.66);color:#d1fae5}.dark .wc-pilot-transition-evidence span{color:#a7f3d0}.dark .wc-pilot-transition p{color:#cbd5e1}@media(max-width:560px){.wc-pilot-transition{grid-template-columns:1fr}.wc-pilot-transition-evidence{justify-self:start;text-align:left}}'
       ,'.wc-pilot-transition-evidence .wc-pilot-transition-energy{margin-top:5px;padding-top:4px;border-top:1px solid rgba(180,83,9,.2);color:#92400e}.wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=released]{color:#9a3412}.wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=none]{color:#475569}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy{border-top-color:rgba(253,186,116,.24);color:#fde68a}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=released]{color:#fed7aa}.dark .wc-pilot-transition-evidence .wc-pilot-transition-energy[data-energy=none]{color:#cbd5e1}@media(forced-colors:active){.wc-pilot-transition-evidence .wc-pilot-transition-energy{border-color:CanvasText;color:CanvasText}}'
       ,'.wc-pilot-science,.wc-pilot-ledger{padding:13px 15px;border:1px solid rgba(148,163,184,.4);border-radius:13px;background:rgba(255,255,255,.86)}.dark .wc-pilot-science,.dark .wc-pilot-ledger{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.66)}.wc-pilot-science h4,.wc-pilot-ledger h4{margin:0 0 6px;font-size:15px;font-weight:900;color:#0f172a}.dark .wc-pilot-science h4,.dark .wc-pilot-ledger h4{color:#f1f5f9}.wc-pilot-science p{margin:0 0 9px;font-size:14px;line-height:1.55;color:#334155}.dark .wc-pilot-science p{color:#cbd5e1}.wc-pilot-science-numbers{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:7px;margin-bottom:9px}.wc-pilot-science-numbers div{padding:7px 9px;border:1px solid rgba(2,132,199,.22);border-radius:9px;background:rgba(240,249,255,.8)}.dark .wc-pilot-science-numbers div{border-color:rgba(125,211,252,.2);background:rgba(8,47,73,.5)}.wc-pilot-science-numbers dt{font-size:10.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-science-numbers dt{color:#7dd3fc}.wc-pilot-science-numbers dd{margin:0;font-size:15px;font-weight:900;color:#0c4a6e}.dark .wc-pilot-science-numbers dd{color:#e0f2fe}.wc-pilot-model-note{margin:0!important;font-size:12px!important;line-height:1.45!important;color:#475569!important}.dark .wc-pilot-model-note{color:#94a3b8!important}'
       ,'.wc-pilot-ledger-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}.wc-pilot-ledger-head span{font-size:13px;font-weight:900;color:#0369a1}.dark .wc-pilot-ledger-head span{color:#7dd3fc}.wc-pilot-ledger-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(142px,1fr));gap:6px;margin:8px 0 9px;padding:0;list-style:none}.wc-pilot-ledger-list li{display:flex;align-items:center;gap:7px;padding:7px 9px;border:1px solid rgba(148,163,184,.36);border-radius:9px;font-size:13px;font-weight:700;color:#475569}.wc-pilot-ledger-list li.is-done{border-color:rgba(16,185,129,.5);background:rgba(209,250,229,.6);color:#065f46}.dark .wc-pilot-ledger-list li{border-color:rgba(51,65,85,.9);color:#94a3b8}.dark .wc-pilot-ledger-list li.is-done{border-color:rgba(52,211,153,.44);background:rgba(6,78,59,.42);color:#a7f3d0}.wc-pilot-ledger-mark{font-weight:900}.wc-pilot-ledger-done,.wc-pilot-ledger-hint{margin:0;font-size:13px;line-height:1.5;color:#475569}.dark .wc-pilot-ledger-done,.dark .wc-pilot-ledger-hint{color:#cbd5e1}.wc-pilot-ledger-done{color:#065f46;font-weight:700}.dark .wc-pilot-ledger-done{color:#a7f3d0}'
+      ,'.wc-pilot-route-history{margin:10px 0;padding-top:9px;border-top:1px solid rgba(148,163,184,.32)}.wc-pilot-route-history>strong{font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;color:#0369a1}.dark .wc-pilot-route-history>strong{color:#7dd3fc}.wc-pilot-route-history ul{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:5px;margin:6px 0;padding:0;list-style:none}.wc-pilot-route-history li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:1px 6px;padding:6px 8px;border:1px solid rgba(148,163,184,.32);border-radius:8px;color:#475569}.wc-pilot-route-history li.is-tried{border-color:rgba(14,116,144,.45);background:rgba(224,242,254,.58);color:#0c4a6e}.dark .wc-pilot-route-history li{border-color:rgba(51,65,85,.9);color:#94a3b8}.dark .wc-pilot-route-history li.is-tried{border-color:rgba(34,211,238,.4);background:rgba(8,47,73,.5);color:#cffafe}.wc-pilot-route-history span{font-size:11px;font-weight:800}.wc-pilot-route-history small{grid-column:1;font-size:9px}.wc-pilot-route-history b{grid-column:2;grid-row:1/3;align-self:center;font-size:14px}.wc-pilot-route-history p{margin:6px 0 0;font-size:11px;font-weight:700;color:#0e7490}.dark .wc-pilot-route-history p{color:#67e8f9}'
       ,'.wc-pilot-alt{padding:9px 12px;border:1px solid rgba(148,163,184,.4);border-radius:10px;background:rgba(248,250,252,.8)}.wc-pilot-alt summary{font-size:13px;font-weight:800;color:#334155;cursor:pointer}.wc-pilot-alt p{margin:7px 0 0;font-size:13px;line-height:1.55;color:#475569}.dark .wc-pilot-alt{border-color:rgba(51,65,85,.8);background:rgba(15,23,42,.6)}.dark .wc-pilot-alt summary{color:#e2e8f0}.dark .wc-pilot-alt p{color:#cbd5e1}'
       ,'@media(max-width:700px){.wc-pilot-canvas{height:520px;min-height:520px}.wc-pilot-hud-left{top:54px;right:8px;left:8px;min-width:0;padding:7px 8px;grid-template-columns:minmax(0,.86fr) minmax(0,1.14fr);gap:5px 7px}.wc-pilot-hud-left .wc-pilot-form-badge{grid-column:1;grid-row:1}.wc-pilot-hud-left .wc-pilot-readouts{grid-column:2;grid-row:1}.wc-pilot-hud-left .wc-pilot-buoy{grid-column:1/-1;grid-row:2}.wc-pilot-hud-left .wc-pilot-place{grid-column:1/-1;grid-row:3}.wc-pilot-readouts{grid-template-columns:1fr 1fr;gap:3px 7px}.wc-pilot-hud-right{top:auto;bottom:124px;right:8px;min-width:0;max-width:54%}.wc-pilot-ladder{bottom:106px;left:8px}.wc-pilot-ladder-track{height:clamp(76px,21vw,104px)}.wc-pilot-ladder-mark{font-size:9px;padding:1px 4px}.wc-pilot-pad{left:8px;right:8px;transform:none;bottom:8px}.wc-pilot-key{min-width:0;flex:1 1 40px}.wc-pilot-key.is-wide{flex:1 1 74px}.wc-pilot-buoy{font-size:10px}}'
       // Reduced motion: the scene already skips its own animation, but the CSS
       // transitions that move the HUD ladder and gauges have to stop too, or the
       // page still animates for someone who asked it not to.
+      ,'.wc-pilot-recovery{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:11px 12px;border:1px solid rgba(16,185,129,.42);border-left:4px solid #10b981;border-radius:12px;background:linear-gradient(135deg,rgba(236,253,245,.92),rgba(224,242,254,.78));box-shadow:0 8px 20px rgba(15,23,42,.06)}.wc-pilot-recovery-copy{display:grid;gap:2px;min-width:0}.wc-pilot-recovery-copy strong{font-size:13px;color:#065f46}.wc-pilot-recovery-copy span{font-size:11px;line-height:1.4;color:#334155}.wc-pilot-recovery-copy small{font-size:10px;line-height:1.35;color:#64748b}.wc-pilot-recovery-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.dark .wc-pilot-recovery{border-color:rgba(52,211,153,.38);border-left-color:#34d399;background:linear-gradient(135deg,rgba(6,78,59,.5),rgba(8,47,73,.58))}.dark .wc-pilot-recovery-copy strong{color:#a7f3d0}.dark .wc-pilot-recovery-copy span{color:#e2e8f0}.dark .wc-pilot-recovery-copy small{color:#94a3b8}'
+      ,'.wc-pilot-notebook{margin-top:10px;padding:14px;border:1px solid rgba(14,165,233,.3);border-radius:14px;background:linear-gradient(145deg,rgba(240,249,255,.86),rgba(236,253,245,.68));box-shadow:0 10px 24px rgba(15,23,42,.06)}.wc-pilot-notebook-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.wc-pilot-notebook-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;color:#0369a1}.wc-pilot-notebook h4{margin:1px 0 0;font-size:16px;color:#0f172a}.wc-pilot-notebook-head p{max-width:660px;margin:3px 0 0;font-size:11px;line-height:1.45;color:#475569}.wc-pilot-notebook-save-state{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(16,185,129,.34);border-radius:999px;background:rgba(236,253,245,.88);color:#047857;font-size:9px;font-weight:900;white-space:nowrap}.wc-pilot-notebook-save-state[data-state=off],.wc-pilot-notebook-save-state[data-state=unavailable]{border-color:rgba(245,158,11,.4);background:rgba(255,247,237,.88);color:#9a3412}.wc-pilot-notebook-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:11px 0}.wc-pilot-notebook-summary>div{padding:7px 8px;border:1px solid rgba(148,163,184,.28);border-radius:9px;background:rgba(255,255,255,.72)}.wc-pilot-notebook-summary dt{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b}.wc-pilot-notebook-summary dd{margin:2px 0 0;font-size:16px;font-weight:900;color:#075985}.wc-pilot-notebook-reflection{display:grid;gap:5px}.wc-pilot-notebook-reflection label{font-size:12px;font-weight:900;color:#1e293b}.wc-pilot-notebook-reflection textarea{box-sizing:border-box;width:100%;min-height:94px;resize:vertical;padding:9px 10px;border:1px solid rgba(2,132,199,.4);border-radius:9px;background:#fff;color:#0f172a;font:inherit;font-size:12px;line-height:1.45}.wc-pilot-notebook-reflection textarea:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-notebook-reflection textarea:disabled{cursor:not-allowed;opacity:.66}.wc-pilot-notebook-help{display:flex;justify-content:space-between;gap:10px;font-size:9.5px;line-height:1.35;color:#64748b}.wc-pilot-notebook-help span:last-child{flex:0 0 auto;font-weight:800}.wc-pilot-notebook-trail{margin-top:10px;padding:9px 10px;border:1px solid rgba(14,165,233,.2);border-radius:10px;background:rgba(255,255,255,.58)}.wc-pilot-notebook-trail-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.wc-pilot-notebook-trail-head strong{font-size:11px;color:#0f172a}.wc-pilot-notebook-trail-head span{font-size:9px;color:#64748b}.wc-pilot-notebook-trail ol{display:grid;gap:5px;margin:7px 0 0;padding-left:20px}.wc-pilot-notebook-trail li{padding-left:2px;color:#334155;font-size:10px;line-height:1.35}.wc-pilot-notebook-trail li strong{display:block;color:#0f766e}.wc-pilot-notebook-trail li span{display:block;color:#475569}.wc-pilot-notebook-empty{margin:6px 0 0;font-size:10px;color:#64748b}.wc-pilot-notebook-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.wc-pilot-notebook-btn{min-height:40px;padding:7px 10px;border:1px solid rgba(2,132,199,.36);border-radius:8px;background:rgba(255,255,255,.88);color:#075985;font-size:10.5px;font-weight:900;cursor:pointer}.wc-pilot-notebook-btn:hover{background:#e0f2fe}.wc-pilot-notebook-btn.is-primary{border-color:#0284c7;background:#0284c7;color:#fff}.wc-pilot-notebook-btn.is-primary:hover{background:#0369a1}.wc-pilot-notebook-btn.is-clear{border-color:rgba(220,38,38,.3);color:#b91c1c}.wc-pilot-notebook-btn.is-enable{border-color:rgba(16,185,129,.4);color:#047857}.wc-pilot-notebook-btn:disabled{cursor:not-allowed;opacity:.46}.wc-pilot-notebook-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-notebook-privacy{margin:9px 0 0;padding-left:8px;border-left:2px solid #0ea5e9;font-size:9.5px;line-height:1.4;color:#475569}.wc-pilot-notebook-status{margin:7px 0 0;padding:6px 8px;border-radius:7px;background:rgba(14,165,233,.09);font-size:10px;font-weight:800;color:#075985}'
+      ,'.dark .wc-pilot-notebook{border-color:rgba(56,189,248,.28);background:linear-gradient(145deg,rgba(8,47,73,.58),rgba(6,78,59,.38));box-shadow:0 14px 30px rgba(2,6,23,.26)}.dark .wc-pilot-notebook-kicker{color:#7dd3fc}.dark .wc-pilot-notebook h4,.dark .wc-pilot-notebook-reflection label,.dark .wc-pilot-notebook-trail-head strong{color:#f8fafc}.dark .wc-pilot-notebook-head p,.dark .wc-pilot-notebook-help,.dark .wc-pilot-notebook-trail-head span,.dark .wc-pilot-notebook-empty,.dark .wc-pilot-notebook-privacy{color:#cbd5e1}.dark .wc-pilot-notebook-save-state{border-color:rgba(52,211,153,.35);background:rgba(6,78,59,.48);color:#a7f3d0}.dark .wc-pilot-notebook-save-state[data-state=off],.dark .wc-pilot-notebook-save-state[data-state=unavailable]{border-color:rgba(251,191,36,.38);background:rgba(69,49,10,.48);color:#fde68a}.dark .wc-pilot-notebook-summary>div,.dark .wc-pilot-notebook-trail{border-color:rgba(71,85,105,.8);background:rgba(15,23,42,.62)}.dark .wc-pilot-notebook-summary dt{color:#94a3b8}.dark .wc-pilot-notebook-summary dd{color:#7dd3fc}.dark .wc-pilot-notebook-reflection textarea{border-color:rgba(56,189,248,.38);background:#0f172a;color:#f8fafc}.dark .wc-pilot-notebook-trail li{color:#cbd5e1}.dark .wc-pilot-notebook-trail li strong{color:#6ee7b7}.dark .wc-pilot-notebook-trail li span{color:#cbd5e1}.dark .wc-pilot-notebook-btn{border-color:rgba(125,211,252,.32);background:rgba(15,23,42,.78);color:#bae6fd}.dark .wc-pilot-notebook-btn:hover{background:#0c4a6e}.dark .wc-pilot-notebook-btn.is-primary{background:#0ea5e9;color:#082f49}.dark .wc-pilot-notebook-btn.is-clear{border-color:rgba(248,113,113,.35);color:#fecaca}.dark .wc-pilot-notebook-btn.is-enable{border-color:rgba(52,211,153,.35);color:#a7f3d0}.dark .wc-pilot-notebook-status{background:rgba(14,165,233,.14);color:#bae6fd}'
+      ,'@media(max-width:700px){.wc-pilot-recovery{align-items:stretch;flex-direction:column}.wc-pilot-recovery-actions{justify-content:stretch}.wc-pilot-recovery-actions button{flex:1}.wc-pilot-notebook-head{display:grid}.wc-pilot-notebook-save-state{justify-self:start}.wc-pilot-notebook-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-notebook-help,.wc-pilot-notebook-trail-head{align-items:flex-start;flex-direction:column}.wc-pilot-notebook-actions{display:grid;grid-template-columns:1fr 1fr}.wc-pilot-notebook-btn{width:100%}}@media(max-width:430px){.wc-pilot-notebook-actions{grid-template-columns:1fr}}'
+      ,'@media(forced-colors:active){.wc-pilot-recovery,.wc-pilot-notebook,.wc-pilot-notebook-summary>div,.wc-pilot-notebook-reflection textarea,.wc-pilot-notebook-trail,.wc-pilot-notebook-btn,.wc-pilot-notebook-save-state,.wc-pilot-notebook-status{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-recovery-copy strong,.wc-pilot-recovery-copy span,.wc-pilot-recovery-copy small,.wc-pilot-notebook-kicker,.wc-pilot-notebook h4,.wc-pilot-notebook-head p,.wc-pilot-notebook-summary dt,.wc-pilot-notebook-summary dd,.wc-pilot-notebook-reflection label,.wc-pilot-notebook-help,.wc-pilot-notebook-trail-head strong,.wc-pilot-notebook-trail-head span,.wc-pilot-notebook-trail li,.wc-pilot-notebook-trail li strong,.wc-pilot-notebook-trail li span,.wc-pilot-notebook-empty,.wc-pilot-notebook-privacy{color:CanvasText}.wc-pilot-notebook-btn.is-primary{background:Highlight;color:HighlightText}}'
+      ,'@media print{body *{visibility:hidden!important}.wc-pilot-notebook,.wc-pilot-notebook *{visibility:visible!important}.wc-pilot-notebook{position:absolute;left:0;top:0;width:100%;margin:0;border:0;box-shadow:none;background:#fff;color:#000}.wc-pilot-notebook-actions,.wc-pilot-notebook-save-state,.wc-pilot-notebook-status{display:none!important}.wc-pilot-notebook-trail{break-inside:avoid}.wc-pilot-notebook-reflection textarea{border:1px solid #000;background:#fff;color:#000}}'
       ,'@media(prefers-reduced-motion:reduce){.wc-pilot-ladder-you,.wc-pilot-gauge-track i{transition:none!important}}'
-      ,'@media(forced-colors:active){.wc-pilot-hud,.wc-pilot-pad,.wc-pilot-key,.wc-pilot-scenario,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-objective,.wc-pilot-alt{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-key[aria-pressed=true],.wc-pilot-scenario[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-pilot-form-dot,.wc-pilot-ladder-you,.wc-pilot-gauge-track i{background:CanvasText!important;box-shadow:none!important}}'
+      // Expedition interface polish: the setup cards preview each climate,
+      // the live HUD reads as one instrument family, the controls separate
+      // movement from utilities, and the notebook becomes a field journal.
+      ,'.wc-pilot-scenarios{gap:10px}.wc-pilot-scenario{position:relative;display:grid;grid-template-rows:56px minmax(68px,auto);gap:0;min-height:132px;padding:0;overflow:hidden;isolation:isolate;border:1px solid rgba(14,116,144,.3);border-radius:15px;background:rgba(255,255,255,.92);color:#0c4a6e;box-shadow:0 7px 18px rgba(15,23,42,.08),inset 0 1px 0 rgba(255,255,255,.8);transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease}.wc-pilot-scenario:hover{transform:translateY(-3px);background:rgba(255,255,255,.98);border-color:rgba(2,132,199,.62);box-shadow:0 14px 28px rgba(2,132,199,.16),inset 0 1px 0 #fff}.wc-pilot-scenario:active{transform:translateY(-1px)}.wc-pilot-scenario[aria-pressed=true]{background:linear-gradient(145deg,#075985,#0f766e);border-color:#38bdf8;color:#fff;box-shadow:0 0 0 2px rgba(125,211,252,.42),0 15px 30px rgba(3,105,161,.24)}.wc-pilot-scenario-scene{position:relative;display:block;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.44);background:linear-gradient(180deg,#7dd3fc,#dbeafe)}.wc-pilot-scenario-scene::after{content:"";position:absolute;z-index:1;left:-5%;right:-5%;bottom:-7px;height:18px;border-radius:50%;background:rgba(14,116,144,.55);box-shadow:0 -4px 0 rgba(224,242,254,.36)}.wc-pilot-scenario-sun{position:absolute;z-index:1;top:8px;right:13px;width:20px;height:20px;border-radius:50%;background:#fde68a;box-shadow:0 0 0 6px rgba(254,240,138,.2),0 0 18px rgba(251,191,36,.55)}.wc-pilot-scenario-cloud{position:absolute;z-index:3;top:15px;left:24%;width:38px;height:13px;border-radius:999px;background:rgba(248,250,252,.9);box-shadow:17px 4px 0 -1px rgba(248,250,252,.82);animation:wc-pilot-scenario-cloud-drift 5.2s ease-in-out infinite alternate}.wc-pilot-scenario-cloud::before,.wc-pilot-scenario-cloud::after{content:"";position:absolute;border-radius:50%;background:inherit}.wc-pilot-scenario-cloud::before{width:17px;height:17px;left:7px;top:-8px}.wc-pilot-scenario-cloud::after{width:13px;height:13px;right:3px;top:-5px}.wc-pilot-scenario-land{position:absolute;z-index:2;left:-5%;right:-5%;bottom:0;height:27px;background:#0f766e;clip-path:polygon(0 72%,20% 48%,38% 67%,58% 24%,74% 52%,100% 30%,100% 100%,0 100%)}.wc-pilot-scenario[data-scenario="tropicalOcean"] .wc-pilot-scenario-scene{background:linear-gradient(180deg,#38bdf8 0,#bae6fd 64%,#0ea5e9 65%,#0369a1 100%)}.wc-pilot-scenario[data-scenario="tropicalOcean"] .wc-pilot-scenario-land{background:#0f766e;clip-path:polygon(0 74%,18% 63%,34% 76%,54% 55%,72% 72%,100% 52%,100% 100%,0 100%)}.wc-pilot-scenario[data-scenario="temperateCoast"] .wc-pilot-scenario-scene{background:linear-gradient(180deg,#93c5fd,#dbeafe 67%,#0e7490 68%,#155e75)}.wc-pilot-scenario[data-scenario="temperateCoast"] .wc-pilot-scenario-sun{background:#fef3c7;opacity:.82}.wc-pilot-scenario[data-scenario="mountainWinter"] .wc-pilot-scenario-scene{background:linear-gradient(180deg,#bfdbfe,#f8fafc)}.wc-pilot-scenario[data-scenario="mountainWinter"] .wc-pilot-scenario-land{height:36px;background:linear-gradient(150deg,#e2e8f0 0 42%,#94a3b8 43% 56%,#f8fafc 57%);clip-path:polygon(0 100%,20% 58%,31% 76%,55% 8%,66% 45%,76% 29%,100% 100%)}.wc-pilot-scenario[data-scenario="mountainWinter"] .wc-pilot-scenario-sun{background:#e0f2fe;box-shadow:0 0 0 6px rgba(224,242,254,.28),0 0 18px rgba(186,230,253,.7)}.wc-pilot-scenario[data-scenario="desertBasin"] .wc-pilot-scenario-scene{background:linear-gradient(180deg,#fbbf24,#fed7aa 64%,#d97706 65%,#9a3412)}.wc-pilot-scenario[data-scenario="desertBasin"] .wc-pilot-scenario-land{height:31px;background:#b45309;clip-path:polygon(0 48%,18% 30%,38% 60%,58% 42%,76% 64%,100% 36%,100% 100%,0 100%)}.wc-pilot-scenario[data-scenario="desertBasin"] .wc-pilot-scenario-cloud{opacity:.28}.wc-pilot-scenario-copy{display:grid;align-content:center;gap:3px;padding:9px 11px 10px;text-align:left}.wc-pilot-scenario-copy strong{font-size:13px;font-weight:950;line-height:1.2}.wc-pilot-scenario-copy small{font-size:10.5px;font-weight:800;line-height:1.32;color:#0e7490}.wc-pilot-scenario[aria-pressed=true] .wc-pilot-scenario-copy small{color:#cffafe}.wc-pilot-scenario-selected{position:absolute;z-index:4;top:7px;right:7px;display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(255,255,255,.75);border-radius:50%;background:#ecfeff;color:#075985;font-size:14px;font-weight:950;opacity:0;transform:scale(.72);box-shadow:0 4px 12px rgba(2,20,35,.2);transition:opacity 160ms ease,transform 160ms ease}.wc-pilot-scenario[data-selected=true] .wc-pilot-scenario-selected{opacity:1;transform:scale(1)}.wc-pilot-scenario-note{padding:9px 12px;border-left:3px solid #0ea5e9;border-radius:0 10px 10px 0;background:linear-gradient(90deg,rgba(224,242,254,.82),rgba(240,253,250,.42));font-weight:650}'
+      ,'.wc-pilot-hud{--wc-phase:#38bdf8;overflow:hidden;padding:10px 12px;border-color:rgba(186,230,253,.34);border-radius:14px;box-shadow:0 12px 28px rgba(2,12,27,.36),inset 0 1px 0 rgba(255,255,255,.09)}.wc-pilot-hud::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--wc-phase),transparent);opacity:.9}.wc-pilot-hud[data-form="liquid"],.wc-pilot-hud[data-form="runoff"],.wc-pilot-hud[data-form="groundwater"]{--wc-phase:#22d3ee}.wc-pilot-hud[data-form="vapor"],.wc-pilot-hud[data-form="transpiring"]{--wc-phase:#fbbf24}.wc-pilot-hud[data-form="droplet"],.wc-pilot-hud[data-form="cloud"],.wc-pilot-hud[data-form="rain"]{--wc-phase:#7dd3fc}.wc-pilot-hud[data-form="ice"],.wc-pilot-hud[data-form="snow"]{--wc-phase:#c4b5fd}.wc-pilot-hud[data-form="soil"],.wc-pilot-hud[data-form="plant"],.wc-pilot-hud[data-pathway=true]{--wc-phase:#6ee7b7}.wc-pilot-hud-kicker{display:block;margin-bottom:1px;color:var(--wc-phase);font-size:8px;font-weight:950;letter-spacing:.14em;line-height:1;text-transform:uppercase}.wc-pilot-hud-left{gap:8px;min-width:208px}.wc-pilot-form-badge{padding:3px 0;font-size:14px}.wc-pilot-form-dot{width:14px;height:14px;border:2px solid rgba(255,255,255,.78);outline:1px solid var(--wc-phase);outline-offset:2px;animation:wc-pilot-phase-pulse 2.8s ease-in-out infinite}.wc-pilot-readouts{gap:5px 7px}.wc-pilot-readouts>div{min-width:0;padding:5px 6px;border:1px solid rgba(125,211,252,.12);border-radius:7px;background:rgba(8,47,73,.38)}.wc-pilot-readouts dt{color:rgba(186,230,253,.82);font-size:8.5px;letter-spacing:.1em}.wc-pilot-readouts dd{overflow:hidden;color:#fff;font-size:12px;text-overflow:ellipsis}.wc-pilot-buoy{padding:5px 7px;border:1px solid rgba(125,211,252,.15);border-radius:7px;background:rgba(8,47,73,.32);line-height:1.3}.wc-pilot-place{padding-top:7px;border-top-color:rgba(125,211,252,.2)}.wc-pilot-place strong{color:var(--wc-phase)}.wc-pilot-hud-right{display:grid;gap:7px;min-width:188px}.wc-pilot-gauge{gap:5px}.wc-pilot-gauge>span{color:#e0f2fe}.wc-pilot-gauge-track{height:10px;padding:2px;background:rgba(2,12,27,.78);box-shadow:inset 0 1px 4px rgba(0,0,0,.5)}.wc-pilot-gauge-track i{height:100%;background:linear-gradient(90deg,var(--wc-phase),#f8fafc);box-shadow:0 0 12px color-mix(in srgb,var(--wc-phase) 72%,transparent)}.wc-pilot-micro{padding:7px 8px;border:1px solid rgba(125,211,252,.17);border-radius:8px;background:linear-gradient(135deg,rgba(8,47,73,.48),rgba(15,23,42,.5))}.wc-pilot-micro strong{color:var(--wc-phase)}'
+      ,'.wc-pilot-pad{display:grid;grid-template-columns:auto auto;grid-template-areas:"label label" "motion actions";align-items:center;gap:5px 7px;max-width:calc(100% - 20px);padding:7px 8px 8px;border-color:rgba(186,230,253,.34);border-radius:15px;box-shadow:0 14px 32px rgba(2,12,27,.44),inset 0 1px 0 rgba(255,255,255,.08)}.wc-pilot-pad-label{grid-area:label;justify-self:start;padding-left:2px;color:#7dd3fc;font-size:8px;font-weight:950;letter-spacing:.16em;line-height:1;text-transform:uppercase}.wc-pilot-pad-motion{grid-area:motion;display:flex;align-items:center;gap:5px}.wc-pilot-pad-actions{grid-area:actions;display:flex;align-items:center;gap:5px;padding-left:7px;border-left:1px solid rgba(125,211,252,.18)}.wc-pilot-key{position:relative;min-height:42px;border-color:rgba(125,211,252,.48);background:linear-gradient(180deg,rgba(14,116,144,.94),rgba(7,89,133,.96));box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 3px 0 #082f49,0 5px 10px rgba(2,12,27,.28);transition:transform 90ms ease,box-shadow 90ms ease,filter 150ms ease}.wc-pilot-key.is-rise,.wc-pilot-key.is-sink{background:linear-gradient(180deg,#0891b2,#0e7490)}.wc-pilot-key.is-left,.wc-pilot-key.is-right{background:linear-gradient(180deg,#0f766e,#115e59)}.wc-pilot-key.is-depth{background:linear-gradient(180deg,#2563eb,#1e40af)}.wc-pilot-key.is-action{border-color:rgba(148,163,184,.42);background:linear-gradient(180deg,#334155,#1e293b)}.wc-pilot-key.is-reset{color:#fde68a}.wc-pilot-key:hover{filter:brightness(1.18);background:linear-gradient(180deg,#0e7490,#075985)}.wc-pilot-key:active,.wc-pilot-key[aria-pressed=true]{transform:translateY(2px);box-shadow:inset 0 1px 5px rgba(2,12,27,.28),0 1px 0 #082f49;background:#67e8f9;color:#083344}.wc-pilot-key-pathway{background:linear-gradient(135deg,#047857,#0f766e)}'
+      ,'.wc-pilot-notebook{position:relative;overflow:hidden;padding:18px 18px 17px 30px;border-color:rgba(14,165,233,.34);border-radius:17px;background:linear-gradient(90deg,transparent 0 21px,rgba(244,63,94,.2) 21px 22px,transparent 22px),repeating-linear-gradient(180deg,transparent 0 27px,rgba(14,165,233,.075) 27px 28px),linear-gradient(145deg,rgba(248,252,255,.96),rgba(240,253,250,.9));box-shadow:0 18px 38px rgba(15,23,42,.1),inset 0 1px 0 #fff}.wc-pilot-notebook::before{content:"";position:absolute;z-index:0;top:0;bottom:0;left:13px;width:3px;background:linear-gradient(180deg,#38bdf8,#14b8a6);opacity:.72}.wc-pilot-notebook::after{content:"";position:absolute;z-index:0;top:10px;bottom:10px;left:5px;width:15px;background:radial-gradient(circle,#fff 0 3px,#0ea5e9 3.5px 5px,transparent 5.5px) center top/15px 32px repeat-y;opacity:.9}.wc-pilot-notebook>*{position:relative;z-index:1}.wc-pilot-notebook-head{align-items:center;padding-bottom:11px;border-bottom:1px solid rgba(14,116,144,.16)}.wc-pilot-notebook-title{display:flex;align-items:center;gap:12px;min-width:0}.wc-pilot-notebook-title>div{min-width:0}.wc-pilot-notebook-mark{position:relative;flex:0 0 42px;width:42px;height:42px;border:2px solid rgba(255,255,255,.75);border-radius:62% 38% 66% 34%/66% 42% 58% 34%;background:linear-gradient(145deg,#38bdf8,#0f766e);transform:rotate(35deg);box-shadow:0 8px 18px rgba(2,132,199,.24),inset 7px 7px 12px rgba(255,255,255,.2)}.wc-pilot-notebook-mark::after{content:"";position:absolute;top:8px;left:9px;width:11px;height:7px;border-radius:50%;background:rgba(255,255,255,.72);transform:rotate(-24deg)}.wc-pilot-notebook[data-complete=true] .wc-pilot-notebook-mark{background:linear-gradient(145deg,#fbbf24,#0ea5e9 45%,#8b5cf6);animation:wc-pilot-notebook-complete 3.8s ease-in-out infinite}.wc-pilot-notebook-kicker{font-size:9.5px;letter-spacing:.13em}.wc-pilot-notebook h4{font-size:18px;letter-spacing:-.01em}.wc-pilot-notebook-head p{font-size:11.5px}.wc-pilot-notebook-save-state{box-shadow:inset 0 1px 0 rgba(255,255,255,.7)}.wc-pilot-notebook-summary{gap:9px;margin:12px 0 9px}.wc-pilot-notebook-summary>div{position:relative;overflow:hidden;padding:9px 10px;border-color:rgba(14,116,144,.2);border-radius:11px;background:rgba(255,255,255,.8);box-shadow:0 5px 13px rgba(15,23,42,.055)}.wc-pilot-notebook-summary>div::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#38bdf8,#14b8a6)}.wc-pilot-notebook-summary dt{font-size:9px;letter-spacing:.1em}.wc-pilot-notebook-summary dd{font-size:18px}.wc-pilot-notebook-progress{display:grid;grid-template-columns:auto minmax(120px,1fr);align-items:center;gap:10px;margin:0 0 12px;padding:8px 10px;border:1px solid rgba(14,116,144,.2);border-radius:11px;background:rgba(224,242,254,.58)}.wc-pilot-notebook-progress>div{display:flex;align-items:baseline;justify-content:space-between;gap:9px;color:#075985}.wc-pilot-notebook-progress>div span{font-size:10px;font-weight:900;letter-spacing:.07em;text-transform:uppercase}.wc-pilot-notebook-progress>div strong{font-size:12px}.wc-pilot-notebook-progress-track{height:9px;padding:2px;border-radius:999px;background:rgba(14,116,144,.14);box-shadow:inset 0 1px 3px rgba(15,23,42,.12)}.wc-pilot-notebook-progress-track i{display:block;height:100%;min-width:3px;border-radius:999px;background:linear-gradient(90deg,#0ea5e9,#14b8a6);box-shadow:0 0 10px rgba(14,165,233,.34);transition:width 220ms ease}.wc-pilot-notebook-reflection textarea{border-radius:11px;background:rgba(255,255,255,.88);box-shadow:inset 0 1px 3px rgba(15,23,42,.06)}.wc-pilot-notebook-trail{padding:11px 12px;background:rgba(255,255,255,.68)}.wc-pilot-notebook-trail ol{position:relative;list-style:none;padding-left:19px}.wc-pilot-notebook-trail ol::before{content:"";position:absolute;top:3px;bottom:5px;left:5px;width:2px;border-radius:999px;background:linear-gradient(180deg,#38bdf8,#14b8a6)}.wc-pilot-notebook-trail li{position:relative;padding:1px 0 5px 7px}.wc-pilot-notebook-trail li::before{content:"";position:absolute;top:4px;left:-18px;width:9px;height:9px;border:2px solid #fff;border-radius:50%;background:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.3)}.wc-pilot-notebook-actions{gap:8px}.wc-pilot-notebook-btn{min-height:42px;border-radius:10px;background:rgba(255,255,255,.92);box-shadow:0 3px 0 rgba(14,116,144,.18);transition:transform 100ms ease,box-shadow 100ms ease,filter 150ms ease}.wc-pilot-notebook-btn.is-primary{background:linear-gradient(135deg,#0284c7,#0f766e)}.wc-pilot-notebook-btn:hover{filter:brightness(1.04);transform:translateY(-1px)}.wc-pilot-notebook-btn:active{transform:translateY(2px);box-shadow:none}'
+      ,'.dark .wc-pilot-scenario{border-color:rgba(125,211,252,.3);background:rgba(15,23,42,.88);color:#e0f2fe;box-shadow:0 10px 22px rgba(2,6,23,.28)}.dark .wc-pilot-scenario:hover{background:rgba(15,23,42,.96)}.dark .wc-pilot-scenario[aria-pressed=true]{border-color:#67e8f9;background:linear-gradient(145deg,#075985,#115e59);color:#fff}.dark .wc-pilot-scenario-copy small{color:#7dd3fc}.dark .wc-pilot-scenario[aria-pressed=true] .wc-pilot-scenario-copy small{color:#cffafe}.dark .wc-pilot-scenario-note{background:linear-gradient(90deg,rgba(8,47,73,.72),rgba(6,78,59,.35));color:#bae6fd}.dark .wc-pilot-notebook{border-color:rgba(56,189,248,.3);background:linear-gradient(90deg,transparent 0 21px,rgba(251,113,133,.2) 21px 22px,transparent 22px),repeating-linear-gradient(180deg,transparent 0 27px,rgba(125,211,252,.055) 27px 28px),linear-gradient(145deg,rgba(8,47,73,.76),rgba(6,78,59,.5));box-shadow:0 20px 42px rgba(2,6,23,.34),inset 0 1px 0 rgba(255,255,255,.06)}.dark .wc-pilot-notebook::after{opacity:.62}.dark .wc-pilot-notebook-head{border-bottom-color:rgba(125,211,252,.16)}.dark .wc-pilot-notebook-summary>div,.dark .wc-pilot-notebook-trail{border-color:rgba(125,211,252,.15);background:rgba(15,23,42,.68)}.dark .wc-pilot-notebook-progress{border-color:rgba(125,211,252,.18);background:rgba(8,47,73,.55)}.dark .wc-pilot-notebook-progress>div{color:#bae6fd}.dark .wc-pilot-notebook-progress-track{background:rgba(2,12,27,.68)}.dark .wc-pilot-notebook-reflection textarea{background:rgba(15,23,42,.88)}'
+      ,'@keyframes wc-pilot-scenario-cloud-drift{from{transform:translateX(-2px)}to{transform:translateX(6px)}}@keyframes wc-pilot-phase-pulse{0%,100%{transform:scale(.94);filter:brightness(.96)}50%{transform:scale(1.08);filter:brightness(1.18)}}@keyframes wc-pilot-notebook-complete{0%,100%{filter:saturate(1);box-shadow:0 8px 18px rgba(2,132,199,.24),inset 7px 7px 12px rgba(255,255,255,.2)}50%{filter:saturate(1.25) brightness(1.08);box-shadow:0 8px 22px rgba(139,92,246,.34),inset 7px 7px 12px rgba(255,255,255,.28)}}'
+      ,'@media(max-width:700px){.wc-pilot-scenarios{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.wc-pilot-scenario{grid-template-rows:48px minmax(65px,auto);min-height:118px}.wc-pilot-scenario-copy{padding:8px 9px}.wc-pilot-scenario-copy strong{font-size:12px}.wc-pilot-scenario-copy small{font-size:9.5px}.wc-pilot-hud-left .wc-pilot-hud-kicker{grid-column:1/-1;grid-row:1}.wc-pilot-hud-left .wc-pilot-form-badge{grid-column:1;grid-row:2}.wc-pilot-hud-left .wc-pilot-readouts{grid-column:2;grid-row:2}.wc-pilot-hud-left .wc-pilot-buoy{grid-column:1/-1;grid-row:3}.wc-pilot-hud-left .wc-pilot-place{grid-column:1/-1;grid-row:4}.wc-pilot-hud-right{bottom:132px}.wc-pilot-pad{grid-template-columns:minmax(0,1fr);grid-template-areas:"label" "motion" "actions";gap:5px;max-width:none}.wc-pilot-pad-motion{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.wc-pilot-pad-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:5px 0 0;border-top:1px solid rgba(125,211,252,.18);border-left:0}.wc-pilot-key,.wc-pilot-key.is-wide{width:100%;min-width:0;min-height:39px;padding:5px 4px;font-size:11px}.wc-pilot-pad-label{font-size:7.5px}.wc-pilot-notebook{padding:15px 12px 15px 26px}.wc-pilot-notebook-title{align-items:flex-start;gap:9px}.wc-pilot-notebook-mark{flex-basis:34px;width:34px;height:34px}.wc-pilot-notebook-progress{grid-template-columns:1fr;gap:6px}}@media(max-width:430px){.wc-pilot-scenario-selected{width:21px;height:21px;font-size:12px}.wc-pilot-hud-kicker{font-size:7px}.wc-pilot-readouts>div{padding:4px}.wc-pilot-pad-motion{gap:3px}.wc-pilot-key,.wc-pilot-key.is-wide{font-size:10px}.wc-pilot-notebook-mark{display:none}}'
+      ,'@media(prefers-reduced-motion:reduce){.wc-pilot-scenario,.wc-pilot-scenario-selected,.wc-pilot-key,.wc-pilot-notebook-btn,.wc-pilot-notebook-progress-track i{transition:none!important}.wc-pilot-scenario-cloud,.wc-pilot-form-dot,.wc-pilot-notebook-mark{animation:none!important;transform:none!important}}@media(forced-colors:active){.wc-pilot-scenario-scene{display:none}.wc-pilot-scenario{grid-template-rows:auto;min-height:70px}.wc-pilot-scenario-selected{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-scenario-copy strong,.wc-pilot-scenario-copy small,.wc-pilot-scenario-note,.wc-pilot-hud-kicker,.wc-pilot-pad-label,.wc-pilot-notebook-progress>div{color:CanvasText}.wc-pilot-hud::before,.wc-pilot-notebook::before,.wc-pilot-notebook::after{display:none}.wc-pilot-form-dot,.wc-pilot-notebook-mark,.wc-pilot-notebook-progress-track i,.wc-pilot-notebook-trail ol::before,.wc-pilot-notebook-trail li::before{background:Highlight;box-shadow:none}.wc-pilot-notebook-progress,.wc-pilot-notebook-progress-track{border:1px solid CanvasText;background:Canvas}}@media print{.wc-pilot-notebook::before,.wc-pilot-notebook::after,.wc-pilot-notebook-mark{display:none!important}}'
+      // Learning dashboard polish: a connected journey timeline, an energy-
+      // aware change receipt, phase science instruments, and watershed routes.
+      ,'.wc-pilot-journey-guide{position:relative;overflow:hidden;padding:14px;border:1px solid rgba(2,132,199,.3);border-radius:17px;background:radial-gradient(circle at 8% 0,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 96% 100%,rgba(251,191,36,.13),transparent 30%),linear-gradient(145deg,rgba(240,249,255,.94),rgba(248,250,252,.88));box-shadow:0 14px 30px rgba(15,23,42,.08),inset 0 1px 0 #fff}.wc-pilot-journey-guide::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#10b981,#0ea5e9 52%,#f59e0b)}.wc-pilot-journey-guide[data-complete=true]::before{background:linear-gradient(90deg,#10b981,#22d3ee,#8b5cf6,#f59e0b)}.wc-pilot-journey-guide>h4{display:flex;align-items:center;gap:7px;margin:0 0 11px;color:#075985;font-size:11px;letter-spacing:.11em}.wc-pilot-journey-guide>h4::before{content:"";width:10px;height:10px;border:2px solid #fff;border-radius:50%;background:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.2)}.wc-pilot-journey-steps{position:relative;grid-template-columns:minmax(128px,.9fr) minmax(128px,.9fr) minmax(210px,1.5fr);gap:12px}.wc-pilot-journey-steps::before{content:"";position:absolute;z-index:0;top:20px;left:12%;right:12%;height:3px;border-radius:999px;background:linear-gradient(90deg,#34d399,#38bdf8 52%,#fbbf24);opacity:.64}.wc-pilot-journey-step{position:relative;z-index:1;min-height:108px;padding:37px 11px 11px;border-radius:13px;background:rgba(255,255,255,.82);box-shadow:0 7px 18px rgba(15,23,42,.055),inset 0 1px 0 #fff}.wc-pilot-journey-step::before{content:"";position:absolute;top:10px;left:50%;width:20px;height:20px;border:3px solid #fff;border-radius:50%;background:#94a3b8;transform:translateX(-50%);box-shadow:0 0 0 3px rgba(148,163,184,.22)}.wc-pilot-journey-step::after{content:"";position:absolute;top:17px;left:50%;width:6px;height:6px;border-radius:50%;background:#fff;transform:translateX(-50%)}.wc-pilot-journey-step.is-last{border-color:rgba(16,185,129,.36);background:linear-gradient(145deg,rgba(236,253,245,.92),rgba(255,255,255,.82))}.wc-pilot-journey-step.is-last::before{background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.22)}.wc-pilot-journey-step.is-now{border-color:rgba(2,132,199,.48);background:linear-gradient(145deg,rgba(224,242,254,.96),rgba(240,253,250,.78));box-shadow:0 10px 24px rgba(2,132,199,.13),inset 0 1px 0 #fff}.wc-pilot-journey-step.is-now::before{background:#0ea5e9;box-shadow:0 0 0 4px rgba(14,165,233,.2);animation:wc-pilot-journey-now 2.8s ease-in-out infinite}.wc-pilot-journey-step.is-next{border-color:rgba(245,158,11,.46);background:linear-gradient(145deg,rgba(255,247,237,.96),rgba(254,252,232,.86))}.wc-pilot-journey-step.is-next::before{background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.22)}.wc-pilot-journey-step>span{font-size:9px;letter-spacing:.11em}.wc-pilot-journey-step>strong{font-size:13px}.wc-pilot-journey-step.is-next>strong{font-size:14px;line-height:1.42}'
+      ,'.wc-pilot-transition{--wc-energy:#0ea5e9;position:relative;overflow:hidden;grid-template-columns:minmax(0,1fr) minmax(180px,.72fr);gap:8px 14px;padding:14px 15px 14px 58px;border:1px solid color-mix(in srgb,var(--wc-energy) 34%,transparent);border-left-width:1px;border-radius:16px;background:radial-gradient(circle at 5% 20%,color-mix(in srgb,var(--wc-energy) 17%,transparent),transparent 24%),linear-gradient(135deg,rgba(248,250,252,.94),rgba(240,253,250,.82));box-shadow:0 13px 28px rgba(15,23,42,.08),inset 0 1px 0 #fff}.wc-pilot-transition[data-energy=absorbed]{--wc-energy:#f59e0b}.wc-pilot-transition[data-energy=released]{--wc-energy:#f97316}.wc-pilot-transition[data-energy=none]{--wc-energy:#64748b}.wc-pilot-transition::before{content:"";position:absolute;top:18px;left:17px;width:27px;height:27px;border:2px solid rgba(255,255,255,.78);border-radius:62% 38% 65% 35%/65% 42% 58% 35%;background:linear-gradient(145deg,var(--wc-energy),#0ea5e9);transform:rotate(35deg);box-shadow:0 7px 15px color-mix(in srgb,var(--wc-energy) 28%,transparent),inset 5px 5px 8px rgba(255,255,255,.2)}.wc-pilot-transition::after{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--wc-energy),#0ea5e9,transparent)}.wc-pilot-transition-kicker{color:color-mix(in srgb,var(--wc-energy) 78%,#075985);letter-spacing:.11em}.wc-pilot-transition-flow{gap:7px;margin-top:6px}.wc-pilot-transition-form{padding:5px 9px;border-color:color-mix(in srgb,var(--wc-energy) 28%,transparent);border-radius:10px;background:rgba(255,255,255,.86);color:#0f4c5c;box-shadow:0 3px 8px rgba(15,23,42,.05)}.wc-pilot-transition-arrow{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:color-mix(in srgb,var(--wc-energy) 13%,#e0f2fe);color:color-mix(in srgb,var(--wc-energy) 78%,#0369a1)}.wc-pilot-transition-evidence{padding:9px 10px;border:1px solid color-mix(in srgb,var(--wc-energy) 18%,transparent);border-radius:11px;background:rgba(255,255,255,.78);box-shadow:0 5px 13px rgba(15,23,42,.05);text-align:left}.wc-pilot-transition-evidence strong{color:#0f172a;font-size:10.5px}.wc-pilot-transition-evidence span{color:#075985}.wc-pilot-transition p{padding-top:8px;border-top:1px solid color-mix(in srgb,var(--wc-energy) 18%,transparent);color:#334155}.wc-pilot-learning-dashboard{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);align-items:start;gap:12px}.wc-pilot-science,.wc-pilot-ledger{position:relative;overflow:hidden;padding:16px;border-radius:17px;box-shadow:0 14px 30px rgba(15,23,42,.075),inset 0 1px 0 #fff}.wc-pilot-science{--wc-phase-card:#0ea5e9;border-color:rgba(2,132,199,.28);background:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--wc-phase-card) 12%,transparent),transparent 28%),linear-gradient(145deg,rgba(248,252,255,.96),rgba(240,249,255,.86))}.wc-pilot-science[data-form=vapor],.wc-pilot-science[data-form=transpiring]{--wc-phase-card:#f59e0b}.wc-pilot-science[data-form=ice],.wc-pilot-science[data-form=snow]{--wc-phase-card:#8b5cf6}.wc-pilot-science[data-form=soil],.wc-pilot-science[data-form=plant],.wc-pilot-science[data-form=groundwater],.wc-pilot-science[data-form=runoff]{--wc-phase-card:#10b981}.wc-pilot-science::before,.wc-pilot-ledger::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,var(--wc-phase-card,#0ea5e9),#22d3ee,transparent)}.wc-pilot-science h4{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:16px}.wc-pilot-science h4::before{content:"";flex:0 0 22px;width:22px;height:22px;border:2px solid #fff;border-radius:62% 38% 65% 35%/65% 42% 58% 35%;background:linear-gradient(145deg,var(--wc-phase-card),#22d3ee);transform:rotate(35deg);box-shadow:0 5px 12px color-mix(in srgb,var(--wc-phase-card) 25%,transparent)}.wc-pilot-science>p:not(.wc-pilot-model-note){padding:9px 10px;border-left:3px solid var(--wc-phase-card);border-radius:0 9px 9px 0;background:rgba(255,255,255,.58)}.wc-pilot-science-numbers{gap:8px}.wc-pilot-science-numbers div{position:relative;overflow:hidden;padding:9px 10px;border-color:color-mix(in srgb,var(--wc-phase-card) 20%,transparent);border-radius:11px;background:rgba(255,255,255,.76);box-shadow:0 5px 12px rgba(15,23,42,.04)}.wc-pilot-science-numbers div::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--wc-phase-card)}.wc-pilot-science-numbers dt{color:color-mix(in srgb,var(--wc-phase-card) 72%,#075985)}.wc-pilot-model-note{padding:9px 10px;border:1px dashed rgba(100,116,139,.3);border-radius:10px;background:rgba(248,250,252,.7)}'
+      ,'.wc-pilot-ledger{--wc-phase-card:#14b8a6;border-color:rgba(20,184,166,.26);background:radial-gradient(circle at 100% 0,rgba(20,184,166,.12),transparent 30%),linear-gradient(145deg,rgba(248,255,253,.96),rgba(240,249,255,.84))}.wc-pilot-ledger[data-complete=true]{--wc-phase-card:#8b5cf6;background:radial-gradient(circle at 100% 0,rgba(139,92,246,.13),transparent 30%),linear-gradient(145deg,rgba(250,245,255,.92),rgba(240,253,250,.88))}.wc-pilot-ledger-head{align-items:center}.wc-pilot-ledger-head h4{margin:0;font-size:16px}.wc-pilot-ledger-head span{padding:4px 8px;border:1px solid rgba(14,116,144,.2);border-radius:999px;background:rgba(255,255,255,.7);font-size:11px;letter-spacing:.04em}.wc-pilot-ledger-progress{height:9px;margin:10px 0 11px;padding:2px;border-radius:999px;background:rgba(14,116,144,.12);box-shadow:inset 0 1px 3px rgba(15,23,42,.12)}.wc-pilot-ledger-progress i{display:block;height:100%;min-width:3px;border-radius:999px;background:linear-gradient(90deg,#14b8a6,#0ea5e9,#8b5cf6);box-shadow:0 0 11px rgba(14,165,233,.28);transition:width 220ms ease}.wc-pilot-ledger-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0 0 11px}.wc-pilot-ledger-list li{--wc-stage:#0ea5e9;position:relative;min-height:45px;padding:8px 9px;border-radius:11px;background:rgba(255,255,255,.68);box-shadow:0 4px 11px rgba(15,23,42,.04)}.wc-pilot-ledger-list li[data-stage=evaporation]{--wc-stage:#f59e0b}.wc-pilot-ledger-list li[data-stage=condensation]{--wc-stage:#06b6d4}.wc-pilot-ledger-list li[data-stage=precipitation]{--wc-stage:#2563eb}.wc-pilot-ledger-list li[data-stage=collection]{--wc-stage:#0284c7}.wc-pilot-ledger-list li[data-stage=infiltration]{--wc-stage:#a16207}.wc-pilot-ledger-list li[data-stage=transpiration]{--wc-stage:#16a34a}.wc-pilot-ledger-list li::after{content:"";position:absolute;inset:0 0 auto;height:2px;background:var(--wc-stage);opacity:.34}.wc-pilot-ledger-list li.is-done{border-color:color-mix(in srgb,var(--wc-stage) 46%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-stage) 11%,#fff),rgba(255,255,255,.84));color:#134e4a}.wc-pilot-ledger-list li.is-done::after{opacity:1}.wc-pilot-ledger-mark{display:grid;place-items:center;flex:0 0 22px;width:22px;height:22px;border:1px solid color-mix(in srgb,var(--wc-stage) 42%,transparent);border-radius:50%;background:rgba(255,255,255,.72);color:var(--wc-stage)}.wc-pilot-ledger-list li.is-done .wc-pilot-ledger-mark{background:var(--wc-stage);color:#fff;box-shadow:0 0 0 3px color-mix(in srgb,var(--wc-stage) 15%,transparent)}.wc-pilot-route-history{margin:11px 0;padding-top:11px}.wc-pilot-route-history>strong{letter-spacing:.09em}.wc-pilot-route-history ul{gap:7px}.wc-pilot-route-history li{--wc-route:#0ea5e9;position:relative;overflow:hidden;min-height:48px;padding:8px 9px 8px 12px;border-radius:10px;background:rgba(255,255,255,.6)}.wc-pilot-route-history li::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--wc-route);opacity:.45}.wc-pilot-route-history li[data-route=water]{--wc-route:#0284c7}.wc-pilot-route-history li[data-route=runoff]{--wc-route:#0ea5e9}.wc-pilot-route-history li[data-route=infiltration]{--wc-route:#a16207}.wc-pilot-route-history li[data-route=plant]{--wc-route:#16a34a}.wc-pilot-route-history li.is-tried{border-color:color-mix(in srgb,var(--wc-route) 42%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-route) 10%,#fff),rgba(255,255,255,.78));color:#0f4c5c}.wc-pilot-route-history li.is-tried::before{opacity:1}.wc-pilot-route-history b{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:color-mix(in srgb,var(--wc-route) 13%,#fff);color:color-mix(in srgb,var(--wc-route) 78%,#0f172a);font-size:12px}.wc-pilot-route-history p{padding:7px 9px;border-radius:8px;background:rgba(224,242,254,.64)}.wc-pilot-ledger-done,.wc-pilot-ledger-hint{padding:9px 10px;border-radius:9px;background:rgba(255,255,255,.58)}'
+      ,'.dark .wc-pilot-journey-guide{border-color:rgba(125,211,252,.25);background:radial-gradient(circle at 8% 0,rgba(56,189,248,.16),transparent 28%),radial-gradient(circle at 96% 100%,rgba(251,191,36,.11),transparent 30%),linear-gradient(145deg,rgba(8,47,73,.68),rgba(15,23,42,.7));box-shadow:0 16px 34px rgba(2,6,23,.3),inset 0 1px 0 rgba(255,255,255,.05)}.dark .wc-pilot-journey-step{background:rgba(15,23,42,.78);box-shadow:0 8px 18px rgba(2,6,23,.2)}.dark .wc-pilot-journey-step.is-last{background:linear-gradient(145deg,rgba(6,78,59,.55),rgba(15,23,42,.72))}.dark .wc-pilot-journey-step.is-now{background:linear-gradient(145deg,rgba(8,47,73,.82),rgba(15,23,42,.72))}.dark .wc-pilot-journey-step.is-next{background:linear-gradient(145deg,rgba(69,49,10,.68),rgba(15,23,42,.72))}.dark .wc-pilot-transition{background:radial-gradient(circle at 5% 20%,color-mix(in srgb,var(--wc-energy) 16%,transparent),transparent 24%),linear-gradient(135deg,rgba(15,23,42,.86),rgba(8,47,73,.66));box-shadow:0 14px 30px rgba(2,6,23,.28),inset 0 1px 0 rgba(255,255,255,.05)}.dark .wc-pilot-transition-form,.dark .wc-pilot-transition-evidence{background:rgba(15,23,42,.76);color:#e0f2fe}.dark .wc-pilot-transition-evidence strong{color:#f8fafc}.dark .wc-pilot-transition p{color:#cbd5e1}.dark .wc-pilot-science,.dark .wc-pilot-ledger{box-shadow:0 16px 34px rgba(2,6,23,.28),inset 0 1px 0 rgba(255,255,255,.05)}.dark .wc-pilot-science{background:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--wc-phase-card) 13%,transparent),transparent 28%),linear-gradient(145deg,rgba(8,47,73,.7),rgba(15,23,42,.75))}.dark .wc-pilot-ledger,.dark .wc-pilot-ledger[data-complete=true]{background:radial-gradient(circle at 100% 0,color-mix(in srgb,var(--wc-phase-card) 13%,transparent),transparent 30%),linear-gradient(145deg,rgba(6,78,59,.48),rgba(15,23,42,.76))}.dark .wc-pilot-science>p:not(.wc-pilot-model-note),.dark .wc-pilot-science-numbers div,.dark .wc-pilot-ledger-list li,.dark .wc-pilot-route-history li,.dark .wc-pilot-ledger-done,.dark .wc-pilot-ledger-hint{background:rgba(15,23,42,.64)}.dark .wc-pilot-model-note{border-color:rgba(148,163,184,.3);background:rgba(15,23,42,.5)}.dark .wc-pilot-ledger-head span{border-color:rgba(125,211,252,.2);background:rgba(15,23,42,.66)}.dark .wc-pilot-ledger-list li.is-done{background:linear-gradient(145deg,color-mix(in srgb,var(--wc-stage) 15%,#0f172a),rgba(15,23,42,.72));color:#d1fae5}.dark .wc-pilot-route-history li.is-tried{background:linear-gradient(145deg,color-mix(in srgb,var(--wc-route) 14%,#0f172a),rgba(15,23,42,.72));color:#cffafe}.dark .wc-pilot-route-history b{background:color-mix(in srgb,var(--wc-route) 18%,#0f172a);color:#f8fafc}.dark .wc-pilot-route-history p{background:rgba(8,47,73,.52)}'
+      ,'@keyframes wc-pilot-journey-now{0%,100%{box-shadow:0 0 0 3px rgba(14,165,233,.18)}50%{box-shadow:0 0 0 7px rgba(14,165,233,.08)}}@media(max-width:860px){.wc-pilot-learning-dashboard{grid-template-columns:1fr}}@media(max-width:700px){.wc-pilot-journey-steps{gap:8px}.wc-pilot-journey-steps::before{top:18px;bottom:18px;left:20px;right:auto;width:3px;height:auto;background:linear-gradient(180deg,#34d399,#38bdf8 52%,#fbbf24)}.wc-pilot-journey-step{min-height:0;padding:11px 11px 11px 48px}.wc-pilot-journey-step::before{top:50%;left:20px;transform:translate(-50%,-50%)}.wc-pilot-journey-step::after{top:50%;left:20px;transform:translate(-50%,-50%)}.wc-pilot-transition{padding-left:54px}.wc-pilot-ledger-list{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:460px){.wc-pilot-transition{grid-template-columns:1fr;padding:13px 12px 13px 48px}.wc-pilot-transition::before{left:13px;width:24px;height:24px}.wc-pilot-science,.wc-pilot-ledger{padding:13px}.wc-pilot-ledger-list{grid-template-columns:1fr}.wc-pilot-science-numbers{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(prefers-reduced-motion:reduce){.wc-pilot-journey-step.is-now::before{animation:none!important}.wc-pilot-ledger-progress i{transition:none!important}}@media(forced-colors:active){.wc-pilot-journey-guide,.wc-pilot-journey-step,.wc-pilot-transition,.wc-pilot-transition-form,.wc-pilot-transition-evidence,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-science-numbers div,.wc-pilot-ledger-list li,.wc-pilot-route-history li,.wc-pilot-ledger-progress{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-journey-guide::before,.wc-pilot-journey-steps::before,.wc-pilot-journey-step::after,.wc-pilot-transition::after,.wc-pilot-science::before,.wc-pilot-ledger::before,.wc-pilot-ledger-list li::after,.wc-pilot-route-history li::before{display:none}.wc-pilot-journey-step::before,.wc-pilot-transition::before,.wc-pilot-science h4::before,.wc-pilot-ledger-mark,.wc-pilot-ledger-progress i{border:1px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-transition-kicker,.wc-pilot-transition-evidence strong,.wc-pilot-transition-evidence span,.wc-pilot-science h4,.wc-pilot-science p,.wc-pilot-science-numbers dt,.wc-pilot-science-numbers dd,.wc-pilot-model-note,.wc-pilot-ledger-head h4,.wc-pilot-ledger-head span,.wc-pilot-ledger-list li,.wc-pilot-ledger-done,.wc-pilot-ledger-hint,.wc-pilot-route-history strong,.wc-pilot-route-history span,.wc-pilot-route-history small,.wc-pilot-route-history b,.wc-pilot-route-history p{color:CanvasText}}'
+      ,'.wc-pilot-compare-lab{--wc-compare-water:#0284c7;--wc-compare-mint:#14b8a6;--wc-compare-violet:#7c3aed;position:relative;isolation:isolate;overflow:hidden;margin-top:14px;padding:18px;border:1px solid rgba(2,132,199,.25);border-radius:22px;background:radial-gradient(circle at 9% 5%,rgba(125,211,252,.25),transparent 25%),radial-gradient(circle at 94% 0,rgba(196,181,253,.22),transparent 25%),linear-gradient(145deg,rgba(248,253,255,.98),rgba(239,250,250,.9) 50%,rgba(250,245,255,.9));box-shadow:0 20px 42px rgba(15,23,42,.1),inset 0 1px 0 rgba(255,255,255,.95)}.wc-pilot-compare-lab::before{content:"";position:absolute;z-index:-1;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#0ea5e9,#14b8a6 31%,#8b5cf6 68%,#f59e0b)}.wc-pilot-compare-lab::after{content:"";position:absolute;z-index:-1;right:-55px;bottom:-75px;width:220px;height:220px;border:1px solid rgba(14,165,233,.13);border-radius:50%;box-shadow:0 0 0 24px rgba(20,184,166,.045),0 0 0 50px rgba(124,58,237,.035)}.wc-pilot-compare-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:14px}.wc-pilot-compare-title{display:flex;align-items:flex-start;gap:12px;min-width:0}.wc-pilot-compare-mark{position:relative;flex:0 0 44px;width:44px;height:48px;margin-top:1px;border:2px solid rgba(255,255,255,.82);border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:conic-gradient(from 205deg,#0284c7,#22d3ee,#14b8a6,#8b5cf6,#0284c7);transform:rotate(38deg);box-shadow:0 9px 20px rgba(2,132,199,.28),inset 8px 8px 12px rgba(255,255,255,.25);animation:wc-pilot-compare-breathe 4.8s ease-in-out infinite}.wc-pilot-compare-mark::before{content:"";position:absolute;top:8px;left:9px;width:10px;height:15px;border-radius:50%;background:rgba(255,255,255,.66);filter:blur(.3px)}.wc-pilot-compare-mark::after{content:"";position:absolute;right:6px;bottom:8px;width:6px;height:6px;border-radius:50%;background:#fef3c7;box-shadow:-9px 3px 0 #a7f3d0,-17px 1px 0 #bae6fd}.wc-pilot-compare-kicker{display:block;margin:1px 0 3px;color:#0369a1;font-size:10px;font-weight:950;letter-spacing:.12em;text-transform:uppercase}.wc-pilot-compare-title h3{margin:0;color:#0f172a;font-size:clamp(18px,2.2vw,24px);line-height:1.1;letter-spacing:-.02em}.wc-pilot-compare-title p{max-width:720px;margin:5px 0 0;color:#475569;font-size:11px;line-height:1.45}.wc-pilot-compare-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px;flex-wrap:wrap}.wc-pilot-compare-btn,.wc-pilot-compare-run{min-height:42px;padding:8px 11px;border:1px solid rgba(3,105,161,.45);border-radius:10px;background:rgba(255,255,255,.78);color:#075985;font:inherit;font-size:10.5px;font-weight:900;line-height:1.2;cursor:pointer;box-shadow:0 4px 10px rgba(15,23,42,.06);transition:transform 160ms ease,box-shadow 160ms ease,background 160ms ease}.wc-pilot-compare-btn.is-primary{border-color:#0369a1;background:linear-gradient(135deg,#0369a1,#0f766e);color:#fff;box-shadow:0 7px 16px rgba(3,105,161,.2)}.wc-pilot-compare-btn:not(:disabled):hover,.wc-pilot-compare-run:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 8px 17px rgba(15,23,42,.12)}.wc-pilot-compare-btn.is-primary:not(:disabled):hover{background:linear-gradient(135deg,#075985,#115e59)}.wc-pilot-compare-btn:focus-visible,.wc-pilot-compare-run:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-compare-btn:disabled,.wc-pilot-compare-run:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}.wc-pilot-compare-insights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:14px 0 12px}.wc-pilot-compare-insights article{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:center;min-height:74px;padding:10px 11px;border:1px solid rgba(2,132,199,.2);border-radius:14px;background:rgba(255,255,255,.66);box-shadow:0 7px 16px rgba(15,23,42,.045)}.wc-pilot-compare-insights article[data-insight=freezing]{border-color:rgba(124,58,237,.2);background:linear-gradient(135deg,rgba(255,255,255,.75),rgba(245,243,255,.7))}.wc-pilot-compare-insight-icon{position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:62% 38% 66% 34%/68% 42% 58% 32%;background:linear-gradient(145deg,#38bdf8,#0284c7);transform:rotate(35deg);box-shadow:0 6px 13px rgba(2,132,199,.2)}.wc-pilot-compare-insight-icon::after{content:"";width:9px;height:13px;border-radius:50%;background:rgba(255,255,255,.62);transform:rotate(-35deg)}.wc-pilot-compare-insights article[data-insight=freezing] .wc-pilot-compare-insight-icon{border-radius:50%;background:linear-gradient(145deg,#a78bfa,#6366f1);transform:none;box-shadow:0 6px 13px rgba(99,102,241,.22)}.wc-pilot-compare-insights article[data-insight=freezing] .wc-pilot-compare-insight-icon::after{content:"✦";width:auto;height:auto;background:none;color:#fff;font-size:20px;line-height:1;transform:none}.wc-pilot-compare-insights strong{display:block;color:#0f172a;font-size:11.5px;line-height:1.25}.wc-pilot-compare-insights p{margin:3px 0 0;color:#475569;font-size:10px;line-height:1.4}.wc-pilot-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;align-items:stretch}.wc-pilot-compare-card{--wc-compare-accent:#0ea5e9;position:relative;display:grid;grid-template-rows:92px minmax(0,1fr);min-width:0;overflow:hidden;border:1px solid rgba(100,116,139,.22);border-radius:16px;background:rgba(255,255,255,.8);box-shadow:0 10px 22px rgba(15,23,42,.07);transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease}.wc-pilot-compare-card[data-scenario=tropicalOcean]{--wc-compare-accent:#0d9488}.wc-pilot-compare-card[data-scenario=temperateCoast]{--wc-compare-accent:#0284c7}.wc-pilot-compare-card[data-scenario=mountainWinter]{--wc-compare-accent:#6366f1}.wc-pilot-compare-card[data-scenario=desertBasin]{--wc-compare-accent:#d97706}.wc-pilot-compare-card::before{content:"";position:absolute;z-index:3;inset:0 0 auto;height:3px;background:var(--wc-compare-accent);opacity:.38}.wc-pilot-compare-card[data-evidence=pinned]::before{opacity:1;background:linear-gradient(90deg,var(--wc-compare-accent),#14b8a6,#8b5cf6)}.wc-pilot-compare-card[data-current=true]{border-color:#0284c7;box-shadow:0 0 0 2px rgba(14,165,233,.18),0 15px 30px rgba(2,132,199,.15)}.wc-pilot-compare-card[data-current=true]::after{content:"";position:absolute;z-index:4;top:9px;left:9px;width:9px;height:9px;border:2px solid rgba(255,255,255,.9);border-radius:50%;background:#22d3ee;box-shadow:0 0 0 4px rgba(34,211,238,.24),0 0 13px #67e8f9;animation:wc-pilot-compare-live 2.2s ease-in-out infinite}.wc-pilot-compare-card[data-evidence=empty]:not([data-current=true]){background:rgba(248,250,252,.7)}.wc-pilot-compare-card:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(15,23,42,.11)}.wc-pilot-compare-sky{position:relative!important;inset:auto!important;display:block!important;width:100%;height:92px;overflow:hidden;border:0;border-radius:0;background:linear-gradient(#7dd3fc,#e0f2fe);pointer-events:none}.wc-pilot-compare-sky::after{content:"";position:absolute;z-index:2;inset:auto 0 0;height:22px;background:linear-gradient(180deg,transparent,rgba(15,23,42,.08))}.wc-pilot-compare-sky .wc-pilot-scenario-sun{top:13px;left:14px;width:26px;height:26px}.wc-pilot-compare-sky .wc-pilot-scenario-cloud{top:24px;right:14px;left:auto;transform:scale(.82);transform-origin:100% 50%}.wc-pilot-compare-sky .wc-pilot-scenario-land{height:31px}.wc-pilot-compare-card[data-scenario=tropicalOcean] .wc-pilot-compare-sky{background:linear-gradient(180deg,#67e8f9,#cffafe 63%,#5eead4 64%,#0284c7)}.wc-pilot-compare-card[data-scenario=tropicalOcean] .wc-pilot-scenario-land{background:linear-gradient(7deg,#0369a1 0 30%,#14b8a6 31% 58%,transparent 59%)}.wc-pilot-compare-card[data-scenario=temperateCoast] .wc-pilot-compare-sky{background:linear-gradient(180deg,#93c5fd,#e0f2fe 62%,#7dd3fc 63%,#0284c7)}.wc-pilot-compare-card[data-scenario=temperateCoast] .wc-pilot-scenario-land{background:linear-gradient(12deg,#166534 0 38%,#4ade80 39% 58%,transparent 59%)}.wc-pilot-compare-card[data-scenario=mountainWinter] .wc-pilot-compare-sky{background:linear-gradient(180deg,#c4b5fd,#e0e7ff 62%,#dbeafe)}.wc-pilot-compare-card[data-scenario=mountainWinter] .wc-pilot-scenario-land{height:44px;background:linear-gradient(142deg,transparent 0 31%,#64748b 32% 48%,#f8fafc 49% 62%,transparent 63%),linear-gradient(38deg,#94a3b8 0 36%,#fff 37% 55%,transparent 56%)}.wc-pilot-compare-card[data-scenario=mountainWinter] .wc-pilot-scenario-sun{opacity:.68}.wc-pilot-compare-card[data-scenario=desertBasin] .wc-pilot-compare-sky{background:linear-gradient(180deg,#fdba74,#ffedd5 65%,#fbbf24)}.wc-pilot-compare-card[data-scenario=desertBasin] .wc-pilot-scenario-land{height:36px;background:linear-gradient(12deg,#b45309 0 39%,#f59e0b 40% 61%,transparent 62%)}.wc-pilot-compare-card[data-scenario=desertBasin] .wc-pilot-scenario-cloud{opacity:.45;transform:scale(.62);transform-origin:100% 50%}.wc-pilot-compare-card-body{display:flex;flex-direction:column;min-width:0;padding:11px}.wc-pilot-compare-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:6px}.wc-pilot-compare-card-head>strong{min-width:0;color:#0f172a;font-size:12.5px;line-height:1.2}.wc-pilot-compare-card-head>span{flex:0 0 auto;padding:3px 6px;border:1px solid rgba(100,116,139,.24);border-radius:999px;background:#f1f5f9;color:#64748b;font-size:8.5px;font-weight:950;letter-spacing:.04em;text-transform:uppercase}.wc-pilot-compare-card-head>span[data-state=pinned]{border-color:rgba(13,148,136,.32);background:#ccfbf1;color:#115e59}.wc-pilot-compare-card-head>span[data-state=live]{border-color:rgba(2,132,199,.35);background:#e0f2fe;color:#075985}.wc-pilot-compare-climate,.wc-pilot-compare-evidence dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:10px 0 0}.wc-pilot-compare-climate>div,.wc-pilot-compare-evidence dl>div{min-width:0;padding:6px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(248,250,252,.72)}.wc-pilot-compare-climate dt,.wc-pilot-compare-evidence dt{color:#64748b;font-size:8px;font-weight:900;letter-spacing:.05em;text-transform:uppercase}.wc-pilot-compare-climate dd,.wc-pilot-compare-evidence dd{margin:2px 0 0;color:#0f172a;font-size:10.5px;font-weight:950;line-height:1.2;overflow-wrap:anywhere}.wc-pilot-compare-evidence{min-height:105px;margin:9px 0;padding:8px;border:1px dashed rgba(2,132,199,.28);border-radius:10px;background:linear-gradient(145deg,rgba(224,242,254,.58),rgba(240,253,250,.52))}.wc-pilot-compare-evidence[data-state=pinned]{border-style:solid;border-color:rgba(13,148,136,.28);background:linear-gradient(145deg,rgba(204,251,241,.68),rgba(237,233,254,.5))}.wc-pilot-compare-evidence[data-state=empty]{display:grid;align-content:center;border-color:rgba(100,116,139,.22);background:rgba(248,250,252,.62)}.wc-pilot-compare-evidence-label{display:block;color:#0369a1;font-size:8.5px;font-weight:950;letter-spacing:.07em;text-transform:uppercase}.wc-pilot-compare-evidence[data-state=pinned] .wc-pilot-compare-evidence-label{color:#0f766e}.wc-pilot-compare-evidence p{margin:6px 0 0;color:#64748b;font-size:9.5px;line-height:1.35}.wc-pilot-compare-evidence dl{margin-top:6px}.wc-pilot-compare-evidence dl>div{padding:5px 6px;background:rgba(255,255,255,.55)}.wc-pilot-compare-run{width:100%;margin-top:auto;border-color:color-mix(in srgb,var(--wc-compare-accent) 55%,#94a3b8);background:color-mix(in srgb,var(--wc-compare-accent) 8%,#fff);color:color-mix(in srgb,var(--wc-compare-accent) 75%,#0f172a)}.wc-pilot-compare-run:not(:disabled):hover{background:var(--wc-compare-accent);color:#fff}.wc-pilot-compare-run:disabled{border-color:rgba(2,132,199,.28);background:#e0f2fe;color:#075985;opacity:1}.dark .wc-pilot-compare-lab{border-color:rgba(56,189,248,.24);background:radial-gradient(circle at 9% 5%,rgba(14,165,233,.16),transparent 27%),radial-gradient(circle at 94% 0,rgba(139,92,246,.15),transparent 27%),linear-gradient(145deg,rgba(3,18,31,.98),rgba(8,47,73,.91) 52%,rgba(30,27,75,.78));box-shadow:0 22px 46px rgba(2,6,23,.42),inset 0 1px 0 rgba(186,230,253,.08)}.dark .wc-pilot-compare-kicker{color:#7dd3fc}.dark .wc-pilot-compare-title h3,.dark .wc-pilot-compare-card-head>strong,.dark .wc-pilot-compare-climate dd,.dark .wc-pilot-compare-evidence dd,.dark .wc-pilot-compare-insights strong{color:#f8fafc}.dark .wc-pilot-compare-title p,.dark .wc-pilot-compare-insights p,.dark .wc-pilot-compare-evidence p{color:#cbd5e1}.dark .wc-pilot-compare-btn,.dark .wc-pilot-compare-run{border-color:rgba(125,211,252,.38);background:rgba(15,23,42,.72);color:#bae6fd;box-shadow:0 6px 14px rgba(2,6,23,.22)}.dark .wc-pilot-compare-btn.is-primary{border-color:#38bdf8;background:linear-gradient(135deg,#0369a1,#0f766e);color:#fff}.dark .wc-pilot-compare-insights article{border-color:rgba(56,189,248,.2);background:rgba(15,23,42,.58)}.dark .wc-pilot-compare-insights article[data-insight=freezing]{border-color:rgba(167,139,250,.24);background:linear-gradient(135deg,rgba(15,23,42,.65),rgba(49,46,129,.32))}.dark .wc-pilot-compare-card{border-color:rgba(148,163,184,.22);background:rgba(15,23,42,.78);box-shadow:0 13px 26px rgba(2,6,23,.3)}.dark .wc-pilot-compare-card[data-current=true]{border-color:#38bdf8;box-shadow:0 0 0 2px rgba(56,189,248,.15),0 17px 32px rgba(2,6,23,.4)}.dark .wc-pilot-compare-card[data-evidence=empty]:not([data-current=true]){background:rgba(15,23,42,.62)}.dark .wc-pilot-compare-card-head>span{border-color:rgba(148,163,184,.28);background:#1e293b;color:#cbd5e1}.dark .wc-pilot-compare-card-head>span[data-state=pinned]{border-color:rgba(45,212,191,.34);background:rgba(15,118,110,.42);color:#99f6e4}.dark .wc-pilot-compare-card-head>span[data-state=live]{border-color:rgba(56,189,248,.35);background:rgba(3,105,161,.42);color:#bae6fd}.dark .wc-pilot-compare-climate>div,.dark .wc-pilot-compare-evidence dl>div{border-color:rgba(148,163,184,.16);background:rgba(15,23,42,.52)}.dark .wc-pilot-compare-climate dt,.dark .wc-pilot-compare-evidence dt{color:#94a3b8}.dark .wc-pilot-compare-evidence{border-color:rgba(56,189,248,.27);background:linear-gradient(145deg,rgba(8,47,73,.6),rgba(15,118,110,.22))}.dark .wc-pilot-compare-evidence[data-state=pinned]{border-color:rgba(45,212,191,.3);background:linear-gradient(145deg,rgba(15,118,110,.34),rgba(76,29,149,.22))}.dark .wc-pilot-compare-evidence[data-state=empty]{border-color:rgba(148,163,184,.2);background:rgba(15,23,42,.45)}.dark .wc-pilot-compare-evidence-label{color:#7dd3fc}.dark .wc-pilot-compare-evidence[data-state=pinned] .wc-pilot-compare-evidence-label{color:#5eead4}.dark .wc-pilot-compare-run{border-color:color-mix(in srgb,var(--wc-compare-accent) 62%,#64748b);background:color-mix(in srgb,var(--wc-compare-accent) 15%,#0f172a);color:#e0f2fe}.dark .wc-pilot-compare-run:disabled{border-color:rgba(56,189,248,.28);background:rgba(3,105,161,.32);color:#bae6fd}@keyframes wc-pilot-compare-breathe{0%,100%{filter:saturate(1);box-shadow:0 9px 20px rgba(2,132,199,.28),inset 8px 8px 12px rgba(255,255,255,.25)}50%{filter:saturate(1.18) brightness(1.05);box-shadow:0 11px 25px rgba(124,58,237,.25),inset 8px 8px 12px rgba(255,255,255,.32)}}@keyframes wc-pilot-compare-live{0%,100%{transform:scale(.9);box-shadow:0 0 0 3px rgba(34,211,238,.22),0 0 10px #67e8f9}50%{transform:scale(1.08);box-shadow:0 0 0 6px rgba(34,211,238,.12),0 0 17px #67e8f9}}@media(max-width:1040px){.wc-pilot-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:760px){.wc-pilot-compare-head{grid-template-columns:1fr}.wc-pilot-compare-actions{justify-content:flex-start}.wc-pilot-compare-insights{grid-template-columns:1fr}}@media(max-width:560px){.wc-pilot-compare-lab{padding:14px;border-radius:17px}.wc-pilot-compare-title{gap:9px}.wc-pilot-compare-mark{flex-basis:36px;width:36px;height:40px}.wc-pilot-compare-title p{font-size:10.5px}.wc-pilot-compare-actions{display:grid;grid-template-columns:1fr;width:100%}.wc-pilot-compare-btn{width:100%}.wc-pilot-compare-grid{grid-template-columns:1fr}.wc-pilot-compare-card{grid-template-columns:112px minmax(0,1fr);grid-template-rows:1fr}.wc-pilot-compare-sky{height:100%;min-height:292px}.wc-pilot-compare-card-body{padding:10px}.wc-pilot-compare-insights article{min-height:0}.wc-pilot-compare-lab::after{display:none}}@media(max-width:410px){.wc-pilot-compare-card{grid-template-columns:1fr;grid-template-rows:78px minmax(0,1fr)}.wc-pilot-compare-sky{height:78px;min-height:0}.wc-pilot-compare-climate,.wc-pilot-compare-evidence dl{grid-template-columns:1fr 1fr}}@media(prefers-reduced-motion:reduce){.wc-pilot-compare-mark,.wc-pilot-compare-card[data-current=true]::after{animation:none!important}.wc-pilot-compare-card,.wc-pilot-compare-btn,.wc-pilot-compare-run{transition:none!important}.wc-pilot-compare-card:hover,.wc-pilot-compare-btn:not(:disabled):hover,.wc-pilot-compare-run:not(:disabled):hover{transform:none}}@media(forced-colors:active){.wc-pilot-compare-lab,.wc-pilot-compare-insights article,.wc-pilot-compare-card,.wc-pilot-compare-climate>div,.wc-pilot-compare-evidence,.wc-pilot-compare-evidence dl>div,.wc-pilot-compare-btn,.wc-pilot-compare-run,.wc-pilot-compare-card-head>span{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-compare-lab::before,.wc-pilot-compare-lab::after,.wc-pilot-compare-card::before,.wc-pilot-compare-card[data-current=true]::after{display:none}.wc-pilot-compare-mark,.wc-pilot-compare-insight-icon{border:2px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-compare-kicker,.wc-pilot-compare-title h3,.wc-pilot-compare-title p,.wc-pilot-compare-insights strong,.wc-pilot-compare-insights p,.wc-pilot-compare-card-head>strong,.wc-pilot-compare-climate dt,.wc-pilot-compare-climate dd,.wc-pilot-compare-evidence-label,.wc-pilot-compare-evidence dt,.wc-pilot-compare-evidence dd,.wc-pilot-compare-evidence p{color:CanvasText}.wc-pilot-compare-btn.is-primary,.wc-pilot-compare-run:not(:disabled),.wc-pilot-compare-card-head>span[data-state=pinned],.wc-pilot-compare-card-head>span[data-state=live]{background:Highlight;color:HighlightText}.wc-pilot-compare-card[data-current=true],.wc-pilot-compare-card[data-evidence=pinned]{outline:2px solid Highlight;outline-offset:2px}.wc-pilot-compare-sky{display:none!important}.wc-pilot-compare-card{grid-template-rows:auto}.wc-pilot-compare-card[data-current=true]::after{display:none}}'
+      ,'.wc-pilot-compare-mission{position:relative;overflow:hidden;margin:14px 0 12px;padding:14px;border:1px solid rgba(14,116,144,.24);border-radius:16px;background:radial-gradient(circle at 100% 0,rgba(125,211,252,.2),transparent 30%),linear-gradient(135deg,rgba(240,249,255,.88),rgba(240,253,250,.78));box-shadow:0 10px 23px rgba(15,23,42,.06),inset 0 1px 0 rgba(255,255,255,.9)}.wc-pilot-compare-mission::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#0284c7,#14b8a6,#8b5cf6);opacity:.82}.wc-pilot-compare-mission[data-complete=true]::before{background:linear-gradient(90deg,#10b981,#22d3ee,#8b5cf6,#f59e0b)}.wc-pilot-compare-mission-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.wc-pilot-compare-mission-kicker{display:block;margin-bottom:2px;color:#0e7490;font-size:8.5px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.wc-pilot-compare-mission-head strong{display:block;color:#0f172a;font-size:13px;line-height:1.25}.wc-pilot-compare-mission-state{flex:0 0 auto;padding:4px 8px;border:1px solid rgba(14,116,144,.24);border-radius:999px;background:rgba(255,255,255,.76);color:#0e7490;font-size:8.5px;font-weight:950;letter-spacing:.05em;text-transform:uppercase}.wc-pilot-compare-mission[data-complete=true] .wc-pilot-compare-mission-state{border-color:rgba(16,185,129,.34);background:#d1fae5;color:#047857}.wc-pilot-compare-progress{height:9px;margin:10px 0 11px;padding:2px;border-radius:999px;background:rgba(14,116,144,.12);box-shadow:inset 0 1px 3px rgba(15,23,42,.13);overflow:hidden}.wc-pilot-compare-progress i{display:block;height:100%;min-width:2px;border-radius:inherit;background:linear-gradient(90deg,#0284c7,#14b8a6 45%,#8b5cf6 75%,#f59e0b);box-shadow:0 0 12px rgba(14,165,233,.35);transition:width 280ms cubic-bezier(.2,.8,.2,1)}.wc-pilot-compare-checklist{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-compare-checklist::before{content:"";position:absolute;top:17px;left:7%;right:7%;height:2px;background:linear-gradient(90deg,rgba(13,148,136,.26),rgba(2,132,199,.26),rgba(99,102,241,.26),rgba(217,119,6,.26))}.wc-pilot-compare-checklist li{--wc-mission-accent:#0284c7;position:relative;z-index:1;display:grid;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:7px;min-width:0;min-height:54px;padding:7px;border:1px solid rgba(100,116,139,.18);border-radius:11px;background:rgba(255,255,255,.7)}.wc-pilot-compare-checklist li[data-scenario=tropicalOcean]{--wc-mission-accent:#0d9488}.wc-pilot-compare-checklist li[data-scenario=temperateCoast]{--wc-mission-accent:#0284c7}.wc-pilot-compare-checklist li[data-scenario=mountainWinter]{--wc-mission-accent:#6366f1}.wc-pilot-compare-checklist li[data-scenario=desertBasin]{--wc-mission-accent:#d97706}.wc-pilot-compare-checklist li>span{position:relative;display:grid;place-items:center;width:26px;height:29px;border:2px solid color-mix(in srgb,var(--wc-mission-accent) 48%,#fff);border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:#fff;transform:rotate(38deg);box-shadow:0 4px 9px rgba(15,23,42,.09)}.wc-pilot-compare-checklist li>span::after{content:"";display:block;width:7px;height:7px;border-radius:50%;background:rgba(100,116,139,.32);transform:rotate(-38deg)}.wc-pilot-compare-checklist li[data-state=pinned]{border-color:color-mix(in srgb,var(--wc-mission-accent) 34%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-mission-accent) 8%,#fff),rgba(255,255,255,.82))}.wc-pilot-compare-checklist li[data-state=pinned]>span{background:linear-gradient(145deg,var(--wc-mission-accent),#14b8a6);box-shadow:0 5px 11px color-mix(in srgb,var(--wc-mission-accent) 25%,transparent)}.wc-pilot-compare-checklist li[data-state=pinned]>span::after{content:"✓";width:auto;height:auto;background:none;color:#fff;font-size:11px;font-weight:950;line-height:1}.wc-pilot-compare-checklist li[data-state=current]{border-color:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.12)}.wc-pilot-compare-checklist li[data-state=current]>span{background:#e0f2fe;animation:wc-pilot-compare-mission-live 2.2s ease-in-out infinite}.wc-pilot-compare-checklist li[data-state=current]>span::after{background:#0ea5e9;box-shadow:0 0 8px #38bdf8}.wc-pilot-compare-checklist li strong,.wc-pilot-compare-checklist li small{display:block;min-width:0;overflow:hidden;text-overflow:ellipsis}.wc-pilot-compare-checklist li strong{color:#0f172a;font-size:9.5px;line-height:1.2;white-space:nowrap}.wc-pilot-compare-checklist li small{margin-top:2px;color:#64748b;font-size:8px;line-height:1.2}.wc-pilot-compare-checklist li[data-state=pinned] small{color:#0f766e;font-weight:850}.wc-pilot-compare-checklist li[data-state=current] small{color:#0369a1;font-weight:850}.wc-pilot-compare-fair-test{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 8px;align-items:center;margin:10px 0 0;padding:8px 10px 8px 36px;border:1px solid rgba(217,119,6,.22);border-radius:10px;background:linear-gradient(110deg,rgba(255,251,235,.9),rgba(254,243,199,.6));color:#78350f}.wc-pilot-compare-fair-test::before{content:"=";position:absolute;left:10px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#f59e0b;color:#fff;font-size:13px;font-weight:950;box-shadow:0 4px 9px rgba(217,119,6,.2)}.wc-pilot-compare-fair-test strong{font-size:9px;letter-spacing:.04em;text-transform:uppercase}.wc-pilot-compare-fair-test span{color:#92400e;font-size:9.5px;line-height:1.35}.wc-pilot-compare-next{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:9px;margin-top:8px;padding:8px 9px;border-left:3px solid #7c3aed;border-radius:9px;background:linear-gradient(110deg,rgba(245,243,255,.86),rgba(224,242,254,.6));color:#4c1d95}.wc-pilot-compare-next>span{font-size:9.5px;font-weight:850;line-height:1.35}.wc-pilot-compare-next button{min-height:36px;padding:6px 9px;border:1px solid #7c3aed;border-radius:8px;background:#6d28d9;color:#fff;font:inherit;font-size:9.5px;font-weight:950;cursor:pointer}.wc-pilot-compare-next button:hover{background:#5b21b6}.wc-pilot-compare-next button:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-compare-synthesis{position:relative;overflow:hidden;margin-top:12px;padding:14px;border:1px solid rgba(99,102,241,.25);border-radius:17px;background:radial-gradient(circle at 100% 0,rgba(167,139,250,.2),transparent 28%),linear-gradient(140deg,rgba(250,250,255,.94),rgba(240,249,255,.84));box-shadow:0 12px 27px rgba(15,23,42,.07),inset 0 1px 0 rgba(255,255,255,.9)}.wc-pilot-compare-synthesis::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#7c3aed,#0ea5e9,#14b8a6)}.wc-pilot-compare-synthesis[data-complete=true]::before{background:linear-gradient(90deg,#10b981,#22d3ee,#8b5cf6,#f59e0b)}.wc-pilot-compare-synthesis-head{display:flex;align-items:center;gap:9px;margin-bottom:10px}.wc-pilot-compare-synthesis-seal{position:relative;flex:0 0 34px;width:34px;height:37px;border:2px solid #fff;border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:conic-gradient(from 200deg,#7c3aed,#0ea5e9,#14b8a6,#7c3aed);transform:rotate(38deg);box-shadow:0 6px 14px rgba(99,102,241,.24)}.wc-pilot-compare-synthesis-seal::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:14px;font-weight:950;transform:rotate(-38deg)}.wc-pilot-compare-synthesis-kicker{display:block;color:#6d28d9;font-size:8.5px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.wc-pilot-compare-synthesis h4{margin:2px 0 0;color:#0f172a;font-size:15px;line-height:1.2}.wc-pilot-compare-cer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.wc-pilot-compare-cer article{--wc-cer:#7c3aed;position:relative;overflow:hidden;min-height:104px;padding:10px;border:1px solid color-mix(in srgb,var(--wc-cer) 22%,transparent);border-radius:11px;background:rgba(255,255,255,.74);box-shadow:0 5px 13px rgba(15,23,42,.045);animation:wc-pilot-compare-synthesis-in 280ms ease-out both}.wc-pilot-compare-cer article:nth-child(2){--wc-cer:#0284c7;animation-delay:70ms}.wc-pilot-compare-cer article:nth-child(3){--wc-cer:#0d9488;animation-delay:140ms}.wc-pilot-compare-cer article::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--wc-cer)}.wc-pilot-compare-cer article>span{display:block;color:var(--wc-cer);font-size:8.5px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}.wc-pilot-compare-cer article p{margin:6px 0 0;color:#334155;font-size:10px;font-weight:750;line-height:1.45}.wc-pilot-compare-method-note{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;margin:9px 0 0;padding:8px 9px;border-left:3px solid #f59e0b;border-radius:8px;background:rgba(255,251,235,.72)}.wc-pilot-compare-method-note strong{color:#92400e;font-size:9px;text-transform:uppercase}.wc-pilot-compare-method-note span{color:#78350f;font-size:9.5px;line-height:1.35}.wc-pilot-compare-complete{position:relative;margin:9px 0 0;padding:9px 10px 9px 34px;border:1px solid rgba(16,185,129,.3);border-radius:9px;background:linear-gradient(110deg,rgba(209,250,229,.86),rgba(224,242,254,.68));color:#065f46;font-size:10px;font-weight:900;line-height:1.35}.wc-pilot-compare-complete::before{content:"✓";position:absolute;left:10px;top:50%;display:grid;place-items:center;width:17px;height:17px;border-radius:50%;background:#10b981;color:#fff;transform:translateY(-50%)}.wc-pilot-compare-synthesis[data-ready=false]{border-style:dashed;background:linear-gradient(135deg,rgba(248,250,252,.82),rgba(241,245,249,.7));box-shadow:none}.wc-pilot-compare-synthesis[data-ready=false]::before{background:linear-gradient(90deg,#94a3b8,transparent)}.wc-pilot-compare-synthesis-locked{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;min-height:72px}.wc-pilot-compare-synthesis-locked>span{position:relative;width:34px;height:34px;border:2px solid #94a3b8;border-radius:50%;background:rgba(255,255,255,.7)}.wc-pilot-compare-synthesis-locked>span::before{content:"";position:absolute;top:6px;left:9px;width:12px;height:10px;border:3px solid #64748b;border-bottom:0;border-radius:8px 8px 0 0}.wc-pilot-compare-synthesis-locked>span::after{content:"";position:absolute;left:7px;bottom:5px;width:16px;height:14px;border-radius:4px;background:#64748b}.wc-pilot-compare-synthesis-locked h4{margin:0;color:#334155;font-size:13px}.wc-pilot-compare-synthesis-locked p{margin:3px 0 0;color:#64748b;font-size:9.5px;line-height:1.4}.dark .wc-pilot-compare-mission{border-color:rgba(56,189,248,.22);background:radial-gradient(circle at 100% 0,rgba(56,189,248,.12),transparent 30%),linear-gradient(135deg,rgba(8,47,73,.58),rgba(6,78,59,.32));box-shadow:0 12px 25px rgba(2,6,23,.25),inset 0 1px 0 rgba(186,230,253,.07)}.dark .wc-pilot-compare-mission-kicker{color:#7dd3fc}.dark .wc-pilot-compare-mission-head strong,.dark .wc-pilot-compare-checklist li strong,.dark .wc-pilot-compare-synthesis h4{color:#f8fafc}.dark .wc-pilot-compare-mission-state{border-color:rgba(125,211,252,.26);background:rgba(15,23,42,.65);color:#bae6fd}.dark .wc-pilot-compare-mission[data-complete=true] .wc-pilot-compare-mission-state{border-color:rgba(52,211,153,.34);background:rgba(6,78,59,.55);color:#a7f3d0}.dark .wc-pilot-compare-progress{background:rgba(148,163,184,.18)}.dark .wc-pilot-compare-checklist li{border-color:rgba(148,163,184,.18);background:rgba(15,23,42,.62)}.dark .wc-pilot-compare-checklist li[data-state=pinned]{background:linear-gradient(145deg,color-mix(in srgb,var(--wc-mission-accent) 16%,#0f172a),rgba(15,23,42,.72))}.dark .wc-pilot-compare-checklist li[data-state=current]{border-color:#38bdf8}.dark .wc-pilot-compare-checklist li>span{border-color:color-mix(in srgb,var(--wc-mission-accent) 55%,#cbd5e1);background:#1e293b}.dark .wc-pilot-compare-checklist li small{color:#94a3b8}.dark .wc-pilot-compare-checklist li[data-state=pinned] small{color:#5eead4}.dark .wc-pilot-compare-checklist li[data-state=current] small{color:#7dd3fc}.dark .wc-pilot-compare-fair-test{border-color:rgba(251,191,36,.25);background:linear-gradient(110deg,rgba(69,26,3,.56),rgba(120,53,15,.28));color:#fde68a}.dark .wc-pilot-compare-fair-test span{color:#fef3c7}.dark .wc-pilot-compare-next{border-left-color:#a78bfa;background:linear-gradient(110deg,rgba(49,46,129,.46),rgba(8,47,73,.55));color:#e9d5ff}.dark .wc-pilot-compare-next button{border-color:#a78bfa;background:#7c3aed}.dark .wc-pilot-compare-synthesis{border-color:rgba(167,139,250,.24);background:radial-gradient(circle at 100% 0,rgba(139,92,246,.14),transparent 28%),linear-gradient(140deg,rgba(30,27,75,.62),rgba(8,47,73,.58));box-shadow:0 14px 29px rgba(2,6,23,.29),inset 0 1px 0 rgba(196,181,253,.07)}.dark .wc-pilot-compare-synthesis-kicker{color:#c4b5fd}.dark .wc-pilot-compare-cer article{border-color:color-mix(in srgb,var(--wc-cer) 32%,transparent);background:rgba(15,23,42,.64);box-shadow:0 6px 15px rgba(2,6,23,.2)}.dark .wc-pilot-compare-cer article p{color:#e2e8f0}.dark .wc-pilot-compare-method-note{background:rgba(120,53,15,.28);border-left-color:#fbbf24}.dark .wc-pilot-compare-method-note strong{color:#fde68a}.dark .wc-pilot-compare-method-note span{color:#fef3c7}.dark .wc-pilot-compare-complete{border-color:rgba(52,211,153,.3);background:linear-gradient(110deg,rgba(6,78,59,.5),rgba(8,47,73,.5));color:#d1fae5}.dark .wc-pilot-compare-synthesis[data-ready=false]{border-color:rgba(148,163,184,.26);background:rgba(15,23,42,.52)}.dark .wc-pilot-compare-synthesis-locked>span{border-color:#94a3b8;background:#1e293b}.dark .wc-pilot-compare-synthesis-locked h4{color:#e2e8f0}.dark .wc-pilot-compare-synthesis-locked p{color:#cbd5e1}@keyframes wc-pilot-compare-mission-live{0%,100%{box-shadow:0 0 0 2px rgba(56,189,248,.16)}50%{box-shadow:0 0 0 6px rgba(56,189,248,.08)}}@keyframes wc-pilot-compare-synthesis-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}@media(max-width:820px){.wc-pilot-compare-checklist{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-compare-checklist::before{display:none}.wc-pilot-compare-cer{grid-template-columns:1fr}.wc-pilot-compare-cer article{min-height:0}.wc-pilot-compare-method-note{grid-template-columns:1fr}}@media(max-width:560px){.wc-pilot-compare-mission,.wc-pilot-compare-synthesis{padding:12px}.wc-pilot-compare-mission-head{display:grid;grid-template-columns:1fr}.wc-pilot-compare-mission-state{justify-self:start}.wc-pilot-compare-next{grid-template-columns:1fr}.wc-pilot-compare-next button{justify-self:start;min-height:40px}.wc-pilot-compare-fair-test{grid-template-columns:1fr;padding-left:36px}.wc-pilot-compare-checklist li strong{white-space:normal}}@media(max-width:390px){.wc-pilot-compare-checklist{grid-template-columns:1fr}.wc-pilot-compare-checklist li{min-height:48px}}@media(prefers-reduced-motion:reduce){.wc-pilot-compare-progress i{transition:none!important}.wc-pilot-compare-checklist li[data-state=current]>span,.wc-pilot-compare-cer article{animation:none!important;transform:none!important}}@media(forced-colors:active){.wc-pilot-compare-mission,.wc-pilot-compare-mission-state,.wc-pilot-compare-progress,.wc-pilot-compare-checklist li,.wc-pilot-compare-checklist li>span,.wc-pilot-compare-fair-test,.wc-pilot-compare-next,.wc-pilot-compare-next button,.wc-pilot-compare-synthesis,.wc-pilot-compare-cer article,.wc-pilot-compare-method-note,.wc-pilot-compare-complete,.wc-pilot-compare-synthesis-locked>span{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-compare-mission::before,.wc-pilot-compare-checklist::before,.wc-pilot-compare-synthesis::before,.wc-pilot-compare-cer article::before{display:none}.wc-pilot-compare-mission-kicker,.wc-pilot-compare-mission-head strong,.wc-pilot-compare-mission-state,.wc-pilot-compare-checklist li strong,.wc-pilot-compare-checklist li small,.wc-pilot-compare-fair-test strong,.wc-pilot-compare-fair-test span,.wc-pilot-compare-next>span,.wc-pilot-compare-synthesis-kicker,.wc-pilot-compare-synthesis h4,.wc-pilot-compare-cer article>span,.wc-pilot-compare-cer article p,.wc-pilot-compare-method-note strong,.wc-pilot-compare-method-note span,.wc-pilot-compare-complete,.wc-pilot-compare-synthesis-locked h4,.wc-pilot-compare-synthesis-locked p{color:CanvasText}.wc-pilot-compare-progress i,.wc-pilot-compare-checklist li[data-state=pinned]>span,.wc-pilot-compare-next button,.wc-pilot-compare-complete::before{background:Highlight;color:HighlightText}.wc-pilot-compare-checklist li[data-state=current],.wc-pilot-compare-synthesis[data-complete=true]{outline:2px solid Highlight;outline-offset:2px}.wc-pilot-compare-checklist li>span::after{background:CanvasText}.wc-pilot-compare-synthesis-seal{border:2px solid CanvasText;background:Highlight;box-shadow:none}}'
+      ,'.wc-pilot-compare-notebook-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;margin-top:10px;padding:8px 12px;border:1px solid #0f766e;border-radius:10px;background:linear-gradient(135deg,#0f766e,#0369a1);color:#fff;font:inherit;font-size:10.5px;font-weight:950;line-height:1.25;cursor:pointer;box-shadow:0 7px 16px rgba(3,105,161,.2),inset 0 1px 0 rgba(255,255,255,.18);transition:transform 150ms ease,box-shadow 150ms ease,filter 150ms ease}.wc-pilot-compare-notebook-btn::before{content:"";width:15px;height:17px;border:2px solid rgba(255,255,255,.86);border-radius:65% 35% 66% 34%/68% 42% 58% 32%;background:linear-gradient(145deg,#67e8f9,#22c55e);transform:rotate(38deg);box-shadow:inset 3px 3px 4px rgba(255,255,255,.2)}.wc-pilot-compare-notebook-btn:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 10px 20px rgba(3,105,161,.24),inset 0 1px 0 rgba(255,255,255,.2)}.wc-pilot-compare-notebook-btn:active{transform:translateY(1px);box-shadow:0 3px 8px rgba(3,105,161,.2)}.wc-pilot-compare-notebook-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-notebook-summary{grid-template-columns:repeat(5,minmax(0,1fr))}'
+      ,'.wc-pilot-notebook-compare{--wc-notebook-compare:#0ea5e9;position:relative;overflow:hidden;margin:0 0 12px;padding:13px;border:1px solid rgba(14,116,144,.23);border-radius:13px;background:radial-gradient(circle at 100% 0,rgba(196,181,253,.15),transparent 28%),linear-gradient(145deg,rgba(255,255,255,.78),rgba(240,253,250,.68));box-shadow:0 8px 20px rgba(15,23,42,.055)}.wc-pilot-notebook-compare::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#0ea5e9,#14b8a6,#8b5cf6,#f59e0b);opacity:.48}.wc-pilot-notebook-compare[data-ready=true]::before{opacity:1}.wc-pilot-notebook-compare-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}.wc-pilot-notebook-compare-head strong{color:#0f172a;font-size:12px}.wc-pilot-notebook-compare-head span{flex:0 0 auto;padding:3px 7px;border:1px solid rgba(14,116,144,.2);border-radius:999px;background:rgba(224,242,254,.66);color:#0369a1;font-size:8.5px;font-weight:950;letter-spacing:.04em}.wc-pilot-notebook-climates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:0;padding:0;list-style:none}.wc-pilot-notebook-climates li{--wc-climate:#0284c7;display:grid;grid-template-columns:27px minmax(0,1fr);gap:3px 8px;align-items:center;min-width:0;padding:8px 9px;border:1px solid color-mix(in srgb,var(--wc-climate) 24%,transparent);border-radius:10px;background:linear-gradient(145deg,color-mix(in srgb,var(--wc-climate) 7%,#fff),rgba(255,255,255,.74));box-shadow:0 4px 10px rgba(15,23,42,.035)}.wc-pilot-notebook-climates li[data-scenario=tropicalOcean]{--wc-climate:#0d9488}.wc-pilot-notebook-climates li[data-scenario=temperateCoast]{--wc-climate:#0284c7}.wc-pilot-notebook-climates li[data-scenario=mountainWinter]{--wc-climate:#6366f1}.wc-pilot-notebook-climates li[data-scenario=desertBasin]{--wc-climate:#d97706}.wc-pilot-notebook-climate-mark{position:relative;grid-row:1/3;width:22px;height:25px;border:2px solid rgba(255,255,255,.84);border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:linear-gradient(145deg,var(--wc-climate),#14b8a6);transform:rotate(38deg);box-shadow:0 5px 10px color-mix(in srgb,var(--wc-climate) 24%,transparent)}.wc-pilot-notebook-climate-mark::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:9px;font-weight:950;transform:rotate(-38deg)}.wc-pilot-notebook-climate-copy{min-width:0}.wc-pilot-notebook-climate-copy strong{display:block;overflow:hidden;color:#0f172a;font-size:10px;line-height:1.25;text-overflow:ellipsis;white-space:nowrap}.wc-pilot-notebook-climate-copy small{display:block;margin-top:1px;color:#475569;font-size:8.5px;line-height:1.35}.wc-pilot-notebook-climates dl{grid-column:2;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;margin:4px 0 0}.wc-pilot-notebook-climates dl>div{padding:4px 5px;border-radius:6px;background:rgba(255,255,255,.64)}.wc-pilot-notebook-climates dt{color:#64748b;font-size:7.5px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}.wc-pilot-notebook-climates dd{margin:1px 0 0;color:color-mix(in srgb,var(--wc-climate) 82%,#0f172a);font-size:9px;font-weight:950}.wc-pilot-notebook-compare-empty,.wc-pilot-notebook-compare-hint{margin:7px 0 0;padding:7px 8px;border-left:3px solid #0ea5e9;border-radius:0 7px 7px 0;background:rgba(224,242,254,.52);color:#475569;font-size:9px;line-height:1.4}.wc-pilot-notebook-compare-hint{border-left-color:#8b5cf6;background:rgba(245,243,255,.6)}.wc-pilot-notebook-compare-cer{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:9px;padding-top:9px;border-top:1px dashed rgba(14,116,144,.24)}.wc-pilot-notebook-compare-cer p{--wc-cer:#7c3aed;position:relative;margin:0;padding:7px 8px 7px 10px;border-radius:8px;background:rgba(255,255,255,.68);box-shadow:0 3px 8px rgba(15,23,42,.035)}.wc-pilot-notebook-compare-cer p[data-part=evidence]{--wc-cer:#0284c7}.wc-pilot-notebook-compare-cer p[data-part=reasoning]{--wc-cer:#0d9488}.wc-pilot-notebook-compare-cer p::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;border-radius:8px 0 0 8px;background:var(--wc-cer)}.wc-pilot-notebook-compare-cer strong{display:block;color:var(--wc-cer);font-size:8px;letter-spacing:.08em;text-transform:uppercase}.wc-pilot-notebook-compare-cer span{display:block;margin-top:3px;color:#334155;font-size:8.5px;line-height:1.42}'
+      ,'.dark .wc-pilot-compare-notebook-btn{border-color:#5eead4;background:linear-gradient(135deg,#0f766e,#075985);color:#fff}.dark .wc-pilot-notebook-compare{border-color:rgba(125,211,252,.2);background:radial-gradient(circle at 100% 0,rgba(139,92,246,.12),transparent 28%),linear-gradient(145deg,rgba(15,23,42,.7),rgba(8,47,73,.55));box-shadow:0 10px 22px rgba(2,6,23,.22)}.dark .wc-pilot-notebook-compare-head strong,.dark .wc-pilot-notebook-climate-copy strong{color:#f8fafc}.dark .wc-pilot-notebook-compare-head span{border-color:rgba(125,211,252,.22);background:rgba(8,47,73,.62);color:#bae6fd}.dark .wc-pilot-notebook-climates li{border-color:color-mix(in srgb,var(--wc-climate) 32%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-climate) 13%,#0f172a),rgba(15,23,42,.7));box-shadow:0 5px 12px rgba(2,6,23,.16)}.dark .wc-pilot-notebook-climate-copy small{color:#cbd5e1}.dark .wc-pilot-notebook-climates dl>div,.dark .wc-pilot-notebook-compare-cer p{background:rgba(15,23,42,.58)}.dark .wc-pilot-notebook-climates dt{color:#94a3b8}.dark .wc-pilot-notebook-climates dd{color:#e0f2fe}.dark .wc-pilot-notebook-compare-empty,.dark .wc-pilot-notebook-compare-hint{background:rgba(8,47,73,.5);color:#cbd5e1}.dark .wc-pilot-notebook-compare-hint{background:rgba(49,46,129,.34)}.dark .wc-pilot-notebook-compare-cer{border-top-color:rgba(125,211,252,.2)}.dark .wc-pilot-notebook-compare-cer span{color:#e2e8f0}'
+      ,'@media(max-width:820px){.wc-pilot-notebook-climates{grid-template-columns:1fr}.wc-pilot-notebook-compare-cer{grid-template-columns:1fr}}@media(max-width:700px){.wc-pilot-notebook-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-notebook-compare-head{align-items:flex-start;flex-direction:column}.wc-pilot-notebook-compare-head span{flex-basis:auto}}@media(max-width:420px){.wc-pilot-notebook-compare{padding:11px}.wc-pilot-notebook-climates li{grid-template-columns:24px minmax(0,1fr);padding:7px}.wc-pilot-notebook-climates dl{grid-column:1/-1}.wc-pilot-notebook-climate-mark{width:19px;height:22px}}@media(prefers-reduced-motion:reduce){.wc-pilot-compare-notebook-btn{transition:none!important}}@media(forced-colors:active){.wc-pilot-compare-notebook-btn,.wc-pilot-notebook-compare,.wc-pilot-notebook-compare-head span,.wc-pilot-notebook-climates li,.wc-pilot-notebook-climates dl>div,.wc-pilot-notebook-compare-empty,.wc-pilot-notebook-compare-hint,.wc-pilot-notebook-compare-cer p{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-compare-notebook-btn{background:Highlight;color:HighlightText}.wc-pilot-notebook-compare::before,.wc-pilot-notebook-compare-cer p::before{display:none}.wc-pilot-notebook-climate-mark{border:1px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-notebook-compare-head strong,.wc-pilot-notebook-compare-head span,.wc-pilot-notebook-climate-copy strong,.wc-pilot-notebook-climate-copy small,.wc-pilot-notebook-climates dt,.wc-pilot-notebook-climates dd,.wc-pilot-notebook-compare-empty,.wc-pilot-notebook-compare-hint,.wc-pilot-notebook-compare-cer strong,.wc-pilot-notebook-compare-cer span{color:CanvasText}}@media print{.wc-pilot-compare-notebook-btn{display:none!important}.wc-pilot-notebook-compare{break-inside:avoid;border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-notebook-climates li,.wc-pilot-notebook-compare-cer p{break-inside:avoid;background:#fff}}'
+      ,'.wc-pilot-sky-profile{position:relative;overflow:hidden;margin:12px 0;padding:14px;border:1px solid rgba(14,116,144,.25);border-radius:17px;background:radial-gradient(circle at 96% 0,rgba(196,181,253,.18),transparent 25%),linear-gradient(145deg,rgba(255,255,255,.82),rgba(240,249,255,.72));box-shadow:0 11px 24px rgba(15,23,42,.06),inset 0 1px 0 rgba(255,255,255,.86)}.wc-pilot-sky-profile::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:linear-gradient(90deg,#0ea5e9,#14b8a6 38%,#8b5cf6 72%,#f59e0b)}.wc-pilot-sky-profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}.wc-pilot-sky-profile-kicker{display:block;color:#0e7490;font-size:8.5px;font-weight:950;letter-spacing:.11em;text-transform:uppercase}.wc-pilot-sky-profile h4{margin:2px 0 0;color:#0f172a;font-size:15px;line-height:1.2}.wc-pilot-sky-profile-spread{flex:0 0 auto;padding:5px 8px;border:1px solid rgba(124,58,237,.22);border-radius:999px;background:rgba(245,243,255,.8);color:#6d28d9;font-size:9px;font-weight:950;white-space:nowrap}.wc-pilot-sky-profile-legend{display:flex;align-items:center;gap:6px 13px;flex-wrap:wrap;margin-bottom:9px;padding:7px 9px;border:1px solid rgba(148,163,184,.2);border-radius:9px;background:rgba(255,255,255,.58)}.wc-pilot-sky-profile-legend>span{display:inline-flex;align-items:center;gap:6px;color:#475569;font-size:9px;font-weight:850}.wc-pilot-sky-profile-legend i{position:relative;display:inline-block;flex:0 0 auto;width:18px;height:10px}.wc-pilot-sky-profile-legend [data-key=cloud] i{border-bottom:2px solid #0284c7}.wc-pilot-sky-profile-legend [data-key=cloud] i::before{content:"";position:absolute;left:3px;bottom:2px;width:11px;height:5px;border-radius:999px;background:#e0f2fe;box-shadow:4px 1px 0 #bae6fd}.wc-pilot-sky-profile-legend [data-key=freezing] i{border-bottom:2px dashed #7c3aed}.wc-pilot-sky-profile-legend [data-key=freezing] i::before{content:"✦";position:absolute;right:0;bottom:0;color:#7c3aed;font-size:10px;line-height:1}.wc-pilot-sky-profile-legend [data-key=journey] i{width:10px;height:12px;border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:linear-gradient(145deg,#10b981,#0ea5e9);transform:rotate(38deg)}.wc-pilot-sky-profile-plot{display:grid;grid-template-columns:40px minmax(0,1fr);gap:7px;align-items:start}.wc-pilot-sky-profile-axis{position:relative;height:210px;border-right:1px solid rgba(14,116,144,.25);color:#64748b}.wc-pilot-sky-profile-axis span{position:absolute;right:5px;font-size:8px;font-weight:900;line-height:1;white-space:nowrap}.wc-pilot-sky-profile-axis .is-top{top:0}.wc-pilot-sky-profile-axis .is-middle{top:50%;transform:translateY(-50%)}.wc-pilot-sky-profile-axis .is-surface{bottom:0}.wc-pilot-sky-profile-columns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}.wc-pilot-sky-profile-column{--wc-profile:#0284c7;display:grid;grid-template-rows:210px minmax(88px,auto);min-width:0;overflow:hidden;border:1px solid color-mix(in srgb,var(--wc-profile) 27%,transparent);border-radius:11px;background:rgba(255,255,255,.72);box-shadow:0 5px 13px rgba(15,23,42,.045)}.wc-pilot-sky-profile-column[data-scenario=tropicalOcean]{--wc-profile:#0d9488}.wc-pilot-sky-profile-column[data-scenario=temperateCoast]{--wc-profile:#0284c7}.wc-pilot-sky-profile-column[data-scenario=mountainWinter]{--wc-profile:#6366f1}.wc-pilot-sky-profile-column[data-scenario=desertBasin]{--wc-profile:#d97706}.wc-pilot-sky-profile-column[data-current=true]{border-color:var(--wc-profile);box-shadow:0 0 0 2px color-mix(in srgb,var(--wc-profile) 16%,transparent),0 8px 17px color-mix(in srgb,var(--wc-profile) 15%,transparent)}.wc-pilot-sky-profile-column-sky{position:relative;overflow:hidden;background:repeating-linear-gradient(180deg,transparent 0 calc(25% - 1px),rgba(255,255,255,.24) calc(25% - 1px) 25%),linear-gradient(180deg,#7dd3fc 0,#bae6fd 55%,#e0f2fe 82%,#d1fae5 100%)}.wc-pilot-sky-profile-column[data-scenario=mountainWinter] .wc-pilot-sky-profile-column-sky{background:repeating-linear-gradient(180deg,transparent 0 calc(25% - 1px),rgba(255,255,255,.3) calc(25% - 1px) 25%),linear-gradient(180deg,#bfdbfe,#e0f2fe 56%,#f8fafc 83%,#cbd5e1)}.wc-pilot-sky-profile-column[data-scenario=desertBasin] .wc-pilot-sky-profile-column-sky{background:repeating-linear-gradient(180deg,transparent 0 calc(25% - 1px),rgba(255,255,255,.2) calc(25% - 1px) 25%),linear-gradient(180deg,#60a5fa,#bae6fd 58%,#fed7aa 86%,#fbbf24)}.wc-pilot-sky-profile-midline{position:absolute;z-index:1;left:0;right:0;top:50%;border-top:1px dotted rgba(14,116,144,.25)}.wc-pilot-sky-threshold{position:absolute;z-index:3;left:4px;right:4px;height:2px;transform:translateY(1px)}.wc-pilot-sky-threshold.is-cloud{background:#0284c7;box-shadow:0 0 7px rgba(14,165,233,.34)}.wc-pilot-sky-threshold.is-cloud i{position:absolute;right:3px;bottom:3px;width:24px;height:7px;border:1px solid rgba(2,132,199,.34);border-radius:999px;background:#f8fafc;box-shadow:-6px 2px 0 -1px #e0f2fe,5px 2px 0 -1px #bae6fd}.wc-pilot-sky-threshold.is-cloud i::before,.wc-pilot-sky-threshold.is-cloud i::after{content:"";position:absolute;border-radius:50%;background:inherit}.wc-pilot-sky-threshold.is-cloud i::before{left:4px;top:-6px;width:10px;height:10px}.wc-pilot-sky-threshold.is-cloud i::after{right:3px;top:-4px;width:8px;height:8px}.wc-pilot-sky-threshold.is-freezing{border-top:2px dashed #7c3aed}.wc-pilot-sky-threshold.is-freezing[data-above-model=true]{border-top-style:dotted;opacity:.7}.wc-pilot-sky-threshold.is-freezing[data-above-model=true] i{top:2px;bottom:auto}.wc-pilot-sky-threshold.is-freezing i{position:absolute;left:3px;bottom:1px;width:15px;height:15px}.wc-pilot-sky-threshold.is-freezing i::before{content:"✦";display:block;color:#6d28d9;font-size:14px;font-weight:900;line-height:1;text-shadow:0 1px 0 #fff}.wc-pilot-sky-journey-marker{position:absolute;z-index:5;left:3px;right:3px;border-top:1px dotted #047857}.wc-pilot-sky-journey-marker i{position:absolute;left:50%;bottom:-8px;width:14px;height:16px;border:2px solid rgba(255,255,255,.9);border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:linear-gradient(145deg,#10b981,#0ea5e9);transform:translateX(-50%) rotate(38deg);box-shadow:0 4px 9px rgba(5,150,105,.28)}.wc-pilot-sky-journey-marker[data-state=pinned]{border-top-color:#7c3aed}.wc-pilot-sky-journey-marker[data-state=pinned] i{background:linear-gradient(145deg,#7c3aed,#0ea5e9)}.wc-pilot-sky-journey-marker[data-state=live] i{animation:wc-pilot-sky-live 2.2s ease-in-out infinite}.wc-pilot-sky-profile-ground{position:absolute;z-index:2;left:-5%;right:-5%;bottom:-1px;height:10px;background:linear-gradient(90deg,var(--wc-profile),#0f766e);clip-path:polygon(0 55%,18% 30%,37% 62%,56% 18%,73% 53%,100% 24%,100% 100%,0 100%)}.wc-pilot-sky-profile-column-copy{display:grid;align-content:start;gap:4px;min-width:0;padding:7px 7px 8px}.wc-pilot-sky-profile-column-copy>strong{overflow:hidden;color:#0f172a;font-size:9.5px;line-height:1.2;text-overflow:ellipsis}.wc-pilot-sky-profile-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}.wc-pilot-sky-profile-values b{min-width:0;padding:3px 4px;border-radius:5px;background:rgba(224,242,254,.68);color:#0369a1;font-size:8px;line-height:1.25;text-align:center}.wc-pilot-sky-profile-values b[data-value=freezing]{background:rgba(237,233,254,.72);color:#6d28d9}.wc-pilot-sky-profile-column-copy small{color:#64748b;font-size:8px;font-weight:800;line-height:1.3}.wc-pilot-sky-profile-column-copy small[data-state=pinned]{color:#6d28d9}.wc-pilot-sky-profile-column-copy small[data-state=live]{color:#047857}.wc-pilot-sky-profile figcaption{margin-top:8px;padding-left:9px;border-left:3px solid #14b8a6;color:#475569;font-size:9px;line-height:1.4}.wc-pilot-notebook-climates dl{grid-template-columns:repeat(3,minmax(0,1fr))}@keyframes wc-pilot-sky-live{0%,100%{filter:brightness(1);box-shadow:0 4px 9px rgba(5,150,105,.28)}50%{filter:brightness(1.18);box-shadow:0 4px 14px rgba(5,150,105,.48),0 0 0 5px rgba(16,185,129,.1)}}'
+      ,'.dark .wc-pilot-sky-profile{border-color:rgba(125,211,252,.22);background:radial-gradient(circle at 96% 0,rgba(139,92,246,.14),transparent 25%),linear-gradient(145deg,rgba(15,23,42,.72),rgba(8,47,73,.58));box-shadow:0 13px 27px rgba(2,6,23,.24),inset 0 1px 0 rgba(255,255,255,.05)}.dark .wc-pilot-sky-profile-kicker{color:#7dd3fc}.dark .wc-pilot-sky-profile h4,.dark .wc-pilot-sky-profile-column-copy>strong{color:#f8fafc}.dark .wc-pilot-sky-profile-spread{border-color:rgba(196,181,253,.26);background:rgba(49,46,129,.45);color:#ddd6fe}.dark .wc-pilot-sky-profile-legend{border-color:rgba(125,211,252,.16);background:rgba(15,23,42,.58)}.dark .wc-pilot-sky-profile-legend>span,.dark .wc-pilot-sky-profile figcaption{color:#cbd5e1}.dark .wc-pilot-sky-profile-axis{border-right-color:rgba(125,211,252,.2);color:#94a3b8}.dark .wc-pilot-sky-profile-column{background:rgba(15,23,42,.68);box-shadow:0 6px 15px rgba(2,6,23,.2)}.dark .wc-pilot-sky-profile-values b{background:rgba(8,47,73,.7);color:#bae6fd}.dark .wc-pilot-sky-profile-values b[data-value=freezing]{background:rgba(49,46,129,.56);color:#ddd6fe}.dark .wc-pilot-sky-profile-column-copy small{color:#94a3b8}.dark .wc-pilot-sky-profile-column-copy small[data-state=pinned]{color:#c4b5fd}.dark .wc-pilot-sky-profile-column-copy small[data-state=live]{color:#6ee7b7}.dark .wc-pilot-sky-threshold.is-freezing i::before{color:#c4b5fd;text-shadow:0 1px 0 #312e81}.dark .wc-pilot-sky-threshold.is-cloud i{border-color:rgba(125,211,252,.4);background:#e0f2fe}.dark .wc-pilot-sky-profile-column[data-scenario=tropicalOcean] .wc-pilot-sky-profile-column-sky,.dark .wc-pilot-sky-profile-column[data-scenario=temperateCoast] .wc-pilot-sky-profile-column-sky{filter:saturate(.86) brightness(.78)}.dark .wc-pilot-sky-profile-column[data-scenario=mountainWinter] .wc-pilot-sky-profile-column-sky,.dark .wc-pilot-sky-profile-column[data-scenario=desertBasin] .wc-pilot-sky-profile-column-sky{filter:saturate(.8) brightness(.72)}'
+      ,'@media(max-width:820px){.wc-pilot-sky-profile{padding:12px}.wc-pilot-sky-profile-axis,.wc-pilot-sky-profile-column{height:auto}.wc-pilot-sky-profile-axis{height:190px}.wc-pilot-sky-profile-column{grid-template-rows:190px minmax(84px,auto)}}@media(max-width:560px){.wc-pilot-sky-profile-head{display:grid}.wc-pilot-sky-profile-spread{justify-self:start}.wc-pilot-sky-profile-legend{gap:5px 9px;padding:6px}.wc-pilot-sky-profile-plot{grid-template-columns:31px minmax(0,1fr);gap:4px}.wc-pilot-sky-profile-axis{height:165px}.wc-pilot-sky-profile-axis span{right:3px;font-size:7.5px}.wc-pilot-sky-profile-columns{gap:4px}.wc-pilot-sky-profile-column{grid-template-rows:165px minmax(96px,auto);border-radius:8px}.wc-pilot-sky-profile-column-copy{gap:3px;padding:6px 4px}.wc-pilot-sky-profile-column-copy>strong{font-size:8.5px}.wc-pilot-sky-profile-values{grid-template-columns:1fr}.wc-pilot-sky-profile-values b{padding:2px;font-size:7.5px}.wc-pilot-sky-profile-column-copy small{font-size:7.5px}.wc-pilot-sky-threshold{left:2px;right:2px}.wc-pilot-sky-threshold.is-cloud i{right:1px;width:18px}.wc-pilot-sky-threshold.is-freezing i{left:1px}.wc-pilot-sky-profile figcaption{font-size:8.5px}}@media(max-width:380px){.wc-pilot-sky-profile{padding:10px}.wc-pilot-sky-profile-axis{height:150px}.wc-pilot-sky-profile-column{grid-template-rows:150px minmax(98px,auto)}.wc-pilot-sky-profile-column-copy small{overflow-wrap:anywhere}.wc-pilot-notebook-climates dl{grid-template-columns:1fr 1fr}.wc-pilot-notebook-climates dl>div:last-child{grid-column:1/-1}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-journey-marker[data-state=live] i{animation:none!important}}@media(forced-colors:active){.wc-pilot-sky-profile,.wc-pilot-sky-profile-spread,.wc-pilot-sky-profile-legend,.wc-pilot-sky-profile-column,.wc-pilot-sky-profile-column-sky,.wc-pilot-sky-profile-values b{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none;filter:none}.wc-pilot-sky-profile::before,.wc-pilot-sky-profile-midline,.wc-pilot-sky-profile-ground{display:none}.wc-pilot-sky-profile-kicker,.wc-pilot-sky-profile h4,.wc-pilot-sky-profile-spread,.wc-pilot-sky-profile-legend>span,.wc-pilot-sky-profile-axis,.wc-pilot-sky-profile-column-copy>strong,.wc-pilot-sky-profile-values b,.wc-pilot-sky-profile-column-copy small,.wc-pilot-sky-profile figcaption{color:CanvasText}.wc-pilot-sky-threshold.is-cloud,.wc-pilot-sky-threshold.is-freezing,.wc-pilot-sky-journey-marker{border-top:2px solid CanvasText;background:none;box-shadow:none}.wc-pilot-sky-threshold.is-cloud i,.wc-pilot-sky-journey-marker i,.wc-pilot-sky-profile-legend [data-key=journey] i{border:1px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-sky-threshold.is-freezing i::before,.wc-pilot-sky-profile-legend [data-key=freezing] i::before{color:CanvasText;text-shadow:none}.wc-pilot-sky-profile-column[data-current=true]{outline:2px solid Highlight;outline-offset:2px}}@media print{.wc-pilot-sky-profile{break-inside:avoid;border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-profile-column{break-inside:avoid;box-shadow:none}.wc-pilot-sky-journey-marker[data-state=live] i{animation:none}}'
+      ,'.wc-pilot-sky-probe{position:relative;overflow:hidden;margin:0 0 9px;padding:10px 11px 9px;border:1px solid rgba(219,39,119,.24);border-left:4px solid #db2777;border-radius:12px;background:radial-gradient(circle at 94% 0,rgba(244,114,182,.14),transparent 31%),linear-gradient(135deg,rgba(255,255,255,.86),rgba(253,242,248,.66));box-shadow:inset 0 1px 0 rgba(255,255,255,.82)}.wc-pilot-sky-probe-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.wc-pilot-sky-probe-copy{display:grid;gap:1px;min-width:0}.wc-pilot-sky-probe-kicker{color:#be185d;font-size:8px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.wc-pilot-sky-probe label{color:#0f172a;font-size:12px;font-weight:950;line-height:1.15}.wc-pilot-sky-probe-copy small{color:#64748b;font-size:8.5px;font-weight:750}.wc-pilot-sky-probe-output{flex:0 0 auto;min-width:64px;padding:6px 9px;border:1px solid rgba(219,39,119,.28);border-radius:999px;background:#fff;color:#9d174d;font-size:11px;font-weight:950;text-align:center;box-shadow:0 4px 10px rgba(157,23,77,.09)}.wc-pilot-sky-probe-range{display:block;width:100%;height:24px;margin:7px 0 4px;background:transparent;accent-color:#db2777;cursor:pointer;-webkit-appearance:none;appearance:none}.wc-pilot-sky-probe-range::-webkit-slider-runnable-track{height:7px;border:1px solid rgba(100,116,139,.2);border-radius:999px;background:linear-gradient(90deg,#0284c7 0 25%,#0f766e 25% 50%,#7c3aed 50% 75%,#db2777 75%)}.wc-pilot-sky-probe-range::-moz-range-track{height:7px;border:1px solid rgba(100,116,139,.2);border-radius:999px;background:linear-gradient(90deg,#0284c7 0 25%,#0f766e 25% 50%,#7c3aed 50% 75%,#db2777 75%)}.wc-pilot-sky-probe-range::-webkit-slider-thumb{width:22px;height:22px;margin-top:-8px;border:3px solid #fff;border-radius:50%;background:#db2777;box-shadow:0 0 0 2px #9d174d,0 5px 12px rgba(157,23,77,.3);-webkit-appearance:none;appearance:none}.wc-pilot-sky-probe-range::-moz-range-thumb{width:18px;height:18px;border:3px solid #fff;border-radius:50%;background:#db2777;box-shadow:0 0 0 2px #9d174d,0 5px 12px rgba(157,23,77,.3)}.wc-pilot-sky-probe-range:focus-visible{outline:3px solid #facc15;outline-offset:3px}.wc-pilot-sky-probe-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.wc-pilot-sky-probe-presets button{min-height:42px;padding:5px 7px;border:1px solid rgba(157,23,77,.25);border-radius:8px;background:rgba(255,255,255,.76);color:#831843;font:inherit;font-size:8.5px;font-weight:900;cursor:pointer;transition:transform 150ms ease,background 150ms ease,box-shadow 150ms ease}.wc-pilot-sky-probe-presets button[aria-pressed=true]{border-color:#be185d;background:linear-gradient(135deg,#db2777,#7c3aed);color:#fff;box-shadow:0 5px 12px rgba(157,23,77,.2)}.wc-pilot-sky-probe-presets button:not([aria-pressed=true]):hover{transform:translateY(-1px);background:#fff}.wc-pilot-sky-probe-presets button:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-sky-probe-science{margin:7px 0 0;padding-top:6px;border-top:1px solid rgba(219,39,119,.14);color:#475569;font-size:8.5px;line-height:1.4}.wc-pilot-sky-profile-legend [data-key=probe] i{width:11px;height:11px;border:2px solid #db2777;background:#fdf2f8;transform:rotate(45deg)}.wc-pilot-sky-profile-column{grid-template-rows:210px minmax(142px,auto)}.wc-pilot-sky-probe-line,.wc-pilot-sky-profile-probe-result{--wc-probe-state:#0284c7}.wc-pilot-sky-probe-line[data-probe-state=cold],.wc-pilot-sky-profile-probe-result[data-probe-state=cold]{--wc-probe-state:#4f46e5}.wc-pilot-sky-probe-line[data-probe-state=cloud],.wc-pilot-sky-profile-probe-result[data-probe-state=cloud]{--wc-probe-state:#0f766e}.wc-pilot-sky-probe-line[data-probe-state=ice],.wc-pilot-sky-profile-probe-result[data-probe-state=ice]{--wc-probe-state:#7c3aed}.wc-pilot-sky-probe-line{position:absolute;z-index:7;left:0;right:0;height:0;border-top:2px solid #db2777;filter:drop-shadow(0 1px 2px rgba(157,23,77,.45))}.wc-pilot-sky-probe-line i{position:absolute;top:-6px;left:50%;width:10px;height:10px;border:2px solid rgba(255,255,255,.95);background:var(--wc-probe-state);transform:translateX(-50%) rotate(45deg);box-shadow:0 0 0 2px #db2777,0 3px 8px rgba(15,23,42,.28);animation:wc-pilot-probe-pulse 2.4s ease-in-out infinite}.wc-pilot-sky-probe-line[data-edge=top] i{top:2px}.wc-pilot-sky-profile-probe-result{display:grid;gap:2px;margin-top:2px;padding:5px 6px;border-left:3px solid var(--wc-probe-state);border-radius:6px;background:color-mix(in srgb,var(--wc-probe-state) 9%,white)}.wc-pilot-sky-profile-probe-result b{color:color-mix(in srgb,var(--wc-probe-state) 86%,#0f172a);font-size:8px;line-height:1.25}.wc-pilot-sky-profile-probe-result em{color:#475569;font-size:7.5px;font-style:normal;font-weight:700;line-height:1.3}'
+      ,'@keyframes wc-pilot-probe-pulse{0%,100%{box-shadow:0 0 0 2px #db2777,0 3px 8px rgba(15,23,42,.28)}50%{box-shadow:0 0 0 5px rgba(219,39,119,.2),0 4px 12px rgba(15,23,42,.34)}}.dark .wc-pilot-sky-probe{border-color:rgba(244,114,182,.3);border-left-color:#f472b6;background:radial-gradient(circle at 94% 0,rgba(219,39,119,.13),transparent 31%),linear-gradient(135deg,rgba(15,23,42,.78),rgba(76,5,25,.3));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.dark .wc-pilot-sky-probe-kicker{color:#f9a8d4}.dark .wc-pilot-sky-probe label{color:#f8fafc}.dark .wc-pilot-sky-probe-copy small,.dark .wc-pilot-sky-probe-science,.dark .wc-pilot-sky-profile-probe-result em{color:#cbd5e1}.dark .wc-pilot-sky-probe-output{border-color:rgba(249,168,212,.3);background:rgba(80,7,36,.64);color:#fbcfe8;box-shadow:0 5px 13px rgba(2,6,23,.2)}.dark .wc-pilot-sky-probe-presets button{border-color:rgba(249,168,212,.23);background:rgba(15,23,42,.68);color:#fbcfe8}.dark .wc-pilot-sky-probe-presets button:not([aria-pressed=true]):hover{background:rgba(80,7,36,.58)}.dark .wc-pilot-sky-probe-science{border-top-color:rgba(249,168,212,.17)}.dark .wc-pilot-sky-profile-legend [data-key=probe] i{border-color:#f472b6;background:#500724}.dark .wc-pilot-sky-profile-probe-result{background:color-mix(in srgb,var(--wc-probe-state) 20%,#0f172a)}.dark .wc-pilot-sky-profile-probe-result b{color:color-mix(in srgb,var(--wc-probe-state) 38%,white)}'
+      ,'@media(max-width:820px){.wc-pilot-sky-profile-column{grid-template-rows:190px minmax(138px,auto)}}@media(max-width:560px){.wc-pilot-sky-probe-head{align-items:start}.wc-pilot-sky-probe-output{min-width:58px;padding-inline:7px}.wc-pilot-sky-probe-presets button{font-size:8px}.wc-pilot-sky-profile-column{grid-template-rows:165px minmax(154px,auto)}.wc-pilot-sky-profile-probe-result{padding:4px}.wc-pilot-sky-profile-probe-result b{font-size:7.5px}.wc-pilot-sky-profile-probe-result em{font-size:7px}}@media(max-width:380px){.wc-pilot-sky-probe{padding:9px}.wc-pilot-sky-probe-head{display:grid}.wc-pilot-sky-probe-output{justify-self:start}.wc-pilot-sky-probe-presets{grid-template-columns:repeat(2,minmax(0,1fr))}.wc-pilot-sky-profile-column{grid-template-rows:150px minmax(132px,auto)}.wc-pilot-sky-profile-probe-result em{display:none}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-probe-line i{animation:none!important}.wc-pilot-sky-probe-presets button{transition:none!important}}'
+      ,'@media(forced-colors:active){.wc-pilot-sky-probe,.wc-pilot-sky-probe-output,.wc-pilot-sky-probe-presets button,.wc-pilot-sky-profile-probe-result{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-sky-probe-range{accent-color:Highlight}.wc-pilot-sky-probe-range::-webkit-slider-runnable-track{border:1px solid CanvasText;background:Canvas}.wc-pilot-sky-probe-range::-moz-range-track{border:1px solid CanvasText;background:Canvas}.wc-pilot-sky-probe-range::-webkit-slider-thumb{border:2px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-sky-probe-range::-moz-range-thumb{border:2px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-sky-probe-kicker,.wc-pilot-sky-probe label,.wc-pilot-sky-probe-copy small,.wc-pilot-sky-probe-science,.wc-pilot-sky-profile-probe-result b,.wc-pilot-sky-profile-probe-result em{color:CanvasText}.wc-pilot-sky-probe-presets button[aria-pressed=true]{outline:3px solid Highlight;outline-offset:1px}.wc-pilot-sky-probe-line{border-top:2px solid Highlight;filter:none}.wc-pilot-sky-probe-line i,.wc-pilot-sky-profile-legend [data-key=probe] i{border:2px solid CanvasText;background:Highlight;box-shadow:none}}@media print{.wc-pilot-sky-probe{border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-probe-range,.wc-pilot-sky-probe-presets{display:none}.wc-pilot-sky-probe-output,.wc-pilot-sky-profile-probe-result{border-color:#000;background:#fff;box-shadow:none}.wc-pilot-sky-probe-line{border-top-color:#000;filter:none}.wc-pilot-sky-probe-line i{animation:none;background:#fff;box-shadow:none}.wc-pilot-sky-profile-probe-result b,.wc-pilot-sky-profile-probe-result em{color:#000}}'
+      ,'.wc-pilot-sky-probe-verdict{margin-top:8px;padding:8px;border:1px solid rgba(100,116,139,.18);border-radius:10px;background:rgba(255,255,255,.56)}.wc-pilot-sky-probe-verdict-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:6px}.wc-pilot-sky-probe-verdict-head>strong{color:#0f172a;font-size:9.5px;font-weight:950}.wc-pilot-sky-probe-verdict-head p{max-width:590px;margin:0;color:#475569;font-size:8px;line-height:1.35;text-align:right}.wc-pilot-sky-probe-states{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:0;padding:0;list-style:none}.wc-pilot-sky-probe-states li{--wc-probe-verdict:#0284c7;display:grid;grid-template-columns:21px minmax(0,1fr);align-items:center;gap:6px;min-width:0;min-height:58px;padding:6px;border:1px solid color-mix(in srgb,var(--wc-probe-verdict) 24%,transparent);border-radius:8px;background:linear-gradient(145deg,color-mix(in srgb,var(--wc-probe-verdict) 11%,white),rgba(255,255,255,.68));box-shadow:inset 0 2px 0 color-mix(in srgb,var(--wc-probe-verdict) 56%,transparent);transition:opacity 160ms ease,filter 160ms ease,transform 160ms ease}.wc-pilot-sky-probe-states li[data-probe-state=cold]{--wc-probe-verdict:#4f46e5}.wc-pilot-sky-probe-states li[data-probe-state=cloud]{--wc-probe-verdict:#0f766e}.wc-pilot-sky-probe-states li[data-probe-state=ice]{--wc-probe-verdict:#7c3aed}.wc-pilot-sky-probe-states li[data-empty=true]{opacity:.58;filter:saturate(.6)}.wc-pilot-sky-probe-states li[data-empty=false]{transform:translateY(-1px)}.wc-pilot-sky-probe-states li>i{display:block;width:17px;height:17px;border:2px solid rgba(255,255,255,.88);border-radius:50%;background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.78) 0 18%,transparent 20%),var(--wc-probe-verdict);box-shadow:0 0 0 2px color-mix(in srgb,var(--wc-probe-verdict) 25%,transparent),0 3px 7px rgba(15,23,42,.14)}.wc-pilot-sky-probe-states li>span{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:0 5px;min-width:0}.wc-pilot-sky-probe-states b{grid-row:1/3;color:var(--wc-probe-verdict);font-size:18px;font-weight:950;line-height:1}.wc-pilot-sky-probe-states strong{min-width:0;color:#0f172a;font-size:7.5px;font-weight:900;line-height:1.2}.wc-pilot-sky-probe-states small{color:#64748b;font-size:6.8px;font-weight:750;line-height:1.2}.wc-pilot-sky-condition-zone{position:absolute;z-index:0;left:0;right:0;pointer-events:none;opacity:.14;transition:opacity 180ms ease,filter 180ms ease}.wc-pilot-sky-condition-zone.is-cloud{background:radial-gradient(ellipse at 22% 84%,rgba(255,255,255,.82) 0 8%,transparent 9%),radial-gradient(ellipse at 68% 64%,rgba(255,255,255,.7) 0 10%,transparent 11%),radial-gradient(ellipse at 45% 24%,rgba(224,242,254,.7) 0 7%,transparent 8%),linear-gradient(180deg,rgba(224,242,254,.16),rgba(186,230,253,.6));mix-blend-mode:screen}.wc-pilot-sky-condition-zone.is-freezing{background:repeating-linear-gradient(135deg,rgba(221,214,254,.34) 0 2px,transparent 2px 10px),linear-gradient(180deg,rgba(196,181,253,.5),rgba(224,231,255,.12));mix-blend-mode:screen}.wc-pilot-sky-condition-zone[data-active=true]{opacity:.46;filter:saturate(1.2)}.wc-pilot-sky-condition-zone.is-freezing[data-active=true]{opacity:.38}.wc-pilot-sky-condition-zone[data-above-model=true]{display:none}'
+      ,'.dark .wc-pilot-sky-probe-verdict{border-color:rgba(249,168,212,.16);background:rgba(15,23,42,.48)}.dark .wc-pilot-sky-probe-verdict-head>strong,.dark .wc-pilot-sky-probe-states strong{color:#f8fafc}.dark .wc-pilot-sky-probe-verdict-head p,.dark .wc-pilot-sky-probe-states small{color:#cbd5e1}.dark .wc-pilot-sky-probe-states li{border-color:color-mix(in srgb,var(--wc-probe-verdict) 38%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-probe-verdict) 20%,#0f172a),rgba(15,23,42,.76));box-shadow:inset 0 2px 0 color-mix(in srgb,var(--wc-probe-verdict) 68%,transparent)}.dark .wc-pilot-sky-probe-states b{color:color-mix(in srgb,var(--wc-probe-verdict) 58%,white)}.dark .wc-pilot-sky-condition-zone.is-cloud{opacity:.1;mix-blend-mode:screen}.dark .wc-pilot-sky-condition-zone.is-freezing{opacity:.12;mix-blend-mode:screen}.dark .wc-pilot-sky-condition-zone[data-active=true]{opacity:.34}.dark .wc-pilot-sky-condition-zone.is-freezing[data-active=true]{opacity:.3}'
+      ,'@media(max-width:560px){.wc-pilot-sky-probe-verdict-head{display:grid}.wc-pilot-sky-probe-verdict-head p{text-align:left}.wc-pilot-sky-probe-states{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.wc-pilot-sky-probe-verdict{padding:7px}.wc-pilot-sky-probe-states li{min-height:54px;padding:5px}.wc-pilot-sky-probe-states b{font-size:16px}.wc-pilot-sky-probe-states strong{font-size:7px}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-probe-states li,.wc-pilot-sky-condition-zone{transition:none!important}}'
+      ,'@media(forced-colors:active){.wc-pilot-sky-probe-verdict,.wc-pilot-sky-probe-states li{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none;filter:none;opacity:1}.wc-pilot-sky-probe-verdict-head>strong,.wc-pilot-sky-probe-verdict-head p,.wc-pilot-sky-probe-states b,.wc-pilot-sky-probe-states strong,.wc-pilot-sky-probe-states small{color:CanvasText}.wc-pilot-sky-probe-states li>i{border:2px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-sky-condition-zone{display:none}}@media print{.wc-pilot-sky-probe-verdict,.wc-pilot-sky-probe-states li{border:1px solid #000;background:#fff;box-shadow:none;filter:none;opacity:1;transform:none}.wc-pilot-sky-probe-verdict-head>strong,.wc-pilot-sky-probe-verdict-head p,.wc-pilot-sky-probe-states b,.wc-pilot-sky-probe-states strong,.wc-pilot-sky-probe-states small{color:#000}.wc-pilot-sky-condition-zone{opacity:.12;filter:grayscale(1);mix-blend-mode:multiply;transition:none}}'
+      ,'.wc-pilot-sky-thermal{position:relative;margin-top:8px;padding:9px;border:1px solid rgba(79,70,229,.2);border-radius:10px;background:radial-gradient(circle at 4% 0,rgba(99,102,241,.13),transparent 27%),radial-gradient(circle at 96% 100%,rgba(249,115,22,.12),transparent 29%),linear-gradient(135deg,rgba(248,250,252,.78),rgba(255,255,255,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.76)}.wc-pilot-sky-thermal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.wc-pilot-sky-thermal-head>div{display:grid;gap:1px;min-width:0}.wc-pilot-sky-thermal-kicker{color:#4f46e5;font-size:7px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.wc-pilot-sky-thermal-head strong{color:#0f172a;font-size:9.5px;font-weight:950;line-height:1.2}.wc-pilot-sky-thermal-head small{color:#64748b;font-size:7.5px;font-weight:750;line-height:1.3}.wc-pilot-sky-thermal-spread{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(234,88,12,.25);border-radius:999px;background:rgba(255,247,237,.82);color:#c2410c!important;font-size:7.5px!important;white-space:nowrap}.wc-pilot-sky-thermal-scale{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:7px;margin:7px 1px 3px;color:#475569;font-size:7px;font-weight:900}.wc-pilot-sky-thermal-scale span:nth-child(2){overflow:hidden;color:#64748b;font-size:6.5px;letter-spacing:.06em;text-align:center;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.wc-pilot-sky-thermal-plot{position:relative;height:70px;overflow:hidden;border:1px solid rgba(100,116,139,.22);border-radius:9px;background:repeating-linear-gradient(90deg,transparent 0 calc(12.5% - 1px),rgba(255,255,255,.24) calc(12.5% - 1px) 12.5%),linear-gradient(90deg,#4338ca 0,#38bdf8 36%,#e0f2fe 50%,#fde68a 64%,#f97316 100%);box-shadow:inset 0 8px 18px rgba(255,255,255,.15)}.wc-pilot-sky-thermal-plot::after{content:"cold air ← warmer air";position:absolute;z-index:0;right:5px;bottom:2px;left:5px;color:rgba(15,23,42,.52);font-size:6px;font-weight:950;letter-spacing:.07em;text-align:center;text-transform:uppercase}.wc-pilot-sky-thermal-zero{position:absolute;z-index:1;top:0;bottom:0;width:0;border-left:2px dashed rgba(15,23,42,.68)}.wc-pilot-sky-thermal-zero b{position:absolute;top:2px;left:4px;padding:2px 4px;border-radius:999px;background:rgba(255,255,255,.88);color:#334155;font-size:6.5px;font-weight:950;line-height:1;white-space:nowrap;box-shadow:0 2px 5px rgba(15,23,42,.12)}.wc-pilot-sky-thermal-path{--wc-thermal:#0284c7;position:absolute;z-index:1;height:3px;border-radius:999px;background:linear-gradient(90deg,color-mix(in srgb,var(--wc-thermal) 88%,#fff),color-mix(in srgb,var(--wc-thermal) 48%,#fff));box-shadow:0 0 0 1px rgba(255,255,255,.52),0 2px 5px rgba(15,23,42,.18);transform:translateY(-50%);transition:left 240ms cubic-bezier(.2,.8,.2,1),width 240ms cubic-bezier(.2,.8,.2,1)}.wc-pilot-sky-thermal-path::before{content:"";position:absolute;top:50%;left:-4px;border-top:4px solid transparent;border-right:6px solid var(--wc-thermal);border-bottom:4px solid transparent;transform:translateY(-50%)}.wc-pilot-sky-thermal-surface{position:absolute;top:50%;right:-5px;width:10px;height:10px;border:2px solid var(--wc-thermal);border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 0 0 2px rgba(255,255,255,.48),0 2px 5px rgba(15,23,42,.2);transform:translateY(-50%)}.wc-pilot-sky-thermal-marker{--wc-thermal:#0284c7;position:absolute;z-index:2;width:0;height:0;transition:left 240ms cubic-bezier(.2,.8,.2,1)}.wc-pilot-sky-thermal-path[data-scenario=tropicalOcean],.wc-pilot-sky-thermal-marker[data-scenario=tropicalOcean],.wc-pilot-sky-thermal-legend li[data-scenario=tropicalOcean]{--wc-thermal:#0d9488}.wc-pilot-sky-thermal-path[data-scenario=temperateCoast],.wc-pilot-sky-thermal-marker[data-scenario=temperateCoast],.wc-pilot-sky-thermal-legend li[data-scenario=temperateCoast]{--wc-thermal:#0284c7}.wc-pilot-sky-thermal-path[data-scenario=mountainWinter],.wc-pilot-sky-thermal-marker[data-scenario=mountainWinter],.wc-pilot-sky-thermal-legend li[data-scenario=mountainWinter]{--wc-thermal:#6366f1}.wc-pilot-sky-thermal-path[data-scenario=desertBasin],.wc-pilot-sky-thermal-marker[data-scenario=desertBasin],.wc-pilot-sky-thermal-legend li[data-scenario=desertBasin]{--wc-thermal:#d97706}.wc-pilot-sky-thermal-marker i{position:absolute;top:0;left:0;width:13px;height:13px;border:2px solid rgba(255,255,255,.95);border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:var(--wc-thermal);transform:translateX(-50%) rotate(38deg);box-shadow:0 0 0 2px color-mix(in srgb,var(--wc-thermal) 50%,transparent),0 3px 7px rgba(15,23,42,.24)}.wc-pilot-sky-thermal-marker b{position:absolute;top:0;left:9px;min-width:31px;padding:3px 4px;border:1px solid color-mix(in srgb,var(--wc-thermal) 45%,white);border-radius:999px;background:rgba(255,255,255,.9);color:color-mix(in srgb,var(--wc-thermal) 82%,#0f172a);font-size:6.8px;font-weight:950;line-height:1;text-align:center;white-space:nowrap;box-shadow:0 2px 6px rgba(15,23,42,.13)}.wc-pilot-sky-thermal-marker[data-extreme=warmest] b{right:9px;left:auto}.wc-pilot-sky-thermal-marker[data-freezing=true] b{border-style:dashed}.wc-pilot-sky-thermal-marker[data-extreme=coldest] i,.wc-pilot-sky-thermal-marker[data-extreme=warmest] i{animation:wc-pilot-thermal-extreme 2.8s ease-in-out infinite}.wc-pilot-sky-freeze-challenge{position:relative;margin:7px 0 0;padding:8px;overflow:hidden;border:1px solid rgba(59,130,246,.24);border-radius:10px;background:radial-gradient(circle at 96% 0,rgba(129,140,248,.16),transparent 30%),linear-gradient(135deg,rgba(239,246,255,.9),rgba(238,242,255,.78));box-shadow:inset 0 1px 0 rgba(255,255,255,.82),0 5px 13px rgba(30,64,175,.06)}.wc-pilot-sky-freeze-challenge::before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,#38bdf8,#6366f1,#a855f7);opacity:.72}.wc-pilot-sky-freeze-challenge[data-state=confirmed]{border-color:rgba(5,150,105,.34);background:radial-gradient(circle at 96% 0,rgba(52,211,153,.17),transparent 30%),linear-gradient(135deg,rgba(236,253,245,.9),rgba(236,254,255,.8))}.wc-pilot-sky-freeze-challenge[data-state=confirmed]::before{background:linear-gradient(90deg,#10b981,#22d3ee,#6366f1);opacity:1}.wc-pilot-sky-freeze-challenge[data-state=retry]{border-color:rgba(217,119,6,.34);background:radial-gradient(circle at 96% 0,rgba(251,191,36,.15),transparent 30%),linear-gradient(135deg,rgba(255,251,235,.9),rgba(239,246,255,.8))}.wc-pilot-sky-freeze-challenge[data-state=retry]::before{background:linear-gradient(90deg,#f59e0b,#38bdf8,#6366f1)}.wc-pilot-sky-freeze-head{display:grid;grid-template-columns:29px minmax(0,1fr) auto;align-items:center;gap:7px}.wc-pilot-sky-freeze-head>div{display:grid;gap:1px;min-width:0}.wc-pilot-sky-freeze-seal{position:relative;display:grid;place-items:center;width:27px;height:27px;border:1px solid rgba(79,70,229,.32);border-radius:50%;background:conic-gradient(from 30deg,#e0f2fe,#818cf8,#cffafe,#6366f1,#e0f2fe);box-shadow:inset 0 0 0 4px rgba(255,255,255,.76),0 4px 9px rgba(79,70,229,.18)}.wc-pilot-sky-freeze-seal::after{content:"✦";color:#3730a3;font-size:13px;font-weight:950;text-shadow:0 1px 0 #fff}.wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-seal{border-color:rgba(5,150,105,.42);background:conic-gradient(from 30deg,#d1fae5,#2dd4bf,#cffafe,#10b981,#d1fae5);animation:wc-pilot-freeze-confirm 420ms ease-out}.wc-pilot-sky-freeze-kicker{color:#4f46e5;font-size:6.5px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.wc-pilot-sky-freeze-head strong{color:#0f172a;font-size:9px;font-weight:950;line-height:1.2}.wc-pilot-sky-freeze-state{justify-self:end;padding:3px 6px;border:1px solid rgba(99,102,241,.24);border-radius:999px;background:rgba(255,255,255,.78);color:#4338ca;font-size:6.5px;font-weight:950;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}.wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-state{border-color:rgba(5,150,105,.3);background:#d1fae5;color:#047857}.wc-pilot-sky-freeze-challenge[data-state=retry] .wc-pilot-sky-freeze-state{border-color:rgba(217,119,6,.3);background:#fef3c7;color:#92400e}.wc-pilot-sky-freeze-prompt{margin:6px 0 5px;color:#1e3a8a;font-size:7.5px;font-weight:900;line-height:1.35}.wc-pilot-sky-freeze-choices{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}.wc-pilot-sky-freeze-choices button{position:relative;display:grid;place-items:center;gap:0;min-width:0;min-height:42px;padding:4px;border:1px solid rgba(59,130,246,.25);border-radius:8px;background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(224,242,254,.74));color:#1d4ed8;font:inherit;cursor:pointer;box-shadow:0 3px 7px rgba(30,64,175,.07);transition:transform 150ms ease,border-color 150ms ease,box-shadow 150ms ease,background 150ms ease}.wc-pilot-sky-freeze-choices button:hover{border-color:#3b82f6;transform:translateY(-1px);box-shadow:0 5px 10px rgba(30,64,175,.13)}.wc-pilot-sky-freeze-choices button:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-sky-freeze-choices button strong{font-size:13px;font-weight:950;line-height:1}.wc-pilot-sky-freeze-choices button small{overflow:hidden;max-width:100%;color:#64748b;font-size:6px;font-weight:850;line-height:1.1;text-overflow:ellipsis;text-transform:uppercase;white-space:nowrap}.wc-pilot-sky-freeze-choices button[data-selected=true]{border-color:#4f46e5;background:linear-gradient(145deg,#eef2ff,#dbeafe);box-shadow:0 0 0 2px rgba(99,102,241,.15),0 5px 11px rgba(79,70,229,.14)}.wc-pilot-sky-freeze-choices button[data-outcome=correct]{border-color:#059669;background:linear-gradient(145deg,#d1fae5,#cffafe);color:#047857;box-shadow:0 0 0 2px rgba(16,185,129,.14),0 5px 11px rgba(5,150,105,.13)}.wc-pilot-sky-freeze-choices button[data-outcome=retry]{border-color:#d97706;background:linear-gradient(145deg,#fef3c7,#ffedd5);color:#92400e;box-shadow:0 0 0 2px rgba(245,158,11,.13)}.wc-pilot-sky-freeze-feedback{margin:6px 0 0;padding:5px 7px;border-left:3px solid #6366f1;border-radius:0 6px 6px 0;background:rgba(255,255,255,.58);color:#3730a3;font-size:7px;font-weight:850;line-height:1.35}.wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-feedback{border-left-color:#10b981;color:#065f46}.wc-pilot-sky-freeze-challenge[data-state=retry] .wc-pilot-sky-freeze-feedback{border-left-color:#f59e0b;color:#92400e}.wc-pilot-sky-freeze-scope{display:block;margin-top:4px;color:#64748b;font-size:6.3px;font-weight:700;line-height:1.3}@keyframes wc-pilot-freeze-confirm{0%{transform:scale(.86) rotate(-12deg);opacity:.62}70%{transform:scale(1.08) rotate(4deg)}100%{transform:scale(1) rotate(0);opacity:1}}.wc-pilot-sky-cooling-rule{position:relative;display:grid;grid-template-columns:28px minmax(0,1fr);align-items:center;gap:8px;margin:7px 0 0;padding:7px 8px;overflow:hidden;border:1px solid rgba(14,116,144,.22);border-radius:9px;background:linear-gradient(115deg,rgba(236,254,255,.84),rgba(238,242,255,.76) 54%,rgba(255,247,237,.72));box-shadow:inset 0 1px 0 rgba(255,255,255,.78)}.wc-pilot-sky-cooling-rule::after{content:"";position:absolute;right:-18px;bottom:-24px;width:72px;height:72px;border:1px solid rgba(14,165,233,.12);border-radius:50%;box-shadow:0 0 0 9px rgba(99,102,241,.045),0 0 0 18px rgba(249,115,22,.03);pointer-events:none}.wc-pilot-sky-cooling-icon{position:relative;display:block;width:24px;height:38px;border:1px solid rgba(79,70,229,.28);border-radius:999px;background:linear-gradient(to top,#fb923c 0,#fde68a 28%,#7dd3fc 62%,#4f46e5 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.58),0 4px 9px rgba(79,70,229,.16)}.wc-pilot-sky-cooling-icon::before{content:"";position:absolute;top:9px;bottom:6px;left:50%;width:2px;border-radius:999px;background:rgba(255,255,255,.9);transform:translateX(-50%)}.wc-pilot-sky-cooling-icon::after{content:"";position:absolute;top:5px;left:50%;border-right:4px solid transparent;border-bottom:6px solid rgba(255,255,255,.94);border-left:4px solid transparent;transform:translateX(-50%)}.wc-pilot-sky-cooling-body{position:relative;z-index:1;display:grid;gap:4px;min-width:0}.wc-pilot-sky-cooling-head{display:flex;align-items:baseline;gap:6px}.wc-pilot-sky-cooling-head span{color:#0e7490;font-size:6.5px;font-weight:950;letter-spacing:.09em;text-transform:uppercase}.wc-pilot-sky-cooling-head strong{color:#0f172a;font-size:8.5px;font-weight:950}.wc-pilot-sky-cooling-equation{display:flex;align-items:center;gap:4px;min-width:0}.wc-pilot-sky-cooling-equation span,.wc-pilot-sky-cooling-equation b{padding:3px 5px;border:1px solid rgba(99,102,241,.2);border-radius:6px;background:rgba(255,255,255,.82);color:#3730a3;font-size:7px;font-weight:950;line-height:1.15;white-space:nowrap;box-shadow:0 2px 5px rgba(15,23,42,.05)}.wc-pilot-sky-cooling-equation span[data-term=altitude]{border-color:rgba(2,132,199,.22);color:#0369a1}.wc-pilot-sky-cooling-equation b[data-term=result]{border-color:rgba(13,148,136,.28);background:linear-gradient(135deg,rgba(204,251,241,.88),rgba(224,242,254,.86));color:#0f766e}.wc-pilot-sky-cooling-equation i{color:#64748b;font-size:8px;font-style:normal;font-weight:950}.wc-pilot-sky-cooling-body p{margin:0;color:#475569;font-size:6.8px;font-weight:750;line-height:1.35}.wc-pilot-sky-thermal-legend{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin:6px 0 0;padding:0;list-style:none}.wc-pilot-sky-thermal-legend li{--wc-thermal:#0284c7;display:grid;grid-template-columns:14px minmax(0,1fr) auto;align-items:center;gap:5px;min-width:0;min-height:46px;padding:5px 6px;border:1px solid color-mix(in srgb,var(--wc-thermal) 22%,transparent);border-radius:8px;background:rgba(255,255,255,.7)}.wc-pilot-sky-thermal-legend li[data-extreme=coldest],.wc-pilot-sky-thermal-legend li[data-extreme=warmest]{border-color:color-mix(in srgb,var(--wc-thermal) 52%,transparent);box-shadow:inset 0 2px 0 var(--wc-thermal)}.wc-pilot-sky-thermal-legend li>i{width:11px;height:13px;border:2px solid #fff;border-radius:64% 36% 66% 34%/68% 42% 58% 32%;background:var(--wc-thermal);transform:rotate(38deg);box-shadow:0 0 0 1px color-mix(in srgb,var(--wc-thermal) 35%,transparent)}.wc-pilot-sky-thermal-legend li>span{display:grid;gap:1px;min-width:0}.wc-pilot-sky-thermal-legend strong{overflow:hidden;color:#334155;font-size:7.2px;font-weight:950;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}.wc-pilot-sky-thermal-legend small{color:#64748b;font-size:6.4px;font-weight:750;line-height:1.2}.wc-pilot-sky-thermal-legend li>b{padding:3px 4px;border-radius:999px;background:color-mix(in srgb,var(--wc-thermal) 10%,white);color:color-mix(in srgb,var(--wc-thermal) 82%,#0f172a);font-size:7.2px;font-weight:950;white-space:nowrap}.wc-pilot-sky-thermal-legend li[data-freezing=true]>b{border:1px dashed var(--wc-thermal)}.wc-pilot-sky-thermal-legend li[data-freezing=true]>b::before{content:"✦ ";font-size:6px}.wc-pilot-sky-thermal-summary{margin:6px 0 0;padding:6px 8px;border-left:3px solid #6366f1;border-radius:0 6px 6px 0;background:rgba(238,242,255,.64);color:#3730a3;font-size:7.5px;font-weight:800;line-height:1.4}@keyframes wc-pilot-thermal-extreme{0%,100%{filter:brightness(1);box-shadow:0 0 0 2px color-mix(in srgb,var(--wc-thermal) 44%,transparent),0 3px 7px rgba(15,23,42,.24)}50%{filter:brightness(1.15);box-shadow:0 0 0 5px color-mix(in srgb,var(--wc-thermal) 18%,transparent),0 4px 10px rgba(15,23,42,.28)}}'
+      ,'.dark .wc-pilot-sky-thermal{border-color:rgba(129,140,248,.23);background:radial-gradient(circle at 4% 0,rgba(99,102,241,.2),transparent 27%),radial-gradient(circle at 96% 100%,rgba(249,115,22,.13),transparent 29%),linear-gradient(135deg,rgba(15,23,42,.7),rgba(30,27,75,.36));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.dark .wc-pilot-sky-thermal-kicker{color:#a5b4fc}.dark .wc-pilot-sky-thermal-head strong,.dark .wc-pilot-sky-thermal-legend strong{color:#f8fafc}.dark .wc-pilot-sky-thermal-head small,.dark .wc-pilot-sky-thermal-scale,.dark .wc-pilot-sky-thermal-scale span:nth-child(2),.dark .wc-pilot-sky-thermal-legend small{color:#cbd5e1}.dark .wc-pilot-sky-thermal-spread{border-color:rgba(251,146,60,.32);background:rgba(124,45,18,.38);color:#fed7aa!important}.dark .wc-pilot-sky-thermal-plot{border-color:rgba(203,213,225,.25);filter:saturate(.82) brightness(.8)}.dark .wc-pilot-sky-thermal-zero{border-left-color:rgba(255,255,255,.8)}.dark .wc-pilot-sky-thermal-zero b,.dark .wc-pilot-sky-thermal-marker b{background:rgba(15,23,42,.9);color:#f8fafc}.dark .wc-pilot-sky-thermal-legend li{border-color:color-mix(in srgb,var(--wc-thermal) 35%,transparent);background:rgba(15,23,42,.67)}.dark .wc-pilot-sky-thermal-legend li>b{background:color-mix(in srgb,var(--wc-thermal) 22%,#0f172a);color:#f8fafc}.dark .wc-pilot-sky-thermal-path{box-shadow:0 0 0 1px rgba(15,23,42,.7),0 2px 6px rgba(2,6,23,.38)}.dark .wc-pilot-sky-thermal-surface{background:#0f172a;box-shadow:0 0 0 2px rgba(15,23,42,.6),0 2px 6px rgba(2,6,23,.5)}.dark .wc-pilot-sky-freeze-challenge{border-color:rgba(96,165,250,.26);background:radial-gradient(circle at 96% 0,rgba(129,140,248,.18),transparent 30%),linear-gradient(135deg,rgba(8,47,73,.6),rgba(30,27,75,.48));box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 6px 14px rgba(2,6,23,.18)}.dark .wc-pilot-sky-freeze-challenge[data-state=confirmed]{border-color:rgba(52,211,153,.3);background:radial-gradient(circle at 96% 0,rgba(52,211,153,.13),transparent 30%),linear-gradient(135deg,rgba(6,78,59,.5),rgba(8,47,73,.56))}.dark .wc-pilot-sky-freeze-challenge[data-state=retry]{border-color:rgba(251,191,36,.3);background:radial-gradient(circle at 96% 0,rgba(251,191,36,.12),transparent 30%),linear-gradient(135deg,rgba(120,53,15,.38),rgba(8,47,73,.56))}.dark .wc-pilot-sky-freeze-seal{border-color:rgba(165,180,252,.38);box-shadow:inset 0 0 0 4px rgba(15,23,42,.55),0 4px 10px rgba(2,6,23,.3)}.dark .wc-pilot-sky-freeze-seal::after{color:#e0e7ff;text-shadow:0 1px 0 #0f172a}.dark .wc-pilot-sky-freeze-kicker{color:#a5b4fc}.dark .wc-pilot-sky-freeze-head strong{color:#f8fafc}.dark .wc-pilot-sky-freeze-state{border-color:rgba(165,180,252,.28);background:rgba(15,23,42,.7);color:#c7d2fe}.dark .wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-state{border-color:rgba(52,211,153,.32);background:rgba(6,78,59,.66);color:#a7f3d0}.dark .wc-pilot-sky-freeze-challenge[data-state=retry] .wc-pilot-sky-freeze-state{border-color:rgba(251,191,36,.3);background:rgba(120,53,15,.58);color:#fde68a}.dark .wc-pilot-sky-freeze-prompt{color:#bfdbfe}.dark .wc-pilot-sky-freeze-choices button{border-color:rgba(96,165,250,.28);background:linear-gradient(145deg,rgba(15,23,42,.78),rgba(8,47,73,.72));color:#93c5fd;box-shadow:0 3px 8px rgba(2,6,23,.25)}.dark .wc-pilot-sky-freeze-choices button small{color:#cbd5e1}.dark .wc-pilot-sky-freeze-choices button[data-selected=true]{border-color:#818cf8;background:linear-gradient(145deg,rgba(49,46,129,.68),rgba(30,64,175,.46))}.dark .wc-pilot-sky-freeze-choices button[data-outcome=correct]{border-color:#34d399;background:linear-gradient(145deg,rgba(6,78,59,.72),rgba(8,47,73,.68));color:#a7f3d0}.dark .wc-pilot-sky-freeze-choices button[data-outcome=retry]{border-color:#fbbf24;background:linear-gradient(145deg,rgba(120,53,15,.65),rgba(69,26,3,.62));color:#fde68a}.dark .wc-pilot-sky-freeze-feedback{background:rgba(15,23,42,.5);color:#c7d2fe}.dark .wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-feedback{color:#a7f3d0}.dark .wc-pilot-sky-freeze-challenge[data-state=retry] .wc-pilot-sky-freeze-feedback{color:#fde68a}.dark .wc-pilot-sky-freeze-scope{color:#cbd5e1}.dark .wc-pilot-sky-cooling-rule{border-color:rgba(125,211,252,.22);background:linear-gradient(115deg,rgba(8,47,73,.58),rgba(30,27,75,.52) 54%,rgba(124,45,18,.28));box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}.dark .wc-pilot-sky-cooling-rule::after{border-color:rgba(125,211,252,.12);box-shadow:0 0 0 9px rgba(129,140,248,.055),0 0 0 18px rgba(251,146,60,.035)}.dark .wc-pilot-sky-cooling-head span{color:#67e8f9}.dark .wc-pilot-sky-cooling-head strong{color:#f8fafc}.dark .wc-pilot-sky-cooling-equation span,.dark .wc-pilot-sky-cooling-equation b{border-color:rgba(165,180,252,.26);background:rgba(15,23,42,.72);color:#c7d2fe}.dark .wc-pilot-sky-cooling-equation span[data-term=altitude]{border-color:rgba(125,211,252,.26);color:#bae6fd}.dark .wc-pilot-sky-cooling-equation b[data-term=result]{border-color:rgba(94,234,212,.3);background:linear-gradient(135deg,rgba(6,78,59,.58),rgba(8,47,73,.64));color:#99f6e4}.dark .wc-pilot-sky-cooling-equation i,.dark .wc-pilot-sky-cooling-body p{color:#cbd5e1}.dark .wc-pilot-sky-thermal-summary{background:rgba(49,46,129,.34);color:#c7d2fe}'
+      ,'@media(max-width:560px){.wc-pilot-sky-thermal-head{display:grid}.wc-pilot-sky-thermal-spread{justify-self:start}.wc-pilot-sky-freeze-head{grid-template-columns:29px minmax(0,1fr)}.wc-pilot-sky-freeze-state{grid-column:2;justify-self:start}.wc-pilot-sky-cooling-equation{flex-wrap:wrap}.wc-pilot-sky-thermal-legend{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:380px){.wc-pilot-sky-thermal{padding:7px}.wc-pilot-sky-freeze-challenge{padding:7px}.wc-pilot-sky-freeze-choices{gap:3px}.wc-pilot-sky-freeze-choices button{min-height:44px;padding-inline:2px}.wc-pilot-sky-freeze-choices button small{font-size:5.5px}.wc-pilot-sky-cooling-rule{grid-template-columns:22px minmax(0,1fr);gap:6px;padding:6px}.wc-pilot-sky-cooling-icon{width:20px;height:34px}.wc-pilot-sky-cooling-equation{gap:3px}.wc-pilot-sky-cooling-equation span,.wc-pilot-sky-cooling-equation b{padding-inline:4px;font-size:6.5px}.wc-pilot-sky-thermal-scale span:nth-child(2){font-size:6px}.wc-pilot-sky-thermal-marker b{min-width:28px;padding-inline:3px;font-size:6.2px}.wc-pilot-sky-thermal-legend li{padding:5px}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-freeze-choices button,.wc-pilot-sky-thermal-path,.wc-pilot-sky-thermal-marker{transition:none!important}.wc-pilot-sky-freeze-challenge[data-state=confirmed] .wc-pilot-sky-freeze-seal{animation:none!important}.wc-pilot-sky-thermal-marker[data-extreme=coldest] i,.wc-pilot-sky-thermal-marker[data-extreme=warmest] i{animation:none!important}}'
+      ,'@media(forced-colors:active){.wc-pilot-sky-thermal,.wc-pilot-sky-thermal-plot,.wc-pilot-sky-thermal-spread,.wc-pilot-sky-thermal-marker b,.wc-pilot-sky-freeze-challenge,.wc-pilot-sky-freeze-state,.wc-pilot-sky-freeze-choices button,.wc-pilot-sky-freeze-feedback,.wc-pilot-sky-cooling-rule,.wc-pilot-sky-cooling-equation span,.wc-pilot-sky-cooling-equation b,.wc-pilot-sky-thermal-legend li,.wc-pilot-sky-thermal-legend li>b,.wc-pilot-sky-thermal-summary{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none;filter:none}.wc-pilot-sky-thermal-kicker,.wc-pilot-sky-thermal-head strong,.wc-pilot-sky-thermal-head small,.wc-pilot-sky-thermal-scale,.wc-pilot-sky-thermal-scale span:nth-child(2),.wc-pilot-sky-freeze-kicker,.wc-pilot-sky-freeze-head strong,.wc-pilot-sky-freeze-prompt,.wc-pilot-sky-freeze-choices button strong,.wc-pilot-sky-freeze-choices button small,.wc-pilot-sky-freeze-scope,.wc-pilot-sky-cooling-head span,.wc-pilot-sky-cooling-head strong,.wc-pilot-sky-cooling-equation i,.wc-pilot-sky-cooling-body p,.wc-pilot-sky-thermal-legend strong,.wc-pilot-sky-thermal-legend small{color:CanvasText}.wc-pilot-sky-thermal-zero{border-left:2px dashed CanvasText}.wc-pilot-sky-thermal-zero b{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.wc-pilot-sky-thermal-marker i,.wc-pilot-sky-freeze-seal,.wc-pilot-sky-cooling-icon,.wc-pilot-sky-thermal-legend li>i{border:2px solid CanvasText;background:Highlight;box-shadow:none}.wc-pilot-sky-freeze-seal::after{color:HighlightText;text-shadow:none}.wc-pilot-sky-freeze-challenge::before{display:none}.wc-pilot-sky-freeze-choices button[data-selected=true]{outline:2px solid Highlight;outline-offset:1px}.wc-pilot-sky-thermal-path{border:0;background:Highlight;box-shadow:none}.wc-pilot-sky-thermal-path::before{border-right-color:Highlight}.wc-pilot-sky-thermal-surface{border:2px solid CanvasText;background:Canvas;box-shadow:none}.wc-pilot-sky-cooling-rule::after{display:none}.wc-pilot-sky-thermal-marker[data-extreme=coldest] i,.wc-pilot-sky-thermal-marker[data-extreme=warmest] i{outline:2px solid Highlight;animation:none}.wc-pilot-sky-thermal-plot::after{color:CanvasText}}@media print{.wc-pilot-sky-thermal{break-inside:avoid;border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-freeze-challenge{break-inside:avoid;border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-freeze-challenge::before{display:none}.wc-pilot-sky-cooling-rule{border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-cooling-rule::after{display:none}.wc-pilot-sky-thermal-plot{border:1px solid #000;filter:grayscale(1)}.wc-pilot-sky-thermal-head strong,.wc-pilot-sky-thermal-head small,.wc-pilot-sky-thermal-kicker,.wc-pilot-sky-thermal-scale,.wc-pilot-sky-thermal-scale span:nth-child(2),.wc-pilot-sky-thermal-spread,.wc-pilot-sky-thermal-marker b,.wc-pilot-sky-freeze-kicker,.wc-pilot-sky-freeze-head strong,.wc-pilot-sky-freeze-state,.wc-pilot-sky-freeze-prompt,.wc-pilot-sky-freeze-choices button,.wc-pilot-sky-freeze-choices button small,.wc-pilot-sky-freeze-feedback,.wc-pilot-sky-freeze-scope,.wc-pilot-sky-cooling-head span,.wc-pilot-sky-cooling-head strong,.wc-pilot-sky-cooling-equation span,.wc-pilot-sky-cooling-equation b,.wc-pilot-sky-cooling-equation i,.wc-pilot-sky-cooling-body p,.wc-pilot-sky-thermal-legend strong,.wc-pilot-sky-thermal-legend small,.wc-pilot-sky-thermal-legend li>b,.wc-pilot-sky-thermal-summary{color:#000!important}.wc-pilot-sky-thermal-spread,.wc-pilot-sky-thermal-marker b,.wc-pilot-sky-freeze-challenge,.wc-pilot-sky-freeze-state,.wc-pilot-sky-freeze-choices button,.wc-pilot-sky-freeze-feedback,.wc-pilot-sky-cooling-rule,.wc-pilot-sky-cooling-equation span,.wc-pilot-sky-cooling-equation b,.wc-pilot-sky-thermal-legend li,.wc-pilot-sky-thermal-legend li>b,.wc-pilot-sky-thermal-summary{border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-freeze-choices button,.wc-pilot-sky-thermal-path,.wc-pilot-sky-thermal-marker{transition:none}.wc-pilot-sky-freeze-seal,.wc-pilot-sky-thermal-marker i{animation:none}.wc-pilot-sky-thermal-legend li[data-extreme=coldest],.wc-pilot-sky-thermal-legend li[data-extreme=warmest]{box-shadow:inset 0 2px 0 #000}}'
+      ,'.wc-pilot-sky-waypoints{position:relative;margin-top:8px;padding:8px;border:1px solid rgba(14,116,144,.2);border-radius:10px;background:linear-gradient(135deg,rgba(240,253,250,.72),rgba(239,246,255,.7));box-shadow:inset 0 1px 0 rgba(255,255,255,.72)}.wc-pilot-sky-waypoints-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px}.wc-pilot-sky-waypoints-head>div{display:grid;gap:1px;min-width:0}.wc-pilot-sky-waypoints-kicker{color:#0f766e;font-size:7px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}.wc-pilot-sky-waypoints-head strong{color:#0f172a;font-size:9.5px;font-weight:950;line-height:1.2}.wc-pilot-sky-waypoints-head small{color:#64748b;font-size:7.5px;font-weight:750;line-height:1.3}.wc-pilot-sky-waypoints-count{flex:0 0 auto;padding:4px 7px;border:1px solid rgba(13,148,136,.25);border-radius:999px;background:rgba(255,255,255,.78);color:#0f766e!important;font-size:7.5px!important;white-space:nowrap}.wc-pilot-sky-waypoints[data-complete=true] .wc-pilot-sky-waypoints-count{border-color:rgba(5,150,105,.38);background:#d1fae5;color:#047857!important}.wc-pilot-sky-waypoints-controls{display:grid;grid-template-columns:58px minmax(0,1fr) 58px;align-items:stretch;gap:5px}.wc-pilot-sky-waypoint-step,.wc-pilot-sky-waypoints-list button{min-height:58px;border:1px solid rgba(100,116,139,.23);border-radius:8px;background:rgba(255,255,255,.78);color:#334155;font:inherit;cursor:pointer;transition:transform 160ms ease,box-shadow 160ms ease,border-color 160ms ease,background 160ms ease}.wc-pilot-sky-waypoint-step{display:grid;place-items:center;align-content:center;gap:1px;padding:5px}.wc-pilot-sky-waypoint-step span{color:#0f766e;font-size:16px;font-weight:950;line-height:1}.wc-pilot-sky-waypoint-step small{font-size:7px;font-weight:900}.wc-pilot-sky-waypoint-step:disabled{cursor:not-allowed;opacity:.42;filter:saturate(.45)}.wc-pilot-sky-waypoint-step:not(:disabled):hover,.wc-pilot-sky-waypoints-list button:hover{border-color:#0d9488;background:#fff;box-shadow:0 6px 13px rgba(15,118,110,.13);transform:translateY(-1px)}.wc-pilot-sky-waypoint-step:focus-visible,.wc-pilot-sky-waypoints-list button:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-sky-waypoints-list{--wc-waypoint-progress:0%;position:relative;display:flex;gap:5px;min-width:0;margin:0;padding:2px 2px 5px;overflow-x:auto;list-style:none;scrollbar-color:rgba(13,148,136,.38) transparent;scrollbar-width:thin;scroll-snap-type:x proximity}.wc-pilot-sky-waypoints-list::before{content:"";position:absolute;z-index:0;top:28px;right:10px;left:10px;height:3px;border-radius:999px;background:linear-gradient(90deg,#14b8a6 0 var(--wc-waypoint-progress),rgba(148,163,184,.32) var(--wc-waypoint-progress) 100%)}.wc-pilot-sky-waypoints-list li{--wc-waypoint:#0284c7;position:relative;z-index:1;flex:1 0 112px;min-width:0;scroll-snap-align:start}.wc-pilot-sky-waypoints-list li[data-waypoint-type=freezing]{--wc-waypoint:#7c3aed}.wc-pilot-sky-waypoints-list button{display:grid;grid-template-columns:18px minmax(0,1fr);align-items:center;gap:5px;width:100%;padding:5px 6px;text-align:left}.wc-pilot-sky-waypoints-list button>i{position:relative;display:grid;place-items:center;width:15px;height:15px;border:2px solid #fff;border-radius:50%;background:#94a3b8;box-shadow:0 0 0 2px rgba(100,116,139,.3)}.wc-pilot-sky-waypoints-list li[data-waypoint-type=cloud] button>i{border-radius:60% 40% 62% 38%;background:#e0f2fe;box-shadow:0 0 0 2px #0284c7}.wc-pilot-sky-waypoints-list li[data-waypoint-type=cloud] button>i::after{content:"";width:8px;height:4px;border-radius:999px;background:#0284c7;box-shadow:3px 1px 0 -1px #38bdf8}.wc-pilot-sky-waypoints-list li[data-waypoint-type=freezing] button>i{background:#ede9fe;box-shadow:0 0 0 2px #7c3aed}.wc-pilot-sky-waypoints-list li[data-waypoint-type=freezing] button>i::after{content:"✦";color:#6d28d9;font-size:10px;font-weight:950;line-height:1}.wc-pilot-sky-waypoints-list button>span{display:grid;gap:2px;min-width:0}.wc-pilot-sky-waypoints-list button strong{overflow:hidden;color:#334155;font-size:7.5px;font-weight:950;line-height:1.15;text-overflow:ellipsis;white-space:nowrap}.wc-pilot-sky-waypoints-list button small{color:#64748b;font-size:6.8px;font-weight:800;line-height:1.2}.wc-pilot-sky-waypoints-list li[data-crossed=true] button{border-color:color-mix(in srgb,var(--wc-waypoint) 38%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-waypoint) 11%,white),rgba(255,255,255,.82))}.wc-pilot-sky-waypoints-list li[data-crossed=true] button>i{background:var(--wc-waypoint);box-shadow:0 0 0 2px color-mix(in srgb,var(--wc-waypoint) 48%,transparent)}.wc-pilot-sky-waypoints-list li[data-crossed=true] button>i::after{color:#fff}.wc-pilot-sky-waypoints-list li[data-current=true] button{border-color:#db2777;outline:2px solid rgba(219,39,119,.2);outline-offset:1px;box-shadow:0 6px 15px rgba(157,23,77,.16);transform:translateY(-1px)}.wc-pilot-sky-waypoints-list li[data-current=true] button>i{animation:wc-pilot-waypoint-breathe 2.2s ease-in-out infinite}.wc-pilot-sky-waypoints-list li[data-next=true]:not([data-current=true]) button{border-style:dashed;border-color:var(--wc-waypoint);box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--wc-waypoint) 8%,transparent)}.wc-pilot-sky-waypoints-status{margin:5px 0 0;padding:5px 7px;border-left:3px solid #0d9488;border-radius:0 6px 6px 0;background:rgba(204,251,241,.5);color:#115e59;font-size:7.5px;font-weight:850;line-height:1.35}.wc-pilot-sky-probe-temperature{position:absolute;right:4px;bottom:4px;min-width:36px;padding:3px 5px;border:1px solid color-mix(in srgb,var(--wc-probe-state) 40%,white);border-radius:999px;background:color-mix(in srgb,var(--wc-probe-state) 14%,rgba(255,255,255,.92));color:color-mix(in srgb,var(--wc-probe-state) 84%,#0f172a);font-size:8px;font-weight:950;line-height:1;text-align:center;box-shadow:0 3px 8px rgba(15,23,42,.16);backdrop-filter:blur(4px)}.wc-pilot-sky-probe-temperature[data-freezing=true]{border-style:dashed}.wc-pilot-sky-probe-line[data-edge=top] .wc-pilot-sky-probe-temperature{top:4px;bottom:auto}@keyframes wc-pilot-waypoint-breathe{0%,100%{filter:brightness(1);transform:scale(.92)}50%{filter:brightness(1.18);transform:scale(1.08)}}'
+      ,'.dark .wc-pilot-sky-waypoints{border-color:rgba(45,212,191,.2);background:linear-gradient(135deg,rgba(15,118,110,.18),rgba(30,27,75,.26));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}.dark .wc-pilot-sky-waypoints-kicker{color:#5eead4}.dark .wc-pilot-sky-waypoints-head strong,.dark .wc-pilot-sky-waypoints-list button strong{color:#f8fafc}.dark .wc-pilot-sky-waypoints-head small,.dark .wc-pilot-sky-waypoints-list button small{color:#cbd5e1}.dark .wc-pilot-sky-waypoints-count{border-color:rgba(45,212,191,.28);background:rgba(15,118,110,.25);color:#99f6e4!important}.dark .wc-pilot-sky-waypoints[data-complete=true] .wc-pilot-sky-waypoints-count{background:rgba(6,78,59,.7);color:#a7f3d0!important}.dark .wc-pilot-sky-waypoint-step,.dark .wc-pilot-sky-waypoints-list button{border-color:rgba(148,163,184,.25);background:rgba(15,23,42,.72);color:#cbd5e1}.dark .wc-pilot-sky-waypoint-step span{color:#5eead4}.dark .wc-pilot-sky-waypoint-step:not(:disabled):hover,.dark .wc-pilot-sky-waypoints-list button:hover{border-color:#2dd4bf;background:#0f172a}.dark .wc-pilot-sky-waypoints-list li[data-crossed=true] button{border-color:color-mix(in srgb,var(--wc-waypoint) 50%,transparent);background:linear-gradient(145deg,color-mix(in srgb,var(--wc-waypoint) 20%,#0f172a),rgba(15,23,42,.82))}.dark .wc-pilot-sky-waypoints-status{background:rgba(6,78,59,.38);color:#a7f3d0}.dark .wc-pilot-sky-probe-temperature{border-color:color-mix(in srgb,var(--wc-probe-state) 55%,white);background:color-mix(in srgb,var(--wc-probe-state) 25%,rgba(15,23,42,.9));color:#f8fafc;box-shadow:0 4px 10px rgba(2,6,23,.28)}'
+      ,'@media(max-width:560px){.wc-pilot-sky-waypoints-head{display:grid}.wc-pilot-sky-waypoints-count{justify-self:start}.wc-pilot-sky-waypoints-controls{grid-template-columns:50px minmax(0,1fr) 50px}.wc-pilot-sky-waypoints-list li{flex-basis:104px}}@media(max-width:380px){.wc-pilot-sky-waypoints{padding:7px}.wc-pilot-sky-waypoints-controls{grid-template-columns:44px minmax(0,1fr) 44px}.wc-pilot-sky-waypoint-step{padding:3px}.wc-pilot-sky-waypoint-step small{font-size:6.5px}.wc-pilot-sky-waypoints-list li{flex-basis:98px}.wc-pilot-sky-probe-temperature{right:2px;min-width:31px;padding-inline:3px;font-size:7px}}@media(prefers-reduced-motion:reduce){.wc-pilot-sky-waypoints-list li[data-current=true] button>i{animation:none!important}.wc-pilot-sky-waypoint-step,.wc-pilot-sky-waypoints-list button{transition:none!important}.wc-pilot-sky-waypoint-step:not(:disabled):hover,.wc-pilot-sky-waypoints-list button:hover,.wc-pilot-sky-waypoints-list li[data-current=true] button{transform:none}}'
+      ,'@media(forced-colors:active){.wc-pilot-sky-waypoints,.wc-pilot-sky-waypoint-step,.wc-pilot-sky-waypoints-list button,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-status,.wc-pilot-sky-probe-temperature{border:1px solid CanvasText;background:Canvas;color:CanvasText;box-shadow:none;filter:none}.wc-pilot-sky-waypoints-kicker,.wc-pilot-sky-waypoints-head strong,.wc-pilot-sky-waypoints-head small,.wc-pilot-sky-waypoint-step span,.wc-pilot-sky-waypoints-list button strong,.wc-pilot-sky-waypoints-list button small{color:CanvasText}.wc-pilot-sky-waypoints-list::before{background:CanvasText}.wc-pilot-sky-waypoints-list button>i{border:2px solid CanvasText;background:Canvas;box-shadow:none}.wc-pilot-sky-waypoints-list li[data-crossed=true] button>i{background:Highlight}.wc-pilot-sky-waypoints-list li[data-current=true] button{outline:3px solid Highlight;outline-offset:1px}.wc-pilot-sky-waypoints-list li[data-next=true]:not([data-current=true]) button{border-style:dashed}.wc-pilot-sky-probe-temperature[data-freezing=true]{border-style:dashed}}@media print{.wc-pilot-sky-waypoints{border:1px solid #000;background:#fff;box-shadow:none}.wc-pilot-sky-waypoints-head strong,.wc-pilot-sky-waypoints-head small,.wc-pilot-sky-waypoints-kicker,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-list button strong,.wc-pilot-sky-waypoints-list button small,.wc-pilot-sky-waypoints-status{color:#000!important}.wc-pilot-sky-waypoint-step{display:none}.wc-pilot-sky-waypoints-controls{display:block}.wc-pilot-sky-waypoints-list{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible}.wc-pilot-sky-waypoints-list::before{display:none}.wc-pilot-sky-waypoints-list button,.wc-pilot-sky-waypoints-count,.wc-pilot-sky-waypoints-status{border:1px solid #000;background:#fff;box-shadow:none;transform:none}.wc-pilot-sky-waypoints-list li[data-current=true] button{outline:2px solid #000}.wc-pilot-sky-probe-temperature{border:1px solid #000;background:#fff;color:#000;box-shadow:none;backdrop-filter:none}}'
+      ,'@media(forced-colors:active){.wc-pilot-hud,.wc-pilot-pad,.wc-pilot-key,.wc-pilot-scenario,.wc-pilot-science,.wc-pilot-ledger,.wc-pilot-journey-guide,.wc-pilot-journey-step,.wc-pilot-alt{border:1px solid CanvasText;background:Canvas;color:CanvasText}.wc-pilot-key[aria-pressed=true],.wc-pilot-scenario[aria-pressed=true]{background:Highlight;color:HighlightText}.wc-pilot-journey-guide>h4,.wc-pilot-journey-step>span,.wc-pilot-journey-step>strong,.wc-pilot-journey-step>small{color:CanvasText}.wc-pilot-form-dot,.wc-pilot-ladder-you,.wc-pilot-gauge-track i{background:CanvasText!important;box-shadow:none!important}}'
       ,'.wc-pilot-stage[data-camera-mode=water]::after{content:"";position:absolute;z-index:2;inset:0;pointer-events:none;background:radial-gradient(circle at 50% 47%,transparent 42%,rgba(2,12,27,.08) 68%,rgba(2,12,27,.36) 100%),linear-gradient(115deg,rgba(125,211,252,.08),transparent 28%,transparent 72%,rgba(34,211,238,.07));box-shadow:inset 0 0 48px rgba(56,189,248,.15)}'
-      ,'.wc-pilot-camera-switch{position:absolute;z-index:6;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid rgba(186,230,253,.3);border-radius:12px;background:rgba(3,18,31,.82);box-shadow:0 8px 24px rgba(2,12,27,.2);backdrop-filter:blur(10px)}.wc-pilot-camera-btn{min-height:34px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#bae6fd;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer}.wc-pilot-camera-btn:hover{background:rgba(14,116,144,.55);color:#fff}.wc-pilot-camera-btn[aria-pressed=true]{background:#e0f2fe;color:#075985;box-shadow:0 2px 10px rgba(2,12,27,.24)}.wc-pilot-camera-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-camera-help{min-width:34px;padding-inline:8px;color:#fef3c7}'
-      ,'.wc-pilot-route{position:absolute;z-index:5;left:50%;bottom:76px;transform:translateX(-50%);width:min(390px,calc(100% - 250px));padding:8px 10px;border:1px solid rgba(167,243,208,.38);border-radius:11px;background:rgba(3,18,31,.82);box-shadow:0 10px 26px rgba(2,12,27,.26);backdrop-filter:blur(10px);color:#e0f2fe;pointer-events:none}.wc-pilot-route-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6ee7b7}.wc-pilot-route strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#fff}.wc-pilot-route small{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#bae6fd}'
+      ,'.wc-pilot-camera-switch{position:absolute;z-index:6;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:stretch;gap:2px;padding:3px;border:1px solid rgba(186,230,253,.3);border-radius:12px;background:rgba(3,18,31,.94);box-shadow:0 8px 24px rgba(2,12,27,.2)}.wc-pilot-camera-btn{min-height:34px;padding:6px 10px;border:0;border-radius:8px;background:transparent;color:#bae6fd;font-size:11px;font-weight:900;white-space:nowrap;cursor:pointer}.wc-pilot-camera-btn:hover{background:rgba(14,116,144,.55);color:#fff}.wc-pilot-camera-btn[aria-pressed=true]{background:#e0f2fe;color:#075985;box-shadow:0 2px 10px rgba(2,12,27,.24)}.wc-pilot-camera-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}.wc-pilot-camera-help{min-width:34px;padding-inline:8px;color:#fef3c7}'
+      ,'.wc-pilot-route{position:absolute;z-index:5;left:50%;bottom:76px;transform:translateX(-50%);width:min(390px,calc(100% - 250px));padding:8px 10px;border:1px solid rgba(167,243,208,.38);border-radius:11px;background:rgba(3,18,31,.94);box-shadow:0 10px 26px rgba(2,12,27,.26);color:#e0f2fe;pointer-events:none}.wc-pilot-route-kicker{display:block;font-size:9px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#6ee7b7}.wc-pilot-route strong{display:block;margin-top:2px;font-size:12px;line-height:1.3;color:#fff}.wc-pilot-route small{display:block;margin-top:2px;font-size:10px;line-height:1.35;color:#bae6fd}'
       ,'.wc-pilot-launch{position:absolute;z-index:9;inset:0;display:grid;place-items:center;padding:18px;overflow:auto;background:linear-gradient(145deg,rgba(2,12,27,.84),rgba(3,47,67,.7));backdrop-filter:blur(5px)}.wc-pilot-launch-card{width:min(660px,100%);padding:20px;border:1px solid rgba(186,230,253,.38);border-radius:18px;background:linear-gradient(145deg,rgba(3,18,31,.95),rgba(8,47,73,.94));box-shadow:0 24px 70px rgba(2,6,23,.48);color:#e0f2fe}.wc-pilot-launch-kicker{display:block;margin-bottom:5px;font-size:10px;font-weight:900;letter-spacing:.11em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch h3{margin:0;font-size:clamp(21px,3vw,30px);line-height:1.08;letter-spacing:-.025em;color:#fff}.wc-pilot-launch-intro{margin:7px 0 13px;font-size:13px;line-height:1.5;color:#bae6fd}.wc-pilot-launch-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}.wc-pilot-launch-step{padding:9px 10px;border:1px solid rgba(125,211,252,.2);border-radius:11px;background:rgba(15,23,42,.48)}.wc-pilot-launch-step span{display:block;font-size:9px;font-weight:900;letter-spacing:.07em;text-transform:uppercase;color:#67e8f9}.wc-pilot-launch-step strong{display:block;margin-top:3px;font-size:12px;line-height:1.3;color:#f8fafc}.wc-pilot-launch-science{margin:10px 0;padding:8px 10px;border-left:3px solid #34d399;border-radius:0 8px 8px 0;background:rgba(6,78,59,.3);font-size:11px;line-height:1.45;color:#d1fae5}.wc-pilot-launch-actions{display:flex;gap:7px;flex-wrap:wrap}.wc-pilot-launch-btn{flex:1 1 190px;min-height:42px;padding:9px 13px;border:1px solid #7dd3fc;border-radius:10px;background:#0284c7;color:#fff;font-size:12px;font-weight:900;cursor:pointer}.wc-pilot-launch-btn:hover{background:#0369a1}.wc-pilot-launch-btn.is-water{border-color:#67e8f9;background:rgba(14,116,144,.65)}.wc-pilot-launch-btn:focus-visible{outline:3px solid #facc15;outline-offset:3px}'
       ,'@media(max-width:700px){.wc-pilot-camera-switch{top:8px;right:8px;left:8px;transform:none;justify-content:center}.wc-pilot-camera-btn{padding-inline:7px}.wc-pilot-route{top:200px;right:8px;bottom:auto;left:auto;width:min(58%,260px);transform:none}.wc-pilot-launch{place-items:start center;padding:10px}.wc-pilot-launch-card{padding:14px}.wc-pilot-launch-grid{grid-template-columns:1fr}.wc-pilot-launch-step{padding:6px 8px}.wc-pilot-launch-intro{margin-bottom:9px}.wc-pilot-launch-science{margin:8px 0}.wc-pilot-launch-btn{min-height:38px}}'
       ,'@media(max-width:700px){.wc-pilot-stage[data-onboarding=true]{min-height:620px}}'
       ,'@media(forced-colors:active){.wc-pilot-camera-switch,.wc-pilot-camera-btn,.wc-pilot-route,.wc-pilot-launch,.wc-pilot-launch-card,.wc-pilot-launch-step,.wc-pilot-launch-btn{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-camera-btn[aria-pressed=true],.wc-pilot-launch-btn{background:Highlight;color:HighlightText}.wc-pilot-stage[data-camera-mode=water]::after{display:none}}'
       ,'@media(forced-colors:active){.wc-pilot-transition,.wc-pilot-transition-form,.wc-pilot-transition-evidence{border-color:CanvasText;background:Canvas;color:CanvasText}.wc-pilot-transition-kicker,.wc-pilot-transition p,.wc-pilot-transition-arrow,.wc-pilot-transition-evidence span{color:CanvasText}}'
-      ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.9),rgba(30,41,59,.84))}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
+      ,'.wc-pilot-buoy[data-state=pathway]{background:rgba(99,102,241,.2);color:#e0e7ff}.wc-pilot-readouts.is-pathway dd{font-size:11px;line-height:1.22}.wc-pilot-route.is-process{border-color:rgba(165,243,252,.5);background:linear-gradient(145deg,rgba(3,18,31,.96),rgba(30,41,59,.94))}.wc-pilot-route-progress{height:6px;margin-top:6px;border-radius:999px;background:rgba(186,230,253,.2);overflow:hidden}.wc-pilot-route-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38bdf8,#4ade80)}.wc-pilot-key-pathway{min-width:128px;background:#0f766e;border-color:#5eead4}.wc-pilot-key-pathway:hover{background:#0d9488}@media(forced-colors:active){.wc-pilot-route-progress{border:1px solid CanvasText;background:Canvas}.wc-pilot-route-progress i{background:Highlight}.wc-pilot-key-pathway{background:Highlight;color:HighlightText}}'
     ].join('');
     if (document.head) document.head.appendChild(st);
   })();
@@ -950,7 +1016,8 @@
     { id: 'quiz_pass', name: 'Hydrologist Scholar', desc: 'Answer a quiz question correctly', icon: '🎓', rp: 15 },
     { id: 'vocabulary_studied', name: 'Word Power', desc: 'Study 3 water cycle vocabulary flashcards', icon: '📝', rp: 20 },
     { id: 'stewardship_win', name: 'Watershed Champion', desc: 'Achieve a "Watershed Recovery" or "Recovering Watershed" outcome in the campaign', icon: '🏆', rp: 50 },
-    { id: 'myth_buster', name: 'Myth Buster', desc: 'Answer 3 water myths (True/False)', icon: '🧠', rp: 30 }
+    { id: 'myth_buster', name: 'Myth Buster', desc: 'Answer 3 water myths (True/False)', icon: '🧠', rp: 30 },
+    { id: 'double_rainbow', name: 'Double Rainbow Scientist', desc: 'Create a primary and secondary rainbow with correct Sun-rain-view geometry', icon: '\uD83C\uDF08', rp: 40 }
   ];
 
   var WATER_CYCLE_PRESETS = {
@@ -2302,7 +2369,7 @@
   }
 
   // ══════════════════════════════════════════════════════════════════════════
-  //  BE THE WATER - flagship piloted-parcel kernel
+  //  BE THE WATER - piloted 3D water-parcel kernel
   //  ------------------------------------------------------------------------
   //  Every rule the piloted 3D mode obeys lives here, as pure functions over a
   //  plain state object. Nothing in this block touches THREE, the DOM, or React.
@@ -2369,39 +2436,108 @@
     plant: 1 / 14
   };
   var WC_PILOT_CANOPY_RELEASE_M = 30;
+  // Time-compressed exposure threshold for virga. A falling drop accumulates
+  // exposure only in substantially unsaturated air below cloud base. The rate
+  // is deliberately scenario-independent: humidity and time aloft, rather
+  // than a special-case desert switch, decide whether the drop survives.
+  var WC_PILOT_VIRGA_RATE = 0.12;
 
   var WC_PILOT_SCENARIOS = {
     tropicalOcean: {
       id: 'tropicalOcean',
       label: 'Tropical ocean',
       blurb: 'Hot sea, humid air, a low cloud base. The easiest place to become a cloud.',
-      surfaceTempC: 30, surfaceRH: 80, seaTempC: 29, windMs: 4, solar: 1.15, surfaceExcessC: 2,
+      surfaceTempC: 30, surfaceRH: 80, seaTempC: 29, windMs: 4, solar: 1.15, surfaceExcessC: 2, sunElevationDeg: 24,
       terrain: 'coast'
     },
     temperateCoast: {
       id: 'temperateCoast',
       label: 'Temperate coast',
       blurb: 'Mild sea, drier air. You must climb further before anything condenses.',
-      surfaceTempC: 20, surfaceRH: 62, seaTempC: 17, windMs: 6, solar: 1, surfaceExcessC: 1.6,
+      surfaceTempC: 20, surfaceRH: 62, seaTempC: 17, windMs: 6, solar: 1, surfaceExcessC: 1.6, sunElevationDeg: 28,
       terrain: 'coast'
     },
     mountainWinter: {
       id: 'mountainWinter',
       label: 'Mountain winter',
       blurb: 'Cold and dry. The freezing level is near the ground, so you become ice, not rain.',
-      surfaceTempC: 2, surfaceRH: 70, seaTempC: 4, windMs: 8, solar: 0.7, surfaceExcessC: 1.1,
+      surfaceTempC: 2, surfaceRH: 70, seaTempC: 4, windMs: 8, solar: 0.7, surfaceExcessC: 1.1, sunElevationDeg: 15,
       terrain: 'mountain'
     },
     desertBasin: {
       id: 'desertBasin',
       label: 'Desert basin',
       blurb: 'Very dry air lifts the cloud base far above your head, and falling drops evaporate on the way down.',
-      surfaceTempC: 38, surfaceRH: 22, seaTempC: 26, windMs: 3, solar: 1.35, surfaceExcessC: 2.8,
+      surfaceTempC: 38, surfaceRH: 22, seaTempC: 26, windMs: 3, solar: 1.35, surfaceExcessC: 2.8, sunElevationDeg: 34,
       terrain: 'desert'
     }
   };
 
   function wcPilotClamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  // Rainbow geometry is observer-relative: the bow is centered on the
+  // antisolar point, not on a fixed place in the landscape. National Weather
+  // Service teaching guidance places the primary near 42 degrees (one internal
+  // reflection) and the fainter, color-reversed secondary near 50-51 degrees
+  // (two internal reflections). These constants drive both the challenge and
+  // the visual, so the explanation cannot drift away from what learners make.
+  var WC_PILOT_RAINBOW_PRIMARY_DEG = 42;
+  var WC_PILOT_RAINBOW_SECONDARY_DEG = 51;
+  var WC_PILOT_RAINBOW_MAX_SUN_DEG = 42;
+
+  function wcPilotRainbowNumber(value, fallback) {
+    var number = Number(value);
+    return isFinite(number) ? number : fallback;
+  }
+
+  function wcPilotRainbowOptics(input) {
+    var value = input && typeof input === 'object' ? input : {};
+    var form = typeof value.form === 'string' ? value.form : 'liquid';
+    var solar = wcPilotClamp(wcPilotRainbowNumber(value.solar, 0), 0, 2);
+    var sunAltitudeDeg = wcPilotClamp(wcPilotRainbowNumber(value.sunAltitudeDeg, 90), 0, 90);
+    var alignment = wcPilotClamp(wcPilotRainbowNumber(value.antisolarAlignment, -1), -1, 1);
+    var mass = wcPilotClamp(wcPilotRainbowNumber(value.mass, 0), 0, 5);
+    var rainReady = form === 'rain';
+    var lowSunReady = sunAltitudeDeg > 0 && sunAltitudeDeg < WC_PILOT_RAINBOW_MAX_SUN_DEG;
+    var sunlightReady = solar >= 0.75;
+    var primaryAligned = alignment >= 0.86;
+    var secondaryAligned = alignment >= 0.985;
+    var rainCurtainReady = mass >= WC_PILOT_MASS_TO_FALL;
+    var primaryVisible = rainReady && lowSunReady && sunlightReady && primaryAligned;
+    var secondaryVisible = primaryVisible && rainCurtainReady && solar >= 1 && secondaryAligned;
+    var alignmentStrength = wcPilotClamp((alignment - 0.82) / 0.18, 0, 1);
+    var sunlightStrength = wcPilotClamp((solar - 0.65) / 0.7, 0, 1);
+    var primaryStrength = primaryVisible
+      ? wcPilotClamp(0.5 + alignmentStrength * 0.25 + sunlightStrength * 0.2, 0, 0.95) : 0;
+    var secondaryStrength = secondaryVisible
+      ? wcPilotClamp(0.2 + sunlightStrength * 0.22 + alignmentStrength * 0.08, 0, 0.5) : 0;
+    var stage = !rainReady ? 0
+      : !(lowSunReady && sunlightReady) ? 1
+        : !primaryVisible ? 2
+          : !secondaryVisible ? 3 : 4;
+    return {
+      stage: stage,
+      rainReady: rainReady,
+      lowSunReady: lowSunReady,
+      sunlightReady: sunlightReady,
+      primaryAligned: primaryAligned,
+      secondaryAligned: secondaryAligned,
+      rainCurtainReady: rainCurtainReady,
+      primaryVisible: primaryVisible,
+      secondaryVisible: secondaryVisible,
+      primaryStrength: primaryStrength,
+      secondaryStrength: secondaryStrength,
+      strengthBucket: Math.round(Math.max(primaryStrength, secondaryStrength) * 10),
+      antisolarAlignment: alignment,
+      alignmentPercent: Math.round(wcPilotClamp((alignment + 1) * 50, 0, 100)),
+      solar: solar,
+      sunAltitudeDeg: sunAltitudeDeg,
+      primaryAngleDeg: WC_PILOT_RAINBOW_PRIMARY_DEG,
+      secondaryAngleDeg: WC_PILOT_RAINBOW_SECONDARY_DEG,
+      primaryReflections: 1,
+      secondaryReflections: 2
+    };
+  }
 
   // Dew point from temperature and relative humidity. The simple
   // (100-RH)/5 form is accurate to about 1 deg C for RH above ~50 % and is the
@@ -2458,6 +2594,7 @@
       id: s.id, label: s.label, blurb: s.blurb, terrain: s.terrain,
       surfaceTempC: surfaceTempC, surfaceRH: s.surfaceRH, seaTempC: s.seaTempC,
       windMs: s.windMs, solar: s.solar, surfaceExcessC: excessC,
+      sunElevationDeg: s.sunElevationDeg == null ? 24 : s.sunElevationDeg,
       parcelSurfaceC: parcelSurfaceC,
       dewPointC: dewPointC, lclM: lclM, tempAtLclC: tempAtLcl, freezingM: freezingM,
       lfcM: lfcM, lfcReachable: lfcReachable,
@@ -2468,6 +2605,25 @@
   // Ambient air temperature at an altitude - what the parcel is competing with.
   function wcPilotAmbientTempC(env, altitudeM) {
     return env.surfaceTempC - WC_PILOT_ENV_LAPSE * (wcPilotClamp(altitudeM, 0, env.ceilingM) / 1000);
+  }
+
+  // Shared-profile probe: classify one bounded altitude against the same
+  // environment thresholds used by the live parcel simulation.
+  function wcPilotClimateProbe(environment, altitudeM) {
+    var env = environment && typeof environment === 'object'
+      ? environment : wcPilotEnvironment(environment);
+    var ceilingM = Number(env.ceilingM) || WC_PILOT_CEILING_M;
+    var boundedAltitudeM = Math.round(wcPilotClamp(Number(altitudeM) || 0, 0, ceilingM));
+    var aboveCloudBase = boundedAltitudeM >= env.lclM;
+    var atOrAboveFreezingLevel = boundedAltitudeM >= env.freezingM;
+    return {
+      altitudeM: boundedAltitudeM,
+      ambientTempC: wcPilotAmbientTempC(env, boundedAltitudeM),
+      aboveCloudBase: aboveCloudBase,
+      atOrAboveFreezingLevel: atOrAboveFreezingLevel,
+      state: aboveCloudBase ? (atOrAboveFreezingLevel ? 'ice' : 'cloud')
+        : (atOrAboveFreezingLevel ? 'cold' : 'air')
+    };
   }
 
   // Temperature of the LIFTED PARCEL itself. The kink at the LCL is the whole
@@ -2538,6 +2694,7 @@
       droplets: 0,        // coalesced cloud droplets
       mass: 0.12,         // relative; >= WC_PILOT_MASS_TO_FALL falls
       nucleus: false,     // has met a condensation nucleus at or above the LCL
+      dryAirExposure: 0,  // 0..1; falling-rain evaporation (virga) progress
       pathwayProgress: 0, // 0..1 through the current land-storage pathway
       formsSeen: { liquid: true },
       stagesSeen: {},
@@ -2556,6 +2713,16 @@
     var warmth = wcPilotClamp((env.seaTempC + 5) / 35, 0.05, 1.2);
     var windTerm = 0.55 + 0.45 * wcPilotClamp(env.windMs / 10, 0, 1);
     return env.solar * (sunlit ? 1 : 0.28) * (0.25 + 0.75 * dryness) * warmth * windTerm * 0.42;
+  }
+
+  // Falling rain can evaporate before reaching the surface. Below about 70%
+  // RH, the saturation deficit removes water from a drop; both a drier layer
+  // and more time spent inside it increase the accumulated exposure. Returning
+  // a rate keeps the integration deterministic and testable at different dt.
+  function wcPilotVirgaRate(env, altitudeM) {
+    var rh = wcPilotParcelRH(env, altitudeM);
+    var saturationDeficit = wcPilotClamp((70 - rh) / 70, 0, 1);
+    return saturationDeficit * WC_PILOT_VIRGA_RATE;
   }
 
   // -- The transition rules -------------------------------------------------
@@ -2590,6 +2757,7 @@
         // A snowflake that falls below the freezing level melts into rain.
         return alt < env.freezingM ? 'rain' : '';
       case 'rain':
+        if ((state.dryAirExposure || 0) >= 1) return 'vapor';
         return alt >= env.freezingM ? 'snow' : '';
       default:
         return '';
@@ -2636,6 +2804,7 @@
     'liquid>vapor': true,
     'transpiring>vapor': true,
     'droplet>vapor': true,
+    'rain>vapor': true,
     'ice>droplet': true,
     'snow>rain': true,
     'snow>liquid': true,
@@ -2704,7 +2873,12 @@
       next.energy = wcPilotClamp(state.energy + wcPilotEvaporationRate(env, !!(input && input.sunlit)) * dt, 0, 1);
     } else if (state.form === 'transpiring') {
       next.energy = wcPilotClamp(state.energy + 0.5 * dt, 0, 1);
-      if (next.energy >= 1) { next.form = 'vapor'; next.energy = 0; }
+      if (next.energy >= 1) {
+        next.form = 'vapor';
+        next.energy = 0;
+        // Transpiration returns water to the atmosphere; this same loop keeps
+        // going until precipitation reaches collected surface water.
+      }
     }
 
     // A nucleus is only meaningful at or above the cloud base; meeting one in
@@ -2731,6 +2905,16 @@
       next.altitudeM = 0;
     }
 
+    // Integrate virga after this step's descent, but before ground contact.
+    // A drop that reaches exposure 1 while still aloft re-evaporates; a drop
+    // that reaches the ground first follows the selected surface pathway.
+    if (next.form === 'rain' && next.altitudeM > 0 && next.altitudeM < env.lclM) {
+      var previousExposure = state.form === 'rain' ? (state.dryAirExposure || 0) : 0;
+      next.dryAirExposure = wcPilotClamp(previousExposure + wcPilotVirgaRate(env, next.altitudeM) * dt, 0, 1);
+    } else if (next.form !== 'rain') {
+      next.dryAirExposure = 0;
+    }
+
     // Ground contact.
     if (next.altitudeM <= 0 && wcPilotIsFalling(next.form)) {
       next.altitudeM = 0;
@@ -2740,7 +2924,11 @@
       next.mass = 0.12;
       next.nucleus = false;
       next.pathwayProgress = 0;
-      next.loops = state.loops + 1;
+      next.dryAirExposure = 0;
+      // Open-water landfall closes the loop immediately. Land routes are not
+      // credited until runoff or groundwater reaches collected water, so merely
+      // touching land or returning to the atmosphere cannot mimic completion.
+      if (next.form === 'liquid') next.loops = state.loops + 1;
       next.note = 'landed';
     } else if (next.altitudeM < 0) {
       next.altitudeM = 0;
@@ -2766,7 +2954,10 @@
           // atmospheric altitude; the tree itself is enlarged as teaching-scale
           // scenery by the renderer.
           if (pathwayNext === 'transpiring') next.altitudeM = WC_PILOT_CANOPY_RELEASE_M;
-          if (pathwayNext === 'liquid') next.energy = 0;
+          if (pathwayNext === 'liquid') {
+            next.energy = 0;
+            next.loops = state.loops + 1;
+          }
         }
       }
     } else if (next.pathwayProgress == null) {
@@ -2777,7 +2968,12 @@
     var transition = wcPilotNextForm(next, env);
     if (transition && transition !== next.form) {
       next.form = transition;
-      if (transition === 'vapor') { next.energy = 0; next.nucleus = false; next.droplets = 0; next.mass = 0.12; }
+      if (transition === 'vapor') {
+        next.energy = 0; next.nucleus = false; next.droplets = 0; next.mass = 0.12;
+        // Keep the threshold on the exact rain -> vapour frame so the receipt
+        // can show why virga occurred. The next vapour step clears it.
+        if (state.form !== 'rain') next.dryAirExposure = 0;
+      }
       if (transition === 'droplet' && state.form === 'vapor') { next.mass = 0.12; next.droplets = 1; }
       next.pathwayProgress = 0;
       next.note = 'transition';
@@ -2843,7 +3039,9 @@
       case 'ice':
         return _pt('pilot_obj_ice', 'You are above the freezing level at {m} m. Ice grows faster than the droplets around it - keep collecting, then fall.', { m: Math.round(env.freezingM) });
       case 'rain':
-        return _pt('pilot_obj_rain', 'Falling as rain. Steer toward open water, permeable ground, or a plant - each sends you down a different pathway.');
+        return (state.dryAirExposure || 0) > 0.02
+          ? _pt('pilot_obj_rain_virga', 'Dry air is evaporating the falling drop ({pct}% exposure). Keep descending to see whether rain reaches the ground or becomes virga.', { pct: Math.round((state.dryAirExposure || 0) * 100) })
+          : _pt('pilot_obj_rain', 'Falling as rain. Steer toward open water, permeable ground, or a plant - each sends you down a different pathway.');
       case 'snow':
         return _pt('pilot_obj_snow', 'Falling as snow. If you pass below {m} m you will melt into rain on the way down.', { m: Math.round(env.freezingM) });
       case 'runoff':
@@ -2855,10 +3053,17 @@
       case 'plant':
         return _pt('pilot_obj_plant', 'A root took you up. Follow the glowing xylem from root to leaf; rise to travel faster.');
       case 'transpiring':
-        return _pt('pilot_obj_transpiring', 'Leaving through a stoma. In a moment you are vapour again and the cycle repeats.');
+        return _pt('pilot_obj_transpiring', 'Leaving through a stoma. In a moment you are vapour again; keep going until precipitation returns you to collected water.');
       default:
         return '';
     }
+  }
+
+  // A form difference is only a live model event when the canvas published the
+  // exact transition frame. Tick/reset/scenario snapshots may follow a remount
+  // and must never manufacture receipts, sounds, celebrations, or route credit.
+  function wcPilotIsLiveTransition(previous, next) {
+    return !!(previous && next && previous.form && next.form !== previous.form && next.reason === 'form');
   }
 
   // Scenario and form copy. The English is READ BACK OUT OF THE DATA the first
@@ -2883,6 +3088,412 @@
     });
   }
 
+  // ========================================================================
+  // BE THE WATER JOURNEY NOTEBOOK
+  // A versioned, bounded checkpoint for local recovery and learner evidence.
+  // It intentionally stores no account, learner name, location, or render
+  // objects. Restores always return paused with every held control neutral.
+  // ========================================================================
+  var WC_PILOT_NOTEBOOK_VERSION = 1;
+  var WC_PILOT_NOTEBOOK_KEY = 'alloflow.waterCycle.beTheWaterNotebook.v1';
+  var WC_PILOT_NOTEBOOK_MAX_CHANGES = 24;
+  var WC_PILOT_NOTEBOOK_MAX_COMPARISONS = Object.keys(WC_PILOT_SCENARIOS).length;
+  var WC_PILOT_NOTEBOOK_MAX_REFLECTION = 1200;
+  var WC_PILOT_NOTEBOOK_ROUTE_KEYS = ['water', 'runoff', 'infiltration', 'plant'];
+  var WC_PILOT_NOTEBOOK_SURFACES = ['water', 'permeable', 'plant', 'hard'];
+  var WC_PILOT_NOTEBOOK_PREDICTIONS = ['runoff', 'infiltration', 'evaporation', 'storage', 'mixed'];
+
+  function wcPilotNotebookNumber(value, min, max, fallback) {
+    var number = Number(value);
+    if (!isFinite(number)) return fallback;
+    return Math.max(min, Math.min(max, number));
+  }
+
+  function wcPilotNotebookText(value, maxLength, keepLines) {
+    var text = value == null ? '' : String(value);
+    text = text.replace(/\u0000/g, '');
+    if (!keepLines) text = text.replace(/[\r\n\t]+/g, ' ').trim();
+    return text.slice(0, maxLength);
+  }
+
+  function wcPilotNotebookKnownMap(value, keys) {
+    var source = value && typeof value === 'object' ? value : {};
+    var output = {};
+    keys.forEach(function(key) {
+      if (source[key] === true) output[key] = true;
+    });
+    return output;
+  }
+
+  function wcPilotNotebookCountMap(value, keys) {
+    var source = value && typeof value === 'object' ? value : {};
+    var output = {};
+    keys.forEach(function(key) {
+      output[key] = Math.round(wcPilotNotebookNumber(source[key], 0, 999, 0));
+    });
+    return output;
+  }
+
+  function wcPilotNotebookMergeKnownMaps(first, second, keys) {
+    var output = wcPilotNotebookKnownMap(first, keys);
+    var next = wcPilotNotebookKnownMap(second, keys);
+    Object.keys(next).forEach(function(key) { output[key] = true; });
+    return output;
+  }
+
+  function wcPilotNotebookMergeCounts(first, second, keys) {
+    var left = wcPilotNotebookCountMap(first, keys);
+    var right = wcPilotNotebookCountMap(second, keys);
+    keys.forEach(function(key) { left[key] = Math.max(left[key], right[key]); });
+    return left;
+  }
+
+  function wcPilotNotebookNormalizeSnapshot(value) {
+    if (!value || typeof value !== 'object') return null;
+    var scenario = WC_PILOT_SCENARIOS[value.scenario] ? value.scenario : 'tropicalOcean';
+    var form = WC_PILOT_FORMS[value.form] ? value.form : 'liquid';
+    var altitudeM = wcPilotNotebookNumber(value.altitudeM, 0, WC_PILOT_CEILING_M, 0);
+    var environment = wcPilotEnvironment(scenario);
+    var surface = WC_PILOT_NOTEBOOK_SURFACES.indexOf(value.surface) >= 0 ? value.surface : 'water';
+    return {
+      scenario: scenario,
+      form: form,
+      altitudeM: altitudeM,
+      x: wcPilotNotebookNumber(value.x, -330, 330, 0),
+      z: wcPilotNotebookNumber(value.z, -330, 330, 0),
+      yaw: wcPilotNotebookNumber(value.yaw, -6.4, 6.4, -1.05),
+      pitch: wcPilotNotebookNumber(value.pitch, -1.15, 1.15, 0.26),
+      vy: wcPilotNotebookNumber(value.vy, -120, 120, 0),
+      energy: wcPilotNotebookNumber(value.energy, 0, 1, 0),
+      droplets: Math.round(wcPilotNotebookNumber(value.droplets, 0, 999, 0)),
+      mass: wcPilotNotebookNumber(value.mass, 0, 5, 0.12),
+      nucleus: value.nucleus === true,
+      dryAirExposure: wcPilotNotebookNumber(value.dryAirExposure, 0, 1, 0),
+      pathwayProgress: wcPilotNotebookNumber(value.pathwayProgress, 0, 1, 0),
+      formsSeen: wcPilotNotebookKnownMap(value.formsSeen, Object.keys(WC_PILOT_FORMS)),
+      stagesSeen: wcPilotNotebookKnownMap(value.stagesSeen, WC_PILOT_STAGE_ORDER),
+      loops: Math.round(wcPilotNotebookNumber(value.loops, 0, 999, 0)),
+      elapsed: wcPilotNotebookNumber(value.elapsed, 0, 604800, 0),
+      note: wcPilotNotebookText(value.note, 40, false),
+      surface: surface,
+      cameraMode: value.cameraMode === 'water' ? 'water' : 'follow',
+      tempC: wcPilotNotebookNumber(value.tempC, -100, 100, wcPilotParcelTempC(environment, altitudeM)),
+      ambientC: wcPilotNotebookNumber(value.ambientC, -100, 100, wcPilotAmbientTempC(environment, altitudeM)),
+      rh: wcPilotNotebookNumber(value.rh, 0, 100, wcPilotParcelRH(environment, altitudeM)),
+      buoyancyC: wcPilotNotebookNumber(value.buoyancyC, -100, 100, wcPilotBuoyancyC(environment, altitudeM))
+    };
+  }
+
+  function wcPilotNotebookNormalizeChange(value, fallbackSequence) {
+    if (!value || typeof value !== 'object') return null;
+    var from = WC_PILOT_FORMS[value.from] ? value.from : '';
+    var to = WC_PILOT_FORMS[value.to] ? value.to : '';
+    if (!from || !to || from === to) return null;
+    var scenario = WC_PILOT_SCENARIOS[value.scenario] ? value.scenario : 'tropicalOcean';
+    var sequence = Math.round(wcPilotNotebookNumber(value.sequence, 1, 999999, fallbackSequence || 1));
+    var elapsed = wcPilotNotebookNumber(value.elapsed, 0, 604800, 0);
+    var id = wcPilotNotebookText(value.id, 120, false)
+      || [scenario, sequence, from, to, Math.round(elapsed * 10)].join(':');
+    return {
+      id: id,
+      sequence: sequence,
+      scenario: scenario,
+      from: from,
+      to: to,
+      altitudeM: wcPilotNotebookNumber(value.altitudeM, 0, WC_PILOT_CEILING_M, 0),
+      tempC: wcPilotNotebookNumber(value.tempC, -100, 100, 0),
+      rh: wcPilotNotebookNumber(value.rh, 0, 100, 0),
+      nucleus: value.nucleus === true,
+      droplets: Math.round(wcPilotNotebookNumber(value.droplets, 0, 999, 0)),
+      mass: wcPilotNotebookNumber(value.mass, 0, 5, 0),
+      energy: wcPilotNotebookNumber(value.energy, 0, 1, 0),
+      dryAirExposure: wcPilotNotebookNumber(value.dryAirExposure, 0, 1, 0),
+      pathwayProgress: wcPilotNotebookNumber(value.pathwayProgress, 0, 1, 0),
+      surface: WC_PILOT_NOTEBOOK_SURFACES.indexOf(value.surface) >= 0 ? value.surface : 'water',
+      elapsed: elapsed
+    };
+  }
+
+  function wcPilotNotebookNormalizeChanges(value) {
+    var source = Array.isArray(value) ? value : [];
+    var output = [];
+    var seen = {};
+    source.forEach(function(change, index) {
+      var normalized = wcPilotNotebookNormalizeChange(change, index + 1);
+      if (!normalized || seen[normalized.id]) return;
+      seen[normalized.id] = true;
+      output.push(normalized);
+    });
+    return output.slice(-WC_PILOT_NOTEBOOK_MAX_CHANGES);
+  }
+
+  function wcPilotNotebookNormalizeRainbow(value) {
+    var source = value && typeof value === 'object' ? value : {};
+    var doubleCreated = source.doubleCreated === true;
+    var primarySeen = source.primarySeen === true || doubleCreated;
+    var scenario = WC_PILOT_SCENARIOS[source.scenario] ? source.scenario : 'tropicalOcean';
+    var inferredStage = doubleCreated ? 4 : (primarySeen ? 3 : 0);
+    return {
+      primarySeen: primarySeen,
+      doubleCreated: doubleCreated,
+      stageReached: Math.max(inferredStage,
+        Math.round(wcPilotNotebookNumber(source.stageReached, 0, 4, 0))),
+      bestAlignment: wcPilotNotebookNumber(source.bestAlignment, -1, 1, -1),
+      sunAltitudeDeg: wcPilotNotebookNumber(source.sunAltitudeDeg, 0, 90, 0),
+      scenario: scenario,
+      elapsed: wcPilotNotebookNumber(source.elapsed, 0, 604800, 0)
+    };
+  }
+
+  function wcPilotNotebookNormalizeComparisons(value) {
+    var source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    var output = {};
+    Object.keys(WC_PILOT_SCENARIOS).slice(0, WC_PILOT_NOTEBOOK_MAX_COMPARISONS).forEach(function(id) {
+      var record = source[id];
+      if (!record || typeof record !== 'object' || record.scenario !== id) return;
+      var environment = wcPilotEnvironment(id);
+      output[id] = {
+        scenario: id,
+        form: WC_PILOT_FORMS[record.form] ? record.form : 'liquid',
+        altitudeM: Math.round(wcPilotNotebookNumber(record.altitudeM, 0, environment.ceilingM, 0)),
+        stageCount: Math.round(wcPilotNotebookNumber(record.stageCount, 0, WC_PILOT_STAGE_ORDER.length, 0)),
+        rainbowStage: Math.round(wcPilotNotebookNumber(record.rainbowStage, 0, 4, 0)),
+        savedAt: Math.round(wcPilotNotebookNumber(record.savedAt, 0, 9007199254740991, 0))
+      };
+    });
+    return output;
+  }
+
+  function wcPilotNotebookMergeComparisons(currentValue, savedValue) {
+    var current = wcPilotNotebookNormalizeComparisons(currentValue);
+    var saved = wcPilotNotebookNormalizeComparisons(savedValue);
+    var output = Object.assign({}, current);
+    Object.keys(saved).forEach(function(id) {
+      if (!output[id] || saved[id].savedAt >= output[id].savedAt) output[id] = saved[id];
+    });
+    return wcPilotNotebookNormalizeComparisons(output);
+  }
+
+  function wcPilotNotebookNormalizeRecord(value) {
+    if (!value || typeof value !== 'object' || value.version !== WC_PILOT_NOTEBOOK_VERSION) return null;
+    var checkpoint = wcPilotNotebookNormalizeSnapshot(value.checkpoint);
+    if (!checkpoint) return null;
+    var evidence = value.evidence && typeof value.evidence === 'object' ? value.evidence : {};
+    var lastChange = wcPilotNotebookNormalizeChange(evidence.lastChange, 1);
+    var changes = wcPilotNotebookNormalizeChanges(evidence.changes);
+    if (!lastChange && changes.length) lastChange = changes[changes.length - 1];
+    var lastRoute = WC_PILOT_NOTEBOOK_ROUTE_KEYS.indexOf(evidence.lastRoute) >= 0 ? evidence.lastRoute : '';
+    var prediction = WC_PILOT_NOTEBOOK_PREDICTIONS.indexOf(evidence.prediction) >= 0 ? evidence.prediction : '';
+    return {
+      version: WC_PILOT_NOTEBOOK_VERSION,
+      savedAt: Math.round(wcPilotNotebookNumber(value.savedAt, 1, 9007199254740991, 1)),
+      reason: wcPilotNotebookText(value.reason, 32, false) || 'manual',
+      sessionId: wcPilotNotebookText(value.sessionId, 80, false),
+      checkpoint: checkpoint,
+      evidence: {
+        stagesSeen: wcPilotNotebookKnownMap(evidence.stagesSeen, WC_PILOT_STAGE_ORDER),
+        routes: wcPilotNotebookCountMap(evidence.routes, WC_PILOT_NOTEBOOK_ROUTE_KEYS),
+        lastRoute: lastRoute,
+        loopsCompleted: Math.round(wcPilotNotebookNumber(evidence.loopsCompleted, 0, 999, 0)),
+        changes: changes,
+        lastChange: lastChange,
+        prediction: prediction,
+        comparisons: wcPilotNotebookNormalizeComparisons(evidence.comparisons),
+        rainbow: wcPilotNotebookNormalizeRainbow(evidence.rainbow)
+      },
+      reflection: wcPilotNotebookText(value.reflection, WC_PILOT_NOTEBOOK_MAX_REFLECTION, true)
+    };
+  }
+
+  function wcPilotNotebookCapture(waterCycle, savedAt, reason) {
+    var state = waterCycle && typeof waterCycle === 'object' ? waterCycle : {};
+    var pilot = state.pilot && typeof state.pilot === 'object' ? state.pilot : {};
+    var notebook = state.pilotNotebook && typeof state.pilotNotebook === 'object' ? state.pilotNotebook : {};
+    var scenario = WC_PILOT_SCENARIOS[pilot.scenario] ? pilot.scenario : 'tropicalOcean';
+    var checkpointSource = pilot.snapshot || wcPilotInitialState(scenario);
+    checkpointSource = Object.assign({}, checkpointSource, {
+      scenario: scenario,
+      cameraMode: pilot.cameraMode === 'water' ? 'water' : (checkpointSource.cameraMode || 'follow')
+    });
+    var combinedStages = wcPilotNotebookMergeKnownMaps(state.stagesViewed, pilot.stagesSeen, WC_PILOT_STAGE_ORDER);
+    return wcPilotNotebookNormalizeRecord({
+      version: WC_PILOT_NOTEBOOK_VERSION,
+      savedAt: savedAt || Date.now(),
+      reason: reason || 'manual',
+      sessionId: pilot.notebookSessionId || '',
+      checkpoint: checkpointSource,
+      evidence: {
+        stagesSeen: combinedStages,
+        routes: pilot.routes || {},
+        lastRoute: pilot.lastRoute || '',
+        loopsCompleted: Math.max(Number(pilot.loopsCompleted) || 0, Number(state.journeyLoops) || 0),
+        changes: pilot.notebookChanges || [],
+        lastChange: pilot.lastChange || null,
+        prediction: state.wcPrediction || '',
+        comparisons: pilot.comparisons || {},
+        rainbow: Object.assign({}, pilot.rainbowEvidence || {}, {
+          doubleCreated: state.rainbowDoubleCreated === true
+            || !!(pilot.rainbowEvidence && pilot.rainbowEvidence.doubleCreated)
+        })
+      },
+      reflection: notebook.reflection || ''
+    });
+  }
+
+  function wcPilotNotebookRestore(currentWaterCycle, savedRecord) {
+    var record = wcPilotNotebookNormalizeRecord(savedRecord);
+    if (!record) return null;
+    var current = currentWaterCycle && typeof currentWaterCycle === 'object' ? currentWaterCycle : {};
+    var currentPilot = current.pilot && typeof current.pilot === 'object' ? current.pilot : {};
+    var checkpoint = wcPilotNotebookNormalizeSnapshot(record.checkpoint);
+    var stagesSeen = wcPilotNotebookMergeKnownMaps(currentPilot.stagesSeen, record.evidence.stagesSeen, WC_PILOT_STAGE_ORDER);
+    var routes = wcPilotNotebookMergeCounts(currentPilot.routes, record.evidence.routes, WC_PILOT_NOTEBOOK_ROUTE_KEYS);
+    var comparisons = wcPilotNotebookMergeComparisons(currentPilot.comparisons, record.evidence.comparisons);
+    var journeyPaths = wcPilotNotebookMergeCounts(current.journeyPaths, {
+      runoff: record.evidence.routes.runoff,
+      infiltrate: record.evidence.routes.infiltration,
+      plant: record.evidence.routes.plant
+    }, ['runoff', 'infiltrate', 'plant']);
+    var stagesViewed = wcPilotNotebookMergeKnownMaps(current.stagesViewed, record.evidence.stagesSeen, WC_PILOT_STAGE_ORDER);
+    var currentRainbow = wcPilotNotebookNormalizeRainbow(currentPilot.rainbowEvidence);
+    var savedRainbow = wcPilotNotebookNormalizeRainbow(record.evidence.rainbow);
+    var savedRainbowIsBest = savedRainbow.bestAlignment >= currentRainbow.bestAlignment;
+    var rainbowEvidence = wcPilotNotebookNormalizeRainbow({
+      primarySeen: currentRainbow.primarySeen || savedRainbow.primarySeen,
+      doubleCreated: currentRainbow.doubleCreated || savedRainbow.doubleCreated,
+      stageReached: Math.max(currentRainbow.stageReached, savedRainbow.stageReached),
+      bestAlignment: Math.max(currentRainbow.bestAlignment, savedRainbow.bestAlignment),
+      sunAltitudeDeg: savedRainbowIsBest ? savedRainbow.sunAltitudeDeg : currentRainbow.sunAltitudeDeg,
+      scenario: savedRainbowIsBest ? savedRainbow.scenario : currentRainbow.scenario,
+      elapsed: savedRainbowIsBest ? savedRainbow.elapsed : currentRainbow.elapsed
+    });
+    var notebookState = Object.assign({}, current.pilotNotebook || {}, {
+      reflection: record.reflection,
+      autoSave: true,
+      dirty: false,
+      savedAt: record.savedAt,
+      restoredAt: record.savedAt,
+      status: 'restored'
+    });
+    var restoredPilot = Object.assign({}, currentPilot, {
+      scenario: checkpoint.scenario,
+      snapshot: checkpoint,
+      stagesSeen: stagesSeen,
+      routes: routes,
+      comparisons: comparisons,
+      lastRoute: record.evidence.lastRoute || currentPilot.lastRoute || '',
+      loopsCompleted: Math.max(Number(currentPilot.loopsCompleted) || 0, record.evidence.loopsCompleted),
+      lastChange: record.evidence.lastChange,
+      notebookChanges: record.evidence.changes.slice(),
+      rainbowEvidence: rainbowEvidence,
+      notebookSessionId: record.sessionId || ('restored-' + record.savedAt),
+      cameraMode: checkpoint.cameraMode,
+      paused: true,
+      onboardingComplete: true,
+      resumeCheckpoint: checkpoint,
+      resumeToken: String(record.savedAt)
+    });
+    return Object.assign({}, current, {
+      pilot: restoredPilot,
+      pilotNotebook: notebookState,
+      stagesViewed: stagesViewed,
+      journeyPaths: journeyPaths,
+      journeyLoops: Math.max(Number(current.journeyLoops) || 0, record.evidence.loopsCompleted),
+      rainbowDoubleCreated: current.rainbowDoubleCreated === true || rainbowEvidence.doubleCreated
+    });
+  }
+
+  function wcPilotNotebookStorage(explicitStorage) {
+    if (explicitStorage) return explicitStorage;
+    try {
+      return typeof window !== 'undefined' ? window.localStorage : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function wcPilotNotebookAvailable(explicitStorage) {
+    var storage = wcPilotNotebookStorage(explicitStorage);
+    return !!(storage && typeof storage.getItem === 'function'
+      && typeof storage.setItem === 'function' && typeof storage.removeItem === 'function');
+  }
+
+  function wcPilotNotebookRead(explicitStorage) {
+    var storage = wcPilotNotebookStorage(explicitStorage);
+    if (!wcPilotNotebookAvailable(storage)) return null;
+    try {
+      var raw = storage.getItem(WC_PILOT_NOTEBOOK_KEY);
+      return raw ? wcPilotNotebookNormalizeRecord(JSON.parse(raw)) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function wcPilotNotebookWrite(value, explicitStorage) {
+    var storage = wcPilotNotebookStorage(explicitStorage);
+    var record = wcPilotNotebookNormalizeRecord(value);
+    if (!record || !wcPilotNotebookAvailable(storage)) return null;
+    try {
+      storage.setItem(WC_PILOT_NOTEBOOK_KEY, JSON.stringify(record));
+      return record;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function wcPilotNotebookClear(explicitStorage) {
+    var storage = wcPilotNotebookStorage(explicitStorage);
+    if (!wcPilotNotebookAvailable(storage)) return false;
+    try {
+      storage.removeItem(WC_PILOT_NOTEBOOK_KEY);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function wcPilotNotebookSummary(value) {
+    var record = wcPilotNotebookNormalizeRecord(value);
+    if (!record) return null;
+    var stageCount = Object.keys(record.evidence.stagesSeen).length;
+    var routeCount = WC_PILOT_NOTEBOOK_ROUTE_KEYS.filter(function(key) {
+      return record.evidence.routes[key] > 0;
+    }).length;
+    return {
+      savedAt: record.savedAt,
+      scenario: record.checkpoint.scenario,
+      form: record.checkpoint.form,
+      cameraMode: record.checkpoint.cameraMode,
+      stages: stageCount,
+      totalStages: WC_PILOT_STAGE_ORDER.length,
+      routes: routeCount,
+      loops: record.evidence.loopsCompleted,
+      changes: record.evidence.changes.length,
+      comparisons: Object.keys(record.evidence.comparisons).length,
+      doubleRainbow: record.evidence.rainbow.doubleCreated,
+      primaryRainbow: record.evidence.rainbow.primarySeen,
+      reflectionLength: record.reflection.length
+    };
+  }
+
+  window.WaterCyclePilotNotebook = {
+    VERSION: WC_PILOT_NOTEBOOK_VERSION,
+    STORAGE_KEY: WC_PILOT_NOTEBOOK_KEY,
+    MAX_CHANGES: WC_PILOT_NOTEBOOK_MAX_CHANGES,
+    MAX_COMPARISONS: WC_PILOT_NOTEBOOK_MAX_COMPARISONS,
+    MAX_REFLECTION: WC_PILOT_NOTEBOOK_MAX_REFLECTION,
+    normalizeSnapshot: wcPilotNotebookNormalizeSnapshot,
+    normalizeComparisons: wcPilotNotebookNormalizeComparisons,
+    normalize: wcPilotNotebookNormalizeRecord,
+    capture: wcPilotNotebookCapture,
+    restore: wcPilotNotebookRestore,
+    summary: wcPilotNotebookSummary,
+    available: wcPilotNotebookAvailable,
+    read: wcPilotNotebookRead,
+    write: wcPilotNotebookWrite,
+    clear: wcPilotNotebookClear
+  };
+
   window.WaterCyclePilotKernel = {
     UNIT_M: WC_PILOT_UNIT_M,
     CEILING_M: WC_PILOT_CEILING_M,
@@ -2892,16 +3503,24 @@
     forms: WC_PILOT_FORMS,
     stageOrder: WC_PILOT_STAGE_ORDER.slice(),
     environment: wcPilotEnvironment,
+    rainbow: {
+      primaryAngleDeg: WC_PILOT_RAINBOW_PRIMARY_DEG,
+      secondaryAngleDeg: WC_PILOT_RAINBOW_SECONDARY_DEG,
+      maxSunAltitudeDeg: WC_PILOT_RAINBOW_MAX_SUN_DEG
+    },
+    rainbowOptics: wcPilotRainbowOptics,
     dewPointC: wcPilotDewPointC,
     lclM: wcPilotLclM,
     envLapse: WC_PILOT_ENV_LAPSE,
     dryLapse: WC_PILOT_DRY_LAPSE,
     moistLapse: WC_PILOT_MOIST_LAPSE,
     ambientTempC: wcPilotAmbientTempC,
+    climateProbe: wcPilotClimateProbe,
     parcelTempC: wcPilotParcelTempC,
     parcelRH: wcPilotParcelRH,
     buoyancyC: wcPilotBuoyancyC,
     evaporationRate: wcPilotEvaporationRate,
+    virgaRate: wcPilotVirgaRate,
     initialState: wcPilotInitialState,
     nextForm: wcPilotNextForm,
     landingForm: wcPilotLandingForm,
@@ -2914,6 +3533,7 @@
     step: wcPilotStep,
     stageCoverage: wcPilotStageCoverage,
     objective: wcPilotObjective,
+    isLiveTransition: wcPilotIsLiveTransition,
     applyCopy: applyPilotCopy
   };
 
@@ -2979,7 +3599,9 @@ const d = labToolData.waterCycle || {};
           var isDark = !!(ctx && ctx.isDark) || isContrast;
           // The host keeps this compact chrome on a light card in normal dark mode.
           // Keep the simulation's real isDark flag, but key these surface-owned controls to contrast only.
-          var isHeaderSurfaceDark = isContrast;
+          // The root now paints its own dark ground in dark theme (it used to sit on
+          // the host's white card), so the header surface is dark whenever the theme is.
+          var isHeaderSurfaceDark = isContrast || isDark;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, waterCycle: { ...prev.waterCycle, [key]: val } }));
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, waterCycle: Object.assign({}, prev.waterCycle, obj) }));
@@ -3010,6 +3632,8 @@ const d = labToolData.waterCycle || {};
                 met = state.campaignSuccess === true;
               } else if (ch.id === 'myth_buster') {
                 met = (state.wcMythsDone || 0) >= 3;
+              } else if (ch.id === 'double_rainbow') {
+                met = state.rainbowDoubleCreated === true;
               }
 
               if (met) {
@@ -3212,12 +3836,12 @@ const d = labToolData.waterCycle || {};
             var prediction = WATER_CYCLE_PREDICTIONS[predictionId];
             if (!prediction) return;
             upd('wcPrediction', predictionId);
-            if (typeof announceToSR === 'function') announceToSR('Prediction recorded: ' + prediction.label + '. Now compare the live values as evidence.');
+            if (typeof announceToSR === 'function') announceToSR('Evidence claim selected: ' + prediction.label + '. Compare it with the strongest modeled shift.');
           };
 
           var resetWcPrediction = function() {
             upd('wcPrediction', '');
-            if (typeof announceToSR === 'function') announceToSR('Prediction cleared. Choose a new hypothesis before reviewing the evidence.');
+            if (typeof announceToSR === 'function') announceToSR('Evidence claim cleared. Read the comparison and choose another claim.');
           };
 
           var saveWcObservation = function() {
@@ -3343,7 +3967,7 @@ const d = labToolData.waterCycle || {};
           // set of places you can go never depends on where you already are.
           var WC_MODE_TABS = [
             { id: 'explorer', icon: '🌊', label: t('stem.watercycle.sect_explore', 'Explore'), blurb: t('stem.watercycle.sect_the_whole_system_at_once', 'The whole system at once') },
-            { id: 'pilot', icon: '💧', label: t('stem.watercycle.sect_be_the_water', 'Be the Water'), blurb: t('stem.watercycle.sect_fly_one_parcel_through_every_form', 'Fly one parcel through every form'), flagship: true },
+            { id: 'pilot', icon: '💧', label: t('stem.watercycle.sect_be_the_water', 'Be the Water'), blurb: t('stem.watercycle.sect_fly_one_parcel_through_every_form', 'Pilot one parcel through changing states and pathways'), experienceType: 'piloted3d' },
             { id: 'precipHunt', icon: '🌧️', label: t('stem.watercycle.sect_storm_lab', 'Storm Lab'), blurb: t('stem.watercycle.sect_build_rain_snow_and_hail', 'Build rain, snow, and hail') },
             { id: 'steward', icon: '🏞️', label: t('stem.watercycle.sect_steward', 'Steward'), blurb: t('stem.watercycle.sect_10_years_of_one_watershed', '10 years of one watershed') }
           ];
@@ -3395,7 +4019,7 @@ const d = labToolData.waterCycle || {};
                 return h('button', {
                   key: tab.id,
                   type: 'button',
-                  className: 'wc-mode-tab' + (tab.flagship ? ' is-flagship' : ''),
+                  className: 'wc-mode-tab' + (tab.experienceType === 'piloted3d' ? ' is-piloted-3d' : ''),
                   'aria-pressed': active,
                   'aria-label': t(active ? 'stem.watercycle.mode_aria_active' : 'stem.watercycle.mode_aria',
                     active ? '{label}. {blurb}. Currently open.' : '{label}. {blurb}')
@@ -3408,7 +4032,7 @@ const d = labToolData.waterCycle || {};
                 },
                   h('strong', null, tab.icon + ' ' + tab.label),
                   h('small', null, tab.blurb),
-                  tab.flagship && h('span', { className: 'wc-mode-flag' }, t('stem.watercycle.mode_flagship', 'FLAGSHIP'))
+                  tab.experienceType === 'piloted3d' && h('span', { className: 'wc-mode-kind' }, t('stem.watercycle.mode_3d_simulation', '3D SIMULATION'))
                 );
               })
             );
@@ -10059,11 +10683,12 @@ const d = labToolData.waterCycle || {};
                          '9-12': 'Groundwater depletion in the Indo-Gangetic Basin exceeds 50 km\u00B3/yr, detectable via GRACE satellite gravity anomalies averaging -2 cm/yr equivalent water height.' } },
           ];
 
-          // ═══ FLAGSHIP MODE: BE THE WATER ═══
+          // ═══ PILOTED 3D SIMULATION: BE THE WATER ═══
           // Declared here, after STAGES, because the stage ledger reads the
           // same STAGES metadata every other view uses - one source for the
           // six stage names rather than a second list that can drift.
           var _lastWcPilotCanvas = null;
+          var _wcPilotNotebookLastAutosaveAt = 0;
           // ══════════════════════════════════════════════════════════════════
           //  BE THE WATER - the piloted 3D world
           //  ----------------------------------------------------------------
@@ -10080,6 +10705,7 @@ const d = labToolData.waterCycle || {};
           //  when the form changes or every 400 ms.
           // ══════════════════════════════════════════════════════════════════
           var WCPK = window.WaterCyclePilotKernel;
+          var WCPN = window.WaterCyclePilotNotebook;
 
           function wcPilotCanvasRef(canvasEl) {
             if (!canvasEl) {
@@ -10103,11 +10729,37 @@ const d = labToolData.waterCycle || {};
               renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: false, powerPreference: 'high-performance' });
             } catch (err) {
               canvasEl.dataset.engineState = 'error';
-              setTimeout(function() { upd('pilotError', t('stem.watercycle.pilot_webgl_is_unavailable_on_this_device_th', 'WebGL is unavailable on this device. The System Map view teaches the same six stages without 3D.')); }, 0);
+              setTimeout(function() {
+                upd('pilotError', {
+                  kind: 'unavailable',
+                  message: t('stem.watercycle.pilot_webgl_is_unavailable_on_this_device_th', 'WebGL is unavailable on this device. The System Map view teaches the same six stages without 3D.')
+                });
+              }, 0);
               return;
             }
             canvasEl._wcPilotInit = true;
             canvasEl.dataset.engineState = 'ready';
+
+            // WebGL contexts can be reclaimed by mobile browsers and GPU drivers
+            // after a scene has already started. Stop the loop immediately, keep
+            // the React-owned journey snapshot intact, and let the learner retry
+            // with a fresh canvas instead of leaving a frozen interactive surface.
+            var alive = true, raf = null, prevT = 0;
+            var contextFailureReported = false;
+            function onPilotContextLost(event) {
+              if (event && event.preventDefault) event.preventDefault();
+              if (contextFailureReported) return;
+              contextFailureReported = true;
+              alive = false;
+              if (raf) cancelAnimationFrame(raf);
+              canvasEl.dataset.engineState = 'context-lost';
+              var contextMessage = t('stem.watercycle.pilot_graphics_connection_lost', 'The 3D view lost its graphics connection. Your journey progress is saved; retry the view or continue in the System Map.');
+              setTimeout(function() {
+                upd('pilotError', { kind: 'context-lost', message: contextMessage });
+                if (typeof announceToSR === 'function') announceToSR(contextMessage);
+              }, 0);
+            }
+            canvasEl.addEventListener('webglcontextlost', onPilotContextLost, false);
 
             var W = Math.max(320, canvasEl.clientWidth || 900);
             var H = Math.max(300, canvasEl.clientHeight || 520);
@@ -10175,6 +10827,15 @@ const d = labToolData.waterCycle || {};
             );
             sunDisc.position.copy(sun.position).multiplyScalar(3.1);
             scene.add(sunDisc);
+            var sunHalo = new THREE.Mesh(
+              new THREE.SphereGeometry(34, 20, 14),
+              new THREE.MeshBasicMaterial({
+                color: 0xfff4c2, transparent: true, opacity: 0.18,
+                blending: THREE.AdditiveBlending, depthWrite: false, fog: false
+              })
+            );
+            sunHalo.position.copy(sunDisc.position);
+            scene.add(sunHalo);
 
             // ── Ocean ────────────────────────────────────────────────────────
             // A displaced plane rather than a flat one: a still mirror reads as a
@@ -11705,13 +12366,14 @@ const d = labToolData.waterCycle || {};
             var input = canvasEl._wcPilotInput = {
               up: 0, down: 0, left: 0, right: 0, fwd: 0, back: 0,
               paused: false, orbit: false, cameraMode: 'follow',
-              scenario: 'tropicalOcean', reset: 0, restartAt: -1
+              scenario: 'tropicalOcean', reset: 0, restartAt: -1,
+              restoreCheckpoint: null, resumeToken: '', rainbowAlign: 0
             };
 
             var keyState = {};
             function onKeyDown(e) {
               var k = e.key.toLowerCase();
-              if (['w', 'a', 's', 'd', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift'].indexOf(k) === -1) return;
+              if (['w', 'a', 's', 'd', 'f', 'b', 'arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' ', 'shift'].indexOf(k) === -1) return;
               // The canvas is focusable and documents these keys, so it owns them
               // while focused; letting them scroll the page instead is the classic
               // "the game fights the browser" bug.
@@ -11719,8 +12381,23 @@ const d = labToolData.waterCycle || {};
               keyState[k] = true;
             }
             function onKeyUp(e) { keyState[e.key.toLowerCase()] = false; }
+            function clearPilotKeyboardState() { keyState = {}; }
+            function clearPilotInputs() {
+              clearPilotKeyboardState();
+              input.up = input.down = input.left = input.right = input.fwd = input.back = 0;
+              input.rainbowAlign = 0;
+              activePointers = {};
+              pinchDistance = 0;
+              dragging = false;
+            }
+            function onPilotVisibilityChange() { if (document.hidden) clearPilotInputs(); }
+            function onPilotPageHide() { snapshot('pagehide'); }
             canvasEl.addEventListener('keydown', onKeyDown);
             canvasEl.addEventListener('keyup', onKeyUp);
+            canvasEl.addEventListener('blur', clearPilotKeyboardState);
+            window.addEventListener('blur', clearPilotInputs);
+            document.addEventListener('visibilitychange', onPilotVisibilityChange);
+            window.addEventListener('pagehide', onPilotPageHide);
 
             // Pointer look. Touch is handled by the same handlers via pointer
             // events, and every action also has an on-screen button, so the mode
@@ -11732,17 +12409,57 @@ const d = labToolData.waterCycle || {};
             // ocean, the beach, the forest, and the ridge are all in the first
             // frame - the destinations before the journey.
             var yaw = -1.05, pitch = 0.26, dragging = false, lastPx = 0, lastPy = 0;
+            var activePointers = {}, pinchDistance = 0;
+            function pilotPointerIds() { return Object.keys(activePointers); }
+            function pilotPinchDistance() {
+              var ids = pilotPointerIds();
+              if (ids.length < 2) return 0;
+              var a = activePointers[ids[0]], b = activePointers[ids[1]];
+              return Math.hypot(b.x - a.x, b.y - a.y);
+            }
             function onPointerDown(e) {
-              dragging = true; lastPx = e.clientX; lastPy = e.clientY;
+              activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+              if (pilotPointerIds().length >= 2) {
+                pinchDistance = pilotPinchDistance();
+                dragging = false;
+              } else {
+                dragging = true; lastPx = e.clientX; lastPy = e.clientY;
+              }
               if (canvasEl.setPointerCapture && e.pointerId != null) { try { canvasEl.setPointerCapture(e.pointerId); } catch (_e) {} }
             }
             function onPointerMove(e) {
+              if (Object.prototype.hasOwnProperty.call(activePointers, e.pointerId)) {
+                activePointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+              }
+              if (pilotPointerIds().length >= 2) {
+                var nextPinchDistance = pilotPinchDistance();
+                if (input.cameraMode !== 'water' && pinchDistance > 0 && nextPinchDistance > 0) {
+                  userZoom = Math.max(12, Math.min(320,
+                    pilotZoomBase() - (nextPinchDistance - pinchDistance) * 0.45));
+                  canvasEl.dataset.pilotZoom = String(Math.round(userZoom));
+                }
+                pinchDistance = nextPinchDistance;
+                dragging = false;
+                return;
+              }
               if (!dragging) return;
               yaw -= (e.clientX - lastPx) * 0.005;
               pitch = Math.max(-0.35, Math.min(1.15, pitch + (e.clientY - lastPy) * 0.004));
               lastPx = e.clientX; lastPy = e.clientY;
             }
-            function onPointerUp() { dragging = false; }
+            function onPointerUp(e) {
+              if (e && e.pointerId != null) delete activePointers[e.pointerId];
+              pinchDistance = 0;
+              var remainingIds = pilotPointerIds();
+              if (remainingIds.length === 1) {
+                var remainingPointer = activePointers[remainingIds[0]];
+                lastPx = remainingPointer.x;
+                lastPy = remainingPointer.y;
+                dragging = true;
+              } else {
+                dragging = false;
+              }
+            }
             canvasEl.addEventListener('pointerdown', onPointerDown);
             canvasEl.addEventListener('pointermove', onPointerMove);
             canvasEl.addEventListener('pointerup', onPointerUp);
@@ -11760,9 +12477,14 @@ const d = labToolData.waterCycle || {};
               if (f === 'vapor' || f === 'transpiring') return 88;
               return camDist;
             }
+            function pilotZoomBase() {
+              return userZoom || formCamDist(sim && sim.form ? sim.form : 'liquid');
+            }
             function onWheel(e) {
               e.preventDefault();
-              userZoom = Math.max(12, Math.min(320, (userZoom || camDist) + e.deltaY * 0.12));
+              if (input.cameraMode === 'water') return;
+              userZoom = Math.max(12, Math.min(320, pilotZoomBase() + e.deltaY * 0.12));
+              canvasEl.dataset.pilotZoom = String(Math.round(userZoom));
             }
             canvasEl.addEventListener('wheel', onWheel, { passive: false });
 
@@ -11772,10 +12494,15 @@ const d = labToolData.waterCycle || {};
             var px = START_X, pz = START_Z;   // horizontal position in world units
             var lastSnapshot = 0, lastForm = sim.form, lastScenario = sim.scenario;
             var cloudBurstT = 0, streamFlowRate = 0.075;
+            var pilotRainbowOptics = WCPK.rainbowOptics({
+              form: sim.form, solar: env.solar, sunAltitudeDeg: env.sunElevationDeg,
+              antisolarAlignment: -1, mass: sim.mass
+            });
             var activePathwayKind = '';
             var pathwayAnchorX = START_X, pathwayAnchorZ = START_Z;
             var pathwayReleaseLift = 0;
             var pathwayWorldPoint = new THREE.Vector3();
+            var cameraGoal = new THREE.Vector3();
 
             function nearestPathwayWaterTarget(x, z) {
               var best = new THREE.Vector3(-24, 1.2, 72);
@@ -11886,6 +12613,11 @@ const d = labToolData.waterCycle || {};
               skyUniforms.midColor.value.setHex(warm > 26 ? 0x38bdf8 : warm > 12 ? 0x60a5fa : 0x93a8c4);
               skyUniforms.horizonColor.value.setHex(warm > 26 ? 0xfef3c7 : warm > 12 ? 0xdbeafe : 0xe2e8f0);
               sun.intensity = 0.6 + env.solar * 0.5;
+              var sunElevationRad = env.sunElevationDeg * Math.PI / 180;
+              var sunHorizontalDistance = 240;
+              sun.position.set(-192, Math.tan(sunElevationRad) * sunHorizontalDistance, 144);
+              sunDisc.position.copy(sun.position).normalize().multiplyScalar(720);
+              sunHalo.position.copy(sunDisc.position);
               ambientClouds.children.forEach(function(cg) { cg.position.y = m2u(env.lclM) + cg.userData.baseY; });
 
               // ── Terrain follows the scenario ────────────────────────────
@@ -11897,6 +12629,7 @@ const d = labToolData.waterCycle || {};
               var biome = env.id;
               var isDesert = biome === 'desertBasin';
               var isWinter = biome === 'mountainWinter';
+              sunHalo.material.color.setHex(isWinter ? 0xe8f3ff : isDesert ? 0xffd38a : 0xfff4c2);
               // Atmospheric perspective belongs to the biome too. The warm
               // mineral haze of a desert, blue winter air and humid coastal
               // light now separate the scenarios before a learner reads a word.
@@ -11934,6 +12667,31 @@ const d = labToolData.waterCycle || {};
               ocean.material.color.setHex(env.seaTempC > 24 ? 0x0a4763 : env.seaTempC > 12 ? 0x08304a : 0x0b2e42);
             }
             applyScenario(sim.scenario);
+
+            function restorePilotCheckpoint(checkpoint) {
+              var restored = WCPN && WCPN.normalizeSnapshot
+                ? WCPN.normalizeSnapshot(checkpoint) : null;
+              if (!restored) return false;
+              applyScenario(restored.scenario);
+              sim = Object.assign(WCPK.initialState(restored.scenario), restored);
+              env = WCPK.environment(restored.scenario);
+              px = restored.x; pz = restored.z;
+              yaw = restored.yaw; pitch = restored.pitch;
+              sim.x = px; sim.z = pz;
+              lastForm = sim.form;
+              lastScenario = sim.scenario;
+              activePathwayKind = '';
+              if (sim.form === 'runoff' || sim.form === 'soil'
+                || sim.form === 'groundwater' || sim.form === 'plant') {
+                beginSurfacePathway(sim.form);
+              }
+              input.scenario = sim.scenario;
+              input.cameraMode = restored.cameraMode;
+              input.paused = true;
+              clearPilotInputs();
+              canvasEl.dataset.pilotRestored = 'true';
+              return true;
+            }
 
             // Which surface is under the parcel right now. Position IS the choice:
             // the learner steers to a pathway rather than picking one from a list.
@@ -11974,36 +12732,56 @@ const d = labToolData.waterCycle || {};
                 canvasEl.dataset.pilotCamera = input.cameraMode === 'water' ? 'water' : 'follow';
                 canvasEl.dataset.pilotWindMs = String(env.windMs);
                 canvasEl.dataset.pilotPathwayProgress = String(Math.round((sim.pathwayProgress || 0) * 100));
+                canvasEl.dataset.pilotDryAirExposure = String(Math.round((sim.dryAirExposure || 0) * 100));
               }
               if (canvasEl._wcPilotOnSnapshot) {
                 canvasEl._wcPilotOnSnapshot({
                   form: sim.form, altitudeM: sim.altitudeM, energy: sim.energy,
+                  x: px, z: pz, yaw: yaw, pitch: pitch,
                   droplets: sim.droplets, mass: sim.mass, nucleus: sim.nucleus,
+                  dryAirExposure: sim.dryAirExposure || 0,
                   loops: sim.loops, elapsed: sim.elapsed, scenario: sim.scenario,
                   pathwayProgress: sim.pathwayProgress || 0,
                   stagesSeen: Object.assign({}, sim.stagesSeen),
                   formsSeen: Object.assign({}, sim.formsSeen),
+                  note: sim.note || '',
                   tempC: WCPK.parcelTempC(env, sim.altitudeM),
                   ambientC: WCPK.ambientTempC(env, sim.altitudeM),
                   rh: WCPK.parcelRH(env, sim.altitudeM),
                   buoyancyC: WCPK.buoyancyC(env, sim.altitudeM),
                   vy: sim.vy, surface: surfaceUnder(px, pz),
                   cameraMode: input.cameraMode === 'water' ? 'water' : 'follow',
+                  rainbow: Object.assign({}, pilotRainbowOptics),
                   reason: reason || 'tick'
                 });
               }
             }
 
             // ── Loop ─────────────────────────────────────────────────────────
-            var alive = true, raf = null, prevT = 0;
             function frame(now) {
               if (!alive) return;
               raf = requestAnimationFrame(frame);
               var dt = prevT ? Math.min(0.05, (now - prevT) / 1000) : 0.016;
               prevT = now;
 
+              if (input.restoreCheckpoint) {
+                var checkpointToRestore = input.restoreCheckpoint;
+                input.restoreCheckpoint = null;
+                if (restorePilotCheckpoint(checkpointToRestore)) snapshot('restore');
+              }
               if (input.scenario !== lastScenario) { lastScenario = input.scenario; applyScenario(input.scenario); snapshot('scenario'); }
               if (input.reset) { input.reset = 0; applyScenario(sim.scenario); snapshot('reset'); }
+              if (input.rainbowAlign) {
+                var rainbowAlignMode = input.rainbowAlign;
+                input.rainbowAlign = 0;
+                // A coarse alignment deliberately reveals only the primary bow;
+                // fine alignment centers the antisolar point closely enough for
+                // the fainter secondary rays. This keeps the challenge observable.
+                yaw = Math.atan2(sun.position.x, sun.position.z)
+                  + (rainbowAlignMode === 1 ? 0.22 : 0);
+                pitch = 0.12;
+                input.cameraMode = 'water';
+              }
 
               var thrust = 0, strafe = 0, surge = 0;
               if (!input.paused) {
@@ -12011,7 +12789,7 @@ const d = labToolData.waterCycle || {};
                        - (keyState.shift || keyState.s || keyState.arrowdown || input.down ? 1 : 0);
                 strafe = (keyState.d || keyState.arrowright || input.right ? 1 : 0)
                        - (keyState.a || keyState.arrowleft || input.left ? 1 : 0);
-                surge = (input.fwd ? 1 : 0) - (input.back ? 1 : 0);
+                surge = (keyState.f || input.fwd ? 1 : 0) - (keyState.b || input.back ? 1 : 0);
               }
 
               // Horizontal motion is steered relative to where the camera looks,
@@ -12254,6 +13032,28 @@ const d = labToolData.waterCycle || {};
               // by one icon. Both fields are pooled above and follow the parcel.
               var showingRain = f === 'rain';
               var showingSnow = f === 'snow';
+              var sunHorizontalLength = Math.max(0.001, Math.sqrt(
+                sun.position.x * sun.position.x + sun.position.z * sun.position.z));
+              var viewHorizontalX = -Math.sin(yaw);
+              var viewHorizontalZ = -Math.cos(yaw);
+              var antisolarX = -sun.position.x / sunHorizontalLength;
+              var antisolarZ = -sun.position.z / sunHorizontalLength;
+              var antisolarAlignment = viewHorizontalX * antisolarX + viewHorizontalZ * antisolarZ;
+              pilotRainbowOptics = WCPK.rainbowOptics({
+                form: f, solar: env.solar, sunAltitudeDeg: env.sunElevationDeg,
+                antisolarAlignment: antisolarAlignment, mass: sim.mass
+              });
+              canvasEl.dataset.rainbowStage = String(pilotRainbowOptics.stage);
+              canvasEl.dataset.weatherOptics = pilotRainbowOptics.secondaryVisible ? 'double-rainbow'
+                : pilotRainbowOptics.primaryVisible ? 'primary-rainbow' : 'none';
+              canvasEl.dataset.antisolarAlignment = String(pilotRainbowOptics.alignmentPercent);
+              rainField.material.opacity = showingRain
+                ? 0.42 + pilotRainbowOptics.primaryStrength * 0.2 : 0.38;
+              sunHalo.material.opacity = 0.1 + env.solar * 0.055
+                + pilotRainbowOptics.primaryStrength * 0.12;
+              var rainbowExposureGoal = pilotRainbowOptics.primaryVisible ? 0.93 : 0.84;
+              renderer.toneMappingExposure += (rainbowExposureGoal - renderer.toneMappingExposure)
+                * (motionReduced ? 1 : Math.min(1, dt * 2.5));
               rainField.visible = showingRain;
               snowField.visible = showingSnow;
               canvasEl.dataset.precipitationField = showingRain
@@ -12418,8 +13218,8 @@ const d = labToolData.waterCycle || {};
                 // learner steers. The HUD still names the current form, while the
                 // follow view remains one click away for seeing that form change.
                 var eyeY = subsurfaceFocus ? parcelDisplayY + 3.2 : Math.max(5.2, parcelDisplayY + 3.2);
-                var eyeGoal = new THREE.Vector3(px, eyeY, pz);
-                camera.position.lerp(eyeGoal, motionReduced ? 1 : Math.min(1, dt * 7));
+                cameraGoal.set(px, eyeY, pz);
+                camera.position.lerp(cameraGoal, motionReduced ? 1 : Math.min(1, dt * 7));
                 var lookDistance = 90;
                 camera.lookAt(
                   px - Math.sin(yaw) * Math.cos(pitch) * lookDistance,
@@ -12428,7 +13228,8 @@ const d = labToolData.waterCycle || {};
                 );
               } else {
                 var wantDist = userZoom || formCamDist(f);
-                var camGoal = new THREE.Vector3(
+                canvasEl.dataset.pilotZoom = String(Math.round(wantDist));
+                cameraGoal.set(
                   px + Math.sin(yaw) * Math.cos(pitch) * wantDist,
                   parcelDisplayY + Math.sin(pitch) * wantDist + 6,
                   pz + Math.cos(yaw) * Math.cos(pitch) * wantDist
@@ -12436,8 +13237,8 @@ const d = labToolData.waterCycle || {};
                 // Never let the chase camera drop below the waterline: at low pitch
                 // near the surface it otherwise dips under the ocean plane and the
                 // whole frame becomes an undifferentiated wash of water.
-                camGoal.y = Math.max(camGoal.y, subsurfaceFocus ? parcelDisplayY + 5 : 7);
-                camera.position.lerp(camGoal, motionReduced ? 1 : Math.min(1, dt * 4.5));
+                cameraGoal.y = Math.max(cameraGoal.y, subsurfaceFocus ? parcelDisplayY + 5 : 7);
+                camera.position.lerp(cameraGoal, motionReduced ? 1 : Math.min(1, dt * 4.5));
                 camera.lookAt(px, parcelDisplayY + 2, pz);
               }
               updateLatentEnergyCue(dt, t);
@@ -12471,14 +13272,20 @@ const d = labToolData.waterCycle || {};
             canvasEl._wcPilotCleanup = function() {
               alive = false;
               if (raf) cancelAnimationFrame(raf);
+              clearPilotInputs();
               canvasEl.removeEventListener('keydown', onKeyDown);
               canvasEl.removeEventListener('keyup', onKeyUp);
+              canvasEl.removeEventListener('blur', clearPilotKeyboardState);
+              window.removeEventListener('blur', clearPilotInputs);
+              document.removeEventListener('visibilitychange', onPilotVisibilityChange);
+              window.removeEventListener('pagehide', onPilotPageHide);
               canvasEl.removeEventListener('pointerdown', onPointerDown);
               canvasEl.removeEventListener('pointermove', onPointerMove);
               canvasEl.removeEventListener('pointerup', onPointerUp);
               canvasEl.removeEventListener('pointercancel', onPointerUp);
               canvasEl.removeEventListener('pointerleave', onPointerUp);
               canvasEl.removeEventListener('wheel', onWheel);
+              canvasEl.removeEventListener('webglcontextlost', onPilotContextLost, false);
               if (ro) { try { ro.disconnect(); } catch (e) {} } else { window.removeEventListener('resize', onResize); }
               if (motionMedia && motionMedia.removeEventListener) motionMedia.removeEventListener('change', syncMotion);
               else if (motionMedia && motionMedia.removeListener) motionMedia.removeListener(syncMotion);
@@ -12517,7 +13324,7 @@ const d = labToolData.waterCycle || {};
                   var s0 = WCPK.initialState(scenarioId);
                   return {
                     form: s0.form, altitudeM: 0, energy: 0, droplets: 0, mass: s0.mass,
-                    pathwayProgress: 0,
+                    pathwayProgress: 0, dryAirExposure: 0,
                     nucleus: false, loops: 0, elapsed: 0, scenario: scenarioId,
                     stagesSeen: {}, formsSeen: { liquid: true },
                     tempC: WCPK.parcelTempC(env, 0), ambientC: WCPK.ambientTempC(env, 0),
@@ -12542,7 +13349,9 @@ const d = labToolData.waterCycle || {};
                     label: t('stem.watercycle.pilot_molecular_liquid', 'Liquid - close together, sliding'),
                     description: t('stem.watercycle.pilot_molecular_liquid_alt', 'the molecules stay close together but slide past one another')
                   };
-            var coverage = WCPK.stageCoverage({ stagesSeen: snap.stagesSeen });
+            var pilotStagesSeen = Object.assign({}, pilotStored.stagesSeen || {}, snap.stagesSeen || {});
+            var coverage = WCPK.stageCoverage({ stagesSeen: pilotStagesSeen });
+            var totalPilotLoops = pilotStored.loopsCompleted || 0;
             var objective = WCPK.objective(snap, env);
             var paused = !!pilotStored.paused;
             var onboardingComplete = pilotStored.onboardingComplete === true;
@@ -12551,42 +13360,553 @@ const d = labToolData.waterCycle || {};
             // Defaults ON: the mode is only ever entered deliberately, and the
             // form-change cue is the mode's only non-visual channel.
             var pilotSound = pilotStored.sound !== false;
+            var rainbowOptics = snap.rainbow && typeof snap.rainbow === 'object'
+              ? snap.rainbow : WCPK.rainbowOptics({
+                  form: snap.form, solar: env.solar, sunAltitudeDeg: env.sunElevationDeg,
+                  antisolarAlignment: -1, mass: snap.mass
+                });
+            var rainbowEvidence = pilotStored.rainbowEvidence && typeof pilotStored.rainbowEvidence === 'object'
+              ? pilotStored.rainbowEvidence : {};
+            var rainbowChallengeComplete = rainbowEvidence.doubleCreated === true
+              || d.rainbowDoubleCreated === true;
+            var rainbowProgressStage = Math.max(
+              Number(rainbowEvidence.stageReached) || 0,
+              Number(rainbowOptics.stage) || 0,
+              rainbowEvidence.primarySeen === true ? 3 : 0,
+              rainbowChallengeComplete ? 4 : 0
+            );
+            var rainbowCanAim = onboardingComplete && rainbowOptics.rainReady
+              && rainbowOptics.lowSunReady && rainbowOptics.sunlightReady
+              && !rainbowChallengeComplete;
+            var rainbowSunGeometryReady = rainbowOptics.lowSunReady && rainbowOptics.sunlightReady;
+            var rainbowEvidenceBestAlignment = Number(rainbowEvidence.bestAlignment);
+            if (!isFinite(rainbowEvidenceBestAlignment)) rainbowEvidenceBestAlignment = -1;
+            var rainbowEvidenceAlignmentPct = Math.round(Math.max(0, Math.min(100,
+              (rainbowEvidenceBestAlignment + 1) * 50)));
+            var rainbowEvidenceSunAltitude = Math.round(Number(rainbowEvidence.sunAltitudeDeg)
+              || env.sunElevationDeg || 0);
+            var rainbowEvidenceScenarioId = WCPK.scenarios[rainbowEvidence.scenario]
+              ? rainbowEvidence.scenario : scenarioId;
+            var rainbowEvidenceScenario = WCPK.scenarios[rainbowEvidenceScenarioId]
+              || WCPK.scenarios.tropicalOcean;
+            var pilotRainbowPrimaryColors = ['#ef4444', '#f97316', '#facc15', '#22c55e', '#0ea5e9', '#6366f1', '#a855f7'];
+            var pilotRainbowSecondaryColors = pilotRainbowPrimaryColors.slice().reverse();
+            function pilotRainbowArcPath(radius) {
+              var k = radius * 0.55228475;
+              return 'M ' + (400 - radius) + ' 430 C ' + (400 - radius) + ' ' + (430 - k)
+                + ' ' + (400 - k) + ' ' + (430 - radius) + ' 400 ' + (430 - radius)
+                + ' C ' + (400 + k) + ' ' + (430 - radius) + ' ' + (400 + radius)
+                + ' ' + (430 - k) + ' ' + (400 + radius) + ' 430';
+            }
+            var pilotErrorRecord = d.pilotError;
+            var pilotErrorKind = pilotErrorRecord && typeof pilotErrorRecord === 'object'
+              ? pilotErrorRecord.kind : 'unavailable';
+            var pilotErrorMessage = pilotErrorRecord && typeof pilotErrorRecord === 'object'
+              ? pilotErrorRecord.message : pilotErrorRecord;
+
+            // Scenario comparison records store only bounded semantic evidence
+            // from a run. Climate values are always recomputed by the kernel,
+            // so a pinned card can never drift away from the scenario physics.
+            var pilotComparisonSource = pilotStored.comparisons
+              && typeof pilotStored.comparisons === 'object'
+              && !Array.isArray(pilotStored.comparisons)
+                ? pilotStored.comparisons : {};
+            function pilotComparisonNumber(value, minimum, maximum, fallback) {
+              var number = Number(value);
+              if (!isFinite(number)) return fallback;
+              return Math.max(minimum, Math.min(maximum, number));
+            }
+            var pilotComparisons = {};
+            Object.keys(WCPK.scenarios).forEach(function(id) {
+              var record = pilotComparisonSource[id];
+              if (!record || typeof record !== 'object' || record.scenario !== id) return;
+              var comparisonEnv = WCPK.environment(id);
+              pilotComparisons[id] = {
+                scenario: id,
+                form: WCPK.forms[record.form] ? record.form : 'liquid',
+                altitudeM: Math.round(pilotComparisonNumber(record.altitudeM, 0, comparisonEnv.ceilingM, 0)),
+                stageCount: Math.round(pilotComparisonNumber(record.stageCount, 0, WCPK.stageOrder.length, 0)),
+                rainbowStage: Math.round(pilotComparisonNumber(record.rainbowStage, 0, 4, 0)),
+                savedAt: Math.round(pilotComparisonNumber(record.savedAt, 0, 9007199254740991, 0))
+              };
+            });
+            var currentRunStageCount = WCPK.stageOrder.reduce(function(total, stageId) {
+              return total + (snap.stagesSeen && snap.stagesSeen[stageId] ? 1 : 0);
+            }, 0);
+            var currentPilotComparison = {
+              scenario: scenarioId,
+              form: WCPK.forms[snap.form] ? snap.form : 'liquid',
+              altitudeM: Math.round(pilotComparisonNumber(snap.altitudeM, 0, env.ceilingM, 0)),
+              stageCount: currentRunStageCount,
+              rainbowStage: Math.round(pilotComparisonNumber(rainbowProgressStage, 0, 4, 0)),
+              savedAt: 0
+            };
+            var pilotComparisonRows = Object.keys(WCPK.scenarios).map(function(id) {
+              return {
+                id: id,
+                scenario: WCPK.scenarios[id],
+                env: WCPK.environment(id),
+                pinned: pilotComparisons[id] || null,
+                current: id === scenarioId
+              };
+            });
+            var pilotComparisonLowestCloud = pilotComparisonRows.reduce(function(best, row) {
+              return !best || row.env.lclM < best.env.lclM ? row : best;
+            }, null);
+            var pilotComparisonHighestCloud = pilotComparisonRows.reduce(function(best, row) {
+              return !best || row.env.lclM > best.env.lclM ? row : best;
+            }, null);
+            var pilotComparisonLowestFreezing = pilotComparisonRows.reduce(function(best, row) {
+              return !best || row.env.freezingM < best.env.freezingM ? row : best;
+            }, null);
+            var pilotComparisonProfileCeilingM = pilotComparisonRows.reduce(function(highest, row) {
+              return Math.max(highest, Number(row.env.ceilingM) || 0);
+            }, WCPK.CEILING_M || 6000);
+            var pilotComparisonCloudSpreadM = Math.round(
+              pilotComparisonHighestCloud.env.lclM - pilotComparisonLowestCloud.env.lclM);
+            function pilotComparisonProfilePercent(value) {
+              return Math.max(0, Math.min(100,
+                (Number(value) || 0) / Math.max(1, pilotComparisonProfileCeilingM) * 100));
+            }
+            function pilotComparisonProfileMarkerPercent(value) {
+              return Math.max(4, Math.min(96, pilotComparisonProfilePercent(value)));
+            }
+            function pilotComparisonFreezingText(row) {
+              return row.env.freezingM >= row.env.ceilingM
+                ? t('stem.watercycle.pilot_compare_above_model', 'Above model')
+                : Math.round(row.env.freezingM) + ' m';
+            }
+            var pilotComparisonProbeM = Math.round(
+              pilotComparisonNumber(pilotStored.profileProbeM, 0,
+                pilotComparisonProfileCeilingM, 1500) / 100) * 100;
+            function pilotComparisonProbeAltitudeText(value) {
+              var metres = Math.round(Number(value) || 0);
+              if (metres === 0) return t('stem.watercycle.pilot_compare_surface', 'Surface');
+              if (metres >= 1000) {
+                var kilometres = metres / 1000;
+                return kilometres.toFixed(kilometres % 1 === 0 ? 0 : 1) + ' km';
+              }
+              return metres + ' m';
+            }
+            var pilotComparisonProbeStateOrder = ['air', 'cold', 'cloud', 'ice'];
+            var pilotComparisonProbeLabels = {
+              air: t('stem.watercycle.pilot_compare_probe_state_air', 'Below cloud base'),
+              cold: t('stem.watercycle.pilot_compare_probe_state_cold', 'Cold air, no cloud yet'),
+              cloud: t('stem.watercycle.pilot_compare_probe_state_cloud', 'Liquid cloud possible'),
+              ice: t('stem.watercycle.pilot_compare_probe_state_ice', 'Cloud ice possible')
+            };
+            function pilotComparisonProbeReading(row) {
+              var kernelReading = WCPK.climateProbe(row.env, pilotComparisonProbeM);
+              var temperatureC = Math.round(kernelReading.ambientTempC);
+              var key = kernelReading.state;
+
+              var details = {
+                air: t('stem.watercycle.pilot_compare_probe_detail_air',
+                  '{temp}°C air · condensation threshold not reached'),
+                cold: t('stem.watercycle.pilot_compare_probe_detail_cold',
+                  '{temp}°C air · subfreezing but below cloud base'),
+                cloud: t('stem.watercycle.pilot_compare_probe_detail_cloud',
+                  '{temp}°C air · above cloud base, below freezing'),
+                ice: t('stem.watercycle.pilot_compare_probe_detail_ice',
+                  '{temp}°C air · above cloud base and freezing level')
+              };
+              return {
+                key: key,
+                label: pilotComparisonProbeLabels[key],
+                detail: details[key].replace('{temp}', temperatureC),
+                temperatureC: temperatureC,
+                ambientTempC: kernelReading.ambientTempC,
+                aboveCloudBase: kernelReading.aboveCloudBase,
+                atOrAboveFreezingLevel: kernelReading.atOrAboveFreezingLevel
+              };
+            }
+            var pilotComparisonProbeRows = pilotComparisonRows.map(function(row) {
+              return { row: row, reading: pilotComparisonProbeReading(row) };
+            });
+            var pilotComparisonProbeCounts = { air: 0, cold: 0, cloud: 0, ice: 0 };
+            pilotComparisonProbeRows.forEach(function(item) {
+              pilotComparisonProbeCounts[item.reading.key] += 1;
+            });
+            var pilotComparisonProbeAboveCloudCount = pilotComparisonProbeRows.reduce(function(total, item) {
+              return total + (item.reading.aboveCloudBase ? 1 : 0);
+            }, 0);
+            var pilotComparisonProbeFreezingCount = pilotComparisonProbeRows.reduce(function(total, item) {
+              return total + (item.reading.atOrAboveFreezingLevel ? 1 : 0);
+            }, 0);
+            var pilotComparisonProbeCrossingText = t('stem.watercycle.pilot_compare_probe_crossing',
+              'At {altitude}, the probe is above cloud base in {cloud} of {total} climates and at or above the freezing level in {freezing}.')
+                .replace('{altitude}', pilotComparisonProbeAltitudeText(pilotComparisonProbeM))
+                .replace('{cloud}', pilotComparisonProbeAboveCloudCount)
+                .replace('{total}', pilotComparisonRows.length)
+                .replace('{freezing}', pilotComparisonProbeFreezingCount);
+            var pilotComparisonWaypointLabels = {
+              cloud: t('stem.watercycle.pilot_compare_waypoint_cloud', 'Cloud base'),
+              freezing: t('stem.watercycle.pilot_compare_waypoint_freezing', 'Freezing level')
+            };
+            var pilotComparisonProbeWaypoints = [];
+            pilotComparisonRows.forEach(function(row) {
+              [
+                { type: 'cloud', altitudeM: row.env.lclM },
+                { type: 'freezing', altitudeM: row.env.freezingM }
+              ].forEach(function(candidate) {
+                if (candidate.type === 'freezing'
+                  && candidate.altitudeM >= row.env.ceilingM) return;
+                var thresholdM = Math.max(0, Math.min(pilotComparisonProfileCeilingM,
+                  Math.round(candidate.altitudeM)));
+                var waypointProbeM = Math.max(0, Math.min(pilotComparisonProfileCeilingM,
+                  Math.ceil(thresholdM / 100) * 100));
+                pilotComparisonProbeWaypoints.push({
+                  id: row.id + '-' + candidate.type,
+                  row: row,
+                  type: candidate.type,
+                  label: pilotComparisonWaypointLabels[candidate.type],
+                  thresholdM: thresholdM,
+                  probeM: waypointProbeM
+                });
+              });
+            });
+            pilotComparisonProbeWaypoints.sort(function(a, b) {
+              if (a.probeM !== b.probeM) return a.probeM - b.probeM;
+              if (a.type !== b.type) return a.type === 'cloud' ? -1 : 1;
+              return a.row.scenario.label.localeCompare(b.row.scenario.label);
+            });
+            function pilotComparisonWaypointEventText(waypoint) {
+              return t('stem.watercycle.pilot_compare_waypoint_event', '{scenario} {threshold}')
+                .replace('{scenario}', waypoint.row.scenario.label)
+                .replace('{threshold}', waypoint.label);
+            }
+            function pilotComparisonProbeTemperatureText(value) {
+              var rounded = Math.round(Number(value) || 0);
+              return t('stem.watercycle.pilot_compare_probe_temperature', '{temp}°C')
+                .replace('{temp}', (rounded > 0 ? '+' : '') + rounded);
+            }
+            function pilotComparisonThermalDecimalText(value) {
+              var rounded = Math.round((Number(value) || 0) * 10) / 10;
+              return rounded.toFixed(rounded % 1 === 0 ? 0 : 1);
+            }
+            var pilotComparisonCoolingRateCPerKm = Number(WCPK.envLapse) || 6.5;
+            var pilotComparisonCoolingAltitudeKm = pilotComparisonProbeM / 1000;
+            var pilotComparisonCoolingDropC =
+              pilotComparisonCoolingRateCPerKm * pilotComparisonCoolingAltitudeKm;
+            var pilotComparisonCoolingRateText = pilotComparisonThermalDecimalText(
+              pilotComparisonCoolingRateCPerKm);
+            var pilotComparisonCoolingAltitudeText = pilotComparisonThermalDecimalText(
+              pilotComparisonCoolingAltitudeKm);
+            var pilotComparisonCoolingDropText = pilotComparisonThermalDecimalText(
+              pilotComparisonCoolingDropC);
+            var pilotComparisonThermalRawMinC = pilotComparisonRows.reduce(function(low, row) {
+              return Math.min(low,
+                WCPK.climateProbe(row.env, pilotComparisonProfileCeilingM).ambientTempC);
+            }, 0);
+            var pilotComparisonThermalRawMaxC = pilotComparisonRows.reduce(function(high, row) {
+              return Math.max(high, WCPK.climateProbe(row.env, 0).ambientTempC);
+            }, 0);
+            var pilotComparisonThermalScaleMinC =
+              Math.floor(pilotComparisonThermalRawMinC / 5) * 5;
+            var pilotComparisonThermalScaleMaxC =
+              Math.ceil(pilotComparisonThermalRawMaxC / 5) * 5;
+            var pilotComparisonThermalScaleSpanC = Math.max(5,
+              pilotComparisonThermalScaleMaxC - pilotComparisonThermalScaleMinC);
+            function pilotComparisonThermalPercent(value) {
+              return Math.max(0, Math.min(100,
+                (Number(value) - pilotComparisonThermalScaleMinC)
+                  / pilotComparisonThermalScaleSpanC * 100));
+            }
+            var pilotComparisonThermalRows = pilotComparisonProbeRows.map(function(item, index) {
+              var surfaceReading = WCPK.climateProbe(item.row.env, 0);
+              var surfaceTemperatureC = Math.round(surfaceReading.ambientTempC);
+              var surfacePositionPct = pilotComparisonThermalPercent(
+                surfaceReading.ambientTempC);
+              var currentPositionPct = pilotComparisonThermalPercent(
+                item.reading.ambientTempC);
+              return {
+                id: item.row.id,
+                row: item.row,
+                lane: index,
+                temperatureC: item.reading.temperatureC,
+                surfaceTemperatureC: surfaceTemperatureC,
+                positionPct: currentPositionPct,
+                surfacePositionPct: surfacePositionPct,
+                coolingWidthPct: Math.max(0, surfacePositionPct - currentPositionPct)
+              };
+            });
+            var pilotComparisonThermalColdest = pilotComparisonThermalRows.reduce(
+              function(best, item) {
+                return !best || item.temperatureC < best.temperatureC ? item : best;
+              }, null);
+            var pilotComparisonThermalWarmest = pilotComparisonThermalRows.reduce(
+              function(best, item) {
+                return !best || item.temperatureC > best.temperatureC ? item : best;
+              }, null);
+            var pilotComparisonThermalSpreadC = pilotComparisonThermalWarmest
+              && pilotComparisonThermalColdest
+              ? pilotComparisonThermalWarmest.temperatureC
+                - pilotComparisonThermalColdest.temperatureC
+              : 0;
+            var pilotComparisonThermalZeroPct = pilotComparisonThermalPercent(0);
+            var pilotComparisonThermalSummary = t('stem.watercycle.pilot_compare_thermal_summary',
+              'At {altitude}, {cold} is coldest at {coldTemp}; {warm} is warmest at {warmTemp}. The {spread}°C spread comes from different surface starting temperatures in this shared-lapse-rate model.')
+                .replace('{altitude}', pilotComparisonProbeAltitudeText(pilotComparisonProbeM))
+                .replace('{cold}', pilotComparisonThermalColdest.row.scenario.label)
+                .replace('{coldTemp}', pilotComparisonProbeTemperatureText(
+                  pilotComparisonThermalColdest.temperatureC))
+                .replace('{warm}', pilotComparisonThermalWarmest.row.scenario.label)
+                .replace('{warmTemp}', pilotComparisonProbeTemperatureText(
+                  pilotComparisonThermalWarmest.temperatureC))
+                .replace('{spread}', pilotComparisonThermalSpreadC);
+            var pilotComparisonCoolingEquationAria = t(
+              'stem.watercycle.pilot_compare_cooling_equation_aria',
+              '{rate} degrees Celsius per kilometre multiplied by {altitude} kilometres equals {drop} degrees Celsius cooler.')
+                .replace('{rate}', pilotComparisonCoolingRateText)
+                .replace('{altitude}', pilotComparisonCoolingAltitudeText)
+                .replace('{drop}', pilotComparisonCoolingDropText);
+            var pilotComparisonCoolingSummary = t('stem.watercycle.pilot_compare_cooling_summary',
+              'Every climate cools by the same {drop}°C at this altitude because the model applies one environmental lapse rate. Different surface temperatures keep the markers separated.')
+                .replace('{drop}', pilotComparisonCoolingDropText);
+            var pilotComparisonFreezeRows = pilotComparisonProbeRows.filter(function(item) {
+              return item.reading.ambientTempC <= 0;
+            });
+            var pilotComparisonFreezeActualCount = pilotComparisonFreezeRows.length;
+            var pilotComparisonFreezeNames = pilotComparisonFreezeRows.length
+              ? pilotComparisonFreezeRows.map(function(item) {
+                  return item.row.scenario.label;
+                }).join(', ')
+              : t('stem.watercycle.pilot_compare_freeze_none', 'none');
+            var pilotComparisonFreezeRawCount = pilotStored.thermalForecastCount;
+            var pilotComparisonFreezeStoredCount = null;
+            if (pilotComparisonFreezeRawCount !== null
+              && pilotComparisonFreezeRawCount !== undefined
+              && pilotComparisonFreezeRawCount !== ''
+              && isFinite(Number(pilotComparisonFreezeRawCount))) {
+              pilotComparisonFreezeStoredCount = Math.round(pilotComparisonNumber(
+                pilotComparisonFreezeRawCount, 0, pilotComparisonRows.length, 0));
+            }
+            var pilotComparisonFreezeStoredProbeM =
+              pilotStored.thermalForecastProbeM === null
+                || pilotStored.thermalForecastProbeM === undefined
+                ? -1
+                : Math.round(pilotComparisonNumber(pilotStored.thermalForecastProbeM,
+                    0, pilotComparisonProfileCeilingM, -1));
+            var pilotComparisonFreezeForecastCurrent =
+              pilotComparisonFreezeStoredCount !== null
+              && pilotComparisonFreezeStoredProbeM === pilotComparisonProbeM;
+            var pilotComparisonFreezeSelectedCount = pilotComparisonFreezeForecastCurrent
+              ? pilotComparisonFreezeStoredCount : null;
+            var pilotComparisonFreezeCorrect = pilotComparisonFreezeForecastCurrent
+              && pilotComparisonFreezeSelectedCount === pilotComparisonFreezeActualCount;
+            var pilotComparisonFreezeState = !pilotComparisonFreezeForecastCurrent
+              ? 'ready' : (pilotComparisonFreezeCorrect ? 'confirmed' : 'retry');
+            var pilotComparisonFreezeStateText = pilotComparisonFreezeState === 'confirmed'
+              ? t('stem.watercycle.pilot_compare_freeze_state_confirmed', 'Evidence matched')
+              : pilotComparisonFreezeState === 'retry'
+                ? t('stem.watercycle.pilot_compare_freeze_state_retry', 'Check the line')
+                : t('stem.watercycle.pilot_compare_freeze_state_ready', 'Make your call');
+            var pilotComparisonFreezePrompt = t('stem.watercycle.pilot_compare_freeze_prompt',
+              'How many climate markers sit at or below 0°C at {altitude}?')
+                .replace('{altitude}', pilotComparisonProbeAltitudeText(pilotComparisonProbeM));
+            var pilotComparisonFreezeFeedback = pilotComparisonFreezeCorrect
+              ? t('stem.watercycle.pilot_compare_freeze_confirmed',
+                  'Confirmed: {count} of {total} climate profiles sit at or below 0°C at {altitude}: {climates}.')
+                  .replace('{count}', pilotComparisonFreezeActualCount)
+                  .replace('{total}', pilotComparisonRows.length)
+                  .replace('{altitude}', pilotComparisonProbeAltitudeText(pilotComparisonProbeM))
+                  .replace('{climates}', pilotComparisonFreezeNames)
+              : pilotComparisonFreezeForecastCurrent
+                ? t('stem.watercycle.pilot_compare_freeze_retry',
+                    'Try again. Count the markers on or left of the dashed 0°C line.')
+                : t('stem.watercycle.pilot_compare_freeze_hint',
+                    'Read the dashed freezing line, then choose 0–4.');
+            var pilotComparisonProbePreviousWaypoint = null;
+            var pilotComparisonProbeNextWaypoint = null;
+            var pilotComparisonProbeCurrentWaypoints = [];
+            var pilotComparisonProbeWaypointCrossedCount = 0;
+            pilotComparisonProbeWaypoints.forEach(function(waypoint) {
+              if (waypoint.probeM <= pilotComparisonProbeM) {
+                pilotComparisonProbeWaypointCrossedCount += 1;
+              }
+              if (waypoint.probeM < pilotComparisonProbeM) {
+                pilotComparisonProbePreviousWaypoint = waypoint;
+              } else if (waypoint.probeM === pilotComparisonProbeM) {
+                pilotComparisonProbeCurrentWaypoints.push(waypoint);
+              } else if (!pilotComparisonProbeNextWaypoint) {
+                pilotComparisonProbeNextWaypoint = waypoint;
+              }
+            });
+            var pilotComparisonProbeWaypointProgress = pilotComparisonProbeWaypoints.length
+              ? Math.round(pilotComparisonProbeWaypointCrossedCount
+                  / pilotComparisonProbeWaypoints.length * 100)
+              : 0;
+            var pilotComparisonProbeWaypointStatus;
+            if (pilotComparisonProbeCurrentWaypoints.length) {
+              pilotComparisonProbeWaypointStatus = t('stem.watercycle.pilot_compare_waypoint_status_here',
+                'This probe step crosses: {events}.')
+                  .replace('{events}', pilotComparisonProbeCurrentWaypoints
+                    .map(pilotComparisonWaypointEventText).join(', '));
+            } else if (pilotComparisonProbeNextWaypoint) {
+              pilotComparisonProbeWaypointStatus = t('stem.watercycle.pilot_compare_waypoint_status_next',
+                'Next crossing: {scenario} {threshold} at the {altitude} probe step; climb {distance}.')
+                  .replace('{scenario}', pilotComparisonProbeNextWaypoint.row.scenario.label)
+                  .replace('{threshold}', pilotComparisonProbeNextWaypoint.label)
+                  .replace('{altitude}',
+                    pilotComparisonProbeAltitudeText(pilotComparisonProbeNextWaypoint.probeM))
+                  .replace('{distance}', pilotComparisonProbeAltitudeText(
+                    pilotComparisonProbeNextWaypoint.probeM - pilotComparisonProbeM));
+            } else {
+              pilotComparisonProbeWaypointStatus = t('stem.watercycle.pilot_compare_waypoint_status_complete',
+                'Every modeled cloud-base and freezing crossing is at or below this altitude.');
+            }
+            var pilotComparisonProbeSummary = pilotComparisonProbeRows.map(function(item) {
+              return t('stem.watercycle.pilot_compare_probe_summary_item', '{scenario}: {result}')
+                .replace('{scenario}', item.row.scenario.label)
+                .replace('{result}', item.reading.label);
+            }).join('; ');
+            var pinnedPilotComparisonCount = Object.keys(pilotComparisons).length;
+            var pilotPinnedComparisonRows = pilotComparisonRows.filter(function(row) {
+              return !!row.pinned;
+            });
+            var pilotUnpinnedComparisonRows = pilotComparisonRows.filter(function(row) {
+              return !row.pinned;
+            });
+            var pilotNextComparisonRow = pilotUnpinnedComparisonRows.reduce(function(best, row) {
+              if (row.current) return row;
+              return best || row;
+            }, null);
+            var pilotComparisonMissionComplete = pinnedPilotComparisonCount === pilotComparisonRows.length;
+            var pilotComparisonSynthesisReady = pilotPinnedComparisonRows.length >= 2;
+            var pilotPinnedLowestCloud = pilotPinnedComparisonRows.reduce(function(best, row) {
+              return !best || row.env.lclM < best.env.lclM ? row : best;
+            }, null);
+            var pilotPinnedHighestCloud = pilotPinnedComparisonRows.reduce(function(best, row) {
+              return !best || row.env.lclM > best.env.lclM ? row : best;
+            }, null);
+            var pilotPinnedMostStages = pilotPinnedComparisonRows.reduce(function(best, row) {
+              return !best || row.pinned.stageCount > best.pinned.stageCount ? row : best;
+            }, null);
+            function pilotComparisonClaimFor(lowRow, highRow) {
+              return t('stem.watercycle.pilot_compare_synthesis_claim',
+                '{low} forms cloud at a lower altitude than {high} in this model.')
+                  .replace('{low}', lowRow.scenario.label)
+                  .replace('{high}', highRow.scenario.label);
+            }
+            function pilotComparisonEvidenceFor(lowRow, highRow) {
+              return t('stem.watercycle.pilot_compare_synthesis_evidence',
+                '{low}: {lowM} m cloud base at {lowRH}% humidity. {high}: {highM} m at {highRH}% humidity.')
+                  .replace('{low}', lowRow.scenario.label)
+                  .replace('{lowM}', Math.round(lowRow.env.lclM))
+                  .replace('{lowRH}', Math.round(lowRow.env.surfaceRH))
+                  .replace('{high}', highRow.scenario.label)
+                  .replace('{highM}', Math.round(highRow.env.lclM))
+                  .replace('{highRH}', Math.round(highRow.env.surfaceRH));
+            }
+            function pilotComparisonReasoningFor() {
+              return t('stem.watercycle.pilot_compare_synthesis_reasoning',
+                'Air that starts closer to saturation needs less cooling before water vapor condenses, so its cloud base is lower.');
+            }
+            var pilotComparisonClaim = pilotComparisonSynthesisReady
+              ? pilotComparisonClaimFor(pilotPinnedLowestCloud, pilotPinnedHighestCloud) : '';
+            var pilotComparisonEvidence = pilotComparisonSynthesisReady
+              ? pilotComparisonEvidenceFor(pilotPinnedLowestCloud, pilotPinnedHighestCloud) : '';
+            var pilotComparisonReasoning = pilotComparisonSynthesisReady
+              ? pilotComparisonReasoningFor() : '';
 
             // ── Publishing the snapshot back into tool state ────────────────
             // Throttled by the loop, but ALSO guarded here: an identical snapshot
             // must not schedule a re-render, or a paused sim would still spin
             // React at the snapshot rate.
+            function autosavePilotNotebook(waterCycleState, pilotState, nextSnapshot, reason, force) {
+              if (!WCPN || !pilotState || pilotState.onboardingComplete !== true
+                || !pilotState.notebookSessionId) return null;
+              var notebookState = waterCycleState.pilotNotebook || {};
+              if (notebookState.autoSave === false) return null;
+              var now = Date.now();
+              if (!force && now - _wcPilotNotebookLastAutosaveAt < 5000) return null;
+              _wcPilotNotebookLastAutosaveAt = now;
+              var checkpointPilot = Object.assign({}, pilotState, {
+                snapshot: nextSnapshot,
+                scenario: nextSnapshot.scenario || pilotState.scenario
+              });
+              var checkpointState = Object.assign({}, waterCycleState, { pilot: checkpointPilot });
+              return WCPN.write(WCPN.capture(checkpointState, now, reason || 'checkpoint'));
+            }
+
             function receiveSnapshot(next) {
               setLabToolData(function(prev) {
                 var wc = prev.waterCycle || {};
                 var cur = wc.pilot || {};
                 var prevSnap = cur.snapshot;
+                autosavePilotNotebook(wc, cur, next, next.reason || 'checkpoint', next.reason === 'pagehide');
                 if (prevSnap && prevSnap.form === next.form
                   && Math.abs((prevSnap.altitudeM || 0) - next.altitudeM) < 25
                   && prevSnap.droplets === next.droplets
                   && Math.abs((prevSnap.energy || 0) - next.energy) < 0.04
                   && Math.abs((prevSnap.pathwayProgress || 0) - (next.pathwayProgress || 0)) < 0.04
+                  && Math.abs((prevSnap.dryAirExposure || 0) - (next.dryAirExposure || 0)) < 0.04
                   && prevSnap.loops === next.loops
                   && prevSnap.surface === next.surface
-                  && prevSnap.cameraMode === next.cameraMode) return prev;
+                  && prevSnap.cameraMode === next.cameraMode
+                  && ((prevSnap.rainbow && prevSnap.rainbow.stage) || 0) === ((next.rainbow && next.rainbow.stage) || 0)
+                  && ((prevSnap.rainbow && prevSnap.rainbow.strengthBucket) || 0)
+                    === ((next.rainbow && next.rainbow.strengthBucket) || 0)) return prev;
                 // Piloting credits the SAME stage ledger and challenge set as
                 // every other view, so a learner who only ever flies still
                 // completes the tool. One ledger, one derivation.
                 var stagesViewed = Object.assign({}, wc.stagesViewed || {});
-                Object.keys(next.stagesSeen || {}).forEach(function(k) { stagesViewed[k] = true; });
+                var cumulativePilotStages = Object.assign({}, cur.stagesSeen || {});
+                Object.keys(next.stagesSeen || {}).forEach(function(k) {
+                  stagesViewed[k] = true;
+                  cumulativePilotStages[k] = true;
+                });
                 var patch = {
-                  pilot: Object.assign({}, cur, { snapshot: next, scenario: next.scenario }),
+                  pilot: Object.assign({}, cur, {
+                    snapshot: next, scenario: next.scenario, stagesSeen: cumulativePilotStages
+                  }),
                   stagesViewed: stagesViewed
                 };
+                var currentRainbowEvidence = cur.rainbowEvidence && typeof cur.rainbowEvidence === 'object'
+                  ? cur.rainbowEvidence : {};
+                var nextRainbow = next.rainbow && typeof next.rainbow === 'object' ? next.rainbow : {};
+                var newPrimaryRainbow = nextRainbow.primaryVisible === true
+                  && currentRainbowEvidence.primarySeen !== true;
+                var newDoubleRainbow = nextRainbow.secondaryVisible === true
+                  && currentRainbowEvidence.doubleCreated !== true;
+                var nextRainbowAlignment = Number(nextRainbow.antisolarAlignment);
+                if (!isFinite(nextRainbowAlignment)) nextRainbowAlignment = -1;
+                var previousBestRainbowAlignment = Number(currentRainbowEvidence.bestAlignment);
+                if (!isFinite(previousBestRainbowAlignment)) previousBestRainbowAlignment = -1;
+                var rainbowAlignmentImproved = nextRainbowAlignment > previousBestRainbowAlignment;
+                var nextRainbowEvidence = {
+                  primarySeen: currentRainbowEvidence.primarySeen === true || nextRainbow.primaryVisible === true,
+                  doubleCreated: currentRainbowEvidence.doubleCreated === true || nextRainbow.secondaryVisible === true,
+                  stageReached: Math.max(Number(currentRainbowEvidence.stageReached) || 0,
+                    Number(nextRainbow.stage) || 0),
+                  bestAlignment: Math.max(previousBestRainbowAlignment, nextRainbowAlignment),
+                  sunAltitudeDeg: rainbowAlignmentImproved
+                    ? Number(nextRainbow.sunAltitudeDeg) || env.sunElevationDeg
+                    : Number(currentRainbowEvidence.sunAltitudeDeg) || env.sunElevationDeg,
+                  scenario: rainbowAlignmentImproved ? next.scenario
+                    : (currentRainbowEvidence.scenario || next.scenario),
+                  elapsed: rainbowAlignmentImproved ? (next.elapsed || 0)
+                    : (currentRainbowEvidence.elapsed || 0)
+                };
+                patch.pilot = Object.assign({}, patch.pilot, { rainbowEvidence: nextRainbowEvidence });
+                if (nextRainbowEvidence.doubleCreated) patch.rainbowDoubleCreated = true;
                 // The culmination gets an announcement and a toast. A silent
                 // state change is the one thing this moment must not be: it is
                 // what the learner has spent the whole climb working toward, and
                 // a screen-reader user would otherwise have no idea it happened.
                 var wasForm = prevSnap ? prevSnap.form : '';
-                if (wasForm && next.form !== wasForm) {
+                var isLiveTransition = WCPK.isLiveTransition(prevSnap, next);
+                if (isLiveTransition) {
                   // Preserve the measurements from the exact transition frame.
-                  // Later ticks keep updating the HUD, but this small receipt must
-                  // continue to explain WHY the current form was reached.
+                  // Later ticks keep updating the HUD, but this receipt and the
+                  // bounded notebook trail must continue to explain WHY the form
+                  // changed after the learner keeps moving.
+                  var notebookChanges = Array.isArray(cur.notebookChanges)
+                    ? cur.notebookChanges.slice(-WCPN.MAX_CHANGES + 1) : [];
+                  var previousNotebookChange = notebookChanges.length
+                    ? notebookChanges[notebookChanges.length - 1] : null;
+                  var notebookSequence = previousNotebookChange
+                    ? (Number(previousNotebookChange.sequence) || notebookChanges.length) + 1 : 1;
                   patch.pilot = Object.assign({}, patch.pilot, {
                     lastChange: {
                       from: wasForm,
@@ -12598,21 +13918,53 @@ const d = labToolData.waterCycle || {};
                       droplets: next.droplets,
                       mass: next.mass,
                       energy: wasForm === 'liquid' ? 1 : next.energy,
+                      dryAirExposure: next.dryAirExposure || 0,
                       pathwayProgress: next.pathwayProgress || 0,
-                      surface: next.surface
+                      surface: next.surface,
+                      elapsed: next.elapsed || 0
                     }
                   });
+                  var exactChange = Object.assign({
+                    id: [next.scenario, notebookSequence, wasForm, next.form, Math.round((next.elapsed || 0) * 10)].join(':'),
+                    sequence: notebookSequence,
+                    scenario: next.scenario
+                  }, patch.pilot.lastChange);
+                  if (!previousNotebookChange || previousNotebookChange.id !== exactChange.id) {
+                    notebookChanges.push(exactChange);
+                  }
+                  patch.pilot = Object.assign({}, patch.pilot, {
+                    lastChange: exactChange,
+                    notebookChanges: notebookChanges.slice(-WCPN.MAX_CHANGES)
+                  });
+                }
+                // Record the landing separately from the current run so learners
+                // can compare routes after Reset or a scenario change.
+                var landingRouteByForm = { liquid: 'water', runoff: 'runoff', soil: 'infiltration', plant: 'plant' };
+                var landingRoute = landingRouteByForm[next.form];
+                if (isLiveTransition && next.note === 'landed' && landingRoute) {
+                  var pilotRoutes = Object.assign({}, cur.routes || {});
+                  pilotRoutes[landingRoute] = (pilotRoutes[landingRoute] || 0) + 1;
+                  patch.pilot = Object.assign({}, patch.pilot, {
+                    routes: pilotRoutes, lastRoute: landingRoute
+                  });
+                  var sharedRoute = { runoff: 'runoff', infiltration: 'infiltrate', plant: 'plant' }[landingRoute];
+                  if (sharedRoute) {
+                    var journeyPaths = Object.assign({ runoff: 0, infiltrate: 0, plant: 0 }, wc.journeyPaths || {});
+                    journeyPaths[sharedRoute] = (journeyPaths[sharedRoute] || 0) + 1;
+                    patch.journeyPaths = journeyPaths;
+                    patch.journeyLastPath = sharedRoute;
+                  }
                 }
                 // ── Audio on every change of form ──────────────────────────
                 // The tool already carries a full water-cycle SFX bank that the
-                // 2D canvas and the Precipitation Lab both use; the flagship was
+                // 2D canvas and the Precipitation Lab both use; the piloted simulation was
                 // silent. Sound here is not decoration: a change of form is the
                 // single most important event in the mode, and a learner who is
                 // watching the terrain rather than the badge - or who cannot see
                 // the badge at all - otherwise has no signal that it happened.
                 // Opt-out, defaulting ON, because the mode is only entered
                 // deliberately; the toggle lives beside the flight controls.
-                if (wasForm && next.form !== wasForm && cur.sound !== false) {
+                if (isLiveTransition && cur.sound !== false) {
                   var pilotCue = {
                     vapor: sfxEvaporate, droplet: sfxCondense, cloud: sfxCondense,
                     ice: sfxFreeze, rain: sfxRain, snow: sfxFreeze,
@@ -12622,7 +13974,19 @@ const d = labToolData.waterCycle || {};
                   }[next.form];
                   if (pilotCue) { try { pilotCue(); } catch (_sfxErr) {} }
                 }
-                if (next.form === 'cloud' && wasForm !== 'cloud') {
+                if (isLiveTransition && next.form !== 'cloud') {
+                  var announcedChange = patch.pilot.lastChange;
+                  setTimeout(function() {
+                    if (typeof announceToSR === 'function') {
+                      var announcedMeta = pilotTransitionMeta(announcedChange);
+                      announceToSR(announcedMeta
+                        ? t('stem.watercycle.pilot_transition_announce', 'Water changed from {from} to {to}: {process}.')
+                            .replace('{from}', announcedMeta.from).replace('{to}', announcedMeta.to).replace('{process}', announcedMeta.process)
+                        : t('stem.watercycle.pilot_pathway_changed', 'Your water pathway changed.'));
+                    }
+                  }, 0);
+                }
+                if (isLiveTransition && next.form === 'cloud') {
                   setTimeout(function() {
                     if (typeof announceToSR === 'function') {
                       announceToSR(t('stem.watercycle.pilot_cloud_announce',
@@ -12633,10 +13997,39 @@ const d = labToolData.waterCycle || {};
                     if (typeof stemCelebrate === 'function') { try { stemCelebrate(); } catch (_e) {} }
                   }, 0);
                 }
-                if (next.loops > (cur.snapshot ? cur.snapshot.loops || 0 : 0)) {
-                  patch.journeyLoops = (wc.journeyLoops || 0) + 1;
+                var previousLoopCount = cur.snapshot ? (cur.snapshot.loops || 0) : 0;
+                var loopDelta = Math.max(0, (next.loops || 0) - previousLoopCount);
+                if (loopDelta > 0) {
+                  patch.journeyLoops = (wc.journeyLoops || 0) + loopDelta;
+                  patch.pilot = Object.assign({}, patch.pilot, {
+                    loopsCompleted: (cur.loopsCompleted || 0) + loopDelta
+                  });
                 }
-                return Object.assign({}, prev, { waterCycle: Object.assign({}, wc, patch) });
+                var nextWaterCycle = Object.assign({}, wc, patch);
+                if (isLiveTransition || loopDelta > 0 || next.reason === 'restore'
+                  || newPrimaryRainbow || newDoubleRainbow) {
+                  autosavePilotNotebook(nextWaterCycle, nextWaterCycle.pilot, next,
+                    newDoubleRainbow ? 'double-rainbow'
+                      : newPrimaryRainbow ? 'primary-rainbow'
+                        : isLiveTransition ? 'transition' : (next.reason || 'loop'), true);
+                }
+                if (newPrimaryRainbow || newDoubleRainbow) {
+                  setTimeout(function() {
+                    if (newDoubleRainbow) {
+                      if (addToast) addToast(t('stem.watercycle.pilot_rainbow_double_toast',
+                        'Double rainbow created - two internal reflections, reversed colors!'), 'success');
+                      checkWaterCycleChallenges(nextWaterCycle);
+                      if (typeof announceToSR === 'function') {
+                        announceToSR(t('stem.watercycle.pilot_rainbow_double_announce',
+                          'Double rainbow created. The fainter outer bow is wider and its colors are reversed.'));
+                      }
+                    } else if (typeof announceToSR === 'function') {
+                      announceToSR(t('stem.watercycle.pilot_rainbow_primary_announce',
+                        'Primary rainbow visible near 42 degrees from the antisolar point. Fine-tune your view to reveal the secondary bow.'));
+                    }
+                  }, 0);
+                }
+                return Object.assign({}, prev, { waterCycle: nextWaterCycle });
               });
             }
 
@@ -12651,12 +14044,31 @@ const d = labToolData.waterCycle || {};
                   el._wcPilotInput.scenario = scenarioId;
                   el._wcPilotInput.paused = effectivePaused;
                   el._wcPilotInput.cameraMode = cameraMode;
+                  var resumeToken = String(pilotStored.resumeToken || '');
+                  if (pilotStored.resumeCheckpoint && resumeToken
+                    && el._wcPilotInput.resumeToken !== resumeToken) {
+                    el._wcPilotInput.resumeToken = resumeToken;
+                    el._wcPilotInput.restoreCheckpoint = pilotStored.resumeCheckpoint;
+                    el._wcPilotInput.paused = true;
+                  }
                 }
               }
             }
 
             function setPilot(patch) {
-              upd('pilot', Object.assign({}, pilotStored, patch));
+              var nextPatch = patch || {};
+              // Starting or re-entering the live experience establishes the
+              // notebook session at the same boundary as the original launch.
+              // Existing sessions keep their identity, while a new launch
+              // clears any completed checkpoint handoff fields.
+              if (nextPatch.onboardingComplete === true && nextPatch.paused === false) {
+                nextPatch = Object.assign({}, nextPatch, {
+                  notebookSessionId: pilotStored.notebookSessionId || ('wc-' + Date.now().toString(36)),
+                  resumeCheckpoint: null,
+                  resumeToken: ''
+                });
+              }
+              upd('pilot', Object.assign({}, pilotStored, nextPatch));
             }
             function pilotInput() {
               var el = document.getElementById('wcPilotCanvas');
@@ -12667,14 +14079,30 @@ const d = labToolData.waterCycle || {};
             // behaviour - the trap where a control works with a mouse and is
             // silently dead to a keyboard.
             function holdProps(key, label) {
+              var directActivation = false;
               function on() { var i = pilotInput(); if (i) i[key] = 1; }
               function off() { var i = pilotInput(); if (i) i[key] = 0; }
+              function directOn() { directActivation = true; on(); }
+              function directOff() {
+                off();
+                setTimeout(function() { directActivation = false; }, 0);
+              }
+              function impulse(e) {
+                // Pointer and physical-key activation already used the hold path;
+                // a synthesized click from voice/switch/screen-reader control has
+                // no such press, so give it a bounded, never-stuck impulse.
+                if (directActivation || (e && e.detail > 0)) { directActivation = false; return; }
+                var target = pilotInput();
+                if (!target) return;
+                target[key] = 1;
+                setTimeout(function() { target[key] = 0; }, 180);
+              }
               return {
                 type: 'button', className: 'wc-pilot-key', 'aria-label': label,
-                onPointerDown: on, onPointerUp: off, onPointerLeave: off, onPointerCancel: off,
-                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); on(); } },
-                onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); off(); } },
-                onBlur: off
+                onPointerDown: directOn, onPointerUp: directOff, onPointerLeave: directOff, onPointerCancel: directOff,
+                onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); directOn(); } },
+                onKeyUp: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); directOff(); } },
+                onClick: impulse, onBlur: directOff
               };
             }
 
@@ -12689,6 +14117,27 @@ const d = labToolData.waterCycle || {};
                   .replace('{rh}', Math.round(e2.surfaceRH)).replace('{m}', Math.round(e2.lclM)));
               }
             }
+            function pinPilotComparison() {
+              var nextComparisons = Object.assign({}, pilotComparisons);
+              nextComparisons[scenarioId] = Object.assign({}, currentPilotComparison, {
+                savedAt: Date.now()
+              });
+              setPilot({ comparisons: nextComparisons });
+              if (notebookAutoSave) savePilotNotebook('comparison', { comparisons: nextComparisons }, true);
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_compare_pin_announce',
+                  '{scenario} journey pinned for comparison.')
+                    .replace('{scenario}', env.label));
+              }
+            }
+            function clearPilotComparisons() {
+              setPilot({ comparisons: {} });
+              if (notebookAutoSave) savePilotNotebook('comparison', { comparisons: {} }, true);
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_compare_clear_announce',
+                  'Pinned scenario comparisons cleared.'));
+              }
+            }
             function resetRun() {
               setPilot({ snapshot: null, lastChange: null });
               var i = pilotInput(); if (i) i.reset = 1;
@@ -12698,6 +14147,15 @@ const d = labToolData.waterCycle || {};
               var nextPaused = !paused;
               setPilot({ paused: nextPaused });
               var i = pilotInput(); if (i) i.paused = nextPaused;
+              if (nextPaused) savePilotNotebook('pause', { paused: true }, true);
+            }
+            function retryPilot3d() {
+              // Clearing only the renderer error remounts a fresh canvas. The
+              // parcel snapshot, stage ledger, route counts, and loop total stay.
+              upd('pilotError', null);
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_retrying_3d_view', 'Retrying the 3D view. Your journey progress is preserved.'));
+              }
             }
             function chooseCameraMode(nextMode) {
               var safeMode = nextMode === 'water' ? 'water' : 'follow';
@@ -12709,8 +14167,36 @@ const d = labToolData.waterCycle || {};
                   : t('stem.watercycle.pilot_follow_view_selected', 'Follow view selected. The camera now shows the parcel and each change of form.'));
               }
             }
+            function alignPilotForRainbow() {
+              if (!onboardingComplete) return;
+              var input = pilotInput();
+              if (!input) return;
+              var fineTune = rainbowOptics.primaryVisible === true
+                && rainbowOptics.secondaryVisible !== true;
+              setPilot({ cameraMode: 'water' });
+              input.cameraMode = 'water';
+              input.rainbowAlign = fineTune ? 2 : 1;
+              if (typeof announceToSR === 'function') {
+                announceToSR(fineTune
+                  ? t('stem.watercycle.pilot_rainbow_fine_tune_announce',
+                      'View centered more closely on the antisolar point. Look for the fainter outer bow.')
+                  : t('stem.watercycle.pilot_rainbow_align_announce',
+                      'Water view aimed opposite the Sun. Look through the rain for the primary bow.'));
+              }
+            }
+            function focusPilotRainbowNotebook() {
+              var reflection = document.getElementById('wcPilotNotebookReflection');
+              if (!reflection) return;
+              if (reflection.scrollIntoView) reflection.scrollIntoView({ block: 'center' });
+              if (reflection.focus) reflection.focus();
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_rainbow_notebook_focus_announce',
+                  'Journey Notebook reflection focused. Use the captured rainbow measurements as evidence.'));
+              }
+            }
             function beginPilot(nextMode) {
               var safeMode = nextMode === 'water' ? 'water' : 'follow';
+              if (savedPilotNotebook && !savedPilotNotebookIsCurrent && WCPN) WCPN.clear();
               setPilot({ onboardingComplete: true, cameraMode: safeMode, paused: false });
               var i = pilotInput();
               if (i) { i.paused = false; i.cameraMode = safeMode; }
@@ -12718,11 +14204,370 @@ const d = labToolData.waterCycle || {};
                 var canvas = document.getElementById('wcPilotCanvas');
                 if (canvas && canvas.focus) canvas.focus();
               }, 0);
-              if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_experience_started', 'Be the Water started. You are liquid water in the sunlit ocean. Follow the Do this next instruction below the scene.'));
+              if (typeof announceToSR === 'function') announceToSR(t('stem.watercycle.pilot_experience_started', 'Be the Water started. You are liquid water in the sunlit ocean. Follow the Next goal instruction below the scene.'));
             }
             function reopenPilotGuide() {
               setPilot({ onboardingComplete: false });
               var i = pilotInput(); if (i) i.paused = true;
+              setTimeout(function() {
+                var firstGuideAction = document.querySelector('.wc-pilot-launch-btn');
+                if (firstGuideAction && firstGuideAction.focus) firstGuideAction.focus();
+              }, 0);
+            }
+
+            // Journey Notebook state is intentionally separate from the physics
+            // snapshot. Typing a reflection can never change the parcel, and
+            // restoring a parcel can never erase a learner's current session data.
+            var notebookUi = d.pilotNotebook && typeof d.pilotNotebook === 'object'
+              ? d.pilotNotebook : {};
+            var notebookReflection = typeof notebookUi.reflection === 'string'
+              ? notebookUi.reflection.slice(0, WCPN.MAX_REFLECTION) : '';
+            var notebookAutoSave = notebookUi.autoSave !== false;
+            var notebookStorageAvailable = !!(WCPN && WCPN.available());
+            var savedPilotNotebook = WCPN ? WCPN.read() : null;
+            var savedPilotNotebookSummary = savedPilotNotebook ? WCPN.summary(savedPilotNotebook) : null;
+            var savedPilotNotebookIsCurrent = !!(savedPilotNotebook
+              && savedPilotNotebook.sessionId
+              && savedPilotNotebook.sessionId === pilotStored.notebookSessionId);
+            var pilotNotebookChanges = Array.isArray(pilotStored.notebookChanges)
+              ? pilotStored.notebookChanges.slice(-WCPN.MAX_CHANGES) : [];
+            var savedPilotNotebookLabel = '';
+            if (savedPilotNotebookSummary) {
+              try { savedPilotNotebookLabel = new Date(savedPilotNotebookSummary.savedAt).toLocaleString(); }
+              catch (_notebookDateError) { savedPilotNotebookLabel = ''; }
+            }
+
+            function notebookStateForCapture(reflectionValue, pilotPatch) {
+              return Object.assign({}, d, {
+                pilot: Object.assign({}, pilotStored, pilotPatch || {}),
+                pilotNotebook: Object.assign({}, notebookUi, {
+                  reflection: typeof reflectionValue === 'string'
+                    ? reflectionValue.slice(0, WCPN.MAX_REFLECTION) : notebookReflection
+                })
+              });
+            }
+
+            function setNotebookStatus(status, patch) {
+              upd('pilotNotebook', Object.assign({}, notebookUi, patch || {}, {
+                reflection: patch && typeof patch.reflection === 'string'
+                  ? patch.reflection.slice(0, WCPN.MAX_REFLECTION) : notebookReflection,
+                status: status || ''
+              }));
+            }
+
+            function focusPilotComparisonNotebook() {
+              if (!pilotComparisonSynthesisReady) return;
+              var hasReflection = notebookReflection.trim().length > 0;
+              if (!hasReflection) {
+                var starter = [
+                  t('stem.watercycle.pilot_compare_synthesis_claim_label', 'Claim') + ': ' + pilotComparisonClaim,
+                  t('stem.watercycle.pilot_compare_synthesis_evidence_label', 'Evidence') + ': ' + pilotComparisonEvidence,
+                  t('stem.watercycle.pilot_compare_synthesis_reasoning_label', 'Reasoning') + ': ' + pilotComparisonReasoning
+                ].join('\n');
+                setNotebookStatus('', {
+                  reflection: starter.slice(0, WCPN.MAX_REFLECTION),
+                  dirty: true
+                });
+              }
+              setTimeout(function() {
+                var reflection = document.getElementById('wcPilotNotebookReflection');
+                if (!reflection) return;
+                if (reflection.scrollIntoView) reflection.scrollIntoView({ block: 'center' });
+                if (reflection.focus) reflection.focus();
+              }, 0);
+              if (typeof announceToSR === 'function') {
+                announceToSR(hasReflection
+                  ? t('stem.watercycle.pilot_compare_notebook_preserved_announce',
+                      'Journey Notebook reflection focused. Your existing writing was preserved.')
+                  : t('stem.watercycle.pilot_compare_notebook_added_announce',
+                      'Climate conclusion added to your reflection. Review or revise it.'));
+              }
+            }
+
+            function savePilotNotebook(reason, pilotPatch, quiet) {
+              if (!WCPN || !notebookStorageAvailable) {
+                if (!quiet) setNotebookStatus('unavailable');
+                return null;
+              }
+              if (!notebookAutoSave && reason !== 'manual') return null;
+              var record = WCPN.capture(notebookStateForCapture(notebookReflection, pilotPatch), Date.now(), reason || 'manual');
+              var saved = WCPN.write(record);
+              if (saved) {
+                setNotebookStatus(quiet ? '' : 'saved', {
+                  autoSave: true, dirty: false, savedAt: saved.savedAt
+                });
+                if (!quiet && typeof announceToSR === 'function') {
+                  announceToSR(t('stem.watercycle.pilot_notebook_saved_announce',
+                    'Journey notebook saved on this device.'));
+                }
+              } else if (!quiet) {
+                setNotebookStatus('unavailable');
+              }
+              return saved;
+            }
+
+            function resumeSavedPilotNotebook() {
+              var record = WCPN && (WCPN.read() || savedPilotNotebook);
+              if (!record) return;
+              var restoredCheckpoint = record.checkpoint;
+              setLabToolData(function(prev) {
+                var restored = WCPN.restore(prev.waterCycle || {}, record);
+                return restored ? Object.assign({}, prev, { waterCycle: restored }) : prev;
+              });
+              var input = pilotInput();
+              if (input) {
+                input.restoreCheckpoint = restoredCheckpoint;
+                input.resumeToken = String(record.savedAt);
+                input.scenario = restoredCheckpoint.scenario;
+                input.cameraMode = restoredCheckpoint.cameraMode;
+                input.paused = true;
+              }
+              setTimeout(function() {
+                var canvas = document.getElementById('wcPilotCanvas');
+                if (canvas && canvas.focus) canvas.focus();
+              }, 0);
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_notebook_restored_announce',
+                  'Saved journey restored and paused. Review where you are, then resume when ready.'));
+              }
+            }
+
+            function startFreshPilotNotebook() {
+              if (WCPN) WCPN.clear();
+              setLabToolData(function(prev) {
+                var wc = prev.waterCycle || {};
+                var currentPilot = wc.pilot || {};
+                var freshPilot = Object.assign({}, currentPilot, {
+                  snapshot: null,
+                  lastChange: null,
+                  notebookChanges: [],
+                  rainbowEvidence: {},
+                  comparisons: {},
+                  stagesSeen: {},
+                  routes: {},
+                  lastRoute: '',
+                  loopsCompleted: 0,
+                  notebookSessionId: '',
+                  resumeCheckpoint: null,
+                  resumeToken: '',
+                  paused: true,
+                  onboardingComplete: false
+                });
+                return Object.assign({}, prev, {
+                  waterCycle: Object.assign({}, wc, {
+                    pilot: freshPilot,
+                    pilotNotebook: {
+                      reflection: '', autoSave: true, dirty: false,
+                      savedAt: 0, restoredAt: 0, status: 'fresh'
+                    }
+                  })
+                });
+              });
+              var input = pilotInput();
+              if (input) { input.reset = 1; input.paused = true; input.restoreCheckpoint = null; }
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_notebook_fresh_announce',
+                  'Saved journey removed. A fresh journey is ready.'));
+              }
+            }
+
+            function disablePilotNotebookAutosave() {
+              if (WCPN) WCPN.clear();
+              setNotebookStatus('cleared', { autoSave: false, dirty: false, savedAt: 0 });
+              if (typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_notebook_cleared_announce',
+                  'Device copy removed. Current on-screen progress is still available.'));
+              }
+            }
+
+            function enablePilotNotebookAutosave() {
+              setNotebookStatus('', { autoSave: true });
+              var record = WCPN && WCPN.capture(notebookStateForCapture(notebookReflection), Date.now(), 'manual');
+              var saved = record && WCPN.write(record);
+              setNotebookStatus(saved ? 'saved' : 'unavailable', {
+                autoSave: !!saved, dirty: false, savedAt: saved ? saved.savedAt : 0
+              });
+              if (saved && typeof announceToSR === 'function') {
+                announceToSR(t('stem.watercycle.pilot_notebook_autosave_on_announce',
+                  'Journey notebook autosave enabled on this device.'));
+              }
+            }
+
+            function pilotNotebookStatusMessage(status) {
+              var messages = {
+                saved: t('stem.watercycle.pilot_notebook_status_saved', 'Journey notebook saved on this device.'),
+                exported: t('stem.watercycle.pilot_notebook_status_exported', 'Readable notebook report downloaded.'),
+                cleared: t('stem.watercycle.pilot_notebook_status_cleared', 'Device copy removed; this on-screen journey remains open.'),
+                restored: t('stem.watercycle.pilot_notebook_status_restored', 'Saved journey restored and paused.'),
+                fresh: t('stem.watercycle.pilot_notebook_status_fresh', 'Fresh journey ready.'),
+                unavailable: t('stem.watercycle.pilot_notebook_status_unavailable', 'Browser storage is unavailable. You can still download the report.'),
+                'export-error': t('stem.watercycle.pilot_notebook_status_export_error', 'The report could not be downloaded in this browser.'),
+                'print-opened': t('stem.watercycle.pilot_notebook_status_print', 'Print dialog opened.'),
+                'print-error': t('stem.watercycle.pilot_notebook_status_print_error', 'The print dialog is unavailable in this browser.')
+              };
+              return messages[status] || '';
+            }
+
+            function buildPilotNotebookReport(record) {
+              var normalized = WCPN.normalize(record);
+              if (!normalized) return '';
+              var summary = WCPN.summary(normalized);
+              var scenarioMeta = WCPK.scenarios[summary.scenario] || WCPK.scenarios.tropicalOcean;
+              var formMeta = WCPK.forms[summary.form] || WCPK.forms.liquid;
+              var lines = [
+                '# ' + t('stem.watercycle.pilot_notebook_report_title', 'Be the Water - Journey Notebook'),
+                '',
+                t('stem.watercycle.pilot_notebook_report_saved', 'Saved: {date}')
+                  .replace('{date}', savedPilotNotebookLabel || new Date(normalized.savedAt).toLocaleString()),
+                t('stem.watercycle.pilot_notebook_report_privacy',
+                  'Privacy: created locally; no learner name, account, or location is included.'),
+                '',
+                '## ' + t('stem.watercycle.pilot_notebook_report_summary', 'Journey summary'),
+                '- ' + t('stem.watercycle.pilot_notebook_report_scenario', 'Scenario: {value}').replace('{value}', scenarioMeta.label),
+                '- ' + t('stem.watercycle.pilot_notebook_report_current_form', 'Current form: {value}').replace('{value}', formMeta.label),
+                '- ' + t('stem.watercycle.pilot_notebook_report_stages', 'Stages experienced: {done} of {total}')
+                  .replace('{done}', summary.stages).replace('{total}', summary.totalStages),
+                '- ' + t('stem.watercycle.pilot_notebook_report_loops', 'Completed cycles: {value}').replace('{value}', summary.loops),
+                '- ' + t('stem.watercycle.pilot_notebook_report_routes',
+                  'Landing pathways: open water {water}; runoff {runoff}; infiltration {infiltration}; plant {plant}')
+                  .replace('{water}', normalized.evidence.routes.water)
+                  .replace('{runoff}', normalized.evidence.routes.runoff)
+                  .replace('{infiltration}', normalized.evidence.routes.infiltration)
+                  .replace('{plant}', normalized.evidence.routes.plant)
+              ];
+              if (normalized.evidence.prediction && WATER_CYCLE_PREDICTIONS[normalized.evidence.prediction]) {
+                lines.push('- ' + t('stem.watercycle.pilot_notebook_report_prediction', 'Prediction: {value}')
+                  .replace('{value}', WATER_CYCLE_PREDICTIONS[normalized.evidence.prediction].label));
+              }
+              lines.push('', '## ' + t('stem.watercycle.pilot_notebook_report_evidence', 'Transition evidence'));
+              if (!normalized.evidence.changes.length) {
+                lines.push(t('stem.watercycle.pilot_notebook_no_changes', 'No water-form changes have been recorded yet.'));
+              } else {
+                normalized.evidence.changes.forEach(function(change, index) {
+                  var meta = pilotTransitionMeta(change);
+                  if (!meta) return;
+                  lines.push((index + 1) + '. **' + meta.from + ' -> ' + meta.to + '** - ' + meta.process);
+                  lines.push('   - ' + meta.evidence);
+                  lines.push('   - ' + meta.energyLabel);
+                });
+              }
+              var reportComparisonRows = Object.keys(normalized.evidence.comparisons || {}).map(function(id) {
+                var pinned = normalized.evidence.comparisons[id];
+                return {
+                  id: id,
+                  pinned: pinned,
+                  scenario: WCPK.scenarios[id],
+                  env: WCPK.environment(id)
+                };
+              });
+              lines.push('', '## ' + t('stem.watercycle.pilot_notebook_report_comparison',
+                'Climate comparison evidence'));
+              if (!reportComparisonRows.length) {
+                lines.push(t('stem.watercycle.pilot_notebook_report_comparison_empty',
+                  'No climate journeys have been pinned yet.'));
+              } else {
+                reportComparisonRows.forEach(function(row, index) {
+                  var reportComparisonForm = WCPK.forms[row.pinned.form] || WCPK.forms.liquid;
+                  var reportComparisonFreezing = pilotComparisonFreezingText(row);
+                  lines.push((index + 1) + '. ' + t('stem.watercycle.pilot_notebook_report_comparison_row',
+                    '**{scenario}:** {form} at {altitude} m; {stages} of {total} stages; optics {optics} of 4; model cloud base {cloud} m at {rh}% starting humidity; freezing {freezing}.')
+                      .replace('{scenario}', row.scenario.label)
+                      .replace('{form}', reportComparisonForm.label)
+                      .replace('{altitude}', row.pinned.altitudeM)
+                      .replace('{stages}', row.pinned.stageCount)
+                      .replace('{total}', WCPK.stageOrder.length)
+                      .replace('{optics}', row.pinned.rainbowStage)
+                      .replace('{cloud}', Math.round(row.env.lclM))
+                      .replace('{rh}', Math.round(row.env.surfaceRH))
+                      .replace('{freezing}', reportComparisonFreezing));
+                });
+                if (reportComparisonRows.length >= 2) {
+                  var reportLowestCloud = reportComparisonRows.reduce(function(best, row) {
+                    return !best || row.env.lclM < best.env.lclM ? row : best;
+                  }, null);
+                  var reportHighestCloud = reportComparisonRows.reduce(function(best, row) {
+                    return !best || row.env.lclM > best.env.lclM ? row : best;
+                  }, null);
+                  lines.push(
+                    '',
+                    '**' + t('stem.watercycle.pilot_compare_synthesis_claim_label', 'Claim') + ':** '
+                      + pilotComparisonClaimFor(reportLowestCloud, reportHighestCloud),
+                    '**' + t('stem.watercycle.pilot_compare_synthesis_evidence_label', 'Evidence') + ':** '
+                      + pilotComparisonEvidenceFor(reportLowestCloud, reportHighestCloud),
+                    '**' + t('stem.watercycle.pilot_compare_synthesis_reasoning_label', 'Reasoning') + ':** '
+                      + pilotComparisonReasoningFor()
+                  );
+                }
+              }
+              var reportRainbow = normalized.evidence.rainbow || {};
+              var reportBestAlignment = Number(reportRainbow.bestAlignment);
+              if (!isFinite(reportBestAlignment)) reportBestAlignment = -1;
+              var reportAlignment = Math.round(Math.max(0, Math.min(100,
+                (reportBestAlignment + 1) * 50)));
+              lines.push(
+                '',
+                '## ' + t('stem.watercycle.pilot_notebook_report_rainbow', 'Double-rainbow evidence'),
+                '- ' + t('stem.watercycle.pilot_notebook_report_rainbow_primary', 'Primary bow observed: {value}')
+                  .replace('{value}', reportRainbow.primarySeen
+                    ? t('stem.watercycle.pilot_notebook_yes', 'Yes') : t('stem.watercycle.pilot_notebook_not_yet', 'Not yet')),
+                '- ' + t('stem.watercycle.pilot_notebook_report_rainbow_secondary', 'Secondary bow created: {value}')
+                  .replace('{value}', reportRainbow.doubleCreated
+                    ? t('stem.watercycle.pilot_notebook_yes', 'Yes') : t('stem.watercycle.pilot_notebook_not_yet', 'Not yet')),
+                '- ' + t('stem.watercycle.pilot_notebook_report_rainbow_alignment', 'Best antisolar alignment: {value}%')
+                  .replace('{value}', reportAlignment),
+                '- ' + t('stem.watercycle.pilot_notebook_report_rainbow_sun', 'Sun altitude at best alignment: {value}°')
+                  .replace('{value}', Math.round(Number(reportRainbow.sunAltitudeDeg) || 0)),
+                t('stem.watercycle.pilot_notebook_report_rainbow_science',
+                  'Science note: the primary bow is near 42° after one internal reflection; the fainter secondary is near 51° after two reflections, with reversed colors and a darker band between.'),
+                '',
+                '## ' + t('stem.watercycle.pilot_notebook_report_reflection', 'Learner reflection'),
+                normalized.reflection || t('stem.watercycle.pilot_notebook_reflection_empty', 'No reflection has been added yet.'),
+                '',
+                '## ' + t('stem.watercycle.pilot_notebook_report_model_note', 'Model boundary'),
+                t('stem.watercycle.pilot_notebook_report_model_copy',
+                  'This is a qualitative teaching simulation. Residence times are compressed, and pathway shares are not measured water volumes.')
+              );
+              return lines.join('\n') + '\n';
+            }
+
+            function downloadPilotNotebook() {
+              var record = WCPN && WCPN.capture(notebookStateForCapture(notebookReflection), Date.now(), 'export');
+              var report = record && buildPilotNotebookReport(record);
+              if (!report || typeof Blob === 'undefined' || typeof URL === 'undefined'
+                || typeof URL.createObjectURL !== 'function' || typeof document === 'undefined') {
+                setNotebookStatus('export-error');
+                return;
+              }
+              try {
+                if (notebookAutoSave) WCPN.write(record);
+                var notebookBlob = new Blob([report], { type: 'text/markdown;charset=utf-8' });
+                var notebookUrl = URL.createObjectURL(notebookBlob);
+                var notebookLink = document.createElement('a');
+                notebookLink.href = notebookUrl;
+                notebookLink.download = 'be-the-water-journey-' + new Date(record.savedAt).toISOString().slice(0, 10) + '.md';
+                document.body.appendChild(notebookLink);
+                notebookLink.click();
+                setTimeout(function() {
+                  if (notebookLink.parentNode) notebookLink.parentNode.removeChild(notebookLink);
+                  URL.revokeObjectURL(notebookUrl);
+                }, 100);
+                setNotebookStatus('exported', { dirty: false, savedAt: record.savedAt });
+                if (typeof announceToSR === 'function') {
+                  announceToSR(t('stem.watercycle.pilot_notebook_exported_announce',
+                    'Journey notebook report downloaded.'));
+                }
+              } catch (_notebookExportError) {
+                setNotebookStatus('export-error');
+              }
+            }
+
+            function printPilotNotebook() {
+              try {
+                window.print();
+                setNotebookStatus('print-opened');
+              } catch (_notebookPrintError) {
+                setNotebookStatus('print-error');
+              }
             }
 
             var altPct = Math.max(0, Math.min(100, (snap.altitudeM / env.ceilingM) * 100));
@@ -12777,12 +14622,22 @@ const d = labToolData.waterCycle || {};
               }
             };
             var activeLandPathway = landPathwayMeta[snap.form] || null;
+            var pilotRouteCounts = pilotStored.routes || {};
+            var pilotRouteRows = [
+              { id: 'water', label: surfacePathways.water.label, timescale: t('stem.watercycle.pilot_days_millennia', 'Days–millennia') },
+              { id: 'runoff', label: surfacePathways.hard.label, timescale: landPathwayMeta.runoff.timescale },
+              { id: 'infiltration', label: surfacePathways.permeable.label, timescale: t('stem.watercycle.pilot_hours_millennia', 'Hours–millennia') },
+              { id: 'plant', label: surfacePathways.plant.label, timescale: landPathwayMeta.plant.timescale }
+            ].map(function(route) {
+              return Object.assign({}, route, { count: pilotRouteCounts[route.id] || 0 });
+            });
+            var nextPilotRoute = pilotRouteRows.filter(function(route) { return route.count === 0; })[0] || null;
             var activePathwayControl = snap.form === 'soil'
               ? { key: 'down', label: t('stem.watercycle.pilot_percolate_faster', 'Percolate faster'), aria: t('stem.watercycle.pilot_percolate_faster_aria', 'Move downward through soil pores faster. Also Shift or S.') }
               : snap.form === 'plant'
                 ? { key: 'up', label: t('stem.watercycle.pilot_ride_xylem', 'Ride xylem'), aria: t('stem.watercycle.pilot_ride_xylem_aria', 'Move upward through xylem faster. Also Space or W.') }
                 : activeLandPathway
-                  ? { key: 'fwd', label: t('stem.watercycle.pilot_follow_flow', 'Follow flow'), aria: t('stem.watercycle.pilot_follow_flow_aria', 'Follow the highlighted water pathway faster.') }
+                  ? { key: 'fwd', label: t('stem.watercycle.pilot_follow_flow', 'Follow flow'), aria: t('stem.watercycle.pilot_follow_flow_aria', 'Follow the highlighted water pathway faster. Also F.') }
                   : null;
 
             // Turn the last model transition into a short, evidence-based
@@ -12832,6 +14687,10 @@ const d = labToolData.waterCycle || {};
                 'droplet>vapor': {
                   process: t('stem.watercycle.pilot_receipt_reevaporation', 'Re-evaporation'),
                   cause: t('stem.watercycle.pilot_receipt_reevaporation_cause', 'The droplet sank below cloud base into unsaturated air, so it evaporated back into invisible water vapour.')
+                },
+                'rain>vapor': {
+                  process: t('stem.watercycle.pilot_receipt_virga', 'Virga - rain re-evaporation'),
+                  cause: t('stem.watercycle.pilot_receipt_virga_cause', 'The falling raindrop spent enough time in very dry air below cloud base to evaporate completely before reaching the surface.')
                 },
                 'droplet>rain': {
                   process: t('stem.watercycle.pilot_receipt_coalescence', 'Collision-coalescence'),
@@ -12911,6 +14770,9 @@ const d = labToolData.waterCycle || {};
                 var landedPathway = surfacePathways[change.surface] || surfacePathways.water;
                 evidence = t('stem.watercycle.pilot_receipt_surface_evidence', '{surface} · surface pathway')
                   .replace('{surface}', landedPathway.label);
+              } else if (key === 'rain>vapor') {
+                evidence = t('stem.watercycle.pilot_receipt_dry_air_evidence', 'Dry-air exposure · {pct}%')
+                  .replace('{pct}', Math.round((change.dryAirExposure || 0) * 100));
               } else if (key === 'liquid>vapor' || key === 'transpiring>vapor') {
                 evidence = t('stem.watercycle.pilot_receipt_energy_evidence', 'Energy threshold · {pct}%')
                   .replace('{pct}', Math.round((change.energy == null ? 1 : change.energy) * 100));
@@ -12950,7 +14812,7 @@ const d = labToolData.waterCycle || {};
 
             // The text alternative. It is the whole simulation in words, because
             // a canvas is otherwise entirely unavailable to a screen reader, and
-            // this mode is the tool's flagship.
+            // this mode is rendered primarily in WebGL.
             var landscapeDescription = scenarioId === 'mountainWinter'
               ? t('stem.watercycle.pilot_alt_winter_landscape',
                   'A snow-covered mountain catchment stores water above a connected stream, lake, and ocean.')
@@ -12983,25 +14845,65 @@ const d = labToolData.waterCycle || {};
                 (env.lfcReachable ? t('stem.watercycle.pilot_alt_lfc', ', free convection at {m} metres').replace('{m}', Math.round(env.lfcM)) : '') +
                 (env.freezingM < env.ceilingM ? t('stem.watercycle.pilot_alt_freezing', ', freezing level at {m} metres').replace('{m}', Math.round(env.freezingM)) : '') +
                 '. ' + landscapeDescription + ' ' + molecularDescription + ' ' + objective;
+            if (rainbowOptics.secondaryVisible) {
+              textAlternative += ' ' + t('stem.watercycle.pilot_rainbow_alt_double',
+                'A double rainbow is visible opposite the Sun: a bright primary bow near 42 degrees and a fainter, wider secondary near 51 degrees with reversed colors. The band between them is darker.');
+            } else if (rainbowOptics.primaryVisible) {
+              textAlternative += ' ' + t('stem.watercycle.pilot_rainbow_alt_primary',
+                'A primary rainbow is visible opposite the Sun near 42 degrees. Fine alignment may reveal a fainter secondary bow outside it.');
+            }
 
             return h('div', {
               className: 'wc-pilot-root' + (isDark ? ' is-dark' : ''),
               role: 'region',
-              'aria-label': t('stem.watercycle.pilot_be_the_water_pilot_one_parcel_of_water', 'Be the Water. Pilot one parcel of water through every stage of the water cycle.')
+              'aria-label': t('stem.watercycle.pilot_be_the_water_pilot_one_parcel_of_water', 'Be the Water. Pilot one water parcel through changing states and pathways in the water cycle.')
             },
               renderWcModeBar(),
 
               h('div', { className: 'wc-pilot-topbar' },
                 h('div', { className: 'wc-pilot-title' },
                   h('strong', null, t('stem.watercycle.pilot_be_the_water', '💧 Be the Water')),
-                  h('span', null, t('stem.watercycle.pilot_fly_one_parcel_through_every_form_wate', 'Fly one parcel through every form water takes'))
+                  h('span', null, t('stem.watercycle.pilot_fly_one_parcel_through_every_form_wate', 'Pilot one parcel through changing states and pathways'))
                 ),
                 h('span', { className: 'wc-pilot-loops' },
-                  t(snap.loops === 1 ? 'stem.watercycle.pilot_loops_one' : 'stem.watercycle.pilot_loops_many',
-                    snap.loops === 1 ? '{n} full cycle' : '{n} full cycles').replace('{n}', snap.loops || 0))
+                  t(totalPilotLoops === 1 ? 'stem.watercycle.pilot_loops_one' : 'stem.watercycle.pilot_loops_many',
+                    totalPilotLoops === 1 ? '{n} full cycle' : '{n} full cycles').replace('{n}', totalPilotLoops))
               ),
 
               // ── Scenario picker ─────────────────────────────────────────
+
+              savedPilotNotebook && !savedPilotNotebookIsCurrent && h('aside', {
+                className: 'wc-pilot-recovery',
+                'data-wc-pilot-recovery': 'true',
+                'aria-labelledby': 'wcPilotRecoveryTitle'
+              },
+                h('div', { className: 'wc-pilot-recovery-copy' },
+                  h('strong', { id: 'wcPilotRecoveryTitle' },
+                    t('stem.watercycle.pilot_saved_journey_ready', 'Saved journey ready')),
+                  h('span', null,
+                    t('stem.watercycle.pilot_saved_journey_summary',
+                      '{scenario} - {form} - {stages}/{total} stages - {loops} cycles')
+                      .replace('{scenario}', (WCPK.scenarios[savedPilotNotebookSummary.scenario] || WCPK.scenarios.tropicalOcean).label)
+                      .replace('{form}', (WCPK.forms[savedPilotNotebookSummary.form] || WCPK.forms.liquid).label)
+                      .replace('{stages}', savedPilotNotebookSummary.stages)
+                      .replace('{total}', savedPilotNotebookSummary.totalStages)
+                      .replace('{loops}', savedPilotNotebookSummary.loops)),
+                  savedPilotNotebookLabel && h('small', null,
+                    t('stem.watercycle.pilot_saved_journey_when',
+                      'Saved {date}. Restores paused with movement controls released.')
+                      .replace('{date}', savedPilotNotebookLabel))
+                ),
+                h('div', { className: 'wc-pilot-recovery-actions', role: 'group',
+                  'aria-label': t('stem.watercycle.pilot_saved_journey_actions', 'Saved journey actions') },
+                  h('button', { type: 'button', className: 'wc-pilot-notebook-btn is-primary',
+                    onClick: resumeSavedPilotNotebook },
+                    t('stem.watercycle.pilot_resume_saved', 'Resume saved journey')),
+                  h('button', { type: 'button', className: 'wc-pilot-notebook-btn',
+                    onClick: startFreshPilotNotebook },
+                    t('stem.watercycle.pilot_start_fresh', 'Start fresh'))
+                )
+              ),
+
               h('div', { className: 'wc-pilot-scenarios', role: 'group', 'aria-label': t('stem.watercycle.pilot_starting_conditions', 'Starting conditions') },
                 Object.keys(WCPK.scenarios).map(function(id) {
                   var s = WCPK.scenarios[id];
@@ -13009,32 +14911,184 @@ const d = labToolData.waterCycle || {};
                   return h('button', {
                     key: id, type: 'button', className: 'wc-pilot-scenario',
                     'aria-pressed': id === scenarioId,
+                    'data-scenario': id,
+                    'data-selected': String(id === scenarioId),
                     onClick: function() { chooseScenario(id); },
                     'aria-label': t('stem.watercycle.pilot_scenario_aria', '{label}. {blurb} Cloud base {m} metres.')
                       .replace('{label}', s.label).replace('{blurb}', s.blurb).replace('{m}', Math.round(e2.lclM))
                   },
-                    h('strong', null, s.label),
-                    h('small', null, t('stem.watercycle.pilot_scenario_stats', '{temp}°C · {rh}% RH · base {m} m')
-                      .replace('{temp}', Math.round(e2.surfaceTempC)).replace('{rh}', Math.round(e2.surfaceRH)).replace('{m}', Math.round(e2.lclM)))
+                    h('span', { className: 'wc-pilot-scenario-scene', 'aria-hidden': 'true' },
+                      h('i', { className: 'wc-pilot-scenario-sun' }),
+                      h('i', { className: 'wc-pilot-scenario-cloud' }),
+                      h('i', { className: 'wc-pilot-scenario-land' })),
+                    h('span', { className: 'wc-pilot-scenario-copy' },
+                      h('strong', null, s.label),
+                      h('small', null, t('stem.watercycle.pilot_scenario_stats', '{temp}°C · {rh}% RH · base {m} m')
+                        .replace('{temp}', Math.round(e2.surfaceTempC)).replace('{rh}', Math.round(e2.surfaceRH)).replace('{m}', Math.round(e2.lclM)))),
+                    h('span', { className: 'wc-pilot-scenario-selected', 'aria-hidden': 'true' }, '✓')
                   );
                 })
               ),
               h('p', { className: 'wc-pilot-scenario-note' }, env.blurb),
 
               // ── The world ────────────────────────────────────────────────
-              h('div', { className: 'wc-pilot-stage', 'data-camera-mode': cameraMode, 'data-onboarding': String(!onboardingComplete) },
-                d.pilotError
+              h('div', {
+                className: 'wc-pilot-stage',
+                'data-camera-mode': cameraMode,
+                'data-onboarding': String(!onboardingComplete),
+                'data-optics-stage': String(rainbowOptics.stage),
+                'data-optics-double': String(rainbowOptics.secondaryVisible)
+              },
+                pilotErrorMessage
                   ? h('div', { className: 'wc-pilot-fallback', role: 'alert' },
-                      h('strong', null, t('stem.watercycle.pilot_3d_is_unavailable_on_this_device', '3D is unavailable on this device.')),
-                      h('p', null, d.pilotError),
-                      h('button', { type: 'button', className: 'wc-pilot-btn', onClick: function() { switchMode('explorer'); } }, t('stem.watercycle.pilot_open_system_map_instead', 'Open the System Map instead')))
+                      h('strong', null, pilotErrorKind === 'context-lost'
+                        ? t('stem.watercycle.pilot_3d_view_interrupted', '3D view interrupted')
+                        : t('stem.watercycle.pilot_3d_is_unavailable_on_this_device', '3D is unavailable on this device.')),
+                      h('p', null, pilotErrorMessage),
+                      h('div', { className: 'wc-pilot-fallback-actions' },
+                        h('button', {
+                          type: 'button', className: 'wc-pilot-btn', onClick: retryPilot3d
+                        }, t('stem.watercycle.pilot_retry_3d_view', 'Retry 3D view')),
+                        h('button', {
+                          type: 'button', className: 'wc-pilot-btn is-secondary',
+                          onClick: function() { switchMode('explorer'); }
+                        }, t('stem.watercycle.pilot_open_system_map_instead', 'Open the System Map instead'))))
                   : h('canvas', {
                       id: 'wcPilotCanvas', className: 'wc-pilot-canvas', ref: attachPilotCanvas,
                       tabIndex: onboardingComplete ? 0 : -1, role: 'application',
                       'aria-label': textAlternative,
-                      'aria-keyshortcuts': t('stem.watercycle.pilot_w_a_s_d_arrowup_arrowdown_arrowleft_ar', 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space Shift'),
+                      'aria-keyshortcuts': t('stem.watercycle.pilot_w_a_s_d_arrowup_arrowdown_arrowleft_ar', 'W A S D F B ArrowUp ArrowDown ArrowLeft ArrowRight Space Shift'),
                       'data-parcel-form': snap.form
                     }),
+
+                onboardingComplete && !pilotErrorMessage && rainbowOptics.primaryVisible && h('div', {
+                  className: 'wc-pilot-rainbow-visual',
+                  'data-double': String(rainbowOptics.secondaryVisible),
+                  'aria-hidden': 'true'
+                },
+                  h('svg', {
+                    className: 'wc-pilot-rainbow-svg', viewBox: '0 0 800 430',
+                    preserveAspectRatio: 'xMidYMax slice', focusable: 'false'
+                  },
+                    h('defs', null,
+                      h('filter', { id: 'wcPilotRainbowGlow', x: '-20%', y: '-20%', width: '140%', height: '140%' },
+                        h('feGaussianBlur', { stdDeviation: '1.7', result: 'softGlow' }),
+                        h('feMerge', null,
+                          h('feMergeNode', { in: 'softGlow' }),
+                          h('feMergeNode', { in: 'SourceGraphic' })
+                        )
+                      ),
+                      h('radialGradient', { id: 'wcPilotRainbowMist', cx: '50%', cy: '100%', r: '72%' },
+                        h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: '.52' }),
+                        h('stop', { offset: '60%', stopColor: '#bae6fd', stopOpacity: '.12' }),
+                        h('stop', { offset: '100%', stopColor: '#bae6fd', stopOpacity: '0' })
+                      ),
+                      h('linearGradient', { id: 'wcPilotRainbowVeil', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#38bdf8', stopOpacity: '0' }),
+                        h('stop', { offset: '42%', stopColor: '#bae6fd', stopOpacity: '.28' }),
+                        h('stop', { offset: '70%', stopColor: '#c4b5fd', stopOpacity: '.22' }),
+                        h('stop', { offset: '100%', stopColor: '#a855f7', stopOpacity: '0' })
+                      ),
+                      h('linearGradient', { id: 'wcPilotRainShaft', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#f8fafc', stopOpacity: '0' }),
+                        h('stop', { offset: '38%', stopColor: '#e0f2fe', stopOpacity: '.85' }),
+                        h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: '0' })
+                      ),
+                      h('radialGradient', { id: 'wcPilotRainbowHorizon', cx: '50%', cy: '100%', r: '72%' },
+                        h('stop', { offset: '0%', stopColor: '#f8fafc', stopOpacity: '.42' }),
+                        h('stop', { offset: '48%', stopColor: '#7dd3fc', stopOpacity: '.13' }),
+                        h('stop', { offset: '100%', stopColor: '#0ea5e9', stopOpacity: '0' })
+                      ),
+                      h('linearGradient', { id: 'wcPilotPrismSweep', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#ef4444' }),
+                        h('stop', { offset: '18%', stopColor: '#f97316' }),
+                        h('stop', { offset: '35%', stopColor: '#facc15' }),
+                        h('stop', { offset: '52%', stopColor: '#22c55e' }),
+                        h('stop', { offset: '70%', stopColor: '#0ea5e9' }),
+                        h('stop', { offset: '100%', stopColor: '#a855f7' })
+                      )
+                    ),
+                    h('path', { className: 'wc-pilot-rainbow-veil',
+                      d: 'M 0 62 C 170 18 258 76 397 42 C 548 6 650 58 800 20 L 800 430 L 0 430 Z' }),
+                    h('ellipse', { className: 'wc-pilot-rainbow-horizon-haze', cx: 400, cy: 438, rx: 392, ry: 126 }),
+                    h('g', { className: 'wc-pilot-rain-curtain' },
+                      [[76, 12, 34, 214], [138, -8, 96, 190], [204, 54, 158, 252],
+                       [596, 40, 552, 244], [660, -12, 618, 194], [732, 24, 690, 230]].map(function(shaft, index) {
+                        return h('line', { key: 'shaft-' + index, className: 'wc-pilot-rain-shaft',
+                          x1: shaft[0], y1: shaft[1], x2: shaft[2], y2: shaft[3] });
+                      })
+                    ),
+                    h('g', { className: 'wc-pilot-rain-motes' },
+                      [[92, 154, 2.2], [156, 98, 1.8], [226, 72, 2.4], [574, 76, 2],
+                       [648, 112, 2.8], [714, 174, 1.7], [120, 254, 1.6], [682, 270, 1.9]].map(function(mote, index) {
+                        return h('circle', { key: 'mote-' + index, className: 'wc-pilot-rain-mote',
+                          cx: mote[0], cy: mote[1], r: mote[2] });
+                      })
+                    ),
+                    h('ellipse', { className: 'wc-pilot-rainbow-mist', cx: 400, cy: 438, rx: 355, ry: 105 }),
+                    rainbowOptics.secondaryVisible && h('path', {
+                      className: 'wc-pilot-alexander-band', d: pilotRainbowArcPath(328), strokeWidth: 27
+                    }),
+                    rainbowOptics.secondaryVisible && h('path', {
+                      className: 'wc-pilot-prism-sweep', d: pilotRainbowArcPath(346)
+                    }),
+                    rainbowOptics.secondaryVisible && h('g', {
+                      className: 'wc-pilot-rainbow-secondary', filter: 'url(#wcPilotRainbowGlow)'
+                    }, pilotRainbowSecondaryColors.map(function(color, index) {
+                      return h('path', {
+                        key: 'secondary-' + color, className: 'wc-pilot-rainbow-arc',
+                        d: pilotRainbowArcPath(374 - index * 5.4), stroke: color, strokeWidth: 8.5,
+                        style: { opacity: rainbowOptics.secondaryStrength * (0.94 - index * 0.035) }
+                      });
+                    })),
+                    h('g', { className: 'wc-pilot-rainbow-primary', filter: 'url(#wcPilotRainbowGlow)' },
+                      pilotRainbowPrimaryColors.map(function(color, index) {
+                        return h('path', {
+                          key: 'primary-' + color, className: 'wc-pilot-rainbow-arc',
+                          d: pilotRainbowArcPath(314 - index * 5.4), stroke: color, strokeWidth: 9,
+                          style: { opacity: rainbowOptics.primaryStrength * (0.98 - index * 0.035) }
+                        });
+                      })
+                    ),
+                    h('g', { className: 'wc-pilot-rainbow-label' },
+                      h('rect', { x: 326, y: 124, width: 148, height: 24, rx: 12 }),
+                      h('text', { x: 400, y: 140 }, t('stem.watercycle.pilot_rainbow_primary_label', 'PRIMARY · 42°'))
+                    ),
+                    rainbowOptics.secondaryVisible && h('g', { className: 'wc-pilot-rainbow-label' },
+                      h('rect', { x: 282, y: 54, width: 236, height: 24, rx: 12 }),
+                      h('text', { x: 400, y: 70 }, t('stem.watercycle.pilot_rainbow_secondary_label', 'SECONDARY · 51° · REVERSED'))
+                    ),
+                    rainbowOptics.secondaryVisible && h('g', { className: 'wc-pilot-rainbow-glints' },
+                      h('circle', { className: 'wc-pilot-rainbow-glint', cx: 208, cy: 126, r: 3.5 }),
+                      h('circle', { className: 'wc-pilot-rainbow-glint', cx: 591, cy: 128, r: 3 }),
+                      h('circle', { className: 'wc-pilot-rainbow-glint', cx: 400, cy: 55, r: 4 })
+                    ),
+                    h('g', { className: 'wc-pilot-antisolar-marker' },
+                      h('line', { className: 'wc-pilot-antisolar-line', x1: 400, y1: 404, x2: 400, y2: 430 }),
+                      h('line', { className: 'wc-pilot-antisolar-line', x1: 371, y1: 430, x2: 429, y2: 430 }),
+                      h('circle', { className: 'wc-pilot-antisolar-ring', cx: 400, cy: 430, r: 21 }),
+                      h('circle', { className: 'wc-pilot-antisolar-core', cx: 400, cy: 430, r: 4.5 }),
+                      h('rect', { className: 'wc-pilot-antisolar-label-bg', x: 318, y: 382, width: 164, height: 20, rx: 10 }),
+                      h('text', { className: 'wc-pilot-antisolar-label', x: 400, y: 396 },
+                        t('stem.watercycle.pilot_rainbow_antisolar_point_short', 'ANTISOLAR POINT'))
+                    ),
+                    h('g', { className: 'wc-pilot-optics-seal' },
+                      h('rect', { className: 'wc-pilot-optics-seal-panel', x: 270, y: 268, width: 260, height: 44, rx: 14 }),
+                      h('circle', { className: 'wc-pilot-optics-seal-ring', cx: 294, cy: 290, r: 12 }),
+                      h('circle', { className: 'wc-pilot-optics-seal-core', cx: 294, cy: 290, r: 3.5 }),
+                      h('line', { className: 'wc-pilot-optics-seal-cross', x1: 284, y1: 290, x2: 304, y2: 290 }),
+                      h('line', { className: 'wc-pilot-optics-seal-cross', x1: 294, y1: 280, x2: 294, y2: 300 }),
+                      h('text', { className: 'wc-pilot-optics-seal-kicker', x: 314, y: 284 },
+                        rainbowOptics.secondaryVisible
+                          ? t('stem.watercycle.pilot_rainbow_double_found', 'DOUBLE RAINBOW FOUND')
+                          : t('stem.watercycle.pilot_rainbow_optics_locked', 'OPTICS LOCKED')),
+                      h('text', { className: 'wc-pilot-optics-seal-value', x: 314, y: 301 },
+                        rainbowOptics.secondaryVisible
+                          ? t('stem.watercycle.pilot_rainbow_secondary_label', 'SECONDARY · 51° · REVERSED')
+                          : t('stem.watercycle.pilot_rainbow_primary_label', 'PRIMARY · 42°'))
+                    )
+                  )
+                ),
 
                 onboardingComplete && h('div', {
                   className: 'wc-pilot-camera-switch', role: 'group',
@@ -13060,7 +15114,14 @@ const d = labToolData.waterCycle || {};
                 // Live HUD. Fixed light inks on a fixed dark glass panel: the
                 // canvas behind is always dark in both themes, so a theme-reactive
                 // ink here would be the one that failed contrast.
-                h('div', { className: 'wc-pilot-hud wc-pilot-hud-left', 'aria-hidden': 'true' },
+                h('div', {
+                  className: 'wc-pilot-hud wc-pilot-hud-left',
+                  'data-form': snap.form,
+                  'data-pathway': String(!!activeLandPathway),
+                  'aria-hidden': 'true'
+                },
+                  h('span', { className: 'wc-pilot-hud-kicker' },
+                    t('stem.watercycle.pilot_live_water_state', 'Live water state')),
                   h('div', { className: 'wc-pilot-form-badge', 'data-form': snap.form },
                     h('span', { className: 'wc-pilot-form-dot' }),
                     h('strong', null, form.label)),
@@ -13134,7 +15195,14 @@ const d = labToolData.waterCycle || {};
                 // Progress toward the next transition. Which bar shows depends on
                 // the form, because "what is stopping me" is a different quantity
                 // at each stage and a single generic meter would teach nothing.
-                h('div', { className: 'wc-pilot-hud wc-pilot-hud-right', 'aria-hidden': 'true' },
+                h('div', {
+                  className: 'wc-pilot-hud wc-pilot-hud-right',
+                  'data-form': snap.form,
+                  'data-pathway': String(!!activeLandPathway),
+                  'aria-hidden': 'true'
+                },
+                  h('span', { className: 'wc-pilot-hud-kicker' },
+                    t('stem.watercycle.pilot_transition_meter', 'Transition meter')),
                   activeLandPathway
                     ? h('div', { className: 'wc-pilot-gauge' },
                         h('span', null, activeLandPathway.progressLabel),
@@ -13174,7 +15242,14 @@ const d = labToolData.waterCycle || {};
                                 h('i', { style: { width: Math.min(100, (snap.droplets / WCPK.DROPLETS_FOR_CLOUD) * 100) + '%' } })),
                               h('small', null, t('stem.watercycle.pilot_droplets_progress', '{n} / {total} to become a cloud')
                                 .replace('{n}', Math.min(snap.droplets, WCPK.DROPLETS_FOR_CLOUD)).replace('{total}', WCPK.DROPLETS_FOR_CLOUD)))
-                          : (snap.form === 'rain' || snap.form === 'snow')
+                          : snap.form === 'rain' && (snap.dryAirExposure || 0) > 0.01
+                            ? h('div', { className: 'wc-pilot-gauge' },
+                                h('span', null, t('stem.watercycle.pilot_virga_risk', 'Dry-air exposure')),
+                                h('div', { className: 'wc-pilot-gauge-track' },
+                                  h('i', { style: { width: Math.max(4, Math.round((snap.dryAirExposure || 0) * 100)) + '%' } })),
+                                h('small', null, t('stem.watercycle.pilot_virga_progress', 'Unsaturated air is evaporating the drop · {pct}%')
+                                  .replace('{pct}', Math.round((snap.dryAirExposure || 0) * 100))))
+                            : (snap.form === 'rain' || snap.form === 'snow')
                             ? h('div', { className: 'wc-pilot-gauge' },
                                 h('span', null, t('stem.watercycle.pilot_descent_to_surface', 'Descent to surface')),
                                 h('div', { className: 'wc-pilot-gauge-track' },
@@ -13217,28 +15292,33 @@ const d = labToolData.waterCycle || {};
                 // they are the keyboard-free path AND the discoverability cue for
                 // learners who would never guess at WASD.
                 onboardingComplete && h('div', { className: 'wc-pilot-pad', role: 'group', 'aria-label': t('stem.watercycle.pilot_flight_controls', 'Flight controls') },
+                  h('span', { className: 'wc-pilot-pad-label', 'aria-hidden': 'true' },
+                    t('stem.watercycle.pilot_flight_deck', 'Flight deck')),
+                  h('div', { className: 'wc-pilot-pad-motion' },
                   activePathwayControl && h('button', Object.assign(
                     holdProps(activePathwayControl.key, activePathwayControl.aria),
-                    { key: 'pathway', className: 'wc-pilot-key is-wide wc-pilot-key-pathway' }
+                    { key: 'pathway', className: 'wc-pilot-key is-wide wc-pilot-key-pathway', 'data-control': 'pathway' }
                   ), activePathwayControl.label),
-                  !activeLandPathway && h('button', Object.assign(holdProps('up', t('stem.watercycle.pilot_rise_also_space_or_w', 'Rise. Also Space or W.')), { key: 'u' }), '▲'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('down', t('stem.watercycle.pilot_sink_also_shift_or_s', 'Sink. Also Shift or S.')), { key: 'd' }), '▼'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('left', t('stem.watercycle.pilot_steer_left_also_a_or_left_arrow', 'Steer left. Also A or Left Arrow.')), { key: 'l' }), '◀'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('right', t('stem.watercycle.pilot_steer_right_also_d_or_right_arrow', 'Steer right. Also D or Right Arrow.')), { key: 'r' }), '▶'),
-                  !activeLandPathway && h('button', Object.assign(holdProps('fwd', t('stem.watercycle.pilot_move_forward_away_from_the_camera', 'Move forward, away from the camera.')), { key: 'f' }), t('stem.watercycle.pilot_fwd', 'Fwd')),
-                  !activeLandPathway && h('button', Object.assign(holdProps('back', t('stem.watercycle.pilot_move_back_toward_the_camera', 'Move back, toward the camera.')), { key: 'b' }), t('stem.watercycle.pilot_back', 'Back')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('up', t('stem.watercycle.pilot_rise_also_space_or_w', 'Rise. Also Space or W.')), { key: 'u', className: 'wc-pilot-key is-move is-rise', 'data-control': 'rise' }), '▲'),
+                  !activeLandPathway && h('button', Object.assign(holdProps('down', t('stem.watercycle.pilot_sink_also_shift_or_s', 'Sink. Also Shift or S.')), { key: 'd', className: 'wc-pilot-key is-move is-sink', 'data-control': 'sink' }), '▼'),
+                  !activeLandPathway && h('button', Object.assign(holdProps('left', t('stem.watercycle.pilot_steer_left_also_a_or_left_arrow', 'Steer left. Also A or Left Arrow.')), { key: 'l', className: 'wc-pilot-key is-move is-left', 'data-control': 'left' }), '◀'),
+                  !activeLandPathway && h('button', Object.assign(holdProps('right', t('stem.watercycle.pilot_steer_right_also_d_or_right_arrow', 'Steer right. Also D or Right Arrow.')), { key: 'r', className: 'wc-pilot-key is-move is-right', 'data-control': 'right' }), '▶'),
+                  !activeLandPathway && h('button', Object.assign(holdProps('fwd', t('stem.watercycle.pilot_move_forward_away_from_the_camera', 'Move forward, away from the camera. Also F.')), { key: 'f', className: 'wc-pilot-key is-move is-depth', 'data-control': 'forward' }), t('stem.watercycle.pilot_fwd', 'Fwd')),
+                  !activeLandPathway && h('button', Object.assign(holdProps('back', t('stem.watercycle.pilot_move_back_toward_the_camera', 'Move back, toward the camera. Also B.')), { key: 'b', className: 'wc-pilot-key is-move is-depth', 'data-control': 'back' }), t('stem.watercycle.pilot_back', 'Back'))
+                  ),
+                  h('div', { className: 'wc-pilot-pad-actions' },
                   h('button', {
-                    key: 'p', type: 'button', className: 'wc-pilot-key is-wide',
+                    key: 'p', type: 'button', className: 'wc-pilot-key is-wide is-action is-pause', 'data-control': 'pause',
                     'aria-pressed': paused, 'aria-label': paused ? t('stem.watercycle.pilot_resume_the_simulation', 'Resume the simulation') : t('stem.watercycle.pilot_pause_the_simulation', 'Pause the simulation'),
                     onClick: togglePause
                   }, paused ? t('stem.watercycle.pilot_resume', '▶ Resume') : t('stem.watercycle.pilot_pause', '⏸ Pause')),
                   h('button', {
-                    key: 'x', type: 'button', className: 'wc-pilot-key is-wide',
+                    key: 'x', type: 'button', className: 'wc-pilot-key is-wide is-action is-reset', 'data-control': 'reset',
                     'aria-label': t('stem.watercycle.pilot_reset_this_run_and_start_again_as_liqu', 'Reset this run and start again as liquid water'),
                     onClick: resetRun
                   }, t('stem.watercycle.pilot_reset', '↻ Reset')),
                   h('button', {
-                    key: 's', type: 'button', className: 'wc-pilot-key is-wide',
+                    key: 's', type: 'button', className: 'wc-pilot-key is-wide is-action is-sound', 'data-control': 'sound',
                     'aria-pressed': pilotSound,
                     'aria-label': pilotSound
                       ? t('stem.watercycle.pilot_sound_on_each_change_of_form_plays_a_c', 'Sound on. Each change of form plays a cue. Select to mute.')
@@ -13250,6 +15330,7 @@ const d = labToolData.waterCycle || {};
                       }
                     }
                   }, pilotSound ? t('stem.watercycle.pilot_sound', '🔊 Sound') : t('stem.watercycle.pilot_muted', '🔇 Muted'))
+                  )
                 ),
 
                 !onboardingComplete && h('section', {
@@ -13257,14 +15338,14 @@ const d = labToolData.waterCycle || {};
                   'aria-labelledby': 'wcPilotLaunchTitle'
                 },
                   h('div', { className: 'wc-pilot-launch-card' },
-                    h('span', { className: 'wc-pilot-launch-kicker' }, t('stem.watercycle.pilot_flagship_experience', 'Flagship immersive experience')),
+                    h('span', { className: 'wc-pilot-launch-kicker' }, t('stem.watercycle.pilot_interactive_3d_simulation', 'Interactive 3D water-cycle simulation')),
                     h('h3', { id: 'wcPilotLaunchTitle' }, t('stem.watercycle.pilot_become_one_parcel', 'Become one parcel of water')),
                     h('p', { className: 'wc-pilot-launch-intro' },
                       t('stem.watercycle.pilot_launch_intro', 'Explore freely, but follow real science: heat, humidity, altitude, particles, gravity, and the surface below you determine what happens next.')),
                     h('div', { className: 'wc-pilot-launch-grid' },
                       h('div', { className: 'wc-pilot-launch-step' }, h('span', null, t('stem.watercycle.pilot_launch_step_1', '1 - Look')), h('strong', null, t('stem.watercycle.pilot_launch_look', 'Drag the world to look around. Scroll or pinch to zoom in Follow view.'))),
                       h('div', { className: 'wc-pilot-launch-step' }, h('span', null, t('stem.watercycle.pilot_launch_step_2', '2 - Move')), h('strong', null, t('stem.watercycle.pilot_launch_move', 'Use Rise, Sink, arrows, Forward, and Back - or the matching keyboard controls.'))),
-                      h('div', { className: 'wc-pilot-launch-step' }, h('span', null, t('stem.watercycle.pilot_launch_step_3', '3 - Notice')), h('strong', null, t('stem.watercycle.pilot_launch_notice', 'Watch Do this next, the phase badge, and the meters explain every transformation.')))
+                      h('div', { className: 'wc-pilot-launch-step' }, h('span', null, t('stem.watercycle.pilot_launch_step_3', '3 - Notice')), h('strong', null, t('stem.watercycle.pilot_launch_notice', 'Watch Next goal, the phase badge, and the meters explain every transformation.')))
                     ),
                     h('p', { className: 'wc-pilot-launch-science' },
                       t('stem.watercycle.pilot_launch_science', 'Your goal is not to win quickly. Compare pathways, notice cause and effect, and complete all six water-cycle stages across repeated journeys.')),
@@ -13276,16 +15357,251 @@ const d = labToolData.waterCycle || {};
                 )
               ),
 
-              // ── Coaching line ────────────────────────────────────────────
-              h('div', { className: 'wc-pilot-objective', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-                h('span', { className: 'wc-pilot-objective-kicker' }, t('stem.watercycle.pilot_do_this_next', 'Do this next')),
-                h('p', null, objective)
+              onboardingComplete && h('section', {
+                className: 'wc-pilot-rainbow-challenge',
+                'data-stage': String(rainbowProgressStage),
+                'aria-labelledby': 'wcPilotRainbowTitle'
+              },
+                h('div', { className: 'wc-pilot-rainbow-head' },
+                  h('span', { className: 'wc-pilot-rainbow-orb', 'aria-hidden': 'true' }),
+                  h('div', { className: 'wc-pilot-rainbow-copy' },
+                    h('span', { className: 'wc-pilot-rainbow-kicker' },
+                      t('stem.watercycle.pilot_rainbow_challenge_kicker', 'Atmospheric optics challenge')),
+                    h('h3', { id: 'wcPilotRainbowTitle' },
+                      t('stem.watercycle.pilot_rainbow_challenge_title', 'Create a double rainbow')),
+                    h('p', null, t('stem.watercycle.pilot_rainbow_challenge_intro',
+                      'Use rain, sunlight, and viewing geometry to build both bows - then explain why they differ.'))
+                  ),
+                  h('span', { className: 'wc-pilot-rainbow-count' },
+                    t('stem.watercycle.pilot_rainbow_progress', '{done} / 4 conditions')
+                      .replace('{done}', rainbowProgressStage))
+                ),
+                h('div', {
+                  className: 'wc-pilot-rainbow-progress', role: 'progressbar',
+                  'aria-label': t('stem.watercycle.pilot_rainbow_progress_aria', 'Double-rainbow challenge progress'),
+                  'aria-valuenow': rainbowProgressStage, 'aria-valuemin': 0, 'aria-valuemax': 4
+                }, [1, 2, 3, 4].map(function(step) {
+                  return h('i', { key: step, 'data-complete': String(rainbowProgressStage >= step) });
+                })),
+                h('p', { className: 'wc-pilot-rainbow-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  rainbowChallengeComplete
+                    ? t('stem.watercycle.pilot_rainbow_status_complete', 'Double rainbow created. Your optical evidence is saved in the Journey Notebook.')
+                    : rainbowOptics.stage === 3
+                      ? t('stem.watercycle.pilot_rainbow_status_primary', 'Primary bow found. Fine-tune the antisolar view to reveal the fainter outer bow.')
+                      : rainbowOptics.stage === 2
+                        ? t('stem.watercycle.pilot_rainbow_status_aim', 'Rain and sunlight are ready. Face directly opposite the Sun and look through the rain.')
+                        : rainbowOptics.stage === 1
+                          ? t('stem.watercycle.pilot_rainbow_status_sun', 'Liquid rain is ready. You still need bright sunlight with the Sun below 42 degrees.')
+                          : rainbowEvidence.primarySeen === true
+                            ? t('stem.watercycle.pilot_rainbow_status_recreate', 'Primary-bow evidence is saved. Become liquid rain again to complete the second bow.')
+                            : t('stem.watercycle.pilot_rainbow_status_rain', 'First become liquid rain: grow a cloud heavy enough for gravity to win.')),
+                h('figure', {
+                  className: 'wc-pilot-rainbow-geometry',
+                  'data-sun-ready': String(rainbowSunGeometryReady),
+                  'data-view-ready': String(rainbowOptics.primaryAligned),
+                  'data-rain-ready': String(rainbowOptics.rainReady),
+                  'data-double-ready': String(rainbowChallengeComplete),
+                  'aria-label': t('stem.watercycle.pilot_rainbow_geometry_aria',
+                    'Rainbow viewing geometry: the Sun is behind the observer, who looks in the opposite direction toward rain.')
+                },
+                  h('svg', { viewBox: '0 0 760 126', 'aria-hidden': 'true', focusable: 'false' },
+                    h('defs', null,
+                      h('linearGradient', { id: 'wcPilotOpticsSky', x1: '0', y1: '0', x2: '1', y2: '1' },
+                        h('stop', { offset: '0%', stopColor: '#e0f2fe' }),
+                        h('stop', { offset: '58%', stopColor: '#f8fafc' }),
+                        h('stop', { offset: '100%', stopColor: '#ede9fe' })
+                      ),
+                      h('filter', { id: 'wcPilotOpticsGlow', x: '-40%', y: '-40%', width: '180%', height: '180%' },
+                        h('feGaussianBlur', { stdDeviation: '3', result: 'glow' }),
+                        h('feMerge', null, h('feMergeNode', { in: 'glow' }), h('feMergeNode', { in: 'SourceGraphic' }))
+                      )
+                    ),
+                    h('rect', { className: 'wc-optics-sky', x: 1, y: 1, width: 758, height: 124, rx: 13 }),
+                    h('line', { className: 'wc-optics-horizon', x1: 16, y1: 105, x2: 744, y2: 105 }),
+                    h('g', { className: 'wc-optics-sun' },
+                      [0, 45, 90, 135, 180, 225, 270, 315].map(function(deg) {
+                        var radians = deg * Math.PI / 180;
+                        return h('line', { key: deg, className: 'wc-optics-sun-ray',
+                          x1: 72 + Math.cos(radians) * 23, y1: 55 + Math.sin(radians) * 23,
+                          x2: 72 + Math.cos(radians) * 32, y2: 55 + Math.sin(radians) * 32 });
+                      }),
+                      h('circle', { className: 'wc-optics-sun-core', cx: 72, cy: 55, r: 17 })
+                    ),
+                    h('path', { className: 'wc-optics-light-path', d: 'M 108 39 C 205 25 280 30 337 46' }),
+                    h('g', { className: 'wc-optics-observer' },
+                      h('circle', { className: 'wc-optics-observer-head', cx: 375, cy: 50, r: 13 }),
+                      h('path', { className: 'wc-optics-observer-body', d: 'M 348 93 Q 375 68 402 93' }),
+                      h('circle', { className: 'wc-optics-eye', cx: 385, cy: 48, r: 3.2 })
+                    ),
+                    h('path', { className: 'wc-optics-aim', d: 'M 405 55 C 470 47 528 48 586 57' }),
+                    h('polygon', { className: 'wc-optics-aim-arrow', points: '586,57 574,50 576,64' }),
+                    h('g', { className: 'wc-optics-rain-curtain' },
+                      [615, 630, 645, 660, 675, 690].map(function(x, index) {
+                        return h('line', { key: x, className: 'wc-optics-rain',
+                          x1: x, y1: 34 + (index % 2) * 8, x2: x - 8, y2: 84 + (index % 3) * 5 });
+                      }),
+                      h('path', { className: 'wc-optics-bow-secondary', d: 'M 596 103 Q 653 8 710 103' }),
+                      h('path', { className: 'wc-optics-bow-primary', d: 'M 609 103 Q 653 30 697 103' })
+                    ),
+                    h('text', { className: 'wc-optics-label', x: 72, y: 116 }, t('stem.watercycle.pilot_rainbow_geometry_sun_short', 'SUN')),
+                    h('text', { className: 'wc-optics-label', x: 375, y: 116 }, t('stem.watercycle.pilot_rainbow_geometry_you_short', 'YOU')),
+                    h('text', { className: 'wc-optics-label', x: 653, y: 116 }, t('stem.watercycle.pilot_rainbow_geometry_rain_short', 'RAIN'))
+                  ),
+                  h('figcaption', { className: 'wc-pilot-optics-caption' },
+                    h('span', { 'data-ready': String(rainbowSunGeometryReady) },
+                      (rainbowSunGeometryReady ? '✓ ' : '○ ') + t('stem.watercycle.pilot_rainbow_geometry_sun', 'Sun bright and behind you')),
+                    h('span', { 'data-ready': String(rainbowOptics.primaryAligned) },
+                      (rainbowOptics.primaryAligned ? '✓ ' : '○ ') + t('stem.watercycle.pilot_rainbow_geometry_look', 'Look opposite the Sun')),
+                    h('span', { 'data-ready': String(rainbowOptics.rainReady) },
+                      (rainbowOptics.rainReady ? '✓ ' : '○ ') + t('stem.watercycle.pilot_rainbow_geometry_rain', 'Liquid rain ahead'))
+                  )
+                ),
+                h('ol', { className: 'wc-pilot-rainbow-steps' },
+                  [
+                    [t('stem.watercycle.pilot_rainbow_step_rain', 'Liquid rain'), t('stem.watercycle.pilot_rainbow_step_rain_detail', 'A curtain of spherical drops'), 1],
+                    [t('stem.watercycle.pilot_rainbow_step_sun', 'Bright, low Sun'), t('stem.watercycle.pilot_rainbow_step_sun_detail', 'Sun altitude below 42°'), 2],
+                    [t('stem.watercycle.pilot_rainbow_step_primary', 'Primary bow'), t('stem.watercycle.pilot_rainbow_step_primary_detail', '42° · one reflection'), 3],
+                    [t('stem.watercycle.pilot_rainbow_step_secondary', 'Secondary bow'), t('stem.watercycle.pilot_rainbow_step_secondary_detail', '51° · two reflections'), 4]
+                  ].map(function(step) {
+                    return h('li', { key: step[2], className: 'wc-pilot-rainbow-step',
+                      'data-complete': String(rainbowProgressStage >= step[2]) },
+                      h('span', null, step[0]), h('small', null, step[1]));
+                  })
+                ),
+                h('div', { className: 'wc-pilot-rainbow-actions' },
+                  h('button', {
+                    type: 'button', className: 'wc-pilot-rainbow-action',
+                    disabled: !rainbowCanAim, onClick: alignPilotForRainbow
+                  }, rainbowChallengeComplete
+                    ? t('stem.watercycle.pilot_rainbow_created', 'Double rainbow created')
+                    : rainbowOptics.primaryVisible
+                      ? t('stem.watercycle.pilot_rainbow_fine_tune', 'Fine-tune the second bow')
+                      : t('stem.watercycle.pilot_rainbow_face_sun', 'Face opposite the Sun')),
+                  h('span', { className: 'wc-pilot-rainbow-alignment' },
+                    t('stem.watercycle.pilot_rainbow_alignment', 'Antisolar alignment: {pct}%')
+                      .replace('{pct}', rainbowOptics.alignmentPercent))
+                ),
+                rainbowChallengeComplete && h('section', {
+                  className: 'wc-pilot-rainbow-receipt', role: 'note',
+                  'aria-labelledby': 'wcPilotRainbowReceiptTitle'
+                },
+                  h('div', { className: 'wc-pilot-rainbow-receipt-head' },
+                    h('span', { className: 'wc-pilot-rainbow-receipt-check', 'aria-hidden': 'true' }, '✓'),
+                    h('div', null,
+                      h('strong', { id: 'wcPilotRainbowReceiptTitle' },
+                        t('stem.watercycle.pilot_rainbow_observation_captured', 'Double-rainbow observation captured')),
+                      h('span', null, t('stem.watercycle.pilot_rainbow_observation_copy',
+                        'These measurements persist when the rain ends and are included in your downloaded Journey Notebook.'))
+                    )
+                  ),
+                  h('dl', null,
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_rainbow_receipt_scenario', 'Scenario')), h('dd', null, rainbowEvidenceScenario.label)),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_rainbow_receipt_sun', 'Sun altitude')), h('dd', null, rainbowEvidenceSunAltitude + '°')),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_rainbow_receipt_alignment', 'Best alignment')), h('dd', null, rainbowEvidenceAlignmentPct + '%')),
+                    h('div', null, h('dt', null, t('stem.watercycle.pilot_rainbow_receipt_paths', 'Ray paths')), h('dd', null, t('stem.watercycle.pilot_rainbow_receipt_paths_value', '42° × 1 · 51° × 2')))
+                  ),
+                  h('button', { type: 'button', onClick: focusPilotRainbowNotebook },
+                    t('stem.watercycle.pilot_rainbow_use_evidence', 'Use this evidence in your notebook'))
+                ),
+                h('details', { className: 'wc-pilot-rainbow-science' },
+                  h('summary', null, t('stem.watercycle.pilot_rainbow_science_summary', 'Open the raindrop ray lab')),
+                  h('div', { className: 'wc-pilot-rainbow-raylab' },
+                    h('div', { className: 'wc-pilot-rainbow-ray-card' },
+                      h('svg', { className: 'wc-pilot-drop-diagram', viewBox: '0 0 160 120', role: 'img',
+                        'aria-label': t('stem.watercycle.pilot_rainbow_primary_diagram_aria',
+                          'Schematic primary rainbow ray: sunlight refracts into a raindrop, reflects once, and refracts back toward the observer.') },
+                        h('circle', { className: 'wc-pilot-drop-shell', cx: 80, cy: 60, r: 44 }),
+                        h('path', { className: 'wc-pilot-drop-highlight', d: 'M 49 39 Q 60 22 79 18' }),
+                        h('line', { className: 'wc-pilot-ray-sun', x1: 4, y1: 30, x2: 46, y2: 30 }),
+                        h('polyline', { className: 'wc-pilot-ray-inside', points: '46,30 118,59 49,91' }),
+                        h('circle', { className: 'wc-pilot-ray-bounce', cx: 118, cy: 59, r: 3.5 }),
+                        h('line', { className: 'wc-pilot-ray-red', x1: 49, y1: 91, x2: 6, y2: 107 }),
+                        h('line', { className: 'wc-pilot-ray-violet', x1: 49, y1: 91, x2: 8, y2: 116 }),
+                        h('text', { className: 'wc-pilot-ray-count', x: 80, y: 67 }, '1×')
+                      ),
+                      h('strong', null, t('stem.watercycle.pilot_rainbow_primary_science', 'Primary · about 42°')),
+                      h('span', null, t('stem.watercycle.pilot_rainbow_primary_science_detail', 'Light refracts, reflects once inside each drop, then refracts out.'))
+                    ),
+                    h('div', { className: 'wc-pilot-rainbow-ray-card' },
+                      h('svg', { className: 'wc-pilot-drop-diagram', viewBox: '0 0 160 120', role: 'img',
+                        'aria-label': t('stem.watercycle.pilot_rainbow_secondary_diagram_aria',
+                          'Schematic secondary rainbow ray: sunlight refracts into a raindrop, reflects at two points inside, and exits with reversed color order.') },
+                        h('circle', { className: 'wc-pilot-drop-shell', cx: 80, cy: 60, r: 44 }),
+                        h('path', { className: 'wc-pilot-drop-highlight', d: 'M 49 39 Q 60 22 79 18' }),
+                        h('line', { className: 'wc-pilot-ray-sun', x1: 4, y1: 29, x2: 47, y2: 29 }),
+                        h('polyline', { className: 'wc-pilot-ray-inside', points: '47,29 117,52 75,103 43,79' }),
+                        h('circle', { className: 'wc-pilot-ray-bounce', cx: 117, cy: 52, r: 3.5 }),
+                        h('circle', { className: 'wc-pilot-ray-bounce', cx: 75, cy: 103, r: 3.5 }),
+                        h('line', { className: 'wc-pilot-ray-violet', x1: 43, y1: 79, x2: 5, y2: 68 }),
+                        h('line', { className: 'wc-pilot-ray-red', x1: 43, y1: 79, x2: 4, y2: 59 }),
+                        h('text', { className: 'wc-pilot-ray-count', x: 81, y: 67 }, '2×')
+                      ),
+                      h('strong', null, t('stem.watercycle.pilot_rainbow_secondary_science', 'Secondary · about 51°')),
+                      h('span', null, t('stem.watercycle.pilot_rainbow_secondary_science_detail', 'Two internal reflections make it fainter, wider, and reverse its color order.'))
+                    ),
+                    h('div', { className: 'wc-pilot-rainbow-ray-card' },
+                      h('div', { className: 'wc-pilot-dark-band-mini', 'aria-hidden': 'true' },
+                        h('span', { className: 'is-secondary' }), h('span', { className: 'is-band' }), h('span', { className: 'is-primary' })),
+                      h('strong', null, t('stem.watercycle.pilot_rainbow_dark_band', 'Alexander’s dark band')),
+                      h('span', null, t('stem.watercycle.pilot_rainbow_dark_band_detail', 'Fewer rainbow rays reach your eye in the region between the two bows.'))
+                    )
+                  ),
+                  h('p', { className: 'wc-pilot-rainbow-science-note' },
+                    t('stem.watercycle.pilot_rainbow_raylab_note',
+                      'Ray paths are schematic, not to scale. Both bows include refraction as light enters and leaves the drop.')),
+                  h('div', { className: 'wc-pilot-rainbow-science-grid' },
+                    h('div', null,
+                      h('strong', null, t('stem.watercycle.pilot_rainbow_raylab_compare', 'Compare the exits')),
+                      h('span', null, t('stem.watercycle.pilot_rainbow_raylab_compare_detail', 'The extra reflection changes the exit angle, spreads energy across a wider arc, and reverses the visible color order.')))
+                  ),
+                  h('p', { className: 'wc-pilot-rainbow-science-note' },
+                    t('stem.watercycle.pilot_rainbow_science_note', 'The bows are centered on the antisolar point - directly opposite the Sun. Every observer sees their own rainbow geometry.'))
+                )
+              ),
+
+              // ── Journey orientation ────────────────────────────────────────────
+              h('section', {
+                className: 'wc-pilot-journey-guide',
+                'data-form': snap.form,
+                'data-complete': String(coverage.complete),
+                'aria-labelledby': 'wcPilotJourneyGuideTitle'
+              },
+                h('h4', { id: 'wcPilotJourneyGuideTitle' },
+                  t('stem.watercycle.pilot_journey_guide', 'Journey guide')),
+                h('ol', { className: 'wc-pilot-journey-steps' },
+                  h('li', { className: 'wc-pilot-journey-step is-last', 'data-step': 'last' },
+                    h('span', null, t('stem.watercycle.pilot_last_change', 'Last change')),
+                    h('strong', null, transitionMeta
+                      ? transitionMeta.from + ' ' + String.fromCharCode(8594) + ' ' + transitionMeta.to
+                      : t('stem.watercycle.pilot_journey_started', 'Journey started')),
+                    h('small', null, transitionMeta ? transitionMeta.process : surfacePathways.water.label)
+                  ),
+                  h('li', {
+                    className: 'wc-pilot-journey-step is-now',
+                    'data-step': 'now',
+                    'aria-current': 'step'
+                  },
+                    h('span', null, t('stem.watercycle.pilot_now', 'Now')),
+                    h('strong', null, form.label),
+                    h('small', null, activeLandPathway
+                      ? activeLandPathway.label
+                      : t('stem.watercycle.pilot_over_surface', 'Over {surface}').replace('{surface}', surfacePathway.label))
+                  ),
+                  h('li', { className: 'wc-pilot-journey-step is-next', 'data-step': 'next' },
+                    h('span', null, t('stem.watercycle.pilot_next_goal', 'Next goal')),
+                    h('strong', {
+                      role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'
+                    }, objective)
+                  )
+                )
               ),
 
               // The objective looks forward; this receipt looks backward at the
               // exact evidence that produced the learner's most recent change.
               transitionMeta && h('section', {
                 className: 'wc-pilot-transition',
+                'data-energy': transitionMeta.energyDirection,
+                'data-form': snap.form,
                 'aria-labelledby': 'wcPilotTransitionTitle'
               },
                 h('div', { className: 'wc-pilot-transition-copy' },
@@ -13309,7 +15625,12 @@ const d = labToolData.waterCycle || {};
               ),
 
               // ── Science card ─────────────────────────────────────────────
-              h('section', { className: 'wc-pilot-science', 'aria-labelledby': 'wcPilotScienceTitle' },
+              h('div', { className: 'wc-pilot-learning-dashboard' },
+                h('section', {
+                  className: 'wc-pilot-science',
+                  'data-form': snap.form,
+                  'aria-labelledby': 'wcPilotScienceTitle'
+                },
                 h('h4', { id: 'wcPilotScienceTitle' }, t('stem.watercycle.pilot_what_you_are', 'What you are right now: {form}').replace('{form}', form.label)),
                 h('p', null, form.science),
                 h('div', { className: 'wc-pilot-science-numbers' },
@@ -13329,17 +15650,30 @@ const d = labToolData.waterCycle || {};
               ),
 
               // ── Stage ledger ─────────────────────────────────────────────
-              h('section', { className: 'wc-pilot-ledger', 'aria-labelledby': 'wcPilotLedgerTitle' },
+              h('section', {
+                className: 'wc-pilot-ledger',
+                'data-complete': String(coverage.complete),
+                'aria-labelledby': 'wcPilotLedgerTitle'
+              },
                 h('div', { className: 'wc-pilot-ledger-head' },
                   h('h4', { id: 'wcPilotLedgerTitle' }, t('stem.watercycle.pilot_stages_you_have_been_through', 'Stages you have been through')),
                   h('span', null, t('stem.watercycle.pilot_coverage', '{done} / {total}').replace('{done}', coverage.done).replace('{total}', coverage.total))
                 ),
+                h('div', {
+                  className: 'wc-pilot-ledger-progress',
+                  role: 'progressbar',
+                  'aria-label': t('stem.watercycle.pilot_stages_you_have_been_through', 'Stages you have been through'),
+                  'aria-valuenow': coverage.done,
+                  'aria-valuemin': 0,
+                  'aria-valuemax': coverage.total
+                }, h('i', { style: { width: Math.round((coverage.done / Math.max(1, coverage.total)) * 100) + '%' } })),
                 h('ul', { className: 'wc-pilot-ledger-list' },
                   WCPK.stageOrder.map(function(stageId) {
-                    var done = !!(snap.stagesSeen && snap.stagesSeen[stageId]);
+                    var done = !!pilotStagesSeen[stageId];
                     var meta = STAGES.filter(function(s) { return s.id === stageId; })[0];
                     return h('li', {
                       key: stageId, className: done ? 'is-done' : 'is-open',
+                      'data-stage': stageId,
                       // One whole phrase per state, not a label glued to a
                       // fragment: ": experienced" alone is not translatable, and
                       // several languages need the marker before the noun.
@@ -13351,14 +15685,1166 @@ const d = labToolData.waterCycle || {};
                       h('span', null, meta ? meta.label : stageId));
                   })
                 ),
+                h('div', { className: 'wc-pilot-route-history', role: 'region',
+                  'aria-label': t('stem.watercycle.pilot_landing_comparison', 'Landing pathway comparison') },
+                  h('strong', null, t('stem.watercycle.pilot_routes_tried', 'Landing pathways tried')),
+                  h('ul', null, pilotRouteRows.map(function(route) {
+                    return h('li', {
+                      key: route.id,
+                      className: route.count ? 'is-tried' : 'is-untried',
+                      'data-route': route.id
+                    },
+                      h('span', null, route.label),
+                      h('small', null, route.timescale),
+                      h('b', null, String(route.count)));
+                  })),
+                  nextPilotRoute && h('p', null, t('stem.watercycle.pilot_try_next_route', 'Try next: land on {surface}.')
+                    .replace('{surface}', nextPilotRoute.label))
+                ),
                 coverage.complete
                   ? h('p', { className: 'wc-pilot-ledger-done', role: 'status' },
                       t('stem.watercycle.pilot_you_have_now_been_through_all_six_stag', 'You have now been through all six stages. Different landings send you down different pathways — try landing on bare ground, on a forest, and in the lake to compare how long each one holds you.'))
                   : h('p', { className: 'wc-pilot-ledger-hint' },
                       t('stem.watercycle.pilot_one_flight_cannot_reach_every_stage_wh', 'One flight cannot reach every stage: where you land decides which pathway you take. Fly it again and land somewhere else.'))
+              )
+              ),
+
+              // ── Scenario comparison lab ──────────────────────────────────
+              h('section', {
+                className: 'wc-pilot-compare-lab',
+                'data-pins': String(pinnedPilotComparisonCount),
+                'data-current-scenario': scenarioId,
+                'aria-labelledby': 'wcPilotCompareTitle'
+              },
+                h('div', { className: 'wc-pilot-compare-head' },
+                  h('div', { className: 'wc-pilot-compare-title' },
+                    h('span', { className: 'wc-pilot-compare-mark', 'aria-hidden': 'true' }),
+                    h('div', null,
+                      h('span', { className: 'wc-pilot-compare-kicker' },
+                        t('stem.watercycle.pilot_compare_kicker', 'Cross-scenario investigation')),
+                      h('h3', { id: 'wcPilotCompareTitle' },
+                        t('stem.watercycle.pilot_compare_title', 'Scenario comparison lab')),
+                      h('p', null, t('stem.watercycle.pilot_compare_intro',
+                        'Pin evidence from this journey, switch climates, and compare what the same parcel experiences. Pins stay while you explore these scenarios.'))
+                    )
+                  ),
+                  h('div', { className: 'wc-pilot-compare-actions' },
+                    h('button', {
+                      type: 'button',
+                      className: 'wc-pilot-compare-btn is-primary',
+                      disabled: !onboardingComplete,
+                      onClick: pinPilotComparison
+                    }, pilotComparisons[scenarioId]
+                      ? t('stem.watercycle.pilot_compare_update', 'Update current pin')
+                      : t('stem.watercycle.pilot_compare_pin', 'Pin current journey')),
+                    h('button', {
+                      type: 'button',
+                      className: 'wc-pilot-compare-btn',
+                      disabled: pinnedPilotComparisonCount === 0,
+                      onClick: clearPilotComparisons
+                    }, t('stem.watercycle.pilot_compare_clear', 'Clear pinned journeys'))
+                  )
+                ),
+                h('section', {
+                  className: 'wc-pilot-compare-mission',
+                  'data-complete': String(pilotComparisonMissionComplete),
+                  'aria-labelledby': 'wcPilotCompareMissionTitle'
+                },
+                  h('div', { className: 'wc-pilot-compare-mission-head' },
+                    h('div', null,
+                      h('span', { className: 'wc-pilot-compare-mission-kicker' },
+                        t('stem.watercycle.pilot_compare_mission_kicker', 'Four-climate challenge')),
+                      h('strong', { id: 'wcPilotCompareMissionTitle' },
+                        t('stem.watercycle.pilot_compare_mission_title', 'Collect evidence across climates'))
+                    ),
+                    h('span', { className: 'wc-pilot-compare-mission-state' },
+                      pilotComparisonMissionComplete
+                        ? t('stem.watercycle.pilot_compare_mission_complete', 'Investigation complete')
+                        : t('stem.watercycle.pilot_compare_mission_building', 'Building evidence'))
+                  ),
+                  h('div', {
+                    className: 'wc-pilot-compare-progress',
+                    role: 'progressbar',
+                    'aria-valuemin': 0,
+                    'aria-valuemax': pilotComparisonRows.length,
+                    'aria-valuenow': pinnedPilotComparisonCount,
+                    'aria-label': t('stem.watercycle.pilot_compare_mission_progress',
+                      '{done} of {total} climate journeys pinned')
+                        .replace('{done}', pinnedPilotComparisonCount)
+                        .replace('{total}', pilotComparisonRows.length)
+                  },
+                    h('i', {
+                      style: { width: Math.round((pinnedPilotComparisonCount / pilotComparisonRows.length) * 100) + '%' }
+                    })
+                  ),
+                  h('ol', {
+                    className: 'wc-pilot-compare-checklist',
+                    'aria-label': t('stem.watercycle.pilot_compare_mission_checklist_aria',
+                      'Climate evidence checklist')
+                  },
+                    pilotComparisonRows.map(function(row) {
+                      var missionState = row.pinned ? 'pinned' : (row.current ? 'current' : 'todo');
+                      var missionStatus = missionState === 'pinned'
+                        ? t('stem.watercycle.pilot_compare_mission_step_pinned', 'Evidence pinned')
+                        : missionState === 'current'
+                          ? t('stem.watercycle.pilot_compare_mission_step_live', 'Live now - pin this journey')
+                          : t('stem.watercycle.pilot_compare_mission_step_next', 'Not tested yet');
+                      return h('li', {
+                        key: row.id,
+                        'data-scenario': row.id,
+                        'data-state': missionState
+                      },
+                        h('span', { 'aria-hidden': 'true' }),
+                        h('div', null,
+                          h('strong', null, row.scenario.label),
+                          h('small', null, missionStatus)
+                        )
+                      );
+                    })
+                  ),
+                  h('p', { className: 'wc-pilot-compare-fair-test' },
+                    h('strong', null, t('stem.watercycle.pilot_compare_fair_test_title', 'Fair-test rule')),
+                    h('span', null, t('stem.watercycle.pilot_compare_fair_test_copy',
+                      'Use the same rise and steering strategy in every climate so starting conditions are the main variable.'))
+                  ),
+                  !pilotComparisonMissionComplete && pilotNextComparisonRow
+                    ? h('div', { className: 'wc-pilot-compare-next' },
+                        h('span', null,
+                          pilotNextComparisonRow.current
+                            ? t('stem.watercycle.pilot_compare_next_current',
+                                'Next: pin this live {scenario} journey using the button above.')
+                                .replace('{scenario}', pilotNextComparisonRow.scenario.label)
+                            : t('stem.watercycle.pilot_compare_next_switch',
+                                'Next: run {scenario} with the same flight strategy.')
+                                .replace('{scenario}', pilotNextComparisonRow.scenario.label)),
+                        !pilotNextComparisonRow.current && h('button', {
+                          type: 'button',
+                          onClick: function() { chooseScenario(pilotNextComparisonRow.id); }
+                        }, t('stem.watercycle.pilot_compare_next_button', 'Test {scenario}')
+                          .replace('{scenario}', pilotNextComparisonRow.scenario.label))
+                      )
+                    : null
+                ),
+                h('div', { className: 'wc-pilot-compare-insights', role: 'note' },
+                  h('article', { 'data-insight': 'humidity' },
+                    h('span', { className: 'wc-pilot-compare-insight-icon', 'aria-hidden': 'true' }),
+                    h('div', null,
+                      h('strong', null, t('stem.watercycle.pilot_compare_cloud_insight_title',
+                        'Humidity changes the climb')),
+                      h('p', null, t('stem.watercycle.pilot_compare_cloud_insight',
+                        '{low} forms cloud near {lowM} m; {high} near {highM} m because drier air starts farther from saturation.')
+                          .replace('{low}', pilotComparisonLowestCloud.scenario.label)
+                          .replace('{lowM}', Math.round(pilotComparisonLowestCloud.env.lclM))
+                          .replace('{high}', pilotComparisonHighestCloud.scenario.label)
+                          .replace('{highM}', Math.round(pilotComparisonHighestCloud.env.lclM)))
+                    )
+                  ),
+                  h('article', { 'data-insight': 'freezing' },
+                    h('span', { className: 'wc-pilot-compare-insight-icon', 'aria-hidden': 'true' }),
+                    h('div', null,
+                      h('strong', null, t('stem.watercycle.pilot_compare_freeze_insight_title',
+                        'Temperature changes the phase')),
+                      h('p', null, t('stem.watercycle.pilot_compare_freeze_insight',
+                        '{scenario} reaches freezing near {m} m, so rising water can become ice sooner.')
+                          .replace('{scenario}', pilotComparisonLowestFreezing.scenario.label)
+                          .replace('{m}', Math.round(pilotComparisonLowestFreezing.env.freezingM)))
+                    )
+                  )
+                ),
+                h('figure', {
+                  className: 'wc-pilot-sky-profile',
+                  'aria-labelledby': 'wcPilotSkyProfileTitle',
+                  'aria-describedby': 'wcPilotSkyProfileCaption'
+                },
+                  h('div', { className: 'wc-pilot-sky-profile-head' },
+                    h('div', null,
+                      h('span', { className: 'wc-pilot-sky-profile-kicker' },
+                        t('stem.watercycle.pilot_compare_profile_kicker', 'Shared model scale')),
+                      h('h4', { id: 'wcPilotSkyProfileTitle' },
+                        t('stem.watercycle.pilot_compare_profile_title', 'Climate sky profile'))
+                    ),
+                    h('strong', { className: 'wc-pilot-sky-profile-spread' },
+                      t('stem.watercycle.pilot_compare_profile_spread',
+                        '{value} m cloud-base spread')
+                        .replace('{value}', pilotComparisonCloudSpreadM))
+                  ),
+                  h('section', {
+                    className: 'wc-pilot-sky-probe',
+                    'data-altitude-m': pilotComparisonProbeM,
+                    'aria-labelledby': 'wcPilotSkyProbeLabel'
+                  },
+                    h('div', { className: 'wc-pilot-sky-probe-head' },
+                      h('div', { className: 'wc-pilot-sky-probe-copy' },
+                        h('span', { className: 'wc-pilot-sky-probe-kicker' },
+                          t('stem.watercycle.pilot_compare_probe_kicker', 'Interactive threshold check')),
+                        h('label', { id: 'wcPilotSkyProbeLabel', htmlFor: 'wcPilotSkyProbe' },
+                          t('stem.watercycle.pilot_compare_probe_label', 'Altitude probe')),
+                        h('small', null, t('stem.watercycle.pilot_compare_probe_prompt',
+                          'Move one altitude through every climate'))
+                      ),
+                      h('output', {
+                        className: 'wc-pilot-sky-probe-output',
+                        htmlFor: 'wcPilotSkyProbe'
+                      }, pilotComparisonProbeAltitudeText(pilotComparisonProbeM))
+                    ),
+                    h('input', {
+                      id: 'wcPilotSkyProbe',
+                      className: 'wc-pilot-sky-probe-range',
+                      type: 'range',
+                      min: 0,
+                      max: pilotComparisonProfileCeilingM,
+                      step: 100,
+                      value: pilotComparisonProbeM,
+                      'aria-label': t('stem.watercycle.pilot_compare_probe_aria_label', 'Shared altitude probe'),
+                      'aria-valuetext': t('stem.watercycle.pilot_compare_probe_aria_value', '{altitude} metres')
+                        .replace('{altitude}', pilotComparisonProbeM),
+                      'aria-describedby': 'wcPilotSkyProbeStatus wcPilotSkyProbeScience wcPilotSkyWaypointStatus',
+                      onChange: function(event) {
+                        var nextProbeM = Math.round(Number(event.target.value) / 100) * 100;
+                        setPilot({ profileProbeM: pilotComparisonNumber(nextProbeM, 0,
+                          pilotComparisonProfileCeilingM, 1500) });
+                      }
+                    }),
+                    h('div', {
+                      className: 'wc-pilot-sky-probe-presets',
+                      role: 'group',
+                      'aria-label': t('stem.watercycle.pilot_compare_probe_presets', 'Altitude probe presets')
+                    },
+                      [0, 1500, 3000, pilotComparisonProfileCeilingM].map(function(probePresetM) {
+                        var probePresetText = pilotComparisonProbeAltitudeText(probePresetM);
+                        return h('button', {
+                          key: 'probe-' + probePresetM,
+                          type: 'button',
+                          'aria-pressed': String(pilotComparisonProbeM === probePresetM),
+                          'aria-label': t('stem.watercycle.pilot_compare_probe_preset_aria',
+                            'Set altitude probe to {altitude}').replace('{altitude}', probePresetText),
+                          onClick: function() { setPilot({ profileProbeM: probePresetM }); }
+                        }, probePresetText);
+                      })
+                    ),
+                    h('nav', {
+                      className: 'wc-pilot-sky-waypoints',
+                      'aria-labelledby': 'wcPilotSkyWaypointsTitle',
+                      'data-complete': String(pilotComparisonProbeWaypointCrossedCount
+                        === pilotComparisonProbeWaypoints.length)
+                    },
+                      h('div', { className: 'wc-pilot-sky-waypoints-head' },
+                        h('div', null,
+                          h('span', { className: 'wc-pilot-sky-waypoints-kicker' },
+                            t('stem.watercycle.pilot_compare_waypoints_kicker',
+                              'Boundary navigator')),
+                          h('strong', { id: 'wcPilotSkyWaypointsTitle' },
+                            t('stem.watercycle.pilot_compare_waypoints_title',
+                              'Atmospheric waypoints')),
+                          h('small', null,
+                            t('stem.watercycle.pilot_compare_waypoints_hint',
+                              'Jump to the first 100 m probe step at or above each boundary'))
+                        ),
+                        h('strong', {
+                          className: 'wc-pilot-sky-waypoints-count',
+                          role: 'progressbar',
+                          'aria-label': t('stem.watercycle.pilot_compare_waypoints_progress_aria',
+                            'Atmospheric thresholds crossed'),
+                          'aria-valuemin': 0,
+                          'aria-valuemax': pilotComparisonProbeWaypoints.length,
+                          'aria-valuenow': pilotComparisonProbeWaypointCrossedCount
+                        }, t('stem.watercycle.pilot_compare_waypoints_count',
+                          '{crossed} / {total} crossed')
+                            .replace('{crossed}', pilotComparisonProbeWaypointCrossedCount)
+                            .replace('{total}', pilotComparisonProbeWaypoints.length))
+                      ),
+                      h('div', { className: 'wc-pilot-sky-waypoints-controls' },
+                        h('button', {
+                          type: 'button',
+                          className: 'wc-pilot-sky-waypoint-step is-previous',
+                          disabled: !pilotComparisonProbePreviousWaypoint,
+                          onClick: function() {
+                            if (pilotComparisonProbePreviousWaypoint) {
+                              setPilot({ profileProbeM:
+                                pilotComparisonProbePreviousWaypoint.probeM });
+                            }
+                          }
+                        },
+                          h('span', { 'aria-hidden': 'true' }, '←'),
+                          h('small', null, t('stem.watercycle.pilot_compare_waypoint_previous',
+                            'Previous'))
+                        ),
+                        h('ol', {
+                          className: 'wc-pilot-sky-waypoints-list',
+                          role: 'list',
+                          style: {
+                            '--wc-waypoint-progress':
+                              pilotComparisonProbeWaypointProgress + '%'
+                          }
+                        }, pilotComparisonProbeWaypoints.map(function(waypoint) {
+                          var waypointCrossed = waypoint.probeM <= pilotComparisonProbeM;
+                          var waypointCurrent = waypoint.probeM === pilotComparisonProbeM;
+                          var waypointNext = !!pilotComparisonProbeNextWaypoint
+                            && waypoint.id === pilotComparisonProbeNextWaypoint.id;
+                          var waypointAltitude = pilotComparisonProbeAltitudeText(waypoint.probeM);
+                          var waypointButtonAria = t(
+                            'stem.watercycle.pilot_compare_waypoint_button_aria',
+                            'Move probe to the {scenario} {threshold} crossing step at {altitude}')
+                              .replace('{scenario}', waypoint.row.scenario.label)
+                              .replace('{threshold}', waypoint.label)
+                              .replace('{altitude}', waypointAltitude);
+                          return h('li', {
+                            key: waypoint.id,
+                            'data-waypoint-type': waypoint.type,
+                            'data-crossed': String(waypointCrossed),
+                            'data-current': String(waypointCurrent),
+                            'data-next': String(waypointNext),
+                            'data-threshold-m': waypoint.thresholdM,
+                            'data-probe-m': waypoint.probeM
+                          }, h('button', {
+                            type: 'button',
+                            'aria-label': waypointButtonAria,
+                            'aria-current': waypointCurrent ? 'step' : undefined,
+                            onClick: function() {
+                              setPilot({ profileProbeM: waypoint.probeM });
+                            }
+                          },
+                            h('i', { 'aria-hidden': 'true' }),
+                            h('span', null,
+                              h('strong', null, waypoint.row.scenario.label),
+                              h('small', null,
+                                t('stem.watercycle.pilot_compare_waypoint_card',
+                                  '{threshold} · {altitude}')
+                                    .replace('{threshold}', waypoint.label)
+                                    .replace('{altitude}', waypointAltitude))
+                            )
+                          ));
+                        })),
+                        h('button', {
+                          type: 'button',
+                          className: 'wc-pilot-sky-waypoint-step is-next',
+                          disabled: !pilotComparisonProbeNextWaypoint,
+                          onClick: function() {
+                            if (pilotComparisonProbeNextWaypoint) {
+                              setPilot({ profileProbeM:
+                                pilotComparisonProbeNextWaypoint.probeM });
+                            }
+                          }
+                        },
+                          h('span', { 'aria-hidden': 'true' }, '→'),
+                          h('small', null, t('stem.watercycle.pilot_compare_waypoint_next',
+                            'Next'))
+                        )
+                      ),
+                      h('p', {
+                        id: 'wcPilotSkyWaypointStatus',
+                        className: 'wc-pilot-sky-waypoints-status'
+                      }, pilotComparisonProbeWaypointStatus)
+                    ),
+                    h('section', {
+                      className: 'wc-pilot-sky-thermal',
+                      'aria-labelledby': 'wcPilotSkyThermalTitle',
+                      'aria-describedby': 'wcPilotSkyThermalSummary',
+                      'data-scale-min-c': pilotComparisonThermalScaleMinC,
+                      'data-scale-max-c': pilotComparisonThermalScaleMaxC,
+                      'data-spread-c': pilotComparisonThermalSpreadC,
+                      'data-lapse-rate-c-km': pilotComparisonCoolingRateText,
+                      'data-cooling-c': pilotComparisonCoolingDropText
+                    },
+                      h('div', { className: 'wc-pilot-sky-thermal-head' },
+                        h('div', null,
+                          h('span', { className: 'wc-pilot-sky-thermal-kicker' },
+                            t('stem.watercycle.pilot_compare_thermal_kicker',
+                              'Temperature evidence')),
+                          h('strong', { id: 'wcPilotSkyThermalTitle' },
+                            t('stem.watercycle.pilot_compare_thermal_title',
+                              'Thermal cross-section')),
+                          h('small', null,
+                            t('stem.watercycle.pilot_compare_thermal_hint',
+                              'Same altitude, one shared model scale'))
+                        ),
+                        h('strong', { className: 'wc-pilot-sky-thermal-spread' },
+                          t('stem.watercycle.pilot_compare_thermal_spread',
+                            '{spread}°C spread')
+                              .replace('{spread}', pilotComparisonThermalSpreadC))
+                      ),
+                      h('div', { className: 'wc-pilot-sky-thermal-scale' },
+                        h('span', null, pilotComparisonProbeTemperatureText(
+                          pilotComparisonThermalScaleMinC)),
+                        h('span', null, t('stem.watercycle.pilot_compare_thermal_scale',
+                          'Shared ambient-temperature scale')),
+                        h('span', null, pilotComparisonProbeTemperatureText(
+                          pilotComparisonThermalScaleMaxC))
+                      ),
+                      h('div', {
+                        className: 'wc-pilot-sky-thermal-plot',
+                        'aria-hidden': 'true'
+                      },
+                        h('span', {
+                          className: 'wc-pilot-sky-thermal-zero',
+                          style: { left: pilotComparisonThermalZeroPct + '%' }
+                        }, h('b', null, t('stem.watercycle.pilot_compare_thermal_zero',
+                          '0°C'))),
+                        pilotComparisonThermalRows.map(function(thermalItem) {
+                          return h('span', {
+                            key: 'thermal-path-' + thermalItem.id,
+                            className: 'wc-pilot-sky-thermal-path',
+                            'data-scenario': thermalItem.id,
+                            'data-surface-c': thermalItem.surfaceTemperatureC,
+                            'data-current-c': thermalItem.temperatureC,
+                            'data-cooling-c': pilotComparisonCoolingDropText,
+                            style: {
+                              left: thermalItem.positionPct + '%',
+                              width: thermalItem.coolingWidthPct + '%',
+                              top: (13 + thermalItem.lane * 15) + 'px'
+                            }
+                          }, h('i', {
+                            className: 'wc-pilot-sky-thermal-surface'
+                          }));
+                        }),
+                        pilotComparisonThermalRows.map(function(thermalItem) {
+                          var thermalExtreme = thermalItem.id === pilotComparisonThermalColdest.id
+                            ? 'coldest'
+                            : (thermalItem.id === pilotComparisonThermalWarmest.id
+                                ? 'warmest' : 'middle');
+                          return h('span', {
+                            key: 'thermal-marker-' + thermalItem.id,
+                            className: 'wc-pilot-sky-thermal-marker',
+                            'data-scenario': thermalItem.id,
+                            'data-freezing': String(thermalItem.temperatureC <= 0),
+                            'data-extreme': thermalExtreme,
+                            style: {
+                              left: thermalItem.positionPct + '%',
+                              top: (7 + thermalItem.lane * 15) + 'px'
+                            }
+                          },
+                            h('i', null),
+                            h('b', null, pilotComparisonProbeTemperatureText(
+                              thermalItem.temperatureC))
+                          );
+                        })
+                      ),
+                      h('section', {
+                        className: 'wc-pilot-sky-freeze-challenge',
+                        'data-state': pilotComparisonFreezeState,
+                        'data-correct': String(pilotComparisonFreezeCorrect),
+                        'data-probe-m': pilotComparisonProbeM,
+                        'aria-labelledby': 'wcPilotFreezeChallengeTitle',
+                        'aria-describedby': 'wcPilotFreezeChallengePrompt wcPilotFreezeChallengeScope'
+                      },
+                        h('div', { className: 'wc-pilot-sky-freeze-head' },
+                          h('span', {
+                            className: 'wc-pilot-sky-freeze-seal',
+                            'aria-hidden': 'true'
+                          }),
+                          h('div', null,
+                            h('span', { className: 'wc-pilot-sky-freeze-kicker' },
+                              t('stem.watercycle.pilot_compare_freeze_kicker',
+                                'Science challenge')),
+                            h('strong', { id: 'wcPilotFreezeChallengeTitle' },
+                              t('stem.watercycle.pilot_compare_freeze_title',
+                                'Freeze-line forecast'))
+                          ),
+                          h('b', { className: 'wc-pilot-sky-freeze-state' },
+                            pilotComparisonFreezeStateText)
+                        ),
+                        h('p', {
+                          id: 'wcPilotFreezeChallengePrompt',
+                          className: 'wc-pilot-sky-freeze-prompt'
+                        }, pilotComparisonFreezePrompt),
+                        h('div', {
+                          className: 'wc-pilot-sky-freeze-choices',
+                          role: 'group',
+                          'aria-label': t('stem.watercycle.pilot_compare_freeze_choices_aria',
+                            'Freeze-line forecast choices')
+                        }, [0, 1, 2, 3, 4].map(function(forecastCount) {
+                          var forecastSelected = pilotComparisonFreezeForecastCurrent
+                            && pilotComparisonFreezeSelectedCount === forecastCount;
+                          var forecastOutcome = !forecastSelected
+                            ? 'idle' : (pilotComparisonFreezeCorrect ? 'correct' : 'retry');
+                          var forecastAria = t('stem.watercycle.pilot_compare_freeze_choice_aria',
+                            'Forecast {count} climate profiles at or below 0°C')
+                              .replace('{count}', forecastCount);
+                          return h('button', {
+                            key: 'freeze-forecast-' + forecastCount,
+                            type: 'button',
+                            'aria-label': forecastAria,
+                            'aria-pressed': String(forecastSelected),
+                            'data-selected': String(forecastSelected),
+                            'data-outcome': forecastOutcome,
+                            onClick: function() {
+                              setPilot({
+                                thermalForecastCount: forecastCount,
+                                thermalForecastProbeM: pilotComparisonProbeM
+                              });
+                            }
+                          },
+                            h('strong', null, forecastCount),
+                            h('small', null, t('stem.watercycle.pilot_compare_freeze_profiles',
+                              'profiles'))
+                          );
+                        })),
+                        h('p', {
+                          className: 'wc-pilot-sky-freeze-feedback',
+                          role: 'status',
+                          'aria-live': 'polite',
+                          'aria-atomic': 'true'
+                        }, pilotComparisonFreezeFeedback),
+                        h('small', {
+                          id: 'wcPilotFreezeChallengeScope',
+                          className: 'wc-pilot-sky-freeze-scope'
+                        }, t('stem.watercycle.pilot_compare_freeze_scope',
+                          'Counts ambient temperature markers only. Below-freezing air does not guarantee that every water parcel is ice.'))
+                      ),
+                      h('aside', {
+                        className: 'wc-pilot-sky-cooling-rule',
+                        role: 'note',
+                        'aria-labelledby': 'wcPilotCoolingRuleTitle',
+                        'aria-describedby': 'wcPilotCoolingRuleSummary',
+                        'data-lapse-rate-c-km': pilotComparisonCoolingRateText,
+                        'data-cooling-c': pilotComparisonCoolingDropText
+                      },
+                        h('span', {
+                          className: 'wc-pilot-sky-cooling-icon',
+                          'aria-hidden': 'true'
+                        }),
+                        h('div', { className: 'wc-pilot-sky-cooling-body' },
+                          h('div', { className: 'wc-pilot-sky-cooling-head' },
+                            h('span', null, t('stem.watercycle.pilot_compare_cooling_kicker',
+                              'Model rule')),
+                            h('strong', { id: 'wcPilotCoolingRuleTitle' },
+                              t('stem.watercycle.pilot_compare_cooling_title',
+                                'Altitude cooling'))
+                          ),
+                          h('div', {
+                            className: 'wc-pilot-sky-cooling-equation',
+                            'aria-label': pilotComparisonCoolingEquationAria
+                          },
+                            h('span', { 'data-term': 'rate' },
+                              t('stem.watercycle.pilot_compare_cooling_rate',
+                                '{rate}°C / km')
+                                  .replace('{rate}', pilotComparisonCoolingRateText)),
+                            h('i', { 'aria-hidden': 'true' }, '×'),
+                            h('span', { 'data-term': 'altitude' },
+                              t('stem.watercycle.pilot_compare_cooling_altitude',
+                                '{altitude} km climbed')
+                                  .replace('{altitude}', pilotComparisonCoolingAltitudeText)),
+                            h('i', { 'aria-hidden': 'true' }, '='),
+                            h('b', { 'data-term': 'result' },
+                              t('stem.watercycle.pilot_compare_cooling_result',
+                                '{drop}°C cooler')
+                                  .replace('{drop}', pilotComparisonCoolingDropText))
+                          ),
+                          h('p', {
+                            id: 'wcPilotCoolingRuleSummary'
+                          }, pilotComparisonCoolingSummary)
+                        )
+                      ),
+                      h('ul', {
+                        className: 'wc-pilot-sky-thermal-legend',
+                        role: 'list'
+                      }, pilotComparisonThermalRows.map(function(thermalItem) {
+                        var thermalExtreme = thermalItem.id === pilotComparisonThermalColdest.id
+                          ? 'coldest'
+                          : (thermalItem.id === pilotComparisonThermalWarmest.id
+                              ? 'warmest' : 'middle');
+                        var thermalNowText = pilotComparisonProbeTemperatureText(
+                          thermalItem.temperatureC);
+                        var thermalSurfaceText = pilotComparisonProbeTemperatureText(
+                          thermalItem.surfaceTemperatureC);
+                        var thermalAria = t('stem.watercycle.pilot_compare_thermal_climate_aria',
+                          '{scenario}: {current} at {altitude}; surface starting temperature {surface}; model cooling {drop}°C.')
+                            .replace('{scenario}', thermalItem.row.scenario.label)
+                            .replace('{current}', thermalNowText)
+                            .replace('{altitude}',
+                              pilotComparisonProbeAltitudeText(pilotComparisonProbeM))
+                            .replace('{surface}', thermalSurfaceText)
+                            .replace('{drop}', pilotComparisonCoolingDropText);
+                        return h('li', {
+                          key: 'thermal-legend-' + thermalItem.id,
+                          'data-scenario': thermalItem.id,
+                          'data-freezing': String(thermalItem.temperatureC <= 0),
+                          'data-extreme': thermalExtreme,
+                          'aria-label': thermalAria
+                        },
+                          h('i', { 'aria-hidden': 'true' }),
+                          h('span', null,
+                            h('strong', null, thermalItem.row.scenario.label),
+                            h('small', null,
+                              t('stem.watercycle.pilot_compare_thermal_surface',
+                                'Surface {temp}')
+                                  .replace('{temp}', thermalSurfaceText))
+                          ),
+                          h('b', null, thermalNowText)
+                        );
+                      })),
+                      h('p', {
+                        id: 'wcPilotSkyThermalSummary',
+                        className: 'wc-pilot-sky-thermal-summary'
+                      }, pilotComparisonThermalSummary)
+                    ),
+                    h('div', {
+                      className: 'wc-pilot-sky-probe-verdict',
+                      role: 'group',
+                      'aria-labelledby': 'wcPilotSkyProbeVerdictTitle'
+                    },
+                      h('div', { className: 'wc-pilot-sky-probe-verdict-head' },
+                        h('strong', { id: 'wcPilotSkyProbeVerdictTitle' },
+                          t('stem.watercycle.pilot_compare_probe_verdict_title', 'Conditions at this altitude')),
+                        h('p', null, pilotComparisonProbeCrossingText)
+                      ),
+                      h('ul', { className: 'wc-pilot-sky-probe-states', role: 'list' },
+                        pilotComparisonProbeStateOrder.map(function(probeStateKey) {
+                          var probeStateCount = pilotComparisonProbeCounts[probeStateKey];
+                          var probeStateLabel = pilotComparisonProbeLabels[probeStateKey];
+                          var probeStateAria = t('stem.watercycle.pilot_compare_probe_condition_aria',
+                            '{label}: {count} of {total} climates at {altitude}.')
+                              .replace('{label}', probeStateLabel)
+                              .replace('{count}', probeStateCount)
+                              .replace('{total}', pilotComparisonRows.length)
+                              .replace('{altitude}', pilotComparisonProbeAltitudeText(pilotComparisonProbeM));
+                          return h('li', {
+                            key: probeStateKey,
+                            'data-probe-state': probeStateKey,
+                            'data-count': probeStateCount,
+                            'data-empty': String(probeStateCount === 0),
+                            'aria-label': probeStateAria
+                          },
+                            h('i', { 'aria-hidden': 'true' }),
+                            h('span', null,
+                              h('b', null, probeStateCount),
+                              h('strong', null, probeStateLabel),
+                              h('small', null, t('stem.watercycle.pilot_compare_probe_state_count',
+                                '{count} / {total} climates')
+                                  .replace('{count}', probeStateCount)
+                                  .replace('{total}', pilotComparisonRows.length))
+                            )
+                          );
+                        })
+                      )
+                    ),
+                    h('p', {
+                      id: 'wcPilotSkyProbeStatus',
+                      className: 'sr-only',
+                      role: 'status',
+                      'aria-live': 'polite',
+                      'aria-atomic': 'true'
+                    }, pilotComparisonProbeSummary),
+                    h('p', { id: 'wcPilotSkyProbeScience', className: 'wc-pilot-sky-probe-science' },
+                      t('stem.watercycle.pilot_compare_probe_science',
+                        'Thresholds describe environmental conditions, not a guaranteed parcel phase. Supercooled liquid can remain below 0°C.'))
+                  ),
+                  h('div', {
+                    className: 'wc-pilot-sky-profile-legend',
+                    role: 'list',
+                    'aria-label': t('stem.watercycle.pilot_compare_profile_legend',
+                      'Climate sky profile legend')
+                  },
+                    h('span', { role: 'listitem', 'data-key': 'cloud' },
+                      h('i', { 'aria-hidden': 'true' }),
+                      t('stem.watercycle.pilot_compare_profile_legend_cloud', 'Cloud base')),
+                    h('span', { role: 'listitem', 'data-key': 'freezing' },
+                      h('i', { 'aria-hidden': 'true' }),
+                      t('stem.watercycle.pilot_compare_profile_legend_freezing', 'Freezing level')),
+                    h('span', { role: 'listitem', 'data-key': 'journey' },
+                      h('i', { 'aria-hidden': 'true' }),
+                      t('stem.watercycle.pilot_compare_profile_legend_journey', 'Live or pinned parcel')),
+                    h('span', { role: 'listitem', 'data-key': 'probe' },
+                      h('i', { 'aria-hidden': 'true' }),
+                      t('stem.watercycle.pilot_compare_profile_legend_probe', 'Altitude probe'))
+                  ),
+                  h('div', { className: 'wc-pilot-sky-profile-plot' },
+                    h('div', { className: 'wc-pilot-sky-profile-axis', 'aria-hidden': 'true' },
+                      h('span', { className: 'is-top' },
+                        Math.round(pilotComparisonProfileCeilingM / 1000) + ' km'),
+                      h('span', { className: 'is-middle' },
+                        Math.round(pilotComparisonProfileCeilingM / 2000) + ' km'),
+                      h('span', { className: 'is-surface' },
+                        t('stem.watercycle.pilot_compare_surface', 'Surface'))
+                    ),
+                    h('div', { className: 'wc-pilot-sky-profile-columns' },
+                      pilotComparisonRows.map(function(row) {
+                        var profileEvidence = row.pinned || (row.current ? currentPilotComparison : null);
+                        var profileState = row.pinned ? 'pinned' : (row.current ? 'live' : 'empty');
+                        var profileForm = profileEvidence
+                          ? (WCPK.forms[profileEvidence.form] || WCPK.forms.liquid) : null;
+                        var profileFreezing = pilotComparisonFreezingText(row);
+                        var profileProbeReading = pilotComparisonProbeReading(row);
+                        var profileEvidenceText = profileEvidence
+                          ? (profileState === 'pinned'
+                              ? t('stem.watercycle.pilot_compare_profile_pinned',
+                                  'Pinned: {form} at {altitude} m')
+                              : t('stem.watercycle.pilot_compare_profile_live',
+                                  'Live: {form} at {altitude} m'))
+                              .replace('{form}', profileForm.label)
+                              .replace('{altitude}', profileEvidence.altitudeM)
+                          : t('stem.watercycle.pilot_compare_profile_empty', 'No journey evidence');
+                        var profileProbeAria = t('stem.watercycle.pilot_compare_probe_scenario_aria',
+                          'At {altitude} metres: {result}. {detail}.')
+                            .replace('{altitude}', pilotComparisonProbeM)
+                            .replace('{result}', profileProbeReading.label)
+                            .replace('{detail}', profileProbeReading.detail);
+                        var profileAria = t('stem.watercycle.pilot_compare_profile_scenario_aria',
+                          '{scenario}. Cloud base {cloud} m. Freezing {freezing}. {evidence}.')
+                            .replace('{scenario}', row.scenario.label)
+                            .replace('{cloud}', Math.round(row.env.lclM))
+                            .replace('{freezing}', profileFreezing)
+                            .replace('{evidence}', profileEvidenceText) + ' ' + profileProbeAria;
+                        return h('article', {
+                          key: row.id,
+                          className: 'wc-pilot-sky-profile-column',
+                          'data-scenario': row.id,
+                          'data-state': profileState,
+                          'data-current': String(row.current),
+                          'data-cloud-base-m': Math.round(row.env.lclM),
+                          'data-freezing-m': Math.round(row.env.freezingM),
+                          'data-probe-state': profileProbeReading.key,
+                          'aria-label': profileAria
+                        },
+                          h('div', { className: 'wc-pilot-sky-profile-column-sky', 'aria-hidden': 'true' },
+                            h('span', {
+                              className: 'wc-pilot-sky-condition-zone is-cloud',
+                              'data-zone': 'cloud',
+                              'data-active': String(profileProbeReading.aboveCloudBase),
+                              style: {
+                                bottom: pilotComparisonProfilePercent(row.env.lclM) + '%',
+                                height: (100 - pilotComparisonProfilePercent(row.env.lclM)) + '%'
+                              }
+                            }),
+                            h('span', {
+                              className: 'wc-pilot-sky-condition-zone is-freezing',
+                              'data-zone': 'freezing',
+                              'data-active': String(profileProbeReading.atOrAboveFreezingLevel),
+                              'data-above-model': String(row.env.freezingM >= row.env.ceilingM),
+                              style: {
+                                bottom: pilotComparisonProfilePercent(row.env.freezingM) + '%',
+                                height: (100 - pilotComparisonProfilePercent(row.env.freezingM)) + '%'
+                              }
+                            }),
+                            h('span', { className: 'wc-pilot-sky-profile-midline' }),
+                            h('span', {
+                              className: 'wc-pilot-sky-probe-line',
+                              'data-probe-state': profileProbeReading.key,
+                              'data-edge': pilotComparisonProbeM === 0 ? 'surface'
+                                : (pilotComparisonProbeM === pilotComparisonProfileCeilingM ? 'top' : 'middle'),
+                              style: { bottom: pilotComparisonProfilePercent(pilotComparisonProbeM) + '%' }
+                            },
+                              h('i', null),
+                              h('b', {
+                                className: 'wc-pilot-sky-probe-temperature',
+                                'data-freezing': String(profileProbeReading.temperatureC <= 0)
+                              }, pilotComparisonProbeTemperatureText(
+                                profileProbeReading.temperatureC))
+                            ),
+                            h('span', {
+                              className: 'wc-pilot-sky-threshold is-freezing',
+                              'data-above-model': String(row.env.freezingM >= row.env.ceilingM),
+                              style: { bottom: pilotComparisonProfilePercent(row.env.freezingM) + '%' }
+                            }, h('i', null)),
+                            h('span', {
+                              className: 'wc-pilot-sky-threshold is-cloud',
+                              style: { bottom: pilotComparisonProfilePercent(row.env.lclM) + '%' }
+                            }, h('i', null)),
+                            profileEvidence && h('span', {
+                              className: 'wc-pilot-sky-journey-marker',
+                              'data-state': profileState,
+                              style: { bottom: pilotComparisonProfileMarkerPercent(profileEvidence.altitudeM) + '%' }
+                            }, h('i', null)),
+                            h('span', { className: 'wc-pilot-sky-profile-ground' })
+                          ),
+                          h('div', { className: 'wc-pilot-sky-profile-column-copy' },
+                            h('strong', null, row.scenario.label),
+                            h('span', { className: 'wc-pilot-sky-profile-values' },
+                              h('b', { 'data-value': 'cloud' }, Math.round(row.env.lclM) + ' m'),
+                              h('b', { 'data-value': 'freezing' }, profileFreezing)
+                            ),
+                            h('small', { 'data-state': profileState }, profileEvidenceText),
+                            h('span', {
+                              className: 'wc-pilot-sky-profile-probe-result',
+                              'data-probe-state': profileProbeReading.key
+                            },
+                              h('b', null, profileProbeReading.label),
+                              h('em', null, profileProbeReading.detail)
+                            )
+                          )
+                        );
+                      })
+                    )
+                  ),
+                  h('figcaption', { id: 'wcPilotSkyProfileCaption' },
+                    t('stem.watercycle.pilot_compare_profile_caption',
+                      'All four climates use the same 0-{ceiling} km model scale. Tinted sky above each marker shows where that threshold has been crossed; higher markers require a farther climb.')
+                      .replace('{ceiling}', Math.round(pilotComparisonProfileCeilingM / 1000)))
+                ),
+                h('div', { className: 'wc-pilot-compare-grid' },
+                  pilotComparisonRows.map(function(row) {
+                    var pinnedEvidence = row.pinned;
+                    var comparisonEvidence = pinnedEvidence || (row.current ? currentPilotComparison : null);
+                    var evidenceState = pinnedEvidence ? 'pinned' : (row.current ? 'live' : 'empty');
+                    var evidenceForm = comparisonEvidence
+                      ? (WCPK.forms[comparisonEvidence.form] || WCPK.forms.liquid) : null;
+                    var freezingValue = pilotComparisonFreezingText(row);
+                    return h('article', {
+                      key: row.id,
+                      className: 'wc-pilot-compare-card',
+                      'data-scenario': row.id,
+                      'data-current': String(row.current),
+                      'data-evidence': evidenceState
+                    },
+                      h('span', { className: 'wc-pilot-scenario-scene wc-pilot-compare-sky', 'aria-hidden': 'true' },
+                        h('i', { className: 'wc-pilot-scenario-sun' }),
+                        h('i', { className: 'wc-pilot-scenario-cloud' }),
+                        h('i', { className: 'wc-pilot-scenario-land' })),
+                      h('div', { className: 'wc-pilot-compare-card-body' },
+                        h('div', { className: 'wc-pilot-compare-card-head' },
+                          h('strong', null, row.scenario.label),
+                          h('span', { 'data-state': evidenceState },
+                            evidenceState === 'pinned'
+                              ? t('stem.watercycle.pilot_compare_pinned', 'Pinned')
+                              : evidenceState === 'live'
+                                ? t('stem.watercycle.pilot_compare_live', 'Live now')
+                                : t('stem.watercycle.pilot_compare_empty_short', 'Not pinned'))
+                        ),
+                        h('dl', {
+                          className: 'wc-pilot-compare-climate',
+                          'aria-label': t('stem.watercycle.pilot_compare_starting_air', 'Starting air')
+                        },
+                          h('div', null,
+                            h('dt', null, t('stem.watercycle.pilot_compare_surface', 'Surface')),
+                            h('dd', null, Math.round(row.env.surfaceTempC) + '°C')),
+                          h('div', null,
+                            h('dt', null, t('stem.watercycle.pilot_humidity', 'Humidity')),
+                            h('dd', null, Math.round(row.env.surfaceRH) + '%')),
+                          h('div', null,
+                            h('dt', null, t('stem.watercycle.pilot_compare_cloud_base', 'Cloud base')),
+                            h('dd', null, Math.round(row.env.lclM) + ' m')),
+                          h('div', null,
+                            h('dt', null, t('stem.watercycle.pilot_compare_freezing', 'Freezing')),
+                            h('dd', null, freezingValue))
+                        ),
+                        h('div', { className: 'wc-pilot-compare-evidence', 'data-state': evidenceState },
+                          h('span', { className: 'wc-pilot-compare-evidence-label' },
+                            evidenceState === 'pinned'
+                              ? t('stem.watercycle.pilot_compare_pinned_evidence', 'Pinned evidence')
+                              : evidenceState === 'live'
+                                ? t('stem.watercycle.pilot_compare_live_evidence', 'Live evidence')
+                                : t('stem.watercycle.pilot_compare_no_evidence', 'No journey evidence yet')),
+                          comparisonEvidence
+                            ? h('dl', null,
+                                h('div', null,
+                                  h('dt', null, t('stem.watercycle.pilot_compare_form', 'Form')),
+                                  h('dd', null, evidenceForm.label)),
+                                h('div', null,
+                                  h('dt', null, t('stem.watercycle.pilot_notebook_stages', 'Stages')),
+                                  h('dd', null, comparisonEvidence.stageCount + ' / ' + WCPK.stageOrder.length)),
+                                h('div', null,
+                                  h('dt', null, t('stem.watercycle.pilot_altitude', 'Altitude')),
+                                  h('dd', null, comparisonEvidence.altitudeM + ' m')),
+                                h('div', null,
+                                  h('dt', null, t('stem.watercycle.pilot_compare_optics', 'Optics')),
+                                  h('dd', null, comparisonEvidence.rainbowStage + ' / 4')))
+                            : h('p', null, t('stem.watercycle.pilot_compare_empty',
+                                'Run this scenario, then pin its evidence for comparison.'))
+                        ),
+                        h('button', {
+                          type: 'button',
+                          className: 'wc-pilot-compare-run',
+                          disabled: row.current,
+                          onClick: function() { chooseScenario(row.id); }
+                        }, row.current
+                          ? t('stem.watercycle.pilot_compare_live', 'Live now')
+                          : t('stem.watercycle.pilot_compare_run', 'Run this scenario'))
+                      )
+                    );
+                  })
+                ),
+                h('section', {
+                  className: 'wc-pilot-compare-synthesis',
+                  'data-ready': String(pilotComparisonSynthesisReady),
+                  'data-complete': String(pilotComparisonMissionComplete),
+                  'aria-labelledby': 'wcPilotCompareSynthesisTitle'
+                },
+                  pilotComparisonSynthesisReady
+                    ? h(React.Fragment, null,
+                        h('div', { className: 'wc-pilot-compare-synthesis-head' },
+                          h('span', { className: 'wc-pilot-compare-synthesis-seal', 'aria-hidden': 'true' }),
+                          h('div', null,
+                            h('span', { className: 'wc-pilot-compare-synthesis-kicker' },
+                              t('stem.watercycle.pilot_compare_synthesis_kicker',
+                                'Claim - evidence - reasoning')),
+                            h('h4', { id: 'wcPilotCompareSynthesisTitle' },
+                              t('stem.watercycle.pilot_compare_synthesis_title', 'Climate conclusion'))
+                          )
+                        ),
+                        h('div', { className: 'wc-pilot-compare-cer' },
+                          h('article', { 'data-part': 'claim' },
+                            h('span', null, t('stem.watercycle.pilot_compare_synthesis_claim_label', 'Claim')),
+                            h('p', null, pilotComparisonClaim)
+                          ),
+                          h('article', { 'data-part': 'evidence' },
+                            h('span', null, t('stem.watercycle.pilot_compare_synthesis_evidence_label', 'Evidence')),
+                            h('p', null, pilotComparisonEvidence)
+                          ),
+                          h('article', { 'data-part': 'reasoning' },
+                            h('span', null, t('stem.watercycle.pilot_compare_synthesis_reasoning_label', 'Reasoning')),
+                            h('p', null, pilotComparisonReasoning)
+                          )
+                        ),
+                        h('p', { className: 'wc-pilot-compare-method-note' },
+                          h('strong', null, t('stem.watercycle.pilot_compare_method_title',
+                            'Separate climate from piloting')),
+                          h('span', null, t('stem.watercycle.pilot_compare_method_copy',
+                            '{scenario} recorded the most stage evidence ({done} of {total}). Stage coverage reflects the route you flew, so it is not proof of a climate effect.')
+                              .replace('{scenario}', pilotPinnedMostStages.scenario.label)
+                              .replace('{done}', pilotPinnedMostStages.pinned.stageCount)
+                              .replace('{total}', WCPK.stageOrder.length))
+                        ),
+                        h('button', {
+                          type: 'button',
+                          className: 'wc-pilot-compare-notebook-btn',
+                          onClick: focusPilotComparisonNotebook
+                        }, t('stem.watercycle.pilot_compare_use_in_notebook',
+                          'Use this conclusion in Journey Notebook')),
+                        pilotComparisonMissionComplete
+                          ? h('p', { className: 'wc-pilot-compare-complete', role: 'status' },
+                              t('stem.watercycle.pilot_compare_conclusion_complete',
+                                'Four-climate evidence set complete. Your claim now spans every starting environment.'))
+                          : null
+                      )
+                    : h('div', { className: 'wc-pilot-compare-synthesis-locked' },
+                        h('span', { 'aria-hidden': 'true' }),
+                        h('div', null,
+                          h('h4', { id: 'wcPilotCompareSynthesisTitle' },
+                            t('stem.watercycle.pilot_compare_synthesis_locked_title',
+                              'Pin one more climate to unlock a conclusion')),
+                          h('p', null, t('stem.watercycle.pilot_compare_synthesis_locked_copy',
+                            'A scientific comparison needs evidence from at least two starting conditions.'))
+                        )
+                      )
+                )
               ),
 
               // ── Text alternative ─────────────────────────────────────────
+
+              // The notebook turns exploration into a durable learning artifact.
+              // Only bounded semantic evidence is listed here; the 3D scene,
+              // pointer history, and frame data never enter browser storage.
+              h('section', {
+                className: 'wc-pilot-notebook',
+                'data-autosave': String(notebookAutoSave),
+                'data-complete': String(coverage.complete),
+                'aria-labelledby': 'wcPilotNotebookTitle'
+              },
+                h('div', { className: 'wc-pilot-notebook-head' },
+                  h('div', { className: 'wc-pilot-notebook-title' },
+                    h('span', { className: 'wc-pilot-notebook-mark', 'aria-hidden': 'true' }),
+                    h('div', null,
+                    h('span', { className: 'wc-pilot-notebook-kicker' },
+                      t('stem.watercycle.pilot_local_learning_record', 'Local learning record')),
+                    h('h4', { id: 'wcPilotNotebookTitle' },
+                      t('stem.watercycle.pilot_notebook', 'Journey notebook')),
+                    h('p', null, t('stem.watercycle.pilot_notebook_intro',
+                      'Keep the pathway evidence, explain what changed in your thinking, and resume this journey later.'))
+                    )
+                  ),
+                  h('span', {
+                    className: 'wc-pilot-notebook-save-state',
+                    'data-state': !notebookStorageAvailable ? 'unavailable'
+                      : !notebookAutoSave ? 'off'
+                        : savedPilotNotebookIsCurrent ? 'saved' : 'ready'
+                  }, !notebookStorageAvailable
+                    ? t('stem.watercycle.pilot_notebook_storage_unavailable', 'Storage unavailable')
+                    : !notebookAutoSave
+                      ? t('stem.watercycle.pilot_notebook_autosave_off', 'Autosave off')
+                      : savedPilotNotebookIsCurrent
+                        ? t('stem.watercycle.pilot_notebook_saved_device', 'Saved on this device')
+                        : t('stem.watercycle.pilot_notebook_autosave_ready', 'Autosave ready'))
+                ),
+                h('dl', { className: 'wc-pilot-notebook-summary',
+                  'aria-label': t('stem.watercycle.pilot_notebook_summary', 'Journey notebook summary') },
+                  h('div', null,
+                    h('dt', null, t('stem.watercycle.pilot_notebook_stages', 'Stages')),
+                    h('dd', null, coverage.done + ' / ' + coverage.total)),
+                  h('div', null,
+                    h('dt', null, t('stem.watercycle.pilot_notebook_cycles', 'Cycles')),
+                    h('dd', null, String(totalPilotLoops))),
+                  h('div', null,
+                    h('dt', null, t('stem.watercycle.pilot_notebook_pathways', 'Pathways')),
+                    h('dd', null, String(pilotRouteRows.filter(function(route) { return route.count > 0; }).length) + ' / ' + pilotRouteRows.length)),
+                  h('div', null,
+                    h('dt', null, t('stem.watercycle.pilot_notebook_climates', 'Climates')),
+                    h('dd', null, pinnedPilotComparisonCount + ' / ' + pilotComparisonRows.length)),
+                  h('div', null,
+                    h('dt', null, t('stem.watercycle.pilot_notebook_changes', 'Changes')),
+                    h('dd', null, String(pilotNotebookChanges.length)))
+                ),
+                h('div', {
+                  className: 'wc-pilot-notebook-progress',
+                  role: 'progressbar',
+                  'aria-label': t('stem.watercycle.pilot_notebook_stage_progress', 'Water-cycle stages recorded'),
+                  'aria-valuenow': coverage.done,
+                  'aria-valuemin': 0,
+                  'aria-valuemax': coverage.total
+                },
+                  h('div', null,
+                    h('span', null, t('stem.watercycle.pilot_notebook_evidence_progress', 'Stage evidence')),
+                    h('strong', null, coverage.done + ' / ' + coverage.total)),
+                  h('span', { className: 'wc-pilot-notebook-progress-track', 'aria-hidden': 'true' },
+                    h('i', { style: { width: Math.round((coverage.done / Math.max(1, coverage.total)) * 100) + '%' } }))
+                ),
+                h('section', {
+                  className: 'wc-pilot-notebook-compare',
+                  'data-ready': String(pilotComparisonSynthesisReady),
+                  'aria-labelledby': 'wcPilotNotebookCompareTitle'
+                },
+                  h('div', { className: 'wc-pilot-notebook-compare-head' },
+                    h('strong', { id: 'wcPilotNotebookCompareTitle' },
+                      t('stem.watercycle.pilot_notebook_compare_title',
+                        'Climate comparison evidence')),
+                    h('span', null, t('stem.watercycle.pilot_notebook_compare_count',
+                      '{done} of {total} climates pinned')
+                        .replace('{done}', pinnedPilotComparisonCount)
+                        .replace('{total}', pilotComparisonRows.length))
+                  ),
+                  pilotPinnedComparisonRows.length
+                    ? h('ul', { className: 'wc-pilot-notebook-climates' },
+                        pilotPinnedComparisonRows.map(function(row) {
+                          var pinnedForm = WCPK.forms[row.pinned.form] || WCPK.forms.liquid;
+                          return h('li', { key: row.id, 'data-scenario': row.id },
+                            h('span', { className: 'wc-pilot-notebook-climate-mark', 'aria-hidden': 'true' }),
+                            h('div', { className: 'wc-pilot-notebook-climate-copy' },
+                              h('strong', null, row.scenario.label),
+                              h('small', null, t('stem.watercycle.pilot_notebook_compare_journey',
+                                '{form} at {altitude} m - {stages} of {total} stages')
+                                  .replace('{form}', pinnedForm.label)
+                                  .replace('{altitude}', row.pinned.altitudeM)
+                                  .replace('{stages}', row.pinned.stageCount)
+                                  .replace('{total}', WCPK.stageOrder.length))
+                            ),
+                            h('dl', null,
+                              h('div', null,
+                                h('dt', null, t('stem.watercycle.pilot_compare_cloud_base', 'Cloud base')),
+                                h('dd', null, Math.round(row.env.lclM) + ' m')),
+                              h('div', null,
+                                h('dt', null, t('stem.watercycle.pilot_humidity', 'Humidity')),
+                                h('dd', null, Math.round(row.env.surfaceRH) + '%')),
+                              h('div', null,
+                                h('dt', null, t('stem.watercycle.pilot_compare_freezing', 'Freezing')),
+                                h('dd', null, pilotComparisonFreezingText(row)))
+                            )
+                          );
+                        }))
+                    : h('p', { className: 'wc-pilot-notebook-compare-empty' },
+                        t('stem.watercycle.pilot_notebook_compare_empty',
+                          'Pin a climate journey in the Comparison Lab to add evidence here.')),
+                  pilotComparisonSynthesisReady
+                    ? h('div', { className: 'wc-pilot-notebook-compare-cer', role: 'note' },
+                        h('p', { 'data-part': 'claim' },
+                          h('strong', null, t('stem.watercycle.pilot_compare_synthesis_claim_label', 'Claim')),
+                          h('span', null, pilotComparisonClaim)),
+                        h('p', { 'data-part': 'evidence' },
+                          h('strong', null, t('stem.watercycle.pilot_compare_synthesis_evidence_label', 'Evidence')),
+                          h('span', null, pilotComparisonEvidence)),
+                        h('p', { 'data-part': 'reasoning' },
+                          h('strong', null, t('stem.watercycle.pilot_compare_synthesis_reasoning_label', 'Reasoning')),
+                          h('span', null, pilotComparisonReasoning))
+                      )
+                    : h('p', { className: 'wc-pilot-notebook-compare-hint' },
+                        t('stem.watercycle.pilot_notebook_compare_hint',
+                          'Pin at least two climates to unlock a claim, evidence, and reasoning receipt.'))
+                ),
+                h('div', { className: 'wc-pilot-notebook-reflection' },
+                  h('label', { htmlFor: 'wcPilotNotebookReflection' },
+                    t('stem.watercycle.pilot_notebook_reflection_label', 'What changed in your thinking?')),
+                  h('textarea', {
+                    id: 'wcPilotNotebookReflection',
+                    value: notebookReflection,
+                    rows: 4,
+                    maxLength: WCPN.MAX_REFLECTION,
+                    disabled: !onboardingComplete,
+                    'aria-describedby': 'wcPilotNotebookReflectionHelp',
+                    placeholder: t('stem.watercycle.pilot_notebook_reflection_placeholder',
+                      'Use evidence from a phase change, pathway, or scenario comparison...'),
+                    onChange: function(event) {
+                      setNotebookStatus('', {
+                        reflection: event.target.value.slice(0, WCPN.MAX_REFLECTION),
+                        dirty: true
+                      });
+                    },
+                    onBlur: function() {
+                      if (notebookAutoSave && onboardingComplete) {
+                        savePilotNotebook('reflection', null, true);
+                      }
+                    }
+                  }),
+                  h('div', { id: 'wcPilotNotebookReflectionHelp', className: 'wc-pilot-notebook-help' },
+                    h('span', null, onboardingComplete
+                      ? t('stem.watercycle.pilot_notebook_reflection_help',
+                          'Connect a claim to evidence from the simulation. Agreement is not required.')
+                      : t('stem.watercycle.pilot_notebook_start_help',
+                          'Start or resume a journey to add a reflection.')),
+                    h('span', null, notebookReflection.length + ' / ' + WCPN.MAX_REFLECTION)
+                  )
+                ),
+                h('div', { className: 'wc-pilot-notebook-trail',
+                  'aria-labelledby': 'wcPilotNotebookTrailTitle' },
+                  h('div', { className: 'wc-pilot-notebook-trail-head' },
+                    h('strong', { id: 'wcPilotNotebookTrailTitle' },
+                      t('stem.watercycle.pilot_notebook_recent_evidence', 'Recent transition evidence')),
+                    h('span', null, t('stem.watercycle.pilot_notebook_bounded',
+                      'Newest {shown} of {total} saved changes')
+                      .replace('{shown}', Math.min(6, pilotNotebookChanges.length))
+                      .replace('{total}', pilotNotebookChanges.length))
+                  ),
+                  pilotNotebookChanges.length
+                    ? h('ol', null, pilotNotebookChanges.slice(-6).reverse().map(function(change) {
+                        var changeMeta = pilotTransitionMeta(change);
+                        return changeMeta && h('li', { key: change.id },
+                          h('strong', null, changeMeta.from + ' ' + String.fromCharCode(8594) + ' ' + changeMeta.to),
+                          h('span', null, changeMeta.process + ' - ' + changeMeta.evidence));
+                      }))
+                    : h('p', { className: 'wc-pilot-notebook-empty' },
+                        t('stem.watercycle.pilot_notebook_no_changes',
+                          'No water-form changes have been recorded yet.'))
+                ),
+                h('div', { className: 'wc-pilot-notebook-actions', role: 'group',
+                  'aria-label': t('stem.watercycle.pilot_notebook_actions', 'Journey notebook actions') },
+                  h('button', {
+                    type: 'button',
+                    className: 'wc-pilot-notebook-btn is-primary',
+                    disabled: !notebookStorageAvailable || !onboardingComplete,
+                    onClick: function() { savePilotNotebook('manual'); }
+                  }, t('stem.watercycle.pilot_notebook_save', 'Save notebook')),
+                  h('button', {
+                    type: 'button',
+                    className: 'wc-pilot-notebook-btn',
+                    disabled: !onboardingComplete,
+                    onClick: downloadPilotNotebook
+                  }, t('stem.watercycle.pilot_notebook_download', 'Download readable report')),
+                  h('button', {
+                    type: 'button',
+                    className: 'wc-pilot-notebook-btn',
+                    disabled: !onboardingComplete,
+                    onClick: printPilotNotebook
+                  }, t('stem.watercycle.pilot_notebook_print', 'Print / Save PDF')),
+                  notebookAutoSave
+                    ? h('button', {
+                        type: 'button',
+                        className: 'wc-pilot-notebook-btn is-clear',
+                        disabled: !notebookStorageAvailable,
+                        onClick: disablePilotNotebookAutosave
+                      }, t('stem.watercycle.pilot_notebook_remove_copy', 'Remove device copy'))
+                    : h('button', {
+                        type: 'button',
+                        className: 'wc-pilot-notebook-btn is-enable',
+                        disabled: !notebookStorageAvailable || !onboardingComplete,
+                        onClick: enablePilotNotebookAutosave
+                      }, t('stem.watercycle.pilot_notebook_enable_autosave', 'Enable autosave'))
+                ),
+                h('p', { className: 'wc-pilot-notebook-privacy', role: 'note' },
+                  t('stem.watercycle.pilot_notebook_privacy',
+                    'Saved only in this browser on this device. No name, account, or location is stored.')),
+                notebookUi.status && pilotNotebookStatusMessage(notebookUi.status) && h('p', {
+                  className: 'wc-pilot-notebook-status',
+                  role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'
+                }, pilotNotebookStatusMessage(notebookUi.status))
+              ),
+
               h('details', { className: 'wc-pilot-alt' },
                 h('summary', null, t('stem.watercycle.pilot_text_description_of_the_3d_scene', 'Text description of the 3D scene')),
                 h('p', null, textAlternative)
@@ -21721,6 +25207,8 @@ const d = labToolData.waterCycle || {};
             }).filter(function(stage) { return !!stage; });
           }
           var wcCausalActive = wcCausalChain.length > 0;
+          // Keep the legacy wcPrediction persistence key, but present this
+          // post-comparison task honestly as evidence interpretation.
           var wcPrediction = WATER_CYCLE_PREDICTIONS[d.wcPrediction] ? d.wcPrediction : '';
           var wcPredictionAnswer = '';
           var wcPredictionMatched = null;
@@ -21760,8 +25248,8 @@ const d = labToolData.waterCycle || {};
               wcPredictionMatched = wcPrediction === wcPredictionAnswer;
               var predictionAnswer = WATER_CYCLE_PREDICTIONS[wcPredictionAnswer];
               wcPredictionFeedback = wcPredictionMatched
-                ? 'Matched: ' + predictionAnswer.label + ' was the strongest modeled shift.'
-                : 'The strongest modeled shift was ' + predictionAnswer.label.toLowerCase() + '. Use the comparison values as evidence.';
+                ? 'Evidence agrees: ' + predictionAnswer.label + ' was the strongest modeled shift.'
+                : 'Evidence differs from your claim: the strongest modeled shift was ' + predictionAnswer.label.toLowerCase() + '.';
               if (wcPredictionAnswer === 'runoff') {
                 wcPredictionEvidence = 'Evidence to check: runoff ' + formatWcDelta(wcRunoffDelta, ' pts', 0) + '; infiltration ' + formatWcDelta(wcInfiltrationDelta, ' pts', 0) + '.';
               } else if (wcPredictionAnswer === 'infiltration') {
@@ -21787,21 +25275,21 @@ const d = labToolData.waterCycle || {};
           var wcPredictionAnswerLabel = wcPredictionAnswer && WATER_CYCLE_PREDICTIONS[wcPredictionAnswer] ? WATER_CYCLE_PREDICTIONS[wcPredictionAnswer].label : '';
           var wcDataEvidenceStatus = wcPrediction
             ? (wcPredictionAnswerLabel
-              ? (wcPredictionMatched ? 'Matched: ' + wcPredictionLabel : 'Hypothesis: ' + wcPredictionLabel + "; Evidence: " + wcPredictionAnswerLabel)
-              : 'Hypothesis recorded: ' + wcPredictionLabel)
-            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Prediction pending' : 'No prediction recorded');
+              ? (wcPredictionMatched ? 'Evidence agrees with claim: ' + wcPredictionLabel : 'Claim: ' + wcPredictionLabel + "; strongest modeled shift: " + wcPredictionAnswerLabel)
+              : 'Claim selected: ' + wcPredictionLabel)
+            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Evidence claim pending' : 'No evidence claim selected');
           var wcDataEvidenceDetail = wcPrediction
             ? (wcPredictionEvidence || 'Compare the baseline and current values as evidence.')
-            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Choose a hypothesis before reviewing the evidence.' : 'Save a baseline, then adjust a control to compare a new scenario.');
+            : (wcScenarioBaseline && wcScenarioChanges.length ? 'Read the comparison, then select the claim it supports.' : 'Save a baseline, then adjust a control to compare a new scenario.');
           var wcScenarioWorkflowStatus = !wcScenarioBaseline
             ? 'Start with a baseline: adjust a control or choose a preset; the previous state is saved automatically.'
             : !wcScenarioChanges.length
               ? 'Baseline ready: change one control or choose a preset to create a comparison.'
               : !wcPrediction
-                ? 'Comparison ready: record a prediction before reading the evidence.'
+                ? 'Comparison ready: read the evidence and select the strongest modeled shift.'
                 : wcObservationSaved
                   ? 'Observation saved: restore the baseline or change one control to begin a new comparison.'
-                  : 'Prediction recorded: compare the bars and pathway mix as evidence, then save the observation.';
+                  : 'Evidence claim selected: compare the bars and pathway mix, then save the observation.';
           var wcDataTrailStatus = wcReplayedObservation
             ? 'Replay active; ' + wcExperimentLog.length + '/4 observations saved'
             : wcExperimentLog.length
@@ -21810,8 +25298,8 @@ const d = labToolData.waterCycle || {};
           var wcDataTrailDetail = wcReplayedObservation
             ? 'Replaying: ' + wcReplayedObservation + '. Adjust a control to branch from this observation.'
             : wcExperimentLog.length
-              ? 'The trail preserves recent hypotheses, modeled evidence, pathway-mix snapshots, and qualitative deltas.'
-              : 'Save an observation after making a prediction to build a trail.';
+              ? 'The trail preserves recent claims, modeled evidence, pathway-mix snapshots, and qualitative deltas.'
+              : 'Save an observation after interpreting the evidence to build a trail.';
           var wcDataViewStatus = currentStageLabel + ' selected. ' +
             'Climate ' + currentTemp + ' degrees C, solar ' + currentSolar.toFixed(2) + ' times baseline, wind ' + currentWind.toFixed(1) + ' times baseline. ' +
             'Land routing indices: runoff ' + runoffTendency + ' of 100; infiltration ' + infiltrationOpportunity + ' of 100. ' +
@@ -22244,7 +25732,8 @@ const d = labToolData.waterCycle || {};
             : t('stem.watercycle.watch_water_move_between_ocean_air_land', 'Watch water move between ocean, air, land, and plants. Then try one change to see what shifts.');
 
           return React.createElement("div", {
-              className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "text-slate-100" : "text-slate-800"),
+              className: "wc-explorer-root max-w-3xl mx-auto animate-in fade-in duration-200 " + (isDark ? "dark text-slate-100" : "text-slate-800"),
+              style: isDark ? { background: "#0f172a", borderRadius: 12 } : undefined,
               "data-wc-focus-mode": String(wcFocusMode),
               role: "region",
               "aria-label": t('stem.watercycle.water_cycle_keyboard_shortcuts_1_throu', "Water Cycle. Keyboard shortcuts: 1 through 6 select a stage, G starts or stops the Guided Walkthrough, J toggles Journey mode, R U P choose your journey path, Escape exits Focus Canvas mode."),
@@ -22366,22 +25855,22 @@ const d = labToolData.waterCycle || {};
                       React.createElement("small", null, t('stem.watercycle.test_sunlight_temperature_or_wind', "Test sunlight, temperature, or wind"))
                     )
                   ),
-                  // Card 3 now opens the flagship. There used to be three separate
+                  // Card 3 now opens the piloted 3D simulation. There used to be three separate
                   // doors into 3D - this card, the "Droplet Journey" segment in
                   // Choose a view, and a "Play the droplet journey" button about
                   // 2,000 pixels below - all leading to the same guided view. The
                   // guided view keeps its door in Choose a view, where it belongs
                   // as a way of drawing the canvas; this card, which is the page's
                   // primary call to action, points at the mode built to be the
-                  // tool's centrepiece.
+                  // piloted water-parcel simulation.
                   React.createElement("button", {
-                    type: "button", className: "wc-start-action wc-start-action-flagship", onClick: function() { switchMode('pilot'); },
-                    "aria-label": "Be the Water: pilot one parcel of water through every stage of the cycle in 3D"
+                    type: "button", className: "wc-start-action wc-start-action-pilot", onClick: function() { switchMode('pilot'); },
+                    "aria-label": "Be the Water: interactive 3D simulation of one water parcel moving through states and pathways"
                   },
                     React.createElement("span", { className: "wc-start-number", "aria-hidden": "true" }, "3"),
                     React.createElement("span", null,
                       React.createElement("strong", null, "Be the water"),
-                      React.createElement("small", null, "Fly one parcel through every form")
+                      React.createElement("small", null, "Pilot one parcel through changing states and pathways")
                     )
                   )
                 )
@@ -23610,7 +27099,7 @@ React.createElement("div", {
                 "Qualitative teaching indices, not measured percentages or a forecast. They are independent: water can also be stored, evaporated, taken up by organisms, or move laterally. Infiltration does not automatically become groundwater recharge."
               )
             ),
-            wcScenarioBaseline && React.createElement("div", {
+            wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {
               className: "wc-compare-strip",
               role: "region",
               "aria-label": "Scenario comparison",
@@ -23671,12 +27160,13 @@ React.createElement("div", {
               ),
               React.createElement("div", {
                 className: "wc-compare-bars",
-                "aria-label": "Visual comparison of baseline and current values"
+                "aria-label": "Visual comparison of baseline and current values",
+                "aria-describedby": "wcScenarioWorkflowStatus"
               },
                 React.createElement("div", {
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x, current " + evaporationIndex.toFixed(2) + "x" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? ". Prediction evidence to check." : "")
+                  "aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2) + "x, current " + evaporationIndex.toFixed(2) + "x" + (wcPredictionEvidenceMetrics.indexOf("evaporation") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Evaporation"),
@@ -23709,7 +27199,7 @@ React.createElement("div", {
                 React.createElement("div", {
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff + " of 100, current " + runoffTendency + " of 100" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? ". Prediction evidence to check." : "")
+                  "aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff + " of 100, current " + runoffTendency + " of 100" + (wcPredictionEvidenceMetrics.indexOf("runoff") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Runoff"),
@@ -23742,7 +27232,7 @@ React.createElement("div", {
                 React.createElement("div", {
                   className: "wc-compare-bar-card" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? " is-prediction-evidence" : ""),
                   role: "group",
-                  "aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration + " of 100, current " + infiltrationOpportunity + " of 100" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? ". Prediction evidence to check." : "")
+                  "aria-label": "Infiltration baseline " + wcBaselineLandIndices.infiltration + " of 100, current " + infiltrationOpportunity + " of 100" + (wcPredictionEvidenceMetrics.indexOf("infiltration") >= 0 ? ". Evidence for the claim check." : "")
                 },
                   React.createElement("div", { className: "wc-compare-bar-label" },
                     React.createElement("span", null, "Infiltration"),
@@ -23814,24 +27304,25 @@ React.createElement("div", {
             ),
             wcScenarioBaseline && wcScenarioChanges.length && React.createElement("div", {
               className: "wc-prediction-strip" + (wcPrediction ? " is-answered" : ""),
+              "data-watercycle-evidence-interpretation": "true",
               role: "region",
-              "aria-label": "Prediction check",
+              "aria-label": "Scenario evidence interpretation",
               "aria-live": wcPrediction ? "polite" : undefined
             },
               React.createElement("div", { className: "wc-prediction-copy" },
-                React.createElement("span", { className: "wc-prediction-kicker" }, "Predict first"),
+                React.createElement("span", { className: "wc-prediction-kicker" }, wcPrediction ? "Read the evidence" : "Make a prediction"),
                 React.createElement("strong", null, wcPrediction
-                  ? (wcPredictionMatched ? "Your hypothesis matched the strongest shift." : "Compare your hypothesis with the strongest shift.")
+                  ? (wcPredictionMatched ? "The evidence agrees with your claim." : "The evidence differs from your claim.")
                   : "Before reading the evidence, what will shift most?"),
                 React.createElement("span", null, wcPrediction
                   ? wcPredictionFeedback
-                  : "Choose one, then use the comparison values as evidence."),
+                  : "Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score."),
                 wcPrediction && wcPredictionEvidence && React.createElement("span", { className: "wc-prediction-evidence" }, wcPredictionEvidence)
               ),
               !wcPrediction && React.createElement("div", {
                 className: "wc-prediction-options",
                 role: "group",
-                "aria-label": "Choose a predicted scenario shift"
+                "aria-label": "Choose the strongest modeled shift"
               },
                 Object.keys(WATER_CYCLE_PREDICTIONS).map(function(predictionId) {
                   var prediction = WATER_CYCLE_PREDICTIONS[predictionId];
@@ -23839,7 +27330,7 @@ React.createElement("div", {
                     key: predictionId,
                     type: "button",
                     className: "wc-prediction-option",
-                    "aria-label": "Predict " + prediction.label,
+                    "aria-label": "Choose " + prediction.label + " as the strongest modeled shift",
                     onClick: function() { recordWcPrediction(predictionId); }
                   },
                     React.createElement("span", { "aria-hidden": "true" }, prediction.emoji),
@@ -23849,9 +27340,9 @@ React.createElement("div", {
               ),
               wcPrediction && WATER_CYCLE_PREDICTIONS[wcPrediction] && React.createElement("div", { className: "wc-prediction-result" },
                 React.createElement("span", {
-                  className: "wc-prediction-result-badge " + (wcPredictionMatched ? "is-match" : "is-mismatch")
-                }, wcPredictionMatched ? "Match" : "Evidence"),
-                React.createElement("span", null, "You chose " + WATER_CYCLE_PREDICTIONS[wcPrediction].label + "."),
+                  className: "wc-prediction-result-badge " + (wcPredictionMatched ? "is-agrees" : "is-differs")
+                }, wcPredictionMatched ? "Agrees" : "Differs"),
+                React.createElement("span", null, "Your claim: " + WATER_CYCLE_PREDICTIONS[wcPrediction].label + "."),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset wc-prediction-save",
@@ -23862,9 +27353,9 @@ React.createElement("div", {
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset",
-                  "aria-label": "Make a new scenario prediction",
+                  "aria-label": "Choose a different evidence claim",
                   onClick: resetWcPrediction
-                }, "Predict again")
+                }, "Choose again")
               )
             ),
             wcExperimentLog.length > 0 && React.createElement("div", {
@@ -23884,7 +27375,7 @@ React.createElement("div", {
                     "aria-atomic": "true"
                   }, wcReplayedObservation
                     ? "Replaying: " + wcReplayedObservation + ". Adjust a control to branch from this observation."
-                    : "Revisit what you predicted and what the evidence showed.")
+                    : "Revisit the claim you selected and what the modeled evidence showed.")
                 ),
                 wcReplayedObservation && React.createElement("span", { className: "wc-experiment-log-replay-badge", "aria-hidden": "true" }, "Replay active"),
                 React.createElement("button", {
@@ -23916,13 +27407,13 @@ React.createElement("div", {
                     key: entry.key || entry.savedAt || entryIndex,
                     className: "wc-log-entry",
                     role: "listitem",
-                    "aria-label": (entry.label || "Custom controls") + ". " + (entry.matched ? "Prediction matched the evidence." : "Prediction differed from the evidence.") + " Hypothesis: " + prediction.label + ". Evidence: " + evidenceLabel + "." + routeMixAccessibility
+                    "aria-label": (entry.label || "Custom controls") + ". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim. Claim: " + prediction.label + ". Strongest modeled shift: " + evidenceLabel + "." + routeMixAccessibility
                   },
                     React.createElement("span", { className: "wc-log-entry-index", "aria-hidden": "true" }, String(wcExperimentLog.length - entryIndex)),
                     React.createElement("div", { className: "wc-log-entry-copy" },
                       React.createElement("strong", null, entry.label || "Custom controls"),
-                      React.createElement("span", null, (entry.matched ? "Matched" : "Evidence differed") + " · Hypothesis: " + prediction.shortLabel),
-                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Evidence: " + evidenceLabel),
+                      React.createElement("span", null, (entry.matched ? "Evidence agrees" : "Evidence differs") + " · Claim: " + prediction.shortLabel),
+                      React.createElement("span", { className: "wc-log-entry-evidence" }, "Strongest modeled shift: " + evidenceLabel),
                       hasRouteShares && React.createElement("span", { className: "wc-log-entry-route-mix" }, "Path mix (relative): Runoff " + routeShares.runoff + "% · Underground " + routeShares.infiltration + "% · Plant " + routeShares.plant + "%"),
                       React.createElement("small", null, "Evap " + formatWcDelta(evaporationDelta, "x", 2) + " · Runoff " + formatWcDelta(runoffDelta, "", 0) + " · Infiltration " + formatWcDelta(infiltrationDelta, "", 0))
                     ),

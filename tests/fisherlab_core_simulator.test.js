@@ -17,6 +17,32 @@ describe('Fisher Lab core mission profiles', () => {
     expect(core.getCoreSimProfile('greatlakes')).toMatchObject({ targetFishId: 'laketrout', trapCatch: 'crayfish' });
   });
 
+  it('builds each regional planning brief from established port, mission, and traffic data', () => {
+    const { getCoreTrainingChartBrief } = window.__FisherLabCore;
+    const expected = {
+      maine: { portName: 'Portland Harbor', destination: 'Halfway Rock', targetFish: 'Atlantic cod', trapCatch: 'lobster', trafficVessel: 'Casco Bay ferry', waterContext: 'tidal coastal water', detailMode: 'portland-detail' },
+      chesapeake: { portName: 'Annapolis', destination: 'Thomas Point grounds', targetFish: 'striped bass', trapCatch: 'blue crab', trafficVessel: 'sailing vessel', waterContext: 'tidal coastal water', detailMode: 'regional-schematic' },
+      pnw: { portName: 'Anacortes', destination: 'Burrows Island grounds', targetFish: 'Chinook salmon', trapCatch: 'Dungeness crab', trafficVessel: 'channel ferry', waterContext: 'tidal coastal water', detailMode: 'regional-schematic' },
+      greatlakes: { portName: 'Sault Ste. Marie', destination: 'Point Iroquois grounds', targetFish: 'lake trout', trapCatch: 'crayfish', trafficVessel: 'lake freighter', waterContext: 'non-tidal freshwater channel', detailMode: 'regional-schematic' }
+    };
+
+    Object.entries(expected).forEach(([region, facts]) => {
+      const brief = getCoreTrainingChartBrief(region);
+      expect(brief).toMatchObject({ region, ...facts, buoyage: 'IALA-B' });
+      expect(brief.landmarks.length).toBeGreaterThan(2);
+      expect(brief.authority).toBeTruthy();
+    });
+  });
+
+  it('returns an isolated brief and safely falls back to the shipped Maine detail', () => {
+    const { getCoreTrainingChartBrief } = window.__FisherLabCore;
+    const first = getCoreTrainingChartBrief('chesapeake');
+    first.landmarks.push('Invented waypoint');
+
+    expect(getCoreTrainingChartBrief('chesapeake').landmarks).not.toContain('Invented waypoint');
+    expect(getCoreTrainingChartBrief('unknown')).toMatchObject({ region: 'maine', portName: 'Portland Harbor', detailMode: 'portland-detail' });
+  });
+
   it('requires every learning objective before a safe return can complete the mission', () => {
     const { isCoreMissionReady } = window.__FisherLabCore;
     const complete = {
@@ -32,6 +58,47 @@ describe('Fisher Lab core mission profiles', () => {
     Object.keys(complete).forEach((key) => {
       expect(isCoreMissionReady({ ...complete, [key]: false })).toBe(false);
     });
+  });
+});
+
+describe('Fisher Lab section scope contract', () => {
+  const scope = (tab, region) => window.__FisherLabCore.getCoreSectionScope(tab, region);
+
+  it('classifies adapted, shared, and Maine-curriculum sections conservatively', () => {
+    ['home', 'journal', 'sim', 'chart', 'species', 'regs'].forEach((tab) => {
+      expect(scope(tab, 'chesapeake').scope).toBe('regional');
+    });
+    ['buoyage', 'colregs', 'vhf', 'knots'].forEach((tab) => {
+      expect(scope(tab, 'greatlakes').scope).toBe('shared');
+    });
+    ['aqcond', 'weather', 'tides', 'quiz', 'regional', 'not-a-tab', '__proto__'].forEach((tab) => {
+      expect(scope(tab, 'pnw').scope).toBe('maine-curriculum');
+    });
+  });
+
+  it('returns truthful context for a persistent non-Maine banner', () => {
+    expect(scope('sim', 'chesapeake')).toMatchObject({
+      tabId: 'sim',
+      region: 'chesapeake',
+      regionLabel: 'Chesapeake Bay',
+      authority: 'Maryland Department of Natural Resources',
+      scope: 'regional',
+      visible: true,
+      title: 'Chesapeake Bay profile active'
+    });
+    expect(scope('sim', 'chesapeake').message).toContain('adapts');
+    expect(scope('colregs', 'greatlakes').message).toContain('verify local requirements');
+    expect(scope('weather', 'chesapeake').message).toContain('uses Maine curriculum examples');
+    expect(scope('sim', 'toString')).toMatchObject({ region: 'maine', scope: 'regional', visible: false });
+  });
+
+  it('names the selected region gear action instead of always claiming lobster', () => {
+    const { getCoreTrapActionLabel } = window.__FisherLabCore;
+
+    expect(getCoreTrapActionLabel('maine')).toBe('Haul lobster trap');
+    expect(getCoreTrapActionLabel('chesapeake')).toBe('Haul blue crab pot');
+    expect(getCoreTrapActionLabel('pnw')).toBe('Haul Dungeness crab pot');
+    expect(getCoreTrapActionLabel('greatlakes')).toBe('Inspect crayfish gear');
   });
 });
 
@@ -167,6 +234,55 @@ describe('Fisher Lab voyage progression', () => {
     expect(trail).toHaveLength(6);
     expect(trail.map((entry) => entry.bearing)).toEqual([2, 3, 4, 5, 6, 7]);
     expect(appendCoreRadarPlot([], 0, -4, 6)[0].range).toBe(0);
+  });
+
+  it('canonicalizes hostile navigation numbers without hangs or non-finite output', () => {
+    const {
+      appendCoreRadarPlot,
+      summarizeCoreRadarTrail,
+      evaluateCoreCollisionRisk,
+      evaluateCoreManeuver,
+      getCoreManeuverWindow,
+      getCoreRadarPlotPoint
+    } = window.__FisherLabCore;
+    const trail = appendCoreRadarPlot(
+      [{ bearing: Number.POSITIVE_INFINITY, range: Number.POSITIVE_INFINITY }],
+      725,
+      1e308,
+      Number.POSITIVE_INFINITY
+    );
+
+    expect(trail).toEqual([{ bearing: 0, range: 0 }, { bearing: 5, range: 1000 }]);
+    const summary = summarizeCoreRadarTrail([
+      { bearing: Number.POSITIVE_INFINITY, range: Number.POSITIVE_INFINITY },
+      { bearing: Number.NEGATIVE_INFINITY, range: Number.NEGATIVE_INFINITY }
+    ]);
+    const risk = evaluateCoreCollisionRisk(
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY
+    );
+    const maneuver = evaluateCoreManeuver('give-way',
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      Number.POSITIVE_INFINITY,
+      Number.NEGATIVE_INFINITY,
+      Number.POSITIVE_INFINITY
+    );
+    const windowState = getCoreManeuverWindow(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+    const plotPoint = getCoreRadarPlotPoint(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+
+    expect(summary).toMatchObject({ bearingChange: 0, rangeChange: 0, trend: 'steady-range' });
+    expect(risk).toMatchObject({ id: 'monitoring', bearingChange: 0, rangeChange: 0 });
+    expect(maneuver).toMatchObject({ criterionOne: true, criterionTwo: false, complete: false });
+    expect(windowState).toMatchObject({ duration: 20, elapsed: 0, remaining: 20, remainingPct: 100 });
+    [summary, risk, maneuver, windowState, plotPoint].forEach((record) => {
+      Object.values(record).filter((value) => typeof value === 'number').forEach((value) => {
+        expect(Number.isFinite(value)).toBe(true);
+      });
+    });
   });
 
   it('summarizes radar evidence for the post-encounter replay', () => {
@@ -314,15 +430,303 @@ describe('Fisher Lab catch evidence', () => {
     const { appendCoreCatchDecision } = window.__FisherLabCore;
     let history = [];
     for (let index = 0; index < 5; index += 1) {
-      history = appendCoreCatchDecision(history, { kind: index % 2 ? 'shellfish' : 'finfish', label: 'Catch ' + index, length: index === 4 ? 'bad' : 10 + index, action: index % 2 ? 'release' : 'keep', correct: index !== 3, evidence: 'Evidence ' + index });
+      history = appendCoreCatchDecision(history, {
+        kind: index % 2 ? 'shellfish' : 'finfish',
+        speciesId: 'cod',
+        label: 'Catch ' + index,
+        length: index === 4 ? 'bad' : 10 + index,
+        action: index % 2 ? 'release' : 'keep',
+        correct: index !== 3,
+        evidence: 'Evidence ' + index,
+        ts: 1000 + index,
+        practiceTargetSpeciesId: 'cod',
+        practiceFocusSkill: 'transfer',
+        correctionReviewedAt: 900
+      });
     }
 
     expect(history).toHaveLength(4);
     expect(history[0]).toMatchObject({ label: 'Catch 1', kind: 'shellfish', action: 'release' });
     expect(history[2]).toMatchObject({ label: 'Catch 3', correct: false });
-    expect(history[3]).toMatchObject({ label: 'Catch 4', length: null });
+    expect(history[3]).toMatchObject({
+      label: 'Catch 4',
+      speciesId: 'cod',
+      length: null,
+      ts: 1004,
+      practiceTargetSpeciesId: 'cod',
+      practiceFocusSkill: 'transfer',
+      correctionReviewedAt: 900
+    });
   });
 });
+
+describe('Fisher Lab focused-practice transfer evidence', () => {
+  const transferNote = (overrides = {}) => ({
+    kind: 'finfish',
+    speciesId: 'cod',
+    correct: true,
+    ts: 101,
+    practiceTargetSpeciesId: 'cod',
+    practiceFocusSkill: 'transfer',
+    correctionReviewedAt: 100,
+    ...overrides
+  });
+
+  it('requires a strictly newer correct target decision', () => {
+    const { getCorePracticeTransferResult } = window.__FisherLabCore;
+
+    expect(getCorePracticeTransferResult([])).toMatchObject({
+      active: false,
+      statusId: 'not-applicable',
+      verified: false
+    });
+    expect(getCorePracticeTransferResult([
+      transferNote({ speciesId: 'haddock', correct: true })
+    ])).toMatchObject({
+      active: true,
+      statusId: 'bycatch',
+      verified: false,
+      targetAttempts: 0,
+      bycatchAttempts: 1
+    });
+    expect(getCorePracticeTransferResult([
+      transferNote({ ts: 100 })
+    ])).toMatchObject({
+      statusId: 'pending',
+      verified: false,
+      targetAttempts: 0
+    });
+    expect(getCorePracticeTransferResult([
+      transferNote({ correct: false })
+    ])).toMatchObject({
+      statusId: 'review',
+      verified: false,
+      targetAttempts: 1
+    });
+    expect(getCorePracticeTransferResult([
+      transferNote({ correct: true })
+    ])).toMatchObject({
+      statusId: 'verified',
+      verified: true,
+      targetAttempts: 1
+    });
+  });
+
+  it('scopes evidence to the latest saved-correction plan tuple', () => {
+    const { getCorePracticeTransferResult } = window.__FisherLabCore;
+    const result = getCorePracticeTransferResult([
+      transferNote({ correctionReviewedAt: 100, ts: 110, speciesId: 'cod', correct: true }),
+      transferNote({ correctionReviewedAt: 200, ts: 210, speciesId: 'haddock', correct: true })
+    ]);
+
+    expect(result).toMatchObject({
+      statusId: 'bycatch',
+      verified: false,
+      correctionReviewedAt: 200,
+      targetAttempts: 0,
+      bycatchAttempts: 1
+    });
+  });
+  it('leaves prior evidence unchanged when the incoming plan tuple is incomplete', () => {
+    const { reduceCorePracticeTransferEvidence } = window.__FisherLabCore;
+    const prior = reduceCorePracticeTransferEvidence(undefined, transferNote({ ts: 110 }));
+
+    [
+      {},
+      transferNote({ practiceTargetSpeciesId: '', ts: 111 }),
+      transferNote({ practiceFocusSkill: 'identification', ts: 111 }),
+      transferNote({ correctionReviewedAt: 0, ts: 111 })
+    ].forEach((note) => {
+      expect(reduceCorePracticeTransferEvidence(prior, note)).toBe(prior);
+    });
+  });
+
+  it('ignores equal or older attempts and lets the latest newer target attempt decide the outcome', () => {
+    const { reduceCorePracticeTransferEvidence } = window.__FisherLabCore;
+    const verified = reduceCorePracticeTransferEvidence(undefined, transferNote({ ts: 110, correct: true }));
+
+    expect(reduceCorePracticeTransferEvidence(verified, transferNote({ ts: 110, correct: false }))).toBe(verified);
+    expect(reduceCorePracticeTransferEvidence(verified, transferNote({ ts: 109, correct: false }))).toBe(verified);
+
+    const review = reduceCorePracticeTransferEvidence(verified, transferNote({ ts: 111, correct: false }));
+    expect(review).toMatchObject({
+      statusId: 'review',
+      verified: false,
+      targetAttempts: 2,
+      latestAttemptTs: 111,
+      latestTargetAttemptTs: 111
+    });
+
+    expect(reduceCorePracticeTransferEvidence(review, transferNote({ ts: 112, correct: true }))).toMatchObject({
+      statusId: 'verified',
+      verified: true,
+      targetAttempts: 3,
+      latestAttemptTs: 112,
+      latestTargetAttemptTs: 112
+    });
+  });
+
+  it('resets stale verification for a newer plan while preserving a same-plan target outcome through bycatch', () => {
+    const { reduceCorePracticeTransferEvidence } = window.__FisherLabCore;
+    const verified = reduceCorePracticeTransferEvidence(undefined, transferNote({ ts: 110, correct: true }));
+    const afterBycatch = reduceCorePracticeTransferEvidence(verified, transferNote({
+      speciesId: 'haddock',
+      ts: 111
+    }));
+
+    expect(afterBycatch).toMatchObject({
+      statusId: 'verified',
+      verified: true,
+      targetAttempts: 1,
+      bycatchAttempts: 1,
+      latestAttemptTs: 111,
+      latestTargetAttemptTs: 110
+    });
+
+    expect(reduceCorePracticeTransferEvidence(afterBycatch, transferNote({
+      practiceTargetSpeciesId: 'haddock',
+      correctionReviewedAt: 200,
+      speciesId: 'cod',
+      ts: 201
+    }))).toMatchObject({
+      statusId: 'bycatch',
+      verified: false,
+      targetSpeciesId: 'haddock',
+      correctionReviewedAt: 200,
+      targetAttempts: 0,
+      bycatchAttempts: 1,
+      latestAttemptTs: 201,
+      latestTargetAttemptTs: 0
+    });
+  });
+
+  it('retains verified transfer evidence after the four-note debrief history drops the target attempt', () => {
+    const {
+      appendCoreCatchDecision,
+      getCorePracticeTransferResult,
+      reduceCorePracticeTransferEvidence
+    } = window.__FisherLabCore;
+    let history = [];
+    let transferEvidence = getCorePracticeTransferResult([]);
+    const append = (entry) => {
+      history = appendCoreCatchDecision(history, entry);
+      transferEvidence = reduceCorePracticeTransferEvidence(transferEvidence, history[history.length - 1]);
+    };
+
+    append(transferNote({ label: 'Verified target', ts: 110, correct: true }));
+    for (let index = 0; index < 5; index += 1) {
+      append({
+        kind: 'finfish',
+        speciesId: 'haddock',
+        label: 'Unrelated catch ' + index,
+        correct: index % 2 === 0,
+        ts: 200 + index
+      });
+    }
+
+    expect(history).toHaveLength(4);
+    expect(history.some((note) => note.label === 'Verified target')).toBe(false);
+    expect(getCorePracticeTransferResult(history).verified).toBe(false);
+    expect(transferEvidence).toMatchObject({
+      statusId: 'verified',
+      verified: true,
+      targetSpeciesId: 'cod',
+      targetAttempts: 1,
+      bycatchAttempts: 0,
+      latestTargetAttemptTs: 110
+    });
+  });
+
+  it('wires the persistent transfer accumulator through catch updates, HUD, debrief, and replay reset', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+
+    expect(source).toContain('practiceTransferEvidence: getCorePracticeTransferResult([])');
+    expect(source).toContain('boatState.practiceTransferEvidence = reduceCorePracticeTransferEvidence(boatState.practiceTransferEvidence, boatState.catchDecisionHistory[boatState.catchDecisionHistory.length - 1]);');
+    expect(source).toContain('practiceTransferEvidence: Object.assign({}, boatState.practiceTransferEvidence)');
+    expect(source).toContain("var practiceTransferResult = hud.practiceTransferEvidence && typeof hud.practiceTransferEvidence === 'object' ? hud.practiceTransferEvidence : getCorePracticeTransferResult(catchDecisionHistory);");
+    expect(source).toContain('boatState.practiceTransferEvidence = getCorePracticeTransferResult([]);');
+  });
+
+});
+
+describe('Fisher Lab simulator modal focus containment', () => {
+  it('filters unavailable controls and wraps Tab in both directions', () => {
+    const { getCoreDialogFocusables, containCoreDialogFocus } = window.__FisherLabCore;
+    const dialog = document.createElement('section');
+    dialog.tabIndex = -1;
+    dialog.innerHTML = `
+      <button id="first">First</button>
+      <button disabled>Disabled</button>
+      <span hidden><button>Hidden</button></span>
+      <button id="last">Last</button>
+    `;
+    document.body.appendChild(dialog);
+    const first = dialog.querySelector('#first');
+    const last = dialog.querySelector('#last');
+
+    expect(getCoreDialogFocusables(dialog)).toEqual([first, last]);
+
+    last.focus();
+    const forward = {
+      key: 'Tab',
+      shiftKey: false,
+      currentTarget: dialog,
+      preventDefault() { this.defaultPrevented = true; }
+    };
+    expect(containCoreDialogFocus(forward)).toBe(true);
+    expect(forward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(first);
+
+    first.focus();
+    const backward = {
+      key: 'Tab',
+      shiftKey: true,
+      currentTarget: dialog,
+      preventDefault() { this.defaultPrevented = true; }
+    };
+    expect(containCoreDialogFocus(backward)).toBe(true);
+    expect(document.activeElement).toBe(last);
+    dialog.remove();
+  });
+
+  it('recovers focus entering from outside and ignores non-Tab keys', () => {
+    const { containCoreDialogFocus } = window.__FisherLabCore;
+    const outside = document.createElement('button');
+    const dialog = document.createElement('section');
+    dialog.tabIndex = -1;
+    dialog.innerHTML = '<button id="first">First</button><button>Last</button>';
+    document.body.append(outside, dialog);
+    outside.focus();
+
+    const event = {
+      key: 'Tab',
+      shiftKey: false,
+      currentTarget: dialog,
+      preventDefault() { this.defaultPrevented = true; }
+    };
+    expect(containCoreDialogFocus(event)).toBe(true);
+    expect(event.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(dialog.querySelector('#first'));
+    expect(containCoreDialogFocus({ key: 'Enter', currentTarget: dialog })).toBe(false);
+    outside.remove();
+    dialog.remove();
+  });
+});
+
+describe('Fisher Lab simulator toolbar sizing', () => {
+  it('publishes a safe rounded HUD offset', () => {
+    const { publishCoreToolbarHeight } = window.__FisherLabCore;
+    const stage = document.createElement('div');
+    const bar = { getBoundingClientRect: () => ({ height: 73.6 }) };
+
+    expect(publishCoreToolbarHeight(bar, stage)).toBe(74);
+    expect(stage.style.getPropertyValue('--fl-bar-h')).toBe('74px');
+    expect(publishCoreToolbarHeight({ getBoundingClientRect: () => ({ height: -12 }) }, stage)).toBe(0);
+    expect(stage.style.getPropertyValue('--fl-bar-h')).toBe('0px');
+    expect(publishCoreToolbarHeight(null, stage)).toBe(0);
+  });
+});
+
 
 describe('Fisher Lab shellfish caliper', () => {
   it('requires an instrument reading within tolerance', () => {
@@ -359,11 +763,576 @@ describe('Fisher Lab shellfish caliper', () => {
   });
 });
 
+describe('Fisher Lab renderer resource teardown', () => {
+  it('disposes shared scene resources exactly once across meshes, uniforms, and detached extras', () => {
+    const { disposeCoreThreeResources } = window.__FisherLabCore;
+    const calls = { geometry: 0, materialA: 0, materialB: 0, texture: 0, extra: 0 };
+    const texture = {
+      isTexture: true,
+      dispose() { calls.texture += 1; }
+    };
+    const geometry = {
+      isBufferGeometry: true,
+      dispose() { calls.geometry += 1; }
+    };
+    const materialA = {
+      isMaterial: true,
+      map: texture,
+      normalMap: texture,
+      dispose() { calls.materialA += 1; }
+    };
+    const materialB = {
+      isMaterial: true,
+      uniforms: {
+        surface: { value: texture },
+        layers: { value: [texture, texture] }
+      },
+      dispose() { calls.materialB += 1; }
+    };
+    const childA = { geometry, material: [materialA, materialB] };
+    const childB = { geometry, material: materialA };
+    const scene = {
+      background: texture,
+      environment: texture,
+      traverse(visitor) {
+        visitor(this);
+        visitor(childA);
+        visitor(childB);
+      }
+    };
+    const detached = {
+      dispose() { calls.extra += 1; }
+    };
+
+    const stats = disposeCoreThreeResources(
+      scene,
+      [geometry, materialA, texture, detached, detached]
+    );
+
+    expect(calls).toEqual({ geometry: 1, materialA: 1, materialB: 1, texture: 1, extra: 1 });
+    expect(stats).toEqual({ geometries: 1, materials: 2, textures: 1, extras: 1, errors: 0 });
+  });
+
+  it('releases composer passes and fallback render targets without double disposal', () => {
+    const { disposeCoreComposerResources } = window.__FisherLabCore;
+    const calls = { passA: 0, passB: 0, copy: 0, target: 0, modern: 0, privateCopy: 0 };
+
+    const passA = { dispose() { calls.passA += 1; } };
+    const passB = { dispose() { calls.passB += 1; } };
+    const copyPass = { dispose() { calls.copy += 1; } };
+    const target = { dispose() { calls.target += 1; } };
+    const legacyStats = disposeCoreComposerResources({
+      passes: [passA, passA, passB],
+      copyPass,
+      renderTarget1: target,
+      renderTarget2: target
+    });
+
+    expect(calls).toMatchObject({ passA: 1, passB: 1, copy: 1, target: 1 });
+    expect(legacyStats).toEqual({ passes: 3, targets: 1, composer: 0, errors: 0 });
+
+    const privateCopyPass = { dispose() { calls.privateCopy += 1; } };
+    const modernStats = disposeCoreComposerResources({
+      passes: [],
+      copyPass: privateCopyPass,
+      dispose() { calls.modern += 1; }
+    });
+
+    expect(calls.modern).toBe(1);
+    expect(calls.privateCopy).toBe(0);
+    expect(modernStats).toEqual({ passes: 0, targets: 0, composer: 1, errors: 0 });
+
+    let recoveredTargets = 0;
+    const failedStats = disposeCoreComposerResources({
+      passes: [],
+      copyPass: { dispose() { calls.copy += 1; } },
+      renderTarget1: { dispose() { recoveredTargets += 1; } },
+      renderTarget2: { dispose() { recoveredTargets += 1; } },
+      dispose() { throw new Error('partial composer teardown'); }
+    });
+
+    expect(recoveredTargets).toBe(2);
+    expect(failedStats).toEqual({ passes: 1, targets: 2, composer: 0, errors: 1 });
+  });
+
+  it('runs the shipped engine teardown only once and returns stable disposal diagnostics', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const resizeStart = source.indexOf('    function onResize()');
+    const apiStart = source.indexOf('    return {', resizeStart);
+    const boatStateStart = source.indexOf('      getBoatState:', apiStart);
+    const listenerStubs = 'var onWebGLContextLost = function() {}; var onWebGLContextRestored = function() {}; var onKeyDown = function() {}; var onKeyUp = function() {}; var onWindowBlur = function() {}; var onResize = function() {}; var onVisibilityChange = function() {}; var onPageHide = function() {}; ';
+    const apiSource = listenerStubs + source.slice(apiStart, boatStateStart) + '    };';
+    const calls = {
+      release: 0,
+      cancelled: 0,
+      canvasListeners: 0,
+      windowListeners: 0,
+      documentListeners: 0,
+      ambient: 0,
+      composer: 0,
+      geometry: 0,
+      material: 0,
+      texture: 0,
+      clear: 0,
+      animationLoop: 0,
+      renderLists: 0,
+      renderer: 0,
+      context: 0,
+      audio: 0
+    };
+
+    expect(resizeStart).toBeGreaterThan(-1);
+    expect(apiStart).toBeGreaterThan(resizeStart);
+    expect(boatStateStart).toBeGreaterThan(apiStart);
+
+    const texture = { isTexture: true, dispose() { calls.texture += 1; } };
+    const geometry = { isBufferGeometry: true, dispose() { calls.geometry += 1; } };
+    const material = { isMaterial: true, map: texture, dispose() { calls.material += 1; } };
+    const mesh = { geometry, material };
+    const scene = {
+      background: texture,
+      traverse(visitor) {
+        visitor(this);
+        visitor(mesh);
+      },
+      clear() { calls.clear += 1; }
+    };
+    const renderer = {
+      _alloComposer: { passes: [], dispose() { calls.composer += 1; } },
+      setAnimationLoop(value) {
+        expect(value).toBeNull();
+        calls.animationLoop += 1;
+      },
+      renderLists: { dispose() { calls.renderLists += 1; } },
+      dispose() { calls.renderer += 1; },
+      forceContextLoss() { calls.context += 1; }
+    };
+    const engine = new Function(
+      'alive',
+      'disposalStats',
+      'contextLost',
+      'graphicsFailureReason',
+      'releaseHeldControls',
+      'raf',
+      'cancelAnimationFrame',
+      'canvas',
+      'window',
+      'document',
+      'AF',
+      'renderer',
+      'disposeCoreComposerResources',
+      'disposeCoreThreeResources',
+      'scene',
+      'buoyDisposables',
+      'disposeAudioSynth',
+      apiSource
+    )(
+      true,
+      null,
+      true,
+      'render-error',
+      () => { calls.release += 1; },
+      71,
+      (id) => { expect(id).toBe(71); calls.cancelled += 1; },
+      { removeEventListener() { calls.canvasListeners += 1; } },
+      { removeEventListener() { calls.windowListeners += 1; } },
+      { removeEventListener() { calls.documentListeners += 1; } },
+      { dispose() { calls.ambient += 1; return { resources: 'released' }; } },
+      renderer,
+      window.__FisherLabCore.disposeCoreComposerResources,
+      window.__FisherLabCore.disposeCoreThreeResources,
+      scene,
+      [geometry, material, texture],
+      () => { calls.audio += 1; return true; }
+    );
+
+    const first = engine.dispose();
+    const second = engine.dispose();
+
+    expect(second).toBe(first);
+    expect(engine.getDisposalStats()).toBe(first);
+    expect(first).toMatchObject({
+      geometries: 1,
+      materials: 1,
+      textures: 1,
+      extras: 0,
+      errors: 0,
+      audio: true,
+      renderer: { renderLists: true, renderer: true, context: true },
+      composer: { passes: 0, targets: 0, composer: 1, errors: 0 }
+    });
+    expect(calls).toEqual({
+      release: 1,
+      cancelled: 1,
+      canvasListeners: 2,
+      windowListeners: 5,
+      documentListeners: 1,
+      ambient: 1,
+      composer: 1,
+      geometry: 1,
+      material: 1,
+      texture: 1,
+      clear: 1,
+      animationLoop: 1,
+      renderLists: 1,
+      renderer: 1,
+      context: 1,
+      audio: 1
+    });
+  });
+
+  it('makes asynchronous effects, audio, and engine teardown idempotent', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const ambientDisposeAt = source.indexOf('        AF.dispose = function () {');
+    const ambientLoaderAt = source.indexOf('          var ensure = function (cb) {', ambientDisposeAt);
+
+    expect(ambientDisposeAt).toBeGreaterThan(-1);
+    expect(ambientLoaderAt).toBeGreaterThan(ambientDisposeAt);
+    expect(source).toContain('try { AF.dispose(); } catch (_) {}');
+    expect(source).toContain('var effectsDisposed = false;');
+    expect(source).toContain('var ambientScripts = [];');
+    expect(source).toContain('if (effectsDisposed) return;');
+    expect(source).toContain('if (effectsDisposed) return ambientDisposeStats;');
+    expect(source).toContain('disposeCoreComposerResources(activeComposer);');
+    expect(source).toContain('disposeCoreComposerResources(failedComposer);');
+    expect(source).toContain('disposeAudioSynth();');
+    expect(source).toContain('if (!alive) return disposalStats;');
+    expect(source).toContain('disposalStats = disposeCoreThreeResources(scene, buoyDisposables);');
+    expect(source).toContain('if (renderer.renderLists && renderer.renderLists.dispose)');
+    expect(source).toContain('renderer.forceContextLoss();');
+    expect(source).toContain('disposalStats.audio = disposeAudioSynth();');
+    expect(source).toContain('getDisposalStats: function() { return disposalStats; }');
+    expect(source).not.toContain('buoyDisposables.forEach(function(d)');
+  });
+});
+
 describe('Fisher Lab simulator safeguards', () => {
+  it('releases held keyboard commands when the window loses focus', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const keyboardStart = source.indexOf('    var keys = Object.create(null);');
+    const keyboardEnd = source.indexOf('    var cameraTarget', keyboardStart);
+
+    expect(keyboardStart).toBeGreaterThan(-1);
+    expect(keyboardEnd).toBeGreaterThan(keyboardStart);
+
+    const listeners = {};
+    const canvas = {};
+    const harness = new Function(
+      'window',
+      'document',
+      'canvas',
+      'boatState',
+      'shouldIgnoreCoreRepeatedKey',
+      source.slice(keyboardStart, keyboardEnd) + '\nreturn { getKeys: function() { return keys; } };'
+    )(
+      { addEventListener(type, listener) { listeners[type] = listener; } },
+      { activeElement: canvas },
+      canvas,
+      { paused: false },
+      () => false
+    );
+
+    listeners.keydown({ key: 'w', repeat: false, preventDefault() {} });
+    expect(harness.getKeys().w).toBe(true);
+
+    listeners.blur();
+    expect(Object.keys(harness.getKeys())).toEqual([]);
+    expect(Object.getPrototypeOf(harness.getKeys())).toBeNull();
+  });
+
+  it('rejects stale or unmounted asynchronous simulator launch completions', () => {
+    const { isCoreSimulatorLaunchCurrent } = window.__FisherLabCore;
+
+    expect(isCoreSimulatorLaunchCurrent).toBeTypeOf('function');
+    expect(isCoreSimulatorLaunchCurrent(4, 4, true)).toBe(true);
+    expect(isCoreSimulatorLaunchCurrent(4, 3, true)).toBe(false);
+    expect(isCoreSimulatorLaunchCurrent(4, 4, false)).toBe(false);
+    expect(isCoreSimulatorLaunchCurrent('4', 4, true)).toBe(false);
+
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const launchStart = source.indexOf('    function clearSimulatorRetryTimer()');
+    const launchBlock = source.slice(launchStart, source.indexOf('    function startSim()', launchStart));
+    const stopStart = source.indexOf('    function stopSim()');
+    const stopBlock = source.slice(stopStart, source.indexOf('    var activeSimRegionRef', stopStart));
+    const cleanupStart = source.indexOf('    useEffect(function() {\n      simLifecycleMountedRef.current = true;');
+    const cleanupBlock = source.slice(cleanupStart, source.indexOf('    var cardStyle', cleanupStart));
+    const retryStart = source.indexOf('                var retryCheckpoint = pendingCheckpointRef.current');
+    const retryBlock = source.slice(retryStart, source.indexOf('              },', retryStart));
+
+    expect(launchStart).toBeGreaterThan(-1);
+    expect((launchBlock.match(/isCurrentSimulatorLaunch\(launchGeneration\)/g) || [])).toHaveLength(2);
+    expect(launchBlock).toContain('if (!simLifecycleMountedRef.current) return;');
+    expect(launchBlock).toContain('clearSimulatorRetryTimer();');
+    expect(stopBlock).toContain('var stopGeneration = invalidateSimulatorLaunch();');
+    expect(stopBlock).toContain('if (!isCurrentSimulatorLaunch(stopGeneration)) return;');
+    expect(cleanupBlock).toContain('simLifecycleMountedRef.current = false;');
+    expect(cleanupBlock).toContain('invalidateSimulatorLaunch();');
+    expect(retryBlock).toContain('simRetryTimerRef.current = setTimeout(function()');
+    expect(retryBlock).toContain('if (!isCurrentSimulatorLaunch(retryGeneration)) return;');
+  });
+
+  it('pauses, checkpoints, and restarts the frame loop across WebGL context recovery', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const lifecycleStart = source.indexOf('    var t0 = performance.now();');
+    const lifecycleEnd = source.indexOf('    function tick()', lifecycleStart);
+
+    expect(lifecycleStart).toBeGreaterThan(-1);
+    expect(lifecycleEnd).toBeGreaterThan(lifecycleStart);
+
+    function createHarness(checkpoint, rendererOverride) {
+      const listeners = {};
+      const calls = { checkpoints: [], pauses: [], cancelled: [], requested: [], statuses: [], announcements: [], graphics: [], errors: [], resize: 0 };
+      const canvas = {
+        addEventListener(type, listener) { listeners[type] = listener; }
+      };
+      const harness = new Function(
+        'canvas',
+        'performance',
+        'emitVoyageCheckpoint',
+        'setPaused',
+        'cancelAnimationFrame',
+        'requestAnimationFrame',
+        'statusCb',
+        'flAnnounce',
+        'opts',
+        'renderer',
+        'scene',
+        'camera',
+        'console',
+        'disposeCoreComposerResources',
+        'onResize',
+        source.slice(lifecycleStart, lifecycleEnd) + '\nfunction tick() {}\nreturn { getContextLost: function() { return contextLost; }, getRaf: function() { return raf; }, setRaf: function(value) { raf = value; }, renderFrame: renderFrame };'
+      )(
+        canvas,
+        { now: () => 4200 },
+        (reason, force) => { calls.checkpoints.push([reason, force]); return checkpoint; },
+        (paused, announce) => { calls.pauses.push([paused, announce]); return true; },
+        (id) => calls.cancelled.push(id),
+        (callback) => { calls.requested.push(callback); return 91; },
+        (payload) => calls.statuses.push(payload.text),
+        (message) => calls.announcements.push(message),
+        { onGraphicsContextChange: (lost, reason) => calls.graphics.push([lost, reason]) },
+        rendererOverride || {},
+        {},
+        {},
+        { error: (...args) => calls.errors.push(args) },
+        window.__FisherLabCore.disposeCoreComposerResources,
+        () => { calls.resize += 1; }
+      );
+      return { listeners, calls, harness };
+    }
+
+    const recovered = createHarness({ savedAt: 4200 });
+    recovered.harness.setRaf(17);
+    let prevented = 0;
+    recovered.listeners.webglcontextlost({ preventDefault() { prevented += 1; } });
+
+    expect(prevented).toBe(1);
+    expect(recovered.harness.getContextLost()).toBe(true);
+    expect(recovered.harness.getRaf()).toBeNull();
+    expect(recovered.calls.checkpoints).toEqual([['webgl-context-lost', true]]);
+    expect(recovered.calls.pauses).toEqual([[true, false]]);
+    expect(recovered.calls.cancelled).toEqual([17]);
+    expect(recovered.calls.graphics).toEqual([[true, 'context-lost']]);
+    expect(recovered.calls.statuses.at(-1)).toContain('safe recovery point');
+
+    recovered.listeners.webglcontextlost({ preventDefault() { prevented += 1; } });
+    expect(prevented).toBe(2);
+    expect(recovered.calls.checkpoints).toHaveLength(1);
+
+    recovered.listeners.webglcontextrestored();
+    expect(recovered.harness.getContextLost()).toBe(false);
+    expect(recovered.harness.getRaf()).toBe(91);
+    expect(recovered.calls.pauses).toEqual([[true, false], [true, false]]);
+    expect(recovered.calls.graphics).toEqual([[true, 'context-lost'], [false, null]]);
+    expect(recovered.calls.resize).toBe(1);
+    expect(recovered.calls.requested).toHaveLength(1);
+    expect(recovered.calls.statuses.at(-1)).toContain('remains paused');
+
+    recovered.listeners.webglcontextrestored();
+    expect(recovered.calls.requested).toHaveLength(1);
+
+    const unresolvedInteraction = createHarness(null);
+    unresolvedInteraction.listeners.webglcontextlost({ preventDefault() {} });
+    expect(unresolvedInteraction.calls.statuses.at(-1)).toContain('prior safe checkpoint remains unchanged');
+
+    let plainFrames = 0;
+    let composerDisposals = 0;
+    const composerFallbackRenderer = {
+      _alloBloomDark: true,
+      _alloComposer: {
+        render() { throw new Error('optional composer failed'); },
+        dispose() { composerDisposals += 1; }
+      },
+      render() { plainFrames += 1; }
+    };
+    const composerFallback = createHarness({ savedAt: 4200 }, composerFallbackRenderer);
+    expect(composerFallback.harness.renderFrame()).toBe(true);
+    expect(composerFallbackRenderer._alloComposer).toBeNull();
+    expect(composerDisposals).toBe(1);
+    expect(plainFrames).toBe(1);
+    expect(composerFallback.calls.checkpoints).toEqual([]);
+
+    const fatalRenderError = new Error('plain WebGL render failed');
+    const renderFailure = createHarness({ savedAt: 4200 }, {
+      _alloBloomDark: false,
+      _alloComposer: null,
+      render() { throw fatalRenderError; }
+    });
+    renderFailure.harness.setRaf(23);
+    expect(renderFailure.harness.renderFrame()).toBe(false);
+    expect(renderFailure.harness.getContextLost()).toBe(true);
+    expect(renderFailure.calls.checkpoints).toEqual([['graphics-render-error', true]]);
+    expect(renderFailure.calls.pauses).toEqual([[true, false]]);
+    expect(renderFailure.calls.cancelled).toEqual([23]);
+    expect(renderFailure.calls.graphics).toEqual([[true, 'render-error']]);
+    expect(renderFailure.calls.statuses.at(-1)).toContain('rendering stopped unexpectedly');
+    expect(renderFailure.calls.errors[0][1]).toBe(fatalRenderError);
+    expect(renderFailure.harness.renderFrame()).toBe(false);
+    expect(renderFailure.calls.checkpoints).toHaveLength(1);
+
+    expect(source).toContain("canvas.removeEventListener('webglcontextlost', onWebGLContextLost, false)");
+    expect(source).toContain("canvas.removeEventListener('webglcontextrestored', onWebGLContextRestored, false)");
+    expect(source).toContain('if (alive && !contextLost && raf === null) raf = requestAnimationFrame(tick);');
+    expect(source.match(/if \(!renderFrame\(\)\) return;/g)).toHaveLength(2);
+  });
+
+  it('locks resume and exposes persistent recovery guidance while graphics are unavailable', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const pauseStart = source.indexOf('    function setPaused(paused, announce)');
+    const pauseEnd = source.indexOf('    var pausedForVisibility', pauseStart);
+    const boatState = { paused: true, throttle: 0.8 };
+    const statuses = [];
+    const announcements = [];
+    let releases = 0;
+    let hudUpdates = 0;
+    let checkpoints = 0;
+
+    expect(pauseStart).toBeGreaterThan(-1);
+    expect(pauseEnd).toBeGreaterThan(pauseStart);
+
+    const setPaused = new Function(
+      'boatState',
+      'releaseHeldControls',
+      'statusCb',
+      'flAnnounce',
+      'hudCb',
+      'lastHud',
+      'emitVoyageCheckpoint',
+      'var contextLost = true;\n' + source.slice(pauseStart, pauseEnd) + '\nreturn setPaused;'
+    )(
+      boatState,
+      () => { releases += 1; },
+      (payload) => statuses.push(payload.text),
+      (message) => announcements.push(message),
+      () => { hudUpdates += 1; },
+      { paused: true },
+      () => { checkpoints += 1; }
+    );
+
+    expect(setPaused(false, true)).toBe(false);
+    expect(boatState).toEqual({ paused: true, throttle: 0.8 });
+    expect(releases).toBe(0);
+    expect(hudUpdates).toBe(0);
+    expect(checkpoints).toBe(0);
+    expect(statuses.at(-1)).toContain('still recovering');
+    expect(announcements.at(-1)).toContain('remains paused');
+    expect(source).toContain("disabled: graphicsContextLost, title: graphicsContextLost ? 'Resume is unavailable while graphics recover'");
+    expect(source).toContain("'data-fisherlab-graphics-recovery': 'lost'");
+    expect(source).toContain("'data-fisherlab-graphics-reason': graphicsFailureReason || 'context-lost'");
+    expect(source).toContain("'aria-labelledby': 'fl-graphics-recovery-title'");
+    expect(source).toContain("voyageSaveStatus.id === 'error' ? 'Browser storage also needs attention.");
+    expect(source).toContain('onClick: restartSimulatorGraphics');
+  });
+
+  it('relaunches failed graphics from a safe checkpoint through the guarded launch generation', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const restartStart = source.indexOf('    function restartSimulatorGraphics()');
+    const restartEnd = source.indexOf('    function stopSim()', restartStart);
+    const liveCheckpoint = { schemaVersion: 1, savedAt: 7000 };
+    const harborRef = {
+      current: {
+        checkpoint(reason) {
+          expect(reason).toBe('graphics-restart');
+          return liveCheckpoint;
+        },
+        dispose() { calls.disposed += 1; }
+      }
+    };
+    const pendingCheckpointRef = { current: null };
+    const confirmedVoyageCheckpointRef = { current: { schemaVersion: 1, savedAt: 6000 } };
+    const simRetryTimerRef = { current: null };
+    const calls = { disposed: 0, cleared: [], recovery: [], sim: [], announcements: [], launched: [] };
+    let queued = null;
+
+    expect(restartStart).toBeGreaterThan(-1);
+    expect(restartEnd).toBeGreaterThan(restartStart);
+
+    const restartSimulatorGraphics = new Function(
+      'graphicsContextLost',
+      'harborRef',
+      'normalizeCoreVoyageCheckpoint',
+      'confirmedVoyageCheckpointRef',
+      'savedVoyageCheckpoint',
+      'invalidateSimulatorLaunch',
+      'pendingCheckpointRef',
+      'updateGraphicsRecovery',
+      'setActiveFishing',
+      'setActiveFish',
+      'setActiveLobster',
+      'setActiveTraffic',
+      'setSim',
+      'flAnnounce',
+      'simRetryTimerRef',
+      'setTimeout',
+      'isCurrentSimulatorLaunch',
+      'launchSim',
+      source.slice(restartStart, restartEnd) + '\nreturn restartSimulatorGraphics;'
+    )(
+      true,
+      harborRef,
+      (value) => value || null,
+      confirmedVoyageCheckpointRef,
+      null,
+      () => 12,
+      pendingCheckpointRef,
+      (lost, reason) => calls.recovery.push([lost, reason]),
+      () => calls.cleared.push('fishing'),
+      () => calls.cleared.push('fish'),
+      () => calls.cleared.push('lobster'),
+      () => calls.cleared.push('traffic'),
+      (value) => calls.sim.push(value),
+      (message) => calls.announcements.push(message),
+      simRetryTimerRef,
+      (callback) => { queued = callback; return 73; },
+      (generation) => generation === 12,
+      (checkpoint) => calls.launched.push(checkpoint)
+    );
+
+    restartSimulatorGraphics();
+    expect(calls.disposed).toBe(1);
+    expect(harborRef.current).toBeNull();
+    expect(pendingCheckpointRef.current).toBe(liveCheckpoint);
+    expect(calls.recovery).toEqual([[false, undefined]]);
+    expect(calls.cleared).toEqual(['fishing', 'fish', 'lobster', 'traffic']);
+    expect(calls.sim[0]).toMatchObject({ active: false, loading: true, restarting: true });
+    expect(calls.announcements.at(-1)).toContain('latest safe voyage checkpoint');
+    expect(simRetryTimerRef.current).toBe(73);
+
+    queued();
+    expect(simRetryTimerRef.current).toBeNull();
+    expect(calls.launched).toEqual([liveCheckpoint]);
+    expect(source).toContain('normalizeCoreVoyageCheckpoint(confirmedVoyageCheckpointRef.current)');
+    expect(source).toContain('if (!isCurrentSimulatorLaunch(retryGeneration)) return;');
+  });
+
   it('keeps keyboard control focused, fuel bounded, and catch decisions explicit', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
 
     expect(source).toContain('if (document.activeElement !== canvas) return;');
+    expect(source).toContain("window.addEventListener('blur', onWindowBlur)");
+    expect(source).toContain("window.removeEventListener('blur', onWindowBlur)");
+    expect(source).toContain('function cancelHeldControlPulse(key)');
     expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange)");
     expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange)");
     expect(source).toContain('Simulation paused because the tab became inactive');
@@ -470,7 +1439,12 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain("getCoreFishHandlingGuidance(action, result.legalToRetain)");
     expect(source).toContain("activeFishing ? activeFishing.phase : null");
     expect(source).not.toContain("[activeFish, activeFishing, activeLobster");
-    expect(source).toContain("handleFishingDialogKeyDown");
+    expect(source).toContain("handleSimulatorDialogKeyDown");
+    expect(source).toContain("containCoreDialogFocus(e)");
+    expect(source).not.toContain("handleFishingDialogKeyDown");
+    expect(source).toContain("practiceCorrectionRef.current = masteryRow.focusSkill === 'transfer'");
+    expect(source).toContain("practiceCorrectionReviewedAt: correctionReviewedAt");
+    expect(source).toContain("'data-fisherlab-transfer-result': practiceTransferResult.statusId");
     expect(source).toContain("}, 80);");
     expect(source).toContain("return function() { clearTimeout(focusTimer); };");
     expect(source).toContain("role: 'dialog', 'aria-modal': 'true'");
@@ -503,7 +1477,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).not.toContain('minSize: 3, slot:');
     expect(source).not.toContain('CITATION: Possession of');
     expect(source).not.toContain('Violation penalty: $');
-    expect(source).not.toContain('resumeSim');
+    expect(source).toContain('resumeSavedVoyage');
     expect(source).not.toContain('hud.fuel || 100');
   });
 });
@@ -1328,11 +2302,26 @@ describe('Fisher Lab sim buoys match the buoyage lesson', () => {
 
   it('resolves every mark the sim places', () => {
     const src = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
-    const placed = [...src.matchAll(/addBuoy\([^,]+,\s*[^,]+,\s*'([^']+)'\)/g)].map((m) => m[1]);
-    expect(placed.length).toBeGreaterThanOrEqual(6);
-    [...new Set(placed)].forEach((t) => {
+    const literalMarks = [...src.matchAll(/addBuoy\([^,]+,\s*[^,]+,\s*'([^']+)'\)/g)].map((m) => m[1]);
+    expect(literalMarks).toEqual(expect.arrayContaining(['safe-water', 'cardinal-N']));
+    [...new Set(literalMarks)].forEach((t) => {
       expect(spec(t), 'sim places an unresolvable mark: ' + t).toBeTruthy();
     });
+
+    const { getCoreVoyageBuoyageLayout } = window.__FisherLabCore;
+    ['maine', 'chesapeake', 'pnw', 'greatlakes'].forEach((region) => {
+      const layout = getCoreVoyageBuoyageLayout(region);
+      expect(spec(layout.portMarkType), region + ' port mark is unresolvable').toBeTruthy();
+      expect(spec(layout.starboardMarkType), region + ' starboard mark is unresolvable').toBeTruthy();
+    });
+    [
+      'addBuoy(6, -10, buoyageLayout.portMarkType)',
+      'addBuoy(-6, -10, buoyageLayout.starboardMarkType)',
+      'addBuoy(7, -30, buoyageLayout.portMarkType)',
+      'addBuoy(-7, -30, buoyageLayout.starboardMarkType)',
+      'addBuoy(9, -55, buoyageLayout.portMarkType)',
+      'addBuoy(-9, -55, buoyageLayout.starboardMarkType)'
+    ].forEach((placement) => expect(src).toContain(placement));
   });
 
   it('gives the north cardinal two STACKED up-cones, not a side-by-side pair', () => {
@@ -1524,6 +2513,35 @@ describe('Fisher Lab chart room accessibility', () => {
     // FUNCTION to React as a child of the svg. Production React drops it
     // silently, which is why it survived; the development build warns.
     expect(src()).not.toMatch(/\]\.forEach,\s*$/m);
+  });
+
+  it('keeps Portland detail Maine-only and labels every other plan as a schematic', () => {
+    const s = src();
+    const regional = s.slice(s.indexOf('function flRegionalTrainingChartSvg'), s.indexOf('// --- CHART tab'));
+    const chart = s.slice(s.indexOf('function chartTab()'), s.indexOf('function flBuoyRow'));
+
+    expect(regional).toContain("viewBox: '0 0 640 360'");
+    expect(regional).toContain("'data-fisherlab-regional-chart': brief.region");
+    expect(regional).toContain("var portDetail = String(brief.portCoords || '').split('·')[0].trim() || brief.portName");
+    expect(regional).toContain("stage(18, '1 - DEPART', brief.portName, portDetail");
+    expect(regional).toContain('NOT A NAUTICAL CHART');
+    expect(regional).toContain('Reference names only');
+    expect(chart).toContain("var detailedMaine = chartBrief.detailMode === 'portland-detail'");
+    expect(chart).toContain("'🗺 Chart Room — ' + chartBrief.label + ' (' + chartBrief.portName + ')'");
+    expect(chart).toContain("detailedMaine ? h('svg', { viewBox: '0 0 600 400'");
+    expect(chart).toContain('flRegionalTrainingChartSvg(h, chartBrief)');
+  });
+});
+
+describe('Fisher Lab regional home briefing', () => {
+  it('does not present the Maine roadmap as regional progress', () => {
+    const s = fs.readFileSync('stem_lab/stem_tool_fisherlab.js', 'utf8');
+    const home = s.slice(s.indexOf('function homeTab()'), s.indexOf('// --- FIELD JOURNAL tab'));
+
+    expect(home).toContain("var isMaineCurriculum = region === 'maine'");
+    expect(home).toContain("'data-fisherlab-regional-mission': region");
+    expect(home).toContain('The full expedition roadmap is Maine-specific');
+    expect(home).not.toContain('Pilot a Maine skiff from Custom House Wharf');
   });
 });
 

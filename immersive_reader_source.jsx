@@ -1207,6 +1207,7 @@ const KaraokeReaderOverlay = React.memo(({ text, sentenceList, onClose, isOpen, 
         if (!copied) {
             try {
                 const scratch = document.createElement('textarea');
+                scratch.setAttribute('aria-label', 'Temporary field for copying read-aloud diagnostics');
                 scratch.value = payload;
                 scratch.setAttribute('readonly', '');
                 scratch.style.position = 'fixed';

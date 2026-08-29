@@ -216,6 +216,569 @@
   // water and molten rock as meaningful boundaries rather than mineable blocks.
   var CORE_RIG_ANGLES = { vertical: 90, slant: 60, shallow: 35 };
   var CORE_RIG_DEPTHS = [6, 9, 12];
+  var CORE_RIG_FEED_MODES = {
+    preserve: { label: 'Preserve', speedMultiplier: 0.72, heatMultiplier: 0.55 },
+    cruise: { label: 'Cruise', speedMultiplier: 1, heatMultiplier: 1 },
+    torque: { label: 'Torque', speedMultiplier: 1.45, heatMultiplier: 1.55 }
+  };
+  var CORE_RIG_INTERVAL_SCAN_MS = 700;
+  function coreRigIntervalScanMs() { return CORE_RIG_INTERVAL_SCAN_MS; }
+  function coreRigIntervalScanning(scanUntil, now, running, hasCurrent) {
+    var deadline = Number(scanUntil), clock = Number(now);
+    return !!running && !!hasCurrent && isFinite(deadline) && isFinite(clock) && deadline > clock;
+  }
+  function coreRigFeedProfile(modeId) {
+    var id = Object.prototype.hasOwnProperty.call(CORE_RIG_FEED_MODES, modeId) ? modeId : 'cruise';
+    return Object.assign({ id: id }, CORE_RIG_FEED_MODES[id]);
+  }
+  function coreRigFormationLoad(key, type) {
+    var profile = fpMiningProfile(key, type), label = profile && profile.label ? profile.label : 'Dense';
+    var idealMode = (label === 'Loose' || label === 'Crystalline') ? 'preserve' : (label === 'Hard' ? 'torque' : 'cruise');
+    return { label: label, idealMode: idealMode };
+  }
+  function coreRigIntegrityLoss(idealMode, selectedMode, heat, seconds) {
+    var ideal = coreRigFeedProfile(idealMode).id, selected = coreRigFeedProfile(selectedMode).id;
+    var safeHeat = Math.max(0, Math.min(1, Number(heat) || 0));
+    var safeSeconds = Math.max(0, Math.min(10, Number(seconds) || 0));
+    var mismatchRate = ideal === selected ? 0 : ((ideal === 'cruise' || selected === 'cruise') ? 0.035 : 0.06);
+    var thermalRate = safeHeat > 0.64 ? (safeHeat - 0.64) * 0.22 : 0;
+    return Math.round((mismatchRate + thermalRate) * safeSeconds * 100000) / 100000;
+  }
+  function coreRigIntegrityFromStress(stress) {
+    return Math.round(Math.max(0.55, Math.min(1, 1 - (Number(stress) || 0))) * 100) / 100;
+  }
+  function coreRigQualitySummary(samples) {
+    var values = [], pristineCount = 0;
+    (Array.isArray(samples) ? samples : []).forEach(function (sample) {
+      if (!sample || sample.integrity == null || !isFinite(Number(sample.integrity))) return;
+      var value = Math.max(0.55, Math.min(1, Number(sample.integrity)));
+      values.push(value); if (value >= 0.97) pristineCount += 1;
+    });
+    var averageIntegrity = values.length ? values.reduce(function (sum, value) { return sum + value; }, 0) / values.length : 1;
+    averageIntegrity = Math.round(averageIntegrity * 100) / 100;
+    return { ratedCount: values.length, averageIntegrity: averageIntegrity, integrityPercent: Math.round(averageIntegrity * 100), pristineCount: pristineCount };
+  }
+  function coreRigTrajectoryAdvice(scan) {
+    if (!scan.recoverable) return 'Relocate the rig or change angle before drilling.';
+    if (scan.riskLevel === 'caution') return 'A protected boundary shortens this bore; prioritize sample integrity.';
+    if (scan.riskLevel === 'limited') return 'The safe column is shorter than requested; consider another trajectory.';
+    if (scan.variability === 'volatile') return 'Frequent resistance changes ahead: watch each formation scan and reserve coolant.';
+    if (scan.dominantFeed === 'torque') return 'Sustained resistance ahead: favor Torque feed and protect the drill head with coolant.';
+    if (scan.dominantFeed === 'preserve') return 'Delicate ground dominates: favor Preserve feed to protect core integrity.';
+    return 'Balanced ground ahead: begin in Cruise and respond to each formation scan.';
+  }
+  function coreRigTrajectoryResult(requestedDepth, recoverable, loadCounts, transitions, riskLevel) {
+    var requested = Math.max(1, Math.min(24, Math.round(Number(requestedDepth) || 1)));
+    var recovered = Math.max(0, Math.min(requested, Math.floor(Number(recoverable) || 0)));
+    var counts = { preserve: 0, cruise: 0, torque: 0 };
+    Object.keys(counts).forEach(function (mode) {
+      counts[mode] = Math.max(0, Math.min(recovered, Math.floor(Number(loadCounts && loadCounts[mode]) || 0)));
+    });
+    var countTotal = counts.preserve + counts.cruise + counts.torque;
+    if (countTotal > recovered) {
+      var overflow = countTotal - recovered;
+      ['torque', 'cruise', 'preserve'].forEach(function (mode) {
+        var reduction = Math.min(overflow, counts[mode]);
+        counts[mode] -= reduction; overflow -= reduction;
+      });
+    } else if (countTotal < recovered) counts.cruise += recovered - countTotal;
+    var shifts = Math.max(0, Math.min(Math.max(0, recovered - 1), Math.floor(Number(transitions) || 0)));
+    var variability = shifts === 0 ? 'steady'
+      : (shifts <= Math.max(1, Math.floor(Math.max(0, recovered - 1) / 2)) ? 'mixed' : 'volatile');
+    var allowedRisk = ['clear', 'caution', 'limited'].indexOf(riskLevel) >= 0 ? riskLevel : 'limited';
+    if (!recovered || (recovered < requested && allowedRisk === 'clear')) allowedRisk = 'limited';
+    var peakCount = Math.max(counts.preserve, counts.cruise, counts.torque);
+    var leaders = ['preserve', 'cruise', 'torque'].filter(function (mode) { return counts[mode] === peakCount; });
+    var dominantFeed = leaders.length === 1 ? leaders[0] : 'balanced';
+    var result = {
+      requestedDepth: requested, recoverable: recovered,
+      coveragePct: Math.round(recovered / requested * 100),
+      loadCounts: counts, dominantFeed: dominantFeed,
+      transitions: shifts, variability: variability, riskLevel: allowedRisk
+    };
+    result.advice = coreRigTrajectoryAdvice(result);
+    return result;
+  }
+  function coreRigTrajectoryScan(entries, plannedStop, requestedDepth) {
+    var source = Array.isArray(entries) ? entries.slice(0, 24) : [];
+    var counts = { preserve: 0, cruise: 0, torque: 0 }, previousMode = null, transitions = 0;
+    source.forEach(function (entry) {
+      entry = entry && typeof entry === 'object' ? entry : {};
+      var load = coreRigFormationLoad(entry.key, entry.type);
+      var mode = load && ['preserve', 'cruise', 'torque'].indexOf(load.idealMode) >= 0 ? load.idealMode : 'cruise';
+      counts[mode] += 1;
+      if (previousMode && previousMode !== mode) transitions += 1;
+      previousMode = mode;
+    });
+    var requested = Math.max(1, Math.min(24, Math.round(Number(requestedDepth) || source.length || 1)));
+    var stop = ['fluid', 'hazard', 'blocked', 'spent', 'cancelled'].indexOf(plannedStop) >= 0 ? plannedStop : null;
+    var riskLevel = !source.length ? 'limited'
+      : ((stop === 'fluid' || stop === 'hazard') ? 'caution'
+      : (stop || source.length < requested ? 'limited' : 'clear'));
+    return coreRigTrajectoryResult(requested, source.length, counts, transitions, riskLevel);
+  }
+  function coreRigTrajectorySnapshot(scan) {
+    scan = scan && typeof scan === 'object' ? scan : {};
+    return coreRigTrajectoryResult(
+      scan.requestedDepth, scan.recoverable, scan.loadCounts, scan.transitions,
+      ['clear', 'caution', 'limited'].indexOf(scan.riskLevel) >= 0 ? scan.riskLevel : 'limited'
+    );
+  }
+  function coreRigTrajectorySummary(scan) {
+    var safe = coreRigTrajectorySnapshot(scan);
+    return safe.recoverable + '/' + safe.requestedDepth + ' recoverable · ' +
+      safe.variability + ' resistance · ' + safe.transitions + ' load shift' +
+      (safe.transitions === 1 ? '' : 's') + ' · ' + safe.riskLevel + ' boundary risk';
+  }
+  function coreRigBoreBrief(scan, samples, bestPristineStreak, finished) {
+    var safeScan = coreRigTrajectorySnapshot(scan);
+    var safeSamples = (Array.isArray(samples) ? samples : []).filter(function (sample) {
+      return sample && typeof sample === 'object';
+    }).slice(0, 24);
+    var quality = coreRigQualitySummary(safeSamples);
+    var integrityValues = safeSamples.filter(function (sample) { return sample.integrity != null && isFinite(Number(sample.integrity)); }).map(function (sample) { return Math.max(0.55, Math.min(1, Number(sample.integrity))); });
+    var rawAverageIntegrity = integrityValues.length ? integrityValues.reduce(function (sum, value) { return sum + value; }, 0) / integrityValues.length : 0;
+    var streak = Math.max(0, Math.floor(Number(bestPristineStreak) || 0));
+    var recoveryTarget = safeScan.recoverable;
+    var precisionTarget = Math.min(3, recoveryTarget);
+    var checks = [
+      {
+        id: 'recovery', label: 'Recover the safe column',
+        current: safeSamples.length, target: recoveryTarget, unit: 'intervals',
+        met: recoveryTarget > 0 && safeSamples.length >= recoveryTarget
+      },
+      {
+        id: 'preservation', label: 'Protect average integrity',
+        current: integrityValues.length ? Math.round(rawAverageIntegrity * 1000) / 10 : 0, target: 85, unit: '% integrity',
+        met: safeSamples.length > 0 && quality.ratedCount === safeSamples.length && rawAverageIntegrity >= 0.85
+      },
+      {
+        id: 'precision', label: 'Build a pristine streak',
+        current: streak, target: precisionTarget, unit: 'intervals',
+        met: precisionTarget > 0 && streak >= precisionTarget
+      }
+    ];
+    checks = checks.map(function (objective) {
+      return Object.assign({}, objective, { state: objective.met ? 'met' : (finished ? 'missed' : 'pending') });
+    });
+    var metCount = checks.filter(function (objective) { return objective.met; }).length;
+    return {
+      objectives: checks, metCount: metCount, total: 3, complete: metCount === 3,
+      finished: !!finished,
+      summary: (finished ? 'Bore Brief ' : 'Live Bore Brief ') + metCount + '/3 complete'
+    };
+  }
+  function coreRigPublicSample(sample, fallbackDepth) {
+    sample = sample && typeof sample === 'object' ? sample : {};
+    var rawIntegrity = Number(sample.integrity);
+    var integrity = isFinite(rawIntegrity) ? Math.max(0.55, Math.min(1, rawIntegrity)) : null;
+    var rawColor = sample.color;
+    var color = typeof rawColor === 'number' && isFinite(rawColor)
+      ? Math.max(0, Math.min(0xffffff, Math.floor(rawColor)))
+      : (typeof rawColor === 'string' && /^#?[0-9a-f]{3,8}$/i.test(rawColor) ? rawColor.slice(0, 9) : null);
+    var clean = {
+      key: String(sample.key || 'unknown').slice(0, 80),
+      name: String(sample.name || sample.key || 'Core sample').slice(0, 100),
+      type: String(sample.type || 'Rock').slice(0, 80),
+      depth: Math.max(1, Math.min(24, Math.round(Number(sample.depth) || fallbackDepth || 1)))
+    };
+    if (color != null) clean.color = color;
+    if (integrity != null) clean.integrity = integrity;
+    return clean;
+  }
+  function coreRigCoreCassette(samples, intervalCount, running, scanning) {
+    var source = (Array.isArray(samples) ? samples : []).filter(function (sample) {
+      return sample && typeof sample === 'object' && sample.key;
+    }).slice(0, 24);
+    var requested = Math.max(0, Math.min(24, Math.round(Number(intervalCount) || source.length)));
+    var total = Math.max(source.length, requested), slots = [];
+    for (var slotIndex = 0; slotIndex < total; slotIndex++) {
+      if (slotIndex < source.length) {
+        var cleanSample = coreRigPublicSample(source[slotIndex], slotIndex + 1);
+        var feedback = cleanSample.integrity == null
+          ? { integrityPercent: null, tier: 'unrated', label: 'Unrated' }
+          : coreRigIntervalFeedback(cleanSample.name, cleanSample.integrity, 0);
+        var qualityGlyph = feedback.tier === 'pristine' ? '◆' : (feedback.tier === 'stable' ? '◇' : (feedback.tier === 'damaged' ? '△' : '□'));
+        slots.push(Object.assign({
+          index: slotIndex + 1, interval: slotIndex + 1, state: 'recovered',
+          integrityPercent: feedback.integrityPercent, tier: feedback.tier,
+          quality: feedback.label, glyph: qualityGlyph, sample: Object.assign({}, cleanSample)
+        }, cleanSample));
+      } else if (!!running && slotIndex === source.length) {
+        slots.push({
+          index: slotIndex + 1, interval: slotIndex + 1,
+          state: scanning ? 'scanning' : 'current', quality: null, glyph: scanning ? '◉' : '○'
+        });
+      } else {
+        slots.push({ index: slotIndex + 1, interval: slotIndex + 1, state: 'pending', quality: null, glyph: '·' });
+      }
+    }
+    return { slots: slots, revealedCount: source.length, total: total, running: !!running, scanning: !!running && !!scanning };
+  }
+  function coreRigCompressedCore(report) {
+    report = report && typeof report === 'object' ? report : {};
+    var target = Number(report.targetDepth);
+    var limit = isFinite(target) && target > 0 ? Math.max(1, Math.min(24, Math.round(target))) : 24;
+    var samples = (Array.isArray(report.samples) ? report.samples : []).filter(function (sample) {
+      return sample && typeof sample === 'object' && sample.key;
+    }).slice(0, limit).map(function (sample, index) { return coreRigPublicSample(sample, index + 1); });
+    var bands = [];
+    samples.forEach(function (sample) {
+      var previous = bands.length ? bands[bands.length - 1] : null;
+      if (!previous || previous.key !== sample.key) {
+        bands.push({
+          key: sample.key, name: sample.name, type: sample.type,
+          color: sample.color == null ? null : sample.color,
+          startDepth: sample.depth, endDepth: sample.depth, count: 1,
+          avgIntegrity: sample.integrity == null ? null : sample.integrity,
+          integrityTotal: sample.integrity == null ? 0 : sample.integrity,
+          integrityCount: sample.integrity == null ? 0 : 1
+        });
+        return;
+      }
+      if (sample.integrity != null) {
+        previous.integrityTotal += sample.integrity;
+        previous.integrityCount += 1;
+      }
+      previous.endDepth = sample.depth; previous.count += 1;
+      previous.avgIntegrity = previous.integrityCount ? Math.round(previous.integrityTotal / previous.integrityCount * 10000) / 10000 : null;
+    });
+    var publicBands = bands.map(function (band) {
+      var cleanBand = Object.assign({}, band);
+      delete cleanBand.integrityTotal; delete cleanBand.integrityCount;
+      return cleanBand;
+    });
+    return {
+      bands: publicBands,
+      sequence: publicBands.map(function (band) { return band.key; }),
+      sampleCount: samples.length, intervalCount: samples.length, formationCount: publicBands.length
+    };
+  }
+  function coreRigReportStableId(report) {
+    report = report && typeof report === 'object' ? report : {};
+    if (report.id != null && String(report.id).trim()) return String(report.id).trim().slice(0, 180);
+    var compressed = coreRigCompressedCore(report);
+    return [
+      String(report.sceneId || '').slice(0, 80), String(report.angle || '').slice(0, 24),
+      Math.max(0, Math.round(Number(report.targetDepth) || 0)),
+      Math.max(0, Math.round(Number(report.completedAt) || 0)), compressed.sequence.join('>')
+    ].join('@');
+  }
+  function coreRigCompareReports(previousReport, nextReport) {
+    previousReport = previousReport && typeof previousReport === 'object' ? previousReport : {};
+    nextReport = nextReport && typeof nextReport === 'object' ? nextReport : {};
+    var previousCore = coreRigCompressedCore(previousReport), nextCore = coreRigCompressedCore(nextReport);
+    var previousId = coreRigReportStableId(previousReport), nextId = coreRigReportStableId(nextReport);
+    var pairId = [previousId, nextId].sort().join('::');
+    var previousScene = String(previousReport.sceneId || ''), nextScene = String(nextReport.sceneId || '');
+    var previousAngle = CORE_RIG_ANGLES[previousReport.angle] ? previousReport.angle : null;
+    var nextAngle = CORE_RIG_ANGLES[nextReport.angle] ? nextReport.angle : null;
+    var previousDepth = Math.max(0, Math.round(Number(previousReport.targetDepth) || 0));
+    var nextDepth = Math.max(0, Math.round(Number(nextReport.targetDepth) || 0));
+    var angleChanged = previousAngle !== nextAngle, depthChanged = previousDepth !== nextDepth;
+    if (!previousScene || previousScene !== nextScene || !previousAngle || !nextAngle ||
+        !previousCore.sampleCount || !nextCore.sampleCount || previousId === nextId || angleChanged === depthChanged) {
+      return { eligible: false, pairId: null, changedVariable: null, reason: 'Paired bore trials must share a scene and change exactly one public variable.' };
+    }
+    var a = previousCore.sequence, b = nextCore.sequence;
+    var matrix = [], rowIndex, columnIndex;
+    for (rowIndex = 0; rowIndex <= a.length; rowIndex++) {
+      matrix[rowIndex] = [];
+      for (columnIndex = 0; columnIndex <= b.length; columnIndex++) matrix[rowIndex][columnIndex] = 0;
+    }
+    for (rowIndex = 1; rowIndex <= a.length; rowIndex++) {
+      for (columnIndex = 1; columnIndex <= b.length; columnIndex++) {
+        matrix[rowIndex][columnIndex] = a[rowIndex - 1] === b[columnIndex - 1]
+          ? matrix[rowIndex - 1][columnIndex - 1] + 1
+          : Math.max(matrix[rowIndex - 1][columnIndex], matrix[rowIndex][columnIndex - 1]);
+      }
+    }
+    var lcsLength = matrix[a.length][b.length];
+    var lcsRatio = Math.round((lcsLength / Math.max(1, a.length, b.length)) * 100) / 100;
+    var similarityPct = Math.round(lcsRatio * 100);
+    var previousByKey = {}, nextByKey = {};
+    previousCore.bands.forEach(function (band) { if (!previousByKey[band.key]) previousByKey[band.key] = band; });
+    nextCore.bands.forEach(function (band) { if (!nextByKey[band.key]) nextByKey[band.key] = band; });
+    var sharedFormations = [], newFormations = [], notRepeated = [];
+    nextCore.bands.forEach(function (band) {
+      if (previousByKey[band.key] && sharedFormations.indexOf(band.key) < 0) {
+        sharedFormations.push(band.key);
+      } else if (!previousByKey[band.key] && newFormations.indexOf(band.key) < 0) {
+        newFormations.push(band.key);
+      }
+    });
+    previousCore.bands.forEach(function (band) {
+      if (!nextByKey[band.key] && notRepeated.indexOf(band.key) < 0) notRepeated.push(band.key);
+    });
+    var sharedFormationDetails = sharedFormations.map(function (key) {
+      var band = nextByKey[key] || previousByKey[key];
+      return { key: key, name: band ? band.name : key };
+    });
+    var newFormationDetails = newFormations.map(function (key) {
+      var band = nextByKey[key];
+      return { key: key, name: band ? band.name : key };
+    });
+    var changedVariable = angleChanged ? 'angle' : 'depth';
+    var controlLabel = angleChanged
+      ? ('Angle ' + coreRigAngleDegrees(previousAngle) + '° → ' + coreRigAngleDegrees(nextAngle) + '° · depth held at ' + previousDepth)
+      : ('Depth ' + previousDepth + ' → ' + nextDepth + ' intervals · angle held at ' + coreRigAngleDegrees(previousAngle) + '°');
+    var findingLevel = similarityPct >= 70 ? 'consistent' : (similarityPct >= 35 ? 'mixed' : 'different');
+    var interpretation = findingLevel === 'consistent'
+      ? 'These paired bore trials recovered similar sequences.'
+      : (findingLevel === 'mixed'
+      ? 'These paired bore trials share part of the sequence and add different evidence.'
+      : 'These paired bore trials recovered different sequences; another controlled trial would strengthen the interpretation.');
+    return {
+      eligible: true, pairId: pairId, changedVariable: changedVariable, changed: changedVariable,
+      controlLabel: controlLabel, lcsLength: lcsLength, lcsRatio: lcsRatio, similarityPct: similarityPct,
+      sharedFormations: sharedFormations.slice(), newFormations: newFormations.slice(), notRepeated: notRepeated.slice(),
+      sharedFormationDetails: sharedFormationDetails, newFormationDetails: newFormationDetails,
+      shared: sharedFormations.slice(),
+      findingLevel: findingLevel, interpretation: interpretation, finding: interpretation,
+      previousCore: previousCore, nextCore: nextCore
+    };
+  }
+  function coreRigNextExperiment(report, certification) {
+    report = report && typeof report === 'object' ? report : {};
+    var angle = CORE_RIG_ANGLES[report.angle] ? report.angle : null;
+    var depth = Math.round(Number(report.targetDepth) || 0);
+    var currentKey = coreRigProgramKey(angle, depth);
+    if (!currentKey) return null;
+    var catalog = coreRigProgramCatalog(), programs = normalizeCoreRigPrograms(certification);
+    var angles = ['vertical', 'slant', 'shallow'];
+    var angleIndex = angles.indexOf(angle), depthIndex = CORE_RIG_DEPTHS.indexOf(depth), candidates = [];
+    function offer(candidateAngle, candidateDepth) {
+      var key = coreRigProgramKey(candidateAngle, candidateDepth);
+      if (!key || key === currentKey || candidates.some(function (item) { return item.key === key; })) return;
+      var program = catalog.filter(function (item) { return item.key === key; })[0];
+      if (program) candidates.push(program);
+    }
+    for (var angleOffset = 1; angleOffset < angles.length; angleOffset++) offer(angles[(angleIndex + angleOffset) % angles.length], depth);
+    for (var deeperIndex = depthIndex + 1; deeperIndex < CORE_RIG_DEPTHS.length; deeperIndex++) offer(angle, CORE_RIG_DEPTHS[deeperIndex]);
+    for (var shallowerIndex = depthIndex - 1; shallowerIndex >= 0; shallowerIndex--) offer(angle, CORE_RIG_DEPTHS[shallowerIndex]);
+    var next = candidates.filter(function (candidate) {
+      return !programs[candidate.key] || Number(programs[candidate.key].tier) < 1;
+    })[0];
+    if (!next) return null;
+    var changedVariable = next.angle === angle ? 'depth' : 'angle';
+    var controlLabel = changedVariable === 'depth'
+      ? ('Hold angle at ' + coreRigAngleDegrees(angle) + '° · change depth ' + depth + ' → ' + next.depth)
+      : ('Hold depth at ' + depth + ' intervals · change angle ' + coreRigAngleDegrees(angle) + '° → ' + next.angleDegrees + '°');
+    var question = changedVariable === 'depth'
+      ? ('Does a ' + next.depth + '-interval bore add another recovered formation while angle stays ' + coreRigAngleDegrees(angle) + '°?')
+      : ('Does changing to ' + next.angleDegrees + '° alter the recovered sequence while depth stays ' + depth + ' intervals?');
+    return {
+      mode: 'compare', programKey: next.key, angle: next.angle, angleDegrees: next.angleDegrees,
+      depth: next.depth, changedVariable: changedVariable, changed: changedVariable,
+      controlLabel: controlLabel, question: question
+    };
+  }
+  function coreRigIntervalFeedback(name, integrity, pristineStreak) {
+    var numericIntegrity = Number(integrity);
+    var safeIntegrity = isFinite(numericIntegrity) ? Math.max(0.55, Math.min(1, numericIntegrity)) : 1;
+    var integrityPercent = Math.round(safeIntegrity * 100);
+    var streak = Math.max(0, Math.floor(Number(pristineStreak) || 0));
+    var tier = safeIntegrity >= 0.97 ? 'pristine' : (safeIntegrity >= 0.85 ? 'stable' : 'damaged');
+    var label = tier === 'pristine' ? 'Pristine' : (tier === 'stable' ? 'Stable' : 'Damaged');
+    var sampleName = String(name || 'Core sample');
+    return {
+      name: sampleName, integrity: safeIntegrity, integrityPercent: integrityPercent,
+      pristineStreak: streak, tier: tier, label: label,
+      summary: label + ' core · ' + sampleName + ' · ' + integrityPercent + '% integrity · ' + (tier === 'pristine' ? ('pristine streak ' + streak) : 'streak reset')
+    };
+  }
+  function coreRigFormationCue(formationLoad, idealMode, previousResult) {
+    var load = String(formationLoad || 'Dense');
+    var profile = coreRigFeedProfile(String(idealMode || 'cruise').toLowerCase());
+    var previousSummary = previousResult && previousResult.summary ? String(previousResult.summary) : '';
+    var prompt = previousSummary
+      ? previousSummary + '. Next formation: ' + load + ' load. Select ' + profile.label + ' feed.'
+      : 'Formation scan. ' + load + ' load. Select ' + profile.label + ' feed.';
+    return { formationLoad: load, idealFeedMode: profile.id, idealFeedLabel: profile.label, prompt: prompt };
+  }
+  function coreRigChallengeProgress(replayScore, bestScore, resultScore) {
+    function cleanScore(value) { return Math.max(0, Math.min(200, Math.floor(Number(value) || 0))); }
+    var replay = cleanScore(replayScore), best = Math.max(replay, cleanScore(bestScore));
+    var hasResult = resultScore !== null && resultScore !== undefined && isFinite(Number(resultScore));
+    var result = hasResult ? cleanScore(resultScore) : null, delta = result == null ? null : result - replay;
+    return {
+      replayScore: replay, bestScore: best, xpTarget: best < 200 ? best + 1 : null, resultScore: result, delta: delta,
+      state: result == null ? 'ready' : (delta > 0 ? 'beaten' : (delta === 0 ? 'matched' : 'behind'))
+    };
+  }
+  function coreRigProgramKey(angle, depth) {
+    var angleId = angle === 'vertical' || angle === 'slant' || angle === 'shallow' ? angle : null;
+    var numericDepth = Number(depth), depthValue = Math.round(numericDepth || 0);
+    return angleId && isFinite(numericDepth) && numericDepth === depthValue && CORE_RIG_DEPTHS.indexOf(depthValue) >= 0 ? angleId + '@' + depthValue : null;
+  }
+  function coreRigProgramCatalog() {
+    var programs = [];
+    ['vertical', 'slant', 'shallow'].forEach(function (angle) {
+      CORE_RIG_DEPTHS.forEach(function (depth) {
+        programs.push({ key: coreRigProgramKey(angle, depth), angle: angle, angleDegrees: coreRigAngleDegrees(angle), depth: depth });
+      });
+    });
+    return programs;
+  }
+  function coreRigCertificationTiers() {
+    return [
+      { level: 0, id: 'unrated', label: 'Unrated' },
+      { level: 1, id: 'certified', label: 'Certified' },
+      { level: 2, id: 'advanced', label: 'Advanced' },
+      { level: 3, id: 'mastered', label: 'Mastered' }
+    ].map(function (tier) { return Object.assign({}, tier); });
+  }
+  function coreRigProgramScoreCeiling(report) {
+    report = report && typeof report === 'object' ? report : {};
+    var targetDepth = Math.max(1, Math.min(24, Math.round(Number(report.targetDepth) || coreRigReportSummary(report).sampleCount || 1)));
+    return Math.min(200, targetDepth * 24 + 24);
+  }
+  function coreRigProgramRating(report, evaluation) {
+    report = report && typeof report === 'object' ? report : {};
+    evaluation = evaluation && typeof evaluation === 'object' ? evaluation : coreRigEvaluation(report);
+    var theoreticalMaximum = coreRigProgramScoreCeiling(report);
+    var score = Math.max(0, Math.min(theoreticalMaximum, Math.floor(Number(evaluation.score) || 0)));
+    return Math.max(0, Math.min(200, Math.round(score / Math.max(1, theoreticalMaximum) * 200)));
+  }
+  function coreRigCertificationTier(report, evaluation) {
+    report = report && typeof report === 'object' ? report : {};
+    evaluation = evaluation && typeof evaluation === 'object' ? evaluation : coreRigEvaluation(report);
+    var samples = Array.isArray(report.samples) ? report.samples : [];
+    var quality = coreRigQualitySummary(samples);
+    var suppliedIntegrity = evaluation.integrityPercent != null && isFinite(Number(evaluation.integrityPercent));
+    var hasIntegrity = samples.length ? quality.ratedCount === samples.length : suppliedIntegrity;
+    var integrityPercent = suppliedIntegrity
+      ? Math.max(0, Math.min(100, Math.round(Number(evaluation.integrityPercent))))
+      : (hasIntegrity ? quality.integrityPercent : 0);
+    var score = Math.max(0, Math.min(coreRigProgramScoreCeiling(report), Math.floor(Number(evaluation.score) || 0)));
+    var rating = coreRigProgramRating(report, evaluation);
+    var targetDepth = Math.max(1, Number(report.targetDepth) || samples.length || 1);
+    var recoveryRatio = samples.length
+      ? Math.min(1, samples.length / targetDepth)
+      : (evaluation.recoveryRatio != null && isFinite(Number(evaluation.recoveryRatio)) ? Math.max(0, Math.min(1, Number(evaluation.recoveryRatio))) : 0);
+    var blockedStop = ['cancelled', 'blocked', 'spent'].indexOf(report.stopReason) >= 0;
+    var eligibleFinish = (!!evaluation.fullCore && recoveryRatio >= 1) || (!!evaluation.safeBoundary && recoveryRatio >= 0.75);
+    var eligible = !blockedStop && hasIntegrity && eligibleFinish;
+    var level = eligible && rating >= 175 && integrityPercent >= 97 ? 3
+      : (eligible && rating >= 135 && integrityPercent >= 92 ? 2
+      : (eligible && score >= 65 && integrityPercent >= 85 ? 1 : 0));
+    var tiers = coreRigCertificationTiers(), tier = tiers[level];
+    return Object.assign({}, tier, {
+      score: score, rating: rating, integrityPercent: integrityPercent, recoveryRatio: recoveryRatio, eligible: eligible,
+      fullCore: !!evaluation.fullCore && recoveryRatio >= 1, safeBoundary: !!evaluation.safeBoundary && recoveryRatio >= 0.75
+    });
+  }
+  function coreRigCertificationReward(previousBest, nextScore) {
+    var previous = Math.max(0, Math.min(200, Math.floor(Number(previousBest) || 0)));
+    var next = Math.max(0, Math.min(200, Math.floor(Number(nextScore) || 0)));
+    return next > previous ? Math.max(0, Math.ceil(next / 10) - Math.ceil(previous / 10)) : 0;
+  }
+  function coreRigCertificationXpTarget(bestRating) {
+    var best = Math.max(0, Math.min(200, Math.floor(Number(bestRating) || 0)));
+    var bucket = Math.ceil(best / 10);
+    return bucket >= 20 ? null : bucket * 10 + 1;
+  }
+  function normalizeCoreRigPrograms(programs) {
+    var source = programs && programs.programs && typeof programs.programs === 'object' ? programs.programs : programs;
+    source = source && typeof source === 'object' ? source : {};
+    var tiers = coreRigCertificationTiers(), normalized = {};
+    coreRigProgramCatalog().forEach(function (program) {
+      var raw = source[program.key] && typeof source[program.key] === 'object' ? source[program.key] : {};
+      var tierLevel = Math.max(0, Math.min(3, Math.floor(Number(raw.tier) || 0)));
+      var scoreCeiling = coreRigProgramScoreCeiling({ targetDepth: program.depth });
+      var rawBestScore = Math.max(0, Math.min(scoreCeiling, Math.floor(Number(raw.bestScore) || 0)));
+      var bestScore = tierLevel >= 1 ? rawBestScore : 0;
+      var lastScore = Math.max(0, Math.min(scoreCeiling, Math.floor(Number(raw.lastScore) || 0)));
+      var reportIds = Array.isArray(raw.reportIds) ? raw.reportIds.map(String).filter(Boolean).slice(-8) : [];
+      normalized[program.key] = Object.assign({}, raw, {
+        key: program.key, angle: program.angle, angleDegrees: program.angleDegrees, depth: program.depth,
+        bestScore: bestScore, bestGrade: coreRigGradeForScore(bestScore),
+        bestRating: tierLevel >= 1 ? Math.max(0, Math.min(200, Math.round(Number(raw.bestRating) || coreRigProgramRating({ targetDepth: program.depth }, { score: bestScore })))) : 0,
+        bestIntegrity: tierLevel >= 1 ? Math.max(0, Math.min(100, Math.round(Number(raw.bestIntegrity) || 0))) : 0,
+        tier: tierLevel, tierLabel: tiers[tierLevel].label,
+        attempts: Math.max(0, Math.floor(isFinite(Number(raw.attempts)) ? Number(raw.attempts) : 0)),
+        lastScore: lastScore, lastGrade: coreRigGradeForScore(lastScore),
+        lastRating: Math.max(0, Math.min(200, Math.round(Number(raw.lastRating) || coreRigProgramRating({ targetDepth: program.depth }, { score: lastScore })))),
+        lastIntegrity: Math.max(0, Math.min(100, Math.round(Number(raw.lastIntegrity) || 0))),
+        lastCompletedAt: Math.max(0, isFinite(Number(raw.lastCompletedAt)) ? Number(raw.lastCompletedAt) : 0),
+        lastEligible: !!raw.lastEligible, lastFullCore: !!raw.lastFullCore, lastSafeBoundary: !!raw.lastSafeBoundary,
+        lastStopReason: ['fluid', 'hazard', 'blocked', 'spent', 'cancelled'].indexOf(raw.lastStopReason) >= 0 ? raw.lastStopReason : null,
+        bestReportId: raw.bestReportId == null ? null : String(raw.bestReportId),
+        reportIds: reportIds
+      });
+    });
+    return normalized;
+  }
+  function advanceCoreRigCertification(previousEntry, report, evaluation, completedAt, reportId) {
+    previousEntry = previousEntry && typeof previousEntry === 'object' ? previousEntry : {};
+    report = report && typeof report === 'object' ? report : {};
+    evaluation = evaluation && typeof evaluation === 'object' ? evaluation : coreRigEvaluation(report);
+    var programs = normalizeCoreRigPrograms(previousEntry);
+    var baseEntry = Object.assign({}, previousEntry, { version: 1, programs: programs });
+    var programKey = coreRigProgramKey(report.angle, report.targetDepth);
+    if (!programKey || !programs[programKey]) {
+      return { entry: baseEntry, certificationReward: 0, programKey: null, program: null, tierUp: false, newBest: false, duplicate: false, unsupported: true };
+    }
+    var previous = programs[programKey];
+    var stableId = String(reportId || completedAt || '');
+    if (stableId && previous.reportIds.indexOf(stableId) >= 0) {
+      return { entry: baseEntry, certificationReward: 0, programKey: programKey, program: previous, tierUp: false, newBest: false, duplicate: true };
+    }
+    var assessment = coreRigCertificationTier(report, evaluation);
+    var score = assessment.score, qualifies = assessment.level >= 1;
+    var newBest = qualifies && score > previous.bestScore;
+    var nextBest = newBest ? score : previous.bestScore;
+    var newRatingBest = qualifies && assessment.rating > previous.bestRating;
+    var nextBestRating = newRatingBest ? assessment.rating : previous.bestRating;
+    var tierUp = assessment.level > previous.tier;
+    var reportIds = stableId ? previous.reportIds.concat([stableId]).slice(-8) : previous.reportIds.slice();
+    var nextProgram = Object.assign({}, previous, {
+      bestScore: nextBest, bestGrade: coreRigGradeForScore(nextBest), bestRating: nextBestRating,
+      bestIntegrity: qualifies ? Math.max(previous.bestIntegrity, assessment.integrityPercent) : previous.bestIntegrity,
+      tier: tierUp ? assessment.level : previous.tier,
+      tierLabel: coreRigCertificationTiers()[tierUp ? assessment.level : previous.tier].label,
+      attempts: previous.attempts + 1,
+      lastScore: score, lastGrade: coreRigGradeForScore(score), lastRating: assessment.rating, lastIntegrity: assessment.integrityPercent,
+      lastCompletedAt: Math.max(0, isFinite(Number(completedAt)) ? Number(completedAt) : 0),
+      lastEligible: assessment.eligible, lastFullCore: assessment.fullCore, lastSafeBoundary: assessment.safeBoundary, lastStopReason: report.stopReason || null,
+      bestReportId: newBest || newRatingBest || tierUp ? (stableId || previous.bestReportId) : previous.bestReportId,
+      reportIds: reportIds
+    });
+    var nextPrograms = Object.assign({}, programs); nextPrograms[programKey] = nextProgram;
+    return {
+      entry: Object.assign({}, previousEntry, { version: 1, programs: nextPrograms }),
+      certificationReward: coreRigCertificationReward(previous.bestRating, nextBestRating),
+      programKey: programKey, program: nextProgram, assessment: assessment,
+      tierUp: tierUp, newBest: newBest, duplicate: false
+    };
+  }
+  function coreRigCertificationGuidance(program) {
+    program = program && typeof program === 'object' ? program : {};
+    if (!Math.max(0, Math.floor(Number(program.attempts) || 0))) return 'Grade C, 85% integrity, and target recovery or a protected boundary after 75%';
+    if (Number(program.tier) >= 3) return 'Highest operator tier earned';
+    if (Number(program.tier) >= 2) return 'Mastered target: 175 program rating with 97% integrity';
+    if (Number(program.tier) >= 1) return 'Advanced target: 135 program rating with 92% integrity';
+    var needs = [];
+    if (Number(program.lastScore) < 65) needs.push('Need Grade C');
+    if (Number(program.lastIntegrity) < 85) needs.push('Need 85% integrity');
+    if (!program.lastEligible || (!program.lastFullCore && !program.lastSafeBoundary)) needs.push('Recover 75% and finish at target or protected boundary');
+    return needs.length ? needs.join(' · ') : 'Retry to certify this trajectory';
+  }
+  function coreRigCertificationSummary(entry) {
+    var programs = normalizeCoreRigPrograms(entry), certified = 0, advanced = 0, mastered = 0, attempts = 0;
+    var rows = { vertical: 0, slant: 0, shallow: 0 };
+    coreRigProgramCatalog().forEach(function (program) {
+      var cell = programs[program.key];
+      attempts += cell.attempts;
+      if (cell.tier >= 1) { certified += 1; rows[program.angle] += 1; }
+      if (cell.tier >= 2) advanced += 1;
+      if (cell.tier >= 3) mastered += 1;
+    });
+    var completedRows = Object.keys(rows).filter(function (angle) { return rows[angle] === CORE_RIG_DEPTHS.length; }).length;
+    var title = mastered === 9 ? 'Master Core Operator' : (certified === 9 ? 'Certified Core Operator' : (certified >= 6 ? 'Directional Specialist' : (certified >= 3 ? 'Qualified Operator' : 'Operator in training')));
+    return { total: 9, certified: certified, advanced: advanced, mastered: mastered, attempts: attempts, percent: Math.round(certified / 9 * 100), complete: certified === 9, completedRows: completedRows, title: title };
+  }
+
   function coreRigSupported(sceneId) { return fpExplorerMode(sceneId) === 'mine'; }
   function coreRigAngleDegrees(angleId) { return CORE_RIG_ANGLES[angleId] || CORE_RIG_ANGLES.vertical; }
   function coreRigPath(origin, yaw, angleId, depth, bounds) {
@@ -279,10 +842,18 @@
     var recoveryRatio = Math.min(1, summary.sampleCount / targetDepth);
     var fullCore = !!(summary.sampleCount && !summary.stopReason && recoveryRatio >= 1);
     var safeBoundary = !!(summary.sampleCount && (summary.stopReason === 'fluid' || summary.stopReason === 'hazard'));
-    var score = Math.min(200, summary.sampleCount * 7 + summary.uniqueMaterials * 14 + summary.deepest * 3 + (fullCore ? 24 : 0) + (safeBoundary ? 16 : 0));
+    var quality = coreRigQualitySummary(report && report.samples);
+    var rawScore = Math.min(200, summary.sampleCount * 7 + summary.uniqueMaterials * 14 + summary.deepest * 3 + (fullCore ? 24 : 0) + (safeBoundary ? 16 : 0));
+    var qualityPenalty = quality.ratedCount ? Math.round((1 - quality.averageIntegrity) * 40) : 0;
+    var score = Math.max(0, rawScore - qualityPenalty);
     var grade = coreRigGradeForScore(score);
     var label = grade === 'S' ? 'Exceptional column' : (grade === 'A' ? 'Research-grade core' : (grade === 'B' ? 'Strong recovery' : (grade === 'C' ? 'Usable core' : 'Partial recovery')));
-    return { score: score, grade: grade, label: label, fullCore: fullCore, safeBoundary: safeBoundary, recoveryRatio: recoveryRatio };
+    var result = { score: score, grade: grade, label: label, fullCore: fullCore, safeBoundary: safeBoundary, recoveryRatio: recoveryRatio };
+    if (quality.ratedCount) {
+      result.averageIntegrity = quality.averageIntegrity; result.integrityPercent = quality.integrityPercent;
+      result.pristineCount = quality.pristineCount; result.qualityPenalty = qualityPenalty;
+    }
+    return result;
   }
   function coreRigResearchReward(previousBest, nextScore) {
     var previous = Math.max(0, Math.min(200, Math.floor(Number(previousBest) || 0)));
@@ -303,12 +874,12 @@
     var newBest = score > previousBest, bestScore = newBest ? score : previousBest;
     var reportIds = stableId ? previousIds.concat([stableId]).slice(-12) : previousIds;
     return {
-      entry: {
+      entry: Object.assign({}, previousEntry, {
         bestScore: bestScore, bestGrade: coreRigGradeForScore(bestScore),
         totalBores: Math.max(0, Math.floor(Number(previousEntry.totalBores) || 0)) + 1,
         lastScore: score, lastGrade: coreRigGradeForScore(score),
         lastCompletedAt: Math.max(0, Number(completedAt) || 0), reportIds: reportIds
-      },
+      }),
       researchReward: newBest ? coreRigResearchReward(previousBest, score) : 0,
       newBest: newBest, duplicate: false
     };
@@ -2842,9 +3413,11 @@
     var coreRigState3d = {
       deployed: false, running: false, stage: 'packed', angle: 'vertical', depth: CORE_RIG_DEPTHS[1],
       origin: null, yaw: 0, path: [], cursor: 0, samples: [], heat: 0, progress: 0,
+      feedMode: 'cruise', coolantRemaining: 2, coolantUsed: 0, formationLoad: null, idealFeedMode: 'cruise',
+      intervalStress: 0, intervalPeakHeat: 0, pristineStreak: 0, bestPristineStreak: 0,
       currentCell: null, currentVoxel: null, currentElapsed: 0, currentDuration: 0,
-      stopReason: null, plannedStop: null, status: 'Pack ready', lastHudAt: 0, evaluation: null,
-      deployedAt: 0, celebrateUntil: 0
+      stopReason: null, plannedStop: null, trajectoryScan: null, status: 'Pack ready', lastHudAt: 0, evaluation: null,
+      deployedAt: 0, celebrateUntil: 0, coolantFlashUntil: 0, scanUntil: 0, lastIntervalResult: null
     };
     coreRigGroup3d.name = 'directional-core-rig';
     coreRigGroup3d.visible = false;
@@ -2875,23 +3448,153 @@
     var coreRigBit3d = coreRigMesh3d(new THREE.ConeGeometry(rigUnit3d * 0.24, rigUnit3d * 0.58, 10), coreRigAmberMat3d, 0, -rigUnit3d * 3.04, 0, coreRigAssembly3d);
     coreRigBit3d.rotation.z = Math.PI;
     coreRigAssembly3d.position.set(0, rigUnit3d * 3.0, 0);
+    // Three indexed torque collars turn formation pressure into a readable mechanical load cue.
+    // They reuse tracked rig resources and remain pooled for the lifetime of the explorer.
+    var coreRigLoadCouplers3d = [], coreRigLoadCompression3d = 0;
+    for (var loadCouplerIndex3d = 0; loadCouplerIndex3d < 3; loadCouplerIndex3d++) {
+      var loadCoupler3d = new THREE.Group();
+      loadCoupler3d.name = 'core-load-coupler-' + (loadCouplerIndex3d + 1);
+      var loadCollar3d = new THREE.Mesh(coreRigRotor3d.geometry, coreRigAmberMat3d);
+      loadCollar3d.rotation.x = Math.PI * 0.5;
+      loadCollar3d.scale.setScalar(0.38);
+      loadCollar3d.castShadow = false; loadCollar3d.receiveShadow = false;
+      var loadIndexTooth3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigSteelMat3d);
+      loadIndexTooth3d.scale.set(0.13, 0.07, 0.13);
+      loadIndexTooth3d.position.x = rigUnit3d * 0.22;
+      loadIndexTooth3d.rotation.z = Math.PI * 0.5;
+      loadIndexTooth3d.castShadow = false; loadIndexTooth3d.receiveShadow = false;
+      loadCoupler3d.add(loadCollar3d); loadCoupler3d.add(loadIndexTooth3d);
+      loadCoupler3d.position.set(0, -rigUnit3d * (1.82 + loadCouplerIndex3d * 0.24), 0);
+      loadCoupler3d.rotation.y = loadCouplerIndex3d * Math.PI * 0.66;
+      coreRigAssembly3d.add(loadCoupler3d);
+      coreRigLoadCouplers3d.push(loadCoupler3d);
+    }
     var coreRigGuideGeo3d = coreRigGeometry3d(new THREE.BufferGeometry());
     var coreRigGuide3d = new THREE.Line(coreRigGuideGeo3d, coreRigGuideMat3d);
     coreRigGuide3d.renderOrder = 8; coreRigGroup3d.add(coreRigGuide3d);
     var coreRigTargetMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+    var coreRigPulseMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.58, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
     var coreRigTarget3d = coreRigMesh3d(new THREE.IcosahedronGeometry(rigUnit3d * 0.26, 1), coreRigTargetMat3d, 0, 0, 0);
     coreRigTarget3d.castShadow = false; coreRigTarget3d.receiveShadow = false; coreRigTarget3d.renderOrder = 9;
     var coreRigGuideStart3d = new THREE.Vector3(0, rigUnit3d * 0.34, 0), coreRigGuideEnd3d = coreRigGuideStart3d.clone();
+    var coreRigPulseDirection3d = new THREE.Vector3(), coreRigPulseNormal3d = new THREE.Vector3(0, 0, 1);
+    var coreRigPulseQuaternion3d = new THREE.Quaternion();
     var coreRigFeedGlow3d = coreRigMesh3d(new THREE.SphereGeometry(rigUnit3d * 0.18, 10, 8), coreRigTargetMat3d, 0, 0, 0);
     coreRigFeedGlow3d.castShadow = false; coreRigFeedGlow3d.receiveShadow = false; coreRigFeedGlow3d.renderOrder = 10; coreRigFeedGlow3d.visible = false;
+    // This collar is a physical bit-face cue, so unlike the planning rings it obeys rock depth.
+    var coreRigContactMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.68, blending: THREE.AdditiveBlending, depthTest: true, depthWrite: false }));
+    var coreRigContact3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * 0.23, rigUnit3d * 0.035, 6, 22), coreRigContactMat3d, 0, 0, 0);
+    coreRigContact3d.castShadow = false; coreRigContact3d.receiveShadow = false; coreRigContact3d.renderOrder = 6; coreRigContact3d.visible = false;
     var coreRigPulseRings3d = [];
     for (var rigRingIndex3d = 0; rigRingIndex3d < 3; rigRingIndex3d++) {
-      var pulseRing3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * (0.46 + rigRingIndex3d * 0.16), rigUnit3d * 0.025, 5, 24), coreRigCyanMat3d, 0, rigUnit3d * 0.38, 0);
-      pulseRing3d.rotation.x = Math.PI * 0.5; pulseRing3d.renderOrder = 8; coreRigPulseRings3d.push(pulseRing3d);
+      var pulseRing3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * (0.46 + rigRingIndex3d * 0.16), rigUnit3d * 0.025, 5, 24), coreRigPulseMat3d, 0, rigUnit3d * 0.38, 0);
+      pulseRing3d.rotation.x = Math.PI * 0.5; pulseRing3d.renderOrder = 8; pulseRing3d.visible = false;
+      coreRigPulseRings3d.push(pulseRing3d);
     }
+    // A spoiler-safe surface receiver makes every recovered interval physically legible.
+    // Empty slots stay neutral; a slot only takes on a formation color after excavation succeeds.
+    var CORE_RIG_GRADE_TONES_3D = { S: 0xc084fc, A: 0x22d3ee, B: 0x34d399, C: 0xfbbf24, D: 0xfb7185 };
+    var coreRigAssemblyDirection3d = new THREE.Vector3();
+    var coreRigReceiverGroup3d = new THREE.Group();
+    coreRigReceiverGroup3d.name = 'core-recovery-surface-barrel';
+    var coreRigReceiverRestY3d = rigUnit3d * 1.02;
+    coreRigReceiverGroup3d.position.set(rigUnit3d * 1.02, coreRigReceiverRestY3d, rigUnit3d * 0.72);
+    coreRigGroup3d.add(coreRigReceiverGroup3d);
+    var coreRigReceiverGlassMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0x8be9f7, emissive: 0x164e63, emissiveIntensity: 0.16, roughness: 0.18, metalness: 0.08, transparent: true, opacity: 0.16, depthWrite: false }));
+    var coreRigReceiverSlotGeo3d = coreRigGeometry3d(new THREE.CylinderGeometry(rigUnit3d * 0.105, rigUnit3d * 0.105, rigUnit3d * 0.27, 8));
+    var coreRigReceiverSlotCount3d = CORE_RIG_DEPTHS[CORE_RIG_DEPTHS.length - 1];
+    coreRigMesh3d(new THREE.BoxGeometry(rigUnit3d * 1.52, rigUnit3d * 1.34, rigUnit3d * 0.16), coreRigReceiverGlassMat3d, 0, 0, 0, coreRigReceiverGroup3d).renderOrder = 5;
+    coreRigBeam3d(new THREE.Vector3(-rigUnit3d * 0.82, -rigUnit3d * 0.72, 0), new THREE.Vector3(rigUnit3d * 0.82, -rigUnit3d * 0.72, 0), rigUnit3d * 0.045, coreRigSteelMat3d, coreRigReceiverGroup3d);
+    coreRigBeam3d(new THREE.Vector3(-rigUnit3d * 0.82, rigUnit3d * 0.72, 0), new THREE.Vector3(rigUnit3d * 0.82, rigUnit3d * 0.72, 0), rigUnit3d * 0.045, coreRigSteelMat3d, coreRigReceiverGroup3d);
+    coreRigBeam3d(new THREE.Vector3(-rigUnit3d * 0.82, -rigUnit3d * 0.72, 0), new THREE.Vector3(-rigUnit3d * 0.82, rigUnit3d * 0.72, 0), rigUnit3d * 0.045, coreRigAmberMat3d, coreRigReceiverGroup3d);
+    coreRigBeam3d(new THREE.Vector3(rigUnit3d * 0.82, -rigUnit3d * 0.72, 0), new THREE.Vector3(rigUnit3d * 0.82, rigUnit3d * 0.72, 0), rigUnit3d * 0.045, coreRigAmberMat3d, coreRigReceiverGroup3d);
+    var coreRigReceiverSlots3d = [];
+    for (var receiverSlotIndex3d = 0; receiverSlotIndex3d < coreRigReceiverSlotCount3d; receiverSlotIndex3d++) {
+      var receiverColumn3d = receiverSlotIndex3d % 4, receiverRow3d = Math.floor(receiverSlotIndex3d / 4);
+      var receiverSlotMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0x334155, emissive: 0x0f172a, emissiveIntensity: 0.12, roughness: 0.72, metalness: 0.22, transparent: true, opacity: 0.62 }));
+      var receiverSlot3d = new THREE.Mesh(coreRigReceiverSlotGeo3d, receiverSlotMat3d);
+      receiverSlot3d.position.set((receiverColumn3d - 1.5) * rigUnit3d * 0.37, (1 - receiverRow3d) * rigUnit3d * 0.42, rigUnit3d * 0.13);
+      receiverSlot3d.rotation.z = Math.PI * 0.5;
+      receiverSlot3d.castShadow = false; receiverSlot3d.receiveShadow = false; receiverSlot3d.renderOrder = 7;
+      receiverSlot3d.userData.coreRigInterval = receiverSlotIndex3d + 1;
+      coreRigReceiverGroup3d.add(receiverSlot3d); coreRigReceiverSlots3d.push(receiverSlot3d);
+    }
+    var coreRigReceiverNextMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.82, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+    var coreRigReceiverNext3d = coreRigMesh3d(new THREE.TorusGeometry(rigUnit3d * 0.17, rigUnit3d * 0.025, 5, 20), coreRigReceiverNextMat3d, 0, 0, rigUnit3d * 0.19, coreRigReceiverGroup3d);
+    coreRigReceiverNext3d.castShadow = false; coreRigReceiverNext3d.receiveShadow = false; coreRigReceiverNext3d.renderOrder = 9;
+    var coreRigLiftMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: 0xcbd5e1, emissive: 0x475569, emissiveIntensity: 0.55, roughness: 0.28, metalness: 0.16, transparent: true, opacity: 0.96 }));
+    var coreRigLiftMesh3d = coreRigMesh3d(new THREE.CylinderGeometry(rigUnit3d * 0.13, rigUnit3d * 0.13, rigUnit3d * 0.44, 10), coreRigLiftMat3d, 0, 0, 0, coreRigGroup3d);
+    coreRigLiftMesh3d.visible = false; coreRigLiftMesh3d.castShadow = false; coreRigLiftMesh3d.receiveShadow = false; coreRigLiftMesh3d.renderOrder = 10;
+    var coreRigLiftHaloMat3d = coreRigMaterial3d(new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.68, blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
+    var coreRigLiftHalo3d = coreRigMesh3d(new THREE.SphereGeometry(rigUnit3d * 0.25, 10, 8), coreRigLiftHaloMat3d, 0, 0, 0, coreRigGroup3d);
+    coreRigLiftHalo3d.visible = false; coreRigLiftHalo3d.castShadow = false; coreRigLiftHalo3d.receiveShadow = false; coreRigLiftHalo3d.renderOrder = 9;
+    // Reuse tracked rig resources for a visible winch: no extra geometry or material lifetime.
+    var coreRigRecoveryPulley3d = new THREE.Group();
+    coreRigRecoveryPulley3d.name = 'core-recovery-winch';
+    coreRigRecoveryPulley3d.position.set(0, rigUnit3d * 3.18, rigUnit3d * 0.08);
+    var coreRigRecoveryPulleyRim3d = new THREE.Mesh(coreRigRotor3d.geometry, coreRigSteelMat3d);
+    coreRigRecoveryPulleyRim3d.scale.setScalar(0.42);
+    coreRigRecoveryPulleyRim3d.castShadow = false; coreRigRecoveryPulleyRim3d.receiveShadow = false; coreRigRecoveryPulley3d.add(coreRigRecoveryPulleyRim3d);
+    for (var pulleySpokeIndex3d = 0; pulleySpokeIndex3d < 2; pulleySpokeIndex3d++) {
+      var pulleySpoke3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigSteelMat3d);
+      pulleySpoke3d.scale.set(0.18, 0.16, 0.18); pulleySpoke3d.rotation.z = pulleySpokeIndex3d * Math.PI * 0.5;
+      pulleySpoke3d.castShadow = false; pulleySpoke3d.receiveShadow = false; coreRigRecoveryPulley3d.add(pulleySpoke3d);
+    }
+    var coreRigRecoveryPulleyHub3d = new THREE.Mesh(coreRigMotor3d.geometry, coreRigAmberMat3d);
+    coreRigRecoveryPulleyHub3d.scale.setScalar(0.16); coreRigRecoveryPulleyHub3d.rotation.x = Math.PI * 0.5;
+    coreRigRecoveryPulleyHub3d.castShadow = false; coreRigRecoveryPulleyHub3d.receiveShadow = false; coreRigRecoveryPulley3d.add(coreRigRecoveryPulleyHub3d);
+    coreRigGroup3d.add(coreRigRecoveryPulley3d);
+    var coreRigRecoveryTether3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigSteelMat3d);
+    coreRigRecoveryTether3d.name = 'core-recovery-tether'; coreRigRecoveryTether3d.visible = false;
+    coreRigRecoveryTether3d.castShadow = false; coreRigRecoveryTether3d.receiveShadow = false; coreRigRecoveryTether3d.renderOrder = 9;
+    coreRigRecoveryTether3d.scale.set(0.24, 1, 0.24); coreRigGroup3d.add(coreRigRecoveryTether3d);
+    var coreRigRecoveryTetherVector3d = new THREE.Vector3(); var coreRigRecoveryPulleyProgress3d = 0;
+    // A pooled wireline overshot visibly grips the core between the winch and barrel handoff.
+    var coreRigRecoveryHead3d = new THREE.Group();
+    coreRigRecoveryHead3d.name = 'core-recovery-overshot'; coreRigRecoveryHead3d.visible = false;
+    var coreRigRecoveryHeadCollar3d = new THREE.Mesh(coreRigRotor3d.geometry, coreRigSteelMat3d);
+    coreRigRecoveryHeadCollar3d.rotation.x = Math.PI * 0.5; coreRigRecoveryHeadCollar3d.scale.setScalar(0.34);
+    coreRigRecoveryHeadCollar3d.castShadow = false; coreRigRecoveryHeadCollar3d.receiveShadow = false;
+    var coreRigRecoveryHeadJawLeft3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigAmberMat3d);
+    var coreRigRecoveryHeadJawRight3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigAmberMat3d);
+    var coreRigRecoveryHeadJawClosed3d = rigUnit3d * 0.145, coreRigRecoveryHeadJawOpen3d = rigUnit3d * 0.215;
+    coreRigRecoveryHeadJawLeft3d.scale.set(0.18, 0.075, 0.18); coreRigRecoveryHeadJawRight3d.scale.set(0.18, 0.075, 0.18);
+    coreRigRecoveryHeadJawLeft3d.position.set(-coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+    coreRigRecoveryHeadJawRight3d.position.set(coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+    coreRigRecoveryHeadJawLeft3d.rotation.z = 0.26; coreRigRecoveryHeadJawRight3d.rotation.z = -0.26;
+    coreRigRecoveryHeadJawLeft3d.castShadow = false; coreRigRecoveryHeadJawLeft3d.receiveShadow = false;
+    coreRigRecoveryHeadJawRight3d.castShadow = false; coreRigRecoveryHeadJawRight3d.receiveShadow = false;
+    coreRigRecoveryHead3d.add(coreRigRecoveryHeadCollar3d);
+    coreRigRecoveryHead3d.add(coreRigRecoveryHeadJawLeft3d); coreRigRecoveryHead3d.add(coreRigRecoveryHeadJawRight3d);
+    coreRigGroup3d.add(coreRigRecoveryHead3d);
+    var coreRigRecoveryHeadOffset3d = new THREE.Vector3(0, rigUnit3d * 0.19, 0);
+    var coreRigRecoveryHeadTransfer3d = new THREE.Vector3();
+    var coreRigRecoveryHeadTransferQuaternion3d = new THREE.Quaternion();
+    // A pooled spring clamp gives the surface barrel a physical catch at docking.
+    var coreRigDockClamp3d = new THREE.Group();
+    coreRigDockClamp3d.name = 'core-recovery-dock-clamp'; coreRigDockClamp3d.visible = false;
+    var coreRigDockClampOpen3d = rigUnit3d * 0.23, coreRigDockClampClosed3d = rigUnit3d * 0.155;
+    var coreRigDockClampTop3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigAmberMat3d);
+    var coreRigDockClampBottom3d = new THREE.Mesh(coreRigShaft3d.geometry, coreRigAmberMat3d);
+    coreRigDockClampTop3d.scale.set(0.32, 0.16, 0.32); coreRigDockClampBottom3d.scale.set(0.32, 0.16, 0.32);
+    coreRigDockClampTop3d.castShadow = false; coreRigDockClampTop3d.receiveShadow = false;
+    coreRigDockClampBottom3d.castShadow = false; coreRigDockClampBottom3d.receiveShadow = false;
+    coreRigDockClamp3d.add(coreRigDockClampTop3d); coreRigDockClamp3d.add(coreRigDockClampBottom3d);
+    coreRigReceiverGroup3d.add(coreRigDockClamp3d);
+    var coreRigLiftState3d = { active: false, elapsed: 0, duration: 0.9, slotIndex: -1, sample: null, color: 0x67e8f9, dockFlashUntil: 0 };
+    var coreRigLiftStart3d = new THREE.Vector3(), coreRigLiftTransfer3d = new THREE.Vector3(), coreRigLiftDock3d = new THREE.Vector3();
+    var coreRigLiftWorld3d = new THREE.Vector3(), coreRigLiftDirection3d = new THREE.Vector3(0, 1, 0), coreRigLiftUp3d = new THREE.Vector3(0, 1, 0);
+    var coreRigLiftStartQuaternion3d = new THREE.Quaternion(), coreRigLiftDockQuaternion3d = new THREE.Quaternion();
     var coreRigLight3d = new THREE.PointLight(0x22d3ee, 1.35, rigUnit3d * 7.5);
     coreRigLight3d.position.set(0, rigUnit3d * 2.8, 0); coreRigGroup3d.add(coreRigLight3d);
-    try { renderer.domElement.dataset.geologyCoreRigRendering = 'animated-a-frame-directional-drill-and-core-trail'; } catch (coreRigDatasetError3d) {}
+    try { renderer.domElement.dataset.geologyCoreRigRendering = 'animated-a-frame-directional-drill-and-core-trail';
+      renderer.domElement.dataset.geologyCoreRecovery = 'spoiler-safe-lift-to-surface-barrel';
+      renderer.domElement.dataset.geologyCorePulse = 'phase-aware-pooled-pressure-rings';
+      renderer.domElement.dataset.geologyCoreContact = 'depth-tested-bit-pressure-collar';
+      renderer.domElement.dataset.geologyCoreRecoveryMechanics = 'pooled-winch-tether-and-dock';
+      renderer.domElement.dataset.geologyCoreRecoveryLatch = 'pooled-overshot-tension-and-release';
+      renderer.domElement.dataset.geologyCoreDock = 'pooled-spring-clamp-catch';
+      renderer.domElement.dataset.geologyCoreDrillLoadMechanics = 'pooled-torque-collars-and-axial-thrust'; } catch (coreRigDatasetError3d) {}
     // The optional Field Run survey pulse briefly reveals one nearby requested
     // specimen through overburden. It is a direction cue, not permanent x-ray vision.
     var surveySourceGeo = new THREE.BoxGeometry(VOXEL * 1.22, VOXEL * 1.22, VOXEL * 1.22);
@@ -4119,16 +4822,27 @@
       surveyBox.material.opacity = reducedMotion3d ? 0.95 : 0.72 + Math.sin(t * 7) * 0.22;
     }
     function coreRigSnapshot3d() {
+      var trajectoryScan3d = coreRigState3d.trajectoryScan ? coreRigTrajectorySnapshot(coreRigState3d.trajectoryScan) : null;
+      var finished3d = ['complete', 'stopped', 'paused'].indexOf(coreRigState3d.stage) >= 0;
       return {
         deployed: !!coreRigState3d.deployed, running: !!coreRigState3d.running, stage: coreRigState3d.stage,
         angle: coreRigState3d.angle, angleDegrees: coreRigAngleDegrees(coreRigState3d.angle), depth: coreRigState3d.depth,
         progress: fpClampN(coreRigState3d.progress, 0, 1), heat: fpClampN(coreRigState3d.heat, 0, 1),
+        feedMode: coreRigState3d.feedMode, coolantRemaining: coreRigState3d.coolantRemaining, coolantUsed: coreRigState3d.coolantUsed,
+        formationLoad: coreRigState3d.formationLoad, idealFeedMode: coreRigState3d.idealFeedMode,
+        currentIntegrity: coreRigIntegrityFromStress(coreRigState3d.intervalStress), pristineStreak: coreRigState3d.pristineStreak, bestPristineStreak: coreRigState3d.bestPristineStreak,
         cursor: coreRigState3d.cursor, plannedCount: coreRigState3d.path.length,
         sampleCount: coreRigState3d.samples.length, samples: coreRigState3d.samples.map(function (sample3d) {
-          return { key: sample3d.key, name: sample3d.name, type: sample3d.type, color: sample3d.color, depth: sample3d.depth };
+          return { key: sample3d.key, name: sample3d.name, type: sample3d.type, color: sample3d.color, depth: sample3d.depth, integrity: sample3d.integrity };
         }),
-        stopReason: coreRigState3d.stopReason, plannedStop: coreRigState3d.plannedStop || null,
+        // Publish only the stop actually reached; the engine keeps any future boundary private.
+        stopReason: coreRigState3d.stopReason,
+        trajectoryScan: trajectoryScan3d,
+        boreBrief: trajectoryScan3d ? coreRigBoreBrief(trajectoryScan3d, coreRigState3d.samples, coreRigState3d.bestPristineStreak, finished3d) : null,
         evaluation: coreRigState3d.evaluation ? Object.assign({}, coreRigState3d.evaluation) : null,
+        scanning: coreRigIntervalScanning(coreRigState3d.scanUntil, Date.now(), coreRigState3d.running, coreRigState3d.currentVoxel),
+        lastIntervalResult: coreRigState3d.lastIntervalResult ? Object.assign({}, coreRigState3d.lastIntervalResult) : null,
+        formationCue: coreRigState3d.running && coreRigState3d.currentVoxel && coreRigState3d.formationLoad ? coreRigFormationCue(coreRigState3d.formationLoad, coreRigState3d.idealFeedMode, coreRigState3d.lastIntervalResult) : null,
         status: coreRigState3d.status
       };
     }
@@ -4170,6 +4884,15 @@
       coreRigState3d.lastHudAt = now3d;
       if (opts.onCoreRigState) opts.onCoreRigState(coreRigSnapshot3d());
     }
+    function resetCoreRigLoadCouplers3d() {
+      coreRigLoadCompression3d = 0;
+      for (var loadResetIndex3d = 0; loadResetIndex3d < coreRigLoadCouplers3d.length; loadResetIndex3d++) {
+        var resetCoupler3d = coreRigLoadCouplers3d[loadResetIndex3d];
+        resetCoupler3d.position.set(0, -rigUnit3d * (1.82 + loadResetIndex3d * 0.24), 0);
+        resetCoupler3d.rotation.set(0, loadResetIndex3d * Math.PI * 0.66, 0);
+        resetCoupler3d.scale.set(1, 1, 1);
+      }
+    }
     function clearCoreRigBoreMarkers3d() {
       while (coreRigBoreGroup3d.children.length) {
         var markerRoot3d = coreRigBoreGroup3d.children[0];
@@ -4179,6 +4902,8 @@
         });
         coreRigBoreGroup3d.remove(markerRoot3d);
       }
+      resetCoreRigReceiver3d();
+      resetCoreRigLoadCouplers3d();
     }
     function coreRigLocalDirection3d() {
       var radians3d = coreRigAngleDegrees(coreRigState3d.angle) * Math.PI / 180;
@@ -4203,10 +4928,10 @@
       coreRigGuide3d.computeLineDistances();
       coreRigTarget3d.position.copy(coreRigGuideEnd3d);
       coreRigTarget3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), direction3d);
-      var targetTone3d = coreRigState3d.plannedStop === 'hazard' ? 0xfb7185
-        : (coreRigState3d.plannedStop === 'fluid' ? 0x38bdf8
-        : (coreRigState3d.plannedStop ? 0xfbbf24 : 0x22d3ee));
-      coreRigTargetMat3d.color.setHex(targetTone3d);
+      var trajectoryRisk3d = coreRigState3d.trajectoryScan ? coreRigState3d.trajectoryScan.riskLevel : 'limited';
+      var targetTone3d = trajectoryRisk3d === 'clear' ? 0x22d3ee
+        : (trajectoryRisk3d === 'caution' ? 0xfbbf24 : 0xfb7185);
+      coreRigTargetMat3d.color.setHex(targetTone3d); coreRigGuideMat3d.color.setHex(targetTone3d);
       coreRigPulseRings3d.forEach(function (ring3d, index3d) {
         ring3d.position.copy(coreRigGuideStart3d).addScaledVector(direction3d, guideLength3d * ((index3d + 1) / 4));
         ring3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), direction3d);
@@ -4216,9 +4941,12 @@
       coreRigFeedGlow3d.position.copy(coreRigGuideStart3d);
     }
     function planCoreRigPath3d() {
-      if (!coreRigState3d.origin) { coreRigState3d.path = []; return []; }
+      if (!coreRigState3d.origin) {
+        coreRigState3d.path = []; coreRigState3d.plannedStop = null; coreRigState3d.trajectoryScan = null;
+        return [];
+      }
       var rawPath3d = coreRigPath(coreRigState3d.origin, coreRigState3d.yaw, coreRigState3d.angle, coreRigState3d.depth, { minX: 0, maxX: NX - 1, minY: 0, maxY: NY - 1, minZ: 0, maxZ: NZ - 1 });
-      var planned3d = [], plannedStop3d = null, skippedCavities3d = 0;
+      var planned3d = [], scanEntries3d = [], plannedStop3d = null, skippedCavities3d = 0;
       for (var pathIndex3d = 0; pathIndex3d < rawPath3d.length; pathIndex3d++) {
         var cell3d = rawPath3d[pathIndex3d];
         var voxel3d = voxelByKey[cell3d.x + ',' + cell3d.y + ',' + cell3d.z];
@@ -4227,15 +4955,41 @@
         var stop3d = coreRigStopReason(voxel3d && voxel3d.key, material3d && material3d.type);
         if (stop3d) { plannedStop3d = stop3d; break; }
         planned3d.push({ x: cell3d.x, y: cell3d.y, z: cell3d.z, distance: cell3d.distance, depth: cell3d.depth });
+        scanEntries3d.push({ key: voxel3d && voxel3d.key, type: material3d && material3d.type });
       }
       if (!plannedStop3d && rawPath3d.length < coreRigState3d.depth) plannedStop3d = 'blocked';
       if (!plannedStop3d && skippedCavities3d) plannedStop3d = 'spent';
       coreRigState3d.path = planned3d; coreRigState3d.plannedStop = plannedStop3d;
+      coreRigState3d.trajectoryScan = coreRigTrajectoryScan(scanEntries3d, plannedStop3d, coreRigState3d.depth);
       return planned3d;
     }
     function coreRigError3d(message3d, reason3d) {
       if (opts.onFlash) opts.onFlash(message3d);
       return { ok: false, reason: reason3d || 'unavailable', message: message3d };
+    }
+    function setCoreRigFeedMode3d(modeId3d) {
+      if (!coreRigState3d.deployed) return coreRigError3d('Deploy the rig before changing its feed mode.', 'packed');
+      if (!CORE_RIG_FEED_MODES[modeId3d]) return coreRigError3d('Choose Preserve, Cruise, or Torque feed.', 'invalid-mode');
+      coreRigState3d.feedMode = modeId3d;
+      var profile3d = coreRigFeedProfile(modeId3d);
+      coreRigState3d.status = profile3d.label + ' feed selected' + (coreRigState3d.formationLoad ? (' · ' + coreRigState3d.formationLoad + ' formation') : '');
+      notifyCoreRigState3d(true);
+      if (opts.onFlash) opts.onFlash(profile3d.label + ' feed · ' + Math.round(profile3d.speedMultiplier * 100) + '% advance · ' + Math.round(profile3d.heatMultiplier * 100) + '% heat load');
+      if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (coreRigModeHapticError3d) {} }
+      return { ok: true, state: coreRigSnapshot3d() };
+    }
+    function useCoreRigCoolant3d() {
+      if (!coreRigState3d.deployed || !coreRigState3d.running) return coreRigError3d('Coolant is available during an active bore.', 'inactive');
+      if (coreRigState3d.stage === 'cooling') return coreRigError3d('Auto-cooling is already protecting the core. Save the pulse for the next interval.', 'cooling');
+      if (coreRigState3d.coolantRemaining <= 0) return coreRigError3d('Both coolant pulses have been used for this bore.', 'empty');
+      if (coreRigState3d.heat < 0.22) return coreRigError3d('Head temperature is already low. Save the coolant pulse.', 'cool');
+      coreRigState3d.coolantRemaining -= 1; coreRigState3d.coolantUsed += 1;
+      coreRigState3d.heat = Math.max(0, coreRigState3d.heat - 0.34); coreRigState3d.coolantFlashUntil = Date.now() + 700;
+      coreRigState3d.status = 'Coolant pulse · head temperature ' + Math.round(coreRigState3d.heat * 100) + '% · ' + coreRigState3d.coolantRemaining + ' remaining';
+      notifyCoreRigState3d(true);
+      if (opts.onFlash) opts.onFlash('Coolant pulse released · core integrity protected');
+      if (window._alloHaptic) { try { window._alloHaptic('success'); } catch (coreRigCoolantHapticError3d) {} }
+      return { ok: true, state: coreRigSnapshot3d() };
     }
     function coreRigSupportTop3d(wx3d, wz3d, maxTop3d) {
       if (wx3d < -WORLD.w * 0.5 || wx3d > WORLD.w * 0.5 || wz3d < -WORLD.d * 0.5 || wz3d > WORLD.d * 0.5) return null;
@@ -4296,8 +5050,12 @@
       coreRigState3d.depth = CORE_RIG_DEPTHS.indexOf(Number(config3d.depth)) >= 0 ? Number(config3d.depth) : coreRigState3d.depth;
       coreRigState3d.origin = pad3d.origin; coreRigState3d.yaw = fp.yaw; coreRigState3d.cursor = 0;
       coreRigState3d.samples = []; coreRigState3d.heat = 0; coreRigState3d.progress = 0; coreRigState3d.stopReason = null;
+      coreRigState3d.feedMode = CORE_RIG_FEED_MODES[config3d.feedMode] ? config3d.feedMode : coreRigState3d.feedMode;
+      coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0; coreRigState3d.formationLoad = null; coreRigState3d.idealFeedMode = 'cruise';
+      coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = 0; coreRigState3d.pristineStreak = 0; coreRigState3d.bestPristineStreak = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
-      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigState3d.deployedAt = Date.now();
+      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigState3d.coolantFlashUntil = 0;
+      coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null; coreRigState3d.deployedAt = Date.now();
       clearCoreRigBoreMarkers3d();
       var rigOriginWorld3d = worldPos(pad3d.origin);
       coreRigGroup3d.position.set(rigOriginWorld3d[0], pad3d.groundTopY, rigOriginWorld3d[2]);
@@ -4309,7 +5067,7 @@
         ? (coreRigState3d.path.length ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals') : 'No safe rock on this trajectory')
         : 'Locking stabilizers · trajectory scan ready';
       notifyCoreRigState3d(true);
-      if (opts.onFlash) opts.onFlash('Core rig deployed. Choose an angle and depth, then start the bore.');
+      if (opts.onFlash) opts.onFlash('Core rig deployed. Choose an angle and depth, then match Preserve, Cruise, or Torque feed to each formation load.');
       if (window._alloHaptic) { try { window._alloHaptic('success'); } catch (coreRigHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
     }
@@ -4321,12 +5079,14 @@
       if (CORE_RIG_DEPTHS.indexOf(Number(config3d.depth)) >= 0) coreRigState3d.depth = Number(config3d.depth);
       coreRigState3d.stage = 'preview'; coreRigState3d.cursor = 0; coreRigState3d.samples = [];
       coreRigState3d.heat = 0; coreRigState3d.progress = 0; coreRigState3d.stopReason = null;
+      coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0; coreRigState3d.formationLoad = null; coreRigState3d.idealFeedMode = 'cruise';
+      coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = 0; coreRigState3d.pristineStreak = 0; coreRigState3d.bestPristineStreak = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
-      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigFeedGlow3d.visible = false;
+      coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0; coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null; coreRigFeedGlow3d.visible = false;
       clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
       coreRigState3d.status = coreRigState3d.path.length
         ? ('Trajectory ready · ' + coreRigState3d.path.length + ' recoverable intervals')
-        : (coreRigState3d.plannedStop === 'spent' ? 'Existing bore detected · choose another trajectory' : 'Trajectory meets a boundary immediately');
+        : 'Trajectory unavailable · change angle, depth, or position';
       notifyCoreRigState3d(true);
       return { ok: true, state: coreRigSnapshot3d() };
     }
@@ -4336,19 +5096,27 @@
       coreRigState3d.running = false; coreRigState3d.stopReason = reason3d === 'complete' ? null : reason3d;
       coreRigState3d.stage = reason3d === 'complete' ? 'complete' : (reason3d === 'cancelled' ? 'paused' : 'stopped');
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null;
-      coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0; coreRigFeedGlow3d.visible = false;
+      coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0; coreRigState3d.scanUntil = 0; coreRigFeedGlow3d.visible = false;
       var completedAt3d = Date.now();
+      var trajectoryScan3d = coreRigState3d.trajectoryScan
+        ? coreRigTrajectorySnapshot(coreRigState3d.trajectoryScan)
+        : coreRigTrajectoryScan([], reason3d, coreRigState3d.depth);
       var report3d = {
         sceneId: SCENE.id, angle: coreRigState3d.angle, angleDegrees: coreRigAngleDegrees(coreRigState3d.angle),
-        targetDepth: coreRigState3d.depth, stopReason: coreRigState3d.stopReason,
+        targetDepth: coreRigState3d.depth, plannedCount: trajectoryScan3d.recoverable, stopReason: coreRigState3d.stopReason,
+        feedMode: coreRigState3d.feedMode, coolantUsed: coreRigState3d.coolantUsed, bestPristineStreak: coreRigState3d.bestPristineStreak,
+        trajectoryScan: trajectoryScan3d,
         samples: coreRigSnapshot3d().samples, completedAt: completedAt3d
       };
+      report3d.boreBrief = coreRigBoreBrief(trajectoryScan3d, report3d.samples, report3d.bestPristineStreak, true);
       var summary3d = coreRigReportSummary(report3d);
       var evaluation3d = coreRigEvaluation(report3d);
       report3d.evaluation = Object.assign({}, evaluation3d);
       coreRigState3d.evaluation = Object.assign({}, evaluation3d);
       coreRigState3d.celebrateUntil = summary3d.sampleCount ? completedAt3d + (reducedMotion3d ? 250 : 2400) : 0;
-      var resultLabel3d = 'Grade ' + evaluation3d.grade + ' · ' + evaluation3d.label;
+      var resultLabel3d = 'Grade ' + evaluation3d.grade + ' · ' + evaluation3d.label +
+        (evaluation3d.integrityPercent != null ? (' · ' + evaluation3d.integrityPercent + '% integrity') : '') +
+        ' · Brief ' + report3d.boreBrief.metCount + '/3';
       var message3d = !summary3d.sampleCount
         ? (reason3d === 'spent' ? 'Existing bore detected — relocate or change trajectory.'
         : (reason3d === 'cancelled' ? 'Bore ended before a sample interval was recovered.'
@@ -4376,9 +5144,14 @@
         if (stop3d) { finishCoreRig3d(stop3d); return false; }
         var duration3d = coreRigDrillDuration(voxel3d.key, material3d.type);
         if (!duration3d) { finishCoreRig3d('blocked'); return false; }
+        var formation3d = coreRigFormationLoad(voxel3d.key, material3d.type);
         coreRigState3d.currentCell = cell3d; coreRigState3d.currentVoxel = voxel3d;
-        coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = reducedMotion3d ? 90 : duration3d;
-        coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Cutting ' + material3d.name + ' · core ' + (coreRigState3d.cursor + 1) + '/' + coreRigState3d.path.length;
+        coreRigState3d.formationLoad = formation3d.label; coreRigState3d.idealFeedMode = formation3d.idealMode;
+        coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = coreRigState3d.heat;
+        coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = Math.max(950, Math.round(duration3d * 1.7));
+        coreRigState3d.scanUntil = Date.now() + CORE_RIG_INTERVAL_SCAN_MS;
+        coreRigState3d.stage = 'drilling'; coreRigState3d.status = coreRigFormationCue(formation3d.label, formation3d.idealMode, coreRigState3d.lastIntervalResult).prompt;
+        notifyCoreRigState3d(true);
         return true;
       }
       finishCoreRig3d(coreRigState3d.plannedStop || 'complete'); return false;
@@ -4389,18 +5162,23 @@
       if (coreRigState3d.running) return { ok: true, state: coreRigSnapshot3d() };
       coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.heat = 0;
       coreRigState3d.progress = 0; coreRigState3d.stopReason = null; coreRigState3d.evaluation = null; coreRigState3d.celebrateUntil = 0;
+      coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0; coreRigState3d.formationLoad = null; coreRigState3d.idealFeedMode = 'cruise';
+      coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = 0; coreRigState3d.pristineStreak = 0; coreRigState3d.bestPristineStreak = 0; coreRigState3d.coolantFlashUntil = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
+      coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null;
       clearCoreRigBoreMarkers3d(); planCoreRigPath3d(); updateCoreRigGuide3d();
       if (!coreRigState3d.path.length) return finishCoreRig3d(coreRigState3d.plannedStop || 'blocked');
       coreRigState3d.running = true; coreRigState3d.stage = 'drilling'; coreRigState3d.status = 'Spin-up · locking the drill string';
-      prepareCoreRigStep3d(); notifyCoreRigState3d(true);
+      prepareCoreRigStep3d();
       if (window._alloHaptic) { try { window._alloHaptic('selection'); } catch (coreRigStartHapticError3d) {} }
       return { ok: true, state: coreRigSnapshot3d() };
     }
     function addCoreRigSampleMarker3d(sample3d, voxel3d) {
       var materialColor3d = new THREE.Color(sample3d.color || 0xcbd5e1);
-      var markerMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: materialColor3d, emissive: materialColor3d, emissiveIntensity: 0.48, roughness: 0.36, metalness: 0.18, transparent: true, opacity: 0.9 }));
+      var sampleIntegrity3d = Math.max(0.55, Math.min(1, Number(sample3d.integrity) || 1));
+      var markerMat3d = coreRigMaterial3d(new THREE.MeshStandardMaterial({ color: materialColor3d, emissive: materialColor3d, emissiveIntensity: 0.24 + sampleIntegrity3d * 0.28, roughness: 0.66 - sampleIntegrity3d * 0.3, metalness: 0.18, transparent: true, opacity: 0.55 + sampleIntegrity3d * 0.35 }));
       var marker3d = coreRigMesh3d(new THREE.CylinderGeometry(VOXEL * 0.12, VOXEL * 0.12, VOXEL * 0.54, 10), markerMat3d, 0, 0, 0, coreRigBoreGroup3d);
+      marker3d.scale.set(0.72 + sampleIntegrity3d * 0.28, 1, 0.72 + sampleIntegrity3d * 0.28);
       marker3d.userData.coreRigDynamicGeometry = true; marker3d.userData.coreRigDynamicMaterial = true;
       var halo3d = coreRigMesh3d(new THREE.SphereGeometry(VOXEL * 0.2, 8, 6), coreRigBoreMat3d, 0, 0, 0, marker3d);
       halo3d.userData.coreRigDynamicGeometry = true; halo3d.castShadow = false; halo3d.receiveShadow = false;
@@ -4411,13 +5189,380 @@
       marker3d.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), coreRigLocalDirection3d().clone().negate());
       marker3d.renderOrder = 6;
     }
-    function updateCoreRig3d(dt3d) {
+    function resetCoreRigRecoveryHead3d() {
+      coreRigRecoveryHead3d.visible = false;
+      coreRigRecoveryHead3d.position.set(0, 0, 0); coreRigRecoveryHead3d.quaternion.identity();
+      coreRigRecoveryHead3d.scale.set(1, 1, 1);
+      coreRigRecoveryHeadOffset3d.set(0, rigUnit3d * 0.19, 0);
+      coreRigRecoveryHeadTransfer3d.set(0, 0, 0); coreRigRecoveryHeadTransferQuaternion3d.identity();
+      coreRigRecoveryHeadJawLeft3d.position.set(-coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+      coreRigRecoveryHeadJawRight3d.position.set(coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+      coreRigRecoveryHeadJawLeft3d.rotation.z = 0.26; coreRigRecoveryHeadJawRight3d.rotation.z = -0.26;
+    }
+    function positionCoreRigDockClamp3d(slot3d) {
+      coreRigDockClamp3d.visible = !!slot3d;
+      if (!slot3d) return;
+      coreRigDockClamp3d.position.copy(slot3d.position); coreRigDockClamp3d.position.z += rigUnit3d * 0.11;
+    }
+    function resetCoreRigReceiver3d() {
+      coreRigLiftState3d.active = false; coreRigLiftState3d.elapsed = 0; coreRigLiftState3d.slotIndex = -1;
+      coreRigLiftState3d.sample = null; coreRigLiftState3d.dockFlashUntil = 0;
+      coreRigLiftMesh3d.visible = false; coreRigLiftHalo3d.visible = false;
+      coreRigRecoveryTether3d.visible = false; coreRigRecoveryTether3d.scale.set(0.24, 1, 0.24);
+      coreRigRecoveryPulley3d.rotation.z = 0; coreRigRecoveryPulleyProgress3d = 0;
+      resetCoreRigRecoveryHead3d();
+      coreRigReceiverGroup3d.position.y = coreRigReceiverRestY3d;
+      coreRigLiftHaloMat3d.opacity = 0.68;
+      coreRigReceiverSlots3d.forEach(function (receiverSlot3d) {
+        receiverSlot3d.userData.coreRigReceiverFilled = false;
+        receiverSlot3d.material.color.setHex(0x334155); receiverSlot3d.material.emissive.setHex(0x0f172a);
+        receiverSlot3d.material.emissiveIntensity = 0.12; receiverSlot3d.material.opacity = 0.62;
+        receiverSlot3d.scale.set(1, 1, 1);
+      });
+      coreRigReceiverNext3d.visible = !!coreRigReceiverSlots3d.length;
+      if (coreRigReceiverSlots3d.length) {
+        coreRigReceiverNext3d.position.copy(coreRigReceiverSlots3d[0].position);
+        coreRigReceiverNext3d.position.z += rigUnit3d * 0.06;
+      }
+      coreRigReceiverNext3d.scale.setScalar(1);
+      positionCoreRigDockClamp3d(coreRigReceiverSlots3d.length ? coreRigReceiverSlots3d[0] : null);
+      coreRigDockClampTop3d.position.set(0, coreRigDockClampOpen3d, 0); coreRigDockClampBottom3d.position.set(0, -coreRigDockClampOpen3d, 0);
+      coreRigDockClampTop3d.rotation.z = Math.PI * 0.5 + 0.12; coreRigDockClampBottom3d.rotation.z = Math.PI * 0.5 - 0.12;
+      coreRigDockClamp3d.scale.setScalar(1);
+    }
+    function fillCoreRigReceiverSlot3d(slotIndex3d, sample3d) {
+      var receiverSlot3d = coreRigReceiverSlots3d[slotIndex3d];
+      if (!receiverSlot3d || !sample3d) return;
+      var recoveredColor3d = sample3d.color != null ? sample3d.color : 0xcbd5e1;
+      var recoveredIntegrity3d = Math.max(0.55, Math.min(1, Number(sample3d.integrity) || 1));
+      receiverSlot3d.material.color.set(recoveredColor3d); receiverSlot3d.material.emissive.set(recoveredColor3d);
+      receiverSlot3d.material.emissiveIntensity = 0.24 + recoveredIntegrity3d * 0.34;
+      receiverSlot3d.material.opacity = 0.78 + recoveredIntegrity3d * 0.2;
+      var receiverRadius3d = 0.76 + recoveredIntegrity3d * 0.24;
+      receiverSlot3d.scale.set(receiverRadius3d, 0.78 + recoveredIntegrity3d * 0.22, receiverRadius3d);
+      receiverSlot3d.userData.coreRigReceiverFilled = true;
+      var nextReceiverSlot3d = coreRigReceiverSlots3d[slotIndex3d + 1];
+      coreRigReceiverNext3d.visible = !!nextReceiverSlot3d;
+      if (nextReceiverSlot3d) {
+        coreRigReceiverNext3d.position.copy(nextReceiverSlot3d.position);
+        coreRigReceiverNext3d.position.z += rigUnit3d * 0.06;
+      }
+    }
+    function beginCoreRigLift3d(sample3d, voxel3d) {
+      if (!sample3d || !voxel3d || !coreRigReceiverSlots3d.length) return;
+      if (coreRigLiftState3d.active && coreRigLiftState3d.sample) {
+        fillCoreRigReceiverSlot3d(coreRigLiftState3d.slotIndex, coreRigLiftState3d.sample);
+      }
+      var liftSlotIndex3d = Math.max(0, Math.min(coreRigReceiverSlots3d.length - 1, coreRigState3d.samples.length - 1));
+      var liftSlot3d = coreRigReceiverSlots3d[liftSlotIndex3d];
+      coreRigReceiverGroup3d.position.y = coreRigReceiverRestY3d;
+      var liftVoxelWorld3d = worldPos(voxel3d);
+      coreRigGroup3d.updateMatrixWorld(true);
+      coreRigLiftWorld3d.set(liftVoxelWorld3d[0], liftVoxelWorld3d[1], liftVoxelWorld3d[2]);
+      coreRigLiftStart3d.copy(coreRigGroup3d.worldToLocal(coreRigLiftWorld3d));
+      coreRigLiftTransfer3d.set(0, rigUnit3d * 2.97, rigUnit3d * 0.08);
+      coreRigLiftDock3d.copy(coreRigReceiverGroup3d.position).add(liftSlot3d.position);
+      coreRigLiftDock3d.z += rigUnit3d * 0.12;
+      coreRigLiftDirection3d.copy(coreRigLocalDirection3d()).negate();
+      coreRigLiftStartQuaternion3d.setFromUnitVectors(coreRigLiftUp3d, coreRigLiftDirection3d);
+      coreRigLiftDockQuaternion3d.copy(liftSlot3d.quaternion);
+      coreRigRecoveryHeadTransferQuaternion3d.copy(coreRigLiftStartQuaternion3d).slerp(coreRigLiftDockQuaternion3d, 0.784);
+      coreRigRecoveryHeadOffset3d.set(0, rigUnit3d * 0.19, 0).applyQuaternion(coreRigRecoveryHeadTransferQuaternion3d);
+      coreRigRecoveryHeadTransfer3d.copy(coreRigLiftTransfer3d).add(coreRigRecoveryHeadOffset3d);
+      coreRigLiftState3d.active = !reducedMotion3d; coreRigLiftState3d.elapsed = 0; coreRigRecoveryPulleyProgress3d = 0;
+      coreRigLiftState3d.duration = 0.82 + Math.min(0.28, coreRigLiftStart3d.distanceTo(coreRigLiftTransfer3d) * 0.025);
+      coreRigLiftState3d.slotIndex = liftSlotIndex3d; coreRigLiftState3d.sample = sample3d;
+      positionCoreRigDockClamp3d(liftSlot3d); coreRigDockClamp3d.scale.setScalar(1);
+      coreRigLiftMat3d.color.set(sample3d.color != null ? sample3d.color : 0xcbd5e1);
+      coreRigLiftMat3d.emissive.copy(coreRigLiftMat3d.color); coreRigLiftHaloMat3d.color.copy(coreRigLiftMat3d.color);
+      coreRigLiftState3d.color = coreRigLiftMat3d.color.getHex(); coreRigLiftState3d.dockFlashUntil = 0;
+      coreRigLiftMesh3d.position.copy(coreRigLiftStart3d); coreRigLiftMesh3d.quaternion.copy(coreRigLiftStartQuaternion3d);
+      coreRigLiftMesh3d.scale.setScalar(1); coreRigLiftMesh3d.visible = !reducedMotion3d;
+      coreRigLiftHalo3d.position.copy(reducedMotion3d ? coreRigLiftDock3d : coreRigLiftStart3d);
+      coreRigLiftHalo3d.scale.set(1, 0.48, 1); coreRigLiftHaloMat3d.opacity = 0.68; coreRigLiftHalo3d.visible = true;
+      if (reducedMotion3d) {
+        fillCoreRigReceiverSlot3d(liftSlotIndex3d, sample3d);
+        coreRigLiftState3d.sample = null; coreRigLiftState3d.dockFlashUntil = Date.now() + 260;
+      }
+    }
+    function updateCoreRigRecoveryHead3d(liftProgress3d) {
+      var headProgressValue3d = Number(liftProgress3d);
+      var headActive3d = !!(coreRigLiftState3d.active && !reducedMotion3d && isFinite(headProgressValue3d) && headProgressValue3d < 0.9);
+      coreRigRecoveryHead3d.visible = headActive3d;
+      if (!headActive3d) {
+        coreRigRecoveryHead3d.scale.set(1, 1, 1);
+        coreRigRecoveryHeadJawLeft3d.position.set(-coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+        coreRigRecoveryHeadJawRight3d.position.set(coreRigRecoveryHeadJawOpen3d, -rigUnit3d * 0.11, 0);
+        coreRigRecoveryHeadJawLeft3d.rotation.z = 0.26; coreRigRecoveryHeadJawRight3d.rotation.z = -0.26;
+        return;
+      }
+      var safeHeadProgress3d = fpClampN(headProgressValue3d, 0, 1);
+      var headAtTransfer3d = safeHeadProgress3d > 0.7;
+      if (headAtTransfer3d) {
+        coreRigRecoveryHead3d.position.copy(coreRigRecoveryHeadTransfer3d);
+        coreRigRecoveryHead3d.quaternion.copy(coreRigRecoveryHeadTransferQuaternion3d);
+      } else {
+        coreRigRecoveryHeadOffset3d.set(0, rigUnit3d * 0.19, 0).applyQuaternion(coreRigLiftMesh3d.quaternion);
+        coreRigRecoveryHead3d.position.copy(coreRigLiftMesh3d.position).add(coreRigRecoveryHeadOffset3d);
+        coreRigRecoveryHead3d.quaternion.copy(coreRigLiftMesh3d.quaternion);
+      }
+      var headGrip3d = fpClampN(safeHeadProgress3d / 0.12, 0, 1);
+      headGrip3d = headGrip3d * headGrip3d * (3 - 2 * headGrip3d);
+      var headRelease3d = fpClampN((safeHeadProgress3d - 0.7) / 0.18, 0, 1);
+      headRelease3d = headRelease3d * headRelease3d * (3 - 2 * headRelease3d);
+      var headLatch3d = fpClampN(headGrip3d - headRelease3d, 0, 1);
+      var headJawGap3d = coreRigRecoveryHeadJawOpen3d
+        + (coreRigRecoveryHeadJawClosed3d - coreRigRecoveryHeadJawOpen3d) * headLatch3d;
+      var headJawTilt3d = 0.26 + (0.09 - 0.26) * headLatch3d;
+      coreRigRecoveryHeadJawLeft3d.position.set(-headJawGap3d, -rigUnit3d * 0.11, 0);
+      coreRigRecoveryHeadJawRight3d.position.set(headJawGap3d, -rigUnit3d * 0.11, 0);
+      coreRigRecoveryHeadJawLeft3d.rotation.z = headJawTilt3d; coreRigRecoveryHeadJawRight3d.rotation.z = -headJawTilt3d;
+      var headTension3d = headAtTransfer3d ? 0 : Math.sin(fpClampN(safeHeadProgress3d / 0.7, 0, 1) * Math.PI) * 0.045;
+      var headReleasePulse3d = Math.sin(headRelease3d * Math.PI) * 0.055;
+      coreRigRecoveryHead3d.scale.set(
+        1 + headReleasePulse3d,
+        1 - headTension3d + headReleasePulse3d * 0.3,
+        1 + headReleasePulse3d
+      );
+    }
+    function updateCoreRigDockClamp3d(now3d, dockFlashing3d) {
+      var clampHasTarget3d = coreRigLiftState3d.active || dockFlashing3d || coreRigReceiverNext3d.visible;
+      coreRigDockClamp3d.visible = clampHasTarget3d;
+      if (!clampHasTarget3d) { coreRigReceiverGroup3d.position.y = coreRigReceiverRestY3d; return; }
+      if (!coreRigLiftState3d.active && !dockFlashing3d && coreRigReceiverNext3d.visible) {
+        coreRigDockClamp3d.position.copy(coreRigReceiverNext3d.position); coreRigDockClamp3d.position.z += rigUnit3d * 0.05;
+      }
+      var clampLatch3d = 0, clampPulse3d = 1, clampRecoil3d = 0;
+      if (dockFlashing3d) {
+        if (reducedMotion3d) clampLatch3d = 1;
+        else {
+          var clampCatchProgress3d = 1 - fpClampN((coreRigLiftState3d.dockFlashUntil - now3d) / 480, 0, 1);
+          clampLatch3d = fpClampN(clampCatchProgress3d * 4.2, 0, 1);
+          clampLatch3d = clampLatch3d * clampLatch3d * (3 - 2 * clampLatch3d);
+          clampLatch3d += Math.sin(clampLatch3d * Math.PI) * 0.08;
+          var clampImpactProgress3d = fpClampN(clampCatchProgress3d * 2.5, 0, 1);
+          var clampImpact3d = Math.sin(clampImpactProgress3d * Math.PI);
+          clampPulse3d += clampImpact3d * 0.055; clampRecoil3d = clampImpact3d * rigUnit3d * 0.055;
+        }
+      }
+      coreRigReceiverGroup3d.position.y = coreRigReceiverRestY3d - clampRecoil3d;
+      var clampGap3d = coreRigDockClampOpen3d + (coreRigDockClampClosed3d - coreRigDockClampOpen3d) * clampLatch3d;
+      var clampTilt3d = (1 - Math.min(1, clampLatch3d)) * 0.12;
+      coreRigDockClampTop3d.position.set(0, clampGap3d, 0); coreRigDockClampBottom3d.position.set(0, -clampGap3d, 0);
+      coreRigDockClampTop3d.rotation.z = Math.PI * 0.5 + clampTilt3d; coreRigDockClampBottom3d.rotation.z = Math.PI * 0.5 - clampTilt3d;
+      coreRigDockClamp3d.scale.setScalar(clampPulse3d);
+    }
+    function updateCoreRigRecoveryTether3d() {
+      var tetherProgress3d = fpClampN(coreRigLiftState3d.elapsed / coreRigLiftState3d.duration, 0, 1); var tetherActive3d = coreRigLiftState3d.active && !reducedMotion3d && tetherProgress3d <= 0.7;
+      coreRigRecoveryTether3d.visible = tetherActive3d;
+      if (!tetherActive3d) {
+        coreRigRecoveryTether3d.scale.set(0.24, 1, 0.24);
+        return;
+      }
+      var tetherTravel3d = 1 - Math.pow(1 - tetherProgress3d / 0.7, 3); coreRigRecoveryPulley3d.rotation.z += (tetherTravel3d - coreRigRecoveryPulleyProgress3d) * Math.PI * 2.6; coreRigRecoveryPulleyProgress3d = tetherTravel3d;
+      coreRigRecoveryTetherVector3d.subVectors(coreRigRecoveryHead3d.position, coreRigLiftTransfer3d);
+      var tetherLength3d = coreRigRecoveryTetherVector3d.length();
+      if (tetherLength3d <= rigUnit3d * 0.05) {
+        coreRigRecoveryTether3d.visible = false;
+        return;
+      }
+      coreRigRecoveryTether3d.position.copy(coreRigLiftTransfer3d).addScaledVector(coreRigRecoveryTetherVector3d, 0.5);
+      coreRigRecoveryTether3d.quaternion.setFromUnitVectors(coreRigLiftUp3d, coreRigRecoveryTetherVector3d.normalize());
+      coreRigRecoveryTether3d.scale.set(0.24, tetherLength3d / (rigUnit3d * 2.6), 0.24);
+    }
+    function updateCoreRigLift3d(dt3d, now3d) {
+      if (coreRigLiftState3d.active) {
+        coreRigLiftState3d.elapsed += Math.max(0, Number(dt3d) || 0);
+        var liftProgress3d = fpClampN(coreRigLiftState3d.elapsed / coreRigLiftState3d.duration, 0, 1);
+        if (liftProgress3d < 0.7) {
+          var liftRise3d = liftProgress3d / 0.7;
+          liftRise3d = 1 - Math.pow(1 - liftRise3d, 3);
+          coreRigLiftMesh3d.position.copy(coreRigLiftStart3d).lerp(coreRigLiftTransfer3d, liftRise3d);
+        } else {
+          var liftDockProgress3d = (liftProgress3d - 0.7) / 0.3;
+          liftDockProgress3d = liftDockProgress3d * liftDockProgress3d * (3 - 2 * liftDockProgress3d);
+          coreRigLiftMesh3d.position.copy(coreRigLiftTransfer3d).lerp(coreRigLiftDock3d, liftDockProgress3d);
+        }
+        var liftEase3d = liftProgress3d * liftProgress3d * (3 - 2 * liftProgress3d);
+        coreRigLiftMesh3d.quaternion.copy(coreRigLiftStartQuaternion3d).slerp(coreRigLiftDockQuaternion3d, liftEase3d);
+        coreRigLiftMesh3d.scale.setScalar(0.94 + Math.sin(liftProgress3d * Math.PI) * 0.14);
+        coreRigLiftHalo3d.position.copy(coreRigLiftMesh3d.position);
+        coreRigLiftHalo3d.scale.setScalar(0.92 + Math.sin(liftProgress3d * Math.PI * 3) * 0.12);
+        coreRigLiftHaloMat3d.opacity = 0.5 + Math.sin(liftProgress3d * Math.PI) * 0.22;
+        if (liftProgress3d >= 1) {
+          fillCoreRigReceiverSlot3d(coreRigLiftState3d.slotIndex, coreRigLiftState3d.sample);
+          coreRigLiftState3d.active = false; coreRigLiftState3d.sample = null;
+          coreRigLiftState3d.dockFlashUntil = now3d + 480;
+          coreRigLiftMesh3d.visible = false; coreRigLiftHalo3d.position.copy(coreRigLiftDock3d);
+        }
+      }
+      var dockFlashing3d = now3d < coreRigLiftState3d.dockFlashUntil;
+      if (!coreRigLiftState3d.active && dockFlashing3d) {
+        var dockFlashProgress3d = fpClampN((coreRigLiftState3d.dockFlashUntil - now3d) / (reducedMotion3d ? 260 : 480), 0, 1);
+        coreRigLiftHalo3d.visible = true; coreRigLiftHalo3d.position.copy(coreRigLiftDock3d);
+        coreRigLiftHalo3d.scale.setScalar(reducedMotion3d ? 1.05 : 1.05 + (1 - dockFlashProgress3d) * 0.48);
+        coreRigLiftHaloMat3d.opacity = reducedMotion3d ? 0.52 : dockFlashProgress3d * 0.68;
+      } else if (!coreRigLiftState3d.active) {
+        coreRigLiftHalo3d.visible = false; coreRigLiftHaloMat3d.opacity = 0.68;
+      }
+      updateCoreRigDockClamp3d(now3d, dockFlashing3d);
+      if (coreRigReceiverNext3d.visible) {
+        var nextReceiverPulse3d = coreRigLiftState3d.active && !reducedMotion3d ? 1 + Math.sin(t * 12) * 0.12 : 1;
+        coreRigReceiverNext3d.scale.setScalar(nextReceiverPulse3d);
+      }
+      updateCoreRigRecoveryHead3d(liftProgress3d);
+      updateCoreRigRecoveryTether3d();
+      return coreRigLiftState3d.active || dockFlashing3d ? coreRigLiftState3d.color : null;
+    }
+    function updateCoreRigPulseRings3d(motion3d, now3d, deployEase3d, scanning3d, recovering3d, celebrating3d, pulseRate3d, tone3d) {
+      var stage3d = coreRigState3d.stage;
+      var finished3d = stage3d === 'complete' || stage3d === 'stopped' || stage3d === 'paused';
+      var progress3d = fpClampN(Number(coreRigState3d.progress) || 0, 0, 1);
+      var guideLength3d = Math.max(VOXEL * 0.25, coreRigPulseDirection3d.subVectors(coreRigGuideEnd3d, coreRigGuideStart3d).length());
+      if (coreRigPulseDirection3d.lengthSq() < 0.0001) coreRigPulseDirection3d.set(0, -1, 0);
+      else coreRigPulseDirection3d.normalize();
+      coreRigPulseQuaternion3d.setFromUnitVectors(coreRigPulseNormal3d, coreRigPulseDirection3d);
+      var hasSamples3d = coreRigState3d.samples.length > 0;
+      var completedAt3d = coreRigState3d.celebrateUntil - 2400;
+      var rippleStart3d = Math.max(completedAt3d, Number(coreRigLiftState3d.dockFlashUntil) || 0);
+      var rippleProgress3d = finished3d && motion3d && celebrating3d
+        ? fpClampN((now3d - rippleStart3d) / 820, 0, 1) : 1;
+      coreRigPulseMat3d.color.setHex(tone3d);
+      coreRigPulseMat3d.opacity = recovering3d ? 0.2
+        : (finished3d ? 0.76 : (coreRigState3d.running ? (scanning3d ? 0.74 : 0.64) : (stage3d === 'deploying' ? 0.62 : 0.5)));
+      for (var index3d = 0; index3d < coreRigPulseRings3d.length; index3d++) {
+        var ring3d = coreRigPulseRings3d[index3d];
+        if (!motion3d) {
+          if (finished3d) {
+            ring3d.visible = hasSamples3d && index3d === 0;
+            if (ring3d.visible) {
+              ring3d.position.copy(coreRigReceiverGroup3d.position);
+              ring3d.position.z += rigUnit3d * 0.24;
+              ring3d.quaternion.identity();
+            }
+          } else {
+            ring3d.visible = true;
+            ring3d.position.copy(coreRigGuideStart3d).addScaledVector(coreRigPulseDirection3d, guideLength3d * ((index3d + 1) / 4));
+            ring3d.quaternion.copy(coreRigPulseQuaternion3d);
+          }
+          ring3d.scale.setScalar(1);
+          continue;
+        }
+        if (recovering3d) {
+          ring3d.visible = index3d === 0;
+          if (ring3d.visible) {
+            ring3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, progress3d);
+            ring3d.quaternion.copy(coreRigPulseQuaternion3d);
+            ring3d.scale.setScalar(0.64);
+          } else ring3d.scale.setScalar(1);
+          continue;
+        }
+        if (finished3d) {
+          if (!hasSamples3d) {
+            ring3d.visible = false; ring3d.scale.setScalar(1);
+            continue;
+          }
+          ring3d.position.copy(coreRigReceiverGroup3d.position);
+          ring3d.position.z += rigUnit3d * 0.24;
+          ring3d.quaternion.identity();
+          if (!motion3d || !celebrating3d || rippleProgress3d >= 1) {
+            ring3d.visible = index3d === 0;
+            ring3d.scale.setScalar(0.92);
+          } else {
+            var wave3d = fpClampN(rippleProgress3d * 1.55 - index3d * 0.18, 0, 1);
+            ring3d.visible = index3d === 0 || wave3d > 0.01;
+            ring3d.scale.setScalar(0.68 + wave3d * 1.08);
+          }
+          continue;
+        }
+        if (coreRigState3d.running) {
+          var phase3d = motion3d ? ((t * pulseRate3d + index3d * 0.29) % 1) : ((index3d + 1) / 4);
+          var trail3d = fpClampN(progress3d - (0.016 + phase3d * 0.052), 0, 1);
+          ring3d.visible = true;
+          ring3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, trail3d);
+          ring3d.quaternion.copy(coreRigPulseQuaternion3d);
+          ring3d.scale.setScalar(motion3d ? (scanning3d ? 0.72 + phase3d * 0.34 : 0.74 + phase3d * 0.56) : 1);
+          continue;
+        }
+        if (stage3d === 'deploying') {
+          var settle3d = fpClampN(deployEase3d * 1.55 - index3d * 0.18, 0, 1);
+          var lane3d = ((index3d + 1) / 4) * settle3d;
+          ring3d.visible = settle3d > 0.02;
+          ring3d.position.copy(coreRigGuideStart3d).addScaledVector(coreRigPulseDirection3d, guideLength3d * lane3d);
+          ring3d.quaternion.copy(coreRigPulseQuaternion3d);
+          ring3d.scale.setScalar(0.58 + settle3d * 0.42);
+          continue;
+        }
+        var previewPhase3d = motion3d ? ((t * 0.55 + index3d * 0.28) % 1) : 0;
+        ring3d.visible = true;
+        ring3d.position.copy(coreRigGuideStart3d).addScaledVector(coreRigPulseDirection3d, guideLength3d * ((index3d + 1) / 4));
+        ring3d.quaternion.copy(coreRigPulseQuaternion3d);
+        ring3d.scale.setScalar(motion3d ? 0.9 + previewPhase3d * 0.34 : 1);
+      }
+    }
+    function updateCoreRigLoadCouplers3d(dt3d, motion3d, scanning3d, feedSpeed3d) {
+      var drillingLoadActive3d = !!(coreRigState3d.running && !scanning3d && coreRigState3d.stage !== 'cooling');
+      var formationLoad3d = coreRigState3d.formationLoad === 'Hard' ? 1
+        : (coreRigState3d.formationLoad === 'Dense' ? 0.7
+          : (coreRigState3d.formationLoad === 'Crystalline' ? 0.45
+            : (coreRigState3d.formationLoad === 'Loose' ? 0.18 : 0.25)));
+      var stressLoad3d = fpClampN(Number(coreRigState3d.intervalStress) || 0, 0, 1);
+      var feedLoad3d = fpClampN(((Number(feedSpeed3d) || 1) - 0.72) / 0.73, 0, 1);
+      var targetLoad3d = drillingLoadActive3d
+        ? fpClampN(formationLoad3d * 0.58 + feedLoad3d * 0.22 + stressLoad3d * 0.32, 0, 1)
+        : 0;
+      var safeLoadDt3d = Math.max(0, Number(dt3d) || 0);
+      var loadResponse3d = motion3d
+        ? 1 - Math.exp(-safeLoadDt3d * (targetLoad3d > coreRigLoadCompression3d ? 12 : 8))
+        : 1;
+      coreRigLoadCompression3d += (targetLoad3d - coreRigLoadCompression3d) * loadResponse3d;
+      var loadSpacing3d = rigUnit3d * (0.24 - coreRigLoadCompression3d * 0.08);
+      for (var loadIndex3d = 0; loadIndex3d < coreRigLoadCouplers3d.length; loadIndex3d++) {
+        var activeCoupler3d = coreRigLoadCouplers3d[loadIndex3d];
+        activeCoupler3d.position.y = -rigUnit3d * 1.82 - loadIndex3d * loadSpacing3d;
+        activeCoupler3d.scale.set(
+          1 + coreRigLoadCompression3d * 0.055,
+          1 - coreRigLoadCompression3d * 0.045,
+          1 + coreRigLoadCompression3d * 0.055
+        );
+        if (!motion3d) {
+          activeCoupler3d.rotation.y = loadIndex3d * Math.PI * 0.66;
+        } else if (drillingLoadActive3d) {
+          activeCoupler3d.rotation.y += safeLoadDt3d * (2.2 + coreRigLoadCompression3d * 5.8)
+            * (loadIndex3d === 1 ? -0.72 : (loadIndex3d === 2 ? 0.42 : 1));
+        }
+      }
+      return coreRigLoadCompression3d;
+    }
+        function updateCoreRigContact3d(motion3d, scanning3d, coolantFlash3d, tone3d) {
+      coreRigContact3d.visible = !!coreRigState3d.running;
+      if (!coreRigContact3d.visible) {
+        coreRigContact3d.scale.setScalar(1);
+        return;
+      }
+      var contactProgress3d = fpClampN(Number(coreRigState3d.progress) || 0, 0, 1);
+      var contactPressure3d = fpClampN(Number(coreRigState3d.intervalStress) || 0, 0, 1);
+      coreRigContact3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, contactProgress3d);
+      coreRigContact3d.position.addScaledVector(coreRigPulseDirection3d, -VOXEL * 0.46);
+      coreRigContact3d.quaternion.copy(coreRigPulseQuaternion3d);
+      coreRigContactMat3d.color.setHex(tone3d);
+      coreRigContactMat3d.opacity = scanning3d ? 0.38 : (coolantFlash3d ? 0.88 : 0.58 + contactPressure3d * 0.18);
+      var contactScale3d = motion3d && !scanning3d
+        ? 0.88 + contactPressure3d * 0.34 + Math.sin(t * (coolantFlash3d ? 20 : 13)) * 0.055
+        : 1;
+      coreRigContact3d.scale.setScalar(contactScale3d);
+    }
+function updateCoreRig3d(dt3d) {
       if (!coreRigState3d.deployed) return;
       var motion3d = reducedMotion3d ? 0 : 1;
+      var trajectoryVariability3d = coreRigState3d.trajectoryScan ? coreRigState3d.trajectoryScan.variability : 'steady';
+      var trajectoryPulseRate3d = trajectoryVariability3d === 'volatile' ? 1.1 : (trajectoryVariability3d === 'mixed' ? 0.86 : 0.7);
       var coreRigNow3d = Date.now();
+      var scanning3d = coreRigIntervalScanning(coreRigState3d.scanUntil, coreRigNow3d, coreRigState3d.running, coreRigState3d.currentVoxel);
+      var deployEase3d = 1;
       if (coreRigState3d.stage === 'deploying') {
         var deployProgress3d = fpClampN((coreRigNow3d - coreRigState3d.deployedAt) / 520, 0, 1);
-        var deployEase3d = 1 - Math.pow(1 - deployProgress3d, 3);
+        deployEase3d = 1 - Math.pow(1 - deployProgress3d, 3);
         coreRigGroup3d.scale.setScalar(0.04 + deployEase3d * 0.96);
         coreRigGroup3d.updateMatrixWorld(true);
         coreRigLight3d.intensity = 0.5 + deployEase3d * 1.1;
@@ -4425,32 +5570,49 @@
           coreRigState3d.stage = 'preview';
           coreRigState3d.status = coreRigState3d.path.length
             ? ('Bore preview · ' + coreRigState3d.path.length + ' recoverable intervals')
-            : (coreRigState3d.plannedStop === 'spent' ? 'Existing bore detected · choose another trajectory' : 'No safe rock on this trajectory');
+            : 'Trajectory unavailable · change angle, depth, or position';
           notifyCoreRigState3d(true);
         }
       }
-      var gradeTone3d = { S: 0xc084fc, A: 0x22d3ee, B: 0x34d399, C: 0xfbbf24, D: 0xfb7185 };
+      var feedProfile3d = coreRigFeedProfile(coreRigState3d.feedMode);
+      var coolantFlash3d = coreRigNow3d < coreRigState3d.coolantFlashUntil;
+      var gradeTone3d = CORE_RIG_GRADE_TONES_3D;
       var celebrating3d = !!(coreRigState3d.evaluation && coreRigNow3d < coreRigState3d.celebrateUntil);
-      var baseTone3d = coreRigState3d.plannedStop === 'hazard' ? 0xfb7185
-        : (coreRigState3d.plannedStop === 'fluid' ? 0x38bdf8
-        : (coreRigState3d.plannedStop ? 0xfbbf24 : 0x22d3ee));
-      var activeTone3d = celebrating3d ? (gradeTone3d[coreRigState3d.evaluation.grade] || baseTone3d) : baseTone3d;
-      coreRigTargetMat3d.color.setHex(activeTone3d); coreRigLight3d.color.setHex(activeTone3d);
-      coreRigGuideMat3d.opacity = 0.62 + (motion3d ? (Math.sin(t * 5.4) + 1) * 0.11 : 0.1);
-      coreRigRotor3d.rotation.x += dt3d * (coreRigState3d.running ? 10 : 1.4) * motion3d;
-      coreRigBit3d.rotation.y += dt3d * (coreRigState3d.running ? 22 : 0.8) * motion3d;
+      var trajectoryRisk3d = coreRigState3d.trajectoryScan ? coreRigState3d.trajectoryScan.riskLevel : 'limited';
+      var baseTone3d = trajectoryRisk3d === 'clear' ? 0x22d3ee
+        : (trajectoryRisk3d === 'caution' ? 0xfbbf24 : 0xfb7185);
+      var scanTone3d = coreRigState3d.idealFeedMode === 'torque' ? 0xf59e0b : (coreRigState3d.idealFeedMode === 'preserve' ? 0x22d3ee : 0x34d399);
+      var activeTone3d = coolantFlash3d ? 0x7dd3fc : (scanning3d ? scanTone3d : (celebrating3d ? (gradeTone3d[coreRigState3d.evaluation.grade] || baseTone3d) : baseTone3d));
+      coreRigTargetMat3d.color.setHex(activeTone3d); coreRigCyanMat3d.color.setHex(activeTone3d); coreRigLight3d.color.setHex(activeTone3d);
+      coreRigGuideMat3d.opacity = (scanning3d ? 0.76 : 0.62) + (motion3d ? (Math.sin(t * (scanning3d ? 8.4 : trajectoryPulseRate3d * 7.7)) + 1) * 0.11 : 0.1);
+      coreRigRotor3d.rotation.x += dt3d * (coreRigState3d.running ? (scanning3d ? 2.2 : 10 * feedProfile3d.speedMultiplier) : 1.4) * motion3d;
+      coreRigBit3d.rotation.y += dt3d * (coreRigState3d.running ? (scanning3d ? 4.4 : 22 * feedProfile3d.speedMultiplier) : 0.8) * motion3d;
       coreRigTarget3d.rotation.y += dt3d * 1.2 * motion3d;
-      coreRigTarget3d.scale.setScalar(celebrating3d && motion3d ? 1.08 + Math.sin(t * 11) * 0.16 : 1);
-      coreRigLight3d.intensity = 0.9 + (coreRigState3d.running ? 0.8 : 0.25) + (celebrating3d ? 0.75 : 0) + Math.sin(t * 5) * 0.12 * motion3d;
-      coreRigPulseRings3d.forEach(function (ring3d, index3d) {
-        var pulse3d = motion3d ? 0.88 + ((t * (celebrating3d ? 1.35 : 0.7) + index3d * 0.28) % 1) * (celebrating3d ? 0.52 : 0.34) : 1;
-        ring3d.scale.setScalar(pulse3d);
-      });
-      var assemblyDirection3d = coreRigGuideEnd3d.clone().sub(coreRigGuideStart3d);
+      coreRigTarget3d.scale.setScalar(scanning3d && motion3d ? 1.08 + Math.sin(t * 12) * 0.09 : (celebrating3d && motion3d ? 1.08 + Math.sin(t * 11) * 0.16 : 1));
+      coreRigLight3d.intensity = 0.9 + (coreRigState3d.running ? 0.8 : 0.25) + (scanning3d ? 0.5 : 0) + (celebrating3d ? 0.75 : 0) + Math.sin(t * 5) * 0.12 * motion3d;
+      var coreRigRecoveryTone3d = updateCoreRigLift3d(dt3d, coreRigNow3d);
+      if (coreRigRecoveryTone3d != null) {
+        coreRigLight3d.color.setHex(coreRigRecoveryTone3d);
+        coreRigLight3d.intensity += reducedMotion3d ? 0.32 : 0.72;
+      }
+      updateCoreRigPulseRings3d(
+        motion3d, coreRigNow3d, deployEase3d, scanning3d,
+        coreRigRecoveryTone3d != null, celebrating3d,
+        coolantFlash3d ? 2.2 : (scanning3d ? 1.8 : 0.94),
+        coreRigRecoveryTone3d != null ? coreRigRecoveryTone3d : activeTone3d
+      );
+      updateCoreRigContact3d(motion3d, scanning3d, coolantFlash3d, activeTone3d);
+      var rigLoadCompression3d = updateCoreRigLoadCouplers3d(dt3d, motion3d, scanning3d, feedProfile3d.speedMultiplier);
+      var assemblyDirection3d = coreRigAssemblyDirection3d.subVectors(coreRigGuideEnd3d, coreRigGuideStart3d);
       if (assemblyDirection3d.lengthSq() < 0.0001) assemblyDirection3d.copy(coreRigLocalDirection3d());
       else assemblyDirection3d.normalize();
       coreRigAssembly3d.position.copy(coreRigGuideStart3d).addScaledVector(assemblyDirection3d, -rigUnit3d * 3.33);
-      if (coreRigState3d.running && motion3d) coreRigAssembly3d.position.x += Math.sin(t * 44) * rigUnit3d * 0.018;
+      // Local -Y maps into the guide axis, so positive guide travel seats the bit under load.
+      coreRigAssembly3d.position.addScaledVector(assemblyDirection3d, rigUnit3d * 0.08 * rigLoadCompression3d);
+      if (coreRigState3d.running && motion3d && !scanning3d && coreRigState3d.stage !== 'cooling') {
+        coreRigAssembly3d.position.x += Math.sin(t * (32 + feedProfile3d.speedMultiplier * 10))
+          * rigUnit3d * (0.004 + rigLoadCompression3d * 0.016);
+      }
       coreRigFeedGlow3d.visible = !!coreRigState3d.running;
       if (coreRigFeedGlow3d.visible) {
         coreRigFeedGlow3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, fpClampN(coreRigState3d.progress, 0, 1));
@@ -4464,6 +5626,15 @@
         }
         return;
       }
+      if (scanning3d) {
+        updateCoreRigHudDom3d();
+        return;
+      }
+      if (coreRigState3d.scanUntil) {
+        coreRigState3d.scanUntil = 0;
+        coreRigState3d.status = 'Feed engaged · ' + coreRigState3d.formationLoad + ' load · ' + coreRigFeedProfile(coreRigState3d.feedMode).label + ' response';
+        notifyCoreRigState3d(true);
+      }
       if (coreRigState3d.stage === 'cooling') {
         coreRigState3d.heat = Math.max(0, coreRigState3d.heat - dt3d * 0.4);
         coreRigState3d.status = 'Auto-cooling drill head · ' + Math.round(coreRigState3d.heat * 100) + '%';
@@ -4471,12 +5642,14 @@
         notifyCoreRigState3d(false); return;
       }
       if (!coreRigState3d.currentVoxel && !prepareCoreRigStep3d()) return;
-      coreRigState3d.currentElapsed += Math.max(0, dt3d * 1000);
-      coreRigState3d.heat = Math.min(1, coreRigState3d.heat + dt3d * (0.11 + coreRigState3d.currentDuration / 5200));
+      coreRigState3d.currentElapsed += Math.max(0, dt3d * 1000 * feedProfile3d.speedMultiplier);
+      coreRigState3d.heat = Math.min(1, coreRigState3d.heat + dt3d * (0.11 + coreRigState3d.currentDuration / 5200) * feedProfile3d.heatMultiplier);
+      coreRigState3d.intervalStress += coreRigIntegrityLoss(coreRigState3d.idealFeedMode, coreRigState3d.feedMode, coreRigState3d.heat, dt3d);
+      coreRigState3d.intervalPeakHeat = Math.max(coreRigState3d.intervalPeakHeat, coreRigState3d.heat);
       var stepProgress3d = coreRigState3d.currentDuration ? fpClampN(coreRigState3d.currentElapsed / coreRigState3d.currentDuration, 0, 1) : 1;
       coreRigState3d.progress = coreRigState3d.path.length ? (coreRigState3d.cursor + stepProgress3d) / coreRigState3d.path.length : 1;
       coreRigFeedGlow3d.position.copy(coreRigGuideStart3d).lerp(coreRigGuideEnd3d, fpClampN(coreRigState3d.progress, 0, 1));
-      if (coreRigState3d.heat >= 0.82 && stepProgress3d < 1) {
+      if (coreRigState3d.heat >= 0.86 && stepProgress3d < 1) {
         coreRigState3d.stage = 'cooling'; coreRigState3d.status = 'Thermal pause · protecting the recovered core';
         notifyCoreRigState3d(true); return;
       }
@@ -4485,8 +5658,13 @@
         var drilledMaterial3d = SCENE.palette[drilledVoxel3d.key] || ROCKS[drilledVoxel3d.key] || { name: drilledVoxel3d.key || 'Rock', type: '', color: 0xcbd5e1 };
         var result3d = excavateVoxel(drilledVoxel3d, 'core-rig');
         if (result3d) {
-          var sample3d = { key: drilledVoxel3d.key, name: drilledMaterial3d.name, type: drilledMaterial3d.type || 'Rock', color: drilledMaterial3d.color || 0xcbd5e1, depth: drilledCell3d.depth };
+          var intervalIntegrity3d = coreRigIntegrityFromStress(coreRigState3d.intervalStress);
+          var sample3d = { key: drilledVoxel3d.key, name: drilledMaterial3d.name, type: drilledMaterial3d.type || 'Rock', color: drilledMaterial3d.color || 0xcbd5e1, depth: drilledCell3d.depth, integrity: intervalIntegrity3d };
+          coreRigState3d.pristineStreak = intervalIntegrity3d >= 0.97 ? coreRigState3d.pristineStreak + 1 : 0;
+          coreRigState3d.bestPristineStreak = Math.max(coreRigState3d.bestPristineStreak, coreRigState3d.pristineStreak);
+          coreRigState3d.lastIntervalResult = coreRigIntervalFeedback(sample3d.name, intervalIntegrity3d, coreRigState3d.pristineStreak);
           coreRigState3d.samples.push(sample3d); addCoreRigSampleMarker3d(sample3d, drilledVoxel3d);
+          beginCoreRigLift3d(sample3d, drilledVoxel3d);
           if (window._alloHaptic) { try { window._alloHaptic('break'); } catch (coreRigSampleHapticError3d) {} }
         }
         coreRigState3d.cursor += 1; coreRigState3d.currentVoxel = null; coreRigState3d.currentCell = null;
@@ -4508,9 +5686,19 @@
       coreRigState3d.deployed = false; coreRigState3d.running = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
       coreRigState3d.origin = null; coreRigState3d.path = []; coreRigState3d.samples = []; coreRigState3d.cursor = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
-      coreRigState3d.progress = 0; coreRigState3d.heat = 0; coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null;
-      coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0;
-      clearCoreRigBoreMarkers3d(); coreRigFeedGlow3d.visible = false; coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.visible = false; notifyCoreRigState3d(true);
+      coreRigState3d.progress = 0; coreRigState3d.heat = 0; coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null; coreRigState3d.trajectoryScan = null;
+      coreRigState3d.feedMode = 'cruise'; coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0;
+      coreRigState3d.formationLoad = null; coreRigState3d.idealFeedMode = 'cruise'; coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = 0;
+      coreRigState3d.pristineStreak = 0; coreRigState3d.bestPristineStreak = 0;
+      coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0; coreRigState3d.coolantFlashUntil = 0;
+      coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null;
+      clearCoreRigBoreMarkers3d(); coreRigFeedGlow3d.visible = false;
+      for (var packedRingIndex3d = 0; packedRingIndex3d < coreRigPulseRings3d.length; packedRingIndex3d++) {
+        coreRigPulseRings3d[packedRingIndex3d].visible = false;
+        coreRigPulseRings3d[packedRingIndex3d].scale.setScalar(1);
+      }
+      coreRigContact3d.visible = false; coreRigContact3d.scale.setScalar(1);
+      coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.visible = false; notifyCoreRigState3d(true);
       return { ok: true, state: coreRigSnapshot3d() };
     }
     function fpCompleteMining() {
@@ -4878,8 +6066,11 @@
       coreRigState3d.running = false; coreRigState3d.deployed = false; coreRigState3d.stage = 'packed'; coreRigState3d.status = 'Pack ready';
       coreRigState3d.angle = 'vertical'; coreRigState3d.depth = CORE_RIG_DEPTHS[1]; coreRigState3d.origin = null; coreRigState3d.yaw = 0;
       coreRigState3d.path = []; coreRigState3d.cursor = 0; coreRigState3d.samples = []; coreRigState3d.progress = 0; coreRigState3d.heat = 0;
+      coreRigState3d.feedMode = 'cruise'; coreRigState3d.coolantRemaining = 2; coreRigState3d.coolantUsed = 0;
+      coreRigState3d.formationLoad = null; coreRigState3d.idealFeedMode = 'cruise'; coreRigState3d.intervalStress = 0; coreRigState3d.intervalPeakHeat = 0;
+      coreRigState3d.pristineStreak = 0; coreRigState3d.bestPristineStreak = 0;
       coreRigState3d.currentCell = null; coreRigState3d.currentVoxel = null; coreRigState3d.currentElapsed = 0; coreRigState3d.currentDuration = 0;
-      coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null; coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0; coreRigState3d.lastHudAt = 0;
+      coreRigState3d.stopReason = null; coreRigState3d.plannedStop = null; coreRigState3d.trajectoryScan = null; coreRigState3d.evaluation = null; coreRigState3d.deployedAt = 0; coreRigState3d.celebrateUntil = 0; coreRigState3d.coolantFlashUntil = 0; coreRigState3d.scanUntil = 0; coreRigState3d.lastIntervalResult = null; coreRigState3d.lastHudAt = 0;
       clearCoreRigBoreMarkers3d(); coreRigFeedGlow3d.visible = false; coreRigGroup3d.scale.setScalar(1); coreRigGroup3d.visible = false; notifyCoreRigState3d(true);
       waterMesh.scale.y = 1; waterMesh.position.z = 0;
       if (oceanSurfaceMesh3d) { oceanSurfaceMesh3d.scale.y = 1; oceanSurfaceMesh3d.position.z = 0; }
@@ -4896,6 +6087,8 @@
     eng.fpSurvey = fpSurveyMaterial;
     eng.coreRigDeploy = deployCoreRig3d;
     eng.coreRigConfigure = configureCoreRig3d;
+    eng.coreRigSetFeedMode = setCoreRigFeedMode3d;
+    eng.coreRigCoolant = useCoreRigCoolant3d;
     eng.coreRigStart = startCoreRig3d;
     eng.coreRigCancel = cancelCoreRig3d;
     eng.coreRigPack = packCoreRig3d;
@@ -4974,7 +6167,7 @@
       rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, sceneMeasurementRows: sceneMeasurementRows, measurementSpeech: measurementSpeech, aoCount: aoCount,
       crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel, fpMaterialPhysics: fpMaterialPhysics, fpMiningProfile: fpMiningProfile, fpMiningStage: fpMiningStage, fpToolMiningDuration: fpToolMiningDuration, fpDrillHeatRate: fpDrillHeatRate, excavationWorldKey: excavationWorldKey,
-      coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); },
+      coreRigSupported: coreRigSupported, coreRigAngleDegrees: coreRigAngleDegrees, coreRigPath: coreRigPath, coreRigStopReason: coreRigStopReason, coreRigDrillDuration: coreRigDrillDuration, coreRigReportSummary: coreRigReportSummary, coreRigGradeForScore: coreRigGradeForScore, coreRigEvaluation: coreRigEvaluation, coreRigResearchReward: coreRigResearchReward, advanceCoreRigResearch: advanceCoreRigResearch, coreRigStopLabel: coreRigStopLabel, coreRigFeedProfile: coreRigFeedProfile, coreRigFormationLoad: coreRigFormationLoad, coreRigIntegrityLoss: coreRigIntegrityLoss, coreRigIntegrityFromStress: coreRigIntegrityFromStress, coreRigQualitySummary: coreRigQualitySummary, coreRigTrajectoryScan: coreRigTrajectoryScan, coreRigTrajectorySnapshot: coreRigTrajectorySnapshot, coreRigTrajectorySummary: coreRigTrajectorySummary, coreRigBoreBrief: coreRigBoreBrief, coreRigCoreCassette: coreRigCoreCassette, coreRigCompressedCore: coreRigCompressedCore, coreRigCompareReports: coreRigCompareReports, coreRigNextExperiment: coreRigNextExperiment, coreRigReportStableId: coreRigReportStableId, coreRigIntervalScanMs: coreRigIntervalScanMs, coreRigIntervalScanning: coreRigIntervalScanning, coreRigIntervalFeedback: coreRigIntervalFeedback, coreRigFormationCue: coreRigFormationCue, coreRigChallengeProgress: coreRigChallengeProgress, coreRigProgramKey: coreRigProgramKey, coreRigProgramCatalog: coreRigProgramCatalog, coreRigProgramRating: coreRigProgramRating, coreRigCertificationTier: coreRigCertificationTier, coreRigCertificationReward: coreRigCertificationReward, coreRigCertificationXpTarget: coreRigCertificationXpTarget, normalizeCoreRigPrograms: normalizeCoreRigPrograms, advanceCoreRigCertification: advanceCoreRigCertification, coreRigCertificationSummary: coreRigCertificationSummary, coreRigCertificationGuidance: coreRigCertificationGuidance, coreRigCertificationTiers: coreRigCertificationTiers, coreRigAngles: function () { return Object.assign({}, CORE_RIG_ANGLES); }, coreRigDepths: function () { return CORE_RIG_DEPTHS.slice(); }, coreRigFeedModes: function () { return Object.keys(CORE_RIG_FEED_MODES); },
       fieldExpeditions: function () { return FIELD_EXPEDITIONS; }, sceneVoxelKeys: function (sceneId) { return SCENES[sceneId] ? SCENES[sceneId].voxelKeys.slice() : []; }, fieldExpeditionFor: fieldExpeditionFor, beginFieldRun: beginFieldRun, retireFieldRunEntry: retireFieldRunEntry, advanceFieldRun: advanceFieldRun, fieldRunReward: fieldRunReward, fieldRankForXp: fieldRankForXp, fieldSpecimenName: fieldSpecimenName, fieldCollectibleKeys: fieldCollectibleKeys, recordFieldDiscovery: recordFieldDiscovery, fieldDiscoveryProgress: fieldDiscoveryProgress, fieldJournalEntries: fieldJournalEntries, fieldJournalSummary: fieldJournalSummary,
       fpExplorerMode: fpExplorerMode, fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
       scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; }, quizRemediation: quizRemediation, missions: function () { return SCENE_MISSIONS; }, lessonGuide: function () { return LESSON_GUIDE; }, evaluateCER: evaluateCER, evidenceMapDraft: evidenceMapDraft, nextMissionHint: nextMissionHint, missionAction: missionActionFor, sceneComparisons: function () { return SCENE_COMPARISONS; }, sceneComparisonInsight: sceneComparisonInsight, sceneProgress: sceneProgressFor, orientation: function () { return SCENE_ORIENTATION; }, schematicInfo: sceneSchematicInfo, schematicState: sceneSchematicState, vocabulary: function () { return SCENE_VOCABULARY; }, sequenceChallenges: function () { return SCENE_SEQUENCE_CHALLENGES; }, sequenceInitialOrder: sequenceInitialOrder, sequenceIsCorrect: sequenceIsCorrect, sequenceMoveBefore: sequenceMoveBefore, sceneJourney: sceneJourneyFor, sceneResumeState: sceneResumeState, sceneBeacons: sceneBeaconsFor, processCues: sceneProcessCueFor, sceneTimeline: sceneTimelineFor, focusLensIncludes: focusLensIncludes, cutawayReadout: cutawayReadout, firstSolidVoxelY: firstSolidVoxelY, undoPreviewTarget: undoPreviewTarget, restoreEnginePresentation: restoreEnginePresentation, sceneJourneyProgress: sceneJourneyProgressFor, evidenceMapRoles: function () { return EVIDENCE_MAP_ROLES; }, evidenceMapForScene: evidenceMapForScene, evidenceMapStatus: evidenceMapStatus,
@@ -5092,6 +6285,10 @@
       var cra = React.useState(CORE_RIG_ANGLES[d.coreRigAngle] ? d.coreRigAngle : 'vertical'); var coreRigAngle = cra[0], setCoreRigAngle = cra[1];
       var crd = React.useState(CORE_RIG_DEPTHS.indexOf(Number(d.coreRigDepth)) >= 0 ? Number(d.coreRigDepth) : CORE_RIG_DEPTHS[1]); var coreRigDepth = crd[0], setCoreRigDepth = crd[1];
       var crh = React.useState(null); var coreRigHud = crh[0], setCoreRigHud = crh[1];
+      var crr = React.useState(null); var coreRigReview = crr[0], setCoreRigReview = crr[1];
+      var crc = React.useState(null); var coreRigChallenge = crc[0], setCoreRigChallenge = crc[1];
+      var crp = React.useState(coreRigProgramKey(coreRigAngle, coreRigDepth)); var coreRigProgramSelection = crp[0], setCoreRigProgramSelection = crp[1];
+      var coreRigConsoleRef = React.useRef(null), coreRigReturnFocusRef = React.useRef(null), coreRigStageAnnounceRef = React.useRef(null), coreRigDebriefFocusRef = React.useRef(false);
       var coreRigConfigRef = React.useRef({ angle: coreRigAngle, depth: coreRigDepth });
       coreRigConfigRef.current = { angle: coreRigAngle, depth: coreRigDepth };
       var initialFieldRuns = (d.fieldRuns && typeof d.fieldRuns === 'object') ? d.fieldRuns : {};
@@ -5101,7 +6298,8 @@
         discoveredByScene: (initialFieldRuns.discoveredByScene && typeof initialFieldRuns.discoveredByScene === 'object') ? initialFieldRuns.discoveredByScene : {},
         byScene: (initialFieldRuns.byScene && typeof initialFieldRuns.byScene === 'object') ? initialFieldRuns.byScene : {},
         coreLogsByScene: (initialFieldRuns.coreLogsByScene && typeof initialFieldRuns.coreLogsByScene === 'object') ? initialFieldRuns.coreLogsByScene : {},
-        coreResearchByScene: (initialFieldRuns.coreResearchByScene && typeof initialFieldRuns.coreResearchByScene === 'object') ? initialFieldRuns.coreResearchByScene : {}
+        coreResearchByScene: (initialFieldRuns.coreResearchByScene && typeof initialFieldRuns.coreResearchByScene === 'object') ? initialFieldRuns.coreResearchByScene : {},
+        coreCertification: Object.assign({}, (initialFieldRuns.coreCertification && typeof initialFieldRuns.coreCertification === 'object') ? initialFieldRuns.coreCertification : {}, { version: 1, programs: normalizeCoreRigPrograms(initialFieldRuns.coreCertification) })
       };
       var fbr = React.useState(fieldBookSeed); var fieldBook = fbr[0], setFieldBook = fbr[1];
       var fieldBookRef = React.useRef(fieldBook); fieldBookRef.current = fieldBook;
@@ -5113,6 +6311,29 @@
       var cutaway = cutawayReadout(slice, NZ);
 
       function announce(msg) { try { var lr = document.getElementById('allo-live-geology'); if (lr) { lr.textContent = ''; setTimeout(function () { lr.textContent = String(msg || ''); }, 30); } } catch (e) {} }
+      React.useEffect(function () {
+        var deployed = !!(coreRigHud && coreRigHud.deployed);
+        if (deployed) {
+          if (!coreRigReturnFocusRef.current) coreRigReturnFocusRef.current = document.activeElement;
+          setTimeout(function () { try { if (coreRigConsoleRef.current) coreRigConsoleRef.current.focus(); } catch (coreRigFocusError) {} }, 0);
+        } else if (coreRigReturnFocusRef.current) {
+          var returnTarget = coreRigReturnFocusRef.current; coreRigReturnFocusRef.current = null;
+          setTimeout(function () { try { if (returnTarget && returnTarget.focus) returnTarget.focus(); } catch (coreRigReturnFocusError) {} }, 0);
+        }
+      }, [!!(coreRigHud && coreRigHud.deployed)]);
+      React.useEffect(function () {
+        var finishedStage = !!(coreRigHud && ['complete', 'stopped', 'paused'].indexOf(coreRigHud.stage) >= 0);
+        if (!finishedStage || !coreRigDebriefFocusRef.current) return;
+        coreRigDebriefFocusRef.current = false;
+        setTimeout(function () {
+          try {
+            var consoleNode = coreRigConsoleRef.current;
+            var debriefHeading = consoleNode && consoleNode.querySelector('[data-geology-core-debrief-heading]');
+            if (debriefHeading) debriefHeading.focus();
+            else if (consoleNode) consoleNode.focus();
+          } catch (coreRigDebriefFocusError) {}
+        }, 0);
+      }, [coreRigHud && coreRigHud.stage]);
       function saveFieldBook(next) {
         fieldBookRef.current = next;
         setFieldBook(next);
@@ -5123,18 +6344,33 @@
         sceneId = SCENES[sceneId] ? sceneId : SCENE.id;
         var cleanAngle = CORE_RIG_ANGLES[report.angle] ? report.angle : 'vertical';
         var cleanStop = ['fluid', 'hazard', 'blocked', 'spent', 'cancelled'].indexOf(report.stopReason) >= 0 ? report.stopReason : null;
+        var reportedDepth = Math.max(1, Math.min(24, Math.round(Number(report.targetDepth) || 1)));
+        var reportedRecoverable = Math.max(0, Math.min(reportedDepth, Math.floor(Number(report.plannedCount) || report.samples.length || 0)));
+        var cleanTrajectory = report.trajectoryScan
+          ? coreRigTrajectorySnapshot(report.trajectoryScan)
+          : coreRigTrajectorySnapshot({
+            requestedDepth: reportedDepth, recoverable: reportedRecoverable,
+            loadCounts: { preserve: 0, cruise: reportedRecoverable, torque: 0 }, transitions: 0,
+            riskLevel: reportedRecoverable >= reportedDepth ? 'clear' : 'limited'
+          });
         var cleanReport = {
           sceneId: sceneId, angle: cleanAngle, angleDegrees: coreRigAngleDegrees(cleanAngle),
-          targetDepth: Math.max(1, Number(report.targetDepth) || 1),
+          targetDepth: reportedDepth, plannedCount: cleanTrajectory.recoverable,
+          feedMode: CORE_RIG_FEED_MODES[report.feedMode] ? report.feedMode : 'cruise',
+          coolantUsed: Math.max(0, Math.min(2, Math.floor(Number(report.coolantUsed) || 0))),
+          bestPristineStreak: Math.max(0, Math.floor(Number(report.bestPristineStreak) || 0)),
           stopReason: cleanStop, completedAt: Math.max(1, Number(report.completedAt) || Date.now()),
-          samples: report.samples.slice(0, 24).filter(function (sample) { return sample && sample.key; }).map(function (sample) {
-            return {
+          samples: report.samples.slice(0, reportedDepth).filter(function (sample) { return sample && sample.key; }).map(function (sample) {
+            var cleanSample = {
               key: String(sample.key), name: String(sample.name || fieldSpecimenName(sceneId, sample.key)),
               type: String(sample.type || 'Rock'), color: sample.color, depth: Math.max(1, Number(sample.depth) || 1)
             };
+            if (sample.integrity != null && isFinite(Number(sample.integrity))) cleanSample.integrity = Math.max(0.55, Math.min(1, Number(sample.integrity)));
+            return cleanSample;
           })
         };
         if (!cleanReport.samples.length) return false;
+        cleanReport.boreBrief = coreRigBoreBrief(cleanTrajectory, cleanReport.samples, cleanReport.bestPristineStreak, true);
         var reportId = sceneId + '@' + cleanReport.completedAt + '@' + cleanReport.angle + '@' + cleanReport.targetDepth;
         cleanReport.id = reportId;
         var evaluation = coreRigEvaluation(cleanReport);
@@ -5149,31 +6385,82 @@
           cleanReport.duplicate = true;
           return cleanReport;
         }
+        var previousCertification = book.coreCertification || {};
+        var previousCertificationSummary = coreRigCertificationSummary(previousCertification);
+        var certification = advanceCoreRigCertification(previousCertification, cleanReport, evaluation, cleanReport.completedAt, reportId);
+        var nextCertificationSummary = coreRigCertificationSummary(certification.entry);
+        cleanReport.programKey = certification.programKey;
+        cleanReport.certificationTier = certification.assessment ? certification.assessment.level : 0;
+        cleanReport.certificationTierLabel = certification.assessment ? certification.assessment.label : 'Unrated';
+        cleanReport.programTier = certification.program ? certification.program.tier : 0;
+        cleanReport.programTierLabel = certification.program ? certification.program.tierLabel : 'Unrated';
+        cleanReport.certificationEarned = certification.tierUp;
+        cleanReport.certificationReward = certification.certificationReward;
+        cleanReport.totalReward = transition.researchReward + certification.certificationReward;
         var logs = Array.isArray(logsByScene[sceneId]) ? logsByScene[sceneId].slice(-5) : [];
+        var previousCoreLog = logs.length ? logs[logs.length - 1] : null;
+        cleanReport.comparison = coreRigCompareReports(previousCoreLog || {}, cleanReport);
+        if (!previousCoreLog || !cleanReport.comparison.eligible) cleanReport.comparison = null;
+        cleanReport.nextExperiment = coreRigNextExperiment(cleanReport, certification.entry);
         logs.push(cleanReport); logsByScene[sceneId] = logs; researchByScene[sceneId] = transition.entry;
         var oldXp = Math.max(0, Math.floor(Number(book.xp) || 0));
-        var nextXp = oldXp + transition.researchReward;
-        saveFieldBook(Object.assign({}, book, { xp: nextXp, coreLogsByScene: logsByScene, coreResearchByScene: researchByScene }));
+        var nextXp = oldXp + cleanReport.totalReward;
+        saveFieldBook(Object.assign({}, book, {
+          xp: nextXp, coreLogsByScene: logsByScene, coreResearchByScene: researchByScene,
+          coreCertification: certification.entry
+        }));
+        setCoreRigReview(null);
+        setCoreRigChallenge(function (previousChallenge) {
+          if (!previousChallenge) return previousChallenge;
+          var patch = {};
+          if (previousChallenge.sceneId === sceneId) patch.bestScore = transition.entry.bestScore;
+          if (previousChallenge.programKey === certification.programKey && certification.program) patch.programBestRating = certification.program.bestRating;
+          return Object.keys(patch).length ? Object.assign({}, previousChallenge, patch) : previousChallenge;
+        });
         setCoreRigHud(function (previousHud) {
           return previousHud ? Object.assign({}, previousHud, {
-            evaluation: Object.assign({}, evaluation), researchReward: transition.researchReward, newBest: transition.newBest
+            evaluation: Object.assign({}, evaluation), researchReward: transition.researchReward,
+            certificationReward: certification.certificationReward,
+            certificationTier: cleanReport.certificationTier,
+            certificationTierLabel: cleanReport.certificationTierLabel,
+            certificationEarned: certification.tierUp, newBest: transition.newBest,
+            boreBrief: cleanReport.boreBrief, comparison: cleanReport.comparison || null,
+            nextExperiment: cleanReport.nextExperiment || null
           }) : previousHud;
         });
         var summary = coreRigReportSummary(cleanReport);
         var sequence = cleanReport.samples.map(function (sample) { return sample.name; }).join(' → ');
         var boundary = cleanReport.stopReason ? (' Stop: ' + coreRigStopLabel(cleanReport.stopReason) + '.') : ' Target depth recovered.';
+        var certificationNote = certification.assessment && certification.assessment.level
+          ? (' · This run ' + certification.assessment.label + ' at ' + certification.assessment.rating + '/200 program rating')
+          : (' · This run unrated' + (certification.program && certification.program.tier ? (' · program best remains ' + certification.program.tierLabel) : ''));
         addNotebookEvidence(
           'core-rig',
-          'Directional core · ' + cleanReport.angleDegrees + '° / ' + cleanReport.targetDepth + ' intervals · Grade ' + evaluation.grade + ' (' + evaluation.score + ')',
+          'Directional core · ' + cleanReport.angleDegrees + '° / ' + cleanReport.targetDepth + ' intervals · Grade ' + evaluation.grade + ' (' + evaluation.score + ')' + (evaluation.integrityPercent != null ? (' · ' + evaluation.integrityPercent + '% integrity') : '') + ' · Brief ' + cleanReport.boreBrief.metCount + '/3' + certificationNote,
           sequence + '.' + boundary,
           'core-rig-' + reportId
         );
         var oldRank = fieldRankForXp(oldXp), nextRank = fieldRankForXp(nextXp);
-        var toastMessage = (transition.newBest ? 'New personal best! ' : '') + 'Grade ' + evaluation.grade + ' · ' + evaluation.score + '/200.';
-        toastMessage += transition.researchReward ? (' +' + transition.researchReward + ' research XP.') : ' Match or beat your best score to earn more research XP.';
+        var toastMessage = (transition.newBest ? 'New personal best! ' : '') + 'Grade ' + evaluation.grade + ' · ' + evaluation.score + '/200.' + (evaluation.integrityPercent != null ? (' Core integrity ' + evaluation.integrityPercent + '%.') : '') + ' Bore Brief ' + cleanReport.boreBrief.metCount + '/3.';
+        if (certification.tierUp && certification.program) toastMessage += ' ' + certification.program.tierLabel + ': ' + certification.program.angleDegrees + '° / ' + certification.program.depth + ' program!';
+        if (!certification.tierUp && certification.program && certification.program.tier === 0) toastMessage += ' ' + coreRigCertificationGuidance(certification.program) + '.';
+        if (cleanReport.totalReward) toastMessage += ' +' + cleanReport.totalReward + ' XP.';
+        else if (certification.program && certification.program.tier >= 3) toastMessage += ' Highest operator tier already earned.';
+        else toastMessage += ' Improve the program rating or core quality to advance.';
+        if (!previousCertificationSummary.complete && nextCertificationSummary.complete) toastMessage += ' All nine programs certified — Certified Core Operator!';
+        if (previousCertificationSummary.mastered < 9 && nextCertificationSummary.mastered === 9) toastMessage += ' Every program mastered — Master Core Operator!';
+        if (cleanReport.comparison) toastMessage += ' Paired finding · ' + cleanReport.comparison.similarityPct + '% sequence match.';
+        if (cleanReport.nextExperiment) toastMessage += ' Next experiment ready.';
         if (nextRank.label !== oldRank.label) toastMessage += ' Rank up: ' + nextRank.label + '!';
-        addToast(toastMessage, transition.newBest ? 'success' : 'info');
-        announce('Core log saved. Grade ' + evaluation.grade + ', ' + evaluation.score + ' points. ' + summary.sampleCount + ' samples across ' + summary.uniqueMaterials + ' materials. ' + (transition.researchReward ? transition.researchReward + ' research experience earned.' : 'Personal best unchanged.'));
+        addToast(toastMessage, transition.newBest || certification.tierUp ? 'success' : 'info');
+        var certificationSpeech = certification.tierUp && certification.program
+          ? (certification.program.tierLabel + ' operator tier earned for ' + certification.program.angleDegrees + ' degrees, ' + certification.program.depth + ' intervals. ')
+          : (certification.program && certification.program.tier === 0 ? ('Program remains unrated. ' + coreRigCertificationGuidance(certification.program) + '. ') : '');
+        var completionSpeech = !previousCertificationSummary.complete && nextCertificationSummary.complete ? 'All nine programs certified. Certified Core Operator earned. ' : '';
+        if (previousCertificationSummary.mastered < 9 && nextCertificationSummary.mastered === 9) completionSpeech += 'Every program mastered. Master Core Operator earned. ';
+        announce('Core log saved. Grade ' + evaluation.grade + ', ' + evaluation.score + ' points. ' + summary.sampleCount + ' samples across ' + summary.uniqueMaterials + ' materials. ' + (evaluation.integrityPercent != null ? evaluation.integrityPercent + ' percent core integrity. ' : '') + 'Bore Brief ' + cleanReport.boreBrief.metCount + ' of 3 complete. ' + certificationSpeech + completionSpeech + (cleanReport.totalReward ? cleanReport.totalReward + ' experience earned. ' : 'No new experience this run. ') +
+          (cleanReport.comparison ? ('Paired finding: ' + cleanReport.comparison.similarityPct + ' percent sequence match. ') : '') +
+          (cleanReport.nextExperiment ? ('Next experiment ready. ' + cleanReport.nextExperiment.question) : ''));
         return cleanReport;
       }
       function startFieldRun(sceneId, requestedIndex) {
@@ -5272,16 +6559,105 @@
             } else result = engine.coreRigPack ? engine.coreRigPack() : null;
           } else result = engine.coreRigDeploy ? engine.coreRigDeploy(coreRigConfigRef.current) : null;
         } else if (action === 'start') result = engine.coreRigStart ? engine.coreRigStart() : null;
+        else if (action === 'feed' && CORE_RIG_FEED_MODES[value]) result = engine.coreRigSetFeedMode ? engine.coreRigSetFeedMode(value) : null;
+        else if (action === 'coolant') result = engine.coreRigCoolant ? engine.coreRigCoolant() : null;
         else if (action === 'pack') result = engine.coreRigPack ? engine.coreRigPack() : null;
         else if (action === 'angle' && CORE_RIG_ANGLES[value]) {
           setCoreRigAngle(value); coreRigConfigRef.current = { angle: value, depth: coreRigConfigRef.current.depth }; upd('coreRigAngle', value);
+          var angleProgramKey = coreRigProgramKey(value, coreRigConfigRef.current.depth); setCoreRigProgramSelection(angleProgramKey);
+          setCoreRigChallenge(function (challenge) { return challenge && challenge.programKey !== angleProgramKey ? null : challenge; });
           result = state.deployed && engine.coreRigConfigure ? engine.coreRigConfigure(coreRigConfigRef.current) : { ok: true, state: state };
         } else if (action === 'depth' && CORE_RIG_DEPTHS.indexOf(Number(value)) >= 0) {
           var nextDepth = Number(value); setCoreRigDepth(nextDepth); coreRigConfigRef.current = { angle: coreRigConfigRef.current.angle, depth: nextDepth }; upd('coreRigDepth', nextDepth);
+          var depthProgramKey = coreRigProgramKey(coreRigConfigRef.current.angle, nextDepth); setCoreRigProgramSelection(depthProgramKey);
+          setCoreRigChallenge(function (challenge) { return challenge && challenge.programKey !== depthProgramKey ? null : challenge; });
           result = state.deployed && engine.coreRigConfigure ? engine.coreRigConfigure(coreRigConfigRef.current) : { ok: true, state: state };
         }
         if (result && result.state) setCoreRigHud(result.state);
+        if (result && result.ok && action === 'feed' && result.state) announce(result.state.status);
         return result;
+      }
+      function reviewCoreRigReport(report) {
+        if (!report || !Array.isArray(report.samples)) return false;
+        var evaluation = report.evaluation || coreRigEvaluation(report);
+        setCoreRigReview({ sceneId: SCENE.id, report: report });
+        announce('Reviewing grade ' + evaluation.grade + ' bore, ' + evaluation.score + ' points, ' + coreRigAngleDegrees(report.angle) + ' degrees and ' + report.targetDepth + ' intervals.');
+        return true;
+      }
+      function applyCoreRigTrajectory(angle, depth) {
+        var engine = window[ENGINE_KEY], engineState = engine && engine.coreRigState ? engine.coreRigState() : null;
+        if (engineState && (engineState.running || engineState.stage === 'deploying')) {
+          announce('End the active bore before loading a new trajectory.');
+          return null;
+        }
+        setCoreRigAngle(angle); setCoreRigDepth(depth); coreRigConfigRef.current = { angle: angle, depth: depth };
+        upd('coreRigAngle', angle); upd('coreRigDepth', depth);
+        if (engineState && engineState.deployed && engine.coreRigConfigure) {
+          var configured = engine.coreRigConfigure(coreRigConfigRef.current);
+          if (configured && configured.state) setCoreRigHud(configured.state);
+        }
+        setFpOn(true);
+        setTimeout(function () {
+          try {
+            var focusTarget = engineState && engineState.deployed ? coreRigConsoleRef.current : containerRef.current;
+            if (focusTarget) focusTarget.focus();
+          } catch (trajectoryFocusError) {}
+        }, 0);
+        return { engineState: engineState };
+      }
+      function loadCoreRigProgram(program, experiment) {
+        var requestedKey = typeof program === 'string' ? program : (program && (program.key || coreRigProgramKey(program.angle, program.depth)));
+        var catalogProgram = coreRigProgramCatalog().filter(function (item) { return item.key === requestedKey; })[0];
+        if (!catalogProgram) {
+          announce('That core rig certification program is unavailable.');
+          return false;
+        }
+        var experimentMode = !!(experiment && typeof experiment === 'object' && experiment.mode === 'compare');
+        var experimentQuestion = experimentMode && typeof experiment.question === 'string' ? experiment.question.slice(0, 220) : '';
+        var experimentControl = experimentMode && typeof experiment.controlLabel === 'string' ? experiment.controlLabel.slice(0, 180) : '';
+        var trajectoryApplication = applyCoreRigTrajectory(catalogProgram.angle, catalogProgram.depth);
+        if (!trajectoryApplication) return false;
+        var certification = (fieldBookRef.current && fieldBookRef.current.coreCertification) || {};
+        var cell = normalizeCoreRigPrograms(certification)[catalogProgram.key];
+        var challenge = {
+          kind: experimentMode ? 'experiment' : 'program', sceneId: SCENE.id, programKey: catalogProgram.key,
+          programBestRating: cell.bestRating, angle: catalogProgram.angle, depth: catalogProgram.depth,
+          question: experimentQuestion, controlLabel: experimentControl
+        };
+        setCoreRigReview(null); setCoreRigChallenge(challenge); setCoreRigProgramSelection(catalogProgram.key);
+        var xpTarget = coreRigCertificationXpTarget(cell.bestRating);
+        var stateCopy = cell.tier ? (cell.tierLabel + ' · best grade ' + cell.bestGrade + ' · rating ' + cell.bestRating) : (cell.attempts ? 'retry available' : 'open program');
+        var targetCopy = xpTarget == null ? 'Program XP ceiling reached.' : ('A ' + xpTarget + '-point program rating reaches the next XP step.');
+        var programNextAction = trajectoryApplication.engineState && trajectoryApplication.engineState.deployed ? 'Trajectory applied — start the bore.' : 'Program loaded — enter Walk and Dig, find level ground, then deploy the rig.';
+        if (experimentMode) {
+          addToast('Next experiment loaded · ' + catalogProgram.angleDegrees + '° / ' + catalogProgram.depth + '. ' + (experimentQuestion || experimentControl), 'info');
+          announce('Next controlled experiment loaded. ' + catalogProgram.angleDegrees + ' degrees, ' + catalogProgram.depth + ' intervals. ' + experimentControl + '. ' + experimentQuestion + ' ' + programNextAction);
+        } else {
+          addToast('Program loaded · ' + catalogProgram.angleDegrees + '° / ' + catalogProgram.depth + ' · ' + stateCopy + '. ' + programNextAction, 'info');
+          announce('Core rig certification program loaded. ' + catalogProgram.angleDegrees + ' degrees, ' + catalogProgram.depth + ' intervals. ' + stateCopy + '. ' + targetCopy + ' Grade C or better, at least 85 percent integrity, and target recovery or a safe boundary after 75 percent earns certification. ' + programNextAction);
+        }
+        return true;
+      }
+      function loadCoreRigChallenge(report) {
+        if (!report) return false;
+        var challengeAngle = CORE_RIG_ANGLES[report.angle] ? report.angle : 'vertical';
+        var challengeDepth = CORE_RIG_DEPTHS.indexOf(Number(report.targetDepth)) >= 0 ? Number(report.targetDepth) : CORE_RIG_DEPTHS[1];
+        if (!applyCoreRigTrajectory(challengeAngle, challengeDepth)) return false;
+        var evaluation = report.evaluation || coreRigEvaluation(report);
+        var research = (fieldBookRef.current.coreResearchByScene && fieldBookRef.current.coreResearchByScene[SCENE.id]) || {};
+        var progress = coreRigChallengeProgress(evaluation.score, research.bestScore, null);
+        var programKey = coreRigProgramKey(challengeAngle, challengeDepth);
+        var program = normalizeCoreRigPrograms(fieldBookRef.current.coreCertification)[programKey];
+        var challenge = {
+          kind: 'score', sceneId: SCENE.id, report: report, replayScore: progress.replayScore,
+          bestScore: progress.bestScore, programKey: programKey, programBestRating: program.bestRating,
+          angle: challengeAngle, depth: challengeDepth
+        };
+        setCoreRigReview({ sceneId: SCENE.id, report: report }); setCoreRigChallenge(challenge); setCoreRigProgramSelection(programKey);
+        var targetCopy = progress.xpTarget == null ? 'The 200-point research ceiling is already reached.' : (progress.xpTarget + ' points earns more research XP.');
+        addToast('Challenge loaded · ' + coreRigAngleDegrees(challengeAngle) + '° / ' + challengeDepth + ' intervals · replay ' + progress.replayScore + '.', 'info');
+        announce('Challenge trajectory loaded. Replay score ' + progress.replayScore + '. Personal best ' + progress.bestScore + '. ' + targetCopy);
+        return true;
       }
       function finishFieldRun(sceneId) {
         var book = fieldBookRef.current || {};
@@ -5624,7 +7000,26 @@
               excavationByWorldRef.current = next; upd('excavationByWorld', next);
             },
             onExcavate: function (sample) { collectFieldSample(scene, sample); },
-            onCoreRigState: function (state) { setCoreRigHud(state); },
+            onCoreRigState: function (state) {
+              var nextRigStage = state && state.stage;
+              var enteringCoreRigDebrief = nextRigStage && ['complete', 'stopped', 'paused'].indexOf(nextRigStage) >= 0 &&
+                nextRigStage !== coreRigStageAnnounceRef.current;
+              if (enteringCoreRigDebrief) {
+                try {
+                  var activeCoreRigControl = document.activeElement;
+                  coreRigDebriefFocusRef.current = !!(activeCoreRigControl && coreRigConsoleRef.current &&
+                    coreRigConsoleRef.current.contains(activeCoreRigControl));
+                } catch (coreRigActiveFocusError) { coreRigDebriefFocusRef.current = false; }
+              } else if (nextRigStage && ['complete', 'stopped', 'paused'].indexOf(nextRigStage) < 0) {
+                coreRigDebriefFocusRef.current = false;
+              }
+              setCoreRigHud(state);
+              if (nextRigStage && nextRigStage !== coreRigStageAnnounceRef.current) {
+                coreRigStageAnnounceRef.current = nextRigStage;
+                var coreRigStateSampleCount = state && Array.isArray(state.samples) ? state.samples.length : 0;
+                if (nextRigStage === 'cooling' || (!coreRigStateSampleCount && ['complete', 'stopped', 'paused'].indexOf(nextRigStage) >= 0)) announce(state.status);
+              }
+            },
             onCoreRigComplete: function (report) { saveCoreRigReport(scene, report); },
             onFpHome: function () { finishFieldRun(scene); },
             onFpProbe: function (p) { if (!p) return; setFpHud(p); var nw = (window.performance && performance.now) ? performance.now() : Date.now(); if (nw - fpAnnAtRef.current > 1200) { fpAnnAtRef.current = nw; announce(fpAnnounceText(p)); } },   // HUD every layer change; SR debounced so fast flight can't flood it
@@ -6836,6 +8231,215 @@
           h('p', { key: 'hint', className: 'mt-1 text-[10.5px] ' + muted }, 'This map follows the formation timeline and the existing material list.')
         ]);
       }
+      function coreRigPublicBandColor(band) {
+        var raw = band && band.color;
+        if (typeof raw === 'number' && isFinite(raw)) return '#' + ('000000' + Math.max(0, Math.min(0xffffff, Math.round(raw))).toString(16)).slice(-6);
+        if (typeof raw === 'string') {
+          var match = raw.trim().match(/^#?([0-9a-f]{6})$/i);
+          if (match) return '#' + match[1];
+        }
+        return '#64748b';
+      }
+      function coreRigCorrelationFigure(comparison, options) {
+        comparison = comparison && typeof comparison === 'object' ? comparison : {};
+        options = options || {};
+        if (!comparison.eligible || !comparison.previousCore || !comparison.nextCore) return null;
+        var darkSurface = !!(options.forceDark || isDark);
+        var compact = !!options.compact;
+        var similarity = Math.max(0, Math.min(100, Math.round(Number(comparison.similarityPct) || 0)));
+        var findingLevel = comparison.findingLevel === 'consistent' || comparison.findingLevel === 'mixed' || comparison.findingLevel === 'different'
+          ? comparison.findingLevel : 'mixed';
+        var sharedKeys = Array.isArray(comparison.sharedFormations) ? comparison.sharedFormations.slice(0, 24).map(function (key) { return String(key).slice(0, 80); }) : [];
+        var newKeys = Array.isArray(comparison.newFormations) ? comparison.newFormations.slice(0, 24).map(function (key) { return String(key).slice(0, 80); }) : [];
+        var notRepeatedKeys = Array.isArray(comparison.notRepeated) ? comparison.notRepeated.slice(0, 24).map(function (key) { return String(key).slice(0, 80); }) : [];
+        var surfaceTone = findingLevel === 'consistent'
+          ? (darkSurface ? 'border-emerald-300/40 bg-emerald-400/10' : 'border-emerald-300 bg-emerald-50')
+          : (findingLevel === 'mixed'
+          ? (darkSurface ? 'border-amber-300/45 bg-amber-400/10' : 'border-amber-300 bg-amber-50')
+          : (darkSurface ? 'border-rose-300/45 bg-rose-400/10' : 'border-rose-300 bg-rose-50'));
+        var headingTone = findingLevel === 'consistent'
+          ? (darkSurface ? 'text-emerald-100' : 'text-emerald-900')
+          : (findingLevel === 'mixed' ? (darkSurface ? 'text-amber-100' : 'text-amber-900') : (darkSurface ? 'text-rose-100' : 'text-rose-900'));
+        var bodyInk = darkSurface ? 'text-slate-100' : 'text-slate-900';
+        var bodyMuted = darkSurface ? 'text-slate-300' : 'text-slate-600';
+        var interpretation = String(comparison.interpretation || 'Recovered sequences provide a new comparison for the field journal.').slice(0, 180);
+        var controlLabel = String(comparison.controlLabel || 'Compare one changed variable while holding the other constant.').slice(0, 120);
+        function bandState(laneId, key) {
+          key = String(key || '');
+          if (sharedKeys.indexOf(key) >= 0) return 'shared';
+          if (laneId === 'candidate' && newKeys.indexOf(key) >= 0) return 'new';
+          if (laneId === 'reference' && notRepeatedKeys.indexOf(key) >= 0) return 'not-repeated';
+          return laneId === 'candidate' ? 'new' : 'not-repeated';
+        }
+        function bandStateLabel(state) {
+          return state === 'shared' ? 'Shared' : (state === 'new' ? 'New' : 'Not repeated');
+        }
+        function recoveredIntervalCount(core) {
+          var bands = core && Array.isArray(core.bands) ? core.bands.slice(0, 24) : [];
+          return bands.reduce(function (total, band) {
+            return total + Math.max(1, Math.min(24, Math.round(Number(band && band.count) || 1)));
+          }, 0);
+        }
+        var referenceIntervalCount = recoveredIntervalCount(comparison.previousCore);
+        var candidateIntervalCount = recoveredIntervalCount(comparison.nextCore);
+        var sharedIntervalScale = Math.max(1, referenceIntervalCount, candidateIntervalCount);
+        function coreStrip(laneId, label, core) {
+          var bands = core && Array.isArray(core.bands) ? core.bands.slice(0, 24) : [];
+          var totalIntervals = laneId === 'reference' ? referenceIntervalCount : candidateIntervalCount;
+          var remainderIntervals = Math.max(0, sharedIntervalScale - totalIntervals);
+          return h('div', {
+            key: laneId, 'data-geology-core-strip': laneId,
+            className: 'rounded-lg border p-1.5 ' + (darkSurface ? 'border-white/10 bg-slate-950/55' : 'border-slate-200 bg-white/80')
+          }, [
+            h('div', { key: 'head', className: 'mb-1 flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide ' + bodyMuted }, [
+              h('span', { key: 'label' }, label),
+              h('span', { key: 'count', className: 'tabular-nums' }, totalIntervals + ' / ' + sharedIntervalScale + ' intervals')
+            ]),
+            bands.length ? h('div', { key: 'scroll', className: 'overflow-x-auto pb-1' },
+              h('ol', {
+                className: 'flex gap-1', 'aria-label': label + ' recovered formations',
+                style: { minWidth: compact ? '13rem' : '15rem' }
+              }, bands.map(function (band, bandIndex) {
+                var key = String(band && band.key || '');
+                var state = bandState(laneId, key);
+                var count = Math.max(1, Math.min(24, Math.round(Number(band && band.count) || 1)));
+                var start = Math.max(1, Math.round(Number(band && band.startDepth) || (bandIndex + 1)));
+                var end = Math.max(start, Math.round(Number(band && band.endDepth) || (start + count - 1)));
+                var range = start === end ? String(start) : (start + '–' + end);
+                var name = String(band && band.name || 'Recovered formation').slice(0, 80);
+                var integrity = band && band.avgIntegrity != null && isFinite(Number(band.avgIntegrity))
+                  ? Math.max(0, Math.min(100, Math.round(Number(band.avgIntegrity) * 100))) : null;
+                var stateLabel = bandStateLabel(state);
+                var stateTone = state === 'shared'
+                  ? (darkSurface ? 'text-cyan-100' : 'text-cyan-800')
+                  : (state === 'new' ? (darkSurface ? 'text-amber-100' : 'text-amber-800') : (darkSurface ? 'text-rose-100' : 'text-rose-800'));
+                var bandRing = state === 'shared'
+                  ? 'ring-1 ring-cyan-200/70'
+                  : (state === 'new' ? 'ring-2 ring-amber-200/80' : 'ring-1 ring-rose-200/70 opacity-70 grayscale');
+                var aria = label + ' intervals ' + range + ': ' + name + ', ' + stateLabel.toLowerCase() +
+                  (integrity == null ? '' : (', average integrity ' + integrity + ' percent'));
+                return h('li', {
+                  key: laneId + '-' + key + '-' + bandIndex,
+                  'data-geology-core-band': key || String(bandIndex + 1), 'data-state': state,
+                  'data-start-interval': start, 'data-end-interval': end,
+                  className: 'min-w-0 list-none', style: { flexGrow: count, flexBasis: 0, minWidth: 0 },
+                  title: aria, 'aria-label': aria
+                }, [
+                  h('span', {
+                    key: 'bar', className: 'block h-5 rounded-md border border-white/35 shadow-inner ' + bandRing,
+                    style: { background: coreRigPublicBandColor(band) }, 'aria-hidden': 'true'
+                  }),
+                  h('span', { key: 'name', className: 'mt-1 block truncate text-[10px] font-extrabold ' + bodyInk }, name),
+                  h('span', { key: 'meta', className: 'block text-[10px] font-bold tabular-nums ' + stateTone }, range + ' · ' + stateLabel)
+                ]);
+              })).concat(remainderIntervals ? [h('li', {
+                key: laneId + '-remainder', 'data-geology-core-remainder': remainderIntervals,
+                className: 'min-w-0 list-none', style: { flexGrow: remainderIntervals, flexBasis: 0, minWidth: 0 },
+                'aria-label': label + ' has ' + remainderIntervals + ' fewer recovered intervals on the shared scale'
+              }, [
+                h('span', {
+                  key: 'bar', className: 'block h-5 rounded-md border border-dashed ' + (darkSurface ? 'border-slate-500 bg-slate-800/70' : 'border-slate-300 bg-slate-100'),
+                  style: { backgroundImage: 'repeating-linear-gradient(135deg, transparent 0, transparent 5px, rgba(148,163,184,.22) 5px, rgba(148,163,184,.22) 7px)' },
+                  'aria-hidden': 'true'
+                }),
+                h('span', { key: 'meta', className: 'mt-1 block truncate text-[10px] font-bold ' + bodyMuted }, remainderIntervals + ' interval gap')
+              ])] : [])) : h('p', { key: 'empty', className: 'text-[10px] font-semibold ' + bodyMuted }, 'No recovered intervals')
+          ]);
+        }
+        var change = comparison.changedVariable === 'angle' ? 'Angle changed · depth held' : 'Depth changed · angle held';
+        return h('figure', {
+          key: options.key, 'data-geology-core-correlation': findingLevel,
+          className: 'rounded-xl border p-2 shadow-inner ' + surfaceTone,
+          'aria-label': 'Paired recovered core correlation'
+        }, [
+          h('div', { key: 'heading', className: 'flex items-start justify-between gap-2' }, [
+            h('div', { key: 'copy' }, [
+              h('h4', { key: 'title', className: 'text-[11px] font-black uppercase tracking-[.14em] ' + headingTone }, 'Core correlation'),
+              h('p', { key: 'change', className: 'mt-0.5 text-[10px] font-bold ' + bodyMuted }, change)
+            ]),
+            h('span', { key: 'score', className: 'shrink-0 rounded-full border border-cyan-200/40 bg-cyan-400/10 px-2 py-1 text-[11px] font-black tabular-nums ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-900') }, similarity + '% match')
+          ]),
+          h('div', {
+            key: 'meter', role: 'meter', 'aria-label': 'Recovered sequence similarity',
+            'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': similarity,
+            'aria-valuetext': similarity + ' percent recovered sequence match',
+            className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (darkSurface ? 'bg-slate-800' : 'bg-slate-200')
+          }, h('span', {
+            className: 'block h-full rounded-full bg-gradient-to-r from-violet-400 via-cyan-300 to-emerald-300',
+            style: { width: similarity + '%' }
+          })),
+          h('div', { key: 'strips', className: 'mt-2 grid gap-1.5' }, [
+            coreStrip('reference', 'Reference bore', comparison.previousCore),
+            coreStrip('candidate', 'Candidate bore', comparison.nextCore)
+          ]),
+          h('ul', { key: 'legend', className: 'mt-1.5 flex flex-wrap gap-1', 'aria-label': 'Core correlation states' }, [
+            h('li', { key: 'shared', className: 'list-none rounded-full border border-cyan-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-cyan-100' : 'text-cyan-800') }, 'Shared'),
+            h('li', { key: 'new', className: 'list-none rounded-full border border-amber-300/45 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-amber-100' : 'text-amber-800') }, 'New'),
+            h('li', { key: 'not-repeated', className: 'list-none rounded-full border border-rose-300/40 px-1.5 py-0.5 text-[10px] font-bold ' + (darkSurface ? 'text-rose-100' : 'text-rose-800') }, 'Not repeated')
+          ]),
+          h('p', { key: 'note', 'data-geology-core-correlation-note': 'true', className: 'mt-1.5 text-[10px] font-semibold leading-snug ' + bodyMuted }, 'Sequence matches compare recovered intervals; they do not prove continuous rock between boreholes.'),
+          h('figcaption', { key: 'caption', className: 'mt-1.5 ' + bodyInk }, [
+            h('p', { key: 'finding', className: 'text-[11px] font-semibold leading-snug' }, interpretation),
+            h('p', { key: 'control', className: 'mt-0.5 text-[10px] font-bold ' + bodyMuted }, controlLabel)
+          ])
+        ]);
+      }
+      function coreRigExperimentRail(experiment, options) {
+        experiment = experiment && typeof experiment === 'object' ? experiment : {};
+        options = options || {};
+        var darkSurface = !!(options.forceDark || isDark);
+        var changedVariable = experiment.changedVariable === 'angle' ? 'angle' : 'depth';
+        var nextAngle = Math.max(0, Math.round(Number(experiment.angleDegrees) || 0));
+        var nextDepth = Math.max(0, Math.round(Number(experiment.depth) || 0));
+        var currentAngle = isFinite(Number(options.currentAngleDegrees)) ? Math.max(0, Math.round(Number(options.currentAngleDegrees))) : nextAngle;
+        var currentDepth = isFinite(Number(options.currentDepth)) ? Math.max(0, Math.round(Number(options.currentDepth))) : nextDepth;
+        var variables = [
+          { id: 'angle', label: 'Angle', value: nextAngle + '°' },
+          { id: 'depth', label: 'Depth', value: nextDepth + ' intervals' }
+        ];
+        var currentConfiguration = currentAngle + '° / ' + currentDepth;
+        var nextConfiguration = nextAngle + '° / ' + nextDepth;
+        return h('div', {
+          key: options.key, 'data-geology-core-experiment-map': experiment.programKey || 'next',
+          'data-geology-core-control-variable': changedVariable,
+          className: 'mt-1.5', role: 'group',
+          'aria-label': 'Controlled experiment map. Current setup ' + currentConfiguration + '. ' + changedVariable + ' changes. Next setup ' + nextConfiguration + '. Outcome unknown until the bore is run.'
+        }, [
+          h('div', { key: 'configurations', className: 'grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-1' }, [
+            h('div', { key: 'current', 'data-geology-core-configuration': 'current', className: 'min-w-0 rounded-md border px-2 py-1.5 ' + (darkSurface ? 'border-slate-500/50 bg-slate-950/55 text-slate-100' : 'border-slate-300 bg-white/80 text-slate-800') }, [
+              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-cyan-200' : 'text-cyan-800') }, 'Current'),
+              h('span', { key: 'value', className: 'mt-0.5 block truncate text-[11px] font-extrabold tabular-nums', title: currentConfiguration }, currentConfiguration)
+            ]),
+            h('span', { key: 'arrow', className: 'grid place-items-center px-0.5 text-base text-violet-300', 'aria-hidden': 'true' }, '→'),
+            h('div', { key: 'next', 'data-geology-core-configuration': 'next', className: 'min-w-0 rounded-md border px-2 py-1.5 ' + (darkSurface ? 'border-violet-200/60 bg-violet-400/20 text-violet-50 shadow-[0_0_12px_rgba(167,139,250,.16)]' : 'border-violet-400 bg-violet-100 text-violet-950') }, [
+              h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide ' + (darkSurface ? 'text-violet-200' : 'text-violet-800') }, 'Next'),
+              h('span', { key: 'value', className: 'mt-0.5 block truncate text-[11px] font-extrabold tabular-nums', title: nextConfiguration }, nextConfiguration)
+            ])
+          ]),
+          h('div', { key: 'variables', className: 'mt-1 grid grid-cols-2 gap-1' }, variables.map(function (variable) {
+            var changed = variable.id === changedVariable;
+            return h('div', {
+              key: variable.id, 'data-geology-core-variable': variable.id, 'data-state': changed ? 'changed' : 'held',
+              className: 'rounded-md border px-2 py-1.5 ' + (changed
+                ? (darkSurface ? 'border-violet-200/70 bg-violet-400/20 text-violet-50' : 'border-violet-400 bg-violet-100 text-violet-950')
+                : (darkSurface ? 'border-cyan-300/30 bg-slate-950/45 text-slate-200' : 'border-cyan-300 bg-white/70 text-slate-700')),
+              'aria-label': variable.label + ' ' + (changed ? 'changed to ' : 'held at ') + variable.value
+            }, [
+              h('span', { key: 'state', className: 'block text-[10px] font-black uppercase tracking-wide ' + (changed ? (darkSurface ? 'text-violet-200' : 'text-violet-800') : (darkSurface ? 'text-cyan-200' : 'text-cyan-800')) }, (changed ? 'Δ Changed · ' : '= Held · ') + variable.label),
+              h('span', { key: 'value', className: 'mt-0.5 block text-[11px] font-extrabold tabular-nums' }, variable.value)
+            ]);
+          })),
+          h('div', {
+            key: 'unknown', 'data-geology-core-outcome': 'unknown',
+            className: 'mt-1 flex items-center gap-2 rounded-md border border-dashed px-2 py-1.5 ' + (darkSurface ? 'border-slate-500/70 bg-slate-950/35 text-slate-300' : 'border-slate-400 bg-white/60 text-slate-600')
+          }, [
+            h('span', { key: 'slots', className: 'flex shrink-0 gap-0.5', 'aria-hidden': 'true' }, [0, 1, 2].map(function (slot) {
+              return h('span', { key: slot, className: 'grid h-5 w-4 place-items-center rounded-sm border border-slate-500/60 bg-slate-700/50 text-[10px] font-black' }, '?');
+            })),
+            h('span', { key: 'copy', className: 'min-w-0 text-[10px] font-bold leading-snug' }, 'Outcome unknown · run this bore to reveal the comparison')
+          ])
+        ]);
+      }
       function fieldJournalPanel() {
         var discoveredByScene = fieldBook.discoveredByScene || {};
         var entries = fieldJournalEntries(SCENE.id, discoveredByScene);
@@ -6843,10 +8447,27 @@
         var totalProgress = fieldJournalSummary(discoveredByScene);
         var runEntry = (fieldBook.byScene && fieldBook.byScene[SCENE.id]) || {};
         var sceneCoreLogs = (fieldBook.coreLogsByScene && Array.isArray(fieldBook.coreLogsByScene[SCENE.id])) ? fieldBook.coreLogsByScene[SCENE.id] : [];
-        var latestCoreLog = sceneCoreLogs.length ? sceneCoreLogs[sceneCoreLogs.length - 1] : null;
+        var latestCoreLog = (coreRigReview && coreRigReview.sceneId === SCENE.id && coreRigReview.report) ? coreRigReview.report : (sceneCoreLogs.length ? sceneCoreLogs[sceneCoreLogs.length - 1] : null);
         var latestCoreSummary = coreRigReportSummary(latestCoreLog || {});
         var latestCoreEvaluation = latestCoreLog ? (latestCoreLog.evaluation || coreRigEvaluation(latestCoreLog)) : null;
+        var latestCoreLogIndex = latestCoreLog ? sceneCoreLogs.map(coreRigReportStableId).indexOf(coreRigReportStableId(latestCoreLog)) : -1;
+        var persistedCoreComparison = latestCoreLog && latestCoreLog.comparison && latestCoreLog.comparison.eligible
+          ? latestCoreLog.comparison : null;
+        var previousCoreLog = latestCoreLogIndex > 0 ? sceneCoreLogs[latestCoreLogIndex - 1] : null;
+        var derivedCoreComparison = previousCoreLog && latestCoreLog
+          ? coreRigCompareReports(previousCoreLog, latestCoreLog) : null;
+        var latestCoreComparison = derivedCoreComparison && derivedCoreComparison.eligible
+          ? derivedCoreComparison : (!previousCoreLog ? persistedCoreComparison : null);
+        var latestCoreNextExperiment = latestCoreLog ? (coreRigNextExperiment(latestCoreLog, fieldBook.coreCertification) || latestCoreLog.nextExperiment || null) : null;
+        var latestCoreCassette = latestCoreLog ? coreRigCoreCassette(latestCoreLog.samples, latestCoreLog.targetDepth, false, false) : null;
         var sceneCoreResearch = (fieldBook.coreResearchByScene && fieldBook.coreResearchByScene[SCENE.id]) || {};
+        var corePrograms = normalizeCoreRigPrograms(fieldBook.coreCertification);
+        var coreCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification);
+        var selectedCoreProgramKey = corePrograms[coreRigProgramSelection] ? coreRigProgramSelection : coreRigProgramKey(coreRigAngle, coreRigDepth);
+        var selectedCoreProgram = corePrograms[selectedCoreProgramKey] || corePrograms[coreRigProgramCatalog()[0].key];
+        var selectedProgramXpTarget = coreRigCertificationXpTarget(selectedCoreProgram.bestRating);
+        var coreProgramLoadLocked = !!(coreRigHud && (coreRigHud.running || coreRigHud.stage === 'deploying'));
+        var coreProgramLoadHelpId = 'geology-core-program-load-help-' + SCENE.id;
         var coreMasteryScore = Math.max(0, Math.min(200, Math.floor(Number(sceneCoreResearch.bestScore) || (latestCoreEvaluation && latestCoreEvaluation.score) || 0)));
         var coreMasteryGrade = coreRigGradeForScore(coreMasteryScore);
         var latestCoreGrade = latestCoreEvaluation ? latestCoreEvaluation.grade : null;
@@ -6909,10 +8530,14 @@
                 h('div', { key: 'head', className: 'flex flex-wrap items-start justify-between gap-2' }, [
                   h('div', { key: 'title' }, [
                     h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wider ' + (isDark ? 'text-cyan-300' : 'text-cyan-800') }, '◉ Directional core research'),
-                    h('p', { key: 'sub', className: 'mt-0.5 text-[10px] ' + muted }, latestCoreLog ? (latestCoreLog.angleDegrees + '° bore · ' + latestCoreLog.targetDepth + '-interval target · log ' + sceneCoreLogs.length) : 'No bore logged in this scene yet.')
+                    h('p', { key: 'sub', className: 'mt-0.5 text-[10px] ' + muted }, latestCoreLog ? ((latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)) + '° bore · ' + latestCoreLog.targetDepth + '-interval target · log ' + sceneCoreLogs.length) : 'No bore logged in this scene yet.')
                   ]),
                   latestCoreEvaluation ? h('div', { key: 'grade', className: 'flex items-center gap-1.5' }, [
                     latestCoreLog && latestCoreLog.newBest ? h('span', { key: 'best', className: 'rounded-full border border-amber-300/60 bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, 'New best') : null,
+                    latestCoreLog && latestCoreLog.boreBrief ? h('span', { key: 'brief',
+                      'data-geology-core-brief-badge': latestCoreLog.boreBrief.metCount,
+                      className: 'rounded-full border border-violet-300/55 bg-violet-400/15 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (isDark ? 'text-violet-200' : 'text-violet-800') },
+                      'Brief ' + latestCoreLog.boreBrief.metCount + '/3') : null,
                     h('span', { key: 'badge', 'data-geology-core-grade': latestCoreEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + coreGradeClass }, 'Grade ' + latestCoreEvaluation.grade),
                     h('span', { key: 'score', 'data-geology-core-score': latestCoreEvaluation.score, className: 'text-[10px] font-black tabular-nums ' + ink }, latestCoreEvaluation.score + '/200')
                   ]) : null
@@ -6925,29 +8550,170 @@
                   h('div', { key: 'track', className: 'mt-1 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Best directional core score', 'aria-valuemin': 0, 'aria-valuemax': 200, 'aria-valuenow': coreMasteryScore }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500 transition-[width] duration-300 motion-reduce:transition-none', style: { width: (coreMasteryScore / 2) + '%' } })),
                   h('div', { key: 'meta', className: 'mt-1 flex flex-wrap justify-between gap-1 text-[10px] font-semibold ' + muted }, [
                     h('span', { key: 'bores' }, Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) + ' scored bore' + (Math.max(Number(sceneCoreResearch.totalBores) || 0, sceneCoreLogs.length) === 1 ? '' : 's')),
-                    h('span', { key: 'reward', 'data-geology-core-research-reward': latestCoreLog ? (latestCoreLog.researchReward || 0) : 0 }, latestCoreLog && latestCoreLog.researchReward ? ('Latest +' + latestCoreLog.researchReward + ' research XP') : 'Improve the best score to earn XP')
+                    h('span', { key: 'reward', 'data-geology-core-research-reward': latestCoreLog ? (latestCoreLog.researchReward || 0) : 0 }, latestCoreLog && latestCoreLog.researchReward ? ('Selected +' + latestCoreLog.researchReward + ' research XP') : 'Improve the best score to earn XP')
                   ])
                 ]),
-                latestCoreLog ? h('div', { key: 'tube', className: 'mt-2 flex h-8 overflow-x-auto overflow-y-hidden rounded-lg border border-slate-500/50 bg-slate-900/80 p-0.5 shadow-inner', role: 'group', 'aria-label': 'Core samples from shallowest to deepest' }, latestCoreLog.samples.map(function (sample, sampleIndex) {
-                  var sampleRock = SCENE.palette[sample.key] || ROCKS[sample.key] || {};
-                  var rawColor = sample.color != null ? sample.color : sampleRock.color;
-                  var sampleTone = typeof rawColor === 'string' ? (rawColor.charAt(0) === '#' ? rawColor : '#' + rawColor) : hex(rawColor == null ? 0x94a3b8 : rawColor);
-                  return h('button', { key: sampleIndex + ':' + sample.key, type: 'button', className: 'relative min-w-6 flex-1 border-r border-black/30 last:border-r-0 focus:z-10 focus:outline-none focus:ring-2 focus:ring-cyan-300', style: { background: sampleTone }, title: sample.name + ' · interval ' + sample.depth, 'aria-label': 'Core interval ' + sample.depth + ': ' + sample.name, onClick: function () { selectRock(rockFacts(sample.key, DEPTH_GUESS[sample.key] || sample.depth)); } }, h('span', { className: 'sr-only' }, sample.name));
+                h('section', { key: 'certification', 'data-geology-core-certification': 'true', className: 'mt-2 overflow-hidden rounded-lg border ' + (isDark ? 'border-violet-400/45 bg-violet-950/20' : 'border-violet-200 bg-white/75'), role: 'region', 'aria-label': 'Core Rig Operator Certification' }, [
+                  h('div', { key: 'cert-head', className: 'flex flex-wrap items-start justify-between gap-2 p-2' }, [
+                    h('div', { key: 'copy' }, [
+                      h('h5', { key: 'title', className: 'text-[10px] font-black uppercase tracking-[.13em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, '⬡ Core Rig Operator Certification'),
+                      h('p', { key: 'rule', className: 'mt-0.5 max-w-sm text-[11px] leading-snug ' + muted }, 'Certify every angle and depth. Earn Grade C, protect at least 85% integrity, and recover the target or reach 75% before a protected boundary.'),
+                      h('p', { key: 'tiers', className: 'mt-1 text-[10.5px] font-bold ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, 'Certified C / 85% · Advanced 135 rating / 92% · Mastered 175 rating / 97%')
+                    ]),
+                    h('div', { key: 'rank', className: 'text-right' }, [
+                      h('div', { key: 'count', className: 'text-[12px] font-black tabular-nums ' + (coreCertificationProgress.complete ? (isDark ? 'text-emerald-200' : 'text-emerald-800') : ink) }, coreCertificationProgress.certified + '/9'),
+                      h('div', { key: 'title', className: 'text-[10px] font-bold ' + muted }, coreCertificationProgress.title)
+                    ])
+                  ]),
+                  h('div', { key: 'cert-progress', className: 'mx-2 h-1.5 overflow-hidden rounded-full ' + (isDark ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Core rig certification programs completed', 'aria-valuemin': 0, 'aria-valuemax': 9, 'aria-valuenow': coreCertificationProgress.certified, 'aria-valuetext': coreCertificationProgress.certified + ' of 9 certification programs complete' }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-400 to-violet-500 transition-[width] motion-reduce:transition-none', style: { width: coreCertificationProgress.percent + '%' } })),
+                  h('div', { key: 'matrix-wrap', className: 'mt-2 overflow-x-auto px-2' },
+                    h('table', { className: 'w-full table-fixed border-separate border-spacing-1 text-center', 'data-geology-core-program-matrix': 'true' }, [
+                      h('caption', { key: 'caption', className: 'sr-only' }, 'Certification programs by drill angle and target depth'),
+                      h('thead', { key: 'head' }, h('tr', null, [
+                        h('th', { key: 'corner', scope: 'col', className: 'w-[4.5rem] px-1 text-left text-[10px] font-black uppercase tracking-wide ' + muted }, 'Angle')
+                      ].concat(CORE_RIG_DEPTHS.map(function (depth) {
+                        return h('th', { key: depth, scope: 'col', 'aria-label': depth + ' intervals', className: 'px-1 pb-0.5 text-[10px] font-black ' + ink }, depth + ' int.');
+                      })))),
+                      h('tbody', { key: 'body' }, ['vertical', 'slant', 'shallow'].map(function (angle) {
+                        return h('tr', { key: angle }, [
+                          h('th', { key: 'label', scope: 'row', className: 'px-1 text-left text-[10px] font-extrabold leading-tight ' + ink }, [
+                            h('span', { key: 'name', className: 'block capitalize' }, angle),
+                            h('span', { key: 'degrees', className: 'block font-semibold ' + muted }, coreRigAngleDegrees(angle) + '°')
+                          ])
+                        ].concat(CORE_RIG_DEPTHS.map(function (depth) {
+                          var programKey = coreRigProgramKey(angle, depth), cell = corePrograms[programKey];
+                          var selectedProgram = selectedCoreProgramKey === programKey;
+                          var visibleStatus = cell.tier >= 3 ? ('★ ' + cell.bestGrade) : (cell.tier >= 2 ? ('◆ ' + cell.bestGrade) : (cell.tier >= 1 ? ('✓ ' + cell.bestGrade) : (cell.attempts ? 'Retry' : 'Open')));
+                          var programGuidance = coreRigCertificationGuidance(cell);
+                          var spokenStatus = cell.tier
+                            ? (cell.tierLabel + '. Highest qualifying score grade ' + cell.bestGrade + '. Best program rating ' + cell.bestRating + '. Highest integrity ' + cell.bestIntegrity + ' percent. ' + programGuidance)
+                            : (cell.attempts ? ('Unrated after ' + cell.attempts + ' attempts. ' + programGuidance) : 'Open, no attempts. ' + programGuidance);
+                          return h('td', { key: programKey, className: 'p-0.5' },
+                            h('button', {
+                              type: 'button', 'data-geology-core-program': programKey, 'data-tier': cell.tier,
+                              'aria-pressed': selectedProgram ? 'true' : 'false',
+                              'aria-label': cell.angleDegrees + ' degree, ' + cell.depth + ' interval certification program. ' + spokenStatus + '.',
+                              title: spokenStatus,
+                              onClick: function () {
+                                setCoreRigProgramSelection(programKey);
+                                announce(cell.angleDegrees + ' degree, ' + cell.depth + ' interval program selected. ' + spokenStatus + '.');
+                              },
+                              className: 'min-h-11 min-w-11 w-full rounded-md border px-1 text-[10px] font-black transition focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (selectedProgram
+                                ? (isDark ? 'border-cyan-300 bg-cyan-500/20 text-cyan-100 shadow-[0_0_12px_rgba(34,211,238,.2)]' : 'border-cyan-500 bg-cyan-100 text-cyan-950 shadow-sm')
+                                : (cell.tier >= 3 ? (isDark ? 'border-violet-300/70 bg-violet-400/20 text-violet-100' : 'border-violet-300 bg-violet-100 text-violet-900')
+                                : (cell.tier >= 1 ? (isDark ? 'border-emerald-300/60 bg-emerald-400/15 text-emerald-100' : 'border-emerald-300 bg-emerald-50 text-emerald-900')
+                                : (isDark ? 'border-slate-600 bg-slate-900/65 text-slate-200 hover:border-cyan-400' : 'border-slate-300 bg-white text-slate-700 hover:border-cyan-500'))))
+                            }, visibleStatus));
+                        })));
+                      }))
+                    ])),
+                  h('div', { key: 'selected', className: 'm-2 mt-1.5 rounded-lg border p-2 ' + (isDark ? 'border-white/10 bg-black/20' : 'border-slate-200 bg-slate-50') }, [
+                    h('div', { key: 'row', className: 'flex flex-wrap items-start justify-between gap-2' }, [
+                      h('div', { key: 'name' }, [
+                        h('div', { key: 'eyebrow', className: 'text-[10px] font-black uppercase tracking-wide ' + muted }, 'Selected program'),
+                        h('div', { key: 'value', className: 'text-[11px] font-extrabold ' + ink }, selectedCoreProgram.angleDegrees + '° ' + selectedCoreProgram.angle + ' · ' + selectedCoreProgram.depth + ' intervals')
+                      ]),
+                      h('span', { key: 'state', className: 'rounded-full border px-2 py-0.5 text-[10px] font-black ' + (selectedCoreProgram.tier ? (isDark ? 'border-emerald-300/50 text-emerald-200' : 'border-emerald-300 text-emerald-800') : (isDark ? 'border-slate-600 text-slate-300' : 'border-slate-300 text-slate-600')) }, selectedCoreProgram.tier ? selectedCoreProgram.tierLabel : (selectedCoreProgram.attempts ? 'Retry' : 'Open'))
+                    ]),
+                    h('p', { key: 'meta', className: 'mt-1 text-[11px] font-semibold ' + muted }, selectedCoreProgram.tier
+                      ? ('Highest qualifying score ' + selectedCoreProgram.bestGrade + ' · ' + selectedCoreProgram.bestScore + '/200 · Best rating ' + selectedCoreProgram.bestRating + '/200 · Highest integrity ' + selectedCoreProgram.bestIntegrity + '% · ' + selectedCoreProgram.attempts + ' attempt' + (selectedCoreProgram.attempts === 1 ? '' : 's'))
+                      : (selectedCoreProgram.attempts
+                        ? ('Last result ' + selectedCoreProgram.lastGrade + ' · ' + selectedCoreProgram.lastScore + '/200 · rating ' + selectedCoreProgram.lastRating + '/200 · ' + selectedCoreProgram.lastIntegrity + '% integrity')
+                        : 'No bore logged for this exact trajectory yet.')),
+                    h('p', { key: 'guidance', className: 'mt-0.5 text-[11px] font-bold ' + (isDark ? 'text-cyan-200' : 'text-cyan-800') }, coreRigCertificationGuidance(selectedCoreProgram)),
+                    h('p', { key: 'xp', className: 'mt-0.5 text-[10.5px] font-bold ' + (isDark ? 'text-amber-200' : 'text-amber-800') }, selectedProgramXpTarget == null ? 'All score-improvement XP earned' : ('Next XP at ' + selectedProgramXpTarget + ' rating ' + (selectedProgramXpTarget === 1 ? 'point' : 'points'))),
+                    h('button', {
+                      key: 'load', type: 'button', 'data-geology-core-program-load': selectedCoreProgram.key,
+                      disabled: coreProgramLoadLocked, 'aria-describedby': coreProgramLoadLocked ? coreProgramLoadHelpId : undefined,
+                      onClick: function () { loadCoreRigProgram(selectedCoreProgram); },
+                      className: 'mt-2 min-h-11 w-full rounded-lg border border-cyan-300/60 bg-gradient-to-r from-cyan-500/20 to-violet-500/20 px-3 text-[11px] font-extrabold transition hover:border-amber-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-cyan-100' : 'text-cyan-900'),
+                      'aria-label': 'Load ' + selectedCoreProgram.angleDegrees + ' degree, ' + selectedCoreProgram.depth + ' interval certification program and enter Walk and Dig'
+                    }, 'Load ' + selectedCoreProgram.angleDegrees + '° / ' + selectedCoreProgram.depth + ' program · enter Walk & Dig'),
+                    coreProgramLoadLocked ? h('p', { key: 'load-help', id: coreProgramLoadHelpId, className: 'mt-1 text-[11px] font-semibold text-amber-500' }, 'End the active bore before loading another program.') : null
+                  ])
+                ]),
+                latestCoreLog && latestCoreCassette ? h('ol', {
+                  key: 'tube', 'data-geology-core-cassette': 'journal',
+                  className: 'mt-2 flex min-h-12 gap-1 overflow-x-auto overflow-y-hidden rounded-lg border border-slate-500/50 bg-slate-900/80 p-1 shadow-inner',
+                  'aria-label': 'Core cassette from shallowest to deepest'
+                }, latestCoreCassette.slots.map(function (cassetteSlot) {
+                  var recoveredSlot = cassetteSlot.state === 'recovered';
+                  var cassetteSample = recoveredSlot ? cassetteSlot.sample : null;
+                  var sampleRock = cassetteSample ? (SCENE.palette[cassetteSample.key] || ROCKS[cassetteSample.key] || {}) : {};
+                  var rawColor = cassetteSample && cassetteSample.color != null ? cassetteSample.color : sampleRock.color;
+                  var sampleTone = typeof rawColor === 'string' ? (rawColor.charAt(0) === '#' ? rawColor : '#' + rawColor) : hex(rawColor == null ? 0x64748b : rawColor);
+                  var slotLabel = recoveredSlot
+                    ? ('Core interval ' + cassetteSlot.interval + ': ' + cassetteSample.name + ', ' + cassetteSlot.quality + (cassetteSlot.integrityPercent == null ? ', integrity not recorded' : (', ' + cassetteSlot.integrityPercent + ' percent integrity')))
+                    : ('Core interval ' + cassetteSlot.interval + ': not recovered');
+                  var slotCopy = [
+                    h('span', { key: 'number', 'data-geology-core-interval-number': cassetteSlot.interval, className: 'rounded-sm bg-slate-950/70 px-1 text-[10px] font-black tabular-nums shadow-sm' }, '#' + String(cassetteSlot.interval)),
+                    h('span', { key: 'quality', 'data-geology-core-quality-glyph': cassetteSlot.quality, className: 'rounded-sm bg-slate-950/70 px-1 text-[13px] font-black leading-none shadow-sm', 'aria-hidden': 'true' }, cassetteSlot.glyph)
+                  ];
+                  return h('li', {
+                    key: cassetteSlot.interval, 'data-state': cassetteSlot.state,
+                    className: 'min-w-12 flex-1 list-none overflow-hidden rounded-md border transition motion-reduce:transition-none ' +
+                      (recoveredSlot ? 'border-white/25 shadow-[inset_0_0_0_1px_rgba(255,255,255,.12)]' : 'border-slate-600 bg-slate-800 text-slate-400')
+                  }, recoveredSlot
+                    ? h('button', {
+                        type: 'button', className: 'flex min-h-11 w-full items-center justify-between gap-1 px-1 text-white focus:outline-none focus:ring-2 focus:ring-cyan-300',
+                        style: { background: sampleTone }, title: cassetteSample.name + ' · interval ' + cassetteSample.depth + (cassetteSlot.integrityPercent == null ? ' · integrity not recorded' : (' · ' + cassetteSlot.integrityPercent + '% integrity')),
+                        'aria-label': slotLabel,
+                        onClick: function () { selectRock(rockFacts(cassetteSample.key, DEPTH_GUESS[cassetteSample.key] || cassetteSample.depth)); }
+                      }, slotCopy)
+                    : h('span', { className: 'flex min-h-11 items-center justify-between gap-1 px-1', 'aria-label': slotLabel }, slotCopy));
                 })) : h('div', { key: 'empty', className: 'mt-2 rounded-md border border-dashed p-2 text-[10px] font-semibold ' + (isDark ? 'border-slate-600 text-slate-400' : 'border-slate-300 text-slate-600') }, 'Drop into Walk & Dig, find level ground, then press R to deploy the core rig.'),
                 latestCoreLog ? h('div', { key: 'summary', className: 'mt-2 grid gap-1 text-[10px] font-bold sm:grid-cols-[auto_1fr] ' + muted }, [
                   h('div', { key: 'facts', className: 'flex flex-wrap gap-x-3 gap-y-1' }, [
                     h('span', { key: 'samples' }, latestCoreSummary.sampleCount + ' samples'),
                     h('span', { key: 'materials' }, latestCoreSummary.uniqueMaterials + ' materials'),
                     h('span', { key: 'deepest' }, 'Interval ' + latestCoreSummary.deepest + ' deepest'),
+                    latestCoreEvaluation && latestCoreEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: isDark ? 'text-cyan-200' : 'text-cyan-800' }, latestCoreEvaluation.integrityPercent + '% integrity') : null,
+                    latestCoreEvaluation && latestCoreEvaluation.pristineCount ? h('span', { key: 'pristine', className: isDark ? 'text-emerald-200' : 'text-emerald-800' }, latestCoreEvaluation.pristineCount + ' pristine') : null,
+                    latestCoreLog.coolantUsed ? h('span', { key: 'coolant', className: isDark ? 'text-sky-200' : 'text-sky-800' }, latestCoreLog.coolantUsed + ' coolant pulse' + (latestCoreLog.coolantUsed === 1 ? '' : 's')) : null,
                     h('span', { key: 'stop', className: latestCoreLog.stopReason ? (isDark ? 'text-amber-200' : 'text-amber-800') : (isDark ? 'text-emerald-200' : 'text-emerald-800') }, latestCoreLog.stopReason ? ('Stop · ' + coreRigStopLabel(latestCoreLog.stopReason)) : 'Target depth recovered')
                   ]),
-                  h('span', { key: 'sequence', className: 'min-w-0 truncate sm:text-right', title: latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → ') }, latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → '))
+                  h('span', { key: 'sequence', className: 'min-w-0 break-words sm:text-right', title: latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → ') }, latestCoreLog.samples.map(function (sample) { return sample.name; }).join(' → '))
                 ]) : null,
-                sceneCoreLogs.length > 1 ? h('div', { key: 'recent', className: 'mt-2 flex flex-wrap items-center gap-1', 'aria-label': 'Recent scored bores' }, [
+                latestCoreComparison ? h('section', {
+                  key: 'finding', 'data-geology-core-finding': latestCoreComparison.findingLevel,
+                  className: 'mt-2', 'aria-label': 'Paired bore finding'
+                }, [
+                  h('span', { key: 'label', className: 'sr-only' }, 'Finding'),
+                  coreRigCorrelationFigure(latestCoreComparison, { key: 'figure' })
+                ]) : null,
+                latestCoreNextExperiment ? h('section', {
+                  key: 'next-experiment', 'data-geology-core-next-experiment': latestCoreNextExperiment.programKey,
+                  className: 'mt-2 rounded-lg border p-2 ' + (isDark ? 'border-violet-300/35 bg-violet-400/10' : 'border-violet-200 bg-violet-50'),
+                  'aria-label': 'Next controlled experiment'
+                }, [
+                  h('h5', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.14em] ' + (isDark ? 'text-violet-200' : 'text-violet-800') }, 'Next experiment'),
+                  h('p', { key: 'question', className: 'mt-1 text-[11px] font-extrabold leading-snug ' + ink }, latestCoreNextExperiment.question),
+                  coreRigExperimentRail(latestCoreNextExperiment, { key: 'variables', currentAngleDegrees: latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle), currentDepth: latestCoreLog.targetDepth }),
+                  h('p', { key: 'control', className: 'mt-1 text-[10px] font-semibold ' + muted }, latestCoreNextExperiment.controlLabel)
+                ]) : null,
+                latestCoreLog ? h('div', { key: 'actions', className: 'mt-2 grid gap-1.5 ' + (latestCoreNextExperiment ? 'sm:grid-cols-2' : '') }, [
+                  h('button', {
+                    key: 'improve', type: 'button', disabled: coreProgramLoadLocked,
+                    onClick: function () { loadCoreRigChallenge(latestCoreLog); },
+                    className: 'min-h-11 rounded-lg border border-amber-300/60 bg-gradient-to-r from-amber-500/15 to-cyan-500/15 px-3 text-[11px] font-extrabold transition hover:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-amber-100' : 'text-amber-900'),
+                    'data-geology-core-load-trajectory': 'true',
+                    'aria-label': 'Improve this ' + (latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)) + ' degree, ' + latestCoreLog.targetDepth + ' interval bore'
+                  }, 'Improve this bore · ' + (latestCoreLog.angleDegrees || coreRigAngleDegrees(latestCoreLog.angle)) + '° / ' + latestCoreLog.targetDepth),
+                  latestCoreNextExperiment ? h('button', {
+                    key: 'compare', type: 'button', disabled: coreProgramLoadLocked,
+                    onClick: function () { loadCoreRigProgram(latestCoreNextExperiment.programKey, latestCoreNextExperiment); },
+                    className: 'min-h-11 rounded-lg border border-violet-300/60 bg-gradient-to-r from-violet-500/20 to-cyan-500/15 px-3 text-[11px] font-extrabold transition hover:border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 disabled:cursor-not-allowed disabled:opacity-45 ' + (isDark ? 'text-violet-100' : 'text-violet-900'),
+                    'data-geology-core-next-experiment': latestCoreNextExperiment.programKey,
+                    'aria-label': 'Load next controlled experiment. ' + latestCoreNextExperiment.question
+                  }, 'Compare · load ' + latestCoreNextExperiment.angleDegrees + '° / ' + latestCoreNextExperiment.depth) : null
+                ]) : null,
+                sceneCoreLogs.length > 1 ? h('div', { key: 'recent', className: 'mt-2 flex flex-wrap items-center gap-1', role: 'group', 'aria-label': 'Recent scored bores' }, [
                   h('span', { key: 'label', className: 'mr-1 text-[10px] font-black uppercase tracking-wide ' + muted }, 'Recent'),
                   sceneCoreLogs.slice().reverse().map(function (coreLog, coreLogIndex) {
                     var logEvaluation = coreLog.evaluation || coreRigEvaluation(coreLog);
-                    return h('span', { key: coreLog.id || coreLog.completedAt || coreLogIndex, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-extrabold ' + (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-200' : 'border-slate-300 bg-white/70 text-slate-700'), title: coreRigStopLabel(coreLog.stopReason) }, logEvaluation.grade + ' · ' + logEvaluation.score);
+                    var logSelected = latestCoreLog === coreLog;
+                    var logStop = coreLog.stopReason ? coreRigStopLabel(coreLog.stopReason) : 'target depth';
+                    return h('button', { key: coreLog.id || coreLog.completedAt || coreLogIndex, type: 'button', 'aria-pressed': logSelected ? 'true' : 'false', 'data-geology-core-review': coreLog.id || coreLog.completedAt || coreLogIndex, onClick: function () { reviewCoreRigReport(coreLog); }, className: 'min-h-9 rounded-full border px-2 text-[10px] font-extrabold transition focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (logSelected ? (isDark ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : 'border-cyan-500 bg-cyan-100 text-cyan-900') : (isDark ? 'border-slate-600 bg-slate-900/60 text-slate-200' : 'border-slate-300 bg-white/70 text-slate-700')), 'aria-label': 'Review grade ' + logEvaluation.grade + ' bore, score ' + logEvaluation.score + ', ' + coreRigAngleDegrees(coreLog.angle) + ' degrees, ' + coreLog.targetDepth + ' intervals, stop ' + logStop }, logEvaluation.grade + ' · ' + logEvaluation.score);
                   })
                 ]) : null
               ])
@@ -7005,7 +8771,7 @@
       function switchScene(sid) {
         if (sid === scene || !SCENES[sid]) return;
         var restored = sceneResumeState(sid, d);
-        setSceneState(sid); upd('scene', sid); setCoreRigHud(null);
+        setSceneState(sid); upd('scene', sid); setCoreRigHud(null); setCoreRigReview(null); setCoreRigChallenge(null);
         setCompareSceneId(defaultComparisonScene(sid));
         setModeState('explore'); upd('mode', 'explore');
         setHintShown(false); setVocabularyOpen(false);
@@ -7264,7 +9030,9 @@
             else if (name === 'rig-pack') result = coreRigAction('pack');
             else if (name === 'home' && E.fpRespawn) result = E.fpRespawn();
           } catch (e) {}
-          setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
+          if (name !== 'rig-toggle' && name !== 'rig-pack') {
+            setTimeout(function () { try { if (containerRef.current) containerRef.current.focus(); } catch (e) {} }, 0);
+          }
           return result;
         }
         function fieldRunPanel() {
@@ -7315,6 +9083,24 @@
         function coreRigConsole() {
           if (!fpOn || !fpWalkScene || !coreRigHud || !coreRigHud.deployed) return null;
           var rigRunning = !!coreRigHud.running, rigStage = coreRigHud.stage || 'preview';
+          var rigFinished = ['complete', 'stopped', 'paused'].indexOf(rigStage) >= 0;
+          var rigPreview = !rigRunning && !rigFinished;
+          var rigPhaseIndex = rigFinished ? 2 : (rigStage === 'preview' ? 0 : 1);
+          var rigPhaseKey = ['setup', 'bore', 'debrief'][rigPhaseIndex];
+          var rigShellTone = rigFinished
+            ? 'border-violet-300/70 shadow-[0_0_38px_rgba(167,139,250,.34)]'
+            : (rigPhaseIndex === 1 ? 'border-amber-300/65 shadow-[0_0_36px_rgba(251,191,36,.28)]' : 'border-cyan-300/60 shadow-[0_0_34px_rgba(34,211,238,.32)]');
+          var rigAccentTone = rigFinished
+            ? 'from-violet-400 via-cyan-300 to-emerald-300'
+            : (rigPhaseIndex === 1 ? 'from-amber-400 via-orange-300 to-cyan-300' : 'from-cyan-400 via-sky-300 to-violet-400');
+          var rigCurrentStepTone = rigFinished
+            ? 'border-violet-200/70 bg-violet-400/20 text-violet-100'
+            : (rigPhaseIndex === 1 ? 'border-amber-200/70 bg-amber-400/20 text-amber-100' : 'border-cyan-200/70 bg-cyan-400/20 text-cyan-100');
+          var rigIconTone = rigFinished
+            ? 'border-violet-300/60 bg-violet-400/15 text-violet-100 shadow-[0_0_12px_rgba(167,139,250,.3)]'
+            : (rigPhaseIndex === 1 ? 'border-amber-300/60 bg-amber-400/15 text-amber-100 shadow-[0_0_12px_rgba(251,191,36,.3)]' : 'border-cyan-300/60 bg-cyan-400/15 text-cyan-100 shadow-[0_0_12px_rgba(34,211,238,.3)]');
+          var rigStageTextTone = rigFinished ? 'text-violet-200' : (rigPhaseIndex === 1 ? 'text-amber-300' : 'text-cyan-200');
+          var rigPhaseGlyph = ['⌖', '⛏', '⬡'][rigPhaseIndex];
           var rigLocked = rigRunning || rigStage === 'deploying';
           var rigProgress = Math.max(0, Math.min(100, Math.round((Number(coreRigHud.progress) || 0) * 100)));
           var rigHeat = Math.max(0, Math.min(100, Math.round((Number(coreRigHud.heat) || 0) * 100)));
@@ -7325,6 +9111,46 @@
           var rigAssignment = rigRunEntry.active ? fieldExpeditionFor(SCENE.id, rigRunEntry.contractIndex) : null;
           var rigCollected = Array.isArray(rigRunEntry.collected) ? rigRunEntry.collected.length : 0;
           var rigTarget = rigAssignment ? (rigRunEntry.ready ? 'Return home to bank the field run' : fieldSpecimenName(SCENE.id, rigAssignment.targets[rigCollected])) : null;
+          var rigFeed = coreRigFeedProfile(coreRigHud.feedMode);
+          var rigIntegrity = Math.round(Math.max(0.55, Math.min(1, Number(coreRigHud.currentIntegrity) || 1)) * 100);
+          var rigScanning = !!coreRigHud.scanning;
+          var rigCassette = coreRigCoreCassette(rigSamples, coreRigHud.depth || coreRigDepth, rigRunning, rigScanning);
+          var rigIntervalResult = coreRigHud.lastIntervalResult || null;
+          var rigFormationCue = coreRigHud.formationCue || (rigRunning && coreRigHud.formationLoad ? coreRigFormationCue(coreRigHud.formationLoad, coreRigHud.idealFeedMode, rigIntervalResult) : null);
+          var rigTrajectory = coreRigHud.trajectoryScan ? coreRigTrajectorySnapshot(coreRigHud.trajectoryScan) : null;
+          var rigBrief = coreRigHud.boreBrief || (rigTrajectory
+            ? coreRigBoreBrief(rigTrajectory, rigSamples, coreRigHud.bestPristineStreak, ['complete', 'stopped', 'paused'].indexOf(rigStage) >= 0)
+            : null);
+          var rigBriefObjectives = rigBrief && Array.isArray(rigBrief.objectives) ? rigBrief.objectives : [];
+          var rigComparison = coreRigHud.comparison && coreRigHud.comparison.eligible ? coreRigHud.comparison : null;
+          var rigNextExperiment = coreRigHud.nextExperiment || null;
+          var rigTrajectoryCopy = rigTrajectory ? coreRigTrajectorySummary(rigTrajectory) : '';
+          var rigRiskTone = !rigTrajectory ? 'border-slate-500/40 bg-slate-900/45 text-slate-200'
+            : (rigTrajectory.riskLevel === 'clear' ? 'border-emerald-300/45 bg-emerald-400/10 text-emerald-100'
+            : (rigTrajectory.riskLevel === 'caution' ? 'border-amber-300/50 bg-amber-400/10 text-amber-100'
+            : 'border-rose-300/45 bg-rose-400/10 text-rose-100'));
+          var rigResultTone = !rigIntervalResult ? '' : (rigIntervalResult.tier === 'pristine' ? 'border-emerald-300/50 bg-emerald-400/15 text-emerald-100' : (rigIntervalResult.tier === 'stable' ? 'border-cyan-300/45 bg-cyan-400/10 text-cyan-100' : 'border-amber-300/50 bg-amber-400/15 text-amber-100'));
+          var rigProgramKey = coreRigProgramKey(coreRigAngle, coreRigDepth);
+          var rigPrograms = normalizeCoreRigPrograms(fieldBook.coreCertification);
+          var rigProgram = rigPrograms[rigProgramKey];
+          var rigCertificationProgress = coreRigCertificationSummary(fieldBook.coreCertification);
+          var rigCertificationState = rigRunning ? 'IN PROGRESS' : (rigProgram.tier ? (rigProgram.tierLabel.toUpperCase() + ' ' + rigProgram.bestGrade) : (rigProgram.attempts ? 'RETRY' : 'OPEN'));
+          var rigCertificationCopy = 'CERT ' + rigCertificationProgress.certified + '/9 • ' + coreRigAngleDegrees(coreRigAngle) + '° / ' + coreRigDepth + ' • ' + rigCertificationState;
+          var activeRigChallenge = coreRigChallenge && coreRigChallenge.sceneId === SCENE.id ? coreRigChallenge : null;
+          var challengeProgress = activeRigChallenge && activeRigChallenge.kind === 'score' ? coreRigChallengeProgress(activeRigChallenge.replayScore, activeRigChallenge.bestScore, rigEvaluation && rigEvaluation.score) : null;
+          var activeProgramChallenge = activeRigChallenge && (activeRigChallenge.kind === 'program' || activeRigChallenge.kind === 'experiment') ? activeRigChallenge : null;
+          var challengeCopy = !challengeProgress ? '' : (challengeProgress.state === 'ready'
+            ? ('Replay ' + challengeProgress.replayScore + (challengeProgress.xpTarget == null ? ' · research ceiling reached' : ' · ' + challengeProgress.xpTarget + '+ earns XP'))
+            : (challengeProgress.state === 'beaten' ? ('Replay beaten +' + challengeProgress.delta + ' · result ' + challengeProgress.resultScore)
+            : (challengeProgress.state === 'matched' ? ('Replay matched · result ' + challengeProgress.resultScore) : (Math.abs(challengeProgress.delta) + ' points to replay · result ' + challengeProgress.resultScore))));
+          var activeExperimentChallenge = activeProgramChallenge && activeProgramChallenge.kind === 'experiment' ? activeProgramChallenge : null;
+          var programChallengeTarget = activeProgramChallenge && !activeExperimentChallenge ? coreRigCertificationXpTarget(activeProgramChallenge.programBestRating) : null;
+          var programChallengeCopy = !activeProgramChallenge ? '' : (activeExperimentChallenge
+            ? (activeExperimentChallenge.question || 'Recover this core, then compare the revealed sequence.')
+            : (rigProgram.tier ? (rigProgram.tierLabel + ' · highest qualifying score ' + rigProgram.bestGrade + ' · rating ' + rigProgram.bestRating + ' · highest integrity ' + rigProgram.bestIntegrity + '% · ' + coreRigCertificationGuidance(rigProgram)) : coreRigCertificationGuidance(rigProgram)));
+          var programChallengeXpCopy = !activeProgramChallenge ? '' : (activeExperimentChallenge
+            ? activeExperimentChallenge.controlLabel
+            : (programChallengeTarget == null ? 'All score-improvement XP earned' : ('Next XP at ' + programChallengeTarget + ' rating ' + (programChallengeTarget === 1 ? 'point' : 'points'))));
           var rigGradeClass = !rigEvaluation ? '' : (rigEvaluation.grade === 'S' ? 'border-violet-300 bg-violet-400/20 text-violet-100' : (rigEvaluation.grade === 'A' ? 'border-cyan-300 bg-cyan-400/20 text-cyan-100' : (rigEvaluation.grade === 'B' ? 'border-emerald-300 bg-emerald-400/20 text-emerald-100' : (rigEvaluation.grade === 'C' ? 'border-amber-300 bg-amber-400/20 text-amber-100' : 'border-rose-300 bg-rose-400/20 text-rose-100'))));
           function sampleColor(sample) {
             var raw = sample && sample.color;
@@ -7334,70 +9160,275 @@
             return rock && rock.color ? ('#' + ('000000' + Number(rock.color).toString(16)).slice(-6)) : '#94a3b8';
           }
           return h('section', {
-            'data-geology-core-rig-console': 'true', 'data-stage': rigStage, 'data-running': rigRunning ? 'true' : 'false',
-            className: 'absolute left-1/2 top-14 z-20 -translate-x-1/2 overflow-y-auto overscroll-contain rounded-xl border border-cyan-300/60 bg-gradient-to-br from-slate-950/95 via-cyan-950/95 to-amber-950/90 text-white shadow-[0_0_34px_rgba(34,211,238,.32)] backdrop-blur-md md:left-auto md:right-14 md:translate-x-0',
-            style: { width: 'min(340px, calc(100% - 6.5rem))', maxHeight: 'calc(100% - 4rem)' }, role: 'region', 'aria-label': 'Directional core rig command console'
+            ref: coreRigConsoleRef, tabIndex: -1, 'data-geology-core-rig-console': 'true', 'data-stage': rigStage, 'data-running': rigRunning ? 'true' : 'false',
+            'data-geology-core-phase': rigPhaseKey,
+            className: 'absolute top-14 z-20 overflow-y-auto overscroll-contain rounded-xl border bg-gradient-to-br from-slate-950/95 via-cyan-950/95 to-amber-950/90 text-white backdrop-blur-md transition-[border-color,box-shadow] duration-200 motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-cyan-300 ' + rigShellTone,
+            style: { width: 'min(380px, calc(100% - 1rem))', right: 'clamp(.5rem, 4vw, 3.5rem)', maxHeight: 'min(calc(100% - 4rem), calc(100dvh - 5rem))' }, role: 'region', 'aria-label': 'Directional core rig command console'
           }, [
-            h('div', { key: 'accent', className: 'sticky top-0 z-10 h-1 bg-gradient-to-r from-amber-400 via-cyan-300 to-violet-500', 'aria-hidden': 'true' }),
             h('div', { key: 'body', className: 'p-2' }, [
-              h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+              h('header', { key: 'head', className: 'relative sticky top-0 z-20 -mx-2 -mt-2 flex flex-wrap items-center justify-between gap-2 border-b border-white/10 bg-slate-950/95 px-2 pb-1.5 pt-3 backdrop-blur-md' }, [
+                h('span', { key: 'accent', className: 'absolute inset-x-0 top-0 h-1 bg-gradient-to-r transition-colors duration-200 motion-reduce:transition-none ' + rigAccentTone, 'aria-hidden': 'true' }),
                 h('div', { key: 'title', className: 'flex min-w-0 items-center gap-1.5' }, [
-                  h('span', { key: 'icon', className: 'grid h-7 w-7 shrink-0 place-items-center rounded-md border border-amber-300/50 bg-amber-400/15 text-base shadow-[0_0_12px_rgba(251,191,36,.3)]', 'aria-hidden': 'true' }, '🏗'),
+                  h('span', { key: 'icon', className: 'grid h-7 w-7 shrink-0 place-items-center rounded-md border text-base transition-colors duration-200 motion-reduce:transition-none ' + rigIconTone, 'aria-hidden': 'true' }, rigPhaseGlyph),
                   h('div', { key: 'words', className: 'min-w-0' }, [
                     h('h3', { key: 'name', className: 'truncate text-[11px] font-black tracking-wide text-cyan-100' }, 'STRATA CORE RIG'),
-                    h('p', { key: 'stage', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-extrabold tracking-[.14em] ' + (rigStage === 'cooling' || rigStage === 'stopped' || rigStage === 'paused' ? 'text-amber-300' : 'text-emerald-300') }, stageLabel)
+                    h('p', { key: 'stage', className: 'text-[11px] font-extrabold tracking-[.14em] transition-colors duration-200 motion-reduce:transition-none ' + rigStageTextTone }, stageLabel)
                   ])
                 ]),
-                h('span', { key: 'count', className: 'shrink-0 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-0.5 text-[10px] font-bold text-cyan-100' }, rigSamples.length + ' sample' + (rigSamples.length === 1 ? '' : 's'))
+                h('span', { key: 'count', className: 'shrink-0 rounded-full border border-cyan-300/40 bg-cyan-400/10 px-2 py-0.5 text-[11px] font-bold text-cyan-100' }, rigSamples.length + ' sample' + (rigSamples.length === 1 ? '' : 's') + (rigBrief ? (' · ' + rigBrief.metCount + '/3 seals') : '')),
+                h('ol', {
+                  key: 'phase-rail', 'data-geology-core-phase-rail': rigPhaseKey,
+                  className: 'grid w-full grid-cols-3 gap-1', 'aria-label': 'Core rig workflow'
+                }, [['setup', 'Setup'], ['bore', 'Bore'], ['debrief', 'Debrief']].map(function (phase, phaseIndex) {
+                  var phaseState = phaseIndex < rigPhaseIndex ? 'complete' : (phaseIndex === rigPhaseIndex ? 'current' : 'upcoming');
+                  return h('li', {
+                    key: phase[0], 'data-geology-core-phase-step': phase[0], 'data-state': phaseState,
+                    'aria-current': phaseState === 'current' ? 'step' : undefined,
+                    'aria-label': phase[1] + ' phase, ' + phaseState,
+                    className: 'list-none rounded-md border px-1 py-1 text-center text-[10px] font-black uppercase tracking-wide transition-colors duration-200 motion-reduce:transition-none ' +
+                      (phaseState === 'current' ? rigCurrentStepTone : (phaseState === 'complete'
+                        ? 'border-emerald-300/35 bg-emerald-400/10 text-emerald-200'
+                        : 'border-white/10 bg-white/5 text-slate-400'))
+                  }, [
+                    h('span', { key: 'label', className: 'block' }, (phaseState === 'complete' ? '✓ ' : (phaseState === 'current' ? '● ' : '○ ')) + phase[1]),
+                    h('span', { key: 'state', className: 'block text-[10px] font-bold normal-case tracking-normal opacity-80' },
+                      phaseState === 'complete' ? 'Complete' : (phaseState === 'current' ? 'Current' : 'Upcoming'))
+                  ]);
+                }))
               ]),
-              rigTarget ? h('div', { key: 'target', className: 'mt-1.5 flex items-center gap-1.5 rounded-md border border-violet-300/25 bg-violet-400/10 px-2 py-1 text-[10px] font-semibold text-violet-100', 'data-geology-core-field-target': 'true' }, [
+              rigPreview ? h('div', { key: 'cert-status', 'data-geology-core-cert-status': rigProgramKey, className: 'mt-1.5 rounded-md border border-cyan-300/30 bg-cyan-400/10 px-2 py-1 text-[10px] font-black tracking-wide text-cyan-100' }, rigCertificationCopy) : null,
+              rigTarget ? h('div', { key: 'target', className: 'mt-1.5 flex items-center gap-1.5 rounded-md border border-violet-300/25 bg-violet-400/10 px-2 py-1 text-[11px] font-semibold text-violet-100', 'data-geology-core-field-target': 'true' }, [
                 h('span', { key: 'icon', 'aria-hidden': 'true' }, '🧭'),
                 h('span', { key: 'copy', className: 'min-w-0 truncate', title: rigTarget }, 'Field Run target · ' + rigTarget)
+              ]) : null,
+              rigPreview && activeProgramChallenge ? h('p', { key: 'program-challenge', 'data-geology-core-program-challenge': activeProgramChallenge.programKey, className: 'mt-1 flex flex-wrap gap-x-1.5 gap-y-0.5 rounded-md border border-violet-300/30 bg-violet-400/10 px-2 py-1 text-[10.5px] font-semibold text-slate-100' }, [
+                h('span', { key: 'label', className: 'font-black text-violet-200' }, activeExperimentChallenge ? 'Next experiment' : 'Program focus'),
+                h('span', { key: 'copy' }, programChallengeCopy),
+                h('span', { key: 'xp', className: 'text-amber-200' }, programChallengeXpCopy)
+              ]) : null,
+              rigPreview && challengeProgress ? h('div', { key: 'challenge', 'data-geology-core-challenge': challengeProgress.state, className: 'mt-1.5 rounded-md border border-amber-300/40 bg-gradient-to-r from-amber-400/15 to-violet-400/10 px-2 py-1.5' }, [
+                h('div', { key: 'head', className: 'flex items-center justify-between gap-2 text-[11px] font-black uppercase tracking-wide text-amber-200' }, [
+                  h('span', { key: 'label' }, '◆ Score challenge'),
+                  h('span', { key: 'trajectory', className: 'shrink-0 text-cyan-200' }, coreRigAngleDegrees(activeRigChallenge.angle) + '° / ' + activeRigChallenge.depth)
+                ]),
+                h('p', { key: 'copy', className: 'mt-0.5 text-[11px] font-bold text-slate-100', role: challengeProgress.state === 'ready' ? undefined : 'status' }, challengeCopy)
               ]) : null,
               rigEvaluation ? h('div', { key: 'evaluation', className: 'mt-1.5 flex items-center gap-2 rounded-lg border border-white/10 bg-black/20 px-2 py-1.5' }, [
                 h('span', { key: 'grade', 'data-geology-core-grade': rigEvaluation.grade, className: 'rounded-md border px-2 py-1 text-[11px] font-black ' + rigGradeClass }, 'Grade ' + rigEvaluation.grade),
                 h('div', { key: 'copy', className: 'min-w-0 flex-1' }, [
-                  h('p', { key: 'label', className: 'truncate text-[10px] font-extrabold text-white' }, rigEvaluation.label),
-                  h('p', { key: 'detail', className: 'text-[10px] font-semibold text-slate-300' }, [
+                  h('p', { key: 'label', className: 'truncate text-[11px] font-extrabold text-white' }, rigEvaluation.label),
+                  h('p', { key: 'detail', className: 'text-[11px] font-semibold text-slate-300' }, [
                     h('span', { key: 'score', 'data-geology-core-score': rigEvaluation.score }, rigEvaluation.score + '/200'),
                     coreRigHud.newBest ? h('span', { key: 'best', className: 'ml-1.5 text-amber-300' }, '★ New best') : null,
-                    coreRigHud.researchReward ? h('span', { key: 'xp', 'data-geology-core-research-reward': coreRigHud.researchReward, className: 'ml-1.5 text-emerald-300' }, '+' + coreRigHud.researchReward + ' XP') : null
+                    coreRigHud.certificationEarned ? h('span', { key: 'cert-tier', className: 'ml-1.5 text-violet-200' }, '⬡ ' + coreRigHud.certificationTierLabel) : null,
+                    coreRigHud.researchReward ? h('span', { key: 'xp', 'data-geology-core-research-reward': coreRigHud.researchReward, className: 'ml-1.5 text-emerald-300' }, '+' + coreRigHud.researchReward + ' research XP') : null,
+                    coreRigHud.certificationReward ? h('span', { key: 'program-xp', 'data-geology-core-certification-reward': coreRigHud.certificationReward, className: 'ml-1.5 text-amber-200' }, '+' + coreRigHud.certificationReward + ' program XP') : null,
+                    rigEvaluation.integrityPercent != null ? h('span', { key: 'integrity', className: 'ml-1.5 text-cyan-200' }, rigEvaluation.integrityPercent + '% integrity') : null
                   ])
                 ])
               ]) : null,
-              h('div', { key: 'config', className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]' }, [
+              rigPreview ? h('div', { key: 'config', 'data-geology-core-phase-surface': 'setup', className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]' }, [
                 h('div', { key: 'angles', role: 'group', 'aria-label': 'Bore angle', className: 'grid grid-cols-3 gap-1' }, [
                   ['vertical', '↧', '90°'], ['slant', '⤡', '60°'], ['shallow', '↘', '35°']
                 ].map(function (angleOption) {
                   var angleActive = coreRigHud.angle === angleOption[0];
-                  return h('button', { key: angleOption[0], type: 'button', disabled: rigLocked, 'data-geology-core-rig-angle': angleOption[0], 'aria-pressed': angleActive ? 'true' : 'false', 'aria-label': angleOption[2] + ' ' + angleOption[0] + ' bore', onClick: function () { coreRigAction('angle', angleOption[0]); }, className: 'min-h-9 rounded-md border px-1 text-[10px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (angleActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500') }, angleOption[1] + ' ' + angleOption[2]);
+                  return h('button', { key: angleOption[0], type: 'button', disabled: rigLocked, 'data-geology-core-rig-angle': angleOption[0], 'aria-pressed': angleActive ? 'true' : 'false', 'aria-label': angleOption[2] + ' ' + angleOption[0] + ' bore', onClick: function () { coreRigAction('angle', angleOption[0]); }, className: 'min-h-11 rounded-md border px-1 text-[11px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (angleActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500') }, angleOption[1] + ' ' + angleOption[2]);
                 })),
                 h('div', { key: 'depths', role: 'group', 'aria-label': 'Target core depth', className: 'grid grid-cols-3 gap-1' }, CORE_RIG_DEPTHS.map(function (depthOption) {
                   var depthActive = Number(coreRigHud.depth) === depthOption;
-                  return h('button', { key: depthOption, type: 'button', disabled: rigLocked, 'data-geology-core-rig-depth': depthOption, 'aria-pressed': depthActive ? 'true' : 'false', 'aria-label': depthOption + ' interval target depth', onClick: function () { coreRigAction('depth', depthOption); }, className: 'min-h-9 min-w-8 rounded-md border px-1 text-[10px] font-extrabold disabled:cursor-not-allowed disabled:opacity-45 ' + (depthActive ? 'border-amber-300 bg-amber-400/25 text-amber-100' : 'border-slate-600 bg-slate-900/70 text-slate-300') }, String(depthOption));
+                  return h('button', { key: depthOption, type: 'button', disabled: rigLocked, 'data-geology-core-rig-depth': depthOption, 'aria-pressed': depthActive ? 'true' : 'false', 'aria-label': depthOption + ' interval target depth', onClick: function () { coreRigAction('depth', depthOption); }, className: 'min-h-11 min-w-8 rounded-md border px-1 text-[11px] font-extrabold disabled:cursor-not-allowed disabled:opacity-45 ' + (depthActive ? 'border-amber-300 bg-amber-400/25 text-amber-100' : 'border-slate-600 bg-slate-900/70 text-slate-300') }, String(depthOption));
                 }))
-              ]),
-              h('div', { key: 'meters', className: 'mt-2 grid grid-cols-2 gap-2' }, [
+              ]) : null,
+              rigPreview && rigTrajectory && rigBrief ? h('section', {
+                key: 'bore-brief', 'data-geology-core-trajectory-scan': rigTrajectory.riskLevel,
+                'data-geology-core-bore-brief': rigBrief.finished ? 'finished' : 'active',
+                className: 'mt-2 overflow-hidden rounded-lg border p-2 transition-all motion-reduce:transition-none ' +
+                  (rigBrief.complete
+                    ? 'border-violet-300/70 bg-gradient-to-br from-violet-400/20 via-cyan-400/10 to-emerald-400/15 shadow-[0_0_20px_rgba(167,139,250,.28)]'
+                    : 'border-cyan-300/30 bg-gradient-to-br from-slate-950/60 via-cyan-950/35 to-violet-950/25'),
+                'aria-label': 'Aggregate bore trajectory brief'
+              }, [
+                h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+                  h('div', { key: 'title', className: 'flex items-center gap-1.5' }, [
+                    h('span', { key: 'radar', className: 'grid h-6 w-6 place-items-center rounded-full border border-cyan-300/45 bg-cyan-400/15 text-[12px] text-cyan-100', 'aria-hidden': 'true' }, '◉'),
+                    h('div', { key: 'copy' }, [
+                      h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-[.16em] text-cyan-100' }, 'Bore Brief'),
+                      h('p', { key: 'summary', className: 'text-[10px] font-semibold text-slate-300' }, rigTrajectoryCopy)
+                    ])
+                  ]),
+                  h('span', { key: 'seals', className: 'shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-black ' +
+                    (rigBrief.complete ? 'border-violet-200/70 bg-violet-300/20 text-violet-100' : 'border-white/15 bg-white/5 text-slate-200') },
+                    rigBrief.metCount + '/3 SEALS')
+                ]),
+                h('div', { key: 'coverage', className: 'mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10',
+                  role: 'progressbar', 'aria-label': 'Projected safe bore coverage', 'aria-valuemin': 0, 'aria-valuemax': 100,
+                  'aria-valuenow': rigTrajectory.coveragePct, 'aria-valuetext': rigTrajectory.recoverable + ' of ' + rigTrajectory.requestedDepth + ' intervals recoverable' },
+                  h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-cyan-400 via-emerald-300 to-amber-300 transition-[width] duration-300 motion-reduce:transition-none',
+                    style: { width: rigTrajectory.coveragePct + '%' } })),
+                h('div', { key: 'signals', className: 'mt-1.5 grid grid-cols-3 gap-1 text-center' }, [
+                  h('div', { key: 'yield', className: 'rounded-md border border-white/10 bg-black/20 px-1 py-1' }, [
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, 'Yield'),
+                    h('span', { key: 'value', className: 'block text-[11px] font-black tabular-nums text-cyan-100' }, rigTrajectory.recoverable + '/' + rigTrajectory.requestedDepth)
+                  ]),
+                  h('div', { key: 'ground', className: 'rounded-md border border-white/10 bg-black/20 px-1 py-1' }, [
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide text-slate-400' }, 'Resistance'),
+                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize text-violet-100' }, rigTrajectory.variability)
+                  ]),
+                  h('div', { key: 'risk', className: 'rounded-md border px-1 py-1 ' + rigRiskTone }, [
+                    h('span', { key: 'label', className: 'block text-[10px] font-black uppercase tracking-wide opacity-75' }, 'Boundary'),
+                    h('span', { key: 'value', className: 'block text-[11px] font-black capitalize' }, rigTrajectory.riskLevel)
+                  ])
+                ]),
+                h('div', { key: 'mix', className: 'mt-1.5 flex flex-wrap gap-1', 'aria-label': 'Aggregate feed mix' },
+                  ['preserve', 'cruise', 'torque'].map(function (modeId) {
+                    return h('span', { key: modeId, 'data-geology-core-load-mix': modeId,
+                      className: 'rounded-full border border-white/10 bg-black/25 px-1.5 py-0.5 text-[10px] font-bold text-slate-200' },
+                      coreRigFeedProfile(modeId).label + ' ×' + rigTrajectory.loadCounts[modeId]);
+                  })),
+                h('p', { key: 'advice', className: 'mt-1 text-[10px] font-semibold leading-snug text-slate-300' }, rigTrajectory.advice),
+                h('ul', { key: 'objectives', className: 'mt-1.5 grid gap-1', 'aria-label': 'Bore Brief objectives' },
+                  rigBriefObjectives.map(function (objective) {
+                    var objectiveIcon = objective.state === 'met' ? '✓' : (objective.state === 'missed' ? '×' : '○');
+                    var objectiveTone = objective.state === 'met'
+                      ? 'border-emerald-300/35 bg-emerald-400/10 text-emerald-100'
+                      : (objective.state === 'missed' ? 'border-rose-300/35 bg-rose-400/10 text-rose-100' : 'border-white/10 bg-white/5 text-slate-200');
+                    var objectiveProgress = objective.id === 'preservation'
+                      ? objective.current + '% / ' + objective.target + '%'
+                      : objective.current + '/' + objective.target;
+                    return h('li', { key: objective.id, 'data-geology-core-objective': objective.id, 'data-state': objective.state,
+                      className: 'flex items-center justify-between gap-2 rounded-md border px-1.5 py-1 text-[10px] font-bold ' + objectiveTone }, [
+                      h('span', { key: 'label', className: 'min-w-0 truncate' }, [
+                        h('span', { key: 'icon', className: 'mr-1', 'aria-hidden': 'true' }, objectiveIcon),
+                        objective.label
+                      ]),
+                      h('span', { key: 'progress', className: 'shrink-0 tabular-nums opacity-85' }, objectiveProgress)
+                    ]);
+                  })),
+                // Completion speech is owned by the existing global announcer; keep this semantic summary silent.
+                rigBrief.finished ? h('p', { key: 'final',
+                  'data-geology-core-brief-summary': rigBrief.metCount, className: 'sr-only' }, rigBrief.summary) : null
+              ]) : null,
+              !rigFinished ? h('section', { key: 'operator', 'data-geology-core-phase-surface': 'bore', 'data-geology-core-feed-control': 'true', 'data-geology-core-interval-scan': rigScanning ? 'active' : 'idle', className: 'mt-2 rounded-lg border p-1.5 transition-colors motion-reduce:transition-none ' + (rigScanning ? 'border-cyan-300/70 bg-gradient-to-r from-cyan-400/15 via-emerald-400/10 to-amber-400/15 shadow-[0_0_16px_rgba(34,211,238,.18)]' : 'border-cyan-300/20 bg-black/20'), 'aria-label': 'Adaptive core recovery controls' }, [
+                h('p', { key: 'scan-live', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'sr-only', 'data-geology-core-formation-cue': 'true', 'data-state': rigFormationCue ? 'active' : 'idle' }, rigFormationCue ? rigFormationCue.prompt : ''),
+                h('div', { key: 'formation', className: 'flex items-center justify-between gap-2 text-[11px] font-bold ' + (rigScanning ? 'text-white' : 'text-slate-300') }, [
+                  h('span', { key: 'load', className: 'min-w-0 leading-snug' }, rigScanning ? ('◉ FORMATION SCAN · ' + (coreRigHud.formationLoad || 'reading')) : ('Formation · ' + (coreRigHud.formationLoad || 'trajectory scan'))),
+                  h('span', { key: 'ideal', className: 'shrink-0 ' + (rigScanning ? 'text-amber-200' : 'text-cyan-200') }, coreRigHud.formationLoad ? ((rigScanning ? 'Select · ' : 'Best response · ') + coreRigFeedProfile(coreRigHud.idealFeedMode).label) : 'Choose a feed')
+                ]),
+                rigIntervalResult ? h('div', { key: 'interval-result', 'data-geology-core-interval-result': rigIntervalResult.tier, className: 'mt-1 flex items-center justify-between gap-2 rounded-md border px-2 py-1 text-[10px] font-extrabold ' + rigResultTone }, [
+                  h('span', { key: 'quality', className: 'min-w-0 leading-snug' }, '◆ ' + rigIntervalResult.label.toUpperCase() + ' · ' + rigIntervalResult.name + ' · ' + rigIntervalResult.integrityPercent + '%'),
+                  h('span', { key: 'streak', className: 'shrink-0' }, rigIntervalResult.tier === 'pristine' ? ('streak ' + rigIntervalResult.pristineStreak) : 'streak reset')
+                ]) : null,
+                h('div', { key: 'modes', className: 'mt-1 grid grid-cols-3 gap-1', role: 'group', 'aria-label': 'Drill feed mode' }, Object.keys(CORE_RIG_FEED_MODES).map(function (modeId) {
+                  var modeProfile = coreRigFeedProfile(modeId), modeActive = rigFeed.id === modeId;
+                  return h('button', { key: modeId, type: 'button', disabled: rigStage === 'deploying', 'data-geology-core-feed-mode': modeId, 'aria-pressed': modeActive ? 'true' : 'false', onClick: function () { coreRigAction('feed', modeId); }, className: 'min-h-11 rounded-md border px-1 text-[11px] font-extrabold transition disabled:cursor-not-allowed disabled:opacity-45 ' + (modeActive ? 'border-cyan-300 bg-cyan-400/25 text-cyan-50 shadow-[0_0_10px_rgba(34,211,238,.2)]' : 'border-slate-600 bg-slate-900/70 text-slate-300 hover:border-cyan-500'), 'aria-label': modeProfile.label + ' feed, ' + Math.round(modeProfile.speedMultiplier * 100) + ' percent advance and ' + Math.round(modeProfile.heatMultiplier * 100) + ' percent heat load' }, modeProfile.label);
+                })),
+                h('button', { key: 'coolant', type: 'button', disabled: !rigRunning || rigStage === 'cooling' || Number(coreRigHud.coolantRemaining) <= 0 || rigHeat < 22, onClick: function () { coreRigAction('coolant'); }, className: 'mt-1 min-h-11 w-full rounded-md border border-sky-300/50 bg-sky-400/15 px-2 text-[11px] font-extrabold text-sky-100 transition hover:bg-sky-400/25 disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-900/60 disabled:text-slate-500', 'data-geology-core-coolant': coreRigHud.coolantRemaining, 'aria-label': 'Release coolant pulse. ' + Number(coreRigHud.coolantRemaining || 0) + ' remaining' }, '❄ Coolant pulse · ' + Number(coreRigHud.coolantRemaining || 0) + ' remaining')
+              ]) : null,
+              rigFinished ? h('section', {
+                key: 'debrief', 'data-geology-core-debrief': rigStage, 'data-geology-core-phase-surface': 'debrief',
+                className: 'mt-2 rounded-xl border border-violet-300/40 bg-gradient-to-r from-violet-400/15 via-cyan-400/10 to-emerald-400/10 p-2',
+                'aria-label': 'Core bore debrief'
+              }, [
+                h('div', { key: 'head', className: 'flex items-center justify-between gap-2' }, [
+                  h('h4', {
+                    key: 'label', tabIndex: -1, 'data-geology-core-debrief-heading': 'true',
+                    className: 'scroll-mt-24 text-[11px] font-black uppercase tracking-[.14em] text-violet-100 focus:outline-none'
+                  }, 'Core debrief'),
+                  h('span', { key: 'stage', className: 'rounded-full border border-white/15 bg-slate-950/45 px-2 py-0.5 text-[10px] font-black text-cyan-100' }, stageLabel)
+                ]),
+                h('div', { key: 'metrics', className: 'mt-1.5 grid grid-cols-3 gap-1' }, [
+                  h('div', { key: 'recovery', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
+                    h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-white' }, rigSamples.length + '/' + Math.max(1, Number(coreRigHud.depth || coreRigDepth))),
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Recovered')
+                  ]),
+                  h('div', { key: 'integrity', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
+                    h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-emerald-200' }, (rigEvaluation && rigEvaluation.integrityPercent != null ? rigEvaluation.integrityPercent : rigIntegrity) + '%'),
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Integrity')
+                  ]),
+                  h('div', { key: 'brief', className: 'rounded-md border border-white/10 bg-slate-950/45 p-1.5 text-center' }, [
+                    h('span', { key: 'value', className: 'block text-[12px] font-black tabular-nums text-amber-200' }, (rigBrief ? rigBrief.metCount : 0) + '/3'),
+                    h('span', { key: 'label', className: 'block text-[10px] font-bold text-slate-300' }, 'Bore Brief')
+                  ])
+                ])
+              ]) : null,
+              h('div', { key: 'meters', className: (rigFinished ? 'hidden ' : '') + 'mt-2 grid grid-cols-2 gap-2' }, [
                 h('div', { key: 'progress' }, [
-                  h('div', { key: 'labels', className: 'flex justify-between text-[10px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Bore'), h('span', { key: 'b', 'data-geology-core-rig-progress-value': 'true' }, rigProgress + '%')]),
+                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Bore'), h('span', { key: 'b', 'data-geology-core-rig-progress-value': 'true' }, rigProgress + '%')]),
                   h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': 'Core bore progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigProgress }, h('span', { 'data-geology-core-rig-progress': 'true', className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 to-cyan-300 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigProgress + '%' } }))
                 ]),
                 h('div', { key: 'heat' }, [
-                  h('div', { key: 'labels', className: 'flex justify-between text-[10px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Head temp'), h('span', { key: 'b', 'data-geology-core-rig-heat-value': 'true' }, rigHeat + '%')]),
+                  h('div', { key: 'labels', className: 'flex justify-between text-[11px] font-bold text-slate-300' }, [h('span', { key: 'a' }, 'Head temp'), h('span', { key: 'b', 'data-geology-core-rig-heat-value': 'true' }, rigHeat + '%')]),
                   h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': 'Core rig heat', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': rigHeat }, h('span', { 'data-geology-core-rig-heat': 'true', className: 'block h-full rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,.8)] transition-[width,background-color] duration-200 motion-reduce:transition-none', style: { width: rigHeat + '%' } }))
                 ])
               ]),
-              h('div', { key: 'core', className: 'mt-2 flex items-center gap-2' }, [
-                h('div', { key: 'segments', className: 'flex h-5 min-w-0 flex-1 overflow-hidden rounded-md border border-slate-600 bg-slate-900/80', role: 'list', 'aria-label': rigSamples.length ? 'Recovered core sample sequence' : 'No core samples recovered yet' },
-                  rigSamples.length ? rigSamples.map(function (sample, sampleIndex) {
-                    return h('span', { key: sampleIndex + ':' + sample.key, role: 'listitem', className: 'min-w-[13px] flex-1 border-r border-black/25 last:border-r-0', style: { background: sampleColor(sample) }, title: sample.name + ' · interval ' + sample.depth, 'aria-label': sample.name + ', interval ' + sample.depth });
-                  }) : h('span', { className: 'm-auto text-[10px] font-semibold text-slate-500' }, 'awaiting core')),
-                h('span', { key: 'planned', className: 'shrink-0 text-[10px] font-bold text-slate-300' }, (coreRigHud.plannedCount || 0) + ' intervals')
+              h('div', { key: 'integrity', 'data-geology-core-integrity': rigIntegrity, className: (rigFinished ? 'hidden ' : '') + 'mt-2' }, [
+                h('div', { key: 'labels', className: 'flex justify-between gap-2 text-[11px] font-bold text-slate-300' }, [
+                  h('span', { key: 'a' }, 'Live core integrity'),
+                  h('span', { key: 'b', className: rigIntegrity >= 97 ? 'text-emerald-300' : (rigIntegrity >= 85 ? 'text-cyan-200' : 'text-amber-300') }, rigIntegrity + '% · pristine streak ' + Number(coreRigHud.pristineStreak || 0))
+                ]),
+                h('div', { key: 'track', className: 'mt-0.5 h-1.5 overflow-hidden rounded-full bg-slate-800 ring-1 ring-white/10', role: 'progressbar', 'aria-label': 'Current core interval integrity', 'aria-valuemin': 55, 'aria-valuemax': 100, 'aria-valuenow': rigIntegrity }, h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-amber-400 via-cyan-300 to-emerald-300 transition-[width] duration-200 motion-reduce:transition-none', style: { width: rigIntegrity + '%' } }))
               ]),
-              h('p', { key: 'status', 'data-geology-core-rig-status': 'true', className: 'mt-2 text-[10px] font-semibold leading-snug text-cyan-100', title: coreRigHud.status }, coreRigHud.status || 'Trajectory ready'),
-              h('div', { key: 'footer', className: 'mt-2 grid grid-cols-2 gap-2' }, [
-                h('button', { key: 'start', type: 'button', disabled: rigLocked || rigStage !== 'preview' || !coreRigHud.plannedCount, onClick: function () { fpAction('rig-start'); }, className: 'min-h-9 rounded-md border border-amber-200 bg-amber-400 px-2 text-[10px] font-black text-amber-950 shadow-[0_0_12px_rgba(251,191,36,.25)] disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-400', 'aria-label': rigRunning ? 'Core rig drilling in progress' : 'Start directional core bore' }, rigRunning ? (rigStage === 'cooling' ? 'Cooling…' : 'Drilling…') : (rigStage === 'deploying' ? 'Stabilizing…' : (rigStage === 'preview' ? 'Start bore' : 'Adjust trajectory'))),
-                h('button', { key: 'pack', type: 'button', disabled: rigStage === 'deploying', onClick: function () { fpAction(rigRunning ? 'rig-stop' : 'rig-pack'); }, className: 'min-h-9 rounded-md border border-slate-500 bg-slate-900 px-2 text-[10px] font-bold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': rigRunning ? 'End the active bore and log recovered samples' : 'Pack and relocate directional core rig' }, rigRunning ? 'End bore' : (rigStage === 'complete' || rigStage === 'stopped' || rigStage === 'paused' ? 'Relocate' : 'Pack'))
+              h('section', { key: 'core', 'data-geology-core-cassette': 'console', className: 'mt-2 rounded-lg border border-slate-600/80 bg-slate-950/65 p-1.5', 'aria-label': 'Core recovery cassette' }, [
+                h('div', { key: 'head', className: 'mb-1 flex items-center justify-between gap-2 text-[10px] font-black uppercase tracking-wide text-slate-300' }, [
+                  h('span', { key: 'label' }, rigFinished ? 'Surface barrel' : 'Core cassette'),
+                  h('span', { key: 'count', className: 'tabular-nums text-cyan-200' }, rigCassette.revealedCount + '/' + rigCassette.total + ' recovered')
+                ]),
+                h('ol', { key: 'slots', className: 'flex min-h-10 gap-1 overflow-x-auto', 'aria-label': 'Requested core intervals' },
+                  rigCassette.slots.map(function (cassetteSlot) {
+                    var recoveredSlot = cassetteSlot.state === 'recovered';
+                    var newestRecovery = recoveredSlot && rigRunning && rigIntervalResult && cassetteSlot.interval === rigCassette.revealedCount;
+                    var slotTone = recoveredSlot
+                      ? 'border-white/25 text-white'
+                      : (cassetteSlot.state === 'scanning'
+                      ? 'border-cyan-200 bg-cyan-400/20 text-cyan-50 shadow-[0_0_12px_rgba(34,211,238,.55)] animate-pulse motion-reduce:animate-none'
+                      : (cassetteSlot.state === 'current'
+                      ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-100'
+                      : 'border-slate-700 bg-slate-900 text-slate-500'));
+                    var slotLabel = recoveredSlot
+                      ? ('Interval ' + cassetteSlot.interval + ': ' + cassetteSlot.name + ', ' + cassetteSlot.quality + (cassetteSlot.integrityPercent == null ? ', integrity not recorded' : (', ' + cassetteSlot.integrityPercent + ' percent integrity')))
+                      : ('Interval ' + cassetteSlot.interval + ': ' + (cassetteSlot.state === 'scanning' ? 'formation scan in progress' : (cassetteSlot.state === 'current' ? 'current drill interval' : 'pending')));
+                    return h('li', {
+                      key: cassetteSlot.interval, 'data-state': cassetteSlot.state, 'aria-label': slotLabel,
+                      className: 'flex min-h-10 min-w-9 list-none flex-col items-center justify-center overflow-hidden rounded-md border text-center transition motion-reduce:transition-none ' + slotTone +
+                        (newestRecovery ? ' ring-1 ring-emerald-200/80 shadow-[0_0_14px_rgba(52,211,153,.65)]' : ''),
+                      style: recoveredSlot ? { background: sampleColor(cassetteSlot.sample) } : undefined
+                    }, [
+                      h('span', { key: 'number', 'data-geology-core-interval-number': cassetteSlot.interval, className: recoveredSlot ? 'rounded-sm bg-slate-950/70 px-1 text-[10px] font-black tabular-nums shadow-sm' : 'text-[10px] font-black tabular-nums' }, '#' + String(cassetteSlot.interval)),
+                      h('span', { key: 'quality', 'data-geology-core-quality-glyph': cassetteSlot.quality, className: (recoveredSlot ? 'rounded-sm bg-slate-950/70 px-1 shadow-sm ' : '') + 'text-[13px] font-black leading-none', 'aria-hidden': 'true' }, cassetteSlot.glyph)
+                    ]);
+                  }))
+              ]),
+              rigFinished && rigComparison ? h('section', {
+                key: 'finding', 'data-geology-core-finding': rigComparison.findingLevel,
+                className: 'mt-2', 'aria-label': 'Paired bore finding'
+              }, [
+                h('span', { key: 'label', className: 'sr-only' }, 'Finding'),
+                coreRigCorrelationFigure(rigComparison, { key: 'figure', compact: true, forceDark: true })
+              ]) : null,
+              rigFinished && rigNextExperiment ? h('section', {
+                key: 'next-experiment', 'data-geology-core-next-experiment': rigNextExperiment.programKey,
+                className: 'mt-2 rounded-lg border border-violet-300/45 bg-gradient-to-r from-violet-400/15 to-cyan-400/10 p-2',
+                'aria-label': 'Next controlled experiment'
+              }, [
+                h('h4', { key: 'label', className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Next experiment'),
+                h('p', { key: 'question', className: 'mt-1 text-[11px] font-extrabold leading-snug text-white' }, rigNextExperiment.question),
+                coreRigExperimentRail(rigNextExperiment, { key: 'variables', forceDark: true, currentAngleDegrees: coreRigAngleDegrees(coreRigHud.angle || coreRigAngle), currentDepth: coreRigHud.depth || coreRigDepth }),
+                h('p', { key: 'control', className: 'mt-1 text-[10px] font-semibold text-slate-300' }, rigNextExperiment.controlLabel),
+                h('button', {
+                  key: 'load', type: 'button', onClick: function () { loadCoreRigProgram(rigNextExperiment.programKey, rigNextExperiment); },
+                  className: 'mt-1.5 min-h-11 w-full rounded-md border border-violet-200/60 bg-violet-400/20 px-2 text-[11px] font-black text-violet-50 transition hover:border-cyan-200 focus:outline-none focus:ring-2 focus:ring-cyan-300',
+                  'aria-label': 'Load next controlled experiment. ' + rigNextExperiment.question
+                }, 'Load comparison · ' + rigNextExperiment.angleDegrees + '° / ' + rigNextExperiment.depth)
+              ]) : null,
+              h('p', { key: 'status', 'data-geology-core-rig-status': 'true', className: 'mt-2 text-[11px] font-semibold leading-snug text-cyan-100', title: coreRigHud.status }, coreRigHud.status || 'Trajectory ready'),
+              h('div', {
+                key: 'footer', 'data-geology-core-action-dock': rigPhaseKey,
+                className: 'sticky bottom-0 z-20 -mx-2 mt-2 grid gap-2 border-t border-white/10 bg-slate-950/95 px-2 pt-2 backdrop-blur-md ' +
+                  (rigFinished ? 'grid-cols-1' : 'grid-cols-2'),
+                style: { paddingBottom: 'max(.5rem, env(safe-area-inset-bottom))' }
+              }, [
+                !rigFinished ? h('button', { key: 'start', type: 'button', disabled: rigLocked || rigStage !== 'preview' || !coreRigHud.plannedCount, onClick: function () { fpAction('rig-start'); }, className: 'min-h-11 rounded-md border border-amber-200 bg-amber-400 px-2 text-[11px] font-black text-amber-950 shadow-[0_0_12px_rgba(251,191,36,.25)] disabled:cursor-not-allowed disabled:border-slate-600 disabled:bg-slate-800 disabled:text-slate-400', 'aria-label': rigRunning ? 'Core rig drilling in progress' : 'Start directional core bore' }, rigRunning ? (rigScanning ? 'Scanning…' : (rigStage === 'cooling' ? 'Cooling…' : 'Drilling…')) : (rigStage === 'deploying' ? 'Stabilizing…' : (rigStage === 'preview' ? 'Start bore' : 'Adjust trajectory'))) : null,
+                h('button', { key: 'pack', type: 'button', disabled: rigStage === 'deploying', onClick: function () { fpAction(rigRunning ? 'rig-stop' : 'rig-pack'); }, className: 'min-h-11 rounded-md border border-slate-500 bg-slate-900 px-2 text-[11px] font-bold text-slate-200 disabled:cursor-not-allowed disabled:opacity-40', 'aria-label': rigRunning ? 'End the active bore and log recovered samples' : 'Pack and relocate directional core rig' }, rigRunning ? 'End bore' : (rigStage === 'complete' || rigStage === 'stopped' || rigStage === 'paused' ? 'Relocate' : 'Pack'))
               ])
             ])
           ]);
@@ -7415,7 +9446,7 @@
           sceneBeaconOverlay(),
           processCueOverlay(),
           cameraCompassOverlay(),
-          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: isFs ? 0 : (rigDeployed ? 400 : 320), background: '#060913', cursor: fpOn ? 'crosshair' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? (rigDeployed ? 'Directional core rig control station. Choose a bore angle and depth, start the bore, monitor heat and recovery, then relocate the rig. R ends an active bore or packs an idle rig, and H returns home.' : (fpWalkScene ? 'First-person geology mining explorer. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, R deploys the directional core rig, G surveys for the active specimen, click or tap digs one block, Enter digs instantly, Z undoes, Y redoes, and H returns. Escape exits.' : 'First-person Deep Earth flight. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, G surveys for the active specimen, click or tap excavates one block, Enter excavates instantly, Z undoes, Y redoes, and H returns. Escape exits.')) : 'Interactive 3D voxel model of ' + SCENE.label + '. Use the ' + (feat.crossSection ? 'cross-section' : '2D evidence map') + ' and material list below for an accessible alternative.' }),
+          h('div', { ref: containerRef, tabIndex: fpOn ? 0 : undefined, style: { height: isFs ? '100vh' : 'min(58vh, 460px)', minHeight: isFs ? 0 : (rigDeployed ? 400 : 320), background: '#060913', cursor: fpOn ? 'crosshair' : (excavate ? 'crosshair' : 'grab') }, className: fpOn ? 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-inset' : undefined, role: fpOn ? 'application' : 'img', 'aria-label': fpOn ? (rigDeployed ? 'Directional core rig control station. Choose a bore angle and depth, match Preserve, Cruise, or Torque feed to each formation, use limited coolant to protect integrity, and challenge previous scores. R ends an active bore or packs an idle rig, and H returns home.' : (fpWalkScene ? 'First-person geology mining explorer. W A S D or arrow keys walk, Space jumps, Shift sprints, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, R deploys the directional core rig, G surveys for the active specimen, click or tap digs one block, Enter digs instantly, Z undoes, Y redoes, and H returns. Escape exits.' : 'First-person Deep Earth flight. W A S D or arrow keys fly, Q and E move up and down, I J K L or drag looks, 1 selects the pickaxe, 2 selects the powered drill, holding X drills continuously with a heat limit, G surveys for the active specimen, click or tap excavates one block, Enter excavates instantly, Z undoes, Y redoes, and H returns. Escape exits.')) : 'Interactive 3D voxel model of ' + SCENE.label + '. Use the ' + (feat.crossSection ? 'cross-section' : '2D evidence map') + ' and material list below for an accessible alternative.' }),
           h('div', { className: 'absolute top-2 left-2 z-10 flex gap-1' },
             [['iso', '3D'], ['front', 'Front'], ['top', 'Top']].map(function (vw) {
               var activeView = cameraViewState === vw[0];

@@ -31,8 +31,8 @@ describe('HistoryPanel community sharing', () => {
     expect(src).toContain('textAccessPreflight');
     expect(src).toContain('supplementalWithoutPrimary');
     expect(src).toContain('instructionalText: getInstructionalTextRecord(item)');
-    expect(src).toContain('config.instructionalText');
-    expect(src).toContain("item.config.instructionalContext");
+    expect(src).toContain("safeField(config, 'instructionalText')");
+    expect(src).toContain("getSafeArtifactField(config, 'instructionalContext')");
     expect(src).toContain('This pack includes a supplemental adapted text but no designated primary text.');
     expect(src).toContain('advisoryOnly: true');
     // Community staging must not regain the identifying free-form fields that

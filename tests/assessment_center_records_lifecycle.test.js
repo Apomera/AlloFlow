@@ -158,14 +158,18 @@ describe('module records manager (finding 6)', () => {
   const HANDLER_PARAMS = ['recordsRemovalTarget', 'askStudentAnalyticsConfirmation', 'deleteStudentRecords',
     'setExternalCBMScores', 'setRosterKey', 'setImportedStudents', 'selectedStudent', 'setSelectedStudent',
     'researchStudent', 'setResearchStudent', 'activeStudent', 'setActiveStudent', 'setProbeTargetStudent',
-    'setRecordsRemovalTarget', 'addToast', 't', 'localStorage', 'window'];
+    'setRecordsRemovalTarget', 'addToast', 't', 'localStorage', 'window', '_acIdentityLinkKey',
+    'setIdentityLinks', 'lastLinkUndo', 'safeSessionRemoveItem', 'AC_LINK_UNDO_KEY',
+    'safeRemoveItem', 'setLastLinkUndo'];
 
   function runHandler(target, confirmAnswer, world = {}) {
     const fnSrc = extractDecl(ac, 'const handleRemoveStudentRecords = async () => {');
-    const calls = { deleted: [], toasts: [], cleared: [], confirmations: [] };
+    const calls = { deleted: [], toasts: [], cleared: [], confirmations: [], sessionRemoved: [], localRemoved: [], undoState: 'unchanged' };
+    const fingerprint = 'sha256:' + 'a'.repeat(64);
     let cbm = world.cbm || { [target]: [{ score: 90 }], Heron: [] };
     let roster = world.roster || { progressHistory: { [target]: [{ date: '2026-08-01' }], Heron: [] }, students: {} };
     let imported = world.imported || [{ name: target, stats: {} }, { name: 'Heron', stats: {} }];
+    let links = world.identityLinks || { [fingerprint]: target, ['sha256:' + 'b'.repeat(64)]: 'Heron' };
     // eslint-disable-next-line no-new-func
     const handler = new Function(...HANDLER_PARAMS, fnSrc + ' return handleRemoveStudentRecords;')(
       target,
@@ -186,12 +190,19 @@ describe('module records manager (finding 6)', () => {
       () => undefined,
       { setItem: () => {} },
       { dispatchEvent: () => {} },
+      async () => fingerprint,
+      (u) => { links = typeof u === 'function' ? u(links) : u; },
+      world.lastLinkUndo === undefined ? { fromName: target, toName: 'Swift Falcon' } : world.lastLinkUndo,
+      (key) => calls.sessionRemoved.push(key),
+      'undo-key',
+      (key) => calls.localRemoved.push(key),
+      (value) => { calls.undoState = value; },
     );
-    return handler().then(() => ({ calls, cbm, roster, imported }));
+    return handler().then(() => ({ calls, cbm, roster, imported, links }));
   }
 
   it('a confirmed removal purges every store and clears every selection', async () => {
-    const { calls, cbm, roster, imported } = await runHandler('Falcon', true);
+    const { calls, cbm, roster, imported, links } = await runHandler('Falcon', true);
     expect(calls.confirmations).toHaveLength(1);
     expect(calls.confirmations[0].opts.title).toBe('Remove student records');
     expect(calls.deleted).toEqual(['Falcon']);
@@ -200,14 +211,21 @@ describe('module records manager (finding 6)', () => {
     expect(imported.map(s => s.name)).toEqual(['Heron']);
     expect(calls.cleared).toEqual(expect.arrayContaining(['selectedStudent', 'researchStudent', 'activeStudent', 'probeTarget', 'target']));
     expect(calls.toasts.some(x => x.level === 'success')).toBe(true);
+    expect(Object.values(links)).toEqual(['Heron']);
+    expect(calls.sessionRemoved).toEqual(['undo-key']);
+    expect(calls.localRemoved).toEqual(['undo-key']);
+    expect(calls.undoState).toBeNull();
+    expect(calls.confirmations[0].msg).toContain('saved Assessment Center link');
   });
 
   it('cancelling the confirmation deletes nothing', async () => {
-    const { calls, cbm, imported } = await runHandler('Falcon', false);
+    const { calls, cbm, imported, links } = await runHandler('Falcon', false);
     expect(calls.deleted).toHaveLength(0);
     expect(cbm.Falcon).toBeDefined();
     expect(imported).toHaveLength(2);
     expect(calls.toasts).toHaveLength(0);
+    expect(Object.values(links).sort()).toEqual(['Falcon', 'Heron']);
+    expect(calls.sessionRemoved).toEqual([]);
   });
 
   it('unrelated selections are left alone', async () => {

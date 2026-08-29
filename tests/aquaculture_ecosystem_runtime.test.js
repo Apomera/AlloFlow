@@ -118,14 +118,35 @@ describe('Aquaculture Ecosystem Builder', () => {
     for (let count = 1; count <= 5; count += 1) {
       await act(async () => { findButton(host, `Deploy seeded dropper ${count} of 5`).dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     }
-    await act(async () => { findButton(host, 'Take probe reading').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Take surface sample').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    await act(async () => { findButton(host, 'Take crop-depth sample').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    const pairedRecord = host.querySelector('.aq-guided-sample-comparison');
+    expect(pairedRecord).toBeTruthy();
+    expect(pairedRecord.textContent).toContain('Paired depth record');
+    expect(pairedRecord.textContent).toContain('0.40 mg/L lower');
+    expect(pairedRecord.querySelectorAll('tbody tr')).toHaveLength(2);
     await act(async () => { findButton(host, 'Return and secure the vessel').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     const reflection = host.querySelector('#aq-guided-reflection');
-    await act(async () => { setTextareaValue(reflection, 'I kept the red nun to starboard, stayed in the channel, logged the probe, and returned safely.'); await Promise.resolve(); });
+    await act(async () => { setTextareaValue(reflection, 'I kept the red nun to starboard, stayed in the channel, compared surface and crop-depth samples, and returned safely.'); await Promise.resolve(); });
     await act(async () => { findButton(host, 'Save mission evidence').dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
     const saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1'));
-    expect(saved.completedMissions['mission-1']).toMatchObject({ mode: 'guided-2d' });
-    expect(saved.probeReadings.at(-1)).toMatchObject({ mode: 'guided-2d', DO: '8.1' });
+    expect(saved.completedMissions['mission-1']).toMatchObject({
+      mode: 'guided-2d',
+      summary: {
+        droppersDeployed: 5,
+        surfaceReading: { depth: 'surface', DO: '8.45' },
+        cropDepthReading: { depth: 'crop', DO: '8.05' }
+      }
+    });
+    expect(saved.probeReadings.slice(-2).map((reading) => reading.depth)).toEqual(['surface', 'crop']);
+    expect(saved.probeReadings.at(-2)).toMatchObject({ mode: 'guided-2d', depth: 'surface', DO: '8.45' });
+    expect(saved.probeReadings.at(-1)).toMatchObject({ mode: 'guided-2d', depth: 'crop', DO: '8.05' });
+    const analyze = findButton(host, 'Analyze saved samples');
+    expect(analyze).toBeTruthy();
+    await act(async () => { analyze.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    expect(host.querySelector('#aq-mussel-health-heading').textContent).toBe('Mussel health station');
+    expect(host.querySelector('#aq-mussel-temperature-number').value).toBe('13.5');
+    expect(JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).musselHealthWorkspace.evidenceSource).toBe('mission-crop');
   });
 
   it('labels model scope and exposes official primary-source gateways', async () => {

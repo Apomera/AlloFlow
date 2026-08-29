@@ -75,9 +75,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (document.getElementById('allo-rr-accent-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-rr-accent-css';
-    st.textContent = ':root, .theme-default{--rr-cyan:#0e7490;--rr-violet:#6d28d9;--rr-amber:#92400e;--rr-blue:#1d4ed8;}'
-      + '.theme-dark{--rr-cyan:#22d3ee;--rr-violet:#a78bfa;--rr-amber:#fbbf24;--rr-blue:#60a5fa;}'
-      + '.theme-contrast{--rr-cyan:#ffff00;--rr-violet:#ffff00;--rr-amber:#ffff00;--rr-blue:#ffff00;}';
+    st.textContent = ':root, .theme-default{--rr-cyan:#0e7490;--rr-cyan-ink:#ffffff;--rr-violet:#6d28d9;--rr-amber:#92400e;--rr-blue:#1d4ed8;}'
+      + '.theme-dark{--rr-cyan:#22d3ee;--rr-cyan-ink:#082f49;--rr-violet:#a78bfa;--rr-amber:#fbbf24;--rr-blue:#60a5fa;}'
+      + '.theme-contrast{--rr-cyan:#ffff00;--rr-cyan-ink:#000000;--rr-violet:#ffff00;--rr-amber:#ffff00;--rr-blue:#ffff00;}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -99,10 +99,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     st.textContent =
       '[data-rr-view="menu"] button,[data-rr-view="scenarioSelect"] button,[data-rr-view="scenarioBriefing"] button{line-height:1.35}' +
       '.rr-drive-dock button{touch-action:manipulation}' +
+      '.touch-controls button{min-width:44px;min-height:44px}' +
       '#roadready-certificate{box-sizing:border-box}' +
-      '@media(max-width:720px){.rr-drive-shell{height:calc(100dvh - 56px)!important;min-height:340px!important;border-radius:0!important}.rr-drive-dock{width:calc(100% - 12px);justify-content:center;bottom:calc(98px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-dock button{flex:1 1 auto;padding-left:5px!important;padding-right:5px!important}.rr-drive-more{right:6px!important;bottom:calc(144px + env(safe-area-inset-bottom, 0px))!important}.touch-controls{transform:scale(.84)}.rr-touch-pedals{transform-origin:bottom right}.rr-touch-secondary{transform-origin:bottom left}.rr-world-controls{max-height:42vh;overflow:auto}#roadready-certificate{padding:34px 18px 24px!important}}' +
+      '@media(max-width:720px){.rr-drive-shell{height:calc(100dvh - 56px)!important;min-height:340px!important;border-radius:0!important}.rr-drive-dock{width:calc(100% - 12px);justify-content:center;bottom:calc(98px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-dock button{flex:1 1 auto;padding-left:5px!important;padding-right:5px!important}.rr-drive-more{right:6px!important;bottom:calc(144px + env(safe-area-inset-bottom, 0px))!important}.touch-controls{bottom:calc(150px + env(safe-area-inset-bottom, 0px))!important}.touch-controls button{min-width:44px;min-height:44px}.rr-world-controls{max-height:42vh;overflow:auto}#roadready-certificate{padding:34px 18px 24px!important}}' +
+      '@media(max-width:560px){.rr-road-test-meter{top:84px!important;min-width:0!important;padding:5px 9px!important;border-width:1px!important;border-radius:8px!important}.rr-road-test-meter>div{display:flex;align-items:center;gap:8px}.rr-road-test-label{font-size:10px!important;white-space:nowrap}.rr-road-test-score{font-size:16px!important;line-height:1!important;white-space:nowrap}}' +
       '@media(max-width:420px){.rr-ridealong-state{position:absolute;bottom:42px;left:50%;transform:translateX(-50%);min-height:26px!important;padding:0 7px!important}.rr-ridealong-state.rr-more-open{display:none!important}}' +
-      '@media(max-height:560px){.rr-drive-shell{height:calc(100dvh - 42px)!important;min-height:320px!important}.rr-drive-dock{bottom:calc(96px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-more{bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;max-height:150px;overflow:auto}.rr-world-controls{max-height:150px;overflow:auto}}';
+      '@media(max-height:560px){.rr-drive-shell{height:calc(100dvh - 42px)!important;min-height:320px!important}.rr-drive-dock{bottom:calc(96px + env(safe-area-inset-bottom, 0px))!important}.rr-drive-more{bottom:calc(140px + env(safe-area-inset-bottom, 0px))!important;max-height:150px;overflow:auto}.rr-touch-pedals{flex-direction:row!important;align-items:center}.rr-world-controls{max-height:150px;overflow:auto}}';
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -172,6 +174,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (tone === 'caution') return { tone: tone, background: 'rgba(69,42,8,0.94)', border: '#fbbf24', text: '#fff7ed' };
     if (tone === 'success') return { tone: tone, background: 'rgba(5,46,22,0.94)', border: '#4ade80', text: '#f0fdf4' };
     return { tone: 'info', background: 'rgba(8,47,73,0.94)', border: '#38bdf8', text: '#f0f9ff' };
+  }
+
+  function driveAlertBaseY(canvasHeight, topStackY, avoidTopOverlay, compact) {
+    var height = Math.max(0, Number(canvasHeight) || 0);
+    var normalY = Math.max(0, Number(topStackY) || 0) + 72;
+    var overlayRatio = compact ? 0.28 : 0.44;
+    return avoidTopOverlay ? Math.max(normalY, Math.ceil(height * overlayRatio)) : normalY;
   }
 
   function canvasMessageLines(context, message, maxWidth, maxLines) {
@@ -585,7 +594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'When making a lane change, you should signal:', a: ['While changing lanes', 'At least 100 feet before the change', 'Only if other cars are close behind you', 'Never on empty roads'], correct: 1, exp: 'Signal at least 100 feet before any lane change. This gives following drivers time to react. Check mirrors AND blind spots before moving.', category: 'general' },
     { q: 'What is the correct procedure for a 3-point turn?', a: ['Turn left, reverse right, drive forward', 'Make a U-turn across all lanes', 'Back up in a straight line', 'Turn right, reverse left, drive forward'], correct: 0, exp: 'A 3-point turn (K-turn): (1) Turn wheel left, drive forward to far curb. (2) Turn wheel right, reverse to near curb. (3) Straighten, drive forward in new direction.', category: 'general' },
     { q: 'The friction circle concept teaches you to:', a: ['Always brake and turn at the same time to use all the grip', 'Use grip for braking OR steering, but not both at full', 'Drive only in circles', 'Ignore ABS warnings'], correct: 1, exp: 'Your tires have a total grip budget (the friction circle). If you use 100% for braking, 0% is left for steering — and vice versa. This is why you brake BEFORE a turn, not during.', category: 'general' },
-    { q: 'When backing up, you should primarily look:', a: ['In the rearview mirror only, to keep both hands on the wheel', 'Over your right shoulder through the rear window', 'Straight ahead', 'At the side mirrors only, since they cover both sides'], correct: 1, exp: 'Turn your body and look over your right shoulder through the rear window. Mirrors have blind spots. Your head gives you the widest view.', category: 'general' },
+    { q: 'When backing up, you should primarily look:', a: ['In the rearview mirror only, to keep both hands on the wheel', 'Over your right shoulder through the rear window', 'Straight ahead', 'At the side mirrors only'], correct: 1, exp: 'Turn your body and look over your right shoulder through the rear window. Mirrors have blind spots. Your head gives you the widest view.', category: 'general' },
     { q: 'An emergency vehicle with lights and siren is approaching from behind. On a 2-lane road you should:', a: ['Speed up to get out of the way until the next intersection', 'Move left to give them room', 'Pull to the RIGHT shoulder and stop until it passes', 'Keep driving but slow down'], correct: 2, exp: 'Maine law: draw as near as practicable to the right-hand curb, clear of any intersection, and stop until the emergency vehicle passes. Signal, move right smoothly, then stop.', category: 'emergency' },
     { q: 'After an emergency vehicle passes you with lights on, you should:', a: ['Follow it closely to get through the traffic it clears', 'Wait a moment, then resume driving carefully', 'Immediately speed up to normal', 'Flash your lights to acknowledge'], correct: 1, exp: 'Wait until the emergency vehicle is well past, then check for additional emergency vehicles before resuming. Following an emergency vehicle too closely (tailgating) is illegal.', category: 'emergency' },
     { q: 'Going from 15 MPG to 20 MPG saves MORE fuel than going from 35 to 50 MPG for the same distance. True or false?', a: ['True — MPG is non-linear', 'False — higher MPG always saves more', 'They save the same', 'It depends on the vehicle weight'], correct: 0, exp: 'TRUE. Over 10,000 miles: 15→20 MPG saves 167 gallons. 35→50 MPG saves only 86 gallons. This is the "MPG illusion" — switching from a gas-guzzler to mediocre saves more than mediocre to excellent.', category: 'general' },
@@ -593,17 +602,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'At an uncontrolled intersection (no signs, no lights), who has the right-of-way?', a: ['The faster of the two vehicles', 'The vehicle on the right', 'The larger vehicle', 'The first to honk'], correct: 1, exp: 'At any uncontrolled intersection, yield to the vehicle on your RIGHT. Slow down and look left-right-left before proceeding.', category: 'general' },
     { q: 'You are turning left at a green light (no arrow). You must yield to:', a: ['Nobody — a green light gives you the right of way', 'Oncoming traffic going straight or turning right', 'Only the traffic queued up behind you', 'Pedestrians only, not oncoming vehicles'], correct: 1, exp: 'A green light without an arrow means you may turn left, but you must YIELD to oncoming traffic and pedestrians. Only a green ARROW gives you protected right-of-way.', category: 'general' },
     { q: 'Your oil pressure warning light comes on while driving. You should:', a: ['Drive to the nearest gas station', 'Keep driving if the engine sounds normal and is not overheating', 'Pull over immediately and shut off the engine', 'Add water to the engine'], correct: 2, exp: 'An oil pressure warning is CRITICAL. Driving even 1 minute with no oil pressure can destroy the engine. Pull over, turn off the engine, check oil level. Do NOT restart if oil is empty — tow it.', category: 'maintenance' },
-    { q: 'The TPMS (tire pressure) light means:', a: ['Your tires are worn out and need replacing very soon', 'One or more tires is significantly under-inflated', 'Your brake pads are worn and need servicing', 'Your engine oil has dropped below its safe level'], correct: 1, exp: 'TPMS = Tire Pressure Monitoring System. When it lights up, one or more tires is 25%+ below the recommended PSI. Check and inflate all 4 tires to the pressure on the driver door sticker.', category: 'maintenance' },
+    { q: 'The TPMS (tire pressure) light means:', a: ['Your tires are worn out and need replacing very soon', 'One or more tires is significantly under-inflated', 'Your brakes are worn', 'Oil is low'], correct: 1, exp: 'TPMS = Tire Pressure Monitoring System. When it lights up, one or more tires is 25%+ below the recommended PSI. Check and inflate all 4 tires to the pressure on the driver door sticker.', category: 'maintenance' },
     { q: 'Before driving, the FIRST thing you should adjust is:', a: ['The radio', 'Your seat and mirrors', 'The AC temperature', 'The GPS destination and route'], correct: 1, exp: 'Seat position (so you can reach all pedals fully) and mirrors (rearview + both sides) should be adjusted BEFORE you start driving. Never adjust mirrors while the car is moving.', category: 'general' },
     { q: 'The penny test for tire tread measures:', a: ['Whether the tire pressure matches the door-jamb placard value', 'How old the tire is, read from its DOT date code', 'Whether tread depth is still safe (2/32" is the minimum)', 'The quality rating of the tire\'s brand and model'], correct: 2, exp: 'Insert a penny head-first into the tread groove. If you can see ALL of Lincoln\'s head, tread is below 2/32" and the tire is unsafe — replace it. Maine requires 2/32" minimum tread depth.', category: 'maintenance' },
     { q: 'Your check engine light is FLASHING (not steady). This means:', a: ['Normal operation', 'Minor issue, schedule service when convenient', 'Active engine misfire — pull over immediately', 'The gas cap is loose'], correct: 2, exp: 'A FLASHING check engine light means active misfire. Unburned fuel is being sent to the catalytic converter, which can overheat and catch fire. Pull over and turn off the engine.', category: 'maintenance' },
-    { q: 'You are stopped at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Drive into the intersection against the red light so the ambulance has a clear path straight through', 'Move right only if you can do so safely while staying clear of the intersection; otherwise wait', 'Reverse far enough to open a gap for the ambulance', 'Stay exactly where you are and ignore it until the light turns green'], correct: 1, exp: 'Yield by moving as near as practicable to the right curb and stopping clear of intersections until the emergency vehicle passes. Do not enter cross traffic against a red light to make room.', category: 'emergency' },
+    { q: 'You are stopped at a red light when an ambulance with sirens approaches from behind. You should:', a: ['Drive into the intersection against the red light so the ambulance has a clear path straight through', 'Move right only if you can do so safely while staying clear of the intersection; otherwise wait', 'Reverse to make room', 'Ignore it until the light changes'], correct: 1, exp: 'Yield by moving as near as practicable to the right curb and stopping clear of intersections until the emergency vehicle passes. Do not enter cross traffic against a red light to make room.', category: 'emergency' },
     { q: 'After pulling over for an emergency vehicle, how long should you wait before re-entering traffic?', a: ['Immediately after it passes', 'Wait for any additional emergency vehicles, then merge carefully', '60 seconds exactly', 'Until all of the surrounding traffic has resumed its normal speed'], correct: 1, exp: 'Emergency vehicles often travel in groups (ambulance + fire truck, multiple police). Wait until you are sure no more are coming, then signal left and merge carefully.', category: 'emergency' },
     { q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:', a: ['Stop in the travel lane immediately', 'Stay at your normal speed, because the median fully separates you from it', 'Move right and stop until it passes, staying clear of intersections', 'Speed up to clear the area'], correct: 2, exp: 'Maine §2054 does not list a divided-highway exception for an authorized emergency vehicle using lights and siren. Move as near as practicable to the right-hand curb or edge, stay clear of intersections, and stop until it passes. On high-speed roads, do this smoothly and only where safe.', category: 'emergency' },
     { q: 'When driving, you should look:', a: ['Only at the car directly in front', '12-15 seconds ahead down the road', 'Only at the speedometer', 'Only in the mirrors'], correct: 1, exp: 'Scan 12-15 seconds ahead (about 1/4 mile at highway speed). This is called "high visual horizon" — it gives you maximum time to react to hazards, stops, and lane changes.', category: 'general' },
     { q: 'A white car is in your blind spot. The safest way to check before changing lanes is:', a: ['Use the mirrors alone; they cover every angle', 'Briefly turn your head to look over your shoulder', 'Sound the horn and change lanes if nobody replies', 'Accelerate past them so they fall behind you'], correct: 1, exp: 'Mirrors have blind spots where entire vehicles hide. A brief head turn (shoulder check) covers the blind spot. Signal → mirror → shoulder check → move. In that order, every time.', category: 'general' },
     { q: 'You are driving 55 mph and it starts raining. You should:', a: ['Maintain your speed, since a car with good tires does not hydroplane', 'Slow down by at least 10 mph and increase following distance', 'Pull over immediately', 'Turn on hazard flashers and continue'], correct: 1, exp: 'Rain reduces friction by 30-50%. Slow down, increase following to 4+ seconds, and turn on headlights when wipers are in constant use or visibility is reduced. The first 10 minutes of rain are worst — oil lifts off the road.', category: 'winter' },
-    { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly before they fully lower', 'Stop and wait — never drive around lowered gates', 'Speed up and cross before the train reaches you', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.', category: 'emergency' },
+    { q: 'You approach a railroad crossing and the gates begin to lower as you arrive. You should:', a: ['Go around the gates quickly before they fully lower', 'Stop and wait — never drive around lowered gates', 'Speed up to beat the train', 'Honk and proceed'], correct: 1, exp: 'NEVER go around lowered gates. Trains can take a mile to stop. A stuck gate means call the number on the crossbuck or 911.', category: 'emergency' },
     { q: 'The primary purpose of antilock brakes (ABS) is to:', a: ['Stop the car faster on all road surfaces', 'Allow you to steer while braking hard', 'Replace the handbrake', 'Prevent tire wear'], correct: 1, exp: 'ABS pulses the brakes so wheels do not lock. Locked wheels cannot steer. ABS may not always stop you faster, but it keeps the steering alive.', category: 'general' },
     { q: 'When driving in heavy fog, you should use:', a: ['High beams', 'Low beams and/or fog lights', 'Hazard lights while moving slowly', 'Parking lights only'], correct: 1, exp: 'High beams reflect off fog and reduce visibility. Use LOW beams and fog lights. Hazard flashers can confuse other drivers while moving; save them for an actual hazard or when stopped/disabled.', category: 'winter' },
     { q: 'You are parking uphill next to a curb. You should turn the front wheels:', a: ['Toward the curb', 'Away from the curb', 'Straight', 'It does not matter'], correct: 1, exp: 'UPHILL with curb: wheels AWAY (if brakes fail, car rolls INTO curb). DOWNHILL: wheels TOWARD curb. No curb: wheels toward the road edge.', category: 'general' },
@@ -618,23 +627,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'A driver in front of you stops suddenly for a deer. The best way to avoid hitting them is:', a: ['Swerve into the next lane immediately without checking mirrors', 'Have already been following at 3+ seconds and brake firmly', 'Slam on the horn', 'Speed up and pass'], correct: 1, exp: 'Crashes are avoided BEFORE they happen — by following far enough behind that you have time and room to brake. Reaction distance is half the equation; following distance is the other half.', category: 'general' },
     { q: 'When you see flashing blue or red lights of an emergency vehicle behind you, you must:', a: ['Speed up to clear the road well ahead of them', 'Brake immediately', 'Pull to the right and stop until it passes', 'Continue at the same speed'], correct: 2, exp: 'Pull right, stay clear of intersections, and stop until the emergency vehicle passes. Do not enter an intersection or block the lane it needs.', category: 'emergency' },
     { q: 'You approach a school bus on the opposite side of a roadway separated by curbing, a guardrail, a concrete barrier, or another physical barrier. The bus has red flashing lights. You must:', a: ['Stop completely until the lights stop flashing, as always', 'Slow down but continue past the bus', 'Continue with normal caution (you do not need to stop)', 'Speed up to clear the area quickly'], correct: 2, exp: 'Maine §2308 says opposite-direction traffic need not stop only when separated from the bus lane by curbing or another physical barrier, or under the limited-access/loading-zone exception. Paint-only lanes are undivided — both directions stop.', category: 'pedestrian' },
-    { q: 'In an emergency stop with ABS brakes, you should:', a: ['Pump the brake pedal rapidly to stop the wheels locking up', 'Press and HOLD the brake pedal firmly while steering', 'Apply gentle, steady pressure to the brake pedal', 'Pull the parking brake to stop in a shorter distance'], correct: 1, exp: 'ABS does the pumping for you. Press and HOLD firmly. You will feel pulsing in the pedal — that is normal. The pulsing means it is working. Steer through the stop.', category: 'emergency' },
+    { q: 'In an emergency stop with ABS brakes, you should:', a: ['Pump the brake pedal rapidly to stop the wheels locking up', 'Press and HOLD the brake pedal firmly while steering', 'Apply gentle pressure', 'Use the parking brake'], correct: 1, exp: 'ABS does the pumping for you. Press and HOLD firmly. You will feel pulsing in the pedal — that is normal. The pulsing means it is working. Steer through the stop.', category: 'emergency' },
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area on the highway', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.', category: 'general' },
-    { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only, since that is what the OUI law was written for', 'Alcohol and illegal drugs, but not medications that a doctor or pharmacist has provided', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only when a breath test puts you over 0.08 percent BAC'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
+    { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only, since that is what OUI covers', 'Alcohol and illegal drugs, but not medications that a doctor or pharmacist has provided', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only when a breath test shows a BAC above 0.08'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
     { q: 'Cell phone use while driving in Maine is:', a: ['Always legal, as long as you keep both hands on the wheel while talking', 'Banned for handheld; hands-free only if 18+ and not permit/intermediate', 'Banned only for drivers under the age of 18', 'Banned only within posted school zones'], correct: 1, exp: 'Maine §2121 bans handheld phone/device interaction while operating, including when temporarily stopped in traffic or at a light/stop sign. Hands-free is allowed only for drivers 18+ who are not using a learner\'s permit or intermediate license; texting remains banned under §2119.', category: 'dui' },
     { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at the posted speed past the scene', 'Sound the horn and pass by as quickly as you can so you are past the hazard sooner', 'Move to a non-adjacent lane if safe, or slow to a careful and prudent speed', 'Come to a complete stop until they wave you past'], correct: 2, exp: 'Maine\'s stationary-vehicle passing law requires drivers to move to a non-adjacent lane if possible, or slow to a careful and prudent speed. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
     // ── Accident aftermath + advanced ──
     { q: 'You are involved in a minor fender bender with no injuries. Your first step should be:', a: ['Leave the scene, since there were no injuries to report', 'Move the vehicles to a safe location out of the traffic lanes', 'Call 911 immediately and wait in the travel lane for the police to arrive', 'Exchange insurance details only, then drive away separately'], correct: 1, exp: 'Move vehicles to safety first (if drivable). Then exchange info, take photos, and report the crash when required. Maine §2251 defines a reportable accident as one with injury, death, or apparent property damage of $2,000 or more.', category: 'emergency' },
     { q: 'After a crash, what information should you exchange with the other driver?', a: ['Just phone numbers, so you can sort out repairs later', 'Name, insurance company, policy number, license, plate, phone', 'Nothing at all, and let the two insurance companies handle it between them', 'Only exchange details if a police officer is present'], correct: 1, exp: 'Always exchange: name, phone, insurance company + policy number, driver\'s license number, license plate, vehicle make/model. Take photos of everything.', category: 'emergency' },
-    { q: 'You hit a parked car and the owner is nowhere around. You should:', a: ['Leave, since nobody saw it and the owner is not there to tell', 'Stop and leave a conspicuous note with your name, address, vehicle registration number, and what happened', 'Report it only if the damage looks bad enough to be worth it', 'Move your car away and treat it as though it never happened, since a scrape on a parked car is not a reportable crash'], correct: 1, exp: 'Maine §2254: stop and notify the owner if possible. If not, leave a conspicuous note with your name, address, vehicle registration number, and the circumstances. Provide insurance evidence if the owner requests it. Take photos.', category: 'emergency' },
+    { q: 'You hit a parked car and the owner is nowhere around. You should:', a: ['Leave, since no one witnessed it and the owner is absent', 'Stop and leave a conspicuous note with your name, address, vehicle registration number, and what happened', 'Report it only if the damage looks severe enough to matter', 'Move your car away and treat it as though it never happened, since a scrape on a parked car is not a reportable crash'], correct: 1, exp: 'Maine §2254: stop and notify the owner if possible. If not, leave a conspicuous note with your name, address, vehicle registration number, and the circumstances. Provide insurance evidence if the owner requests it. Take photos.', category: 'emergency' },
     { q: 'What is the purpose of the vehicle\'s VIN (Vehicle Identification Number)?', a: ['It encodes the fuel type and engine size so that parts stores can match components exactly', 'It uniquely identifies your specific vehicle for registration, insurance, and recalls', 'It records the engine\'s rated horsepower and its emissions class', 'It is another form of the license plate number and changes when you move states'], correct: 1, exp: 'The VIN is a 17-character code unique to every vehicle manufactured. It encodes the make, model, year, factory, and serial number. Found on the dashboard and door frame.', category: 'maintenance' },
-    { q: 'Tailgating (following too closely) is dangerous because:', a: ['It saves fuel by drafting behind the car in front', 'It leaves no room for reaction if the car ahead stops suddenly', 'It makes the other driver go faster, which raises everyone\'s speed', 'It only matters at highway speed, not around town'], correct: 1, exp: 'Tailgating eliminates your reaction buffer. At 60 mph with a 1-second following distance, you need 132 ft to react + 180 ft to brake = 312 ft. A 1-second gap at 60 mph is only 88 ft.', category: 'general' },
+    { q: 'Tailgating (following too closely) is dangerous because:', a: ['It saves fuel from drafting', 'It leaves no room for reaction if the car ahead stops suddenly', 'It makes the other driver go faster, which raises everyone\'s speed', 'It only matters on highways'], correct: 1, exp: 'Tailgating eliminates your reaction buffer. At 60 mph with a 1-second following distance, you need 132 ft to react + 180 ft to brake = 312 ft. A 1-second gap at 60 mph is only 88 ft.', category: 'general' },
     { q: 'When driving through a deep puddle, what should you do after crossing it?', a: ['Speed up to dry the brakes', 'Gently tap the brakes a few times to dry them', 'Nothing, since modern brakes are sealed and waterproof', 'Pull over and wait 10 minutes'], correct: 1, exp: 'Water on brake rotors reduces braking power. Lightly tapping brakes creates friction heat that evaporates the water. This restores full braking within seconds.', category: 'general' },
     { q: 'Carbon monoxide from your car\'s exhaust is dangerous because:', a: ['It smells bad enough to make people faint in enclosed spaces', 'It is odorless and can cause unconsciousness or death indoors', 'It only affects diesel engines, which burn fuel less cleanly', 'It damages the engine from the inside over long idling periods'], correct: 1, exp: 'CO is odorless, colorless, and deadly. Never idle in a closed garage. If stuck in snow, keep the exhaust pipe clear and crack a window. CO poisoning symptoms: headache, dizziness, nausea.', category: 'emergency' },
-    { q: 'The two-second rule should be increased to four or more seconds when:', a: ['You are driving a small, light car', 'Road conditions are wet, icy, or visibility is poor', 'You are driving in daylight rather than after dark', 'Driving well below the speed limit on an open highway'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.', category: 'winter' },
-    { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it, since cars always smell a little like gasoline after a fill-up', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up so the airflow blows the fumes out', 'Turn the air conditioning to recirculate the air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
+    { q: 'The two-second rule should be increased to four or more seconds when:', a: ['Driving a small car', 'Road conditions are wet, icy, or visibility is poor', 'Driving during the day', 'Driving well below the speed limit on an open highway'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.', category: 'winter' },
+    { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it, since cars always smell a little like gasoline after a fill-up', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
     { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal vibration from road texture that needs no attention', 'Likely a wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating and the vibration comes from the cooling fan working at full speed', 'Worn brake pads, which always vibrate the steering wheel at speed'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.', category: 'maintenance' },
-    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['A $100 fine, with no suspension of your licence', 'A written warning for a first offence, with no fine and no suspension', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of your vehicle registration, but not your licence'], correct: 2, exp: 'Maine first-offense OUI: at least a $500 fine and 150-day license suspension. Jail becomes mandatory in aggravating cases such as 0.15+ BAC, 30+ mph over the limit, eluding, a passenger under 21, or refusing a test. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
+    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['A $100 fine and nothing beyond that', 'A written warning for a first offence, with no fine and no suspension', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of the vehicle registration only'], correct: 2, exp: 'Maine first-offense OUI: at least a $500 fine and 150-day license suspension. Jail becomes mandatory in aggravating cases such as 0.15+ BAC, 30+ mph over the limit, eluding, a passenger under 21, or refusing a test. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
     { q: 'In Maine, which child passenger must use a belt-positioning seat or child restraint unless a stricter child-restraint rule applies?', a: ['Any child under 12, regardless of their size or their weight', 'A child under 8 who is under 80 lb and under 57 inches tall', 'Any child weighing under 100 lb, at any age', 'Only children under 2 years old'], correct: 1, exp: 'Maine §2081 uses age, weight, and height. Under 2: rear-facing unless seat limits are exceeded. Age 2+ and under 55 lb: internal-harness child restraint. Under 8, under 80 lb, and under 57 in: belt-positioning seat or child restraint. Under 12: rear seat if possible.', category: 'general' },
     { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green cycle to begin'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.', category: 'general' },
     { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking using fixed reference points', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway from a short ramp', 'Adjusting your mirrors outward far enough to erase the blind spots on both sides'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.', category: 'general' },
@@ -658,7 +667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'If your car has a manual transmission and you are stopped on a steep uphill, you should:', a: ['Use the parking brake while starting to prevent rolling backward', 'Rev the engine and release the clutch quickly before the car can roll', 'Roll backward and try again', 'Shift to neutral'], correct: 0, exp: 'Hill start technique: hold the parking brake while you find the clutch engagement point and apply gas. Release the parking brake as you feel the car pull forward. This prevents the dangerous roll-back.', category: 'general' },
     { q: 'Right-of-way at a T-intersection (no signs or signals):', a: ['The car on the through road always goes first', 'The car on the stem road goes first if it arrived first', 'The larger vehicle goes first', 'Whoever arrives first'], correct: 0, exp: 'At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.', category: 'general' },
     { q: 'The purpose of rumble strips on the highway shoulder is to:', a: ['Mark the pavement edge for snow plow drivers when the road is covered in snow', 'Alert drowsy or distracted drivers that they are leaving the travel lane', 'Slow traffic down before a sharp curve ahead', 'Guide cyclists onto a safe riding line'], correct: 1, exp: 'Rumble strips create noise and vibration when you drive over them. They are specifically designed to wake up drowsy drivers or alert distracted ones before they leave the road. They reduce run-off-road crashes by 15-70%.', category: 'general' },
-    { q: 'When driving near a large truck, where is the SAFEST position?', a: ['Directly behind the truck (drafting), where the truck blocks the wind for you', 'Far enough behind or ahead that you can see the truck driver\'s mirrors', 'Beside the truck, holding level with it in the left lane', 'As close behind as you can get, to save fuel'], correct: 1, exp: 'Rule: if you cannot see the truck driver\'s mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck (they need 40% more stopping distance than a car).', category: 'general' },
+    { q: 'When driving near a large truck, where is the SAFEST position?', a: ['Directly behind the truck (drafting), where the truck blocks the wind for you', 'Far enough behind or ahead that you can see the truck driver\'s mirrors', 'Beside the truck in the left lane', 'As close as possible to save fuel'], correct: 1, exp: 'Rule: if you cannot see the truck driver\'s mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck (they need 40% more stopping distance than a car).', category: 'general' },
     { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16 years old exactly', '16 and 9 months', '17 years old exactly', '18 years old exactly'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), and full unrestricted at about 16 years and 9 months if the 270-day intermediate restrictions are not extended.', category: 'gdl' },
 
     // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
@@ -668,7 +677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always the smart legal advice to follow', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any OUI charges.', category: 'dui' },
     { q: 'You went out for drinks and feel "okay to drive." The safest choice is:', a: ['Drive carefully and slowly', 'Wait 30 minutes, then reassess how you feel', 'Use a rideshare, taxi, or designated driver', 'Drink coffee for 15 minutes first'], correct: 2, exp: 'You cannot reliably self-assess your impairment — alcohol affects judgment FIRST. The only safe choice is not driving. Coffee speeds nothing; only TIME (about 1 hour per standard drink) lowers BAC.', category: 'dui' },
     { q: 'Approximately how long does it take your body to metabolize ONE standard drink (12 oz beer, 5 oz wine, 1.5 oz liquor)?', a: ['10 minutes', '1 hour', '4 hours', '24 hours'], correct: 1, exp: 'About 1 hour per drink for a typical adult. There is no shortcut — coffee, food, cold air, and exercise do not speed metabolism. Plan drinks-and-driving math BEFORE you start.', category: 'dui' },
-    { q: 'Combining alcohol with sleep deprivation is dangerous because:', a: ['Sleep deprivation cancels out alcohol\'s effects, because a tired body burns alcohol off faster', 'Their effects multiply — being tired AND drunk impairs you far more than either alone', 'It only matters once you are over 0.08 percent BAC', 'It only affects drivers who are tall or heavy'], correct: 1, exp: 'Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a "legal" 0.05% BAC gives you the impairment of a 0.10% drunk driver.', category: 'dui' },
+    { q: 'Combining alcohol with sleep deprivation is dangerous because:', a: ['Sleep deprivation cancels out alcohol\'s effects, because a tired body burns alcohol off faster', 'Their effects multiply — being tired AND drunk impairs you far more than either alone', 'It only matters at 0.08% BAC', 'It only affects taller drivers'], correct: 1, exp: 'Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a "legal" 0.05% BAC gives you the impairment of a 0.10% drunk driver.', category: 'dui' },
     { q: 'Which over-the-counter medication is MOST likely to impair driving?', a: ['Vitamin C or other daily supplements', 'Diphenhydramine (Benadryl) and other sedating antihistamines', 'Acetaminophen (Tylenol) taken as directed on the package label', 'Low-dose daily aspirin for heart health'], correct: 1, exp: 'Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: "may cause drowsiness" means do not drive. Non-drowsy options (Claritin, Zyrtec) are safer.', category: 'dui' },
     { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the officer\'s roadside breath test', 'A criminal OUI offense — same penalties as alcohol OUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
     { q: 'How does cannabis impairment differ from alcohol impairment behind the wheel?', a: ['Cannabis only slows reflexes a little; alcohol does everything else, which is why the law treats the two so differently', 'Cannabis can impair attention, reaction time, lane keeping, and decision-making — many alcohol-like effects', 'Cannabis improves focus and therefore improves driving', 'They are identical in every measurable respect and degree'], correct: 1, exp: 'THC slows reaction time, narrows attention, distorts time perception, and degrades multitasking. Effects last 4-8 hours after smoking and longer after edibles. There is no equivalent of "one drink is fine" for cannabis.', category: 'dui' },
@@ -689,13 +698,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'In a near-whiteout snow squall on a highway, the safest action is:', a: ['Stop where you are in the travel lane and put hazards on', 'Slow down, increase following distance, turn on low beams (not high beams), exit at the next safe pull-off', 'Speed up so that you get clear of the squall more quickly, keeping your high beams on so other drivers can see you', 'Pull onto the shoulder and stop with all your lights off'], correct: 1, exp: 'Stopping in the lane = rear-end crash risk. The shoulder is unsafe (others may also leave the road). Slow, increase distance, low beams, and exit at a rest area, gas station, or wide pull-off. Hazards on the shoulder, NOT in the lane.', category: 'winter' },
 
     // ── Pedestrian / school zone ──
-    { q: 'At a marked crosswalk in Maine, when must a driver yield to a pedestrian?', a: ['Only after the pedestrian is fully in your lane and has made eye contact with you, the driver', 'When the pedestrian is crossing or shows visible intent to enter the marked crosswalk', 'Only when a crossing guard is there directing traffic', 'Only during school hours, when children are about'], correct: 1, exp: 'Maine §2056 requires drivers to yield to a pedestrian crossing within a marked crosswalk or showing visible intent to enter it. Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.', category: 'pedestrian' },
+    { q: 'At a marked crosswalk in Maine, when must a driver yield to a pedestrian?', a: ['Only after the pedestrian is fully in your lane and has made eye contact with you, the driver', 'When the pedestrian is crossing or shows visible intent to enter the marked crosswalk', 'Only if a crossing guard is present', 'Only during school hours'], correct: 1, exp: 'Maine §2056 requires drivers to yield to a pedestrian crossing within a marked crosswalk or showing visible intent to enter it. Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.', category: 'pedestrian' },
     { q: 'You are turning right at an intersection. A pedestrian is at the marked crosswalk showing visible intent to cross. You should:', a: ['Turn quickly before they step off the curb so you are out of their way', 'Yield: stop and let them cross before completing your turn', 'Honk so they wait for you', 'Continue if you have a green light'], correct: 1, exp: 'A green light is permission to PROCEED, not to ignore pedestrians. Yield to pedestrians in a marked crosswalk or showing visible intent to enter it, then turn when clear.', category: 'pedestrian' },
     { q: 'If a pedestrian is crossing outside a marked crosswalk in Maine, a driver should:', a: ['Accelerate past, because the pedestrian is the one required to yield', 'Use due care: slow or stop as needed to avoid a collision, even though the pedestrian generally yields outside marked crosswalks', 'Sound the horn continuously and carry on at your current speed anyway', 'Pass within about a foot of them so that they know to get out of the way; jaywalkers have no legal protection and the driver has no duty of care outside a marked crosswalk'], correct: 1, exp: 'Maine §2056 says pedestrians crossing outside a marked crosswalk generally yield to vehicles, but drivers must exercise due care to avoid colliding with any pedestrian.', category: 'pedestrian' },
     { q: 'When backing out of a driveway, the highest-risk pedestrian is:', a: ['An adult walking along the sidewalk behind your car', 'A child on a bike, scooter, or playing — small, fast, and below your rearview mirror sightline', 'A person walking a dog along the far side of the street, since the dog may suddenly bolt into the road', 'No one — a backup camera removes the risk entirely'], correct: 1, exp: 'Children move unpredictably and are below mirror sightlines. Walk around the car before backing up if children may be around. Backup cameras help but do not show every angle.', category: 'pedestrian' },
     { q: 'On a residential street with children playing nearby (no posted limit change), Maine law expects you to:', a: ['Drive the posted limit, since that is exactly what the law allows on that street', 'Reduce speed below the posted limit to a safe speed for the conditions', 'Honk to alert the children', 'Continue normally'], correct: 1, exp: '"Reasonable and prudent" speed is the legal standard. The posted limit is a maximum, not a target. Children + cars = drop your speed. Maine uses "basic speed law" to ticket drivers for "speeding" even at the posted limit when conditions warrant slowing.', category: 'pedestrian' },
     { q: 'Approaching a school crossing where a crossing guard holds up a stop paddle, you must:', a: ['Slow down and pass the guard carefully', 'Come to a complete stop until the guard signals you may proceed', 'Drive around the guard if the way is clear and no children are in sight', 'Sound the horn before passing the crossing'], correct: 1, exp: 'Maine §2091-A requires drivers to obey a qualified school crossing guard\'s hand signal or handheld traffic-control device at a marked crosswalk. The guard may not contradict or override a lighted traffic or pedestrian signal. Stop until the guard signals you may proceed, and keep scanning for children.', category: 'pedestrian' },
-    { q: 'A flashing yellow light at a school zone means:', a: ['Stop and wait until the light stops flashing before driving on through the zone', 'Slow down — the active school-zone speed limit (15 mph in Maine) is in effect', 'School is closed, so the zone limit does not apply', 'The same as any ordinary yellow traffic light'], correct: 1, exp: 'Flashing yellow at a school zone indicates an active school-zone period. Maine §2074 sets the school-zone speed at 15 mph during active periods such as recess, opening/closing windows, flashing signs, or locally designated times. Standard speed applies otherwise.', category: 'pedestrian' },
+    { q: 'A flashing yellow light at a school zone means:', a: ['Stop and wait until the light stops flashing before driving on through the zone', 'Slow down — the active school-zone speed limit (15 mph in Maine) is in effect', 'School is closed and the zone does not apply', 'The same as any regular yellow traffic light'], correct: 1, exp: 'Flashing yellow at a school zone indicates an active school-zone period. Maine §2074 sets the school-zone speed at 15 mph during active periods such as recess, opening/closing windows, flashing signs, or locally designated times. Standard speed applies otherwise.', category: 'pedestrian' },
     { q: 'A pedestrian carrying a white cane (sometimes with a red tip) is signaling:', a: ['A volunteer helping out at the crosswalk during school hours', 'Visual impairment — yield, stop as needed, and give room', 'A construction worker directing traffic', 'A tour guide leading a walking group'], correct: 1, exp: 'A white or metallic cane, with or without a red tip, or a guide/personal care dog indicates a visually impaired pedestrian. Maine §2056 requires drivers to yield; failure is a traffic infraction with a $50-$1,000 fine. Stop as needed and avoid honking unless necessary to prevent an immediate collision.', category: 'pedestrian' },
     { q: 'A car ahead of you stops at a marked crosswalk for a pedestrian. You should:', a: ['Pass them in the next lane so that traffic keeps moving', 'STOP — never pass a vehicle stopped at a crosswalk; the pedestrian may be hidden by the stopped vehicle', 'Sound the horn to encourage the front car to move on', 'Pass them on the right, where the lane ahead looks clear, keeping your speed down in case the pedestrian steps out'], correct: 1, exp: 'A stopped car at a crosswalk is the most dangerous moment — the pedestrian is hidden from your view. Stop and wait. Pass-through-pedestrian crashes are often fatal.', category: 'pedestrian' },
     { q: 'A school bus stop on a 2-lane neighborhood street: where do children most often appear from?', a: ['From the front of the bus only, never behind', 'BOTH the front (crossing the street) AND the rear (running to catch the bus)', 'Only after the bus has pulled away again', 'Only from marked and designated waiting zones, where the driver can see them clearly'], correct: 1, exp: 'Children dart from in front (crossing) and behind (running for bus). Stay stopped and scan in all directions. Never resume driving until the bus retracts the stop arm AND lights stop flashing.', category: 'pedestrian' },
@@ -731,9 +740,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // ── Maine GDL specifics ──
     { q: 'Maine intermediate license curfew is in effect:', a: ['From 10 PM until 5 AM every night', 'Midnight - 5 AM during the 270-day intermediate restriction period', 'There is no curfew for intermediate drivers', 'From 8 PM until 6 AM on every night of the week for the whole first year'], correct: 1, exp: 'Maine intermediate license: no driving between midnight and 5 AM during the 270-day restriction period. Violating a restriction can extend the restrictions another 270 days, trigger a $250-$500 fine, and suspend the license.', category: 'gdl' },
-    { q: 'During Maine\'s 270-day intermediate restriction period, the driver may:', a: ['Carry any number of passengers at any time of day, as long as every one of them is wearing a seat belt', 'Carry immediate family, or other passengers only with a qualifying licensed operator present', 'Carry passengers only if every one of them is over 18', 'Not drive at all until the restriction period has ended'], correct: 1, exp: 'Maine intermediate: passengers other than immediate family require a licensed operator who is at least 20, has held a license at least 2 years, and sits beside the driver. Restrictions can extend if violated.', category: 'gdl' },
+    { q: 'During Maine\'s 270-day intermediate restriction period, the driver may:', a: ['Carry any number of passengers at any time of day, as long as every one of them is wearing a seat belt', 'Carry immediate family, or other passengers only with a qualifying licensed operator present', 'Carry only adult passengers over the age of 18', 'Not drive at all until the restriction period ends'], correct: 1, exp: 'Maine intermediate: passengers other than immediate family require a licensed operator who is at least 20, has held a license at least 2 years, and sits beside the driver. Restrictions can extend if violated.', category: 'gdl' },
     { q: 'A Maine driver\'s ed program for teens requires approximately:', a: ['No formal requirement at all beyond passing the road test and the written knowledge exam at the BMV', '30 hours of classroom + 10 hours behind-the-wheel instruction with a licensed instructor', 'About 5 hours of combined instruction in total', 'A full 100 hours of combined instruction in total'], correct: 1, exp: 'Maine driver\'s ed: 30 hours classroom and 10 hours behind-the-wheel (split over multiple sessions) with a state-licensed instructor. Required to get a permit before age 18.', category: 'gdl' },
-    { q: 'A Maine intermediate driver violates the passenger, curfew, or mobile-device restriction. The restriction period:', a: ['Runs on unchanged; the violation does not affect it', 'Is extended by another 270 days and can include fines/suspension', 'Means a permanent licence suspension and a new road test before it is reinstated', 'Results in a written warning and nothing further'], correct: 1, exp: 'A violation of the intermediate-license restrictions extends the restriction period another 270 days. Maine also sets a $250-$500 fine and license suspensions for violations.', category: 'gdl' },
+    { q: 'A Maine intermediate driver violates the passenger, curfew, or mobile-device restriction. The restriction period:', a: ['Is unaffected by any such violation', 'Is extended by another 270 days and can include fines/suspension', 'Means a permanent licence suspension and a new road test before it is reinstated', 'Results in a written warning only'], correct: 1, exp: 'A violation of the intermediate-license restrictions extends the restriction period another 270 days. Maine also sets a $250-$500 fine and license suspensions for violations.', category: 'gdl' },
     { q: 'Who can supervise a Maine learner\'s permit holder during practice driving?', a: ['Anyone who currently holds a driver licence', 'A licensed driver age 20+ with at least 2 years of licensed driving experience', 'Only a parent or a legal guardian may do it', 'Only a paid, state-certified driving instructor riding in the front passenger seat'], correct: 1, exp: 'Maine permit supervisor: licensed driver age 20+ with 2+ years of licensed experience. Common supervisors are parents, but other family or qualified adults work. They sit in the front passenger seat.', category: 'gdl' },
 
     // ── Signs (extra coverage) ──
@@ -1372,12 +1381,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     };
   }
 
+  var ROAD_TEST_MIN_DISTANCE_METERS = 300;
+
   function rrSessionEvidence(stats, elapsedSec, options) {
     stats = stats || {};
     options = options || {};
     var durationSec = Math.max(0, Number(elapsedSec) || 0);
     var distanceMeters = Math.max(0, Number(stats.distance) || 0);
-    var qualifying = durationSec >= 60 && distanceMeters >= 300;
+    var qualifying = durationSec >= 60 && distanceMeters >= ROAD_TEST_MIN_DISTANCE_METERS;
     if (options.missionReady) qualifying = true;
     var missionEvaluated = typeof options.missionPassed === 'boolean';
     return {
@@ -1402,10 +1413,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var safety = Math.max(0, Math.min(100, Number(stats.safetyScore) || 0));
     var eco = Math.max(0, Math.min(100, Number(stats.efficiencyScore) || 0));
     var weighted = Math.round(safety * 0.8 + eco * 0.2);
-    var crashes = Math.max(0, Number(stats.crashes) || 0);
+    var crashes = Math.max(0, (Number(stats.crashes) || 0) - (Number(stats.aiCausedCrashes) || 0));
     var major = Math.max(0, Number(stats.majorViolations) || 0);
     var vulnerableStrike = Math.max(0, Number(stats.childStrike) || 0);
-    var critical = crashes > 0 || major > 0 || vulnerableStrike > 0;
+    var wrongSide = Math.max(0, Number(stats.wrongSideViolations) || 0);
+    var critical = crashes > 0 || major > 0 || vulnerableStrike > 0 || wrongSide > 0;
     if (critical) weighted = Math.min(weighted, vulnerableStrike > 0 ? 49 : 64);
     if (!evidence.qualifying) {
       if (critical) {
@@ -1491,12 +1503,299 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (!isFinite(liveSimTime)) return 0;
     return Math.max(0, liveSimTime - state.startedAtSim);
   }
-  function shouldHoldStartupWorld(seatbeltFastened, simTime, graceUntil, gear) {
+  function startupSequenceActive(seatbeltFastened, simTime, graceUntil) {
     var liveSimTime = Number(simTime);
     var scanEndsAt = Number(graceUntil);
-    var startupActive = !seatbeltFastened ||
+    return !seatbeltFastened ||
       (isFinite(liveSimTime) && isFinite(scanEndsAt) && liveSimTime < scanEndsAt);
-    return startupActive && gear === 'P';
+  }
+  function startupMovementInputActive(throttle, brake, steerLeft, steerRight, gamepadSteer) {
+    return Math.max(0, Number(throttle) || 0) > 0.05 ||
+      Math.max(0, Number(brake) || 0) > 0.05 ||
+      Math.max(0, Number(steerLeft) || 0) > 0.05 ||
+      Math.max(0, Number(steerRight) || 0) > 0.05 ||
+      Math.abs(Number(gamepadSteer) || 0) > 0.1;
+  }
+  function clearDrivingMovementInputs(keys) {
+    var source = keys || {};
+    var cleared = {};
+    // Preserve physical-button edge latches so a held Start/A/D-pad button
+    // cannot fire again merely because pause cleared the movement controls.
+    ['_gpA', '_gpB', '_gpX', '_gpY', '_gpStart', '_gpUp', '_gpDown',
+     '_gpLeft', '_gpRight', '_gpLB', '_gpRB'].forEach(function(key) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) cleared[key] = !!source[key];
+    });
+    cleared._gpSteer = 0;
+    cleared._gpThrottle = 0;
+    cleared._gpBrake = 0;
+    return cleared;
+  }
+  function longitudinalNetForce(thrustForce, resistanceForce, speedMps, gradeForce) {
+    var speed = Number(speedMps) || 0;
+    var resistance = Math.max(0, Number(resistanceForce) || 0);
+    var unopposedForce = (Number(thrustForce) || 0) - (Number(gradeForce) || 0);
+    if (Math.abs(speed) <= 0.01) {
+      if (Math.abs(unopposedForce) <= resistance) return 0;
+      return unopposedForce - resistance * (unopposedForce > 0 ? 1 : -1);
+    }
+    return unopposedForce - resistance * (speed > 0 ? 1 : -1);
+  }
+  function vulnerableRoadUserImpactAttribution(playerSpeed, roadUserSpeed) {
+    var learnerMoving = Math.abs(Number(playerSpeed) || 0) > 0.5;
+    var roadUserMoving = Math.abs(Number(roadUserSpeed) || 0) > 0.5;
+    if (learnerMoving) return 'learner';
+    if (roadUserMoving) return 'road_user';
+    return 'none';
+  }
+  function roadUserImpactClosingState(player, roadUser) {
+    if (!player || !roadUser) {
+      return { attribution: 'none', closingSpeed: 0,
+        playerClosing: 0, roadUserClosing: 0 };
+    }
+    var dx = Number(roadUser.x) - Number(player.x);
+    var dy = Number(roadUser.y) - Number(player.y);
+    var distance = Math.hypot(dx, dy);
+    var playerHeading = Number(player.heading) || 0;
+    var roadUserHeading = Number(roadUser.heading) || 0;
+    var playerVelocityX = Math.cos(playerHeading) * (Number(player.speed) || 0);
+    var playerVelocityY = Math.sin(playerHeading) * (Number(player.speed) || 0);
+    var roadUserVelocityX = Math.cos(roadUserHeading) * (Number(roadUser.speed) || 0);
+    var roadUserVelocityY = Math.sin(roadUserHeading) * (Number(roadUser.speed) || 0);
+    if (!(distance > 0.001) || !isFinite(distance)) {
+      return {
+        attribution: vulnerableRoadUserImpactAttribution(
+          player.speed, roadUser.speed),
+        closingSpeed: Math.hypot(playerVelocityX - roadUserVelocityX,
+          playerVelocityY - roadUserVelocityY),
+        playerClosing: 0, roadUserClosing: 0
+      };
+    }
+    var towardRoadUserX = dx / distance;
+    var towardRoadUserY = dy / distance;
+    var playerClosing = playerVelocityX * towardRoadUserX +
+      playerVelocityY * towardRoadUserY;
+    var roadUserClosing = -(roadUserVelocityX * towardRoadUserX +
+      roadUserVelocityY * towardRoadUserY);
+    var closingSpeed = Math.max(0, playerClosing + roadUserClosing);
+    var attribution = 'none';
+    // Attribute by motion toward the contact point, not by an arbitrary total
+    // speed threshold. A slow learner moving away can still be rear-ended by a
+    // faster rider without suddenly becoming at fault at 0.51 m/s.
+    if (closingSpeed > 0.05) {
+      if (playerClosing > 0.25) attribution = 'learner';
+      else if (roadUserClosing > 0.25) attribution = 'road_user';
+    }
+    return { attribution: attribution, closingSpeed: closingSpeed,
+      playerClosing: playerClosing, roadUserClosing: roadUserClosing };
+  }
+  function movingRoadUserBlockedByStoppedVehicle(playerSpeed, roadUserSpeed,
+      overlaps, stoppedThreshold) {
+    var threshold = Math.max(0, Number(stoppedThreshold));
+    if (!isFinite(threshold)) threshold = 0.5;
+    return !!overlaps &&
+      Math.abs(Number(playerSpeed) || 0) <= threshold &&
+      Math.abs(Number(roadUserSpeed) || 0) > 0.01;
+  }
+  function vulnerableRoadUserStartupClearance(roadUserType, closing) {
+    // World units are meters here. Motorcycles need more post-scan reaction
+    // distance, but remain inside the streamed-world recycling threshold.
+    if (!closing) return { radius: 8, push: 12 };
+    return roadUserType === 'motorcycle'
+      ? { radius: 50, push: 52 }
+      : { radius: 30, push: 35 };
+  }
+  function vulnerableRoadUserClosingRespawnMin(roadUser, playerVehicleId, maxDistance) {
+    var respawnMax = Math.max(18, Number(maxDistance) || 18);
+    var playerLength = vehicleFootprint(playerVehicleId).length;
+    var riderLength = vulnerableRoadUserFootprint(roadUser).length;
+    var reactionDistance = Math.abs(Number(roadUser && roadUser.speed) || 0) * 1.5;
+    var bodyClearance = (playerLength + riderLength) * 0.5;
+    return Math.min(respawnMax,
+      Math.max(18, reactionDistance + bodyClearance + 1.5));
+  }
+  function vulnerableRoadUserFollowingControl(forwardGap, lateralGap,
+      playerSpeed, headingAlignment, roadUserCruise, playerLength,
+      roadUserLength, playerWidth, roadUserWidth, roadUserType, timeStep) {
+    var cruise = Math.max(0, Number(roadUserCruise) || 0);
+    var learnerSpeed = Number(playerSpeed) || 0;
+    var alignment = Math.max(-1, Math.min(1, Number(headingAlignment) || 0));
+    var sameFlow = alignment > 0.5 && learnerSpeed >= -0.25;
+    // A rider should follow a vehicle moving with them and must not drive into
+    // a stationary/just-starting vehicle from either direction. A learner who
+    // is already driving toward an oncoming rider remains responsible for
+    // avoiding that conflict; this controller does not erase that lesson.
+    var slowObstacle = Math.abs(learnerSpeed) <= 1.5;
+    var leadForwardSpeed = Math.max(0, learnerSpeed * alignment);
+    var step = Math.max(0, Math.min(0.2, Number(timeStep) || 0));
+    var integrationBuffer = Math.max(0, cruise - leadForwardSpeed) * step;
+    var standstillGap = roadUserType === 'motorcycle' ? 1.5 : 1.0;
+    var holdGap = Math.max(0,
+      (Number(playerLength) || 4.5) * 0.5 +
+      (Number(roadUserLength) || 1.85) * 0.5 + standstillGap + integrationBuffer);
+    var corridorClearance = Math.max(0,
+      (Number(playerWidth) || 1.8) * 0.5 +
+      (Number(roadUserWidth) || 0.68) * 0.5 + 0.15);
+    var following = Number(forwardGap) > 0 &&
+      Math.abs(Number(lateralGap) || 0) < corridorClearance &&
+      (sameFlow || slowObstacle);
+    if (!following) {
+      return {
+        targetSpeed: cruise, holdGap: holdGap,
+        corridorClearance: corridorClearance,
+        following: false, braking: false
+      };
+    }
+    var usableGap = Math.max(0, Number(forwardGap) - holdGap);
+    var targetSpeed = Math.min(cruise,
+      Math.sqrt(leadForwardSpeed * leadForwardSpeed + 2 * 5.5 * usableGap));
+    return {
+      targetSpeed: targetSpeed, holdGap: holdGap,
+      corridorClearance: corridorClearance,
+      following: true, braking: targetSpeed < cruise - 0.05
+    };
+  }
+  function trafficFollowingControl(forwardGap, lateralGap, leadForwardSpeed,
+      followerCruise, leadLength, followerLength, leadWidth, followerWidth,
+      timeStep) {
+    var cruise = Math.max(0, Number(followerCruise) || 0);
+    var leadSpeed = Math.max(0, Number(leadForwardSpeed) || 0);
+    var step = Math.max(0, Math.min(0.2, Number(timeStep) || 0));
+    var integrationBuffer = Math.max(0, cruise - leadSpeed) * step;
+    var holdGap = Math.max(0,
+      (Number(leadLength) || 4.5) * 0.5 +
+      (Number(followerLength) || 4.5) * 0.5 + 1.5 + integrationBuffer);
+    var corridorClearance = Math.max(0,
+      (Number(leadWidth) || 1.8) * 0.5 +
+      (Number(followerWidth) || 1.8) * 0.5 + 0.25);
+    var following = Number(forwardGap) > 0 &&
+      Math.abs(Number(lateralGap) || 0) < corridorClearance;
+    if (!following) {
+      return { targetSpeed: cruise, holdGap: holdGap,
+        corridorClearance: corridorClearance,
+        following: false, braking: false };
+    }
+    var usableGap = Math.max(0, Number(forwardGap) - holdGap);
+    var brakingCap = Math.sqrt(
+      leadSpeed * leadSpeed + 2 * 5.5 * usableGap);
+    // A 1.5-second closing headway begins a natural slowdown before the
+    // last-moment AEB zone, while the kinematic cap guarantees body clearance.
+    var headwayCap = leadSpeed + usableGap / 1.5;
+    var targetSpeed = Math.min(cruise, brakingCap, headwayCap);
+    return { targetSpeed: targetSpeed, holdGap: holdGap,
+      corridorClearance: corridorClearance,
+      following: true, braking: targetSpeed < cruise - 0.05 };
+  }
+  function emergencyFollowingControl(roadAhead, roadLateral, playerSpeed,
+      responderSpeed, playerLength, responderLength, playerWidth, responderWidth,
+      timeStep) {
+    var cruise = Math.max(0, Number(responderSpeed) || 0);
+    var leadSpeed = Math.max(0, Number(playerSpeed) || 0);
+    var reactionStep = Math.max(0, Math.min(0.2, Number(timeStep) || 0));
+    var integrationBuffer = Math.max(0, cruise - leadSpeed) * reactionStep;
+    var holdGap = Math.max(0,
+      (Number(playerLength) || 4.5) * 0.5 +
+      (Number(responderLength) || 4.5) * 0.5 + 0.75 + integrationBuffer);
+    var passClearance = Math.max(0,
+      (Number(playerWidth) || 1.8) * 0.5 +
+      (Number(responderWidth) || 1.8) * 0.5 + 0.2);
+    // Once the responder is ahead or there is full body-to-body lateral
+    // clearance, following control releases and the responder may pass.
+    if (Number(roadAhead) >= 0 ||
+        Math.abs(Number(roadLateral) || 0) >= passClearance) {
+      return {
+        targetSpeed: cruise, holdGap: holdGap,
+        passClearance: passClearance, following: false, braking: false
+      };
+    }
+    var usableGap = Math.max(0, -Number(roadAhead) - holdGap);
+    // Constant-deceleration cap. Including the learner's forward speed lets
+    // the responder safely follow a moving vehicle instead of treating it as
+    // an obstacle only after it stops. Negative speed means reversing toward
+    // the responder and therefore contributes no forward lead speed.
+    var targetSpeed = Math.min(cruise,
+      Math.sqrt(leadSpeed * leadSpeed + 2 * 6.5 * usableGap));
+    return {
+      targetSpeed: targetSpeed, holdGap: holdGap,
+      passClearance: passClearance, following: true,
+      braking: targetSpeed < cruise - 0.05
+    };
+  }
+  function emergencyPullOverAssessment(profileOrChunk, travelSign,
+      initialLaneOffset, playerLateral, playerSpeed) {
+    var direction = Number(travelSign) < 0 ? -1 : 1;
+    var layout = roadLayoutFor(profileOrChunk || {});
+    var lateral = Number(playerLateral) || 0;
+    var laneStart = Number(initialLaneOffset);
+    if (!isFinite(laneStart)) {
+      laneStart = nearestAuthoredTrafficLaneOffset(
+        profileOrChunk || {}, direction, lateral);
+    }
+    var shoulderTarget = trafficRightShoulderOffset(
+      profileOrChunk || {}, direction);
+    var shoulderDelta = shoulderTarget - laneStart;
+    var rightSign = shoulderDelta < 0 ? -1 : 1;
+    var rightwardProgress = (lateral - laneStart) * rightSign;
+    var requiredProgress = Math.max(0.8,
+      Math.min(Math.abs(shoulderDelta), Math.abs(shoulderDelta) * 0.65));
+    var reachedRoadEdge = Math.abs(lateral) >= layout.edgeLineOffset - 0.2;
+    var closeToShoulderTarget = Math.abs(lateral - shoulderTarget) <=
+      Math.max(1.0, layout.shoulderWidth + 0.35);
+    var pulledRight = shoulderDelta !== 0 && rightwardProgress >= requiredProgress &&
+      reachedRoadEdge && closeToShoulderTarget;
+    var stopped = Math.abs(Number(playerSpeed) || 0) <= 0.35;
+    return {
+      pulledRight: pulledRight,
+      stopped: stopped,
+      safe: pulledRight && stopped,
+      travelSign: direction,
+      laneStart: laneStart,
+      shoulderTarget: shoulderTarget,
+      rightSign: rightSign,
+      rightwardProgress: rightwardProgress,
+      requiredProgress: requiredProgress,
+      reachedRoadEdge: reachedRoadEdge
+    };
+  }
+  function roadTestOutcome(testState, stats, simTime) {
+    testState = testState || {};
+    stats = stats || {};
+    var requiredDurationSec = Math.max(1, Number(testState.durationSec) || 240);
+    var elapsedSec = evaluationElapsedSeconds(testState, simTime);
+    var score = Math.max(0, Math.min(100, Number(testState.score) || 0));
+    var distanceMeters = Math.max(0, Number(stats.distance) || 0);
+    var recordedCrashes = Math.max(0, Number(stats.crashes) || 0);
+    var aiCausedCrashes = Math.max(0, Number(stats.aiCausedCrashes) || 0);
+    var learnerFaultCrashes = Math.max(0, recordedCrashes - aiCausedCrashes);
+    var majorViolations = Math.max(0, Number(stats.majorViolations) || 0);
+    var vulnerableRoadUserStrikes = Math.max(0, Number(stats.childStrike) || 0);
+    var wrongSideViolations = Math.max(0, Number(stats.wrongSideViolations) || 0);
+    var completed = elapsedSec >= requiredDurationSec;
+    var evidenceMet = distanceMeters >= ROAD_TEST_MIN_DISTANCE_METERS;
+    var critical = learnerFaultCrashes > 0 || majorViolations > 0 ||
+      vulnerableRoadUserStrikes > 0 || wrongSideViolations > 0;
+    var reason = !completed ? 'duration' : !evidenceMet ? 'distance' :
+      critical ? 'critical' : score < 90 ? 'score' : 'passed';
+    return {
+      score: score,
+      passed: reason === 'passed',
+      completed: completed,
+      evidenceMet: evidenceMet,
+      critical: critical,
+      reason: reason,
+      elapsedSec: elapsedSec,
+      requiredDurationSec: requiredDurationSec,
+      distanceMeters: distanceMeters,
+      criticalEvents: {
+        learnerFaultCrashes: learnerFaultCrashes,
+        aiCausedCrashes: aiCausedCrashes,
+        majorViolations: majorViolations,
+        vulnerableRoadUserStrikes: vulnerableRoadUserStrikes,
+        wrongSideViolations: wrongSideViolations
+      }
+    };
+  }
+  function shouldHoldStartupWorld(seatbeltFastened, simTime, graceUntil, gear, requireNeutral) {
+    return gear === 'P' && (startupSequenceActive(seatbeltFastened, simTime, graceUntil) || !!requireNeutral);
   }
   function followingGapSeconds(distanceWorldUnits, speedMps) {
     if (!(speedMps > 0)) return Infinity;
@@ -1519,6 +1818,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
   function vehicleFootprint(type) {
     if (type === 'schoolbus' || type === 'school_bus' || type === 'bus') return { length: 10.0, width: 2.5 };
+    if (type === 'firetruck') return { length: 7.5, width: 2.4 };
     if (type === 'truck' || type === 'pickup') return { length: 5.5, width: 2.0 };
     if (type === 'van') return { length: 5.0, width: 2.0 };
     if (type === 'suv') return { length: 4.8, width: 1.9 };
@@ -1648,7 +1948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   }
 
   function emergencyVehicleFootprintType(kind) {
-    if (kind === 'firetruck') return 'truck';
+    if (kind === 'firetruck') return 'firetruck';
     if (kind === 'ambulance') return 'van';
     return 'car';
   }
@@ -4372,6 +4672,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     return Number(travelSign) < 0 ? magnitude : -magnitude;
   }
 
+  function vulnerableRoadUserLaneOffset(profileOrChunk, roadUserType,
+      travelSign, currentLateral) {
+    if (roadUserType !== 'motorcycle') {
+      return bicycleLaneOffsetFor(profileOrChunk, travelSign);
+    }
+    // Motorcycles are full traffic-lane vehicles. Sending them through the
+    // bicycle-lane target made them visibly drift across the white boundary.
+    return nearestAuthoredTrafficLaneOffset(
+      profileOrChunk || {}, travelSign, currentLateral);
+  }
+
   function alignCyclistsToStreamedWorld(world, cyclists) {
     if (!world || !world.spline) return cyclists || [];
     (cyclists || []).forEach(function(cyclist) {
@@ -4380,7 +4691,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var station = typeof cyclist._roadStation === 'number'
         ? cyclist._roadStation : cyclist.y;
       var profile = roadProfileAt(world, station, null);
-      cyclist._bikeLane = bicycleLaneOffsetFor(profile, direction);
+      var riderLocal = mainRoadLocalPoint(world, cyclist.x, cyclist.y);
+      cyclist._bikeLane = vulnerableRoadUserLaneOffset(
+        profile, cyclist.type, direction, riderLocal.lateral);
       var roadPoint = mainRoadWorldPoint(world, station, cyclist._bikeLane);
       cyclist.x = roadPoint.x;
       cyclist.y = roadPoint.y;
@@ -6890,6 +7203,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cyclistsRef: cyclistsRef,
             wildlifeRef: wildlifeRef,
             statsRef: statsRef,
+            eventToastRef: eventToastRef,
+            keysRef: keysRef,
             gearRef: gearRef,
             seatbeltRef: seatbeltRef,
             rideAlongRef: rideAlongRef,
@@ -7229,6 +7544,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       };
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
+      var gamepadNeedsNeutralRef = useRef(true);
       // Touch-device detection (computed once at mount). Used to hide the
       // on-screen throttle/brake/steering buttons on desktop, where they're
       // visual clutter — the keyboard handles all input. Touch-capable Surface
@@ -7378,7 +7694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Road Test Simulator: Maine BMV-style scored eval. 100 pts to start; deductions
       // for each violation. 90+ = pass. Tracks max speed, signal compliance, full stops,
       // lane keeping, following distance over a fixed-duration scored drive.
-      var roadTestRef = useRef({ active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240 });
+      var roadTestRef = useRef({ active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240, completedOutcome: null });
       var journalLog = function(kind, icon, text) {
         var j = journalRef.current;
         if (!j) return;
@@ -7390,7 +7706,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // Grace period: first few seconds after drive start. Shows a subtle
       // "check your mirrors first" banner + narration, and the spawn sanitization
       // keeps the driver's immediate vicinity clear of traffic.
-      var graceRef = useRef({ until: 0, mirrorCheckPrompted: false });
+      var graceRef = useRef({ until: 0, mirrorCheckPrompted: false, visible: false, requireNeutral: false });
       // Seatbelt state: must be fastened to start driving. Chime plays until buckled.
       // User presses B (or any movement key will also auto-buckle after first prompt).
       var seatbeltRef = useRef({ fastened: false, chimeOsc: null, chimeGain: null });
@@ -7411,10 +7727,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var togglePause = function(force) {
         var pNext = typeof force === 'boolean' ? force : !pausedRef.current;
         pausedRef.current = pNext;
-        // A pause is a safety boundary. Drop every held keyboard/touch input so
-        // resuming never reapplies stale throttle or steering from before the
-        // pause (keyup/touchend can be lost while an overlay is appearing).
-        if (pNext) keysRef.current = {};
+        // Pause and resume are both safety boundaries. Preserve gamepad button
+        // edge latches, but require a fresh neutral sample before analog motion
+        // can return; keyboard/touch keys likewise need a new press.
+        keysRef.current = clearDrivingMovementInputs(keysRef.current);
+        gamepadNeedsNeutralRef.current = true;
         setIsPaused(pNext);
       };
       // Once-per-second React clock for visible timed-evaluation cards. The
@@ -7428,6 +7745,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var turnSignalTuple = useState(0);
       var turnSignalUi = turnSignalTuple[0];
       var setTurnSignalUi = turnSignalTuple[1];
+      var driveGearUiTuple = useState('P');
+      var driveGearUi = driveGearUiTuple[0];
+      var setDriveGearUi = driveGearUiTuple[1];
       var cameraModeTuple = useState('cockpit');
       var cameraModeUi = cameraModeTuple[0];
       var setCameraModeUi = cameraModeTuple[1];
@@ -7470,11 +7790,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (announce) rrAnnounce('Ride-Along is managing the transmission.');
           return false;
         }
+        if (startupSequenceActive(seatbeltRef.current.fastened,
+            timeRef.current, graceRef.current.until) || graceRef.current.requireNeutral) {
+          if (announce) rrAnnounce('Finish the seatbelt and mirror check before shifting gear.');
+          return false;
+        }
         if (!canShiftDriveGear(carRef.current && carRef.current.speed)) {
           if (announce) rrAnnounce('Stop the vehicle completely before shifting gear.');
           return false;
         }
         gearRef.current = nextGear;
+        setDriveGearUi(nextGear);
         return true;
       };
       // Grace-banner mirror ("check your mirrors" card after buckling). Its old
@@ -7483,6 +7809,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var graceVisibleTuple = useState(false);
       var graceVisible = graceVisibleTuple[0];
       var setGraceVisible = graceVisibleTuple[1];
+      var startupReleasePendingTuple = useState(false);
+      var startupReleasePending = startupReleasePendingTuple[0];
+      var setStartupReleasePending = startupReleasePendingTuple[1];
+      // One buckle action serves keyboard/gamepad auto-buckle and the explicit
+      // touch control, preserving the same parked mirror-scan sequence.
+      var fastenSeatbelt = function() {
+        if (seatbeltRef.current.fastened) return false;
+        seatbeltRef.current.fastened = true;
+        setBeltFastened(true);
+        graceRef.current.until = timeRef.current + 4;
+        graceRef.current.mirrorCheckPrompted = false;
+        graceRef.current.visible = true;
+        setGraceVisible(true);
+        setStartupReleasePending(false);
+        var seatbeltScanMessage = 'Seatbelt fastened. Check the rearview, left, and right mirrors. Driving controls unlock after the four-second scan.';
+        addToast('🔔 Seatbelt fastened — check all three mirrors.');
+        rrAnnounce(seatbeltScanMessage);
+        speak(seatbeltScanMessage);
+        return true;
+      };
       // Animation-frame state lives in refs, while these mirrors update React
       // only for deliberate UI milestones and disclosure changes.
       var missionCompleteTuple = useState(null);
@@ -7653,7 +7999,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // moving while the learner is in another tab can manufacture a crash
         // they never had a chance to perceive or avoid.
         var pauseForInterruption = function() {
-          keysRef.current = {};
+          keysRef.current = clearDrivingMovementInputs(keysRef.current);
+          gamepadNeedsNeutralRef.current = true;
           if (!pausedRef.current && drivingRef.current) {
             togglePause(true);
             try {
@@ -7691,6 +8038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // A prior drive may have ended while a key or gamepad trigger was held.
         // Start every session neutral so stale input cannot move the next car.
         keysRef.current = {};
+        setDriveGearUi('P');
         // Shallow-clone so the Free Explore override block below (and any
         // other runtime mutations) don't leak into the SCENARIOS master
         // array. Previously `scn.time = fes.time` would mutate the source
@@ -7802,18 +8150,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // ── Grace period: first 4 seconds after drive start ──
         // Coach reminds the driver to check mirrors + settle in before pulling out.
         // This also pairs with the safe-spawn sanitization above.
-        graceRef.current = { until: 4, mirrorCheckPrompted: false };
+        graceRef.current = { until: 0, mirrorCheckPrompted: false, visible: false, requireNeutral: false };
+        setGraceVisible(false);
+        setStartupReleasePending(false);
         // ── Seatbelt startup sequence ──
         // Unbuckled on start. Plays 2-second chime loop every 4s until fastened.
         // Scenarios that auto-bypass this: parking (top-down, no real car), 3-point, backingDrill.
         var autoBelt = rideAlongActive ||
           ['parking', 'threePoint', 'backingDrill'].indexOf(scn.id) !== -1;
+        var autoBeltSafetyScan = rideAlongActive;
+        if (autoBeltSafetyScan) {
+          graceRef.current.until = 4;
+          graceRef.current.visible = true;
+        }
         seatbeltRef.current = { fastened: autoBelt, chimeOsc: null, chimeGain: null, startedAt: Date.now() };
         setBeltFastened(!!autoBelt); // reset the UI mirror whenever driving starts
         // Auto-belted scenarios skip the fasten branch in the sim loop, so show
         // the mirror-check grace banner from here instead.
-        setGraceVisible(!!autoBelt);
-        if (autoBelt) safeTimeout(function() { setGraceVisible(false); }, 4200);
+        setGraceVisible(autoBeltSafetyScan);
         if (!autoBelt) {
           safeTimeout(function() {
             if (!seatbeltRef.current.fastened) {
@@ -7975,7 +8329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // ── SAFE-START sanitization ──
         // Clear a 20-cell bubble around the player so you never spawn into an active crash.
         // Traffic in the danger zone gets teleported to a safe distance (preserving lane offset).
-        // Peds/cyclists within 6 cells also get pushed away to avoid instant collisions.
+        // Pedestrians and riders also get their own safe post-scan clearance.
         var DANGER_R = 20; // cells ahead OR behind in same direction
         var safeStartWorld = infiniteWorldRef.current && infiniteWorldRef.current.spline
           ? infiniteWorldRef.current : null;
@@ -8085,7 +8439,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             t.x = Math.random() < 0.5 ? 3 : MAP_SIZE - 3;
           }
         });
-        // Peds and cyclists: push away if within 6 cells of the player.
+        // Pedestrians: keep the authored path but prevent an immediate overlap.
         (pedsRef.current || []).forEach(function(p) {
           var dd = safeStartWorld
             ? Math.hypot(safeStartState(p).station - safeStartPlayerStation,
@@ -8095,14 +8449,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             safeStartPushActor(p, 6, 20);
           }
         });
+        // Riders are frozen during the safety scan. Once it ends, leave enough
+        // room for the learner to see and react—especially at motorcycle speed.
         (cyclistsRef.current || []).forEach(function(cy) {
-          var dd = safeStartWorld
-            ? Math.hypot(safeStartState(cy).station - safeStartPlayerStation,
-              safeStartState(cy).lateral - safeStartPlayerLateral)
-            : Math.hypot(cy.x - startX, cy.y - playerStartWorldY);
-          if (dd < 10) {
-            safeStartPushActor(cy, 10, 25);
-          }
+          var riderState = safeStartState(cy);
+          var riderStationDelta = riderState.station - safeStartPlayerStation;
+          var riderClosing = riderStationDelta * riderState.direction <= 0;
+          var riderClearance = vulnerableRoadUserStartupClearance(cy.type, riderClosing);
+          safeStartPushActor(cy, riderClearance.radius, riderClearance.push);
         });
         statsRef.current = { startTime: Date.now(), simTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, absSeconds: 0, hydroplaneSeconds: 0, cyclistClose: 0, laneChanges: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, majorViolations: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
         missionRef.current = (!d.freeExplore && d.roadTestStage !== 'drive' && !d.parentRideMode)
@@ -8122,10 +8476,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         };
         // Road Test Simulator: arm scoring when entering the driving phase.
         if (d.roadTestStage === 'drive') {
-          roadTestRef.current = { active: true, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240, lastSampleT: null };
+          roadTestRef.current = { active: true, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240, lastSampleT: null, completedOutcome: null };
           journalLog('roadtest', '🪪', 'Road Test driving phase started');
         } else {
-          roadTestRef.current = { active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240 };
+          roadTestRef.current = { active: false, deductions: [], score: 100, startedAt: null, startedAtSim: null, durationSec: 240, completedOutcome: null };
         }
         // Parent Ride Check: reset eval state when this mode is engaged.
         if (d.parentRideMode) {
@@ -8241,7 +8595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         emergencyRef.current = null;
         lastStateRef.current = { speed: 0, accel: 0 };
         timeRef.current = 0;
-        if (autoBelt) startFormalEvaluationClocks();
+        if (autoBelt && !autoBeltSafetyScan) startFormalEvaluationClocks();
         driveUiSecondRef.current = -1;
         setDriveUiSeconds(0);
         setDriveControlsOpen(false);
@@ -8343,27 +8697,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var avgMPG = s.mpgSamples > 0 ? (s.mpgSum / s.mpgSamples) : 0;
         // Seal the road test result if the exam was running.
         if (liveData.roadTestStage === 'drive') {
-          var rtElapsed = evaluationElapsedSeconds(roadTestRef.current, timeRef.current);
-          var rtCompleted = rtElapsed >= (roadTestRef.current.durationSec || 240);
-          var rtFinalScore = Math.max(0, roadTestRef.current.score);
-          var rtPassed = rtCompleted && rtFinalScore >= 90;
+          var rtOutcome = roadTestRef.current.completedOutcome ||
+            roadTestOutcome(roadTestRef.current, s, timeRef.current);
+          var rtDeductions = rtOutcome.deductions || roadTestRef.current.deductions.slice();
           var rtReport = {
-            score: rtFinalScore,
-            passed: rtPassed,
-            completed: rtCompleted,
-            deductions: roadTestRef.current.deductions.slice(),
+            score: rtOutcome.score,
+            passed: rtOutcome.passed,
+            completed: rtOutcome.completed,
+            evidenceMet: rtOutcome.evidenceMet,
+            critical: rtOutcome.critical,
+            reason: rtOutcome.reason,
+            distanceMeters: rtOutcome.distanceMeters,
+            criticalEvents: rtOutcome.criticalEvents,
+            deductions: rtDeductions,
             scenario: exitScenario.name,
-            durationSec: Math.min(roadTestRef.current.durationSec || rtElapsed, Math.round(rtElapsed)),
+            durationSec: Math.min(rtOutcome.requiredDurationSec, Math.floor(rtOutcome.elapsedSec)),
             startedAt: roadTestRef.current.startedAt,
-            endedAt: Date.now()
+            endedAt: rtOutcome.completedAt || Date.now()
           };
           updMulti({ lastRoadTest: rtReport, roadTestStage: 'result', view: 'roadTestResult' });
           roadTestRef.current.active = false;
-          if (rtPassed) {
+          if (rtOutcome.passed) {
             var rtBadges = Object.assign({}, liveData.badges || {});
             if (!rtBadges.road_test_pass) { rtBadges.road_test_pass = true; upd('badges', rtBadges); }
           }
-          journalLog('roadtest_done', rtPassed ? '🪪' : '❌', 'Road test ' + (rtPassed ? 'PASSED' : 'failed') + ' — score ' + rtFinalScore);
+          journalLog('roadtest_done', rtOutcome.passed ? '🪪' : '❌', 'Road test ' + (rtOutcome.passed ? 'PASSED' : 'failed') + ' — score ' + rtOutcome.score);
         }
         // Emergency Drill is a one-drive mode. The flag lives in persisted tool
         // state; without this reset a single drill tap left every later drive —
@@ -8507,7 +8865,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // overrides a safety-critical outcome.
         var newBadges = Object.assign({}, liveData.badges || {}, lBadges || {});
         delete newBadges.speed_demon;
-        if (rtPassed) newBadges.road_test_pass = true;
+        if (rtOutcome && rtOutcome.passed) newBadges.road_test_pass = true;
         rrDriveAchievementIds(s, {
           evidence: evidence,
           elapsedSec: elapsedSec,
@@ -8586,20 +8944,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var buttons = gp.buttons;
             var k = keysRef.current;
             var gpRideAlongLocked = rideAlongControlsLocked();
-            // Steering from left stick X (axis 0) — analog!
-            if (!gpRideAlongLocked && Math.abs(axes[0]) > 0.1) {
-              k._gpSteer = axes[0]; // -1 to 1 analog value
-            } else {
-              k._gpSteer = 0;
-            }
+            var rawGpSteer = Number(axes[0]) || 0;
             // Throttle from right trigger
-            var rtVal = buttons[7] ? buttons[7].value : 0;
+            var rtVal = buttons[7] ? Number(buttons[7].value) || 0 : 0;
             if (axes.length > 5 && axes[5] > 0) rtVal = Math.max(rtVal, (axes[5] + 1) / 2);
-            k._gpThrottle = gpRideAlongLocked ? 0 : rtVal;
             // Brake from left trigger
-            var ltVal = buttons[6] ? buttons[6].value : 0;
+            var ltVal = buttons[6] ? Number(buttons[6].value) || 0 : 0;
             if (axes.length > 4 && axes[4] > 0) ltVal = Math.max(ltVal, (axes[4] + 1) / 2);
-            k._gpBrake = gpRideAlongLocked ? 0 : ltVal;
+            var gpMovementHeld = startupMovementInputActive(rtVal, ltVal, 0, 0, rawGpSteer);
+            var gpRearmBlocked = gamepadNeedsNeutralRef.current;
+            if (gpRearmBlocked && !gpMovementHeld) {
+              gamepadNeedsNeutralRef.current = false;
+              gpRearmBlocked = false;
+            }
+            var gpMovementLocked = gpRideAlongLocked || pausedRef.current || gpRearmBlocked;
+            // Steering from left stick X (axis 0) — analog. Pause/resume and
+            // hot-plug boundaries require a neutral sample before motion returns.
+            k._gpSteer = !gpMovementLocked && Math.abs(rawGpSteer) > 0.1 ? rawGpSteer : 0;
+            k._gpThrottle = gpMovementLocked ? 0 : rtVal;
+            k._gpBrake = gpMovementLocked ? 0 : ltVal;
             // Buttons (edge-triggered)
             if (buttons[0] && buttons[0].pressed && !k._gpA) { k._gpA = true; if (!gpRideAlongLocked) playHorn(0.35); }
             else if (!buttons[0] || !buttons[0].pressed) k._gpA = false;
@@ -8634,6 +8997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // held at disconnect kept the car accelerating with no way to stop
           // it from the keyboard.
           if (!gpFound) {
+            gamepadNeedsNeutralRef.current = true;
             var kGone = keysRef.current;
             if (kGone._gpSteer || kGone._gpThrottle || kGone._gpBrake) {
               kGone._gpSteer = 0; kGone._gpThrottle = 0; kGone._gpBrake = 0;
@@ -8688,7 +9052,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Shifting out of Park deliberately releases the road immediately.
             var holdStartupWorld = shouldHoldStartupWorld(
               seatbeltRef.current.fastened, timeRef.current,
-              graceRef.current.until, gearRef.current);
+              graceRef.current.until, gearRef.current,
+              graceRef.current.requireNeutral);
             if (!holdStartupWorld) {
               updateSignals(signalsRef.current, dt);
               updateTraffic(dt);
@@ -9383,6 +9748,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Auto-end after the full evaluated interval. Setup and time spent
               // unbelted are deliberately excluded from the scored clock.
               if (roadTestElapsed >= roadTestRef.current.durationSec) {
+                roadTestRef.current.completedOutcome = Object.assign(
+                  roadTestOutcome(roadTestRef.current, statsRef.current, timeRef.current),
+                  {
+                    deductions: roadTestRef.current.deductions.slice(),
+                    completedAt: Date.now()
+                  }
+                );
                 roadTestRef.current.active = false;
                 addToast('🪪 Road Test complete. Tap End Drive for results.');
                 speak('Road test complete. Tap end drive for your results.');
@@ -9596,8 +9968,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var gpThrottle = k._gpThrottle || 0;
           var gpBrake = k._gpBrake || 0;
           var gpSteer = k._gpSteer || 0;
-          // Auto-shift to D on first throttle if in P
-          if (gear === 'P' && ((k['w'] || k['arrowup']) || gpThrottle > 0.1)) gearRef.current = gear = 'D';
           // Blend keyboard (binary 0/1) with gamepad (analog 0-1)
           var throttleInput = Math.max((k['w'] || k['arrowup']) ? 1 : 0, gpThrottle);
           var brakeInput = Math.max((k['s'] || k['arrowdown']) ? 1 : 0, gpBrake);
@@ -9606,18 +9976,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // ── Seatbelt lock: no throttle until fastened ──
           // Touching W/↑/B/any movement key after the prompt also auto-buckles you.
           if (!seatbeltRef.current.fastened) {
-            if (throttleInput > 0 || brakeInput > 0 || k['b']) {
-              seatbeltRef.current.fastened = true;
-              setBeltFastened(true); // sync React state so the prompt disappears
-              startFormalEvaluationClocks();
-              graceRef.current.until = timeRef.current + 4;
-              graceRef.current.mirrorCheckPrompted = false;
-              // Show the mirror-check grace banner for ~4s, with its own timed
-              // dismissal (safeTimeout is cancelled on drive exit).
-              setGraceVisible(true);
-              safeTimeout(function() { setGraceVisible(false); }, 4200);
-              addToast('🔔 Seatbelt fastened. Drive safe.');
-              speak('Seatbelt fastened.');
+            if (throttleInput > 0 || brakeInput > 0 || steerLeft > 0 ||
+                steerRight > 0 || Math.abs(gpSteer) > 0.1 || k['b']) {
+              fastenSeatbelt();
             } else {
               // Keep the car parked until buckled. Also play a quiet periodic chime.
               throttleInput = 0;
@@ -9640,6 +10001,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     chime.start(); chime.stop(sbAc.currentTime + 0.35);
                   }
                 } catch (_) {}
+              }
+            }
+          }
+          // The four-second scan is an actual parked pre-drive check. Consume
+          // every movement input until it is complete so W/Up cannot buckle,
+          // auto-shift, and launch the car in the same gesture.
+          var startupMovementHeld = startupMovementInputActive(
+            throttleInput, brakeInput, steerLeft, steerRight, gpSteer);
+          var startupControlsLocked = startupSequenceActive(
+            seatbeltRef.current.fastened, timeRef.current, graceRef.current.until);
+          if (startupControlsLocked) {
+            if (!rideAlongRef.current && startupMovementHeld && !graceRef.current.requireNeutral) {
+              graceRef.current.requireNeutral = true;
+              setStartupReleasePending(true);
+            }
+            throttleInput = 0;
+            brakeInput = 0;
+            steerLeft = 0;
+            steerRight = 0;
+            gpSteer = 0;
+            if (gear !== 'P') {
+              gearRef.current = gear = 'P';
+              setDriveGearUi('P');
+            }
+          } else {
+            if (graceRef.current.visible) {
+              graceRef.current.visible = false;
+              setGraceVisible(false);
+            }
+            if (graceRef.current.requireNeutral) {
+              if (startupMovementHeld) {
+                throttleInput = 0;
+                brakeInput = 0;
+                steerLeft = 0;
+                steerRight = 0;
+                gpSteer = 0;
+                if (gear !== 'P') {
+                  gearRef.current = gear = 'P';
+                  setDriveGearUi('P');
+                }
+              } else {
+                graceRef.current.requireNeutral = false;
+                setStartupReleasePending(false);
+                startFormalEvaluationClocks();
+              }
+            } else {
+              startFormalEvaluationClocks();
+              if (gear === 'P' && throttleInput > 0) {
+                gearRef.current = gear = 'D';
+                setDriveGearUi('D');
               }
             }
           }
@@ -9960,7 +10371,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
 
             // Stay in Park for the four-second mirror scan, then pull away.
-            if (gear === 'P' && !raStartup) gearRef.current = gear = 'D';
+            if (gear === 'P' && !raStartup) {
+              gearRef.current = gear = 'D';
+              setDriveGearUi('D');
+            }
 
             // ─── Narration: announce what the driver is responding to ───
             if (raNearestControl && raNearestControl.ahead < Math.min(35, raPlanDistance)) {
@@ -10102,7 +10516,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var Fd = dragForce(absSpeed, veh.cd, veh.area);
           var Fr = rollingForce(veh.mass, crr);
           // Drag and rolling resist always oppose motion
-          var resistSign = car.speed >= 0 ? 1 : -1;
           var brakeForce = tireDynamics.brakingMu * veh.mass * 9.81;
           // Hill grade: slope of road height at the car's position. Positive
           // slope = uphill (opposes forward motion), negative = downhill (assists).
@@ -10133,9 +10546,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var slope = (hAhead - hHere); // rise per 1 cell IN FORWARD DIRECTION
             gradeForce = veh.mass * 9.81 * slope * 0.18;
           }
-          var netForce = thrust - (Fd + Fr + brakeForce) * resistSign - gradeForce * resistSign;
+          var netForce = longitudinalNetForce(
+            thrust, Fd + Fr + brakeForce, car.speed, gradeForce);
           var accel = netForce / veh.mass;
           car.speed += accel * dt;
+          if (gear === 'P') { car.speed = 0; accel = 0; }
           // Extra brake clamping: if braking and speed is very low, snap to zero (prevents creeping)
           // Low-speed brake clamping (works for analog gamepad triggers too)
           if (brakeInput > 0.2 && Math.abs(car.speed) < 1.5) car.speed *= 0.82;
@@ -10745,7 +11160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // subtract it (backing during a 3-point turn used to shrink the
           // hypermile challenge's mileage and could push it negative).
           statsRef.current.distance += Math.abs(deltaDist);
-          if (car.speed > statsRef.current.maxSpeed) statsRef.current.maxSpeed = car.speed;
+          if (Math.abs(car.speed) > statsRef.current.maxSpeed) statsRef.current.maxSpeed = Math.abs(car.speed);
           // MPG sample. First 5 min of any drive runs the cold-start penalty
           // (real cars lose 10–15% MPG until warm). Snow scenarios proxy as
           // winter for the dense-air / accessory-load penalty.
@@ -11635,13 +12050,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // and shouldn't AEB-brake for a main-road player who happens to share a
             // raw-X coordinate while transiting the intersection.
             var playerCar = carRef.current;
+            var playerTrafficSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+            var followerTrafficSize = vehicleFootprint(t.type);
+            var playerFollowLaneTolerance =
+              (playerTrafficSize.width + followerTrafficSize.width) * 0.5 + 0.25;
             var playerFollowState = !t.crossStreet
-              ? followingVehicleRoadState(infiniteWorldRef.current, t, playerCar, 1.0)
+              ? followingVehicleRoadState(infiniteWorldRef.current, t, playerCar,
+                playerFollowLaneTolerance)
               : null;
             var playerSameLane = !!(playerFollowState && playerFollowState.eligible &&
               playerFollowState.sameLane);
+            var playerAhead = playerSameLane ? playerFollowState.ahead : Infinity;
             if (playerSameLane && !t.crossStreet) {
-              var playerAhead = playerFollowState.ahead;
               if (playerAhead > 0 && playerAhead < 3) {
                 // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
                 // Real modern cars brake at up to 1g when a collision is imminent.
@@ -11785,12 +12205,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (t._turning) {
               targetSpeed = Math.min(targetSpeed, 12 * MPH_TO_MS);
             }
+            var playerFollowControl = null;
+            if (playerSameLane && !t.crossStreet && playerAhead > 0) {
+              var playerHeadingAlignment = Math.cos(
+                (Number(playerCar.heading) || 0) - (Number(t.heading) || 0));
+              var playerForwardSpeed = Math.max(0,
+                (Number(playerCar.speed) || 0) * playerHeadingAlignment);
+              playerFollowControl = trafficFollowingControl(
+                playerAhead, playerFollowState.lateral, playerForwardSpeed,
+                Math.max(Number(t.speed) || 0, targetSpeed),
+                playerTrafficSize.length, followerTrafficSize.length,
+                playerTrafficSize.width, followerTrafficSize.width, dt);
+              targetSpeed = Math.min(targetSpeed, playerFollowControl.targetSpeed);
+              if (playerFollowControl.braking) t._aeb = true;
+            }
             // Frame-rate-independent approach: exp-based smoothing with a 0.5 s time
             // constant. `Math.min(1, dt * 2)` was biased toward low frame rates (AI cars
             // accelerated faster at 30 fps than 60 fps); this form converges at the same
             // rate regardless of fps.
             var speedLerp = 1 - Math.exp(-dt / 0.5);
             t.speed += (targetSpeed - t.speed) * speedLerp;
+            if (playerFollowControl && t.speed > playerFollowControl.targetSpeed) {
+              // Smoothing is comfortable during ordinary changes, but cannot be
+              // allowed to consume the remaining physical clearance.
+              t.speed = playerFollowControl.targetSpeed;
+            }
             // Expose slowFor to the renderer so brake lights match the AI's braking state.
             t._slowFor = slowFor;
             // Turn signal on AI vehicles — blink when slowing for a signal, BUT do not
@@ -12800,6 +13239,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               w._playerPreviousAhead = eventBusAhead;
               return;
             }
+            var wildlifePreviousX = w.x;
+            var wildlifePreviousY = w.y;
             w.x += w.vx * dt;
             w.y += w.vy * dt;
             w.life -= dt;
@@ -12873,10 +13314,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 { length: landmarkVehicle.length, width: landmarkVehicle.width })
               : pointOverlapsVehicle(car, hazardPlayerSize, w,
                 wildlifeCollisionRadius(w));
+            var wildlifeActorSpeed = Math.hypot(
+              Number(w.vx) || 0, Number(w.vy) || 0);
             // A stationary driver who braked successfully is not charged when
-            // a moving animal finishes crossing into the vehicle footprint.
-            if (!w.hit && wildlifeOverlap && Math.abs(car.speed) > 0.5) {
+            // a moving actor reaches the vehicle footprint. Roll the actor back
+            // and pause its lifetime at the body boundary until the path clears.
+            if (!w.hit && movingRoadUserBlockedByStoppedVehicle(
+                car.speed, wildlifeActorSpeed, wildlifeOverlap, 0.5)) {
+              w.x = wildlifePreviousX;
+              w.y = wildlifePreviousY;
+              w.life += dt;
+              w._blockedByStoppedVehicle = true;
+              var stillOverlappingParkedCar = landmarkVehicle
+                ? vehicleRectsOverlap(car, hazardPlayerSize, w,
+                  { length: landmarkVehicle.length, width: landmarkVehicle.width })
+                : pointOverlapsVehicle(car, hazardPlayerSize, w,
+                  wildlifeCollisionRadius(w));
+              if (stillOverlappingParkedCar) {
+                if (landmarkVehicle) {
+                  separateVehicleAfterImpact(
+                    infiniteWorldRef.current, w, car, 0.8);
+                } else {
+                  var priorHazardVx = w.vx, priorHazardVy = w.vy;
+                  separateRoadUserAfterImpact(
+                    infiniteWorldRef.current, car, w,
+                    hazardCategory === 'child' || hazardCategory === 'pedestrian'
+                      ? 1.0 : 1.3);
+                  w.vx = priorHazardVx;
+                  w.vy = priorHazardVy;
+                  w._impactPose = false;
+                }
+              }
+            } else if (!w.hit && wildlifeOverlap && Math.abs(car.speed) > 0.5) {
               w.hit = true;
+              w._blockedByStoppedVehicle = false;
               w._impactAt = timeRef.current;
               w.life = Math.max(w.life, 4);
               if (landmarkVehicle) {
@@ -12988,7 +13459,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 : 22 + Math.random() * 8;
               var emPlayerFrame = emSpawnSpline
                 ? mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y) : null;
-              var emTravelSign = Math.sin(car.heading) > 0 ? 1 : -1;
+              // Emergency routing currently follows the main road. Defer an
+              // encounter while the learner is on a cross street or outside the
+              // paved main-road corridor instead of spawning an impossible route.
+              if (emPlayerFrame) {
+                var emPlayerProfile = roadProfileAt(
+                  infiniteWorldRef.current, emPlayerFrame.longitudinal,
+                  getContinuousScenarioProfile(currentScenario.id));
+                var emPlayerLayout = roadLayoutFor(emPlayerProfile);
+                if (Math.abs(emPlayerFrame.lateral) >
+                    emPlayerLayout.pavedHalfWidth + 0.75) return;
+              }
+              var emTravelSign = emSpawnSpline
+                ? mainRoadTravelSign(infiniteWorldRef.current, car)
+                : (Math.sin(car.heading) >= 0 ? 1 : -1);
               var playerLaneOff = emPlayerFrame ? emPlayerFrame.lateral : 0;
               var emSpawnStation = emPlayerFrame
                 ? emPlayerFrame.longitudinal - emTravelSign * emSpawnDistance
@@ -13002,17 +13486,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var emSpawnY = emSpawnPoint.y;
               // Heading should match the spline direction at spawn (so the emergency vehicle
               // actually faces along the curving road, not pure ±π/2).
-              var emSpawnHeading = car.heading > 0
+              var emSpawnHeading = emTravelSign > 0
                 ? (Math.PI / 2 - emThetaAtSpawn)
                 : (-Math.PI / 2 - emThetaAtSpawn);
+              var emCruiseSpeed = Math.abs(car.speed) + 12;
               emergencyRef.current = {
                 kind: spawn.kind, icon: spawn.icon, color: spawn.color, sirenFreq: spawn.sirenFreq,
                 x: emSpawnX,
                 y: emSpawnY,
                 _roadStation: emSpawnStation,
                 _laneOff: playerLaneOff,
+                _homeLaneOff: playerLaneOff,
+                _travelSign: emTravelSign,
                 heading: emSpawnHeading,
-                speed: Math.abs(car.speed) + 12,
+                speed: emCruiseSpeed,
+                _cruiseSpeed: emCruiseSpeed,
                 life: 20,
                 responded: false,
                 checked: false
@@ -13054,8 +13542,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var emiFrame = mainRoadLocalPoint(infiniteWorldRef.current, em.x, em.y);
             em._roadStation = emiFrame.longitudinal;
             var emiTheta = emiFrame.heading;
-            // Direction sign matches sign of sin(em.heading) — spawn used same convention as player.
-            var emiDirSign = em.heading > 0 ? 1 : -1;
+            // Keep the explicit authored travel direction. Raw angle sign is not
+            // wrap-invariant (for example -π/2 and 3π/2 are the same heading).
+            var emiDirSign = Number(em._travelSign) < 0 ? -1 : 1;
             var emiTargetHeading = emiDirSign === 1
               ? (Math.PI / 2 - emiTheta)
               : (-Math.PI / 2 - emiTheta);
@@ -13077,6 +13566,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               em._laneOff = mainRoadLocalPoint(
                 infiniteWorldRef.current, carRef.current.x, carRef.current.y).lateral;
             }
+            if (isFinite(em._targetLaneOff)) {
+              em._laneOff += (em._targetLaneOff - em._laneOff) *
+                (1 - Math.exp(-dt / 0.45));
+            }
             var emiTargetPoint = mainRoadWorldPoint(
               infiniteWorldRef.current, em._roadStation, em._laneOff);
             var emiLerp = 1 - Math.exp(-dt / 0.18);
@@ -13085,7 +13578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           } else {
             // Finite/straight fallback: follow the player's travel direction so
             // a southbound driver also gets an emergency vehicle from behind.
-            var emFallbackSign = Math.sin(em.heading) > 0 ? 1 : -1;
+            var emFallbackSign = Number(em._travelSign) < 0 ? -1 : 1;
             em.y += emFallbackSign * em.speed * dt;
           }
           em.life -= dt;
@@ -13095,7 +13588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var emRoadAhead = 0;
           var emRoadLateral = 0;
           if (car) {
-            var emPlayerTravelSign = Math.sin(car.heading) > 0 ? 1 : -1;
+            var emPlayerTravelSign = Number(em._travelSign) < 0 ? -1 : 1;
             emRoadAhead = (em.y - car.y) * emPlayerTravelSign;
             emRoadLateral = -Math.sin(car.heading) * (em.x - car.x) +
               Math.cos(car.heading) * (em.y - car.y);
@@ -13107,6 +13600,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               emRoadLateral = emNowFrame.lateral - carNowFrame.lateral;
             }
           }
+          var emPlayerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+          var emResponderSize = vehicleFootprint(emergencyVehicleFootprintType(em.kind));
+          var emFollow = emergencyFollowingControl(
+            emRoadAhead, emRoadLateral, car.speed,
+            em._cruiseSpeed == null ? em.speed : em._cruiseSpeed,
+            emPlayerSize.length, emResponderSize.length,
+            emPlayerSize.width, emResponderSize.width, dt);
+          if (emFollow.following) {
+            em._aebActive = true;
+            if (em.speed > emFollow.targetSpeed) em.speed = emFollow.targetSpeed;
+            else em.speed = Math.min(emFollow.targetSpeed, em.speed + 3 * dt);
+          } else if (em._aebActive) {
+            em.speed = Math.min(em._cruiseSpeed, em.speed + 6 * dt);
+            if (em.speed >= em._cruiseSpeed - 0.05) em._aebActive = false;
+          }
+          var emResponseDistance = Math.max(6, emFollow.holdGap + 0.25);
+          // Do not let an AEB-held responder time out while the learner is
+          // completing the maneuver. The eight-second response window below
+          // eventually resolves the encounter if the lane remains blocked.
+          if (emFollow.following && !em.checked &&
+              emRoadAhead > -emResponseDistance) em.life += dt;
           // Siren warble
           try {
             if (audioRef.current._sirenOsc) {
@@ -13137,25 +13651,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (emRoadAhead > 5) audioRef.current._sirenGain.gain.setTargetAtTime(0.01, audioRef.current.ctx.currentTime, 0.3);
             }
           } catch (e) {}
-          // Check if player pulled right and stopped
-          // Wider detection window (6 units = ~60 feet) and timeout if it passes completely
-          if (!em.checked && emRoadAhead > -6) {
-            em.checked = true;
-            // "Pulled right" = perpendicular offset from spline ≥ 1.5 in the driver's RIGHT direction.
-            // For NB (heading negative, default in Free Explore) RIGHT = +X = positive perp offset.
-            // For SB RIGHT = −X = negative perp offset. Use spline at car's Y for curve-safety.
+          // Grade the completed maneuver, not the first frame at the AEB hold
+          // point. A normal travel-lane stop is not a pull-over; the shared
+          // assessment requires meaningful movement toward the authored shoulder.
+          if (!em.responded && !em.checked && emRoadAhead > -emResponseDistance) {
+            if (em._responseWindowStartedAt == null) {
+              em._responseWindowStartedAt = timeRef.current;
+            }
             var emSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
-            var carPerpOff = emSpline
-              ? mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y).lateral
+            var emResponseCarFrame = emSpline
+              ? mainRoadLocalPoint(infiniteWorldRef.current, car.x, car.y) : null;
+            var carPerpOff = emResponseCarFrame
+              ? emResponseCarFrame.lateral
               : car.x - Math.floor(MAP_SIZE / 2);
-            // Driver's right side via sin(heading) — sign-stable across heading wrap.
-            // SB (sin>0): right = −X = negative perp. NB (sin<0): right = +X = positive perp.
-            var rightSign = Math.sin(car.heading) > 0 ? -1 : 1;
-            var pulledRight = (carPerpOff * rightSign) > 1.5;
-            // Use absolute speed — a player creeping backward at 5 mph isn't "stopped".
-            var stopped = Math.abs(car.speed) < 2;
+            var emResponseProfile = emResponseCarFrame
+              ? roadProfileAt(infiniteWorldRef.current,
+                  emResponseCarFrame.longitudinal,
+                  getContinuousScenarioProfile(currentScenario.id))
+              : (getContinuousScenarioProfile(currentScenario.id) || {});
+            var emPullOver = emergencyPullOverAssessment(
+              emResponseProfile, em._travelSign, em._homeLaneOff,
+              carPerpOff, car.speed);
+            var rightSign = emPullOver.rightSign;
+            var pulledRight = emPullOver.pulledRight;
+            var stopped = emPullOver.stopped;
+            var responseTimedOut = timeRef.current -
+              em._responseWindowStartedAt >= 8;
+            var setEmergencyPassLane = function() {
+              var emPassLayout = roadLayoutFor(emResponseProfile);
+              var emDesiredSeparation = emFollow.passClearance + 0.35;
+              em._targetLaneOff = Math.max(
+                -emPassLayout.edgeLineOffset + 0.3,
+                Math.min(emPassLayout.edgeLineOffset - 0.3,
+                  carPerpOff - rightSign * emDesiredSeparation));
+            };
             if (pulledRight && stopped) {
               em.responded = true;
+              em.checked = true;
+              setEmergencyPassLane();
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 5);
               if (!statsRef.current.emergencyYields) statsRef.current.emergencyYields = 0;
               statsRef.current.emergencyYields++;
@@ -13170,14 +13703,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   upd('badges', erBadges);
                 }
               }
-            } else if (stopped && !pulledRight) {
+            } else if (responseTimedOut && stopped && !pulledRight) {
+              em.checked = true;
+              setEmergencyPassLane();
               statsRef.current.safetyScore -= 10;
               addToast('⚠️ You stopped but didn\'t pull right. -10');
               eventToastRef.current = { msg: '⚠️ You must pull to the RIGHT side of the road, then stop.', until: timeRef.current + 4 };
-            } else {
+            } else if (responseTimedOut) {
+              em.checked = true;
+              setEmergencyPassLane();
               statsRef.current.safetyScore -= 20;
               addToast('🚨 Failed to yield to emergency vehicle! -20');
               eventToastRef.current = { msg: '🚨 FAILURE TO YIELD. Pull right, stay clear of intersections, and stop for emergency vehicles.', until: timeRef.current + 5 };
+            } else if (!em._responseGuidanceAt ||
+                       timeRef.current - em._responseGuidanceAt >= 3) {
+              em._responseGuidanceAt = timeRef.current;
+              eventToastRef.current = {
+                msg: stopped
+                  ? '→ Keep moving safely toward the right shoulder; remain stopped.'
+                  : pulledRight
+                    ? '↓ You are clear to the right; brake to a complete stop.'
+                    : '→ Signal, move toward the right shoulder, and stop.',
+                until: timeRef.current + 2.5
+              };
             }
           }
           // Remove when done
@@ -13192,6 +13740,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
         var updateCyclists = function(dt) {
           var cySpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
+          var cyPlayer = carRef.current;
+          var cyPlayerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+          var applyRiderFollowingControl = function(cy) {
+            if (!cy || !cyPlayer) return;
+            if (!(typeof cy._cruiseSpeed === 'number' && isFinite(cy._cruiseSpeed) &&
+                cy._cruiseSpeed > 0)) {
+              cy._cruiseSpeed = Math.max(0, Number(cy.speed) || 0);
+            }
+            var cyPlayerRelation = roadAwareRelativePosition(
+              infiniteWorldRef.current, cy, cyPlayer);
+            var cyHeadingAlignment = Math.cos(
+              (Number(cyPlayer.heading) || 0) - (Number(cy.heading) || 0));
+            var cySize = vulnerableRoadUserFootprint(cy);
+            var cyFollow = vulnerableRoadUserFollowingControl(
+              cyPlayerRelation.ahead, cyPlayerRelation.lat, cyPlayer.speed,
+              cyHeadingAlignment, cy._cruiseSpeed, cyPlayerSize.length,
+              cySize.length, cyPlayerSize.width, cySize.width, cy.type, dt);
+            cy._followingPlayer = cyFollow.following;
+            cy._brakingForPlayer = cyFollow.braking;
+            var cyAcceleration = cy.type === 'motorcycle' ? 2.8 : 1.4;
+            if (Number(cy.speed) > cyFollow.targetSpeed) {
+              // Apply the safe cap immediately. Easing deceleration can consume
+              // the last body-clearance gap during a long integration frame.
+              cy.speed = cyFollow.targetSpeed;
+            } else {
+              cy.speed = Math.min(cyFollow.targetSpeed,
+                Math.max(0, Number(cy.speed) || 0) + cyAcceleration * dt);
+            }
+          };
           cyclistsRef.current.forEach(function(cy) {
             // Keep an impacted rider visible and stationary at the separated
             // roadside position; do not snap them back onto the bike lane.
@@ -13206,17 +13783,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Bike lane offset matches the PAINTED bike lane center (roadHalfW − 0.7 ≈ 2.8m).
               // Previously was 2.3 which placed cyclists slightly inside the painted lane —
               // they'd ride on the inner edge instead of in the center of the bike lane.
-              var cyDirSign = cy.heading > 0 ? 1 : -1;
+              var cyDirSign = Math.sin(cy.heading) >= 0 ? 1 : -1;
               var cyProfile = roadProfileAt(infiniteWorldRef.current, cyStation, null);
-              var bikeLaneOff = bicycleLaneOffsetFor(cyProfile, cyDirSign);
-              if (cy._bikeLane === undefined) cy._bikeLane = bikeLaneOff;
-              else cy._bikeLane += (bikeLaneOff - cy._bikeLane) * (1 - Math.exp(-dt / 0.8));
+              var cyCurrentLateral = mainRoadLocalPoint(
+                infiniteWorldRef.current, cy.x, cy.y).lateral;
+              var riderLaneOff = vulnerableRoadUserLaneOffset(
+                cyProfile, cy.type, cyDirSign,
+                typeof cy._bikeLane === 'number' ? cy._bikeLane : cyCurrentLateral);
+              if (cy._bikeLane === undefined) cy._bikeLane = riderLaneOff;
+              else cy._bikeLane += (riderLaneOff - cy._bikeLane) *
+                (1 - Math.exp(-dt / 0.8));
               // Target heading aligned with spline tangent ± π/2
               var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
               var cyDh = cyTargetHeading - cy.heading;
               while (cyDh > Math.PI) cyDh -= 2 * Math.PI;
               while (cyDh < -Math.PI) cyDh += 2 * Math.PI;
               cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
+              applyRiderFollowingControl(cy);
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
               // Lateral correction uses the same tangent/perpendicular frame as
@@ -13228,6 +13811,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.x -= (cy.x - cyTargetPoint.x) * cyLerp;
               cy.y -= (cy.y - cyTargetPoint.y) * cyLerp;
             } else {
+              applyRiderFollowingControl(cy);
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
             }
@@ -13240,16 +13824,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 : mainRoadLocalPoint(infiniteWorldRef.current, cy.x, cy.y).longitudinal;
               if (Math.abs(cyCurrentStation - cyPlayerStation) > MAP_SIZE * 0.6) {
                 var cyRespawnSide = Math.random() < 0.5 ? -1 : 1;
-                cy._roadStation = cyPlayerStation + cyRespawnSide *
-                  (18 + Math.random() * MAP_SIZE * 0.35);
                 var cyRespawnDir = Math.sin(cy.heading) >= 0 ? 1 : -1;
-                cy._bikeLane = bicycleLaneOffsetFor(
-                  roadProfileAt(infiniteWorldRef.current, cy._roadStation, null), cyRespawnDir);
+                var cyRespawnMax = MAP_SIZE * 0.6 - 6;
+                var cyRespawnMin = 18;
+                if (cyRespawnSide * cyRespawnDir < 0) {
+                  cyRespawnMin = vulnerableRoadUserClosingRespawnMin(
+                    cy, currentVehicle && currentVehicle.id, cyRespawnMax);
+                }
+                var cyRespawnDistance = cyRespawnMin +
+                  Math.random() * Math.max(0, cyRespawnMax - cyRespawnMin);
+                cy._roadStation = cyPlayerStation + cyRespawnSide * cyRespawnDistance;
+                cy._bikeLane = vulnerableRoadUserLaneOffset(
+                  roadProfileAt(infiniteWorldRef.current, cy._roadStation, null),
+                  cy.type, cyRespawnDir, cy._bikeLane);
                 var cyRespawnPoint = mainRoadWorldPoint(infiniteWorldRef.current, cy._roadStation, cy._bikeLane);
                 cy.x = cyRespawnPoint.x;
                 cy.y = cyRespawnPoint.y;
                 var cyRespawnTheta = cyRespawnPoint.heading;
                 cy.heading = cyRespawnDir === 1 ? (Math.PI / 2 - cyRespawnTheta) : (-Math.PI / 2 - cyRespawnTheta);
+                cy._followingPlayer = false;
+                cy._brakingForPlayer = false;
+                if (cy._cruiseSpeed > 0) cy.speed = cy._cruiseSpeed;
               }
             } else {
               if (cy.y < -2) cy.y = MAP_SIZE + 2;
@@ -13461,26 +14056,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // A recycled cyclist is a new encounter; clear the one-pass guard
             // while they are safely ahead rather than suppressing it forever.
             if (cyclistRelation.ahead > 6 && dist > 6) cy._flaggedClose = false;
-            if (dist > 4) return;
             var cyclistSize = vulnerableRoadUserFootprint(cy);
-            var carVx = Math.cos(car.heading) * car.speed;
-            var carVy = Math.sin(car.heading) * car.speed;
-            var cyclistVx = Math.cos(cy.heading) * (cy.speed || 0);
-            var cyclistVy = Math.sin(cy.heading) * (cy.speed || 0);
-            var cyclistRelativeSpeed = Math.hypot(
-              carVx - cyclistVx, carVy - cyclistVy);
+            var cyclistCollisionReach = Math.hypot(
+              (playerSize.length + cyclistSize.length) * 0.5,
+              (playerSize.width + cyclistSize.width) * 0.5) + 0.15;
+            if (dist > Math.max(4, cyclistCollisionReach)) return;
             var cyclistOverlap = vehicleRectsOverlap(
               car, playerSize, cy, cyclistSize);
-            if (cyclistOverlap && cyclistRelativeSpeed > 0.5 &&
-                (Math.abs(car.speed) > 0.5 || Math.abs(cy.speed || 0) > 0.5)) {
+            var cyclistImpactState = roadUserImpactClosingState(car, cy);
+            var cyclistImpactAttribution = cyclistImpactState.attribution;
+            if (cyclistOverlap && cyclistImpactState.closingSpeed > 0.5 &&
+                cyclistImpactAttribution !== 'none') {
               var roadUserLabel = cy.type === 'motorcycle'
                 ? 'motorcycle rider' : 'cyclist';
               statsRef.current.crashes++;
               statsRef.current._lastCrashAt = timeRef.current;
-              statsRef.current.safetyScore -= 50;
-              addToast('💥 Struck a ' + roadUserLabel + '! -50');
-              showDriveAlert('💥 You struck a ' + roadUserLabel +
-                '. Stop immediately and call emergency services.', 6, 3, 'critical');
+              if (cyclistImpactAttribution === 'road_user') {
+                statsRef.current.aiCausedCrashes =
+                  (statsRef.current.aiCausedCrashes || 0) + 1;
+                addToast('A ' + roadUserLabel +
+                  ' contacted your stopped vehicle — no learner penalty.');
+                showDriveAlert('A ' + roadUserLabel +
+                  ' contacted your stopped vehicle. No learner safety penalty was assigned.',
+                  4, 1, 'info');
+              } else {
+                statsRef.current.safetyScore -= 50;
+                addToast('💥 Struck a ' + roadUserLabel + '! -50');
+                showDriveAlert('💥 You struck a ' + roadUserLabel +
+                  '. Stop immediately and call emergency services.', 6, 3, 'critical');
+              }
               car.speed *= cy.type === 'motorcycle' ? 0.35 : 0.2;
               cy._hit = true;
               cy._impactAt = timeRef.current;
@@ -14075,8 +14679,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var signals = signalsRef.current;
           var traffic = trafficRef.current;
           var playerCar = carRef.current;
+          var pedestrianPlayerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
           var pedSpline = infiniteWorldRef.current && infiniteWorldRef.current.spline;
           pedsRef.current.forEach(function(p) {
+            // Preserve the authored path state before advancing. When the
+            // learner has yielded, the stopped vehicle remains a solid obstacle;
+            // rollback lets the walker wait at its body and resume naturally.
+            var pedPrevious = {
+              x: p.x, y: p.y, roadStation: p._roadStation,
+              sidewalkLateral: p._sidewalkLateral,
+              homeX: p.homeX, homeY: p.homeY
+            };
             var curvedPed = !!(pedSpline && p._curvedRoadFrame &&
               typeof p._roadStation === 'number' && typeof p._sidewalkLateral === 'number');
             if (p.waitingAtCrosswalk && p.crosswalkY != null) {
@@ -14243,6 +14856,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               p.x += p.vx * dt * 2;
               p.y += p.vy * dt * 2;
             }
+            var pedMotionSpeed = curvedPed && p.crossing
+              ? Math.abs(Number(p._crossSpeed) || 0)
+              : Math.hypot(Number(p.vx) || 0, Number(p.vy) || 0) * 2;
+            var pedestrianRadius = p.kind === 'kid' ? 0.22 : 0.28;
+            var pedOverlapsStoppedVehicle = pointOverlapsVehicle(
+              playerCar, pedestrianPlayerSize, p, pedestrianRadius);
+            if (movingRoadUserBlockedByStoppedVehicle(
+                playerCar.speed, pedMotionSpeed, pedOverlapsStoppedVehicle, 1)) {
+              p.x = pedPrevious.x;
+              p.y = pedPrevious.y;
+              p._roadStation = pedPrevious.roadStation;
+              p._sidewalkLateral = pedPrevious.sidewalkLateral;
+              p.homeX = pedPrevious.homeX;
+              p.homeY = pedPrevious.homeY;
+              p._blockedByStoppedVehicle = true;
+              // A spawn that began inside the body has no safe prior step.
+              if (pointOverlapsVehicle(
+                  playerCar, pedestrianPlayerSize, p, pedestrianRadius)) {
+                separatePedestrianAfterImpact(
+                  infiniteWorldRef.current, playerCar, p,
+                  pedestrianPlayerSize.width * 0.5 + 0.45);
+              }
+            } else {
+              p._blockedByStoppedVehicle = false;
+            }
           });
         };
 
@@ -14361,16 +14999,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // stopped player (T-boned at a light, AI drifting into a parked car).
             var trafficCollisionSize = vehicleFootprint(t.type);
             var vehicleOverlap = vehicleRectsOverlap(car, playerCollisionSize, t, trafficCollisionSize);
-            if (vehicleOverlap && relativeSpeed > 0.5 && (absSpeed > 0.5 || Math.abs(t.speed) > 0.5)) {
+            var trafficImpactState = roadUserImpactClosingState(car, t);
+            var trafficImpactAttribution = trafficImpactState.attribution;
+            if (vehicleOverlap && trafficImpactState.closingSpeed > 0.5 &&
+                trafficImpactAttribution !== 'none') {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
                 // Mirror to the rear-end cooldown so the upstream rear-end-of-player
                 // detector at ~line 6577 doesn't double-charge this same impact.
                 t._rearEndCooldown = timeRef.current;
-                var impactSpeed = relativeSpeed * MS_TO_MPH;
+                var impactSpeed = trafficImpactState.closingSpeed * MS_TO_MPH;
                 statsRef.current.crashes++;
                 statsRef.current._lastCrashAt = timeRef.current;
-                if (impactSpeed > 30) {
+                if (trafficImpactAttribution === 'road_user') {
+                  statsRef.current.aiCausedCrashes =
+                    (statsRef.current.aiCausedCrashes || 0) + 1;
+                  statsRef.current.safetyScore -= 2;
+                  addToast('A moving vehicle contacted your stopped vehicle. -2 defensive margin.');
+                  showDriveAlert('Another vehicle contacted your stopped vehicle. No major learner-fault penalty was assigned.',
+                    4, 1, 'info');
+                } else if (impactSpeed > 30) {
                   statsRef.current.safetyScore -= 40;
                   addToast('💥 HIGH-SPEED COLLISION! -40 safety');
                   showDriveAlert('💥 Major collision at ' + Math.round(impactSpeed) + ' mph relative speed. In real life, serious injuries.', 5, 3, 'critical');
@@ -14452,21 +15100,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var emRelativeSpeed = Math.hypot(emCarVx - emVx, emCarVy - emVy);
             var emergencyOverlap = vehicleRectsOverlap(
               car, playerCollisionSize, em, emSize);
+            var emergencyImpactAttribution = vulnerableRoadUserImpactAttribution(
+              car.speed, em.speed);
             if (emergencyOverlap && emRelativeSpeed > 0.5 &&
-                (absSpeed > 0.5 || Math.abs(em.speed || 0) > 0.5) && !em._hitPlayer) {
+                emergencyImpactAttribution !== 'none' && !em._hitPlayer) {
               em._hitPlayer = true;
               statsRef.current.crashes++;
               statsRef.current._lastCrashAt = timeRef.current;
-              statsRef.current.safetyScore -= 50;
-              addToast('💥 STRUCK EMERGENCY VEHICLE! -50 safety');
-              showDriveAlert('💥 You collided with an emergency vehicle. Criminal offense + massive liability.', 5, 3, 'critical');
+              if (emergencyImpactAttribution === 'road_user') {
+                statsRef.current.aiCausedCrashes =
+                  (statsRef.current.aiCausedCrashes || 0) + 1;
+                addToast('A responder contacted your stopped vehicle. No learner-fault penalty.');
+                showDriveAlert('An emergency vehicle contacted your stopped vehicle. Yielding is graded separately; no collision penalty was assigned.', 4, 1, 'info');
+              } else {
+                statsRef.current.safetyScore -= 50;
+                addToast('💥 STRUCK EMERGENCY VEHICLE! -50 safety');
+                showDriveAlert('💥 You collided with an emergency vehicle. Criminal offense + massive liability.', 5, 3, 'critical');
+              }
               car.speed *= 0.1;
               em.speed *= 0.45;
               separateVehicleAfterImpact(infiniteWorldRef.current, car, em, 0.8);
               crashFxRef.current.push({
                 x: (car.x + em.x) * 0.5,
                 y: (car.y + em.y) * 0.5,
-                severity: 3,
+                severity: emergencyImpactAttribution === 'road_user' ? 1 : 3,
                 spawnAt: timeRef.current,
                 hudFlashed: false
               });
@@ -14787,7 +15444,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var lp=rm||(!!navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4); var rs=lp?0.5:1;
                 var cc=new TT.EffectComposer(renderer);
                 cc.addPass(new TT.RenderPass(scene, camera));
-                cc.addPass(new TT.UnrealBloomPass(new TT.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), lp?0.49:0.7, 0.35, 0.84));
+                var bloomStrength = isNight && !isDawn ? (lp ? 0.42 : 0.58) :
+                  (isRain || isFog || isDawn ? (lp ? 0.2 : 0.3) : (lp ? 0.08 : 0.14));
+                var bloomRadius = isNight && !isDawn ? 0.32 : isRain || isFog || isDawn ? 0.28 : 0.24;
+                var bloomThreshold = isNight && !isDawn ? 0.8 : isRain || isFog || isDawn ? 0.9 : 0.94;
+                cc.addPass(new TT.UnrealBloomPass(new TT.Vector2(Math.max(1,Math.round((W)*rs)),Math.max(1,Math.round((H)*rs))), bloomStrength, bloomRadius, bloomThreshold));
                 renderer._alloComposer=cc;
               } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
             });
@@ -18496,11 +19157,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               _clearEm();
               var eGrp = new T.Group();
               var isTruck = em.kind === 'firetruck';
-              var bodyLen = isTruck ? 3.0 : 2.2;
-              var bodyH = isTruck ? 1.4 : 1.0;
+              var bodyLen = isTruck ? 7.5 : em.kind === 'ambulance' ? 5.0 : 4.8;
+              var bodyWidth = isTruck ? 2.4 : em.kind === 'ambulance' ? 2.0 : 1.9;
+              var bodyH = isTruck ? 2.3 : em.kind === 'ambulance' ? 1.7 : 0.85;
               var bodyCol = em.bodyColor || new T.Color(em.color).getHex();
               // Main body
-              var eBGeo = new T.BoxGeometry(bodyLen, bodyH, 1.0);
+              var eBGeo = new T.BoxGeometry(bodyLen, bodyH, bodyWidth);
               var eBMat = new T.MeshLambertMaterial({ color: bodyCol });
               var eBody = new T.Mesh(eBGeo, eBMat);
               eBody.position.y = bodyH / 2 + 0.2;
@@ -18508,7 +19170,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               eGrp.add(eBody);
               // Cabin / roof (lighter)
               if (!isTruck) {
-                var cabGeo = new T.BoxGeometry(bodyLen * 0.45, 0.4, 0.9);
+                var cabGeo = new T.BoxGeometry(
+                  bodyLen * 0.45, 0.4, bodyWidth * 0.9);
                 var cabMat = new T.MeshLambertMaterial({ color: bodyCol });
                 var cab = new T.Mesh(cabGeo, cabMat);
                 cab.position.set(-bodyLen * 0.1, bodyH + 0.35, 0);
@@ -18516,8 +19179,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
               // Wheels (4) — lifted by 0.04 to prevent Z-fighting with road surface
               var ewMat = new T.MeshLambertMaterial({ color: 0x111111 });
-              [[-bodyLen * 0.3, 0.24, 0.52], [-bodyLen * 0.3, 0.24, -0.52], [bodyLen * 0.3, 0.24, 0.52], [bodyLen * 0.3, 0.24, -0.52]].forEach(function(wp) {
-                var ewGeo = new T.CylinderGeometry(0.2, 0.2, 0.12, 10);
+              var emWheelRadius = isTruck ? 0.48 : em.kind === 'ambulance' ? 0.36 : 0.32;
+              [[-bodyLen * 0.3, emWheelRadius + 0.04, bodyWidth * 0.48], [-bodyLen * 0.3, emWheelRadius + 0.04, -bodyWidth * 0.48], [bodyLen * 0.3, emWheelRadius + 0.04, bodyWidth * 0.48], [bodyLen * 0.3, emWheelRadius + 0.04, -bodyWidth * 0.48]].forEach(function(wp) {
+                var ewGeo = new T.CylinderGeometry(
+                  emWheelRadius, emWheelRadius, isTruck ? 0.26 : 0.2, 12);
                 var ew = new T.Mesh(ewGeo, ewMat);
                 ew.rotation.x = Math.PI / 2;
                 ew.position.set(wp[0], wp[1], wp[2]);
@@ -18568,16 +19233,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (em.kind === 'ambulance') {
                 var crossMat = new T.MeshBasicMaterial({ color: 0xff0000 });
                 var crossH = new T.Mesh(new T.BoxGeometry(0.6, 0.05, 0.15), crossMat);
-                crossH.position.set(0, bodyH + 0.05, 0.51);
+                crossH.position.set(0, bodyH + 0.05, bodyWidth * 0.5 + 0.01);
                 eGrp.add(crossH);
                 var crossV = new T.Mesh(new T.BoxGeometry(0.15, 0.05, 0.6), crossMat);
-                crossV.position.set(0, bodyH + 0.05, 0.51);
+                crossV.position.set(0, bodyH + 0.05, bodyWidth * 0.5 + 0.01);
                 eGrp.add(crossV);
               } else if (em.kind === 'police') {
                 var stripeMat = new T.MeshBasicMaterial({ color: 0x3b82f6 });
                 var stripe = new T.Mesh(new T.BoxGeometry(bodyLen * 0.8, 0.04, 0.2), stripeMat);
-                stripe.position.set(0, bodyH * 0.6, 0.51);
+                stripe.position.set(0, bodyH * 0.6, bodyWidth * 0.5 + 0.01);
                 eGrp.add(stripe);
+              } else if (em.kind === 'firetruck') {
+                var fireStripeMat = new T.MeshBasicMaterial({ color: 0xffd166 });
+                [-1, 1].forEach(function(fireSide) {
+                  var fireStripe = new T.Mesh(
+                    new T.BoxGeometry(bodyLen * 0.82, 0.14, 0.025),
+                    fireStripeMat);
+                  fireStripe.position.set(0, bodyH * 0.58,
+                    fireSide * (bodyWidth * 0.5 + 0.014));
+                  eGrp.add(fireStripe);
+                });
+                var fireLadderMat = new T.MeshLambertMaterial({ color: 0xcbd5e1 });
+                [-0.42, 0.42].forEach(function(fireRailSide) {
+                  var fireRail = new T.Mesh(
+                    new T.BoxGeometry(bodyLen * 0.68, 0.08, 0.08),
+                    fireLadderMat);
+                  fireRail.position.set(0.35, bodyH + 0.42, fireRailSide);
+                  eGrp.add(fireRail);
+                });
               }
               eGroup.add(eGrp);
               s3._emKey = em.kind;
@@ -24801,7 +25484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Gear indicator (actual gear state from gearRef)
           var gear = gearRef.current;
           var rideAlongHudActive = rideAlongControlsLocked();
-          var gearHudX = hudCompact ? 125 : 130;
+          var gearHudX = hudCompact ? 140 : 130;
           gfx.fillStyle = rideAlongHudActive ? '#86efac' : gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
           gfx.font = 'bold ' + (hudCompact ? 15 : 16) + 'px monospace'; gfx.textAlign = 'center';
           gfx.fillText(rideAlongHudActive ? 'AUTO' : gear, gearHudX, hudCompact ? H - 50 : H - 42);
@@ -24811,8 +25494,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Keep persistent HUD cards below the mirror row at every width. The
           // compact layout previously painted these cards over the side mirrors.
           var hudTopStackY = Math.max(72, Math.ceil(H * 0.14));
-          var hudStartupScan = !!rideAlongRef.current &&
-            timeRef.current < (graceRef.current.until || 0);
+          var hudStartupScan = startupSequenceActive(
+            seatbeltRef.current.fastened, timeRef.current, graceRef.current.until);
           var hudFormalOverlay = !!(d && d.roadTestStage === 'drive');
           var hudChallengeOverlay = !!(d && d.freeExplore &&
             (challengeRef.current.offered || challengeRef.current.active));
@@ -25001,7 +25684,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!staticAlert && elapsed < 0.25) fadeAlpha = elapsed / 0.25;
             else if (!staticAlert && remaining < 0.4) fadeAlpha = remaining / 0.4;
             fadeAlpha = Math.max(0, Math.min(1, fadeAlpha));
-            var alertBaseY = hudTopStackY + 72;
+            var alertBaseY = driveAlertBaseY(
+              H, hudTopStackY, hudPersistentOverlay, hudCompact && hudFormalOverlay);
             var slideY = staticAlert ? alertBaseY : alertBaseY + (1 - Math.min(1, elapsed / 0.25)) * -14;
             var alertAppearance = driveAlertAppearance(et.msg, et.tone);
             var alertW = Math.max(120, Math.min(W - 16, W * 0.82));
@@ -25027,13 +25711,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.restore();
           }
 
-          // Speed limit sign
-          var signX = W - 70, signY2 = hudTopStackY;
-          gfx.fillStyle = '#fff'; gfx.fillRect(signX, signY2, 50, 60);
-          gfx.strokeStyle = '#000'; gfx.lineWidth = 2; gfx.strokeRect(signX, signY2, 50, 60);
-          gfx.fillStyle = '#000'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
-          gfx.fillText('SPEED', signX + 25, signY2 + 14); gfx.fillText('LIMIT', signX + 25, signY2 + 24);
-          gfx.font = 'bold 20px monospace'; gfx.fillText(hudPostedLimitMph, signX + 25, signY2 + 48);
+          // The compact dashboard already carries a posted-limit chip beside
+          // the speedometer; repeating the full sign hid too much roadway.
+          if (!hudCompact) {
+            var signX = W - 70, signY2 = hudTopStackY;
+            gfx.fillStyle = '#fff'; gfx.fillRect(signX, signY2, 50, 60);
+            gfx.strokeStyle = '#000'; gfx.lineWidth = 2; gfx.strokeRect(signX, signY2, 50, 60);
+            gfx.fillStyle = '#000'; gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText('SPEED', signX + 25, signY2 + 14); gfx.fillText('LIMIT', signX + 25, signY2 + 24);
+            gfx.font = 'bold 20px monospace'; gfx.fillText(hudPostedLimitMph, signX + 25, signY2 + 48);
+          }
 
           // Blinkers
           var blink = blinkerRef.current;
@@ -25055,7 +25742,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var hcColor = '#fbbf24';
             var arrow = hcState.dir === -1 ? '◄' : '►';
             var side = hcState.dir === -1 ? 'LEFT' : 'RIGHT';
-            var hcPanelY = hudCompact ? Math.max(hudTopStackY + 64, H - 150) : 60;
+            var hcPanelY = hudCompact ? Math.max(hudTopStackY + 64, H - 190) : 60;
             gfx.save();
             gfx.fillStyle = 'rgba(30,41,59,0.8)';
             gfx.strokeStyle = hcColor;
@@ -25497,8 +26184,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
           }
           // Label + distance readout
-          gfx.fillStyle = tailgateWarning ? '#fca5a5' : '#94a3b8';
           gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
+          var rearLabelW = gfx.measureText('REARVIEW').width + 12;
+          gfx.fillStyle = 'rgba(2,6,23,0.8)';
+          gfx.fillRect(W / 2 - rearLabelW / 2, Math.max(0, mirrorY - 19), rearLabelW, 15);
+          gfx.fillStyle = tailgateWarning ? '#fca5a5' : '#e2e8f0';
           gfx.fillText('REARVIEW', W / 2, mirrorY - 6);
           if (closestRearDist < 15) {
             gfx.fillStyle = closestRearDist < 6 ? '#fca5a5' : '#94a3b8';
@@ -25528,6 +26218,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillRect(smX, smY, smW, smH / 2);
             gfx.fillStyle = isNight ? '#0a0a14' : '#334155';
             gfx.fillRect(smX, smY + smH / 2, smW, smH / 2);
+            // Mobile avoids two extra WebGL camera passes, but a flat two-tone
+            // fallback looked like a powered-off display. A compact horizon and
+            // converging road edges preserve depth and mirror orientation.
+            gfx.save();
+            var smHorizon = smY + smH * 0.49;
+            var smVanishX = smX + smW * (isLeft ? 0.56 : 0.44);
+            gfx.strokeStyle = isNight ? 'rgba(148,163,184,0.5)' : 'rgba(203,213,225,0.65)';
+            gfx.lineWidth = 1;
+            gfx.beginPath();
+            gfx.moveTo(smX, smHorizon);
+            gfx.lineTo(smX + smW, smHorizon);
+            gfx.stroke();
+            gfx.fillStyle = isNight ? '#111827' : '#1f2937';
+            gfx.beginPath();
+            gfx.moveTo(smVanishX - 3, smHorizon);
+            gfx.lineTo(smX + 3, smY + smH);
+            gfx.lineTo(smX + smW - 3, smY + smH);
+            gfx.lineTo(smVanishX + 3, smHorizon);
+            gfx.closePath();
+            gfx.fill();
+            gfx.strokeStyle = 'rgba(226,232,240,0.72)';
+            gfx.beginPath();
+            gfx.moveTo(smVanishX - 3, smHorizon);
+            gfx.lineTo(smX + 3, smY + smH);
+            gfx.moveTo(smVanishX + 3, smHorizon);
+            gfx.lineTo(smX + smW - 3, smY + smH);
+            gfx.stroke();
+            gfx.setLineDash([3, 3]);
+            gfx.strokeStyle = isNight ? 'rgba(250,204,21,0.55)' : 'rgba(250,204,21,0.75)';
+            gfx.beginPath();
+            gfx.moveTo(smVanishX, smHorizon + 2);
+            gfx.lineTo(smX + smW * 0.5, smY + smH);
+            gfx.stroke();
+            gfx.restore();
             // Own car shadow at inner edge (driver-side corner)
             gfx.fillStyle = 'rgba(0,0,0,0.5)';
             if (isLeft) gfx.fillRect(smX + smW - 12, smY + smH * 0.5, 12, smH * 0.5);
@@ -25589,8 +26313,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
             }
             // Label
-            gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
-            gfx.fillText(isLeft ? '◄ LEFT' : 'RIGHT ►', smX + smW / 2, smY - 4);
+            var sideMirrorLabel = isLeft ? '◄ LEFT' : 'RIGHT ►';
+            gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
+            var sideMirrorLabelW = gfx.measureText(sideMirrorLabel).width + 10;
+            gfx.fillStyle = 'rgba(2,6,23,0.8)';
+            gfx.fillRect(smX + (smW - sideMirrorLabelW) / 2, Math.max(0, smY - 17), sideMirrorLabelW, 14);
+            gfx.fillStyle = '#e2e8f0';
+            gfx.fillText(sideMirrorLabel, smX + smW / 2, smY - 4);
             // ── Blind spot warning (yellow icon at outer corner, matches modern car BSW systems) ──
             var blindSpot = isLeft ? blindSpotRef.current.left : blindSpotRef.current.right;
             if (blindSpot) {
@@ -26615,7 +27344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { style: { fontSize: '15px', fontWeight: 850, marginBottom: '3px' } }, next.title),
                 h('div', { style: { fontSize: '11px', lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, next.detail)
               ),
-              h('button', { onClick: next.action, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: '#082f49', fontSize: '12px', fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Continue learning')
+              h('button', { onClick: next.action, style: { minHeight: '42px', padding: '10px 18px', borderRadius: '9px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: 'var(--rr-cyan-ink, #ffffff)', fontSize: '12px', fontWeight: 900, cursor: 'pointer', whiteSpace: 'nowrap' } }, 'Continue learning')
             );
           })(),
           // Free Explore hero button
@@ -27169,9 +27898,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('span', null, __alloT('stem.roadready.calm_drive', 'Calm Drive')),
               h('span', { style: { color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '10px' } }, __alloT('stem.roadready.quieter_engine_and_ambient_layers_no', '— quieter engine/ambient layers; no celebration bursts; safety cues stay on'))
             ),
-            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px' } },
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: '12px', flexWrap: 'wrap' } },
               h('span', { style: { minWidth: '86px', fontWeight: 800 } }, 'Driving HUD'),
-              h('select', { value: d.hudPreset || (d.calmDrive ? 'calm' : 'driver'), onChange: function(e) { upd('hudPreset', e.target.value); }, style: { flex: 1, minHeight: '34px', borderRadius: '7px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '4px 7px', fontSize: '12px' } },
+              h('select', { value: d.hudPreset || (d.calmDrive ? 'calm' : 'driver'), onChange: function(e) { upd('hudPreset', e.target.value); }, style: { flex: '1 1 150px', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', minHeight: '34px', borderRadius: '7px', border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', padding: '4px 7px', fontSize: '12px' } },
                 h('option', { value: 'driver' }, 'Driver · essentials'),
                 h('option', { value: 'science' }, 'Science · forces + MPG'),
                 h('option', { value: 'instructor' }, 'Instructor · full evidence'),
@@ -27320,12 +28049,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid ' + (d.lastJournal ? '#10b981' : '#334155'), background: d.lastJournal ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.5)', color: d.lastJournal ? '#10b981' : '#475569', fontSize: '12px', fontWeight: 700, cursor: d.lastJournal ? 'pointer' : 'not-allowed' }
               }, __alloT('stem.roadready.export_journal', '📓 Export Journal')),
               h('label', {
-                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: 'var(--rr-blue, #60a5fa)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px' }
+                style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #60a5fa', background: 'rgba(96,165,250,0.15)', color: 'var(--rr-blue, #60a5fa)', fontSize: '12px', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6px', maxWidth: '100%', boxSizing: 'border-box' }
               }, __alloT('stem.roadready.load_progress', '📥 Load Progress'),
                 h('input', {
                   id: 'rr-load-progress-file', type: 'file', accept: 'application/json,.json',
                   'aria-label': __alloT('stem.roadready.load_progress_file', 'Load RoadReady progress file'),
-                  style: { display: 'block', maxWidth: '240px', fontSize: '11px', color: 'inherit', cursor: 'pointer' },
+                  style: { display: 'block', width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box', fontSize: '11px', color: 'inherit', cursor: 'pointer' },
                   onChange: function(e) {
                     var file = e.target.files && e.target.files[0];
                     if (!file) return;
@@ -27676,7 +28405,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var rideAlongEmergencyUi = rideAlongActiveUi && emergencyRef.current &&
           !emergencyRef.current.responded;
         var startupOverlayVisibleUi = !beltFastened ||
-          (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible);
+          (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible) || startupReleasePending;
+        var touchControlsLockedUi = startupOverlayVisibleUi || isPaused || !!missionComplete;
+        // One dead-man contract covers touch, pen, mouse, keyboard, and switch
+        // input. Pointer capture keeps release events paired with the originating
+        // control, while every cancel/leave/blur path returns the input to neutral.
+        var setDrivingHoldUi = function(keyName, held, event) {
+          if (event && event.preventDefault) event.preventDefault();
+          keysRef.current[keyName] = touchControlsLockedUi ? false : !!held;
+        };
+        var releaseDrivingHoldUi = function(keyName, event) {
+          setDrivingHoldUi(keyName, false, event);
+          try {
+            if (event && event.currentTarget && event.pointerId != null &&
+                event.currentTarget.hasPointerCapture &&
+                event.currentTarget.hasPointerCapture(event.pointerId)) {
+              event.currentTarget.releasePointerCapture(event.pointerId);
+            }
+          } catch (pointerReleaseErr) {}
+        };
+        var drivingHoldProps = function(keyName, label, shortcut) {
+          return {
+            disabled: touchControlsLockedUi,
+            'aria-label': label,
+            'aria-keyshortcuts': shortcut,
+            'data-rr-focusable': 'true',
+            'data-rr-hold-key': keyName,
+            onPointerDown: function(e) {
+              if (e.button != null && e.button !== 0) return;
+              try {
+                if (e.currentTarget.setPointerCapture && e.pointerId != null) {
+                  e.currentTarget.setPointerCapture(e.pointerId);
+                }
+              } catch (pointerCaptureErr) {}
+              setDrivingHoldUi(keyName, true, e);
+            },
+            onPointerUp: function(e) { releaseDrivingHoldUi(keyName, e); },
+            onPointerCancel: function(e) { releaseDrivingHoldUi(keyName, e); },
+            onLostPointerCapture: function(e) { setDrivingHoldUi(keyName, false, e); },
+            onPointerLeave: function(e) { releaseDrivingHoldUi(keyName, e); },
+            onKeyDown: function(e) {
+              if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) {
+                e.stopPropagation();
+                setDrivingHoldUi(keyName, true, e);
+              }
+            },
+            onKeyUp: function(e) {
+              if (e.key === ' ' || e.key === 'Enter') {
+                e.stopPropagation();
+                setDrivingHoldUi(keyName, false, e);
+              }
+            },
+            onBlur: function(e) { setDrivingHoldUi(keyName, false, e); },
+            onContextMenu: function(e) { e.preventDefault(); }
+          };
+        };
         return h('div', { className: 'rr-drive-shell', 'data-rr-view': 'driving', style: { position: 'relative', width: '100%', height: 'clamp(360px, calc(100vh - 80px), 760px)', minHeight: '360px', background: '#000', borderRadius: '12px', overflow: 'hidden' } },
           // Three.js WebGL canvas (behind). role=img + aria-label so SR users
           // hear what the 3D scene contains; the HUD canvas above carries the
@@ -27828,15 +28611,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Read the React-state mirror, NOT the ref — a ref update alone won't
           // cause a re-render and the prompt would hang on screen forever.
           !beltFastened ? h('div', {
-            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', maxWidth: '440px', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: reducedMotionRef.current ? 'none' : 'rr-pulse-soft 1.5s ease-in-out infinite' }
+            className: 'rr-seatbelt-prompt',
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '14px 22px', borderRadius: '14px', background: 'linear-gradient(135deg, rgba(127,29,29,0.95), rgba(185,28,28,0.95))', border: '2px solid #fca5a5', color: '#fff', zIndex: 28, textAlign: 'center', width: 'max-content', maxWidth: 'calc(100% - 24px)', boxSizing: 'border-box', boxShadow: '0 6px 24px rgba(239,68,68,0.5)', animation: 'none' }
           },
             h('div', { style: { fontSize: '36px', marginBottom: '4px' } }, '🔔'),
             h('div', { style: { fontSize: '15px', fontWeight: 900, marginBottom: '4px' } }, __alloT('stem.roadready.fasten_your_seatbelt', 'Fasten Your Seatbelt')),
-            h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, __alloT('stem.roadready.press', 'Press '), h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), __alloT('stem.roadready.or_any_movement_key_to_fasten_the_car_', ' or any movement key to fasten. The car will not move until you do.')),
+            isTouchDeviceRef.current
+              ? h('div', null,
+                  h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5', maxWidth: '300px' } }, 'Buckle up first. The car stays in Park during your mirror scan.'),
+                  h('button', {
+                    onClick: fastenSeatbelt,
+                    'aria-label': 'Fasten seatbelt',
+                    'data-rr-focusable': 'true',
+                    style: { marginTop: '10px', minWidth: '160px', minHeight: '44px', padding: '10px 16px', borderRadius: '10px', border: '2px solid #fef2f2', background: '#fff', color: '#991b1b', fontSize: '13px', fontWeight: 900, cursor: 'pointer', boxShadow: '0 3px 10px rgba(0,0,0,0.25)' }
+                  }, '✓ Fasten seatbelt')
+                )
+              : h('div', { style: { fontSize: '11px', color: '#fecaca', lineHeight: '1.5' } }, __alloT('stem.roadready.press', 'Press '), h('kbd', { style: { padding: '2px 6px', background: 'rgba(0,0,0,0.3)', borderRadius: '4px', fontFamily: 'monospace', fontWeight: 900 } }, 'B'), __alloT('stem.roadready.or_any_movement_key_to_fasten_the_car_', ' or any movement key to fasten. The car will not move until you do.')),
             formalRideAlongPausedUi ? h('div', { style: { marginTop: '7px', fontSize: '11px', fontWeight: 800, color: '#fef3c7' } }, '🎧 Ride-Along is paused for evaluated drives. You are in control.') : null
           ) :
-          // ── Grace period banner: visible for ~4s after belt is fastened
-          // (graceVisible state, set + timed out at the fasten site) ──
+          // ── Grace period banner: follows the simulation-time safety scan ──
           (rideAlongActiveUi ? rideAlongPreparingUi : graceVisible) ? h('div', {
             style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(22,163,74,0.95), rgba(21,128,61,0.95))', border: '2px solid #4ade80', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(74,222,128,0.4)', animation: reducedMotionRef.current ? 'none' : 'rr-fade-in 0.5s ease-out' }
           },
@@ -27846,85 +28639,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               : __alloT('stem.roadready.glance_at_each_mirror_before_you_pull_', 'Glance at each mirror before you pull out')),
             h('div', { style: { fontSize: '11px', color: '#bbf7d0', lineHeight: '1.4' } }, rideAlongActiveUi
               ? 'Rearview · left mirror · right mirror. The car stays in Park until this safety scan finishes.'
-              : __alloT('stem.roadready.rearview_top_center_left_mirror_top_le', 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Take your time — the road isn\'t going anywhere.')),
+              : __alloT('stem.roadready.rearview_top_center_left_mirror_top_le', 'Rearview (top center) · Left mirror (top left) · Right mirror (top right). Driving controls unlock after the scan.')),
             formalRideAlongPausedUi ? h('div', { style: { marginTop: '5px', fontSize: '10px', fontWeight: 800, color: '#fef3c7' } }, 'Evaluated drive · manual control') : null
+          ) : null,
+          startupReleasePending && !graceVisible && !rideAlongPreparingUi ? h('div', {
+            style: { position: 'absolute', top: '100px', left: '50%', transform: 'translateX(-50%)', padding: '12px 20px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(120,53,15,0.97), rgba(146,64,14,0.97))', border: '2px solid #fbbf24', color: '#fff', zIndex: 27, textAlign: 'center', maxWidth: '420px', boxShadow: '0 6px 20px rgba(251,191,36,0.3)' },
+            role: 'status', 'aria-live': 'polite'
+          },
+            h('div', { style: { fontSize: '18px', fontWeight: 900, marginBottom: '5px' } }, 'Release Movement Controls'),
+            h('div', { style: { fontSize: '12px', color: '#fef3c7', lineHeight: '1.45' } }, 'Release throttle, brake, and steering. Then accelerate again to pull out.')
           ) : null,
           // ── Touch controls for mobile/tablet ──
           // Wrapped in isTouchDeviceRef check so they only render on touch-
           // capable devices. On desktop they were ~10% of the viewport in
           // visual clutter for no benefit (keyboard handles all input).
-          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', { style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', right: d.freeExplore && worldControlsOpen ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20 },
-            className: 'touch-controls rr-touch-pedals' },
-            // Throttle (big green button). onTouchCancel mirrors onTouchEnd on
-            // all four hold-buttons: the browser fires touchcancel (NOT touchend)
-            // when it hijacks the gesture — edge swipe, notification, finger
-            // sliding off — which used to leave the throttle/brake/steer stuck ON.
-            // onMouseLeave releases a mouse press dragged off the button.
-            h('button', {
-              onTouchStart: function(e) { e.preventDefault(); keysRef.current['w'] = true; },
-              onTouchEnd: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
-              onTouchCancel: function(e) { e.preventDefault(); keysRef.current['w'] = false; },
-              onMouseDown: function() { keysRef.current['w'] = true; },
-              onMouseUp: function() { keysRef.current['w'] = false; },
-              onMouseLeave: function() { keysRef.current['w'] = false; },
-              'aria-label': __alloT('stem.roadready.accelerate_touch_and_hold', 'Accelerate (touch and hold)'),
-              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #4ade80', background: 'rgba(34,197,94,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
-            }, '▲'),
+          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', {
+            style: { position: 'absolute', bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))', right: d.freeExplore && worldControlsOpen ? '180px' : '10px', display: 'flex', flexDirection: 'column', gap: '6px', zIndex: 20, opacity: touchControlsLockedUi ? 0.64 : 1, transition: reducedMotionRef.current ? 'none' : 'opacity 160ms ease' },
+            className: 'touch-controls rr-touch-pedals',
+            'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'
+          },
+            touchControlsLockedUi ? h('div', { 'aria-hidden': 'true', style: { alignSelf: 'center', padding: '3px 7px', borderRadius: '999px', background: 'rgba(15,23,42,0.92)', border: '1px solid #cbd5e1', color: '#fff', fontSize: '9px', fontWeight: 900, letterSpacing: '0.08em' } }, '🔒 SCAN') : null,
+            h('button', Object.assign({}, drivingHoldProps('w', __alloT('stem.roadready.accelerate_touch_and_hold', 'Accelerate (touch and hold)'), 'Space Enter'), {
+              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #4ade80', background: 'rgba(34,197,94,0.3)', color: '#fff', cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer', touchAction: 'none', userSelect: 'none' }
+            }), h('span', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: '1' } },
+              h('span', { style: { fontSize: '17px' } }, '▲'),
+              h('span', { style: { marginTop: '3px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.04em' } }, 'GO')
+            )),
             h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center' } },
               // Steer left
-              h('button', {
-                onTouchStart: function(e) { e.preventDefault(); keysRef.current['a'] = true; },
-                onTouchEnd: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
-                onTouchCancel: function(e) { e.preventDefault(); keysRef.current['a'] = false; },
-                onMouseDown: function() { keysRef.current['a'] = true; },
-                onMouseUp: function() { keysRef.current['a'] = false; },
-                onMouseLeave: function() { keysRef.current['a'] = false; },
-                'aria-label': __alloT('stem.roadready.steer_left_touch_and_hold', 'Steer left (touch and hold)'),
+              h('button', Object.assign({}, drivingHoldProps('a', __alloT('stem.roadready.steer_left_touch_and_hold', 'Steer left (touch and hold)'), 'Space Enter'), {
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
-              }, '◄'),
+              }), '◄'),
               // Steer right
-              h('button', {
-                onTouchStart: function(e) { e.preventDefault(); keysRef.current['d'] = true; },
-                onTouchEnd: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
-                onTouchCancel: function(e) { e.preventDefault(); keysRef.current['d'] = false; },
-                onMouseDown: function() { keysRef.current['d'] = true; },
-                onMouseUp: function() { keysRef.current['d'] = false; },
-                onMouseLeave: function() { keysRef.current['d'] = false; },
-                'aria-label': __alloT('stem.roadready.steer_right_touch_and_hold', 'Steer right (touch and hold)'),
+              h('button', Object.assign({}, drivingHoldProps('d', __alloT('stem.roadready.steer_right_touch_and_hold', 'Steer right (touch and hold)'), 'Space Enter'), {
                 style: { width: '48px', height: '48px', borderRadius: '50%', border: '2px solid #60a5fa', background: 'rgba(96,165,250,0.3)', color: '#fff', fontSize: '18px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
-              }, '►')
+              }), '►')
             ),
             // Brake (big red button)
-            h('button', {
-              onTouchStart: function(e) { e.preventDefault(); keysRef.current['s'] = true; },
-              onTouchEnd: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
-              onTouchCancel: function(e) { e.preventDefault(); keysRef.current['s'] = false; },
-              onMouseDown: function() { keysRef.current['s'] = true; },
-              onMouseUp: function() { keysRef.current['s'] = false; },
-              onMouseLeave: function() { keysRef.current['s'] = false; },
-              'aria-label': __alloT('stem.roadready.brake_touch_and_hold', 'Brake (touch and hold)'),
-              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', fontSize: '20px', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
-            }, '▼')
+            h('button', Object.assign({}, drivingHoldProps('s', __alloT('stem.roadready.brake_touch_and_hold', 'Brake (touch and hold)'), 'Space Enter'), {
+              style: { width: '60px', height: '60px', borderRadius: '50%', border: '2px solid #ef4444', background: 'rgba(239,68,68,0.3)', color: '#fff', cursor: 'pointer', touchAction: 'none', userSelect: 'none' }
+            }), h('span', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', lineHeight: '1' } },
+              h('span', { style: { fontSize: '17px' } }, '▼'),
+              h('span', { style: { marginTop: '3px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.04em' } }, 'BRAKE')
+            ))
           ) : null,
           // Left side touch: gear + signals (same touch-only guard)
-          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', { style: { position: 'absolute', bottom: 'calc(110px + env(safe-area-inset-bottom, 0px))', left: '10px', display: 'flex', flexDirection: 'column', gap: '4px', zIndex: 20 },
-            className: 'touch-controls rr-touch-secondary' },
-            h('button', { onClick: function() { attemptDriveGear(gearRef.current === 'D' ? 'R' : 'D', true); },
-              'aria-label': __alloT('stem.roadready.shift_between_drive_and_reverse_only_w', 'Shift between Drive and Reverse (only when stopped)'),
-              style: { padding: '8px 14px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.2)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
-            }, __alloT('stem.roadready.shift_gear', '⚙ Shift Gear')),
+          isTouchDeviceRef.current && !rideAlongActiveUi ? h('div', {
+            style: { position: 'absolute', bottom: 'calc(150px + env(safe-area-inset-bottom, 0px))', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 20, opacity: touchControlsLockedUi ? 0.64 : 1, transition: reducedMotionRef.current ? 'none' : 'opacity 160ms ease' },
+            className: 'touch-controls rr-touch-secondary',
+            'data-rr-controls-locked': touchControlsLockedUi ? 'true' : 'false'
+          },
+            h('div', { role: 'group', 'aria-label': 'Transmission', style: { display: 'flex', gap: '4px' } },
+              ['P', 'D', 'R'].map(function(touchGear) {
+                return h('button', {
+                  key: touchGear,
+                  onClick: function() { attemptDriveGear(touchGear, true); },
+                  disabled: touchControlsLockedUi,
+                  'aria-label': 'Shift to ' + (touchGear === 'P' ? 'Park' : touchGear === 'D' ? 'Drive' : 'Reverse'),
+                  'aria-pressed': driveGearUi === touchGear,
+                  'data-rr-focusable': 'true',
+                  style: { minWidth: '44px', minHeight: '44px', padding: '5px 8px', borderRadius: '8px', border: '2px solid ' + (driveGearUi === touchGear ? '#fbbf24' : '#64748b'), background: driveGearUi === touchGear ? 'rgba(251,191,36,0.38)' : 'rgba(15,23,42,0.76)', color: '#fff', fontSize: '13px', fontWeight: 900, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer' }
+                }, touchGear);
+              })
+            ),
+            h('div', { role: 'group', 'aria-label': 'Turn signals', style: { display: 'flex', gap: '4px' } },
             h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === -1 ? 0 : -1, true); },
               'aria-label': __alloT('stem.roadready.toggle_left_turn_signal', 'Toggle left turn signal'),
               'aria-pressed': turnSignalUi === -1,
+              disabled: touchControlsLockedUi,
               'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: { minWidth: '66px', minHeight: '44px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === -1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer' }
             }, __alloT('stem.roadready.signal', '◄ Signal')),
             h('button', { onClick: function() { applyTurnSignal(blinkerRef.current === 1 ? 0 : 1, true); },
               'aria-label': __alloT('stem.roadready.toggle_right_turn_signal', 'Toggle right turn signal'),
               'aria-pressed': turnSignalUi === 1,
+              disabled: touchControlsLockedUi,
               'data-rr-focusable': 'true',
-              style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+              style: { minWidth: '66px', minHeight: '44px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #22c55e', background: turnSignalUi === 1 ? 'rgba(34,197,94,0.4)' : 'rgba(0,0,0,0.4)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer' }
             }, __alloT('stem.roadready.signal_2', 'Signal ►'))
+            ),
+            h('div', { role: 'group', 'aria-label': 'Shoulder checks', style: { display: 'flex', gap: '4px' } },
+              h('button', Object.assign({}, drivingHoldProps('z', 'Look over left shoulder (touch and hold)', 'Space Enter'), {
+                style: { minWidth: '66px', minHeight: '44px', padding: '5px 7px', borderRadius: '7px', border: '1px solid #38bdf8', background: 'rgba(14,116,144,0.32)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer', touchAction: 'none', userSelect: 'none' }
+              }), '👀 Look L'),
+              h('button', Object.assign({}, drivingHoldProps('x', 'Look over right shoulder (touch and hold)', 'Space Enter'), {
+                style: { minWidth: '66px', minHeight: '44px', padding: '5px 7px', borderRadius: '7px', border: '1px solid #38bdf8', background: 'rgba(14,116,144,0.32)', color: '#fff', fontSize: '10px', fontWeight: 800, cursor: touchControlsLockedUi ? 'not-allowed' : 'pointer', touchAction: 'none', userSelect: 'none' }
+              }), 'Look R 👀')
+            )
           ) : null,
           // Free Explore live condition toolbar
           // ── Road Test HUD: score + time remaining (when road test is active) ──
@@ -27939,8 +28740,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var remaining = Math.max(0, roadTestRef.current.durationSec - elapsed);
               var curScore = Math.max(0, roadTestRef.current.score);
               return h('div', null,
-                h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#bbf7d0', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🪪 Road Test · ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0')),
-                h('div', { style: { fontSize: '24px', fontWeight: 900, color: curScore >= 90 ? '#4ade80' : curScore >= 75 ? '#fbbf24' : '#ef4444' } }, curScore + ' / 100')
+                h('div', { className: 'rr-road-test-label', style: { fontSize: '10px', fontWeight: 800, color: '#bbf7d0', textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🪪 Road Test · ' + Math.floor(remaining / 60) + ':' + String(remaining % 60).padStart(2, '0')),
+                h('div', { className: 'rr-road-test-score', style: { fontSize: '24px', fontWeight: 900, color: curScore >= 90 ? '#4ade80' : curScore >= 75 ? '#fbbf24' : '#ef4444' } }, curScore + ' / 100')
               );
             })()
           ) : null,
@@ -28910,7 +29711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 )
               ),
               h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-                h('button', { onClick: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: retryScenarioId, freeExplore: false, freeExploreScenario: null }); }, style: { minHeight: '40px', padding: '9px 15px', borderRadius: '8px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: '#082f49', fontSize: '11px', fontWeight: 900, cursor: 'pointer' } }, 'Practice this now'),
+                h('button', { onClick: function() { updMulti({ view: 'scenarioBriefing', pendingScenario: retryScenarioId, freeExplore: false, freeExploreScenario: null }); }, style: { minHeight: '40px', padding: '9px 15px', borderRadius: '8px', border: 'none', background: 'var(--rr-cyan, #22d3ee)', color: 'var(--rr-cyan-ink, #ffffff)', fontSize: '11px', fontWeight: 900, cursor: 'pointer' } }, 'Practice this now'),
                 h('button', { onClick: function() { setDebriefDetailsOpen(!debriefDetailsOpen); }, 'aria-expanded': debriefDetailsOpen, style: { minHeight: '40px', padding: '9px 15px', borderRadius: '8px', border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontWeight: 750, cursor: 'pointer' } }, debriefDetailsOpen ? 'Hide drive details' : 'Show drive details')
               )
             ),
@@ -29824,7 +30625,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', null, __alloT('stem.roadready.speeding_15_over_3_per_second_auto_fai', '• Speeding 15+ over: -3 per second (auto-fail at -18).')),
             h('div', null, __alloT('stem.roadready.unsignaled_lane_change_4_each', '• Unsignaled lane change: -4 each.')),
             h('div', null, __alloT('stem.roadready.crash_any_speed_25_and_typically_auto_', '• Crash (any speed): -25 and typically auto-fail.')),
-            h('div', null, __alloT('stem.roadready.hard_brake_close_follow_skid_each_reco', '• Hard brake, close follow, skid: each recorded.'))
+            h('div', null, __alloT('stem.roadready.hard_brake_close_follow_skid_each_reco', '• Hard brake, close follow, skid: each recorded.')),
+            h('div', null, '• Pass requires the full four minutes, at least 0.19 mi of evaluated driving, and no critical safety event.')
           ),
           d.lastRoadTest ? h('button', { onClick: function() { upd('view', 'roadTestResult'); },
             style: { width: '100%', marginTop: '12px', padding: '10px', borderRadius: '10px', border: '1px solid #4ade80', background: 'transparent', color: '#bbf7d0', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
@@ -29837,6 +30639,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var ded = rtr.deductions || [];
         var byType = {};
         var rtrIncomplete = rtr.completed === false;
+        var rtrInsufficientEvidence = !rtrIncomplete && rtr.evidenceMet === false;
+        var rtrCritical = !!rtr.critical;
+        var rtrDistanceMi = Math.max(0, Number(rtr.distanceMeters) || 0) / METERS_PER_MILE;
         var rtrDurationSec = Math.max(0, Math.round(Number(rtr.durationSec) || 0));
         var rtrDurationLabel = Math.floor(rtrDurationSec / 60) + ':' + String(rtrDurationSec % 60).padStart(2, '0');
         ded.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + e.pts; });
@@ -29844,14 +30649,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: 'var(--rr-blue, #60a5fa)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, __alloT('stem.roadready.menu_14', '← Menu')),
           // Big pass/fail banner
           h('div', { style: { background: rtr.passed ? 'linear-gradient(135deg, #14532d, #166534)' : 'linear-gradient(135deg, #7f1d1d, #450a0a)', borderRadius: '14px', padding: '32px', border: '2px solid ' + (rtr.passed ? '#4ade80' : '#ef4444'), marginBottom: '14px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : rtrIncomplete ? '⏱️' : '❌'),
-            h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : rtrIncomplete ? 'Incomplete — Try Again' : 'Not Yet — Try Again'),
+            h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : rtrIncomplete ? '⏱️' : rtrCritical ? '⚠️' : rtrInsufficientEvidence ? '🛣️' : '❌'),
+            h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : rtrIncomplete ? 'Incomplete — Try Again' : rtrCritical ? 'Safety Review Required' : rtrInsufficientEvidence ? 'More Driving Evidence Needed' : 'Not Yet — Try Again'),
             h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.score + ' / 100'),
             h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed
               ? 'You cleared this simulator\'s 90-point bar — your rules and hazard decisions are solid. The real Maine BMV road test is scored by an examiner riding with you, on car control and observation a keyboard cannot measure.'
               : rtrIncomplete
                 ? 'Complete the full four-minute evaluated drive to earn a result. Evaluated time: ' + rtrDurationLabel + '.'
-                : 'Need 90+ to pass. Review the deductions below and try again.')
+                : rtrCritical
+                  ? 'A learner-fault crash, major violation, vulnerable-road-user strike, or wrong-side event makes this attempt an automatic non-pass. Review the safety event before trying again.'
+                  : rtrInsufficientEvidence
+                    ? 'The timer finished, but a valid attempt needs at least 0.19 mi of evaluated driving. This attempt recorded ' + rtrDistanceMi.toFixed(2) + ' mi.'
+                    : 'Need 90+ to pass. Review the deductions below and try again.'),
+            rtr.distanceMeters != null ? h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#fecaca' } }, 'Evaluated distance: ' + rtrDistanceMi.toFixed(2) + ' mi · minimum 0.19 mi') : null
           ),
           // Deductions breakdown
           ded.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
@@ -29863,8 +30673,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('span', { style: { color: '#ef4444', fontWeight: 700 } }, '-' + byType[t] + ' pts')
               );
             })
-          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid #4ade80', marginBottom: '12px', color: '#bbf7d0', textAlign: 'center' } },
-            __alloT('stem.roadready.clean_drive_no_deductions_recorded', '🌟 Clean drive — no deductions recorded.')
+          ) : h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid ' + (rtrCritical ? '#ef4444' : (rtrIncomplete || rtrInsufficientEvidence) ? '#fbbf24' : '#4ade80'), marginBottom: '12px', color: rtrCritical ? '#fecaca' : (rtrIncomplete || rtrInsufficientEvidence) ? '#fef3c7' : '#bbf7d0', textAlign: 'center' } },
+            rtrCritical ? 'Critical safety status recorded even though no formal point deduction was logged.' :
+              rtrIncomplete ? 'No deductions recorded before this attempt ended.' :
+                rtrInsufficientEvidence ? 'No deductions recorded, but the minimum evaluated distance was not reached.' :
+                  __alloT('stem.roadready.clean_drive_no_deductions_recorded', '🌟 Clean drive — no deductions recorded.')
           ),
           // Timeline
           ded.length > 0 ? h('div', { style: { background: 'var(--allo-stem-deeper, var(--allo-stem-deeper, #020617))', borderRadius: '12px', padding: '14px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px', maxHeight: '220px', overflowY: 'auto' } },
@@ -36598,6 +37411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       METERS_PER_MILE: METERS_PER_MILE, AIR_DENSITY: AIR_DENSITY,
       METERS_PER_WORLD_UNIT: METERS_PER_WORLD_UNIT, FEET_PER_WORLD_UNIT: FEET_PER_WORLD_UNIT,
       GEAR_SHIFT_MAX_SPEED_MPS: GEAR_SHIFT_MAX_SPEED_MPS,
+      ROAD_TEST_MIN_DISTANCE_METERS: ROAD_TEST_MIN_DISTANCE_METERS,
       MAP_SIZE: MAP_SIZE, CHUNK_SIZE: CHUNK_SIZE,
       MAX_ROAD_WIDTH: MAX_ROAD_WIDTH, CLEARANCE_BUFFER: CLEARANCE_BUFFER,
       SPLINE_MAX_HEADING: SPLINE_MAX_HEADING,
@@ -36624,11 +37438,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       worldUnitsToMeters: worldUnitsToMeters, worldUnitsToFeet: worldUnitsToFeet,
       metersToWorldUnits: metersToWorldUnits, canShiftDriveGear: canShiftDriveGear,
       evaluationElapsedSeconds: evaluationElapsedSeconds,
+      startupSequenceActive: startupSequenceActive,
+      startupMovementInputActive: startupMovementInputActive,
+      clearDrivingMovementInputs: clearDrivingMovementInputs,
+      longitudinalNetForce: longitudinalNetForce,
+      roadTestOutcome: roadTestOutcome,
       shouldHoldStartupWorld: shouldHoldStartupWorld,
       followingGapSeconds: followingGapSeconds,
       recommendedFollowingMeters: recommendedFollowingMeters,
       crossedControlLine: crossedControlLine, vehicleFootprint: vehicleFootprint,
       vehicleRectsOverlap: vehicleRectsOverlap, pointOverlapsVehicle: pointOverlapsVehicle,
+      vulnerableRoadUserImpactAttribution: vulnerableRoadUserImpactAttribution,
+      roadUserImpactClosingState: roadUserImpactClosingState,
+      movingRoadUserBlockedByStoppedVehicle: movingRoadUserBlockedByStoppedVehicle,
+      vulnerableRoadUserStartupClearance: vulnerableRoadUserStartupClearance,
+      vulnerableRoadUserClosingRespawnMin: vulnerableRoadUserClosingRespawnMin,
+      vulnerableRoadUserFollowingControl: vulnerableRoadUserFollowingControl,
+      trafficFollowingControl: trafficFollowingControl,
+      emergencyFollowingControl: emergencyFollowingControl,
+      emergencyPullOverAssessment: emergencyPullOverAssessment,
       vulnerableRoadUserFootprint: vulnerableRoadUserFootprint,
       vehicleSideClearance: vehicleSideClearance, wildlifeCollisionRadius: wildlifeCollisionRadius,
       landmarkVehicleAppearance: landmarkVehicleAppearance, hazardActorCategory: hazardActorCategory,
@@ -36719,7 +37547,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       alignTrafficToStreamedWorld: alignTrafficToStreamedWorld,
       trafficCountForLevel: trafficCountForLevel,
       reconcileFreeExploreTrafficPopulation: reconcileFreeExploreTrafficPopulation,
-      bicycleLaneOffsetFor: bicycleLaneOffsetFor, alignCyclistsToStreamedWorld: alignCyclistsToStreamedWorld,
+      bicycleLaneOffsetFor: bicycleLaneOffsetFor,
+      vulnerableRoadUserLaneOffset: vulnerableRoadUserLaneOffset,
+      alignCyclistsToStreamedWorld: alignCyclistsToStreamedWorld,
       spawnTraffic: spawnTraffic, spawnRoundaboutTraffic: spawnRoundaboutTraffic,
       roundaboutPose: roundaboutPose, roundaboutApproach: roundaboutApproach, roundaboutGapSeconds: roundaboutGapSeconds,
       updateRoundaboutTrafficVehicle: updateRoundaboutTrafficVehicle, assessRoundaboutFrame: assessRoundaboutFrame,
@@ -36730,7 +37560,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // coaching / grading / misc
       pushDriveEvent: pushDriveEvent, coachTipFor: coachTipFor,
       driveAlertPriority: driveAlertPriority, mergeDriveAlert: mergeDriveAlert,
-      driveAlertAppearance: driveAlertAppearance, canvasMessageLines: canvasMessageLines,
+      driveAlertAppearance: driveAlertAppearance, driveAlertBaseY: driveAlertBaseY,
+      canvasMessageLines: canvasMessageLines,
       rrPracticeFocusFor: rrPracticeFocusFor,
       rrRuleOutcomeFor: rrRuleOutcomeFor,
       rrRuleCueFor: rrRuleCueFor,

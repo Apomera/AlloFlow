@@ -274,7 +274,7 @@ describe('reduced motion', () => {
   it('defaults to the OS preference but leaves the student in charge', () => {
     expect(SRC).toMatch(/matchMedia\('\(prefers-reduced-motion: reduce\)'\)\.matches/);
     // An explicit stored choice must win over the OS default.
-    expect(SRC).toMatch(/d\.sensoryReduceMotion != null\s*\?\s*!!d\.sensoryReduceMotion/);
+    expect(SRC).toMatch(/d\.sensoryReduceMotion != null\s*\?\s*d\.sensoryReduceMotion === true/);
   });
 
   it('honours the app-level .reduce-motion class like the host does', () => {
@@ -289,11 +289,11 @@ describe('reduced motion', () => {
     expect(html).toMatch(/aria-pressed="true"/);
   });
 
-  it('every change that alters the image marks the scene dirty', () => {
+  it('every change that alters the image invalidates and schedules the scene', () => {
     // Otherwise a species or dusk switch would show a stale frame while
     // reduced motion is on.
-    for (const re of [/S\.built\.scentGroup\.visible = \(speciesId === 'dog'\);\s*\n\s*S\.dirty = true;/,
-      /S\.camera\.updateProjectionMatrix\(\);\s*\n\s*S\.dirty = true;\s*\n\s*\}/]) {
+    for (const re of [/S\.built\.scentGroup\.visible = \(speciesId === 'dog'\);\s*\n\s*invalidate\(\);/,
+      /S\.camera\.updateProjectionMatrix\(\);\s*\n\s*invalidate\(\);\s*\n\s*\}/]) {
       expect(SRC).toMatch(re);
     }
   });

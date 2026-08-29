@@ -974,7 +974,7 @@ window.SelHub = window.SelHub || {
             { id: 'badges', label: '\uD83C\uDFC5 Badges' }
           ].map(function(t) {
             return h('button', { key: t.id, role: 'tab', 'aria-label': t.label, 'aria-selected': tab === t.id, 'tabIndex': tab === t.id ? 0 : -1, onClick: function() { upd('tab', t.id); if (announceToSR) announceToSR(t.label + ' tab selected'); },
-              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-600/60 hover:text-cyan-700')
+              className: 'flex-1 min-w-[70px] px-2 py-2 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-cyan-500 focus:ring-offset-1 ' + (tab === t.id ? 'bg-white text-cyan-700 shadow-sm' : 'text-cyan-700 hover:text-cyan-700')
             }, t.label);
           })
         ),

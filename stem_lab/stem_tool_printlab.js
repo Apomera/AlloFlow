@@ -8,6 +8,8 @@
 
   var MAX_FILE_BYTES = 5 * 1024 * 1024;
   var MAX_GCODE_BYTES = 25 * 1024 * 1024;
+  var GEOMETRY_EDGE_CLEARANCE_MM = 5;
+  var DEFAULT_PRINTER_PROFILE = { name: 'School printer', bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, planningClearanceMm: GEOMETRY_EDGE_CLEARANCE_MM, nozzleMm: 0.4, maxTriangles: 250000, maxBytes: MAX_FILE_BYTES };
   var TABS = ['Design', 'Preflight', 'Materials', 'Submit'];
   var SHAPES = ['box', 'sphere', 'cylinder', 'cone', 'torus'];
   var MATERIALS = [
@@ -131,6 +133,23 @@
       'The primitive-modeling engine could not be loaded.'
     );
   }
+
+  // Geometry World is registered later in the shared STEM-tool bundle, so its
+  // focused builder UI lives in a small sidecar that can wait for that registry
+  // entry. Loading it here keeps the local model handoff owned by the two tools
+  // that participate in it and avoids a second copy of Geometry World's engine.
+  function ensureGeometryWorldBuilder() {
+    return loadSidecar(
+      [selfAsset('stem_tool_geometryworld_builder.js'), 'stem_lab/stem_tool_geometryworld_builder.js'],
+      'geometry-world-builder-enhancement',
+      function () { return !!(window.StemLab && window.StemLab.geometryWorldBuilderPure); },
+      'The optional Geometry World free-build enhancement could not be loaded.'
+    );
+  }
+
+  ensureGeometryWorldBuilder().catch(function (error) {
+    try { console.warn('[Print Lab] Geometry World builder enhancement unavailable:', error && error.message ? error.message : error); } catch (_) {}
+  });
 
   function ensurePrintRuntime() {
     return Promise.all([ensurePrintableModel(), ensurePrim3D()]);
@@ -415,9 +434,208 @@
     );
   }
 
+  // Geometry World hands a selected build to Print Lab through one ephemeral,
+  // in-memory slot.  Model bytes never enter persisted toolData, localStorage, or a
+  // network request.  Validate the slot at the receiving boundary before a preview
+  // or advisory inspection is allowed to touch it.
+  var GEOMETRY_WORLD_BLOCK_TYPES = ['stone', 'wood', 'diamond', 'gold', 'sand', 'glass', 'water', 'brick', 'ice', 'lava', 'torch'];
+  var GEOMETRY_WORLD_BLOCK_SHAPES = ['cube', 'halfA', 'halfB', 'quarter'];
+  function sanitizeGeometryWorldSource(source) {
+    if (!source || source.schema !== 'alloflow-geometry-world-build/1' || !Array.isArray(source.blocks)) return null;
+    var seen = {};
+    var blocks = [];
+    source.blocks.forEach(function (block) {
+      if (blocks.length >= 1500 || !block || ![block.x, block.y, block.z].every(function (value) {
+        return typeof value === 'number' && isFinite(value) && Math.abs(value) <= 1500;
+      })) return;
+      var x = Math.round(block.x), y = Math.round(block.y), z = Math.round(block.z);
+      var key = x + ',' + y + ',' + z;
+      if (seen[key]) return;
+      seen[key] = true;
+      blocks.push({
+        x: x,
+        y: y,
+        z: z,
+        type: GEOMETRY_WORLD_BLOCK_TYPES.indexOf(block.type) >= 0 ? block.type : 'stone',
+        shape: GEOMETRY_WORLD_BLOCK_SHAPES.indexOf(block.shape) >= 0 ? block.shape : 'cube',
+        rotation: ((Math.round(Number(block.rotation) || 0) % 4) + 4) % 4
+      });
+    });
+    if (!blocks.length) return null;
+    blocks.sort(function (a, b) { return a.y - b.y || a.x - b.x || a.z - b.z || a.shape.localeCompare(b.shape) || a.type.localeCompare(b.type) || a.rotation - b.rotation; });
+    return {
+      schema: 'alloflow-geometry-world-build/1',
+      title: safeText(source.title, 100) || 'Geometry World selected build',
+      coordinateSystem: 'x-right,y-up,z-depth',
+      blocks: blocks
+    };
+  }
+  function inspectGeometryWorldBinaryStl(bytes, triangleCount) {
+    var view;
+    try { view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength); } catch (_) { return null; }
+    var min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
+    for (var triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
+      var base = 84 + triangleIndex * 50;
+      var values = [];
+      for (var valueIndex = 0; valueIndex < 12; valueIndex++) values.push(view.getFloat32(base + valueIndex * 4, true));
+      if (!values.every(function (value) { return typeof value === 'number' && isFinite(value) && Math.abs(value) <= 100000; })) return null;
+      var ax = values[3], ay = values[4], az = values[5];
+      var bx = values[6], by = values[7], bz = values[8];
+      var cx = values[9], cy = values[10], cz = values[11];
+      var ux = bx - ax, uy = by - ay, uz = bz - az;
+      var vx = cx - ax, vy = cy - ay, vz = cz - az;
+      var crossX = uy * vz - uz * vy, crossY = uz * vx - ux * vz, crossZ = ux * vy - uy * vx;
+      if (crossX * crossX + crossY * crossY + crossZ * crossZ <= 0.000000000001) return null;
+      [[ax, ay, az], [bx, by, bz], [cx, cy, cz]].forEach(function (vertex) {
+        for (var axis = 0; axis < 3; axis++) { min[axis] = Math.min(min[axis], vertex[axis]); max[axis] = Math.max(max[axis], vertex[axis]); }
+      });
+    }
+    function extent(axis) { return Math.round((max[axis] - min[axis]) * 10000) / 10000; }
+    return { L: extent(0), W: extent(2), H: extent(1) };
+  }
+  function geometryWorldSourceSummary(source, triangleCount, meshDimensions) {
+    var minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity, maxZ = -Infinity;
+    var shapedCount = 0;
+    source.blocks.forEach(function (block) {
+      minX = Math.min(minX, block.x); maxX = Math.max(maxX, block.x);
+      minY = Math.min(minY, block.y); maxY = Math.max(maxY, block.y);
+      minZ = Math.min(minZ, block.z); maxZ = Math.max(maxZ, block.z);
+      if (block.shape !== 'cube') shapedCount += 1;
+    });
+    return {
+      blockCount: source.blocks.length,
+      triangleCount: triangleCount,
+      shapedCount: shapedCount,
+      dimensions: { L: maxX - minX + 1, W: maxZ - minZ + 1, H: maxY - minY + 1 },
+      meshDimensions: meshDimensions
+    };
+  }
+  function scaledGeometryWorldDimensions(summary, unitMm) {
+    var dimensions = summary && summary.meshDimensions;
+    if (!dimensions || ![dimensions.L, dimensions.W, dimensions.H].every(function (value) { return typeof value === 'number' && isFinite(value) && value >= 0; })) return null;
+    var scale = clamp(unitMm, 0.01, 1000, 5);
+    function scaled(value) { return Math.round(value * scale * 100) / 100; }
+    var result = { width: scaled(dimensions.L), depth: scaled(dimensions.W), height: scaled(dimensions.H) };
+    result.label = result.width + ' × ' + result.depth + ' × ' + result.height + ' mm';
+    return result;
+  }
+  function geometryWorldPrinterFit(physicalSize, profile) {
+    if (!physicalSize || !profile) return null;
+    var limits = {
+      width: clamp(profile.bedWidthMm, 1, 10000, 220),
+      depth: clamp(profile.bedDepthMm, 1, 10000, 220),
+      height: clamp(profile.bedHeightMm, 1, 10000, 250)
+    };
+    var over = [];
+    if (physicalSize.width > limits.width) over.push('width');
+    if (physicalSize.depth > limits.depth) over.push('depth');
+    if (physicalSize.height > limits.height) over.push('height');
+    return {
+      fits: over.length === 0,
+      over: over,
+      profileLabel: limits.width + ' × ' + limits.depth + ' × ' + limits.height + ' mm'
+    };
+  }
+  function geometryWorldScaleRecommendation(summary, profile, currentUnitMm, clearanceMm) {
+    var dimensions = summary && summary.meshDimensions;
+    if (!dimensions || !profile || ![dimensions.L, dimensions.W, dimensions.H].every(function (value) { return typeof value === 'number' && isFinite(value) && value >= 0; })) return null;
+    if (!(dimensions.L > 0 || dimensions.W > 0 || dimensions.H > 0)) return null;
+    var clearance = clamp(clearanceMm, 0, 1000, GEOMETRY_EDGE_CLEARANCE_MM);
+    var profileSize = {
+      width: clamp(profile.bedWidthMm, 1, 10000, 220),
+      depth: clamp(profile.bedDepthMm, 1, 10000, 220),
+      height: clamp(profile.bedHeightMm, 1, 10000, 250)
+    };
+    var available = {
+      width: profileSize.width - clearance * 2,
+      depth: profileSize.depth - clearance * 2,
+      height: profileSize.height - clearance * 2
+    };
+    var current = clamp(currentUnitMm, 0.01, 1000, 5);
+    if (available.width <= 0 || available.depth <= 0 || available.height <= 0) {
+      return { canFit: false, needsReduction: true, recommendedUnitMm: null, clearanceMm: clearance, limitingDimensions: [], availableLabel: 'No usable clearance envelope' };
+    }
+    var candidates = [
+      { name: 'width', size: dimensions.L, available: available.width },
+      { name: 'depth', size: dimensions.W, available: available.depth },
+      { name: 'height', size: dimensions.H, available: available.height }
+    ].filter(function (axis) { return axis.size > 0; }).map(function (axis) {
+      return { name: axis.name, size: axis.size, available: axis.available, maxUnitMm: axis.available / axis.size };
+    });
+    if (!candidates.length) return null;
+    var rawMaximum = Math.min.apply(Math, candidates.map(function (axis) { return axis.maxUnitMm; }));
+    var safeMaximum = Math.floor(Math.min(1000, rawMaximum) * 100) / 100;
+    var canFit = safeMaximum >= 0.01;
+    return {
+      canFit: canFit,
+      needsReduction: !canFit || current > safeMaximum,
+      recommendedUnitMm: canFit ? safeMaximum : null,
+      currentUnitMm: current,
+      reductionPercent: canFit && current > safeMaximum ? Math.round((1 - safeMaximum / current) * 1000) / 10 : 0,
+      recommendedPhysicalSize: canFit ? scaledGeometryWorldDimensions(summary, safeMaximum) : null,
+      clearanceMm: clearance,
+      limitingDimensions: candidates.filter(function (axis) { return Math.abs(axis.maxUnitMm - rawMaximum) < 0.000001; }).map(function (axis) { return axis.name; }),
+      limitingCalculations: candidates.filter(function (axis) { return Math.abs(axis.maxUnitMm - rawMaximum) < 0.000001; }).map(function (axis) {
+        return { dimension: axis.name, availableMm: Math.round(axis.available * 100) / 100, modelUnits: Math.round(axis.size * 1000) / 1000, rawUnitMm: Math.round(axis.maxUnitMm * 1000) / 1000 };
+      }),
+      availableLabel: available.width + ' \u00D7 ' + available.depth + ' \u00D7 ' + available.height + ' mm'
+    };
+  }
+  function geometryWorldOrientationAdvice(summary, profile, currentUnitMm, clearanceMm) {
+    var dimensions = summary && summary.meshDimensions;
+    var current = geometryWorldScaleRecommendation(summary, profile, currentUnitMm, clearanceMm);
+    if (!dimensions || !current || !current.canFit || !current.needsReduction || !(current.recommendedUnitMm > 0)) return null;
+    var rotatedSummary = Object.assign({}, summary, {
+      meshDimensions: { L: dimensions.W, W: dimensions.L, H: dimensions.H }
+    });
+    var rotated = geometryWorldScaleRecommendation(rotatedSummary, profile, currentUnitMm, clearanceMm);
+    if (!rotated || !rotated.canFit || !(rotated.recommendedUnitMm > current.recommendedUnitMm + 0.01)) return null;
+    var currentScale = clamp(currentUnitMm, 0.01, 1000, 5);
+    var currentScaleFitsRotated = currentScale <= rotated.recommendedUnitMm;
+    var suggestedUnitMm = currentScaleFitsRotated ? currentScale : rotated.recommendedUnitMm;
+    return {
+      beneficial: true,
+      currentMaximumUnitMm: current.recommendedUnitMm,
+      rotatedMaximumUnitMm: rotated.recommendedUnitMm,
+      currentScaleFitsRotated: currentScaleFitsRotated,
+      suggestedUnitMm: suggestedUnitMm,
+      rotatedPhysicalSize: scaledGeometryWorldDimensions(rotatedSummary, suggestedUnitMm),
+      improvementPercent: Math.round((rotated.recommendedUnitMm / current.recommendedUnitMm - 1) * 1000) / 10,
+      clearanceMm: rotated.clearanceMm
+    };
+  }
+  function readPendingLocalHandoff(candidate) {
+    var pending = arguments.length ? candidate : (typeof window !== 'undefined' ? window.__alloPrintLabPendingHandoff : null);
+    if (!pending || pending.schema !== 'alloflow-print-source/1' || pending.format !== 'STL' || pending.sourceTool !== 'geometryWorld') return null;
+    var bytes = pending.bytes instanceof Uint8Array ? pending.bytes
+      : pending.bytes instanceof ArrayBuffer ? new Uint8Array(pending.bytes) : null;
+    if (!bytes || bytes.byteLength < 84 || bytes.byteLength > MAX_FILE_BYTES) return null;
+    var triangleCount;
+    try { triangleCount = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint32(80, true); } catch (_) { return null; }
+    if (!triangleCount || triangleCount > 250000 || 84 + triangleCount * 50 !== bytes.byteLength) return null;
+    var meshDimensions = inspectGeometryWorldBinaryStl(bytes, triangleCount);
+    if (!meshDimensions) return null;
+    var source = sanitizeGeometryWorldSource(pending.sourceModel);
+    if (!source) return null;
+    return {
+      id: safeText(pending.id, 80),
+      sourceTool: 'geometryWorld',
+      format: 'STL',
+      bytes: bytes,
+      sourceName: safeText(pending.sourceName, 120) || 'geometry-world-build.stl',
+      title: safeText(pending.title, 100) || 'Geometry World build',
+      description: safeText(pending.description, 500),
+      unitMm: clamp(pending.unitMm, 0.01, 1000, 5),
+      sourceModel: source,
+      summary: geometryWorldSourceSummary(source, triangleCount, meshDimensions)
+    };
+  }
+
   window.StemLab.printLabPure = {
     MAX_FILE_BYTES: MAX_FILE_BYTES,
     MAX_GCODE_BYTES: MAX_GCODE_BYTES,
+    GEOMETRY_EDGE_CLEARANCE_MM: GEOMETRY_EDGE_CLEARANCE_MM,
+    DEFAULT_PRINTER_PROFILE: Object.assign({}, DEFAULT_PRINTER_PROFILE),
     TABS: TABS.slice(),
     SHAPES: SHAPES.slice(),
     MATERIALS: MATERIALS.map(function (item) { return Object.assign({}, item); }),
@@ -425,7 +643,14 @@
     allowedGcodeFile: allowedGcodeFile,
     sourceExtension: sourceExtension,
     normalizeRewardsPortalUrl: normalizeRewardsPortalUrl,
-    normalizePersistedRecipe: normalizePersistedRecipe
+    normalizePersistedRecipe: normalizePersistedRecipe,
+    sanitizeGeometryWorldSource: sanitizeGeometryWorldSource,
+    inspectGeometryWorldBinaryStl: inspectGeometryWorldBinaryStl,
+    scaledGeometryWorldDimensions: scaledGeometryWorldDimensions,
+    geometryWorldPrinterFit: geometryWorldPrinterFit,
+    geometryWorldScaleRecommendation: geometryWorldScaleRecommendation,
+    geometryWorldOrientationAdvice: geometryWorldOrientationAdvice,
+    readPendingLocalHandoff: readPendingLocalHandoff
   };
 
   window.StemLab.registerTool('printLab', {
@@ -440,30 +665,36 @@
     render: function (ctx) {
       var React = ctx.React, h = React.createElement;
       var stored = (ctx.toolData && ctx.toolData.printLab) || {};
-      var initialRecipe = normalizePersistedRecipe(stored.recipe);
-      var initialFormat = initialRecipe ? 'RECIPE' : 'RECIPE';
-      var _tab = React.useState(TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design'), activeTab = _tab[0], setActiveTab = _tab[1];
+      var pendingSlotRef = React.useRef(undefined);
+      if (pendingSlotRef.current === undefined) pendingSlotRef.current = window.__alloPrintLabPendingHandoff || null;
+      var pendingHandoffRef = React.useRef(undefined);
+      if (pendingHandoffRef.current === undefined) pendingHandoffRef.current = readPendingLocalHandoff(pendingSlotRef.current);
+      var pendingHandoff = pendingHandoffRef.current;
+      var initialRecipe = pendingHandoff ? null : normalizePersistedRecipe(stored.recipe);
+      var initialFormat = pendingHandoff ? pendingHandoff.format : 'RECIPE';
+      var _tab = React.useState(pendingHandoff ? 'Design' : (TABS.indexOf(stored.activeTab) >= 0 ? stored.activeTab : 'Design')), activeTab = _tab[0], setActiveTab = _tab[1];
       var _ready = React.useState(!!(window.AlloModules && window.AlloModules.PrintableModel && window.AlloModules.Prim3D)), runtimeReady = _ready[0], setRuntimeReady = _ready[1];
       var _runtimeError = React.useState(''), runtimeError = _runtimeError[0], setRuntimeError = _runtimeError[1];
       var _format = React.useState(initialFormat), format = _format[0], setFormat = _format[1];
       var _recipe = React.useState(initialRecipe), recipe = _recipe[0], setRecipe = _recipe[1];
-      var _bytes = React.useState(null), fileBytes = _bytes[0], setFileBytes = _bytes[1];
+      var _bytes = React.useState(pendingHandoff ? pendingHandoff.bytes : null), fileBytes = _bytes[0], setFileBytes = _bytes[1];
       var _glb = React.useState(null), glbRoot = _glb[0], setGlbRoot = _glb[1];
-      var _sourceName = React.useState(''), sourceName = _sourceName[0], setSourceName = _sourceName[1];
+      var _sourceName = React.useState(pendingHandoff ? pendingHandoff.sourceName : ''), sourceName = _sourceName[0], setSourceName = _sourceName[1];
       var _hash = React.useState(''), contentHash = _hash[0], setContentHash = _hash[1];
-      var _unit = React.useState(clamp(stored.unitMm, 0.01, 1000, 20)), unitMm = _unit[0], setUnitMm = _unit[1];
-      var _report = React.useState(stored.preflight || null), report = _report[0], setReport = _report[1];
-      var _status = React.useState('Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
+      var _unit = React.useState(pendingHandoff ? pendingHandoff.unitMm : clamp(stored.unitMm, 0.01, 1000, 20)), unitMm = _unit[0], setUnitMm = _unit[1];
+      var _report = React.useState(pendingHandoff ? null : (stored.preflight || null)), report = _report[0], setReport = _report[1];
+      var _status = React.useState(pendingHandoff ? 'Loaded a connected Geometry World build locally. Confirm its scale, preview, and advisory preflight.' : 'Model files stay on this device until you deliberately download a handoff.'), status = _status[0], setStatus = _status[1];
       var _revision = React.useState(0), revision = _revision[0], setRevision = _revision[1];
       var _subject = React.useState(''), aiSubject = _subject[0], setAiSubject = _subject[1];
       var _refine = React.useState(''), aiRefinement = _refine[0], setAiRefinement = _refine[1];
       var _busy = React.useState(false), aiBusy = _busy[0], setAiBusy = _busy[1];
-      var _title = React.useState(stored.title || ''), title = _title[0], setTitle = _title[1];
-      var _description = React.useState(stored.description || ''), description = _description[0], setDescription = _description[1];
+      var _title = React.useState(pendingHandoff ? pendingHandoff.title : (stored.title || '')), title = _title[0], setTitle = _title[1];
+      var _description = React.useState(pendingHandoff ? pendingHandoff.description : (stored.description || '')), description = _description[0], setDescription = _description[1];
+      var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
       var _note = React.useState(stored.studentNote || ''), studentNote = _note[0], setStudentNote = _note[1];
       var _aiUse = React.useState(stored.aiUse || 'NONE'), aiUse = _aiUse[0], setAiUse = _aiUse[1];
       var _aiDisclosure = React.useState(stored.aiDisclosure || ''), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
-      var _profile = React.useState(stored.profile || { name: 'School printer', bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250, nozzleMm: 0.4, maxTriangles: 250000, maxBytes: MAX_FILE_BYTES }), profile = _profile[0], setProfile = _profile[1];
+      var _profile = React.useState(Object.assign({}, DEFAULT_PRINTER_PROFILE, stored.profile || {})), profile = _profile[0], setProfile = _profile[1];
       var _material = React.useState(stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
       var _support = React.useState(clamp(stored.supportPercent, 0, 200, 10)), supportPercent = _support[0], setSupportPercent = _support[1];
@@ -499,6 +730,14 @@
       }, []);
 
       React.useEffect(function () {
+        if (window.__alloPrintLabPendingHandoff === pendingSlotRef.current) delete window.__alloPrintLabPendingHandoff;
+        if (!pendingHandoff) return;
+        // Persist only small form defaults. The STL bytes and editable source model
+        // intentionally remain in component memory and disappear when Print Lab closes.
+        persist({ activeTab: 'Design', recipe: null, unitMm: pendingHandoff.unitMm, preflight: null, title: pendingHandoff.title, description: pendingHandoff.description });
+      }, []);
+
+      React.useEffect(function () {
         return function () { if (glbRoot) disposeObject(glbRoot, true); };
       }, [glbRoot]);
 
@@ -509,6 +748,13 @@
 
       function clearJobArtifacts() {
         setJobTicket(null); setSimulatorSnapshot(null); setSimulatorJobKey(''); setSimulatedSchedule(null); simulatorRef.current = null;
+      }
+
+      function applyUnitScale(value, message) {
+        var next = clamp(value, 0.01, 1000, unitMm);
+        setUnitMm(next); setReport(null); clearJobArtifacts(); setRevision(function (current) { return current + 1; });
+        persist({ unitMm: next, preflight: null });
+        if (message) announce(message);
       }
 
       function chooseTab(name) {
@@ -534,6 +780,7 @@
         var P3D = window.AlloModules && window.AlloModules.Prim3D;
         var clean = P3D ? P3D.normalizeRecipe(next) : next;
         setRecipe(clean); setFormat('RECIPE'); setFileBytes(null); setGlbRoot(null); setSourceName(''); setReport(null); setContentHash('');
+        setSourceContext(null);
         setRepairResult(null); clearJobArtifacts();
         setRevision(function (value) { return value + 1; });
         persist({ recipe: clean, unitMm: unitMm, preflight: null });
@@ -554,6 +801,27 @@
         var P3D = window.AlloModules && window.AlloModules.Prim3D, clean = P3D && P3D.normalizeRecipe(savedSculpts[selectedSaved]);
         if (!clean) { announce('That saved Geometry Sandbox design is not a valid primitive recipe.'); return; }
         setUnitMm(20); updateRecipe(clean); setTitle(clean.name || selectedSaved); announce('Loaded “' + selectedSaved + '” from Geometry Sandbox.');
+      }
+
+      function downloadGeometryWorldSource() {
+        var source = sourceContext && sourceContext.sourceModel;
+        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce('No editable Geometry World source is available in this session.'); return; }
+        downloadBlob(new Blob([JSON.stringify(source, null, 2)], { type: 'application/json' }), 'geometry-world-editable-build.json');
+        announce('Downloaded the editable Geometry World block recipe. It contains shapes and rotations, not the physical print settings.');
+      }
+
+      function returnToGeometryWorld() {
+        var source = sourceContext && sourceContext.sourceModel;
+        if (!source || source.schema !== 'alloflow-geometry-world-build/1') { announce('No editable Geometry World source is available in this session.'); return; }
+        if (typeof ctx.setStemLabTool !== 'function') { downloadGeometryWorldSource(); return; }
+        window.__alloGeometryWorldPendingBuild = {
+          schema: 'alloflow-geometry-world-build/1',
+          id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
+          sourceModel: JSON.parse(JSON.stringify(source))
+        };
+        if (typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
+        announce('Returning the editable selected build to Geometry World. Print settings remain in Print Lab only.');
+        ctx.setStemLabTool('geometryWorld');
       }
 
       function runPreflight() {
@@ -601,6 +869,7 @@
         var file = event.target.files && event.target.files[0]; event.target.value = '';
         var accepted = allowedFile(file); if (!accepted.ok) { announce(accepted.message); return; }
         if (!runtimeReady) { announce('The local inspection engine is still loading.'); return; }
+        setSourceContext(null);
         var Printable = window.AlloModules.PrintableModel, P3D = window.AlloModules.Prim3D;
         announce('Reading ' + accepted.format + ' locally…');
         readBytes(file).then(function (bytes) {
@@ -679,6 +948,12 @@
       var slicerMaterial = gcodeMetadata && gcodeMetadata.filamentGrams > 0 ? { estimatedGrams: gcodeMetadata.filamentGrams, method: 'reviewed-slicer-comment' } : null;
       var quoteMaterial = slicerMaterial || materialEstimate;
       var pointQuote = Printable && quoteMaterial ? Printable.estimatePointQuote(quoteMaterial, quoteConfig) : null;
+      var geometryPhysicalSize = scaledGeometryWorldDimensions(sourceContext && sourceContext.summary, unitMm);
+      var geometryPrinterFit = geometryWorldPrinterFit(geometryPhysicalSize, profile);
+      var geometryPlanningClearanceMm = clamp(profile.planningClearanceMm, 0, 50, GEOMETRY_EDGE_CLEARANCE_MM);
+      var geometryScaleRecommendation = geometryWorldScaleRecommendation(sourceContext && sourceContext.summary, profile, unitMm, geometryPlanningClearanceMm);
+      var geometryOrientationAdvice = geometryWorldOrientationAdvice(sourceContext && sourceContext.summary, profile, unitMm, geometryPlanningClearanceMm);
+      var geometryClearanceFit = geometryPrinterFit && (!geometryScaleRecommendation || !geometryScaleRecommendation.needsReduction);
 
       function setQuoteConfigField(key, value) {
         var next = Object.assign({}, quoteConfig); next[key] = Number(value); setQuoteConfig(next); clearJobArtifacts(); persist({ quoteConfig: next });
@@ -807,6 +1082,37 @@
       function designPanel() {
         return h('div', { className: 'grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(360px,.9fr)]' },
           h('div', { className: 'space-y-4' },
+            sourceContext && sourceContext.sourceTool === 'geometryWorld' && h('section', { className: 'rounded-2xl border border-cyan-500/70 bg-gradient-to-br from-cyan-950/80 via-slate-900 to-violet-950/80 p-4', 'aria-labelledby': 'print-lab-geometry-source-title' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-cyan-300' }, 'Local connected-tool handoff'),
+                  h('h2', { id: 'print-lab-geometry-source-title', className: 'mt-1 text-lg font-black text-white' }, 'From Geometry World'),
+                  h('p', { className: 'mt-1 max-w-2xl text-xs leading-5 text-slate-200' }, 'The STL preview is physical geometry. A separate editable block recipe is held only in this open session so shapes and rotations are not lost.')
+                ),
+                h('span', { className: 'rounded-full border border-cyan-400/50 bg-cyan-950 px-3 py-1 text-[10px] font-black text-cyan-100' }, 'Default: 5 mm / block')
+              ),
+              h('dl', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4' },
+                [
+                  ['Connected blocks', sourceContext.summary && sourceContext.summary.blockCount || 0],
+                  ['Shaped pieces', sourceContext.summary && sourceContext.summary.shapedCount || 0],
+                  ['STL triangles', sourceContext.summary && sourceContext.summary.triangleCount || 0],
+                  ['Block envelope', sourceContext.summary && sourceContext.summary.dimensions ? sourceContext.summary.dimensions.L + ' × ' + sourceContext.summary.dimensions.W + ' × ' + sourceContext.summary.dimensions.H + ' blocks' : '-']
+                ].map(function (item) { return h('div', { key: item[0], className: 'rounded-xl border border-slate-700 bg-slate-950/60 p-2' }, h('dt', { className: 'text-[9px] font-bold uppercase text-slate-400' }, item[0]), h('dd', { className: 'mt-1 text-sm font-black text-white' }, String(item[1]))); })
+              ),
+              geometryPhysicalSize && h('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-emerald-400/50 bg-emerald-950/35 p-3', 'aria-live': 'polite' },
+                h('div', null,
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-emerald-300' }, 'Current physical size'),
+                  h('p', { className: 'mt-1 text-xl font-black text-white' }, geometryPhysicalSize.label),
+                  h('p', { className: 'mt-1 text-[10px] leading-4 text-emerald-100' }, 'Exact STL mesh envelope at ' + unitMm + ' mm per Geometry World block. Width × depth × height.')
+                ),
+                h('button', { type: 'button', disabled: Math.abs(unitMm - 5) < 0.000001, onClick: function () { applyUnitScale(5, 'Restored the Geometry World default scale of 5 millimeters per block.'); }, className: 'min-h-[40px] rounded-lg border border-emerald-400 px-3 text-[10px] font-black text-emerald-100 disabled:cursor-default disabled:opacity-50' }, 'Reset to 5 mm / block')
+              ),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                h('button', { type: 'button', onClick: returnToGeometryWorld, className: 'min-h-[42px] rounded-xl bg-cyan-700 px-4 text-xs font-black text-white' }, 'Revise in Geometry World'),
+                h('button', { type: 'button', onClick: downloadGeometryWorldSource, className: 'min-h-[42px] rounded-xl border border-cyan-400 px-4 text-xs font-black text-cyan-100' }, 'Download editable block source')
+              ),
+              h('p', { className: 'mt-3 text-[11px] leading-5 text-amber-100' }, 'Virtual Stone, Wood, Gold, and other block labels describe appearance only. Select the actual school filament in Materials after reviewing its properties and end-of-life limits.')
+            ),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-create-title' },
               h('h2', { id: 'print-lab-create-title', className: 'text-lg font-black text-white' }, 'Design with primitives'),
               h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Build directly, bring in a Geometry Sandbox sculpture, or ask AI for an editable starting recipe. Every AI result uses the same constrained primitive format.'),
@@ -828,7 +1134,7 @@
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-import-title' },
               h('h2', { id: 'print-lab-import-title', className: 'text-base font-black text-white' }, 'Import locally'),
               h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Accepted: primitive recipe JSON, self-contained GLB, or STL. Maximum 5 MB. The file is inspected in this browser and is not uploaded by Print Lab.'),
-              h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl bg-sky-700 px-4 text-xs font-black text-white' }, 'Choose RECIPE / GLB / STL', h('input', { type: 'file', accept: '.json,.glb,.stl,application/json,model/gltf-binary,model/stl', className: 'sr-only', onChange: importFile })),
+              h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl bg-sky-700 px-4 text-xs font-black text-white focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Choose RECIPE / GLB / STL', h('input', { type: 'file', accept: '.json,.glb,.stl,application/json,model/gltf-binary,model/stl', className: 'sr-only', onChange: importFile })),
               sourceName && h('p', { className: 'mt-2 text-xs text-slate-300' }, 'Loaded locally: ', h('strong', { className: 'text-white' }, sourceName), '. The downloaded handoff substitutes a generic file name and a content hash.'),
               savedNames.length > 0 && h('div', { className: 'mt-3 flex flex-wrap items-end gap-2' },
                 h('label', { className: 'min-w-[220px] text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Saved Geometry Sandbox sculpture'), h('select', { value: selectedSaved, onChange: function (event) { setSelectedSaved(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 px-2 text-white' }, h('option', { value: '' }, 'Choose a saved sculpture'), savedNames.map(function (name) { return h('option', { key: name, value: name }, name); }))),
@@ -840,7 +1146,94 @@
             h(PrintPreview, { React: React, ready: runtimeReady, format: format, recipe: recipe, bytes: fileBytes, glbRoot: glbRoot, unitMm: unitMm, revision: revision }),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4' },
               h('h2', { className: 'text-sm font-black text-white' }, 'Physical scale'),
-              field('Millimeters per model unit', unitMm, function (value) { var next = clamp(value, 0.01, 1000, unitMm); setUnitMm(next); setReport(null); clearJobArtifacts(); setRevision(function (v) { return v + 1; }); persist({ unitMm: next, preflight: null }); }, { type: 'number', min: 0.01, max: 1000, step: 0.1 }),
+              sourceContext && sourceContext.sourceTool === 'geometryWorld' && h('div', { className: 'mt-3', 'aria-label': 'Geometry World scale presets' },
+                h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-400' }, 'Scale presets'),
+                h('div', { className: 'mt-2 grid grid-cols-3 gap-2' },
+                  [
+                    { value: 2.5, label: 'Draft', note: '2.5 mm' },
+                    { value: 5, label: 'Default', note: '5 mm' },
+                    { value: 10, label: 'Large', note: '10 mm' }
+                  ].map(function (preset) {
+                    var selected = Math.abs(unitMm - preset.value) < 0.000001;
+                    return h('button', {
+                      key: preset.value,
+                      type: 'button',
+                      'aria-pressed': selected ? 'true' : 'false',
+                      onClick: function () { applyUnitScale(preset.value, 'Changed Geometry World scale to ' + preset.value + ' millimeters per block. Run preflight again.'); },
+                      className: 'min-h-[48px] rounded-xl border px-2 text-center text-[10px] font-black ' + (selected ? 'border-cyan-300 bg-cyan-950 text-white' : 'border-slate-600 bg-slate-950 text-slate-200')
+                    }, h('span', { className: 'block' }, preset.label), h('span', { className: 'mt-1 block font-medium text-slate-400' }, preset.note + ' / block'));
+                  })
+                )
+              ),
+              field(sourceContext && sourceContext.sourceTool === 'geometryWorld' ? 'Millimeters per Geometry World block' : 'Millimeters per model unit', unitMm, function (value) { applyUnitScale(value); }, { type: 'number', min: 0.01, max: 1000, step: 0.1 }),
+              geometryPhysicalSize && h('p', { className: 'mt-2 rounded-lg border border-emerald-800 bg-emerald-950/30 p-2 text-xs font-bold text-emerald-100' }, 'Current mesh envelope: ' + geometryPhysicalSize.label + ' (width × depth × height).'),
+              geometryPrinterFit && h('div', {
+                className: 'mt-2 rounded-lg border p-2 text-[11px] leading-5 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
+                role: 'status',
+                'data-geometry-printer-fit': geometryClearanceFit ? 'true' : 'false'
+              },
+                h('strong', null, geometryClearanceFit
+                  ? 'Within the current printer envelope with ' + geometryPlanningClearanceMm + ' mm planning clearance. '
+                  : geometryPrinterFit.fits
+                    ? 'Fits the bed dimensions but not the preferred ' + geometryPlanningClearanceMm + ' mm planning clearance. '
+                    : 'Outside the current printer envelope. '),
+                geometryClearanceFit
+                  ? 'Compared with ' + geometryPrinterFit.profileLabel + '. This is a planning buffer only; preflight and staff review are still required.'
+                  : geometryPrinterFit.fits
+                    ? 'The mesh remains inside ' + geometryPrinterFit.profileLabel + ', but a smaller scale is suggested before preflight.'
+                  : 'The ' + geometryPrinterFit.over.join(', ') + ' dimension' + (geometryPrinterFit.over.length === 1 ? ' is' : 's are') + ' too large for ' + geometryPrinterFit.profileLabel + '. Choose a smaller scale or revise the model.'
+              ),
+              geometryScaleRecommendation && geometryScaleRecommendation.needsReduction && h('div', {
+                className: 'mt-2 rounded-xl border border-cyan-700 bg-cyan-950/30 p-3 text-cyan-50',
+                role: 'region',
+                'aria-label': 'Suggested Geometry World scale correction',
+                'data-geometry-scale-recommendation': geometryScaleRecommendation.canFit ? geometryScaleRecommendation.recommendedUnitMm : 'unavailable'
+              },
+                h('strong', { className: 'block text-xs' }, geometryScaleRecommendation.canFit
+                  ? 'Suggested safe-fit scale: ' + geometryScaleRecommendation.recommendedUnitMm + ' mm per block'
+                  : 'No supported scale preserves the planning clearance'),
+                h('p', { className: 'mt-1 text-[11px] leading-5 text-cyan-100' }, geometryScaleRecommendation.canFit
+                  ? h(React.Fragment, null,
+                    h('span', null, geometryScaleRecommendation.limitingDimensions.join(' and ').replace(/^./, function (character) { return character.toUpperCase(); })),
+                    geometryScaleRecommendation.limitingDimensions.length === 1 ? ' is the limiting dimension. ' : ' are the limiting dimensions. ',
+                    'This targets a usable ' + geometryScaleRecommendation.availableLabel + ' envelope, preserving ' + geometryScaleRecommendation.clearanceMm + ' mm on every edge. Printer clips, purge lines, and machine keep-out zones still require slicer and staff review.'
+                  )
+                  : 'Revise the model or choose a different printer profile before preflight.'),
+                geometryScaleRecommendation.canFit && geometryScaleRecommendation.recommendedPhysicalSize && h('dl', { className: 'mt-3 grid grid-cols-3 gap-2', 'aria-label': 'Scale change preview' },
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, 'Current envelope'), h('dd', { className: 'mt-1 text-[10px] font-bold text-white' }, geometryPhysicalSize.label)),
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, 'Suggested envelope'), h('dd', { className: 'mt-1 text-[10px] font-bold text-white' }, geometryScaleRecommendation.recommendedPhysicalSize.label)),
+                  h('div', { className: 'rounded-lg bg-slate-950/70 p-2' }, h('dt', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-400' }, 'Scale reduction'), h('dd', { className: 'mt-1 text-[10px] font-bold text-white' }, geometryScaleRecommendation.reductionPercent + '%'))
+                ),
+                geometryScaleRecommendation.canFit && h('details', { className: 'mt-3 rounded-lg border border-cyan-800 bg-slate-950/50 px-3', 'data-geometry-scale-math': 'true' },
+                  h('summary', { className: 'flex min-h-[40px] cursor-pointer items-center text-[11px] font-black text-cyan-100' }, 'How this scale was calculated'),
+                  h('div', { className: 'pb-3 text-[10px] leading-5 text-cyan-100' },
+                    geometryScaleRecommendation.limitingCalculations.map(function (calculation) {
+                      return h('p', { key: calculation.dimension },
+                        calculation.dimension.replace(/^./, function (character) { return character.toUpperCase(); }) + ': ' + calculation.availableMm + ' mm usable ÷ ' + calculation.modelUnits + ' mesh units = ' + calculation.rawUnitMm + ' mm per unit.'
+                      );
+                    }),
+                    h('p', { className: 'mt-1 text-slate-300' }, 'Print Lab rounds downward to ' + geometryScaleRecommendation.recommendedUnitMm + ' mm per block so rounding cannot exceed the planning envelope. This assumes the model keeps its current orientation.')
+                  )
+                ),
+                geometryOrientationAdvice && h('div', {
+                  className: 'mt-3 rounded-lg border border-violet-600 bg-violet-950/35 p-3 text-violet-50',
+                  role: 'note',
+                  'aria-label': 'Alternative 90-degree model orientation',
+                  'data-geometry-orientation-advice': geometryOrientationAdvice.currentScaleFitsRotated ? 'preserve-scale' : 'improve-scale'
+                },
+                  h('strong', { className: 'block text-xs' }, 'A 90-degree turn may fit better'),
+                  h('p', { className: 'mt-1 text-[11px] leading-5 text-violet-100' }, geometryOrientationAdvice.currentScaleFitsRotated
+                    ? 'At the current ' + geometryOrientationAdvice.suggestedUnitMm + ' mm per block, a 90-degree horizontal turn in the school slicer would use an envelope of ' + geometryOrientationAdvice.rotatedPhysicalSize.label + ' and fit the selected planning envelope.'
+                    : 'A 90-degree horizontal turn could allow up to ' + geometryOrientationAdvice.rotatedMaximumUnitMm + ' mm per block instead of ' + geometryOrientationAdvice.currentMaximumUnitMm + ' mm per block, a ' + geometryOrientationAdvice.improvementPercent + '% larger fit scale. At that scale, the rotated envelope would be ' + geometryOrientationAdvice.rotatedPhysicalSize.label + '.'),
+                  h('p', { className: 'mt-2 text-[10px] leading-5 text-violet-200' }, 'This is an orientation option, not an automatic fix. Print Lab has not rotated or rewritten the STL. Rotate it in the receiving slicer, then confirm bed placement, supports, clearance, and the slicer preview before printing.')
+                ),
+                geometryScaleRecommendation.canFit && h('button', {
+                  type: 'button',
+                  onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Reduced Geometry World scale to ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block to preserve a ' + geometryScaleRecommendation.clearanceMm + ' millimeter planning clearance. Run preflight again.'); },
+                  'aria-label': 'Use suggested scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per Geometry World block',
+                  className: 'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-xs font-black text-white hover:bg-cyan-600'
+                }, 'Use ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
+              ),
               h('p', { className: 'mt-2 text-[11px] leading-5 text-amber-100' }, format === 'STL' ? 'STL does not store units. Confirm this value and orientation again in the school slicer.' : format === 'GLB' ? 'GLB scene units and node transforms vary by exporter. Minecraft and other sources still need a deliberate target size.' : 'Recipe units are design units, not automatic millimeters.'),
               h('button', { type: 'button', onClick: function () { chooseTab('Preflight'); }, className: 'mt-3 min-h-[42px] w-full rounded-xl bg-emerald-700 px-4 text-xs font-black text-white' }, 'Continue to Preflight')
             )
@@ -857,7 +1250,41 @@
               field('Bed width (mm)', profile.bedWidthMm, function (v) { setProfileField('bedWidthMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
               field('Bed depth (mm)', profile.bedDepthMm, function (v) { setProfileField('bedDepthMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
               field('Build height (mm)', profile.bedHeightMm, function (v) { setProfileField('bedHeightMm', v); }, { type: 'number', min: 50, max: 1000, step: 1 }),
+              field('Planning clearance (mm)', geometryPlanningClearanceMm, function (v) { setProfileField('planningClearanceMm', v); }, { type: 'number', min: 0, max: 50, step: 1 }),
               field('Nozzle diameter (mm)', profile.nozzleMm, function (v) { setProfileField('nozzleMm', v); }, { type: 'number', min: 0.1, max: 2, step: 0.05 })
+            ),
+            h('p', { className: 'mt-2 text-[10px] leading-5 text-slate-400' }, 'Planning clearance is a conservative advisory buffer removed from both sides of each profile dimension. Adjust it for clips, purge lines, and local procedures; it is not a machine setting.'),
+            geometryPhysicalSize && geometryPrinterFit && h('div', {
+              className: 'mt-3 rounded-xl border p-3 ' + (geometryClearanceFit ? 'border-emerald-700 bg-emerald-950/30 text-emerald-100' : 'border-amber-600 bg-amber-950/30 text-amber-100'),
+              role: 'region',
+              'aria-live': 'polite',
+              'aria-label': 'Geometry World printer fit in Preflight',
+              'data-geometry-preflight-fit': geometryClearanceFit ? 'true' : 'false'
+            },
+              h('strong', { className: 'block text-xs' }, geometryClearanceFit ? 'Geometry World scale fits this profile' : 'Geometry World scale needs attention'),
+              h('p', { className: 'mt-1 text-[11px] leading-5' }, 'Model envelope: ' + geometryPhysicalSize.label + '. Printer profile: ' + geometryPrinterFit.profileLabel + '.'),
+              h('p', { className: 'mt-1 text-[10px] leading-5 opacity-90' }, geometryClearanceFit
+                ? 'Includes the preferred ' + geometryPlanningClearanceMm + ' mm planning clearance. Profile changes update this check immediately; slicer and staff review remain required.'
+                : geometryScaleRecommendation && geometryScaleRecommendation.canFit
+                  ? 'Suggested scale: ' + geometryScaleRecommendation.recommendedUnitMm + ' mm per block, producing approximately ' + geometryScaleRecommendation.recommendedPhysicalSize.label + '. This assumes the current orientation.'
+                  : 'Revise the model or choose a different printer profile before running preflight.'),
+              geometryOrientationAdvice && h('div', {
+                className: 'mt-2 rounded-lg border border-violet-500/70 bg-violet-950/35 p-2 text-violet-100',
+                role: 'note',
+                'data-geometry-preflight-orientation': geometryOrientationAdvice.currentScaleFitsRotated ? 'preserve-scale' : 'improve-scale'
+              },
+                h('strong', { className: 'block text-[11px]' }, 'Orientation option'),
+                h('p', { className: 'mt-1 text-[10px] leading-5' }, geometryOrientationAdvice.currentScaleFitsRotated
+                  ? 'A 90-degree turn in the school slicer may preserve the current ' + geometryOrientationAdvice.suggestedUnitMm + ' mm per block scale; its rotated envelope would be ' + geometryOrientationAdvice.rotatedPhysicalSize.label + '.'
+                  : 'A 90-degree turn in the school slicer may permit up to ' + geometryOrientationAdvice.rotatedMaximumUnitMm + ' mm per block instead of ' + geometryOrientationAdvice.currentMaximumUnitMm + ' mm per block; at that scale its rotated envelope would be ' + geometryOrientationAdvice.rotatedPhysicalSize.label + '.'),
+                h('p', { className: 'mt-1 text-[10px] leading-5 text-violet-200' }, 'Print Lab has not rotated the STL. Make the turn in the receiving slicer, then recheck bed placement, supports, clearance, and the slicer preview before printing.')
+              ),
+              !geometryClearanceFit && geometryScaleRecommendation && geometryScaleRecommendation.canFit && h('button', {
+                type: 'button',
+                onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Applied the Geometry World safe-fit scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block. Run advisory preflight when ready.'); },
+                'aria-label': 'Apply suggested Geometry World scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block',
+                className: 'mt-2 min-h-[42px] w-full rounded-lg bg-cyan-700 px-3 text-xs font-black text-white hover:bg-cyan-600'
+              }, 'Apply ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
             ),
             h('button', { type: 'button', disabled: !runtimeReady || (format === 'RECIPE' ? !recipe : !fileBytes), onClick: runPreflight, className: 'mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Run advisory preflight'),
             h('div', { className: 'mt-4 rounded-xl border border-slate-700 bg-slate-950 p-3', 'aria-labelledby': 'repair-title' },

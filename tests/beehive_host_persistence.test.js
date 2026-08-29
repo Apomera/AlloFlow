@@ -51,9 +51,37 @@ describe('Beehive host persistence', () => {
       modelVersion: 'colony-daily-1.0',
       simulationSeed: 18436572,
       randomState: 305419896,
+      experimentRunSerial: 3,
       seededFromDay: 0,
+      experimentBaseline: {
+        schemaVersion: 1,
+        modelVersion: 'colony-daily-1.0',
+        simulationSeed: 18436572,
+        runSerial: 2,
+        seededFromDay: 0,
+        exactFromStart: true,
+        capturedDay: 12,
+        stockId: 'italian',
+        siteId: 'meadow',
+        metrics: { workers: 14000, brood: 3600, honey: 31, pollen: 18, varroaLevel: 9, diseaseRisk: 3, morale: 84, queenHealth: 96, habitat: 57, pesticideExposure: 2 },
+        totals: { totalHoney: 22, totalHarvested: 8, eventsHandled: 2 },
+        managementTrail: [{ day: 4, label: 'Plant wildflowers', cost: '1 AP', summary: 'Habitat improved.' }],
+      },
       autoAdvance: true,
-      notebook: { drone: { evidence: 'Reached the DCA with 31% energy.' } },
+      notebook: {
+        drone: { evidence: 'Reached the DCA with 31% energy.' },
+        experiment: {
+          schemaVersion: 1,
+          question: 'Does planting wildflowers change honey stores?',
+          hypothesis: 'More forage will increase honey stores.',
+          changedVariable: 'Plant wildflowers once',
+          prediction: 'Run B honey will be higher at Day 12.',
+          observations: 'Run A had 20 lb and Run B had 28 lb.',
+          alternativeExplanation: 'A later event could affect stores.',
+          conclusion: 'The evidence supported the prediction with uncertainty.',
+          review: { singleVariable: true, numericEvidence: true, uncertainty: true },
+        },
+      },
       queen: { active: true, paused: false, day: 6, career: { matches: 3, wins: 2 } },
       drone: {
         active: true,
@@ -86,10 +114,13 @@ describe('Beehive host persistence', () => {
       modelVersion: 'colony-daily-1.0',
       simulationSeed: 18436572,
       randomState: 305419896,
+      experimentRunSerial: 3,
       seededFromDay: 0,
     });
+    expect(restored.experimentBaseline).toEqual(state.experimentBaseline);
     expect(restored).not.toHaveProperty('autoAdvance');
     expect(restored.notebook).toEqual(state.notebook);
+    expect(restored.notebook.experiment).toEqual(state.notebook.experiment);
     expect(restored.queen).toEqual({ active: true, paused: true, day: 6, career: { matches: 3, wins: 2 } });
     expect(restored.drone).toMatchObject({
       highScore: 920,

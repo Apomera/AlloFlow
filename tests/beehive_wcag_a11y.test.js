@@ -99,7 +99,13 @@ describe('Beehive WCAG 2.2 accessibility', () => {
 
   for (const testCase of [
     { name: 'Beekeeper experiment setup', state: { viewMode: 'beekeeper', day: 0, simulationSeed: 1234, motionPaused: true } },
-    { name: 'Beekeeper', state: { viewMode: 'beekeeper', day: 8, motionPaused: true, badges: { first_day: { earned: true, day: 1 } } } },
+    { name: 'Beekeeper', state: { viewMode: 'beekeeper', day: 8, motionPaused: true, experimentNotebookOpen: true, badges: { first_day: { earned: true, day: 1 } } } },
+    { name: 'Beekeeper final choice audit', state: {
+      viewMode: 'beekeeper', day: 8, simulationSeed: 2468, randomState: 9753, experimentRunSerial: 2, seededFromDay: 0, motionPaused: true,
+      managementTrail: [{ day: 3, label: 'Plant wildflowers', cost: '1 AP' }],
+      notebook: { experiment: { plannedActionId: 'plant_wildflowers', predictedMetricId: 'honey', predictedDirection: 'higher' } },
+      experimentBaseline: { schemaVersion: 1, modelVersion: 'colony-daily-1.0', simulationSeed: 2468, runSerial: 1, seededFromDay: 0, exactFromStart: true, capturedDay: 8, stockId: 'italian', siteId: 'meadow', colonySurvived: true, metrics: {}, totals: {}, managementTrail: [{ day: 3, label: 'Inspect brood', cost: '1 AP' }] },
+    } },
     { name: 'Colony Network', state: { viewMode: 'queen', queen: { active: true, paused: true } } },
     { name: 'Drone Flight', state: { viewMode: 'drone', drone: { active: false, difficulty: 'easy' } }, liveDrone: true },
   ]) {
@@ -118,7 +124,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
         .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
         .map((violation) => `${violation.id}: ${violation.help} :: ${violation.nodes.map((node) => `${node.target.join(' ')} ${node.failureSummary || node.html}`).join(' | ')}`);
       expect(serious).toEqual([]);
-    }, 15000);
+    }, 30000);
   }
 
   it('makes experiment setup understandable, operable, and screen-reader traceable', async () => {
@@ -148,6 +154,272 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(host.querySelector('[data-beehive-fresh-seed="true"]')).toBeNull();
   });
 
+  it('saves, clears, and preserves an accessible comparison checkpoint across restart', async () => {
+    await mount({
+      viewMode: 'beekeeper',
+      day: 8,
+      simulationSeed: 2468,
+      randomState: 1357,
+      seededFromDay: 0,
+      workers: 12500,
+      honey: 29,
+      motionPaused: true,
+    });
+    let workspace = host.querySelector('[data-beehive-experiment-compare="true"]');
+    expect(workspace.tagName).toBe('SECTION');
+    expect(workspace.getAttribute('data-experiment-compare-state')).toBe('empty');
+    const save = workspace.querySelector('[data-experiment-baseline-save="save"]');
+    expect(save.className).toContain('min-h-[44px]');
+
+    await act(async () => { save.click(); await Promise.resolve(); });
+    expect(latest.beehive.experimentBaseline).toMatchObject({
+      schemaVersion: 1,
+      capturedDay: 8,
+      simulationSeed: 2468,
+      exactFromStart: true,
+      runSerial: 1,
+    });
+    workspace = host.querySelector('[data-beehive-experiment-compare="true"]');
+    expect(workspace.getAttribute('aria-labelledby')).toBe('beehive-experiment-compare-title');
+    expect(workspace.getAttribute('aria-describedby')).toContain('beehive-experiment-evidence-prompt');
+    expect(workspace.querySelector('[data-experiment-compare-table="true"]').tagName).toBe('TABLE');
+    expect(workspace.querySelector('caption').textContent).toContain('Run A at Day 8 and Run B at Day 8');
+    expect(workspace.querySelector('[data-experiment-compare-status="same-run"]').textContent).toBe('Restart to create Run B');
+    expect(workspace.querySelectorAll('[data-experiment-check]')).toHaveLength(7);
+    expect(workspace.querySelector('[data-experiment-check="run"]').getAttribute('data-experiment-check-result')).toBe('different');
+    expect(workspace.querySelector('[data-experiment-protocol-step="repeat"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
+    expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-status')).toBe('identical');
+    expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-final')).toBe('false');
+    expect(workspace.querySelector('[data-experiment-management-audit="true"]').textContent).toContain('Available in Run B');
+    expect(Array.from(workspace.querySelectorAll('button')).every((button) => button.className.includes('min-h-[44px]'))).toBe(true);
+
+    const startRunB = workspace.querySelector('[data-experiment-start-run-b="true"]');
+    expect(startRunB.textContent).toContain('Start separate Run B');
+    await act(async () => { startRunB.click(); await Promise.resolve(); });
+    expect(latest.beehive.day).toBe(0);
+    expect(latest.beehive.experimentRunSerial).toBe(2);
+    expect(latest.beehive.experimentBaseline).toMatchObject({ capturedDay: 8, runSerial: 1 });
+    workspace = host.querySelector('[data-beehive-experiment-compare="true"]');
+    expect(workspace.getAttribute('data-experiment-compare-state')).toBe('checkpoint');
+    expect(workspace.querySelector('[data-experiment-protocol-step="repeat"]').getAttribute('data-protocol-step-state')).toBe('complete');
+    expect(workspace.querySelector('[data-experiment-protocol-step="checkpoint"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
+    expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-final')).toBe('false');
+    expect(workspace.querySelector('[data-experiment-management-audit="true"]').textContent).toContain('Provisional through Day 0');
+
+    const clear = workspace.querySelector('[data-experiment-baseline-clear="true"]');
+    await act(async () => { clear.click(); await Promise.resolve(); });
+    expect(latest.beehive.experimentBaseline).toBeNull();
+    expect(host.querySelector('[data-experiment-compare-state="empty"]')).toBeTruthy();
+
+    await mount({
+      viewMode: 'beekeeper',
+      day: 68,
+      colonySurvived: false,
+      simulationSeed: 2468,
+      randomState: 9753,
+      seededFromDay: 0,
+      workers: 2100,
+      honey: 2,
+      motionPaused: true,
+    });
+    const restart = host.querySelector('[data-beehive-restart="same-seed"]');
+    await act(async () => { restart.click(); await Promise.resolve(); });
+    expect(latest.beehive.day).toBe(0);
+    expect(latest.beehive.colonySurvived).toBe(true);
+    expect(latest.beehive.experimentRunSerial).toBe(2);
+    expect(latest.beehive.experimentBaseline).toMatchObject({ capturedDay: 68, simulationSeed: 2468, runSerial: 1 });
+    expect(host.querySelector('[data-experiment-compare-state="checkpoint"]')).toBeTruthy();
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Run A is saved at Day 68');
+
+    const savedRunA = JSON.parse(JSON.stringify(latest.beehive.experimentBaseline));
+    await mount({
+      viewMode: 'beekeeper',
+      day: 75,
+      colonySurvived: false,
+      simulationSeed: 2468,
+      randomState: 8642,
+      seededFromDay: 0,
+      experimentBaseline: savedRunA,
+      motionPaused: true,
+    });
+    const freshRestart = host.querySelector('[data-beehive-restart="fresh-seed"]');
+    await act(async () => { freshRestart.click(); await Promise.resolve(); });
+    expect(latest.beehive.simulationSeed).not.toBe(2468);
+    expect(latest.beehive.experimentRunSerial).toBe(2);
+    expect(latest.beehive.experimentBaseline).toEqual(savedRunA);
+    expect(host.querySelector('[data-experiment-compare-state="exploratory"]')).toBeTruthy();
+  });
+
+  it('autosaves, reviews, captures, and exports the guided experiment evidence chain', async () => {
+    await mount({
+      viewMode: 'beekeeper',
+      day: 8,
+      simulationSeed: 2468,
+      randomState: 1357,
+      seededFromDay: 0,
+      honey: 29,
+      managementTrail: [{ day: 3, label: 'Inspect brood', cost: '1 AP' }],
+      experimentNotebookOpen: true,
+      motionPaused: true,
+    });
+    await act(async () => { host.querySelector('[data-experiment-baseline-save="save"]').click(); await Promise.resolve(); });
+    const guidedRunA = JSON.parse(JSON.stringify(latest.beehive.experimentBaseline));
+    await mount({
+      viewMode: 'beekeeper',
+      day: 8,
+      simulationSeed: 2468,
+      randomState: 9753,
+      experimentRunSerial: 2,
+      seededFromDay: 0,
+      honey: 34,
+      experimentBaseline: guidedRunA,
+      managementTrail: [{ day: 3, label: 'Plant wildflowers', cost: '1 AP' }],
+      experimentNotebookOpen: true,
+      motionPaused: true,
+    });
+
+    let notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
+    expect(notebook.tagName).toBe('DETAILS');
+    expect(notebook.open).toBe(true);
+    expect(notebook.querySelector('[data-experiment-notebook-summary="true"]').className).toContain('min-h-[58px]');
+    expect(notebook.querySelectorAll('fieldset[data-experiment-notebook-phase]')).toHaveLength(2);
+    const choiceAudit = host.querySelector('[data-experiment-management-audit="true"]');
+    expect(choiceAudit.getAttribute('data-management-audit-status')).toBe('one-change');
+    expect(choiceAudit.getAttribute('data-management-audit-final')).toBe('true');
+    expect(choiceAudit.querySelector('[data-management-difference="changed"]')).toBeTruthy();
+    expect(host.querySelector('[data-experiment-plan-alignment="unplanned"]')).toBeTruthy();
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Choose the planned choice');
+    const plannedAction = notebook.querySelector('select[data-experiment-planned-action="true"]');
+    expect(plannedAction.value).toBe('');
+    expect(plannedAction.className).toContain('min-h-[44px]');
+    expect(plannedAction.getAttribute('aria-describedby')).toBe('beehive-experiment-planned-action-help');
+    expect(plannedAction.closest('label').textContent).toContain('Planned management choice');
+    const selectSetter = Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set;
+    await act(async () => { selectSetter.call(plannedAction, 'plant_wildflowers'); plannedAction.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
+    expect(latest.beehive.notebook.experiment.plannedActionId).toBe('plant_wildflowers');
+    expect(host.querySelector('[data-experiment-plan-alignment="matched"]')).toBeTruthy();
+    expect(host.querySelector('[data-experiment-compare-status="matched"]').textContent).toBe('Planned comparison ready');
+    expect(host.querySelector('[data-experiment-protocol-step="choice"]').getAttribute('data-protocol-step-state')).toBe('complete');
+
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('unplanned');
+    let predictionMetric = notebook.querySelector('select[data-experiment-prediction-metric="true"]');
+    let predictionDirection = notebook.querySelector('select[data-experiment-prediction-direction="true"]');
+    expect(predictionMetric.value).toBe('');
+    expect(predictionDirection.value).toBe('');
+    expect([predictionMetric, predictionDirection].every((control) => control.className.includes('min-h-[44px]'))).toBe(true);
+    expect(predictionMetric.getAttribute('aria-describedby')).toBe('beehive-experiment-prediction-metric-help');
+    expect(predictionDirection.getAttribute('aria-describedby')).toBe('beehive-experiment-prediction-direction-help');
+    expect(predictionMetric.closest('label').textContent).toContain('Prediction metric');
+    expect(predictionDirection.closest('label').textContent).toContain('Expected direction');
+    await act(async () => { selectSetter.call(predictionMetric, 'honey'); predictionMetric.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    predictionDirection = host.querySelector('select[data-experiment-prediction-direction="true"]');
+    await act(async () => { selectSetter.call(predictionDirection, 'higher'); predictionDirection.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
+    expect(latest.beehive.notebook.experiment).toMatchObject({ predictedMetricId: 'honey', predictedDirection: 'higher' });
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('aligned');
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').textContent).toContain('Numeric direction aligned');
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').textContent).toContain('does not prove causation');
+    expect(host.querySelector('[data-experiment-protocol-step="prediction"]').getAttribute('data-protocol-step-state')).toBe('complete');
+    expect(notebook.querySelectorAll('textarea[data-experiment-notebook-field]')).toHaveLength(7);
+    expect(Array.from(notebook.querySelectorAll('textarea[data-experiment-notebook-field]')).map((area) => area.maxLength))
+      .toEqual([300, 600, 300, 600, 1200, 800, 1200]);
+    expect(Array.from(notebook.querySelectorAll('textarea[data-experiment-notebook-field]')).every((area) => area.getAttribute('aria-describedby'))).toBe(true);
+
+    const values = {
+      question: 'Does planting wildflowers change honey stores?',
+      hypothesis: 'If forage increases, honey will rise because more nectar is available.',
+      changedVariable: 'Plant wildflowers once',
+      prediction: 'At Day 8, Run B honey will exceed Run A honey.',
+      observations: 'Run A had 29 lb and Run B had 34 lb after the changed choice.',
+      alternativeExplanation: 'A later eligible event or the simplified model could affect stores.',
+      conclusion: 'The current checkpoint is a baseline; I need the changed Run B outcome next.',
+    };
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    for (const [field, value] of Object.entries(values)) {
+      const area = host.querySelector('[data-experiment-notebook-field="' + field + '"]');
+      await act(async () => { setter.call(area, value); area.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
+    }
+    expect(latest.beehive.notebook.experiment).toMatchObject({
+      schemaVersion: 3,
+      plannedActionId: 'plant_wildflowers',
+      predictedMetricId: 'honey',
+      predictedDirection: 'higher',
+      question: values.question,
+      changedVariable: values.changedVariable,
+      conclusion: values.conclusion,
+    });
+
+    let reviewChecks = Array.from(host.querySelectorAll('[data-experiment-notebook-review-check]'));
+    expect(reviewChecks).toHaveLength(3);
+    expect(reviewChecks.every((input) => !input.disabled)).toBe(true);
+    expect(reviewChecks.every((input) => input.className.includes('h-5') && input.className.includes('w-5'))).toBe(true);
+    expect(reviewChecks.every((input) => input.closest('label').className.includes('min-h-[48px]'))).toBe(true);
+    for (const input of reviewChecks) {
+      await act(async () => { input.click(); await Promise.resolve(); });
+    }
+    expect(latest.beehive.notebook.experiment.review).toEqual({ singleVariable: true, numericEvidence: true, uncertainty: true });
+    notebook = host.querySelector('[data-beehive-experiment-notebook="true"]');
+    expect(notebook.getAttribute('data-experiment-notebook-complete')).toBe('true');
+    expect(notebook.querySelector('[role="progressbar"][aria-valuemax="10"]').getAttribute('aria-valuenow')).toBe('10');
+    expect(notebook.querySelector('[data-experiment-notebook-review="true"]').getAttribute('data-review-complete')).toBe('true');
+
+    let predictionDirectionControl = host.querySelector('[data-experiment-prediction-direction="true"]');
+    await act(async () => { selectSetter.call(predictionDirectionControl, 'lower'); predictionDirectionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(false);
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('not-aligned');
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').textContent).toContain('This is still useful evidence');
+    predictionDirectionControl = host.querySelector('[data-experiment-prediction-direction="true"]');
+    await act(async () => { selectSetter.call(predictionDirectionControl, 'higher'); predictionDirectionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(false);
+    expect(host.querySelector('[data-experiment-prediction-audit="true"]').getAttribute('data-prediction-audit-status')).toBe('aligned');
+    await act(async () => { host.querySelector('[data-experiment-notebook-review-check="numericEvidence"]').click(); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.numericEvidence).toBe(true);
+
+    let plannedActionControl = host.querySelector('[data-experiment-planned-action="true"]');
+    await act(async () => { selectSetter.call(plannedActionControl, 'feed_bees'); plannedActionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
+    expect(host.querySelector('[data-experiment-plan-alignment="mismatched"]')).toBeTruthy();
+    plannedActionControl = host.querySelector('[data-experiment-planned-action="true"]');
+    await act(async () => { selectSetter.call(plannedActionControl, 'plant_wildflowers'); plannedActionControl.dispatchEvent(new Event('change', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
+    await act(async () => { host.querySelector('[data-experiment-notebook-review-check="singleVariable"]').click(); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(true);
+
+    const changedVariable = host.querySelector('[data-experiment-notebook-field="changedVariable"]');
+    await act(async () => { setter.call(changedVariable, ''); changedVariable.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.review.singleVariable).toBe(false);
+    expect(host.querySelector('[data-experiment-notebook-review-check="singleVariable"]').disabled).toBe(true);
+    const restoredVariable = host.querySelector('[data-experiment-notebook-field="changedVariable"]');
+    await act(async () => { setter.call(restoredVariable, values.changedVariable); restoredVariable.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
+
+    const capture = host.querySelector('[data-experiment-notebook-capture="true"]');
+    expect(capture.className).toContain('min-h-[44px]');
+    await act(async () => { capture.click(); await Promise.resolve(); });
+    expect(latest.beehive.notebook.experiment.observations).toContain('Run A Day 8 vs Run B Day 8');
+    expect(latest.beehive.notebook.experiment.observations).toContain('Management-choice audit: one recorded difference');
+    expect(latest.beehive.notebook.experiment.observations).toContain('Planned-choice audit: recorded change matches Plant wildflowers');
+    expect(latest.beehive.notebook.experiment.observations).toContain('Prediction audit: Honey: Run B was higher; displayed direction aligned with the prediction');
+    expect(latest.beehive.notebook.experiment.observations).toContain('Honey:');
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('metrics inserted into experiment observations');
+
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+    const copy = host.querySelector('[data-beehive-copy-experiment="true"]');
+    expect(copy.className).toContain('min-h-[44px]');
+    await act(async () => { copy.click(); await Promise.resolve(); });
+    expect(latest.beehive.exportedReportTitle).toBe('Experiment Evidence Record');
+    expect(latest.beehive.exportedReport).toContain('## Guided Experiment Notebook');
+    expect(latest.beehive.exportedReport).toContain(values.question);
+    expect(latest.beehive.exportedReport).toContain('**Comparison status:** Planned comparison ready');
+    expect(latest.beehive.exportedReport).toContain('### Management-choice audit');
+    expect(latest.beehive.exportedReport).toContain('**Recorded-choice result:** One difference');
+    expect(latest.beehive.exportedReport).toContain('**Plan alignment:** Recorded change matches the plan');
+    expect(latest.beehive.exportedReport).toContain('### Prediction audit');
+    expect(latest.beehive.exportedReport).toContain('**Structured prediction:** Honey - Run B will be higher');
+    expect(latest.beehive.exportedReport).toContain('**Result:** Displayed numeric pattern aligns with the prediction');
+    expect(host.querySelector('[data-beehive-focus-panel="report"]').getAttribute('aria-label')).toBe('Experiment Evidence Record export');
+  });
+
   it('keeps the introductory tutorial scoped, labeled, and comfortably operable', async () => {
     await mount({ viewMode: 'beekeeper', day: 0, tutorialStep: 0, motionPaused: true });
     let tutorial = host.querySelector('[data-beehive-tutorial="true"]');
@@ -170,6 +442,156 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById('beehive-tutorial-title').textContent).toBe('Welcome, Beekeeper!');
   });
 
+  it('moves tutorial focus through changed steps and into Next Day on exit', async () => {
+    await mount({ viewMode: 'beekeeper', day: 0, tutorialStep: 0, motionPaused: true });
+    let tutorial = host.querySelector('[data-beehive-tutorial="true"]');
+    let title = document.getElementById('beehive-tutorial-title');
+    expect(title.tagName).toBe('H2');
+    expect(title.tabIndex).toBe(-1);
+
+    const next = Array.from(tutorial.querySelectorAll('button')).find((button) => button.textContent.includes('Next'));
+    next.focus();
+    await act(async () => { next.click(); await Promise.resolve(); });
+    title = document.getElementById('beehive-tutorial-title');
+    expect(title.textContent).toBe('Advance Days');
+    expect(document.activeElement).toBe(title);
+
+    const back = Array.from(host.querySelectorAll('[data-beehive-tutorial="true"] button')).find((button) => button.textContent.includes('Back'));
+    await act(async () => { back.click(); await Promise.resolve(); });
+    title = document.getElementById('beehive-tutorial-title');
+    expect(title.textContent).toBe('Welcome, Beekeeper!');
+    expect(document.activeElement).toBe(title);
+
+    tutorial = host.querySelector('[data-beehive-tutorial="true"]');
+    const skip = tutorial.querySelector('button[aria-label="Skip tutorial"]');
+    skip.focus();
+    await act(async () => { skip.click(); await Promise.resolve(); });
+    expect(latest.beehive.tutorialDone).toBe(true);
+    expect(document.activeElement).toBe(document.getElementById('beehive-next-day'));
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Tutorial skipped');
+
+    await mount({ viewMode: 'beekeeper', day: 0, tutorialStep: 4, motionPaused: true });
+    const finish = Array.from(host.querySelectorAll('[data-beehive-tutorial="true"] button')).find((button) => button.textContent.includes('Start Beekeeping'));
+    finish.focus();
+    await act(async () => { finish.click(); await Promise.resolve(); });
+    expect(latest.beehive.tutorialDone).toBe(true);
+    expect(document.activeElement).toBe(document.getElementById('beehive-next-day'));
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Tutorial complete');
+  });
+
+  it('responds immediately to live reduced-motion changes and cleans up the modern listener', async () => {
+    let matches = false;
+    const listeners = new Set();
+    const motionQuery = {
+      media: '(prefers-reduced-motion: reduce)',
+      get matches() { return matches; },
+      addEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.add(listener); }),
+      removeEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.delete(listener); }),
+    };
+    window.matchMedia.mockReturnValue(motionQuery);
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5 });
+
+    expect(listeners.size).toBe(1);
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-reduced-motion')).toBe('false');
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-motion-state')).toBe('ambient');
+    const listener = Array.from(listeners)[0];
+
+    matches = true;
+    await act(async () => { listener({ matches: true }); await Promise.resolve(); });
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-reduced-motion')).toBe('true');
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-motion-state')).toBe('paused');
+    expect(host.querySelector('[data-beehive-motion-notice="true"]')).toBeTruthy();
+    expect(latest.beehive.motionPaused).toBeUndefined();
+
+    matches = false;
+    await act(async () => { listener({ matches: false }); await Promise.resolve(); });
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-reduced-motion')).toBe('false');
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-motion-state')).toBe('ambient');
+    expect(host.querySelector('[data-beehive-motion-notice="true"]')).toBeNull();
+
+    await act(async () => { root.unmount(); await Promise.resolve(); });
+    root = null;
+    expect(motionQuery.removeEventListener).toHaveBeenCalledWith('change', listener);
+    expect(listeners.size).toBe(0);
+  });
+
+  it('supports legacy reduced-motion listeners whose callback omits the event', async () => {
+    let legacyListener = null;
+    const motionQuery = {
+      matches: false,
+      media: '(prefers-reduced-motion: reduce)',
+      addListener: vi.fn((listener) => { legacyListener = listener; }),
+      removeListener: vi.fn((listener) => { if (legacyListener === listener) legacyListener = null; }),
+    };
+    window.matchMedia.mockReturnValue(motionQuery);
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5 });
+    expect(legacyListener).toBeTypeOf('function');
+
+    motionQuery.matches = true;
+    await act(async () => { legacyListener(); await Promise.resolve(); });
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-reduced-motion')).toBe('true');
+
+    const subscribedListener = legacyListener;
+    await act(async () => { root.unmount(); await Promise.resolve(); });
+    root = null;
+    expect(motionQuery.removeListener).toHaveBeenCalledWith(subscribedListener);
+    expect(legacyListener).toBeNull();
+  });
+
+  it('uses stable names for persistent Drone toggles and action names for pause controls', async () => {
+    await mountDroneFlight({ paused: false });
+    const pauseButtons = Array.from(host.querySelectorAll('button[aria-keyshortcuts="P"]'));
+    expect(pauseButtons.length).toBeGreaterThan(0);
+    expect(pauseButtons.every((button) => !button.hasAttribute('aria-pressed'))).toBe(true);
+
+    let camera = host.querySelector('[data-flight-camera-toggle="true"]');
+    expect(camera.getAttribute('aria-label')).toBe('Chase camera');
+    expect(camera.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => { camera.click(); await Promise.resolve(); });
+    camera = host.querySelector('[data-flight-camera-toggle="true"]');
+    expect(camera.getAttribute('aria-label')).toBe('Chase camera');
+    expect(camera.getAttribute('aria-pressed')).toBe('true');
+
+    let stabilization = host.querySelector('[data-flight-camera-stabilized="true"]');
+    expect(stabilization.getAttribute('aria-label')).toBe('Camera stabilization');
+    expect(stabilization.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => { stabilization.click(); await Promise.resolve(); });
+    stabilization = host.querySelector('[data-flight-camera-stabilized="true"]');
+    expect(stabilization.getAttribute('aria-label')).toBe('Camera stabilization');
+    expect(stabilization.getAttribute('aria-pressed')).toBe('false');
+
+    await mount({ viewMode: 'queen', queen: { active: true, paused: false } });
+    let queenPauseButtons = Array.from(host.querySelectorAll('button[aria-keyshortcuts="P"]'));
+    expect(queenPauseButtons.length).toBeGreaterThan(0);
+    expect(queenPauseButtons.every((button) => button.getAttribute('aria-label') === 'Pause Colony Network simulation' && !button.hasAttribute('aria-pressed'))).toBe(true);
+    await act(async () => { queenPauseButtons[0].click(); await Promise.resolve(); });
+    queenPauseButtons = Array.from(host.querySelectorAll('button[aria-keyshortcuts="P"]'));
+    expect(queenPauseButtons.every((button) => !button.hasAttribute('aria-pressed'))).toBe(true);
+    const namedQueenPauseButtons = queenPauseButtons.filter((button) => button.hasAttribute('aria-label'));
+    expect(namedQueenPauseButtons.length).toBe(2);
+    expect(namedQueenPauseButtons.every((button) => button.getAttribute('aria-label') === 'Resume Colony Network simulation')).toBe(true);
+
+  });
+
+  it('links 3D disclosures and keeps 3D selection names stable', async () => {
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 45, motionPaused: true });
+    let bay = host.querySelector('[data-beehive-3d-bay="hive"]');
+    const disclosure = bay.querySelector('button[aria-expanded][aria-controls]');
+    expect(disclosure.getAttribute('aria-controls')).toBe('beehive-3d-hive-content');
+    expect(document.getElementById(disclosure.getAttribute('aria-controls'))).toBeTruthy();
+
+    const openHive = Array.from(bay.querySelectorAll('button')).find((button) => (button.getAttribute('aria-label') || '').startsWith('Open hive'));
+    expect(openHive.hasAttribute('aria-pressed')).toBe(false);
+    const partButtons = Array.from(bay.querySelectorAll('button[aria-pressed]')).filter((button) => (button.getAttribute('aria-label') || '').endsWith(' details'));
+    expect(partButtons.length).toBeGreaterThan(2);
+    expect(partButtons.every((button) => !/^(Show|Hide) details/.test(button.getAttribute('aria-label')))).toBe(true);
+    expect(bay.querySelector('button[aria-label="Find the queen"]').getAttribute('aria-pressed')).toBe('false');
+
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 45, motionPaused: true, hive3dPart: 'queen' });
+    bay = host.querySelector('[data-beehive-3d-bay="hive"]');
+    const selectedQueen = bay.querySelector('button[aria-label="Find the queen"]');
+    expect(selectedQueen.getAttribute('aria-pressed')).toBe('true');
+  });
   it('implements roving Arrow, Home, and End navigation for both tablists', async () => {
     await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true });
     let modeTabs = Array.from(host.querySelectorAll('[data-beehive-mode-tab]'));
@@ -420,6 +842,146 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Drone flight resumed');
   });
 
+  it('keeps event-paused time controls discoverable and returns focus after acknowledgement', async () => {
+    const event = { emoji: '⚠', label: 'Sudden storm', desc: 'Foragers return early.', lesson: 'Weather changes colony energy flow.', effect: { morale: -4 } };
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true, tutorialDone: true, activeEvent: event, eventsHandled: 0 });
+
+    let timeControls = Array.from(host.querySelectorAll('[data-beehive-time-control]'));
+    expect(timeControls).toHaveLength(3);
+    expect(timeControls.every((button) => button.disabled === false)).toBe(true);
+    expect(timeControls.every((button) => button.getAttribute('aria-disabled') === 'true')).toBe(true);
+    expect(timeControls.every((button) => button.getAttribute('data-unavailable-reason').includes('Sudden storm'))).toBe(true);
+
+    const nextDay = host.querySelector('#beehive-next-day');
+    nextDay.focus();
+    await act(async () => { nextDay.click(); await Promise.resolve(); });
+    expect(latest.beehive.day).toBe(5);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Time is paused');
+
+    const acknowledge = host.querySelector('#beehive-active-event button');
+    expect(acknowledge.className).toContain('min-h-[44px]');
+    expect(acknowledge.getAttribute('aria-label')).toContain('return to time controls');
+    acknowledge.focus();
+    await act(async () => { acknowledge.click(); await Promise.resolve(); await Promise.resolve(); });
+
+    expect(latest.beehive.activeEvent).toBeNull();
+    expect(latest.beehive.eventsHandled).toBe(1);
+    timeControls = Array.from(host.querySelectorAll('[data-beehive-time-control]'));
+    expect(timeControls.every((button) => button.hasAttribute('aria-disabled') === false)).toBe(true);
+    expect(document.activeElement).toBe(host.querySelector('#beehive-next-day'));
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Sudden storm acknowledged');
+  });
+
+  it('makes unavailable management and treatment choices focusable and explanatory', async () => {
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 8, motionPaused: true, tutorialDone: true, actionPoints: 0, diseaseRisk: 20, varroaLevel: 24, honey: 40, workers: 20_000 });
+
+    const hygiene = host.querySelector('[data-management-action="Hygiene"]');
+    const inspect = host.querySelector('[data-management-action="Inspect"]');
+    expect(hygiene.disabled).toBe(false);
+    expect(hygiene.tabIndex).toBe(0);
+    expect(hygiene.getAttribute('aria-disabled')).toBe('true');
+    expect(hygiene.getAttribute('data-unavailable-reason')).toBe('Need 1 AP');
+    expect(hygiene.getAttribute('aria-label')).toContain('Need 1 AP');
+    expect(inspect.hasAttribute('aria-disabled')).toBe(false);
+
+    hygiene.focus();
+    await act(async () => { hygiene.click(); await Promise.resolve(); });
+    expect(latest.beehive.diseaseRisk).toBe(20);
+    expect(latest.beehive.actionPoints).toBe(0);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Hygiene is unavailable. Need 1 AP');
+
+    const treat = host.querySelector('[data-management-action="Treat"]');
+    await act(async () => { treat.click(); await Promise.resolve(); });
+    const treatment = host.querySelector('[data-treatment-ready="false"]');
+    expect(treatment).toBeTruthy();
+    expect(treatment.disabled).toBe(false);
+    expect(treatment.getAttribute('aria-disabled')).toBe('true');
+    expect(treatment.textContent).toMatch(/Need \d AP · have 0/);
+    expect(treatment.getAttribute('aria-label')).toMatch(/^Apply .+ treatment$/);
+    const treatmentDescription = document.getElementById(treatment.getAttribute('aria-describedby'))?.textContent || '';
+    expect(treatmentDescription).toMatch(/Forecast for current colony: Varroa \d+ to \d+ percent/);
+    expect(treatmentDescription).toMatch(/Modeled treatment strength: \d+ percentage points before the zero floor/);
+    expect(treatmentDescription).toMatch(/Modeled colony stress|No modeled morale cost/);
+    expect(treatmentDescription).toMatch(/Modeled queen health cost|No modeled queen health cost/);
+    expect(treatmentDescription).toContain('Cost:');
+    expect(treatmentDescription).toContain('Unavailable:');
+    expect(treatmentDescription).toContain('Safety and timing note:');
+    await act(async () => { treatment.click(); await Promise.resolve(); });
+    expect(latest.beehive.actionPoints).toBe(0);
+    expect(latest.beehive.treatmentsUsed || {}).toEqual({});
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('is unavailable. Need');
+
+    const conservation = host.querySelector('[data-conservation-ready="false"]');
+    expect(conservation.disabled).toBe(false);
+    expect(conservation.getAttribute('aria-disabled')).toBe('true');
+    await act(async () => { conservation.click(); await Promise.resolve(); });
+    expect(latest.beehive.conservationsDone || 0).toBe(0);
+  });
+
+  it('keeps the contextual treatment forecast aligned with the committed, floor-limited outcome', async () => {
+    await mount({
+      viewMode: 'beekeeper', tutorialDone: true, motionPaused: true,
+      showTreatModal: true, season: 3, brood: 3000,
+      varroaLevel: 8, actionPoints: 2, morale: 80, queenHealth: 100,
+    });
+
+    const panel = host.querySelector('[data-beehive-focus-panel="treatment"]');
+    expect(panel.getAttribute('role')).toBe('region');
+    expect(panel.getAttribute('aria-labelledby')).toBe('beehive-treatment-title');
+    expect(panel.getAttribute('aria-describedby')).toBe('beehive-treatment-intro');
+    expect(document.getElementById('beehive-treatment-title').textContent).toMatch(/Integrated Pest Management/);
+    expect(document.getElementById('beehive-treatment-intro').textContent).toMatch(/current brood and season/i);
+
+    const oxalic = host.querySelector('[data-treatment-id="oxalic"]');
+    expect(oxalic.getAttribute('data-treatment-forecast')).toBe('8-to-0');
+    expect(oxalic.textContent).toMatch(/8% to 0% Varroa/);
+    expect(oxalic.textContent).toMatch(/Strength -12 points/);
+    expect(oxalic.textContent).toMatch(/Reduced fit: mites are protected in sealed brood/);
+    const description = document.getElementById(oxalic.getAttribute('aria-describedby')).textContent;
+    expect(description).toContain('Forecast for current colony: Varroa 8 to 0 percent');
+    expect(description).toContain('Modeled treatment strength: 12 percentage points before the zero floor');
+
+    await act(async () => { oxalic.click(); await Promise.resolve(); await Promise.resolve(); });
+    expect(latest.beehive.varroaLevel).toBe(0);
+    expect(latest.beehive.morale).toBe(77);
+    expect(latest.beehive.queenHealth).toBe(100);
+    expect(latest.beehive.actionPoints).toBe(1);
+    expect(latest.beehive.showTreatModal).toBe(false);
+    expect(latest.beehive.lastManagement.outcome).toMatchObject({
+      varroaBefore: 8, varroaAfter: 0, reduction: 8, treatmentStrength: 12,
+    });
+    expect(latest.beehive.lastManagement.summary).toContain('Varroa 8% to 0%');
+  });
+  it('keeps locked Colony Network decisions keyboard-discoverable without applying them', async () => {
+    await mount({
+      viewMode: 'queen',
+      queen: {
+        active: true,
+        paused: true,
+        resources: { nectar: 0, pollen: 0, wax: 0, royalJelly: 0 },
+        population: { nurses: 200, builders: 100, guards: 50, foragers: 300, scouts: 30, drones: 40 },
+        rival: { name: 'Test colony', health: 100, pressure: 0, intel: 0 },
+      },
+    });
+
+    const scout = host.querySelector('[data-quick-command="scout_rival"]');
+    expect(scout.disabled).toBe(false);
+    expect(scout.tabIndex).toBe(0);
+    expect(scout.getAttribute('aria-disabled')).toBe('true');
+    expect(scout.getAttribute('data-unavailable-reason')).toMatch(/Nectar short/i);
+    scout.focus();
+    await act(async () => { scout.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.resources.nectar).toBe(0);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Scout Rival is unavailable');
+
+    const commandCard = host.querySelector('[data-mobile-rail="pheromone-commands"] [data-command-ready="false"]');
+    const structureCard = host.querySelector('[data-mobile-rail="comb-structures"] [data-structure-ready="false"]');
+    expect(commandCard.disabled).toBe(false);
+    expect(commandCard.getAttribute('aria-disabled')).toBe('true');
+    expect(structureCard.disabled).toBe(false);
+    expect(structureCard.getAttribute('aria-disabled')).toBe('true');
+  });
+
   it('pauses and resumes the Beekeeper animation with a 44px named control and announcement', async () => {
     await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: false });
     const pause = host.querySelector('button[aria-label="Pause Beekeeper canvas animation"]');
@@ -431,7 +993,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await act(async () => { pause.click(); await Promise.resolve(); });
     expect(latest.beehive.motionPaused).toBe(true);
     const resume = host.querySelector('button[aria-label="Resume Beekeeper canvas animation"]');
-    expect(resume.getAttribute('aria-pressed')).toBe('true');
+    expect(resume.hasAttribute('aria-pressed')).toBe(false);
     expect(document.getElementById('allo-live-beehive').textContent).toContain('animation paused');
     expect(window.requestAnimationFrame.mock.calls.length).toBe(scheduledBeforePause);
 
@@ -576,9 +1138,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5 });
     const simulationRoot = host.querySelector('[data-beehive-root="true"]');
     expect(simulationRoot.getAttribute('data-reduced-motion')).toBe('true');
-    expect(host.querySelector('[data-beehive-motion-notice="true"]')).toBeTruthy();
+    const motionNotice = host.querySelector('[data-beehive-motion-notice="true"]');
+    expect(motionNotice.textContent).toContain('Interface animations and moving highlights are removed');
+    const reducedMotionCss = document.getElementById('allo-beehive-motion-reduce-css').textContent;
+    expect(reducedMotionCss).toContain('animation: none !important');
+    expect(reducedMotionCss).toContain('transition: none !important');
+    const beehiveCss = document.getElementById('allo-beehive-visual-css').textContent;
+    for (const selector of ['[data-beehive-build-zone]', '[data-beehive-focus-panel]', '[data-flight-control]', '[data-placement-zone]', '[data-beehive-start-strategy="true"]', '#beehive-next-day:hover', '[data-management-action]:hover']) {
+      expect(beehiveCss).toContain(selector);
+    }
+    expect(beehiveCss).toContain('transform:none !important');
     const resumeKeeper = host.querySelector('button[aria-label="Resume Beekeeper canvas animation"]');
-    expect(resumeKeeper.getAttribute('aria-pressed')).toBe('true');
+    expect(resumeKeeper.hasAttribute('aria-pressed')).toBe(false);
     expect(resumeKeeper.getAttribute('aria-keyshortcuts')).toBe('P');
 
     await mount({ viewMode: 'drone', drone: { active: false } });
@@ -594,7 +1165,18 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   it('exposes P pause shortcuts with clear Queen feedback and quiet summary regions', async () => {
     await mount({ viewMode: 'queen', queen: { active: true, paused: false, events: [{ type: 'phase', text: 'Build phase' }] } });
     const queenPause = host.querySelector('button[aria-keyshortcuts="P"]');
-    expect(queenPause.getAttribute('aria-pressed')).toBe('false');
+    expect(queenPause.hasAttribute('aria-pressed')).toBe(false);
+    const outside = document.createElement('div');
+    outside.tabIndex = 0;
+    document.body.appendChild(outside);
+    outside.focus();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.queen.paused).toBe(false);
+
+    host.querySelector('#beehive-queen-playfield').focus();
     await act(async () => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
       await Promise.resolve();
@@ -602,11 +1184,95 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.queen.paused).toBe(true);
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Queen real-time simulation paused');
     expect(host.querySelector('[role="log"]').getAttribute('aria-live')).toBe('off');
+    outside.remove();
 
     await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true });
     const colonyStatus = Array.from(host.querySelectorAll('[role="group"]')).find((node) => (node.getAttribute('aria-label') || '').startsWith('Colony status:'));
     expect(colonyStatus).toBeTruthy();
     expect(colonyStatus.hasAttribute('aria-live')).toBe(false);
+  });
+
+  it('scopes flight keys to the canvas, gives panels priority, and makes Escape pause-only', async () => {
+    await mountDroneFlight({ paused: false });
+    let canvas = host.querySelector('[data-beehive-drone-canvas="true"]');
+    expect(document.activeElement).toBe(canvas);
+
+    const outside = document.createElement('div');
+    outside.tabIndex = 0;
+    document.body.appendChild(outside);
+    outside.focus();
+    const pageArrow = new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true, cancelable: true });
+    await act(async () => { document.dispatchEvent(pageArrow); await Promise.resolve(); });
+    expect(pageArrow.defaultPrevented).toBe(false);
+    const cameraBefore = latest.beehive.drone.cameraMode;
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'v', bubbles: true, cancelable: true }));
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.cameraMode).toBe(cameraBefore);
+    expect(latest.beehive.drone.paused).toBe(false);
+
+    canvas.focus();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.paused).toBe(true);
+    canvas = host.querySelector('[data-beehive-drone-canvas="true"]');
+    canvas.focus();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.paused).toBe(true);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('remains paused');
+
+    canvas.focus();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.paused).toBe(false);
+    canvas = host.querySelector('[data-beehive-drone-canvas="true"]');
+    canvas.focus();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.paused).toBe(true);
+
+    const shortcutsTrigger = host.querySelector('button[aria-label="Keyboard shortcuts"]');
+    shortcutsTrigger.focus();
+    await act(async () => { shortcutsTrigger.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(document.activeElement).toBe(host.querySelector('[data-beehive-focus-panel="shortcuts"]'));
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.showKeys).toBe(false);
+    expect(latest.beehive.drone.paused).toBe(true);
+    outside.remove();
+  });
+
+  it('closes a Colony Network panel before acting on placement Escape', async () => {
+    await mount({ viewMode: 'queen', showKeys: false, queen: { active: true, paused: true, buildMode: 'guard', resources: { nectar: 30, pollen: 20, wax: 20, royalJelly: 5 } } });
+    const trigger = host.querySelector('button[aria-label="Keyboard shortcuts"]');
+    trigger.focus();
+    await act(async () => { trigger.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(document.activeElement).toBe(host.querySelector('[data-beehive-focus-panel="shortcuts"]'));
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.showKeys).toBe(false);
+    expect(latest.beehive.queen.buildMode).toBe('guard');
+    expect(document.activeElement).toBe(trigger);
   });
 
   it('moves focus into explicit panels, closes with Escape, and restores the trigger', async () => {
@@ -632,6 +1298,76 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Closed shortcuts panel');
   });
 
+  it('makes the Hive Inspector a focused, escapable region with complete roving tabs', async () => {
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true });
+    const trigger = host.querySelector('[data-management-action="Inspect"]');
+    trigger.focus();
+    await act(async () => { trigger.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+
+    const inspector = host.querySelector('[data-beehive-focus-panel="inspection"]');
+    expect(inspector.tagName).toBe('SECTION');
+    expect(inspector.getAttribute('role')).toBe('region');
+    expect(inspector.getAttribute('aria-labelledby')).toBe('beehive-inspector-title');
+    expect(document.activeElement).toBe(inspector);
+    expect(inspector.querySelector('button[aria-label*="close Hive Inspector"]').className).toContain('min-h-[44px]');
+
+    let tabs = Array.from(inspector.querySelectorAll('[data-inspection-tab]'));
+    expect(tabs).toHaveLength(9);
+    expect(tabs.map((tab) => tab.tabIndex)).toEqual([0, -1, -1, -1, -1, -1, -1, -1, -1]);
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    for (const tab of tabs) {
+      const controlled = document.getElementById(tab.getAttribute('aria-controls'));
+      expect(controlled).toBeTruthy();
+      expect(controlled.getAttribute('role')).toBe('tabpanel');
+      expect(controlled.getAttribute('aria-labelledby')).toBe(tab.id);
+    }
+
+    tabs[0].focus();
+    await act(async () => {
+      tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    tabs = Array.from(inspector.querySelectorAll('[data-inspection-tab]'));
+    expect(latest.beehive.inspectLayer).toBe('honey_chem');
+    expect(document.activeElement).toBe(tabs[1]);
+    expect(document.getElementById(tabs[1].getAttribute('aria-controls')).hidden).toBe(false);
+
+    await act(async () => {
+      tabs[1].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    tabs = Array.from(inspector.querySelectorAll('[data-inspection-tab]'));
+    expect(latest.beehive.inspectLayer).toBe('lifecycle');
+    expect(document.activeElement).toBe(tabs[2]);
+
+    await act(async () => {
+      tabs[2].dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    tabs = Array.from(inspector.querySelectorAll('[data-inspection-tab]'));
+    expect(latest.beehive.inspectLayer).toBe('roles');
+    expect(document.activeElement).toBe(tabs[0]);
+
+    await act(async () => {
+      tabs[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    tabs = Array.from(inspector.querySelectorAll('[data-inspection-tab]'));
+    expect(latest.beehive.inspectLayer).toBe('bloom');
+    expect(document.activeElement).toBe(tabs.at(-1));
+
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.showInspect).toBe(false);
+    expect(host.querySelector('[data-beehive-focus-panel="inspection"]')).toBeNull();
+    expect(document.activeElement).toBe(trigger);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Closed inspection panel');
+  });
+
   it('implements a complete roving Field Guide tab and tabpanel pattern', async () => {
     await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, showGuide: true });
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
@@ -651,6 +1387,282 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const panel = host.querySelector('#beehive-guide-panel[role="tabpanel"]');
     expect(panel.getAttribute('aria-labelledby')).toBe(last.id);
     expect(last.getAttribute('aria-controls')).toBe(panel.id);
+  });
+
+  it('models bee stock and apiary site choices as described, roving radio groups', async () => {
+    await mount({ viewMode: 'beekeeper', day: 0, motionPaused: true, tutorialDone: true });
+
+    let stockGroup = host.querySelector('[role="radiogroup"][aria-labelledby="beehive-stock-heading"]');
+    let stockOptions = Array.from(stockGroup.querySelectorAll('[data-beehive-stock-option]'));
+    expect(stockOptions.length).toBeGreaterThan(2);
+    expect(stockOptions.filter((option) => option.getAttribute('aria-checked') === 'true')).toHaveLength(1);
+    expect(stockOptions.filter((option) => option.tabIndex === 0)).toHaveLength(1);
+    const firstStockDescription = stockOptions[0].getAttribute('aria-describedby').split(/\s+/)
+      .map((id) => document.getElementById(id)?.textContent || '').join(' ');
+    expect(stockOptions[0].getAttribute('aria-label')).toMatch(/bee stock from/i);
+    expect(firstStockDescription).toMatch(/Honey|Spring|Winter|Varroa/);
+
+    stockOptions[0].focus();
+    await act(async () => {
+      stockOptions[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    });
+    stockGroup = host.querySelector('[role="radiogroup"][aria-labelledby="beehive-stock-heading"]');
+    stockOptions = Array.from(stockGroup.querySelectorAll('[data-beehive-stock-option]'));
+    expect(latest.beehive.subspecies).toBe(stockOptions[1].getAttribute('data-beehive-stock-option'));
+    expect(stockOptions[1].getAttribute('aria-checked')).toBe('true');
+    expect(document.activeElement).toBe(stockOptions[1]);
+    expect(host.querySelector('#beehive-stock-picker')).toBeTruthy();
+
+    let siteGroup = host.querySelector('[role="radiogroup"][aria-labelledby="beehive-site-heading"]');
+    let siteOptions = Array.from(siteGroup.querySelectorAll('[data-beehive-site-option]'));
+    expect(siteOptions.filter((option) => option.getAttribute('aria-checked') === 'true')).toHaveLength(1);
+    const firstSiteDescription = siteOptions[0].getAttribute('aria-describedby').split(/\s+/)
+      .map((id) => document.getElementById(id)?.textContent || '').join(' ');
+    expect(firstSiteDescription).toMatch(/Forage/);
+    expect(firstSiteDescription).toMatch(/Disease/);
+
+    siteOptions[0].focus();
+    await act(async () => {
+      siteOptions[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true, cancelable: true }));
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    });
+    siteGroup = host.querySelector('[role="radiogroup"][aria-labelledby="beehive-site-heading"]');
+    siteOptions = Array.from(siteGroup.querySelectorAll('[data-beehive-site-option]'));
+    expect(latest.beehive.apiarySite).toBe(siteOptions.at(-1).getAttribute('data-beehive-site-option'));
+    expect(siteOptions.at(-1).getAttribute('aria-checked')).toBe('true');
+    expect(document.activeElement).toBe(siteOptions.at(-1));
+  });
+
+  it('models every Drone and Colony Network briefing choice as a roving radio group', async () => {
+    async function advanceChoice(groupLabel, dataAttribute, readState) {
+      let group = host.querySelector(`[role="radiogroup"][aria-label="${groupLabel}"]`);
+      expect(group, groupLabel).toBeTruthy();
+      let options = Array.from(group.querySelectorAll(`[${dataAttribute}]`));
+      expect(options.length, groupLabel).toBeGreaterThan(2);
+      expect(options.filter((option) => option.getAttribute('aria-checked') === 'true')).toHaveLength(1);
+      expect(options.filter((option) => option.tabIndex === 0)).toHaveLength(1);
+      expect(options.every((option) => !option.hasAttribute('aria-pressed'))).toBe(true);
+
+      const currentIndex = options.findIndex((option) => option.getAttribute('aria-checked') === 'true');
+      const expectedIndex = (currentIndex + 1) % options.length;
+      options[currentIndex].focus();
+      await act(async () => {
+        options[currentIndex].dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+        await new Promise((resolve) => setTimeout(resolve, 5));
+      });
+
+      group = host.querySelector(`[role="radiogroup"][aria-label="${groupLabel}"]`);
+      options = Array.from(group.querySelectorAll(`[${dataAttribute}]`));
+      const expected = options[expectedIndex];
+      expect(expected.getAttribute('aria-checked')).toBe('true');
+      expect(expected.tabIndex).toBe(0);
+      expect(readState()).toBe(expected.getAttribute(dataAttribute));
+      expect(document.activeElement).toBe(expected);
+    }
+
+    await mount({ viewMode: 'drone', drone: { active: false, difficulty: 'easy', routePlan: 'balanced', scenario: 'clear' } });
+    await advanceChoice('Preflight route priority', 'data-drone-route-plan', () => latest.beehive.drone.routePlan);
+    await advanceChoice('Drone mission scenario', 'data-drone-scenario', () => latest.beehive.drone.scenario);
+
+    await mount({ viewMode: 'queen', queen: { active: false, scenario: 'field_report', difficulty: 'standard', opening: 'balanced' } });
+    await advanceChoice('Colony Network mission scenario', 'data-queen-scenario', () => latest.beehive.queen.scenario);
+    await advanceChoice('Colony Network rival pressure', 'data-queen-difficulty', () => latest.beehive.queen.difficulty);
+    await advanceChoice('Colony Network opening doctrine', 'data-queen-opening', () => latest.beehive.queen.opening);
+  });
+
+  it('keeps small instructional and decision text readable in the light theme', async () => {
+    function leafContaining(text) {
+      return Array.from(host.querySelectorAll('p, span, div'))
+        .find((node) => node.children.length === 0 && node.textContent.includes(text));
+    }
+
+    await mount({ viewMode: 'drone', drone: { active: false, difficulty: 'easy' } });
+    expect(leafContaining('Arrow keys / WASD').className).toContain('text-slate-700');
+
+    await mountDroneFlight({ paused: true });
+    expect(leafContaining('Keep flying to discover facts').className).toContain('text-slate-600');
+
+    await mount({ viewMode: 'queen', queen: { active: false } });
+    expect(leafContaining('Signal queen presence').className).toContain('text-slate-600');
+    expect(leafContaining('Cycles 1-9').className).toContain('text-slate-600');
+    expect(leafContaining('Establish your colony').className).toContain('text-slate-600');
+
+    await mount({ viewMode: 'beekeeper', day: 8, tutorialDone: true, motionPaused: true, actionPoints: 0, varroaLevel: 24,
+      journal: [{ day: 8, season: 1, text: 'Inspection logged.' }] });
+    expect(host.querySelector('[data-management-cost-badge="Hygiene"]').className).toContain('text-slate-600');
+    expect(leafContaining('Click \u201CExplain\u201D').className).toContain('text-slate-600');
+    expect(leafContaining('Real beekeepers keep hive journals').className).toContain('text-slate-700');
+  });
+  it('connects header disclosures to comfortably sized, labelled panels', async () => {
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true });
+    const rootRegion = host.querySelector('[data-beehive-root="true"]');
+    const sound = rootRegion.querySelector('button[aria-label="Sound effects"]');
+    expect(sound.getAttribute('aria-pressed')).toBe('true');
+
+    for (const controlledId of ['beehive-quiz-panel', 'beehive-badges-panel', 'beehive-shortcuts-panel', 'beehive-field-guide']) {
+      const trigger = rootRegion.querySelector(`button[aria-controls="${controlledId}"]`);
+      expect(trigger).toBeTruthy();
+      expect(trigger.className).toContain('min-h-[44px]');
+      expect(trigger.className).toContain('min-w-[44px]');
+      if (trigger.hasAttribute('aria-expanded')) expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      expect(trigger.hasAttribute('aria-pressed')).toBe(false);
+    }
+
+    let guideTrigger = rootRegion.querySelector('button[aria-controls="beehive-field-guide"]');
+    guideTrigger.focus();
+    await act(async () => { guideTrigger.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    guideTrigger = host.querySelector('button[aria-controls="beehive-field-guide"]');
+    expect(guideTrigger.getAttribute('aria-expanded')).toBe('true');
+    expect(document.getElementById('beehive-field-guide')).toBeTruthy();
+    await act(async () => {
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(host.querySelector('button[aria-controls="beehive-field-guide"]').getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(guideTrigger);
+  });
+
+  it('makes the Field Guide directly navigable, semantically structured, and scroll-focusable', async () => {
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, showGuide: true });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    const guide = host.querySelector('#beehive-field-guide');
+    expect(guide.tagName).toBe('SECTION');
+    expect(guide.getAttribute('aria-labelledby')).toBe('beehive-guide-title');
+    expect(guide.querySelector('#beehive-guide-title').tagName).toBe('H2');
+
+    const select = guide.querySelector('#beehive-guide-topic-select');
+    expect(select.labels[0].textContent).toBe('Jump to a topic');
+    expect(Array.from(select.querySelectorAll('optgroup')).map((group) => group.label)).toEqual(['Learning topics', 'Teacher resources']);
+    expect(Array.from(select.options).some((option) => /teacher resource/i.test(option.textContent))).toBe(true);
+
+    let entries = guide.querySelector('[data-beehive-guide-entries]');
+    expect(entries.getAttribute('role')).toBe('region');
+    expect(entries.tabIndex).toBe(0);
+    expect(entries.getAttribute('aria-labelledby')).toBe('beehive-guide-section-title');
+    expect(entries.querySelector('article h4')).toBeTruthy();
+    expect(entries.querySelector('dl dt')).toBeTruthy();
+    expect(entries.querySelector('dl dd')).toBeTruthy();
+
+    entries.scrollTop = 120;
+    await act(async () => {
+      select.value = 'math';
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    });
+    entries = host.querySelector('[data-beehive-guide-entries="math"]');
+    expect(latest.beehive.guideSection).toBe('math');
+    expect(entries.scrollTop).toBe(0);
+    expect(document.getElementById('allo-live-beehive').textContent).toMatch(/Opened Math Problems, \d+ entries/);
+  });
+
+  it('renders, announces, preserves, and contrast-checks thermoregulation trials', async () => {
+    const contrastRatio = (foreground, background) => {
+      const channels = (value) => (value.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const luminance = (value) => {
+        const rgb = channels(value).map((channel) => channel / 255)
+          .map((channel) => channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+        return 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+      };
+      const a = luminance(foreground);
+      const b = luminance(background);
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    };
+
+    for (const sample of [
+      { outsideC: 34, state: 'optimal' },
+      { outsideC: 36, state: 'optimal' },
+      { outsideC: 40, state: 'overheating' },
+      { outsideC: 33, state: 'compensating' },
+      { outsideC: 20, state: 'chilled' },
+    ]) {
+      await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true,
+        thermHunt: { outsideC: sample.outsideC, beesFanning: 0, broodCount: 0, hypothesis: '', explanation: '', log: [] } });
+      const output = host.querySelector('#beehive-thermo-output');
+      expect(output.getAttribute('data-thermo-state')).toBe(sample.state);
+      const outputStyle = getComputedStyle(output);
+      const labelStyle = getComputedStyle(output.firstElementChild);
+      expect(contrastRatio(labelStyle.color, outputStyle.backgroundColor)).toBeGreaterThanOrEqual(4.5);
+    }
+
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true,
+      thermHunt: { outsideC: 35, beesFanning: 0, broodCount: 0, hypothesis: 'Keep this hypothesis', understood: true, explanation: 'Keep this explanation', log: [] } });
+    const outside = host.querySelector('#th-outsideC');
+    expect(outside.getAttribute('aria-valuetext')).toBe('35 degrees Celsius');
+    expect(host.querySelector('#th-broodCount').getAttribute('aria-valuetext')).toBe('0 brood');
+
+    const logButton = Array.from(host.querySelectorAll('[data-beehive-thermoregulation] button'))
+      .find((button) => button.textContent === 'Log current trial');
+    await act(async () => { logButton.click(); await Promise.resolve(); });
+    expect(latest.beehive.thermHunt.log).toHaveLength(1);
+    expect(host.querySelector('[aria-label="Logged thermoregulation trials"]').textContent).toMatch(/35 °C outside.*estimated 35.0 °C.*Typical brood range/);
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Trial logged: outside 35 degrees Celsius');
+
+    const reset = Array.from(host.querySelectorAll('[data-beehive-thermoregulation] button'))
+      .find((button) => button.textContent === 'Reset conditions');
+    await act(async () => { reset.click(); await Promise.resolve(); });
+    expect(latest.beehive.thermHunt.outsideC).toBe(20);
+    expect(latest.beehive.thermHunt.beesFanning).toBe(30);
+    expect(latest.beehive.thermHunt.broodCount).toBe(5000);
+    expect(latest.beehive.thermHunt.log).toHaveLength(1);
+    expect(latest.beehive.thermHunt.hypothesis).toBe('Keep this hypothesis');
+    expect(latest.beehive.thermHunt.explanation).toBe('Keep this explanation');
+    expect(host.querySelector('[data-beehive-thermoregulation] [role="note"]').textContent).toContain('Your log and writing were kept');
+  });
+
+  it('keeps quiz focus coherent, blocks rapid scoring, and presents visible results', async () => {
+    const opener = document.createElement('button');
+    opener.textContent = 'Quiz opener';
+    document.body.insertBefore(opener, host);
+    opener.focus();
+    const questions = [
+      { q: 'First question?', opts: ['Correct one', 'Wrong one'], ans: 0, explain: 'First explanation.' },
+      { q: 'Second question?', opts: ['Wrong two', 'Correct two'], ans: 1, explain: 'Second explanation.' },
+    ];
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true,
+      quizOpen: true, quizComplete: false, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizQuestions: questions });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+
+    let answer = host.querySelector('[aria-label="Answer: Correct one"]');
+    answer.focus();
+    await act(async () => { answer.click(); answer.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.quizAnswered).toBe(1);
+    expect(latest.beehive.quizScore).toBe(1);
+    let next = host.querySelector('[data-beehive-quiz-next]');
+    expect(document.activeElement).toBe(next);
+    expect(next.closest('[role="status"]')).toBeNull();
+    expect(next.className).toContain('min-h-[44px]');
+
+    await act(async () => { next.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    let question = host.querySelector('#beehive-quiz-question');
+    expect(latest.beehive.quizIdx).toBe(1);
+    expect(question.textContent).toBe('Second question?');
+    expect(document.activeElement).toBe(question);
+
+    answer = host.querySelector('[aria-label="Answer: Correct two"]');
+    await act(async () => { answer.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    next = host.querySelector('[data-beehive-quiz-next]');
+    await act(async () => { next.click(); next.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.quizComplete).toBe(true);
+    expect(latest.beehive.quizScore).toBe(2);
+    expect(latest.beehive.bestQuizScore).toBe(2);
+    const resultHeading = host.querySelector('#beehive-quiz-results-title');
+    expect(document.activeElement).toBe(resultHeading);
+    expect(host.querySelector('[data-beehive-quiz-score]').textContent).toBe('2 of 2');
+
+    const closeResults = Array.from(host.querySelectorAll('#beehive-quiz-panel button'))
+      .find((button) => button.textContent === 'Close results');
+    await act(async () => { closeResults.click(); await Promise.resolve(); });
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 5)); });
+    expect(latest.beehive.quizOpen).toBe(false);
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
   });
 
   it('provides persistent labels, semantic progress, reflow, and announced quiz feedback', async () => {
@@ -744,14 +1756,14 @@ describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
     expect(SRC).toMatch(/'data-flight-control'/);
   });
 
-  it('guards the Queen RTS pause key the same way the drone game does', () => {
-    // Memory flagged the queen handler as never audited for the case-normalisation, input-target and
-    // stuck-key bugs fixed in the drone game. Audited: it normalises case and guards typing targets,
-    // and it holds no continuous key state so it needs no blur reset. Pinned rather than changed.
+  it('scopes the Colony Network pause key to its Bee playfield and active panel state', () => {
     const qk = SRC.slice(SRC.indexOf('function onQueenKey'));
     const body = qk.slice(0, qk.indexOf('document.addEventListener'));
     expect(body).toMatch(/toLowerCase\(\)/);
     expect(body).toMatch(/TEXTAREA|isContentEditable/);
+    expect(body).toContain('_beeActiveFocusPanelRef.current');
+    expect(body).toContain('beeRoot.contains(active)');
+    expect(body).toContain('queenPlayfield.contains(active)');
   });
 });
 

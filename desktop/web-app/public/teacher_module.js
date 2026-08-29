@@ -163,23 +163,472 @@ function alloNormalizeTeacherLearnerPreference(value) {
   if (typeof value.updatedAt === "string" && value.updatedAt.trim()) normalized.updatedAt = value.updatedAt.trim().slice(0, 48);
   return normalized;
 }
+function alloTeacherBoundedRosterNumber(value, max) {
+  var parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, Math.min(max == null ? 1e5 : max, Math.floor(parsed))) : 0;
+}
+function alloTeacherBoundedRosterText(value, max) {
+  return typeof value === "string" ? value.trim().slice(0, max || 160) : "";
+}
+function alloTeacherSafeLearnerId(value) {
+  var id = alloTeacherBoundedRosterText(value, 160);
+  return /^[A-Za-z0-9_-]{1,160}$/.test(id) && id !== "__proto__" && id !== "prototype" && id !== "constructor" ? id : "";
+}
+function alloTeacherRosterValueSet(value) {
+  var out = /* @__PURE__ */ Object.create(null);
+  Object.keys(value && typeof value === "object" && !Array.isArray(value) ? value : {}).forEach(function(key) {
+    out[key] = 1;
+  });
+  return out;
+}
+function alloTeacherFilterRosterCodenames(value, studentSet) {
+  var seen = /* @__PURE__ */ Object.create(null);
+  return (Array.isArray(value) ? value : []).filter(function(codename) {
+    if (typeof codename !== "string" || !studentSet[codename] || seen[codename]) return false;
+    seen[codename] = 1;
+    return true;
+  }).slice(0, 250);
+}
+function alloTeacherSanitizeOrganizerEvidence(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  var type = alloTeacherBoundedRosterText(value.type, 40).replace(/[^a-z0-9_-]/gi, "");
+  var statuses = { waiting: 1, loading: 1, ready: 1, failed: 1, working: 1, attempted: 1, complete: 1 };
+  var status = statuses[value.status] ? value.status : "";
+  if (!type && !status) return null;
+  return {
+    type: type || "organizer",
+    status: status || "waiting",
+    score: alloTeacherBoundedRosterNumber(value.score, 1e5),
+    correct: alloTeacherBoundedRosterNumber(value.correct, 1e5),
+    total: alloTeacherBoundedRosterNumber(value.total, 1e5),
+    attempts: alloTeacherBoundedRosterNumber(value.attempts, 1e4)
+  };
+}
+function alloTeacherSanitizeRosterProgressHistory(value, students, groups) {
+  var source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  var groupSet = alloTeacherRosterValueSet(groups);
+  var out = /* @__PURE__ */ Object.create(null);
+  Object.keys(students || {}).forEach(function(codename) {
+    var entries = Array.isArray(source[codename]) ? source[codename] : [];
+    var safeEntries = entries.map(function(entry) {
+      if (!entry || typeof entry !== "object" || Array.isArray(entry)) return null;
+      var sessionId = alloTeacherBoundedRosterText(entry.sessionId, 160);
+      if (!sessionId) return null;
+      var groupId = alloTeacherBoundedRosterText(entry.groupId, 80);
+      var safe = {
+        sessionId,
+        timestamp: typeof entry.timestamp === "string" ? entry.timestamp.slice(0, 48) : null,
+        groupId: groupId && groupSet[groupId] ? groupId : null,
+        responseCount: alloTeacherBoundedRosterNumber(entry.responseCount, 1e4),
+        resourcesOpened: alloTeacherBoundedRosterNumber(entry.resourcesOpened, 1e3),
+        liveActivityCount: alloTeacherBoundedRosterNumber(entry.liveActivityCount, 1e3),
+        liveSubmissionCount: alloTeacherBoundedRosterNumber(entry.liveSubmissionCount, 1e3),
+        liveRevisionCount: alloTeacherBoundedRosterNumber(entry.liveRevisionCount, 1e3)
+      };
+      var organizer = alloTeacherSanitizeOrganizerEvidence(entry.organizer);
+      if (organizer) safe.organizer = organizer;
+      return safe;
+    }).filter(Boolean).slice(-30);
+    if (safeEntries.length) out[codename] = safeEntries;
+  });
+  return out;
+}
+function alloTeacherSanitizeRosterInsightBrief(value, studentSet, groupSet) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  var safe = {
+    schemaVersion: 2,
+    activityCount: alloTeacherBoundedRosterNumber(value.activityCount, 60),
+    submissions: alloTeacherBoundedRosterNumber(value.submissions, 1e5),
+    revisions: alloTeacherBoundedRosterNumber(value.revisions, 1e5),
+    feedbackSent: alloTeacherBoundedRosterNumber(value.feedbackSent, 1e5),
+    votesCast: alloTeacherBoundedRosterNumber(value.votesCast, 1e5),
+    participantsWithRecordedResponse: alloTeacherBoundedRosterNumber(value.participantsWithRecordedResponse, 250),
+    followUpCodenames: alloTeacherFilterRosterCodenames(value.followUpCodenames, studentSet),
+    evidenceScope: "teacher-device-derived-participation"
+  };
+  safe.evidenceCohorts = (Array.isArray(value.evidenceCohorts) ? value.evidenceCohorts : []).map(function(cohort) {
+    if (!cohort || typeof cohort !== "object" || Array.isArray(cohort)) return null;
+    var codenames = alloTeacherFilterRosterCodenames(cohort.codenames, studentSet);
+    if (!codenames.length) return null;
+    var code = alloTeacherBoundedRosterText(cohort.code, 80).replace(/[^a-z0-9_-]/gi, "");
+    if (!code) return null;
+    return {
+      code,
+      intent: cohort.intent === "celebrate" ? "celebrate" : "support",
+      label: alloTeacherBoundedRosterText(cohort.label, 140) || "Evidence cohort",
+      count: codenames.length,
+      codenames,
+      recommendedAction: alloTeacherBoundedRosterText(cohort.recommendedAction, 240)
+    };
+  }).filter(Boolean).slice(0, 8);
+  safe.byKind = (Array.isArray(value.byKind) ? value.byKind : []).map(function(item) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+    var kind = alloTeacherBoundedRosterText(item.kind, 40).replace(/[^a-z0-9_-]/gi, "");
+    if (!kind) return null;
+    return {
+      kind,
+      activityCount: alloTeacherBoundedRosterNumber(item.activityCount, 60),
+      invited: alloTeacherBoundedRosterNumber(item.invited, 1e5),
+      submitted: alloTeacherBoundedRosterNumber(item.submitted, 1e5),
+      revised: alloTeacherBoundedRosterNumber(item.revised, 1e5),
+      completionPercent: alloTeacherBoundedRosterNumber(item.completionPercent, 100)
+    };
+  }).filter(Boolean).slice(0, 60);
+  safe.groups = (Array.isArray(value.groups) ? value.groups : []).map(function(item) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+    var groupId = alloTeacherBoundedRosterText(item.groupId, 80);
+    if (!groupId || !groupSet[groupId]) return null;
+    return {
+      groupId,
+      participantCount: alloTeacherBoundedRosterNumber(item.participantCount, 250),
+      activityOpportunities: alloTeacherBoundedRosterNumber(item.activityOpportunities, 1e5),
+      submissions: alloTeacherBoundedRosterNumber(item.submissions, 1e5),
+      revisions: alloTeacherBoundedRosterNumber(item.revisions, 1e5),
+      followUpCount: alloTeacherBoundedRosterNumber(item.followUpCount, 250)
+    };
+  }).filter(Boolean).slice(0, 100);
+  safe.nextMoves = (Array.isArray(value.nextMoves) ? value.nextMoves : []).map(function(move) {
+    if (!move || typeof move !== "object" || Array.isArray(move)) return null;
+    var code = alloTeacherBoundedRosterText(move.code, 80).replace(/[^a-z0-9_-]/gi, "");
+    var label = alloTeacherBoundedRosterText(move.label, 240);
+    return code && label ? { code, count: alloTeacherBoundedRosterNumber(move.count, 1e5), label } : null;
+  }).filter(Boolean).slice(0, 4);
+  return safe;
+}
+function alloTeacherSanitizeRosterSessionHistory(value, students, groups) {
+  var studentSet = alloTeacherRosterValueSet(students);
+  var groupSet = alloTeacherRosterValueSet(groups);
+  return (Array.isArray(value) ? value : []).map(function(session) {
+    if (!session || typeof session !== "object" || Array.isArray(session)) return null;
+    var id = alloTeacherBoundedRosterText(session.id, 160);
+    if (!id) return null;
+    var participants = /* @__PURE__ */ Object.create(null);
+    var rawParticipants = session.participants && typeof session.participants === "object" && !Array.isArray(session.participants) ? session.participants : {};
+    Object.keys(rawParticipants).forEach(function(codename) {
+      if (Object.keys(participants).length >= 500) return;
+      if (!studentSet[codename]) return;
+      var record = rawParticipants[codename];
+      if (!record || typeof record !== "object" || Array.isArray(record)) return;
+      var groupId = alloTeacherBoundedRosterText(record.groupId, 80);
+      var safeRecord = {
+        groupId: groupId && groupSet[groupId] ? groupId : null,
+        joinedAt: typeof record.joinedAt === "string" ? record.joinedAt.slice(0, 48) : null,
+        responseCount: alloTeacherBoundedRosterNumber(record.responseCount, 1e4),
+        resourcesOpened: alloTeacherBoundedRosterNumber(record.resourcesOpened, 1e3),
+        liveActivityCount: alloTeacherBoundedRosterNumber(record.liveActivityCount, 1e3),
+        liveSubmissionCount: alloTeacherBoundedRosterNumber(record.liveSubmissionCount, 1e3),
+        liveRevisionCount: alloTeacherBoundedRosterNumber(record.liveRevisionCount, 1e3)
+      };
+      var organizer = alloTeacherSanitizeOrganizerEvidence(record.organizer);
+      if (organizer) safeRecord.organizer = organizer;
+      participants[codename] = safeRecord;
+    });
+    var safe = {
+      schemaVersion: 2,
+      id,
+      startedAt: typeof session.startedAt === "string" ? session.startedAt.slice(0, 48) : null,
+      endedAt: typeof session.endedAt === "string" ? session.endedAt.slice(0, 48) : null,
+      durationMinutes: session.durationMinutes === null ? null : alloTeacherBoundedRosterNumber(session.durationMinutes, 1e5),
+      mode: session.mode === "mailbox" ? "mailbox" : "firebase",
+      resourceTitles: (Array.isArray(session.resourceTitles) ? session.resourceTitles : []).map(function(title) {
+        return alloTeacherBoundedRosterText(title, 160);
+      }).filter(Boolean).slice(0, 20),
+      participants,
+      absentCodenames: alloTeacherFilterRosterCodenames(session.absentCodenames, studentSet)
+    };
+    var unmatchedCount = Math.max(
+      Array.isArray(session.unmatchedCodenames) ? session.unmatchedCodenames.map(String).filter(Boolean).slice(0, 250).length : 0,
+      alloTeacherBoundedRosterNumber(session.unmatchedCount, 250)
+    );
+    if (unmatchedCount) safe.unmatchedCount = unmatchedCount;
+    safe.classGoals = (Array.isArray(session.classGoals) ? session.classGoals : []).map(function(goal) {
+      if (!goal || typeof goal !== "object" || Array.isArray(goal)) return null;
+      var label = alloTeacherBoundedRosterText(goal.label, 80);
+      return label ? {
+        label,
+        mode: goal.mode === "independent" ? "independent" : "interdependent",
+        tokens: Number(goal.tokens) === 2 ? 2 : 1,
+        delivered: alloTeacherBoundedRosterNumber(goal.delivered, 250),
+        at: alloTeacherBoundedRosterNumber(goal.at, Number.MAX_SAFE_INTEGER)
+      } : null;
+    }).filter(Boolean).slice(0, 40);
+    safe.liveActivities = (Array.isArray(session.liveActivities) ? session.liveActivities : []).map(function(activity) {
+      if (!activity || typeof activity !== "object" || Array.isArray(activity)) return null;
+      var kind = alloTeacherBoundedRosterText(activity.kind, 40).replace(/[^a-z0-9_-]/gi, "");
+      if (!kind) return null;
+      var out = { kind, phase: alloTeacherBoundedRosterText(activity.phase, 20) || "closed" };
+      ["invited", "submitted", "revised", "approved", "hidden", "revealed", "feedbackSent", "guesses", "showcased", "votesCast"].forEach(function(field) {
+        out[field] = alloTeacherBoundedRosterNumber(activity[field], 1e5);
+      });
+      out.startedAt = alloTeacherBoundedRosterNumber(activity.startedAt, Number.MAX_SAFE_INTEGER);
+      out.endedAt = alloTeacherBoundedRosterNumber(activity.endedAt, Number.MAX_SAFE_INTEGER);
+      return out;
+    }).filter(Boolean).slice(0, 60);
+    if (session.organizerActivity && typeof session.organizerActivity === "object" && !Array.isArray(session.organizerActivity)) {
+      var organizerType = alloTeacherBoundedRosterText(session.organizerActivity.type, 40).replace(/[^a-z0-9_-]/gi, "");
+      if (organizerType) {
+        var statusCounts = {};
+        ["waiting", "loading", "ready", "failed", "working", "attempted", "complete"].forEach(function(status) {
+          statusCounts[status] = alloTeacherBoundedRosterNumber(session.organizerActivity.statusCounts && session.organizerActivity.statusCounts[status], 250);
+        });
+        safe.organizerActivity = {
+          type: organizerType,
+          wasLiveAtEnd: session.organizerActivity.wasLiveAtEnd === true,
+          participantCount: alloTeacherBoundedRosterNumber(session.organizerActivity.participantCount, 250),
+          statusCounts,
+          followUpCodenames: alloTeacherFilterRosterCodenames(session.organizerActivity.followUpCodenames, studentSet)
+        };
+      }
+    }
+    var insightBrief = alloTeacherSanitizeRosterInsightBrief(session.insightBrief, studentSet, groupSet);
+    if (insightBrief) safe.insightBrief = insightBrief;
+    var teacherNote = typeof session.teacherNote === "string" ? session.teacherNote.replace(/\u000d\u000a?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, 1e3) : "";
+    if (teacherNote) safe.teacherNote = teacherNote;
+    if (session.followUpPlan && typeof session.followUpPlan === "object" && !Array.isArray(session.followUpPlan)) {
+      var resourceId = alloTeacherBoundedRosterText(session.followUpPlan.resourceId, 160);
+      if (resourceId && resourceId !== "__proto__" && resourceId !== "prototype" && resourceId !== "constructor") {
+        var cohortCode = alloTeacherBoundedRosterText(session.followUpPlan.cohortCode, 80);
+        var audience = session.followUpPlan.audience === "cohort" && cohortCode ? "cohort" : "class";
+        safe.followUpPlan = {
+          schemaVersion: 1,
+          resourceId,
+          resourceTitle: alloTeacherBoundedRosterText(session.followUpPlan.resourceTitle, 140) || "Follow-up resource",
+          resourceType: alloTeacherBoundedRosterText(session.followUpPlan.resourceType, 80),
+          audience,
+          cohortCode: audience === "cohort" ? cohortCode : "",
+          cohortLabel: audience === "cohort" ? alloTeacherBoundedRosterText(session.followUpPlan.cohortLabel, 120) || "Evidence cohort" : "Whole class",
+          cohortCount: audience === "cohort" ? alloTeacherBoundedRosterNumber(session.followUpPlan.cohortCount, 250) : 0,
+          status: session.followUpPlan.status === "completed" ? "completed" : "planned",
+          plannedAt: typeof session.followUpPlan.plannedAt === "string" ? session.followUpPlan.plannedAt.slice(0, 48) : ""
+        };
+      }
+    }
+    return safe;
+  }).filter(Boolean).slice(-30);
+}
+function alloTeacherSanitizePortableSeating(value, students) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  var studentSet = alloTeacherRosterValueSet(students);
+  var reserved = { "__proto__": true, prototype: true, constructor: true };
+  var clamp = function(raw, min, max, fallback) {
+    return typeof raw === "number" && Number.isFinite(raw) ? Math.max(min, Math.min(max, raw)) : fallback;
+  };
+  var safeId = function(raw) {
+    var id = typeof raw === "string" ? raw.trim().slice(0, 80) : "";
+    return /^[A-Za-z0-9_-]{1,80}$/.test(id) && !reserved[id.toLowerCase()] ? id : "";
+  };
+  var layoutsSource = value.layouts && typeof value.layouts === "object" && !Array.isArray(value.layouts) ? value.layouts : {};
+  var layouts = {};
+  var layoutIdsTaken = /* @__PURE__ */ Object.create(null);
+  Object.keys(layoutsSource).forEach(function(layoutKey) {
+    if (Object.keys(layouts).length >= 30) return;
+    var rawLayout = layoutsSource[layoutKey];
+    if (!rawLayout || typeof rawLayout !== "object" || Array.isArray(rawLayout)) return;
+    var keyId = safeId(layoutKey);
+    var layoutId = safeId(rawLayout.id);
+    if (!keyId || layoutId !== keyId || layoutIdsTaken[layoutId]) return;
+    layoutIdsTaken[layoutId] = 1;
+    var objectIdsTaken = /* @__PURE__ */ Object.create(null);
+    var seats = [];
+    (Array.isArray(rawLayout.seats) ? rawLayout.seats : []).forEach(function(rawSeat) {
+      if (seats.length >= 60) return;
+      if (!rawSeat || typeof rawSeat !== "object" || Array.isArray(rawSeat)) return;
+      var id = safeId(rawSeat.id);
+      if (!id || objectIdsTaken[id]) return;
+      var width = clamp(rawSeat.w, 4, 30, 10);
+      var height = clamp(rawSeat.h, 3, 30, 7);
+      objectIdsTaken[id] = 1;
+      seats.push({
+        id,
+        x: clamp(rawSeat.x, 0, 100 - width, 0),
+        y: clamp(rawSeat.y, 0, 62 - height, 0),
+        w: width,
+        h: height
+      });
+    });
+    var furnitureSpecs = {
+      teacher_desk: { w: 16, h: 8 },
+      table: { w: 16, h: 10 },
+      rug: { w: 20, h: 14 },
+      shelf: { w: 14, h: 4 },
+      door: { w: 8, h: 3 },
+      window: { w: 14, h: 3 }
+    };
+    var furniture = [];
+    (Array.isArray(rawLayout.furniture) ? rawLayout.furniture : []).forEach(function(rawItem) {
+      if (furniture.length >= 30) return;
+      if (!rawItem || typeof rawItem !== "object" || Array.isArray(rawItem)) return;
+      var id = safeId(rawItem.id);
+      if (!id || objectIdsTaken[id]) return;
+      var kind = Object.prototype.hasOwnProperty.call(furnitureSpecs, rawItem.kind) ? rawItem.kind : "table";
+      var spec = furnitureSpecs[kind];
+      var width = clamp(rawItem.w, 2, 60, spec.w);
+      var height = clamp(rawItem.h, 2, 40, spec.h);
+      objectIdsTaken[id] = 1;
+      furniture.push({
+        id,
+        kind,
+        x: clamp(rawItem.x, 0, 100 - width, 0),
+        y: clamp(rawItem.y, 0, 62 - height, 0),
+        w: width,
+        h: height,
+        label: typeof rawItem.label === "string" ? rawItem.label.slice(0, 40) : ""
+      });
+    });
+    var seatSet = /* @__PURE__ */ Object.create(null);
+    seats.forEach(function(seat) {
+      seatSet[seat.id] = 1;
+    });
+    var assignments = {};
+    var assignedStudents = /* @__PURE__ */ Object.create(null);
+    var rawAssignments = rawLayout.assignments && typeof rawLayout.assignments === "object" && !Array.isArray(rawLayout.assignments) ? rawLayout.assignments : {};
+    Object.keys(rawAssignments).forEach(function(seatId) {
+      var codename = rawAssignments[seatId];
+      if (seatSet[seatId] && typeof codename === "string" && studentSet[codename] && !assignedStudents[codename]) {
+        assignments[seatId] = codename;
+        assignedStudents[codename] = 1;
+      }
+    });
+    layouts[layoutId] = {
+      id: layoutId,
+      name: typeof rawLayout.name === "string" && rawLayout.name.trim() ? rawLayout.name.trim().slice(0, 60) : "Layout",
+      seats,
+      furniture,
+      assignments
+    };
+  });
+  var activeLayoutId = safeId(value.activeLayoutId);
+  if (!activeLayoutId || !Object.prototype.hasOwnProperty.call(layouts, activeLayoutId)) {
+    activeLayoutId = Object.keys(layouts)[0] || null;
+  }
+  var activeSeatSet = /* @__PURE__ */ Object.create(null);
+  if (activeLayoutId) layouts[activeLayoutId].seats.forEach(function(seat) {
+    activeSeatSet[seat.id] = 1;
+  });
+  var constraintSizes = {
+    keep_apart: 2,
+    keep_together: 2,
+    front_row: 1,
+    near_teacher: 1,
+    near_door: 1,
+    avoid_window: 1,
+    fixed_seat: 1
+  };
+  var constraintIdsTaken = /* @__PURE__ */ Object.create(null);
+  var constraints = [];
+  (Array.isArray(value.constraints) ? value.constraints : []).forEach(function(rawConstraint) {
+    if (constraints.length >= 80) return;
+    if (!rawConstraint || typeof rawConstraint !== "object" || Array.isArray(rawConstraint)) return;
+    var id = safeId(rawConstraint.id);
+    var expectedSize = constraintSizes[rawConstraint.type];
+    if (!id || !expectedSize || constraintIdsTaken[id]) return;
+    var seenStudents = /* @__PURE__ */ Object.create(null);
+    var codenames = (Array.isArray(rawConstraint.students) ? rawConstraint.students : []).filter(function(codename) {
+      if (typeof codename !== "string" || !studentSet[codename] || seenStudents[codename]) return false;
+      seenStudents[codename] = 1;
+      return true;
+    }).slice(0, expectedSize);
+    if (codenames.length !== expectedSize) return;
+    var safeConstraint = { id, type: rawConstraint.type, students: codenames };
+    if (rawConstraint.type === "fixed_seat") {
+      var seatId = safeId(rawConstraint.seatId);
+      if (!seatId || !activeSeatSet[seatId]) return;
+      safeConstraint.seatId = seatId;
+    }
+    constraintIdsTaken[id] = 1;
+    constraints.push(safeConstraint);
+  });
+  var history = (Array.isArray(value.history) ? value.history : []).filter(function(entry) {
+    return entry && typeof entry === "object" && !Array.isArray(entry) && typeof entry.at === "string" && !Number.isNaN(Date.parse(entry.at.slice(0, 48)));
+  }).map(function(entry) {
+    return {
+      at: entry.at.slice(0, 48),
+      layoutId: safeId(entry.layoutId),
+      layoutName: typeof entry.layoutName === "string" ? entry.layoutName.slice(0, 60) : "",
+      kind: entry.kind === "created" ? "created" : "solve"
+    };
+  }).slice(-50);
+  return {
+    version: 1,
+    activeLayoutId,
+    layouts,
+    constraints,
+    solveSeed: clamp(value.solveSeed, 1, 1e9, 1),
+    history
+  };
+}
+function alloTeacherSanitizeSubmissionKey(value, classId) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  var jwk = value.publicJwk;
+  if (!jwk || typeof jwk !== "object" || Array.isArray(jwk) || jwk.kty !== "RSA") return null;
+  var modulus = typeof jwk.n === "string" && /^[A-Za-z0-9_-]{16,2048}$/.test(jwk.n) ? jwk.n : "";
+  var exponent = typeof jwk.e === "string" && /^[A-Za-z0-9_-]{1,16}$/.test(jwk.e) ? jwk.e : "";
+  if (!modulus || !exponent) return null;
+  var keyClassId = alloTeacherBoundedRosterText(value.classId, 160);
+  if (classId && keyClassId && classId !== keyClassId) return null;
+  var publicJwk = { kty: "RSA", n: modulus, e: exponent };
+  if (typeof jwk.alg === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(jwk.alg)) publicJwk.alg = jwk.alg;
+  if (typeof jwk.ext === "boolean") publicJwk.ext = jwk.ext;
+  if (jwk.use === "enc") publicJwk.use = "enc";
+  var keyOps = (Array.isArray(jwk.key_ops) ? jwk.key_ops : []).filter(function(op) {
+    return op === "encrypt";
+  }).slice(0, 1);
+  if (keyOps.length) publicJwk.key_ops = keyOps;
+  var safe = { publicJwk, classId: classId || keyClassId };
+  var keyId = alloTeacherSafeLearnerId(value.keyId);
+  if (keyId) safe.keyId = keyId;
+  if (typeof value.createdAt === "string") safe.createdAt = value.createdAt.slice(0, 48);
+  return safe;
+}
 function alloEnsureTeacherRosterIdentity(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
   var students = value.students && typeof value.students === "object" && !Array.isArray(value.students) ? value.students : {};
-  var legacyClassId = value.submissionKey && typeof value.submissionKey.classId === "string" ? value.submissionKey.classId.trim() : "";
-  var classId = typeof value.classId === "string" && value.classId.trim() ? value.classId.trim() : legacyClassId || alloTeacherStableId("CLS");
+  var groups = value.groups && typeof value.groups === "object" && !Array.isArray(value.groups) ? value.groups : {};
+  var legacyClassId = alloTeacherSafeLearnerId(
+    value.submissionKey && typeof value.submissionKey.classId === "string" ? value.submissionKey.classId : ""
+  );
+  var classId = alloTeacherSafeLearnerId(value.classId) || legacyClassId || alloTeacherStableId("CLS");
   var currentIds = value.learnerIds && typeof value.learnerIds === "object" && !Array.isArray(value.learnerIds) ? value.learnerIds : {};
   var currentPreferences = value.learnerPreferences && typeof value.learnerPreferences === "object" && !Array.isArray(value.learnerPreferences) ? value.learnerPreferences : {};
-  var learnerIds = {};
-  var learnerPreferences = {};
+  var learnerIds = /* @__PURE__ */ Object.create(null);
+  var learnerPreferences = /* @__PURE__ */ Object.create(null);
+  var usedLearnerIds = /* @__PURE__ */ Object.create(null);
   var readingThemeDefault = alloNormalizeTeacherReadingTheme(value.readingThemeDefault, "default");
-  var changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault;
+  var currentProgressHistory = value.progressHistory && typeof value.progressHistory === "object" && !Array.isArray(value.progressHistory) ? value.progressHistory : {};
+  var currentSessionHistory = Array.isArray(value.sessionHistory) ? value.sessionHistory : [];
+  var progressHistory = alloTeacherSanitizeRosterProgressHistory(currentProgressHistory, students, groups);
+  var sessionHistory = alloTeacherSanitizeRosterSessionHistory(currentSessionHistory, students, groups);
+  var hasSeating = Object.prototype.hasOwnProperty.call(value, "seating");
+  var seating = hasSeating ? alloTeacherSanitizePortableSeating(value.seating, students) : null;
+  var hasSubmissionKey = Object.prototype.hasOwnProperty.call(value, "submissionKey");
+  var submissionKey = hasSubmissionKey ? alloTeacherSanitizeSubmissionKey(value.submissionKey, classId) : null;
+  var progressChanged = false;
+  var sessionsChanged = false;
+  var seatingChanged = false;
+  var submissionKeyChanged = false;
+  try {
+    progressChanged = JSON.stringify(currentProgressHistory) !== JSON.stringify(progressHistory);
+    sessionsChanged = JSON.stringify(currentSessionHistory) !== JSON.stringify(sessionHistory);
+    seatingChanged = hasSeating && JSON.stringify(value.seating) !== JSON.stringify(seating);
+    submissionKeyChanged = hasSubmissionKey && JSON.stringify(value.submissionKey) !== JSON.stringify(submissionKey);
+  } catch (e) {
+    progressChanged = true;
+    sessionsChanged = true;
+    seatingChanged = hasSeating;
+    submissionKeyChanged = hasSubmissionKey;
+  }
+  var hasLegacyIdentityMap = Object.prototype.hasOwnProperty.call(value, "displayNames") || Object.prototype.hasOwnProperty.call(value, "importAliases");
+  var changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault || hasLegacyIdentityMap || progressChanged || sessionsChanged || seatingChanged || submissionKeyChanged;
   Object.keys(students).forEach(function(codename) {
-    var existing = typeof currentIds[codename] === "string" ? currentIds[codename].trim() : "";
-    var learnerId = existing || alloTeacherStableId("LRN");
+    var rawExisting = typeof currentIds[codename] === "string" ? currentIds[codename].trim() : "";
+    var existing = alloTeacherSafeLearnerId(rawExisting);
+    if (existing && usedLearnerIds[existing]) existing = "";
+    var learnerId = existing;
+    while (!learnerId || usedLearnerIds[learnerId]) learnerId = alloTeacherStableId("LRN");
+    usedLearnerIds[learnerId] = 1;
     learnerIds[codename] = learnerId;
-    if (!existing) changed = true;
-    var preferenceSource = Object.prototype.hasOwnProperty.call(currentPreferences, learnerId) ? currentPreferences[learnerId] : currentPreferences[codename];
+    if (!existing || existing !== rawExisting) changed = true;
+    var preferenceSource = existing && Object.prototype.hasOwnProperty.call(currentPreferences, existing) ? currentPreferences[existing] : currentPreferences[codename];
     var preference = alloNormalizeTeacherLearnerPreference(preferenceSource);
     if (preference) learnerPreferences[learnerId] = preference;
     if (preferenceSource && JSON.stringify(preferenceSource) !== JSON.stringify(preference)) changed = true;
@@ -188,13 +637,226 @@ function alloEnsureTeacherRosterIdentity(value) {
   if (Object.keys(currentIds).length !== Object.keys(learnerIds).length) changed = true;
   if (Object.keys(currentPreferences).length !== Object.keys(learnerPreferences).length) changed = true;
   if (!changed) return value;
-  return Object.assign({}, value, {
+  var safeValue = Object.assign({}, value);
+  delete safeValue.displayNames;
+  delete safeValue.importAliases;
+  if (hasSeating) {
+    if (seating) safeValue.seating = seating;
+    else delete safeValue.seating;
+  }
+  if (hasSubmissionKey) {
+    if (submissionKey) safeValue.submissionKey = submissionKey;
+    else delete safeValue.submissionKey;
+  }
+  return Object.assign({}, safeValue, {
     classId,
     learnerIds,
     learnerPreferences,
-    readingThemeDefault
+    readingThemeDefault,
+    progressHistory,
+    sessionHistory
   });
 }
+function alloRemoveTeacherStudentReferences(seatingValue, codename) {
+  if (!seatingValue || typeof seatingValue !== "object" || Array.isArray(seatingValue) || !codename) return seatingValue;
+  var changed = false;
+  var layoutsSource = seatingValue.layouts && typeof seatingValue.layouts === "object" && !Array.isArray(seatingValue.layouts) ? seatingValue.layouts : {};
+  var layouts = {};
+  Object.keys(layoutsSource).forEach(function(layoutId) {
+    var layout = layoutsSource[layoutId];
+    if (!layout || typeof layout !== "object" || Array.isArray(layout)) {
+      layouts[layoutId] = layout;
+      return;
+    }
+    var assignmentsSource = layout.assignments && typeof layout.assignments === "object" && !Array.isArray(layout.assignments) ? layout.assignments : {};
+    var assignments = {};
+    Object.keys(assignmentsSource).forEach(function(seatId) {
+      if (assignmentsSource[seatId] === codename) changed = true;
+      else assignments[seatId] = assignmentsSource[seatId];
+    });
+    layouts[layoutId] = Object.keys(assignments).length === Object.keys(assignmentsSource).length ? layout : Object.assign({}, layout, { assignments });
+  });
+  var constraints = Array.isArray(seatingValue.constraints) ? seatingValue.constraints.filter(function(constraint) {
+    var referencesStudent = !!(constraint && Array.isArray(constraint.students) && constraint.students.indexOf(codename) >= 0);
+    if (referencesStudent) changed = true;
+    return !referencesStudent;
+  }) : seatingValue.constraints;
+  return changed ? Object.assign({}, seatingValue, { layouts, constraints }) : seatingValue;
+}
+function alloRemoveTeacherGroupReferences(rosterValue, groupId) {
+  if (!rosterValue || typeof rosterValue !== "object" || Array.isArray(rosterValue) || !groupId) return rosterValue;
+  var groups = Object.assign({}, rosterValue.groups || {});
+  if (!Object.prototype.hasOwnProperty.call(groups, groupId)) return rosterValue;
+  delete groups[groupId];
+  var students = Object.assign({}, rosterValue.students || {});
+  Object.keys(students).forEach(function(codename) {
+    if (students[codename] === groupId) students[codename] = "";
+  });
+  var teamKey = "group:" + groupId;
+  var classGoals = Array.isArray(rosterValue.classGoals) ? rosterValue.classGoals.filter(function(goal) {
+    return !(goal && goal.team === teamKey);
+  }) : rosterValue.classGoals;
+  var next = Object.assign({}, rosterValue, { groups, students });
+  if (Array.isArray(rosterValue.classGoals)) next.classGoals = classGoals;
+  return next;
+}
+const ALLO_ROSTER_RESERVED_KEYS = /* @__PURE__ */ new Set(["__proto__", "prototype", "constructor"]);
+const ALLO_ROSTER_MAX_GROUPS = 100;
+const ALLO_ROSTER_MAX_STUDENTS = 500;
+const ALLO_ROSTER_FALLBACK_ADJECTIVES = ["Brave", "Bright", "Calm", "Clever", "Curious", "Gentle", "Kind", "Mighty", "Quiet", "Swift"];
+const ALLO_ROSTER_FALLBACK_ANIMALS = ["Bear", "Dolphin", "Falcon", "Fox", "Otter", "Owl", "Panda", "Tiger", "Turtle", "Wolf"];
+const alloNormalizeRosterCodenameKey = (value) => {
+  const raw = String(value || "");
+  const canonical = (typeof raw.normalize === "function" ? raw.normalize("NFKC") : raw).toLowerCase();
+  const compact = canonical.replace(/[^\p{L}\p{M}\p{N}]/gu, "");
+  return /[\p{L}\p{N}]/u.test(compact) ? compact : "";
+};
+const alloRosterCodenameWordOptions = (value, fallback) => {
+  const sanitize = (source) => {
+    const seen = /* @__PURE__ */ new Set();
+    return (Array.isArray(source) ? source : []).reduce((words, candidate) => {
+      if (typeof candidate !== "string") return words;
+      const word = Array.from(candidate.replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim()).slice(0, 36).join("");
+      const key = alloNormalizeRosterCodenameKey(word);
+      if (!key || seen.has(key) || words.length >= 120) return words;
+      seen.add(key);
+      words.push(word);
+      return words;
+    }, []);
+  };
+  const translated = sanitize(value);
+  return translated.length ? translated : sanitize(fallback);
+};
+const alloRosterPlainRecord = (value) => !!value && typeof value === "object" && !Array.isArray(value);
+const alloNormalizeTeacherRosterImport = (data) => {
+  if (!alloRosterPlainRecord(data) || !alloRosterPlainRecord(data.groups) || !alloRosterPlainRecord(data.students)) throw new Error("A roster file must contain group and student records.");
+  const groupEntries = Object.entries(data.groups);
+  const studentEntries = Object.entries(data.students);
+  if (groupEntries.length > ALLO_ROSTER_MAX_GROUPS || studentEntries.length > ALLO_ROSTER_MAX_STUDENTS) throw new Error(`This roster is too large (maximum ${ALLO_ROSTER_MAX_GROUPS} groups and ${ALLO_ROSTER_MAX_STUDENTS} codenames).`);
+  const groups = {};
+  const groupNames = /* @__PURE__ */ new Set();
+  const groupIds = /* @__PURE__ */ new Set();
+  groupEntries.forEach(([rawId, rawGroup]) => {
+    const id = String(rawId || "").trim().slice(0, 80);
+    const name = typeof rawGroup?.name === "string" ? rawGroup.name.trim().slice(0, 80) : "";
+    const normalizedName = name.toLocaleLowerCase();
+    if (!id || ALLO_ROSTER_RESERVED_KEYS.has(id.toLowerCase()) || !alloRosterPlainRecord(rawGroup) || !name || groupIds.has(id) || groupNames.has(normalizedName)) throw new Error("Group names and identifiers must be present, safe, and unique.");
+    groupIds.add(id);
+    groupNames.add(normalizedName);
+    const rawProfile = alloRosterPlainRecord(rawGroup.profile) ? rawGroup.profile : {};
+    const profile = {};
+    ["gradeLevel", "leveledTextLanguage", "readingLevel", "studentInterests", "dokLevel", "simplifyLevel", "leveledTextCustomInstructions", "readingThemeDefault"].forEach((field) => {
+      if (typeof rawProfile[field] === "string") profile[field] = rawProfile[field].slice(0, field === "leveledTextCustomInstructions" ? 500 : 120);
+    });
+    ["dyslexiaFriendly", "useOpenDyslexic", "karaokeMode"].forEach((field) => {
+      if (typeof rawProfile[field] === "boolean") profile[field] = rawProfile[field];
+    });
+    if (Number.isFinite(rawProfile.ttsSpeed)) profile.ttsSpeed = Math.max(0.5, Math.min(1.5, rawProfile.ttsSpeed));
+    groups[id] = { name, color: /^#[0-9a-f]{6}$/i.test(rawGroup.color || "") ? rawGroup.color : "#4F46E5", profile };
+  });
+  const students = {};
+  const codenames = /* @__PURE__ */ new Set();
+  studentEntries.forEach(([rawCodename, rawGroupId]) => {
+    const codename = String(rawCodename || "").trim().slice(0, 80);
+    const normalized = alloNormalizeRosterCodenameKey(codename);
+    const groupId = typeof rawGroupId === "string" ? rawGroupId.trim() : "";
+    if (!normalized || ALLO_ROSTER_RESERVED_KEYS.has(codename.toLowerCase()) || codenames.has(normalized)) throw new Error("Student codenames must be present, safe, and unique.");
+    if (groupId && !Object.prototype.hasOwnProperty.call(groups, groupId)) throw new Error("A student references a group that is not in this file.");
+    codenames.add(normalized);
+    students[codename] = groupId;
+  });
+  const asRecord = (value) => alloRosterPlainRecord(value) ? value : {};
+  const importedClassId = alloTeacherSafeLearnerId(data.classId) || alloTeacherSafeLearnerId(data.submissionKey?.classId);
+  const classGoals = (Array.isArray(data.classGoals) ? data.classGoals : []).map((goal) => {
+    if (!alloRosterPlainRecord(goal) || typeof goal.id !== "string" || !/^[A-Za-z0-9_-]{1,40}$/.test(goal.id)) return null;
+    const label = typeof goal.label === "string" ? goal.label.trim().slice(0, 80) : "";
+    if (!label) return null;
+    let team = "class";
+    if (typeof goal.team === "string" && goal.team.startsWith("group:") && Object.prototype.hasOwnProperty.call(groups, goal.team.slice(6))) team = goal.team;
+    else if (typeof goal.team === "string" && /^pod:\d{1,2}$/.test(goal.team)) team = goal.team;
+    const tracked = alloRosterPlainRecord(goal.tracked) && (goal.tracked.metric === "xp_total" || goal.tracked.metric === "responded_each") ? { metric: goal.tracked.metric, threshold: Math.max(1, Math.min(1e6, Math.floor(Number(goal.tracked.threshold) || 1))) } : null;
+    return {
+      id: goal.id,
+      label,
+      templateId: typeof goal.templateId === "string" ? goal.templateId.slice(0, 40) : "custom",
+      tokens: Number(goal.tokens) === 2 ? 2 : 1,
+      allowance: Math.max(0, Math.min(5, Math.floor(Number(goal.allowance) || 0))),
+      mode: goal.mode === "independent" ? "independent" : "interdependent",
+      team,
+      tracked,
+      active: goal.active !== false,
+      metCount: alloTeacherBoundedRosterNumber(goal.metCount, 1e5),
+      lastMetAt: Number(goal.lastMetAt) > 0 ? Math.min(Number.MAX_SAFE_INTEGER, Number(goal.lastMetAt)) : null
+    };
+  }).filter(Boolean).slice(0, 20);
+  const classGoalLog = (Array.isArray(data.classGoalLog) ? data.classGoalLog : []).map((entry) => {
+    if (!alloRosterPlainRecord(entry)) return null;
+    const goalId = typeof entry.goalId === "string" && /^[A-Za-z0-9_-]{1,40}$/.test(entry.goalId) ? entry.goalId : "";
+    const label = typeof entry.label === "string" ? entry.label.trim().slice(0, 80) : "";
+    if (!goalId || !label) return null;
+    return {
+      goalId,
+      label,
+      mode: entry.mode === "independent" ? "independent" : "interdependent",
+      tokens: Number(entry.tokens) === 2 ? 2 : 1,
+      delivered: alloTeacherBoundedRosterNumber(entry.delivered, 250),
+      sessionCode: typeof entry.sessionCode === "string" ? entry.sessionCode.slice(0, 160) : null,
+      at: alloTeacherBoundedRosterNumber(entry.at, Number.MAX_SAFE_INTEGER)
+    };
+  }).filter(Boolean).slice(-60);
+  const normalizedRoster = alloEnsureTeacherRosterIdentity({
+    className: typeof data.className === "string" ? data.className.slice(0, 120) : "",
+    classId: importedClassId,
+    groups,
+    students,
+    learnerIds: asRecord(data.learnerIds),
+    learnerPreferences: asRecord(data.learnerPreferences),
+    readingThemeDefault: alloNormalizeTeacherReadingTheme(data.readingThemeDefault, "default"),
+    progressHistory: asRecord(data.progressHistory),
+    sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : [],
+    ...alloRosterPlainRecord(data.seating) ? { seating: data.seating } : {},
+    ...classGoals.length ? { classGoals } : {},
+    ...classGoalLog.length ? { classGoalLog } : {}
+  });
+  const submissionKey = alloTeacherSanitizeSubmissionKey(data.submissionKey, normalizedRoster.classId);
+  return submissionKey ? { ...normalizedRoster, submissionKey } : normalizedRoster;
+};
+const alloEscapeRosterWorksheetHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
+const alloNormalizeRosterWorksheetOptions = (value) => {
+  const source = alloRosterPlainRecord(value) ? value : {};
+  return {
+    locationPosition: source.locationPosition === "before-name" || source.locationPosition === "hidden" ? source.locationPosition : "after-name",
+    rowSize: source.rowSize === "compact" || source.rowSize === "large" ? source.rowSize : "standard",
+    sortBy: source.sortBy === "group" ? "group" : "codename"
+  };
+};
+const buildRosterCodenameWorksheetHtml = (roster, options) => {
+  const settings = alloNormalizeRosterWorksheetOptions(options);
+  const students = roster?.students && typeof roster.students === "object" && !Array.isArray(roster.students) ? roster.students : {};
+  const groups = roster?.groups && typeof roster.groups === "object" && !Array.isArray(roster.groups) ? roster.groups : {};
+  const entries = Object.entries(students).map(([codename, groupId]) => ({
+    codename,
+    groupName: typeof groups[groupId]?.name === "string" ? groups[groupId].name.trim().slice(0, 80) : ""
+  })).sort((a, b) => {
+    if (settings.sortBy === "group") {
+      const groupOrder = (a.groupName || "Unassigned").localeCompare(b.groupName || "Unassigned", void 0, { numeric: true, sensitivity: "base" });
+      if (groupOrder) return groupOrder;
+    }
+    return a.codename.localeCompare(b.codename, void 0, { numeric: true, sensitivity: "base" });
+  });
+  const locationHeader = '<th scope="col">Location / seat (write in)</th>';
+  const groupHeader = settings.sortBy === "group" ? '<th scope="col">Group</th>' : "";
+  const headers = '<th scope="col">#</th><th scope="col">Codename</th>' + groupHeader + (settings.locationPosition === "before-name" ? locationHeader : "") + '<th scope="col">Student name (write in)</th>' + (settings.locationPosition === "after-name" ? locationHeader : "");
+  const rows = entries.map((entry, index) => {
+    const groupCell = settings.sortBy === "group" ? `<td>${alloEscapeRosterWorksheetHtml(entry.groupName || "Unassigned")}</td>` : "";
+    const locationCell = "<td></td>";
+    return `<tr><td>${index + 1}</td><th scope="row">${alloEscapeRosterWorksheetHtml(entry.codename)}</th>${groupCell}${settings.locationPosition === "before-name" ? locationCell : ""}<td></td>${settings.locationPosition === "after-name" ? locationCell : ""}</tr>`;
+  }).join("");
+  const rowHeight = settings.rowSize === "compact" ? 8 : settings.rowSize === "large" ? 16 : 12;
+  const pageSize = settings.sortBy === "group" ? "landscape" : "portrait";
+  const privacySummary = settings.sortBy === "group" ? "AlloFlow printed codenames and roster group labels only." : "AlloFlow printed codenames only.";
+  return `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><title>AlloFlow Codename Roster Worksheet</title><style>@page{size:${pageSize};margin:12mm}body{font-family:Arial,sans-serif;color:#111}h1{font-size:20pt}.line{display:inline-block;width:50mm;border-bottom:1px solid #111}.notice{border:1px solid #555;padding:3mm}table{width:100%;border-collapse:collapse}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid #222;padding:2.5mm;text-align:left;height:${rowHeight}mm}thead th{background:#eee}</style></head><body><h1>Class roster worksheet</h1><p>Class / period: <span class="line"></span> &nbsp; Date: <span class="line"></span></p><p class="notice"><strong>Privacy note:</strong> ${privacySummary} Write names and locations by hand; handwriting is not saved in AlloFlow. Keep the completed private teacher record secure.</p><table><caption>Codename-to-student reference</caption><thead><tr>${headers}</tr></thead><tbody>${rows}</tbody></table></body></html>`;
+};
 const rosterSessionCsvCell = (value) => {
   const raw = value === null || value === void 0 ? "" : String(value);
   const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
@@ -303,8 +965,10 @@ const downloadRosterSessionEvidenceCsv = (session) => {
   anchor.download = "alloflow_session_evidence_" + stamp + ".csv";
   document.body.appendChild(anchor);
   anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
+  window.setTimeout(() => {
+    URL.revokeObjectURL(url);
+    anchor.remove();
+  }, 1e3);
 };
 const ROSTER_SESSION_FOLLOW_UP_FILTERS = /* @__PURE__ */ new Set(["all", "follow_up", "revision", "celebrate", "planned"]);
 const normalizeRosterSessionTeacherNote = (value) => String(value || "").replace(/\u000d\u000a?/g, "\n").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, 1e3);
@@ -383,15 +1047,28 @@ const filterRosterSessionHistory = (sessions, focusValue = "all", activityKindVa
     return true;
   });
 };
-const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart, followUpResources = [], onOpenFollowUpResource, onPrepareFollowUpAssignment, onSendFollowUpToLiveSession }) => {
+const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart, followUpResources = [], onOpenFollowUpResource, onPrepareFollowUpAssignment, onSendFollowUpToLiveSession, batchOpenRequest = 0, rosterStorageError = "" }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
-  const [newStudentName, setNewStudentName] = useState("");
+  const [groupNameError, setGroupNameError] = useState("");
+  const [rosterNotice, setRosterNotice] = useState("");
+  const [rosterNoticeTone, setRosterNoticeTone] = useState("info");
+  const [rosterImportUndo, setRosterImportUndo] = useState(null);
+  const [showPrintOptions, setShowPrintOptions] = useState(false);
+  const [printLocationPosition, setPrintLocationPosition] = useState("after-name");
+  const [printRowSize, setPrintRowSize] = useState("standard");
+  const [printSortBy, setPrintSortBy] = useState("codename");
+  const [rosterStudentQuery, setRosterStudentQuery] = useState("");
   const [rosterAdj, setRosterAdj] = useState("");
   const [rosterAnimal, setRosterAnimal] = useState("");
-  const [useCustomName, setUseCustomName] = useState(false);
-  const rosterAdjectives = t("codenames.adjectives", { returnObjects: true }) || [];
-  const rosterAnimals = t("codenames.animals", { returnObjects: true }) || [];
+  const rosterAdjectives = alloRosterCodenameWordOptions(t("codenames.adjectives", { returnObjects: true }), ALLO_ROSTER_FALLBACK_ADJECTIVES);
+  const rosterAnimals = alloRosterCodenameWordOptions(t("codenames.animals", { returnObjects: true }), ALLO_ROSTER_FALLBACK_ANIMALS);
+  const rosterAdjIsValid = rosterAdjectives.includes(rosterAdj);
+  const rosterAnimalIsValid = rosterAnimals.includes(rosterAnimal);
+  const announceRoster = (message, tone = "info") => {
+    setRosterNoticeTone(tone === "error" || tone === "warning" || tone === "success" ? tone : "info");
+    setRosterNotice(String(message || "").slice(0, 320));
+  };
   const randomizeRosterName = () => {
     if (rosterAdjectives.length > 0 && rosterAnimals.length > 0) {
       setRosterAdj(rosterAdjectives[Math.floor(Math.random() * rosterAdjectives.length)]);
@@ -404,8 +1081,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const [editingField, setEditingField] = useState(null);
   const [showBatchConfig, setShowBatchConfig] = useState(false);
   const [batchTypes, setBatchTypes] = useState({ simplified: true, glossary: false, quiz: false, "sentence-frames": false, brainstorm: false, faq: false, outline: false, adventure: false, "concept-sort": false, image: false, timeline: false });
+  const [batchStatus, setBatchStatus] = useState("");
   const fileInputRef = useRef(null);
   const panelRef = useRef(null);
+  const printCleanupRef = useRef(null);
   const submissionDialogRef = useRef(null);
   const submissionDialogTriggerRef = useRef(null);
   const [submissionDialog, setSubmissionDialog] = useState(null);
@@ -436,6 +1115,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     setRosterKey((previous) => alloEnsureTeacherRosterIdentity(previous));
   }, [isOpen, setRosterKey]);
   useEffect(() => {
+    if (isOpen && batchOpenRequest) setShowBatchConfig(true);
+  }, [isOpen, batchOpenRequest]);
+  useEffect(() => () => printCleanupRef.current?.(), []);
+  useEffect(() => {
     if (readingPreferencesStudent && !rosterKey?.students?.[readingPreferencesStudent] && rosterKey?.students?.[readingPreferencesStudent] !== "") {
       setReadingPreferencesStudent(null);
     }
@@ -444,8 +1127,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
-  const getStudentsInGroup = (gId) => Object.entries(students).filter(([_, g2]) => g2 === gId).map(([name]) => name);
-  const getUnassigned = () => Object.entries(students).filter(([_, g2]) => !g2 || !groups[g2]).map(([name]) => name);
+  const studentCodenames = Object.keys(students);
+  const normalizedStudentQuery = rosterStudentQuery.trim().toLocaleLowerCase();
+  const matchesStudentQuery = (name) => !normalizedStudentQuery || name.toLocaleLowerCase().includes(normalizedStudentQuery);
+  const sortCodenames = (names) => names.sort((a, b) => a.localeCompare(b, void 0, { numeric: true, sensitivity: "base" }));
+  const getStudentsInGroup = (gId) => sortCodenames(Object.entries(students).filter(([_, g2]) => g2 === gId).map(([name]) => name));
+  const getUnassigned = () => sortCodenames(Object.entries(students).filter(([_, g2]) => !g2 || !groups[g2]).map(([name]) => name));
+  const visibleGroupIds = normalizedStudentQuery ? groupIds.filter((gId) => getStudentsInGroup(gId).some(matchesStudentQuery)) : groupIds;
+  const visibleUnassigned = getUnassigned().filter(matchesStudentQuery);
+  const studentMatchCount = studentCodenames.filter(matchesStudentQuery).length;
   const updateSessionPlannerStatus = (sessionId, message) => {
     setSessionPlannerStatus((previous) => ({ ...previous, [sessionId]: String(message || "").slice(0, 180) }));
   };
@@ -465,7 +1155,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const note = normalizeRosterSessionTeacherNote(noteDraftFor(session));
     setRosterKey((previous) => updateRosterSessionFollowUp(previous, session.id, { teacherNote: note }));
     setSessionNoteDrafts((previous) => ({ ...previous, [session.id]: note }));
-    updateSessionPlannerStatus(session.id, note ? "Private follow-up note saved." : "Private follow-up note cleared.");
+    updateSessionPlannerStatus(session.id, note ? "Codename-only follow-up note saved." : "Follow-up note cleared.");
   };
   const saveSessionPlan = (session) => {
     const draft = planDraftFor(session);
@@ -522,47 +1212,75 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   const handleImport = (e) => {
     const file = e.target?.files?.[0];
     if (!file) return;
+    e.target.value = "";
+    announceRoster("");
+    if (file.size > 2 * 1024 * 1024) {
+      announceRoster("That roster file is larger than the 2 MB safety limit.", "error");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data && typeof data === "object" && !Array.isArray(data) && (data.groups || data.students)) {
-          const asRecord = (value) => value && typeof value === "object" && !Array.isArray(value) ? value : {};
-          setRosterKey(alloEnsureTeacherRosterIdentity({
-            className: typeof data.className === "string" ? data.className : "",
-            classId: typeof data.classId === "string" ? data.classId : "",
-            groups: asRecord(data.groups),
-            students: asRecord(data.students),
-            learnerIds: asRecord(data.learnerIds),
-            learnerPreferences: asRecord(data.learnerPreferences),
-            readingThemeDefault: alloNormalizeTeacherReadingTheme(data.readingThemeDefault, "default"),
-            displayNames: asRecord(data.displayNames),
-            progressHistory: asRecord(data.progressHistory),
-            sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30).map(normalizeRosterSessionPlanningFields) : [],
-            ...data.submissionKey?.publicJwk ? { submissionKey: data.submissionKey } : {},
-            // Seating charts + constraints travel with the roster (the seating
-            // module re-validates this blob with normalizeSeating on read).
-            ...data.seating && typeof data.seating === "object" && !Array.isArray(data.seating) ? { seating: data.seating } : {},
-            // Class Goals travel too (re-validated by normalizeClassGoals on read).
-            ...Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {},
-            ...Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {}
-          }));
-          setSessionNoteDrafts({});
-          setSessionPlanDrafts({});
-          setSessionPlannerStatus({});
-          if (window.AlloFlowUX) window.AlloFlowUX.toast("Roster imported, including class settings and submission setup.", "success");
-        }
+        const pendingRoster = alloNormalizeTeacherRosterImport(data);
+        const groupsCount = Object.keys(pendingRoster.groups || {}).length;
+        const studentsCount = Object.keys(pendingRoster.students || {}).length;
+        if (!window.confirm(`Replace the current roster with ${groupsCount} groups and ${studentsCount} codenames? This also replaces roster history, seating, class goals, and offline-submission setup. Digital real-name fields are discarded.`)) return;
+        const previousRoster = rosterKey || { groups: {}, students: {} };
+        setRosterImportUndo({
+          roster: previousRoster,
+          groupCount: Object.keys(previousRoster.groups || {}).length,
+          studentCount: Object.keys(previousRoster.students || {}).length
+        });
+        setRosterKey(pendingRoster);
+        setNewStudentGroup("");
+        setExpandedGroup(null);
+        setSessionNoteDrafts({});
+        setSessionPlanDrafts({});
+        setSessionPlannerStatus({});
+        setRosterStudentQuery("");
+        setShowPrintOptions(false);
+        announceRoster(`Roster imported: ${groupsCount} groups and ${studentsCount} codenames. Legacy real-name fields were removed.`, "success");
       } catch (err) {
         console.error("Invalid roster JSON:", err);
+        announceRoster(err?.message || "This file is not a valid roster.", "error");
       }
     };
+    reader.onerror = () => announceRoster("The roster file could not be read.", "error");
     reader.readAsText(file);
-    e.target.value = "";
+  };
+  const handleRestoreRosterImport = () => {
+    if (!rosterImportUndo?.roster) return;
+    if (!window.confirm("Restore the roster that was open before the last import? Any changes made since that import will be replaced.")) return;
+    const previous = rosterImportUndo;
+    setRosterKey(previous.roster);
+    setNewStudentGroup("");
+    setExpandedGroup(null);
+    setSessionNoteDrafts({});
+    setSessionPlanDrafts({});
+    setSessionPlannerStatus({});
+    setRosterStudentQuery("");
+    setShowPrintOptions(false);
+    setRosterImportUndo(null);
+    announceRoster(`Previous roster restored: ${previous.groupCount} groups and ${previous.studentCount} codenames.`, "success");
   };
   const handleExport = () => {
+    const safeRoster = alloEnsureTeacherRosterIdentity(rosterKey || { groups: {}, students: {} });
     const exportData = {
-      ...rosterKey || { groups: {}, students: {} },
-      exportVersion: 3,
+      className: safeRoster.className || "",
+      classId: safeRoster.classId || "",
+      groups: safeRoster.groups || {},
+      students: safeRoster.students || {},
+      learnerIds: safeRoster.learnerIds || {},
+      learnerPreferences: safeRoster.learnerPreferences || {},
+      readingThemeDefault: safeRoster.readingThemeDefault || "default",
+      progressHistory: safeRoster.progressHistory || {},
+      sessionHistory: safeRoster.sessionHistory || [],
+      ...safeRoster.submissionKey?.publicJwk ? { submissionKey: safeRoster.submissionKey } : {},
+      ...safeRoster.seating ? { seating: safeRoster.seating } : {},
+      ...Array.isArray(safeRoster.classGoals) ? { classGoals: safeRoster.classGoals } : {},
+      ...Array.isArray(safeRoster.classGoalLog) ? { classGoalLog: safeRoster.classGoalLog } : {},
+      exportVersion: 4,
       exportDate: (/* @__PURE__ */ new Date()).toISOString()
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -572,8 +1290,48 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     a.download = "roster_key_" + (rosterKey?.className || "roster").replace(/[^a-zA-Z0-9]/g, "_") + "_" + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) + ".json";
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    announceRoster("Roster JSON backup downloaded.", "success");
+    window.setTimeout(() => {
+      URL.revokeObjectURL(url);
+      a.remove();
+    }, 1e3);
+  };
+  const handlePrintRosterWorksheet = (event) => {
+    const trigger = event.currentTarget;
+    const iframe = document.createElement("iframe");
+    iframe.title = "Print codename roster worksheet";
+    iframe.tabIndex = -1;
+    iframe.setAttribute("aria-hidden", "true");
+    iframe.style.cssText = "position:fixed;width:1px;height:1px;right:0;bottom:0;border:0;opacity:0;pointer-events:none";
+    let timer = null;
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (timer) window.clearTimeout(timer);
+      iframe.remove();
+      if (printCleanupRef.current === cleanup) printCleanupRef.current = null;
+      window.setTimeout(() => trigger?.focus(), 0);
+    };
+    printCleanupRef.current?.();
+    printCleanupRef.current = cleanup;
+    iframe.addEventListener("load", () => {
+      try {
+        iframe.contentWindow?.addEventListener("afterprint", cleanup, { once: true });
+        timer = window.setTimeout(cleanup, 6e4);
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+      } catch (_) {
+        cleanup();
+        announceRoster("The print dialog could not be opened. Please try again.", "error");
+      }
+    }, { once: true });
+    iframe.srcdoc = buildRosterCodenameWorksheetHtml(rosterKey, {
+      locationPosition: printLocationPosition,
+      rowSize: printRowSize,
+      sortBy: printSortBy
+    });
+    document.body.appendChild(iframe);
   };
   const closeSubmissionDialog = () => {
     setSubmissionDialog(null);
@@ -636,63 +1394,90 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     }
   };
   const handleAddGroup = () => {
-    if (!newGroupName.trim()) return;
-    const id = newGroupName.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (Object.keys(groups).length >= ALLO_ROSTER_MAX_GROUPS) {
+      setGroupNameError(`A roster can contain up to ${ALLO_ROSTER_MAX_GROUPS} groups.`);
+      announceRoster("Delete an unused group before adding another one.", "warning");
+      return;
+    }
+    const name = newGroupName.trim();
+    if (!name) return;
+    if (Object.values(groups).some((group) => String(group?.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
+      setGroupNameError("Choose a unique group name.");
+      return;
+    }
+    const id = alloTeacherStableId("GRP");
     setRosterKey((prev) => ({
-      ...prev || { students: {} },
+      ...alloEnsureTeacherRosterIdentity(prev || { groups: {}, students: {} }),
       className: prev?.className || "",
-      groups: { ...prev?.groups || {}, [id]: { name: newGroupName.trim(), color: newGroupColor, profile: { gradeLevel: "3rd Grade", leveledTextLanguage: "English" } } },
+      groups: { ...prev?.groups || {}, [id]: { name, color: newGroupColor, profile: { gradeLevel: "3rd Grade", leveledTextLanguage: "English" } } },
       students: prev?.students || {}
     }));
     setNewGroupName("");
+    setGroupNameError("");
     setExpandedGroup(id);
+    announceRoster('Group "' + name + '" added.', "success");
   };
   const handleRemoveGroup = (gId) => {
-    setRosterKey((prev) => {
-      const ng = { ...prev.groups };
-      delete ng[gId];
-      const ns = { ...prev.students };
-      Object.keys(ns).forEach((s2) => {
-        if (ns[s2] === gId) ns[s2] = "";
-      });
-      return { ...prev, groups: ng, students: ns };
-    });
+    const group = groups[gId];
+    const affected = getStudentsInGroup(gId).length;
+    const affectedGoals = (Array.isArray(rosterKey?.classGoals) ? rosterKey.classGoals : []).filter((goal) => goal && goal.team === "group:" + gId).length;
+    const goalNotice = affectedGoals ? ` ${affectedGoals} active group goal${affectedGoals === 1 ? "" : "s"} will also be removed.` : "";
+    if (!window.confirm(`Delete \u201C${group?.name || "this group"}\u201D? ${affected} student${affected === 1 ? "" : "s"} will remain in the roster as Unassigned.${goalNotice}`)) return;
+    setRosterKey((prev) => alloEnsureTeacherRosterIdentity(alloRemoveTeacherGroupReferences(prev, gId)));
+    setNewStudentGroup((current) => current === gId ? "" : current);
+    setExpandedGroup((current) => current === gId ? null : current);
+    announceRoster('Group "' + (group?.name || "Untitled group") + '" deleted. ' + affected + " codename" + (affected === 1 ? "" : "s") + " moved to Unassigned.", "success");
   };
   const handleUpdateGroupProfile = (gId, field, value) => {
+    const safeValue = typeof value === "string" ? value.slice(0, field === "leveledTextCustomInstructions" ? 500 : 120) : value;
     setRosterKey((prev) => ({
       ...prev,
-      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], profile: { ...prev.groups[gId].profile, [field]: value } } }
+      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], profile: { ...prev.groups[gId].profile, [field]: safeValue } } }
     }));
   };
   const handleUpdateGroupMeta = (gId, field, value) => {
+    const safeValue = field === "name" ? String(value || "").slice(0, 80) : value;
+    if (field === "name") {
+      const name = safeValue.trim();
+      if (!name || Object.entries(groups).some(([otherId, group]) => otherId !== gId && String(group?.name || "").trim().toLocaleLowerCase() === name.toLocaleLowerCase())) {
+        setGroupNameError(!name ? "Group names cannot be blank." : "Choose a unique group name.");
+        return;
+      }
+      setGroupNameError("");
+    }
     setRosterKey((prev) => ({
       ...prev,
-      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], [field]: value } }
+      groups: { ...prev.groups, [gId]: { ...prev.groups[gId], [field]: safeValue } }
     }));
   };
   const handleAddStudent = () => {
-    const codename = rosterAdj && rosterAnimal ? `${rosterAdj} ${rosterAnimal}` : "";
+    if (Object.keys(students).length >= ALLO_ROSTER_MAX_STUDENTS) {
+      announceRoster(`This roster has reached the ${ALLO_ROSTER_MAX_STUDENTS}-codename limit. Delete an unused codename before adding another.`, "warning");
+      return;
+    }
+    const codename = rosterAdjIsValid && rosterAnimalIsValid ? `${rosterAdj} ${rosterAnimal}` : "";
     if (!codename) return;
-    const normalizedCodename = codename.toLowerCase().replace(/[^a-z0-9]/g, "");
-    const duplicate = Object.keys(students).some((name) => name.toLowerCase().replace(/[^a-z0-9]/g, "") === normalizedCodename);
+    const normalizedCodename = alloNormalizeRosterCodenameKey(codename);
+    const duplicate = Object.keys(students).some((name) => alloNormalizeRosterCodenameKey(name) === normalizedCodename);
     if (duplicate) {
+      announceRoster("That codename is already in this roster. Generate another one.", "warning");
       if (window.AlloFlowUX) window.AlloFlowUX.toast("That codename is already in this roster. Generate another one.", "warn");
       randomizeRosterName();
       return;
     }
-    const displayName = useCustomName && newStudentName.trim() ? newStudentName.trim() : "";
+    const targetGroup = newStudentGroup && groups[newStudentGroup] ? newStudentGroup : "";
     setRosterKey((prev) => ({
       ...alloEnsureTeacherRosterIdentity(prev || { groups: {} }),
       className: prev?.className || "",
       groups: prev?.groups || {},
-      students: { ...prev?.students || {}, [codename]: newStudentGroup || "" },
-      learnerIds: { ...prev?.learnerIds || {}, [codename]: alloTeacherStableId("LRN") },
-      displayNames: { ...prev?.displayNames || {}, ...displayName ? { [codename]: displayName } : {} }
+      students: { ...prev?.students || {}, [codename]: targetGroup },
+      learnerIds: { ...prev?.learnerIds || {}, [codename]: alloTeacherStableId("LRN") }
     }));
-    setNewStudentName("");
     randomizeRosterName();
+    announceRoster('Codename "' + codename + '" added' + (targetGroup ? " to " + groups[targetGroup].name : " as Unassigned") + ".", "success");
   };
   const handleRemoveStudent = (name) => {
+    if (!window.confirm(`Delete ${name} from the roster? This removes the codename and its linked preferences, individual progress, participant lists, and seating references. De-identified class activity totals and teacher notes remain. Assessment Center records are kept and can be removed separately in its Records manager.`)) return;
     setRosterKey((prev) => {
       const learnerId = prev.learnerIds?.[name];
       const ns = { ...prev.students };
@@ -702,8 +1487,6 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const nr = { ...prev.learnerPreferences || {} };
       if (learnerId) delete nr[learnerId];
       delete nr[name];
-      const nd = { ...prev.displayNames || {} };
-      delete nd[name];
       const np = { ...prev.progressHistory || {} };
       delete np[name];
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map((session) => {
@@ -732,11 +1515,31 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         else delete nextSession.organizerActivity;
         return nextSession;
       });
-      return { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, displayNames: nd, progressHistory: np, sessionHistory: nh };
+      const seating = alloRemoveTeacherStudentReferences(prev.seating, name);
+      const next = { ...prev, students: ns, learnerIds: ni, learnerPreferences: nr, progressHistory: np, sessionHistory: nh };
+      if (seating !== prev.seating) next.seating = seating;
+      return next;
     });
+    announceRoster('Codename "' + name + '" deleted from the roster.', "success");
   };
   const handleMoveStudent = (name, toGroup) => {
-    setRosterKey((prev) => ({ ...prev, students: { ...prev.students, [name]: toGroup } }));
+    const targetGroup = toGroup && groups[toGroup] ? toGroup : "";
+    setRosterKey((prev) => ({ ...prev, students: { ...prev.students, [name]: targetGroup } }));
+    announceRoster('Codename "' + name + '" moved to ' + (targetGroup ? groups[targetGroup].name : "Unassigned") + ".", "info");
+  };
+  const handleRunBatchGenerate = async () => {
+    const selected = Object.keys(batchTypes).filter((type) => batchTypes[type]);
+    if (!selected.length) {
+      setBatchStatus("Select at least one output type.");
+      return;
+    }
+    setBatchStatus("");
+    try {
+      await onBatchGenerate?.(selected);
+      setShowBatchConfig(false);
+    } catch (_) {
+      setBatchStatus("The differentiated resources could not be generated. Try again.");
+    }
   };
   const getLearnerReadingPreference = (name) => {
     const learnerId = rosterKey?.learnerIds?.[name];
@@ -808,6 +1611,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     {
       type: "button",
       onClick: () => handleUpdateGroupProfile(gId, field, !value),
+      "aria-pressed": !!value,
       className: `px-3 py-1 rounded-full text-xs font-bold transition-all motion-reduce:transition-none ${value ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-600"}`
     },
     value ? "On" : "Off"
@@ -816,13 +1620,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     {
       type: "text",
       value: value || "",
+      maxLength: field === "leveledTextCustomInstructions" ? 500 : 120,
       onChange: (e) => handleUpdateGroupProfile(gId, field, e.target.value),
       "aria-label": label,
       placeholder: "\u2014",
       className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-slate-700 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
   ));
-  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] flex flex-col border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: panelRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "teacher-roster-panel-title", className: "fixed inset-0 z-[260] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-0 sm:p-4 animate-in motion-reduce:animate-none fade-in duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-none sm:rounded-2xl shadow-2xl max-w-2xl w-full h-[100dvh] sm:h-auto sm:max-h-[85vh] flex flex-col border-0 sm:border-2 border-indigo-100 animate-in motion-reduce:animate-none zoom-in-95 duration-200 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 p-4 sm:p-5 border-b border-slate-100" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "roster_panel_header" }, /* @__PURE__ */ React.createElement("h2", { id: "teacher-roster-panel-title", className: "text-lg font-black text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 20, className: "text-indigo-500" }), " ", isParentMode ? "Family Learning Profiles" : isIndependentMode ? "My Learning Profile" : t("roster.title") || "Class Roster & Progress Tracking"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, isParentMode ? "Manage family member profiles and track learning progress" : isIndependentMode ? "Manage your learning profile and track your progress" : t("roster.subtitle") || "Organize student groups with differentiated profiles for instruction")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onClose, className: "p-2 rounded-full hover:bg-slate-100 transition-colors motion-reduce:transition-none", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 20, className: "text-slate-600" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 px-4 sm:px-5 py-3 border-b border-slate-50 bg-slate-50/50" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => fileInputRef.current?.click(), className: "px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Upload, { size: 14 }), " ", t("roster.import") || "Import JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleExport, disabled: !rosterKey, className: "px-3 py-1.5 bg-green-50 text-green-700 rounded-lg text-xs font-bold hover:bg-green-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " ", t("roster.export") || "Export JSON"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handlePrintRosterWorksheet, disabled: !Object.keys(rosterKey?.students || {}).length, className: "px-3 py-1.5 bg-cyan-50 text-cyan-800 rounded-lg text-xs font-bold hover:bg-cyan-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Printer, { size: 14 }), " Print worksheet"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowPrintOptions((value) => !value), "aria-expanded": showPrintOptions, "aria-controls": "roster-print-options", className: "px-3 py-1.5 rounded-lg border border-cyan-200 bg-white text-xs font-bold text-cyan-900 hover:bg-cyan-50 transition-colors motion-reduce:transition-none" }, "Worksheet options"), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -855,12 +1660,13 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     "\u{1FA91} ",
     t("roster.seating_chart") || "Seating Chart"
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto p-5 space-y-3 custom-scrollbar" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-2 sm:grid-cols-[1fr_auto]" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(true), disabled: !rosterKey || Object.keys(rosterKey?.groups || {}).length === 0, className: "px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 border border-amber-200" }, /* @__PURE__ */ React.createElement(Layers, { size: 14 }), " ", t("roster.batch_generate") || "Differentiate by Group"), activeSessionCode && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: onSyncToSession, disabled: !rosterKey || groupIds.length === 0, title: "Update this live session's group choices and differentiation settings from the roster.", className: "px-3 py-1.5 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-100 transition-colors motion-reduce:transition-none flex items-center gap-1.5 disabled:opacity-40 ml-auto" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " ", t("roster.sync_session") || "Sync to Live Session"), /* @__PURE__ */ React.createElement("input", { ref: fileInputRef, type: "file", accept: ".json", onChange: handleImport, className: "hidden", "aria-label": t("roster.import") || "Import roster JSON" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-5 space-y-3 custom-scrollbar min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 mb-2 sm:grid-cols-[1fr_auto]" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-bold text-slate-600 uppercase tracking-wider" }, /* @__PURE__ */ React.createElement("span", { className: "shrink-0" }, t("roster.class_name") || "Class Name", ":"), /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: rosterKey?.className || "",
-      onChange: (e) => setRosterKey((prev) => ({ ...prev || { groups: {}, students: {} }, className: e.target.value })),
+      maxLength: 120,
+      onChange: (e) => setRosterKey((prev) => ({ ...prev || { groups: {}, students: {} }, className: e.target.value.slice(0, 120) })),
       placeholder: t("common.placeholder_ms_smith_period_3"),
       "aria-label": t("roster.class_name") || "Class name",
       className: "min-w-0 flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm font-normal normal-case tracking-normal focus:ring-2 focus:ring-indigo-400 focus:outline-none"
@@ -874,59 +1680,79 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "min-h-9 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
     },
     ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label))
-  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Students join with codenames; optional real names stay in this teacher-side roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), groupIds.map((gId) => {
+  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Use codenames only. Never enter student names or other identifying information in the digital roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), rosterNotice && /* @__PURE__ */ React.createElement(
+    "p",
+    {
+      role: rosterNoticeTone === "error" ? "alert" : "status",
+      "aria-live": rosterNoticeTone === "error" ? "assertive" : "polite",
+      "aria-atomic": "true",
+      className: "rounded-lg border px-3 py-2 text-xs font-bold " + (rosterNoticeTone === "error" ? "border-red-300 bg-red-50 text-red-900" : rosterNoticeTone === "warning" ? "border-amber-300 bg-amber-50 text-amber-900" : rosterNoticeTone === "success" ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-indigo-200 bg-indigo-50 text-indigo-900")
+    },
+    rosterNotice
+  ), rosterImportUndo && /* @__PURE__ */ React.createElement("section", { className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2", "aria-label": "Roster import recovery" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-amber-950" }, "The pre-import roster (", rosterImportUndo.groupCount, " groups, ", rosterImportUndo.studentCount, " codenames) is available until another import, dismissal, or page reload. It is kept in memory only."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleRestoreRosterImport, className: "min-h-10 rounded-lg bg-amber-800 px-3 text-xs font-bold text-white hover:bg-amber-900" }, "Restore previous roster"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+    setRosterImportUndo(null);
+    announceRoster("Previous roster recovery dismissed.");
+  }, className: "min-h-10 rounded-lg border border-amber-400 bg-white px-3 text-xs font-bold text-amber-900 hover:bg-amber-100" }, "Dismiss"))), showPrintOptions && /* @__PURE__ */ React.createElement("section", { id: "roster-print-options", className: "rounded-xl border-2 border-cyan-200 bg-cyan-50/70 p-4", "aria-labelledby": "roster-print-options-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "roster-print-options-title", className: "text-sm font-black text-cyan-950" }, "Print worksheet options"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-cyan-900" }, "Choose the blank-column layout before opening the print dialog.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowPrintOptions(false), className: "min-h-9 min-w-9 rounded-full hover:bg-cyan-100", "aria-label": "Close worksheet options" }, /* @__PURE__ */ React.createElement(X, { size: 16, className: "mx-auto" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-cyan-950" }, "Location column", /* @__PURE__ */ React.createElement("select", { value: printLocationPosition, onChange: (event) => setPrintLocationPosition(event.target.value), className: "mt-1 min-h-10 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "after-name" }, "After student name"), /* @__PURE__ */ React.createElement("option", { value: "before-name" }, "Before student name"), /* @__PURE__ */ React.createElement("option", { value: "hidden" }, "Do not print location"))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-cyan-950" }, "Writing space", /* @__PURE__ */ React.createElement("select", { value: printRowSize, onChange: (event) => setPrintRowSize(event.target.value), className: "mt-1 min-h-10 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "compact" }, "Compact \xB7 8 mm"), /* @__PURE__ */ React.createElement("option", { value: "standard" }, "Standard \xB7 12 mm"), /* @__PURE__ */ React.createElement("option", { value: "large" }, "Large \xB7 16 mm"))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-cyan-950" }, "Order", /* @__PURE__ */ React.createElement("select", { value: printSortBy, onChange: (event) => setPrintSortBy(event.target.value), className: "mt-1 min-h-10 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-900" }, /* @__PURE__ */ React.createElement("option", { value: "codename" }, "Codename"), /* @__PURE__ */ React.createElement("option", { value: "group" }, "Group, then codename (prints group labels)")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-900" }, "These options are temporary. Names and locations remain handwritten and are never stored in AlloFlow."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handlePrintRosterWorksheet, disabled: !studentCodenames.length, className: "min-h-10 shrink-0 rounded-lg bg-cyan-800 px-3 text-xs font-bold text-white hover:bg-cyan-900 disabled:opacity-40" }, /* @__PURE__ */ React.createElement(Printer, { size: 14, className: "mr-1 inline" }), " Print with these options"))), showBatchConfig && /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border-2 border-amber-300 bg-amber-50 p-4", "aria-labelledby": "roster-batch-title" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "roster-batch-title", className: "text-sm font-black text-amber-950" }, "Differentiate by group"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-900" }, "Create the selected resource types for every roster group.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(false), className: "min-h-9 min-w-9 rounded-full hover:bg-amber-100", "aria-label": "Close batch configuration" }, /* @__PURE__ */ React.createElement(X, { size: 16, className: "mx-auto" }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2" }, Object.keys(batchTypes).map((type) => /* @__PURE__ */ React.createElement("label", { key: type, className: "flex min-h-10 items-center gap-2 rounded-lg border border-amber-300 bg-white px-3 text-xs font-bold text-amber-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!batchTypes[type], onChange: (event) => setBatchTypes((previous) => ({ ...previous, [type]: event.target.checked })) }), " ", type.replace(/-/g, " ")))), batchStatus && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mt-2 text-xs font-bold text-red-700" }, batchStatus), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowBatchConfig(false), className: "min-h-11 rounded-lg border border-slate-400 px-4 text-sm font-bold" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleRunBatchGenerate, className: "min-h-11 rounded-lg bg-amber-700 px-4 text-sm font-bold text-white" }, "Generate for ", groupIds.length, " group", groupIds.length === 1 ? "" : "s"))), (studentCodenames.length > 10 || normalizedStudentQuery) && /* @__PURE__ */ React.createElement("section", { className: "rounded-xl border border-slate-300 bg-white p-3", "aria-label": "Find a roster codename" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row sm:items-end" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "roster-student-search", className: "flex-1 text-xs font-bold text-slate-700" }, "Find codename", /* @__PURE__ */ React.createElement("input", { id: "roster-student-search", type: "search", value: rosterStudentQuery, maxLength: 80, "aria-describedby": "roster-student-search-status", onChange: (event) => setRosterStudentQuery(event.target.value), placeholder: "Search codenames\u2026", className: "mt-1 min-h-10 w-full rounded-lg border border-slate-400 px-3 text-sm font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-400" })), normalizedStudentQuery && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setRosterStudentQuery(""), className: "min-h-10 rounded-lg border border-slate-300 bg-slate-50 px-3 text-xs font-bold text-slate-700 hover:bg-slate-100" }, "Clear search")), /* @__PURE__ */ React.createElement("p", { id: "roster-student-search-status", role: "status", "aria-live": "polite", className: "mt-2 text-[11px] text-slate-600" }, normalizedStudentQuery ? `${studentMatchCount} of ${studentCodenames.length} codenames match.` : `${studentCodenames.length} codenames available.`)), normalizedStudentQuery && studentMatchCount === 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900" }, "No codenames match \u201C", rosterStudentQuery.trim(), "\u201D."), visibleGroupIds.map((gId) => {
     const group = groups[gId];
     const gStudents = getStudentsInGroup(gId);
+    const shownStudents = gStudents.filter(matchesStudentQuery);
     const isExpanded = expandedGroup === gId;
     return /* @__PURE__ */ React.createElement("div", { key: gId, className: "border border-slate-400 rounded-xl overflow-hidden transition-all motion-reduce:transition-none hover:border-indigo-200" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: () => setExpandedGroup(isExpanded ? null : gId),
+        "aria-expanded": isExpanded,
+        "aria-controls": "roster-group-" + gId,
         className: "w-full flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100 transition-colors motion-reduce:transition-none text-left"
       },
       /* @__PURE__ */ React.createElement("div", { className: "w-3 h-3 rounded-full shrink-0", style: { backgroundColor: group.color || "#4F46E5" } }),
-      /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-sm text-slate-800 truncate" }, group.name), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, gStudents.length, " student", gStudents.length !== 1 ? "s" : "", " \xB7 ", group.profile?.gradeLevel || "\u2014", " \xB7 ", group.profile?.leveledTextLanguage || "\u2014")),
+      /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-sm text-slate-800 truncate" }, group.name), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600" }, normalizedStudentQuery ? `${shownStudents.length} of ${gStudents.length} matching` : `${gStudents.length} student${gStudents.length !== 1 ? "s" : ""}`, " \xB7 ", group.profile?.gradeLevel || "\u2014", " \xB7 ", group.profile?.leveledTextLanguage || "\u2014")),
       /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-slate-400 transition-transform motion-reduce:transition-none ${isExpanded ? "rotate-180" : ""}` })
-    ), isExpanded && /* @__PURE__ */ React.createElement("div", { className: "p-4 space-y-3 border-t border-slate-100 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center mb-2" }, /* @__PURE__ */ React.createElement(
+    ), isExpanded && /* @__PURE__ */ React.createElement("div", { id: "roster-group-" + gId, className: "p-4 space-y-3 border-t border-slate-100 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 sm:items-center mb-2 min-w-0" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
         value: group.name,
+        maxLength: 80,
         onChange: (e) => handleUpdateGroupMeta(gId, "name", e.target.value),
         "aria-label": t("roster.group_name") || "Group name",
         className: "flex-1 px-2 py-1 rounded-lg border border-slate-400 text-sm font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none"
       }
-    ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, COLORS.map((c) => /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, COLORS.map((c) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         key: c,
         onClick: () => handleUpdateGroupMeta(gId, "color", c),
-        className: `w-6 h-6 rounded-full border-2 transition-all motion-reduce:transition-none ${group.color === c ? "border-slate-800 scale-110" : "border-transparent hover:scale-105"}`,
+        className: `w-9 h-9 rounded-full border-2 transition-all motion-reduce:transition-none ${group.color === c ? "border-slate-800 scale-110" : "border-transparent hover:scale-105"}`,
         style: { backgroundColor: c },
         "aria-label": (t("roster.set_group_color") || "Set group color") + " " + c,
         "aria-pressed": group.color === c
       }
-    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: "Reading theme", value: group.profile?.readingThemeDefault, field: "readingThemeDefault", gId, type: "select", options: ALLO_TEACHER_READING_THEME_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, gStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleMoveStudent(name, ""), className: "w-6 h-6 inline-flex items-center justify-center hover:text-red-500 transition-colors motion-reduce:transition-none ml-0.5 rounded-full", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), gStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
-  }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(
+    )))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 bg-slate-50 p-3 rounded-xl" }, /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.grade") || "Grade", value: group.profile?.gradeLevel, field: "gradeLevel", gId, type: "select", options: GRADE_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.language") || "Language", value: group.profile?.leveledTextLanguage, field: "leveledTextLanguage", gId, type: "select", options: LANG_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.reading") || "Reading Lvl", value: group.profile?.readingLevel, field: "readingLevel", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.interests") || "Interests", value: group.profile?.studentInterests, field: "studentInterests", gId }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.dok") || "DOK Level", value: group.profile?.dokLevel, field: "dokLevel", gId, type: "select", options: ["1", "2", "3", "4"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.tts_speed") || "TTS Speed", value: group.profile?.ttsSpeed, field: "ttsSpeed", gId, type: "range" }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.karaoke") || "Karaoke", value: group.profile?.karaokeMode, field: "karaokeMode", gId, type: "toggle" }), /* @__PURE__ */ React.createElement(ProfileField, { label: "Reading theme", value: group.profile?.readingThemeDefault, field: "readingThemeDefault", gId, type: "select", options: ALLO_TEACHER_READING_THEME_OPTIONS }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.simplify") || "Simplify", value: group.profile?.simplifyLevel, field: "simplifyLevel", gId, type: "select", options: ["basic", "intermediate", "advanced"] }), /* @__PURE__ */ React.createElement(ProfileField, { label: t("roster.custom") || "Custom Instr.", value: group.profile?.leveledTextCustomInstructions, field: "leveledTextCustomInstructions", gId })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5" }, t("roster.students_in_group") || "Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, shownStudents.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-medium" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-indigo-100 text-indigo-500 px-1 py-0.5 rounded-full font-mono", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement("select", { value: students[name] || "", onChange: (event) => handleMoveStudent(name, event.target.value), "aria-label": "Move " + name + " to group", className: "min-h-9 max-w-[10rem] rounded-lg border border-indigo-300 bg-white px-2 text-xs text-indigo-900" }, /* @__PURE__ */ React.createElement("option", { value: "" }, "Unassigned"), groupIds.map((id) => /* @__PURE__ */ React.createElement("option", { key: id, value: id }, groups[id].name))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-9 h-9 inline-flex items-center justify-center rounded-full hover:bg-indigo-100 hover:text-indigo-900 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "min-h-9 rounded-lg border border-red-200 bg-white px-2 text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none", "aria-label": "Delete " + name + " from roster" }, "Delete"))), shownStudents.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, normalizedStudentQuery ? "No matching codenames" : t("roster.no_students") || "No students assigned"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onApplyGroup(gId), className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " ", t("roster.apply_to_generator") || "Apply to Generator"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveGroup(gId), className: "px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors motion-reduce:transition-none sm:ml-auto flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Trash2, { size: 12 }), " ", t("roster.delete_group") || "Delete Group"))));
+  }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 sm:items-center p-3 border-2 border-dashed border-slate-200 rounded-xl hover:border-indigo-300 transition-colors motion-reduce:transition-none min-w-0" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
       value: newGroupName,
-      onChange: (e) => setNewGroupName(e.target.value),
+      maxLength: 80,
+      onChange: (e) => {
+        setNewGroupName(e.target.value);
+        setGroupNameError("");
+      },
       placeholder: t("roster.new_group_placeholder") || "New group name...",
       "aria-label": t("roster.new_group_placeholder") || "New group name",
       onKeyDown: (e) => e.key === "Enter" && handleAddGroup(),
-      className: "flex-1 px-3 py-1.5 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+      className: "min-w-0 w-full flex-1 px-3 py-2 rounded-lg border border-slate-400 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1" }, COLORS.slice(0, 4).map((c) => /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, COLORS.slice(0, 4).map((c) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       key: c,
       onClick: () => setNewGroupColor(c),
-      className: `w-6 h-6 rounded-full border-2 ${newGroupColor === c ? "border-slate-800" : "border-transparent"}`,
+      className: `w-9 h-9 rounded-full border-2 ${newGroupColor === c ? "border-slate-800" : "border-transparent"}`,
       style: { backgroundColor: c },
       "aria-label": (t("roster.new_group_color") || "New group color") + " " + c,
       "aria-pressed": newGroupColor === c
@@ -936,69 +1762,40 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     {
       type: "button",
       onClick: handleAddGroup,
-      disabled: !newGroupName.trim(),
+      disabled: !newGroupName.trim() || groupIds.length >= ALLO_ROSTER_MAX_GROUPS,
+      title: groupIds.length >= ALLO_ROSTER_MAX_GROUPS ? "Maximum " + ALLO_ROSTER_MAX_GROUPS + " groups reached" : void 0,
       className: "px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1"
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 14 }),
     " ",
     t("roster.add_group") || "Add"
-  )), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " ", t("roster.manage_students") || "Manage Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 text-[11px]" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        setUseCustomName(false);
-        if (!rosterAdj || !rosterAnimal) randomizeRosterName();
-      },
-      className: `px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${!useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
-    },
-    "\u{1F3B2} Codename Only"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => setUseCustomName(true),
-      className: `px-2 py-1 rounded-full font-bold transition-all motion-reduce:transition-none ${useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
-    },
-    "\u270F\uFE0F Codename + Real Name"
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 items-center" }, /* @__PURE__ */ React.createElement(
+  )), groupNameError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "text-xs font-bold text-red-700" }, groupNameError), groupIds.length >= ALLO_ROSTER_MAX_GROUPS && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-bold text-amber-800" }, "Group limit reached (", ALLO_ROSTER_MAX_GROUPS, "). Delete an unused group to add another."), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), " ", t("roster.manage_students") || "Manage Students", /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[11px] font-medium normal-case tracking-normal text-slate-500" }, studentCodenames.length, "/", ALLO_ROSTER_MAX_STUDENTS)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-700" }, "Add a codename only. Use the printable worksheet for a private handwritten name and location mapping."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2 sm:items-center min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-1.5 sm:items-center min-w-0" }, /* @__PURE__ */ React.createElement(
     "select",
     {
-      value: rosterAdj,
+      value: rosterAdjIsValid ? rosterAdj : "",
       onChange: (e) => setRosterAdj(e.target.value),
       "aria-label": t("codenames.pick_adjective") || "Pick adjective",
-      className: "flex-1 px-2 py-1.5 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none"
+      className: "min-w-0 w-full flex-1 px-2 py-2 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("codenames.pick_adjective") || "\u2014 Adjective \u2014"),
     rosterAdjectives.map((a) => /* @__PURE__ */ React.createElement("option", { key: a, value: a }, a))
   ), /* @__PURE__ */ React.createElement(
     "select",
     {
-      value: rosterAnimal,
+      value: rosterAnimalIsValid ? rosterAnimal : "",
       onChange: (e) => setRosterAnimal(e.target.value),
       "aria-label": t("codenames.pick_animal") || "Pick animal",
-      className: "flex-1 px-2 py-1.5 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none"
+      className: "min-w-0 w-full flex-1 px-2 py-2 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-teal-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("codenames.pick_animal") || "\u2014 Animal \u2014"),
     rosterAnimals.map((a) => /* @__PURE__ */ React.createElement("option", { key: a, value: a }, a))
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: randomizeRosterName, title: t("common.randomize") || "Randomize", className: "p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 }))), useCustomName && /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: newStudentName,
-      onChange: (e) => setNewStudentName(e.target.value),
-      placeholder: t("roster.display_name_placeholder") || "Real name (for your reference only)...",
-      "aria-label": t("roster.display_name_placeholder") || "Student real name",
-      onKeyDown: (e) => e.key === "Enter" && handleAddStudent(),
-      className: "px-3 py-1.5 rounded-lg border border-indigo-200 bg-indigo-50/50 text-sm focus:ring-2 focus:ring-indigo-400 focus:outline-none"
-    }
-  )), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: randomizeRosterName, title: t("common.randomize") || "Randomize", "aria-label": t("common.randomize") || "Randomize codename", className: "min-h-10 min-w-10 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors motion-reduce:transition-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 })))), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: newStudentGroup,
       onChange: (e) => setNewStudentGroup(e.target.value),
       "aria-label": t("roster.assign_group") || "Assign to group",
-      className: "px-2 py-1.5 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+      className: "w-full sm:w-auto min-h-10 px-2 py-1.5 rounded-lg border border-slate-400 text-xs focus:ring-2 focus:ring-indigo-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("roster.unassigned") || "Unassigned"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
@@ -1007,25 +1804,24 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     {
       type: "button",
       onClick: handleAddStudent,
-      disabled: !rosterAdj || !rosterAnimal,
-      className: "px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center gap-1"
+      disabled: !rosterAdjIsValid || !rosterAnimalIsValid || studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS,
+      title: studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS ? "Maximum " + ALLO_ROSTER_MAX_STUDENTS + " codenames reached" : void 0,
+      className: "w-full sm:w-auto min-h-10 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors motion-reduce:transition-none disabled:opacity-40 flex items-center justify-center gap-1"
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 14 }),
     " ",
     t("roster.add_student") || "Add"
-  )), rosterAdj && rosterAnimal && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-medium pl-1" }, useCustomName && newStudentName.trim() ? /* @__PURE__ */ React.createElement("span", null, "Codename: ", /* @__PURE__ */ React.createElement("strong", null, rosterAdj, " ", rosterAnimal), " \xB7 Display: ", /* @__PURE__ */ React.createElement("strong", null, newStudentName.trim())) : /* @__PURE__ */ React.createElement("span", null, "Codename: ", /* @__PURE__ */ React.createElement("strong", null, rosterAdj, " ", rosterAnimal))))), getUnassigned().length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5" }, t("roster.unassigned_students") || "Unassigned Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, getUnassigned().map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-full text-xs font-medium border border-amber-200" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement(
+  )), rosterAdjIsValid && rosterAnimalIsValid && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-teal-600 font-medium pl-1" }, /* @__PURE__ */ React.createElement("span", null, "Codename: ", /* @__PURE__ */ React.createElement("strong", null, rosterAdj, " ", rosterAnimal))), studentCodenames.length >= ALLO_ROSTER_MAX_STUDENTS && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs font-bold text-amber-800" }, "Codename limit reached (", ALLO_ROSTER_MAX_STUDENTS, "). Delete an unused codename to add another."))), visibleUnassigned.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-amber-50 border border-amber-200 rounded-xl mt-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1.5" }, t("roster.unassigned_students") || "Unassigned Students"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, visibleUnassigned.map((name) => /* @__PURE__ */ React.createElement("span", { key: name, className: "inline-flex max-w-full flex-wrap items-center gap-1 px-2.5 py-1 bg-white text-amber-800 rounded-xl text-xs font-medium border border-amber-200" }, name, rosterKey?.progressHistory?.[name]?.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] bg-amber-100 text-amber-600 px-1 py-0.5 rounded-full font-mono ml-0.5", title: `${rosterKey.progressHistory[name].length} sessions` }, rosterKey.progressHistory[name].length, "s"), /* @__PURE__ */ React.createElement(
     "select",
     {
-      onChange: (e) => {
-        if (e.target.value) handleMoveStudent(name, e.target.value);
-      },
-      value: "",
+      onChange: (e) => handleMoveStudent(name, e.target.value),
+      value: students[name] || "",
       "aria-label": "Move " + name + " to group",
-      className: "text-[11px] bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-600 ml-1 w-4"
+      className: "min-h-9 max-w-[10rem] rounded-lg border border-amber-300 bg-white px-2 text-[11px] focus:outline-none focus:ring-2 focus:ring-amber-300 cursor-pointer text-amber-800 ml-1"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
+    /* @__PURE__ */ React.createElement("option", { value: "" }, "Unassigned"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-6 h-6 inline-flex items-center justify-center rounded-full hover:bg-amber-100 hover:text-amber-950 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), readingPreferencesStudent && (() => {
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setReadingPreferencesStudent(name), className: "w-9 h-9 inline-flex items-center justify-center rounded-full hover:bg-amber-100 hover:text-amber-950 transition-colors motion-reduce:transition-none", "aria-label": "Edit reading preferences for " + name, title: "Reading preferences" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2605")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "min-h-9 rounded-lg border border-red-200 px-2 text-red-700 hover:bg-red-50 transition-colors motion-reduce:transition-none", "aria-label": "Delete " + name + " from roster" }, "Delete"))))), readingPreferencesStudent && (() => {
     const preference = getLearnerReadingPreference(readingPreferencesStudent);
     const favorites = alloNormalizeTeacherReadingFavorites(preference.favoriteReadingThemes);
     const groupId = students[readingPreferencesStudent];
@@ -1036,17 +1832,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const selected = favorites.includes(option.id);
       return /* @__PURE__ */ React.createElement("button", { type: "button", key: option.id, onClick: () => handleToggleLearnerReadingFavorite(readingPreferencesStudent, option.id), "aria-pressed": selected, className: `min-h-9 rounded-full border px-3 text-xs font-bold transition-colors motion-reduce:transition-none ${selected ? "border-violet-700 bg-violet-700 text-white" : "border-violet-300 bg-white text-violet-900 hover:bg-violet-100"}` }, selected ? "\u2605 " : "\u2606 ", option.label);
     }))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex items-center justify-between gap-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-violet-800" }, "Choice priority: learner \u2192 saved preference \u2192 group \u2192 class \u2192 device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleResetLearnerReadingPreference(readingPreferencesStudent), className: "min-h-9 shrink-0 rounded-lg border border-violet-300 bg-white px-3 text-xs font-bold text-violet-900 hover:bg-violet-100" }, "Reset to defaults")));
-  })(), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-100 bg-white p-2", "aria-label": "Saved session history filters" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Focus", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryFocus, onChange: (event) => setSessionHistoryFocus(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by follow-up focus" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved sessions"), /* @__PURE__ */ React.createElement("option", { value: "follow_up" }, "Needs follow-up"), /* @__PURE__ */ React.createElement("option", { value: "revision" }, "Revision opportunities"), /* @__PURE__ */ React.createElement("option", { value: "celebrate" }, "Celebrate progress"), /* @__PURE__ */ React.createElement("option", { value: "planned" }, "Has follow-up plan"))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Activity", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryActivityKind, onChange: (event) => setSessionHistoryActivityKind(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by activity type" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All activity types"), sessionActivityKinds.map((kind) => /* @__PURE__ */ React.createElement("option", { key: kind, value: kind }, kind.replace(/_/g, " "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, filteredSessionHistory.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-cyan-100 bg-white p-3 text-xs text-slate-600" }, "No saved sessions match these filters."), filteredSessionHistory.slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50/60 p-2", "data-session-follow-up-planner": session.id }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-violet-900" }, "Post-session follow-up"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-700" }, "Private planning only. Nothing is sent or assigned until you choose an action."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-bold text-slate-700" }, "Private note", /* @__PURE__ */ React.createElement(
+  })(), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-cyan-100 bg-white p-2", "aria-label": "Saved session history filters" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Focus", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryFocus, onChange: (event) => setSessionHistoryFocus(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by follow-up focus" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All saved sessions"), /* @__PURE__ */ React.createElement("option", { value: "follow_up" }, "Needs follow-up"), /* @__PURE__ */ React.createElement("option", { value: "revision" }, "Revision opportunities"), /* @__PURE__ */ React.createElement("option", { value: "celebrate" }, "Celebrate progress"), /* @__PURE__ */ React.createElement("option", { value: "planned" }, "Has follow-up plan"))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-cyan-900" }, "Activity", /* @__PURE__ */ React.createElement("select", { value: sessionHistoryActivityKind, onChange: (event) => setSessionHistoryActivityKind(event.target.value), className: "mt-1 min-h-9 w-full rounded-lg border border-cyan-300 bg-white px-2 text-xs text-slate-800", "aria-label": "Filter saved sessions by activity type" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, "All activity types"), sessionActivityKinds.map((kind) => /* @__PURE__ */ React.createElement("option", { key: kind, value: kind }, kind.replace(/_/g, " "))))))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, filteredSessionHistory.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "rounded-lg border border-cyan-100 bg-white p-3 text-xs text-slate-600" }, "No saved sessions match these filters."), filteredSessionHistory.slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-100 bg-violet-50/60 p-2", "data-session-follow-up-planner": session.id }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-violet-900" }, "Post-session follow-up"), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-[11px] text-violet-700" }, "Local planning only. Nothing is sent or assigned until you choose an action."), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[11px] font-bold text-slate-700" }, "Codename-only private note", /* @__PURE__ */ React.createElement(
     "textarea",
     {
       value: noteDraftFor(session),
       onChange: (event) => setSessionNoteDrafts((previous) => ({ ...previous, [session.id]: event.target.value.slice(0, 1e3) })),
       rows: 2,
       maxLength: 1e3,
-      "aria-label": "Private follow-up note for session " + session.id,
+      "aria-label": "Codename-only follow-up note for session " + session.id,
       className: "mt-1 w-full rounded-lg border border-violet-200 bg-white p-2 text-xs text-slate-800"
     }
-  )), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => saveSessionNote(session), className: "min-h-9 rounded-lg border border-violet-300 bg-white px-2 text-[11px] font-bold text-violet-900" }, "Save private note"), (() => {
+  ), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block font-normal text-violet-700" }, "Use codenames only. This note is stored on this device and included in roster backups.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => saveSessionNote(session), className: "min-h-9 rounded-lg border border-violet-300 bg-white px-2 text-[11px] font-bold text-violet-900" }, "Save codename note"), (() => {
     const draft = planDraftFor(session);
     const savedPlan = normalizeRosterSessionFollowUpPlan(session.followUpPlan);
     const savedResource = savedPlan && safeFollowUpResources.find((item) => item.id === savedPlan.resourceId);
@@ -1058,7 +1854,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     const canSendToLive = Boolean(activeSessionCode && savedPlan && savedPlan.status !== "completed" && savedResource && !planDirty && typeof onSendFollowUpToLiveSession === "function");
     const liveActionLabel = savedPlan?.audience === "cohort" ? "Assign to current live cohort" : "Present to current live class";
     return /* @__PURE__ */ React.createElement("div", { className: "mt-2 border-t border-violet-100 pt-2" }, safeFollowUpResources.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "mb-2 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] text-amber-900" }, "Create or restore a student-safe resource in History to prepare this follow-up. Any saved plan remains available to review or clear."), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-700" }, "Existing resource", /* @__PURE__ */ React.createElement("select", { value: draft.resourceId, disabled: safeFollowUpResources.length === 0 || liveSending, onChange: (event) => setSessionPlanDrafts((previous) => ({ ...previous, [session.id]: { ...draft, resourceId: event.target.value } })), "aria-label": "Choose follow-up resource for session " + session.id, className: "mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800 disabled:bg-slate-100" }, safeFollowUpResources.length === 0 && /* @__PURE__ */ React.createElement("option", { value: "" }, "No student-safe resources in History"), safeFollowUpResources.map((item) => /* @__PURE__ */ React.createElement("option", { key: item.id, value: item.id }, item.title || item.type || "Untitled resource")))), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] font-bold text-slate-700" }, "Planned audience", /* @__PURE__ */ React.createElement("select", { value: draft.audienceKey, disabled: liveSending, onChange: (event) => setSessionPlanDrafts((previous) => ({ ...previous, [session.id]: { ...draft, audienceKey: event.target.value } })), "aria-label": "Choose follow-up audience for session " + session.id, className: "mt-1 min-h-9 w-full rounded-lg border border-violet-200 bg-white px-2 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("option", { value: "class" }, "Whole class"), supportCohorts.map((cohort) => /* @__PURE__ */ React.createElement("option", { key: cohort.code, value: "cohort:" + cohort.code }, cohort.label, " (", cohort.count, ")"))))), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-slate-600" }, "Planned audience is a private distribution reminder. Prepared links are shareable, not recipient-restricted. When a live session is active, the explicit live action below re-resolves current recipients before using the existing class or individual delivery controls."), planDirty && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-[11px] font-bold text-amber-800" }, "Save your plan changes before opening, assigning, or presenting this resource."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => saveSessionPlan(session), disabled: safeFollowUpResources.length === 0 || liveSending, className: "min-h-9 rounded-lg border border-violet-300 bg-violet-100 px-2 text-[11px] font-bold text-violet-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Save follow-up plan"), savedResource && typeof onOpenFollowUpResource === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onOpenFollowUpResource(savedResource), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-sky-300 bg-sky-50 px-2 text-[11px] font-bold text-sky-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Open planned resource"), savedResource && typeof onPrepareFollowUpAssignment === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onPrepareFollowUpAssignment(savedResource), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-2 text-[11px] font-bold text-emerald-900 disabled:cursor-not-allowed disabled:opacity-50" }, "Prepare assignment link"), canSendToLive && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => sendSessionPlanToLive(session), disabled: liveActionInFlight, "aria-label": liveActionLabel + " from saved follow-up plan", className: "min-h-9 rounded-lg border border-fuchsia-300 bg-fuchsia-50 px-2 text-[11px] font-bold text-fuchsia-900 disabled:cursor-not-allowed disabled:opacity-50" }, liveSending ? savedPlan.audience === "cohort" ? "Assigning\u2026" : "Presenting\u2026" : liveActionLabel), savedPlan && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSessionPlanStatus(session, savedPlan.status === "completed" ? "planned" : "completed"), disabled: planDirty || liveSending, className: "min-h-9 rounded-lg border border-slate-300 bg-white px-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:opacity-50" }, savedPlan.status === "completed" ? "Reopen plan" : "Mark complete"), savedPlan && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearSessionPlan(session), disabled: liveSending, className: "min-h-9 rounded-lg border border-rose-200 bg-white px-2 text-[11px] font-bold text-rose-700 disabled:cursor-not-allowed disabled:opacity-50" }, "Clear plan")), savedPlan && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-800" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, savedPlan.status === "completed" ? "Completed" : "Planned", ":"), " ", savedPlan.resourceTitle, " \xB7 ", savedPlan.cohortLabel, !savedResource ? " \xB7 resource no longer available in History" : ""));
-  })(), sessionPlannerStatus[session.id] && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[11px] font-bold text-violet-800" }, sessionPlannerStatus[session.id])), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.organizerActivity && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Visual organizer:"), " ", String(session.organizerActivity.type || "organizer").replace(/3d$/i, " 3D"), " \xB7 ", session.organizerActivity.statusCounts?.complete || 0, " complete \xB7 ", session.organizerActivity.statusCounts?.attempted || 0, " attempted \xB7 ", (session.organizerActivity.followUpCodenames || []).length, " launch follow-up"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1", "aria-label": "Saved evidence cohorts" }, session.insightBrief.evidenceCohorts.map((cohort) => /* @__PURE__ */ React.createElement("details", { key: cohort.code, className: "rounded border p-1.5 " + (cohort.intent === "celebrate" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, cohort.label, " - ", cohort.count), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, cohort.recommendedAction), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, (cohort.codenames || []).join(", "))))), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.organizer ? ` \xB7 organizer ${record.organizer.status}${record.organizer.total ? ` ${record.organizer.correct}/${record.organizer.total}` : ""}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), filteredSessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent matching sessions of ", filteredSessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+  })(), sessionPlannerStatus[session.id] && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", className: "mt-2 text-[11px] font-bold text-violet-800" }, sessionPlannerStatus[session.id])), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.organizerActivity && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Visual organizer:"), " ", String(session.organizerActivity.type || "organizer").replace(/3d$/i, " 3D"), " \xB7 ", session.organizerActivity.statusCounts?.complete || 0, " complete \xB7 ", session.organizerActivity.statusCounts?.attempted || 0, " attempted \xB7 ", (session.organizerActivity.followUpCodenames || []).length, " launch follow-up"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1", "aria-label": "Saved evidence cohorts" }, session.insightBrief.evidenceCohorts.map((cohort) => /* @__PURE__ */ React.createElement("details", { key: cohort.code, className: "rounded border p-1.5 " + (cohort.intent === "celebrate" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, cohort.label, " - ", cohort.count), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, cohort.recommendedAction), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, (cohort.codenames || []).join(", "))))), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.organizer ? ` \xB7 organizer ${record.organizer.status}${record.organizer.total ? ` ${record.organizer.correct}/${record.organizer.total}` : ""}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), Number(session.unmatchedCount || 0) > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched entries:"), " ", session.unmatchedCount, " (typed values were not retained)")))), filteredSessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent matching sessions of ", filteredSessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), rosterStorageError ? /* @__PURE__ */ React.createElement("span", { role: "alert", className: "sm:ml-auto flex items-center gap-1 font-bold text-red-700" }, /* @__PURE__ */ React.createElement(AlertTriangle, { size: 12 }), " ", rosterStorageError) : /* @__PURE__ */ React.createElement("span", { className: "sm:ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " Saved on this device \xB7 codenames only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: submissionDialogRef,
@@ -5429,6 +6225,9 @@ window.AlloModules.TeacherDashboard = TeacherDashboard;
 window.AlloModules.RosterIdentityInternals = {
   ensureRosterIdentity: alloEnsureTeacherRosterIdentity,
   normalizeLearnerReadingPreference: alloNormalizeTeacherLearnerPreference,
+  normalizeRosterImport: alloNormalizeTeacherRosterImport,
+  removeGroupReferences: alloRemoveTeacherGroupReferences,
+  buildCodenameWorksheetHtml: buildRosterCodenameWorksheetHtml,
   readingThemeIds: ALLO_TEACHER_READING_THEME_IDS.slice()
 };
 window.AlloModules.TeacherModule = true;

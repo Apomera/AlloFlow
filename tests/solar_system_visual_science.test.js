@@ -95,6 +95,59 @@ describe('solar system visual science model', () => {
     expect(source).toContain('Select a feature \\u2022 drag to rotate');
   });
 
+  it('fills the mission-control column with a responsive, scientifically disclosed world spotlight', () => {
+    expect(source).toContain('var spotlightPlanet = sel || missionEarth;');
+    expect(source).toContain('data-solarsystem-world-spotlight');
+    expect(source).toContain('className: "solar-world-spotlight"');
+    expect(source).toContain('role: "figure"');
+    expect(source).toContain('PLANET_PORTRAITS[spotlightPlanet.key]');
+    expect(source).toContain('RINGED_GIANTS[spotlightPlanet.key]');
+    expect(source).toContain('spotlightPlanet.atmosphere');
+    expect(source).toContain('spotlightPlanet.surface');
+    expect(source).toContain('Illustrative portrait \\u00b7 not to scale');
+    expect(source).toContain('.solar-cosmos .solar-command-primary{display:flex');
+    expect(source).toContain('@media(max-width:640px){.solar-cosmos .solar-world-spotlight{min-height:0}');
+  });
+
+  it('keeps the selected 3D world locked to its label and declutters compact canvases', () => {
+    expect(source).toContain('var compactLabelMode = W <= 640;');
+    expect(source).toContain("var selectedLabelName = canvas.dataset.selected || '';");
+    expect(source).toContain("var labelTelemetry = canvas.parentElement ? canvas.parentElement.querySelector('.solar-telemetry') : null;");
+    expect(source).toContain('labelY - labelHeight < telemetryClearY');
+    expect(source).toContain('var compactAnchor = compactBodyIndex === 2 || compactBodyIndex === 4 || compactBodyIndex === 7;');
+    expect(source).toContain('if (compactLabelMode && !projectedSelected && !compactAnchor) return;');
+    expect(source).toContain('if (projectedSelected) {');
+    expect(source).toContain('entry.x = lx; entry.y = ly; entry.seeded = true;');
+    expect(source).toContain("live.el.className = isSelected ? 'solar-orbit-label solar-orbit-label--selected'");
+    expect(source).toContain('.solar-cosmos .solar-orbit-label--selected::before{content:"TARGET"');
+    expect(source).toContain('var labelX = Math.max(labelHalfWidth + 6');
+    expect(source).toContain('var labelBottomLimit = compactLabelMode ? H - 142 : H - 46;');
+    expect(source).toContain('let W = canvas.clientWidth || 600;');
+    expect(source).toContain('let H = canvas.clientHeight || 340;');
+    expect(source).toContain('W = w; H = h;');
+    expect(source).toContain('max-width:calc(100% - 12px);overflow:hidden;text-overflow:ellipsis');
+  });
+
+  it('keeps planet anatomy readable across compact and wide cutaways', () => {
+    const interiorStart = source.indexOf("(d.viewTab) === 'interior'");
+    const interiorEnd = source.indexOf("(d.viewTab) === 'descent'", interiorStart);
+    const interiorSource = source.slice(interiorStart, interiorEnd);
+
+    expect(interiorStart).toBeGreaterThan(-1);
+    expect(interiorEnd).toBeGreaterThan(interiorStart);
+    expect(interiorSource).toContain('"data-solar-interior-cutaway": sel.key');
+    expect(interiorSource).toContain('"data-solar-interior-canvas": sel.key');
+    expect(interiorSource).toContain('var compactInterior = cw < 560;');
+    expect(interiorSource).toContain("'data-solar-interior-layout', compactInterior ? 'compact-key' : 'wide-callouts'");
+    expect(interiorSource).toContain('var legendTop = cy + maxR + 27;');
+    expect(interiorSource).toContain("ctx2.fillText('LAYER KEY', 12, legendTop - 11);");
+    expect(interiorSource).toContain('var labelTop = cy - maxR * 0.70;');
+    expect(interiorSource).toContain('grid grid-cols-1 md:grid-cols-2 gap-2');
+    expect(interiorSource).toContain('"data-solar-interior-layer": layer.label');
+    expect(interiorSource).toContain('100%),#0f172a');
+    expect(interiorSource).toContain('Stable brightness prevents the star field from shimmering');
+    expect(interiorSource).not.toContain('Math.random()');
+  });
   it('separates Kepler I geometry callouts from live proof measurements', () => {
     expect(source).toContain('var k1Backdrop = ctx.createRadialGradient');
     expect(source).toContain('function drawK1Tag(text, x, y, color)');

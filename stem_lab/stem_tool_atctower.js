@@ -1642,10 +1642,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         })[loadState];
         var opsSliders = [
           { k: 'wind', label: t('stem.atctower.wind_speed', 'Wind speed'), min: 0, max: 30, step: 1, unit: 'kt' },
-          { k: 'spawn', label: t('stem.atctower.spawn_rate', 'Spawn rate'), min: 1, max: 10, step: 1, unit: 's' },
+          { k: 'spawn', label: t('stem.atctower.arrival_interval', 'Aircraft arrival interval'), min: 1, max: 10, step: 1, unit: 's' },
           { k: 'sep', label: t('stem.atctower.min_separation', 'Min separation'), min: 5, max: 20, step: 1, unit: 'nm' },
           { k: 'descent', label: t('stem.atctower.descent_multiplier', 'Descent multiplier'), min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
-          { k: 'timeout', label: t('stem.atctower.decision_timeout', 'Decision timeout'), min: 10, max: 60, step: 5, unit: 's' }
+          { k: 'timeout', label: t('stem.atctower.decision_window', 'Decision window'), min: 10, max: 60, step: 5, unit: 's' }
         ];
         var menuTabs = [
           { id: 'airports', label: t('stem.atctower.airports', 'Airports'), hint: t('stem.atctower.choose_runway_load', 'Choose runway load') },
@@ -1779,47 +1779,210 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
               })
             )
           ),
-          atcMenuPanel === 'ops' && h('div', { style: { padding: '0 24px 18px' } },
-            h('div', { style: { padding: '16px', borderRadius: '14px', background: loadMeta.bg, border: '1px solid ' + loadMeta.border, color: '#f8fafc' } },
-              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' } },
-                h('div', null,
-                  h('h3', { style: { margin: 0, color: loadMeta.color, fontSize: '17px', fontWeight: 900 } }, t('stem.atctower.ops_control', 'Ops Control')),
-                  h('p', { style: { margin: '4px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45 } }, loadMeta.desc)
+          atcMenuPanel === 'ops' && (function() {
+            var opsLog = Array.isArray(iq.log) ? iq.log : [];
+            function opsSetupSignature(entry) {
+              var descentValue = Number(entry && entry.descent);
+              return [
+                entry && entry.wind,
+                entry && entry.spawn,
+                entry && entry.sep,
+                isFinite(descentValue) ? descentValue.toFixed(1) : 'na',
+                entry && entry.timeout
+              ].join('|');
+            }
+            var controlLabels = {
+              wind: t('stem.atctower.wind_speed', 'Wind speed'),
+              spawn: t('stem.atctower.arrival_interval', 'Aircraft arrival interval'),
+              sep: t('stem.atctower.min_separation', 'Minimum separation'),
+              descent: t('stem.atctower.descent_multiplier', 'Descent multiplier'),
+              timeout: t('stem.atctower.decision_window', 'Decision window')
+            };
+            var controlHints = {
+              wind: t('stem.atctower.wind_model_hint', 'Higher wind adds to the modeled workload.'),
+              spawn: t('stem.atctower.arrival_interval_model_hint', 'Fewer seconds means more frequent arrivals and a larger modeled-load contribution.'),
+              sep: t('stem.atctower.separation_model_hint', 'Less separation adds to this simplified conflict-pressure term.'),
+              descent: t('stem.atctower.descent_model_hint', 'A larger multiplier adds to the modeled workload.'),
+              timeout: t('stem.atctower.decision_window_model_hint', 'Fewer seconds means more decision pressure.')
+            };
+            var liveLoadDescription = ({
+              sandbox: t('stem.atctower.sandbox_model_desc', 'The teaching index classifies this setup as low modeled workload.'),
+              training: t('stem.atctower.training_model_desc', 'The teaching index classifies this setup as moderate-low modeled workload.'),
+              operational: t('stem.atctower.operational_model_desc', 'The teaching index classifies this setup as mid-range modeled workload.'),
+              stressed: t('stem.atctower.stressed_model_desc', 'The teaching index classifies this setup as high modeled workload.'),
+              overload: t('stem.atctower.overload_model_desc', 'The teaching index classifies this setup as very high modeled workload.')
+            })[loadState];
+            var loggedSignatures = {};
+            opsLog.forEach(function(entry) {
+              loggedSignatures[opsSetupSignature(entry)] = true;
+            });
+            var currentSignature = opsSetupSignature(iq);
+            var currentAlreadyLogged = !!loggedSignatures[currentSignature];
+            var distinctLogCount = Object.keys(loggedSignatures).length;
+            var comparisonEntries = opsLog.slice(-2);
+            var changedControls = [];
+            if (comparisonEntries.length === 2) {
+              Object.keys(controlLabels).forEach(function(key) {
+                if (String(comparisonEntries[0][key]) !== String(comparisonEntries[1][key])) changedControls.push(key);
+              });
+            }
+            var fairTestState = comparisonEntries.length < 2
+              ? 'needs-two-setups'
+              : changedControls.length === 1
+                ? 'one-variable'
+                : changedControls.length === 0
+                  ? 'duplicate'
+                  : 'multiple-variables';
+            var fairTestText = comparisonEntries.length < 2
+              ? t('stem.atctower.fair_test_needs_two', 'Fair-test check: log two different setups to compare them.')
+              : changedControls.length === 1
+                ? t('stem.atctower.fair_test_one_variable', 'Fair-test check: one control changed') + ' (' + controlLabels[changedControls[0]] + ').'
+                : changedControls.length === 0
+                  ? t('stem.atctower.fair_test_duplicate', 'Fair-test check: these two logs use the same settings; change one control for the next log.')
+                  : t('stem.atctower.fair_test_multiple', 'Fair-test check: several controls changed. That comparison cannot isolate one control; try changing only one next.');
+            var explanationText = String(iq.explanation || iq.hypothesis || '');
+            var evidenceReady = distinctLogCount >= 2;
+            var explanationComplete = evidenceReady && !!explanationText.trim();
+
+            return h('div', { style: { padding: '0 24px 18px' } },
+              h('div', {
+                style: { padding: '16px', borderRadius: '14px', background: loadMeta.bg, border: '1px solid ' + loadMeta.border, color: '#f8fafc' },
+                'data-atctower-live-inquiry': 'observe-log-explain',
+                'data-atctower-inquiry-credit': 'two-distinct-logs-plus-explanation',
+                'aria-labelledby': 'atctower-ops-title'
+              },
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center', justifyContent: 'space-between' } },
+                  h('div', null,
+                    h('div', { 'data-atctower-inquiry-label': 'live-evidence', style: { color: '#bae6fd', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: '3px' } }, t('stem.atctower.inquiry_widget_live_evidence', 'Inquiry widget · live evidence')),
+                    h('h3', { id: 'atctower-ops-title', style: { margin: 0, color: loadMeta.color, fontSize: '17px', fontWeight: 900 } }, t('stem.atctower.ops_live_model_title', 'Ops Control — Live Load Model')),
+                    h('p', { id: 'atctower-ops-instructions', style: { margin: '4px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45, maxWidth: '72ch' } },
+                      t('stem.atctower.ops_live_model_instructions', 'The result is visible and updates live, so this is an observe–log–explain investigation, not a prediction quiz. Change one control at a time, log at least two different setups, then explain the evidence.')
+                    )
+                  ),
+                  h('span', {
+                    role: 'status',
+                    'aria-live': 'polite',
+                    'aria-atomic': 'true',
+                    'data-atctower-live-load': 'visible-model-output',
+                    style: { borderRadius: '16px', padding: '6px 10px', background: loadMeta.color, color: '#0f172a', fontSize: '12px', fontWeight: 900 }
+                  }, t('stem.atctower.live_modeled_load', 'Live modeled load') + ': ' + loadMeta.label)
                 ),
-                h('span', { style: { borderRadius: '16px', padding: '6px 10px', background: loadMeta.color, color: '#0f172a', fontSize: '12px', fontWeight: 900 } }, t('stem.atctower.predicted_load', 'Predicted load') + ': ' + loadMeta.label)
-              ),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '14px' } },
-                opsSliders.map(function(s) {
-                  return h('label', { key: s.k, style: { display: 'block', color: '#f8fafc', fontSize: '12px', fontWeight: 800 } },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '5px' } },
-                      h('span', null, s.label),
-                      h('span', { style: { color: loadMeta.color, fontFamily: 'monospace', fontWeight: 900 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
+                h('p', { style: { margin: '8px 0 0', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.45 } }, liveLoadDescription),
+                h('div', {
+                  'data-atctower-model-boundary': 'simplified-weighted-index',
+                  style: { marginTop: '10px', padding: '9px 10px', borderRadius: '9px', background: 'rgba(2, 6, 23, 0.48)', border: '1px solid rgba(148, 163, 184, 0.28)', color: '#dbeafe', fontSize: '11px', lineHeight: 1.45 }
+                },
+                  h('strong', null, t('stem.atctower.model_boundary_label', 'Model boundary: ')),
+                  t('stem.atctower.model_boundary_copy', 'This standalone teaching index combines arrival frequency (30%), wind (25%), reduced-separation pressure (25%), descent rate (10%), and decision-window pressure (10%). It does not configure the tower shift or predict real-airport safety.')
+                ),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginTop: '14px' } },
+                  opsSliders.map(function(s) {
+                    return h('label', { key: s.k, style: { display: 'block', color: '#f8fafc', fontSize: '12px', fontWeight: 800 } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '5px' } },
+                        h('span', null, s.label),
+                        h('span', { style: { color: loadMeta.color, fontFamily: 'monospace', fontWeight: 900 } }, (s.step < 1 ? iq[s.k].toFixed(1) : iq[s.k]) + ' ' + s.unit)
+                      ),
+                      h('input', { type: 'range', 'aria-label': s.label, 'aria-describedby': 'atctower-' + s.k + '-hint', min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } }),
+                      h('span', { id: 'atctower-' + s.k + '-hint', style: { display: 'block', marginTop: '3px', color: '#cbd5e1', fontSize: '10px', fontWeight: 500, lineHeight: 1.35 } }, controlHints[s.k])
+                    );
+                  })
+                ),
+                h('div', {
+                  'data-atctower-evidence-log': 'distinct-setups',
+                  style: { marginTop: '14px', padding: '10px', borderRadius: '10px', background: 'rgba(2, 6, 23, 0.52)', border: '1px solid rgba(148, 163, 184, 0.28)' }
+                },
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between' } },
+                    h('div', null,
+                      h('div', { style: { color: '#f8fafc', fontSize: '12px', fontWeight: 900 } }, t('stem.atctower.evidence_log_title', 'Evidence log') + ' · ' + distinctLogCount + '/2 ' + t('stem.atctower.distinct_setups', 'distinct setups')),
+                      h('div', { style: { marginTop: '2px', color: '#cbd5e1', fontSize: '10px', lineHeight: 1.35 } }, t('stem.atctower.evidence_log_hint', 'For the clearest comparison, keep four controls fixed and change one.'))
                     ),
-                    h('input', { type: 'range', 'aria-label': s.label, min: s.min, max: s.max, step: s.step, value: iq[s.k], onChange: function(e) { setKey(s.k, parseFloat(e.target.value)); }, style: { width: '100%' } })
-                  );
-                })
-              ),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px', marginTop: '14px', alignItems: 'start' } },
-                h('label', { style: { display: 'block', fontSize: '12px', fontWeight: 800, color: '#f8fafc' } },
-                  t('stem.atctower.your_hypothesis_what_combo_do_you_expe', 'Your hypothesis (what combo do you expect to break ops first?)'),
-                  h('textarea', { 'aria-label': t('stem.atctower.hypothesis_input', 'Aircraft separation hypothesis'),  value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical' }, placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'Example: low separation plus high spawn rate compounds before wind matters...') })
+                    h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+                      h('button', {
+                        type: 'button',
+                        disabled: currentAlreadyLogged,
+                        'aria-disabled': currentAlreadyLogged ? 'true' : 'false',
+                        'aria-label': currentAlreadyLogged ? t('stem.atctower.current_setup_logged_a11y', 'Current ATC setup already logged') : t('stem.atctower.log_setup_a11y', 'Log current ATC setup as evidence'),
+                        onClick: function() {
+                          if (currentAlreadyLogged) return;
+                          var stamp = new Date().toISOString().slice(11, 19);
+                          setIQ({ log: opsLog.concat([{ t: stamp, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: loadMeta.label, loadIndex: Number(loadIdx.toFixed(3)) }]) });
+                        },
+                        style: { padding: '8px 10px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.52)', color: loadMeta.color, fontSize: '11px', fontWeight: 900, cursor: currentAlreadyLogged ? 'not-allowed' : 'pointer', opacity: currentAlreadyLogged ? 0.68 : 1 }
+                      }, currentAlreadyLogged ? t('stem.atctower.setup_already_logged', 'Setup already logged') : t('stem.atctower.log_current_setup', 'Log current setup')),
+                      opsLog.length > 0 && h('button', {
+                        type: 'button',
+                        'aria-label': t('stem.atctower.clear_evidence_log_a11y', 'Clear ATC evidence log and explanation'),
+                        onClick: function() { setIQ({ log: [], explanation: '', hypothesis: '', understood: false }); },
+                        style: { padding: '8px 10px', borderRadius: '8px', border: '1px solid rgba(148, 163, 184, 0.42)', background: 'rgba(15, 23, 42, 0.72)', color: '#cbd5e1', fontSize: '11px', fontWeight: 800, cursor: 'pointer' }
+                      }, t('stem.atctower.clear_evidence', 'Clear evidence'))
+                    )
+                  ),
+                  opsLog.length > 0 && h('div', { role: 'list', 'aria-label': t('stem.atctower.logged_load_evidence', 'Logged ATC load evidence'), style: { marginTop: '9px', padding: '7px', borderRadius: '7px', background: 'rgba(2, 6, 23, 0.58)', color: '#cbd5e1', fontSize: '10px', fontFamily: 'monospace', lineHeight: 1.5 } },
+                    opsLog.slice(-4).map(function(entry, index) {
+                      var entryText = entry.t + '  ' + entry.state + '  wind ' + entry.wind + 'kt · interval ' + entry.spawn + 's · separation ' + entry.sep + 'nm · descent ' + Number(entry.descent).toFixed(1) + 'x · window ' + entry.timeout + 's';
+                      return h('div', { key: opsSetupSignature(entry) + '-' + index, role: 'listitem', 'aria-label': entryText }, entryText);
+                    })
+                  ),
+                  h('p', { role: 'status', 'aria-live': 'polite', 'data-atctower-fair-test-check': fairTestState, style: { margin: '8px 0 0', color: changedControls.length === 1 ? '#bbf7d0' : '#fde68a', fontSize: '10px', fontWeight: 750, lineHeight: 1.4 } }, fairTestText)
                 ),
-                h('button', { onClick: function() {
-                  var stamp = new Date().toISOString().slice(11, 19);
-                  setIQ({ log: iq.log.concat([{ t: stamp, wind: iq.wind, spawn: iq.spawn, sep: iq.sep, descent: iq.descent, timeout: iq.timeout, state: loadMeta.label }]) });
-                }, style: { padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.52)', color: loadMeta.color, fontSize: '12px', fontWeight: 900, cursor: 'pointer' } }, t('stem.atctower.log_setup', 'Log setup'))
-              ),
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', color: '#e2e8f0', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } },
-                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                h('span', null, t('stem.atctower.i_can_explain_in_my_own_words_why_this', 'I can explain in my own words why this slider combo gives this load.'))
-              ),
-              iq.log.length > 0 && h('div', { style: { marginTop: '12px', padding: '8px', borderRadius: '8px', background: 'rgba(2, 6, 23, 0.52)', border: '1px solid rgba(148, 163, 184, 0.22)', color: '#cbd5e1', fontSize: '11px', fontFamily: 'monospace', lineHeight: 1.5 } },
-                iq.log.slice(-4).map(function(e, i) {
-                  return h('div', { key: i }, e.t + '  ' + e.state + '  w' + e.wind + ' sp' + e.spawn + ' sep' + e.sep + ' d' + e.descent.toFixed(1) + ' t' + e.timeout);
-                })
+                h('div', { style: { marginTop: '10px' } },
+                  h('button', {
+                    type: 'button',
+                    'aria-expanded': iq.stuckRevealed ? 'true' : 'false',
+                    'aria-controls': 'atctower-ops-investigation-prompts',
+                    onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); },
+                    style: { padding: '7px 10px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.5)', color: loadMeta.color, fontSize: '11px', fontWeight: 850, cursor: 'pointer' }
+                  }, iq.stuckRevealed
+                    ? t('stem.atctower.hide_investigation_prompts', 'Hide investigation prompts')
+                    : t('stem.atctower.show_investigation_prompts', "I'm stuck — show investigation prompts")
+                  ),
+                  iq.stuckRevealed && h('div', {
+                    id: 'atctower-ops-investigation-prompts',
+                    role: 'note',
+                    'data-atctower-investigation-prompts': 'scaffold-only',
+                    style: { marginTop: '7px', padding: '9px 10px', borderRadius: '8px', background: 'rgba(2, 6, 23, 0.5)', border: '1px dashed ' + loadMeta.border, color: '#dbeafe', fontSize: '10px', lineHeight: 1.45 }
+                  },
+                    h('div', { style: { color: loadMeta.color, fontWeight: 900, marginBottom: '4px' } }, t('stem.atctower.investigation_prompts', 'Investigation prompts — no answer key')),
+                    h('ul', { style: { margin: 0, paddingLeft: '17px' } },
+                      h('li', null, t('stem.atctower.prompt_compare_logs', 'What stayed fixed between your last two logs, and what changed?')),
+                      h('li', null, t('stem.atctower.prompt_next_fair_test', 'Which one control could you change next for a clearer fair test?')),
+                      h('li', null, t('stem.atctower.prompt_same_band', 'Can two different setups fall in the same modeled load band? What evidence would show that?'))
+                    )
+                  )
+                ),
+                h('label', { style: { display: 'block', marginTop: '12px', color: '#f8fafc', fontSize: '12px', fontWeight: 850 } },
+                  h('span', null, t('stem.atctower.evidence_explanation_prompt', 'Evidence-based explanation from your logged setups')),
+                  h('textarea', {
+                    value: explanationText,
+                    disabled: !evidenceReady,
+                    'aria-disabled': evidenceReady ? 'false' : 'true',
+                    'aria-label': t('stem.atctower.evidence_explanation_input', 'Evidence-based ATC load explanation'),
+                    'aria-describedby': 'atctower-ops-explanation-help',
+                    onChange: function(e) { setIQ({ explanation: e.target.value, hypothesis: '' }); },
+                    rows: 3,
+                    placeholder: t('stem.atctower.evidence_explanation_example', 'What changed, what stayed fixed, and how did the live modeled load respond? Cite both logged setups.'),
+                    style: { width: '100%', marginTop: '6px', padding: '8px', borderRadius: '8px', border: '1px solid ' + loadMeta.border, background: 'rgba(2, 6, 23, 0.66)', color: '#f8fafc', fontSize: '12px', resize: 'vertical', opacity: evidenceReady ? 1 : 0.66 }
+                  })
+                ),
+                h('p', { id: 'atctower-ops-explanation-help', style: { margin: '5px 0 0', color: '#cbd5e1', fontSize: '10px', lineHeight: 1.4 } },
+                  evidenceReady
+                    ? t('stem.atctower.explanation_ready_hint', 'Use the logs to name the control you changed and the direction of the modeled response.')
+                    : t('stem.atctower.explanation_locked_hint', 'Log two distinct setups before writing the explanation.')
+                ),
+                h('p', {
+                  role: 'status',
+                  'aria-live': 'polite',
+                  'data-atctower-inquiry-progress': explanationComplete ? 'complete' : evidenceReady ? 'explain' : 'collect-evidence',
+                  style: { margin: '9px 0 0', color: explanationComplete ? '#bbf7d0' : '#dbeafe', fontSize: '11px', fontWeight: 800, lineHeight: 1.4 }
+                }, explanationComplete
+                  ? t('stem.atctower.inquiry_complete', 'Evidence explanation recorded. Investigation complete; no answer is scored for agreement.')
+                  : evidenceReady
+                    ? t('stem.atctower.inquiry_explain_next', 'Evidence collected. Explain the comparison to complete the investigation.')
+                    : t('stem.atctower.inquiry_collect_next', 'Collect two distinct setups. Completion depends on logging and explaining, not matching a hidden answer.')
+                )
               )
-            )
-          ),
+            );
+          })(),
           atcMenuPanel === 'lessons' && h('div', { style: { padding: '0 24px 18px' } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' } },
               Object.keys(ATC_LESSONS).map(function(key) {
@@ -1937,15 +2100,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             ];
             var sliders = [
               { k: 'wind', label: t('stem.atctower.wind_speed', 'Wind speed'), min: 0, max: 30, step: 1, unit: 'kt' },
-              { k: 'spawn', label: t('stem.atctower.spawn_rate', 'Spawn rate'), min: 1, max: 10, step: 1, unit: 's' },
+              { k: 'spawn', label: t('stem.atctower.arrival_interval', 'Aircraft arrival interval'), min: 1, max: 10, step: 1, unit: 's' },
               { k: 'sep', label: t('stem.atctower.min_separation', 'Min separation'), min: 5, max: 20, step: 1, unit: 'nm' },
               { k: 'descent', label: t('stem.atctower.descent_multiplier', 'Descent multiplier'), min: 0.5, max: 2.0, step: 0.1, unit: 'x' },
-              { k: 'timeout', label: t('stem.atctower.decision_timeout', 'Decision timeout'), min: 10, max: 60, step: 5, unit: 's' }
+              { k: 'timeout', label: t('stem.atctower.decision_window', 'Decision window'), min: 10, max: 60, step: 5, unit: 's' }
             ];
             return h('div', { style: { padding: '14px', margin: '0 24px 12px', borderRadius: '12px', background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
               h('h4', { style: { margin: '0 0 4px', fontSize: '13px', fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: '1px' } }, t('stem.atctower.ops_control_inquiry_widget', '🎚️ Ops Control — Inquiry Widget')),
-              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, t('stem.atctower.move_five_operational_sliders_predict_', 'Move the five operational controls and observe how the modeled load changes before launching a session. The result updates live; record a hypothesis or pattern you notice.')),
-              h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '16px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Predicted load: ' + sm.label),
+              h('p', { style: { margin: '0 0 10px', fontSize: '11px', opacity: 0.85, lineHeight: 1.4 } }, t('stem.atctower.live_model_observe_log_explain', 'This standalone load index updates live. Log at least two different setups, compare what changed, and explain a pattern from the visible evidence.')),
+              h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '16px', background: sm.color, color: '#000', fontSize: '10px', fontWeight: 800, marginBottom: '6px' } }, 'Live modeled load: ' + sm.label),
               h('p', { style: { margin: '0 0 10px', fontSize: '10px', opacity: 0.8 } }, sm.desc),
               h('div', { style: { display: 'flex', justifyContent: 'space-around', flexWrap: 'wrap', marginBottom: '10px' } },
                 rings.map(function(ring, i) {
@@ -1984,24 +2147,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                   return h('div', { key: i }, e.t + '  ' + e.state + ' · w' + e.wind + ' sp' + e.spawn + ' s' + e.sep + ' d' + e.descent.toFixed(1) + ' t' + e.timeout);
                 })
               ),
-              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, t('stem.atctower.your_hypothesis_what_combo_do_you_expe', 'Your hypothesis (what combo do you expect to break ops first?)')),
-              h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 10, resize: 'vertical' }, 'aria-label': t('stem.atctower.hypothesis_input', 'ATC load hypothesis'), placeholder: t('stem.atctower.e_g_low_separation_high_spawn_rate_com', 'e.g., low separation + high spawn rate compounds before wind matters...') }),
-              !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.atctower.i_m_stuck_show_open_questions', "🤔 I'm stuck — show open questions")),
+              h('label', { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.9, marginBottom: 4 } },
+                t('stem.atctower.evidence_explanation_prompt', 'Evidence-based explanation from your logged setups'),
+                h('textarea', {
+                  value: iq.explanation || iq.hypothesis || '',
+                  disabled: !(iq.log && iq.log.length >= 2),
+                  'aria-disabled': iq.log && iq.log.length >= 2 ? 'false' : 'true',
+                  onChange: function(e) { setIQ({ explanation: e.target.value, hypothesis: '' }); },
+                  rows: 2,
+                  'aria-label': t('stem.atctower.evidence_explanation_input', 'Evidence-based ATC load explanation'),
+                  'aria-describedby': 'atctower-legacy-explanation-help',
+                  placeholder: t('stem.atctower.evidence_explanation_example', 'What changed, what stayed fixed, and how did the live modeled load respond? Cite both logged setups.'),
+                  style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginTop: 4, marginBottom: 6, resize: 'vertical' }
+                })
+              ),
+              h('p', { id: 'atctower-legacy-explanation-help', style: { margin: '0 0 8px', fontSize: 9, opacity: 0.75, lineHeight: 1.4 } },
+                iq.log && iq.log.length >= 2
+                  ? t('stem.atctower.explanation_ready_hint', 'Use the logs to name the control you changed and the direction of the modeled response.')
+                  : t('stem.atctower.explanation_locked_hint', 'Log two different setups before writing the explanation.')
+              ),
+              !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid #1a3a2a', background: '#0a1a0a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, t('stem.atctower.i_m_stuck_show_open_questions', "I'm stuck — show investigation prompts")),
               iq.stuckRevealed && h('div', { style: { padding: 8, borderRadius: 6, background: '#0a1a0a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 10, lineHeight: 1.5 } },
-                h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.atctower.open_questions_no_answer_key', 'Open questions (no answer key)')),
+                h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, t('stem.atctower.investigation_prompts', 'Investigation prompts')),
                 h('ul', { style: { margin: 0, paddingLeft: 16 } },
-                  h('li', null, t('stem.atctower.which_two_sliders_are_most_coupled_do_', 'Which two sliders are most coupled — do you predict additive or multiplicative load?')),
-                  h('li', null, t('stem.atctower.where_on_each_axis_does_the_trainable_', 'Where on each axis does the "trainable" zone end and "stressful" begin?')),
-                  h('li', null, t('stem.atctower.if_wind_goes_to_30kt_what_minimum_sepa', 'If wind goes to 30kt, what minimum separation keeps the load constant?')),
-                  h('li', null, t('stem.atctower.could_a_faster_decision_timeout_compen', 'Could a faster decision timeout compensate for tighter separation, or does it make things worse?'))
+                  h('li', null, t('stem.atctower.prompt_hold_four', 'Which four controls can you hold fixed for a fair comparison?')),
+                  h('li', null, t('stem.atctower.prompt_same_band', 'Can two different setups fall in the same modeled load band?')),
+                  h('li', null, t('stem.atctower.prompt_direction', 'When one control changes, which direction does the load band move?'))
                 )
               ),
-              h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, fontWeight: 700, cursor: 'pointer', marginBottom: 6 } },
-                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
-                h('span', null, t('stem.atctower.i_can_explain_in_my_own_words_why_this', 'I can explain — in my own words — why this slider combo gives this load.'))
-              ),
-              iq.understood && h('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': t('stem.atctower.explanation_input', 'ATC load explanation'), placeholder: t('stem.atctower.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a1a0a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
-              h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, t('stem.atctower.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget — no score, no reveal, no answer dump. Build your own theory.'))
+              h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.72 } }, t('stem.atctower.live_model_inquiry_note', 'Live-model inquiry: the result stays visible, and completion comes from logging evidence and explaining it — not from matching an answer.'))
             );
           })(),
           // Controls legend

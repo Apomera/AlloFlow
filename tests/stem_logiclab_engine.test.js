@@ -194,6 +194,11 @@ describe('render and deployment', () => {
     expect(html).toContain('Logic Lab');
   });
 
+  it('gives both inquiry textareas programmatic names', () => {
+    expect(src).toContain("'aria-label': t('stem.logiclab.hypothesis_when_does_p_p_q_p_p_p_q'");
+    expect(src).toContain("'aria-label': t('stem.logiclab.explain_probability_logic'");
+  });
+
   it('public mirror is byte-identical to the root copy', () => {
     expect(fs.readFileSync(publicPath, 'utf8')).toBe(src);
   });

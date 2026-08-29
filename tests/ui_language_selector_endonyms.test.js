@@ -68,6 +68,16 @@ describe('manifest carries an endonym for every language', () => {
 });
 
 describe('the picker renders endonyms', () => {
+  it('keeps every initially focusable language control named before translations settle', () => {
+    expect(source).toContain('const languageCopy = (key, fallback) => {');
+    for (const fallback of [
+      "languageCopy('language_selector.select_label', 'Select UI Language')",
+      "languageCopy('language_selector.search_placeholder', 'Enter Language...')",
+      "languageCopy('language_selector.set_custom_label', 'Set Custom Language')",
+      "languageCopy('language_selector.upload_tooltip', 'Import Language Pack')",
+    ]) expect(source).toContain(fallback);
+  });
+
   it('the source labels options with the endonym, not a languages_list lookup', () => {
     expect(source, 'still using the old languages_list lookup')
       .not.toContain('languages_list.${lang}');

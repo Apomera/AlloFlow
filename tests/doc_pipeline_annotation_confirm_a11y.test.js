@@ -69,7 +69,7 @@ describe('exported learner annotation clear confirmation', () => {
     dom = new JSDOM(html, {
       runScripts: 'dangerously',
       pretendToBeVisual: true,
-      url: 'https://example.test/annotation-export.html',
+      url: 'https://example.test/annotation-export.html?nickname=TestLearner',
       virtualConsole,
     });
     await waitForRuntime(dom.window);

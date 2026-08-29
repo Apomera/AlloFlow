@@ -13,10 +13,10 @@ describe('Calculus Lab inquiry and chart semantics', () => {
       .toBe(crypto.createHash('sha256').update(mirror).digest('hex'));
   });
 
-  it('names the error chart and both inquiry textareas', () => {
+  it('names the error chart and both evidence-explanation textareas', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("role: 'img', 'aria-label': 'Calculus error versus rectangle count chart'");
-    expect(source).toContain("'aria-label': 'Calculus hypothesis'");
-    expect(source).toContain("'aria-label': 'Calculus explanation'");
+    expect(source).toContain("'aria-label': 'Working explanation from live derivative evidence'");
+    expect(source).toContain("'aria-label': 'Evidence-based derivative behavior explanation'");
   });
 });

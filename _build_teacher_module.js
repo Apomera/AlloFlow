@@ -75,7 +75,7 @@ const compiled = fs.readFileSync(TMP_COMPILED, 'utf-8')
 try { fs.unlinkSync(TMP); } catch (_) {}
 try { fs.unlinkSync(TMP_COMPILED); } catch (_) {}
 
-const identitySeam = `\nwindow.AlloModules.RosterIdentityInternals = {\n  ensureRosterIdentity: alloEnsureTeacherRosterIdentity,\n  normalizeLearnerReadingPreference: alloNormalizeTeacherLearnerPreference,\n  readingThemeIds: ALLO_TEACHER_READING_THEME_IDS.slice()\n};\n`;
+const identitySeam = `\nwindow.AlloModules.RosterIdentityInternals = {\n  ensureRosterIdentity: alloEnsureTeacherRosterIdentity,\n  normalizeLearnerReadingPreference: alloNormalizeTeacherLearnerPreference,\n  normalizeRosterImport: alloNormalizeTeacherRosterImport,\n  removeGroupReferences: alloRemoveTeacherGroupReferences,\n  buildCodenameWorksheetHtml: buildRosterCodenameWorksheetHtml,\n  readingThemeIds: ALLO_TEACHER_READING_THEME_IDS.slice()\n};\n`;
 const outputCode = header + compiled + tail.replace("window.AlloModules.TeacherModule = true;", identitySeam + "window.AlloModules.TeacherModule = true;");
 
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');

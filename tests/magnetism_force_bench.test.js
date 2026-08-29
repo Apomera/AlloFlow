@@ -79,13 +79,13 @@ describe('magnetism Force Bench distance detective', () => {
     expect(ready.baseline.targetForce).toBeCloseTo(0.1875, 8);
     expect(ready.observedWeakerFactor).toBeCloseTo(16, 8);
 
-    const confirmed = physics.forceBenchEvidenceState(2, 1.5, 120, true, baseline, 16, true);
-    const revised = physics.forceBenchEvidenceState(2, 1.5, 120, false, baseline, 4, true);
-    expect(confirmed).toMatchObject({ phase: 'confirmed', predictionCorrect: true, complete: true, completedCount: 3 });
-    expect(revised).toMatchObject({ phase: 'revised', predictionCorrect: false, direction: 'repulsion', complete: true });
-    expect(revised.force).toBeCloseTo(confirmed.force, 10);
-    expect(revised.predictions.find((option) => option.factor === 16).state).toBe('correct');
-    expect(revised.predictions.find((option) => option.factor === 4).state).toBe('revised');
+    const matched = physics.forceBenchEvidenceState(2, 1.5, 120, true, baseline, 16, true);
+    const differed = physics.forceBenchEvidenceState(2, 1.5, 120, false, baseline, 4, true);
+    expect(matched).toMatchObject({ phase: 'matched', predictionCorrect: true, estimateMatched: true, complete: true, completedCount: 3 });
+    expect(differed).toMatchObject({ phase: 'different', predictionCorrect: false, estimateMatched: false, direction: 'repulsion', complete: true });
+    expect(differed.force).toBeCloseTo(matched.force, 10);
+    expect(differed.predictions.find((option) => option.factor === 16).state).toBe('model');
+    expect(differed.predictions.find((option) => option.factor === 4).state).toBe('different');
   });
 
   it('carries controlled gap, strength, baseline, and doubled-gap evidence into the notebook', () => {
@@ -105,7 +105,7 @@ describe('magnetism Force Bench distance detective', () => {
     withForceHost(state, (_host, html) => {
       expect(html).toContain('controlled baseline 60 → doubled gap 120');
       expect(html).toContain('observed 16× weaker');
-      expect(html).toContain('prediction 16× was confirmed');
+      expect(html).toContain('ungraded estimate 16× matched the evidence');
     });
   });
 
@@ -117,18 +117,28 @@ describe('magnetism Force Bench distance detective', () => {
       expect(host.querySelectorAll('.mag-force-step[data-state="current"]')).toHaveLength(1);
       expect(host.querySelector('.mag-force-progress').value).toBe(1);
       expect(host.querySelectorAll('.mag-force-prediction')).toHaveLength(4);
-      expect(host.querySelectorAll('.mag-force-metric')).toHaveLength(4);
+      expect(host.querySelectorAll('.mag-force-metric')).toHaveLength(3);
+      expect(host.querySelector('[data-metric="comparison"]')).toBeNull();
       expect(host.querySelectorAll('.mag-force-reading')).toHaveLength(2);
       expect(host.querySelector('.mag-force-bridge').textContent).toContain('force ÷ ?');
       expect(host.querySelector('.mag-force-figure svg').getAttribute('aria-label')).toContain('Arrow length and thickness show force magnitude');
-      expect(host.querySelectorAll('.mag-force-legend span')).toHaveLength(3);
+      expect(host.querySelector('.mag-force-figure polyline')).toBeNull();
+      expect(host.querySelectorAll('.mag-force-legend span')).toHaveLength(2);
+      const lockedGap = [...host.querySelectorAll('input[type="range"]')]
+        .find((input) => input.getAttribute('aria-valuetext')?.startsWith('Gap between magnets'));
+      expect(lockedGap).toBeTruthy();
+      expect(lockedGap.disabled).toBe(true);
       expect(host.querySelector('.mag-force-controls').open).toBe(true);
-      expect(host.textContent).toContain('Choose a prediction');
+      expect(host.querySelector('[data-magnetism-estimation-inquiry="true"]')).toBeTruthy();
+      expect(host.textContent).toContain('Make an ungraded estimate');
       expect(host.textContent).toContain('60-unit baseline');
+      expect(host.textContent).not.toContain('fourth power');
+      expect(host.textContent).not.toContain('inverse-fourth-power');
+      expect(host.textContent).not.toContain('2⁴ = 16');
     });
   });
 
-  it('guides a live 60-to-120 run from baseline through a confirmed prediction', () => {
+  it('guides a live 60-to-120 run from an ungraded estimate to revealed evidence', () => {
     resetStemLab();
     const cfg = loadTool('stem_lab/stem_tool_magnetism.js', 'magnetism');
     const announcements = [];
@@ -148,21 +158,30 @@ describe('magnetism Force Bench distance detective', () => {
       expect(live.host.querySelector('.mag-force-progress').value).toBe(2);
 
       click(live.host.querySelector('.mag-force-next button'));
-      expect(live.host.querySelector('.mag-force-challenge').getAttribute('data-phase')).toBe('confirmed');
+      expect(live.host.querySelector('.mag-force-challenge').getAttribute('data-phase')).toBe('matched');
       expect(live.host.querySelector('.mag-force-progress').value).toBe(3);
-      expect(live.host.querySelector('.mag-force-verdict').getAttribute('data-result')).toBe('confirmed');
-      expect(live.host.querySelector('.mag-force-prediction[data-state="correct"]')).toBeTruthy();
+      expect(live.host.querySelector('.mag-force-verdict').getAttribute('data-result')).toBe('matched');
+      expect(live.host.querySelector('.mag-force-prediction[data-state="model"]')).toBeTruthy();
       expect(live.host.querySelector('.mag-force-bridge').textContent).toContain('force ÷16');
       expect(live.host.querySelector('.mag-force-reading[data-reading="test"] strong').textContent).toBe('0.0625 force');
       expect(live.host.querySelectorAll('.mag-force-metric b')[0].textContent).toBe('120');
+      expect(live.host.querySelector('.mag-force-figure polyline')).toBeTruthy();
+      expect(live.host.querySelectorAll('.mag-force-legend span')).toHaveLength(3);
+      expect(live.host.querySelector('[data-metric="comparison"] b').textContent).toContain('16.0× weaker');
+      const revealedGap = [...live.host.querySelectorAll('input[type="range"]')]
+        .find((input) => input.getAttribute('aria-valuetext')?.startsWith('Gap between magnets'));
+      expect(revealedGap).toBeTruthy();
+      expect(revealedGap.disabled).toBe(false);
+      expect(live.host.textContent).toContain('2⁴ = 16× weaker force');
+      expect(live.host.textContent).toContain('Completion counts the controlled comparison');
       expect(announcements.filter((message) => message.includes('Doubled-gap result captured'))).toHaveLength(1);
-      expect(announcements.at(-1)).toContain('Prediction confirmed');
+      expect(announcements.at(-1)).toContain('evidence matched your estimate');
     } finally {
       live.close();
     }
   });
 
-  it('makes a wrong prediction useful revision evidence and resets cleanly for another direction', () => {
+  it('treats a differing estimate as useful evidence and resets cleanly for another direction', () => {
     resetStemLab();
     const cfg = loadTool('stem_lab/stem_tool_magnetism.js', 'magnetism');
     const live = mountInteractive(cfg, forceSeed());
@@ -173,11 +192,12 @@ describe('magnetism Force Bench distance detective', () => {
       click(predicted4);
       click(live.host.querySelector('.mag-force-next button'));
 
-      expect(live.host.querySelector('.mag-force-challenge').getAttribute('data-phase')).toBe('revised');
-      expect(live.host.querySelector('.mag-force-verdict').getAttribute('data-result')).toBe('revised');
-      expect(live.host.querySelector('.mag-force-prediction[data-state="revised"]').textContent).toContain('4× weaker');
-      expect(live.host.querySelector('.mag-force-prediction[data-state="correct"]').textContent).toContain('16× weaker');
-      expect(live.host.textContent).toContain('Evidence revised the prediction');
+      expect(live.host.querySelector('.mag-force-challenge').getAttribute('data-phase')).toBe('different');
+      expect(live.host.querySelector('.mag-force-verdict').getAttribute('data-result')).toBe('different');
+      expect(live.host.querySelector('.mag-force-prediction[data-state="different"]').textContent).toContain('4× weaker');
+      expect(live.host.querySelector('.mag-force-prediction[data-state="model"]').textContent).toContain('16× weaker');
+      expect(live.host.textContent).toContain('Evidence differed from your estimate');
+      expect(live.host.textContent).toContain('Completion counts the controlled comparison');
 
       click(live.host.querySelector('.mag-force-next button'));
       expect(live.host.querySelector('.mag-force-challenge').getAttribute('data-phase')).toBe('setup');

@@ -14,6 +14,7 @@ describe('AutoRepair EV tabs accessibility', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("role: 'tablist', 'aria-label': __alloT('stem.autorepair.ev_sections'");
     expect(source).toContain("var EV_TAB_IDS = ['overview', 'safety', 'diffs'];");
+    expect(source).toContain("type: 'button'");
     expect(source).toContain("id: 'autorepair-ev-tab-' + id");
     expect(source).toContain("'aria-controls': 'autorepair-ev-panel-' + id");
     expect(source).toContain("'aria-selected': active ? 'true' : 'false'");
@@ -25,10 +26,15 @@ describe('AutoRepair EV tabs accessibility', () => {
     expect(source).toContain("key === 'End'");
   });
 
-  it('links the active EV section to its tabpanel', () => {
+  it('links every EV section to a stable reciprocal tabpanel', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("id: 'autorepair-ev-panel-' + evView");
-    expect(source).toContain("'aria-labelledby': 'autorepair-ev-tab-' + evView");
-    expect(source).toContain('tabIndex: 0');
+    expect(source).toContain("'data-ar-ev-panel': id");
+    expect(source).toContain("id: 'autorepair-ev-panel-' + id");
+    expect(source).toContain("'aria-labelledby': 'autorepair-ev-tab-' + id");
+    expect(source).toContain('hidden: active ? undefined : true');
+    expect(source).toContain('tabIndex: active ? 0 : -1');
+    expect(source).toContain("evPanel('overview'");
+    expect(source).toContain("evPanel('safety'");
+    expect(source).toContain("evPanel('diffs'");
   });
 });

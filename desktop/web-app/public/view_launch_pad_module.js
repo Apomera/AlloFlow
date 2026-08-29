@@ -45,21 +45,122 @@
   var setPendingRole = props.setPendingRole;
   var setIsGateOpen = props.setIsGateOpen;
   var setShowAIBackendModal = props.setShowAIBackendModal;
+  var _aiSettingsLoad = useState('idle');
+  var aiSettingsLoadStatus = _aiSettingsLoad[0];
+  var setAiSettingsLoadStatus = _aiSettingsLoad[1];
   var runLaunchTransition = function (work, event) {
-    // Keep the pre-rendered workspace concealed for this input frame. The
-    // host effect reveals it when the transition commits, allowing the button
-    // press to paint before the large workspace layout is exposed.
+    // Keep the pre-rendered workspace concealed for this input frame. The host
+    // effect reveals it when the transition commits.
     var button = event && event.currentTarget;
     if (button) {
       button.disabled = true;
-      button.setAttribute("aria-busy", "true");
-      button.style.opacity = "0.72";
+      button.setAttribute('aria-busy', 'true');
+      button.style.opacity = '0.72';
     }
     setTimeout(function () {
       if (typeof React.startTransition === 'function') React.startTransition(work);else work();
     }, 40);
   };
   var launchPadRef = React.useRef(null);
+  function ensureAIBackendModalModule() {
+    if (window.AlloModules && window.AlloModules.AIBackendModal) {
+      return Promise.resolve(window.AlloModules.AIBackendModal);
+    }
+    var pendingLoad = window.__alloLaunchPadAIBackendModalPromise;
+    if (pendingLoad && typeof pendingLoad.then === 'function') return pendingLoad;
+    var loadPromise = new Promise(function (resolve, reject) {
+      var script = null;
+      var settled = false;
+      var checkTimer = null;
+      var timeoutTimer = null;
+      function cleanUp() {
+        if (checkTimer !== null) window.clearInterval(checkTimer);
+        if (timeoutTimer !== null) window.clearTimeout(timeoutTimer);
+        if (script) {
+          script.removeEventListener('load', verifyRegistration);
+          script.removeEventListener('error', handleLoadError);
+        }
+      }
+      function finish(error) {
+        if (settled) return;
+        settled = true;
+        cleanUp();
+        if (error) {
+          if (script && script.getAttribute('data-alloflow-launchpad-ai-settings') === 'true') script.remove();
+          reject(error);
+          return;
+        }
+        resolve(window.AlloModules.AIBackendModal);
+      }
+      function verifyRegistration() {
+        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);else finish(new Error('The AI settings module loaded but did not register.'));
+      }
+      function handleLoadError() {
+        finish(new Error('The AI settings module could not be loaded.'));
+      }
+      var scripts = Array.prototype.slice.call(document.scripts || []);
+      script = scripts.find(function (candidate) {
+        try {
+          return new URL(candidate.src, document.baseURI).pathname.endsWith('/view_misc_modals_module.js');
+        } catch (_) {
+          return false;
+        }
+      }) || null;
+      if (!script) {
+        var moduleUrl = new URL('view_misc_modals_module.js', document.baseURI || window.location.href);
+        var buildHash = window.__alloBuildStamp && window.__alloBuildStamp.hash;
+        if (buildHash) moduleUrl.searchParams.set('v', String(buildHash));
+        script = document.createElement('script');
+        script.src = moduleUrl.href;
+        script.async = true;
+        script.setAttribute('data-alloflow-launchpad-ai-settings', 'true');
+      }
+      script.addEventListener('load', verifyRegistration, {
+        once: true
+      });
+      script.addEventListener('error', handleLoadError, {
+        once: true
+      });
+      checkTimer = window.setInterval(function () {
+        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);
+      }, 50);
+      timeoutTimer = window.setTimeout(function () {
+        if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);else finish(new Error('The AI settings module timed out.'));
+      }, 15000);
+      if (!script.isConnected) document.head.appendChild(script);
+      if (window.AlloModules && window.AlloModules.AIBackendModal) finish(null);
+    });
+    window.__alloLaunchPadAIBackendModalPromise = loadPromise;
+    var clearPendingLoad = function () {
+      if (window.__alloLaunchPadAIBackendModalPromise === loadPromise) {
+        try {
+          delete window.__alloLaunchPadAIBackendModalPromise;
+        } catch (_) {
+          window.__alloLaunchPadAIBackendModalPromise = null;
+        }
+      }
+    };
+    loadPromise.then(clearPendingLoad, clearPendingLoad);
+    return loadPromise;
+  }
+  function openAIBackendSettings(event) {
+    if (event) event.stopPropagation();
+    if (aiSettingsLoadStatus === 'loading') return;
+    setAiSettingsLoadStatus('loading');
+    ensureAIBackendModalModule().then(function () {
+      if (!launchPadRef.current || !launchPadRef.current.isConnected) return;
+      if (typeof setShowAIBackendModal !== 'function') throw new Error('The AI settings host is unavailable.');
+      setAiSettingsLoadStatus('idle');
+      setShowAIBackendModal(true);
+    }).catch(function (error) {
+      if (!launchPadRef.current || !launchPadRef.current.isConnected) return;
+      try {
+        console.error('[LaunchPad] AI Backend Settings failed to open:', error);
+      } catch (_) {}
+      setAiSettingsLoadStatus('error');
+      if (typeof setShowAIBackendModal === 'function') setShowAIBackendModal(false);
+    });
+  }
   // Resolve language before the voice setup hooks: model readiness is
   // profile-specific, so changing Spanish -> English must re-check the cache.
   var _langCtx = useContext(window.AlloLanguageContext) || {};
@@ -806,7 +907,7 @@
             .lp-voice-option { display: grid; gap: 8px; border: 1px solid rgba(148,163,184,.16); border-radius: 13px; padding: 12px; background: rgba(255,255,255,.035); }
             .lp-voice-option-title { display: flex; align-items: center; gap: 7px; color: #f8fafc; font-size: 12px; }
             .lp-lang-trigger, .lp-ai-settings { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border: 1px solid rgba(148,163,184,.22); border-radius: 11px; background: rgba(15,23,42,.76); color: #dbe4f3; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; backdrop-filter: blur(16px); transition: background .18s ease, border-color .18s ease, color .18s ease; }
-            .lp-lang-trigger:hover:not([aria-disabled="true"]), .lp-ai-settings:hover { background: rgba(30,41,67,.96); border-color: rgba(165,180,252,.42); color: white; }
+            .lp-lang-trigger:hover:not([aria-disabled="true"]), .lp-ai-settings:hover:not([aria-disabled="true"]) { background: rgba(30,41,67,.96); border-color: rgba(165,180,252,.42); color: white; }
             .lp-lang-item:hover:not([disabled]) { background: rgba(99,102,241,0.2) !important; }
             .lp-download-button { min-height: 44px; border: 1px solid rgba(165,180,252,.38); border-radius: 11px; padding: 10px 13px; background: rgba(67,56,202,.64); color: white; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; transition: background .18s, transform .18s, border-color .18s; box-shadow: inset 0 1px 0 rgba(255,255,255,.1); }
             .lp-download-button:hover:not([disabled]) { background: #4f46e5; border-color: rgba(199,210,254,.72); transform: translateY(-1px); }
@@ -852,19 +953,29 @@
           `), /*#__PURE__*/React.createElement("div", {
     className: "lp-utility-bar",
     "aria-label": copy('launch_pad.utilities_label', 'Launch Pad settings')
-  }, !_isCanvasEnv && /*#__PURE__*/React.createElement("button", {
+  }, !_isCanvasEnv && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: e => {
-      e.stopPropagation();
-      setShowAIBackendModal(true);
-    },
+    onClick: openAIBackendSettings,
     className: "lp-ai-settings",
-    "aria-label": "AI Backend Settings",
-    title: "AI Backend Settings"
+    "aria-label": aiSettingsLoadStatus === 'error' ? 'Retry AI Backend Settings' : aiSettingsLoadStatus === 'loading' ? 'Loading AI Backend Settings' : 'AI Backend Settings',
+    "aria-describedby": "launch-pad-ai-settings-status",
+    "aria-busy": aiSettingsLoadStatus === 'loading',
+    "aria-disabled": aiSettingsLoadStatus === 'loading',
+    title: aiSettingsLoadStatus === 'error' ? 'Retry AI Backend Settings' : 'AI Backend Settings',
+    style: {
+      cursor: aiSettingsLoadStatus === 'loading' ? 'wait' : 'pointer',
+      opacity: aiSettingsLoadStatus === 'loading' ? 0.75 : 1
+    }
   }, /*#__PURE__*/React.createElement(Unplug, {
     size: 15,
     "aria-hidden": "true"
-  }), /*#__PURE__*/React.createElement("span", null, "AI Backend Settings")), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("span", null, aiSettingsLoadStatus === 'error' ? 'Retry AI Settings' : aiSettingsLoadStatus === 'loading' ? 'Loading AI Settings…' : 'AI Backend Settings')), /*#__PURE__*/React.createElement("span", {
+    id: "launch-pad-ai-settings-status",
+    className: "sr-only",
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true"
+  }, aiSettingsLoadStatus === 'loading' ? 'Loading AI Backend Settings.' : aiSettingsLoadStatus === 'error' ? 'AI Backend Settings could not open. Activate Retry AI Backend Settings to try again.' : '')), /*#__PURE__*/React.createElement("div", {
     className: "lp-lang-switcher"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -875,7 +986,6 @@
     },
     "aria-label": (t('launch_pad.change_language') || 'Change language') + '. ' + (t('launch_pad.current_language') || 'Current') + ': ' + currentUiLanguage,
     "aria-expanded": langMenuOpen,
-    "aria-haspopup": "true",
     "aria-controls": "launch-pad-language-list",
     "aria-disabled": isTranslating,
     style: {

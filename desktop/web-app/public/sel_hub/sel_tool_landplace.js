@@ -215,7 +215,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('landPlace'))) {
               'Right now, in this moment, you are reading this from a specific place. ',
               h('strong', { style: { color: _lanFg('#fbbf24') } }, 'What town, neighborhood, building, or room is it?'),
               ' If you do not know the specific Indigenous name for the land you are on, ',
-              h('a', { href: 'https://native-land.ca', target: '_blank', rel: 'noopener noreferrer', style: { color: _lanFg('#7dd3fc') } }, 'native-land.ca'),
+              h('a', { href: 'https://native-land.ca', target: '_blank', rel: 'noopener noreferrer', style: { color: _lanFg('#7dd3fc'), textDecoration: 'underline', textUnderlineOffset: 2 } }, 'native-land.ca'),
               ' is a good starting point. It is a tool built by Indigenous people. Treat its data as starting place, not final answer.'
             )
           ),

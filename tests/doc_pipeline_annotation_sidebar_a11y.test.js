@@ -79,7 +79,7 @@ describe('exported annotation sidebar accessibility', () => {
     dom = new JSDOM(html, {
       runScripts: 'dangerously',
       pretendToBeVisual: true,
-      url: 'https://example.test/annotation-sidebar-export.html',
+      url: 'https://example.test/annotation-sidebar-export.html?nickname=TestLearner',
       virtualConsole,
     });
     await waitForRuntime(dom.window);

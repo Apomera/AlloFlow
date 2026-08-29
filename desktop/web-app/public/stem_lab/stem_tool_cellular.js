@@ -1200,7 +1200,7 @@
         h('div', { style: { marginTop: '3px', fontSize: '14px', fontWeight: 900, color: C.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' } }, value));
     }
 
-    return h('div', { 'data-cellularlab-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
+    return h('div', { 'data-cellularlab-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, background: C.bg, borderRadius: 12, fontFamily: 'inherit' } },
       // header
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         (ctx.setStemLabTool ? h('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, 'aria-label': 'Back to STEAM Lab',

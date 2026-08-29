@@ -48,6 +48,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       view: 'wheel',
       ratings: {},        // domainId -> 1-10
       notes: {},          // domainId -> string
+      focusDomain: null,  // one intentionally chosen area
+      nextStep: '',       // one small move connected to that area
       lastUpdated: null
     };
   }
@@ -75,6 +77,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
       var _wlBg = function(h){ return _wlHC ? (_wl_BGH[h]||h) : (_wlL ? (_wl_BGL[h]||h) : h); };
       var _wlFg = function(h){ return _wlHC ? (_wl_FGH[h]||h) : (_wlL ? (_wl_FGL[h]||h) : h); };
       var _wlBd = function(h){ return _wlHC ? (_wl_BDH[h]||h) : (_wlL ? (_wl_BDL[h]||h) : h); };
+      var _wl_DOMAIN_LIGHT = {'#ef4444':'#b91c1c','#f59e0b':'#92400e','#22c55e':'#166534','#ec4899':'#be185d','#0ea5e9':'#0369a1','#6366f1':'#4338ca','#a855f7':'#7e22ce','#eab308':'#854d0e'};
+      var _wlDomain = function(h){ return _wlHC ? '#ffff00' : (_wlL ? (_wl_DOMAIN_LIGHT[h] || h) : h); };
       var React = ctx.React;
       var h = React.createElement;
       var labToolData = ctx.toolData || {};
@@ -88,7 +92,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         setLabToolData(function(prev) {
           var prior = (prev && prev.wheelOfLife) || defaultState();
           var next = Object.assign({}, prior, patch);
-          if (patch.ratings || patch.notes) next.lastUpdated = todayISO();
+          if (patch.ratings || patch.notes || patch.focusDomain !== undefined || patch.nextStep !== undefined) next.lastUpdated = todayISO();
           return Object.assign({}, prev, { wheelOfLife: next });
         });
       }
@@ -182,15 +186,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         // Accessibility description
         var ratedDomains = DOMAINS.filter(function(dom) { return ratingOf(dom.id) > 0; });
         var avg = ratedDomains.length > 0 ? (ratedDomains.reduce(function(sum, dom) { return sum + ratingOf(dom.id); }, 0) / ratedDomains.length).toFixed(1) : '0';
+        var sortedRated = ratedDomains.slice().sort(function(a, b) { return ratingOf(b.id) - ratingOf(a.id); });
+        var fullest = sortedRated[0] || null;
+        var thinnest = sortedRated.length ? sortedRated[sortedRated.length - 1] : null;
+        var minRating = thinnest ? ratingOf(thinnest.id) : 0;
+        var maxRating = fullest ? ratingOf(fullest.id) : 0;
+        var spread = maxRating - minRating;
+        var shapeLabel = ratedDomains.length < DOMAINS.length ? 'Still taking shape' : spread <= 2 ? 'Close together' : spread <= 5 ? 'Mixed terrain' : 'Wide contrast';
+        var chosenFocus = ratedDomains.find(function(dom) { return dom.id === d.focusDomain; }) || null;
+        var savedMove = (d.nextStep || '').trim();
         var svgDesc = 'Wheel of Life radar chart, ' + ratedDomains.length + ' of ' + DOMAINS.length +
           ' domains rated. Average: ' + avg + ' out of 10. ' +
-          DOMAINS.map(function(dom) { return dom.label + ': ' + (ratingOf(dom.id) || '0') + '/10'; }).join('; ') + '.';
+          DOMAINS.map(function(dom) { return dom.label + ': ' + (ratingOf(dom.id) || '0') + '/10'; }).join('; ') + '.' +
+          (chosenFocus ? ' Chosen focus: ' + chosenFocus.label + '.' : '');
+
+        function snapshotMetric(label, value, caption, color) {
+          return h('div', { style: { padding: 12, borderRadius: 10, minWidth: 0, background: _wlBg('#0f172a'), border: '1px solid ' + (_wlHC ? '#ffff00' : color + '55') } },
+            h('div', { style: { fontSize: 10.5, color: _wlFg('#94a3b8'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.65, marginBottom: 4 } }, label),
+            h('div', { style: { fontSize: 21, color: color, fontWeight: 950, lineHeight: 1.1, marginBottom: 4 } }, value),
+            h('div', { style: { fontSize: 11.5, color: _wlFg('#cbd5e1'), lineHeight: 1.45 } }, caption)
+          );
+        }
 
         return h('div', null,
           h('div', { style: { padding: 10, borderRadius: 12, background: _wlBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto' } },
             h('svg', { width: '100%', viewBox: '0 0 560 560', style: { maxWidth: 560 }, 'aria-labelledby': 'wol-svg-title wol-svg-desc', role: 'img' },
               h('title', { id: 'wol-svg-title' }, 'Wheel of Life radar chart'),
               h('desc', { id: 'wol-svg-desc' }, svgDesc),
+              h('defs', null,
+                h('linearGradient', { id: 'wol-wheel-gradient', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: 0.72 }),
+                  h('stop', { offset: '55%', stopColor: '#f59e0b', stopOpacity: 0.44 }),
+                  h('stop', { offset: '100%', stopColor: '#a855f7', stopOpacity: 0.34 })
+                )
+              ),
               // Gridlines
               [2, 4, 6, 8, 10].map(function(level) {
                 var poly = DOMAINS.map(function(_, i) {
@@ -205,13 +234,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 return h('line', { key: 'spoke_' + i, x1: cx, y1: cy, x2: p.x, y2: p.y, stroke: '#334155', strokeWidth: 1 });
               }),
               // Data polygon
-              h('polygon', { points: poly, fill: '#f59e0b66', stroke: '#f59e0b', strokeWidth: 3 }),
+              h('polygon', { points: poly, fill: _wlHC ? 'none' : 'url(#wol-wheel-gradient)', stroke: _wlHC ? '#ffff00' : '#f59e0b', strokeWidth: 3 }),
               // Data points
               DOMAINS.map(function(dom, i) {
                 var v = ratingOf(dom.id);
                 var p = pointFor(i, v);
+                var isFocus = chosenFocus && chosenFocus.id === dom.id;
+                var pointColor = _wlDomain(dom.color);
                 return h('g', { key: 'pt_' + dom.id },
-                  h('circle', { cx: p.x, cy: p.y, r: 5, fill: dom.color, stroke: '#fff', strokeWidth: 1.5 })
+                  isFocus ? h('circle', { cx: p.x, cy: p.y, r: 15, fill: 'none', stroke: pointColor, strokeWidth: 2, opacity: 0.72, 'data-wol-focus-ring': dom.id }) : null,
+                  h('circle', { cx: p.x, cy: p.y, r: isFocus ? 8 : 5, fill: pointColor, stroke: _wlHC ? '#000000' : '#fff', strokeWidth: isFocus ? 2.5 : 1.5 })
                 );
               }),
               // Labels
@@ -219,11 +251,40 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 var lp = labelPoint(i);
                 var v = ratingOf(dom.id);
                 return h('g', { key: 'lbl_' + dom.id },
-                  h('text', { x: lp.x, y: lp.y - 6, textAnchor: 'middle', fontSize: 16, fill: dom.color }, dom.icon),
+                  h('text', { x: lp.x, y: lp.y - 6, textAnchor: 'middle', fontSize: 16, fill: _wlDomain(dom.color) }, dom.icon),
                   h('text', { x: lp.x, y: lp.y + 10, textAnchor: 'middle', fontSize: 11, fill: _wlFg('#e2e8f0'), style: { fontWeight: 700 } }, dom.label.slice(0, 18)),
-                  h('text', { x: lp.x, y: lp.y + 24, textAnchor: 'middle', fontSize: 13, fill: dom.color, style: { fontWeight: 900 } }, v || '0')
+                  h('text', { x: lp.x, y: lp.y + 24, textAnchor: 'middle', fontSize: 13, fill: _wlDomain(dom.color), style: { fontWeight: 900 } }, v || '0')
                 );
               })
+            )
+          ),
+
+          h('section', { 'aria-label': 'Wheel shape at a glance', style: { padding: 14, borderRadius: 12, background: _wlHC ? '#000000' : 'linear-gradient(135deg, rgba(245,158,11,0.13), rgba(99,102,241,0.10))', border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(245,158,11,0.30)'), marginBottom: 12 } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+              h('div', null,
+                h('div', { style: { color: _wlFg('#fcd34d'), fontSize: 13.5, fontWeight: 900, marginBottom: 2 } }, 'Shape at a glance'),
+                h('div', { style: { color: _wlFg('#cbd5e1'), fontSize: 11.5, lineHeight: 1.5 } }, 'Notice the contrast. A round wheel is not the goal.')
+              ),
+              h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wlBg('#0f172a'), border: '1px solid #475569', color: _wlFg('#fde68a'), fontSize: 10.5, fontWeight: 900 } }, shapeLabel)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 8, marginBottom: 8 } },
+              snapshotMetric('Average', avg + ' / 10', 'Across rated areas', _wlFg('#fcd34d')),
+              snapshotMetric('Range', minRating + '–' + maxRating, 'Lowest to highest', _wlFg('#c7d2fe')),
+              snapshotMetric('Rated', ratedDomains.length + ' / ' + DOMAINS.length, ratedDomains.length === DOMAINS.length ? 'Snapshot complete' : 'You can stop anytime', _wlFg('#bbf7d0'))
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 } },
+              fullest ? h('div', { style: { padding: 11, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + _wlDomain(fullest.color), color: _wlFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.5 } },
+                h('span', { style: { color: _wlFg('#94a3b8'), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, 'Fullest right now'),
+                h('div', { style: { marginTop: 3, fontWeight: 850 } }, fullest.icon + ' ' + fullest.label + ' · ', h('strong', { style: { color: _wlDomain(fullest.color) } }, ratingOf(fullest.id)))
+              ) : null,
+              thinnest ? h('div', { style: { padding: 11, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + (chosenFocus ? _wlDomain(chosenFocus.color) : _wlDomain(thinnest.color)), color: _wlFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.5 } },
+                h('span', { style: { color: _wlFg('#94a3b8'), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase' } }, chosenFocus ? 'Chosen focus' : 'A place to explore'),
+                h('div', { style: { marginTop: 3, fontWeight: 850 } },
+                  (chosenFocus || thinnest).icon + ' ' + (chosenFocus || thinnest).label + ' · ',
+                  h('strong', { style: { color: _wlDomain((chosenFocus || thinnest).color) } }, ratingOf((chosenFocus || thinnest).id)),
+                  chosenFocus && savedMove ? h('div', { style: { marginTop: 5, color: _wlFg('#c7d2fe'), fontSize: 11.5, fontWeight: 650 } }, 'This week: ' + savedMove) : null
+                )
+              ) : null
             )
           ),
 
@@ -236,7 +297,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
                 DOMAINS.map(function(dom) {
                   var v = ratingOf(dom.id);
                   return h('li', { key: dom.id, style: { marginBottom: 2 } },
-                    h('strong', { style: { color: dom.color } }, dom.label),
+                    h('strong', { style: { color: _wlDomain(dom.color) } }, dom.label),
                     ': ' + (v || '0') + '/10'
                   );
                 })
@@ -282,19 +343,20 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             var v = ratingOf(dom.id);
             var note = (d.notes || {})[dom.id] || '';
             var noteId = 'wol-note-' + dom.id;
-            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + dom.color, marginBottom: 10 } },
+            var domainColor = _wlDomain(dom.color);
+            return h('div', { key: dom.id, style: { padding: 14, borderRadius: 10, background: _wlBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid ' + domainColor, marginBottom: 10 } },
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
                 h('span', { style: { fontSize: 26 } }, dom.icon),
                 h('div', { style: { flex: 1, minWidth: 140 } },
-                  h('div', { style: { fontSize: 14, fontWeight: 800, color: dom.color } }, dom.label)
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: domainColor } }, dom.label)
                 ),
-                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? dom.color : _wlFg('#475569') } }, v || '–')
+                h('div', { style: { fontSize: 22, fontWeight: 900, color: v > 0 ? domainColor : _wlFg('#475569') } }, v || '–')
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 10 }, role: 'radiogroup', 'aria-label': 'Rate ' + dom.label },
                 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(n) {
                   var active = v === n;
                   return h('button', { key: n, onClick: function() { setRating(dom.id, n); }, role: 'radio', 'aria-checked': active, 'aria-label': 'Rate ' + n,
-                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? dom.color : _wlFg('#475569')), background: active ? dom.color : _wlBg('#1e293b'), color: active ? '#0f172a' : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
+                    style: { padding: '6px 10px', borderRadius: 6, border: '1px solid ' + (active ? domainColor : _wlFg('#475569')), background: active ? domainColor : _wlBg('#1e293b'), color: active ? (_wlHC ? '#000000' : (_wlL ? '#ffffff' : '#0f172a')) : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: 700, minWidth: 32 } }, n);
                 })
               ),
               h('label', { htmlFor: noteId, style: { display: 'block', fontSize: 11, color: _wlFg('#94a3b8'), fontWeight: 700, marginBottom: 4 } }, 'Note (optional)'),
@@ -327,6 +389,15 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
         var top = sorted.slice(0, 3);
         var bottom = sorted.slice(-3).reverse();
         var avg = rated.reduce(function(sum, d2) { return sum + ratingOf(d2.id); }, 0) / rated.length;
+        var selectedFocus = rated.find(function(d2) { return d2.id === d.focusDomain; }) || null;
+        var focusChoices = bottom.slice();
+        if (selectedFocus && !focusChoices.some(function(d2) { return d2.id === selectedFocus.id; })) focusChoices.unshift(selectedFocus);
+        function chooseFocus(dom) {
+          setWOL({ focusDomain: dom.id, nextStep: '' });
+          if (announceToSR) announceToSR(dom.label + ' selected as this week\'s focus');
+        }
+        function setNextStep(value) { setWOL({ nextStep: value }); }
+        var nextStep = (d.nextStep || '').trim();
 
         return h('div', null,
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(245,158,11,0.08)', borderTop: '1px solid rgba(245,158,11,0.3)', borderRight: '1px solid rgba(245,158,11,0.3)', borderBottom: '1px solid rgba(245,158,11,0.3)', borderLeft: '3px solid #f59e0b', marginBottom: 14, fontSize: 13, color: _wlFg('#fde68a'), lineHeight: 1.65 } },
@@ -338,7 +409,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#bbf7d0'), marginBottom: 8 } }, '🟢 Where my wheel is fullest'),
             top.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
-                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: d2.color } }, ratingOf(d2.id)));
+                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlDomain(d2.color) } }, ratingOf(d2.id)));
             }),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'These are doing well. Notice them. They are part of how you are holding the rest.')
@@ -348,10 +419,39 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _wlFg('#fecaca'), marginBottom: 8 } }, '🔴 Where my wheel is thinnest'),
             bottom.map(function(d2) {
               return h('div', { key: d2.id, style: { fontSize: 13, color: _wlFg('#e2e8f0'), marginBottom: 4 } },
-                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: d2.color } }, ratingOf(d2.id)));
+                d2.icon + ' ' + d2.label + ' · ', h('strong', { style: { color: _wlDomain(d2.color) } }, ratingOf(d2.id)));
             }),
             h('div', { style: { fontSize: 12, color: _wlFg('#94a3b8'), lineHeight: 1.55, marginTop: 6, fontStyle: 'italic' } },
               'A low score is not a moral judgment. Sometimes a domain is intentionally thin right now (you are pouring into work for a season, or family is intense and there is no room for romance). The question worth sitting with: which of these would you actually want to move from a 3 to a 5 in the next month? Only one. Pick one.')
+          ),
+
+          h('section', { 'aria-label': 'One small move builder', style: { padding: 15, borderRadius: 12, background: _wlHC ? '#000000' : 'linear-gradient(135deg, rgba(99,102,241,0.14), rgba(245,158,11,0.08))', border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(99,102,241,0.34)'), marginBottom: 10 } },
+            h('div', { style: { marginBottom: 10 } },
+              h('div', { style: { fontSize: 14, color: _wlFg('#c7d2fe'), fontWeight: 900, marginBottom: 3 } }, '🎯 Choose one area—not every area'),
+              h('div', { style: { fontSize: 11.5, color: _wlFg('#cbd5e1'), lineHeight: 1.5 } }, 'Pick the area you actually want to support this week. A low number does not automatically need fixing.')
+            ),
+            h('div', { role: 'group', 'aria-label': 'Choose one focus domain', style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: selectedFocus ? 12 : 0 } },
+              focusChoices.map(function(dom) {
+                var selected = selectedFocus && selectedFocus.id === dom.id;
+                var color = _wlDomain(dom.color);
+                return h('button', { key: dom.id, onClick: function() { chooseFocus(dom); }, 'aria-pressed': selected,
+                  style: { padding: '8px 11px', borderRadius: 999, background: selected ? (_wlHC ? '#000000' : color + '22') : _wlBg('#1e293b'), border: '1px solid ' + (selected ? color : '#475569'), color: selected ? color : _wlFg('#cbd5e1'), cursor: 'pointer', fontSize: 12, fontWeight: selected ? 900 : 700 } },
+                  (selected ? '✓ ' : '') + dom.icon + ' ' + dom.label + ' · ' + ratingOf(dom.id));
+              })
+            ),
+            selectedFocus ? h('div', { style: { padding: 12, borderRadius: 10, background: _wlBg('#0f172a'), borderLeft: '3px solid ' + _wlDomain(selectedFocus.color) } },
+              h('label', { htmlFor: 'wol-next-step', style: { display: 'block', color: _wlDomain(selectedFocus.color), fontSize: 12.5, fontWeight: 900, marginBottom: 5 } }, selectedFocus.icon + ' One small move for ' + selectedFocus.label),
+              h('textarea', { id: 'wol-next-step', value: d.nextStep || '', onChange: function(e) { setNextStep(e.target.value); }, maxLength: 180,
+                placeholder: 'Example: Text one friend, take a 10-minute walk, or ask for one piece of help…',
+                style: { width: '100%', minHeight: 70, padding: 10, borderRadius: 8, border: '1px solid #475569', background: _wlBg('#1e293b'), color: _wlFg('#e2e8f0'), fontSize: 12.5, fontFamily: 'inherit', lineHeight: 1.55, resize: 'vertical' } }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, marginTop: 6, color: _wlFg('#94a3b8'), fontSize: 10.5 } },
+                h('span', null, 'Small enough to try this week'),
+                h('span', null, String((d.nextStep || '').length) + ' / 180')
+              ),
+              nextStep ? h('div', { 'aria-label': 'Saved small move preview', style: { marginTop: 10, padding: 10, borderRadius: 8, background: _wlHC ? '#000000' : 'rgba(99,102,241,0.15)', border: '1px solid ' + (_wlHC ? '#ffff00' : 'rgba(99,102,241,0.36)'), color: _wlFg('#c7d2fe'), fontSize: 12.5, lineHeight: 1.55 } },
+                h('strong', null, 'This week · '), nextStep)
+              : null
+            ) : h('div', { style: { color: _wlFg('#94a3b8'), fontSize: 11.5, fontStyle: 'italic' } }, 'Choose one area above to shape a half-step.')
           ),
 
           h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.10)', borderTop: '1px solid rgba(99,102,241,0.3)', borderRight: '1px solid rgba(99,102,241,0.3)', borderBottom: '1px solid rgba(99,102,241,0.3)', borderLeft: '3px solid #6366f1', fontSize: 12.5, color: _wlFg('#c7d2fe'), lineHeight: 1.6 } },
@@ -398,11 +498,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('wheelOfLife'))) 
             DOMAINS.map(function(dom) {
               var v = ratingOf(dom.id);
               var note = (d.notes || {})[dom.id] || '';
-              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + dom.color, background: _wlBg('#f8fafc') } },
+              return h('div', { key: dom.id, style: { marginBottom: 12, pageBreakInside: 'avoid', padding: 10, borderLeft: '3px solid ' + _wlDomain(dom.color), background: _wlBg('#f8fafc') } },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                   h('span', { style: { fontSize: 18 } }, dom.icon),
                   h('span', { style: { fontSize: 14, fontWeight: 800, color: _wlFg('#0f172a'), flex: 1 } }, dom.label),
-                  h('span', { style: { fontSize: 22, fontWeight: 900, color: dom.color } }, v || '–')
+                  h('span', { style: { fontSize: 22, fontWeight: 900, color: _wlDomain(dom.color) } }, v || '–')
                 ),
                 note ? h('p', { style: { margin: 0, color: _wlFg('#0f172a'), fontSize: 12, lineHeight: 1.6, fontStyle: 'italic' } }, note) : null
               );

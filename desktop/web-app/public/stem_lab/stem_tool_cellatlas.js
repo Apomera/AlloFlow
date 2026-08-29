@@ -2237,7 +2237,7 @@
                   return h('button', { key: gene.id, type: 'button', className: 'cal-pill', 'aria-pressed': selectedGene.id === gene.id ? 'true' : 'false', onClick: function () { patch({ selectedGene: gene.id }); announce(gene.id + ' marker selected.'); } }, gene.id);
                 })),
               h('div', { className: 'cal-map-wrap' },
-                h('svg', { className: 'cal-map', viewBox: '0 0 680 430', role: 'img', 'aria-labelledby': 'cal-svg-title cal-svg-desc' },
+                h('svg', { className: 'cal-map', viewBox: '0 0 680 430', role: 'group', 'aria-labelledby': 'cal-svg-title cal-svg-desc' },
                   h('title', { id: 'cal-svg-title' }, tissue.mapAria),
                   h('desc', { id: 'cal-svg-desc' }, 'Eight labeled cell-type clusters. Dot size and brightness indicate ' + metricLabel + ' for ' + selectedGene.id + '. Coordinates are illustrative, not a published UMAP.'),
                   h('defs', null,

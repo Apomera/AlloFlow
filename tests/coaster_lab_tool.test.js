@@ -994,7 +994,7 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     for (const marker of [
       'id="clab-guidedWelcome"', 'Guided first coaster', 'id="clab-guidedStep"', 'id="clab-guidedRecord"', 'id="clab-guidedCompare"', 'id="clab-guidedExport"', 'id="clab-guidedClear"', 'id="clab-guidedConditions"', 'id="clab-btnPacketExport"', 'id="clab-btnPacketImport"', 'function exportLabPacket(){', 'function importLabPacket(str){', "type: 'coaster-lab-packet'", 'LAB_PACKET_SCHEMA = 1', 'function packetTelemetrySnapshot(tele){', 'evidence: packetTelemetrySnapshot(lastTele)',
       "const GUIDED_STATE_KEY = 'coaster_lab_onboarding_v1';", "const GUIDED_RECORD_KEY = 'coaster_lab_guided_record_v1';", 'design = normalizeDesign(simpleDesign());',
-      'function syncGuidedWelcome(){', 'function guidedConditionSnapshot(){', 'function guidedConditionsLocked(){', 'function guidedRejectConditionChange(){', 'function guidedGoalSnapshot(tele){', 'function guidedComparison(tele){', 'function guidedNotebookText(){', 'function copyGuidedNotebook(){', 'function clearGuidedNotebook(){', 'function beginGuidedAction(){', 'function renderPredictionEvidence(tele){', 'Physics clue', 'function renderRevisionComparison(tele){', 'function renderGuidedHistoryTrend(history){', 'data-clab-history-trend', 'function guidedTraceSnapshot(tele){', 'trace: guidedTraceSnapshot(tele)', 'function renderGuidedTraceOverlay(history, fromIndex, toIndex){', 'data-clab-trace-overlay', 'function renderExperimentTimeline(tele){', 'data-clab-experiment-timeline', 'function renderExperimentComparisonBoard(){', 'data-clab-experiment-compare', 'function guidedComparisonConclusion(history, fromIndex, toIndex){', 'data-clab-comparison-conclusion', 'data-clab-copy-conclusion', 'function buildGuidedHistoryCsv(){', 'comparison_quality', 'prediction_coach', 'data-clab-history-csv', 'function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){', 'data-clab-teacher-report', 'data-clab-adaptive-plan', 'function guidedRubricSummary(){', 'function guidedExperimentQuality(history, fromIndex, toIndex){', 'function guidedDesignChangeStats(beforeEntry, afterEntry){', 'data-clab-evidence-quality', 'guidedAdaptiveRecommendation', 'guidedAdaptivePlan', 'guidedAdaptiveAction', 'guidedCurrentTelemetry', 'guidedEvidenceFocus', 'guidedEvidenceFocusPoint', 'inspectAdaptiveEvidence', 'guidedReflectionPrompt', 'guidedAdaptiveProgress', 'renderAdaptiveProgress', 'acceptAdaptiveChallenge', 'clab-adaptiveCoach', 'clab-adaptivePlan', 'clab-adaptiveAction', 'clab-adaptiveFocus', 'clab-btnAdaptiveInspect', 'Evidence focus', 'Action plan', 'Action plan - Change:', 'Action plan - Why:', 'Action plan - Test:', 'Done when:', 'clab-reflection-prompt', 'Adaptive recommendation:', 'Next move:', 'Suggested reflection prompt', 'clab-btnAdaptiveAccept', 'clab-adaptiveProgress', 'adaptivePlanVisible', 'Adaptive pathway', 'milestones:', 'adaptivePacket', 'function normalizeGuidedReview(raw){', 'const GUIDED_REVIEW_KEY =', 'data-clab-classroom-rubric', 'data-clab-review-status', 'data-clab-finalize-review', 'data-clab-student-reflection', 'data-clab-rubric-weight', 'data-clab-rubric-notes', 'review: guidedReview', 'bindClassroomRubric', 'bindGuidedTeacherReport', 'bindGuidedHistoryExport', 'bindExperimentComparison', 'guidedRun: () => {',
+      'function syncGuidedWelcome(){', 'function guidedConditionSnapshot(){', 'function guidedConditionsLocked(){', 'function guidedRejectConditionChange(){', 'function guidedGoalSnapshot(tele){', 'function guidedComparison(tele){', 'function guidedNotebookText(){', 'function copyGuidedNotebook(){', 'function clearGuidedNotebook(){', 'function beginGuidedAction(){', 'function renderPredictionEvidence(tele){', 'Physics clue', 'function renderRevisionComparison(tele){', 'function renderGuidedHistoryTrend(history){', 'data-clab-history-trend', 'function guidedTraceSnapshot(tele){', 'trace: guidedTraceSnapshot(tele)', 'function renderGuidedTraceOverlay(history, fromIndex, toIndex){', 'data-clab-trace-overlay', 'function renderExperimentTimeline(tele){', 'data-clab-experiment-timeline', 'function renderExperimentComparisonBoard(){', 'data-clab-experiment-compare', 'function guidedComparisonConclusion(history, fromIndex, toIndex){', 'data-clab-comparison-conclusion', 'data-clab-copy-conclusion', 'function buildGuidedHistoryCsv(){', 'comparison_quality', 'hypothesis_coach', 'data-clab-history-csv', 'function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){', 'data-clab-teacher-report', 'data-clab-adaptive-plan', 'function guidedRubricSummary(){', 'function guidedExperimentQuality(history, fromIndex, toIndex){', 'function guidedDesignChangeStats(beforeEntry, afterEntry){', 'data-clab-evidence-quality', 'guidedAdaptiveRecommendation', 'guidedAdaptivePlan', 'guidedAdaptiveAction', 'guidedCurrentTelemetry', 'guidedEvidenceFocus', 'guidedEvidenceFocusPoint', 'inspectAdaptiveEvidence', 'guidedReflectionPrompt', 'guidedAdaptiveProgress', 'renderAdaptiveProgress', 'acceptAdaptiveChallenge', 'clab-adaptiveCoach', 'clab-adaptivePlan', 'clab-adaptiveAction', 'clab-adaptiveFocus', 'clab-btnAdaptiveInspect', 'Evidence focus', 'Action plan', 'Action plan - Change:', 'Action plan - Why:', 'Action plan - Test:', 'Done when:', 'clab-reflection-prompt', 'Adaptive recommendation:', 'Next move:', 'Suggested reflection prompt', 'clab-btnAdaptiveAccept', 'clab-adaptiveProgress', 'adaptivePlanVisible', 'Adaptive pathway', 'milestones:', 'adaptivePacket', 'function normalizeGuidedReview(raw){', 'const GUIDED_REVIEW_KEY =', 'data-clab-classroom-rubric', 'data-clab-review-status', 'data-clab-finalize-review', 'data-clab-student-reflection', 'data-clab-rubric-weight', 'data-clab-rubric-notes', 'review: guidedReview', 'bindClassroomRubric', 'bindGuidedTeacherReport', 'bindGuidedHistoryExport', 'bindExperimentComparison', 'guidedRun: () => {',
       'telemetrySummary: () => {', 'guidedWelcomeEl.hidden = !active', 'window.__testHooks.coasterLab = rootEl._lab;',
     ]) expect(src).toContain(marker);
     for (const marker of ['id="clab-guidedPrediction"', 'id="clab-guidedSpeed"', 'id="clab-guidedForce"', 'id="clab-guidedRevise"', 'function guidedPredictionReady(){', 'function guidedActualSpeed(tele){', 'function updateGuidedPredictionFeedback(tele){', 'function guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorrect){', 'predictionCoach', 'function persistGuidedRecord(){', 'friction: tele.fricUsed', 'propulsion: design.propulsion.mode']) expect(src).toContain(marker);
@@ -1187,6 +1187,27 @@ describe('coaster lab - visual inquiry and evidence storytelling', () => {
     expect(guidedInquiryPhase('testing', [{}], '', true)).toBe('test');
     expect(guidedInquiryPhase('tested', [{}], 'Short note', false)).toBe('explain');
     expect(guidedInquiryPhase('tested', [{}], 'My measured evidence supports the claim, and I identified a single next revision.', false)).toBe('revise');
+  });
+
+  it.each(TOOL_PATHS)('%s awards guided inquiry-cycle credit independently of hypothesis agreement', (p) => {
+    const factory = loadMarkedBlock(
+      p,
+      '/* @clab-inquiry-rubric-start',
+      '/* @clab-inquiry-rubric-end',
+      'return guidedInquiryCycleEvidence;',
+    );
+    const guidedInquiryCycleEvidence = factory();
+    const matched = [{ speed: 'speedUp', force: 'valley', speedCorrect: true, forceCorrect: true }];
+    const differed = [{ speed: 'slowDown', force: 'hill', speedCorrect: false, forceCorrect: false }];
+
+    expect(guidedInquiryCycleEvidence(matched, 1, '')).toEqual({
+      compared: 1, revisions: 1, explained: false, score: 2,
+    });
+    expect(guidedInquiryCycleEvidence(differed, 1, '')).toEqual({
+      compared: 1, revisions: 1, explained: false, score: 2,
+    });
+    expect(guidedInquiryCycleEvidence(differed, 0, '')).toMatchObject({ compared: 1, score: 1 });
+    expect(guidedInquiryCycleEvidence([], 2, 'A detailed explanation cannot replace committing and testing a hypothesis.')).toMatchObject({ compared: 0, score: 0 });
   });
 
   it.each(TOOL_PATHS)('%s builds a goal-specific visual evidence story from measured results', (p) => {
@@ -1929,26 +1950,33 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(src).toContain('alt="Trackside photo of your train at ${s.where}');
   });
 
-  it.each(TOOL_PATHS)('%s: Explore predicts the restraint and the worst row, graded from the real run', (p) => {
+  it.each(TOOL_PATHS)('%s: Explore compares ungraded hypotheses with real-run evidence', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     const s = src.indexOf('function renderExplore(){');
     const e = src.indexOf('\nfunction checkPredictions(){', s);
     expect(s).toBeGreaterThan(-1);
     const lane = src.slice(s, e);
     // both questions are asked, in language a young rider can answer
-    expect(lane).toContain("card('q5', 'Prediction 5 · What holds you in'");
-    expect(lane).toContain("card('q6', 'Prediction 6 · Where you sit'");
+    expect(lane).toContain("card('q5', 'Hypothesis 5 · What holds you in'");
+    expect(lane).toContain("card('q6', 'Hypothesis 6 · Where you sit'");
     expect(lane).toContain("['harness', 'A harness over the shoulders']");
     expect(lane).toContain("['same', 'About the same in every row']");
-    // and both are required before the run, like every other prediction
+    // and both are required before the run, like every other hypothesis
     expect(lane).toContain("const need = ['q1', 'q2', 'q3', 'q5', 'q6']");
-    // graded against what the ride measured, never against the design
+    // compared against what the ride measured, never against the design
     expect(lane).toContain('const spec = restraintSpec(tele);');
     expect(lane).toContain("judge('q5', spec.key,");
     expect(lane).toContain("const truth = seats.gSpread < 0.08 ? 'same'");
     expect(lane).toContain("(seats.worstIdx === 0 ? 'front' : (seats.worstIdx === seats.n - 1 ? 'back' : 'mid'))");
     // "about the same" is a real answer on a symmetrical layout, not a cop-out
     expect(lane).toContain('your hills are close to symmetrical');
+    expect(lane).toContain('data-clab-explore-inquiry="commit-test-explain-revise"');
+    expect(lane).toContain('<b>Ungraded comparison:</b>');
+    expect(lane).toContain('This count is descriptive, not a score.');
+    expect(lane).toContain('Save explanation &amp; complete cycle');
+    expect(lane).toContain("missionEvent('explore', {});");
+    expect(lane).not.toContain('predictions correct');
+    expect(lane).not.toContain('every prediction correct');
   });
 
   it.each(TOOL_PATHS)('%s: the ride card is a real artifact, and the summary carries the safety verdict', (p) => {

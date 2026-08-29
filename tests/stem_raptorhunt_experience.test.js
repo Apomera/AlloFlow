@@ -1014,6 +1014,1221 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('@media(forced-colors:active){.rh-mystery-hero');
   });
 
+  it('turns all 17 threats into pathway-based systems and intervention plans', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const threatIds = [
+      'lead', 'rodenticide', 'window', 'vehicle', 'pesticide',
+      'fragmentation', 'conversion', 'wind', 'powerline', 'climate',
+      'persecution', 'collection', 'disease', 'plastic', 'mercury',
+      'light', 'invasive',
+    ];
+
+    threatIds.forEach((threatId, threatIdx) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'threats',
+          threatIdx,
+          threatCategory: 'all',
+          threatSearch: '',
+          threatCompareIdx: (threatIdx + 1) % threatIds.length,
+          threatPlans: {},
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-threat-lab="true"');
+      expect(html).toContain('data-threat-id="' + threatId + '"');
+      expect(html).toContain('data-threat-category="all"');
+      expect(html).toMatch(/data-threat-lens="[^"]+"/);
+      expect(html).toContain('data-threat-plan="0-of-3"');
+      expect(html).toContain('data-raptor-threat-pathway="true"');
+      expect(html).toMatch(/data-threat-scene="[^"]+"/);
+      expect(html).toContain('role="img"');
+      expect(html).toContain(' conceptual threat pathway</title>');
+      expect(html).toMatch(/<desc[^>]*>[^<]*do not estimate effectiveness[^<]*<\/desc>/);
+      const stage = html.match(/<div[^>]*class="rh-threat-stage"[^>]*>/);
+      expect(stage).not.toBeNull();
+      expect(stage[0]).toContain('tabindex="0"');
+      expect(stage[0]).toContain('role="region"');
+      expect(stage[0]).toContain('Scroll horizontally to inspect all four steps.');
+      expect((html.match(/data-threat-path-step=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-threat-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-threat-intervention-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-threat-category-control=/g) || [])).toHaveLength(6);
+      expect((html.match(/data-threat-card=/g) || [])).toHaveLength(17);
+      expect(html).toContain('data-threat-comparison="true"');
+    });
+
+    [
+      ['contaminants', 0, 5],
+      ['infrastructure', 2, 5],
+      ['habitat', 5, 3],
+      ['human', 10, 2],
+      ['biological', 12, 2],
+    ].forEach(([category, threatIdx, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'threats',
+          threatIdx,
+          threatCategory: category,
+          threatSearch: '',
+          threatPlans: {},
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-threat-category="' + category + '"');
+      expect((html.match(/data-threat-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    const planHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'threats',
+        threatIdx: 0,
+        threatCategory: 'all',
+        threatSearch: '',
+        threatCompareIdx: 4,
+        threatPlans: { lead: { prevent: true, interrupt: true } },
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(planHtml).toContain('data-threat-id="lead"');
+    expect(planHtml).toContain('data-threat-plan="2-of-3"');
+    const interventionControls = planHtml.match(/<[^>]+data-threat-intervention-control[^>]*>/g) || [];
+    expect(interventionControls).toHaveLength(3);
+    expect(interventionControls.filter((tag) => /(?:aria-pressed|data-selected)="true"/.test(tag))).toHaveLength(2);
+    expect((planHtml.match(/data-threat-barrier=/g) || [])).toHaveLength(2);
+
+    const emptyHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'threats',
+        threatCategory: 'all',
+        threatSearch: 'quasar unicorn impossible',
+        threatPlans: {},
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect((emptyHtml.match(/data-threat-card=/g) || [])).toHaveLength(0);
+    expect(emptyHtml).toMatch(/No threats (?:match|found)/i);
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'threats',
+        threatIdx: 999,
+        threatCategory: 'unknown',
+        threatSearch: '',
+        threatLens: 'unknown',
+        threatCompareIdx: -999,
+        threatPlans: null,
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-raptor-threat-lab="true"');
+    expect(staleStateHtml).toMatch(/data-threat-id="(?:lead|rodenticide|window|vehicle|pesticide|fragmentation|conversion|wind|powerline|climate|persecution|collection|disease|plastic|mercury|light|invasive)"/);
+    expect(staleStateHtml).toMatch(/data-threat-category="(?:all|contaminants|infrastructure|habitat|human|biological)"/);
+    expect(staleStateHtml).toMatch(/data-threat-lens="[^"]+"/);
+    expect((staleStateHtml.match(/data-threat-path-step=/g) || [])).toHaveLength(4);
+    expect((staleStateHtml.match(/data-threat-card=/g) || [])).toHaveLength(17);
+
+    const text = source();
+    expect(text).toContain('var THREAT_CATEGORIES = [');
+    expect(text).toContain('var THREAT_VISUALS = [');
+    expect(text).toContain('function renderThreatPathway(');
+    expect(text).toContain('return Object.assign({}, cur, { threatPlans: nextPlans });');
+    expect(text).not.toContain('return { threatPlans: nextPlans };');
+    expect(text).not.toContain('~600,000 raptor deaths/year');
+    expect(text).not.toContain('Invasive species (avian)');
+    expect(text).toContain('Selection does not estimate effectiveness');
+    expect(text).toContain('.rh-threat-lab{');
+    expect(text).toContain('.rh-threat-workbench{display:grid');
+    expect(text).toContain('.rh-threat-stage:focus-visible{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,1800}\.rh-threat-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1800}\.rh-threat-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,2600}\.rh-threat-/);
+  });
+
+  it('turns all 12 expert spotlights into an accessible science lineage lab', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const profiles = [
+      ['peterson', 'field-guide'],
+      ['carson', 'contaminant-food-web'],
+      ['edge', 'ridge-sanctuary'],
+      ['cade', 'hack-box-release'],
+      ['jones', 'recovery-field-program'],
+      ['payne', 'acoustic-localization'],
+      ['bodio', 'ethnographic-notebook'],
+      ['tucker', 'spiral-pursuit'],
+      ['burnham', 'release-operations'],
+      ['kochert', 'telemetry-study-area'],
+      ['ruelas', 'migration-count'],
+      ['sibley', 'comparative-plate'],
+    ];
+
+    profiles.forEach(([profileId, scene], expertIdx) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'experts',
+          expertIdx,
+          expertField: 'all',
+          expertLens: 'story',
+          expertCompareId: profiles[(expertIdx + 1) % profiles.length][0],
+          expertGuessId: null,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      const lab = html.match(
+        /<div[^>]*data-raptor-expert-lineage-lab="true"[^>]*>/,
+      );
+      expect(lab).not.toBeNull();
+      expect(lab[0]).toContain('data-expert-profile="' + profileId + '"');
+      expect(lab[0]).toContain('data-expert-field="all"');
+      expect(lab[0]).toContain('data-expert-lens="story"');
+      expect(
+        (html.match(/<button[^>]*data-expert-id=/g) || []),
+      ).toHaveLength(12);
+      expect(
+        (html.match(/data-expert-field-filter=/g) || []),
+      ).toHaveLength(7);
+      expect(
+        (html.match(/data-expert-lens-control=/g) || []),
+      ).toHaveLength(3);
+      expect(
+        (html.match(/data-expert-method-step=/g) || []),
+      ).toHaveLength(4);
+      expect(
+        (html.match(/<button[^>]*data-expert-guess=/g) || []),
+      ).toHaveLength(3);
+      expect(html).toContain('data-expert-comparison="true"');
+      expect(html).toContain('data-expert-challenge="' + profileId + '"');
+
+      const methodPlate = html.match(
+        /<svg[^>]*data-expert-method-plate[^>]*>/,
+      );
+      expect(methodPlate).not.toBeNull();
+      expect(methodPlate[0]).toContain('role="img"');
+      expect(methodPlate[0]).toContain(
+        'data-expert-scene="' + scene + '"',
+      );
+      expect(html).toMatch(/<title(?:\s[^>]*)?>[^<]+<\/title>/);
+      expect(html).toMatch(/<desc(?:\s[^>]*)?>[^<]+<\/desc>/);
+
+      const sourceLinks =
+        html.match(/<a[^>]*data-expert-source[^>]*>/g) || [];
+      expect(sourceLinks).toHaveLength(1);
+      expect(sourceLinks[0]).toMatch(/href="https:\/\//);
+      expect(sourceLinks[0]).toContain('target="_blank"');
+      expect(sourceLinks[0]).toContain('rel="noopener noreferrer"');
+    });
+
+    [
+      ['all', 0, 12],
+      ['field-guides', 0, 2],
+      ['advocacy', 1, 2],
+      ['restoration', 3, 3],
+      ['sensory-flight', 5, 2],
+      ['monitoring', 9, 2],
+      ['culture', 6, 1],
+    ].forEach(([field, expertIdx, expectedProfiles]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'experts',
+          expertIdx,
+          expertField: field,
+          expertLens: 'story',
+          expertCompareId: 'sibley',
+          expertGuessId: null,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-expert-field="' + field + '"');
+      expect(
+        (html.match(/<button[^>]*data-expert-id=/g) || []),
+      ).toHaveLength(12);
+      expect(
+        (html.match(/<button[^>]*data-expert-directory-card=/g) || []),
+      ).toHaveLength(expectedProfiles);
+      expect(
+        (html.match(/data-expert-field-filter=/g) || []),
+      ).toHaveLength(7);
+    });
+
+    ['story', 'method', 'legacy'].forEach((lens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'experts',
+          expertIdx: 0,
+          expertField: 'all',
+          expertLens: lens,
+          expertCompareId: 'carson',
+          expertGuessId: null,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-expert-lens="' + lens + '"');
+      expect(
+        (html.match(/data-expert-lens-control=/g) || []),
+      ).toHaveLength(3);
+    });
+
+    const challengeHtml = (expertGuessId) =>
+      renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'experts',
+          expertIdx: 0,
+          expertField: 'all',
+          expertLens: 'method',
+          expertCompareId: 'carson',
+          expertGuessId,
+          selectedSpecies: 'peregrine',
+        },
+      });
+    expect(challengeHtml('peterson')).toContain('data-result="correct"');
+    expect(challengeHtml('jones')).toContain('data-result="incorrect"');
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'experts',
+        expertIdx: 999,
+        expertField: 'unknown',
+        expertLens: 'unknown',
+        expertCompareId: 'sibley',
+        expertGuessId: 'missing-profile',
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain(
+      'data-raptor-expert-lineage-lab="true"',
+    );
+    expect(staleStateHtml).toContain('data-expert-profile="sibley"');
+    expect(staleStateHtml).toContain('data-expert-field="all"');
+    expect(staleStateHtml).toContain('data-expert-lens="story"');
+    expect(staleStateHtml).toContain('data-result="unanswered"');
+    expect(
+      (staleStateHtml.match(/data-expert-method-step=/g) || []),
+    ).toHaveLength(4);
+    expect(
+      (staleStateHtml.match(/<button[^>]*data-expert-guess=/g) || []),
+    ).toHaveLength(3);
+    expect(staleStateHtml).toContain('data-expert-comparison="true"');
+
+    const text = source();
+    expect(text).toMatch(/\bvar\s+EXPERT_FIELDS\s*=\s*\[/);
+    expect(text).toMatch(/\bvar\s+EXPERT_VISUALS\s*=\s*\[/);
+    expect(text).toContain('Vance A. Tucker');
+    expect(text).toContain('Ernesto Ruelas Inzunza');
+    expect(text).toContain('function renderMethodPlate(');
+    expect(text).toContain('.rh-expert-lineage-lab{');
+    expect(text).toContain('.rh-expert-workbench{display:grid');
+    expect(text).toContain('.rh-expert-stage:focus-visible{');
+    expect(text).toMatch(
+      /@media\(max-width:720px\)\{[\s\S]{0,2200}\.rh-expert-/,
+    );
+    expect(text).toMatch(
+      /@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,2200}\.rh-expert-/,
+    );
+    expect(text).toMatch(
+      /@media\(forced-colors:active\)\{[\s\S]{0,3200}\.rh-expert-/,
+    );
+  });
+
+  it('turns Research Stations into a verified role-by-region research network atlas', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const stationIds = [
+      'cornell-lab', 'peregrine-fund', 'hawk-mountain', 'cape-may',
+      'snake-river', 'hawkwatch-international', 'pacific-wildlife-research',
+      'cornell-raptor-program', 'minnesota-raptor-center', 'bnhs', 'fcq',
+      'mauritius-wildlife', 'rrrcn', 'birdlife-sa-raptors', 'rspb',
+      'birdlife-international', 'macaulay-library', 'sdzwa-beckman',
+      'whitley-fund', 'iowa-coop-unit',
+    ];
+
+    stationIds.forEach((researchStationId, index) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'pioneers',
+          researchStationId,
+          researchRegion: 'all',
+          researchRole: 'all',
+          researchLens: 'network',
+          researchCompareId: stationIds[(index + 1) % stationIds.length],
+          researchMission: 'migration',
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-research-atlas="true"');
+      expect(html).toContain('data-research-station="' + researchStationId + '"');
+      expect(html).toContain('data-research-region="all"');
+      expect(html).toContain('data-research-role="all"');
+      expect(html).toContain('data-research-lens="network"');
+      expect(html).toContain('data-research-mission="migration"');
+      expect((html.match(/<button[^>]+data-research-marker=/g) || [])).toHaveLength(20);
+      expect((html.match(/data-research-region-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-research-role-control=/g) || [])).toHaveLength(7);
+      expect((html.match(/data-research-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-research-mission-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-research-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-research-card=/g) || [])).toHaveLength(20);
+      expect((html.match(/data-research-compare-line=/g) || [])).toHaveLength(1);
+      expect(html).toContain('data-research-comparison="true"');
+      expect(html).toContain('data-research-source-link="true"');
+      expect(html).toContain('data-research-station-scene="' + researchStationId + '"');
+      expect(html).toContain('Teaching model only');
+      expect(html).toContain('not a claimed partnership');
+
+      const board = html.match(/<svg[^>]+data-research-network-board="true"[^>]*>/);
+      expect(board).not.toBeNull();
+      expect(board[0]).toContain('role="img"');
+      expect(html).toContain('Raptor research role-by-region network</title>');
+      expect(html).toContain('not a geographic map or an institutional partnership diagram.</desc>');
+
+      const sourceLink = html.match(/<a[^>]+data-research-source-link="true"[^>]*>/);
+      expect(sourceLink).not.toBeNull();
+      expect(sourceLink[0]).toMatch(/href="https:\/\//);
+      expect(sourceLink[0]).toContain('target="_blank"');
+      expect(sourceLink[0]).toContain('rel="noopener noreferrer"');
+    });
+
+    [
+      ['all', 20],
+      ['north-america', 12],
+      ['europe-central-asia', 5],
+      ['south-asia', 1],
+      ['africa-indian-ocean', 2],
+    ].forEach(([researchRegion, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'pioneers',
+          researchRegion,
+          researchRole: 'all',
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-research-region="' + researchRegion + '"');
+      expect((html.match(/data-research-card=/g) || [])).toHaveLength(expectedCards);
+      expect((html.match(/data-research-marker=/g) || [])).toHaveLength(20);
+    });
+
+    [
+      ['all', 20],
+      ['monitoring', 3],
+      ['recovery', 8],
+      ['data', 4],
+      ['health', 2],
+      ['landscape', 1],
+      ['network', 2],
+    ].forEach(([researchRole, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'pioneers',
+          researchRegion: 'all',
+          researchRole,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-research-role="' + researchRole + '"');
+      expect((html.match(/data-research-card=/g) || [])).toHaveLength(expectedCards);
+      expect((html.match(/data-research-marker=/g) || [])).toHaveLength(20);
+    });
+
+    ['network', 'methods', 'careers'].forEach((researchLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'pioneers',
+          researchLens,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-research-lens="' + researchLens + '"');
+      expect(html).toContain('data-lens="' + researchLens + '"');
+    });
+
+    ['migration', 'recovery', 'health', 'archive'].forEach((researchMission) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'pioneers',
+          researchMission,
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-research-mission="' + researchMission + '"');
+      expect(html).toContain('data-research-plan="' + researchMission + '"');
+      expect((html.match(/data-research-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    const emptyHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'pioneers',
+        researchRegion: 'south-asia',
+        researchRole: 'monitoring',
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect((emptyHtml.match(/data-research-card=/g) || [])).toHaveLength(0);
+    expect((emptyHtml.match(/data-research-marker=/g) || [])).toHaveLength(20);
+    expect(emptyHtml).toContain('No nodes match both filters.');
+
+    const sameCompareHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'pioneers',
+        researchStationId: 'peregrine-fund',
+        researchCompareId: 'peregrine-fund',
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(sameCompareHtml).toContain('WCBP ↔ CLO');
+    expect((sameCompareHtml.match(/data-compared="true"/g) || [])).toHaveLength(1);
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'pioneers',
+        researchStationId: 'unknown-station',
+        researchRegion: 'unknown-region',
+        researchRole: 'unknown-role',
+        researchLens: 'unknown-lens',
+        researchCompareId: 'unknown-compare',
+        researchMission: 'unknown-mission',
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-research-station="cornell-lab"');
+    expect(staleStateHtml).toContain('data-research-region="all"');
+    expect(staleStateHtml).toContain('data-research-role="all"');
+    expect(staleStateHtml).toContain('data-research-lens="network"');
+    expect(staleStateHtml).toContain('data-research-mission="migration"');
+    expect((staleStateHtml.match(/data-research-marker=/g) || [])).toHaveLength(20);
+
+    const text = source();
+    expect(text).toContain('var RESEARCH_STATIONS = {');
+    expect(text).toContain("reviewedAt: '2026-08-26'");
+    expect(text).toContain('var RESEARCH_REGIONS = [');
+    expect(text).toContain('var RESEARCH_ROLES = [');
+    expect(text).toContain('var RESEARCH_LENSES = [');
+    expect(text).toContain('var RESEARCH_MISSIONS = [');
+    expect(text).toContain("id:'pacific-wildlife-research'");
+    expect(text).toContain("id:'fcq'");
+    expect(text).toContain("id:'birdlife-sa-raptors'");
+    expect(text).toContain("id:'iowa-coop-unit'");
+    expect(text).toContain("foundedYear:2010");
+    expect(text).toContain("foundedYear:1974");
+    expect(text).toContain('.rh-research-atlas{');
+    expect(text).toContain('.rh-research-marker:focus-visible{');
+    expect(text).toContain('@media(max-width:1020px){.rh-research-');
+    expect(text).toContain('@media(max-width:720px){.rh-research-');
+    expect(text).toContain('@media(max-width:460px){.rh-research-');
+    expect(text).toContain('@media(prefers-reduced-motion:reduce){.rh-research-');
+    expect(text).toContain('@media(forced-colors:active){.rh-research-');
+  });
+
+  it('turns 26 conservation organizations into an accessible action network', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const ids = [
+      'cornell-lab-org', 'peregrine-fund-org', 'hawk-mountain-org', 'audubon-org',
+      'hawkwatch-org', 'abc-org', 'raptor-resource-org', 'birdlife-org', 'wcs-org',
+      'wwf-org', 'defenders-org', 'tnc-org', 'rspb-org', 'mauritius-wildlife-org',
+      'vulpro-org', 'vcf-org', 'ventana-org', 'sdzwa-org', 'fcq-org',
+      'birdlife-sa-org', 'whitley-org', 'american-eagle-org',
+      'national-eagle-center-org', 'international-owl-center-org', 'traffic-org',
+      'iucn-ssc-org',
+    ];
+
+    ids.forEach((id) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'organizations',
+          orgNetworkId: id,
+          orgAction: 'all',
+          orgReach: 'all',
+          orgLens: 'impact',
+          orgMission: 'collision',
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-org-network="true"');
+      expect(html).toContain(`data-org-node="${id}"`);
+      expect(html).toContain(`data-org-node-scene="${id}"`);
+      expect(html).toContain('data-org-action-board="true"');
+      expect(html).toContain('role="img"');
+      expect(html).toContain('Raptor conservation evidence-to-action ecosystem</title>');
+      expect((html.match(/data-org-action-hub=/g) || [])).toHaveLength(6);
+      expect((html.match(/data-org-action-control=/g) || [])).toHaveLength(7);
+      expect((html.match(/data-org-reach-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-org-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-org-mission-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-org-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-org-card=/g) || [])).toHaveLength(26);
+      expect(html).toContain('data-org-comparison=');
+      expect(html).toContain(`data-org-source-link="${id}"`);
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener noreferrer"');
+    });
+
+    [
+      ['science', 4], ['recovery', 8], ['habitat', 4], ['policy', 3],
+      ['education', 4], ['capacity', 3],
+    ].forEach(([orgAction, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'organizations', orgAction, orgReach: 'all', selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-org-action="${orgAction}"`);
+      expect((html.match(/data-org-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    [
+      ['place', 8], ['regional', 8], ['global', 10],
+    ].forEach(([orgReach, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'organizations', orgAction: 'all', orgReach, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-org-reach="${orgReach}"`);
+      expect((html.match(/data-org-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    ['impact', 'participation', 'safeguards'].forEach((orgLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'organizations', orgLens, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-org-lens="${orgLens}"`);
+      expect(html).toContain(`data-lens="${orgLens}"`);
+    });
+
+    ['collision', 'recovery', 'learning', 'trade'].forEach((orgMission) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'organizations', orgMission, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-org-mission="${orgMission}"`);
+      expect(html).toContain(`data-org-plan="${orgMission}"`);
+      expect((html.match(/data-org-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'organizations',
+        orgNetworkId: 'missing-org',
+        orgAction: 'missing-action',
+        orgReach: 'missing-reach',
+        orgLens: 'missing-lens',
+        orgMission: 'missing-mission',
+        orgCompareId: 'missing-compare',
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-org-node="cornell-lab-org"');
+    expect(staleStateHtml).toContain('data-org-action="all"');
+    expect(staleStateHtml).toContain('data-org-reach="all"');
+    expect(staleStateHtml).toContain('data-org-lens="impact"');
+    expect(staleStateHtml).toContain('data-org-mission="collision"');
+    expect((staleStateHtml.match(/data-org-card=/g) || [])).toHaveLength(26);
+
+    const text = source();
+    expect(text).toContain('var ORG_ACTIONS = [');
+    expect(text).toContain('var ORG_MISSIONS = [');
+    expect(text).toContain("id:'vulpro-org'");
+    expect(text).toContain("id:'vcf-org'");
+    expect(text).toContain("id:'fcq-org'");
+    expect(text).toContain("id:'birdlife-sa-org'");
+    expect(text).not.toContain('gypaetus.org');
+    expect(text).not.toContain('Carbon Roots / Vulture conservation');
+    expect(text).toContain('.rh-org-network{');
+    expect(text).toContain('.rh-org-hub:focus-visible{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,2600}\.rh-org-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1200}\.rh-org-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,2600}\.rh-org-/);
+  });
+
+  it('turns 15 museum and field sites into an accessible evidence-literacy lab', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const ids = [
+      'smithsonian-museum', 'amnh-museum', 'world-center-museum',
+      'carolina-raptor-museum', 'national-eagle-museum', 'hawk-mountain-museum',
+      'owl-center-museum', 'audubon-cbop-museum', 'cornell-visitor-museum',
+      'field-museum-birds', 'cal-academy-museum', 'denver-museum-birds',
+      'rom-birds-museum', 'nhm-birds-museum', 'la-brea-birds-museum',
+    ];
+
+    ids.forEach((id) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'museums',
+          museumVenueId: id,
+          museumMode: 'all',
+          museumRegion: 'all',
+          museumLens: 'learner',
+          museumStation: 'notice',
+          museumInquiry: 'adaptation',
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-museum-lab="true"');
+      expect(html).toContain(`data-museum-venue="${id}"`);
+      expect(html).toContain('data-museum-gallery-board="true"');
+      expect(html).toContain('role="img"');
+      expect(html).toContain('Five-station museum evidence gallery</title>');
+      expect((html.match(/data-museum-mode-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-museum-region-control=/g) || [])).toHaveLength(6);
+      expect((html.match(/data-museum-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-museum-station-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-museum-inquiry-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-museum-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-museum-card=/g) || [])).toHaveLength(15);
+      expect(html).toContain('data-museum-comparison=');
+      expect(html).toContain(`data-museum-source-link="${id}"`);
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener noreferrer"');
+    });
+
+    [
+      ['specimens', 7], ['ambassadors', 5], ['field', 2], ['fossils', 1],
+    ].forEach(([museumMode, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumMode, museumRegion: 'all', selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-museum-mode="${museumMode}"`);
+      expect((html.match(/data-museum-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    [
+      ['east', 4], ['southeast', 2], ['central', 4], ['west', 3], ['international', 2],
+    ].forEach(([museumRegion, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumMode: 'all', museumRegion, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-museum-region="${museumRegion}"`);
+      expect((html.match(/data-museum-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    ['learner', 'educator', 'access'].forEach((museumLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumLens, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-museum-lens="${museumLens}"`);
+      expect(html).toContain(`data-lens="${museumLens}"`);
+    });
+
+    ['notice', 'compare', 'context', 'question', 'steward'].forEach((museumStation) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumStation, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-museum-station="${museumStation}"`);
+      expect(html).toContain(`data-museum-gallery-scene="${museumStation}"`);
+    });
+
+    ['adaptation', 'conservation', 'evolution', 'ethics'].forEach((museumInquiry) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumInquiry, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-museum-inquiry="${museumInquiry}"`);
+      expect(html).toContain(`data-museum-inquiry-plan="${museumInquiry}"`);
+      expect((html.match(/data-museum-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    ['cal-academy-museum', 'la-brea-birds-museum'].forEach((museumVenueId) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'museums', museumVenueId, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain('data-alert="true"');
+      expect(html).toContain(`data-museum-status="${museumVenueId}"`);
+    });
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'museums', museumVenueId: 'missing-venue', museumMode: 'missing-mode',
+        museumRegion: 'missing-region', museumLens: 'missing-lens', museumStation: 'missing-station',
+        museumInquiry: 'missing-inquiry', museumCompareId: 'missing-compare', selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-museum-venue="smithsonian-museum"');
+    expect(staleStateHtml).toContain('data-museum-mode="all"');
+    expect(staleStateHtml).toContain('data-museum-region="all"');
+    expect(staleStateHtml).toContain('data-museum-lens="learner"');
+    expect(staleStateHtml).toContain('data-museum-station="notice"');
+    expect(staleStateHtml).toContain('data-museum-inquiry="adaptation"');
+    expect((staleStateHtml.match(/data-museum-card=/g) || [])).toHaveLength(15);
+
+    const text = source();
+    expect(text).toContain('var MUSEUM_MODES = [');
+    expect(text).toContain('var MUSEUM_STATIONS = [');
+    expect(text).toContain("id:'la-brea-birds-museum'");
+    expect(text).toContain('temporarily closed for renovation');
+    expect(text).not.toContain("cost: '$28 adult'");
+    expect(text).not.toContain("url: 'tarpits.org'");
+    expect(text).toContain('.rh-museum-lab{');
+    expect(text).toContain('.rh-museum-station:focus-visible{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,2800}\.rh-museum-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1200}\.rh-museum-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,3000}\.rh-museum-/);
+  });
+
+
+  it('turns 30 source-checked books into an accessible reading flight deck', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const ids = [
+      'sibley-guide', 'field-guide-hawks', 'hawks-flight', 'hawks-distance',
+      'birds-prey-east', 'birds-prey-west', 'birds-prey-dunne', 'raptors-world',
+      'birds-prey-xxi', 'raptor-techniques', 'urban-raptors', 'human-landscapes',
+      'silent-spring', 'return-peregrine', 'peregrine-falcon', 'condor-brink',
+      'beauty-beak', 'saving-peregrine', 'h-is-for-hawk', 'the-peregrine',
+      'the-goshawk', 'my-side-mountain', 'kestrel-knave', 'falcon-fever',
+      'art-falconry', 'falcon-macdonald', 'eagle-dreams', 'hawks-aloft',
+      'falconry-hawking', 'eagle-drums',
+    ];
+
+    ids.forEach((id) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'books', readingBookId: id, readingPurpose: 'all',
+          readingLevel: 'all', readingLens: 'field', readingStage: 'observe',
+          readingMission: 'first-lift', selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-reading-deck="true"');
+      expect(html).toContain(`data-reading-book="${id}"`);
+      expect(html).toContain(`data-reading-book-scene="${id}"`);
+      expect(html).toContain('data-reading-flight-board="true"');
+      expect(html).toContain('role="img"');
+      expect(html).toContain('Five-move raptor evidence reading pathway</title>');
+      expect((html.match(/data-reading-purpose-control=/g) || [])).toHaveLength(6);
+      expect((html.match(/data-reading-level-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-reading-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-reading-stage-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-reading-mission-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-reading-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-reading-card=/g) || [])).toHaveLength(30);
+      expect(html).toContain('data-reading-comparison=');
+      expect(html).toContain(`data-reading-source-link="${id}"`);
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener noreferrer"');
+    });
+
+    ['identify', 'understand', 'conserve', 'stories', 'culture'].forEach((readingPurpose) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'books', readingPurpose, readingLevel: 'all', selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-reading-purpose="${readingPurpose}"`);
+      expect((html.match(/data-reading-card=/g) || [])).toHaveLength(6);
+    });
+
+    [['beginner', 6], ['intermediate', 13], ['advanced', 11]].forEach(([readingLevel, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'books', readingPurpose: 'all', readingLevel, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-reading-level="${readingLevel}"`);
+      expect((html.match(/data-reading-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    ['field', 'classroom', 'family'].forEach((readingLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'books', readingLens, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-reading-lens="${readingLens}"`);
+      expect(html).toContain(`data-lens="${readingLens}"`);
+    });
+
+    ['observe', 'identify', 'explain', 'act', 'reflect'].forEach((readingStage) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'books', readingStage, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-reading-stage="${readingStage}"`);
+      expect(html).toContain(`data-reading-flight-scene="${readingStage}"`);
+    });
+
+    ['first-lift', 'id-sprint', 'recovery-arc', 'culture-time'].forEach((readingMission) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'books', readingMission, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-reading-mission="${readingMission}"`);
+      expect(html).toContain(`data-reading-plan="${readingMission}"`);
+      expect((html.match(/data-reading-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    const emptyHtml = renderTool('raptorHunt', {
+      raptorHunt: { activeSection: 'books', readingPurpose: 'stories', readingLevel: 'advanced', selectedSpecies: 'peregrine' },
+    });
+    expect(emptyHtml).toContain('No titles match both filters');
+    expect((emptyHtml.match(/data-reading-card=/g) || [])).toHaveLength(0);
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'books', readingBookId: 'missing-book', readingPurpose: 'missing-purpose',
+        readingLevel: 'missing-level', readingLens: 'missing-lens', readingStage: 'missing-stage',
+        readingMission: 'missing-mission', readingCompareId: 'missing-compare', selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-reading-book="sibley-guide"');
+    expect(staleStateHtml).toContain('data-reading-purpose="all"');
+    expect(staleStateHtml).toContain('data-reading-level="all"');
+    expect(staleStateHtml).toContain('data-reading-lens="field"');
+    expect(staleStateHtml).toContain('data-reading-stage="observe"');
+    expect(staleStateHtml).toContain('data-reading-mission="first-lift"');
+    expect((staleStateHtml.match(/data-reading-card=/g) || [])).toHaveLength(30);
+
+    const text = source();
+    expect(text).toContain('var READING_PURPOSES = [');
+    expect(text).toContain('var READING_STAGES = [');
+    expect(text).toContain('var READING_MISSIONS = [');
+    expect(text).toContain("reviewed: '2026-08-27'");
+    expect(text).toContain("id: 'eagle-drums'");
+    expect(text).toContain('Nasu\\u0121raq Rainey Hopson');
+    expect(text).toContain('Samuel Johnson Prize and Costa Book of the Year, not the Pulitzer');
+    expect(text).not.toContain('Behind Closed Doors');
+    expect(text).not.toContain('Vacaville: A Stop on Raptor Highway');
+    expect(text).not.toContain('Hawksbill Ventures');
+    expect(text).not.toContain('Practical Falconry to Make a Falconer');
+    expect(text).not.toContain('Pulitzer-winning meditation');
+    expect(text).not.toContain('Petersen Field Guide');
+    expect(text).toContain('.rh-reading-deck{');
+    expect(text).toContain('.rh-reading-stage:focus-visible{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,3000}\.rh-reading-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1300}\.rh-reading-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,3500}\.rh-reading-/);
+  });
+
+  it('turns 20 source-checked titles into an accessible raptor screening room', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const ids = [
+      'meet-raptors', 'raptor-force', 'owl-power', 'season-osprey',
+      'extreme-lives', 'white-falcon', 'jungle-eagle', 'magic-snowy-owl',
+      'american-eagle', 'bird-of-prey', 'condors-shadow', 'return-flight',
+      'eagle-huntress', 'overland', 'falconer', 'h-is-for-hawk-film',
+      'kes', 'all-that-breathes', 'pale-male', 'eagles-mull',
+    ];
+
+    ids.forEach((id) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'films', filmTitleId: id, filmPurpose: 'all',
+          filmAudience: 'all', filmLens: 'evidence', filmStage: 'watch',
+          filmMission: 'first-cut', selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-screening-room="true"');
+      expect(html).toContain(`data-film-title="${id}"`);
+      expect(html).toContain(`data-film-title-scene="${id}"`);
+      expect(html).toContain('data-film-storyboard="true"');
+      expect(html).toContain('role="img"');
+      expect(html).toContain('Five-move raptor media-literacy storyboard</title>');
+      expect((html.match(/data-film-purpose-control=/g) || [])).toHaveLength(6);
+      expect((html.match(/data-film-audience-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-film-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-film-stage-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-film-mission-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-film-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-film-card=/g) || [])).toHaveLength(20);
+      expect(html).toContain('data-film-comparison=');
+      expect(html).toContain(`data-film-source-link="${id}"`);
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener noreferrer"');
+    });
+
+    ['behavior', 'habitat', 'recovery', 'culture', 'stories'].forEach((filmPurpose) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'films', filmPurpose, filmAudience: 'all', selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-film-purpose="${filmPurpose}"`);
+      expect((html.match(/data-film-card=/g) || [])).toHaveLength(4);
+    });
+
+    [['family', 11], ['general', 5], ['advanced', 4]].forEach(([filmAudience, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'films', filmPurpose: 'all', filmAudience, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-film-audience="${filmAudience}"`);
+      expect((html.match(/data-film-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    ['evidence', 'story', 'ethics'].forEach((filmLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'films', filmLens, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-film-lens="${filmLens}"`);
+      expect(html).toContain(`data-lens="${filmLens}"`);
+    });
+
+    ['watch', 'notice', 'verify', 'discuss', 'act'].forEach((filmStage) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'films', filmStage, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-film-stage="${filmStage}"`);
+      expect(html).toContain(`data-film-story-scene="${filmStage}"`);
+    });
+
+    ['first-cut', 'recovery-room', 'people-place', 'field-camera'].forEach((filmMission) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'films', filmMission, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-film-mission="${filmMission}"`);
+      expect(html).toContain(`data-film-plan="${filmMission}"`);
+      expect((html.match(/data-film-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'films', filmTitleId: 'missing-film', filmPurpose: 'missing-purpose',
+        filmAudience: 'missing-audience', filmLens: 'missing-lens', filmStage: 'missing-stage',
+        filmMission: 'missing-mission', filmCompareId: 'missing-compare', selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-film-title="meet-raptors"');
+    expect(staleStateHtml).toContain('data-film-purpose="all"');
+    expect(staleStateHtml).toContain('data-film-audience="all"');
+    expect(staleStateHtml).toContain('data-film-lens="evidence"');
+    expect(staleStateHtml).toContain('data-film-stage="watch"');
+    expect(staleStateHtml).toContain('data-film-mission="first-cut"');
+    expect((staleStateHtml.match(/data-film-card=/g) || [])).toHaveLength(20);
+
+    const text = source();
+    const renderer = functionBody(text, 'renderFilms');
+    expect(text).toContain('var FILM_PURPOSES = [');
+    expect(text).toContain('var FILM_STAGES = [');
+    expect(text).toContain('var FILM_MISSIONS = [');
+    expect(text).toContain("id: 'all-that-breathes'");
+    expect(text).toContain('Streaming, broadcast, captions, audio description, ratings, and regional access change');
+    expect(text).not.toContain('Eye of the Wild: Falcon');
+    expect(text).not.toContain("David Attenborough's 70 Years Living the Wild Years");
+    expect(text).not.toContain('PBS Nature: Owls + Eagles');
+    expect(renderer).not.toContain('Platform:');
+    expect(renderer).not.toContain('must-watch');
+    expect(text).toContain('.rh-film-room{');
+    expect(text).toContain('.rh-film-stage-button:focus-visible{');
+    expect(text).toContain('.rh-film-story-stage{min-height:470px;aspect-ratio:auto}');
+    expect(text).toContain('.rh-film-stage-button:first-child{left:48px!important}');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,3000}\.rh-film-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1300}\.rh-film-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,3500}\.rh-film-/);
+  });
+
+
+  it('turns 14 raptor nest systems into an accessible architecture studio', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const ids = [
+      'bald-eagle', 'golden-eagle', 'red-tailed-hawk', 'coopers-hawk',
+      'osprey', 'great-horned-owl', 'barred-owl', 'eastern-screech-owl',
+      'american-kestrel', 'northern-goshawk', 'peregrine-falcon',
+      'mississippi-kite', 'northern-harrier', 'burrowing-owl',
+    ];
+
+    ids.forEach((id) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'cookbook', nestSpeciesId: id, nestSetting: 'all',
+          nestLens: 'structure', nestStage: 'site', nestMission: 'load-path',
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-nest-studio="true"');
+      expect(html).toContain(`data-nest-species="${id}"`);
+      expect(html).toContain(`data-nest-blueprint="${id}"`);
+      expect(html).toContain('role="img"');
+      expect(html).toContain('Five-stage raptor nest architecture cutaway</title>');
+      expect((html.match(/data-nest-setting-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-nest-lens-control=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-nest-stage-control=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-nest-mission-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-nest-plan-step=/g) || [])).toHaveLength(3);
+      expect((html.match(/data-nest-card=/g) || [])).toHaveLength(14);
+      expect(html).toContain('data-nest-comparison="true"');
+      expect(html).toContain(`data-nest-source-link="${id}"`);
+      expect(html).toContain('target="_blank"');
+      expect(html).toContain('rel="noopener noreferrer"');
+    });
+
+    [['platform', 8], ['cavity', 3], ['scrape', 1], ['ground', 2]].forEach(([nestSetting, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'cookbook', nestSetting, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-nest-setting="${nestSetting}"`);
+      expect((html.match(/data-nest-card=/g) || [])).toHaveLength(expectedCards);
+    });
+
+    ['structure', 'materials', 'stewardship'].forEach((nestLens) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'cookbook', nestLens, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-nest-lens="${nestLens}"`);
+      expect(html).toContain(`data-lens="${nestLens}"`);
+    });
+
+    ['site', 'support', 'form', 'line', 'maintain'].forEach((nestStage) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'cookbook', nestStage, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-nest-stage="${nestStage}"`);
+      expect(html).toContain(`data-nest-stage-note="${nestStage}"`);
+    });
+
+    ['load-path', 'layer-logic', 'site-tradeoffs', 'safer-neighbors'].forEach((nestMission) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: { activeSection: 'cookbook', nestMission, selectedSpecies: 'peregrine' },
+      });
+      expect(html).toContain(`data-nest-mission="${nestMission}"`);
+      expect(html).toContain(`data-nest-plan="${nestMission}"`);
+      expect((html.match(/data-nest-plan-step=/g) || [])).toHaveLength(3);
+    });
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'cookbook', nestSpeciesId: 'missing-nest', nestSetting: 'missing-setting',
+        nestLens: 'missing-lens', nestStage: 'missing-stage', nestMission: 'missing-mission',
+        nestCompareId: 'missing-compare', selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-nest-species="bald-eagle"');
+    expect(staleStateHtml).toContain('data-nest-setting="all"');
+    expect(staleStateHtml).toContain('data-nest-lens="structure"');
+    expect(staleStateHtml).toContain('data-nest-stage="site"');
+    expect(staleStateHtml).toContain('data-nest-mission="load-path"');
+    expect((staleStateHtml.match(/data-nest-card=/g) || [])).toHaveLength(14);
+
+    const text = source();
+    const renderer = functionBody(text, 'renderCookbook');
+    expect(text).toContain('var NEST_SETTINGS = [');
+    expect(text).toContain('var NEST_LENSES = [');
+    expect(text).toContain('var NEST_STAGES = [');
+    expect(text).toContain('var NEST_MISSIONS = [');
+    expect(text).toContain("reviewed: '2026-08-27'");
+    expect(text).toContain("id: 'burrowing-owl'");
+    expect(text).toContain('A typical scrape is only about 9 in wide and 2 in deep.');
+    expect(text).toContain('A first-season platform can be under 2.5 ft wide');
+    expect(text).not.toContain('2 tons (largest US bird nest)');
+    expect(renderer).toContain('Distance-first field ethic');
+    expect(renderer).toContain('difference, not a ranking');
+    expect(text).toContain('.rh-nest-studio{');
+    expect(text).toContain('.rh-nest-scene:focus-visible{');
+    expect(text).toContain('.rh-nest-stage:focus-visible{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,3000}\.rh-nest-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1300}\.rh-nest-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,3500}\.rh-nest-/);
+  });
+
+  it('turns all 15 World Tour destinations into a seasonal global expedition atlas', () => {
+    resetStemLab();
+    loadTool(CANONICAL, 'raptorHunt');
+    const kinds = [
+      'veracruz', 'eilat', 'bayan-olgii', 'hawk-mountain', 'tarifa',
+      'tikal', 'manu', 'cape-may', 'bharatpur', 'iceland',
+      'hokkaido', 'maasai-mara', 'new-zealand', 'skagit', 'falsterbo',
+    ];
+
+    kinds.forEach((kind, worldTourIdx) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'worldtour',
+          worldTourIdx,
+          worldTourFocus: 'all',
+          worldTourLens: 'routes',
+          worldTourMonth: 8,
+          worldTourCompareIdx: (worldTourIdx + 1) % kinds.length,
+          worldTourVisited: { veracruz: true, eilat: true },
+          worldTourDispatchIdx: 0,
+          worldTourDispatchAnswers: {},
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain('data-raptor-world-atlas="true"');
+      expect(html).toContain(`data-world-destination="${kind}"`);
+      expect(html).toContain('data-world-focus="all"');
+      expect(html).toContain('data-world-lens="routes"');
+      expect(html).toContain('data-world-month="9"');
+      expect(html).toContain('data-raptor-world-map="true"');
+      expect(html).toContain('data-world-map-route="true"');
+      expect(html).toContain(`data-world-destination-scene="${kind}"`);
+      expect((html.match(/data-world-destination-marker=/g) || [])).toHaveLength(15);
+      expect((html.match(/data-world-lens-control=/g) || [])).toHaveLength(4);
+      expect((html.match(/data-world-focus-control=/g) || [])).toHaveLength(7);
+      expect((html.match(/data-world-month-control=/g) || [])).toHaveLength(12);
+      expect((html.match(/data-world-destination-card=/g) || [])).toHaveLength(15);
+      expect(html).toContain('data-world-comparison="true"');
+      const passport = html.match(/<[^>]+data-world-passport="true"[^>]*>/);
+      expect(passport).not.toBeNull();
+      expect(passport[0]).toContain('role="progressbar"');
+      expect((html.match(/data-world-dispatch-case=/g) || [])).toHaveLength(5);
+      expect((html.match(/data-world-dispatch-answer=/g) || [])).toHaveLength(3);
+      expect(html).toContain('data-world-dispatch="open"');
+    });
+
+    [
+      ['migration', 0, 6],
+      ['culture', 2, 1],
+      ['rainforest', 5, 2],
+      ['conservation', 8, 2],
+      ['winter', 9, 3],
+      ['savanna', 11, 1],
+    ].forEach(([focus, worldTourIdx, expectedCards]) => {
+      const html = renderTool('raptorHunt', {
+        raptorHunt: {
+          activeSection: 'worldtour',
+          worldTourIdx,
+          worldTourFocus: focus,
+          worldTourLens: 'species',
+          worldTourMonth: 0,
+          worldTourDispatchIdx: 0,
+          worldTourDispatchAnswers: {},
+          selectedSpecies: 'peregrine',
+        },
+      });
+      expect(html).toContain(`data-world-focus="${focus}"`);
+      expect(html).toContain('data-world-month="1"');
+      expect((html.match(/data-world-destination-card=/g) || [])).toHaveLength(expectedCards);
+      expect((html.match(/data-world-destination-marker=/g) || [])).toHaveLength(15);
+    });
+
+    const correctHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'worldtour',
+        worldTourDispatchIdx: 0,
+        worldTourDispatchAnswers: { 0: 0 },
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(correctHtml).toContain('data-world-dispatch="correct"');
+    expect(correctHtml).toContain('data-result="correct"');
+
+    const incorrectHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'worldtour',
+        worldTourDispatchIdx: 0,
+        worldTourDispatchAnswers: { 0: 1 },
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(incorrectHtml).toContain('data-world-dispatch="incorrect"');
+    expect(incorrectHtml).toContain('data-result="incorrect"');
+
+    const staleStateHtml = renderTool('raptorHunt', {
+      raptorHunt: {
+        activeSection: 'worldtour',
+        worldTourIdx: 999,
+        worldTourFocus: 'unknown',
+        worldTourLens: 'unknown',
+        worldTourMonth: 99,
+        worldTourCompareIdx: -999,
+        worldTourDispatchIdx: 999,
+        worldTourDispatchAnswers: {},
+        selectedSpecies: 'peregrine',
+      },
+    });
+    expect(staleStateHtml).toContain('data-raptor-world-atlas="true"');
+    expect(staleStateHtml).toMatch(/data-world-destination="(?:veracruz|eilat|bayan-olgii|hawk-mountain|tarifa|tikal|manu|cape-may|bharatpur|iceland|hokkaido|maasai-mara|new-zealand|skagit|falsterbo)"/);
+    expect(staleStateHtml).toMatch(/data-world-focus="(?:all|migration|culture|rainforest|conservation|winter|savanna)"/);
+    expect(staleStateHtml).toMatch(/data-world-lens="(?:routes|season|species|logistics)"/);
+    expect(staleStateHtml).toMatch(/data-world-month="(?:[1-9]|1[0-2])"/);
+    expect((staleStateHtml.match(/data-world-destination-marker=/g) || [])).toHaveLength(15);
+
+    const text = source();
+    expect(text).toContain('var WORLD_TOUR_VISUALS = [');
+    expect(text).toContain('var WORLD_TOUR_DISPATCHES = [');
+    expect(text).toContain('function renderWorldTourScene(');
+    expect(text).toContain('.rh-world-atlas{');
+    expect(text).toMatch(/@media\(max-width:720px\)\{[\s\S]{0,1600}\.rh-world-/);
+    expect(text).toMatch(/@media\(prefers-reduced-motion:reduce\)\{[\s\S]{0,1600}\.rh-world-/);
+    expect(text).toMatch(/@media\(forced-colors:active\)\{[\s\S]{0,2400}\.rh-world-/);
+  });
+
   it('turns the Molt Atlas into an interactive sequential feather laboratory', () => {
     resetStemLab();
     loadTool(CANONICAL, 'raptorHunt');

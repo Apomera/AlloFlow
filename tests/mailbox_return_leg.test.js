@@ -75,6 +75,7 @@ describe('generated page: submit path (doc_pipeline template)', () => {
     expect(envelope).toContain("kind: 'encrypted-worksheet'");
     expect(envelope).toContain('wrappedKey: encrypted.wrappedKey');
     expect(envelope).toContain('ciphertext: encrypted.ciphertext');
+    expect(envelope).toContain('documentId: payload.documentId');
     expect(envelope).not.toContain('responses');
     expect(pipeSource).toContain("headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: partBody");
   });

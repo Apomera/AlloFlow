@@ -160,6 +160,21 @@ star_code_map.txt
 add_features.js
 test_extract_query.js
 
+# Agent workspaces and root-level scratch artifacts. These are local recovery,
+# visual-QA, and patching intermediates; durable source and tests live elsewhere.
+/.tmp*
+/.release-*/
+/_codex_archive/
+/.codex-patches/
+/.codex-sourcebook-*/
+/_bl_*
+/_tmp_*
+/--*.html
+/undefined-*.html
+/ml-shots.html
+/dummy/
+*.log
+
 # Playwright e2e artifacts
 test-results/
 playwright-report/

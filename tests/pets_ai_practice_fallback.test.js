@@ -54,6 +54,13 @@ function extractArray(name) {
   return eval('(' + SRC.slice(o, j) + ')');
 }
 const AI_SCENARIOS = extractArray('AI_SCENARIOS');
+const AI_GROUND_TRUTH = extractArray('AI_GROUND_TRUTH');
+const AI_READINESS_SOURCE = SRC.slice(
+  SRC.indexOf('function aiDraftReadiness('),
+  SRC.indexOf('function normalizeAiScenarioId('),
+).trim();
+// eslint-disable-next-line no-eval
+const aiDraftReadiness = eval('(' + AI_READINESS_SOURCE + ')');
 
 let mounted = null;
 
@@ -108,14 +115,14 @@ const FILLER =
   'take their time and do what is right for them, and I would tell them that.';
 
 const GOOD_CAT =
-  "First I'd tell them to take the cat to the vet right away, because a sudden change " +
-  'like peeing outside the box is medical until proven otherwise - a UTI, crystals, or ' +
-  'FLUTD. Once the vet clears her, look at stress and environment: did the litter brand ' +
-  'change, is the box dirty, did a new pet arrive, did the schedule change? The rule is ' +
-  'one box per cat plus one, scooped daily, uncovered and low-sided for older cats, in a ' +
-  "quiet location. Don't punish or yell, it increases stress and makes elimination " +
-  'problems worse. And rehoming for litter problems is a common and tragic shelter ' +
-  'intake reason even though it is almost always solvable with vet care and management.';
+  "First I'd recommend a veterinary exam, because sudden house-soiling can have urinary " +
+  'or other medical causes. After medical causes are assessed, look at stress and the ' +
+  'environment: did the litter change, is the box dirty, did a new pet arrive, or did the ' +
+  'schedule change? Review the setup: one box per cat plus one extra, frequent scooping, ' +
+  'accessible boxes, quiet locations, and litter or box preferences. Do not punish or yell, ' +
+  'because that increases stress and can make elimination problems worse. I would not jump ' +
+  'straight to rehoming; use veterinary and environmental assessment plus qualified behavior ' +
+  'support if the problem continues.';
 
 const seedFor = (aiScenarioId, aiResponse) => ({ view: 'aiPractice', aiScenarioId, aiResponse });
 
@@ -141,6 +148,71 @@ afterEach(() => {
     mounted.host.remove();
     mounted = null;
   }
+});
+
+describe('AI Practice feedback readiness', () => {
+  it('requires both enough context and enough words', () => {
+    expect(aiDraftReadiness('Vet first.')).toMatchObject({
+      chars: 10,
+      words: 2,
+      minChars: 80,
+      minWords: 12,
+      ready: false,
+    });
+    expect(aiDraftReadiness('extraordinary '.repeat(11))).toMatchObject({
+      words: 11,
+      ready: false,
+    });
+    expect(aiDraftReadiness(
+      'I would ask about health, housing, budget, schedule, allergies, exercise, and support before making a recommendation.'
+    )).toMatchObject({
+      ready: true,
+    });
+  });
+
+  it('does not run feedback or award completion for a token response', () => {
+    const m = mountPets(seedFor('cat-litter', 'Vet first.'));
+    const button = [...m.host.querySelectorAll('button')]
+      .find((candidate) => /rubric check/i.test(candidate.textContent));
+    expect(button).toBeTruthy();
+    expect(button.disabled).toBe(true);
+    expect(m.text()).toMatch(/Feedback unlocks at 12 words and 80 characters/i);
+    act(() => { button.click(); });
+    expect(m.peek.state.modulesCompleted || {}).not.toHaveProperty('aiPractice');
+    expect(m.peek.state.badges || {}).not.toHaveProperty('pets_ai_designer');
+  });
+});
+
+describe('AI Practice expectations are visible before feedback', () => {
+  it('states the completion checkpoint, stronger evidence, and teacher-review boundary', () => {
+    const m = mountPets({ view: 'aiPractice' });
+    const pathway = m.host.querySelector('.petslab-ai-pathway');
+    expect(pathway).toBeTruthy();
+    expect(pathway.getAttribute('aria-labelledby')).toBe('pets-ai-pathway-heading');
+    expect(pathway.textContent).toMatch(/Completion checkpoint/i);
+    expect(pathway.textContent).toMatch(/Every result still needs teacher review/i);
+    expect(pathway.textContent).toMatch(/Stronger evidence/i);
+
+    const steps = [...pathway.querySelectorAll('[data-pets-ai-path-step]')];
+    expect(steps).toHaveLength(4);
+    expect(steps[0].getAttribute('data-pets-ai-path-status')).toBe('current');
+    expect(steps[0].getAttribute('aria-current')).toBe('step');
+    expect(steps[1].getAttribute('data-pets-ai-path-status')).toBe('upcoming');
+    expect(steps[3].textContent).toMatch(/raw writing is not copied into the teacher record/i);
+  });
+
+  it('discloses all five scenario-specific planning criteria before writing', () => {
+    const scenario = AI_SCENARIOS.find((item) => item.id === 'cat-litter');
+    const m = mountPets(seedFor(scenario.id, ''));
+    const details = m.host.querySelector('.petslab-ai-planning-criteria');
+    expect(details).toBeTruthy();
+    expect(details.querySelector('summary').textContent).toMatch(/Planning criteria \(5\)/i);
+    expect(details.textContent).toMatch(/matching phrase does not prove your reasoning is correct/i);
+    expect(details.querySelectorAll('li')).toHaveLength(5);
+    for (const criterion of scenario.rubric) {
+      expect(details.textContent).toContain(criterion);
+    }
+  });
 });
 
 describe('the offline check does not credit work that was not done', () => {
@@ -204,6 +276,16 @@ describe('the offline check does not credit work that was not done', () => {
 
 describe('a failed AI call falls back instead of dead-ending', () => {
   const rejecting = () => Promise.reject(new Error('network down'));
+
+  it('keeps a clearly labelled local option and explains draft privacy when AI is configured', () => {
+    const m = mountPets(seedFor('cat-litter', GOOD_CAT), {
+      callGemini: () => Promise.resolve('AI feedback'),
+    });
+    expect(m.text()).toMatch(/Check locally instead/i);
+    expect(m.text()).toMatch(/sends this draft to the configured AI service/i);
+    expect(m.text()).toMatch(/Do not include names or identifying details/i);
+    expect(m.html()).toMatch(/aria-label="Run offline rubric check"/i);
+  });
 
   it('runs the offline check when callGemini rejects', async () => {
     const m = mountPets(seedFor('cat-litter', GOOD_CAT), { callGemini: rejecting });
@@ -277,5 +359,26 @@ describe('the AI ground-truth list agrees with the rendered lab', () => {
   it('keeps the medication guard in the prompt itself', () => {
     expect(SRC).toMatch(/never recommend specific medications, dosages, or veterinary procedures/i);
     expect(SRC).toMatch(/Educational only — for medical decisions see your veterinarian/);
+  });
+
+  it('keeps scenario rubrics free of stale precision and treatment-like advice', () => {
+    const scenarios = JSON.stringify(AI_SCENARIOS);
+    expect(scenarios).not.toMatch(
+      /DAD program waitlists|placement costs \$20|JDRF|~60%|rehoming is the rule|most surrendered|Hill's b\/d|Bright Mind|SAMe|anti-anxiety meds/i,
+    );
+    expect(scenarios).toMatch(/Breakthrough T1D/);
+    expect(scenarios).toMatch(/Assistance Dogs International/);
+    expect(scenarios).toMatch(/does not force-feed/);
+    expect(scenarios).toMatch(/qualified behavior support/);
+    expect(scenarios).toMatch(/without diagnosing it/);
+    expect(scenarios).toMatch(/successor-care plan/);
+  });
+
+  it('grounds urgent and diagnostic scenarios in referral-first safety', () => {
+    const facts = AI_GROUND_TRUTH.join(' ');
+    expect(facts).toMatch(/do not force-feed or start home treatment/i);
+    expect(facts).toMatch(/Veterinary evaluation and longitudinal tracking/i);
+    expect(facts).toMatch(/After medical causes are assessed/i);
+    expect(facts).toMatch(/eligibility, availability, wait times, and costs vary/i);
   });
 });

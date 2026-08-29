@@ -694,6 +694,20 @@
     );
   }
 
+  function _fitOptics3DModelBounds(THREE, model, target, half) {
+    var bounds = new THREE.Box3().setFromObject(model);
+    target.set(0, 0, 0);
+    if (!bounds || bounds.isEmpty()) {
+      half.set(9.5, 4.8, 3.2);
+      return;
+    }
+    half.set(
+      Math.max(1, Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x)) + 0.45),
+      Math.max(2.8, Math.max(Math.abs(bounds.min.y), Math.abs(bounds.max.y)) + 0.35),
+      Math.max(2.8, Math.max(Math.abs(bounds.min.z), Math.abs(bounds.max.z)) + 0.35)
+    );
+  }
+
   // Demand-rendered 3D mirror bench. The bright circular aperture is the
   // thin-mirror plane used by the equation; the shallow silver surface makes
   // plane, concave, and convex geometry spatially legible without pretending
@@ -961,12 +975,13 @@
       S.imageSide = model.atInfinity ? 'at-infinity' : (model.imageDistance > 0 ? 'incident' : 'behind');
       S.mirrorType = model.type;
       S.imageDistance = model.imageDistance;
+      S.objectHeight = model.objectHeight;
+      S.imageHeight = model.imageHeight;
       S.screenDistance = screenDistance;
       S.screenBundleRatio = model.screenBundleRatio;
       S.screenFocused = !!model.screenFocused;
       S.screenCapturable = !!model.screenCapturable;
-      S.target.set(0, 0, 0);
-      S.half.set(9.5, 4.8, 3.2);
+      _fitOptics3DModelBounds(THREE, S.model, S.target, S.half);
     }
 
     function scheduleFrame() {
@@ -1053,7 +1068,8 @@
         half: new THREE.Vector3(9.5, 4.8, 3.2), contextLost: false,
         lastW: width, lastH: height, raf: 0, rayCount: 0, virtualExtensionCount: 0,
         imageVisible: false, imageType: null, imageSide: null, mirrorType: null,
-        imageDistance: null, physicalRaysStayIncidentSide: true,
+        imageDistance: null, objectHeight: null, imageHeight: null,
+        physicalRaysStayIncidentSide: true,
         virtualExtensionsBehindMirror: true, realRaysContinuePastFocus: false,
         screenDistance: null, screenBundleRatio: null, screenFocused: false,
         screenCapturable: false
@@ -1108,10 +1124,14 @@
           imageVisible: !!(S && S.imageVisible), imageType: S ? S.imageType : null,
           imageSide: S ? S.imageSide : null, mirrorType: S ? S.mirrorType : null,
           imageDistance: S ? S.imageDistance : null,
+          objectHeight: S ? S.objectHeight : null,
+          imageHeight: S ? S.imageHeight : null,
           screenDistance: S ? S.screenDistance : null,
           screenBundleRatio: S ? S.screenBundleRatio : null,
           screenFocused: !!(S && S.screenFocused),
           screenCapturable: !!(S && S.screenCapturable),
+          fitHalf: S ? { x: S.half.x, y: S.half.y, z: S.half.z } : null,
+          cameraDistance: S ? S.camera.position.distanceTo(S.target) : null,
           physicalRaysStayIncidentSide: !!(S && S.physicalRaysStayIncidentSide),
           virtualExtensionsBehindMirror: !!(S && S.virtualExtensionsBehindMirror),
           realRaysContinuePastFocus: !!(S && S.realRaysContinuePastFocus),
@@ -1145,6 +1165,127 @@
   var opticsMirrorDrag = { current: null };
   if (typeof window !== 'undefined') window.__alloOpticsMirrorGL = OpticsMirrorGL;
 
+  function _renderOpticsFocusGuide(h, options) {
+    var kind = options.kind === 'mirror' ? 'mirror' : 'lens';
+    var title = kind === 'mirror' ? 'Mirror screen alignment' : 'Lens screen alignment';
+    var imageDistance = options.imageDistance;
+    var screenDistance = +options.screenDistance;
+    var capturable = !!options.capturable && imageDistance != null && isFinite(imageDistance) && imageDistance > 0;
+    var ratio = options.bundleRatio != null && isFinite(options.bundleRatio)
+      ? Math.abs(+options.bundleRatio) : 1;
+    var ratioPct = (ratio * 100).toFixed(1);
+    var relative = capturable ? (screenDistance - imageDistance) / imageDistance : null;
+    var delta = capturable ? screenDistance - imageDistance : null;
+    var markerRelative = relative == null ? 0 : clamp(relative, -1, 1);
+    var markerLeft = 50 + markerRelative * 46;
+    var spanLeft = Math.min(50, markerLeft);
+    var spanWidth = Math.abs(markerLeft - 50);
+    var stateName = options.state || (options.focused ? 'sharp' : (capturable ? 'blurred' : 'virtual'));
+    var focused = !!options.focused;
+    var offScale = relative != null && Math.abs(relative) > 1;
+    var signedDelta = delta == null ? '' : (delta > 0 ? '+' : '') + delta.toFixed(1);
+    var summary;
+    var detail;
+    if (focused) {
+      summary = 'Aligned at focus | blur 0.0% aperture';
+      detail = 'Screen and real image plane coincide at ' + screenDistance.toFixed(1) + ' cm.';
+    } else if (capturable) {
+      summary = 'Offset ' + signedDelta + ' cm | blur ' + ratioPct + '% aperture';
+      detail = 'Screen is ' + Math.abs(delta).toFixed(1) + ' cm '
+        + (delta < 0 ? 'before' : 'beyond') + ' the real image plane.';
+      if (!options.focusOnBench) detail += ' The real focus lies outside the movable screen range.';
+      if (offScale) detail += ' The marker is pinned at the end of the +/-100% alignment scale.';
+    } else if (stateName === 'infinity') {
+      summary = 'No finite focus target';
+      detail = 'Outgoing rays are parallel, so the image is at infinity and no finite screen can capture it.';
+    } else if (stateName === 'unavailable') {
+      summary = 'Focus guide unavailable';
+      detail = 'This configuration does not define a usable image plane.';
+    } else {
+      summary = 'No real focus target';
+      detail = 'The image is virtual, so no real screen position can capture it.';
+    }
+    var meterText = title + '. ' + detail + ' Blur diameter is ' + ratioPct + ' percent of the aperture.';
+    var activeColor = focused ? 'var(--op-green-text,#86efac)'
+      : (stateName === 'out-of-range' ? 'var(--op-amber-text,#fbbf24)' : 'var(--op-accent-text,#67e8f9)');
+    return h('div', {
+      role: 'group', 'aria-label': title,
+      'data-op-focus-guide': kind,
+      'data-focus-state': stateName,
+      'data-focus-capturable': capturable ? 'true' : 'false',
+      'data-focus-offset-cm': delta == null ? 'none' : delta.toFixed(6),
+      'data-focus-relative': relative == null ? 'none' : relative.toFixed(6),
+      'data-blur-aperture-ratio': ratio.toFixed(6),
+      style: { maxWidth: 460, margin: '-2px 0 10px', color: 'var(--allo-stem-text,#cbd5e1)' }
+    },
+      h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 5 } },
+        h('span', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.02em', color: 'var(--allo-stem-text,#e2e8f0)' } }, 'Screen-to-image alignment'),
+        h('span', {
+          'data-op-focus-summary': 'true',
+          style: { fontSize: 10, fontFamily: 'monospace', fontWeight: 700, color: activeColor }
+        }, summary)
+      ),
+      h('div', {
+        role: capturable ? 'meter' : 'img',
+        'aria-label': meterText,
+        'aria-valuemin': capturable ? -100 : undefined,
+        'aria-valuemax': capturable ? 100 : undefined,
+        'aria-valuenow': capturable ? +(markerRelative * 100).toFixed(1) : undefined,
+        'aria-valuetext': meterText,
+        'data-op-focus-track': 'true',
+        style: {
+          position: 'relative', height: 14, overflow: 'hidden', borderRadius: 999,
+          background: 'var(--allo-stem-deeper,#0b1220)',
+          border: '1px solid var(--allo-stem-border,#334155)'
+        }
+      },
+        capturable && h('span', {
+          'data-op-focus-span': 'true',
+          style: {
+            position: 'absolute', top: 2, bottom: 2, left: spanLeft.toFixed(3) + '%',
+            width: Math.max(0, spanWidth).toFixed(3) + '%', borderRadius: 999,
+            background: activeColor, opacity: focused ? 0.82 : 0.46
+          }
+        }),
+        h('span', {
+          'data-op-focus-target': 'true',
+          style: {
+            position: 'absolute', left: 'calc(50% - 4px)', top: 1, bottom: 1, width: 8,
+            borderRadius: 999, background: 'var(--op-green-text,#86efac)', opacity: capturable ? 0.18 : 0.08
+          }
+        }),
+        h('span', {
+          style: {
+            position: 'absolute', left: 'calc(50% - 1px)', top: 0, bottom: 0, width: 2,
+            background: 'var(--op-green-text,#86efac)', opacity: capturable ? 0.92 : 0.32
+          }
+        }),
+        capturable && h('span', {
+          'data-op-focus-marker': 'true',
+          'data-marker-off-scale': offScale ? 'true' : 'false',
+          style: {
+            position: 'absolute', left: markerLeft.toFixed(3) + '%', top: '50%', width: 9, height: 9,
+            transform: 'translate(-50%, -50%) rotate(45deg)', borderRadius: 2,
+            background: activeColor, border: '1px solid var(--allo-stem-deeper,#0b1220)'
+          }
+        })
+      ),
+      capturable
+        ? h('div', {
+            'aria-hidden': 'true',
+            style: { display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: 6, marginTop: 3, fontSize: 9, color: 'var(--allo-stem-text-soft,#475569)' }
+          },
+            h('span', null, 'screen before image'),
+            h('span', { style: { color: 'var(--op-green-text,#86efac)', fontWeight: 700 } }, 'image plane'),
+            h('span', { style: { textAlign: 'right' } }, 'screen beyond image')
+          )
+        : h('div', {
+            'data-op-focus-no-target': 'true',
+            style: { marginTop: 4, fontSize: 10, color: 'var(--allo-stem-muted,#94a3b8)' }
+          }, detail)
+    );
+  }
+
   // ---
   // REFLECTION SIM — plane / concave / convex mirror with ray tracing
   // ---
@@ -1154,7 +1295,8 @@
     var mt = state.reflMirrorType || 'concave';  // 'plane' | 'concave' | 'convex'
     var f = mt === 'plane' ? Infinity : (mt === 'concave' ? Math.abs(state.reflFocal || 10) : -Math.abs(state.reflFocal || 10));
     var d_o = state.reflDo || 25;
-    var hObj = state.reflObjH || 6;
+    var mirrorHeightMin = 2, mirrorHeightMax = 10;
+    var hObj = clamp(state.reflObjH != null ? +state.reflObjH : 6, mirrorHeightMin, mirrorHeightMax);
     // Sample problems may use real-world distances well beyond the schematic's
     // 45 cm window. Keep the range control truthful instead of feeding it an
     // out-of-range value whose thumb silently appears at 45 cm.
@@ -1166,6 +1308,12 @@
     var _mirrorVT = (d_i == null) ? 'image at infinity'
       : ('image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2) + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted'));
     var hImg = (m == null) ? null : m * hObj;
+    var mirrorHeightVT = d_i == null
+      ? hObj.toFixed(1) + ' cm object height. Reflected bundle angle '
+        + Math.abs(Math.atan(hObj / Math.max(1e-6, Math.abs(f))) * 180 / Math.PI).toFixed(1)
+        + ' degrees below the optical axis.'
+      : hObj.toFixed(1) + ' cm object height. Image tip '
+        + Math.abs(hImg).toFixed(1) + ' cm ' + (hImg < 0 ? 'below' : 'above') + ' the optical axis.';
     var screenMin = 2, screenMax = 42;
     var screenCm = clamp(state.reflScreenCm != null ? +state.reflScreenCm : 15, screenMin, screenMax);
     var screenCapturable = d_i != null && d_i > 0;
@@ -1197,6 +1345,12 @@
         + screenBundlePct + '% of the mirror aperture width.';
     }
     var screenShortStatus = screenFocused ? 'sharp focus' : screenBundlePct + '% aperture';
+    var screenRelationShort = screenFocused ? 'sharp focus \u00b7 blur 0.0%'
+      : (d_i == null ? 'no finite focus \u00b7 parallel output'
+        : (!screenCapturable ? 'virtual image \u00b7 no screen focus'
+          : (Math.abs(screenDelta).toFixed(1) + ' cm ' + (screenDelta < 0 ? 'before' : 'beyond')
+            + ' focus \u00b7 blur ' + screenBundlePct + '%'
+            + (!screenFocusOnBench ? ' \u00b7 focus off range' : ''))));
     // Object x (negative → in front of mirror)
     var objX = -d_o;
     var imgX = (d_i == null) ? null : -d_i;  // d_i > 0 → real (same side as object, in front)
@@ -1249,7 +1403,8 @@
       : ('F = ' + mirrorFocalAbs.toFixed(1) + ' cm and C = ' + (2 * mirrorFocalAbs).toFixed(1)
         + ' cm ' + (mt === 'concave' ? 'in front of' : 'behind') + ' the mirror.');
     var mirrorGlAlt = 'Three-dimensional ' + mt + ' mirror ray-space bench. The object point is '
-      + d_o.toFixed(1) + ' centimeters in front of the mirror. ';
+      + d_o.toFixed(1) + ' centimeters in front of the mirror and ' + hObj.toFixed(1)
+      + ' centimeters above the optical axis. ';
     if (d_i == null) {
       mirrorGlAlt += 'The object is at the focal plane, so the cyan physical reflected rays leave parallel and the image is at infinity. ';
     } else if (d_i > 0) {
@@ -1291,15 +1446,16 @@
           onReset: function () { setMirrorCamera('oblique'); }
         }, h),
         h('div', {
+          'data-op-mirror-3d-scene': 'true',
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
             background: 'var(--allo-stem-deeper, #08111f)', border: '1px solid var(--allo-stem-border, #334155)'
           }
         },
           h('div', {
-            ref: opticsMirrorGlRef, role: 'img', tabIndex: 0,
+            ref: opticsMirrorGlRef, role: 'group', tabIndex: 0, 'aria-roledescription': 'interactive 3D model',
             'data-a11y-static': 'true', 'data-op-mirror-3d-host': 'true',
-            'aria-label': mirrorGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset.',
+            'aria-label': mirrorGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
             style: { position: 'absolute', inset: 0, outlineOffset: -3 },
             onPointerDown: function (ev) {
@@ -1321,7 +1477,7 @@
             onPointerUp: function () { opticsMirrorDrag.current = null; },
             onPointerCancel: function () { opticsMirrorDrag.current = null; },
             onWheel: function (ev) {
-              ev.preventDefault();
+              ev.preventDefault(); ev.stopPropagation();
               upd({ reflGlCamera: 'custom', reflGlZoom: Math.max(0.5, Math.min(3, (state.reflGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
             },
             onKeyDown: function (ev) {
@@ -1347,23 +1503,59 @@
             }
           }),
           mirrorGlLive && h('div', {
-            role: 'status', 'aria-live': 'polite',
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            'aria-label': mirrorGlAlt,
+            'data-op-mirror-3d-screen': 'true',
             'data-op-mirror-3d-outcome': mirrorImageType,
             'data-image-side': mirrorImageSide, 'data-mirror-type': mt,
+            'data-object-height': hObj.toFixed(3),
+            'data-image-height': hImg == null ? (d_i == null ? 'infinity' : 'unavailable') : hImg.toFixed(3),
+            'data-image-distance-cm': d_i == null ? 'infinity' : d_i.toFixed(3),
+            'data-magnification': m == null ? 'none' : m.toFixed(6),
+            'data-screen-state': screenState,
+            'data-screen-distance-cm': screenCm.toFixed(3),
+            'data-screen-offset-cm': screenDelta == null ? 'none' : screenDelta.toFixed(3),
+            'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
+            'data-screen-focused': screenFocused ? 'true' : 'false',
             style: {
               position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
-              color: '#e2e8f0', background: 'rgba(8,17,31,.80)', padding: '4px 7px',
-              borderRadius: 7, fontSize: 9, lineHeight: 1.45
+              color: '#e2e8f0', background: 'rgba(8,17,31,.88)', padding: '6px 8px',
+              borderRadius: 8,
+              borderLeft: '3px solid ' + (screenFocused ? '#86efac'
+                : (mirrorImageType === 'real' ? '#67e8f9' : (mirrorImageType === 'virtual' ? '#f9a8d4' : '#facc15'))),
+              boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 11, lineHeight: 1.38,
+              maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box'
             }
           },
-            h('div', null, mt.charAt(0).toUpperCase() + mt.slice(1) + ' mirror'),
-            h('div', { style: { color: d_i > 0 ? '#86efac' : '#fda4af', fontWeight: 700 } }, mirrorOutcomeShort),
+            h('div', { style: { color: '#f8fafc', fontSize: 11, fontWeight: 800 } },
+              mt.charAt(0).toUpperCase() + mt.slice(1) + ' mirror'),
             h('div', {
-              'data-op-mirror-3d-screen': 'true',
-              'data-screen-focused': screenFocused ? 'true' : 'false'
-            }, 'sample screen ' + screenCm.toFixed(1) + ' cm - ' + screenShortStatus),
-            h('div', null, 'd_i = ' + (d_i == null ? '∞' : d_i.toFixed(1) + ' cm')
-              + (m == null ? '' : ' · m = ' + m.toFixed(2)))
+              style: {
+                color: mirrorImageType === 'real' ? '#86efac'
+                  : (mirrorImageType === 'virtual' ? '#f9a8d4' : '#67e8f9'),
+                fontWeight: 700
+              }
+            }, mirrorOutcomeShort),
+            h('div', { style: { fontVariantNumeric: 'tabular-nums' } }, 'd_i = ' + (d_i == null ? '∞' : d_i.toFixed(1) + ' cm')
+              + (m == null ? '' : ' · m = ' + m.toFixed(2))),
+            h('div', {
+              style: {
+                color: screenFocused ? '#86efac' : (screenCapturable ? '#67e8f9' : '#fbbf24'),
+                fontWeight: 700, fontVariantNumeric: 'tabular-nums'
+              }
+            }, 'sample screen ' + screenCm.toFixed(1) + ' cm \u00b7 ' + screenRelationShort),
+            h('div', {
+              'data-op-mirror-3d-ray-key': 'true', 'aria-hidden': 'true',
+              style: { marginTop: 2, color: '#cbd5e1', fontWeight: 700 }
+            },
+              h('span', { style: { color: '#fbbf24' } }, 'input rays'),
+              ' \u00b7 ',
+              h('span', { style: { color: '#67e8f9' } }, 'physical rays'),
+              mirrorImageType === 'virtual' ? ' \u00b7 ' : null,
+              mirrorImageType === 'virtual'
+                ? h('span', { style: { color: '#f9a8d4' } }, 'virtual extensions')
+                : null
+            )
           ),
           !mirrorGlLive ? h('div', {
             role: 'status', 'aria-live': 'polite',
@@ -1376,11 +1568,11 @@
               ? '3D mirror bench unavailable on this device; the accessible description and 2D ray diagram remain available.'
               : 'Loading 3D mirror bench...') : null,
           mirrorGlLive ? h('div', {
-            'aria-hidden': 'true',
+            'data-op-mirror-3d-cue': 'true', 'aria-hidden': 'true',
             style: {
-              position: 'absolute', left: 8, bottom: 6, pointerEvents: 'none', fontSize: 10,
-              color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(8,17,31,.76)',
-              padding: '2px 7px', borderRadius: 999
+              position: 'absolute', left: 8, bottom: 6, zIndex: 2, pointerEvents: 'none',
+              fontSize: 10, lineHeight: 1.35, maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+              color: '#cbd5e1', background: 'rgba(8,17,31,.76)', padding: '2px 7px', borderRadius: 999
             }
           }, 'Drag / arrows: orbit · Scroll / +/-: zoom · 0: reset') : null
         ),
@@ -1428,6 +1620,38 @@
       e.preventDefault();
       var step = e.shiftKey ? 0.1 : 0.5;
       upd('reflDo', Math.round(clamp(d_o + (e.key === 'ArrowLeft' ? step : -step), 1, reflDoSliderMax) * 10) / 10);
+    }
+    function setMirrorHeightFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newHeight = 15 - (point.y - pad.t) / (H - pad.t - pad.b) * 30;
+      upd('reflObjH', Math.round(clamp(newHeight, mirrorHeightMin, mirrorHeightMax) * 10) / 10);
+    }
+    function startMirrorHeightDrag(e) {
+      e.stopPropagation();
+      opticsDirectDrag.current = { kind: 'mirror-height', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setMirrorHeightFromPointer(e);
+    }
+    function moveMirrorHeightDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'mirror-height') return;
+      setMirrorHeightFromPointer(e);
+    }
+    function endMirrorHeightDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'mirror-height') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyMirrorHeightDrag(e) {
+      var next = null;
+      var step = e.shiftKey ? 0.1 : 0.5;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') next = hObj + step;
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') next = hObj - step;
+      else if (e.key === 'Home') next = mirrorHeightMin;
+      else if (e.key === 'End') next = mirrorHeightMax;
+      if (next == null) return;
+      e.preventDefault();
+      e.stopPropagation();
+      upd('reflObjH', Math.round(clamp(next, mirrorHeightMin, mirrorHeightMax) * 10) / 10);
     }
     function setMirrorScreenFromPointer(e) {
       var point = _opticsSvgPoint(e, W, H);
@@ -1500,6 +1724,22 @@
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
+        ),
+        h('label', {
+          'data-op-mirror-object-height-control': 'true',
+          style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 }
+        },
+          'h_o (cm):',
+          h('input', {
+            type: 'range', min: mirrorHeightMin, max: mirrorHeightMax, step: 0.5,
+            value: hObj,
+            'data-op-variable': 'reflObjH',
+            onChange: function(e) { upd('reflObjH', parseFloat(e.target.value)); },
+            'data-op-focusable': 'true', 'aria-label': 'Mirror object height',
+            'aria-valuetext': mirrorHeightVT,
+            style: { width: 110 }
+          }),
+          h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, hObj.toFixed(1))
         )
       ),
       h('div', {
@@ -1529,6 +1769,11 @@
           'aria-label': 'Place the mirror sampling screen at the real image plane, ' + d_i.toFixed(1) + ' centimeters'
         }, screenFocused ? 'At image plane' : 'Place at image')
       ),
+      _renderOpticsFocusGuide(h, {
+        kind: 'mirror', state: screenState, imageDistance: d_i, screenDistance: screenCm,
+        bundleRatio: screenBundleRatio, focused: screenFocused,
+        capturable: screenCapturable, focusOnBench: screenFocusOnBench
+      }),
       mirror3dPanel,
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
@@ -1594,6 +1839,27 @@
             fill: OP_RAY.incident
           }),
           h('text', { x: sx(objX), y: sy(hObj) - 6, fill: OP_RAY.incident, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object')
+        ),
+        // The arrow tip is a separate vertical slider so distance and height
+        // remain independently keyboard-accessible while still feeling direct.
+        h('g', {
+          role: 'slider', tabIndex: 0, 'aria-orientation': 'vertical',
+          'data-op-focusable': 'true', 'data-op-direct-handle': 'mirror-object-height',
+          'data-op-mirror-height-handle': 'true', 'data-op-variable': 'reflObjH',
+          'aria-label': 'Mirror object height handle',
+          'aria-valuemin': mirrorHeightMin, 'aria-valuemax': mirrorHeightMax, 'aria-valuenow': hObj,
+          'aria-valuetext': mirrorHeightVT,
+          onPointerDown: startMirrorHeightDrag, onPointerMove: moveMirrorHeightDrag,
+          onPointerUp: endMirrorHeightDrag, onPointerCancel: endMirrorHeightDrag,
+          onKeyDown: keyMirrorHeightDrag,
+          style: { cursor: 'ns-resize' }
+        },
+          h('circle', { cx: sx(objX), cy: sy(hObj), r: 15, fill: 'transparent' }),
+          h('circle', {
+            'data-op-mirror-height-grip': 'true',
+            cx: sx(objX), cy: sy(hObj), r: 6,
+            fill: 'none', stroke: '#fef3c7', strokeWidth: 1.4, opacity: 0.92
+          })
         ),
         // Three principal rays for curved mirrors (or single law-of-reflection for plane)
         (function() {
@@ -2586,7 +2852,7 @@
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var n1 = state.refrN1 != null ? state.refrN1 : 1.000;
     var n2 = state.refrN2 != null ? state.refrN2 : 1.520;
-    var theta1Deg = state.refrTheta1 != null ? state.refrTheta1 : 30;
+    var theta1Deg = clamp(state.refrTheta1 != null ? +state.refrTheta1 : 30, 0, 89);
     var theta1 = degToRad(theta1Deg);
     var snellRes = snell(theta1, n1, n2);
     var theta_c = criticalAngle(n1, n2);  // null if n1 ≤ n2
@@ -2600,6 +2866,35 @@
     var reflectedVisual = Math.sqrt(reflectance);
     var transmittedVisual = Math.sqrt(transmittance);
     var energySplitText = reflectedPct + '% reflected and ' + transmittedPct + '% transmitted, unpolarized light.';
+    var theta2Deg = isTIR ? null : radToDeg(theta2);
+    var criticalDeg = theta_c == null ? null : radToDeg(theta_c);
+    var criticalOffsetDeg = criticalDeg == null ? null : theta1Deg - criticalDeg;
+    var matchedIndices = Math.abs(n1 - n2) < 0.000001;
+    var noDirectionalBend = !isTIR && (matchedIndices || theta1Deg < 0.05 || Math.abs(theta2Deg - theta1Deg) < 0.05);
+    var refractionOutcomeState = isTIR ? 'tir'
+      : (noDirectionalBend ? 'no-bend' : (theta2Deg < theta1Deg ? 'toward-normal' : 'away-from-normal'));
+    var refractionOutcomeLabel = isTIR ? 'Total internal reflection'
+      : (noDirectionalBend ? 'No directional bend' : (refractionOutcomeState === 'toward-normal' ? 'Bends toward normal' : 'Bends away from normal'));
+    var refractionOutcomeText = isTIR
+      ? 'No transmitted ray leaves the interface.'
+      : (noDirectionalBend
+        ? (matchedIndices ? 'The ray continues straight because both media have the same refractive index.' : 'The ray continues along the normal at normal incidence.')
+        : (refractionOutcomeState === 'toward-normal'
+          ? 'The transmitted ray bends toward the normal because the second refractive index is higher.'
+          : 'The transmitted ray bends away from the normal because the second refractive index is lower.'));
+    var refractionAngleLine = isTIR
+      ? '\u03b8\u2081 ' + theta1Deg.toFixed(1) + '\u00b0 \u2192 reflected ' + theta1Deg.toFixed(1) + '\u00b0'
+      : '\u03b8\u2081 ' + theta1Deg.toFixed(1) + '\u00b0 \u2192 \u03b8\u2082 ' + theta2Deg.toFixed(1) + '\u00b0';
+    var criticalRelationText = criticalDeg == null
+      ? 'No critical angle in this direction'
+      : (Math.abs(criticalOffsetDeg) < 0.05
+        ? 'At critical \u00b7 \u03b8c ' + criticalDeg.toFixed(1) + '\u00b0'
+        : Math.abs(criticalOffsetDeg).toFixed(1) + '\u00b0 ' + (criticalOffsetDeg < 0 ? 'below' : 'above') + ' critical \u00b7 \u03b8c ' + criticalDeg.toFixed(1) + '\u00b0');
+    var criticalAltText = criticalDeg == null
+      ? 'No critical angle exists in this direction because the first refractive index is not greater than the second.'
+      : (Math.abs(criticalOffsetDeg) < 0.05
+        ? 'The incident angle is at the critical angle of ' + criticalDeg.toFixed(1) + ' degrees.'
+        : Math.abs(criticalOffsetDeg).toFixed(1) + ' degrees ' + (criticalOffsetDeg < 0 ? 'below' : 'above') + ' the critical angle of ' + criticalDeg.toFixed(1) + ' degrees.');
     // Direct manipulation of the incident ray angle.
     var cx = W / 2, cy = H / 2;  // interface midpoint
     function setAngleFromPointer(e) {
@@ -2609,8 +2904,9 @@
       var dx = point.x - cx;
       var dy = cy - point.y;  // positive = above interface
       if (dy <= 1) return;
-      var rawDeg = Math.atan2(dx, dy) / DEG;
-      var newDeg = clamp(rawDeg, -89, 89);
+      // The visible positive-angle handle sits left of the normal, so invert x.
+      var rawDeg = Math.atan2(-dx, dy) / DEG;
+      var newDeg = clamp(rawDeg, 0, 89);
       upd('refrTheta1', Math.round(newDeg * 10) / 10);
     }
     function startAngleDrag(e) {
@@ -2691,6 +2987,7 @@
     var refraction3DAlt = 'Three-dimensional refraction ray bench. A three-ray parallel fan enters an interface from refractive index '
       + n1.toFixed(3) + ' at ' + theta1Deg.toFixed(1) + ' degrees. '
       + (isTIR ? 'It totally internally reflects into the first medium. ' : 'It refracts into index ' + n2.toFixed(3) + ' at ' + radToDeg(theta2).toFixed(1) + ' degrees. ')
+      + refractionOutcomeText + ' ' + criticalAltText + ' '
       + 'The interface power split is ' + energySplitText;
     var refraction3DPanel = h('div', { style: { marginBottom: 10 } },
       h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text,#cbd5e1)', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
@@ -2754,15 +3051,26 @@
               ev.preventDefault(); ev.stopPropagation(); upd(patch);
             }
           }),
-          h('div', {
-            'aria-hidden': 'true',
-            style: { position: 'absolute', zIndex: 2, left: 8, top: 7, pointerEvents: 'none', background: 'rgba(7,17,31,.82)', color: '#e2e8f0', padding: '5px 7px', borderRadius: 7, fontSize: 9, lineHeight: 1.45 }
+          refraction3DLive && h('div', {
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            'aria-label': refractionOutcomeText + ' ' + refractionAngleLine + '. ' + criticalAltText + ' The interface power split is ' + energySplitText,
+            'data-op-refraction-3d-outcome': refractionOutcomeState,
+            'data-theta1-deg': theta1Deg.toFixed(3),
+            'data-theta2-deg': theta2Deg == null ? 'none' : theta2Deg.toFixed(3),
+            'data-critical-angle-deg': criticalDeg == null ? 'none' : criticalDeg.toFixed(3),
+            'data-critical-offset-deg': criticalOffsetDeg == null ? 'none' : criticalOffsetDeg.toFixed(3),
+            style: {
+              position: 'absolute', zIndex: 2, left: 8, top: 7, maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+              pointerEvents: 'none', background: 'rgba(7,17,31,.88)', color: '#e2e8f0', padding: '6px 8px',
+              borderRadius: 8, borderLeft: '3px solid ' + (isTIR ? '#fb7185' : (refractionOutcomeState === 'no-bend' ? '#facc15' : '#67e8f9')),
+              boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 10, lineHeight: 1.38
+            }
           },
-            h('div', null, 'Above: n₁ = ' + n1.toFixed(3)),
-            h('div', null, 'Below: n₂ = ' + n2.toFixed(3)),
-            h('div', null, isTIR ? 'θ₁ = ' + theta1Deg.toFixed(1) + '° · TIR' : 'θ₁ ' + theta1Deg.toFixed(1) + '° → θ₂ ' + radToDeg(theta2).toFixed(1) + '°'),
+            h('div', { style: { color: '#f8fafc', fontSize: 11, fontWeight: 800 } }, refractionOutcomeLabel),
+            h('div', null, refractionAngleLine),
+            h('div', { style: { color: '#cbd5e1' } }, criticalRelationText),
             h('div', { 'data-op-refraction-3d-energy': 'true', style: { marginTop: 2, fontWeight: 700 } }, 'R ' + reflectedPct + '% · T ' + transmittedPct + '%'),
-            h('div', { style: { marginTop: 2 } }, 'Gold in · Cyan out · Red reflected')
+            h('div', { style: { color: '#cbd5e1' } }, 'n₁ ' + n1.toFixed(3) + ' → n₂ ' + n2.toFixed(3))
           ),
           !refraction3DLive && h('div', {
             style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', textAlign: 'center', padding: 12, color: 'var(--allo-stem-text-soft,#94a3b8)', fontSize: 11, pointerEvents: 'none' }
@@ -2791,10 +3099,13 @@
       });
     }
     var windowConeDeg = windowPossible ? (theta_c * 180 / Math.PI) : null;
+    var windowDiameterDeg = windowPossible ? windowConeDeg * 2 : null;
+    var windowIndexRatio = windowPossible ? n2 / n1 : null;
+    var windowRadiusModel = windowPossible ? OW_DEPTH * Math.tan(theta_c) : null;
     var windowAlt = windowPossible
       ? ('Underwater view of Snell\'s window. Looking up from inside the denser medium, the whole '
          + 'sky is compressed into a cone of half-angle ' + windowConeDeg.toFixed(1) + ' degrees, so a '
-         + 'circle ' + (windowConeDeg * 2).toFixed(0) + ' degrees wide directly overhead. Outside that '
+         + 'circle ' + windowDiameterDeg.toFixed(1) + ' degrees wide directly overhead. Outside that '
          + 'circle the surface acts as a mirror and reflects the bottom back down.')
       : 'Snell\'s window needs the observer in the denser medium.';
     var windowCamera = state.refrWinCamera || 'oblique';
@@ -2846,6 +3157,7 @@
           onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
         }, h),
         h('div', {
+          'data-op-snell-window-3d-scene': 'true',
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
             background: 'var(--allo-stem-deeper, #081726)', border: '1px solid var(--allo-stem-border, #334155)'
@@ -2855,9 +3167,10 @@
             ref: opticsWindowGlRef,
             role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
             'data-a11y-static': 'true',
+            'data-op-snell-window-3d-host': 'true',
             'aria-roledescription': 'interactive 3D model',
             'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
-            'aria-label': windowAlt,
+            'aria-label': windowAlt + ' Drag or use the arrow keys to orbit, use the mouse wheel or plus and minus keys to zoom, and press 0 to reset the view.',
             style: { position: 'absolute', inset: 0 },
             onPointerDown: function (ev) {
               opticsWinDrag.current = { x: ev.clientX, y: ev.clientY,
@@ -2876,7 +3189,7 @@
             onPointerUp: function () { opticsWinDrag.current = null; },
             onPointerCancel: function () { opticsWinDrag.current = null; },
             onWheel: function (ev) {
-              ev.preventDefault();
+              ev.preventDefault(); ev.stopPropagation();
               upd('refrWinZoom', Math.max(0.5, Math.min(3, (state.refrWinZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
             },
             onKeyDown: function(ev) {
@@ -2888,11 +3201,57 @@
               else if (ev.key === 'ArrowDown') patch = { refrWinRot: { rotY: rot.rotY, rotX: Math.min(84, rot.rotX + 5) }, refrWinCamera: 'custom' };
               else if (ev.key === '+' || ev.key === '=') patch = { refrWinZoom: Math.min(3, (state.refrWinZoom || 1) * 1.12) };
               else if (ev.key === '-' || ev.key === '_') patch = { refrWinZoom: Math.max(0.5, (state.refrWinZoom || 1) * 0.89) };
-              else if (ev.key === '0') { setWindowCamera('oblique'); ev.preventDefault(); return; }
+              else if (ev.key === '0') { ev.preventDefault(); ev.stopPropagation(); setWindowCamera('oblique'); return; }
               if (!patch) return;
               ev.preventDefault(); ev.stopPropagation(); upd(patch);
             }
           }),
+          h('div', {
+            'data-op-snell-window-3d-outcome': 'active',
+            'data-cone-half-angle-deg': windowConeDeg.toFixed(3),
+            'data-window-diameter-deg': windowDiameterDeg.toFixed(3),
+            'data-index-ratio': windowIndexRatio.toFixed(6),
+            'data-window-radius-model': windowRadiusModel.toFixed(3),
+            'data-n1': n1.toFixed(3),
+            'data-n2': n2.toFixed(3),
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            style: {
+              position: 'absolute', zIndex: 2, top: 8, left: 8,
+              width: 'fit-content', maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+              padding: '7px 9px', borderRadius: 8, pointerEvents: 'none',
+              background: 'rgba(7,17,31,.90)', border: '1px solid rgba(125,211,252,.28)',
+              borderLeft: '3px solid #38bdf8', boxShadow: '0 8px 24px rgba(2,6,23,.28)',
+              color: '#e2e8f0', fontSize: 11, lineHeight: 1.35
+            }
+          },
+            h('div', {
+              style: {
+                display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                flexWrap: 'wrap', columnGap: 10, marginBottom: 3
+              }
+            },
+              h('span', { style: { color: '#f8fafc', fontWeight: 800 } }, 'Snell\'s window'),
+              h('span', { style: { color: '#7dd3fc', fontWeight: 700 } },
+                'n\u2081 ' + n1.toFixed(3) + ' \u2192 n\u2082 ' + n2.toFixed(3))
+            ),
+            h('div', { 'data-op-snell-window-angle': 'true' },
+              '\u03b8c = sin\u207b\u00b9(n\u2082/n\u2081) = ',
+              h('strong', { style: { color: '#fde68a' } }, windowConeDeg.toFixed(1) + '\u00b0')
+            ),
+            h('div', { 'data-op-snell-window-diameter': 'true' },
+              'Window = 2\u03b8c = ',
+              h('strong', { style: { color: '#fde68a' } }, windowDiameterDeg.toFixed(1) + '\u00b0'),
+              ' across'
+            ),
+            h('div', {
+              'data-op-snell-window-meaning': 'true',
+              style: { marginTop: 2, color: '#cbd5e1' }
+            },
+              h('span', { style: { color: '#7dd3fc' } }, 'Sky inside cone'),
+              ' \u00b7 ',
+              h('span', { style: { color: '#5eead4' } }, 'mirror outside')
+            )
+          ),
           !winLive ? h('div', {
             style: {
               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
@@ -2903,12 +3262,14 @@
               ? '3D view unavailable on this device — the numbers below still describe the window.'
               : 'Loading 3D view…') : null,
           winLive ? h('div', {
+            'data-op-snell-window-3d-cue': 'true', 'aria-hidden': 'true',
             style: {
-              position: 'absolute', left: 8, bottom: 6, fontSize: 10,
-              color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
-              background: 'rgba(8,23,38,.72)', padding: '2px 7px', borderRadius: 999
+              position: 'absolute', left: 8, bottom: 6, zIndex: 2, fontSize: 10, lineHeight: 1.35,
+              maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+              color: '#cbd5e1', pointerEvents: 'none',
+              background: 'rgba(7,17,31,.78)', padding: '2px 7px', borderRadius: 999
             }
-          }, 'Drag — orbit  ·  Scroll — zoom') : null
+          }, 'Drag / arrows: orbit · Scroll / +/-: zoom · 0: reset') : null
         ),
         h('p', {
           style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '6px 0 0', maxWidth: 460 }
@@ -3641,12 +4002,14 @@
       });
 
       S.imageVisible = imageVisible;
+      S.imageDistance = model.imageDistance;
+      S.objectHeight = model.objectHeight;
+      S.imageHeight = model.imageHeight;
       S.screenDistance = screenDistance;
       S.screenBundleRatio = model.screenBundleRatio;
       S.screenFocused = !!model.screenFocused;
       S.screenCapturable = !!model.screenCapturable;
-      S.target.set(0, 0, 0);
-      S.half.set(9.5, 4.8, 3.2);
+      _fitOptics3DModelBounds(THREE, S.model, S.target, S.half);
     }
 
     function scheduleFrame() {
@@ -3732,6 +4095,7 @@
         rotY: 34, rotX: 20, zoom: 1, target: new THREE.Vector3(),
         half: new THREE.Vector3(9.5, 4.8, 3.2), contextLost: false,
         lastW: width, lastH: height, raf: 0, rayCount: 0, imageVisible: false,
+        imageDistance: null, objectHeight: null, imageHeight: null,
         screenDistance: null, screenBundleRatio: null, screenFocused: false, screenCapturable: false,
         realRaysContinuePastFocus: false
       };
@@ -3782,10 +4146,15 @@
         return {
           state: status, rayCount: S ? S.rayCount : 0,
           imageVisible: !!(S && S.imageVisible), contextLost: !!(S && S.contextLost),
+          imageDistance: S ? S.imageDistance : null,
+          objectHeight: S ? S.objectHeight : null,
+          imageHeight: S ? S.imageHeight : null,
           screenDistance: S ? S.screenDistance : null,
           screenBundleRatio: S ? S.screenBundleRatio : null,
           screenFocused: !!(S && S.screenFocused),
           screenCapturable: !!(S && S.screenCapturable),
+          fitHalf: S ? { x: S.half.x, y: S.half.y, z: S.half.z } : null,
+          cameraDistance: S ? S.camera.position.distanceTo(S.target) : null,
           realRaysContinuePastFocus: !!(S && S.realRaysContinuePastFocus)
         };
       },
@@ -3825,7 +4194,8 @@
     var fAbs = Math.abs(state.lensFocal != null ? state.lensFocal : 12);
     var f = lt === 'converging' ? fAbs : -fAbs;
     var d_o = state.lensDo != null ? state.lensDo : 25;
-    var hObj = state.lensObjH != null ? state.lensObjH : 5;
+    var lensHeightMin = 2, lensHeightMax = 10;
+    var hObj = clamp(state.lensObjH != null ? +state.lensObjH : 5, lensHeightMin, lensHeightMax);
     var lens = thinLens(d_o, f);
     var atFocal = !!lens.error && lt === 'converging' && Math.abs(d_o - fAbs) < 1e-9;
     var d_i = lens.error ? null : lens.d_i;
@@ -3843,6 +4213,9 @@
     var screenCenterY = -hObj * screenCm / Math.max(1e-9, d_o);
     var screenDelta = screenCapturable ? screenCm - d_i : null;
     var screenFocused = screenFocusOnBench && screenBundleRatio <= 0.005;
+    var screenState = screenFocused ? 'sharp'
+      : (atFocal ? 'infinity' : (lens.error ? 'unavailable'
+        : (!screenCapturable ? 'virtual' : (screenFocusOnBench ? 'blurred' : 'out-of-range'))));
     var screenStatus;
     if (atFocal) {
       screenStatus = 'No finite screen focus: the outgoing bundle is parallel and remains '
@@ -3863,9 +4236,13 @@
         + (screenDelta < 0 ? 'before' : 'beyond') + ' the real image plane; the point-source bundle is '
         + screenBundlePct + '% of the aperture width.';
     }
-    var screenShortStatus = screenFocused ? 'sharp focus'
-      : (!screenCapturable ? (atFocal ? 'image at infinity' : 'virtual · no screen focus')
-        : ('bundle ' + screenBundlePct + '% aperture'));
+    var screenRelationShort = screenFocused ? 'sharp focus \u00b7 blur 0.0%'
+      : (atFocal ? 'no finite focus \u00b7 parallel output'
+        : (lens.error ? 'focus unavailable'
+          : (!screenCapturable ? 'virtual image \u00b7 no screen focus'
+            : (Math.abs(screenDelta).toFixed(1) + ' cm ' + (screenDelta < 0 ? 'before' : 'beyond')
+              + ' focus \u00b7 blur ' + screenBundlePct + '%'
+              + (!screenFocusOnBench ? ' \u00b7 focus off range' : '')))));
     var showLens3D = !!state.lensShow3D;
     var lensGlLive = showLens3D && OpticsLensGL.status() === 'ready';
     if (showLens3D) {
@@ -3884,6 +4261,22 @@
         zoom: state.lensGlZoom || 1
       });
     }
+    var lensImageType = atFocal ? 'infinity'
+      : (lens.error ? 'unavailable' : (d_i > 0 ? 'real' : 'virtual'));
+    var lensImageSide = atFocal ? 'at-infinity'
+      : (lens.error ? 'unavailable' : (d_i > 0 ? 'far-side' : 'object-side'));
+    var lensImageOrientation = m == null ? 'none' : (m < 0 ? 'inverted' : 'upright');
+    var lensScaleRatio = m == null ? null : Math.abs(m);
+    var lensScaleWord = lensScaleRatio == null ? 'none'
+      : (lensScaleRatio > 1.005 ? 'enlarged' : (lensScaleRatio < 0.995 ? 'reduced' : 'same size'));
+    var lensOutcomeShort = atFocal ? 'image at infinity \u00b7 parallel output'
+      : (lens.error ? 'image unavailable'
+        : lensImageType + ' \u00b7 ' + lensImageOrientation + ' \u00b7 ' + lensScaleWord);
+    var lensMetricShort = atFocal
+      ? 'h_o = ' + hObj.toFixed(1) + ' cm \u00b7 d_i = \u221e'
+      : (lens.error ? lens.error
+        : 'd_i = ' + d_i.toFixed(1) + ' cm \u00b7 m = ' + m.toFixed(2)
+          + ' \u00b7 h_i = ' + hImg.toFixed(1) + ' cm');
     var lensGlAlt = lens.error
       ? ('Three-dimensional ' + lt + ' lens bench. ' + lens.error
         + ' The outgoing cyan rays are parallel, showing why no finite image forms.')
@@ -3894,6 +4287,13 @@
             + (m < 0 ? 'inverted' : 'upright') + ' image.'
           : 'The rays leave diverging; their dashed backward extensions meet ' + Math.abs(d_i).toFixed(1)
             + ' centimeters to the left at a virtual, ' + (m < 0 ? 'inverted' : 'upright') + ' image.'));
+    if (atFocal) {
+      lensGlAlt += ' The object tip is ' + hObj.toFixed(1) + ' centimeters above the optical axis.';
+    } else if (!lens.error) {
+      lensGlAlt += ' The object tip is ' + hObj.toFixed(1)
+        + ' centimeters above the optical axis; the image tip is ' + Math.abs(hImg).toFixed(1)
+        + ' centimeters ' + (hImg < 0 ? 'below' : 'above') + ' the optical axis.';
+    }
     lensGlAlt += ' The movable screen is ' + screenCm.toFixed(1) + ' centimeters to the right. ' + screenStatus;
     // Spoken image result for the slider aria-valuetext (so screen-reader users hear
     // the computed image as they adjust the controls, not just the raw number).
@@ -3906,6 +4306,11 @@
       _lensVT = 'image distance ' + d_i.toFixed(1) + ' cm, magnification ' + m.toFixed(2)
         + ', ' + (d_i > 0 ? 'real' : 'virtual') + ', ' + (m > 0 ? 'upright' : 'inverted');
     }
+    var lensHeightVT = atFocal
+      ? hObj.toFixed(1) + ' cm object height. Outgoing bundle angle '
+        + Math.abs(Math.atan(hObj / fAbs) * 180 / Math.PI).toFixed(1) + ' degrees below the optical axis.'
+      : hObj.toFixed(1) + ' cm object height. Image tip '
+        + Math.abs(hImg).toFixed(1) + ' cm ' + (hImg < 0 ? 'below' : 'above') + ' the optical axis.';
     // Coordinate space: x in cm; lens at x = 0; useful range -45 to +45
     var cmMin = -45, cmMax = 45;
     var sx = _scale(cmMin, cmMax, pad.l, W - pad.r);
@@ -3973,6 +4378,38 @@
       var step = e.shiftKey ? 0.1 : 0.5;
       upd('lensDo', Math.round(clamp(d_o + (e.key === 'ArrowLeft' ? step : -step), 1, 40) * 10) / 10);
     }
+    function setLensHeightFromPointer(e) {
+      var point = _opticsSvgPoint(e, W, H);
+      if (!point) return;
+      var newHeight = 12 - (point.y - pad.t) / (H - pad.t - pad.b) * 24;
+      upd('lensObjH', Math.round(clamp(newHeight, lensHeightMin, lensHeightMax) * 10) / 10);
+    }
+    function startLensHeightDrag(e) {
+      e.stopPropagation();
+      opticsDirectDrag.current = { kind: 'lens-height', pointerId: e.pointerId };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+      setLensHeightFromPointer(e);
+    }
+    function moveLensHeightDrag(e) {
+      if (!opticsDirectDrag.current || opticsDirectDrag.current.kind !== 'lens-height') return;
+      setLensHeightFromPointer(e);
+    }
+    function endLensHeightDrag(e) {
+      if (opticsDirectDrag.current && opticsDirectDrag.current.kind === 'lens-height') opticsDirectDrag.current = null;
+      try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    function keyLensHeightDrag(e) {
+      var next = null;
+      var step = e.shiftKey ? 0.1 : 0.5;
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') next = hObj + step;
+      else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') next = hObj - step;
+      else if (e.key === 'Home') next = lensHeightMin;
+      else if (e.key === 'End') next = lensHeightMax;
+      if (next == null) return;
+      e.preventDefault();
+      e.stopPropagation();
+      upd('lensObjH', Math.round(clamp(next, lensHeightMin, lensHeightMax) * 10) / 10);
+    }
     function setLensScreenFromPointer(e) {
       var point = _opticsSvgPoint(e, W, H);
       if (!point) return;
@@ -4033,6 +4470,7 @@
           onMotion: function(enabled) { upd('opMotionEnabled', enabled); }
         }, h),
         h('div', {
+          'data-op-lens-3d-scene': 'true',
           style: {
             position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
             background: 'var(--allo-stem-deeper, #08111f)', border: '1px solid var(--allo-stem-border, #334155)'
@@ -4040,10 +4478,10 @@
         },
           h('div', {
             ref: opticsLensGlRef,
-            role: 'img', tabIndex: 0,
-            'data-a11y-static': 'true',
-            'aria-label': lensGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom.',
-            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + -',
+            role: 'group', tabIndex: 0, 'aria-roledescription': 'interactive 3D model',
+            'data-a11y-static': 'true', 'data-op-lens-3d-host': 'true',
+            'aria-label': lensGlAlt + ' Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
+            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
             style: { position: 'absolute', inset: 0, outlineOffset: -3 },
             onPointerDown: function (ev) {
               opticsLensDrag.current = {
@@ -4064,7 +4502,7 @@
             onPointerUp: function () { opticsLensDrag.current = null; },
             onPointerCancel: function () { opticsLensDrag.current = null; },
             onWheel: function (ev) {
-              ev.preventDefault();
+              ev.preventDefault(); ev.stopPropagation();
               upd({ lensGlCamera: 'custom', lensGlZoom: Math.max(0.5, Math.min(3, (state.lensGlZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
             },
             onKeyDown: function (ev) {
@@ -4093,16 +4531,60 @@
             }
           }),
           lensGlLive && h('div', {
-            'aria-hidden': 'true', 'data-op-lens-3d-screen': 'true',
+            role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+            'aria-label': lensGlAlt,
+            'data-op-lens-3d-screen': 'true',
+            'data-op-lens-3d-outcome': lensImageType,
+            'data-image-side': lensImageSide,
+            'data-image-orientation': lensImageOrientation,
+            'data-image-scale': lensScaleWord,
+            'data-object-height': hObj.toFixed(3),
+            'data-image-height': hImg == null ? (atFocal ? 'infinity' : 'unavailable') : hImg.toFixed(3),
+            'data-image-distance-cm': d_i == null ? (atFocal ? 'infinity' : 'unavailable') : d_i.toFixed(3),
+            'data-magnification': m == null ? 'none' : m.toFixed(6),
+            'data-screen-state': screenState,
+            'data-screen-distance-cm': screenCm.toFixed(3),
+            'data-screen-offset-cm': screenDelta == null ? 'none' : screenDelta.toFixed(3),
+            'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
             'data-screen-focused': screenFocused ? 'true' : 'false',
             style: {
               position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
-              color: '#e2e8f0', background: 'rgba(8,17,31,.80)', padding: '4px 7px',
-              borderRadius: 7, fontSize: 9, lineHeight: 1.45
+              color: '#e2e8f0', background: 'rgba(8,17,31,.88)', padding: '6px 8px',
+              borderRadius: 8,
+              borderLeft: '3px solid ' + (screenFocused ? '#86efac'
+                : (lensImageType === 'real' ? '#67e8f9' : (lensImageType === 'virtual' ? '#f9a8d4' : '#facc15'))),
+              boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 11, lineHeight: 1.38,
+              maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box'
             }
           },
-            h('div', null, 'Screen d_s = ' + screenCm.toFixed(1) + ' cm'),
-            h('div', { style: { color: screenFocused ? '#86efac' : '#67e8f9', fontWeight: 700 } }, screenShortStatus)
+            h('div', { style: { color: '#f8fafc', fontSize: 11, fontWeight: 800 } },
+              (lt === 'converging' ? 'Converging' : 'Diverging') + ' lens'),
+            h('div', {
+              style: {
+                color: lensImageType === 'real' ? '#86efac'
+                  : (lensImageType === 'virtual' ? '#f9a8d4' : '#67e8f9'),
+                fontWeight: 700
+              }
+            }, lensOutcomeShort),
+            h('div', { style: { fontVariantNumeric: 'tabular-nums' } }, lensMetricShort),
+            h('div', {
+              style: {
+                color: screenFocused ? '#86efac' : '#67e8f9',
+                fontWeight: 700, fontVariantNumeric: 'tabular-nums'
+              }
+            }, 'screen ' + screenCm.toFixed(1) + ' cm \u00b7 ' + screenRelationShort),
+            h('div', {
+              'data-op-lens-3d-ray-key': 'true', 'aria-hidden': 'true',
+              style: { marginTop: 2, color: '#cbd5e1', fontWeight: 700 }
+            },
+              h('span', { style: { color: '#fbbf24' } }, 'input rays'),
+              ' \u00b7 ',
+              h('span', { style: { color: '#67e8f9' } }, 'physical rays'),
+              lensImageType === 'virtual' ? ' \u00b7 ' : null,
+              lensImageType === 'virtual'
+                ? h('span', { style: { color: '#f9a8d4' } }, 'virtual extensions')
+                : null
+            )
           ),
           !lensGlLive ? h('div', {
             role: 'status', 'aria-live': 'polite',
@@ -4115,13 +4597,13 @@
               ? '3D lens bench unavailable on this device; the accessible description and 2D ray diagram remain available.'
               : 'Loading 3D lens bench...') : null,
           lensGlLive ? h('div', {
-            'aria-hidden': 'true',
+            'data-op-lens-3d-cue': 'true', 'aria-hidden': 'true',
             style: {
-              position: 'absolute', left: 8, bottom: 6, pointerEvents: 'none', fontSize: 10,
-              color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'rgba(8,17,31,.76)',
-              padding: '2px 7px', borderRadius: 999
+              position: 'absolute', left: 8, bottom: 6, zIndex: 2, pointerEvents: 'none',
+              fontSize: 10, lineHeight: 1.35, maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+              color: '#cbd5e1', background: 'rgba(8,17,31,.76)', padding: '2px 7px', borderRadius: 999
             }
-          }, 'Drag / arrows: orbit  -  Scroll / +/-: zoom') : null
+          }, 'Drag / arrows: orbit \u00b7 Scroll / +/-: zoom \u00b7 0: reset') : null
         ),
         h('p', {
           style: { margin: '6px 0 0', fontSize: 11, lineHeight: 1.5, color: 'var(--allo-stem-text-soft, #94a3b8)' }
@@ -4173,18 +4655,18 @@
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, d_o.toFixed(1))
         ),
-        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+        h('label', {
+          'data-op-lens-object-height-control': 'true',
+          style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 }
+        },
           'h_o (cm):',
           h('input', {
-            type: 'range', min: 2, max: 10, step: 0.5,
+            type: 'range', min: lensHeightMin, max: lensHeightMax, step: 0.5,
             value: hObj,
             'data-op-variable': 'lensObjH',
             onChange: function(e) { upd('lensObjH', parseFloat(e.target.value)); },
-            'data-op-focusable': 'true', 'aria-label': 'Object height',
-            'aria-valuetext': atFocal
-              ? hObj.toFixed(1) + ' cm object height. Outgoing bundle angle '
-                + Math.abs(Math.atan(hObj / fAbs) * 180 / Math.PI).toFixed(1) + ' degrees below the optical axis.'
-              : hObj.toFixed(1) + ' cm object height. Image height ' + hImg.toFixed(1) + ' cm.',
+            'data-op-focusable': 'true', 'aria-label': 'Lens object height',
+            'aria-valuetext': lensHeightVT,
             style: { width: 110 }
           }),
           h('span', { style: { fontFamily: 'monospace', color: 'var(--op-amber-text, #fbbf24)', fontWeight: 700, minWidth: 36, textAlign: 'right' } }, hObj.toFixed(1))
@@ -4217,6 +4699,11 @@
           'aria-label': 'Place screen at the real image plane, ' + d_i.toFixed(1) + ' centimeters'
         }, screenFocused ? 'Screen at image ✓' : 'Place at image')
       ),
+      _renderOpticsFocusGuide(h, {
+        kind: 'lens', state: screenState, imageDistance: d_i, screenDistance: screenCm,
+        bundleRatio: screenBundleRatio, focused: screenFocused,
+        capturable: screenCapturable, focusOnBench: screenFocusOnBench
+      }),
       lens3dPanel,
       h('svg', {
         width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
@@ -4301,7 +4788,8 @@
           'aria-label': 'Object distance', 'aria-valuemin': 1, 'aria-valuemax': 40, 'aria-valuenow': d_o,
           'aria-valuetext': d_o.toFixed(1) + ' centimeters. ' + _lensVT,
           onPointerDown: startLensObjectDrag, onPointerMove: moveLensObjectDrag,
-          onPointerUp: endLensObjectDrag, onPointerCancel: endLensObjectDrag, onKeyDown: keyLensObjectDrag
+          onPointerUp: endLensObjectDrag, onPointerCancel: endLensObjectDrag, onKeyDown: keyLensObjectDrag,
+          style: { cursor: 'ew-resize' }
         },
           h('rect', { x: sx(objX) - 14, y: sy(hObj) - 15, width: 28, height: sy(0) - sy(hObj) + 30, fill: 'transparent' }),
           h('line', { x1: sx(objX), y1: sy(0), x2: sx(objX), y2: sy(hObj), stroke: OP_RAY.incident, strokeWidth: 3 }),
@@ -4310,6 +4798,26 @@
             fill: OP_RAY.incident
           }),
           h('text', { x: sx(objX), y: sy(hObj) - 6, fill: OP_RAY.incident, fontSize: 10, textAnchor: 'middle', fontWeight: 700 }, 'Object')
+        ),
+        // The tip ring controls height independently from the horizontal stem.
+        h('g', {
+          role: 'slider', tabIndex: 0, 'aria-orientation': 'vertical',
+          'data-op-focusable': 'true', 'data-op-direct-handle': 'lens-object-height',
+          'data-op-lens-height-handle': 'true', 'data-op-variable': 'lensObjH',
+          'aria-label': 'Lens object height handle',
+          'aria-valuemin': lensHeightMin, 'aria-valuemax': lensHeightMax, 'aria-valuenow': hObj,
+          'aria-valuetext': lensHeightVT,
+          onPointerDown: startLensHeightDrag, onPointerMove: moveLensHeightDrag,
+          onPointerUp: endLensHeightDrag, onPointerCancel: endLensHeightDrag,
+          onKeyDown: keyLensHeightDrag,
+          style: { cursor: 'ns-resize' }
+        },
+          h('circle', { cx: sx(objX), cy: sy(hObj), r: 15, fill: 'transparent' }),
+          h('circle', {
+            'data-op-lens-height-grip': 'true',
+            cx: sx(objX), cy: sy(hObj), r: 6,
+            fill: 'none', stroke: '#fef3c7', strokeWidth: 1.4, opacity: 0.92
+          })
         ),
         // Three principal rays from the tip of the object (objX, hObj)
         (function() {
@@ -4573,12 +5081,11 @@
           );
         })(),
         // Click hint
-        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 10, textAnchor: 'middle' }, 'drag gold object or white screen · arrows adjust')
+        h('text', { x: W / 2, y: H - 6, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'drag stem ↔ distance · ring ↕ height · screen ↔ focus')
       ),
       h('div', {
         role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
-        'data-op-lens-screen-test': screenFocused ? 'sharp'
-          : (atFocal ? 'infinity' : (!screenCapturable ? 'virtual' : (screenFocusOnBench ? 'blurred' : 'out-of-range'))),
+        'data-op-lens-screen-test': screenState,
         'data-screen-distance': screenCm.toFixed(6),
         'data-image-distance': d_i == null ? 'infinity' : d_i.toFixed(6),
         'data-screen-bundle-ratio': screenBundleRatio.toFixed(6),
@@ -5953,6 +6460,7 @@
         segments: S ? S.segCount : 0,
         discs: S ? S.discCount : 0,
         mode: S ? S.mode : null,
+        finalIntensity: S ? S.finalIntensity : null,
         // Peak excursion of each named segment along its own axis vs the
         // perpendicular one. Linear light is flat — all excursion on one axis
         // and none across it. Circular light is round: equal on both. This is
@@ -6033,6 +6541,7 @@
       disposeGroup(S.model);
       S.segs = [];
       S.mode = m.mode;
+      S.finalIntensity = m.finalIntensity;
       S.animate = !!m.animate;
 
       var n = m.segments.length;
@@ -6317,6 +6826,41 @@
     var afterP2 = useQwp ? afterP1 * 0.5 : malus(afterP1, degToRad(theta2 - 0));
     // After P2 the light is linear again, along P2's axis, so P3 is Malus as usual.
     var afterP3 = useP3 ? malus(afterP2, degToRad(theta3 - theta2)) : null;
+    var finalIntensity = useP3 ? afterP3 : afterP2;
+    var polMode = useQwp ? 'circular' : 'linear';
+    var polDelta12 = Math.abs(((theta2 + 90) % 180) - 90);
+    var polDelta23 = useP3
+      ? Math.abs(((((theta3 - theta2) + 90) % 180 + 180) % 180) - 90)
+      : null;
+    var polP2Transmission = afterP1 > 0 ? afterP2 / afterP1 : 0;
+    var polP3Transmission = useP3
+      ? (afterP2 > 0 ? afterP3 / afterP2 : 0)
+      : null;
+    var polOutcomeState = finalIntensity < 0.0005 ? 'extinguished'
+      : (useQwp && !useP3 ? 'angle-independent' : 'transmitting');
+    var polOutcomeLabel = polOutcomeState === 'extinguished' ? 'Beam extinguished'
+      : (polOutcomeState === 'angle-independent' ? 'Axis-independent transmission' : 'Beam transmitting');
+    var polStatusColor = polOutcomeState === 'extinguished' ? '#fda4af'
+      : (polOutcomeState === 'angle-independent' ? '#67e8f9' : '#86efac');
+    var polModeLine = useQwp
+      ? ('circular before P\u2082'
+        + (useP3 ? ' \u00b7 linear again before P\u2083' : ' \u00b7 P\u2082 passes half at every axis'))
+      : ('linear before P\u2082 \u00b7 \u0394\u03b8 = ' + polDelta12.toFixed(0) + '\u00b0');
+    var polAxisLine = 'P\u2081 0\u00b0'
+      + (useQwp ? ' \u00b7 QWP 45\u00b0' : '')
+      + ' \u00b7 P\u2082 ' + theta2.toFixed(0) + '\u00b0'
+      + (useP3 ? ' \u00b7 P\u2083 ' + theta3.toFixed(0) + '\u00b0' : '');
+    var polStageLine = 'I\u2080 100.0% \u2192 P\u2081 ' + (afterP1 * 100).toFixed(1) + '%'
+      + (useQwp ? ' \u2192 QWP ' + (afterP1 * 100).toFixed(1) + '%' : '')
+      + ' \u2192 P\u2082 ' + (afterP2 * 100).toFixed(1) + '%'
+      + (useP3 ? ' \u2192 P\u2083 ' + (afterP3 * 100).toFixed(1) + '%' : '');
+    var polProjectionLine = useP3
+      ? ('P\u2083 keeps ' + (polP3Transmission * 100).toFixed(1) + '% of P\u2082 \u00b7 cos\u00b2('
+        + polDelta23.toFixed(0) + '\u00b0)')
+      : (useQwp
+        ? 'P\u2082 keeps 50.0% of circular input \u00b7 angle-independent'
+        : ('P\u2082 keeps ' + (polP2Transmission * 100).toFixed(1) + '% of P\u2081 \u00b7 cos\u00b2('
+          + polDelta12.toFixed(0) + '\u00b0)'));
     // Layout: three vertical polarizer disks across the width
     var disk1X = W * .23, disk2X = useP3 ? W * .50 : W * .63, disk3X = W * .78;
     var midY = (pad.t + H - pad.b) / 2;
@@ -6419,6 +6963,7 @@
       var key = event.key;
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', '_', '0'].indexOf(key) === -1) return;
       event.preventDefault();
+      event.stopPropagation();
       if (key === '0') { resetPolView(); return; }
       if (key === '+' || key === '=') { upd({ polCamera: 'custom', polZoom: Math.min(3, polZoom * 1.12) }); return; }
       if (key === '-' || key === '_') { upd({ polCamera: 'custom', polZoom: Math.max(.5, polZoom * .89) }); return; }
@@ -6447,7 +6992,7 @@
     OpticsGL.push({
       sig: [theta2, theta3, useP3, useQwp, animate, afterP1.toFixed(4), afterP2.toFixed(4),
             afterP3 == null ? 'x' : afterP3.toFixed(4)].join('|'),
-      segments: segs, discs: discs, mode: useQwp ? 'circular' : 'linear',
+      segments: segs, discs: discs, mode: polMode, finalIntensity: finalIntensity,
       animate: animate, wavelength: 4.4,
       rotY: polRot.rotY,
       rotX: polRot.rotX,
@@ -6463,7 +7008,10 @@
             + ' degrees transmits half of it, and would transmit half at any angle.'
           : 'P2 at ' + theta2.toFixed(0) + ' degrees projects that wave onto its own axis, which is what '
             + 'Malus\'s law squares.')
-      + (useP3 ? ' P3 at ' + theta3.toFixed(0) + ' degrees projects once more.' : '');
+      + (useP3 ? ' P3 at ' + theta3.toFixed(0) + ' degrees projects once more.' : '')
+      + ' Final transmitted intensity is ' + (finalIntensity * 100).toFixed(1)
+      + ' percent of the original intensity.'
+      + (polOutcomeState === 'extinguished' ? ' The final beam is extinguished.' : '');
 
     var gl3d = h('div', { style: { marginBottom: 10 } },
       _renderOptics3DToolbar({
@@ -6474,7 +7022,9 @@
       }, h),
       h('div', {
         role: 'group', tabIndex: 0, 'data-op-focusable': 'true',
-        'aria-label': 'Interactive three-dimensional polarization scene',
+        'aria-roledescription': 'interactive 3D model',
+        'data-op-polarization-3d-host': 'true',
+        'aria-label': 'Polarization 3D model. Drag or use arrow keys to orbit; use the mouse wheel, plus, or minus to zoom. Press zero to reset the camera.',
         'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
         onKeyDown: keyPolView,
         style: {
@@ -6509,6 +7059,61 @@
             upd({ polCamera: 'custom', polZoom: Math.max(0.5, Math.min(3, polZoom * (ev.deltaY < 0 ? 1.12 : 0.89))) });
           }
         }),
+        glLive && h('div', {
+          role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          'data-op-polarization-3d-outcome': polOutcomeState,
+          'data-polarization-mode': polMode,
+          'data-final-intensity': finalIntensity.toFixed(6),
+          'data-input-intensity': I0.toFixed(6),
+          'data-after-p1': afterP1.toFixed(6),
+          'data-after-qwp': useQwp ? afterP1.toFixed(6) : 'none',
+          'data-after-p2': afterP2.toFixed(6),
+          'data-after-p3': useP3 ? afterP3.toFixed(6) : 'none',
+          'data-p2-relative-transmission': polP2Transmission.toFixed(6),
+          'data-p3-relative-transmission': polP3Transmission == null ? 'none' : polP3Transmission.toFixed(6),
+          'data-qwp-enabled': useQwp ? 'true' : 'false',
+          'data-p3-enabled': useP3 ? 'true' : 'false',
+          'data-p2-axis': theta2.toFixed(1),
+          'data-p3-axis': useP3 ? theta3.toFixed(1) : undefined,
+          style: {
+            position: 'absolute', left: 8, top: 7, zIndex: 2, pointerEvents: 'none',
+            color: '#e2e8f0', background: 'rgba(8,17,31,.90)', padding: '6px 8px',
+            borderRadius: 8, borderLeft: '3px solid ' + polStatusColor,
+            boxShadow: '0 6px 18px rgba(0,0,0,.22)', fontSize: 10, lineHeight: 1.38,
+            maxWidth: 'calc(100% - 16px)', boxSizing: 'border-box',
+            fontVariantNumeric: 'tabular-nums'
+          }
+        },
+          h('div', { style: { color: polStatusColor, fontSize: 11, fontWeight: 800 } }, polOutcomeLabel),
+          h('div', { style: { color: '#f8fafc', fontWeight: 800 } },
+            'I_out = ' + (finalIntensity * 100).toFixed(1) + '% I\u2080'),
+          h('div', {
+            'data-op-polarization-stage-trail': 'true',
+            style: { color: '#f8fafc', marginTop: 2, fontWeight: 700 }
+          }, polStageLine),
+          h('div', {
+            'data-op-polarization-rule': 'true',
+            style: { color: '#67e8f9', fontWeight: 700 }
+          }, polProjectionLine),
+          h('div', null, polModeLine),
+          h('div', { style: { color: '#cbd5e1' } }, polAxisLine),
+          h('div', {
+            role: 'progressbar', 'aria-label': 'Final transmitted intensity',
+            'aria-valuemin': 0, 'aria-valuemax': 100,
+            'aria-valuenow': Number((finalIntensity * 100).toFixed(1)),
+            'aria-valuetext': (finalIntensity * 100).toFixed(1) + ' percent of original intensity',
+            'data-op-polarization-throughput': 'true',
+            style: {
+              height: 4, marginTop: 4, overflow: 'hidden', borderRadius: 999,
+              background: 'rgba(148,163,184,.24)'
+            }
+          }, h('div', {
+            style: {
+              width: (finalIntensity * 100).toFixed(1) + '%', height: '100%',
+              background: polStatusColor
+            }
+          }))
+        ),
         !glLive ? h('div', {
           style: {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
@@ -6524,7 +7129,7 @@
             color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
             background: 'rgba(11,18,32,.7)', padding: '2px 7px', borderRadius: 999
           }
-        }, 'Drag — orbit  ·  Scroll — zoom  ·  look down the beam to see the axis') : null,
+        }, 'Drag / arrows: orbit \u00b7 Scroll / +/-: zoom \u00b7 0: reset') : null,
         h('p', {
           id: 'optics-pol-gl-desc',
           style: {
@@ -6751,25 +7356,38 @@
     var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;
     var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;
     var useP3 = !!state.polUseP3;
+    var useQwp = !!state.polQwp;
     var I0 = 1.0;
     var afterP1 = 0.5 * I0;
-    var afterP2 = malus(afterP1, degToRad(theta2 - 0));
+    var afterP2 = useQwp ? afterP1 * 0.5 : malus(afterP1, degToRad(theta2 - 0));
     var afterP3 = useP3 ? malus(afterP2, degToRad(theta3 - theta2)) : null;
+    var finalIntensity = useP3 ? afterP3 : afterP2;
     var rows = [];
     rows.push(['I₀ (unpolarized)', '100%']);
     rows.push(['After P₁ (axis 0°)', '50.0% — unpolarized → ½ I₀']);
-    rows.push(['Δθ between P₁ and P₂', _fmt(theta2 - 0, 2) + '°']);
-    rows.push(['After P₂', _fmt(afterP2 * 100, 2) + '% I₀  =  ½ · cos²(' + theta2 + '°)']);
+    if (useQwp) {
+      rows.push(['Before P₂', 'Circular, 50.0% I₀ — QWP preserves intensity']);
+      rows.push(['After P₂', _fmt(afterP2 * 100, 2) + '% I₀ = 1/2 of circular input (angle-independent)']);
+    } else {
+      rows.push(['Δθ between P₁ and P₂', _fmt(theta2 - 0, 2) + '°']);
+      rows.push(['After P₂', _fmt(afterP2 * 100, 2) + '% I₀  =  ½ · cos²(' + theta2 + '°)']);
+    }
     if (useP3) {
       rows.push(['Δθ between P₂ and P₃', _fmt(theta3 - theta2, 2) + '°']);
       rows.push(['After P₃ (final)', _fmt(afterP3 * 100, 2) + '% I₀']);
     } else {
       rows.push(['Final transmitted', _fmt(afterP2 * 100, 2) + '% of original I₀']);
     }
-    return h('div', null,
+    return h('div', {
+      'data-op-polarization-calc-mode': useQwp ? 'circular' : 'linear',
+      'data-final-intensity': finalIntensity.toFixed(6)
+    },
       h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 8, lineHeight: 1.5 } },
-        "Malus's law: I = I_in cos²(Δθ), where Δθ is the angle between the incoming polarization and the polarizer's transmission axis. ",
-        h('b', null, 'Unpolarized light through ONE polarizer drops to I₀/2'), ' (independent of axis).'
+        useQwp
+          ? 'A quarter-wave plate preserves the 50.0% intensity while making the field circular. P₂ then transmits half at every axis; after P₂ the light is linear again, so any P₃ follows Malus\'s law.'
+          : "Malus's law: I = I_in cos²(Δθ), where Δθ is the angle between the incoming polarization and the polarizer's transmission axis. ",
+        !useQwp && h('b', null, 'Unpolarized light through ONE polarizer drops to I₀/2'),
+        !useQwp ? ' (independent of axis).' : ''
       ),
       h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, padding: 10, fontFamily: 'monospace', fontSize: 12 } },
         rows.map(function(r, i) {
@@ -6791,16 +7409,23 @@
             "Malus's law:  I = I_in cos²(Δθ)",
             '',
             'Step 1: Unpolarized → P₁  (always halves intensity)',
-            '  I₁ = ½ · I₀ = 50.0% I₀',
-            '',
-            'Step 2: P₁ → P₂',
-            '  Δθ₁₂ = ' + (theta2 - 0).toFixed(2) + '°',
-            '  I₂ = I₁ · cos²(Δθ₁₂)',
-            '     = 0.500 · cos²(' + theta2.toFixed(2) + '°)',
-            '     = 0.500 · ' + Math.pow(Math.cos(degToRad(theta2)), 2).toFixed(4),
-            '     = ' + afterP2.toFixed(4) + ' I₀',
-            '     = ' + (afterP2 * 100).toFixed(2) + '% I₀'
+            '  I₁ = ½ · I₀ = 50.0% I₀'
           ];
+          lines.push('');
+          if (useQwp) {
+            lines.push('Step 2: P₁ → QWP → P₂  (circular input)');
+            lines.push('  I_QWP = I₁ = 0.5000 I0  (the QWP changes state, not intensity)');
+            lines.push('  I2 = 1/2 I_QWP = 0.2500 I0');
+            lines.push('     = 25.00% I0 at every P2 angle');
+          } else {
+            lines.push('Step 2: P₁ → P₂');
+            lines.push('  Δθ₁₂ = ' + (theta2 - 0).toFixed(2) + '°');
+            lines.push('  I₂ = I₁ · cos²(Δθ₁₂)');
+            lines.push('     = 0.500 · cos²(' + theta2.toFixed(2) + '°)');
+            lines.push('     = 0.500 · ' + Math.pow(Math.cos(degToRad(theta2)), 2).toFixed(4));
+            lines.push('     = ' + afterP2.toFixed(4) + ' I₀');
+            lines.push('     = ' + (afterP2 * 100).toFixed(2) + '% I₀');
+          }
           if (useP3) {
             lines.push('');
             lines.push('Step 3: P₂ → P₃');
@@ -7333,9 +7958,29 @@
   }
 
   function _opticsFormulaSpec(tab, state) {
+    if (tab === 'reflection' && state.opActiveVariable === 'reflScreenCm') return {
+      context: 'mirror-screen',
+      parts: [{ text: 'blur / aperture = |1 - ' }, { text: 'd_s', key: 'reflScreenCm' }, { text: ' / d_i|' }],
+      hint: 'The ratio reaches zero only when a real image plane and the sampling screen coincide.'
+    };
+    if (tab === 'reflection' && state.opActiveVariable === 'reflObjH') return {
+      context: 'mirror-height',
+      parts: [{ text: 'h_i = m ' }, { text: 'h_o', key: 'reflObjH' }],
+      hint: 'Object height scales image height and screen-spot position, but it does not change image distance or magnification.'
+    };
     if (tab === 'reflection') return {
       parts: [{ text: '1/', key: null }, { text: 'f', key: 'reflFocal' }, { text: ' = 1/' }, { text: 'dₒ', key: 'reflDo' }, { text: ' + 1/dᵢ', key: 'reflImage' }],
       hint: 'Changing focal length or object distance moves the image predicted by the mirror equation.'
+    };
+    if (tab === 'lenses' && state.opActiveVariable === 'lensScreenCm') return {
+      context: 'lens-screen',
+      parts: [{ text: 'blur / aperture = |1 - ' }, { text: 'd_s', key: 'lensScreenCm' }, { text: ' / d_i|' }],
+      hint: 'The ratio reaches zero only when a real image plane and the physical screen coincide.'
+    };
+    if (tab === 'lenses' && state.opActiveVariable === 'lensObjH') return {
+      context: 'lens-height',
+      parts: [{ text: 'h_i = m ' }, { text: 'h_o', key: 'lensObjH' }],
+      hint: 'Object height scales image height and screen-spot position, but it does not change image distance or magnification.'
     };
     if (tab === 'lenses') return {
       parts: [{ text: '1/', key: null }, { text: 'f', key: 'lensFocal' }, { text: ' = 1/' }, { text: 'dₒ', key: 'lensDo' }, { text: ' + 1/dᵢ', key: 'lensImage' }],
@@ -7365,7 +8010,10 @@
   function _renderOpticsFormulaLink(tab, state, h) {
     var spec = _opticsFormulaSpec(tab, state);
     var active = state.opActiveVariable || '';
-    return h('div', { className: 'opticslab-formula-link', 'aria-live': 'polite' },
+    return h('div', {
+      className: 'opticslab-formula-link', 'aria-live': 'polite',
+      'data-op-formula-context': spec.context || tab
+    },
       h('span', { style: { fontWeight: 850, color: 'var(--allo-stem-text,#e2e8f0)' } }, 'Live relationship'),
       h('code', null, spec.parts.map(function(part, index) {
         return h('span', {
@@ -7377,11 +8025,16 @@
     );
   }
   function _opticsMissionCatalog(tab, state) {
-    var focal, result, spacing, width, groove, order, afterP2, afterP3;
+    var focal, result, imageDistance, screenDistance, sharpCapture, spacing, width, groove, order, afterP2, afterP3;
     if (tab === 'reflection') {
       focal = Math.abs(state.reflFocal || 10);
+      result = state.reflMirrorType === 'concave' ? thinLens(state.reflDo || 25, focal) : null;
+      imageDistance = result && !result.error ? result.d_i : null;
+      screenDistance = state.reflScreenCm != null ? +state.reflScreenCm : 15;
+      sharpCapture = imageDistance != null && imageDistance > 0 && imageDistance >= 2 && imageDistance <= 42
+        && Math.abs(1 - screenDistance / imageDistance) <= 0.005;
       return [
-        { title: 'Form a real mirror image', copy: 'Use a concave mirror with the object beyond the focal point.', done: state.reflMirrorType === 'concave' && state.reflDo > focal },
+        { title: 'Capture a sharp mirror image', copy: 'Use a concave mirror beyond f, then move the sample screen until the reflected bundle collapses.', done: sharpCapture },
         { title: 'Cross the focal boundary', copy: 'Move the object inside f and make the image virtual and upright.', done: state.reflMirrorType === 'concave' && state.reflDo < focal },
         { title: 'Build a wide-angle view', copy: 'Use a convex mirror and observe a reduced virtual image.', done: state.reflMirrorType === 'convex' }
       ];
@@ -7397,8 +8050,13 @@
     }
     if (tab === 'lenses') {
       focal = Math.abs(state.lensFocal || 12);
+      result = state.lensType === 'converging' ? thinLens(state.lensDo || 25, focal) : null;
+      imageDistance = result && !result.error ? result.d_i : null;
+      screenDistance = state.lensScreenCm != null ? +state.lensScreenCm : 20;
+      sharpCapture = imageDistance != null && imageDistance > 0 && imageDistance >= 2 && imageDistance <= 42
+        && Math.abs(1 - screenDistance / imageDistance) <= 0.005;
       return [
-        { title: 'Find the 2f landmark', copy: 'Use a converging lens and place the object at twice the focal length.', done: state.lensType === 'converging' && Math.abs(state.lensDo - 2 * focal) <= .75 },
+        { title: 'Capture a sharp lens image', copy: 'Use a converging lens beyond f, then move the physical screen until the outgoing bundle collapses.', done: sharpCapture },
         { title: 'Collimate the output', copy: 'Place the object on the focal plane so the outgoing rays become parallel.', done: state.lensType === 'converging' && Math.abs(state.lensDo - focal) <= .25 },
         { title: 'Turn the lens into a magnifier', copy: 'Move the object inside f to form a virtual enlarged image.', done: state.lensType === 'converging' && state.lensDo < focal }
       ];
@@ -7430,9 +8088,9 @@
     ];
   }
   var OPTICS_CAUSAL_CONTROLS = {
-    reflMirrorType: { label: 'Mirror type' }, reflFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, reflDo: { label: 'Object distance', unit: 'cm', digits: 1 }, reflScreenCm: { label: 'Sampling screen position', unit: 'cm', digits: 1 },
+    reflMirrorType: { label: 'Mirror type' }, reflFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, reflDo: { label: 'Object distance', unit: 'cm', digits: 1 }, reflObjH: { label: 'Object height', unit: 'cm', digits: 1 }, reflScreenCm: { label: 'Sampling screen position', unit: 'cm', digits: 1 },
     refrN1: { label: 'First index', digits: 3 }, refrN2: { label: 'Second index', digits: 3 }, refrTheta1: { label: 'Incident angle', unit: 'deg', digits: 1 },
-    lensType: { label: 'Lens type' }, lensFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, lensDo: { label: 'Object distance', unit: 'cm', digits: 1 }, lensScreenCm: { label: 'Screen position', unit: 'cm', digits: 1 },
+    lensType: { label: 'Lens type' }, lensFocal: { label: 'Focal length', unit: 'cm', digits: 1 }, lensDo: { label: 'Object distance', unit: 'cm', digits: 1 }, lensObjH: { label: 'Object height', unit: 'cm', digits: 1 }, lensScreenCm: { label: 'Screen position', unit: 'cm', digits: 1 },
     intLambda: { label: 'Wavelength', unit: 'nm', digits: 0 }, intSlitSep: { label: 'Slit separation', unit: 'mm', digits: 2 }, intScreenL: { label: 'Screen distance', unit: 'm', digits: 1 }, intSlitWidth: { label: 'Slit width', unit: 'um', digits: 0 },
     diffMode: { label: 'Aperture mode' }, diffLambda: { label: 'Wavelength', unit: 'nm', digits: 0 }, diffSlitWidth: { label: 'Slit width', unit: 'um', digits: 0 }, diffScreenL: { label: 'Screen distance', unit: 'm', digits: 1 }, diffGrating: { label: 'Line density', unit: 'lines/mm', digits: 0 }, diffGratingDuty: { label: 'Grating open fraction', unit: '%', digits: 0 },
     polTheta2: { label: 'P2 angle', unit: 'deg', digits: 0 }, polTheta3: { label: 'P3 angle', unit: 'deg', digits: 0 }, polUseP3: { label: 'Third polarizer' }, polQwp: { label: 'Quarter-wave plate' }
@@ -7441,6 +8099,7 @@
     reflMirrorType: 'Changing mirror curvature changes the sign of focal length, so real and virtual image rules swap.',
     reflFocal: 'Mirror power is proportional to 1/f; changing |f| changes how strongly rays converge or diverge.',
     reflDo: 'The mirror equation links reciprocal object and image distances; crossing f changes the image type.',
+    reflObjH: 'Object height scales image height and the vertical position of the sampled bundle, while image distance and magnification stay fixed.',
     reflScreenCm: 'A sampling screen becomes sharp only where a real reflected bundle collapses at the image plane; virtual and parallel bundles cannot be captured.',
     refrN1: 'Snell\'s law uses the ratio n1/n2, so changing the incident medium changes the permitted transmitted angle.',
     refrN2: 'A larger destination index bends the ray closer to the normal; a lower index can create a critical angle.',
@@ -7448,6 +8107,7 @@
     lensType: 'Changing the sign of focal length switches between convergence and divergence.',
     lensFocal: 'Optical power is proportional to 1/f, so focal length controls where the rays meet.',
     lensDo: 'The thin-lens equation links reciprocal object and image distances; crossing f sends the image through infinity.',
+    lensObjH: 'Object height scales image height and the vertical position of the sampled bundle, while image distance and magnification stay fixed.',
     lensScreenCm: 'A physical screen is sharp only where a real outgoing ray bundle collapses at the image plane.',
     intLambda: 'Fringe spacing is directly proportional to wavelength: delta-y = lambda L / d.',
     intSlitSep: 'Fringe spacing is inversely proportional to slit separation: delta-y = lambda L / d.',

@@ -1278,6 +1278,57 @@ function AIBackendModalBody(props) {
     setShowAIBackendModal, showAIBackendModal, t,
     GEMINI_MODELS
   } = props;
+  const launchPadActive = typeof document !== 'undefined'
+    && !!document.body
+    && document.body.classList.contains('alloflow-launchpad-active');
+  const aiBackendOverlayZ = launchPadActive ? 2147483002 : (props.showStemLab ? 10490 : undefined);
+  const aiBackendDialogRef = React.useRef(null);
+  React.useEffect(() => {
+    const dialog = aiBackendDialogRef.current;
+    if (!dialog) return undefined;
+    const previouslyFocused = document.activeElement;
+    try { dialog.focus({ preventScroll: true }); }
+    catch (_) { try { dialog.focus(); } catch (_) {} }
+    return () => {
+      if (previouslyFocused && previouslyFocused !== document.body && previouslyFocused.isConnected && typeof previouslyFocused.focus === 'function') {
+        try { previouslyFocused.focus({ preventScroll: true }); }
+        catch (_) { try { previouslyFocused.focus(); } catch (_) {} }
+      }
+    };
+  }, []);
+  const handleAIBackendDialogKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      setShowAIBackendModal(false);
+      return;
+    }
+    if (event.key !== 'Tab') return;
+    const dialog = aiBackendDialogRef.current;
+    if (!dialog) return;
+    const focusable = Array.from(dialog.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable="true"], [tabindex]:not([tabindex="-1"])'
+    )).filter((element) => {
+      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
+      const style = typeof window.getComputedStyle === 'function' ? window.getComputedStyle(element) : null;
+      return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+    });
+    if (!focusable.length) {
+      event.preventDefault();
+      dialog.focus();
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === dialog || !dialog.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || active === dialog || !dialog.contains(active))) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
   const isStudentAiSetup = Boolean(typeof window !== 'undefined' && window.__alloStudentAiSetupAllowed && window.__alloQrStudentMode);
   const requestedSettingsSection = (() => {
     try { return String(window.__alloAISettingsRequestedSection || ''); }
@@ -1931,15 +1982,17 @@ function AIBackendModalBody(props) {
   };
   return (
         <div
+          data-ai-backend-modal-overlay="true"
           /* z raise while the STEAM Lab is open (lab overlay = INLINE zIndex 10020,
              stem_lab_module.js — its class says 9999 but the style wins). Without
              this, the keyless deep-link visitor clicks the "AI extras: off" pill
              and the doorway opens UNDERNEATH the lab: visible to no one, pointer
              events intercepted (caught by 43-keyless-ai-honesty.spec.ts,
-             2026-08-17). Same pattern as the AlloBot chat containers above. */
-          style={{ zIndex: props.showStemLab ? 10490 : undefined }}
+             2026-08-17). The launch pad is higher still, so its explicit setting
+             doorway must win even if a mounted lab remains behind that surface. */
+          style={{ zIndex: aiBackendOverlayZ }}
           className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={(e) => { if (e.key === 'Escape') setShowAIBackendModal(false); }} onClick={e => e.stopPropagation()}>
+          <div ref={aiBackendDialogRef} data-help-key="ai_backend_modal_panel" data-student-ai-setup={isStudentAiSetup ? 'true' : 'false'} className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="ai-backend-title" tabIndex={-1} onKeyDown={handleAIBackendDialogKeyDown} onClick={e => e.stopPropagation()}>
             {isStudentAiSetup && <style>{`
               [data-student-ai-setup="true"] #ai-backend-engine-strip,
               [data-student-ai-setup="true"] #ai-backend-sdturbo-strip,

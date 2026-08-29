@@ -889,10 +889,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   h('div', null, '\uD83C\uDF1F Prey: ' + sp.preyEmoji + ' ' + sp.preyLabel),
                   h('div', null, '\uD83D\uDD0A Sonar: ' + sp.sonarType)),
                 // Select button
-                h('button', {
-                  'aria-label': 'Select ' + sp.name,
-                  onClick: function(e) { e.stopPropagation(); upd('playableSpecies', sp.id); },
-                  className: 'w-full mt-3 px-4 py-2 rounded-lg text-xs font-bold transition-all ' +
+                h('span', {
+                  'aria-hidden': 'true',
+                  className: 'block text-center w-full mt-3 px-4 py-2 rounded-lg text-xs font-bold transition-all ' +
                     (isSelected ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-indigo-900/50 text-indigo-300 hover:bg-indigo-800' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'))
                 }, isSelected ? '\u2713 Selected' : 'Select ' + sp.name)
               );
@@ -2497,6 +2496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // Create offscreen sonar buffer
         if (!sonarBufferRef.current) {
           sonarBufferRef.current = document.createElement('canvas');
+          sonarBufferRef.current.setAttribute('aria-hidden', 'true');
           sonarBufferRef.current.width = 800;
           sonarBufferRef.current.height = 500;
         }

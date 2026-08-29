@@ -272,10 +272,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + AMBER + ', #f59e0b)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Friendship sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Friendship sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t) {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
@@ -285,7 +285,8 @@ window.SelHub = window.SelHub || {
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#fbbf24', marginLeft: '2px' } }) : null
             );
-          }),
+            })
+          ),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: AMBER_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _frC('#fef3c7'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundEnabled', !soundEnabled); }, className: 'sel-btn', 'aria-label': soundEnabled ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )

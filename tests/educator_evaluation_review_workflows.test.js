@@ -131,9 +131,10 @@ function acknowledgeAndConfirm(container, label) {
 describe('review-before-recording decisions', () => {
   it('keeps a shared comment unchanged on cancel and appends it exactly once on confirmation', async () => {
     const container = mountSample();
+    selectEducator(container, 'Teacher 03');
     clickButton(container, 'Walkthroughs');
     const record = Array.from(container.querySelectorAll('.ae-record'))
-      .find((candidate) => candidate.textContent.includes('At 10:14 students moved'));
+      .find((candidate) => candidate.textContent.includes('Independent reading with a conference rotation'));
     click(record);
 
     const thread = container.querySelector('.ae-thread');
@@ -211,6 +212,7 @@ describe('review-before-recording decisions', () => {
 describe('walkthrough draft lifecycle', () => {
   it('offers Resume only after the evaluator enters meaningful draft content', () => {
     const container = mountSample();
+    selectEducator(container, 'Teacher 03');
     clickButton(container, 'Walkthroughs');
     clickButton(container, '+ Start walkthrough');
     expect(sessionStorage.getItem(DRAFT_KEY)).toBeNull();

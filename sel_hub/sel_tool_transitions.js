@@ -211,15 +211,16 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + SKY + ', #38bdf8)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Transitions sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Transitions sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t) {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
               key: t.id, role: 'tab', className: 'sel-tab' + (active ? ' sel-tab-active' : ''), 'aria-selected': active ? 'true' : 'false',
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: {
                 padding: '6px 14px', borderRadius: '10px', border: active ? 'none' : '1px solid ' + (explored ? '#bae6fd' : 'transparent'),
                 background: active ? 'linear-gradient(135deg, ' + SKY + ', #0369a1)' : explored ? 'rgba(2,132,199,0.06)' : 'transparent',
@@ -231,7 +232,8 @@ window.SelHub = window.SelHub || {
             }, h('span', { className: active ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#38bdf8', marginLeft: '2px' } }) : null
             );
-          }),
+            })
+          ),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: SKY_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _trC('#e0f2fe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', {
             onClick: function() { upd('soundEnabled', !soundEnabled); },

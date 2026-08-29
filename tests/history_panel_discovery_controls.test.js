@@ -13,9 +13,10 @@ describe('HistoryPanel resource discovery controls', () => {
   it('searches localized titles, metadata, and resource types within the selected unit', () => {
     expect(source).toContain("const [resourceSearch, setResourceSearch] = React.useState('');");
     expect(source).toContain("const [resourceTypeFilter, setResourceTypeFilter] = React.useState('all');");
-    expect(source).toContain('const localizedTitle = getDefaultTitle(type);');
+    expect(source).toContain("let localizedTitle = '';");
+    expect(source).toContain('try { localizedTitle = getDefaultTitle(type); } catch (_) {}');
     expect(source).toContain('unitFilteredHistory.filter(item => {');
-    expect(source).toContain('[itemTitle, itemMeta, item.type, getResourceTypeLabel(item.type)]');
+    expect(source).toContain('[itemTitle, itemMeta, itemType, getResourceTypeLabel(itemType)]');
     expect(source).toContain("placeholder={t('history.search_resources_placeholder')}");
     expect(source).toContain("aria-label={t('history.search_resources_aria')}");
     expect(source).toContain("aria-label={t('history.filter_by_type_aria')}");

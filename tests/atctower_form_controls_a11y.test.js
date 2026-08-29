@@ -10,9 +10,11 @@ describe('ATC Tower inquiry form accessibility', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
 
-  it('names the second-variant load hypothesis and explanation fields', () => {
+  it('names both live-model evidence explanation fields', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': t('stem.atctower.hypothesis_input', 'ATC load hypothesis')");
-    expect(source).toContain("'aria-label': t('stem.atctower.explanation_input', 'ATC load explanation')");
+    const evidenceLabelCount = source.split('Evidence-based ATC load explanation').length - 1;
+    expect(evidenceLabelCount).toBe(2);
+    expect(source).not.toContain("'ATC load hypothesis'");
+    expect(source).not.toContain("'ATC load explanation'");
   });
 });

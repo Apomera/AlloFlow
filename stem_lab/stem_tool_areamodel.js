@@ -1067,8 +1067,8 @@ window.StemLab = window.StemLab || {
 
         // Challenge section
         h('div', { className: 'bg-amber-50 rounded-xl p-4 border border-amber-200 space-y-3' },
-          h('div', { className: 'flex items-center justify-between' },
-            h('div', { className: 'flex items-center gap-2' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+            h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('h4', { className: 'text-sm font-bold text-amber-800' }, t('stem.areamodel.multiplication_challenge', '\uD83C\uDFAF Multiplication Challenge')),
               h('div', { className: 'flex gap-0.5 ml-2' },
                 ['easy', 'medium', 'hard'].map(function(d) {

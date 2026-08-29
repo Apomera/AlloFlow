@@ -148,10 +148,10 @@
       lesson: 'Maintenance is science in action: observe a symptom, isolate the likely cause, change one thing, and verify the system response.',
       discoveries: [['♻️ Water panel', 'Condensed breath, sweat, and processed urine rejoin one carefully monitored water loop.'], ['🚽 Waste system', 'Airflow pulls waste away from the body; a normal gravity toilet would not work in freefall.']] },
     { id: 'unity', module: 'Unity', time: '15:10 GMT', icon: '🫸', color: '#34d399', name: 'Unity node', zone: 'Low-g practice', skill: 'Newton’s laws', telemetry: ['RELATIVE SPEED', '0.00 m/s'],
-      objective: 'Choose an impulse that reaches the cargo slowly enough to stop at the next rail.', hint: 'With almost no drag, the speed you create will remain until another force stops you.',
-      scene: 'Six passageways meet at this busy intersection. A cargo pouch has floated loose just beyond your fingertips.',
+      objective: 'Match the loose pouch velocity, catch it gently, then brace and secure it at the marked restraint.', hint: 'A safe catch depends on relative speed. Move with the pouch before grabbing it, then use a rail as your stable anchor.',
+      scene: 'Six passageways meet at this busy intersection. A cargo pouch drifts and tumbles between a handrail and a glowing restraint target.',
       sound: 'Velcro tears, fans whir, and a crewmate calls “coming through” from the next hatch.',
-      task: 'Retrieve a floating cargo pouch', prompt: 'You are at rest beside a handrail. How should you launch toward the pouch without colliding with the far hatch?',
+      task: 'Catch and secure a floating cargo pouch', prompt: 'You are at rest beside a handrail. How should you launch toward the pouch without colliding with the far hatch?',
       choices: [
         { id: 'hard', label: 'Kick off hard', feedback: 'You reach it fast but cannot stop — there is almost no drag. You bump the far hatch and send the pouch spinning.' },
         { id: 'swim', label: 'Swim through the air', feedback: 'Air is far too thin to push against effectively. Astronauts translate by pushing on the station’s structure.' },
@@ -490,6 +490,7 @@
     var W = size, H = size / 2;
     function make(w, h) {
       var cvs = document.createElement('canvas');
+      cvs.setAttribute('aria-hidden', 'true');
       cvs.width = w; cvs.height = h;
       return cvs;
     }
@@ -635,6 +636,7 @@
   function issGlowCanvas() {
     if (_issGlowCanvas) return _issGlowCanvas;
     var cvs = document.createElement('canvas');
+    cvs.setAttribute('aria-hidden', 'true');
     cvs.width = 128; cvs.height = 128;
     var g2d = cvs.getContext && cvs.getContext('2d');
     if (!g2d) return null;
@@ -660,7 +662,7 @@
       { id: 'iss_module', label: 'Inspect 3 station modules in the 3-D map', icon: '🛰️', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenModules || {}).length >= 3; } },
       { id: 'iss_day', label: 'Walk through an astronaut’s whole day', icon: '👩‍🚀', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.seenHours || {}).length >= 6; } },
       { id: 'iss_inside', label: 'Complete 3 jobs inside the station', icon: '🧑‍🔬', check: function (d) { var s = (d && d.spaceStation) || {}; return Object.keys(s.interiorDone || {}).filter(function (k) { return !!s.interiorDone[k]; }).length >= 3; } },
-      { id: 'iss_freeflight', label: 'Complete 3 free-flight navigation challenges', icon: '\uD83E\uDDED', check: function (d) { var n = (((d && d.spaceStation) || {}).interiorNav) || {}; return [n.preciseHatch, n.handrailStop, n.cargoClear, n.orientationRecovered, n.routeComplete].filter(Boolean).length >= 3; } },
+      { id: 'iss_freeflight', label: 'Complete 3 free-flight navigation challenges', icon: '\uD83E\uDDED', check: function (d) { var n = (((d && d.spaceStation) || {}).interiorNav) || {}; return [n.preciseHatch, n.handrailStop, (n.cargoClear || n.cargoSecured), n.transferComplete, n.worksiteComplete, n.orientationRecovered, n.routeComplete].filter(Boolean).length >= 3; } },
       { id: 'iss_ops', label: 'Simulate a full station orbit', icon: '📡', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.opsRuns || 0) >= 1; } },
       { id: 'iss_orbit', label: 'Change the orbit in the Orbit Lab', icon: '🧮', check: function (d) { var s = (d && d.spaceStation) || {}; return !!s.orbitTouched; } },
       { id: 'iss_quiz', label: 'Score ' + QUIZ_PASS + '+ on the station quiz', icon: '🧠', check: function (d) { var s = (d && d.spaceStation) || {}; return (s.quizBest || 0) >= QUIZ_PASS; } },
@@ -682,6 +684,10 @@
       var _prefersReducedMotion = false;
       try { _prefersReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
 
+      function freshInteriorNavigation() {
+        return { flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false };
+      }
+
       if (!labToolData || !labToolData.spaceStation) {
         setLabToolData(function (prev) {
           return Object.assign({}, prev, { spaceStation: {
@@ -689,7 +695,7 @@
             interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
             interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
             interiorGuided: true, lowGImpulse: 10, lowGResult: null,
-            interiorView: '3d', interiorNav: { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 },
+            interiorView: '3d', interiorNav: freshInteriorNavigation(),
             researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {}, cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
             opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
             orbitAlt: 420, orbitInc: 51.6, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
@@ -701,6 +707,10 @@
       }
       var d = labToolData.spaceStation;
       function upd(patch) {
+        var startsFreshInteriorShift = patch && patch.interiorShiftComplete === false && Array.isArray(patch.interiorLog) && patch.interiorLog.length === 0
+          && patch.interiorDone && Object.keys(patch.interiorDone).length === 0
+          && patch.cabinStow && Object.keys(patch.cabinStow).length === 0;
+        if (startsFreshInteriorShift) patch = Object.assign({}, patch, { interiorNav: freshInteriorNavigation() });
         setLabToolData(function (prev) {
           var s = Object.assign({}, (prev && prev.spaceStation) || {}, patch);
           return Object.assign({}, prev, { spaceStation: s });
@@ -743,11 +753,16 @@
           '.iss-interior-viewbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}.iss-interior-viewbar p{margin:0;color:#94a3b8;font-size:10.5px}.iss-interior-view-switch{display:flex;gap:4px;padding:3px;border:1px solid var(--iss-line);border-radius:10px;background:rgba(2,6,23,.46)}.iss-interior-view-switch button{padding:6px 9px;border:0;border-radius:7px;background:transparent;color:#94a3b8;font-size:10.5px;font-weight:850;cursor:pointer}.iss-interior-view-switch button[aria-pressed="true"]{background:#0ea5e9;color:#04121f;box-shadow:0 5px 14px rgba(14,165,233,.22)}' +
           '.iss-interior-sim{margin-bottom:10px}.iss-interior-3d{position:relative;overflow:hidden;border:1px solid rgba(125,211,252,.42);border-radius:16px;background:#030712;box-shadow:0 20px 45px rgba(2,6,23,.42),inset 0 0 40px rgba(14,165,233,.08)}.iss-interior-canvas{display:block;width:100%;height:clamp(320px,48vw,450px);background:#030712;cursor:crosshair;touch-action:none}.iss-interior-hud{position:absolute;inset:10px 10px auto;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;pointer-events:none}.iss-interior-hud span,.iss-interior-help,.iss-interior-route-hud{padding:5px 8px;border:1px solid rgba(125,211,252,.26);border-radius:7px;background:rgba(2,6,23,.72);backdrop-filter:blur(7px);color:#bae6fd;font:850 8.5px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.55px}.iss-interior-hud .iss-interior-room-hud{overflow:hidden;color:#f8fafc;text-overflow:ellipsis;white-space:nowrap}.iss-interior-help{position:absolute;left:50%;bottom:10px;z-index:2;width:max-content;max-width:calc(100% - 20px);transform:translateX(-50%);color:#cbd5e1;text-align:center;pointer-events:none}.iss-interior-route-hud{position:absolute;left:10px;bottom:45px;z-index:2;color:#94a3b8;pointer-events:none}.iss-interior-route-hud strong{color:#7dd3fc}.iss-interior-fallback{margin:8px 0 0;padding:8px;border-left:3px solid #fbbf24;background:rgba(251,191,36,.09);color:#fde68a;font-size:11px}' +
           '.iss-interior-sim[data-iss-webgl-state="unavailable"] .iss-interior-controls{display:none}' +
-          '.iss-interior-safety button[aria-disabled="true"]{opacity:.72;border-style:dashed;cursor:help}' +
+          '.iss-interior-safety [data-iss-interior-transfer-status="contact"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-transfer-status="ready"],.iss-interior-safety [data-iss-interior-transfer-status="tethered"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-transfer-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
+          '.iss-interior-safety button[aria-disabled="true"]{opacity:.72;border-style:dashed;cursor:help}.iss-interior-safety [data-iss-interior-cargo-status="held"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-cargo-status="secured"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-worksite-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-worksite-status="ready"],.iss-interior-safety [data-iss-interior-worksite-status="working"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-worksite-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-capillary-status="unstable"],.iss-interior-safety [data-iss-interior-capillary-status="overflow"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-capillary-status="ready"],.iss-interior-safety [data-iss-interior-capillary-status="priming"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-capillary-status="underfill"],.iss-interior-safety [data-iss-interior-capillary-status="interrupted"]{border-color:#fbbf24;color:#fde68a}.iss-interior-safety [data-iss-interior-capillary-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}.iss-interior-safety [data-iss-interior-observation-status="align"]{border-color:#a78bfa;color:#ddd6fe}.iss-interior-safety [data-iss-interior-observation-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-observation-status="ready"],.iss-interior-safety [data-iss-interior-observation-status="locking"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-observation-status="blurred"],.iss-interior-safety [data-iss-interior-observation-status="interrupted"]{border-color:#fbbf24;color:#fde68a}.iss-interior-safety [data-iss-interior-observation-status="captured"],.iss-interior-safety [data-iss-interior-observation-status="secured"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
+          '.iss-interior-safety [data-iss-interior-stow-status="match-motion"],.iss-interior-safety [data-iss-interior-stow-status="unbraced"]{border-color:#f97316;color:#fed7aa}.iss-interior-safety [data-iss-interior-stow-status="carry"]{border-color:#a78bfa;color:#ddd6fe}.iss-interior-safety [data-iss-interior-stow-status="ready-catch"],.iss-interior-safety [data-iss-interior-stow-status="ready-secure"]{border-color:#38bdf8;color:#bae6fd;box-shadow:inset 0 0 14px rgba(56,189,248,.12)}.iss-interior-safety [data-iss-interior-stow-status="complete"]{border-color:#4ade80;color:#bbf7d0;border-style:solid;opacity:1}' +
           '.iss-interior-controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-top:8px}.iss-interior-thrusters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}.iss-interior-thrusters button,.iss-interior-safety button{min-height:39px;padding:6px 7px;border:1px solid #475569;border-radius:9px;background:rgba(2,6,23,.44);color:#cbd5e1;font-size:9.5px;font-weight:850;cursor:pointer;touch-action:none}.iss-interior-thrusters button:active{border-color:#7dd3fc;background:rgba(14,165,233,.2)}.iss-interior-safety{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px}.iss-interior-safety button:first-child{border-color:#fbbf24;color:#fde68a}.iss-interior-instructions{margin:7px 0 0;color:#94a3b8;font-size:10.5px;line-height:1.5}.iss-nav-challenges{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:6px;margin:9px 0 2px}.iss-nav-challenge{min-height:62px;padding:8px;border:1px solid #334155;border-radius:10px;background:rgba(2,6,23,.38);color:#94a3b8}.iss-nav-challenge.is-complete{border-color:rgba(74,222,128,.52);background:rgba(34,197,94,.09);color:#bbf7d0}.iss-nav-challenge strong{display:block;margin-bottom:2px;color:#e2e8f0;font-size:10px}.iss-nav-challenge span{display:block;font-size:9px;line-height:1.35}.iss-nav-challenge i{float:right;font-style:normal}.iss-discovery-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}.iss-discovery-row button{padding:7px 8px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.52);color:#e2e8f0;font-size:10px;font-weight:800;cursor:pointer}' +
           '.iss-interior-3d:focus-within{border-color:#7dd3fc;box-shadow:0 20px 45px rgba(2,6,23,.42),inset 0 0 52px rgba(14,165,233,.13),0 0 0 2px rgba(125,211,252,.16)}.iss-interior-hud{grid-template-columns:minmax(0,1fr) repeat(3,auto)}.iss-interior-speed[data-rate="controlled"]{color:#bbf7d0;border-color:rgba(74,222,128,.42)}.iss-interior-speed[data-rate="fast"]{color:#fde68a;border-color:rgba(251,191,36,.52)}.iss-interior-reticle{position:absolute;left:50%;top:50%;z-index:2;width:72px;height:72px;transform:translate(-50%,-50%);pointer-events:none}.iss-interior-reticle:before,.iss-interior-reticle:after{content:"";position:absolute;left:50%;top:50%;background:rgba(224,242,254,.7);box-shadow:0 0 8px rgba(125,211,252,.5)}.iss-interior-reticle:before{width:24px;height:1px;transform:translate(-50%,-50%)}.iss-interior-reticle:after{width:1px;height:24px;transform:translate(-50%,-50%)}.iss-interior-horizon{position:absolute;left:12px;right:12px;top:35px;height:1px;background:linear-gradient(90deg,transparent,#7dd3fc 28%,#7dd3fc 72%,transparent);opacity:.5;transform-origin:50% 50%}.iss-interior-velocity-dot{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px;border:1px solid #f8fafc;border-radius:50%;background:#38bdf8;box-shadow:0 0 12px #38bdf8}.iss-interior-next-hatch{position:absolute;right:10px;top:54px;z-index:2;display:grid;grid-template-columns:auto 1fr;gap:2px 7px;align-items:center;max-width:190px;padding:7px 9px;border:1px solid rgba(125,211,252,.32);border-radius:9px;background:rgba(2,6,23,.76);color:#e0f2fe;font:800 8.5px ui-monospace,monospace;pointer-events:none}.iss-interior-next-hatch-arrow{grid-row:1/3;display:grid;place-items:center;width:24px;height:24px;border:1px solid rgba(125,211,252,.46);border-radius:50%;color:#7dd3fc;font-size:17px}.iss-interior-next-hatch strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.6px}.iss-interior-next-hatch span:last-child{color:#94a3b8}.iss-interior-objective{position:absolute;left:10px;top:54px;z-index:2;max-width:210px;padding:7px 9px;border-left:3px solid #fbbf24;border-radius:7px;background:rgba(2,6,23,.76);color:#fef3c7;font:800 8px ui-monospace,monospace;letter-spacing:.45px;pointer-events:none}.iss-interior-event{position:absolute;left:50%;top:26%;z-index:3;max-width:75%;padding:7px 11px;border:1px solid rgba(125,211,252,.4);border-radius:8px;background:rgba(2,6,23,.86);color:#bae6fd;font:900 9px ui-monospace,monospace;letter-spacing:.7px;text-align:center;transform:translate(-50%,-8px);opacity:0;transition:opacity .16s ease,transform .16s ease;pointer-events:none}.iss-interior-event.is-visible{opacity:1;transform:translate(-50%,0)}.iss-interior-event[data-tone="safe"]{color:#bbf7d0;border-color:#4ade80}.iss-interior-event[data-tone="warn"],.iss-interior-event[data-tone="impact"]{color:#fde68a;border-color:#fbbf24}.iss-interior-mission-cue{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;margin:8px 0 0;padding:8px 10px;border:1px solid rgba(125,211,252,.25);border-radius:10px;background:linear-gradient(90deg,rgba(14,165,233,.12),rgba(2,6,23,.38))}.iss-interior-mission-cue>span{grid-row:1/3;color:#7dd3fc;font:900 8px ui-monospace,monospace;letter-spacing:1px}.iss-interior-mission-cue strong{color:#e0f2fe;font-size:10.5px}.iss-interior-mission-cue small{color:#94a3b8;font-size:9px}.iss-interior-thrusters button{display:flex;align-items:center;justify-content:space-between;gap:5px}.iss-interior-thrusters kbd{min-width:20px;padding:2px 4px;border:1px solid #64748b;border-bottom-width:2px;border-radius:4px;background:#101827;color:#e0f2fe;font:850 8px ui-monospace,monospace}.iss-interior-safety button:disabled{opacity:.48;cursor:not-allowed}.iss-location-strip.iss-interior-route-map{display:block;padding:8px 10px;overflow:hidden}.iss-route-map-heading{display:flex;justify-content:space-between;gap:10px;color:#94a3b8;font:850 8px ui-monospace,monospace;letter-spacing:.7px}.iss-route-map-heading strong{color:#7dd3fc}.iss-route-schematic{display:block;width:100%;height:auto;margin-top:2px}.iss-route-schematic .iss-route-line{fill:none;stroke:#334155;stroke-width:3}.iss-route-schematic .iss-route-progress-line{fill:none;stroke:#38bdf8;stroke-width:2;stroke-dasharray:5 5;opacity:.65}.iss-route-schematic .iss-route-node circle{fill:#07101d;stroke:#64748b;stroke-width:2}.iss-route-schematic .iss-route-node text{fill:#94a3b8;font:800 8px ui-monospace,monospace;text-anchor:middle}.iss-route-schematic .iss-route-node.is-visited circle{stroke:#38bdf8}.iss-route-schematic .iss-route-node.is-done circle{fill:#14532d;stroke:#4ade80}.iss-route-schematic .iss-route-node.is-current circle{fill:#0ea5e9;stroke:#e0f2fe;stroke-width:3;filter:drop-shadow(0 0 5px #38bdf8)}.iss-route-schematic .iss-route-node.is-current text{fill:#e0f2fe}.iss-route-schematic .iss-route-branch-label{fill:#fbbf24;font:850 7px ui-monospace,monospace;letter-spacing:.6px}' +
-          '.iss-route-schematic .iss-route-node.is-next circle{stroke:#fbbf24;stroke-dasharray:3 2}.iss-route-schematic .iss-route-node.is-next text{fill:#fde68a}@media (max-width:620px){.iss-interior-objective{display:none}.iss-interior-next-hatch{top:54px;right:8px;max-width:148px}.iss-interior-next-hatch strong{max-width:96px}.iss-interior-hud span:nth-child(4){display:none}.iss-route-map-heading span{display:none}}@media (prefers-reduced-motion:reduce){.iss-interior-event{transition:none}.iss-route-schematic .iss-route-progress-line{stroke-dasharray:none}}' +
-          '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}}' +
+          '.iss-interior-braking{position:absolute;right:10px;bottom:45px;z-index:2;max-width:220px;padding:6px 8px;border:1px solid rgba(125,211,252,.3);border-radius:7px;background:rgba(2,6,23,.78);color:#bae6fd;font:850 8px ui-monospace,monospace;letter-spacing:.55px;pointer-events:none}.iss-interior-braking[data-state="controlled"]{border-color:rgba(74,222,128,.5);color:#bbf7d0}.iss-interior-braking[data-state="warn"]{border-color:rgba(251,191,36,.58);color:#fde68a}.iss-interior-impact-flash{position:absolute;inset:0;z-index:2;opacity:0;background:radial-gradient(circle at center,transparent 45%,rgba(248,113,113,.2));box-shadow:inset 0 0 58px rgba(248,113,113,.7);transition:opacity .14s ease;pointer-events:none}.iss-interior-impact-flash.is-visible{opacity:1}.iss-interior-reticle{--iss-motion-color:#94a3b8}.iss-interior-reticle[data-rate="controlled"]{--iss-motion-color:#4ade80}.iss-interior-reticle[data-rate="fast"]{--iss-motion-color:#fbbf24}.iss-interior-reticle[data-rate="impact"]{--iss-motion-color:#f87171}.iss-interior-reticle:before,.iss-interior-reticle:after{background:var(--iss-motion-color);box-shadow:0 0 9px var(--iss-motion-color)}.iss-interior-velocity-dot{background:var(--iss-motion-color);box-shadow:0 0 12px var(--iss-motion-color)}.iss-interior-hud [data-iss-interior-rail-distance][data-reachable="true"]{color:#bbf7d0;border-color:rgba(74,222,128,.46)}@media (max-width:620px){.iss-interior-braking{right:8px;bottom:44px;max-width:160px}}@media (prefers-reduced-motion:reduce){.iss-interior-impact-flash{transition:none}}' +
+          '.iss-interior-orientation{position:absolute;left:50%;top:78px;width:max-content;min-width:118px;padding:4px 7px;border:1px solid rgba(251,191,36,.42);border-radius:6px;background:rgba(2,6,23,.82);color:#fde68a;font:850 8px ui-monospace,monospace;letter-spacing:.45px;text-align:center;text-shadow:0 0 8px rgba(251,191,36,.42);transform:translateX(-50%)}.iss-interior-orientation[data-state="stable"]{border-color:rgba(74,222,128,.52);color:#bbf7d0;text-shadow:0 0 8px rgba(74,222,128,.42)}.iss-interior-orientation[data-state="inverted"]{border-color:rgba(248,113,113,.62);color:#fecaca;text-shadow:0 0 8px rgba(248,113,113,.48)}' +
+          '@media (max-width:620px){.iss-interior-braking{left:8px;right:8px;bottom:8px;max-width:none;text-align:center}.iss-interior-help{display:none}.iss-interior-orientation{top:74px;font-size:7px}}' +
+          '.iss-route-schematic .iss-route-node.is-next circle{stroke:#fbbf24;stroke-dasharray:3 2}.iss-route-schematic .iss-route-node.is-next text{fill:#fde68a}@media (max-width:620px){.iss-interior-objective{display:none}.iss-interior-next-hatch{top:54px;right:8px;max-width:148px}.iss-interior-next-hatch strong{max-width:96px}.iss-interior-hud span:nth-child(4){display:none}.iss-interior-event{top:34%;max-width:86%}.iss-route-map-heading span{display:none}}@media (prefers-reduced-motion:reduce){.iss-interior-event{transition:none}.iss-route-schematic .iss-route-progress-line{stroke-dasharray:none}}' +
+          '@media (max-width:620px){.iss-interior-hud{grid-template-columns:1fr auto}.iss-interior-hud span:nth-child(3){display:none}.iss-interior-controls{grid-template-columns:1fr}.iss-interior-thrusters{grid-template-columns:repeat(2,minmax(0,1fr))}.iss-interior-safety{justify-content:stretch}.iss-interior-safety button{flex:1 1 110px}.iss-interior-route-hud{display:none}.iss-discovery-row{grid-template-columns:1fr}}@media (forced-colors:active){.iss-interior-3d,.iss-nav-challenge,.iss-interior-view-switch,.iss-interior-event,.iss-interior-braking,.iss-interior-objective,.iss-interior-next-hatch{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.iss-interior-hud,.iss-interior-help{display:none}.iss-interior-reticle{--iss-motion-color:CanvasText}.iss-interior-impact-flash{display:none}}' +
           '.iss-station-stage{position:relative;border-radius:18px!important;border-color:rgba(125,211,252,.35)!important;box-shadow:0 18px 45px rgba(2,6,23,.42),inset 0 0 45px rgba(14,165,233,.08)}.iss-stage-hud{position:absolute;inset:12px 12px auto;display:flex;justify-content:space-between;gap:8px;pointer-events:none}.iss-hud-chip{padding:6px 9px;border:1px solid rgba(125,211,252,.25);border-radius:8px;background:rgba(2,6,23,.62);backdrop-filter:blur(8px);color:#bae6fd;font:800 9px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.7px}.iss-stage-help{position:absolute;left:50%;bottom:12px;transform:translateX(-50%);padding:6px 10px;border:1px solid rgba(148,163,184,.22);border-radius:20px;background:rgba(2,6,23,.64);backdrop-filter:blur(8px);color:#cbd5e1;font-size:9.5px;font-weight:700;pointer-events:none;white-space:nowrap}.iss-module-picker{padding:8px;border:1px solid var(--iss-line);border-radius:12px;background:rgba(2,6,23,.34)}.iss-module-marker{position:absolute;z-index:3;display:flex;align-items:center;gap:5px;transform:translate(-50%,-135%);pointer-events:none;transition:left .08s linear,top .08s linear,opacity .16s ease}.iss-module-marker i{display:block;width:18px;height:18px;border-left:1px solid #fbbf24;border-top:1px solid #fbbf24;transform:translate(9px,9px) rotate(-45deg)}.iss-module-marker span{padding:4px 7px;border:1px solid rgba(251,191,36,.5);border-radius:6px;background:rgba(2,6,23,.76);color:#fef3c7;font:850 8px ui-monospace,monospace;letter-spacing:.7px;box-shadow:0 0 16px rgba(251,191,36,.16)}.iss-hud-chip[data-phase="sunlight"]{color:#fde68a;border-color:rgba(251,191,36,.38)}.iss-hud-chip[data-phase="eclipse"]{color:#c7d2fe;border-color:rgba(129,140,248,.42)}.iss-orientation-widget{position:absolute;right:10px;bottom:8px;width:88px;height:88px;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(2,6,23,.45))}.iss-orientation-widget line{transition:x2 .08s linear,y2 .08s linear}' +
           '.iss-learning-visual{position:relative;overflow:hidden;margin:0 0 12px;border:1px solid rgba(125,211,252,.25);border-radius:14px;background:radial-gradient(circle at 50% 100%,rgba(14,165,233,.12),transparent 56%),rgba(2,6,23,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 25px rgba(2,6,23,.2)}.iss-learning-visual svg{display:block;width:100%;height:auto}.iss-visual-caption{display:flex;justify-content:space-between;gap:10px;padding:7px 10px;border-top:1px solid rgba(148,163,184,.14);color:#94a3b8;font-size:10.5px;letter-spacing:.35px}.iss-flow-path{stroke-dasharray:7 7;animation:iss-flow 7s linear infinite}.iss-orbit-station{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-system-tabs{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.34)}.iss-system-tab[aria-pressed="true"]{box-shadow:inset 0 -2px 0 currentColor,0 7px 18px rgba(2,6,23,.2)}.iss-system-steps{display:flex;flex-wrap:wrap;gap:5px;padding:8px 10px;border-top:1px solid rgba(148,163,184,.14)}.iss-system-steps button{min-height:31px;padding:5px 9px;border:1px solid #475569;border-radius:8px;background:rgba(2,6,23,.36);color:#cbd5e1;font-size:9.5px;font-weight:800;cursor:pointer}.iss-system-steps button[aria-pressed="true"]{border-color:#7dd3fc;background:rgba(14,165,233,.18);color:#e0f2fe;box-shadow:inset 0 -2px 0 #38bdf8}.iss-system-coupling{margin-top:-4px}.iss-coupling-pipe{stroke-dasharray:6 6;animation:iss-flow 5s linear infinite}.iss-dock-canvas{box-shadow:0 16px 36px rgba(2,6,23,.34),inset 0 0 35px rgba(14,165,233,.08)}.iss-timeline{position:relative;padding-left:19px}.iss-timeline:before{content:"";position:absolute;left:5px;top:5px;bottom:5px;width:2px;background:linear-gradient(#38bdf8,#818cf8,#22c55e);box-shadow:0 0 12px rgba(56,189,248,.35)}.iss-timeline-item{position:relative}.iss-timeline-item-button{width:100%;border:0;background:transparent;color:inherit;text-align:left;cursor:pointer}.iss-timeline-item-button:hover{background:linear-gradient(90deg,rgba(56,189,248,.08),transparent)}.iss-timeline-item:before{content:"";position:absolute;left:-18px;top:12px;width:9px;height:9px;border:2px solid #7dd3fc;border-radius:50%;background:#07101d;box-shadow:0 0 10px rgba(56,189,248,.55)}.iss-day-strip{padding:7px;border:1px solid var(--iss-line);border-radius:13px;background:rgba(2,6,23,.32)}.iss-day-chip[aria-pressed="true"]{box-shadow:inset 0 -2px 0 #e879f9,0 7px 18px rgba(232,121,249,.12)}' +
           '@keyframes iss-flow{to{stroke-dashoffset:-70}}@keyframes iss-orbit-breathe{50%{filter:drop-shadow(0 0 8px #7dd3fc)}}' +          '.iss-orbit-environment{margin:-4px 0 12px;background:rgba(2,6,23,.28)}.iss-orbit-environment svg{display:block;width:100%;height:auto}.iss-orbit-environment .iss-visual-caption{border-top:1px solid rgba(148,163,184,.14)}.iss-blueprint{margin:0 0 11px}.iss-blueprint-grid{opacity:.2}.iss-eva-visual{margin:0 0 10px}.iss-eva-astronaut{animation:iss-eva-hover 2.8s ease-in-out infinite}.iss-eva-tether-a{stroke:#38bdf8}.iss-eva-tether-b{stroke:#fbbf24}.iss-day-orbit{margin:0 0 10px}.iss-crew-day-timeline{border-top:1px solid rgba(148,163,184,.14);background:rgba(2,6,23,.28)}.iss-crew-day-timeline svg{display:block;width:100%;height:auto}.iss-day-timeline-marker{filter:drop-shadow(0 0 5px rgba(251,191,36,.42))}.iss-day-marker{animation:iss-orbit-breathe 2.6s ease-in-out infinite}.iss-quiz-console{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;margin-bottom:12px;padding:10px 12px;border:1px solid var(--iss-line);border-radius:13px;background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(99,102,241,.08))}.iss-quiz-number{display:grid;place-items:center;width:45px;height:45px;border:1px solid #38bdf8;border-radius:50%;background:rgba(14,165,233,.12);color:#bae6fd;font:900 13px ui-monospace,monospace;box-shadow:inset 0 0 18px rgba(56,189,248,.12)}.iss-quiz-track{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}.iss-quiz-segment{height:7px;border-radius:5px;background:#263449;border:1px solid rgba(148,163,184,.18)}.iss-quiz-segment.is-complete{background:#38bdf8;border-color:#7dd3fc;box-shadow:0 0 9px rgba(56,189,248,.35)}.iss-quiz-score{text-align:right;color:#94a3b8;font-size:9px;text-transform:uppercase;letter-spacing:.8px}.iss-quiz-score strong{display:block;color:#e0f2fe;font-size:15px;letter-spacing:0}.iss-quiz-answer-state{display:block;margin-bottom:3px;color:#e2e8f0;font-size:10.5px;font-weight:900;letter-spacing:.2px}.iss-quiz-debrief{margin-bottom:11px}.iss-fact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:7px}.iss-fact-item{position:relative;overflow:hidden;min-height:64px;padding:10px!important;background:linear-gradient(145deg,rgba(2,6,23,.52),rgba(30,41,59,.48))!important;transition:transform .18s ease,border-color .18s ease}.iss-fact-item:after{content:"";position:absolute;right:-18px;bottom:-24px;width:54px;height:54px;border-radius:50%;background:#818cf8;opacity:.06}.iss-fact-item:hover{transform:translateY(-2px);border-color:#64748b!important}@keyframes iss-eva-hover{50%{transform:translateY(-3px)}}.iss-cabin-airflow{stroke-dasharray:4 3;animation:iss-flow 3.4s linear infinite}.iss-aurora-curtain{animation:iss-aurora-sway 7s ease-in-out infinite}.iss-aurora-curtain:nth-of-type(2){animation-delay:-2.3s}.iss-aurora-curtain:nth-of-type(3){animation-delay:-4.6s}@keyframes iss-aurora-sway{50%{transform:translateX(4px)}}' +
@@ -1527,6 +1542,18 @@
           cv.style.display = 'none';
         }
 
+        function handleInteriorInitFailure(message) {
+          var partialRenderer = cv._issInteriorRenderer;
+          if (partialRenderer) {
+            try { partialRenderer.dispose(); } catch (disposeError) {}
+            try { if (partialRenderer.forceContextLoss) partialRenderer.forceContextLoss(); } catch (contextError) {}
+          }
+          cv._issInteriorRenderer = null;
+          cv._issInteriorState = null;
+          cv._issInteriorInit = false;
+          if (cv.isConnected) showInteriorFallback(message || 'The 3-D cabin could not finish loading. Choose Accessible diagram to keep exploring every room and activity.');
+        }
+
         function doInit(THREE) {
           var Wc = cv.clientWidth || (cv.parentElement && cv.parentElement.clientWidth) || 720;
           var Hc = cv.clientHeight || 410;
@@ -1537,6 +1564,7 @@
             showInteriorFallback('This browser could not start the 3-D cabin. Choose Accessible diagram to keep exploring every room and activity.');
             return;
           }
+          cv._issInteriorRenderer = renderer;
           renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.6));
           renderer.setSize(Wc, Hc, false);
           renderer.setClearColor(0x02050c, 1);
@@ -1549,6 +1577,7 @@
           scene.fog = new THREE.Fog(0x02050c, 17, 40);
           var camera = new THREE.PerspectiveCamera(70, Wc / Hc, 0.05, 70);
           camera.rotation.order = 'YXZ';
+          scene.add(camera);
           scene.add(new THREE.HemisphereLight(0xdff5ff, 0x050912, 0.48));
           scene.add(new THREE.AmbientLight(0x7890a8, 0.16));
           var workLight = new THREE.DirectionalLight(0xe8f6ff, 0.5);
@@ -1602,11 +1631,131 @@
           var rackMat = standardMat(0x26354a, 0x030812);
           var bulkheadMat = standardMat(0x536171, 0x03070c);
           var railBlue = standardMat(0x1976d2, 0x06214b);
+          var bulkheadFaceMat = new THREE.MeshStandardMaterial({
+            color: 0x657384, emissive: 0x040a12, roughness: 0.68, metalness: 0.38, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
+          });
           var railGold = standardMat(0xd79a24, 0x382206);
           var screenMat = new THREE.MeshStandardMaterial({ color: 0x8ed8f8, emissive: 0x1c89b7, roughness: 0.34, metalness: 0.12 });
           var hatchMat = new THREE.MeshStandardMaterial({ color: 0xdde6ef, emissive: 0x21384d, roughness: 0.32, metalness: 0.68 });
           var guideMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.62 });
           var lightStripMat = new THREE.MeshBasicMaterial({ color: 0xe7f6ff });
+          var softStowageMat = standardMat(0x35506b, 0x07182a);
+          var checklistMat = new THREE.MeshStandardMaterial({ color: 0xb9efff, emissive: 0x197ea5, roughness: 0.28, metalness: 0.08 });
+          var restraintMat = standardMat(0xf97316, 0x4a1605);
+          var hatchCollarMat = new THREE.MeshStandardMaterial({ color: 0x152233, emissive: 0x02060b, roughness: 0.78, metalness: 0.34, side: THREE.DoubleSide });
+          var worksiteHousingMat = standardMat(0x27364a, 0x050b14);
+          var worksiteFilterMaterial = standardMat(0x4b5e73, 0x101b28);
+          var worksiteToolMaterial = standardMat(0xfbbf24, 0x3b2503);
+          var worksiteStatusMaterial = new THREE.MeshStandardMaterial({ color: 0xf59e0b, emissive: 0x6b2b04, roughness: 0.32, metalness: 0.12 });
+          var berthMaterial = standardMat(0x496b91, 0x0b1b31);
+          var stowRiskMaterial = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.88, depthTest: true, depthWrite: false });
+          var stowClearMaterial = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.9, depthTest: true, depthWrite: false });
+          var stowFlowMaterial = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.76, depthTest: true, depthWrite: false });
+          var curtainMaterial = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x20114d, roughness: 0.88, metalness: 0.02, transparent: true, opacity: 0.82, side: THREE.DoubleSide });
+          var scienceFrameMaterial = standardMat(0x24466b, 0x071d36);
+          var scienceGlassMaterial = new THREE.MeshBasicMaterial({ color: 0x9de5ff, transparent: true, opacity: 0.2, side: THREE.DoubleSide, depthWrite: false });
+          var plantLeafMaterial = standardMat(0x4ade80, 0x0d3c25);
+          var fluidMaterial = new THREE.MeshStandardMaterial({ color: 0x38bdf8, emissive: 0x075985, roughness: 0.14, metalness: 0.02, transparent: true, opacity: 0.9 });
+          var dryWickMaterial = new THREE.MeshStandardMaterial({ color: 0xb6c4d3, emissive: 0x111b28, roughness: 0.94, metalness: 0.01 });
+          var capillaryHaloMaterial = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.82, depthTest: true, depthWrite: false });
+          var capillaryStatusMaterial = new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0x5b3304, roughness: 0.3, metalness: 0.08 });
+          var ductMaterial = standardMat(0x9ba9b9, 0x0d1722);
+          var controllerMaterial = standardMat(0xfbbf24, 0x3b2503);
+          var crewSleeveMaterial = new THREE.MeshStandardMaterial({ color: 0xdde6ef, emissive: 0x101923, roughness: 0.72, metalness: 0.08, depthTest: true, depthWrite: false });
+          var crewGloveMaterial = new THREE.MeshStandardMaterial({ color: 0xf8fafc, emissive: 0x172033, roughness: 0.82, metalness: 0.02, depthTest: true, depthWrite: false });
+          var crewCuffMaterial = new THREE.MeshStandardMaterial({ color: 0xf97316, emissive: 0x4a1605, roughness: 0.54, metalness: 0.16, depthTest: true, depthWrite: false });
+          var crewSleeveGeometry = new THREE.CylinderGeometry(0.082, 0.115, 0.36, 8);
+          var crewCuffGeometry = new THREE.CylinderGeometry(0.102, 0.102, 0.075, 10);
+          var crewPalmGeometry = new THREE.BoxGeometry(0.18, 0.14, 0.11);
+          var crewFingersGeometry = new THREE.BoxGeometry(0.15, 0.065, 0.14);
+          var crewThumbGeometry = new THREE.BoxGeometry(0.065, 0.11, 0.07);
+          function crewPart(geometry, material) {
+            var part = new THREE.Mesh(geometry, material);
+            part.frustumCulled = false;
+            part.renderOrder = 18;
+            return part;
+          }
+          function buildCrewArm(side) {
+            var arm = new THREE.Group();
+            var sleeve = crewPart(crewSleeveGeometry, crewSleeveMaterial);
+            sleeve.rotation.x = Math.PI / 2;
+            sleeve.position.z = 0.24;
+            arm.add(sleeve);
+            var cuff = crewPart(crewCuffGeometry, crewCuffMaterial);
+            cuff.rotation.x = Math.PI / 2;
+            cuff.position.z = 0.035;
+            arm.add(cuff);
+            var palm = crewPart(crewPalmGeometry, crewGloveMaterial);
+            palm.position.z = -0.055;
+            arm.add(palm);
+            var fingers = crewPart(crewFingersGeometry, crewGloveMaterial);
+            fingers.position.set(0, -0.022, -0.17);
+            arm.add(fingers);
+            var thumb = crewPart(crewThumbGeometry, crewGloveMaterial);
+            thumb.position.set(side * 0.105, -0.012, -0.08);
+            thumb.rotation.z = side * -0.48;
+            arm.add(thumb);
+            return arm;
+          }
+          var crewRig = new THREE.Group();
+          crewRig.name = 'iss-first-person-crew-rig';
+          var leftCrewArm = buildCrewArm(-1);
+          var rightCrewArm = buildCrewArm(1);
+          leftCrewArm.position.set(-0.42, -0.39, -0.76);
+          rightCrewArm.position.set(0.42, -0.39, -0.76);
+          leftCrewArm.rotation.set(-0.08, -0.08, -0.32);
+          rightCrewArm.rotation.set(-0.08, 0.08, 0.32);
+          leftCrewArm.scale.setScalar(1.06);
+          rightCrewArm.scale.setScalar(1.06);
+          var crewTool = new THREE.Group();
+          crewTool.name = 'iss-crew-torque-tool';
+          var crewToolHandle = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.055, 0.055), worksiteToolMaterial);
+          crewTool.add(crewToolHandle);
+          var crewToolHead = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.16, 0.09), hatchMat);
+          crewToolHead.position.x = -0.19;
+          crewTool.add(crewToolHead);
+          crewTool.position.set(-0.05, -0.02, -0.2);
+          crewTool.rotation.z = -0.34;
+          crewTool.visible = false;
+          rightCrewArm.add(crewTool);
+          var crewScienceTool = new THREE.Group();
+          crewScienceTool.name = 'iss-crew-fluid-injector';
+          var scienceToolBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.045, 0.32, 10), scienceGlassMaterial);
+          scienceToolBarrel.rotation.z = Math.PI / 2;
+          crewScienceTool.add(scienceToolBarrel);
+          var scienceToolFluid = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.2, 9), fluidMaterial);
+          scienceToolFluid.rotation.z = Math.PI / 2;
+          scienceToolFluid.position.x = -0.025;
+          crewScienceTool.add(scienceToolFluid);
+          var scienceToolPlunger = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.035), checklistMat);
+          scienceToolPlunger.position.x = 0.19;
+          crewScienceTool.add(scienceToolPlunger);
+          var scienceToolTip = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.018, 0.18, 8), checklistMat);
+          scienceToolTip.rotation.z = Math.PI / 2;
+          scienceToolTip.position.x = -0.24;
+          crewScienceTool.add(scienceToolTip);
+          crewScienceTool.position.set(-0.05, -0.02, -0.2);
+          crewScienceTool.rotation.z = 0.24;
+          crewScienceTool.visible = false;
+          rightCrewArm.add(crewScienceTool);
+          var crewCamera = new THREE.Group();
+          crewCamera.name = 'iss-crew-earth-camera';
+          var crewCameraBody = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.17, 0.12), checklistMat);
+          crewCamera.add(crewCameraBody);
+          var crewCameraLens = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.08, 0.12, 12), scienceGlassMaterial);
+          crewCameraLens.rotation.x = Math.PI / 2;
+          crewCameraLens.position.z = -0.11;
+          crewCamera.add(crewCameraLens);
+          var crewCameraGrip = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.17, 0.075), hatchMat);
+          crewCameraGrip.position.set(0.16, -0.08, 0.02);
+          crewCamera.add(crewCameraGrip);
+          crewCamera.position.set(-0.03, 0.02, -0.23);
+          crewCamera.rotation.set(-0.08, 0.04, 0.08);
+          crewCamera.visible = false;
+          rightCrewArm.add(crewCamera);
+          crewRig.add(leftCrewArm);
+          crewRig.add(rightCrewArm);
+          camera.add(crewRig);
 
           function addModulePlacard(def, index) {
             var labelCanvas = document.createElement('canvas');
@@ -1657,6 +1806,147 @@
             }
             makeBox(size, position, material);
           }
+          function addWorksiteKit(def, index) {
+            var bagPosition = def.center.toArray();
+            var screenPosition = def.center.toArray();
+            var strapPosition = def.center.toArray();
+            var bagSize, screenSize, strapSize;
+            var direction = index % 2 ? -1 : 1;
+            if (def.axis === 'z') {
+              bagPosition[0] += def.radius * 0.69;
+              bagPosition[1] += 0.34;
+              bagPosition[2] += direction * def.length * 0.16;
+              screenPosition = [bagPosition[0] - 0.035, bagPosition[1] - 0.47, bagPosition[2] + direction * 0.42];
+              strapPosition = [bagPosition[0] - 0.02, bagPosition[1], bagPosition[2]];
+              bagSize = [0.2, 0.56, 0.72]; screenSize = [0.035, 0.38, 0.46]; strapSize = [0.025, 0.68, 0.06];
+            } else if (def.axis === 'x') {
+              bagPosition[0] += direction * def.length * 0.16;
+              bagPosition[1] += 0.34;
+              bagPosition[2] += def.radius * 0.69;
+              screenPosition = [bagPosition[0] + direction * 0.42, bagPosition[1] - 0.47, bagPosition[2] - 0.035];
+              strapPosition = [bagPosition[0], bagPosition[1], bagPosition[2] - 0.02];
+              bagSize = [0.72, 0.56, 0.2]; screenSize = [0.46, 0.38, 0.035]; strapSize = [0.68, 0.025, 0.06];
+            } else {
+              bagPosition[0] += def.radius * 0.69;
+              bagPosition[1] += direction * def.length * 0.15;
+              bagPosition[2] += 0.3;
+              screenPosition = [bagPosition[0] - 0.035, bagPosition[1] + direction * 0.46, bagPosition[2] - 0.36];
+              strapPosition = [bagPosition[0] - 0.02, bagPosition[1], bagPosition[2]];
+              bagSize = [0.2, 0.72, 0.56]; screenSize = [0.035, 0.46, 0.38]; strapSize = [0.025, 0.68, 0.06];
+            }
+            makeBox(bagSize, bagPosition, softStowageMat);
+            makeBox(screenSize, screenPosition, checklistMat);
+            makeBox(strapSize, strapPosition, restraintMat);
+          }
+          var identityKits = {};
+          var destinyFluidDroplet = null;
+          var destinyWickDry = null;
+          var destinyWickWet = null;
+          var destinyOverflowBead = null;
+          var destinyCapillaryHalo = null;
+          var destinyCapillaryProgressTicks = [];
+          var destinyCapillaryStatusLight = null;
+          var destinyPlantLeaves = [];
+          function addModuleIdentityKit(def, index) {
+            var kit = new THREE.Group();
+            kit.name = 'iss-module-identity-' + def.id;
+            kit.position.copy(def.center);
+            function kitBox(size, position, material) {
+              var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), material);
+              mesh.position.set(position[0], position[1], position[2]);
+              kit.add(mesh);
+              return mesh;
+            }
+            if (def.id === 'harmony') {
+              [-0.68, 0.68].forEach(function (zOffset, berthIndex) {
+                kitBox([0.2, 1.08, 0.82], [1.28, 0.08, zOffset], berthMaterial);
+                var curtain = kitBox([0.035, 0.92, 0.7], [1.155, 0.08, zOffset], curtainMaterial);
+                curtain.rotation.z = berthIndex ? -0.025 : 0.025;
+                kitBox([0.045, 1.02, 0.075], [1.125, 0.08, zOffset], restraintMat);
+              });
+            } else if (def.id === 'destiny') {
+              kitBox([0.24, 1.02, 1.12], [-1.27, 0.08, 0], scienceFrameMaterial);
+              kitBox([0.46, 0.78, 0.9], [-1.1, 0.08, 0], scienceGlassMaterial);
+              kitBox([0.22, 0.18, 0.68], [-0.84, -0.22, 0], scienceFrameMaterial);
+              [-0.2, 0.04, 0.24].forEach(function (leafZ, leafIndex) {
+                var leaf = new THREE.Mesh(new THREE.SphereGeometry(0.12, 10, 7), plantLeafMaterial);
+                leaf.scale.set(1.28, 0.52 + leafIndex * 0.06, 0.75);
+                leaf.position.set(-0.81, 0.14 + leafIndex * 0.09, leafZ);
+                destinyPlantLeaves.push(leaf);
+                kit.add(leaf);
+              });
+              destinyWickDry = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.48, 10), dryWickMaterial);
+              destinyWickDry.position.set(-0.79, -0.01, 0.29);
+              kit.add(destinyWickDry);
+              destinyWickWet = new THREE.Mesh(new THREE.CylinderGeometry(0.039, 0.039, 0.48, 10), fluidMaterial);
+              destinyWickWet.position.set(-0.79, -0.249, 0.29);
+              destinyWickWet.scale.y = 0.001;
+              destinyWickWet.visible = false;
+              kit.add(destinyWickWet);
+              destinyFluidDroplet = new THREE.Mesh(new THREE.SphereGeometry(0.075, 12, 9), fluidMaterial);
+              destinyFluidDroplet.position.set(-0.77, 0.26, 0.29);
+              destinyFluidDroplet.scale.set(0.82, 1.28, 0.82);
+              destinyFluidDroplet.userData.baseY = destinyFluidDroplet.position.y;
+              kit.add(destinyFluidDroplet);
+              destinyOverflowBead = new THREE.Mesh(new THREE.SphereGeometry(0.105, 14, 10), fluidMaterial);
+              destinyOverflowBead.position.set(-0.72, 0.34, 0.4);
+              destinyOverflowBead.scale.set(1.18, 0.8, 1.18);
+              destinyOverflowBead.visible = false;
+              kit.add(destinyOverflowBead);
+              destinyCapillaryHalo = new THREE.Mesh(new THREE.TorusGeometry(0.4, 0.024, 7, 34), capillaryHaloMaterial);
+              destinyCapillaryHalo.position.set(-0.68, -0.35, 0.29);
+              destinyCapillaryHalo.rotation.y = Math.PI / 2;
+              destinyCapillaryHalo.renderOrder = 7;
+              kit.add(destinyCapillaryHalo);
+              for (var capillaryTickIndex = 0; capillaryTickIndex < 12; capillaryTickIndex++) {
+                var capillaryTickAngle = capillaryTickIndex * Math.PI * 2 / 12;
+                var capillaryTick = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.075, 0.025), capillaryStatusMaterial);
+                capillaryTick.position.set(-0.665, -0.35 + Math.cos(capillaryTickAngle) * 0.49, 0.29 + Math.sin(capillaryTickAngle) * 0.49);
+                capillaryTick.rotation.x = capillaryTickAngle;
+                capillaryTick.visible = false;
+                destinyCapillaryProgressTicks.push(capillaryTick);
+                kit.add(capillaryTick);
+              }
+              destinyCapillaryStatusLight = new THREE.Mesh(new THREE.SphereGeometry(0.065, 10, 8), capillaryStatusMaterial);
+              destinyCapillaryStatusLight.position.set(-0.67, -0.35, -0.04);
+              kit.add(destinyCapillaryStatusLight);
+            } else if (def.id === 'unity') {
+              var restraintRing = new THREE.Mesh(new THREE.TorusGeometry(0.53, 0.055, 8, 30), restraintMat);
+              orientRing(restraintRing, 'x');
+              restraintRing.position.set(1.29, -0.52, 0.77);
+              kit.add(restraintRing);
+              [-0.18, 0.18].forEach(function (strapOffset) {
+                kitBox([0.045, 0.78, 0.08], [1.24, -0.52, 0.77 + strapOffset], restraintMat);
+                kitBox([0.045, 0.08, 0.78], [1.24, -0.52 + strapOffset, 0.77], restraintMat);
+              });
+            } else if (def.id === 'tranquility') {
+              [-0.72, 0.72].forEach(function (ductZ) {
+                var duct = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 2.35, 12), ductMaterial);
+                duct.rotation.z = Math.PI / 2;
+                duct.position.set(0.1, 1.02, ductZ);
+                kit.add(duct);
+                var ductBand = new THREE.Mesh(new THREE.TorusGeometry(0.135, 0.026, 7, 18), railGold);
+                ductBand.rotation.y = Math.PI / 2;
+                ductBand.position.set(-0.72, 1.02, ductZ);
+                kit.add(ductBand);
+              });
+              kitBox([0.12, 0.72, 0.22], [-0.15, 0.52, -1.18], ductMaterial);
+            } else if (def.id === 'cupola') {
+              kitBox([0.5, 0.16, 0.38], [0.38, -0.72, 0.58], scienceFrameMaterial);
+              var controllerStem = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.055, 0.28, 10), controllerMaterial);
+              controllerStem.position.set(0.38, -0.52, 0.58);
+              kit.add(controllerStem);
+              var controllerGrip = new THREE.Mesh(new THREE.SphereGeometry(0.105, 10, 8), controllerMaterial);
+              controllerGrip.scale.set(0.72, 1.2, 0.72);
+              controllerGrip.position.set(0.38, -0.33, 0.58);
+              kit.add(controllerGrip);
+              kitBox([0.18, 0.045, 0.1], [0.14, -0.62, 0.58], checklistMat);
+            }
+            kit.userData.identityIndex = index;
+            scene.add(kit);
+            identityKits[def.id] = kit;
+          }
+          var roomLights = {};
           function addRoom(def, index) {
             var shell = new THREE.Mesh(
               new THREE.CylinderGeometry(def.radius, def.radius, def.length, 20, 1, true),
@@ -1719,32 +2009,110 @@
               });
             }
 
+            addWorksiteKit(def, index);
+            addModuleIdentityKit(def, index);
             addModulePlacard(def, index);
             var lamp = new THREE.PointLight(def.color, 0.28, 6.4, 2);
             lamp.position.copy(def.center);
             scene.add(lamp);
+            roomLights[def.id] = lamp;
           }
           roomDefs.forEach(addRoom);
 
           var hatchVisuals = [];
-          function addHatch(position, axis, color, from, to) {
+          function addWayfindingPlacard(label, detail, position, lookTarget, color, upVector, signSize) {
+            var signCanvas = document.createElement('canvas');
+            signCanvas.width = 512; signCanvas.height = 144;
+            var signContext = signCanvas.getContext('2d');
+            if (!signContext) return;
+            var accent = '#' + ('000000' + color.toString(16)).slice(-6);
+            signContext.fillStyle = 'rgba(2,8,16,.96)';
+            signContext.fillRect(0, 0, 512, 144);
+            signContext.fillStyle = accent;
+            signContext.fillRect(0, 0, 16, 144);
+            signContext.strokeStyle = accent;
+            signContext.lineWidth = 5;
+            signContext.strokeRect(3, 3, 506, 138);
+            signContext.fillStyle = '#f8fafc';
+            signContext.font = '900 42px Arial, sans-serif';
+            signContext.fillText(String(label).slice(0, 22), 34, 65);
+            signContext.fillStyle = '#a9c3d9';
+            signContext.font = '800 22px Arial, sans-serif';
+            signContext.fillText(String(detail).slice(0, 34), 35, 108);
+            var signTexture = THREE.CanvasTexture ? new THREE.CanvasTexture(signCanvas) : new THREE.Texture(signCanvas);
+            signTexture.needsUpdate = true;
+            if (THREE.sRGBEncoding) signTexture.encoding = THREE.sRGBEncoding;
+            labelTextures.push(signTexture);
+            var sign = new THREE.Mesh(
+              new THREE.PlaneGeometry(signSize ? signSize[0] : 1.34, signSize ? signSize[1] : 0.38),
+              new THREE.MeshBasicMaterial({ map: signTexture, transparent: true, side: THREE.DoubleSide })
+            );
+            sign.position.copy(position);
+            if (upVector) sign.up.copy(upVector);
+            sign.lookAt(lookTarget);
+            scene.add(sign);
+          }
+          function addDeckOrientationPlacards(def) {
+            if (def.axis === 'y') return;
+            var axialUp = def.axis === 'x' ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 0, 1);
+            var deckPosition = def.center.clone();
+            var overheadPosition = def.center.clone();
+            deckPosition.y -= def.radius * 0.71;
+            overheadPosition.y += def.radius * 0.71;
+            var axisCenter = def.axis === 'x' ? def.center.x : def.center.z;
+            setAxisPosition(deckPosition, def.axis, axisCenter + def.length * 0.14);
+            setAxisPosition(overheadPosition, def.axis, axisCenter - def.length * 0.14);
+            var deckTarget = deckPosition.clone(); deckTarget.y += 1;
+            var overheadTarget = overheadPosition.clone(); overheadTarget.y -= 1;
+            addWayfindingPlacard('DECK [D]', 'FEET-REFERENCE SURFACE', deckPosition, deckTarget, 0xfbbf24, axialUp, [1.12, 0.31]);
+            addWayfindingPlacard('OVERHEAD [O]', 'HEAD-REFERENCE SURFACE', overheadPosition, overheadTarget, 0x38bdf8, axialUp, [1.12, 0.31]);
+          }
+          roomDefs.forEach(addDeckOrientationPlacards);
+          function addHatch(position, axis, color, from, to, aperture) {
+            aperture = aperture || 1.24;
+            var bulkheadOuterRadius = Math.max(aperture + 0.22, Math.min(roomDef(from).radius, roomDef(to).radius) - 0.05);
+            var bulkheadFace = new THREE.Mesh(new THREE.RingGeometry(aperture, bulkheadOuterRadius, 48, 1), bulkheadFaceMat);
+            orientRing(bulkheadFace, axis);
+            bulkheadFace.position.set(position[0], position[1], position[2]);
+            scene.add(bulkheadFace);
+            var collar = new THREE.Mesh(new THREE.CylinderGeometry(aperture - 0.055, aperture - 0.055, 0.28, 36, 1, true), hatchCollarMat);
+            orientCylinder(collar, axis);
+            collar.position.copy(bulkheadFace.position);
+            scene.add(collar);
+            [-0.14, 0.14].forEach(function (depthOffset) {
+              var depthRim = new THREE.Mesh(new THREE.TorusGeometry(aperture - 0.055, 0.04, 7, 34), hatchMat);
+              orientRing(depthRim, axis);
+              depthRim.position.copy(bulkheadFace.position);
+              var hatchAxisBase = axis === 'x' ? position[0] : axis === 'y' ? position[1] : position[2];
+              setAxisPosition(depthRim.position, axis, hatchAxisBase + depthOffset);
+              scene.add(depthRim);
+            });
             var outer = new THREE.Mesh(new THREE.TorusGeometry(1.36, 0.11, 10, 36), hatchMat);
             orientRing(outer, axis);
             outer.position.set(position[0], position[1], position[2]);
             scene.add(outer);
-            var inner = new THREE.Mesh(new THREE.TorusGeometry(1.15, 0.025, 6, 32), new THREE.MeshBasicMaterial({ color: color }));
+            var inner = new THREE.Mesh(new THREE.TorusGeometry(aperture - 0.07, 0.025, 6, 32), new THREE.MeshBasicMaterial({ color: color }));
             orientRing(inner, axis);
             inner.position.copy(outer.position);
             scene.add(inner);
             var light = new THREE.PointLight(color, 0.34, 4.2, 2);
             light.position.copy(outer.position);
             scene.add(light);
-            hatchVisuals.push({ from: from, to: to, position: outer.position.clone(), inner: inner, light: light, color: color, flashUntil: 0 });
+            var fromDirection = roomDef(from).center.clone().sub(outer.position).normalize();
+            var toDirection = roomDef(to).center.clone().sub(outer.position).normalize();
+            var fromSignPosition = outer.position.clone().addScaledVector(fromDirection, 0.22);
+            var toSignPosition = outer.position.clone().addScaledVector(toDirection, 0.22);
+            if (axis === 'y') { fromSignPosition.z += 0.92; toSignPosition.z += 0.92; }
+            else { fromSignPosition.y += 1.17; toSignPosition.y += 1.17; }
+            var branchCue = to === 'tranquility' ? 'PORT BRANCH' : to === 'cupola' ? 'NADIR BRANCH' : 'FORWARD ROUTE';
+            addWayfindingPlacard('TO ' + roomInfo(to).module.toUpperCase(), branchCue, fromSignPosition, roomDef(from).center, color);
+            addWayfindingPlacard('TO ' + roomInfo(from).module.toUpperCase(), 'RETURN ROUTE', toSignPosition, roomDef(to).center, color);
+            hatchVisuals.push({ from: from, to: to, axis: axis, aperture: aperture, position: outer.position.clone(), bulkhead: bulkheadFace, inner: inner, collar: collar, light: light, color: color, flashUntil: 0 });
           }
-          addHatch([0, 0, -8.45], 'z', 0x7dd3fc, 'harmony', 'destiny');
-          addHatch([0, 0, -2.25], 'z', 0x4ade80, 'destiny', 'unity');
-          addHatch([-1.45, 0, -0.25], 'x', 0xfbbf24, 'unity', 'tranquility');
-          addHatch([-6.25, -1.28, -0.25], 'y', 0x818cf8, 'tranquility', 'cupola');
+          addHatch([0, 0, -8.45], 'z', 0x7dd3fc, 'harmony', 'destiny', 1.24);
+          addHatch([0, 0, -2.25], 'z', 0x4ade80, 'destiny', 'unity', 1.24);
+          addHatch([-1.45, 0, -0.25], 'x', 0xfbbf24, 'unity', 'tranquility', 1.24);
+          addHatch([-6.25, -1.28, -0.25], 'y', 0x818cf8, 'tranquility', 'cupola', 1.16);
 
           var routePoints = [
             [0, -0.94, -12.3], [0, -0.94, -10.5], [0, -0.94, -8.45],
@@ -1764,33 +2132,281 @@
           );
           scene.add(routeLine);
 
-          // Room-specific objects make the jobs visible before the learner opens
-          // their activity card.
-          makeBox([0.18, 1.18, 0.68], [1.28, 0, -11.1], standardMat(0x557ca8, 0x13263d));
-          makeBox([0.92, 0.72, 0.62], [-1.18, 0.15, -5.45], standardMat(0x1f3158, 0x0b1b3d));
-          var plant = new THREE.Mesh(new THREE.SphereGeometry(0.22, 12, 8), standardMat(0x4ade80, 0x0d3c25));
-          plant.scale.set(1.25, 0.62, 0.8); plant.position.set(-0.82, 0.58, -5.45); scene.add(plant);
-
+          // Module identity kits above make each cabin and its work visible
+          // through silhouette and placement before the activity card is opened.
+          var capillaryPoint = new THREE.Vector3(-0.68, -0.35, -5.16);
+          var worksitePoint = new THREE.Vector3(-3.4, -0.48, -1.18);
+          var observationPoint = new THREE.Vector3(-5.87, -3.07, 0.33);
+          var cupolaTargetPoints = {
+            day: new THREE.Vector3(-6.25, -4.19, -0.25),
+            aurora: new THREE.Vector3(-5.72, -4.19, -0.6),
+            night: new THREE.Vector3(-6.78, -4.19, 0.1)
+          };
+          var maintenanceWorksite = new THREE.Group();
+          var filterHousing = new THREE.Mesh(new THREE.BoxGeometry(1.18, 1.18, 0.12), worksiteHousingMat);
+          filterHousing.position.z = -0.14;
+          maintenanceWorksite.add(filterHousing);
+          var filterPanel = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.88, 0.055), worksiteFilterMaterial);
+          filterPanel.position.z = -0.055;
+          maintenanceWorksite.add(filterPanel);
+          [-0.28, 0, 0.28].forEach(function (gridOffset) {
+            var filterBarV = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.78, 0.035), worksiteHousingMat);
+            filterBarV.position.set(gridOffset, 0, 0.01);
+            maintenanceWorksite.add(filterBarV);
+            var filterBarH = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.025, 0.035), worksiteHousingMat);
+            filterBarH.position.set(0, gridOffset, 0.012);
+            maintenanceWorksite.add(filterBarH);
+          });
           var fan = new THREE.Group();
-          var fanRing = new THREE.Mesh(new THREE.TorusGeometry(0.48, 0.075, 8, 30), standardMat(0x94a3b8, 0x101827));
+          var fanRing = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.068, 8, 30), standardMat(0x94a3b8, 0x101827));
           fan.add(fanRing);
           for (var bladeIndex = 0; bladeIndex < 5; bladeIndex++) {
-            var blade = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.07, 0.035), standardMat(0x64748b, 0x09111d));
+            var blade = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.065, 0.035), standardMat(0x64748b, 0x09111d));
             blade.rotation.z = bladeIndex * Math.PI * 2 / 5;
-            blade.position.set(Math.cos(blade.rotation.z) * 0.2, Math.sin(blade.rotation.z) * 0.2, 0);
+            blade.position.set(Math.cos(blade.rotation.z) * 0.19, Math.sin(blade.rotation.z) * 0.19, 0);
             fan.add(blade);
           }
-          fan.position.set(-3.4, 0.05, -1.23);
-          scene.add(fan);
+          fan.position.z = 0.075;
+          maintenanceWorksite.add(fan);
+          var worksiteHaloMaterial = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.82, depthTest: true, depthWrite: false });
+          var worksiteHalo = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.024, 7, 34), worksiteHaloMaterial);
+          worksiteHalo.position.z = 0.105;
+          worksiteHalo.renderOrder = 6;
+          maintenanceWorksite.add(worksiteHalo);
+          var worksiteProgressMaterial = new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.92 });
+          var worksiteProgressTicks = [];
+          for (var worksiteTickIndex = 0; worksiteTickIndex < 12; worksiteTickIndex++) {
+            var worksiteTickAngle = worksiteTickIndex * Math.PI * 2 / 12;
+            var worksiteTick = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.028, 0.025), worksiteProgressMaterial);
+            worksiteTick.position.set(Math.cos(worksiteTickAngle) * 0.72, Math.sin(worksiteTickAngle) * 0.72, 0.125);
+            worksiteTick.rotation.z = worksiteTickAngle;
+            worksiteTick.visible = false;
+            worksiteProgressTicks.push(worksiteTick);
+            maintenanceWorksite.add(worksiteTick);
+          }
+          var statusLamp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), worksiteStatusMaterial);
+          statusLamp.position.set(0.46, 0.46, 0.095);
+          maintenanceWorksite.add(statusLamp);
+          var fanStatusLight = new THREE.PointLight(0xf59e0b, 0.42, 2.2, 2);
+          fanStatusLight.position.set(0.46, 0.46, 0.2);
+          maintenanceWorksite.add(fanStatusLight);
+          var torqueTool = new THREE.Group();
+          var torqueHandle = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.075, 0.075), worksiteToolMaterial);
+          torqueTool.add(torqueHandle);
+          var torqueHead = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.22, 0.11), hatchMat);
+          torqueHead.position.x = -0.28;
+          torqueTool.add(torqueHead);
+          torqueTool.position.set(0.72, -0.22, 0.15);
+          torqueTool.rotation.z = -0.42;
+          maintenanceWorksite.add(torqueTool);
+          var toolTether = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0.45, -0.38, 0.08), new THREE.Vector3(0.72, -0.22, 0.15)]),
+            new THREE.LineBasicMaterial({ color: 0xf97316, transparent: true, opacity: 0.8 })
+          );
+          maintenanceWorksite.add(toolTether);
+          maintenanceWorksite.position.copy(worksitePoint);
+          scene.add(maintenanceWorksite);
 
           var cargo = new THREE.Group();
-          cargo.add(new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.46, 0.38), standardMat(0x8b5e3c, 0x301707)));
+          var cargoBodyMaterial = standardMat(0x315d73, 0x092638);
+          var cargoPanelMaterial = standardMat(0xff7a1a, 0x5c1d03);
+          cargo.add(new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.46, 0.38), cargoBodyMaterial));
+          var cargoPanel = new THREE.Mesh(new THREE.BoxGeometry(0.43, 0.24, 0.025), cargoPanelMaterial);
+          cargoPanel.position.z = 0.202;
+          cargo.add(cargoPanel);
           var cargoHandle = new THREE.Mesh(new THREE.TorusGeometry(0.19, 0.035, 6, 18, Math.PI), standardMat(0xfde68a, 0x3a2505));
           cargoHandle.position.y = 0.27; cargoHandle.rotation.x = Math.PI;
           cargo.add(cargoHandle);
+          var cargoHaloMaterial = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.82, depthTest: true, depthWrite: false });
+          var cargoHalo = new THREE.Mesh(new THREE.TorusGeometry(0.43, 0.018, 6, 28), cargoHaloMaterial);
+          cargoHalo.position.z = 0.225;
+          cargoHalo.renderOrder = 7;
+          cargo.add(cargoHalo);
           var cargoBase = new THREE.Vector3(-0.66, 0.18, -0.25);
+          var cargoSecurePoint = new THREE.Vector3(1.02, -0.52, 0.52);
           cargo.position.copy(cargoBase);
           scene.add(cargo);
+          // Harmony-to-Destiny bulky transfer drill. The amber ring marks the
+          // reduced bag-center clearance inside the real hatch collar; the
+          // separate tether makes the lagging cargo envelope visible.
+          var transferHatchZ = -8.45;
+          var transferSafeRadius = 0.70;
+          var transferAttachReach = 0.78;
+          var transferBagMass = 12;
+          var transferSpring = 5.6;
+          var transferDamping = 2.8;
+          var transferStagingPoint = new THREE.Vector3(-0.44, -0.15, -9.62);
+          var transferCrewStagingPoint = new THREE.Vector3(0.05, 0, -9.98);
+          var transferDockPoint = new THREE.Vector3(0.58, -0.42, -7.55);
+          var transferBag = new THREE.Group();
+          transferBag.name = 'iss-bulky-transfer-bag';
+          var transferBagMaterial = standardMat(0x7c3aed, 0x25104f);
+          var transferBagPanelMaterial = standardMat(0xfbbf24, 0x4b2b03);
+          transferBag.add(new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.52, 0.58), transferBagMaterial));
+          [-0.25, 0.25].forEach(function (strapX) {
+            var bagStrap = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.57, 0.62), restraintMat);
+            bagStrap.position.x = strapX;
+            transferBag.add(bagStrap);
+          });
+          var transferBagPanel = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.23, 0.025), transferBagPanelMaterial);
+          transferBagPanel.position.z = 0.302;
+          transferBag.add(transferBagPanel);
+          var transferBagHandle = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.035, 6, 18, Math.PI), standardMat(0xfde68a, 0x3a2505));
+          transferBagHandle.position.y = 0.32;
+          transferBagHandle.rotation.x = Math.PI;
+          transferBag.add(transferBagHandle);
+          var transferBagEnvelope = new THREE.Mesh(
+            new THREE.TorusGeometry(0.47, 0.018, 6, 30),
+            new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.84, depthTest: true, depthWrite: false })
+          );
+          transferBagEnvelope.position.z = 0.318;
+          transferBagEnvelope.renderOrder = 7;
+          transferBag.add(transferBagEnvelope);
+          transferBag.position.copy(transferStagingPoint);
+          scene.add(transferBag);
+          var transferTetherGeometry = new THREE.BufferGeometry().setFromPoints([transferCrewStagingPoint, transferStagingPoint]);
+          var transferTether = new THREE.Line(
+            transferTetherGeometry,
+            new THREE.LineBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.88, depthTest: true })
+          );
+          transferTether.name = 'iss-bulky-transfer-tether';
+          transferTether.visible = false;
+          scene.add(transferTether);
+          var transferClearanceMaterial = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.9, depthTest: true, depthWrite: false });
+          var transferClearanceCue = new THREE.Mesh(new THREE.TorusGeometry(transferSafeRadius, 0.035, 8, 40), transferClearanceMaterial);
+          transferClearanceCue.name = 'iss-hatch-transfer-clearance-cue';
+          transferClearanceCue.position.set(0, 0, transferHatchZ - 0.16);
+          transferClearanceCue.renderOrder = 7;
+          scene.add(transferClearanceCue);
+          var transferDockCue = new THREE.Mesh(
+            new THREE.TorusGeometry(0.44, 0.032, 8, 32),
+            new THREE.MeshBasicMaterial({ color: 0x4ade80, transparent: true, opacity: 0.74, depthTest: true, depthWrite: false })
+          );
+          transferDockCue.position.copy(transferDockPoint);
+          transferDockCue.visible = false;
+          scene.add(transferDockCue);
+          addWayfindingPlacard('BULKY TRANSFER BAG', 'CLIP TETHER [B] // CENTER BOTH', new THREE.Vector3(-1.0, 0.8, -9.58), transferStagingPoint, 0xfbbf24, null, [1.48, 0.4]);
+          makeBox([0.055, 0.82, 0.92], [1.35, -0.52, 0.52], standardMat(0x37475a, 0x07111c));
+          var restraintTarget = new THREE.Mesh(
+            new THREE.TorusGeometry(0.43, 0.035, 8, 32),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.68 })
+          );
+          orientRing(restraintTarget, 'x');
+          restraintTarget.position.set(1.315, -0.52, 0.52);
+          scene.add(restraintTarget);
+          var cargoRestraintStraps = new THREE.Group();
+          [-0.13, 0.13].forEach(function (strapY) {
+            var strap = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.065, 0.78), restraintMat);
+            strap.position.y = strapY;
+            cargoRestraintStraps.add(strap);
+          });
+          cargoRestraintStraps.position.copy(cargoSecurePoint);
+          cargoRestraintStraps.visible = false;
+          scene.add(cargoRestraintStraps);
+
+          // Harmony loose-item stow activity. Each object has its own silhouette,
+          // deterministic drift vector, and restraint point so the lesson stays
+          // readable without relying on color alone.
+          var harmonyStowItems = [];
+          var harmonyStowTargets = {};
+          function addHarmonyStowItem(id, label, position, velocity, angularVelocity, securePoint, build) {
+            var object = new THREE.Group();
+            object.name = 'iss-harmony-loose-' + id;
+            build(object);
+            var halo = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.018, 6, 28), stowRiskMaterial.clone());
+            halo.position.z = 0.16;
+            halo.renderOrder = 7;
+            object.add(halo);
+            object.position.copy(position);
+            scene.add(object);
+            var target = new THREE.Group();
+            target.name = 'iss-harmony-restraint-' + id;
+            var targetRing = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.028, 7, id === 'tablet' ? 4 : 28), stowFlowMaterial.clone());
+            targetRing.rotation.y = Math.PI / 2;
+            target.add(targetRing);
+            target.position.copy(securePoint);
+            scene.add(target);
+            harmonyStowTargets[id] = target;
+            harmonyStowItems.push({
+              id: id, label: label, object: object, halo: halo, target: target,
+              basePosition: position.clone(), position: object.position,
+              velocity: velocity.clone(), angularVelocity: angularVelocity.clone(),
+              securePoint: securePoint.clone(), mode: 'loose', warningNearReturn: false
+            });
+          }
+          addHarmonyStowItem('bag', 'sleeping bag', new THREE.Vector3(0.28, 0.34, -11.92), new THREE.Vector3(0.013, -0.006, 0.011), new THREE.Vector3(0.18, 0.11, 0.14), new THREE.Vector3(1.02, -0.58, -12.18), function (object) {
+            var bag = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.28, 0.34), berthMaterial);
+            bag.scale.set(1, 0.82, 1);
+            object.add(bag);
+            [-0.18, 0.18].forEach(function (strapX) {
+              var strap = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.31, 0.37), restraintMat);
+              strap.position.x = strapX;
+              object.add(strap);
+            });
+          });
+          addHarmonyStowItem('tablet', 'crew tablet', new THREE.Vector3(-0.52, 0.12, -11.18), new THREE.Vector3(-0.009, 0.008, -0.014), new THREE.Vector3(0.12, -0.2, 0.16), new THREE.Vector3(-1.02, -0.58, -11.42), function (object) {
+            object.add(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.3, 0.055), rackMat));
+            var tabletScreen = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.23, 0.018), screenMat);
+            tabletScreen.position.z = 0.037;
+            object.add(tabletScreen);
+          });
+          addHarmonyStowItem('cloth', 'damp washcloth', new THREE.Vector3(-0.52, 0.18, -10.46), new THREE.Vector3(-0.015, 0.004, 0.008), new THREE.Vector3(-0.15, 0.19, -0.1), new THREE.Vector3(1.02, -0.58, -10.7), function (object) {
+            var cloth = new THREE.Mesh(new THREE.SphereGeometry(0.23, 10, 7), standardMat(0x8bd5cf, 0x123c40));
+            cloth.scale.set(1.15, 0.18, 0.82);
+            cloth.rotation.z = 0.24;
+            object.add(cloth);
+            var dampDrop = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), fluidMaterial);
+            dampDrop.position.set(0.12, -0.08, 0.08);
+            object.add(dampDrop);
+          });
+          var bagStrap = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.7, 0.62), restraintMat);
+          harmonyStowTargets.bag.add(bagStrap);
+          var tabletDock = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.58, 0.72), checklistMat);
+          harmonyStowTargets.tablet.add(tabletDock);
+          var hygienePouch = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.58, 0.58), softStowageMat);
+          harmonyStowTargets.cloth.add(hygienePouch);
+
+          var harmonyAirReturnPoint = new THREE.Vector3(-1.06, 0.42, -10.42);
+          var harmonyAirReturn = new THREE.Group();
+          harmonyAirReturn.name = 'iss-harmony-air-return';
+          harmonyAirReturn.add(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.82, 0.82), ductMaterial));
+          [-0.27, -0.09, 0.09, 0.27].forEach(function (barOffset) {
+            var grille = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.055, 0.66), worksiteHousingMat);
+            grille.position.y = barOffset;
+            harmonyAirReturn.add(grille);
+          });
+          var harmonyAirflowArrows = [];
+          for (var airflowIndex = 0; airflowIndex < 4; airflowIndex++) {
+            var flowArrow = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.2, 7), stowFlowMaterial.clone());
+            flowArrow.rotation.z = Math.PI / 2;
+            flowArrow.position.set(0.38 + airflowIndex * 0.28, -0.25 + airflowIndex * 0.16, 0);
+            harmonyAirReturn.add(flowArrow);
+            harmonyAirflowArrows.push(flowArrow);
+          }
+          var harmonyAirflowClearMark = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.035, 7, 24), stowClearMaterial);
+          harmonyAirflowClearMark.rotation.y = Math.PI / 2;
+          harmonyAirflowClearMark.position.set(0.08, 0.58, 0);
+          harmonyAirReturn.add(harmonyAirflowClearMark);
+          var harmonyAirflowBlockedMark = new THREE.Group();
+          [-0.72, 0.72].forEach(function (angle) {
+            var slash = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.5, 0.055), stowRiskMaterial);
+            slash.rotation.x = angle;
+            harmonyAirflowBlockedMark.add(slash);
+          });
+          harmonyAirflowBlockedMark.position.set(0.08, 0.58, 0);
+          harmonyAirReturn.add(harmonyAirflowBlockedMark);
+          var airflowStatusCanvas = document.createElement('canvas');
+          airflowStatusCanvas.width = 512; airflowStatusCanvas.height = 128;
+          var airflowStatusContext = airflowStatusCanvas.getContext('2d');
+          var airflowStatusTexture = THREE.CanvasTexture ? new THREE.CanvasTexture(airflowStatusCanvas) : new THREE.Texture(airflowStatusCanvas);
+          if (THREE.sRGBEncoding) airflowStatusTexture.encoding = THREE.sRGBEncoding;
+          labelTextures.push(airflowStatusTexture);
+          var airflowStatusLabel = new THREE.Mesh(new THREE.PlaneGeometry(1.15, 0.29), new THREE.MeshBasicMaterial({ map: airflowStatusTexture, transparent: true, side: THREE.DoubleSide }));
+          airflowStatusLabel.rotation.y = Math.PI / 2;
+          airflowStatusLabel.position.set(0.08, -0.7, 0);
+          harmonyAirReturn.add(airflowStatusLabel);
+          harmonyAirReturn.position.copy(harmonyAirReturnPoint);
+          scene.add(harmonyAirReturn);
 
           var activityBeacons = {};
           function addActivityBeacon(id, position, color) {
@@ -1820,19 +2436,53 @@
           }
           addActivityBeacon('harmony', [1.05, 0.02, -11.1], 0xe879f9);
           addActivityBeacon('destiny', [-0.82, 0.58, -5.45], 0x38bdf8);
-          addActivityBeacon('unity', [-0.66, 0.18, -0.25], 0x34d399);
-          addActivityBeacon('tranquility', [-3.4, 0.05, -1.23], 0xfbbf24);
+          addActivityBeacon('unity', [-0.66, 0.82, -0.25], 0x34d399);
+          activityBeacons.unity.userData.followCargo = true;
+          addActivityBeacon('tranquility', [-3.4, 0.28, -1.12], 0xfbbf24);
           addActivityBeacon('cupola', [-6.25, -3.72, -0.25], 0x818cf8);
 
+          var interiorEarthSkin = null;
+          try { interiorEarthSkin = issEarthCanvases(256); } catch (earthTextureError) { interiorEarthSkin = null; }
+          function interiorEarthTexture(canvasElement, srgb) {
+            var texture = new THREE.CanvasTexture(canvasElement);
+            if (srgb && THREE.sRGBEncoding) texture.encoding = THREE.sRGBEncoding;
+            if (THREE.RepeatWrapping) texture.wrapS = THREE.RepeatWrapping;
+            try { texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (anisotropyError) {}
+            labelTextures.push(texture);
+            return texture;
+          }
+          var interiorEarthMaterialOptions = { color: 0x2879b9, emissive: 0x061b38, shininess: 76, specular: 0x9edfff };
+          if (interiorEarthSkin) {
+            interiorEarthMaterialOptions.color = 0xffffff;
+            interiorEarthMaterialOptions.map = interiorEarthTexture(interiorEarthSkin.day, true);
+            interiorEarthMaterialOptions.specularMap = interiorEarthTexture(interiorEarthSkin.spec, false);
+            interiorEarthMaterialOptions.emissive = 0xffffff;
+            interiorEarthMaterialOptions.emissiveMap = interiorEarthTexture(interiorEarthSkin.night, true);
+            interiorEarthMaterialOptions.emissiveIntensity = 0.32;
+            interiorEarthMaterialOptions.shininess = 118;
+          }
           var earth = new THREE.Mesh(
-            new THREE.SphereGeometry(6.2, 40, 26),
-            new THREE.MeshPhongMaterial({ color: 0x2879b9, emissive: 0x061b38, shininess: 46, specular: 0x9edfff })
+            new THREE.SphereGeometry(6.2, 48, 30),
+            new THREE.MeshPhongMaterial(interiorEarthMaterialOptions)
           );
           earth.position.set(-6.25, -11.0, -0.25);
+          earth.rotation.y = -0.65;
           scene.add(earth);
+          var earthCloudMaterialOptions = { color: 0xe0f2fe, transparent: true, opacity: 0.055, depthWrite: false, shininess: 4 };
+          if (interiorEarthSkin) {
+            earthCloudMaterialOptions.alphaMap = interiorEarthTexture(interiorEarthSkin.cloud, false);
+            earthCloudMaterialOptions.opacity = 0.28;
+          }
+          var earthClouds = new THREE.Mesh(
+            new THREE.SphereGeometry(6.25, 40, 26),
+            new THREE.MeshPhongMaterial(earthCloudMaterialOptions)
+          );
+          earthClouds.position.copy(earth.position);
+          earthClouds.rotation.y = earth.rotation.y + 0.08;
+          scene.add(earthClouds);
           var atmosphere = new THREE.Mesh(
-            new THREE.SphereGeometry(6.3, 40, 26),
-            new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.09, side: THREE.BackSide })
+            new THREE.SphereGeometry(6.32, 40, 26),
+            new THREE.MeshBasicMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.09, side: THREE.BackSide, depthWrite: false })
           );
           atmosphere.position.copy(earth.position);
           scene.add(atmosphere);
@@ -1866,6 +2516,49 @@
           var cupolaGlow = new THREE.PointLight(0x7dd3fc, 0.46, 5.5, 2);
           cupolaGlow.position.set(-6.25, -4.05, -0.25);
           scene.add(cupolaGlow);
+          var cupolaObservationMaterial = new THREE.MeshBasicMaterial({ color: 0x818cf8, transparent: true, opacity: 0.92, depthTest: true, depthWrite: false });
+          var cupolaObservationReticle = new THREE.Mesh(new THREE.TorusGeometry(0.24, 0.024, 7, 4), cupolaObservationMaterial);
+          cupolaObservationReticle.rotation.x = Math.PI / 2;
+          cupolaObservationReticle.renderOrder = 8;
+          cupolaObservationReticle.visible = false;
+          scene.add(cupolaObservationReticle);
+          var cupolaObservationTicks = [];
+          for (var observationTickIndex = 0; observationTickIndex < 12; observationTickIndex++) {
+            var observationTickAngle = observationTickIndex * Math.PI * 2 / 12;
+            var observationTick = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.018, 0.024), cupolaObservationMaterial.clone());
+            observationTick.position.set(Math.cos(observationTickAngle) * 0.36, Math.sin(observationTickAngle) * 0.36, 0);
+            observationTick.rotation.z = observationTickAngle;
+            observationTick.visible = false;
+            cupolaObservationTicks.push(observationTick);
+            cupolaObservationReticle.add(observationTick);
+          }
+          var cupolaObservationStatusLight = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), cupolaObservationMaterial.clone());
+          cupolaObservationStatusLight.position.copy(observationPoint);
+          cupolaObservationStatusLight.visible = false;
+          scene.add(cupolaObservationStatusLight);
+          var driftArrow = new THREE.ArrowHelper(
+            new THREE.Vector3(0, 0, -1), new THREE.Vector3(), 0.8, 0x38bdf8, 0.18, 0.1
+          );
+          [driftArrow.line, driftArrow.cone].forEach(function (part) {
+            part.material.transparent = true;
+            part.material.opacity = 0.78;
+            part.material.depthTest = false;
+            part.renderOrder = 6;
+          });
+          driftArrow.visible = false;
+          scene.add(driftArrow);
+          var controlledMotionColor = new THREE.Color(0x4ade80);
+          var fastMotionColor = new THREE.Color(0xfbbf24);
+          var railCueMaterial = new THREE.MeshBasicMaterial({
+            color: 0x38bdf8, transparent: true, opacity: 0.86, depthTest: true, depthWrite: false
+          });
+          var railCue = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.018, 6, 24), railCueMaterial);
+          railCue.renderOrder = 7;
+          railCue.visible = false;
+          scene.add(railCue);
+          var railCueReachColor = new THREE.Color(0x4ade80);
+          var railCueApproachColor = new THREE.Color(0x38bdf8);
+          var railCueHeldColor = new THREE.Color(0xa7f3d0);
 
           function insideRoom(position, def) {
             var dx = position.x - def.center.x;
@@ -1920,21 +2613,167 @@
             if (adjacent.id !== currentId) return insideRoom(position, adjacent);
             return !crossedConnectorPlane(currentId, position) && insideRoom(position, current);
           }
+          function blockedConnectorNormal(currentId, position, target) {
+            var margin = 0.025;
+            target.set(0, 0, 0);
+            if (transitionRoom(currentId, position).id !== currentId) return false;
+            if (currentId === 'harmony' && position.z > -8.45 + margin) target.set(0, 0, 1);
+            else if (currentId === 'destiny' && position.z < -8.45 - margin) target.set(0, 0, -1);
+            else if (currentId === 'destiny' && position.z > -2.25 + margin) target.set(0, 0, 1);
+            else if (currentId === 'unity' && position.z < -2.25 - margin) target.set(0, 0, -1);
+            else if (currentId === 'unity' && position.x < -1.45 - margin) target.set(-1, 0, 0);
+            else if (currentId === 'tranquility' && position.x > -1.45 + margin) target.set(1, 0, 0);
+            else if (currentId === 'tranquility' && position.y < -1.28 - margin) target.set(0, -1, 0);
+            else if (currentId === 'cupola' && position.y > -1.28 + margin) target.set(0, 1, 0);
+            return target.lengthSq() > 0;
+          }
+          function hullCollisionNormal(currentId, position, target, origin) {
+            if (blockedConnectorNormal(currentId, position, target)) return target;
+            var adjacent = transitionRoom(currentId, position);
+            var def = adjacent.id !== currentId ? adjacent : roomDef(currentId);
+            var dx = position.x - def.center.x;
+            var dy = position.y - def.center.y;
+            var dz = position.z - def.center.z;
+            var axial, radialLength;
+            if (def.axis === 'x') { axial = dx; radialLength = Math.sqrt(dy * dy + dz * dz); }
+            else if (def.axis === 'y') { axial = dy; radialLength = Math.sqrt(dx * dx + dz * dz); }
+            else { axial = dz; radialLength = Math.sqrt(dx * dx + dy * dy); }
+            var axialExcess = Math.abs(axial) - (def.length / 2 + 0.22);
+            var radialExcess = radialLength - (def.radius - 0.16);
+            if (axialExcess > radialExcess && axialExcess > 0) {
+              if (def.axis === 'x') target.set(axial < 0 ? -1 : 1, 0, 0);
+              else if (def.axis === 'y') target.set(0, axial < 0 ? -1 : 1, 0);
+              else target.set(0, 0, axial < 0 ? -1 : 1);
+            } else if (def.axis === 'x') target.set(0, dy, dz);
+            else if (def.axis === 'y') target.set(dx, 0, dz);
+            else target.set(dx, dy, 0);
+            if (target.lengthSq() < 0.000001) target.copy(position).sub(origin || state.position);
+            if (target.lengthSq() < 0.000001) target.set(1, 0, 0);
+            return target.normalize();
+          }
 
           var startDef = roomDef(cv._issInteriorWantRoom || 'harmony');
+          var persistedRouteStep = Number(cv._issInteriorRouteStep);
+          if (!isFinite(persistedRouteStep)) persistedRouteStep = startDef.id === 'harmony' ? 0 : -1;
+          persistedRouteStep = Math.max(-1, Math.min(INTERIOR_ROUTE_IDS.length - 1, Math.round(persistedRouteStep)));
+          var persistedRouteComplete = !!cv._issInteriorRouteComplete;
+          if (persistedRouteComplete) persistedRouteStep = INTERIOR_ROUTE_IDS.length - 1;
+          else if (INTERIOR_ROUTE_IDS.indexOf(startDef.id) !== persistedRouteStep) persistedRouteStep = startDef.id === 'harmony' ? 0 : -1;
+          var persistedVisitedRooms = cv._issInteriorVisitedRooms && typeof cv._issInteriorVisitedRooms === 'object'
+            ? Object.assign({}, cv._issInteriorVisitedRooms) : {};
+          var persistedCapillaryComplete = !!cv._issInteriorCapillaryComplete;
+          var persistedCapillaryDose = persistedCapillaryComplete ? Math.max(2.7, Math.min(3.3, Number(cv._issInteriorCapillaryLastDose) || 3)) : 0;
+          var persistedCapillaryAttempts = Math.max(0, Number(cv._issInteriorCapillaryAttempts) || 0);
+          var persistedCapillaryUnderfills = Math.max(0, Number(cv._issInteriorCapillaryUnderfills) || 0);
+          var persistedCapillaryOverflows = Math.max(0, Number(cv._issInteriorCapillaryOverflows) || 0);
+          var persistedCapillaryTransfers = Math.max(0, Number(cv._issInteriorCapillaryTransfers) || 0);
+          var persistedCapillaryInterruptions = Math.max(0, Number(cv._issInteriorCapillaryInterruptions) || 0);
+          var persistedObservationTarget = ['day', 'aurora', 'night'].indexOf(cv._issInteriorCupolaTarget) >= 0 ? cv._issInteriorCupolaTarget : 'day';
+          var persistedObservationCaptured = !!cv._issInteriorCupolaCaptured;
+          var persistedObservationSecured = !!cv._issInteriorCupolaShutters;
+          var persistedObservationAttempts = Math.max(0, Number(cv._issInteriorObservationAttempts) || 0);
+          var persistedObservationBlurs = Math.max(0, Number(cv._issInteriorObservationBlurs) || 0);
+          var persistedObservationInterruptions = Math.max(0, Number(cv._issInteriorObservationInterruptions) || 0);
+          var persistedObservationCaptures = Math.max(0, Number(cv._issInteriorObservationCaptures) || 0);
+          var persistedCabinStow = cv._issInteriorCabinStow && typeof cv._issInteriorCabinStow === 'object'
+            ? Object.assign({}, cv._issInteriorCabinStow) : {};
+          var persistedStowItems = cv._issInteriorStowItems && typeof cv._issInteriorStowItems === 'object'
+            ? Object.assign({}, cv._issInteriorStowItems) : {};
+          var persistedStowHeldId = null;
+          ['bag', 'tablet', 'cloth'].forEach(function (itemId) {
+            if (persistedCabinStow[itemId]) persistedStowItems[itemId] = 'secured';
+            else if (persistedStowItems[itemId] !== 'held') persistedStowItems[itemId] = 'loose';
+            if (!persistedStowHeldId && persistedStowItems[itemId] === 'held') persistedStowHeldId = itemId;
+            else if (persistedStowItems[itemId] === 'held') persistedStowItems[itemId] = 'loose';
+          });
+          var persistedStowComplete = ['bag', 'tablet', 'cloth'].every(function (itemId) { return persistedStowItems[itemId] === 'secured'; });
+          var persistedTransferComplete = !!cv._issInteriorTransferComplete;
+          var persistedTransferAttempts = Math.max(0, Number(cv._issInteriorTransferAttempts) || 0);
+          var persistedTransferContacts = Math.max(0, Number(cv._issInteriorTransferContacts) || 0);
+          var persistedTransferCompletions = Math.max(0, Number(cv._issInteriorTransferCompletions) || 0);
           var state = {
-            position: startDef.center.clone(), velocity: new THREE.Vector3(),
+            position: startDef.center.clone(), velocity: new THREE.Vector3(), angularVelocity: 0,
             pitch: startDef.facing[0], yaw: startDef.facing[1], roll: startDef.facing[2],
             room: startDef.id, mode: 'STATIONARY', collisions: 0, railGrabs: 0,
-            looseHits: 0, manualVisited: {}, routeComplete: false,
-            routeIndex: startDef.id === 'harmony' ? 0 : -1,
-            cargoHitSinceUnity: false, rolledFar: false, orientationDone: false,
-            lastWallEvent: 0, lastCargoEvent: 0,
+            railHeld: false, railAnchor: startDef.center.clone(), pushOffLatch: false, railPushOffs: 0,
+            looseHits: 0, manualVisited: persistedVisitedRooms, routeComplete: persistedRouteComplete,
+            routeIndex: persistedRouteStep,
+            cargoHitSinceUnity: false, rolledFar: false, orientationDone: !!cv._issInteriorOrientationDone,
+            handPose: 'tucked',
+            capillaryPoint: capillaryPoint, capillaryDose: persistedCapillaryDose,
+            capillaryWetFraction: persistedCapillaryComplete ? 1 : 0, capillaryDuration: persistedCapillaryComplete ? persistedCapillaryDose / 1.3 : 0,
+            capillaryActive: false, capillaryPressLatched: false, capillaryComplete: persistedCapillaryComplete,
+            capillaryOutcome: persistedCapillaryComplete ? 'complete' : 'idle', capillaryOverflow: false,
+            capillaryAttempts: persistedCapillaryAttempts, capillaryUnderfills: persistedCapillaryUnderfills,
+            capillaryOverflows: persistedCapillaryOverflows, capillaryInterruptions: persistedCapillaryInterruptions, capillaryTransfers: persistedCapillaryTransfers,
+            capillaryDistance: Infinity, capillaryAlignment: -1, capillaryStable: false,
+            capillaryMaxSpeed: 0, capillaryMaxAngularSpeed: 0,
+            observationPoint: observationPoint, observationTarget: persistedObservationTarget,
+            observationTargetPoint: cupolaTargetPoints[persistedObservationTarget], observationActive: false,
+            observationPressLatched: false, observationProgress: persistedObservationCaptured ? 1.2 : 0,
+            observationCaptured: persistedObservationCaptured, observationSecured: persistedObservationSecured,
+            observationOutcome: persistedObservationSecured ? 'secured' : persistedObservationCaptured ? 'captured' : 'idle',
+            observationDistance: Infinity, observationAlignment: -1, observationBraced: false,
+            observationAttempts: persistedObservationAttempts, observationBlurs: persistedObservationBlurs,
+            observationInterruptions: persistedObservationInterruptions, observationCaptures: persistedObservationCaptures,
+            observationMinAlignment: 1, observationMaxSpeed: 0, observationMaxAngularSpeed: 0,
+            stowItems: persistedStowItems, stowSceneItems: harmonyStowItems, stowHeldId: persistedStowHeldId,
+            stowComplete: persistedStowComplete, stowAttempts: Math.max(0, Number(cv._issInteriorStowAttempts) || 0),
+            stowCatches: Math.max(0, Number(cv._issInteriorStowCatches) || 0),
+            stowSecures: Math.max(0, Number(cv._issInteriorStowSecures) || 0),
+            stowWarnings: Math.max(0, Number(cv._issInteriorStowWarnings) || 0),
+            stowAirflowState: persistedStowComplete ? 'clear' : 'risk',
+            stowWarningEmitted: Math.max(0, Number(cv._issInteriorStowWarnings) || 0) > 0,
+            cargoPosition: cargo.position, cargoVelocity: new THREE.Vector3(0.018, -0.009, 0.014),
+            cargoAngularVelocity: new THREE.Vector3(0.34, 0.26, 0.21),
+            cargoRoom: 'unity', cargoMode: 'loose', cargoHeld: false, cargoSecured: false,
+            cargoContactLatched: false, cargoCatches: 0, cargoSecures: 0,
+            cargoSecurePoint: cargoSecurePoint,
+            transferPosition: transferBag.position, transferVelocity: new THREE.Vector3(),
+            transferMode: persistedTransferComplete ? 'docked' : 'staged',
+            transferAttempts: persistedTransferAttempts, transferContacts: persistedTransferContacts,
+            transferCompletions: persistedTransferCompletions, transferComplete: persistedTransferComplete,
+            transferPreviousZ: persistedTransferComplete ? transferDockPoint.z : transferStagingPoint.z,
+            transferPreviousBodyPosition: startDef.center.clone(),
+            transferPreviousBagPosition: (persistedTransferComplete ? transferDockPoint : transferStagingPoint).clone(),
+            transferBodyCrossed: persistedTransferComplete, transferBagCrossed: persistedTransferComplete,
+            transferBodyCrossingRadius: persistedTransferComplete ? 0 : null,
+            transferBagCrossingRadius: persistedTransferComplete ? 0 : null,
+            transferOutcome: persistedTransferComplete ? 'complete' : 'staged', transferContactLatched: false,
+            transferPendingSafeCrossing: false, transferVisualKey: '',
+            transferBagObject: transferBag, transferTether: transferTether,
+            transferClearanceCue: transferClearanceCue, transferDockCue: transferDockCue,
+            worksitePoint: worksitePoint, worksiteProgress: 0, worksiteProgressStep: 0,
+            worksiteComplete: false, toolHeld: false, worksitePressLatched: false,
+            worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0,
+            worksiteDistance: Infinity, worksiteAlignment: -1, worksiteBraced: false,
+            worksiteMaxSpeed: 0, worksiteMaxAngularSpeed: 0, worksiteRecoilUntil: 0,
+            lastWallEvent: -Infinity, lastCargoEvent: -Infinity, impactUntil: 0,
+            lastImpactNormal: null, lastNormalImpactSpeed: 0,
+            motionGuideVisible: false, brakingCue: 'MOTION // NO DRIFT',
             feedbackText: '', feedbackTone: 'info', feedbackUntil: 0
           };
+          harmonyStowItems.forEach(function (item) {
+            item.mode = state.stowItems[item.id] || 'loose';
+            if (item.mode === 'secured') {
+              item.object.position.copy(item.securePoint);
+              item.velocity.set(0, 0, 0);
+              item.angularVelocity.set(0, 0, 0);
+            }
+          });
           state.manualVisited[startDef.id] = true;
           cv._issInteriorState = state;
+          cv.setAttribute('data-iss-hand-pose', state.handPose);
           cv.setAttribute('data-iss-webgl', 'ready');
+          cv.style.display = '';
+          var readyShell = cv.closest ? cv.closest('[data-iss-interior-sim]') : null;
+          if (readyShell) {
+            readyShell.removeAttribute('data-iss-webgl-state');
+            var readyControls = readyShell.querySelectorAll('.iss-interior-controls button');
+            for (var readyControlIndex = 0; readyControlIndex < readyControls.length; readyControlIndex++) readyControls[readyControlIndex].disabled = false;
+            var readyWarning = readyShell.querySelector('[data-iss-interior-fallback]');
+            if (readyWarning) readyWarning.hidden = true;
+          }
 
           var keys = {};
           var lastWant = startDef.id;
@@ -1954,6 +2793,30 @@
           var tempSeparation = new THREE.Vector3();
           var tempHudTarget = new THREE.Vector3();
           var tempLocalVelocity = new THREE.Vector3();
+          var tempCollisionNormal = new THREE.Vector3();
+          var tempVelocityDirection = new THREE.Vector3();
+          var tempTargetDirection = new THREE.Vector3();
+          var tempCargoCandidate = new THREE.Vector3();
+          var tempCargoCollisionNormal = new THREE.Vector3();
+          var tempCargoRelativeVelocity = new THREE.Vector3();
+          var tempCargoSharedVelocity = new THREE.Vector3();
+          var tempCargoHoldPosition = new THREE.Vector3();
+          var tempStowCandidate = new THREE.Vector3();
+          var tempStowCollisionNormal = new THREE.Vector3();
+          var tempStowHoldPosition = new THREE.Vector3();
+          var tempRailA = new THREE.Vector3();
+          var tempRailB = new THREE.Vector3();
+          var tempRailPoint = new THREE.Vector3();
+          var tempWorksiteDirection = new THREE.Vector3();
+          var tempWorksiteForward = new THREE.Vector3();
+          var tempCapillaryDirection = new THREE.Vector3();
+          var tempCapillaryForward = new THREE.Vector3();
+          var tempObservationDirection = new THREE.Vector3();
+          var tempObservationForward = new THREE.Vector3();
+          var tempTransferTarget = new THREE.Vector3();
+          var tempTransferAcceleration = new THREE.Vector3();
+          var tempTransferCrewAttach = new THREE.Vector3();
+          var transferTetherPositions = transferTetherGeometry.attributes.position.array;
 
           function announce(message) {
             var shell = cv.closest ? cv.closest('[data-iss-interior-sim]') : null;
@@ -1974,24 +2837,132 @@
             state.feedbackUntil = ((window.performance && performance.now) ? performance.now() : Date.now()) + (duration || 1500);
             dirty = true;
           }
-          function railDistance(position, def) {
+          function updateMotionGuide() {
+            var speed = state.velocity.length();
+            var visible = speed > 0.02;
+            if (driftArrow.visible !== visible) dirty = true;
+            driftArrow.visible = visible;
+            state.motionGuideVisible = visible;
+            if (!visible) return;
+            tempVelocityDirection.copy(state.velocity).normalize();
+            driftArrow.position.copy(state.position).addScaledVector(tempForward, 0.9);
+            driftArrow.setDirection(tempVelocityDirection);
+            driftArrow.setLength(Math.min(0.7, 0.44 + speed * 0.34), 0.16, 0.09);
+            driftArrow.setColor(speed <= 0.35 ? controlledMotionColor : fastMotionColor);
+            dirty = true;
+          }
+          function nearestRailPoint(position, def, target) {
             var offset = def.radius * 0.63;
             var axialHalf = def.length * 0.43;
-            var axialExcess, first, second;
             if (def.axis === 'z') {
-              axialExcess = Math.max(0, Math.abs(position.z - def.center.z) - axialHalf);
-              first = Math.sqrt(Math.pow(position.x - (def.center.x + offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
-              second = Math.sqrt(Math.pow(position.x - (def.center.x - offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+              var railZ = Math.max(def.center.z - axialHalf, Math.min(def.center.z + axialHalf, position.z));
+              tempRailA.set(def.center.x + offset, def.center.y - def.radius * 0.58, railZ);
+              tempRailB.set(def.center.x - offset, def.center.y - def.radius * 0.58, railZ);
             } else if (def.axis === 'x') {
-              axialExcess = Math.max(0, Math.abs(position.x - def.center.x) - axialHalf);
-              first = Math.sqrt(Math.pow(position.z - (def.center.z + offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
-              second = Math.sqrt(Math.pow(position.z - (def.center.z - offset), 2) + Math.pow(position.y - (def.center.y - def.radius * 0.58), 2) + axialExcess * axialExcess);
+              var railX = Math.max(def.center.x - axialHalf, Math.min(def.center.x + axialHalf, position.x));
+              tempRailA.set(railX, def.center.y - def.radius * 0.58, def.center.z + offset);
+              tempRailB.set(railX, def.center.y - def.radius * 0.58, def.center.z - offset);
             } else {
-              axialExcess = Math.max(0, Math.abs(position.y - def.center.y) - axialHalf);
-              first = Math.sqrt(Math.pow(position.x - (def.center.x + offset), 2) + Math.pow(position.z - (def.center.z + def.radius * 0.55), 2) + axialExcess * axialExcess);
-              second = Math.sqrt(Math.pow(position.x - (def.center.x - offset), 2) + Math.pow(position.z - (def.center.z + def.radius * 0.55), 2) + axialExcess * axialExcess);
+              var railY = Math.max(def.center.y - axialHalf, Math.min(def.center.y + axialHalf, position.y));
+              tempRailA.set(def.center.x + offset, railY, def.center.z + def.radius * 0.55);
+              tempRailB.set(def.center.x - offset, railY, def.center.z + def.radius * 0.55);
             }
-            return Math.min(first, second);
+            target.copy(position.distanceToSquared(tempRailA) <= position.distanceToSquared(tempRailB) ? tempRailA : tempRailB);
+            return target;
+          }
+          function railDistance(position, def) {
+            return nearestRailPoint(position, def, tempRailPoint).distanceTo(position);
+          }
+          function updateRailCue() {
+            var distance = railDistance(state.position, roomDef(state.room));
+            var shouldShow = state.railHeld || distance <= 0.9;
+            if (railCue.visible !== shouldShow) dirty = true;
+            railCue.visible = shouldShow;
+            if (!shouldShow) return;
+            nearestRailPoint(state.position, roomDef(state.room), tempRailPoint);
+            railCue.position.copy(tempRailPoint);
+            railCue.lookAt(camera.position);
+            railCue.material.color.copy(state.railHeld ? railCueHeldColor : distance <= 0.68 ? railCueReachColor : railCueApproachColor);
+            railCue.scale.setScalar(state.railHeld ? 1.22 : 1);
+            // Position, camera, and hold-state changes already mark the frame dirty.
+          }
+          var crewPoseTargets = {
+            tucked: {
+              left: [-0.42, -0.39, -0.76, -0.08, -0.08, -0.32],
+              right: [0.42, -0.39, -0.76, -0.08, 0.08, 0.32]
+            },
+            rail: {
+              left: [-0.22, -0.2, -0.68, 0.14, -0.12, -0.92],
+              right: [0.42, -0.4, -0.78, -0.08, 0.08, 0.4]
+            },
+            cargo: {
+              left: [-0.24, -0.2, -0.68, 0.08, -0.16, -0.34],
+              right: [0.24, -0.2, -0.68, 0.08, 0.16, 0.34]
+            },
+            stow: {
+              left: [-0.2, -0.15, -0.61, 0.14, -0.18, -0.5],
+              right: [0.2, -0.15, -0.61, 0.14, 0.18, 0.5]
+            },
+            'stow-braced': {
+              left: [-0.22, -0.2, -0.68, 0.14, -0.12, -0.92],
+              right: [0.2, -0.15, -0.61, 0.14, 0.18, 0.5]
+            },
+            transfer: {
+              left: [-0.28, -0.22, -0.69, 0.1, -0.14, -0.72],
+              right: [0.3, -0.24, -0.7, 0.08, 0.18, 0.54]
+            },
+            tool: {
+              left: [-0.25, -0.2, -0.67, 0.12, -0.12, -0.84],
+              right: [0.22, -0.16, -0.62, 0.18, 0.18, 0.7]
+            },
+            science: {
+              left: [-0.28, -0.22, -0.68, 0.1, -0.13, -0.72],
+              right: [0.2, -0.15, -0.61, 0.16, 0.2, 0.58]
+            },
+            camera: {
+              left: [-0.26, -0.2, -0.67, 0.1, -0.14, -0.78],
+              right: [0.14, -0.08, -0.55, 0.3, 0.1, 0.42]
+            }
+          };
+          function updateCrewArmPose(arm, target, blend) {
+            arm.position.x += (target[0] - arm.position.x) * blend;
+            arm.position.y += (target[1] - arm.position.y) * blend;
+            arm.position.z += (target[2] - arm.position.z) * blend;
+            arm.rotation.x += (target[3] - arm.rotation.x) * blend;
+            arm.rotation.y += (target[4] - arm.rotation.y) * blend;
+            arm.rotation.z += (target[5] - arm.rotation.z) * blend;
+          }
+          function updateCrewRig(dt) {
+            var nextPose = (state.observationActive || (state.room === 'cupola' && state.observationCaptured && !state.observationSecured)) ? 'camera' : state.capillaryActive ? 'science' : state.toolHeld ? 'tool' : state.cargoMode === 'held' ? 'cargo' : state.railHeld ? 'rail' : 'tucked';
+            if (state.transferMode === 'tethered') nextPose = 'transfer';
+            if (state.stowHeldId) nextPose = state.railHeld ? 'stow-braced' : 'stow';
+            if (state.handPose !== nextPose) {
+              state.handPose = nextPose;
+              cv.setAttribute('data-iss-hand-pose', nextPose);
+              dirty = true;
+            }
+            var target = crewPoseTargets[nextPose];
+            var showCrewTool = nextPose === 'tool';
+            if (crewTool.visible !== showCrewTool) {
+              crewTool.visible = showCrewTool;
+              dirty = true;
+            }
+            var showScienceTool = nextPose === 'science';
+            if (crewScienceTool.visible !== showScienceTool) {
+              crewScienceTool.visible = showScienceTool;
+              dirty = true;
+            }
+            var showCrewCamera = nextPose === 'camera';
+            if (crewCamera.visible !== showCrewCamera) {
+              crewCamera.visible = showCrewCamera;
+              dirty = true;
+            }
+            var blend = _prefersReducedMotion ? 1 : 1 - Math.exp(-Math.max(0.001, dt) * 11);
+            var beforeX = leftCrewArm.position.x;
+            var beforeRightX = rightCrewArm.position.x;
+            updateCrewArmPose(leftCrewArm, target.left, blend);
+            updateCrewArmPose(rightCrewArm, target.right, blend);
+            if (Math.abs(leftCrewArm.position.x - beforeX) > 0.0001 || Math.abs(rightCrewArm.position.x - beforeRightX) > 0.0001) dirty = true;
           }
           function nextRouteTarget() {
             if (state.routeComplete) return null;
@@ -2014,23 +2985,1291 @@
               label: recovering ? 'RESET VIA // ' + roomInfo(nextId).module.toUpperCase() : 'NEXT // ' + roomInfo(nextId).module.toUpperCase()
             };
           }
+          var crewMass = 70;
+          var cargoMass = 5;
+          var cargoCatchReach = 0.65;
+          var cargoCatchRelativeSpeed = 0.2;
+          var cargoSecureReach = 0.9;
+          var railPushOffImpulse = 10;
+          var worksiteReach = 0.72;
+          var worksiteAlignmentMinimum = 0.76;
+          var worksiteDuration = 1.5;
+          var worksiteAngularImpulse = 0.14;
+          var capillaryReach = 0.95;
+          var capillaryAlignmentMinimum = 0.76;
+          var capillaryFlowRate = 1.3;
+          var capillaryTargetDose = 3;
+          var capillaryDoseMinimum = 2.7;
+          var capillaryDoseMaximum = 3.3;
+          var capillaryWettingDuration = 2.3;
+          var observationReach = 0.95;
+          var observationAlignmentMinimum = 0.965;
+          var observationDuration = 1.2;
+          function updateCapillaryMetrics() {
+            setCameraFromState();
+            tempCapillaryDirection.copy(capillaryPoint).sub(state.position);
+            state.capillaryDistance = tempCapillaryDirection.length();
+            if (state.capillaryDistance > 0.0001) tempCapillaryDirection.multiplyScalar(1 / state.capillaryDistance);
+            else tempCapillaryDirection.set(0, 0, -1);
+            tempCapillaryForward.set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            state.capillaryAlignment = tempCapillaryForward.dot(tempCapillaryDirection);
+            state.capillaryStable = state.railHeld || (state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035);
+          }
+          function updateCapillaryVisual(now) {
+            var shouldShow = state.room === 'destiny';
+            if (destinyCapillaryHalo && destinyCapillaryHalo.visible !== shouldShow) {
+              destinyCapillaryHalo.visible = shouldShow;
+              dirty = true;
+            }
+            var cueColor = state.capillaryComplete ? 0x4ade80
+              : state.capillaryOverflow ? 0xf87171
+              : state.capillaryDistance > capillaryReach ? 0xfbbf24
+              : state.capillaryAlignment < capillaryAlignmentMinimum ? 0xa78bfa
+              : state.capillaryActive ? 0x38bdf8
+              : state.capillaryStable ? 0x22d3ee : 0xf97316;
+            if (capillaryHaloMaterial.color.getHex() !== cueColor) {
+              capillaryHaloMaterial.color.setHex(cueColor);
+              capillaryStatusMaterial.color.setHex(cueColor);
+              capillaryStatusMaterial.emissive.setHex(state.capillaryComplete ? 0x14532d : state.capillaryOverflow ? 0x6b1118 : 0x083d55);
+              dirty = true;
+            }
+            var wetFraction = state.capillaryComplete ? 1 : Math.max(0, Math.min(1, state.capillaryWetFraction));
+            if (destinyWickWet) {
+              var wickVisible = shouldShow && wetFraction > 0.005;
+              if (destinyWickWet.visible !== wickVisible) { destinyWickWet.visible = wickVisible; dirty = true; }
+              var wickScale = Math.max(0.001, wetFraction);
+              if (Math.abs(destinyWickWet.scale.y - wickScale) > 0.002) {
+                destinyWickWet.scale.y = wickScale;
+                destinyWickWet.position.y = -0.25 + 0.24 * wickScale;
+                dirty = true;
+              }
+            }
+            var progressTicksVisible = state.capillaryComplete ? destinyCapillaryProgressTicks.length
+              : Math.floor(Math.max(0, Math.min(1, state.capillaryDose / capillaryDoseMaximum)) * destinyCapillaryProgressTicks.length);
+            destinyCapillaryProgressTicks.forEach(function (tickMesh, tickIndex) {
+              var tickShouldShow = shouldShow && tickIndex < progressTicksVisible;
+              if (tickMesh.visible !== tickShouldShow) { tickMesh.visible = tickShouldShow; dirty = true; }
+            });
+            if (destinyOverflowBead) {
+              var beadVisible = shouldShow && state.capillaryOverflow;
+              if (destinyOverflowBead.visible !== beadVisible) { destinyOverflowBead.visible = beadVisible; dirty = true; }
+              if (beadVisible && !_prefersReducedMotion) {
+                destinyOverflowBead.rotation.y = Math.sin(now * 0.0018) * 0.18;
+                dirty = true;
+              }
+            }
+            if (destinyFluidDroplet) {
+              var idleFloat = !_prefersReducedMotion && !state.capillaryActive && !state.capillaryComplete && !state.capillaryOverflow
+                ? Math.sin(now * 0.0021) * 0.035 : 0;
+              var doseRatio = Math.max(0, Math.min(1, state.capillaryDose / capillaryTargetDose));
+              var dropletPulse = state.capillaryActive && !_prefersReducedMotion ? 1 + Math.sin(now * 0.004) * 0.035 : 1;
+              destinyFluidDroplet.position.y = destinyFluidDroplet.userData.baseY + idleFloat - doseRatio * 0.08;
+              destinyFluidDroplet.scale.set((0.72 + doseRatio * 0.18) * dropletPulse, (1.18 + doseRatio * 0.16) / dropletPulse, (0.72 + doseRatio * 0.18) * dropletPulse);
+              dirty = dirty || state.capillaryActive || Math.abs(idleFloat) > 0.001;
+            }
+            var plantColor = state.capillaryComplete ? 0x86efac : 0x4ade80;
+            var plantEmissive = state.capillaryComplete ? 0x14532d : 0x0d3c25;
+            if (plantLeafMaterial.color.getHex() !== plantColor) {
+              plantLeafMaterial.color.setHex(plantColor);
+              plantLeafMaterial.emissive.setHex(plantEmissive);
+              dirty = true;
+            }
+          }
+          function completeCapillaryTransfer() {
+            state.capillaryActive = false;
+            state.capillaryPressLatched = false;
+            state.capillaryComplete = true;
+            state.capillaryOutcome = 'complete';
+            state.capillaryOverflow = false;
+            state.capillaryWetFraction = 1;
+            state.capillaryTransfers += 1;
+            cv._issInteriorCapillaryComplete = true;
+            cv._issInteriorCapillaryLastDose = state.capillaryDose;
+            emit('capillary-complete', {
+              room: 'destiny', dose: state.capillaryDose, duration: state.capillaryDuration,
+              maxSpeed: state.capillaryMaxSpeed, maxAngularSpeed: state.capillaryMaxAngularSpeed,
+              attempt: state.capillaryAttempts, stable: true
+            });
+            state.mode = 'CAPILLARY TRANSFER COMPLETE';
+            setFeedback('ROOT ZONE FED // ' + state.capillaryDose.toFixed(2) + ' ML', 'safe', 2600);
+            announce('Capillary transfer complete at ' + state.capillaryDose.toFixed(2) + ' milliliters. The contained wick delivered water to the root zone without gravity.');
+            dirty = true;
+            return true;
+          }
+          function setCapillaryAction(on) {
+            if (!on) {
+              state.capillaryPressLatched = false;
+              if (!state.capillaryActive) return false;
+              state.capillaryActive = false;
+              if (state.capillaryDose >= capillaryDoseMinimum && state.capillaryDose <= capillaryDoseMaximum) return completeCapillaryTransfer();
+              state.capillaryOutcome = 'underfill';
+              state.capillaryUnderfills += 1;
+              emit('capillary-underfill', {
+                room: 'destiny', dose: state.capillaryDose, duration: state.capillaryDuration,
+                attempt: state.capillaryAttempts
+              });
+              state.mode = 'CAPILLARY UNDERFILL';
+              setFeedback('WICK UNDERFILLED // ' + state.capillaryDose.toFixed(2) + ' ML', 'warn', 2300);
+              announce('Underfill at ' + state.capillaryDose.toFixed(2) + ' milliliters. Reopen the contained valve and hold until the dose reaches at least two point seven milliliters.');
+              dirty = true;
+              return false;
+            }
+            if (state.transferMode === 'tethered') {
+              setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
+              announce('Finish the bulky hatch transfer before opening the Destiny water injector.');
+              return false;
+            }
+            if (state.capillaryPressLatched || state.capillaryActive) return false;
+            if (Number(cv._issInteriorResearchStep || 0) < 1) {
+              setFeedback('SECURE SAMPLE FIRST // WATER VALVE LOCKED', 'warn', 2200);
+              announce('Secure the Destiny plant sample before opening the contained water valve.');
+              return false;
+            }
+            updateCapillaryMetrics();
+            if (state.capillaryComplete) {
+              setFeedback('PLANT SAMPLE FED // WICK SATURATED', 'safe');
+              announce('The Destiny plant sample has already received its target capillary dose.');
+              return false;
+            }
+            if (state.room !== 'destiny') {
+              setFeedback('PLANT CHAMBER IN DESTINY // FOLLOW FORWARD ROUTE', 'warn', 1900);
+              announce('The contained plant-watering experiment is in Destiny laboratory.');
+              return false;
+            }
+            if (state.cargoMode === 'held') {
+              setFeedback('SECURE POUCH BEFORE SCIENCE', 'warn', 1800);
+              announce('Secure the cargo pouch before handling the fluid experiment.');
+              return false;
+            }
+            if (state.capillaryDistance > capillaryReach) {
+              setFeedback('PLANT CHAMBER OUT OF REACH // ' + state.capillaryDistance.toFixed(2) + ' M', 'warn', 1900);
+              announce('The plant chamber is ' + state.capillaryDistance.toFixed(2) + ' meters away. Move within zero point nine five meters.');
+              return false;
+            }
+            if (state.capillaryAlignment < capillaryAlignmentMinimum) {
+              setFeedback('ALIGN WITH GLOVEBOX // FACE THE CYAN RING', 'warn', 1900);
+              announce('Face the cyan plant-chamber ring more directly before opening the water valve.');
+              return false;
+            }
+            if (!state.capillaryStable) {
+              setFeedback('STABILIZE BODY // STOP OR HOLD A RAIL', 'warn', 1900);
+              announce('Stop your linear and rotational motion, or hold a handrail, before transferring contained fluid.');
+              return false;
+            }
+            state.capillaryAttempts += 1;
+            state.capillaryPressLatched = true;
+            state.capillaryActive = true;
+            state.capillaryDose = 0;
+            state.capillaryDuration = 0;
+            state.capillaryWetFraction = 0;
+            state.capillaryOutcome = 'priming';
+            state.capillaryOverflow = false;
+            state.capillaryMaxSpeed = state.velocity.length();
+            state.capillaryMaxAngularSpeed = Math.abs(state.angularVelocity);
+            state.mode = 'CAPILLARY TRANSFER // 0%';
+            setFeedback('VALVE OPEN // TARGET 2.7-3.3 ML', 'info', 1900);
+            announce('Contained water valve open. Hold V, then release between two point seven and three point three milliliters.');
+            dirty = true;
+            return true;
+          }
+          function cancelCapillaryAction(quiet) {
+            var wasActive = state.capillaryActive;
+            if (wasActive) state.capillaryAttempts = Math.max(0, state.capillaryAttempts - 1);
+            state.capillaryActive = false;
+            state.capillaryPressLatched = false;
+            if (!state.capillaryComplete) {
+              state.capillaryDose = 0;
+              state.capillaryDuration = 0;
+              state.capillaryWetFraction = 0;
+              state.capillaryOutcome = 'idle';
+              state.capillaryOverflow = false;
+            }
+            if (wasActive && !quiet) setFeedback('TRANSFER PAUSED // SAMPLE RESET', 'info', 1500);
+            dirty = true;
+          }
+          function updateCapillary(dt, now) {
+            updateCapillaryMetrics();
+            if (state.capillaryComplete) {
+              updateCapillaryVisual(now);
+              return;
+            }
+            if (state.capillaryActive) {
+              var stable = state.room === 'destiny'
+                && state.capillaryDistance <= capillaryReach
+                && state.capillaryAlignment >= capillaryAlignmentMinimum
+                && state.capillaryStable;
+              if (!stable) {
+                state.capillaryActive = false;
+                state.capillaryOutcome = 'interrupted';
+                state.capillaryInterruptions += 1;
+                emit('capillary-interrupted', {
+                  room: 'destiny', dose: state.capillaryDose, duration: state.capillaryDuration,
+                  attempt: state.capillaryAttempts, distance: state.capillaryDistance,
+                  alignment: state.capillaryAlignment
+                });
+                state.mode = 'CAPILLARY TRANSFER INTERRUPTED';
+                setFeedback('TRANSFER INTERRUPTED // REPOSITION + RELEASE V', 'warn', 2200);
+                announce('Fluid transfer interrupted. Release V, stabilize near the glovebox, and realign before trying again.');
+              } else {
+                state.capillaryDuration += dt;
+                state.capillaryDose = Math.min(capillaryDoseMaximum, state.capillaryDose + capillaryFlowRate * dt);
+                state.capillaryWetFraction = Math.min(1, Math.sqrt(state.capillaryDuration / capillaryWettingDuration));
+                state.capillaryMaxSpeed = Math.max(state.capillaryMaxSpeed, state.velocity.length());
+                state.capillaryMaxAngularSpeed = Math.max(state.capillaryMaxAngularSpeed, Math.abs(state.angularVelocity));
+                state.mode = 'CAPILLARY TRANSFER // ' + state.capillaryDose.toFixed(2) + ' ML';
+                dirty = true;
+                if (state.capillaryDose >= capillaryDoseMaximum) {
+                  state.capillaryActive = false;
+                  state.capillaryOverflow = true;
+                  state.capillaryOutcome = 'overflow';
+                  state.capillaryOverflows += 1;
+                  emit('capillary-overflow', {
+                    room: 'destiny', dose: state.capillaryDose, duration: state.capillaryDuration,
+                    attempt: state.capillaryAttempts
+                  });
+                  state.mode = 'CAPILLARY OVERFLOW CONTAINED';
+                  setFeedback('OVERFLOW CONTAINED // SURFACE-TENSION BEAD', 'impact', 2600);
+                  announce('The valve auto-closed at three point three milliliters. A water bead clings inside the sealed glovebox because surface tension dominates in microgravity.');
+                }
+              }
+            }
+            updateCapillaryVisual(now);
+          }
+          function resetCapillary() {
+            state.capillaryDose = 0;
+            state.capillaryDuration = 0;
+            state.capillaryWetFraction = 0;
+            state.capillaryActive = false;
+            state.capillaryPressLatched = false;
+            state.capillaryComplete = false;
+            state.capillaryOutcome = 'idle';
+            state.capillaryOverflow = false;
+            state.capillaryAttempts = 0;
+            state.capillaryUnderfills = 0;
+            state.capillaryOverflows = 0;
+            state.capillaryInterruptions = 0;
+            state.capillaryTransfers = 0;
+            state.capillaryMaxSpeed = 0;
+            state.capillaryMaxAngularSpeed = 0;
+            cv._issInteriorCapillaryComplete = false;
+            cv._issInteriorCapillaryLastDose = 0;
+            destinyCapillaryProgressTicks.forEach(function (tickMesh) { tickMesh.visible = false; });
+            if (destinyWickWet) destinyWickWet.visible = false;
+            if (destinyOverflowBead) destinyOverflowBead.visible = false;
+            dirty = true;
+          }
+          function observationLabel(id) {
+            return id === 'aurora' ? 'aurora curtain' : id === 'night' ? 'city lights' : 'cloud vortex';
+          }
+          function updateObservationMetrics() {
+            var selectedPoint = cupolaTargetPoints[state.observationTarget] || cupolaTargetPoints.day;
+            state.observationTargetPoint = selectedPoint;
+            state.observationDistance = state.position.distanceTo(observationPoint);
+            setCameraFromState();
+            tempObservationDirection.copy(selectedPoint).sub(state.position);
+            if (tempObservationDirection.lengthSq() > 0.000001) tempObservationDirection.normalize();
+            else tempObservationDirection.set(0, -1, 0);
+            tempObservationForward.set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            state.observationAlignment = tempObservationForward.dot(tempObservationDirection);
+            state.observationBraced = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.02;
+          }
+          function updateObservationVisual(now) {
+            var shouldShow = state.room === 'cupola';
+            var showTarget = shouldShow && !state.observationSecured;
+            if (cupolaObservationReticle.visible !== showTarget) {
+              cupolaObservationReticle.visible = showTarget;
+              dirty = true;
+            }
+            if (cupolaObservationStatusLight.visible !== shouldShow) {
+              cupolaObservationStatusLight.visible = shouldShow;
+              dirty = true;
+            }
+            cupolaObservationReticle.position.copy(state.observationTargetPoint || cupolaTargetPoints.day);
+            var cueColor = state.observationSecured ? 0x4ade80
+              : state.observationCaptured ? 0x4ade80
+              : state.observationDistance > observationReach ? 0xfbbf24
+              : state.observationAlignment < observationAlignmentMinimum ? 0xa78bfa
+              : !state.observationBraced ? 0xf97316
+              : state.observationActive ? 0x38bdf8 : 0x818cf8;
+            if (cupolaObservationMaterial.color.getHex() !== cueColor) {
+              cupolaObservationMaterial.color.setHex(cueColor);
+              cupolaObservationStatusLight.material.color.setHex(cueColor);
+              cupolaObservationTicks.forEach(function (tickMesh) { tickMesh.material.color.setHex(cueColor); });
+              dirty = true;
+            }
+            var visibleTicks = state.observationCaptured ? cupolaObservationTicks.length
+              : Math.floor(Math.max(0, Math.min(1, state.observationProgress / observationDuration)) * cupolaObservationTicks.length);
+            cupolaObservationTicks.forEach(function (tickMesh, tickIndex) {
+              var tickVisible = showTarget && tickIndex < visibleTicks;
+              if (tickMesh.visible !== tickVisible) {
+                tickMesh.visible = tickVisible;
+                dirty = true;
+              }
+            });
+            var targetScale = state.observationCaptured ? 1.12 : 1;
+            if (!_prefersReducedMotion && state.observationActive) targetScale += Math.sin(now * 0.012) * 0.055;
+            if (Math.abs(cupolaObservationReticle.scale.x - targetScale) > 0.002) {
+              cupolaObservationReticle.scale.setScalar(targetScale);
+              dirty = true;
+            }
+            var glowIntensity = state.observationSecured ? 0.12 : state.observationCaptured ? 0.62 : 0.46;
+            if (Math.abs(cupolaGlow.intensity - glowIntensity) > 0.01) {
+              cupolaGlow.intensity = glowIntensity;
+              dirty = true;
+            }
+          }
+          function setObservationAction(on) {
+            if (!on) {
+              var blurred = state.observationActive && !state.observationCaptured && state.observationProgress > 0;
+              state.observationActive = false;
+              state.observationPressLatched = false;
+              if (blurred) {
+                state.observationBlurs += 1;
+                state.observationOutcome = 'blurred';
+                emit('observation-blurred', {
+                  room: 'cupola', target: state.observationTarget, duration: state.observationProgress,
+                  attempt: state.observationAttempts, alignment: state.observationAlignment
+                });
+                state.observationProgress = 0;
+                state.mode = 'CAMERA FRAME BLURRED';
+                setFeedback('FRAME BLURRED // HOLD P UNTIL LOCK', 'warn', 2100);
+                announce('The handheld Earth image blurred when the camera moved before frame lock. Brace on the rail and hold P for the full training interval.');
+              }
+              dirty = true;
+              return true;
+            }
+            if (state.transferMode === 'tethered') {
+              setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
+              announce('Finish the bulky hatch transfer before handling the Cupola camera.');
+              return false;
+            }
+            if (state.observationPressLatched || state.observationActive) return false;
+            updateObservationMetrics();
+            if (state.room !== 'cupola') {
+              setFeedback('CAMERA STATION IN CUPOLA // FOLLOW NADIR ROUTE', 'warn', 1900);
+              announce('The Earth observation camera station is in Cupola.');
+              return false;
+            }
+            if (state.observationSecured) {
+              setFeedback('CUPOLA SECURE // SHUTTERS CLOSED', 'safe');
+              announce('The Cupola observation is complete and all seven shutters are closed.');
+              return false;
+            }
+            if (state.observationCaptured) {
+              state.observationPressLatched = true;
+              state.observationSecured = true;
+              state.observationOutcome = 'secured';
+              cv._issInteriorCupolaShutters = true;
+              emit('observation-secured', { room: 'cupola', target: state.observationTarget, source: '3d' });
+              try { if (typeof cv._issInteriorSecureCupola === 'function') cv._issInteriorSecureCupola(); } catch (e) {}
+              state.mode = 'CUPOLA SECURE';
+              setFeedback('SEVEN SHUTTERS CLOSED // WINDOWS PROTECTED', 'safe', 2600);
+              dirty = true;
+              return true;
+            }
+            if (state.observationDistance > observationReach) {
+              setFeedback('CAMERA CONTROL OUT OF REACH // ' + state.observationDistance.toFixed(2) + ' M', 'warn', 1900);
+              announce('Move within zero point nine five meters of the Cupola camera control.');
+              return false;
+            }
+            if (state.observationAlignment < observationAlignmentMinimum) {
+              setFeedback('FRAME EARTH TARGET // CENTER THE VIOLET BRACKET', 'warn', 1900);
+              announce('Center the selected Earth target inside the violet Cupola bracket before starting the frame lock.');
+              return false;
+            }
+            if (!state.observationBraced) {
+              setFeedback('BRACE ON RAIL // DAMP CAMERA MOTION', 'warn', 2000);
+              announce('Catch and hold the nearby rail, then stop rotation before taking the handheld Earth image.');
+              return false;
+            }
+            state.observationAttempts += 1;
+            state.observationPressLatched = true;
+            state.observationActive = true;
+            state.observationProgress = 0;
+            state.observationOutcome = 'locking';
+            state.observationMinAlignment = state.observationAlignment;
+            state.observationMaxSpeed = state.velocity.length();
+            state.observationMaxAngularSpeed = Math.abs(state.angularVelocity);
+            state.mode = 'EARTH FRAME LOCK // 0%';
+            setFeedback('CAMERA STEADY // HOLD P FOR 1.2 S', 'info', 1800);
+            announce('Camera frame lock started. Stay braced and hold P for one point two seconds.');
+            dirty = true;
+            return true;
+          }
+          function cancelObservationAction(quiet) {
+            var wasActive = state.observationActive;
+            if (wasActive) state.observationAttempts = Math.max(0, state.observationAttempts - 1);
+            state.observationActive = false;
+            state.observationPressLatched = false;
+            if (wasActive && !state.observationCaptured) {
+              state.observationProgress = 0;
+              state.observationOutcome = 'idle';
+            }
+            if (wasActive && !quiet) setFeedback('CAMERA HOLD CANCELLED // FRAME RESET', 'info', 1500);
+            dirty = true;
+          }
+          function updateObservation(dt, now) {
+            var wantedTarget = ['day', 'aurora', 'night'].indexOf(cv._issInteriorCupolaTarget) >= 0 ? cv._issInteriorCupolaTarget : 'day';
+            if (!state.observationActive && !state.observationCaptured && state.observationTarget !== wantedTarget) {
+              state.observationTarget = wantedTarget;
+              state.observationProgress = 0;
+              state.observationOutcome = 'idle';
+              dirty = true;
+            }
+            if (!state.observationActive) {
+              var propObservationCaptured = !!cv._issInteriorCupolaCaptured;
+              var propObservationSecured = !!cv._issInteriorCupolaShutters;
+              var observationClearedExternally = (state.observationCaptured && !propObservationCaptured) || (state.observationSecured && !propObservationSecured);
+              if (observationClearedExternally) {
+                state.observationProgress = 0;
+                state.observationPressLatched = false;
+                state.observationOutcome = 'idle';
+              }
+              state.observationCaptured = propObservationCaptured;
+              state.observationSecured = propObservationSecured;
+              if (state.observationSecured) state.observationOutcome = 'secured';
+              else if (state.observationCaptured) state.observationOutcome = 'captured';
+            }
+            updateObservationMetrics();
+            if (state.observationActive) {
+              var stable = state.room === 'cupola'
+                && state.observationDistance <= observationReach
+                && state.observationAlignment >= observationAlignmentMinimum
+                && state.observationBraced;
+              if (!stable) {
+                state.observationActive = false;
+                state.observationProgress = 0;
+                state.observationOutcome = 'interrupted';
+                state.observationInterruptions += 1;
+                emit('observation-interrupted', {
+                  room: 'cupola', target: state.observationTarget, attempt: state.observationAttempts,
+                  distance: state.observationDistance, alignment: state.observationAlignment,
+                  braced: state.observationBraced
+                });
+                state.mode = 'EARTH FRAME INTERRUPTED';
+                setFeedback('FRAME LOST // REBRACE + REALIGN', 'warn', 2200);
+                announce('Earth frame lock interrupted by lost bracing, reach, or alignment. Release P and set up the camera again.');
+              } else {
+                state.observationProgress = Math.min(observationDuration, state.observationProgress + dt);
+                state.observationMinAlignment = Math.min(state.observationMinAlignment, state.observationAlignment);
+                state.observationMaxSpeed = Math.max(state.observationMaxSpeed, state.velocity.length());
+                state.observationMaxAngularSpeed = Math.max(state.observationMaxAngularSpeed, Math.abs(state.angularVelocity));
+                state.mode = 'EARTH FRAME LOCK // ' + Math.round(state.observationProgress / observationDuration * 100) + '%';
+                dirty = true;
+                if (state.observationProgress >= observationDuration) {
+                  state.observationActive = false;
+                  state.observationCaptured = true;
+                  state.observationOutcome = 'captured';
+                  state.observationCaptures += 1;
+                  cv._issInteriorCupolaCaptured = true;
+                  emit('observation-captured', {
+                    room: 'cupola', target: state.observationTarget, duration: observationDuration,
+                    minimumAlignment: state.observationMinAlignment, maxSpeed: state.observationMaxSpeed,
+                    maxAngularSpeed: state.observationMaxAngularSpeed, attempt: state.observationAttempts,
+                    braced: true, source: '3d'
+                  });
+                  state.mode = 'EARTH FRAME CAPTURED';
+                  setFeedback('FRAME LOCKED // RELEASE P, THEN CLOSE SHUTTERS', 'safe', 2800);
+                  announce('Stable Earth image captured. Release P, then press it again to close all seven Cupola shutters.');
+                }
+              }
+            }
+            if (!state.observationActive && state.room === 'cupola') {
+              if (state.observationSecured) state.mode = 'CUPOLA SECURE';
+              else if (state.observationCaptured) state.mode = 'EARTH FRAME CAPTURED';
+              else if (state.observationOutcome === 'blurred') state.mode = 'CAMERA FRAME BLURRED';
+              else if (state.observationOutcome === 'interrupted') state.mode = 'EARTH FRAME INTERRUPTED';
+            }
+            updateObservationVisual(now);
+          }
+          function setCargoVisualMode(mode) {
+            state.cargoMode = mode;
+            state.cargoHeld = mode === 'held';
+            state.cargoSecured = mode === 'secured';
+            cargoRestraintStraps.visible = state.cargoSecured;
+            cargoHaloMaterial.color.setHex(state.cargoSecured ? 0x4ade80 : state.cargoHeld ? 0x38bdf8 : 0xfbbf24);
+            cargoPanelMaterial.color.setHex(state.cargoSecured ? 0x34d399 : state.cargoHeld ? 0x38bdf8 : 0xff7a1a);
+            restraintTarget.material.color.setHex(state.cargoSecured ? 0x4ade80 : 0x38bdf8);
+            dirty = true;
+          }
+          function resetCargo() {
+            cargo.position.copy(cargoBase);
+            cargo.rotation.set(0, 0, 0);
+            state.cargoVelocity.set(0.018, -0.009, 0.014);
+            state.cargoAngularVelocity.set(0.34, 0.26, 0.21);
+            state.cargoRoom = 'unity';
+            state.cargoContactLatched = false;
+            state.cargoCatches = 0;
+            state.cargoSecures = 0;
+            setCargoVisualMode('loose');
+          }
+          function cargoDistance() {
+            return state.position.distanceTo(cargo.position);
+          }
+          function syncTransferCanvasProps() {
+            cv._issInteriorTransferAttempts = state.transferAttempts;
+            cv._issInteriorTransferContacts = state.transferContacts;
+            cv._issInteriorTransferCompletions = state.transferCompletions;
+            cv._issInteriorTransferComplete = state.transferComplete;
+          }
+          function setTransferVisualState(outcome) {
+            var color = state.transferComplete ? 0x4ade80 : outcome === 'contact' ? 0xf97316 : state.transferMode === 'tethered' ? 0x38bdf8 : 0xfbbf24;
+            var tetherVisible = state.transferMode === 'tethered';
+            var dockVisible = state.transferComplete;
+            var cueVisible = state.room === 'harmony' || state.room === 'destiny' || tetherVisible || dockVisible;
+            var visualKey = color + ':' + tetherVisible + ':' + dockVisible + ':' + cueVisible;
+            if (state.transferVisualKey === visualKey) return;
+            state.transferVisualKey = visualKey;
+            transferClearanceMaterial.color.setHex(color);
+            transferBagEnvelope.material.color.setHex(color);
+            transferBagPanelMaterial.color.setHex(color);
+            transferTether.material.color.setHex(tetherVisible ? 0x38bdf8 : color);
+            transferTether.visible = tetherVisible;
+            transferDockCue.visible = dockVisible;
+            transferClearanceCue.visible = cueVisible;
+            dirty = true;
+          }
+          function resetTransfer(preserveCounters, outcome) {
+            if (!preserveCounters) {
+              state.transferAttempts = 0;
+              state.transferContacts = 0;
+              state.transferCompletions = 0;
+              state.transferComplete = false;
+            }
+            state.transferMode = state.transferComplete ? 'docked' : 'staged';
+            state.transferPosition.copy(state.transferComplete ? transferDockPoint : transferStagingPoint);
+            state.transferVelocity.set(0, 0, 0);
+            state.transferPreviousZ = state.transferPosition.z;
+            state.transferPreviousBodyPosition.copy(state.position);
+            state.transferPreviousBagPosition.copy(state.transferPosition);
+            state.transferContactLatched = false;
+            state.transferBodyCrossed = !!state.transferComplete;
+            state.transferBagCrossed = !!state.transferComplete;
+            state.transferBodyCrossingRadius = state.transferComplete ? 0 : null;
+            state.transferBagCrossingRadius = state.transferComplete ? 0 : null;
+            state.transferPendingSafeCrossing = false;
+            state.transferVisualKey = '';
+            state.transferOutcome = outcome || (state.transferComplete ? 'complete' : 'staged');
+            setTransferVisualState(state.transferOutcome);
+            syncTransferCanvasProps();
+          }
+          function placeCrewAtTransferStaging() {
+            var harmonyDef = roomDef('harmony');
+            state.position.copy(transferCrewStagingPoint);
+            state.velocity.set(0, 0, 0);
+            state.angularVelocity = 0;
+            state.pitch = harmonyDef.facing[0];
+            state.yaw = harmonyDef.facing[1];
+            state.roll = harmonyDef.facing[2];
+            state.room = 'harmony';
+            state.railHeld = false;
+            state.pushOffLatch = false;
+            state.mode = 'TRANSFER RESET // HARMONY';
+            state.manualVisited.harmony = true;
+            if (!state.routeComplete) state.routeIndex = 0;
+            lastWant = 'harmony';
+            cv._issInteriorWantRoom = 'harmony';
+            setCameraFromState();
+            dirty = true;
+          }
+          function transferAction() {
+            if (state.transferComplete) {
+              setFeedback('BULKY TRANSFER COMPLETE // BAG DOCKED', 'safe');
+              announce('The bulky transfer bag is already docked in Destiny.');
+              return false;
+            }
+            if (state.transferMode === 'tethered') {
+              setFeedback('TETHER CLIPPED // CENTER BODY + BAG', 'info', 1800);
+              announce('The transfer tether is clipped. Keep both your body and the lagging bag centered through the hatch.');
+              return false;
+            }
+            if (state.cargoMode === 'held' || state.stowHeldId || state.toolHeld || state.capillaryActive || state.observationActive) {
+              setFeedback('HANDS BUSY // SECURE CURRENT TOOL FIRST', 'warn', 2100);
+              announce('Secure the item or finish the current tool activity before clipping the bulky transfer tether.');
+              return false;
+            }
+            if (state.room !== 'harmony') {
+              setFeedback('TRANSFER BAG STAGED IN HARMONY', 'warn', 1900);
+              announce('Return to the Harmony side of the forward hatch to begin the bulky transfer.');
+              return false;
+            }
+            var attachDistance = state.position.distanceTo(transferStagingPoint);
+            if (attachDistance > transferAttachReach) {
+              setFeedback('TETHER CLIP OUT OF REACH // ' + attachDistance.toFixed(2) + ' M', 'warn', 1900);
+              announce('Move within zero point seven eight meters of the staged transfer bag before pressing B.');
+              return false;
+            }
+            state.transferAttempts += 1;
+            state.transferMode = 'tethered';
+            state.transferOutcome = 'tethered';
+            state.transferPendingSafeCrossing = false;
+            state.transferPreviousZ = state.transferPosition.z;
+            state.transferPreviousBodyPosition.copy(state.position);
+            state.transferPreviousBagPosition.copy(state.transferPosition);
+            state.transferBodyCrossed = false;
+            state.transferBagCrossed = false;
+            state.transferBodyCrossingRadius = null;
+            state.transferBagCrossingRadius = null;
+            state.transferVelocity.copy(state.velocity);
+            state.mode = 'BULKY TRANSFER // TETHERED';
+            setTransferVisualState('tethered');
+            syncTransferCanvasProps();
+            emit('transfer-attempt', { room: 'harmony', attempt: state.transferAttempts, source: '3d' });
+            setFeedback('TETHER CLIPPED // BAG WILL LAG', 'info', 2300);
+            announce('Tether clipped. The twelve kilogram bag follows with spring and damping lag. Center your body, then allow clearance for the bag before crossing into Destiny.');
+            return true;
+          }
+          function updateTransferTetherGeometry() {
+            tempTransferCrewAttach.copy(state.position).addScaledVector(tempRight, 0.34).addScaledVector(tempUp, -0.15);
+            transferTetherPositions[0] = tempTransferCrewAttach.x;
+            transferTetherPositions[1] = tempTransferCrewAttach.y;
+            transferTetherPositions[2] = tempTransferCrewAttach.z;
+            transferTetherPositions[3] = state.transferPosition.x;
+            transferTetherPositions[4] = state.transferPosition.y;
+            transferTetherPositions[5] = state.transferPosition.z;
+            transferTetherGeometry.attributes.position.needsUpdate = true;
+            transferTetherGeometry.computeBoundingSphere();
+          }
+          function interpolatedTransferRadius(previousPosition, currentPosition) {
+            var deltaZ = currentPosition.z - previousPosition.z;
+            var crossingFraction = Math.abs(deltaZ) > 0.000001 ? (transferHatchZ - previousPosition.z) / deltaZ : 1;
+            crossingFraction = Math.max(0, Math.min(1, crossingFraction));
+            var crossingX = previousPosition.x + (currentPosition.x - previousPosition.x) * crossingFraction;
+            var crossingY = previousPosition.y + (currentPosition.y - previousPosition.y) * crossingFraction;
+            return Math.sqrt(crossingX * crossingX + crossingY * crossingY);
+          }
+          function failHatchTransferContact(culprit, bodyRadius, bagRadius) {
+            if (state.transferMode !== 'tethered' || state.transferContactLatched) return false;
+            var bodyValue = isFinite(Number(bodyRadius)) ? Math.max(0, Number(bodyRadius)) : 0;
+            var bagValue = isFinite(Number(bagRadius)) ? Math.max(0, Number(bagRadius)) : 0;
+            var transferRadial = Math.max(bodyValue, bagValue);
+            state.transferContactLatched = true;
+            state.transferContacts += 1;
+            state.transferLastRadial = transferRadial;
+            emit('transfer-contact', {
+              room: state.room, attempt: state.transferAttempts, contact: state.transferContacts,
+              culprit: culprit, radial: transferRadial,
+              bodyRadial: bodyValue, bagRadial: bagValue,
+              bodyCrossingRadius: bodyValue, bagCrossingRadius: bagValue,
+              safeRadius: transferSafeRadius, source: '3d'
+            });
+            resetTransfer(true, 'contact');
+            placeCrewAtTransferStaging();
+            var culpritLabel = culprit === 'body' ? 'BODY ENVELOPE' : culprit === 'bag' ? 'BAG ENVELOPE' : 'BODY + BAG ENVELOPES';
+            setFeedback(culpritLabel + ' CLIPPED HATCH // RESET TO HARMONY', 'impact', 2900);
+            announce('Physical hatch contact. The ' + culpritLabel.toLowerCase() + ' crossed outside the zero point seven zero meter center radius. You and the bag were reset to Harmony staging.');
+            return true;
+          }
+          function updateHatchTransfer(dt) {
+            setTransferVisualState(state.transferOutcome);
+            if (state.transferMode !== 'tethered') return;
+            var previousBodyPosition = state.transferPreviousBodyPosition;
+            var previousBagPosition = state.transferPreviousBagPosition;
+            tempTransferTarget.copy(state.position)
+              .addScaledVector(tempForward, -0.78)
+              .addScaledVector(tempRight, 0.46)
+              .addScaledVector(tempUp, -0.12);
+            tempTransferAcceleration.copy(tempTransferTarget).sub(state.transferPosition).multiplyScalar(transferSpring)
+              .addScaledVector(state.transferVelocity, -transferDamping);
+            state.transferVelocity.addScaledVector(tempTransferAcceleration, dt);
+            if (state.transferVelocity.length() > 1.25) state.transferVelocity.setLength(1.25);
+            state.transferPosition.addScaledVector(state.transferVelocity, dt);
+            updateTransferTetherGeometry();
+            transferBag.lookAt(tempTransferTarget);
+            dirty = true;
+
+            var bodySweptForward = previousBodyPosition.z <= transferHatchZ && state.position.z > transferHatchZ;
+            var bagSweptForward = previousBagPosition.z <= transferHatchZ && state.transferPosition.z > transferHatchZ;
+            var bodySweptReverse = previousBodyPosition.z > transferHatchZ && state.position.z <= transferHatchZ;
+            var bagSweptReverse = previousBagPosition.z > transferHatchZ && state.transferPosition.z <= transferHatchZ;
+            if (bodySweptReverse) {
+              state.transferBodyCrossed = false;
+              state.transferBodyCrossingRadius = null;
+            }
+            if (bagSweptReverse) {
+              state.transferBagCrossed = false;
+              state.transferBagCrossingRadius = null;
+            }
+            if (bodySweptForward) {
+              state.transferBodyCrossingRadius = interpolatedTransferRadius(previousBodyPosition, state.position);
+              state.transferBodyCrossed = true;
+            }
+            if (bagSweptForward) {
+              state.transferBagCrossingRadius = interpolatedTransferRadius(previousBagPosition, state.transferPosition);
+              state.transferBagCrossed = true;
+            }
+            state.transferPreviousBodyPosition.copy(state.position);
+            state.transferPreviousBagPosition.copy(state.transferPosition);
+            state.transferPreviousZ = state.transferPosition.z;
+            state.transferPendingSafeCrossing = state.transferBodyCrossed || state.transferBagCrossed;
+
+            var bodyUnsafe = bodySweptForward && state.transferBodyCrossingRadius > transferSafeRadius;
+            var bagUnsafe = bagSweptForward && state.transferBagCrossingRadius > transferSafeRadius;
+            if (bodyUnsafe || bagUnsafe) {
+              var culprit = bodyUnsafe && bagUnsafe ? 'body+bag' : bodyUnsafe ? 'body' : 'bag';
+              failHatchTransferContact(culprit, state.transferBodyCrossingRadius, state.transferBagCrossingRadius);
+              return;
+            }
+            if (!state.transferBodyCrossed || !state.transferBagCrossed) {
+              if (bodySweptForward || bagSweptForward) {
+                state.transferOutcome = 'tethered';
+                setFeedback(state.transferBodyCrossed ? 'BODY CLEAR // WAIT FOR LAGGING BAG' : 'BAG CLEAR // BRING BODY THROUGH HATCH', 'info', 1900);
+              }
+              return;
+            }
+            if (state.position.z <= transferHatchZ || state.transferPosition.z <= transferHatchZ || state.room !== 'destiny') return;
+
+            var transferBodyRadial = Number(state.transferBodyCrossingRadius || 0);
+            var transferBagRadial = Number(state.transferBagCrossingRadius || 0);
+            var transferRadial = Math.max(transferBodyRadial, transferBagRadial);
+            state.transferPendingSafeCrossing = false;
+            state.transferComplete = true;
+            state.transferMode = 'docked';
+            state.transferOutcome = 'complete';
+            state.transferCompletions += 1;
+            state.transferPosition.copy(transferDockPoint);
+            state.transferVelocity.set(0, 0, 0);
+            state.transferPreviousZ = transferDockPoint.z;
+            state.transferPreviousBodyPosition.copy(state.position);
+            state.transferPreviousBagPosition.copy(transferDockPoint);
+            setTransferVisualState('complete');
+            syncTransferCanvasProps();
+            emit('transfer-complete', {
+              room: 'destiny', attempt: state.transferAttempts, completion: state.transferCompletions,
+              radial: transferRadial, bodyRadial: transferBodyRadial, bagRadial: transferBagRadial,
+              bodyCrossingRadius: transferBodyRadial, bagCrossingRadius: transferBagRadial,
+              safeRadius: transferSafeRadius, source: '3d'
+            });
+            state.mode = 'BULKY TRANSFER COMPLETE';
+            setFeedback('BOTH ENVELOPES CENTERED // BAG DOCKED IN DESTINY', 'safe', 3000);
+            announce('Bulky hatch transfer complete. Both your body and the lagging bag made their own centered crossings before the bag docked in Destiny.');
+          }
+          function setWorksiteVisualComplete(completed) {
+            var filterColor = completed ? 0x25634a : 0x4b5e73;
+            var filterEmissive = completed ? 0x0b3b28 : 0x101b28;
+            var statusColor = completed ? 0x4ade80 : 0xf59e0b;
+            if (worksiteFilterMaterial.color.getHex() !== filterColor) {
+              worksiteFilterMaterial.color.setHex(filterColor);
+              worksiteFilterMaterial.emissive.setHex(filterEmissive);
+              worksiteStatusMaterial.color.setHex(statusColor);
+              worksiteStatusMaterial.emissive.setHex(completed ? 0x14532d : 0x6b2b04);
+              fanStatusLight.color.setHex(statusColor);
+              fanStatusLight.intensity = completed ? 0.68 : 0.42;
+              dirty = true;
+            }
+          }
+          function updateWorksiteMetrics() {
+            setCameraFromState();
+            tempWorksiteDirection.copy(worksitePoint).sub(state.position);
+            state.worksiteDistance = tempWorksiteDirection.length();
+            if (state.worksiteDistance > 0.0001) tempWorksiteDirection.multiplyScalar(1 / state.worksiteDistance);
+            else tempWorksiteDirection.set(0, 0, -1);
+            tempWorksiteForward.set(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            state.worksiteAlignment = tempWorksiteForward.dot(tempWorksiteDirection);
+            state.worksiteBraced = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035;
+          }
+          function updateWorksiteVisual(now) {
+            var shouldShow = state.room === 'tranquility';
+            if (worksiteHalo.visible !== shouldShow) {
+              worksiteHalo.visible = shouldShow;
+              dirty = true;
+            }
+            var cueColor = state.worksiteComplete ? 0x4ade80
+              : state.worksiteDistance > worksiteReach ? 0xfbbf24
+              : state.worksiteAlignment < worksiteAlignmentMinimum ? 0xa78bfa
+              : state.worksiteBraced ? 0x38bdf8 : 0xf97316;
+            if (worksiteHaloMaterial.color.getHex() !== cueColor) {
+              worksiteHaloMaterial.color.setHex(cueColor);
+              dirty = true;
+            }
+            var progressTicksVisible = state.worksiteComplete ? worksiteProgressTicks.length
+              : Math.floor(Math.max(0, Math.min(1, state.worksiteProgress / worksiteDuration)) * worksiteProgressTicks.length);
+            if (state.worksiteProgressStep !== progressTicksVisible) {
+              state.worksiteProgressStep = progressTicksVisible;
+              worksiteProgressTicks.forEach(function (tickMesh, tickIndex) { tickMesh.visible = shouldShow && tickIndex < progressTicksVisible; });
+              dirty = true;
+            } else {
+              worksiteProgressTicks.forEach(function (tickMesh, tickIndex) {
+                var tickShouldShow = shouldShow && tickIndex < progressTicksVisible;
+                if (tickMesh.visible !== tickShouldShow) { tickMesh.visible = tickShouldShow; dirty = true; }
+              });
+            }
+            var worksiteScale = state.worksiteComplete ? 1.08 : 1;
+            if (!_prefersReducedMotion && now < state.worksiteRecoilUntil) {
+              worksiteScale += Math.sin(now * 0.035) * 0.09;
+              torqueTool.rotation.z = -0.42 + Math.sin(now * 0.042) * 0.16;
+              dirty = true;
+            } else {
+              var toolRotation = state.worksiteComplete ? 0.18 : -0.42;
+              if (Math.abs(torqueTool.rotation.z - toolRotation) > 0.001) { torqueTool.rotation.z = toolRotation; dirty = true; }
+            }
+            if (Math.abs(worksiteHalo.scale.x - worksiteScale) > 0.002) {
+              worksiteHalo.scale.setScalar(worksiteScale);
+              dirty = true;
+            }
+          }
+          function setWorksiteAction(on) {
+            if (!on) {
+              var abandonedProgress = !state.worksiteComplete && state.worksiteProgress > 0.08;
+              state.toolHeld = false;
+              state.worksitePressLatched = false;
+              state.worksiteProgress = state.worksiteComplete ? worksiteDuration : 0;
+              state.worksiteMaxSpeed = 0;
+              state.worksiteMaxAngularSpeed = 0;
+              if (abandonedProgress) {
+                setFeedback('TOOL RELEASED // STABLE TIME RESET', 'info', 1400);
+                announce('Torque tool released before the filter fastener was secure. Hold it for one point five seconds while braced.');
+              }
+              dirty = true;
+              return true;
+            }
+            if (state.transferMode === 'tethered') {
+              setFeedback('BULKY BAG TETHERED // FINISH HATCH TRANSFER', 'warn', 1900);
+              announce('Finish the bulky hatch transfer before using the torque tool.');
+              return false;
+            }
+            if (state.worksitePressLatched || state.toolHeld) return false;
+            updateWorksiteMetrics();
+            if (state.worksiteComplete) {
+              setFeedback('FILTER SERVICED // AIRFLOW RESTORED', 'safe');
+              announce('The Tranquility inlet filter is already serviced.');
+              return false;
+            }
+            if (state.room !== 'tranquility') {
+              setFeedback('WORKSITE IN TRANQUILITY // FOLLOW PORT BRANCH', 'warn', 1900);
+              announce('The filter maintenance worksite is in Tranquility.');
+              return false;
+            }
+            if (state.worksiteDistance > worksiteReach) {
+              setFeedback('WORKSITE OUT OF REACH // ' + state.worksiteDistance.toFixed(2) + ' M', 'warn', 1800);
+              announce('The filter worksite is ' + state.worksiteDistance.toFixed(2) + ' meters away. Move within zero point seven two meters.');
+              return false;
+            }
+            if (state.worksiteAlignment < worksiteAlignmentMinimum) {
+              setFeedback('ALIGN WITH FILTER // FACE THE AMBER RING', 'warn', 1800);
+              announce('Face the filter worksite more directly before using the torque tool.');
+              return false;
+            }
+            state.worksiteAttempts += 1;
+            state.worksitePressLatched = true;
+            if (!state.worksiteBraced) {
+              var appliedImpulse = Math.cos(state.yaw) >= 0 ? worksiteAngularImpulse : -worksiteAngularImpulse;
+              state.angularVelocity = Math.max(-0.9, Math.min(0.9, state.angularVelocity + appliedImpulse));
+              state.worksiteReactions += 1;
+              state.worksiteRecoilUntil = ((window.performance && performance.now) ? performance.now() : Date.now()) + 900;
+              state.mode = 'UNBRACED REACTION TORQUE';
+              emit('worksite-reaction', { room: 'tranquility', distance: state.worksiteDistance, alignment: state.worksiteAlignment, angularImpulse: appliedImpulse, attempt: state.worksiteAttempts });
+              setFeedback('UNBRACED TORQUE // BODY ROTATING', 'impact', 2200);
+              announce('The unbraced tool turned your body instead of the fastener. Catch a rail, stop the roll, release T, and try again.');
+              dirty = true;
+              return false;
+            }
+            state.toolHeld = true;
+            state.worksiteProgress = 0;
+            state.worksiteMaxSpeed = state.velocity.length();
+            state.worksiteMaxAngularSpeed = Math.abs(state.angularVelocity);
+            state.mode = 'BRACED MAINTENANCE';
+            setFeedback('TOOL ENGAGED // HOLD STEADY 1.5 S', 'info', 1800);
+            announce('Torque tool engaged while braced. Hold T steadily for one point five seconds.');
+            dirty = true;
+            return true;
+          }
+          function updateWorksite(dt, now) {
+            updateWorksiteMetrics();
+            if (state.worksiteComplete) {
+              setWorksiteVisualComplete(true);
+              updateWorksiteVisual(now);
+              return;
+            }
+            if (state.toolHeld) {
+              var stable = state.room === 'tranquility'
+                && state.worksiteDistance <= worksiteReach
+                && state.worksiteAlignment >= worksiteAlignmentMinimum
+                && state.worksiteBraced;
+              if (!stable) {
+                state.toolHeld = false;
+                state.worksiteProgress = 0;
+                setFeedback('WORK INTERRUPTED // REBRACE + REALIGN', 'warn', 1800);
+                announce('Stable maintenance interrupted. Release T, catch the rail, realign with the filter, and try again.');
+              } else {
+                state.worksiteProgress = Math.min(worksiteDuration, state.worksiteProgress + dt);
+                state.worksiteMaxSpeed = Math.max(state.worksiteMaxSpeed, state.velocity.length());
+                state.worksiteMaxAngularSpeed = Math.max(state.worksiteMaxAngularSpeed, Math.abs(state.angularVelocity));
+                state.mode = 'BRACED MAINTENANCE // ' + Math.round(state.worksiteProgress / worksiteDuration * 100) + '%';
+                dirty = true;
+                if (state.worksiteProgress >= worksiteDuration) {
+                  state.worksiteComplete = true;
+                  state.toolHeld = false;
+                  state.worksiteServices += 1;
+                  cv._issInteriorWorksiteComplete = true;
+                  setWorksiteVisualComplete(true);
+                  emit('worksite-complete', { room: 'tranquility', duration: worksiteDuration, maxSpeed: state.worksiteMaxSpeed, maxAngularSpeed: state.worksiteMaxAngularSpeed, attempt: state.worksiteAttempts, braced: true });
+                  setFeedback('FILTER SERVICED // AIRFLOW RESTORED', 'safe', 2500);
+                  announce('Filter serviced while braced. Reaction-torque maintenance challenge complete.');
+                }
+              }
+            }
+            updateWorksiteVisual(now);
+          }
+          function resetWorksite() {
+            state.worksiteProgress = 0;
+            state.worksiteProgressStep = 0;
+            state.worksiteComplete = false;
+            state.toolHeld = false;
+            state.worksitePressLatched = false;
+            state.worksiteAttempts = 0;
+            state.worksiteReactions = 0;
+            state.worksiteServices = 0;
+            state.worksiteMaxSpeed = 0;
+            state.worksiteMaxAngularSpeed = 0;
+            state.worksiteRecoilUntil = 0;
+            cv._issInteriorWorksiteComplete = false;
+            setWorksiteVisualComplete(false);
+            worksiteProgressTicks.forEach(function (tickMesh) { tickMesh.visible = false; });
+            dirty = true;
+          }
+          function cargoAction() {
+            if (state.transferMode === 'tethered') {
+              setFeedback('BULKY BAG TETHERED // HANDS COMMITTED', 'warn', 1900);
+              announce('Finish the bulky hatch transfer before handling the Unity cargo pouch.');
+              return false;
+            }
+            if (state.cargoMode === 'secured') {
+              setFeedback('POUCH SECURED // RESTRAINT LOCKED', 'safe');
+              announce('The cargo pouch is already secured at the Unity restraint point.');
+              return false;
+            }
+            if (state.stowHeldId) {
+              setFeedback('ONE ITEM AT A TIME // SECURE CABIN ITEM', 'warn', 2100);
+              announce('Secure the carried Harmony cabin item before handling the Unity cargo pouch.');
+              return false;
+            }
+            if (state.cargoMode === 'held') {
+              var secureDistance = state.position.distanceTo(cargoSecurePoint);
+              var secureRailDistance = railDistance(state.position, roomDef(state.room));
+              var braced = state.railHeld || (state.velocity.length() <= 0.04 && secureRailDistance <= 0.68);
+              if (state.room !== 'unity') {
+                setFeedback('SECURE IN UNITY // RETURN TO RESTRAINT', 'warn', 1900);
+                announce('Carry the pouch back to the marked restraint point in Unity.');
+                return false;
+              }
+              if (secureDistance > cargoSecureReach) {
+                setFeedback('RESTRAINT OUT OF REACH // ' + secureDistance.toFixed(2) + ' M', 'warn', 1900);
+                announce('The Unity cargo restraint is ' + secureDistance.toFixed(2) + ' meters away. Move within 0.90 meters.');
+                return false;
+              }
+              if (!braced) {
+                setFeedback('BRACE AT RAIL // THEN SECURE', 'warn', 1900);
+                announce('Brace on the nearby handrail, or stop within rail reach, before securing the pouch.');
+                return false;
+              }
+              cargo.position.copy(cargoSecurePoint);
+              cargo.rotation.set(0, -Math.PI / 2, 0);
+              state.cargoVelocity.set(0, 0, 0);
+              state.cargoAngularVelocity.set(0, 0, 0);
+              state.cargoRoom = 'unity';
+              state.cargoSecures += 1;
+              setCargoVisualMode('secured');
+              emit('cargo-secured', { room: 'unity', speed: state.velocity.length(), distance: secureDistance });
+              setFeedback('POUCH SECURED // RESTRAINT LOCKED', 'safe', 2300);
+              announce('Cargo pouch secured at the Unity restraint. Loose-object management challenge complete.');
+              return true;
+            }
+            var distance = cargoDistance();
+            if (state.room !== state.cargoRoom || distance > cargoCatchReach) {
+              setFeedback('POUCH OUT OF REACH // ' + distance.toFixed(2) + ' M', 'warn', 1800);
+              announce(state.room !== state.cargoRoom ? 'The loose pouch is in ' + roomInfo(state.cargoRoom).name + '.' : 'The pouch is ' + distance.toFixed(2) + ' meters away. Move within 0.65 meters.');
+              return false;
+            }
+            tempCargoRelativeVelocity.copy(state.velocity).sub(state.cargoVelocity);
+            var relativeSpeed = tempCargoRelativeVelocity.length();
+            if (relativeSpeed > cargoCatchRelativeSpeed) {
+              setFeedback('RELATIVE SPEED TOO HIGH // ' + relativeSpeed.toFixed(2) + ' M/S', 'warn', 1900);
+              announce('Relative speed is ' + relativeSpeed.toFixed(2) + ' meters per second. Match the pouch motion below 0.20 before catching it.');
+              return false;
+            }
+            tempCargoSharedVelocity.copy(state.velocity).multiplyScalar(crewMass);
+            tempCargoSharedVelocity.addScaledVector(state.cargoVelocity, cargoMass).multiplyScalar(1 / (crewMass + cargoMass));
+            state.velocity.copy(tempCargoSharedVelocity);
+            state.cargoVelocity.copy(tempCargoSharedVelocity);
+            state.cargoRoom = state.room;
+            state.cargoContactLatched = true;
+            state.cargoCatches += 1;
+            setCargoVisualMode('held');
+            state.mode = state.velocity.length() > 0.006 ? 'COASTING + CARGO' : 'HOLDING CARGO';
+            emit('cargo-caught', { room: state.room, speed: state.velocity.length(), relativeSpeed: relativeSpeed, distance: distance });
+            setFeedback('POUCH CAUGHT // MOMENTUM SHARED', 'safe', 2100);
+            announce('Pouch caught at low relative speed. You and the five kilogram pouch now share a velocity of ' + state.velocity.length().toFixed(2) + ' meters per second.');
+            return true;
+          }
+          var stowCatchReach = 0.65;
+          var stowCatchRelativeSpeed = 0.2;
+          var stowSecureReach = 0.9;
+          var stowAirReturnRiskReach = 0.72;
+          function stowItemById(id) {
+            return harmonyStowItems.find(function (item) { return item.id === id; }) || null;
+          }
+          function stowSecuredCount() {
+            return harmonyStowItems.filter(function (item) { return item.mode === 'secured'; }).length;
+          }
+          function syncStowCanvasProps() {
+            var itemModes = {};
+            var cabinStow = {};
+            harmonyStowItems.forEach(function (item) {
+              itemModes[item.id] = item.mode;
+              if (item.mode === 'secured') cabinStow[item.id] = true;
+            });
+            cv._issInteriorStowItems = itemModes;
+            cv._issInteriorCabinStow = cabinStow;
+            cv._issInteriorStowAttempts = state.stowAttempts;
+            cv._issInteriorStowCatches = state.stowCatches;
+            cv._issInteriorStowSecures = state.stowSecures;
+            cv._issInteriorStowWarnings = state.stowWarnings;
+          }
+          function setStowItemMode(item, mode) {
+            if (!item || item.mode === mode) return false;
+            item.mode = mode;
+            state.stowItems[item.id] = mode;
+            if (mode === 'secured') {
+              item.object.position.copy(item.securePoint);
+              item.object.rotation.set(0, -Math.PI / 2, 0);
+              item.velocity.set(0, 0, 0);
+              item.angularVelocity.set(0, 0, 0);
+            }
+            item.halo.material.color.setHex(mode === 'secured' ? 0x4ade80 : mode === 'held' ? 0x38bdf8 : 0xfbbf24);
+            if (item.target && item.target.children[0] && item.target.children[0].material && item.target.children[0].material.color) {
+              item.target.children[0].material.color.setHex(mode === 'secured' ? 0x4ade80 : 0x38bdf8);
+            }
+            syncStowCanvasProps();
+            dirty = true;
+            return true;
+          }
+          function drawHarmonyAirflowStatus(nextState, blockedItem) {
+            if (!airflowStatusContext || harmonyAirReturn.userData.status === nextState) return;
+            harmonyAirReturn.userData.status = nextState;
+            var accent = nextState === 'clear' ? '#4ade80' : nextState === 'blocked' ? '#fb923c' : '#fbbf24';
+            var headline = nextState === 'clear' ? 'O  AIRFLOW CLEAR' : nextState === 'blocked' ? 'X  AIRFLOW BLOCKED' : '!  AIRFLOW RISK';
+            var detail = nextState === 'clear' ? 'ALL 3 ITEMS RESTRAINED' : nextState === 'blocked'
+              ? String(blockedItem ? blockedItem.label : 'LOOSE ITEM').toUpperCase() + ' AT AIR RETURN'
+              : (3 - stowSecuredCount()) + ' LOOSE ITEM' + (3 - stowSecuredCount() === 1 ? '' : 'S') + ' IN HARMONY';
+            airflowStatusContext.clearRect(0, 0, 512, 128);
+            airflowStatusContext.fillStyle = 'rgba(2,8,16,.96)';
+            airflowStatusContext.fillRect(0, 0, 512, 128);
+            airflowStatusContext.fillStyle = accent;
+            airflowStatusContext.fillRect(0, 0, 18, 128);
+            airflowStatusContext.strokeStyle = accent;
+            airflowStatusContext.lineWidth = 5;
+            airflowStatusContext.strokeRect(3, 3, 506, 122);
+            airflowStatusContext.fillStyle = '#f8fafc';
+            airflowStatusContext.font = '900 38px Arial, sans-serif';
+            airflowStatusContext.fillText(headline, 38, 58);
+            airflowStatusContext.fillStyle = accent;
+            airflowStatusContext.font = '800 21px Arial, sans-serif';
+            airflowStatusContext.fillText(detail.slice(0, 38), 40, 98);
+            airflowStatusTexture.needsUpdate = true;
+            harmonyAirflowClearMark.visible = nextState === 'clear';
+            harmonyAirflowBlockedMark.visible = nextState === 'blocked';
+            harmonyAirflowArrows.forEach(function (arrow) {
+              arrow.material.color.setHex(nextState === 'clear' ? 0x4ade80 : nextState === 'blocked' ? 0xfb923c : 0x38bdf8);
+              arrow.material.opacity = nextState === 'blocked' ? 0.28 : nextState === 'clear' ? 0.9 : 0.6;
+            });
+            dirty = true;
+          }
+          function updateHarmonyAirflow(now) {
+            var blockedItem = null;
+            harmonyStowItems.forEach(function (item) {
+              item.warningNearReturn = item.mode === 'loose' && item.object.position.distanceTo(harmonyAirReturnPoint) <= stowAirReturnRiskReach;
+              if (!blockedItem && item.warningNearReturn) blockedItem = item;
+            });
+            var nextState = stowSecuredCount() === harmonyStowItems.length ? 'clear' : blockedItem ? 'blocked' : 'risk';
+            state.stowAirflowState = nextState;
+            drawHarmonyAirflowStatus(nextState, blockedItem);
+            if (blockedItem && !state.stowWarningEmitted) {
+              state.stowWarningEmitted = true;
+              state.stowWarnings += 1;
+              syncStowCanvasProps();
+              emit('stow-airflow-warning', { room: 'harmony', item: blockedItem.id, distance: blockedItem.object.position.distanceTo(harmonyAirReturnPoint) });
+              setFeedback('AIRFLOW BLOCKED // CATCH ' + blockedItem.label.toUpperCase(), 'impact', 2600);
+              announce(blockedItem.label + ' is blocking the Harmony air return. Match its motion, catch it with X, then secure it at the marked restraint.');
+            }
+            if (!_prefersReducedMotion && nextState !== 'blocked') {
+              harmonyAirflowArrows.forEach(function (arrow, index) {
+                arrow.position.x = 0.38 + index * 0.28 + Math.sin(now * 0.003 + index) * 0.055;
+              });
+              dirty = true;
+            }
+          }
+          function stowAction() {
+            if (state.transferMode === 'tethered') {
+              setFeedback('BULKY BAG TETHERED // HANDS COMMITTED', 'warn', 1900);
+              announce('Finish the bulky hatch transfer before catching a loose cabin item.');
+              return false;
+            }
+            if (state.stowComplete) {
+              setFeedback('HARMONY STOW COMPLETE // AIRFLOW CLEAR', 'safe');
+              announce('All three Harmony cabin items are already secured and the air return is clear.');
+              return false;
+            }
+            if (state.cargoMode === 'held') {
+              setFeedback('ONE ITEM AT A TIME // SECURE CARGO POUCH', 'warn', 2100);
+              announce('Secure the Unity cargo pouch before catching a Harmony cabin item.');
+              return false;
+            }
+            state.stowAttempts += 1;
+            emit('stow-attempt', { room: state.room, attempt: state.stowAttempts, held: state.stowHeldId });
+            if (state.stowHeldId) {
+              var heldItem = stowItemById(state.stowHeldId);
+              var restraintDistance = heldItem ? state.position.distanceTo(heldItem.securePoint) : Infinity;
+              var stableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035;
+              if (state.room !== 'harmony') {
+                setFeedback('RETURN ITEM TO HARMONY // USE MARKED RESTRAINT', 'warn', 2100);
+                announce('Carry the ' + heldItem.label + ' back to its marked Harmony restraint.');
+                return false;
+              }
+              if (restraintDistance > stowSecureReach) {
+                setFeedback('RESTRAINT OUT OF REACH // ' + restraintDistance.toFixed(2) + ' M', 'warn', 1900);
+                announce('The item-specific restraint is ' + restraintDistance.toFixed(2) + ' meters away. Move within zero point nine meters.');
+                return false;
+              }
+              if (!stableBrace) {
+                setFeedback('BRACE + STOP // THEN SECURE WITH X', 'warn', 2100);
+                announce('Catch and hold the nearby rail and stop rotation before securing the ' + heldItem.label + '.');
+                return false;
+              }
+              state.stowHeldId = null;
+              state.stowSecures += 1;
+              setStowItemMode(heldItem, 'secured');
+              var securedCount = stowSecuredCount();
+              emit('stow-secured', { room: 'harmony', item: heldItem.id, count: securedCount, attempt: state.stowAttempts, braced: true });
+              if (securedCount === harmonyStowItems.length) {
+                state.stowComplete = true;
+                state.stowAirflowState = 'clear';
+                cv._issInteriorCabinComplete = true;
+                emit('stow-complete', { room: 'harmony', count: securedCount, attempt: state.stowAttempts, source: '3d' });
+                setFeedback('3 OF 3 SECURED // AIR RETURN CLEAR', 'safe', 2800);
+                announce('All three cabin items are restrained. Harmony airflow is clear and the canonical cabin stow job is complete.');
+              } else {
+                setFeedback(securedCount + ' OF 3 SECURED // FIND NEXT LOOSE ITEM', 'safe', 2200);
+                announce(heldItem.label + ' secured. ' + securedCount + ' of three items are now stowed.');
+              }
+              dirty = true;
+              return true;
+            }
+            if (state.room !== 'harmony') {
+              setFeedback('LOOSE ITEMS IN HARMONY // RETURN FOR CABIN STOW', 'warn', 2000);
+              announce('The loose-item cabin stow activity is in Harmony.');
+              return false;
+            }
+            var nearest = null;
+            var nearestDistance = Infinity;
+            harmonyStowItems.forEach(function (item) {
+              if (item.mode !== 'loose') return;
+              var itemDistance = state.position.distanceTo(item.object.position);
+              if (itemDistance < nearestDistance) { nearest = item; nearestDistance = itemDistance; }
+            });
+            if (!nearest || nearestDistance > stowCatchReach) {
+              setFeedback('LOOSE ITEM OUT OF REACH // ' + (nearest ? nearestDistance.toFixed(2) : '--') + ' M', 'warn', 1900);
+              announce('Move within zero point six five meters of the nearest loose cabin item before pressing X.');
+              return false;
+            }
+            tempCargoRelativeVelocity.copy(state.velocity).sub(nearest.velocity);
+            var relativeSpeed = tempCargoRelativeVelocity.length();
+            if (relativeSpeed > stowCatchRelativeSpeed) {
+              setFeedback('MATCH ITEM MOTION // RELATIVE ' + relativeSpeed.toFixed(2) + ' M/S', 'warn', 2100);
+              announce('Relative speed to the nearest item is ' + relativeSpeed.toFixed(2) + ' meters per second. Slow below zero point two before catching it.');
+              return false;
+            }
+            state.stowHeldId = nearest.id;
+            state.stowCatches += 1;
+            nearest.velocity.copy(state.velocity);
+            setStowItemMode(nearest, 'held');
+            emit('stow-caught', { room: 'harmony', item: nearest.id, distance: nearestDistance, relativeSpeed: relativeSpeed, attempt: state.stowAttempts });
+            state.mode = state.velocity.length() > 0.006 ? 'COASTING + STOW ITEM' : 'HOLDING STOW ITEM';
+            setFeedback(nearest.label.toUpperCase() + ' CAUGHT // FIND MATCHING RESTRAINT', 'safe', 2300);
+            announce(nearest.label + ' caught at low relative speed. Carry it to its matching restraint, brace on the nearby rail, then press X again.');
+            return true;
+          }
+          function updateHarmonyStow(dt, now) {
+            var harmonyDef = roomDef('harmony');
+            harmonyStowItems.forEach(function (item) {
+              item.target.visible = item.mode !== 'secured' && state.room === 'harmony';
+              item.halo.visible = state.room === 'harmony' && item.mode !== 'secured';
+              if (item.halo.visible) item.halo.lookAt(camera.position);
+              if (item.mode === 'loose') {
+                tempStowCandidate.copy(item.object.position).addScaledVector(item.velocity, dt);
+                var dx = tempStowCandidate.x - harmonyDef.center.x;
+                var dy = tempStowCandidate.y - harmonyDef.center.y;
+                var dz = tempStowCandidate.z - harmonyDef.center.z;
+                var radial = Math.sqrt(dx * dx + dy * dy);
+                var radialLimit = harmonyDef.radius - 0.26;
+                var axialLimit = harmonyDef.length / 2 - 0.32;
+                tempStowCollisionNormal.set(0, 0, 0);
+                if (radial > radialLimit) tempStowCollisionNormal.set(dx / Math.max(radial, 0.001), dy / Math.max(radial, 0.001), 0);
+                else if (Math.abs(dz) > axialLimit) tempStowCollisionNormal.set(0, 0, dz < 0 ? -1 : 1);
+                if (tempStowCollisionNormal.lengthSq() > 0) {
+                  var normalSpeed = item.velocity.dot(tempStowCollisionNormal);
+                  if (normalSpeed > 0) item.velocity.addScaledVector(tempStowCollisionNormal, -1.8 * normalSpeed);
+                  item.object.position.addScaledVector(tempStowCollisionNormal, -0.018);
+                } else item.object.position.copy(tempStowCandidate);
+                if (!_prefersReducedMotion) {
+                  item.object.rotation.x += item.angularVelocity.x * dt;
+                  item.object.rotation.y += item.angularVelocity.y * dt;
+                  item.object.rotation.z += item.angularVelocity.z * dt;
+                }
+              } else if (item.mode === 'held') {
+                tempStowHoldPosition.copy(state.position).addScaledVector(tempForward, 0.54).addScaledVector(tempUp, -0.17);
+                if (state.railHeld) tempStowHoldPosition.addScaledVector(tempRight, 0.18);
+                item.object.position.copy(tempStowHoldPosition);
+                item.object.quaternion.copy(camera.quaternion);
+                item.velocity.copy(state.velocity);
+              } else item.object.position.copy(item.securePoint);
+            });
+            updateHarmonyAirflow(now);
+            dirty = true;
+          }
           function moveToRoom(id, speak, preserveProgress) {
             var def = roomDef(id);
+            var previousRoom = state.room;
+            var transferCancelled = def.id !== previousRoom && state.transferMode === 'tethered' && !state.transferComplete;
+            if (transferCancelled) {
+              resetTransfer(true, 'cancelled');
+              emit('transfer-cancelled', {
+                room: previousRoom, to: def.id, attempt: state.transferAttempts, source: '3d'
+              });
+            }
             state.position.copy(def.center);
             state.velocity.set(0, 0, 0);
+            state.angularVelocity = 0;
+            state.impactUntil = 0;
+            state.railHeld = false;
+            state.pushOffLatch = false;
+            state.toolHeld = false;
+            state.worksitePressLatched = false;
+            if (!state.worksiteComplete) state.worksiteProgress = 0;
             state.pitch = def.facing[0]; state.yaw = def.facing[1]; state.roll = def.facing[2];
             state.room = def.id; state.mode = 'STATIONARY';
-            if (!preserveProgress) {
+            if (!preserveProgress && !state.routeComplete) {
               state.routeIndex = def.id === 'harmony' ? 0 : -1;
-              state.routeComplete = false;
               state.cargoHitSinceUnity = false;
             }
             setCameraFromState();
             dirty = true;
-            if (speak) announce('Moved to ' + roomInfo(def.id).name + '. Camera centered and momentum stopped.');
+            if (transferCancelled) {
+              setFeedback('TRANSFER CANCELLED // BAG RETURNED TO HARMONY STAGING', 'warn', 2900);
+              announce('Bulky transfer cancelled before the cross-room training move. The bag returned to Harmony staging, crossing progress cleared, and the saved flight room moved to ' + roomInfo(def.id).name + '.');
+            } else if (speak) announce('Moved to ' + roomInfo(def.id).name + '. Camera centered and momentum stopped.');
           }
           function grabRail() {
+            if (state.railHeld) {
+              state.railHeld = false;
+              state.mode = 'STATIONARY';
+              setFeedback('HANDRAIL RELEASED // READY TO PUSH', 'info');
+              announce('Handrail released. Use one push direction to launch away from the rail.');
+              dirty = true;
+              return true;
+            }
             var speed = state.velocity.length();
+            var angularSpeed = Math.abs(state.angularVelocity);
             var distance = railDistance(state.position, roomDef(state.room));
             if (distance > 0.68) {
               setFeedback('RAIL OUT OF REACH // ' + distance.toFixed(2) + ' M', 'warn', 1700);
@@ -2038,13 +4277,17 @@
               return false;
             }
             state.velocity.set(0, 0, 0);
+            state.angularVelocity = 0;
+            state.railHeld = true;
+            state.railAnchor.copy(state.position);
+            state.pushOffLatch = false;
             state.mode = 'RAIL HOLD';
             state.railGrabs += 1;
             dirty = true;
-            var controlled = speed >= 0.12 && speed <= 0.35;
-            setFeedback(controlled ? 'CONTROLLED RAIL CATCH' : speed > 0.35 ? 'RAIL CAUGHT // ENTRY TOO FAST' : 'RAIL HOLD // STATIONARY', controlled ? 'safe' : speed > 0.35 ? 'warn' : 'info');
-            emit('rail-grab', { room: state.room, speed: speed, distance: distance, controlled: controlled });
-            announce(speed > 0.02 ? 'Handrail caught. Momentum stopped from ' + speed.toFixed(2) + ' meters per second.' : 'Handrail held. You are already stationary.');
+            var controlled = speed >= 0.12 && speed <= 0.35 && angularSpeed <= 0.2;
+            setFeedback(controlled ? 'CONTROLLED RAIL CATCH' : speed > 0.35 || angularSpeed > 0.2 ? 'RAIL CAUGHT // ENTRY TOO FAST' : 'RAIL HOLD // STATIONARY', controlled ? 'safe' : speed > 0.35 || angularSpeed > 0.2 ? 'warn' : 'info');
+            emit('rail-grab', { room: state.room, speed: speed, angularSpeed: angularSpeed, distance: distance, controlled: controlled });
+            announce(speed > 0.02 || angularSpeed > 0.02 ? 'Handrail caught. Linear and rotational momentum stopped.' : 'Handrail held. You are already stationary. Push once to launch from this anchor.');
             return true;
           }
           function centerAndStop() {
@@ -2059,17 +4302,41 @@
             state.orientationDone = false;
             state.rolledFar = false;
             state.routeIndex = 0;
-            state.collisions = 0; state.railGrabs = 0; state.looseHits = 0;
+            state.collisions = 0; state.railGrabs = 0; state.looseHits = 0; state.railPushOffs = 0;
+            resetCargo();
+            resetTransfer(false);
+            resetWorksite();
+            resetCapillary();
+            cancelObservationAction(true);
+            state.observationAttempts = 0;
+            state.observationBlurs = 0;
+            state.observationInterruptions = 0;
+            state.observationCaptures = 0;
             lastWant = 'harmony';
             moveToRoom('harmony', true);
           }
           cv._issInteriorSetControl = function (action, on) {
             if (action === 'grab' && on) { grabRail(); return; }
+            if (action === 'cargo' && on) { cargoAction(); return; }
+            if (action === 'stow' && on) { stowAction(); return; }
+            if (action === 'transfer' && on) { transferAction(); return; }
+            if (action === 'worksite') { setWorksiteAction(!!on); return; }
+            if (action === 'capillary') { setCapillaryAction(!!on); return; }
+            if (action === 'observation') { setObservationAction(!!on); return; }
             keys[action] = !!on;
-            if (on) state.mode = 'PUSHING';
+            if (on && !state.railHeld) state.mode = 'PUSHING';
             dirty = true;
           };
           cv._issInteriorGrabRail = grabRail;
+          cv._issInteriorCargoAction = cargoAction;
+          cv._issInteriorTransferAction = transferAction;
+          cv._issInteriorStowAction = stowAction;
+          cv._issInteriorStowSceneItems = harmonyStowItems;
+          cv._issInteriorWorksiteAction = setWorksiteAction;
+          cv._issInteriorCapillaryAction = setCapillaryAction;
+          cv._issInteriorCapillaryCancel = cancelCapillaryAction;
+          cv._issInteriorObservationAction = setObservationAction;
+          cv._issInteriorObservationCancel = cancelObservationAction;
           cv._issInteriorCenter = centerAndStop;
           cv._issInteriorReset = resetRoute;
           cv._issInteriorGoTo = function (id) {
@@ -2086,38 +4353,261 @@
             if (!shell) return;
             var info = roomInfo(state.room);
             var speed = state.velocity.length();
+            var pushAcceleration = state.cargoMode === 'held' ? 0.4 : 0.46;
+            if (state.stowHeldId) pushAcceleration = 0.44;
+            if (state.transferMode === 'tethered') pushAcceleration = 0.39;
+            var stoppingDistance = speed * speed / (2 * pushAcceleration);
             var distanceToRail = railDistance(state.position, roomDef(state.room));
+            var distanceToCargo = cargoDistance();
+            tempCargoRelativeVelocity.copy(state.velocity).sub(state.cargoVelocity);
+            var relativeCargoSpeed = tempCargoRelativeVelocity.length();
+            updateWorksiteMetrics();
+            updateCapillaryMetrics();
+            updateObservationMetrics();
             var roomEl = shell.querySelector('[data-iss-interior-room-hud]');
             var speedEl = shell.querySelector('[data-iss-interior-speed]');
             var modeEl = shell.querySelector('[data-iss-interior-mode]');
             var railEl = shell.querySelector('[data-iss-interior-rail-distance]');
             var routeEl = shell.querySelector('[data-iss-interior-route-progress]');
             var grabEl = shell.querySelector('[data-iss-interior-grab]');
+            var cargoEl = shell.querySelector('[data-iss-interior-cargo-action]');
+            var transferEl = shell.querySelector('[data-iss-interior-transfer-action]');
+            var transferReadoutEl = shell.querySelector('[data-iss-interior-transfer-readout]');
+            var worksiteEl = shell.querySelector('[data-iss-interior-worksite-action]');
+            var capillaryEl = shell.querySelector('[data-iss-interior-capillary-action]');
+            var capillaryReadoutEl = shell.querySelector('[data-iss-interior-capillary-readout]');
+            var observationEl = shell.querySelector('[data-iss-interior-observation-action]');
+            var observationReadoutEl = shell.querySelector('[data-iss-interior-observation-readout]');
+            var stowEl = shell.querySelector('[data-iss-interior-stow-action]');
+            var stowReadoutEl = shell.querySelector('[data-iss-interior-stow-readout]');
+            var cabinAirflowEl = shell.querySelector('[data-iss-interior-cabin-airflow]');
             var objectiveEl = shell.querySelector('[data-iss-interior-objective]');
             var hatchLabelEl = shell.querySelector('[data-iss-interior-next-label]');
             var hatchDistanceEl = shell.querySelector('[data-iss-interior-next-distance]');
             var hatchArrowEl = shell.querySelector('[data-iss-interior-next-arrow]');
             var horizonEl = shell.querySelector('[data-iss-interior-horizon]');
             var velocityDotEl = shell.querySelector('[data-iss-interior-velocity-dot]');
+            var orientationEl = shell.querySelector('[data-iss-interior-orientation]');
+            var reticleEl = shell.querySelector('[data-iss-interior-reticle]');
+            var brakingEl = shell.querySelector('[data-iss-interior-braking]');
+            var impactEl = shell.querySelector('[data-iss-interior-impact-flash]');
             var eventEl = shell.querySelector('[data-iss-interior-event]');
             if (roomEl) roomEl.textContent = info.module.toUpperCase() + ' // ' + info.zone.toUpperCase();
             if (speedEl) {
-              speedEl.textContent = 'SPEED ' + speed.toFixed(2) + ' M/S // STOP ~' + (speed * speed / (2 * 0.46)).toFixed(2) + ' M';
+              speedEl.textContent = 'SPEED ' + speed.toFixed(2) + ' M/S // STOP ~' + stoppingDistance.toFixed(2) + ' M';
               speedEl.setAttribute('data-rate', speed < 0.02 ? 'stopped' : speed <= 0.35 ? 'controlled' : 'fast');
             }
-            if (modeEl) modeEl.textContent = state.mode;
-            if (railEl) railEl.textContent = 'RAIL ' + distanceToRail.toFixed(2) + ' M';
+            if (modeEl) modeEl.textContent = state.mode + (state.cargoMode === 'held' && state.mode.indexOf('CARGO') < 0 ? ' // POUCH HELD' : '') + (Math.abs(state.angularVelocity) > 0.01 ? ' // ROLL ' + (state.angularVelocity * 180 / Math.PI).toFixed(0) + ' DEG/S' : '');
+            if (railEl) {
+            if (modeEl && state.stowHeldId && modeEl.textContent.indexOf('STOW ITEM') < 0) modeEl.textContent += ' // ' + state.stowHeldId.toUpperCase() + ' HELD';
+              railEl.textContent = state.railHeld ? 'RAIL // HELD' : 'RAIL ' + distanceToRail.toFixed(2) + ' M';
+              railEl.setAttribute('data-reachable', state.railHeld || distanceToRail <= 0.68 ? 'true' : 'false');
+            }
             if (grabEl) {
               grabEl.disabled = false;
-              grabEl.setAttribute('aria-disabled', distanceToRail > 0.68 ? 'true' : 'false');
-              grabEl.title = distanceToRail > 0.68 ? 'Move within 0.68 m of a handrail' : 'Handrail is within reach';
+              grabEl.textContent = state.railHeld ? 'Release handrail' : 'Grab handrail';
+              grabEl.setAttribute('aria-disabled', !state.railHeld && distanceToRail > 0.68 ? 'true' : 'false');
+              grabEl.title = state.railHeld ? 'Release the handrail without pushing off' : distanceToRail > 0.68 ? 'Move within 0.68 m of a handrail' : 'Handrail is within reach';
+            }
+            if (cargoEl) {
+              var secureDistance = state.position.distanceTo(cargoSecurePoint);
+              var cargoBraced = state.railHeld || (speed <= 0.04 && distanceToRail <= 0.68);
+              var cargoReady = !state.stowHeldId && (state.cargoMode === 'held'
+                ? state.room === 'unity' && secureDistance <= cargoSecureReach && cargoBraced
+                : state.cargoMode === 'loose' && state.room === state.cargoRoom && distanceToCargo <= cargoCatchReach && relativeCargoSpeed <= cargoCatchRelativeSpeed);
+              cargoEl.disabled = false;
+              cargoEl.textContent = state.stowHeldId ? 'Secure cabin item first' : state.cargoMode === 'secured' ? 'Pouch secured' : state.cargoMode === 'held' ? 'Secure at restraint (C)' : 'Catch pouch (C)';
+              cargoEl.setAttribute('aria-disabled', cargoReady ? 'false' : 'true');
+              cargoEl.setAttribute('data-iss-interior-cargo-status', state.stowHeldId ? 'hands-busy' : state.cargoMode);
+              cargoEl.title = state.stowHeldId ? 'Secure the carried Harmony cabin item before handling cargo' : state.cargoMode === 'secured' ? 'Pouch secured in Unity' : state.cargoMode === 'held' ? 'Move to the marked Unity restraint and brace at a rail' : 'Match motion and move within 0.65 m of the pouch';
+            }
+            if (transferEl) {
+              var transferDistance = state.position.distanceTo(transferStagingPoint);
+              var transferHandsBusy = state.cargoMode === 'held' || !!state.stowHeldId || state.toolHeld || state.capillaryActive || state.observationActive;
+              var transferReady = !state.transferComplete && state.transferMode === 'staged' && state.room === 'harmony' && transferDistance <= transferAttachReach && !transferHandsBusy;
+              var transferStatus = state.transferComplete ? 'complete' : state.transferMode === 'tethered' ? 'tethered'
+                : state.transferOutcome === 'contact' ? 'contact' : transferReady ? 'ready' : 'approach';
+              transferEl.disabled = state.transferComplete;
+              transferEl.textContent = state.transferComplete ? 'Transfer bag docked'
+                : state.transferMode === 'tethered' ? 'Bag tethered - cross hatch'
+                : transferHandsBusy ? 'Secure current item first'
+                : 'Clip transfer tether (B)';
+              transferEl.setAttribute('aria-disabled', state.transferComplete || !transferReady && state.transferMode !== 'tethered' ? 'true' : 'false');
+              transferEl.setAttribute('data-iss-interior-transfer-status', transferStatus);
+              transferEl.setAttribute('data-iss-interior-transfer-clearance', state.transferComplete ? 'clear' : state.transferOutcome === 'contact' ? 'contact' : state.transferMode === 'tethered' ? 'monitor' : 'staged');
+              transferEl.title = state.transferComplete ? 'Bulky transfer complete; bag docked in Destiny'
+                : state.transferMode === 'tethered' ? 'Keep both body and lagging bag centers inside the amber hatch ring'
+                : transferHandsBusy ? 'Secure the current item or tool before clipping the tether'
+                : state.room !== 'harmony' ? 'Return to the Harmony side of the forward hatch'
+                : transferDistance > transferAttachReach ? 'Move within 0.78 m of the staged transfer bag'
+                : 'Clip the tether and carry the bag through the Harmony-Destiny hatch';
+              if (transferReadoutEl) {
+                var transferReadout = state.transferComplete ? 'Bulky hatch transfer complete. Transfer bag docked in Destiny.'
+                  : state.transferOutcome === 'contact' ? 'Physical hatch contact. Crew and bag reset to Harmony staging.'
+                  : state.transferOutcome === 'cancelled' ? 'Bulky transfer cancelled before a training move. Bag returned to Harmony staging.'
+                  : state.transferMode === 'tethered' ? 'Transfer bag tethered. Center body and lagging bag through the hatch.'
+                  : transferReady ? 'Transfer tether ready to clip.'
+                  : 'Bulky transfer staged on the Harmony side of the hatch.';
+                if (transferReadoutEl.textContent !== transferReadout) transferReadoutEl.textContent = transferReadout;
+              }
+            }
+            if (worksiteEl) {
+              var worksiteReady = !state.worksiteComplete && state.room === 'tranquility' && state.worksiteDistance <= worksiteReach && state.worksiteAlignment >= worksiteAlignmentMinimum;
+              var worksiteStatus = state.worksiteComplete ? 'complete' : state.toolHeld ? 'working' : !worksiteReady ? (state.room !== 'tranquility' || state.worksiteDistance > worksiteReach ? 'approach' : 'align') : state.worksiteBraced ? 'ready' : 'unbraced';
+              worksiteEl.disabled = false;
+              worksiteEl.textContent = state.worksiteComplete ? 'Filter serviced' : state.toolHeld ? 'Servicing filter ' + Math.round(state.worksiteProgress / worksiteDuration * 100) + '%' : 'Service filter (T)';
+              worksiteEl.setAttribute('aria-disabled', state.worksiteComplete ? 'true' : 'false');
+              worksiteEl.setAttribute('aria-pressed', state.toolHeld ? 'true' : 'false');
+              worksiteEl.setAttribute('data-iss-interior-worksite-status', worksiteStatus);
+              worksiteEl.setAttribute('data-iss-interior-worksite-progress', Math.round(state.worksiteProgress / worksiteDuration * 100));
+              worksiteEl.title = state.worksiteComplete ? 'Tranquility filter serviced' : state.room !== 'tranquility' ? 'Follow the port branch to Tranquility' : state.worksiteDistance > worksiteReach ? 'Move within 0.72 m of the filter' : state.worksiteAlignment < worksiteAlignmentMinimum ? 'Face the filter ring' : state.worksiteBraced ? 'Hold T for 1.5 seconds' : 'Catch and hold the nearby rail before applying torque';
+            }
+            if (capillaryEl) {
+              var capillaryProcedureReady = Number(cv._issInteriorResearchStep || 0) >= 1;
+              var capillaryReady = !state.capillaryComplete && capillaryProcedureReady && state.room === 'destiny' && state.capillaryDistance <= capillaryReach && state.capillaryAlignment >= capillaryAlignmentMinimum && state.capillaryStable;
+              var capillaryStatus = state.capillaryComplete ? 'complete' : state.capillaryActive ? (state.capillaryDose >= capillaryDoseMinimum ? 'target' : 'priming')
+                : state.capillaryOverflow ? 'overflow' : state.capillaryOutcome === 'underfill' ? 'underfill'
+                : state.capillaryOutcome === 'interrupted' ? 'interrupted' : state.room !== 'destiny' || state.capillaryDistance > capillaryReach ? 'approach'
+                : state.capillaryAlignment < capillaryAlignmentMinimum ? 'align' : !state.capillaryStable ? 'unstable'
+                : !capillaryProcedureReady ? 'locked' : 'ready';
+              capillaryEl.disabled = false;
+              capillaryEl.textContent = state.capillaryComplete ? 'Wick primed' : state.capillaryActive
+                ? (state.capillaryDose >= capillaryDoseMinimum ? 'Target band - release V' : 'Dosing wick ' + state.capillaryDose.toFixed(2) + ' mL')
+                : state.capillaryOverflow ? 'Overflow contained — retry (V)'
+                : state.capillaryOutcome === 'underfill' ? 'Underfill ' + state.capillaryDose.toFixed(2) + ' mL — retry (V)' : 'Dose wick (V)';
+              capillaryEl.setAttribute('aria-disabled', state.capillaryComplete ? 'true' : 'false');
+              capillaryEl.setAttribute('aria-pressed', state.capillaryActive ? 'true' : 'false');
+              capillaryEl.setAttribute('data-iss-interior-capillary-status', capillaryStatus);
+              capillaryEl.setAttribute('data-iss-interior-capillary-dose', state.capillaryDose.toFixed(2));
+              capillaryEl.setAttribute('data-iss-interior-capillary-progress', Math.round(Math.min(1, state.capillaryDose / capillaryTargetDose) * 100));
+              capillaryEl.title = state.capillaryComplete ? 'Destiny wick primed at the target dose'
+                : state.room !== 'destiny' ? 'Follow the forward route to Destiny'
+                : state.capillaryDistance > capillaryReach ? 'Move within 0.95 m of the plant chamber'
+                : !capillaryProcedureReady ? 'Secure the plant sample before opening the water valve'
+                : state.capillaryAlignment < capillaryAlignmentMinimum ? 'Face the cyan glovebox ring'
+                : !state.capillaryStable ? 'Stop moving or hold a rail before opening the valve'
+                : capillaryReady ? 'Hold V and release between 2.7 and 3.3 mL' : 'Prepare the contained fluid transfer';
+            }
+              if (capillaryReadoutEl) {
+                var capillaryReadout = state.capillaryComplete ? 'Transfer complete at ' + state.capillaryDose.toFixed(2) + ' milliliters.'
+                  : state.capillaryOverflow ? 'Overflow contained at 3.3 milliliters. Release V, stabilize, and retry.'
+                  : state.capillaryOutcome === 'underfill' ? 'Underfill. Reopen the valve and continue to at least 2.7 milliliters.'
+                  : state.capillaryOutcome === 'interrupted' ? 'Transfer interrupted. Stabilize, face the glovebox ring, and retry.'
+                  : state.capillaryActive && state.capillaryDose >= capillaryDoseMinimum ? 'Target band reached. Release V now before 3.3 milliliters.'
+                  : state.capillaryActive ? 'Dosing contained wick. Target band starts at 2.7 milliliters.'
+                  : !capillaryProcedureReady && state.room === 'destiny' ? 'Water valve locked. Secure the plant sample first.'
+                  : capillaryReady ? 'Water injector ready. Hold V and release between 2.7 and 3.3 milliliters.'
+                  : 'Destiny water injector. Approach, align, and stabilize before dosing.';
+                if (capillaryReadoutEl.textContent !== capillaryReadout) capillaryReadoutEl.textContent = capillaryReadout;
+              }
+            if (observationEl) {
+              var observationReady = !state.observationCaptured && state.room === 'cupola' && state.observationDistance <= observationReach && state.observationAlignment >= observationAlignmentMinimum && state.observationBraced;
+              var observationStatus = state.observationSecured ? 'secured' : state.observationCaptured ? 'captured' : state.observationActive ? 'locking'
+                : state.observationOutcome === 'blurred' ? 'blurred' : state.observationOutcome === 'interrupted' ? 'interrupted'
+                : state.room !== 'cupola' || state.observationDistance > observationReach ? 'approach'
+                : state.observationAlignment < observationAlignmentMinimum ? 'align' : !state.observationBraced ? 'unbraced' : 'ready';
+              observationEl.disabled = false;
+              observationEl.textContent = state.observationSecured ? 'Cupola secured'
+                : state.observationCaptured ? 'Close shutters (P)'
+                : state.observationActive ? 'Frame lock ' + Math.round(state.observationProgress / observationDuration * 100) + '%'
+                : 'Capture Earth frame (P)';
+              observationEl.setAttribute('aria-disabled', state.observationSecured ? 'true' : 'false');
+              observationEl.setAttribute('aria-pressed', state.observationActive ? 'true' : 'false');
+              observationEl.setAttribute('data-iss-interior-observation-status', observationStatus);
+              observationEl.setAttribute('data-iss-interior-observation-progress', Math.round(state.observationProgress / observationDuration * 100));
+              observationEl.setAttribute('data-iss-interior-observation-target', state.observationTarget);
+              observationEl.title = state.observationSecured ? 'Cupola windows protected'
+                : state.observationCaptured ? 'Press P to close all seven external shutters'
+                : state.room !== 'cupola' ? 'Follow the nadir branch to Cupola'
+                : state.observationDistance > observationReach ? 'Move within 0.95 m of the Cupola camera control'
+                : state.observationAlignment < observationAlignmentMinimum ? 'Center the selected Earth target bracket'
+                : !state.observationBraced ? 'Catch and hold the nearby rail before taking the image'
+                : observationReady ? 'Hold P for a 1.2-second training frame lock' : 'Prepare the Earth observation';
+            }
+            if (observationReadoutEl) {
+              var observationReadout = state.observationSecured ? 'Cupola secure. All seven external shutters are closed.'
+                : state.observationCaptured ? 'Earth image captured. Press P once more to close all seven shutters.'
+                : state.observationOutcome === 'blurred' ? 'Frame blurred after an early release. Brace and hold P for the full interval.'
+                : state.observationOutcome === 'interrupted' ? 'Frame lock interrupted. Rebrace, realign, and try again.'
+                : state.observationActive ? 'Earth frame locking. Keep the camera steady until one hundred percent.'
+                : observationReady ? 'Earth target framed. Hold P for one point two seconds.'
+                : 'Cupola camera. Approach the control, center the target, and hold a rail.';
+              if (observationReadoutEl.textContent !== observationReadout) observationReadoutEl.textContent = observationReadout;
             }
             if (routeEl) routeEl.textContent = state.routeComplete ? '5 / 5 // COMPLETE' : state.routeIndex < 0 ? 'ROUTE RESET // RETURN TO HARMONY' : (state.routeIndex + 1) + ' / 5 // ORDERED';
-            if (objectiveEl) objectiveEl.textContent = (cv._issInteriorTaskDone ? 'ACTIVITY COMPLETE // ' : 'CURRENT ACTIVITY // ') + info.task.toUpperCase();
+            if (stowEl) {
+              var heldStowItem = stowItemById(state.stowHeldId);
+              var nearestStowItem = null;
+              var nearestStowDistance = Infinity;
+              harmonyStowItems.forEach(function (item) {
+                if (item.mode !== 'loose') return;
+                var distance = state.position.distanceTo(item.object.position);
+                if (distance < nearestStowDistance) { nearestStowItem = item; nearestStowDistance = distance; }
+              });
+              var activeStowItem = heldStowItem || nearestStowItem;
+              var stowCount = stowSecuredCount();
+              var heldRestraintDistance = heldStowItem ? state.position.distanceTo(heldStowItem.securePoint) : Infinity;
+              var stowStableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035;
+              var stowRelativeSpeed = Infinity;
+              if (nearestStowItem) {
+                tempCargoRelativeVelocity.copy(state.velocity).sub(nearestStowItem.velocity);
+                stowRelativeSpeed = tempCargoRelativeVelocity.length();
+              }
+              var stowHandsBusy = state.cargoMode === 'held';
+              var stowStatus = state.stowComplete ? 'complete' : stowHandsBusy ? 'hands-busy' : heldStowItem
+                ? (state.room === 'harmony' && heldRestraintDistance <= stowSecureReach && stowStableBrace ? 'ready-secure' : stowStableBrace ? 'carry' : 'unbraced')
+                : state.room !== 'harmony' || nearestStowDistance > stowCatchReach ? 'approach'
+                : stowRelativeSpeed > stowCatchRelativeSpeed ? 'match-motion' : 'ready-catch';
+              stowEl.disabled = state.stowComplete;
+              stowEl.textContent = state.stowComplete ? 'Cabin stow complete'
+                : stowHandsBusy ? 'Secure cargo pouch first'
+                : heldStowItem ? 'Secure ' + heldStowItem.label + ' (X)'
+                : 'Catch nearest cabin item (X)';
+              stowEl.setAttribute('aria-disabled', state.stowComplete || stowHandsBusy ? 'true' : 'false');
+              stowEl.setAttribute('data-iss-interior-stow-status', stowStatus);
+              stowEl.setAttribute('data-iss-interior-stow-item', activeStowItem ? activeStowItem.id : 'none');
+              stowEl.setAttribute('data-iss-interior-stow-count', String(stowCount));
+              stowEl.title = state.stowComplete ? 'All three Harmony items are secured and airflow is clear'
+                : stowHandsBusy ? 'Secure the Unity cargo pouch before catching a cabin item'
+                : heldStowItem ? 'Move to the matching restraint, hold a rail, stop, then press X'
+                : state.room !== 'harmony' ? 'Return to Harmony for the cabin stow activity'
+                : nearestStowDistance > stowCatchReach ? 'Move within 0.65 m of the nearest loose item'
+                : stowRelativeSpeed > stowCatchRelativeSpeed ? 'Match item motion below 0.20 m/s relative speed'
+                : 'Press X to catch the nearest loose item';
+              if (stowReadoutEl) {
+                var stowReadout = state.stowComplete ? 'Cabin stow complete. Three of three items secured. Air return clear.'
+                  : stowHandsBusy ? 'Your hands are occupied by the Unity cargo pouch. Secure it before catching a cabin item.'
+                  : heldStowItem ? heldStowItem.label + ' held. Move to its matching restraint, hold a rail, stop moving, then press X.'
+                  : !activeStowItem ? 'No loose Harmony items remain.'
+                  : state.room !== 'harmony' || nearestStowDistance > stowCatchReach ? 'Approach the nearest loose cabin item and move within zero point six five meters.'
+                  : stowRelativeSpeed > stowCatchRelativeSpeed ? 'Match the ' + activeStowItem.label + ' motion below zero point two meters per second relative speed.'
+                  : 'The ' + activeStowItem.label + ' is in reach and motion-matched. Press X to catch it.';
+                if (stowReadoutEl.textContent !== stowReadout) stowReadoutEl.textContent = stowReadout;
+              }
+              if (cabinAirflowEl) {
+                cabinAirflowEl.setAttribute('data-state', state.stowAirflowState);
+                cabinAirflowEl.textContent = state.stowAirflowState === 'clear' ? 'Airflow clear - all three items restrained'
+                  : state.stowAirflowState === 'blocked' ? 'Airflow blocked - loose item at the air return'
+                  : 'Airflow risk - ' + (3 - stowCount) + ' loose cabin item' + (3 - stowCount === 1 ? '' : 's');
+              }
+            }
+            if (objectiveEl) {
+              var currentActivityDone = cv._issInteriorTaskDone || (state.room === 'unity' && state.cargoSecured) || (state.room === 'tranquility' && state.worksiteComplete) || (state.room === 'cupola' && state.observationSecured);
+              if (state.room === 'harmony' && state.stowComplete) currentActivityDone = true;
+              objectiveEl.textContent = state.room === 'destiny' && state.capillaryComplete && !currentActivityDone
+                ? 'SCIENCE STEP COMPLETE // PRIME THE CAPILLARY WICK'
+                : state.room === 'cupola' && state.observationCaptured && !state.observationSecured
+                  ? 'FRAME CAPTURED // CLOSE ALL SEVEN SHUTTERS'
+                  : (currentActivityDone ? 'ACTIVITY COMPLETE // ' : 'CURRENT ACTIVITY // ') + info.task.toUpperCase();
+            }
             var target = nextRouteTarget();
+            var targetDistance = 0;
+            var closingSpeed = 0;
             if (target) {
               tempHudTarget.copy(target.position);
-              var targetDistance = tempHudTarget.distanceTo(state.position);
+              targetDistance = tempHudTarget.distanceTo(state.position);
+              tempTargetDirection.copy(tempHudTarget).sub(state.position);
+              if (targetDistance > 0.001) closingSpeed = state.velocity.dot(tempTargetDirection.normalize());
               camera.worldToLocal(tempHudTarget);
               var targetAngle = Math.atan2(tempHudTarget.x, -tempHudTarget.z) * 180 / Math.PI;
               if (hatchLabelEl) hatchLabelEl.textContent = target.label;
@@ -2127,7 +4617,46 @@
               if (hatchLabelEl) hatchLabelEl.textContent = 'ROUTE COMPLETE';
               if (hatchDistanceEl) hatchDistanceEl.textContent = 'CUPOLA REACHED';
             }
+            var brakingCue = 'MOTION // NO DRIFT';
+            var brakingState = 'idle';
+            if (speed >= 0.02 && target && closingSpeed > 0.03) {
+              if (speed <= 0.35) {
+                brakingCue = 'APPROACH // CONTROLLED';
+                brakingState = 'controlled';
+              } else {
+                var controlledBrakeDistance = Math.max(0, (speed * speed - 0.35 * 0.35) / (2 * pushAcceleration));
+                var brakeMargin = Math.max(0, targetDistance - 0.55) - controlledBrakeDistance;
+                if (brakeMargin <= 0.12) {
+                  brakingCue = 'COUNTER-PUSH NOW // FAST';
+                  brakingState = 'warn';
+                } else {
+                  brakingCue = 'BRAKE IN ' + brakeMargin.toFixed(1) + ' M';
+                  brakingState = brakeMargin < 0.75 ? 'warn' : 'idle';
+                }
+              }
+            } else if (speed >= 0.02 && target) {
+              brakingCue = closingSpeed < -0.03 ? 'DRIFTING AWAY // REALIGN' : 'ALIGN // VECTOR OFF HATCH';
+            } else if (speed >= 0.02) {
+              brakingCue = 'COAST // STOP ~' + stoppingDistance.toFixed(2) + ' M';
+            }
+            state.brakingCue = brakingCue;
+            if (brakingEl) {
+              brakingEl.textContent = brakingCue;
+              brakingEl.setAttribute('data-state', brakingState);
+            }
+            var motionRate = now < state.impactUntil ? 'impact' : speed < 0.02 ? 'stopped' : speed <= 0.35 ? 'controlled' : 'fast';
+            if (reticleEl) reticleEl.setAttribute('data-rate', motionRate);
+            if (impactEl) impactEl.className = 'iss-interior-impact-flash' + (now < state.impactUntil ? ' is-visible' : '');
             if (horizonEl) horizonEl.style.transform = 'rotate(' + (-state.roll * 180 / Math.PI).toFixed(1) + 'deg) translateY(' + Math.max(-14, Math.min(14, state.pitch * 9)).toFixed(1) + 'px)';
+            if (orientationEl) {
+              var rollDegrees = state.roll * 180 / Math.PI;
+              while (rollDegrees > 180) rollDegrees -= 360;
+              while (rollDegrees < -180) rollDegrees += 360;
+              var absoluteRollDegrees = Math.abs(rollDegrees);
+              var orientationState = absoluteRollDegrees <= 8 && Math.abs(state.angularVelocity) < 0.12 ? 'stable' : absoluteRollDegrees >= 135 ? 'inverted' : 'turning';
+              orientationEl.textContent = 'DECK ' + (rollDegrees > 0.5 ? '+' : '') + rollDegrees.toFixed(0) + ' DEG // ' + (orientationState === 'stable' ? 'LEVEL' : orientationState === 'inverted' ? 'INVERTED' : rollDegrees < 0 ? 'PORT LOW' : 'STARBOARD LOW');
+              orientationEl.setAttribute('data-state', orientationState);
+            }
             if (velocityDotEl) {
               tempLocalVelocity.copy(state.position).add(state.velocity);
               camera.worldToLocal(tempLocalVelocity);
@@ -2140,6 +4669,19 @@
             }
           }
 
+          function updateRoomLighting(dt) {
+            Object.keys(roomLights).forEach(function (id) {
+              var light = roomLights[id];
+              var adjacent = hatchVisuals.some(function (hatch) { return (hatch.from === state.room && hatch.to === id) || (hatch.to === state.room && hatch.from === id); });
+              var targetIntensity = id === state.room ? 0.44 : adjacent ? 0.13 : 0.04;
+              var nextIntensity = _prefersReducedMotion ? targetIntensity : light.intensity + (targetIntensity - light.intensity) * Math.min(1, dt * 5.5);
+              if (Math.abs(light.intensity - nextIntensity) > 0.002) {
+                light.intensity = nextIntensity;
+                dirty = true;
+              }
+            });
+          }
+
           function updatePhysics(dt, now) {
             var want = cv._issInteriorWantRoom;
             if (want && want !== lastWant) {
@@ -2148,18 +4690,28 @@
             }
 
             var rollInput = (keys.rollLeft ? 1 : 0) - (keys.rollRight ? 1 : 0);
-            if (rollInput) {
-              state.roll += rollInput * dt * 1.18;
-              if (state.roll > Math.PI) state.roll -= Math.PI * 2;
-              if (state.roll < -Math.PI) state.roll += Math.PI * 2;
-              dirty = true;
-            }
-            if (Math.abs(state.roll) > 0.72) state.rolledFar = true;
-            if (state.rolledFar && !state.orientationDone && Math.abs(state.roll) < 0.14 && rollInput) {
-              state.orientationDone = true;
-              emit('orientation-recovered', { room: state.room });
-              setFeedback('ORIENTATION RECOVERED // DECK ALIGNED', 'safe');
-              announce('Orientation recovered. Your agreed deck direction is level again.');
+            if (state.railHeld) {
+              state.angularVelocity = 0;
+            } else {
+              if (rollInput) {
+                state.angularVelocity += rollInput * dt * 1.45;
+                state.angularVelocity = Math.max(-0.9, Math.min(0.9, state.angularVelocity));
+              }
+              if (Math.abs(state.angularVelocity) > 0.001) {
+                state.roll += state.angularVelocity * dt;
+                if (state.roll > Math.PI) state.roll -= Math.PI * 2;
+                if (state.roll < -Math.PI) state.roll += Math.PI * 2;
+                dirty = true;
+              } else {
+                state.angularVelocity = 0;
+              }
+              if (Math.abs(state.roll) > 0.72) state.rolledFar = true;
+              if (state.rolledFar && !state.orientationDone && Math.abs(state.roll) < 0.14 && Math.abs(state.angularVelocity) < 0.12 && rollInput) {
+                state.orientationDone = true;
+                emit('orientation-recovered', { room: state.room, angularVelocity: state.angularVelocity });
+                setFeedback('ORIENTATION RECOVERED // ROTATION ARRESTED', 'safe');
+                announce('Orientation recovered. Your agreed deck direction is level and the roll rate is nearly stopped.');
+              }
             }
 
             setCameraFromState();
@@ -2170,60 +4722,145 @@
             tempThrust.addScaledVector(tempForward, (keys.forward ? 1 : 0) - (keys.back ? 1 : 0));
             tempThrust.addScaledVector(tempRight, (keys.right ? 1 : 0) - (keys.left ? 1 : 0));
             tempThrust.addScaledVector(tempUp, (keys.up ? 1 : 0) - (keys.down ? 1 : 0));
-            if (tempThrust.lengthSq() > 0) {
+            var hasTranslationInput = tempThrust.lengthSq() > 0;
+            if (!hasTranslationInput) state.pushOffLatch = false;
+            if (state.railHeld) {
+              state.position.copy(state.railAnchor);
+              state.velocity.set(0, 0, 0);
+              state.angularVelocity = 0;
+              state.mode = 'RAIL HOLD';
+              if (hasTranslationInput && !state.pushOffLatch) {
+                tempThrust.normalize();
+                var pushOffMass = crewMass + (state.cargoMode === 'held' ? cargoMass : 0) + (state.transferMode === 'tethered' ? transferBagMass : 0);
+                var pushOffDelta = railPushOffImpulse / pushOffMass;
+                state.velocity.addScaledVector(tempThrust, pushOffDelta);
+                state.railHeld = false;
+                state.pushOffLatch = true;
+                state.railPushOffs += 1;
+                state.mode = 'RAIL PUSH-OFF';
+                emit('rail-push-off', { room: state.room, impulse: railPushOffImpulse, speed: pushOffDelta, carryingCargo: state.cargoMode === 'held' });
+                setFeedback('RAIL PUSH-OFF // ' + pushOffDelta.toFixed(2) + ' M/S', 'safe', 1700);
+                announce('Handrail push-off added ' + pushOffDelta.toFixed(2) + ' meters per second. Release the direction before another push.');
+                dirty = true;
+              }
+            } else if (hasTranslationInput && !state.pushOffLatch) {
               tempThrust.normalize();
-              state.velocity.addScaledVector(tempThrust, 0.46 * dt);
+              var translationAcceleration = state.transferMode === 'tethered' ? 0.39 : state.cargoMode === 'held' ? 0.4 : 0.46;
+              state.velocity.addScaledVector(tempThrust, translationAcceleration * dt);
               if (state.velocity.length() > 0.78) state.velocity.setLength(0.78);
-              state.mode = 'PUSHING';
+              state.mode = Math.abs(state.angularVelocity) > 0.006 ? 'PUSHING + ROTATING' : 'PUSHING';
               dirty = true;
+            } else if (state.velocity.length() > 0.006 && Math.abs(state.angularVelocity) > 0.006) {
+              state.mode = 'COASTING + ROTATING // NO DRAG';
             } else if (state.velocity.length() > 0.006) {
-              state.mode = 'COASTING // NO DRAG';
+              state.mode = state.pushOffLatch ? 'COASTING FROM RAIL // NO DRAG' : state.cargoMode === 'held' ? 'COASTING + CARGO' : 'COASTING // NO DRAG';
+            } else if (Math.abs(state.angularVelocity) > 0.006) {
+              state.velocity.set(0, 0, 0);
+              state.mode = 'ROTATING // NO DRAG';
             } else {
               state.velocity.set(0, 0, 0);
-              if (state.mode !== 'RAIL HOLD') state.mode = 'STATIONARY';
+              if (!state.railHeld) state.mode = state.cargoMode === 'held' ? 'HOLDING CARGO' : 'STATIONARY';
             }
 
             if (state.velocity.lengthSq() > 0) {
               tempCandidate.copy(state.position).addScaledVector(state.velocity, dt);
               if (canOccupyFromRoom(state.room, tempCandidate)) {
                 state.position.copy(tempCandidate);
+                dirty = true;
               } else {
                 var impactSpeed = state.velocity.length();
-                state.velocity.multiplyScalar(-0.18);
+                hullCollisionNormal(state.room, tempCandidate, tempCollisionNormal);
+                var normalImpactSpeed = state.velocity.dot(tempCollisionNormal);
+                if (normalImpactSpeed <= 0.0001) {
+                  tempCollisionNormal.copy(state.velocity).normalize();
+                  normalImpactSpeed = impactSpeed;
+                }
+                state.velocity.addScaledVector(tempCollisionNormal, -1.18 * normalImpactSpeed);
+                state.velocity.multiplyScalar(0.97);
+                state.position.addScaledVector(tempCollisionNormal, -0.012);
+                state.lastImpactNormal = { x: tempCollisionNormal.x, y: tempCollisionNormal.y, z: tempCollisionNormal.z };
+                state.lastNormalImpactSpeed = normalImpactSpeed;
+                state.impactUntil = now + 320;
                 state.collisions += 1;
                 dirty = true;
                 if (now - state.lastWallEvent > 700) {
                   state.lastWallEvent = now;
-                  emit('collision', { room: state.room, speed: impactSpeed });
-                  setFeedback('HULL CONTACT // IMPACT ' + impactSpeed.toFixed(2) + ' M/S', 'impact');
-                  announce('Hull contact at ' + impactSpeed.toFixed(2) + ' meters per second. In microgravity, unplanned speed still carries you into the wall.');
+                  emit('collision', { room: state.room, speed: impactSpeed, normalSpeed: normalImpactSpeed, normal: state.lastImpactNormal });
+                  setFeedback('HULL CONTACT // NORMAL ' + normalImpactSpeed.toFixed(2) + ' M/S', 'impact');
+                  announce('Hull contact. Normal impact speed ' + normalImpactSpeed.toFixed(2) + ' meters per second. Tangential motion continues along the surface.');
                 }
               }
             }
 
+            if (state.cargoMode === 'loose') {
+              tempCargoCandidate.copy(cargo.position).addScaledVector(state.cargoVelocity, dt);
+              if (canOccupyFromRoom(state.cargoRoom, tempCargoCandidate)) {
+                cargo.position.copy(tempCargoCandidate);
+                var cargoNextRoom = transitionRoom(state.cargoRoom, cargo.position);
+                if (cargoNextRoom.id !== state.cargoRoom) state.cargoRoom = cargoNextRoom.id;
+              } else {
+                hullCollisionNormal(state.cargoRoom, tempCargoCandidate, tempCargoCollisionNormal, cargo.position);
+                var cargoNormalSpeed = state.cargoVelocity.dot(tempCargoCollisionNormal);
+                if (cargoNormalSpeed > 0.0001) {
+                  state.cargoVelocity.addScaledVector(tempCargoCollisionNormal, -1.25 * cargoNormalSpeed);
+                  state.cargoVelocity.multiplyScalar(0.995);
+                }
+                cargo.position.addScaledVector(tempCargoCollisionNormal, -0.01);
+              }
+              if (!_prefersReducedMotion) {
+                cargo.rotation.x += state.cargoAngularVelocity.x * dt;
+                cargo.rotation.y += state.cargoAngularVelocity.y * dt;
+                cargo.rotation.z += state.cargoAngularVelocity.z * dt;
+              }
+              dirty = true;
+            } else if (state.cargoMode === 'held') {
+              tempCargoHoldPosition.copy(state.position)
+                .addScaledVector(tempForward, 0.52)
+                .addScaledVector(tempRight, 0.32)
+                .addScaledVector(tempUp, -0.18);
+              cargo.position.copy(tempCargoHoldPosition);
+              cargo.quaternion.copy(camera.quaternion);
+              state.cargoVelocity.copy(state.velocity);
+              state.cargoRoom = state.room;
+              dirty = true;
+            } else {
+              cargo.position.copy(cargoSecurePoint);
+              state.cargoVelocity.set(0, 0, 0);
+            }
+
+            updateWorksite(dt, now);
+            updateCapillary(dt, now);
+            updateObservation(dt, now);
+            updateHarmonyStow(dt, now);
+            updateHatchTransfer(dt);
             if (!_prefersReducedMotion) {
-              cargo.position.copy(cargoBase);
-              cargo.position.y += Math.sin(now * 0.00072) * 0.16;
-              cargo.position.z += Math.cos(now * 0.00058) * 0.09;
-              cargo.rotation.x = now * 0.00018;
-              cargo.rotation.y = now * 0.00024;
-              fan.rotation.z = now * 0.0011;
+              earth.rotation.y += dt * 0.012;
+              earthClouds.rotation.y += dt * 0.015;
+              fan.rotation.z = now * (state.worksiteComplete ? 0.0021 : 0.0011);
               Object.keys(activityBeacons).forEach(function (id, beaconIndex) {
-                activityBeacons[id].position.y = activityBeacons[id].userData.baseY + Math.sin(now * 0.0024 + beaconIndex) * 0.045;
+                if (!activityBeacons[id].userData.followCargo) {
+                  activityBeacons[id].position.y = activityBeacons[id].userData.baseY + Math.sin(now * 0.0024 + beaconIndex) * 0.045;
+                }
                 activityBeacons[id].userData.spinner.rotation.z = now * 0.0007;
               });
               dirty = true;
             }
+            if (activityBeacons.unity) {
+              activityBeacons.unity.position.copy(cargo.position);
+              activityBeacons.unity.position.y += 0.62;
+            }
+            var roomActivityDone = cv._issInteriorTaskDone || (state.room === 'unity' && state.cargoSecured) || (state.room === 'tranquility' && state.worksiteComplete);
+            if (state.room === 'harmony' && state.stowComplete) roomActivityDone = true;
             Object.keys(activityBeacons).forEach(function (id) {
               var beacon = activityBeacons[id];
-              var shouldShowBeacon = id === state.room && !cv._issInteriorTaskDone;
+              var shouldShowBeacon = id === state.room && !roomActivityDone && (id !== 'unity' || state.cargoRoom === state.room);
               if (beacon.visible !== shouldShowBeacon) {
                 beacon.visible = shouldShowBeacon;
                 dirty = true;
               }
               if (beacon.visible) beacon.lookAt(camera.position);
             });
-            var shouldShowShutters = !!cv._issInteriorCupolaShutters;
+            var shouldShowShutters = state.observationSecured || !!cv._issInteriorCupolaShutters;
             if (cupolaShutters.visible !== shouldShowShutters) {
               cupolaShutters.visible = shouldShowShutters;
               dirty = true;
@@ -2237,37 +4874,66 @@
                 dirty = true;
               }
             });
-            tempSeparation.copy(state.position).sub(cargo.position);
-            if (tempSeparation.length() < 0.53 && now - state.lastCargoEvent > 1200) {
-              state.lastCargoEvent = now;
-              state.cargoHitSinceUnity = true;
-              state.looseHits += 1;
-              if (tempSeparation.lengthSq() < 0.001) tempSeparation.set(1, 0, 0);
-              tempSeparation.normalize();
-              state.position.addScaledVector(tempSeparation, 0.12);
-              state.velocity.addScaledVector(tempSeparation, 0.2);
-              emit('cargo-hit', { speed: state.velocity.length() });
-              setFeedback('LOOSE CARGO CONTACT // MOTION CHANGED', 'warn');
-              announce('Loose cargo contact. The pouch changed your motion and now tumbles through the node.');
+            if (state.cargoMode === 'loose' && state.cargoRoom === state.room) {
+              tempSeparation.copy(state.position).sub(cargo.position);
+              var cargoSeparation = tempSeparation.length();
+              if (cargoSeparation > 0.58) state.cargoContactLatched = false;
+              if (cargoSeparation < 0.53 && !state.cargoContactLatched) {
+                state.cargoContactLatched = true;
+                if (tempSeparation.lengthSq() < 0.000001) tempSeparation.set(1, 0, 0);
+                tempSeparation.normalize();
+                tempCargoRelativeVelocity.copy(state.velocity).sub(state.cargoVelocity);
+                var relativeNormalSpeed = tempCargoRelativeVelocity.dot(tempSeparation);
+                if (relativeNormalSpeed < 0) {
+                  var inverseCrewMass = 1 / crewMass;
+                  var inverseCargoMass = 1 / cargoMass;
+                  var contactImpulse = -(1 + 0.15) * relativeNormalSpeed / (inverseCrewMass + inverseCargoMass);
+                  state.velocity.addScaledVector(tempSeparation, contactImpulse * inverseCrewMass);
+                  state.cargoVelocity.addScaledVector(tempSeparation, -contactImpulse * inverseCargoMass);
+                }
+                var overlap = 0.53 - cargoSeparation;
+                var inverseMassTotal = (1 / crewMass) + (1 / cargoMass);
+                state.position.addScaledVector(tempSeparation, overlap * (1 / crewMass) / inverseMassTotal);
+                cargo.position.addScaledVector(tempSeparation, -overlap * (1 / cargoMass) / inverseMassTotal);
+                state.cargoHitSinceUnity = true;
+                state.looseHits += 1;
+                emit('cargo-hit', { speed: state.velocity.length(), relativeSpeed: Math.max(0, -relativeNormalSpeed) });
+                if (now - state.lastCargoEvent > 700) {
+                  state.lastCargoEvent = now;
+                  setFeedback('LOOSE CARGO CONTACT // MOMENTUM TRANSFER', 'warn');
+                  announce('Loose cargo contact. Momentum transferred between you and the five kilogram pouch.');
+                }
+                dirty = true;
+              }
             }
 
             var nextRoom = transitionRoom(state.room, state.position);
             if (nextRoom && nextRoom.id !== state.room) {
               var previous = state.room;
               state.room = nextRoom.id;
+              if (state.cargoMode === 'held') state.cargoRoom = nextRoom.id;
               lastWant = nextRoom.id;
+              cv._issInteriorWantRoom = nextRoom.id;
               state.manualVisited[nextRoom.id] = true;
               if (nextRoom.id === 'unity' && previous !== 'unity') state.cargoHitSinceUnity = false;
-              var expectedRoom = state.routeIndex >= 0 ? INTERIOR_ROUTE_IDS[state.routeIndex + 1] : null;
-              if (nextRoom.id === 'harmony') {
-                state.routeIndex = 0;
-              } else if (expectedRoom && nextRoom.id === expectedRoom) {
-                state.routeIndex += 1;
-              } else {
-                state.routeIndex = -1;
+              var completedThisCrossing = false;
+              if (!state.routeComplete) {
+                var expectedRoom = state.routeIndex >= 0 ? INTERIOR_ROUTE_IDS[state.routeIndex + 1] : null;
+                if (nextRoom.id === 'harmony') {
+                  state.routeIndex = 0;
+                } else if (expectedRoom && nextRoom.id === expectedRoom) {
+                  state.routeIndex += 1;
+                } else {
+                  state.routeIndex = -1;
+                }
+                if (state.routeIndex === INTERIOR_ROUTE_IDS.length - 1) {
+                  state.routeComplete = true;
+                  completedThisCrossing = true;
+                  emit('route-complete', { room: nextRoom.id });
+                }
               }
               var hatchSpeed = state.velocity.length();
-              emit('hatch', { from: previous, to: nextRoom.id, speed: hatchSpeed, routeStep: state.routeIndex });
+              emit('hatch', { from: previous, to: nextRoom.id, speed: hatchSpeed, controlled: hatchSpeed <= 0.35, routeStep: state.routeIndex, routeComplete: state.routeComplete });
               var crossedHatch = hatchVisuals.find(function (hatch) {
                 return (hatch.from === previous && hatch.to === nextRoom.id) || (hatch.to === previous && hatch.from === nextRoom.id);
               });
@@ -2281,20 +4947,22 @@
               if (previous === 'unity' && nextRoom.id === 'tranquility' && !state.cargoHitSinceUnity) {
                 emit('cargo-clear', { speed: state.velocity.length() });
               }
-              var completedThisCrossing = false;
-              if (!state.routeComplete && state.routeIndex === INTERIOR_ROUTE_IDS.length - 1) {
-                state.routeComplete = true;
-                completedThisCrossing = true;
-                emit('route-complete', { room: nextRoom.id });
-              } else if (state.routeComplete && nextRoom.id !== 'cupola') {
-                state.routeComplete = false;
-              }
               if (completedThisCrossing) setFeedback('ORDERED ROUTE COMPLETE // CUPOLA', 'safe', 2400);
               else if (state.routeIndex < 0) setFeedback('ROUTE ORDER LOST // RETURN TO HARMONY', 'warn', 2100);
               else setFeedback((hatchSpeed <= 0.35 ? 'CONTROLLED HATCH // ' : 'FAST HATCH // ') + roomInfo(nextRoom.id).module.toUpperCase(), hatchSpeed <= 0.35 ? 'safe' : 'warn');
               announce('Hatch crossed into ' + roomInfo(nextRoom.id).name + ' at ' + state.velocity.length().toFixed(2) + ' meters per second.');
             }
             setCameraFromState();
+            updateMotionGuide();
+            updateRailCue();
+            updateCrewRig(dt);
+            var shouldShowCargoHalo = state.cargoMode === 'held' || state.cargoRoom === state.room;
+            if (cargoHalo.visible !== shouldShowCargoHalo) {
+              cargoHalo.visible = shouldShowCargoHalo;
+              dirty = true;
+            }
+            if (cargoHalo.visible) cargoHalo.lookAt(camera.position);
+            updateRoomLighting(dt);
           }
 
           function animate(now) {
@@ -2338,6 +5006,36 @@
               if (!event.repeat) grabRail();
               return;
             }
+            if (event.code === 'KeyC') {
+              event.preventDefault();
+              if (!event.repeat) cargoAction();
+              return;
+            }
+            if (event.code === 'KeyB') {
+              event.preventDefault();
+              if (!event.repeat) transferAction();
+              return;
+            }
+            if (event.code === 'KeyX') {
+              event.preventDefault();
+              if (!event.repeat) stowAction();
+              return;
+            }
+            if (event.code === 'KeyT') {
+              event.preventDefault();
+              if (!event.repeat) setWorksiteAction(true);
+              return;
+            }
+            if (event.code === 'KeyV') {
+              event.preventDefault();
+              if (!event.repeat) setCapillaryAction(true);
+              return;
+            }
+            if (event.code === 'KeyP') {
+              event.preventDefault();
+              if (!event.repeat) setObservationAction(true);
+              return;
+            }
             if (event.code === 'Home') {
               event.preventDefault();
               centerAndStop();
@@ -2350,12 +5048,39 @@
             dirty = true;
           }
           function onKeyUp(event) {
+            if (event.code === 'KeyT') {
+              event.preventDefault();
+              setWorksiteAction(false);
+              return;
+            }
+            if (event.code === 'KeyV') {
+              event.preventDefault();
+              setCapillaryAction(false);
+              return;
+            }
+            if (event.code === 'KeyP') {
+              event.preventDefault();
+              setObservationAction(false);
+              return;
+            }
             var action = keyMap[event.code];
             if (!action) return;
             event.preventDefault();
             keys[action] = false;
           }
-          function clearKeys() { keys = {}; if (state.velocity.length() < 0.006 && state.mode !== 'RAIL HOLD') state.mode = 'STATIONARY'; }
+          function clearKeys() {
+            keys = {};
+            state.toolHeld = false;
+            state.worksitePressLatched = false;
+            if (!state.worksiteComplete) state.worksiteProgress = 0;
+            cancelCapillaryAction(true);
+            cancelObservationAction(true);
+            if (drag) {
+              try { cv.releasePointerCapture(drag.id); } catch (e) {}
+              drag = null;
+            }
+            if (state.velocity.length() < 0.006 && !state.railHeld) state.mode = state.cargoMode === 'held' ? 'HOLDING CARGO' : 'STATIONARY';
+          }
           function onVisibilityChange() { if (document.hidden) clearKeys(); }
           function onPointerDown(event) {
             if (event.button != null && event.button !== 0) return;
@@ -2389,7 +5114,15 @@
             renderer.setSize(Wc, Hc, false);
             dirty = true;
           }
+          function onWebGLContextLost(event) {
+            if (event && event.preventDefault) event.preventDefault();
+            if (disposed) return;
+            announce('The 3-D graphics context was lost. The accessible interior diagram remains available.');
+            cleanup();
+            showInteriorFallback('The 3-D graphics context was lost. Choose Accessible diagram to keep exploring every room and activity.');
+          }
 
+          cv.addEventListener('webglcontextlost', onWebGLContextLost, false);
           cv.addEventListener('keydown', onKeyDown);
           cv.addEventListener('keyup', onKeyUp);
           cv.addEventListener('blur', clearKeys);
@@ -2408,8 +5141,10 @@
 
           function cleanup() {
             if (disposed) return;
+            clearKeys();
             disposed = true;
             cancelAnimationFrame(rafId);
+            cv.removeEventListener('webglcontextlost', onWebGLContextLost, false);
             cv.removeEventListener('keydown', onKeyDown);
             cv.removeEventListener('keyup', onKeyUp);
             cv.removeEventListener('blur', clearKeys);
@@ -2431,31 +5166,96 @@
             materials.forEach(function (material) { try { material.dispose(); } catch (e) {} });
             labelTextures.forEach(function (texture) { try { texture.dispose(); } catch (e) {} });
             try { renderer.dispose(); } catch (e) {}
+            try { if (renderer.forceContextLoss) renderer.forceContextLoss(); } catch (e) {}
+            cv._issInteriorRenderer = null;
             cv._issInteriorState = null;
             cv._issInteriorSetControl = null;
             cv._issInteriorGrabRail = null;
+            cv._issInteriorCargoAction = null;
+            cv._issInteriorTransferAction = null;
+            cv._issInteriorWorksiteAction = null;
+            cv._issInteriorStowAction = null;
+            cv._issInteriorStowSceneItems = null;
+            cv._issInteriorCapillaryAction = null;
+            cv._issInteriorCapillaryCancel = null;
+            cv._issInteriorObservationAction = null;
+            cv._issInteriorObservationCancel = null;
+            cv._issInteriorSecureCupola = null;
             cv._issInteriorCenter = null;
             cv._issInteriorReset = null;
             cv._issInteriorGoTo = null;
             cv._issInteriorCleanup = null;
             cv._issInteriorTaskDone = null;
+            cv._issInteriorResearchStep = null;
             cv._issInteriorCupolaShutters = null;
+            cv._issInteriorCupolaTarget = null;
+            cv._issInteriorCupolaCaptured = null;
+            cv._issInteriorObservationAttempts = null;
+            cv._issInteriorObservationBlurs = null;
+            cv._issInteriorObservationInterruptions = null;
+            cv._issInteriorObservationCaptures = null;
+            cv._issInteriorCargoSecured = null;
+            cv._issInteriorCabinStow = null;
+            cv._issInteriorCabinComplete = null;
+            cv._issInteriorStowItems = null;
+            cv._issInteriorStowAttempts = null;
+            cv._issInteriorStowCatches = null;
+            cv._issInteriorStowSecures = null;
+            cv._issInteriorStowWarnings = null;
+            cv._issInteriorTransferAttempts = null;
+            cv._issInteriorTransferContacts = null;
+            cv._issInteriorTransferCompletions = null;
+            cv._issInteriorTransferComplete = null;
+            cv._issInteriorWorksiteComplete = null;
+            cv._issInteriorRouteStep = null;
+            cv._issInteriorCapillaryComplete = null;
+            cv._issInteriorCapillaryLastDose = null;
+            cv._issInteriorCapillaryAttempts = null;
+            cv._issInteriorCapillaryUnderfills = null;
+            cv._issInteriorCapillaryOverflows = null;
+            cv._issInteriorCapillaryInterruptions = null;
+            cv._issInteriorCapillaryTransfers = null;
+            cv._issInteriorRouteComplete = null;
+            cv._issInteriorVisitedRooms = null;
+            cv._issInteriorOrientationDone = null;
+            cv._issInteriorEvent = null;
+            cv._issInteriorWantRoom = null;
+            cv.removeAttribute('data-iss-hand-pose');
             cv._issInteriorInit = false;
           }
           cv._issInteriorCleanup = cleanup;
-          moveToRoom(startDef.id, false);
+          if (cv._issInteriorWorksiteComplete) {
+            state.worksiteComplete = true;
+            state.worksiteProgress = worksiteDuration;
+            state.worksiteProgressStep = worksiteProgressTicks.length;
+            setWorksiteVisualComplete(true);
+          }
+          if (cv._issInteriorCargoSecured) {
+            cargo.position.copy(cargoSecurePoint);
+            cargo.rotation.set(0, -Math.PI / 2, 0);
+            state.cargoVelocity.set(0, 0, 0);
+            state.cargoAngularVelocity.set(0, 0, 0);
+            state.cargoRoom = 'unity';
+            setCargoVisualMode('secured');
+          }
+          resetTransfer(true);
+          moveToRoom(startDef.id, false, true);
           updateHud(lastFrame);
           animate(lastFrame);
         }
 
         if (window.THREE) {
-          doInit(window.THREE);
+          try { doInit(window.THREE); }
+          catch (initializationError) {
+            if (window.console && typeof window.console.error === 'function') window.console.error('[ISS Interior] initialization failed', initializationError);
+            handleInteriorInitFailure();
+          }
         } else if (window.StemLab && typeof window.StemLab.ensureThree === 'function') {
           window.StemLab.ensureThree({ orbit: false }).then(function () {
             if (window.THREE && cv.isConnected) doInit(window.THREE);
             else if (cv.isConnected) showInteriorFallback();
             else cv._issInteriorInit = false;
-          }).catch(function () { if (cv.isConnected) showInteriorFallback(); else cv._issInteriorInit = false; });
+          }).catch(function () { if (cv.isConnected) handleInteriorInitFailure(); else cv._issInteriorInit = false; });
         } else {
           showInteriorFallback();
         }
@@ -3168,7 +5968,12 @@
 
       // ── Interior shift: room exploration + learn-by-doing activities ──
       function renderInterior() {
-        var roomIdx = INTERIOR_ROOMS.findIndex(function (r) { return r.id === d.interiorRoom; });
+        var interiorView = d.interiorView === 'diagram' ? 'diagram' : '3d';
+        var storedNavigation = d.interiorNav || {};
+        var requestedRoomId = d.interiorRoom;
+        if (interiorView === '3d' && INTERIOR_ROUTE_IDS.indexOf(storedNavigation.flightRoom) >= 0) requestedRoomId = storedNavigation.flightRoom;
+        if (INTERIOR_ROUTE_IDS.indexOf(requestedRoomId) < 0) requestedRoomId = 'harmony';
+        var roomIdx = INTERIOR_ROOMS.findIndex(function (r) { return r.id === requestedRoomId; });
         if (roomIdx < 0) roomIdx = 0;
         var room = INTERIOR_ROOMS[roomIdx];
         var interiorRouteRooms = INTERIOR_ROUTE_IDS.map(function (id) { return INTERIOR_ROOMS.find(function (candidate) { return candidate.id === id; }); }).filter(Boolean);
@@ -3183,7 +5988,7 @@
         var roomDone = !!done[room.id];
         var guided = d.interiorGuided !== false;
         var telemetryLabel = room.telemetry[0];
-        var telemetryValue = room.id === 'unity' && d.lowGResult ? Number(d.lowGResult.speed).toFixed(2) + ' m/s' : room.id === 'tranquility' && roomDone ? 'STABLE' : room.telemetry[1];
+        var telemetryValue = room.id === 'unity' && d.lowGResult ? Number(d.lowGResult.speed).toFixed(2) + ' m/s' : room.id === 'destiny' && d.interiorNav && d.interiorNav.capillaryComplete ? Number(d.interiorNav.capillaryLastDose || 3).toFixed(2) + ' mL' : room.id === 'tranquility' && roomDone ? 'STABLE' : room.id === 'cupola' && d.cupolaShutters ? 'SECURED' : room.id === 'cupola' && d.cupolaCaptured ? 'FRAME LOCKED' : room.telemetry[1];
         var attemptStats = d.interiorAttempts || {};
         var totalAttempts = Object.keys(attemptStats).reduce(function (sum, key) { return sum + Number(attemptStats[key] || 0); }, 0);
         var firstTryCount = Object.keys(done).filter(function (key) { return !!done[key] && attemptStats[key] === 1; }).length;
@@ -3194,45 +5999,223 @@
         var pickedChoice = room.choices.find(function (c) { return c.id === choiceId; });
         var discoveryPrefix = room.id + ':';
         var selectedDiscovery = String(d.interiorDiscovery || '').indexOf(discoveryPrefix) === 0 ? parseInt(String(d.interiorDiscovery).split(':')[1], 10) : -1;
-        var interiorView = d.interiorView === 'diagram' ? 'diagram' : '3d';
-        var navigation = Object.assign({ hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 }, d.interiorNav || {});
-        var navigationChallengeCount = [navigation.preciseHatch, navigation.handrailStop, navigation.cargoClear, navigation.orientationRecovered, navigation.routeComplete].filter(Boolean).length;
+        var navigation = Object.assign({ flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false }, storedNavigation);
+        var navigationFlightRoom = INTERIOR_ROUTE_IDS.indexOf(navigation.flightRoom) >= 0 ? navigation.flightRoom : INTERIOR_ROUTE_IDS.indexOf(d.interiorRoom) >= 0 ? d.interiorRoom : 'harmony';
+        navigation.flightRoom = navigationFlightRoom;
+        var normalizedRouteStep = Number(navigation.routeStep);
+        if (navigation.routeComplete) normalizedRouteStep = INTERIOR_ROUTE_IDS.length - 1;
+        else {
+          if (!isFinite(normalizedRouteStep) || Math.floor(normalizedRouteStep) !== normalizedRouteStep || normalizedRouteStep < -1 || normalizedRouteStep >= INTERIOR_ROUTE_IDS.length) normalizedRouteStep = navigationFlightRoom === 'harmony' ? 0 : -1;
+          if (normalizedRouteStep >= 0 && INTERIOR_ROUTE_IDS[normalizedRouteStep] !== navigationFlightRoom) normalizedRouteStep = navigationFlightRoom === 'harmony' ? 0 : -1;
+        }
+        navigation.routeStep = normalizedRouteStep;
+        var navigationChallengeCount = [navigation.preciseHatch, navigation.handrailStop, (navigation.cargoClear || navigation.cargoSecured), navigation.transferComplete, navigation.capillaryComplete, navigation.worksiteComplete, d.cupolaShutters, navigation.orientationRecovered, navigation.routeComplete].filter(Boolean).length;
+        var cabinStowComplete = ['bag', 'tablet', 'cloth'].every(function (itemId) { return !!(d.cabinStow || {})[itemId]; });
+        if (cabinStowComplete) navigationChallengeCount += 1;
 
         function recordInteriorNavigation(event) {
           if (!event || !event.type) return;
           setLabToolData(function (prev) {
             var station = Object.assign({}, (prev && prev.spaceStation) || {});
-            var nav = Object.assign({ hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 }, station.interiorNav || {});
+            var nav = Object.assign({ flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false }, station.interiorNav || {});
             nav.hatches = Object.assign({}, nav.hatches || {});
+            nav.stowItems = Object.assign({}, nav.stowItems || {});
             if (event.type === 'hatch') {
               nav.hatches[event.from + '>' + event.to] = true;
-              if (Number(event.speed) <= 0.35) nav.preciseHatch = true;
+              nav.flightRoom = event.to;
+              if (event.controlled === true || Number(event.speed) <= 0.35) nav.preciseHatch = true;
               if (isFinite(Number(event.routeStep))) nav.routeStep = Number(event.routeStep);
+              if (typeof event.routeComplete === 'boolean') nav.routeComplete = event.routeComplete;
               var nextSeen = Object.assign({}, station.interiorSeen || {});
               nextSeen[event.to] = true;
               station.interiorSeen = nextSeen;
-              station.interiorRoom = event.to;
               station.interiorDiscovery = null;
             } else if (event.type === 'rail-grab') {
               nav.railGrabs = Number(nav.railGrabs || 0) + 1;
-              if (Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35) nav.handrailStop = true;
+              if (event.controlled === true || (event.controlled == null && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35)) nav.handrailStop = true;
+            } else if (event.type === 'rail-push-off') {
+              nav.railPushOffs = Number(nav.railPushOffs || 0) + 1;
             } else if (event.type === 'collision') {
               nav.collisions = Number(nav.collisions || 0) + 1;
               nav.lastImpactSpeed = Number(event.speed || 0);
+              nav.lastImpactNormalSpeed = Number(event.normalSpeed || 0);
             } else if (event.type === 'cargo-hit') {
               nav.looseHits = Number(nav.looseHits || 0) + 1;
+            } else if (event.type === 'cargo-caught') {
+              nav.cargoCatches = Number(nav.cargoCatches || 0) + 1;
+            } else if (event.type === 'cargo-secured') {
+              nav.cargoSecures = Number(nav.cargoSecures || 0) + 1;
+              nav.cargoSecured = true;
             } else if (event.type === 'cargo-clear') {
               nav.cargoClear = true;
+            } else if (event.type === 'transfer-attempt') {
+              nav.transferAttempts = Math.max(Number(nav.transferAttempts || 0), Number(event.attempt || 0));
+              nav.transferLastOutcome = 'tethered';
+              nav.transferLastSource = event.source || '3d';
+            } else if (event.type === 'transfer-contact') {
+              nav.transferAttempts = Math.max(Number(nav.transferAttempts || 0), Number(event.attempt || 0));
+              var reportedTransferContact = Number(event.contact);
+              nav.transferContacts = isFinite(reportedTransferContact) && reportedTransferContact > 0
+                ? Math.max(Number(nav.transferContacts || 0), reportedTransferContact) : Number(nav.transferContacts || 0) + 1;
+              nav.transferLastOutcome = 'contact';
+              nav.transferLastSource = event.source || '3d';
+              nav.transferLastRadial = Number(event.radial || 0);
+              if (event.source !== 'diagram') {
+                nav.flightRoom = 'harmony';
+                if (!nav.routeComplete) nav.routeStep = 0;
+                station.interiorRoom = 'harmony';
+                var transferSeen = Object.assign({}, station.interiorSeen || {});
+                transferSeen.harmony = true;
+                station.interiorSeen = transferSeen;
+              }
+            } else if (event.type === 'transfer-cancelled') {
+              nav.transferAttempts = Math.max(Number(nav.transferAttempts || 0), Number(event.attempt || 0));
+              nav.transferLastOutcome = 'cancelled';
+              nav.transferLastSource = event.source || '3d';
+              nav.transferCancelledTo = event.to || null;
+              var transferCancelRoom = INTERIOR_ROUTE_IDS.indexOf(event.to) >= 0 ? event.to : null;
+              if (transferCancelRoom) {
+                nav.flightRoom = transferCancelRoom;
+                if (!nav.routeComplete) nav.routeStep = transferCancelRoom === 'harmony' ? 0 : -1;
+                station.interiorRoom = transferCancelRoom;
+                var transferCancelSeen = Object.assign({}, station.interiorSeen || {});
+                transferCancelSeen[transferCancelRoom] = true;
+                station.interiorSeen = transferCancelSeen;
+              }
+            } else if (event.type === 'transfer-complete') {
+              nav.transferAttempts = Math.max(Number(nav.transferAttempts || 0), Number(event.attempt || 0));
+              if (!nav.transferComplete) nav.transferCompletions = Math.max(Number(nav.transferCompletions || 0) + 1, Number(event.completion || 0));
+              nav.transferComplete = true;
+              nav.transferLastOutcome = 'complete';
+              nav.transferLastSource = event.source || '3d';
+              nav.transferLastRadial = Number(event.radial || 0);
+            } else if (event.type === 'stow-attempt') {
+              nav.stowAttempts = Math.max(Number(nav.stowAttempts || 0), Number(event.attempt || 0));
+            } else if (event.type === 'stow-airflow-warning') {
+              if (!nav.stowWarningEmitted) {
+                nav.stowWarnings = Number(nav.stowWarnings || 0) + 1;
+                nav.stowWarningEmitted = true;
+              }
+              nav.stowAirflowState = 'blocked';
+              nav.stowBlockedItem = event.item || null;
+            } else if (event.type === 'stow-caught') {
+              var caughtStowId = ['bag', 'tablet', 'cloth'].indexOf(event.item) >= 0 ? event.item : null;
+              if (caughtStowId && nav.stowItems[caughtStowId] !== 'held' && nav.stowItems[caughtStowId] !== 'secured' && !((station.cabinStow || {})[caughtStowId])) {
+                nav.stowItems[caughtStowId] = 'held';
+                nav.stowCatches = Number(nav.stowCatches || 0) + 1;
+              }
+            } else if (event.type === 'stow-secured') {
+              var securedStowId = ['bag', 'tablet', 'cloth'].indexOf(event.item) >= 0 ? event.item : null;
+              if (securedStowId && nav.stowItems[securedStowId] !== 'secured' && !((station.cabinStow || {})[securedStowId])) {
+                nav.stowItems[securedStowId] = 'secured';
+                nav.stowSecures = Number(nav.stowSecures || 0) + 1;
+                var nextCabinStow = Object.assign({}, station.cabinStow || {});
+                nextCabinStow[securedStowId] = true;
+                station.cabinStow = nextCabinStow;
+              }
+              nav.stowAirflowState = Number(event.count || 0) >= 3 ? 'clear' : 'risk';
+              nav.stowBlockedItem = null;
+            } else if (event.type === 'stow-complete') {
+              var stowWasComplete = !!nav.stowComplete || !!((station.interiorDone || {}).harmony);
+              nav.stowComplete = true;
+              nav.stowAirflowState = 'clear';
+              nav.stowBlockedItem = null;
+              nav.stowItems = { bag: 'secured', tablet: 'secured', cloth: 'secured' };
+              station.cabinStow = { bag: true, tablet: true, cloth: true };
+              if (!stowWasComplete) {
+                var stowDone = Object.assign({}, station.interiorDone || {});
+                stowDone.harmony = true;
+                station.interiorDone = stowDone;
+                var stowChoices = Object.assign({}, station.interiorChoices || {});
+                stowChoices.harmony = 'strap';
+                station.interiorChoices = stowChoices;
+                var stowAttempts = Object.assign({}, station.interiorAttempts || {});
+                var harmonyAttempts = Number(stowAttempts.harmony || 0) + 1;
+                stowAttempts.harmony = harmonyAttempts;
+                station.interiorAttempts = stowAttempts;
+                var harmonyRoom = INTERIOR_ROOMS.find(function (candidate) { return candidate.id === 'harmony'; }) || INTERIOR_ROOMS[0];
+                var stowLog = (station.interiorLog || []).slice();
+                stowLog.push(harmonyRoom.time + ' \u2014 ' + harmonyRoom.task + ' complete (' + (harmonyAttempts === 1 ? 'first try' : harmonyAttempts + ' attempts') + ')');
+                station.interiorLog = stowLog;
+                if (Object.keys(stowDone).filter(function (key) { return !!stowDone[key]; }).length >= INTERIOR_ROOMS.length) station.interiorShiftComplete = true;
+              }
+            } else if (event.type === 'capillary-underfill') {
+              nav.capillaryAttempts = Math.max(Number(nav.capillaryAttempts || 0), Number(event.attempt || 0));
+              nav.capillaryUnderfills = Number(nav.capillaryUnderfills || 0) + 1;
+              nav.capillaryLastDose = Number(event.dose || 0);
+              station.researchErrors = Number(station.researchErrors || 0) + 1;
+              station.researchFeedback = '3-D transfer underfilled at ' + Number(event.dose || 0).toFixed(2) + ' mL. Reopen the valve and aim for 2.7–3.3 mL.';
+            } else if (event.type === 'capillary-overflow') {
+              nav.capillaryAttempts = Math.max(Number(nav.capillaryAttempts || 0), Number(event.attempt || 0));
+              nav.capillaryOverflows = Number(nav.capillaryOverflows || 0) + 1;
+              nav.capillaryLastDose = Number(event.dose || 0);
+              station.researchErrors = Number(station.researchErrors || 0) + 1;
+              station.researchFeedback = '3-D overflow stayed inside the glovebox. Reset the sample and close the valve before 3.3 mL.';
+            } else if (event.type === 'capillary-interrupted') {
+              nav.capillaryAttempts = Math.max(Number(nav.capillaryAttempts || 0), Number(event.attempt || 0));
+              nav.capillaryInterruptions = Number(nav.capillaryInterruptions || 0) + 1;
+              nav.capillaryLastDose = Number(event.dose || 0);
+              station.researchErrors = Number(station.researchErrors || 0) + 1;
+              station.researchFeedback = '3-D transfer interrupted by body motion or lost alignment. Stabilize and retry.';
+            } else if (event.type === 'capillary-complete') {
+              nav.capillaryAttempts = Math.max(Number(nav.capillaryAttempts || 0), Number(event.attempt || 0));
+              nav.capillaryTransfers = Number(nav.capillaryTransfers || 0) + 1;
+              nav.capillaryComplete = true;
+              nav.capillaryLastDose = Number(event.dose || 3);
+              station.researchStep = Math.max(2, Number(station.researchStep || 0));
+              station.researchFeedback = 'Wick primed in 3-D at ' + Number(event.dose || 3).toFixed(2) + ' mL. Capillary flow reached the root pillow; start the camera and record the baseline.';
+            } else if (event.type === 'observation-blurred') {
+              nav.observationAttempts = Math.max(Number(nav.observationAttempts || 0), Number(event.attempt || 0));
+              nav.observationBlurs = Number(nav.observationBlurs || 0) + 1;
+            } else if (event.type === 'observation-interrupted') {
+              nav.observationAttempts = Math.max(Number(nav.observationAttempts || 0), Number(event.attempt || 0));
+              nav.observationInterruptions = Number(nav.observationInterruptions || 0) + 1;
+            } else if (event.type === 'observation-captured') {
+              if (!station.cupolaCaptured) {
+                nav.observationAttempts = event.source === 'diagram'
+                  ? Number(nav.observationAttempts || 0) + 1
+                  : Math.max(Number(nav.observationAttempts || 0), Number(event.attempt || 0));
+                nav.observationCaptures = Number(nav.observationCaptures || 0) + 1;
+              }
+              nav.observationCaptured = true;
+              station.cupolaTarget = ['day', 'aurora', 'night'].indexOf(event.target) >= 0 ? event.target : 'day';
+              station.cupolaCaptured = true;
+              station.cupolaObservation = event.note || ('Stable ' + station.cupolaTarget + ' Earth frame captured. Close all seven shutters after observation.');
+            } else if (event.type === 'observation-secured') {
+              if (!nav.observationSecured) nav.observationSecures = Number(nav.observationSecures || 0) + 1;
+              nav.observationSecured = true;
+            } else if (event.type === 'worksite-reaction') {
+              nav.worksiteAttempts = Number(nav.worksiteAttempts || 0) + 1;
+              nav.worksiteReactions = Number(nav.worksiteReactions || 0) + 1;
+            } else if (event.type === 'worksite-complete') {
+              nav.worksiteAttempts = Number(nav.worksiteAttempts || 0) + 1;
+              nav.worksiteServices = Number(nav.worksiteServices || 0) + 1;
+              nav.worksiteComplete = true;
             } else if (event.type === 'orientation-recovered') {
               nav.orientationRecovered = true;
             } else if (event.type === 'route-complete') {
+              nav.flightRoom = event.room || 'cupola';
+              nav.routeStep = INTERIOR_ROUTE_IDS.length - 1;
               nav.routeComplete = true;
             }
             station.interiorNav = nav;
             return Object.assign({}, prev, { spaceStation: station });
           });
-          if (event.type === 'rail-grab' && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35) announceToSR('Controlled handrail stop challenge complete.');
+          if (event.type === 'hatch' && !navigation.preciseHatch && (event.controlled === true || Number(event.speed) <= 0.35)) announceToSR('Controlled hatch challenge complete.');
+          else if (event.type === 'rail-grab' && (event.controlled === true || (event.controlled == null && Number(event.speed) >= 0.12 && Number(event.speed) <= 0.35))) announceToSR('Controlled handrail stop challenge complete.');
+          else if (event.type === 'cargo-caught') announceToSR('Cargo pouch caught. Carry it to the marked Unity restraint while braced.');
+          else if (event.type === 'cargo-secured') announceToSR('Cargo pouch secured. Loose-object management challenge complete.');
           else if (event.type === 'cargo-clear') announceToSR('Loose cargo avoided. Navigation challenge complete.');
+          else if (event.type === 'transfer-attempt') announceToSR('Transfer tether clipped. Center both body and bag through the Harmony-Destiny hatch.');
+          else if (event.type === 'transfer-contact') announceToSR(event.source === 'diagram' ? 'Diagram hatch contact. Only the still diagram scenario reset; the saved 3-D flight room is unchanged.' : 'Physical body or bag envelope clipped the hatch rim. Crew and bag reset to Harmony staging.');
+          else if (event.type === 'transfer-cancelled') announceToSR('Bulky transfer cancelled before a cross-room training move. Bag returned to Harmony staging; contact and completion counts did not change.');
+          else if (event.type === 'transfer-complete') announceToSR('Bulky hatch transfer complete. Transfer bag docked in Destiny.');
+          else if (event.type === 'worksite-reaction') announceToSR('Reaction torque detected. Recover, catch the nearby rail, then retry the filter service.');
+          else if (event.type === 'stow-airflow-warning') announceToSR('Harmony airflow blocked. A loose item is at the air return.');
+          else if (event.type === 'stow-caught') announceToSR('Cabin item caught. Carry it to its matching Harmony restraint and brace on a rail.');
+          else if (event.type === 'stow-secured') announceToSR('Cabin item secured. ' + Number(event.count || 0) + ' of three items stowed.');
+          else if (event.type === 'stow-complete') announceToSR('Harmony cabin stow complete. All three items restrained and airflow clear.');
+          else if (event.type === 'worksite-complete') announceToSR('Filter serviced while braced. Reaction-torque maintenance challenge complete.');
           else if (event.type === 'orientation-recovered') announceToSR('Orientation recovery challenge complete.');
           else if (event.type === 'route-complete') announceToSR('Five-module free-flight route complete.');
         }
@@ -3247,17 +6230,59 @@
           if (mode === 'diagram') {
             var interiorRoot = event && event.currentTarget && event.currentTarget.closest ? event.currentTarget.closest('.iss-interior') : null;
             var canvas = interiorRoot && interiorRoot.querySelector('[data-iss-interior-canvas]');
+            var canvasState = canvas && canvas._issInteriorState;
+            setLabToolData(function (prev) {
+              var station = Object.assign({}, (prev && prev.spaceStation) || {});
+              var nav = Object.assign({ flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false }, station.interiorNav || {});
+              if (canvasState) {
+                nav.flightRoom = INTERIOR_ROUTE_IDS.indexOf(canvasState.room) >= 0 ? canvasState.room : 'harmony';
+                nav.routeStep = isFinite(Number(canvasState.routeIndex)) ? Math.max(-1, Math.min(4, Number(canvasState.routeIndex))) : 0;
+                nav.routeComplete = !!nav.routeComplete || !!canvasState.routeComplete;
+                nav.orientationRecovered = !!nav.orientationRecovered || !!canvasState.orientationDone;
+              }
+              nav.flightRoom = INTERIOR_ROUTE_IDS.indexOf(nav.flightRoom) >= 0 ? nav.flightRoom : INTERIOR_ROUTE_IDS.indexOf(station.interiorRoom) >= 0 ? station.interiorRoom : 'harmony';
+              station.interiorRoom = nav.flightRoom;
+              station.interiorNav = nav;
+              station.interiorView = 'diagram';
+              return Object.assign({}, prev, { spaceStation: station });
+            });
             if (canvas && canvas._issInteriorCleanup) canvas._issInteriorCleanup();
+            // A WebGL fallback can unmount before the renderer installs its full
+            // cleanup callback. Revoke the ref-provided closures in that path too
+            // so a detached canvas cannot retain a stale station state updater.
+            if (canvas) {
+              canvas._issInteriorObservationAction = null;
+              canvas._issInteriorObservationCancel = null;
+              canvas._issInteriorTransferAction = null;
+              canvas._issInteriorEvent = null;
+              canvas._issInteriorWantRoom = null;
+            }
+            announceToSR('Accessible interior diagram opened at the saved flight room.');
+            return;
           }
-          upd({ interiorView: mode });
-          announceToSR(mode === '3d' ? 'Interactive 3-D free-flight view opened.' : 'Accessible interior diagram opened.');
+          setLabToolData(function (prev) {
+            var station = Object.assign({}, (prev && prev.spaceStation) || {});
+            var nav = Object.assign({ flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false }, station.interiorNav || {});
+            var restoredRoom = INTERIOR_ROUTE_IDS.indexOf(nav.flightRoom) >= 0 ? nav.flightRoom : INTERIOR_ROUTE_IDS.indexOf(station.interiorRoom) >= 0 ? station.interiorRoom : 'harmony';
+            nav.flightRoom = restoredRoom;
+            station.interiorNav = nav;
+            station.interiorRoom = restoredRoom;
+            station.interiorView = '3d';
+            return Object.assign({}, prev, { spaceStation: station });
+          });
+          announceToSR('Interactive 3-D free-flight view restored at the saved flight room.');
         }
         function renderInteriorSimulation() {
           var challenges = [
             { id: 'hatch', done: !!navigation.preciseHatch, title: 'Controlled hatch', note: 'Cross any hatch at 0.35 m/s or slower.' },
             { id: 'rail', done: !!navigation.handrailStop, title: 'Handrail braking', note: 'Reach a rail and catch it while coasting at 0.12-0.35 m/s.' },
-            { id: 'cargo', done: !!navigation.cargoClear, title: 'Loose-object awareness', note: navigation.looseHits ? 'Try Unity again without contacting the pouch.' : 'Turn through Unity without touching the pouch.' },
-            { id: 'roll', done: !!navigation.orientationRecovered, title: 'Orientation recovery', note: 'Roll past 40 degrees, then manually return within 8 degrees.' },
+            { id: 'stow', done: cabinStowComplete, title: 'Cabin stow + airflow', note: cabinStowComplete ? 'Sleeping bag, tablet, and damp washcloth secured; Harmony air return clear.' : navigation.stowWarnings ? 'A loose item reached the air return. Catch the nearest item with X, then brace at its matching restraint.' : 'In Harmony, catch each loose item below 0.20 m/s relative speed, then rail-brace and secure it with X.' },
+            { id: 'transfer', done: !!navigation.transferComplete, title: 'Bulky hatch transfer', note: navigation.transferComplete ? 'Transfer bag centered through the Harmony-Destiny hatch and docked in Destiny.' : navigation.transferContacts ? 'Body or bag clipped the rim. Recenter both envelopes, clip with B, and retry.' : 'In Harmony, clip the transfer bag with B and keep both body and the lagging bag inside the hatch clearance ring.' },
+            { id: 'cargo', done: !!(navigation.cargoClear || navigation.cargoSecured), title: 'Loose-object management', note: navigation.cargoSecured ? 'Pouch caught and restrained safely in Unity.' : navigation.cargoClear ? 'Pouch avoided while turning through Unity.' : navigation.looseHits ? 'Match the pouch velocity before catching it, or pass without contact.' : 'Avoid the pouch, or catch it below 0.20 m/s relative speed and secure it.' },
+            { id: 'capillary', done: !!navigation.capillaryComplete, title: 'Contained fluid transfer', note: navigation.capillaryComplete ? 'Destiny wick primed inside the 2.7–3.3 mL target band.' : navigation.capillaryOverflows ? 'Overflow stayed contained. Reset, stabilize, and close the valve before 3.3 mL.' : navigation.capillaryUnderfills ? 'The wick is underfilled. Hold V longer and release at 2.7–3.3 mL.' : navigation.capillaryInterruptions ? 'The transfer was interrupted. Stabilize, face the glovebox, and retry.' : 'In Destiny, stabilize near the glovebox, hold V, and release at 2.7–3.3 mL.' },
+            { id: 'worksite', done: !!navigation.worksiteComplete, title: 'Braced maintenance', note: navigation.worksiteComplete ? 'Tranquility filter serviced without losing body position.' : navigation.worksiteReactions ? 'The tool spun you. Recover, hold the rail, face the filter, and hold T.' : 'At the Tranquility filter, hold a rail and apply torque for 1.5 seconds.' },
+            { id: 'observation', done: !!d.cupolaShutters, title: 'Braced Earth imaging', note: d.cupolaShutters ? 'Earth frame logged and all seven pressure-window shutters secured.' : d.cupolaCaptured ? 'Stable frame captured. Press P again to close all seven shutters.' : navigation.observationBlurs ? 'The last frame blurred. Stay rail-braced and hold P through the full lock.' : navigation.observationInterruptions ? 'Frame lock was interrupted. Rebrace and center the target.' : 'In Cupola, hold a rail, center the Earth target, and hold P for 1.2 seconds.' },
+            { id: 'roll', done: !!navigation.orientationRecovered, title: 'Orientation recovery', note: 'Roll past 40 degrees, counter-roll, then align within 8 degrees with the rotation nearly stopped.' },
             { id: 'route', done: !!navigation.routeComplete, title: 'Connected-station route', note: 'Travel Harmony -> Destiny -> Unity -> Tranquility -> Cupola in order.' }
           ];
           var nextChallenge = challenges.find(function (challenge) { return !challenge.done; });
@@ -3283,6 +6308,68 @@
               onKeyDown: keyControl(true), onKeyUp: keyControl(false), onBlur: setControl(false)
             }, h('span', null, label), h('kbd', { 'aria-hidden': 'true' }, shortcut));
           }
+          function worksiteHold(on) {
+            return function (event) {
+              if (event) event.preventDefault();
+              var canvas = interiorCanvasFrom(event && event.currentTarget);
+              if (canvas && typeof canvas._issInteriorWorksiteAction === 'function') canvas._issInteriorWorksiteAction(on);
+            };
+          }
+          function worksiteKey(on) {
+            return function (event) {
+              if (event.key !== ' ' && event.key !== 'Enter') return;
+              worksiteHold(on)(event);
+            };
+          }
+          function capillaryHold(on) {
+            return function (event) {
+              if (event) event.preventDefault();
+              var canvas = interiorCanvasFrom(event && event.currentTarget);
+              if (canvas && typeof canvas._issInteriorCapillaryAction === 'function') canvas._issInteriorCapillaryAction(on);
+            };
+          }
+          function capillaryKey(on) {
+            return function (event) {
+              if (event.key !== ' ' && event.key !== 'Enter') return;
+              capillaryHold(on)(event);
+            };
+          }
+          function capillaryCancel(event) {
+            var canvas = interiorCanvasFrom(event && event.currentTarget);
+            if (canvas && typeof canvas._issInteriorCapillaryCancel === 'function') canvas._issInteriorCapillaryCancel(true);
+          }
+          function observationHold(on) {
+            return function (event) {
+              if (event) {
+                event.preventDefault();
+                if (on && event.pointerId != null && event.currentTarget && event.currentTarget.setPointerCapture) {
+                  try { event.currentTarget.setPointerCapture(event.pointerId); } catch (e) {}
+                }
+                if (!on && event.pointerId != null && event.currentTarget && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (e) {}
+                }
+              }
+              var canvas = interiorCanvasFrom(event && event.currentTarget);
+              if (canvas && typeof canvas._issInteriorObservationAction === 'function') canvas._issInteriorObservationAction(on);
+            };
+          }
+          function observationKey(on) {
+            return function (event) {
+              if (event.key !== ' ' && event.key !== 'Enter') return;
+              event.currentTarget._issObservationKeyboardClickUntil = Date.now() + 250;
+              observationHold(on)(event);
+            };
+          }
+          function observationCancel(event) {
+            var canvas = interiorCanvasFrom(event && event.currentTarget);
+            if (canvas && typeof canvas._issInteriorObservationCancel === 'function') canvas._issInteriorObservationCancel(true);
+          }
+          function observationActivate(event) {
+            if (!event || event.detail !== 0 || Number(event.currentTarget._issObservationKeyboardClickUntil || 0) >= Date.now()) return;
+            var canvas = interiorCanvasFrom(event.currentTarget);
+            var active = !!(canvas && canvas._issInteriorState && (canvas._issInteriorState.observationActive || canvas._issInteriorState.observationPressLatched));
+            if (canvas && typeof canvas._issInteriorObservationAction === 'function') canvas._issInteriorObservationAction(!active);
+          }
           function safetyAction(method, announcement) {
             return function (event) {
               var canvas = interiorCanvasFrom(event.currentTarget);
@@ -3293,8 +6380,20 @@
           function resetNavigation(event) {
             setLabToolData(function (prev) {
               var station = Object.assign({}, (prev && prev.spaceStation) || {});
+              var savedStowNav = station.interiorNav || {};
               station.interiorRoom = 'harmony';
-              station.interiorNav = { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 };
+              station.interiorNav = { flightRoom: 'harmony', hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false };
+              station.interiorNav.stowAttempts = Number(savedStowNav.stowAttempts || 0);
+              station.interiorNav.stowCatches = Number(savedStowNav.stowCatches || 0);
+              station.interiorNav.stowSecures = Number(savedStowNav.stowSecures || 0);
+              station.interiorNav.stowWarnings = Number(savedStowNav.stowWarnings || 0);
+              station.interiorNav.stowWarningEmitted = !!savedStowNav.stowWarningEmitted;
+              station.interiorNav.stowComplete = cabinStowComplete || !!savedStowNav.stowComplete;
+              station.interiorNav.stowItems = Object.assign({}, savedStowNav.stowItems || {});
+              if (cabinStowComplete) {
+                station.interiorNav.stowItems = { bag: 'secured', tablet: 'secured', cloth: 'secured' };
+                station.interiorNav.stowAirflowState = 'clear';
+              }
               return Object.assign({}, prev, { spaceStation: station });
             });
             var canvas = interiorCanvasFrom(event.currentTarget);
@@ -3310,14 +6409,49 @@
                   canvas._issInteriorWantRoom = room.id;
                   canvas._issInteriorEvent = recordInteriorNavigation;
                   canvas._issInteriorTaskDone = roomDone;
+                  canvas._issInteriorResearchStep = Number(d.researchStep || 0);
                   canvas._issInteriorCupolaShutters = !!d.cupolaShutters;
+                  canvas._issInteriorCupolaTarget = ['day', 'aurora', 'night'].indexOf(d.cupolaTarget) >= 0 ? d.cupolaTarget : 'day';
+                  canvas._issInteriorCupolaCaptured = !!d.cupolaCaptured;
+                  canvas._issInteriorObservationAttempts = Number(navigation.observationAttempts || 0);
+                  canvas._issInteriorObservationBlurs = Number(navigation.observationBlurs || 0);
+                  canvas._issInteriorObservationInterruptions = Number(navigation.observationInterruptions || 0);
+                  canvas._issInteriorObservationCaptures = Number(navigation.observationCaptures || 0);
+                  canvas._issInteriorSecureCupola = secureCupolaFrom3d;
+                  canvas._issInteriorCargoSecured = !!navigation.cargoSecured;
+                  canvas._issInteriorTransferAttempts = Number(navigation.transferAttempts || 0);
+                  canvas._issInteriorTransferContacts = Number(navigation.transferContacts || 0);
+                  canvas._issInteriorTransferCompletions = Number(navigation.transferCompletions || 0);
+                  canvas._issInteriorTransferComplete = !!navigation.transferComplete;
+                  canvas._issInteriorCabinStow = Object.assign({}, d.cabinStow || {});
+                  canvas._issInteriorStowItems = Object.assign({}, navigation.stowItems || {});
+                  ['bag', 'tablet', 'cloth'].forEach(function (itemId) {
+                    if ((d.cabinStow || {})[itemId]) canvas._issInteriorStowItems[itemId] = 'secured';
+                  });
+                  canvas._issInteriorCabinComplete = cabinStowComplete;
+                  canvas._issInteriorStowAttempts = Number(navigation.stowAttempts || 0);
+                  canvas._issInteriorStowCatches = Number(navigation.stowCatches || 0);
+                  canvas._issInteriorStowSecures = Number(navigation.stowSecures || 0);
+                  canvas._issInteriorStowWarnings = Number(navigation.stowWarnings || 0);
+                  canvas._issInteriorWorksiteComplete = !!navigation.worksiteComplete;
+                  canvas._issInteriorCapillaryComplete = !!navigation.capillaryComplete;
+                  canvas._issInteriorCapillaryLastDose = Number(navigation.capillaryLastDose || 0);
+                  canvas._issInteriorCapillaryAttempts = Number(navigation.capillaryAttempts || 0);
+                  canvas._issInteriorCapillaryUnderfills = Number(navigation.capillaryUnderfills || 0);
+                  canvas._issInteriorCapillaryOverflows = Number(navigation.capillaryOverflows || 0);
+                  canvas._issInteriorCapillaryInterruptions = Number(navigation.capillaryInterruptions || 0);
+                  canvas._issInteriorCapillaryTransfers = Number(navigation.capillaryTransfers || 0);
+                  canvas._issInteriorRouteStep = Number(navigation.routeStep || 0);
+                  canvas._issInteriorRouteComplete = !!navigation.routeComplete;
+                  canvas._issInteriorVisitedRooms = Object.assign({}, visited);
+                  canvas._issInteriorOrientationDone = !!navigation.orientationRecovered;
                   interiorCanvasRef(canvas);
                 },
                 'data-iss-interior-canvas': 'true',
                 role: 'application', tabIndex: 0,
-                'aria-label': 'Interactive 3-D interior of the International Space Station. Training push controls add velocity for exploration; actual crew translate by pushing and pulling handrails. Follow Harmony through Destiny and Unity, turn port into Tranquility, then move nadir into Cupola. Momentum continues until you push the other way or catch a nearby rail.',
-                'aria-describedby': 'iss-interior-flight-instructions iss-interior-flight-status',
-                'aria-keyshortcuts': 'W A S D R F Q E ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'
+                'aria-label': 'Interactive 3-D interior of the International Space Station. Training push controls add velocity for exploration; actual crew translate by pushing and pulling handrails. White gloved forearms and task props show your current body task: tucked, holding a rail, carrying cargo, using the torque tool, holding the water injector, or framing Earth with a handheld camera. In-world destination signs mark the forward, port, and nadir branches; labeled deck and overhead surfaces plus a numeric roll readout preserve orientation. Follow Harmony through Destiny and Unity, turn port into Tranquility, then move nadir into Cupola. Linear and rotational momentum continue until you counter-push or catch a nearby rail. In Harmony, use X to catch the nearest loose sleeping bag, tablet, or washcloth within zero point six five meters and below zero point two meters per second relative speed, then rail-brace at its matching restraint and press X again. Airflow risk is shown with color, shape, and text. Match a loose pouch velocity before catching and securing it. At the Destiny plant glovebox, stabilize, face the lower wick port, then hold V and release between 2.7 and 3.3 milliliters. At the Tranquility filter, brace on a rail before applying torque. In Cupola, approach the camera control, hold the nearby rail, center the selected Earth target, then hold P for a one point two second training frame lock.',
+                'aria-describedby': 'iss-interior-flight-instructions iss-interior-transfer-instructions iss-interior-flight-status iss-interior-transfer-readout iss-interior-stow-readout iss-interior-cabin-airflow iss-interior-observation-readout',
+                'aria-keyshortcuts': 'W A S D R F Q E B C V T P X ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'
               }),
               h('div', { className: 'iss-interior-hud', 'aria-hidden': 'true' },
                 h('span', { className: 'iss-interior-room-hud', 'data-iss-interior-room-hud': 'true' }, room.module.toUpperCase() + ' // ' + room.zone.toUpperCase()),
@@ -3329,17 +6463,20 @@
                 h('span', { className: 'iss-interior-next-hatch-arrow', 'data-iss-interior-next-arrow': 'true' }, '^'),
                 h('strong', { 'data-iss-interior-next-label': 'true' }, 'NEXT HATCH'),
                 h('span', { 'data-iss-interior-next-distance': 'true' }, '-- M')),
-              h('div', { className: 'iss-interior-reticle', 'aria-hidden': 'true' },
+              h('div', { className: 'iss-interior-reticle', 'data-iss-interior-reticle': 'true', 'data-rate': 'stopped', 'aria-hidden': 'true' },
                 h('span', { className: 'iss-interior-horizon', 'data-iss-interior-horizon': 'true' }),
-                h('span', { className: 'iss-interior-velocity-dot', 'data-iss-interior-velocity-dot': 'true' })),
+                h('span', { className: 'iss-interior-velocity-dot', 'data-iss-interior-velocity-dot': 'true' }),
+                h('span', { className: 'iss-interior-orientation', 'data-iss-interior-orientation': 'true', 'data-state': 'stable' }, 'DECK 0 DEG // LEVEL')),
               h('div', { className: 'iss-interior-event', 'data-iss-interior-event': 'true', 'aria-hidden': 'true' }),
+              h('div', { className: 'iss-interior-impact-flash', 'data-iss-interior-impact-flash': 'true', 'aria-hidden': 'true' }),
+              h('div', { className: 'iss-interior-braking', 'data-iss-interior-braking': 'true', 'data-state': 'idle', 'aria-hidden': 'true' }, 'MOTION // NO DRIFT'),
               h('div', { className: 'iss-interior-route-hud', 'aria-hidden': 'true' }, 'ORDERED ROUTE // ', h('strong', { 'data-iss-interior-route-progress': 'true' }, (Math.max(0, Number(navigation.routeStep || 0)) + 1) + ' / 5')),
-              h('div', { className: 'iss-interior-help', 'aria-hidden': 'true' }, 'Drag or arrows: look / tap push: add speed / release: coast / Space near rail: catch')),
+              h('div', { className: 'iss-interior-help', 'aria-hidden': 'true' }, 'Signs: route + deck / gloves: body state / Space: rail / X: cabin stow / B: transfer / C: cargo / V: water / T: tool / P: camera')),
             h('p', { className: 'iss-interior-fallback', 'data-iss-interior-fallback': 'true', role: 'status', hidden: true }),
             h('span', { id: 'iss-interior-flight-status', className: 'iss-sr-only', 'data-iss-interior-status': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' }, 'Free-flight simulator ready in ' + room.name + '. Speed zero meters per second.'),
             h('div', { className: 'iss-interior-mission-cue', 'data-iss-next-maneuver': nextChallenge ? nextChallenge.id : 'complete' },
               h('span', null, nextChallenge ? 'NEXT MANEUVER' : 'MISSION'),
-              h('strong', null, nextChallenge ? nextChallenge.title : 'All navigation challenges complete'),
+              h('strong', null, nextChallenge ? nextChallenge.title : 'All crew challenges complete'),
               h('small', null, nextChallenge ? nextChallenge.note : 'Review the route or continue the crew activities.')),
             h('div', { className: 'iss-interior-controls' },
               h('div', { className: 'iss-interior-thrusters', role: 'group', 'aria-label': 'Virtual navigation push controls' },
@@ -3353,11 +6490,55 @@
                 controlButton('rollRight', 'Roll right', 'E')),
               h('div', { className: 'iss-interior-safety', role: 'group', 'aria-label': 'Free-flight safety assists' },
                 h('button', { type: 'button', 'data-iss-interior-grab': 'true', onClick: safetyAction('_issInteriorGrabRail') }, 'Grab handrail'),
+                h('button', { type: 'button', 'data-iss-interior-cargo-action': 'true', 'data-iss-interior-cargo-status': 'loose', 'aria-disabled': 'true', onClick: safetyAction('_issInteriorCargoAction') }, 'Catch pouch (C)'),
+                h('button', {
+                  type: 'button', disabled: !!navigation.transferComplete,
+                  'data-iss-interior-transfer-action': 'true',
+                  'data-iss-interior-transfer-status': navigation.transferComplete ? 'complete' : 'approach',
+                  'data-iss-interior-transfer-clearance': navigation.transferComplete ? 'clear' : 'staged',
+                  'aria-disabled': navigation.transferComplete ? 'true' : 'false',
+                  'aria-describedby': 'iss-interior-transfer-readout', 'aria-keyshortcuts': 'B',
+                  onClick: safetyAction('_issInteriorTransferAction')
+                }, navigation.transferComplete ? 'Transfer bag docked' : 'Clip transfer tether (B)'),
+                h('span', { id: 'iss-interior-transfer-readout', className: 'iss-sr-only', 'data-iss-interior-transfer-readout': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  navigation.transferComplete ? 'Bulky hatch transfer complete. Transfer bag docked in Destiny.'
+                    : navigation.transferLastOutcome === 'cancelled' ? 'Bulky transfer cancelled before a cross-room training move. The bag returned to Harmony staging; contact and completion counts were unchanged.'
+                    : navigation.transferLastOutcome === 'contact' && navigation.transferLastSource === 'diagram'
+                      ? 'The diagram scenario contacted the hatch and reset. Your saved 3-D flight room is unchanged.'
+                      : navigation.transferLastOutcome === 'contact' ? 'Physical body or bag envelope contacted the hatch. Crew and bag reset to Harmony staging; recenter both before retrying.'
+                    : 'Bulky transfer bag staged in Harmony. Move within reach, clip the tether, and keep body and bag centered through the hatch.'),
+                h('button', { type: 'button', disabled: cabinStowComplete, 'data-iss-interior-stow-action': 'true', 'data-iss-interior-stow-status': cabinStowComplete ? 'complete' : 'approach', 'data-iss-interior-stow-item': 'none', 'data-iss-interior-stow-count': cabinStowComplete ? '3' : '0', 'aria-disabled': cabinStowComplete ? 'true' : 'false', 'aria-describedby': 'iss-interior-stow-readout iss-interior-cabin-airflow', onClick: safetyAction('_issInteriorStowAction') }, cabinStowComplete ? 'Cabin stow complete' : 'Catch cabin item (X)'),
+                h('span', { id: 'iss-interior-stow-readout', className: 'iss-sr-only', 'data-iss-interior-stow-readout': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  cabinStowComplete ? 'Cabin stow complete. Three of three items secured.' : 'Harmony cabin stow. Move within zero point six five meters of the nearest loose item and match its motion below zero point two meters per second.'),
+                h('span', { id: 'iss-interior-cabin-airflow', className: 'iss-sr-only', 'data-iss-interior-cabin-airflow': 'true', 'data-state': cabinStowComplete ? 'clear' : 'risk', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  cabinStowComplete ? 'Airflow clear - all three items restrained.' : 'Airflow risk - loose cabin items remain.'),
+                h('button', { type: 'button', 'data-iss-interior-worksite-action': 'true', 'data-iss-interior-worksite-status': 'approach', 'data-iss-interior-worksite-progress': '0', 'aria-disabled': 'false', 'aria-pressed': 'false',
+                  onPointerDown: worksiteHold(true), onPointerUp: worksiteHold(false), onPointerCancel: worksiteHold(false), onPointerLeave: worksiteHold(false),
+                  onKeyDown: worksiteKey(true), onKeyUp: worksiteKey(false), onBlur: worksiteHold(false) }, 'Service filter (T)'),
+                h('button', {
+                  type: 'button', 'data-iss-interior-capillary-action': 'true', 'data-iss-interior-capillary-status': 'approach',
+                  'data-iss-interior-capillary-dose': '0.00', 'data-iss-interior-capillary-progress': '0',
+                  'aria-disabled': 'false', 'aria-pressed': 'false', 'aria-describedby': 'iss-interior-capillary-readout',
+                  onPointerDown: capillaryHold(true), onPointerUp: capillaryHold(false), onPointerCancel: capillaryCancel,
+                  onPointerLeave: capillaryCancel, onKeyDown: capillaryKey(true), onKeyUp: capillaryKey(false), onBlur: capillaryCancel
+                }, 'Dose wick (V)'),
                 h('button', { type: 'button', onClick: safetyAction('_issInteriorCenter', 'Training assist centered and stopped the camera.') }, 'Center + stop'),
-                h('button', { type: 'button', onClick: resetNavigation }, 'Restart route'))),
+                h('span', { id: 'iss-interior-capillary-readout', className: 'iss-sr-only', 'data-iss-interior-capillary-readout': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  'Destiny water injector. Secure the sample, then hold V and release between 2.7 and 3.3 milliliters.'),
+                h('button', {
+                  type: 'button', 'data-iss-interior-observation-action': 'true', 'data-iss-interior-observation-status': 'approach',
+                  'data-iss-interior-observation-progress': '0', 'data-iss-interior-observation-target': d.cupolaTarget || 'day',
+                  'aria-disabled': 'false', 'aria-pressed': 'false', 'aria-describedby': 'iss-interior-observation-readout',
+                  onPointerDown: observationHold(true), onPointerUp: observationHold(false), onPointerCancel: observationCancel,
+                  onKeyDown: observationKey(true), onKeyUp: observationKey(false), onBlur: observationCancel, onClick: observationActivate
+                }, 'Capture Earth frame (P)'),
+                h('span', { id: 'iss-interior-observation-readout', className: 'iss-sr-only', 'data-iss-interior-observation-readout': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+                  'Cupola camera. Approach the control, center the selected Earth target, catch the nearby rail, then hold P for one point two seconds.'),
+                h('button', { type: 'button', 'data-iss-interior-reset-route': 'true', onClick: resetNavigation }, 'Restart route'))),
             h('p', { id: 'iss-interior-flight-instructions', className: 'iss-interior-instructions' },
-              'Training push controls are an exploration aid. Astronauts actually translate by pushing and pulling handrails or station structure; there are no personal thrusters inside. Tap a push briefly to add velocity, release to coast with no passive braking, and move within 0.68 m of a rail before catching it. Arrow keys look; W/A/S/D translate; R/F move vertically; Q/E roll. Follow Harmony -> Destiny -> Unity, turn port into Tranquility, then move nadir into Cupola. The stopping-distance readout uses a simplified constant-counter-push model.'),
-            h('div', { className: 'iss-nav-challenges', role: 'list', 'aria-label': 'Microgravity navigation challenges. ' + navigationChallengeCount + ' of ' + challenges.length + ' complete.' },
+              'Training push controls are an exploration aid. Astronauts actually translate by pushing and pulling handrails or station structure; there are no personal thrusters inside. Tap a push briefly to add velocity, release to coast with no passive braking, and move within 0.68 m of a rail before catching it. While holding a rail, one direction creates a single 10 newton-second push-off; release the direction before another push. The cyan or amber cabin arrow predicts drift, the rail ring turns green within reach, and in-world destination signs mark the forward, port, and nadir branches. Arrow keys look; W/A/S/D translate; R/F move vertically; Q/E apply roll torque; Space holds or releases a rail; X catches or secures Harmony cabin items; C catches or secures the pouch; V opens the Destiny water injector; T holds the Tranquility torque tool; P holds the Cupola camera frame lock. In Harmony, match the nearest sleeping bag, crew tablet, or damp washcloth below 0.20 m/s relative speed, catch it within 0.65 m, then rail-brace at its matching restraint and press X again. A loose item near the air return blocks the airflow cue. Match the pouch below 0.20 m/s relative speed, then brace near the marked Unity restraint. At the Destiny glovebox, stabilize, face the lower injection port, hold V, and release in the 2.7-3.3 mL target band. The wick front advances with the square root of time, while an overfill forms a bead that clings inside the glovebox instead of falling. At the Tranquility filter, face the worksite, hold a nearby rail, and hold T for 1.5 seconds. In Cupola, move within 0.95 m of the camera control, center the selected bracket, catch the nearby rail, and hold P for a 1.2-second training frame lock; releasing early blurs the frame. Release and press P again after capture to close all seven external shutters. An unbraced tool attempt applies a simplified reaction roll because weightlessness removes foot friction, not inertia. Rotation continues after release, so counter-roll before aligning the deck. Follow Harmony -> Destiny -> Unity, turn port into Tranquility, then move nadir into Cupola. Stopping and braking readouts use a simplified constant-counter-push model.'),
+            h('p', { id: 'iss-interior-transfer-instructions', className: 'iss-interior-instructions', 'data-iss-interior-transfer-instructions': 'true' }, 'Bulky hatch transfer: in Harmony, move beside the labeled bag and press B to clip its tether. The 12 kilogram bag follows behind and to your right with spring-and-damper lag. Keep both your body and the bag envelope within the 0.70 meter center clearance as you cross into Destiny; a rim clip safely resets both to Harmony staging.'),
+            h('div', { className: 'iss-nav-challenges', role: 'list', 'aria-label': 'Microgravity crew challenges. ' + navigationChallengeCount + ' of ' + challenges.length + ' complete.' },
               challenges.map(function (challenge) {
                 return h('div', { key: challenge.id, role: 'listitem', className: 'iss-nav-challenge' + (challenge.done ? ' is-complete' : ''), 'data-iss-nav-challenge': challenge.id },
                   h('i', { 'aria-hidden': 'true' }, challenge.done ? '\u2713' : '\u25CB'),
@@ -3365,7 +6546,7 @@
                   h('span', null, challenge.note));
               })),
             h('p', { className: 'iss-interior-instructions', 'aria-live': 'off' },
-              'Flight log: ' + Object.keys(navigation.hatches || {}).length + ' hatch transitions / ' + Number(navigation.railGrabs || 0) + ' rail catches / ' + Number(navigation.collisions || 0) + ' hull contacts / ' + Number(navigation.looseHits || 0) + ' cargo contacts.'),
+              'Flight log: ' + Object.keys(navigation.hatches || {}).length + ' hatch transitions / ' + Number(navigation.railGrabs || 0) + ' rail catches / ' + Number(navigation.railPushOffs || 0) + ' rail push-offs / ' + Number(navigation.collisions || 0) + ' hull contacts / ' + Number(navigation.looseHits || 0) + ' cargo contacts / ' + Number(navigation.cargoSecures || 0) + ' pouches secured / ' + Number(navigation.transferContacts || 0) + ' hatch-transfer contacts / ' + Number(navigation.transferCompletions || 0) + ' bulky transfers / ' + Number(navigation.stowCatches || 0) + ' cabin items caught / ' + Number(navigation.stowSecures || 0) + ' cabin items secured / ' + Number(navigation.stowWarnings || 0) + ' airflow warnings / ' + Number(navigation.capillaryUnderfills || 0) + ' wick underfills / ' + Number(navigation.capillaryOverflows || 0) + ' contained overflows / ' + Number(navigation.capillaryTransfers || 0) + ' wick transfers / ' + Number(navigation.worksiteReactions || 0) + ' reaction-torque events / ' + Number(navigation.worksiteServices || 0) + ' filters serviced / ' + Number(navigation.observationBlurs || 0) + ' blurred Earth frames / ' + Number(navigation.observationInterruptions || 0) + ' interrupted frame locks / ' + Number(navigation.observationCaptures || 0) + ' Earth frames captured.'),
             h('div', { className: 'iss-discovery-row', role: 'group', 'aria-label': 'Inspect details in ' + room.name },
               room.discoveries.map(function (spot, index) {
                 var active = selectedDiscovery === index;
@@ -3377,9 +6558,21 @@
         function visitRoom(index) {
           var safe = Math.max(0, Math.min(INTERIOR_ROOMS.length - 1, index));
           var next = INTERIOR_ROOMS[safe];
-          var seen = Object.assign({}, d.interiorSeen || {}); seen[next.id] = true;
-          upd({ interiorRoom: next.id, interiorSeen: seen, interiorDiscovery: null });
-          announceToSR(next.name + '. ' + next.zone + '.');
+          setLabToolData(function (prev) {
+            var station = Object.assign({}, (prev && prev.spaceStation) || {});
+            var seen = Object.assign({}, station.interiorSeen || {}); seen[next.id] = true;
+            station.interiorRoom = next.id;
+            station.interiorSeen = seen;
+            station.interiorDiscovery = null;
+            if (interiorView === '3d') {
+              var nav = Object.assign({}, station.interiorNav || {});
+              nav.flightRoom = next.id;
+              if (!nav.routeComplete) nav.routeStep = next.id === 'harmony' ? 0 : -1;
+              station.interiorNav = nav;
+            }
+            return Object.assign({}, prev, { spaceStation: station });
+          });
+          announceToSR(next.name + '. ' + next.zone + (interiorView === '3d' ? '. Camera centered and incomplete route progress restarted.' : '. Diagram selection changed; physical free-flight position preserved.'));
         }
         function visitRoomById(id) {
           var index = INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === id; });
@@ -3406,6 +6599,94 @@
           }
           upd(patch);
           announceToSR((choice.correct ? 'Task complete. ' : 'Try another approach. ') + choice.feedback);
+        }
+        function secureCupolaFrom3d() {
+          if (d.cupolaShutters || roomDone) return;
+          chooseInterior({ id: 'shutters', correct: true, feedback: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' }, { cupolaCaptured: true, cupolaShutters: true, cupolaObservation: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' });
+        }
+        function chooseHatchTransferDiagram(choice) {
+          if (navigation.transferComplete) return;
+          var attempt = Number(navigation.transferAttempts || 0) + 1;
+          if (choice === 'aligned') {
+            recordInteriorNavigation({
+              type: 'transfer-complete', room: 'destiny', attempt: attempt,
+              completion: Number(navigation.transferCompletions || 0) + 1,
+              radial: 0, safeRadius: 0.70, source: 'diagram', choice: choice
+            });
+            return;
+          }
+          recordInteriorNavigation({
+            type: 'transfer-contact', room: navigation.flightRoom, attempt: attempt,
+            radial: choice === 'body-only' ? 0.92 : 1.08,
+            safeRadius: 0.70, source: 'diagram', choice: choice
+          });
+        }
+        function renderHatchTransferDiagram() {
+          var transferDone = !!navigation.transferComplete;
+          var transferContact = !transferDone && navigation.transferLastOutcome === 'contact';
+          var transferDiagramStatus = transferDone ? 'complete' : transferContact ? 'contact' : 'ready';
+          var transferDiagramColor = transferDone ? '#4ade80' : transferContact ? '#f97316' : '#38bdf8';
+          var transferDiagramFeedback = transferDone
+            ? 'Transfer complete: the combined body and bag envelope stayed centered, then the bag docked in Destiny.'
+            : transferContact
+              ? 'Diagram contact: centering only the body or pulling harder lets the lagging bag envelope reach the rim. Only this still scenario reset; your saved 3-D flight room is unchanged.'
+              : 'Choose a transfer method. The safe plan accounts for your body and the delayed motion of the tethered bag.';
+          var transferChoices = [
+            ['aligned', 'Align body + bag on centerline'],
+            ['body-only', 'Center my body only'],
+            ['pull-hard', 'Pull harder through the rim']
+          ];
+          return h('section', {
+            'data-iss-hatch-transfer-diagram': 'true',
+            'data-iss-hatch-transfer-status': transferDiagramStatus,
+            'aria-labelledby': 'iss-hatch-transfer-diagram-title',
+            style: { padding: 10, background: 'rgba(2,6,23,.62)', borderTop: '1px solid #334155' }
+          },
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 6, marginBottom: 7 } },
+              h('strong', { id: 'iss-hatch-transfer-diagram-title', style: { color: '#e0f2fe', fontSize: 11.5 } }, 'Harmony \u2192 Destiny bulky hatch transfer'),
+              h('span', { style: { color: transferDiagramColor, font: '850 9px ui-monospace,monospace', letterSpacing: .6 } }, transferDiagramStatus.toUpperCase())),
+            h('svg', {
+              viewBox: '0 0 640 220', role: 'img',
+              'data-iss-hatch-transfer-clearance-cue': 'true',
+              'aria-labelledby': 'iss-hatch-transfer-svg-title iss-hatch-transfer-svg-desc',
+              style: { display: 'block', width: '100%', background: '#050b18' }
+            },
+              h('title', { id: 'iss-hatch-transfer-svg-title' }, 'Hatch cross-section showing the combined body and bag clearance envelope'),
+              h('desc', { id: 'iss-hatch-transfer-svg-desc' }, 'View along the Harmony to Destiny hatch axis. A circular collar surrounds a smaller cyan safe center zone. The crew body and tethered transfer bag both fit inside the safe zone when their centers are aligned.'),
+              h('rect', { width: 640, height: 220, fill: '#050b18' }),
+              h('text', { x: 20, y: 24, fill: '#94a3b8', fontSize: 10, fontWeight: 800 }, 'VIEW ALONG HATCH AXIS // HARMONY TO DESTINY'),
+              h('circle', { cx: 320, cy: 116, r: 86, fill: '#111827', stroke: '#64748b', strokeWidth: 18 }),
+              h('circle', { cx: 320, cy: 116, r: 76, fill: '#07101d', stroke: '#cbd5e1', strokeWidth: 2 }),
+              h('circle', { cx: 320, cy: 116, r: 45, fill: 'rgba(56,189,248,.08)', stroke: '#38bdf8', strokeWidth: 2, strokeDasharray: '6 4' }),
+              h('line', { x1: 244, y1: 116, x2: 396, y2: 116, stroke: '#38bdf8', strokeWidth: 1, opacity: .55 }),
+              h('line', { x1: 320, y1: 40, x2: 320, y2: 192, stroke: '#38bdf8', strokeWidth: 1, opacity: .55 }),
+              h('g', { transform: 'translate(302,108)' },
+                h('circle', { cy: -15, r: 8, fill: '#e8d8c3' }),
+                h('rect', { x: -10, y: -7, width: 20, height: 32, rx: 8, fill: '#e2e8f0', stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('circle', { r: 28, fill: 'none', stroke: '#bae6fd', strokeWidth: 1.5, strokeDasharray: '3 3' })),
+              h('path', { d: 'M320 121 Q332 138 346 127', fill: 'none', stroke: '#fbbf24', strokeWidth: 2 }),
+              h('g', { transform: 'translate(348,126)' },
+                h('circle', { r: 24, fill: 'rgba(251,191,36,.08)', stroke: '#fbbf24', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                h('rect', { x: -14, y: -10, width: 28, height: 20, rx: 4, fill: '#8b5e3c', stroke: '#fde68a', strokeWidth: 2 }),
+                h('path', { d: 'M-8 -10 Q0 -20 8 -10', fill: 'none', stroke: '#fde68a', strokeWidth: 2 })),
+              h('text', { x: 444, y: 82, fill: '#cbd5e1', fontSize: 9, fontWeight: 800 }, 'COLLAR APERTURE 1.185 M'),
+              h('line', { x1: 400, y1: 86, x2: 375, y2: 91, stroke: '#94a3b8' }),
+              h('text', { x: 444, y: 112, fill: '#7dd3fc', fontSize: 9, fontWeight: 800 }, 'SAFE CENTER RADIUS 0.70 M'),
+              h('line', { x1: 400, y1: 115, x2: 370, y2: 116, stroke: '#38bdf8' }),
+              h('text', { x: 444, y: 143, fill: '#fde68a', fontSize: 9, fontWeight: 800 }, 'ALLOW FOR TETHER LAG'),
+              h('line', { x1: 400, y1: 139, x2: 363, y2: 130, stroke: '#fbbf24' }),
+              h('text', { x: 20, y: 205, fill: transferDiagramColor, fontSize: 10, fontWeight: 900 }, transferDone ? 'CLEAR // BAG DOCKED IN DESTINY' : transferContact ? 'CONTACT // DIAGRAM RESET; 3-D ROOM SAVED' : 'CENTER BOTH ENVELOPES BEFORE CROSSING')),
+            h('p', { style: { margin: '7px 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'The 12 kilogram bag follows behind and to your right. A harder pull increases separation; checking only your body ignores the bag envelope.'),
+            h('div', { role: 'group', 'aria-label': 'Choose a bulky hatch-transfer method', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(145px,1fr))', gap: 6 } },
+              transferChoices.map(function (choice) {
+                return h('button', {
+                  key: choice[0], type: 'button', disabled: transferDone,
+                  'data-iss-hatch-transfer-choice': choice[0],
+                  onClick: function () { chooseHatchTransferDiagram(choice[0]); },
+                  style: { padding: '7px 8px', borderRadius: 8, border: '1px solid ' + (transferDone && choice[0] === 'aligned' ? '#4ade80' : '#475569'), background: transferDone && choice[0] === 'aligned' ? 'rgba(34,197,94,.14)' : 'rgba(2,6,23,.46)', color: '#e2e8f0', fontSize: 10.5, fontWeight: 800, cursor: transferDone ? 'default' : 'pointer' }
+                }, (transferDone && choice[0] === 'aligned' ? '\u2713 ' : '') + choice[1]);
+              })),
+            h('p', { 'data-iss-hatch-transfer-diagram-readout': 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { margin: '8px 0 0', color: transferDiagramColor, fontSize: 10.5, lineHeight: 1.45 } }, transferDiagramFeedback));
         }
         function sceneArt() {
           var object = room.id === 'harmony' ?
@@ -3597,8 +6878,10 @@
           var airflowClear = stowedCount === items.length;
           var safetyState = airflowClear ? 'clear' : 'risk-' + (items.length - stowedCount);
           var safetyLabel = airflowClear ? 'CABIN CLEAR // AIR RETURN OPEN' : (items.length - stowedCount) + ' LOOSE OBJECT' + (items.length - stowedCount === 1 ? '' : 'S') + ' // AIRFLOW RISK';
+          var cabinDiagramEnabled = d.interiorView === 'diagram';
           function secureItem(item) {
             if (roomDone || stowed[item[0]]) return;
+            if (!cabinDiagramEnabled) { announceToSR('3-D cabin stow is active. Use X to catch or secure the nearest item.'); return; }
             var next = Object.assign({}, stowed); next[item[0]] = true;
             var nextCount = items.filter(function (candidate) { return !!next[candidate[0]]; }).length;
             if (nextCount >= items.length) {
@@ -3634,7 +6917,8 @@
                 objectMark('cloth', 225, 110, 442, 123, 'CLOTH', 'cloth'),
                 [0,1,2].map(function (i) { var complete = i < stowedCount; return h('g', { key: i, transform: 'translate(' + (285 + i * 34) + ',153)' }, h('circle', { r: 7, fill: complete ? '#14532d' : '#111827', stroke: complete ? '#4ade80' : '#475569', strokeWidth: 1.5 }), h('text', { y: 3, textAnchor: 'middle', fill: complete ? '#dcfce7' : '#94a3b8', fontSize: 7, fontWeight: 900 }, complete ? '✓' : String(i + 1))); }))),
             h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', marginBottom: 6 } }, h('strong', { style: { color: TEXT, fontSize: 11 } }, 'Loose-item scan'), h('span', { role: 'status', 'aria-live': 'polite', style: { color: stowedCount === items.length ? '#4ade80' : room.color, fontSize: 10, fontWeight: 800 } }, stowedCount + ' / ' + items.length + ' secured')),
-            h('div', { role: 'group', 'aria-label': 'Cabin items to secure', style: { display: 'grid', gap: 6 } }, items.map(function (item) { var secure = !!stowed[item[0]]; return h('button', { key: item[0], type: 'button', disabled: secure || roomDone, onClick: function () { secureItem(item); }, style: { display: 'grid', gridTemplateColumns: '28px 1fr', gap: 7, textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (secure ? '#22c55e' : '#475569'), background: secure ? 'rgba(34,197,94,.12)' : 'rgba(2,6,23,.38)', color: TEXT, cursor: secure || roomDone ? 'default' : 'pointer' } }, h('span', { style: { fontSize: 19 }, 'aria-hidden': 'true' }, secure ? '✓' : item[1]), h('span', null, h('strong', { style: { display: 'block', color: secure ? '#4ade80' : TEXT, fontSize: 11 } }, item[2] + ' — ' + item[3]), h('span', { style: { display: 'block', color: SOFT, fontSize: 9.5, lineHeight: 1.4, marginTop: 2 } }, item[4]))); })),
+            !cabinDiagramEnabled ? h('div', { role: 'status', style: { marginBottom: 6, color: '#fde68a', fontSize: 10.5, fontWeight: 800 } }, '3-D cabin-stow controls active - use X to catch or secure each item.') : null,
+            h('div', { role: 'group', 'aria-label': 'Cabin items to secure', style: { display: 'grid', gap: 6 } }, items.map(function (item) { var secure = !!stowed[item[0]]; return h('button', { key: item[0], type: 'button', disabled: secure || roomDone || !cabinDiagramEnabled, 'aria-disabled': secure || roomDone || !cabinDiagramEnabled ? 'true' : 'false', onClick: function () { secureItem(item); }, style: { display: 'grid', gridTemplateColumns: '28px 1fr', gap: 7, textAlign: 'left', padding: 8, borderRadius: 8, border: '1px solid ' + (secure ? '#22c55e' : '#475569'), background: secure ? 'rgba(34,197,94,.12)' : 'rgba(2,6,23,.38)', color: TEXT, cursor: secure || roomDone || !cabinDiagramEnabled ? 'default' : 'pointer' } }, h('span', { style: { fontSize: 19 }, 'aria-hidden': 'true' }, secure ? '✓' : item[1]), h('span', null, h('strong', { style: { display: 'block', color: secure ? '#4ade80' : TEXT, fontSize: 11 } }, item[2] + ' — ' + item[3]), h('span', { style: { display: 'block', color: SOFT, fontSize: 9.5, lineHeight: 1.4, marginTop: 2 } }, cabinDiagramEnabled ? item[4] : 'Use X in the 3-D simulation.'))); })),
             roomDone ? h('div', { role: 'status', style: { marginTop: 7, padding: 7, borderRadius: 7, background: 'rgba(34,197,94,.1)', color: '#bbf7d0', fontSize: 10.5 } }, 'Cabin clear ✓ Air return unobstructed ✓ Morning stow logged') : null
           );
         }        function renderCupolaObservation() {
@@ -3655,13 +6939,14 @@
             announceToSR(targets[id].label + ' selected. Imaging mode: ' + targets[id].mode + '.');
           }
           function captureTarget() {
-            if (roomDone) return;
-            upd({ cupolaCaptured: true, cupolaObservation: target.note });
+            if (interiorView !== 'diagram' || roomDone || captured) return;
+            recordInteriorNavigation({ type: 'observation-captured', room: 'cupola', target: targetId, note: target.note, source: 'diagram' });
             announceToSR('Image captured. ' + target.note);
           }
           function closeObservation() {
-            if (!captured || roomDone) return;
-            chooseInterior({ id: 'shutters', correct: true, feedback: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' }, { cupolaShutters: true, cupolaObservation: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' });
+            if (interiorView !== 'diagram' || !captured || roomDone) return;
+            recordInteriorNavigation({ type: 'observation-secured', room: 'cupola', target: targetId, source: 'diagram' });
+            chooseInterior({ id: 'shutters', correct: true, feedback: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' }, { cupolaCaptured: true, cupolaShutters: true, cupolaObservation: 'Observation logged and Cupola secure. External shutters now protect all seven pressure windows.' });
           }
           return h('div', { 'data-iss-cupola-observation': 'true' },
             h('div', { className: 'iss-learning-visual', 'data-iss-cupola-view': targetId, 'data-observation-state': observationState, style: { marginBottom: 8 } },
@@ -3686,8 +6971,8 @@
             h('div', { role: 'group', 'aria-label': 'Earth observation targets', style: { display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 5, marginTop: 7 } }, Object.keys(targets).map(function (id) { var t = targets[id], active = id === targetId; return h('button', { key: id, type: 'button', disabled: roomDone, 'aria-pressed': active, onClick: function () { selectTarget(id); }, style: { minWidth: 0, padding: 6, borderRadius: 7, border: '1px solid ' + (active ? t.color : '#475569'), background: active ? t.color + '18' : 'rgba(2,6,23,.35)', color: active ? '#f8fafc' : SOFT, fontSize: 9.5, fontWeight: 800, cursor: roomDone ? 'default' : 'pointer' } }, t.icon + ' ' + t.label); })),
             h('div', { style: { marginTop: 6, padding: 7, borderRadius: 7, background: 'rgba(2,6,23,.4)', border: '1px solid #334155', color: TEXT, fontSize: 10 } }, h('strong', { style: { color: target.color } }, 'Camera plan: '), target.mode),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 7 } },
-              h('button', { type: 'button', disabled: roomDone || shutters, onClick: captureTarget, style: { padding: 8, borderRadius: 8, border: '1px solid ' + target.color, background: captured ? target.color + '20' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 850, cursor: roomDone || shutters ? 'default' : 'pointer' } }, captured ? '✓ Image captured' : '📷 Capture image'),
-              h('button', { type: 'button', disabled: !captured || roomDone, onClick: closeObservation, style: { padding: 8, borderRadius: 8, border: '1px solid ' + (captured ? '#818cf8' : '#475569'), background: captured ? 'rgba(129,140,248,.16)' : 'rgba(2,6,23,.25)', color: captured ? '#e0e7ff' : SOFT, fontSize: 10.5, fontWeight: 850, cursor: captured && !roomDone ? 'pointer' : 'not-allowed', opacity: captured ? 1 : .48 } }, shutters ? '✓ Shutters closed' : '🛡️ Close shutters')),
+              h('button', { type: 'button', disabled: interiorView !== 'diagram' || roomDone || shutters || captured, onClick: captureTarget, style: { padding: 8, borderRadius: 8, border: '1px solid ' + target.color, background: captured ? target.color + '20' : 'rgba(2,6,23,.35)', color: TEXT, fontSize: 10.5, fontWeight: 850, cursor: interiorView === 'diagram' && !roomDone && !shutters && !captured ? 'pointer' : 'not-allowed' } }, captured ? '✓ Image captured' : interiorView === '3d' ? 'Use 3-D camera control (P)' : '📷 Capture image'),
+              h('button', { type: 'button', disabled: interiorView !== 'diagram' || !captured || roomDone, onClick: closeObservation, style: { padding: 8, borderRadius: 8, border: '1px solid ' + (captured ? '#818cf8' : '#475569'), background: captured ? 'rgba(129,140,248,.16)' : 'rgba(2,6,23,.25)', color: captured ? '#e0e7ff' : SOFT, fontSize: 10.5, fontWeight: 850, cursor: interiorView === 'diagram' && captured && !roomDone ? 'pointer' : 'not-allowed', opacity: captured ? 1 : .48 } }, shutters ? '✓ Shutters closed' : interiorView === '3d' ? 'Use camera control (P)' : '🛡️ Close shutters')),
             d.cupolaObservation ? h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 7, padding: 7, borderRadius: 7, background: target.color + '10', borderLeft: '3px solid ' + target.color, color: TEXT, fontSize: 10.5, lineHeight: 1.45 } }, h('strong', { style: { color: target.color } }, 'Observation: '), d.cupolaObservation) : null
           );
         }        return h('div', { className: 'iss-interior', 'data-iss-interior': room.id },
@@ -3727,12 +7012,13 @@
             interiorRouteRooms.map(function (r) {
               var originalIndex = INTERIOR_ROOMS.findIndex(function (candidate) { return candidate.id === r.id; });
               var on = r.id === room.id; var finished = !!done[r.id]; var wasVisited = !!visited[r.id]; var roomInspected = [0, 1].filter(function (n) { return !!inspected[r.id + ':' + n]; }).length;
-              return h('button', { className: 'iss-route-button', key: r.id, type: 'button', 'aria-pressed': on, onClick: function () { visitRoom(originalIndex); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '\u2705' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited \u2022 ' + r.zone : r.zone));
+              return h('button', { className: 'iss-route-button', key: r.id, type: 'button', 'data-iss-interior-room-select': r.id, 'aria-pressed': on, onClick: function () { visitRoom(originalIndex); }, style: { minHeight: 64, textAlign: 'left', padding: '8px 9px', borderRadius: 10, cursor: 'pointer', background: on ? r.color + '22' : PANEL, color: TEXT, border: '1px solid ' + (on ? r.color : finished ? '#22c55e' : '#334155') } }, h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, finished ? '\u2705' : r.icon), h('span', { style: { display: 'block', fontSize: 11.5, fontWeight: 800, marginTop: 3 } }, r.name), h('span', { style: { display: 'block', fontSize: 9.5, color: finished ? '#4ade80' : SOFT, marginTop: 2 } }, finished ? 'Job complete' : roomInspected ? roomInspected + '/2 details inspected' : wasVisited ? 'Visited \u2022 ' + r.zone : r.zone));
             })),
           h('div', { className: 'iss-interior-layout' },
             h('div', null,
               interiorView === '3d' ? renderInteriorSimulation() :
               h('div', { key: room.id, className: 'iss-scene-frame iss-hatch-enter', 'data-iss-room-transition': room.id, style: { position: 'relative', overflow: 'hidden', borderRadius: 14, border: '1px solid ' + room.color, background: 'radial-gradient(circle at 50% 12%,' + room.color + '20,#050a18 72%)' } }, sceneArt(),
+                (room.id === 'harmony' || room.id === 'destiny') ? renderHatchTransferDiagram() : null,
                 room.discoveries.map(function (spot, i) { var on = selectedDiscovery === i; return h('button', { key: i, type: 'button', 'aria-pressed': on, onClick: function () { inspectInteriorSpot(i); }, style: { position: 'absolute', left: i ? '65%' : '6%', top: i ? '16%' : '57%', maxWidth: '29%', padding: '5px 8px', borderRadius: 8, fontSize: 10, fontWeight: 800, cursor: 'pointer', background: on ? room.color : 'rgba(2,6,23,0.88)', color: on ? '#04121f' : '#f8fafc', border: '1px solid ' + room.color } }, (inspected[room.id + ':' + i] ? '✓ ' : '') + spot[0]); })),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 8 } },
                 h('button', { type: 'button', disabled: routeRoomIdx <= 0, onClick: function () { if (routeRoomIdx > 0) visitRoomById(interiorRouteRooms[routeRoomIdx - 1].id); }, style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #475569', background: PANEL, color: TEXT, fontSize: 11.5, fontWeight: 700, cursor: routeRoomIdx > 0 ? 'pointer' : 'not-allowed', opacity: routeRoomIdx > 0 ? 1 : 0.45 } }, 'Previous module'),

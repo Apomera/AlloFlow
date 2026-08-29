@@ -139,7 +139,13 @@ describe('A4 — the microphone shows that it is hearing you', () => {
     // have to hover to see cannot tell you the mic is picking you up.
     const ring = botSource.slice(botSource.indexOf('<LandingDust active='), botSource.indexOf('{!isDragging && !isPoofing && !isSleeping && ('));
     expect(ring).toContain('<AlloMicMeter active={!!isListening && !isPoofing}');
+    expect(ring).toContain('theme={theme}');
     expect(botSource).toContain('const AlloMicMeter = React.memo(');
+    expect(botSource).toContain('const ALLOBOT_MIC_METER_CSS');
+    expect(botSource).toContain('data-allo-mic-theme={theme}');
+    expect(botSource).toContain('data-allo-mic-placement={placement}');
+    expect(botSource).toContain("data-allo-mic-motion={motionDisabled ? 'static' : 'animated'}");
+    expect(botSource).toContain('.allobot-mic-meter[data-allo-mic-theme="contrast"]');
     // Instantaneous loudness is noise to a screen reader; A5 carries the state.
     expect(botSource).toMatch(/aria-hidden="true"\s*\n\s*data-allo-mic-meter="true"/);
   });
@@ -213,7 +219,12 @@ describe('A4 — AlloMicMeter renders (SSR)', () => {
       expect(html).toContain('data-allo-mic-meter="true"');
       expect(html).toContain('aria-hidden="true"');
       expect(html).toContain('data-allo-mic-level="0"');
+      expect(html).toContain('data-allobot-mic-meter-styles="true"');
+      expect(html).toContain('data-allo-mic-placement="below"');
+      expect(html).toContain('data-allo-mic-theme="light"');
+      expect(html).toContain('data-allo-mic-motion="static"');
       expect((html.match(/<span/g) || []).length).toBe(5);
+      expect((html.match(/data-allo-mic-bar-state="off"/g) || []).length).toBe(5);
       // At rest every bar is the dim track colour, so a still meter cannot be
       // misread as "loud".
       expect(html).not.toContain('bg-emerald-300');
@@ -224,8 +235,11 @@ describe('A4 — AlloMicMeter renders (SSR)', () => {
       // The inline placement the voice pill uses must drop the absolute
       // positioning, or the meter lands under the pill instead of inside it.
       const inline = RDS.renderToStaticMarkup(React2.createElement(Meter, { active: true, placement: 'inline' }));
-      expect(inline).toContain('inline-flex');
-      expect(inline).not.toContain('absolute');
+      expect(inline).toContain('data-allo-mic-placement="inline"');
+      expect(inline).toContain('class="allobot-mic-meter"');
+
+      const contrast = RDS.renderToStaticMarkup(React2.createElement(Meter, { active: true, theme: 'contrast' }));
+      expect(contrast).toContain('data-allo-mic-theme="contrast"');
     } finally {
       window.React = prevReact;
       window.AlloModules = prevRegistry;

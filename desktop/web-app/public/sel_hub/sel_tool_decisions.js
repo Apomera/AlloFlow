@@ -706,14 +706,16 @@ window.SelHub = window.SelHub || {
         { id: 'print',    label: '\uD83D\uDDA8 Print' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Decision Making tabs',
+      var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Decision Making tabs', style: { display: 'flex', gap: 2 } },
+          tabs.map(function(t) {
           var isActive = activeTab === t.id;
           return h('button', { 'aria-label': t.label,
             key: t.id,
             onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+            onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
             'aria-selected': isActive,
             role: 'tab',
             style: {
@@ -722,7 +724,8 @@ window.SelHub = window.SelHub || {
               transition: 'all 0.15s'
             }
           }, t.label);
-        }),
+          })
+        ),
         // Sound toggle
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },

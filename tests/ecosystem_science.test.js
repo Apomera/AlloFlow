@@ -110,7 +110,8 @@ describe('Ecosystem scenario boundaries and accessibility', () => {
         log: [{ pb: 40, pl: 78, rs: 149, out: 'Coexistence in transition', outcomeKey: 'coexist' }]
       }
     });
-    expect(html).toContain('Explore 121 runs from the same logistic predator-prey model');
+    expect(html).toContain('This map displays evidence from 121 completed runs of the same logistic predator-prey model');
+    expect(html).toContain('Your evidence-based pattern explanation (not a prediction)');
     expect(html).toContain('every cell runs the same deterministic logistic predator-prey equations');
     expect(html).toContain('Outcome map: initial prey × initial predators');
     expect(html).not.toContain('arbitrary weighted classifier');

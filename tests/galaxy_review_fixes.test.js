@@ -297,6 +297,27 @@ describe('galaxy visuals', () => {
     expect(source.indexOf('el._galaxyAladinLoading = true;')).toBeLessThan(source.indexOf("setRealSkyStatus('loading'"));
   });
 
+  it.each(GALAXY_PATHS)('%s exposes and safely initializes the Real Sky Atlas', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    expect(source).toContain('var waitForApiReady = function (api, done)');
+    expect(source).toContain("api.init && typeof api.init.then === 'function'");
+    expect(source).toContain("var GALAXY_ALADIN_STABLE_VERSION = '3.8.1';");
+    expect(source).toContain("GALAXY_ALADIN_ASSET_ROOT + 'latest/'");
+    expect(source).toContain('var loaderGeneration = (window._galaxyAladinLoaderGeneration || 0) + 1;');
+    expect(source).toContain('if (!loaderIsCurrent()) return;');
+    expect(source).toContain('if (loaderTimer) clearTimeout(loaderTimer);');
+    expect(source).toContain('window._galaxyAladinFailed = !ok;');
+    expect(source).toContain('window._galaxyAladinFailedApi = api;');
+    expect(source).toContain('startSource(sourceIndex + 1);');
+    expect(source).toContain('}, 45000);');
+    expect(source).toContain('realSkyElementRef.current !== el');
+    expect(source).toContain('data-galaxy-real-sky-launcher');
+    expect(source).toContain('data-galaxy-real-sky-atlas');
+    expect(source).toContain('data-galaxy-live-survey-badge');
+    expect(source).toContain('galaxy-real-sky-caption');
+    expect(source).toContain("mode_real_sky_atlas', 'Real Sky Atlas'");
+  });
+
 
   it.each(GALAXY_PATHS)('%s gives ellipticals a restrained, gas-poor visual profile', (filePath) => {
     const source = readFileSync(filePath, 'utf8');

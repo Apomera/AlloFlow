@@ -20,6 +20,14 @@
 const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState('');
+  const languageCopy = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
 const FALLBACK_LANGUAGE_OPTIONS = [
   { value: "English", endonym: "English" },
   { value: "Acholi", endonym: "Leb Acholi", provenance: "english-passthrough" },
@@ -175,7 +183,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
   const handleRegenerate = () => {
       const _setConfirm = (typeof setConfirmDialog !== 'undefined') ? setConfirmDialog : (window && window.setConfirmDialog);
       if (typeof _setConfirm === 'function') {
-        _setConfirm({ message: t('language_selector.confirm_regenerate') || 'Regenerate language pack?', onConfirm: () => {
+        _setConfirm({ message: languageCopy('language_selector.confirm_regenerate', 'Regenerate language pack?'), onConfirm: () => {
             regenerateLanguage();
         }});
       } else {
@@ -196,7 +204,7 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                   ></div>
               </div>
               <div className="flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none">
-                  <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {t('language_selector.status_generating')}
+                  <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {languageCopy('language_selector.status_generating', 'Generating translation...')}
               </div>
           </div>
       );
@@ -211,20 +219,20 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                 value={commonLanguages.some(l => l.value === currentUiLanguage) ? currentUiLanguage : "Custom"}
                 onChange={handleChange}
                 className="bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate"
-                aria-label={t('language_selector.select_label')}
+                aria-label={languageCopy('language_selector.select_label', 'Select UI Language')}
                 data-help-key="ui_language_select"
             >
                 {commonLanguages.map(lang => (
                     <option key={lang.value} value={lang.value}>{optionLabel(lang)}</option>
                 ))}
-                <option value="Custom">{t('language_selector.custom_option')}</option>
+                <option value="Custom">{languageCopy('language_selector.custom_option', 'Custom...')}</option>
             </select>
             {currentUiLanguage !== 'English' && (
                 <button
                     onClick={handleRegenerate}
                     className="p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
-                    title={t('language_selector.regenerate_tooltip')}
-                    aria-label={t('language_selector.regenerate_tooltip')}
+                    title={languageCopy('language_selector.regenerate_tooltip', 'Regenerate Translations')}
+                    aria-label={languageCopy('language_selector.regenerate_tooltip', 'Regenerate Translations')}
                     data-help-key="ui_lang_regenerate_btn"
                 >
                     <RefreshCw size={12} />
@@ -239,14 +247,14 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     onChange={(e) => importLanguagePack(e.target.files[0])}
                     className="hidden"
                     accept=".json"
-                    aria-label={t('language_selector.upload_tooltip')}
+                    aria-label={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
                     data-help-key="ui_lang_import_btn"
                 />
                 <button
                     onClick={() => fileInputRef.current.click()} data-help-key="source_upload_btn"
                     className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                    title={t('language_selector.upload_tooltip')}
-                    aria-label={t('language_selector.upload_tooltip')}
+                    title={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
+                    aria-label={languageCopy('language_selector.upload_tooltip', 'Import Language Pack')}
                 >
                     <FolderOpen size={12} />
                 </button>
@@ -254,8 +262,8 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     <button
                         onClick={exportLanguagePack}
                         className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                        title={t('language_selector.download_tooltip')}
-                        aria-label={t('language_selector.download_tooltip')}
+                        title={languageCopy('language_selector.download_tooltip', 'Export Language Pack')}
+                        aria-label={languageCopy('language_selector.download_tooltip', 'Export Language Pack')}
                         data-help-key="ui_lang_export_btn"
                     >
                         <Download size={12} />
@@ -268,16 +276,16 @@ const FALLBACK_LANGUAGE_OPTIONS = [
                     value={manualInput}
                     onChange={(e) => setManualInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
-                    placeholder={t('language_selector.search_placeholder')}
+                    placeholder={languageCopy('language_selector.search_placeholder', 'Enter Language...')}
                     className="text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600"
-                    aria-label={t('language_selector.search_placeholder')}
+                    aria-label={languageCopy('language_selector.search_placeholder', 'Enter Language...')}
                     data-help-key="ui_lang_manual_input"
                 />
                 <button
                     onClick={handleManualSubmit}
                     disabled={!manualInput.trim()}
                     className="p-1 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label={t('language_selector.set_custom_label')}
+                    aria-label={languageCopy('language_selector.set_custom_label', 'Set Custom Language')}
                     data-help-key="ui_lang_manual_submit"
                 >
                     <ArrowRight size={10} />

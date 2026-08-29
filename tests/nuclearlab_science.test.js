@@ -1303,7 +1303,15 @@ describe('Taking a route', () => {
     expect(steps[0]).toMatch(/Measure it/);
     expect(steps[1]).toMatch(/Carbon dating/);
     expect(steps[3]).toMatch(/Evidence challenge/);
-    expect(html).toContain('route: 4 steps');
+    expect(html).toContain('route: 0 of 4 opened');
+  });
+
+  it('renders every route in its stated DOM reading order', () => {
+    for (const route of NK_PATHS) {
+      const html = renderTool('nuclearLab', { _nuclearLab: { nkPath: route.id } });
+      const ids = [...html.matchAll(/data-nk-sec=\x22([^\x22]+)\x22/g)].map((m) => m[1]);
+      expect(ids, route.id + ' route reading order').toEqual(route.steps);
+    }
   });
 
   it('still shows the section numbers, so a step is locatable in the document', () => {

@@ -78,6 +78,11 @@ describe('Solar System first-visit tutorial dialog', () => {
     expect(dialog.getAttribute('aria-labelledby')).toBe('solar-system-tutorial-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('solar-system-tutorial-description');
     expect(dialog.querySelector('.max-h-\\[calc\\(100vh-2rem\\)\\]')).not.toBeNull();
+    expect(dialog.className).toContain('solar-tutorial-backdrop');
+    expect(dialog.querySelector('.solar-tutorial-orbit')).not.toBeNull();
+    expect(dialog.querySelector('.solar-tutorial-steps').getAttribute('role')).toBe('list');
+    expect(dialog.querySelectorAll('.solar-tutorial-step')).toHaveLength(6);
+    expect(start.className).toContain('solar-tutorial-launch');
     expect(start.className).toContain('min-h-[44px]');
     expect(document.activeElement).toBe(title);
 

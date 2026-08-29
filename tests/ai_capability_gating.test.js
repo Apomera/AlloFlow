@@ -206,9 +206,10 @@ describe('z-order over the STEAM Lab overlay (2026-08-17 regressions)', () => {
   it('the AI Backend modal raises itself above the lab while the lab is open', () => {
     // Without this, the keyless visitor clicks the pill and the doorway opens
     // UNDERNEATH the lab; caught live by 43-keyless-ai-honesty.spec.ts.
-    const raiseMatch = modals.match(/zIndex:\s*props\.showStemLab\s*\?\s*(\d+)/);
+    const raiseMatch = modals.match(/const aiBackendOverlayZ = launchPadActive \? (\d+) : \(props\.showStemLab \? (\d+) : undefined\);/);
     expect(raiseMatch, 'AIBackendModal must carry the showStemLab z raise').toBeTruthy();
-    expect(Number(raiseMatch[1])).toBeGreaterThan(labZ);
+    expect(Number(raiseMatch[2])).toBeGreaterThan(labZ);
+    expect(Number(raiseMatch[1])).toBeGreaterThan(2147483001);
     // And the host must actually supply the prop at the mount.
     const mount = anti.match(/AlloModules\.AIBackendModal,\s*\{[\s\S]{0,600}?\}\)/);
     expect(mount, 'AIBackendModal mount must be findable').toBeTruthy();

@@ -14,7 +14,9 @@ beforeAll(() => {
 
 afterEach(() => {
   vi.restoreAllMocks();
+  vi.useRealTimers();
   document.getElementById('allo-private-teacher-download')?.remove();
+  document.getElementById('allo-project-backup-download')?.remove();
 });
 
 describe('student and teacher HTML export bundle', () => {
@@ -43,6 +45,8 @@ describe('student and teacher HTML export bundle', () => {
   it('sanitizes stale edited assessment HTML before download', () => {
     const unsafe = '<html><head><title>TEACHER COPY — Test</title></head><body><main>' +
       '<div class="question" data-correct="2">Question</div><div class="alloflow-cs-strip" data-category-id="answer-a">Card</div>' +
+      '<div class="alloflow-tl-controls"><button class="alloflow-tl-check-btn">Check order</button></div>' +
+      '<div class="alloflow-tl-strips"><div class="alloflow-tl-strip" data-original-index="0">FIRST</div><div class="alloflow-tl-strip" data-original-index="1">SECOND</div><div class="alloflow-tl-strip" data-original-index="2">THIRD</div></div>' +
       '<div class="quiz-controls">Check</div><section class="teacher-view"><p class="answer-key">SECRET_STALE_KEY</p></section>' +
       '</main></body></html>';
     const safe = handlersApi.sanitizeAssessmentStudentHtml(unsafe);
@@ -51,8 +55,45 @@ describe('student and teacher HTML export bundle', () => {
     expect(doc.querySelector('.teacher-view')).toBeNull();
     expect(doc.querySelector('.question')?.getAttribute('data-correct')).toBe('');
     expect(doc.querySelector('.alloflow-cs-strip')?.getAttribute('data-category-id')).toBe('');
+    expect(doc.querySelector('[data-original-index]')).toBeNull();
+    expect(doc.querySelector('.alloflow-tl-check-btn')).toBeNull();
+    expect(Array.from(doc.querySelectorAll('.alloflow-tl-strip')).map((node) => node.textContent)).not.toEqual(['FIRST', 'SECOND', 'THIRD']);
     expect(doc.getElementById('alloflow-assessment-export-safety')?.textContent).toContain('.quiz-controls');
     expect(doc.title).toBe('Test');
+  });
+
+  it('sanitizes stale assessment content before worksheet print handoff', async () => {
+    const unsafe = '<!DOCTYPE html><html><head><title>Worksheet</title></head><body><main><p>Student prompt</p>' +
+      '<div class="question" data-correct="1">Question</div><section class="teacher-view">SECRET_PRINT_KEY</section>' +
+      '</main></body></html>';
+    const writes = [];
+    const fakeWindow = {
+      document: {
+        fonts: { ready: Promise.resolve() }, images: [],
+        write: (value) => writes.push(String(value)), close: () => {},
+      },
+      focus: () => {},
+      print: vi.fn(),
+    };
+    vi.spyOn(window, 'open').mockReturnValue(fakeWindow);
+    const result = await handlersApi.executeExportFromPreview({
+      _docPipeline: {},
+      exportPreviewMode: 'worksheet',
+      exportPreviewRef: { current: null },
+      generateFullPackHTML: () => unsafe,
+      getExportableHistory: () => [{}],
+      getSkippedResources: () => [],
+      exportConfig: { assessmentMode: true, includeTeacherKey: true },
+      history: [{}],
+      addToast: () => {},
+      t: (key) => key,
+      setShowExportPreview: () => {},
+    });
+    expect(result).toBe(true);
+    expect(fakeWindow.__alloflowPrintExport).toBe(true);
+    expect(fakeWindow.print).toHaveBeenCalledOnce();
+    expect(writes.join('')).not.toContain('SECRET_PRINT_KEY');
+    expect(writes.join('')).toContain('data-correct=""');
   });
 
   it('removes teacher-only text from standard and structured narration sources', () => {
@@ -89,6 +130,86 @@ describe('student and teacher HTML export bundle', () => {
     expect(spoken.join('\n')).not.toContain('SECRET_INLINE_AUDIO_442');
   });
 
+  it('adds sentence highlighting without flattening links, notation, ruby, or citations', async () => {
+    const doc = new DOMParser().parseFromString(
+      '<html><head></head><body><main><section data-ka-readable><h2>Science</h2><p id="reading">' +
+      'Water is <a id="source-link" href="#source"><em>H<sub>2</sub>O</em></a>, written with ' +
+      '<ruby id="term"><rb>漢</rb><rt>kan</rt></ruby> and <math id="formula" aria-label="x squared"><msup><mi>x</mi><mn>2</mn></msup></math> in <cite id="citation">the source</cite>.' +
+      '<sup><a id="note-link" role="doc-noteref" href="#note">1</a></sup> A second sentence stays readable.</p>' +
+      '<aside id="note">Footnote text.</aside></section></main></body></html>',
+      'text/html'
+    );
+    const paragraph = doc.getElementById('reading');
+    const sourceLink = doc.getElementById('source-link');
+    const ruby = doc.getElementById('term');
+    const math = doc.getElementById('formula');
+    const citation = doc.getElementById('citation');
+    const noteLink = doc.getElementById('note-link');
+    const originalText = paragraph.textContent;
+    const rubyMarkup = ruby.innerHTML;
+    const mathMarkup = math.innerHTML;
+    const spoken = [];
+
+    await handlersApi.karaokeProcess(doc.documentElement, {
+      mode: { quality: 'embedded', variants: ['standard'], inlinePassageAudio: true },
+      singleFile: true,
+      studentSafeAudio: true,
+      callTTS: async (text) => { spoken.push(String(text)); return 'data:audio/wav;base64,UklGRgAAAAA='; },
+      selectedVoice: 'Puck',
+      addToast: () => {},
+    });
+
+    expect(paragraph.textContent).toBe(originalText);
+    expect(doc.getElementById('source-link')).toBe(sourceLink);
+    expect(doc.getElementById('term')).toBe(ruby);
+    expect(doc.getElementById('formula')).toBe(math);
+    expect(doc.getElementById('citation')).toBe(citation);
+    expect(doc.getElementById('note-link')).toBe(noteLink);
+    expect(ruby.innerHTML).toBe(rubyMarkup);
+    expect(math.innerHTML).toBe(mathMarkup);
+    expect(ruby.querySelector('.ka-s')).toBeNull();
+    expect(math.querySelector('.ka-s')).toBeNull();
+    expect(ruby.parentElement?.matches('.ka-s[data-ka-s="0"]')).toBe(true);
+    expect(math.parentElement?.matches('.ka-s[data-ka-s="0"]')).toBe(true);
+    expect(paragraph.querySelectorAll('.ka-s[data-ka-s="0"]').length).toBeGreaterThan(4);
+    expect(paragraph.querySelector('.ka-s[data-ka-s="0"][data-ka-text]')?.getAttribute('data-ka-text')).toContain('x squared');
+    expect(spoken[0]).toContain('H2O');
+    expect(spoken[0]).toContain('x squared');
+    expect(spoken[0]).not.toContain('kan');
+    expect(spoken[1]).toContain('second sentence');
+  });
+
+  it('keeps partial passage audio usable and explains missing sentences in the exported file', async () => {
+    const doc = new DOMParser().parseFromString(
+      '<html><head><script type="application/json" id="alloflow-runtime-copy">{"readAloudPartial":"Audio disponible para {ready} de {total} oraciones. Lee el texto de las partes que faltan."}</script></head><body><main><section data-ka-readable><h2>Reading</h2>' +
+      '<p>First sentence. Second sentence. Third sentence.</p></section></main></body></html>',
+      'text/html'
+    );
+    const toasts = [];
+    let calls = 0;
+
+    await handlersApi.karaokeProcess(doc.documentElement, {
+      mode: { quality: 'embedded', variants: ['standard'], inlinePassageAudio: true },
+      singleFile: true,
+      studentSafeAudio: true,
+      callTTS: async () => {
+        calls++;
+        return calls === 2 ? null : 'data:audio/wav;base64,UklGRgAAAAA=';
+      },
+      selectedVoice: 'Puck',
+      addToast: (message) => toasts.push(String(message)),
+    });
+
+    const bar = doc.querySelector('.allo-ka-bar');
+    const note = bar?.querySelector('.allo-ka-status[role="note"]');
+    const button = bar?.querySelector('.allo-ka-play');
+    expect(doc.querySelectorAll('.allo-ka-audios audio')).toHaveLength(2);
+    expect(note?.textContent).toContain('2 de 3 oraciones');
+    expect(note?.textContent).toContain('partes que faltan');
+    expect(button?.getAttribute('aria-describedby')).toBe(note?.id);
+    expect(toasts.join('\n')).toContain('1 of 3 sentences');
+  });
+
   it('downloads the STUDENT HTML separately from a teacher-only ZIP', async () => {
     const source = '<!DOCTYPE html><html><head><title>Energy lesson</title></head><body><main><p>Student reading</p>' +
       '<section class="teacher-view"><p>SECRET ANSWER</p></section></main></body></html>';
@@ -117,6 +238,44 @@ describe('student and teacher HTML export bundle', () => {
       'Energy lesson-TEACHER-PROJECT-DO-NOT-SHARE.json',
     ]);
     expect(zipEntries.some((entry) => entry.name.includes('STUDENT'))).toBe(false);
+  });
+
+  it('auto-downloads generic HTML once and keeps the editable project behind a user gesture', async () => {
+    vi.useFakeTimers();
+    let objectUrlIndex = 0;
+    const createUrl = vi.spyOn(URL, 'createObjectURL').mockImplementation(() => 'blob:generic-' + (++objectUrlIndex));
+    const revokeUrl = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
+    const downloads = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function () { downloads.push(this.download); });
+    const toasts = [];
+
+    const result = await handlersApi.handleExport('html', {
+      _docPipeline: {},
+      generateFullPackHTML: () => '<!doctype html><html><head><title>Energy lesson</title></head><body><main>Student lesson</main></body></html>',
+      getExportableHistory: () => [{}],
+      getSkippedResources: () => [],
+      exportConfig: { includeTeacherKey: false, assessmentMode: false, separateTeacherStudentFiles: false },
+      history: [{ id: 'editable-project' }],
+      addToast: (message, tone) => toasts.push([message, tone]),
+      t: (key) => key,
+    });
+
+    expect(result).toBe(true);
+    expect(downloads).toEqual(['Energy lesson.html']);
+    const projectLink = document.querySelector('#allo-project-backup-download a[download]');
+    expect(projectLink?.download).toBe('Energy lesson-project.json');
+    expect(createUrl).toHaveBeenCalledTimes(2);
+    expect(revokeUrl).not.toHaveBeenCalled();
+    expect(toasts.some(([message]) => /Project backup is ready/i.test(message))).toBe(true);
+
+    vi.advanceTimersByTime(4000);
+    expect(revokeUrl).toHaveBeenCalledWith('blob:generic-1');
+    expect(revokeUrl).not.toHaveBeenCalledWith('blob:generic-2');
+    projectLink.dispatchEvent(new Event('click'));
+    vi.advanceTimersByTime(3999);
+    expect(revokeUrl).not.toHaveBeenCalledWith('blob:generic-2');
+    vi.advanceTimersByTime(1);
+    expect(revokeUrl).toHaveBeenCalledWith('blob:generic-2');
   });
 
   it('exports assessment preview HTML without any raw project artifact', async () => {
@@ -205,7 +364,8 @@ describe('student and teacher HTML export bundle', () => {
     const preview = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
     const handlers = readFileSync(resolve(process.cwd(), 'export_handlers_module.js'), 'utf8');
     expect(host).toContain('separateTeacherStudentFiles: true');
-    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 5');
+    expect(host).toContain('const _EXPORT_PRESET_SCHEMA_VERSION = 6');
+    expect(host).toContain("worksheetResponseSpace: 'standard'");
     expect(preview).toContain('Separate student + teacher files');
     expect(preview).toContain('separateTeacherStudentFiles !== false');
     expect(preview).toContain('Embed generated audio in HTML');

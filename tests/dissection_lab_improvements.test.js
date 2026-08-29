@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import axe from 'axe-core';
 import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
@@ -25,6 +25,9 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('organNotes: d.organNotes || {}');
       expect(source).toContain('organConfidence: d.organConfidence || {}');
       expect(source).toContain('annotations: d.annotations || []');
+      expect(source).toContain('dissInquiry: normalizeDissectionInquiry(d.dissInquiry)');
+      expect(source).toContain('dissInquiry: normalizeDissectionInquiry(data.dissInquiry)');
+      expect(source).toContain('dissInquiry: defaultDissectionInquiry()');
       expect(source).toContain('quizFirstAttemptScore: Number(d.quizFirstAttemptScore) || 0');
       expect(source).toContain('quizFirstAttemptTotal: Number(d.quizFirstAttemptTotal) || 0');
       expect(source).toContain('quizSupportedCount: Number(d.quizSupportedCount) || 0');
@@ -70,6 +73,52 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
     }
   });
 
+  it('keeps comparative anatomy species-specific in source and every runtime catalog', () => {
+    const expectedDescriptions = {
+      pig_desc: 'Mammalian specimen with a four-chambered heart and diaphragm. Major organ systems support comparison with humans, while anatomy, proportions, and development remain species-specific.',
+      sheepEye_desc: 'Mammalian eye with cornea, lens, retina, and vitreous humor. Sheep-specific features include a tapetum lucidum and a horizontal retinal specialization rather than a human fovea.',
+      sheepHeart_desc: 'Organ dissection — a four-chambered mammalian heart with a body plan useful for comparison to humans. Vessel branching, size, rate, and pressure remain species-specific.',
+    };
+    const retiredClaims = [
+      'Fetal pig anatomy is 95% identical to human fetal anatomy.',
+      'organ systems nearly identical to human',
+      'pig organs are closest to human in size and function',
+      'Mammalian muscles nearly identical to human.',
+      'closest lab animal to human',
+      '4 chambers identical to human',
+      'alveolar structure identical to human',
+      'Functionally identical to human liver.',
+      'Gray/white matter identical to human.',
+      'Functionally identical to human heart.',
+    ];
+
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      for (const retiredClaim of retiredClaims) expect(source).not.toContain(retiredClaim);
+      expect(source).toContain('immune, infectious, and physiological barriers remain');
+      expect(source).toContain('atrial, venous, ventricular, and great-vessel anatomy differs');
+      expect(source).toContain('a tracheal bronchus supplies the cranial lobe');
+      expect(source).toContain(expectedDescriptions.sheepEye_desc);
+    }
+
+    const sourceCatalog = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+    const publicCatalog = JSON.parse(readFileSync('desktop/web-app/public/ui_strings.js', 'utf8'));
+    const reportCatalog = JSON.parse(readFileSync('dev-tools/stem_i18n_report/ui_strings_stem_dissection.json', 'utf8'));
+    expect(sourceCatalog.stem.dissection).toMatchObject(expectedDescriptions);
+    expect(publicCatalog.stem.dissection).toMatchObject(expectedDescriptions);
+    expect(publicCatalog).toEqual(sourceCatalog);
+    expect(reportCatalog.dissection).toMatchObject(expectedDescriptions);
+
+    const languageFiles = readdirSync('lang').filter((file) => file.endsWith('.js')).sort();
+    expect(languageFiles.length).toBeGreaterThan(0);
+    for (const languageFile of languageFiles) {
+      const sourceText = readFileSync('lang/' + languageFile, 'utf8');
+      const publicText = readFileSync('desktop/web-app/public/lang/' + languageFile, 'utf8');
+      expect(JSON.parse(sourceText).stem.dissection).toMatchObject(expectedDescriptions);
+      expect(JSON.parse(publicText).stem.dissection).toMatchObject(expectedDescriptions);
+    }
+  });
+
   it('models a persistent, accessible procedural instrument workflow', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -87,8 +136,11 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('diss-protocol__align');
       expect(source).toContain('Align specimen to recommended ');
       expect(source).toContain('procedureProtocol: {');
-      expect(source).toContain("schemaVersion: 19");
+      expect(source).toContain("schemaVersion: 21");
       expect(source).toContain('procedureByLayer: d.procedureByLayer || {}');
+      expect(source).toContain('function normalizeSavedProcedureByLayer(map, options)');
+      expect(source).toContain('procedureByLayer: normalizeSavedProcedureByLayer(data.procedureByLayer || {}, {');
+      expect(source).toContain('delete snapshot.tissueState.lastUpdatedAt;');
       expect(source).toContain('verifiedIdentifications: d.verifiedIdentifications || {}');
       expect(source).toContain("role: \"radiogroup\", \"aria-label\": \"Dissection instruments\"");
       expect(source).toContain('function performProcedureAction(action, payload)');
@@ -1218,6 +1270,300 @@ describe('dissection improved UI render', () => {
     loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
   }, 60000);
 
+  it('renders the catalog-backed species-specific specimen descriptions', () => {
+    const catalog = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
+    const translate = (key, fallback) => {
+      const value = key.split('.').reduce((current, part) => current == null ? undefined : current[part], catalog);
+      return typeof value === 'string' ? value : fallback;
+    };
+    const cases = [
+      ['pig', 'Mammalian specimen with a four-chambered heart and diaphragm. Major organ systems support comparison with humans, while anatomy, proportions, and development remain species-specific.'],
+      ['sheepEye', 'Mammalian eye with cornea, lens, retina, and vitreous humor. Sheep-specific features include a tapetum lucidum and a horizontal retinal specialization rather than a human fovea.'],
+      ['sheepHeart', 'Organ dissection — a four-chambered mammalian heart with a body plan useful for comparison to humans. Vessel branching, size, rate, and pressure remain species-specific.'],
+    ];
+
+    for (const [specimen, description] of cases) {
+      const html = renderTool('dissection', { dissection: { specimen } }, { t: translate });
+      expect(html).toContain(description);
+    }
+  });
+
+  it('renders a normalized, screen-reader-friendly inquiry simulator', () => {
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        dissInquiry: {
+          specimenSize: 99,
+          layerDepth: 0,
+          careLevel: 20,
+          timePress: '7',
+          hypothesis: 'Depth will matter most.',
+          stuckRevealed: false,
+          understood: true,
+          explanation: 'The model trades access against damage risk.',
+          log: [{ t: '12:34:56', sz: 99, dp: 0, c: 20, tp: 7 }],
+        },
+      },
+    });
+    const page = document.createElement('div');
+    page.innerHTML = html;
+
+    const inquiry = page.querySelector('[data-dissection-inquiry]');
+    expect(inquiry).not.toBeNull();
+    expect(inquiry.querySelector('#diss-inquiry-result').getAttribute('role')).toBe('status');
+    expect(inquiry.querySelector('#diss-inquiry-result').getAttribute('aria-live')).toBe('polite');
+    expect(inquiry.querySelector('#diss-inquiry-result').textContent).toContain('Modeled outcome: High modeled insight');
+
+    const size = inquiry.querySelector('#diss-inquiry-size');
+    const depth = inquiry.querySelector('#diss-inquiry-depth');
+    const care = inquiry.querySelector('#diss-inquiry-care');
+    const time = inquiry.querySelector('#diss-inquiry-time');
+    expect(size.value).toBe('30');
+    expect(size.getAttribute('aria-valuetext')).toBe('30 centimeters');
+    expect(depth.value).toBe('1');
+    expect(care.value).toBe('10');
+    expect(time.value).toBe('7');
+    for (const control of [size, depth, care, time]) {
+      expect(page.querySelector('label[for="' + control.id + '"]')).not.toBeNull();
+      expect(control.getAttribute('aria-describedby')).toBe('diss-inquiry-disclaimer');
+    }
+
+    const log = inquiry.querySelector('[role="log"]');
+    expect(log.getAttribute('aria-label')).toBe('Saved inquiry approaches');
+    expect(log.textContent).toContain('size 30 cm');
+    expect(inquiry.querySelector('#diss-inquiry-hypothesis').value).toBe('Depth will matter most.');
+    expect(page.querySelector('label[for="diss-inquiry-hypothesis"]')).not.toBeNull();
+    expect(inquiry.querySelector('[aria-controls="diss-inquiry-open-questions"]').getAttribute('aria-expanded')).toBe('false');
+    expect(inquiry.querySelector('[aria-label="Reset inquiry simulator inputs"]').type).toBe('button');
+    expect(inquiry.querySelector('#diss-inquiry-disclaimer').textContent).toContain('not lab-grade rubrics or predictions of an actual specimen');
+    expect(inquiry.textContent).not.toContain('Specimen destroyed');
+  });
+
+  it('migrates legacy procedure layers to stable tissue state when progress loads', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    // Earlier rendered fixtures can leave a module-owned 120 ms debounced save.
+    // Drain it before installing the legacy record this test is responsible for.
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    localStorage.setItem('dissection_progress_frog', JSON.stringify({
+      schemaVersion: 19,
+      activeLayer: 'skin',
+      anatomicalView: 'ventral',
+      specimenCondition: 'preserved',
+      variationSeed: 7,
+      dissInquiry: {
+        specimenSize: 99,
+        layerDepth: 0,
+        careLevel: 20,
+        timePress: '7',
+        hypothesis: 'Depth will matter most.',
+        stuckRevealed: true,
+        understood: true,
+        explanation: 'Compare the assumptions.',
+        log: [{ t: '12:34:56', sz: 99, dp: 0, c: 20, tp: 7 }],
+      },
+      procedureByLayer: {
+        skin: {
+          inspected: true,
+          learningChecks: {
+            inspect: { predictionCorrect: true, reflectionCorrect: true },
+            scalpel: { predictionCorrect: true },
+          },
+        },
+      },
+    }));
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: { specimen: 'frog' },
+      });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 20));
+      });
+
+      const migratedTissue = latestToolData.dissection.procedureByLayer.skin.tissueState;
+      expect(latestToolData.dissection._dissLoadedSpec).toBe('frog');
+      expect(migratedTissue.lastUpdatedAt).toBeGreaterThan(0);
+      expect(migratedTissue.lastAction).toBe('prepared');
+      expect(migratedTissue.moisture).toBeLessThan(76);
+      expect(migratedTissue.consequences).toEqual([]);
+      expect(latestToolData.dissection.dissInquiry).toMatchObject({
+        specimenSize: 30,
+        layerDepth: 1,
+        careLevel: 10,
+        timePress: 7,
+        hypothesis: 'Depth will matter most.',
+        stuckRevealed: true,
+        understood: true,
+        explanation: 'Compare the assumptions.',
+      });
+      expect(latestToolData.dissection.dissInquiry.log).toHaveLength(1);
+      expect(latestToolData.dissection.dissInquiry.log[0]).toMatchObject({
+        sz: 30,
+        dp: 1,
+        c: 10,
+        tp: 7,
+        state: 'High modeled insight',
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      const persisted = JSON.parse(localStorage.getItem('dissection_progress_frog'));
+      expect(persisted.schemaVersion).toBe(21);
+      expect(persisted.procedureByLayer.skin.tissueState.lastUpdatedAt).toBe(migratedTissue.lastUpdatedAt);
+      expect(persisted.dissInquiry).toEqual(latestToolData.dissection.dissInquiry);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
+  it('keeps a direct scalpel gesture active across a harmless React re-render', async () => {
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const dateSpy = vi.spyOn(Date, 'now');
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let requestHarmlessRender;
+    let root;
+    let host;
+    let now = 1000;
+    dateSpy.mockImplementation(() => now);
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({
+        dissection: {
+          specimen: 'frog',
+          activeLayer: 'skin',
+          anatomicalView: 'ventral',
+          procedureMode: 'independent',
+          activeInstrument: 'scalpel',
+          procedureScenario: 'precision-access',
+          _dissLoadedSpec: 'frog',
+          reducedMotion: true,
+          procedureByLayer: {
+            skin: {
+              inspected: true,
+              incisionStarted: false,
+              incisionExtended: false,
+              retracted: false,
+              pins: [],
+              probed: false,
+              errors: 0,
+              history: ['inspect'],
+              actionLog: [],
+              cautionLog: [],
+              learningChecks: {
+                inspect: { predictionCorrect: true, reflectionCorrect: true },
+                scalpel: { predictionCorrect: true },
+              },
+            },
+          },
+        },
+      });
+      latestToolData = toolData;
+      requestHarmlessRender = () => setToolData((previous) => ({
+        ...previous,
+        dissection: { ...previous.dissection, hoveredOrgan: 'dorsal_skin' },
+      }));
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    function pointerEvent(type, x, y, buttons) {
+      const event = new Event(type, { bubbles: true, cancelable: true });
+      const values = {
+        pointerId: 7,
+        pointerType: 'mouse',
+        isPrimary: true,
+        clientX: x,
+        clientY: y,
+        button: 0,
+        buttons,
+        pressure: buttons ? 0.5 : 0,
+      };
+      Object.entries(values).forEach(([key, value]) => {
+        Object.defineProperty(event, key, { configurable: true, value });
+      });
+      return event;
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => {
+        root.render(React.createElement(Component));
+        await Promise.resolve();
+      });
+
+      const canvas = host.querySelector('#diss-canvas');
+      canvas.getBoundingClientRect = () => ({ left: 0, top: 0, width: 500, height: 600, right: 500, bottom: 600 });
+      canvas.setPointerCapture = vi.fn();
+      canvas.hasPointerCapture = vi.fn(() => false);
+      canvas.releasePointerCapture = vi.fn();
+
+      const equivalentAction = host.querySelector('.diss-procedure__next');
+      expect(equivalentAction.disabled).toBe(false);
+      expect(equivalentAction.getAttribute('aria-label')).toContain('Ready to record the equivalent technique action');
+      expect(equivalentAction.getAttribute('aria-label')).not.toContain('complete prediction and readiness checks first');
+
+      await act(async () => {
+        canvas.dispatchEvent(pointerEvent('pointerdown', 245, 174, 1));
+        await Promise.resolve();
+      });
+
+      now = 2000;
+      await act(async () => {
+        requestHarmlessRender();
+        await Promise.resolve();
+      });
+
+      await act(async () => {
+        for (let step = 1; step <= 20; step += 1) {
+          const progress = step / 20;
+          canvas.dispatchEvent(pointerEvent('pointermove', 245 + 5 * progress, 174 + 246 * progress, 1));
+        }
+        now = 3000;
+        canvas.dispatchEvent(pointerEvent('pointerup', 250, 420, 0));
+        await Promise.resolve();
+      });
+
+      const procedure = latestToolData.dissection.procedureByLayer.skin;
+      expect(procedure.incisionStarted).toBe(true);
+      expect(procedure.actionLog.at(-1).action).toBe('scalpel');
+      expect(procedure.incisionMetrics.precision).toBeGreaterThanOrEqual(75);
+      expect(latestToolData.dissection.procedureFeedback.tone).toBe('success');
+    } finally {
+      dateSpy.mockRestore();
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      localStorage.removeItem('dissection_progress_frog');
+      contextSpy.mockRestore();
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
   it('renders the evidence workflow and comparative-model notice', () => {
     const html = renderTool('dissection', {
       dissection: {
@@ -2209,9 +2555,9 @@ describe('dissection improved UI render', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('Persistent tissue dynamics turn isolated tool actions into connected, reversible consequences.');
-      expect(source).toContain('function tissueVariantDefinition()');
-      expect(source).toContain('function defaultTissueState()');
-      expect(source).toContain('function normalizeTissueState(state)');
+      expect(source).toContain('function tissueVariantDefinition(layerId, options)');
+      expect(source).toContain('function defaultTissueState(layerId, options)');
+      expect(source).toContain('function normalizeTissueState(state, layerId, options)');
       expect(source).toContain('function evolveTissueState(action, patch, baseState)');
       expect(source).toContain('function tissuePreservationScore(state)');
       expect(source).toContain('function tissueStatusData(state)');

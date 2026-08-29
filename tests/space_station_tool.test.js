@@ -76,7 +76,7 @@ const BASE = {
   interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
   interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
   interiorGuided: true, lowGImpulse: 10, lowGResult: null,
-  interiorView: '3d', interiorNav: { hatches: {}, collisions: 0, railGrabs: 0, looseHits: 0, routeStep: 0 },
+  interiorView: '3d', interiorNav: { flightRoom: null, hatches: {}, collisions: 0, railGrabs: 0, railPushOffs: 0, looseHits: 0, cargoCatches: 0, cargoSecures: 0, stowAttempts: 0, stowCatches: 0, stowSecures: 0, stowWarnings: 0, stowComplete: false, stowItems: {}, transferAttempts: 0, transferContacts: 0, transferCompletions: 0, transferComplete: false, capillaryAttempts: 0, capillaryUnderfills: 0, capillaryOverflows: 0, capillaryInterruptions: 0, capillaryTransfers: 0, worksiteAttempts: 0, worksiteReactions: 0, worksiteServices: 0, observationAttempts: 0, observationBlurs: 0, observationInterruptions: 0, observationCaptures: 0, observationSecures: 0, routeStep: 0, routeComplete: false },
   researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {},
   cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
   opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
@@ -360,11 +360,16 @@ describe('space station tool', () => {
       expect(source).toContain("var INTERIOR_ROUTE_IDS = ['harmony', 'destiny', 'unity', 'tranquility', 'cupola']");
       expect(source).toContain('function interiorCanvasRef');
       expect(source).toContain('data-iss-interior-canvas');
-      expect(source).toContain("'aria-describedby': 'iss-interior-flight-instructions iss-interior-flight-status'");
-      expect(source).toContain("'aria-keyshortcuts': 'W A S D R F Q E ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'");
+      expect(source).toContain("'aria-describedby': 'iss-interior-flight-instructions iss-interior-transfer-instructions iss-interior-flight-status iss-interior-transfer-readout iss-interior-stow-readout iss-interior-cabin-airflow iss-interior-observation-readout'");
+      expect(source).toContain("id: 'iss-interior-transfer-instructions'");
+      expect(source).toContain("'aria-keyshortcuts': 'W A S D R F Q E B C V T P X ArrowUp ArrowDown ArrowLeft ArrowRight Space Home'");
       expect(source).toContain('cv._issInteriorState = state');
       expect(source).toContain('cv._issInteriorSetControl');
       expect(source).toContain('cv._issInteriorGrabRail');
+      expect(source).toContain('cv._issInteriorCargoAction = cargoAction');
+      expect(source).toContain('cv._issInteriorStowAction = stowAction');
+      expect(source).toContain('cv._issInteriorStowSceneItems = harmonyStowItems');
+      expect(source).toContain('cv._issInteriorWorksiteAction = setWorksiteAction');
       expect(source).toContain('cv._issInteriorCenter');
       expect(source).toContain('cv._issInteriorReset');
       expect(source).toContain('cv._issInteriorCleanup = cleanup');
@@ -377,19 +382,371 @@ describe('space station tool', () => {
       expect(source).toContain('function crossedConnectorPlane');
       expect(source).toContain('function canOccupyFromRoom');
       expect(source).toContain('canOccupyFromRoom(state.room, tempCandidate)');
+      const physicalTransitionStart = source.indexOf('var nextRoom = transitionRoom(state.room, state.position);');
+      const physicalTransitionLastWant = source.indexOf('lastWant = nextRoom.id;', physicalTransitionStart);
+      const physicalTransitionCanvasWant = source.indexOf('cv._issInteriorWantRoom = nextRoom.id;', physicalTransitionLastWant);
+      const physicalTransitionCanvasWantEnd = physicalTransitionCanvasWant + 'cv._issInteriorWantRoom = nextRoom.id;'.length;
+      expect(physicalTransitionStart).toBeGreaterThan(-1);
+      expect(physicalTransitionLastWant).toBeGreaterThan(physicalTransitionStart);
+      expect(physicalTransitionCanvasWant).toBeGreaterThan(physicalTransitionLastWant);
+      expect(source.slice(physicalTransitionLastWant, physicalTransitionCanvasWantEnd).replace(/\s+/g, ' ')).toBe(
+        'lastWant = nextRoom.id; cv._issInteriorWantRoom = nextRoom.id;',
+      );
+      expect(source).toContain('function hullCollisionNormal');
+      expect(source).toContain('var normalImpactSpeed = state.velocity.dot(tempCollisionNormal)');
+      expect(source).toContain("normalSpeed: normalImpactSpeed");
+      expect(source).not.toContain('state.velocity.multiplyScalar(-0.18)');
+      expect(source).toContain('angularVelocity: 0');
+      expect(source).toContain('state.angularVelocity += rollInput');
+      expect(source).toContain('ROTATING // NO DRAG');
+      expect(source).toContain('railHeld: false');
+      expect(source).toContain('pushOffLatch: false');
+      expect(source).toContain('var railPushOffImpulse = 10');
+      expect(source).toContain("emit('rail-push-off'");
+      expect(source).toContain('state.pushOffLatch = true');
+      expect(source).toContain('cargoPosition: cargo.position');
+      expect(source).toContain('cargoVelocity: new THREE.Vector3');
+      expect(source).toContain("cargoMode: 'loose', cargoHeld: false, cargoSecured: false");
+      expect(source).toContain('function cargoAction()');
+      expect(source).toContain("emit('cargo-caught'");
+      expect(source).toContain("emit('cargo-secured'");
+      expect(source).toContain("event.type === 'cargo-secured'");
+      expect(source).toContain('nav.cargoSecured = true');
+      expect(source).toContain('(navigation.cargoClear || navigation.cargoSecured)');
+      // A bulky bag follows the learner through the Harmony-Destiny hatch
+      // with spring/damper lag. Its full visible envelope, not only the crew
+      // body, must clear the reduced centerline aperture.
+      expect(source).toContain('var transferHatchZ = -8.45');
+      expect(source).toContain('var transferSafeRadius = 0.70');
+      expect(source).toContain('var transferAttachReach = 0.78');
+      expect(source).toContain('var transferBagMass = 12');
+      expect(source).toContain('var transferSpring = 5.6');
+      expect(source).toContain('var transferDamping = 2.8');
+      expect(source).toContain('function transferAction()');
+      expect(source).toContain('function resetTransfer(preserveCounters, outcome)');
+      expect(source).toContain('function updateHatchTransfer(dt)');
+      const transferPhysicsStart = source.indexOf('function updateHatchTransfer(dt)');
+      const transferSpringForce = source.indexOf('.copy(tempTransferTarget).sub(state.transferPosition).multiplyScalar(transferSpring)', transferPhysicsStart);
+      const transferDamperForce = source.indexOf('.addScaledVector(state.transferVelocity, -transferDamping)', transferSpringForce);
+      const transferVelocityStep = source.indexOf('state.transferVelocity.addScaledVector(tempTransferAcceleration, dt)', transferDamperForce);
+      const transferSpeedCap = source.indexOf('state.transferVelocity.length() > 1.25', transferVelocityStep);
+      const transferPositionStep = source.indexOf('state.transferPosition.addScaledVector(state.transferVelocity, dt)', transferSpeedCap);
+      expect(transferPhysicsStart).toBeGreaterThan(-1);
+      expect(transferSpringForce).toBeGreaterThan(transferPhysicsStart);
+      expect(transferDamperForce).toBeGreaterThan(transferSpringForce);
+      expect(transferVelocityStep).toBeGreaterThan(transferDamperForce);
+      expect(transferSpeedCap).toBeGreaterThan(transferVelocityStep);
+      expect(transferPositionStep).toBeGreaterThan(transferSpeedCap);
+      const transferPhysicsEnd = source.indexOf('function setWorksiteVisualComplete', transferPhysicsStart);
+      const transferPhysicsSource = source.slice(transferPhysicsStart, transferPhysicsEnd);
+      expect(transferPhysicsEnd).toBeGreaterThan(transferPhysicsStart);
+      expect(source).toContain('transferPreviousBodyPosition: startDef.center.clone()');
+      expect(source).toContain('transferPreviousBagPosition: (persistedTransferComplete ? transferDockPoint : transferStagingPoint).clone()');
+      expect(source).toContain('transferBodyCrossed: persistedTransferComplete, transferBagCrossed: persistedTransferComplete');
+      expect(source).toContain('function interpolatedTransferRadius(previousPosition, currentPosition)');
+      expect(source).toContain('function failHatchTransferContact(culprit, bodyRadius, bagRadius)');
+      expect(transferPhysicsSource).toContain('var bodySweptForward = previousBodyPosition.z <= transferHatchZ && state.position.z > transferHatchZ;');
+      expect(transferPhysicsSource).toContain('var bagSweptForward = previousBagPosition.z <= transferHatchZ && state.transferPosition.z > transferHatchZ;');
+      expect(transferPhysicsSource).toContain('var bodySweptReverse = previousBodyPosition.z > transferHatchZ && state.position.z <= transferHatchZ;');
+      expect(transferPhysicsSource).toContain('var bagSweptReverse = previousBagPosition.z > transferHatchZ && state.transferPosition.z <= transferHatchZ;');
+      expect(transferPhysicsSource).toContain('if (bodySweptReverse) {');
+      expect(transferPhysicsSource).toContain('state.transferBodyCrossed = false;');
+      expect(transferPhysicsSource).toContain('state.transferBodyCrossingRadius = null;');
+      expect(transferPhysicsSource).toContain('if (bagSweptReverse) {');
+      expect(transferPhysicsSource).toContain('state.transferBagCrossed = false;');
+      expect(transferPhysicsSource).toContain('state.transferBagCrossingRadius = null;');
+      expect(transferPhysicsSource).toContain('state.transferBodyCrossingRadius = interpolatedTransferRadius(previousBodyPosition, state.position);');
+      expect(transferPhysicsSource).toContain('state.transferBagCrossingRadius = interpolatedTransferRadius(previousBagPosition, state.transferPosition);');
+      expect(transferPhysicsSource).toContain('var bodyUnsafe = bodySweptForward && state.transferBodyCrossingRadius > transferSafeRadius;');
+      expect(transferPhysicsSource).toContain('var bagUnsafe = bagSweptForward && state.transferBagCrossingRadius > transferSafeRadius;');
+      expect(transferPhysicsSource).toContain('failHatchTransferContact(culprit, state.transferBodyCrossingRadius, state.transferBagCrossingRadius);');
+      const transferBodyReverse = transferPhysicsSource.indexOf('if (bodySweptReverse) {');
+      const transferBagReverse = transferPhysicsSource.indexOf('if (bagSweptReverse) {', transferBodyReverse);
+      const transferBodyForward = transferPhysicsSource.indexOf('if (bodySweptForward) {', transferBagReverse);
+      const transferBagForward = transferPhysicsSource.indexOf('if (bagSweptForward) {', transferBodyForward);
+      const transferBodyCrossed = transferPhysicsSource.indexOf('state.transferBodyCrossed = true;', transferBodyForward);
+      const transferBagCrossed = transferPhysicsSource.indexOf('state.transferBagCrossed = true;', transferBagForward);
+      expect(transferBodyReverse).toBeGreaterThan(-1);
+      expect(transferBagReverse).toBeGreaterThan(transferBodyReverse);
+      expect(transferBodyForward).toBeGreaterThan(transferBagReverse);
+      expect(transferBodyCrossed).toBeGreaterThan(transferBodyForward);
+      expect(transferBagForward).toBeGreaterThan(transferBodyCrossed);
+      expect(transferBagCrossed).toBeGreaterThan(transferBagForward);
+      const transferBothCrossedGate = transferPhysicsSource.indexOf('if (!state.transferBodyCrossed || !state.transferBagCrossed)');
+      const transferBothBeyondGate = transferPhysicsSource.indexOf("if (state.position.z <= transferHatchZ || state.transferPosition.z <= transferHatchZ || state.room !== 'destiny') return;", transferBothCrossedGate);
+      const transferCompletion = transferPhysicsSource.indexOf('state.transferComplete = true;', transferBothBeyondGate);
+      expect(transferBothCrossedGate).toBeGreaterThan(-1);
+      expect(transferBothBeyondGate).toBeGreaterThan(transferBothCrossedGate);
+      expect(transferCompletion).toBeGreaterThan(transferBothBeyondGate);
+      const transferMoveToRoomStart = source.indexOf('function moveToRoom(id, speak, preserveProgress)');
+      const transferMoveToRoomEnd = source.indexOf('function grabRail()', transferMoveToRoomStart);
+      const transferMoveToRoomSource = source.slice(transferMoveToRoomStart, transferMoveToRoomEnd);
+      expect(transferMoveToRoomStart).toBeGreaterThan(-1);
+      expect(transferMoveToRoomEnd).toBeGreaterThan(transferMoveToRoomStart);
+      expect(transferMoveToRoomSource).toContain("var transferCancelled = def.id !== previousRoom && state.transferMode === 'tethered' && !state.transferComplete;");
+      const transferCancelReset = transferMoveToRoomSource.indexOf("resetTransfer(true, 'cancelled');");
+      const transferTeleport = transferMoveToRoomSource.indexOf('state.position.copy(def.center);');
+      expect(transferCancelReset).toBeGreaterThan(-1);
+      expect(transferMoveToRoomSource).toContain("emit('transfer-cancelled'");
+      expect(transferTeleport).toBeGreaterThan(transferCancelReset);
+      const transferResetStart = source.indexOf('function resetTransfer(preserveCounters, outcome)');
+      const transferResetEnd = source.indexOf('function placeCrewAtTransferStaging()', transferResetStart);
+      const transferResetSource = source.slice(transferResetStart, transferResetEnd);
+      expect(transferResetStart).toBeGreaterThan(-1);
+      expect(transferResetEnd).toBeGreaterThan(transferResetStart);
+      expect(transferResetSource).toContain('state.transferPreviousBodyPosition.copy(state.position);');
+      expect(transferResetSource).toContain('state.transferPreviousBagPosition.copy(state.transferPosition);');
+      expect(transferResetSource).toContain('state.transferBodyCrossed = !!state.transferComplete;');
+      expect(transferResetSource).toContain('state.transferBagCrossed = !!state.transferComplete;');
+      expect(transferResetSource).toContain('state.transferBodyCrossingRadius = state.transferComplete ? 0 : null;');
+      expect(transferResetSource).toContain('state.transferBagCrossingRadius = state.transferComplete ? 0 : null;');
+      expect(transferResetSource).toContain('state.transferPendingSafeCrossing = false;');
+      expect(source).toContain('n.transferComplete');
+      expect(source).toContain("transferMode: persistedTransferComplete ? 'docked' : 'staged'");
+      expect(source).toContain('transferPreviousZ: persistedTransferComplete ? transferDockPoint.z : transferStagingPoint.z');
+      expect(source).toContain("transferBag.name = 'iss-bulky-transfer-bag'");
+      expect(source).toContain('new THREE.BoxGeometry(0.78, 0.52, 0.58)');
+      expect(source).toContain('new THREE.TorusGeometry(0.47, 0.018');
+      expect(source).toContain('new THREE.TorusGeometry(transferSafeRadius, 0.035');
+      expect(source).toContain("transferTether.name = 'iss-bulky-transfer-tether'");
+      expect(source).toContain("transferClearanceCue.name = 'iss-hatch-transfer-clearance-cue'");
+      expect(source).toContain('transferTetherGeometry.attributes.position.needsUpdate = true');
+      expect(source).toContain("var tetherVisible = state.transferMode === 'tethered';");
+      expect(source).toContain('transferTether.visible = tetherVisible');
+      expect(source).toContain('var dockVisible = state.transferComplete;');
+      expect(source).toContain('transferDockCue.visible = dockVisible');
+      expect(source).toContain("state.transferMode === 'tethered' ? transferBagMass : 0");
+      expect(source).toContain("emit('transfer-attempt'");
+      expect(source).toContain("emit('transfer-contact'");
+      expect(source).toContain("emit('transfer-complete'");
+      expect(source).toContain("if (event.code === 'KeyB')");
+      expect(source).toContain('cv._issInteriorTransferAction = transferAction');
+      expect(source).toContain('cv._issInteriorTransferAttempts = state.transferAttempts');
+      expect(source).toContain('cv._issInteriorTransferContacts = state.transferContacts');
+      expect(source).toContain('cv._issInteriorTransferCompletions = state.transferCompletions');
+      expect(source).toContain('cv._issInteriorTransferComplete = state.transferComplete');
+      expect(source).toContain('cv._issInteriorTransferAction = null');
+      expect(source).toContain("event.type === 'transfer-attempt'");
+      expect(source).toContain("event.type === 'transfer-contact'");
+      expect(source).toContain("event.type === 'transfer-complete'");
+      expect(source).toContain('nav.transferAttempts = Math.max');
+      expect(source).toContain('nav.transferComplete = true');
+      expect(source).toContain("if (event.source !== 'diagram')");
+      const transferReducerStart = source.indexOf("} else if (event.type === 'transfer-attempt')");
+      const transferReducerEnd = source.indexOf("} else if (event.type === 'stow-attempt')", transferReducerStart);
+      const transferReducerSource = source.slice(transferReducerStart, transferReducerEnd);
+      expect(transferReducerStart).toBeGreaterThan(-1);
+      expect(transferReducerEnd).toBeGreaterThan(transferReducerStart);
+      expect(transferReducerSource).toContain('var reportedTransferContact = Number(event.contact);');
+      expect(transferReducerSource).toContain('? Math.max(Number(nav.transferContacts || 0), reportedTransferContact) : Number(nav.transferContacts || 0) + 1;');
+      expect(transferReducerSource).toContain("if (event.source !== 'diagram') {");
+      expect(transferReducerSource).toContain("nav.flightRoom = 'harmony';");
+      expect(transferReducerSource).toContain("} else if (event.type === 'transfer-cancelled') {");
+      expect(transferReducerSource).toContain("nav.transferLastOutcome = 'cancelled';");
+      expect(transferReducerSource).toContain('nav.transferCancelledTo = event.to || null;');
+      expect(transferReducerSource).toContain('if (!nav.transferComplete) nav.transferCompletions = Math.max');
+      expect(source).toContain("{ id: 'transfer', done: !!navigation.transferComplete");
+      expect(source).toContain("'data-iss-interior-transfer-action': 'true'");
+      expect(source).toContain("'data-iss-interior-transfer-readout': 'true'");
+      expect(source).toContain("'aria-describedby': 'iss-interior-transfer-readout'");
+      expect(source).toContain("'aria-keyshortcuts': 'B'");
+      expect(source).toContain('canvas._issInteriorTransferAttempts = Number(navigation.transferAttempts || 0)');
+      expect(source).toContain('canvas._issInteriorTransferContacts = Number(navigation.transferContacts || 0)');
+      expect(source).toContain('canvas._issInteriorTransferCompletions = Number(navigation.transferCompletions || 0)');
+      expect(source).toContain('canvas._issInteriorTransferComplete = !!navigation.transferComplete');
+      expect(source).toContain('cv._issInteriorTransferAttempts = null');
+      expect(source).toContain('cv._issInteriorTransferContacts = null');
+      expect(source).toContain('cv._issInteriorTransferCompletions = null');
+      expect(source).toContain('cv._issInteriorTransferComplete = null');
+      expect(source).toContain('function chooseHatchTransferDiagram(choice)');
+      expect(source).toContain("if (navigation.transferComplete) return;");
+      expect(source).toContain("'data-iss-hatch-transfer-diagram': 'true'");
+      expect(source).toContain("'aria-labelledby': 'iss-hatch-transfer-diagram-title'");
+      expect(source).toContain("'data-iss-hatch-transfer-clearance-cue': 'true'");
+      expect(source).toContain("'aria-labelledby': 'iss-hatch-transfer-svg-title iss-hatch-transfer-svg-desc'");
+      expect(source).toContain("h('title', { id: 'iss-hatch-transfer-svg-title' }");
+      expect(source).toContain("h('desc', { id: 'iss-hatch-transfer-svg-desc' }");
+      expect(source).toContain("'data-iss-hatch-transfer-choice': choice[0]");
+      expect(source).toContain("'data-iss-hatch-transfer-diagram-readout': 'true'");
+      expect(source).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+      expect(source).toContain("['aligned', 'Align body + bag on centerline']");
+      expect(source).toContain("['body-only', 'Center my body only']");
+      expect(source).toContain("['pull-hard', 'Pull harder through the rim']");
+      expect(source).toContain('SAFE CENTER RADIUS 0.70 M');
+      const transferDiagramStart = source.indexOf('function chooseHatchTransferDiagram(choice)');
+      const transferDiagramEnd = source.indexOf('function sceneArt()', transferDiagramStart);
+      const transferDiagramSource = source.slice(transferDiagramStart, transferDiagramEnd);
+      expect(transferDiagramStart).toBeGreaterThan(-1);
+      expect(transferDiagramEnd).toBeGreaterThan(transferDiagramStart);
+      expect(transferDiagramSource).toContain("type: 'transfer-contact'");
+      expect(transferDiagramSource).toContain("type: 'transfer-complete'");
+      expect(transferDiagramSource).toContain("source: 'diagram'");
+      expect(transferDiagramSource).toContain('safeRadius: 0.70');
+      // Harmony adds three independently drifting cabin items. Safe capture is
+      // based on reach and relative velocity; restraint requires a stable rail
+      // brace at the matching item-specific target.
+      expect(source).toContain("addHarmonyStowItem('bag', 'sleeping bag'");
+      expect(source).toContain("addHarmonyStowItem('tablet', 'crew tablet'");
+      expect(source).toContain("addHarmonyStowItem('cloth', 'damp washcloth'");
+      expect(source).toContain("target.name = 'iss-harmony-restraint-' + id");
+      expect(source).toContain('harmonyStowTargets.bag.add(bagStrap)');
+      expect(source).toContain('harmonyStowTargets.tablet.add(tabletDock)');
+      expect(source).toContain('harmonyStowTargets.cloth.add(hygienePouch)');
+      expect(source).toContain('var stowCatchReach = 0.65');
+      expect(source).toContain('var stowCatchRelativeSpeed = 0.2');
+      expect(source).toContain('function stowAction()');
+      expect(source).toContain('var stableBrace = state.railHeld && state.velocity.length() <= 0.02 && Math.abs(state.angularVelocity) <= 0.035');
+      expect(source).toContain("emit('stow-caught'");
+      expect(source).toContain("emit('stow-secured'");
+      expect(source).toContain("emit('stow-complete'");
+      expect(source).toContain("emit('stow-airflow-warning'");
+      expect(source).toContain("if (event.code === 'KeyX')");
+      expect(source).toContain("event.type === 'stow-attempt'");
+      expect(source).toContain("event.type === 'stow-caught'");
+      expect(source).toContain("event.type === 'stow-secured'");
+      expect(source).toContain("event.type === 'stow-complete'");
+      expect(source).toContain('station.cabinStow = { bag: true, tablet: true, cloth: true }');
+      expect(source).toContain("{ id: 'stow', done: cabinStowComplete");
+      expect(source).toContain('if (state.stowComplete)');
+      expect(source).toContain('stowEl.disabled = state.stowComplete');
+      expect(source.indexOf('if (state.stowComplete)', source.indexOf('function stowAction()'))).toBeLessThan(
+        source.indexOf('state.stowAttempts += 1', source.indexOf('function stowAction()')),
+      );
+      expect(source).toContain('function freshInteriorNavigation()');
+      expect(source).toContain("interiorView: '3d', interiorNav: freshInteriorNavigation()");
+      expect(source).toContain('var startsFreshInteriorShift = patch && patch.interiorShiftComplete === false');
+      expect(source).toContain('if (startsFreshInteriorShift) patch = Object.assign({}, patch, { interiorNav: freshInteriorNavigation() })');
+      const cargoActionStart = source.indexOf('function cargoAction()');
+      const stowActionStart = source.indexOf('function stowAction()');
+      expect(cargoActionStart).toBeGreaterThan(-1);
+      expect(stowActionStart).toBeGreaterThan(-1);
+      expect(source.indexOf('if (state.stowHeldId)', cargoActionStart)).toBeLessThan(
+        source.indexOf("if (state.cargoMode === 'held')", cargoActionStart),
+      );
+      expect(source.indexOf("if (state.cargoMode === 'held')", stowActionStart)).toBeLessThan(
+        source.indexOf('state.stowAttempts += 1', stowActionStart),
+      );
+      expect(source).toContain("var stowHandsBusy = state.cargoMode === 'held'");
+      expect(source).toContain('is in reach and motion-matched. Press X to catch it.');
+      expect(source).not.toContain("nearestStowDistance.toFixed(2) + ' meters away at '");
+      expect(source).toContain('flowArrow.rotation.z = Math.PI / 2');
+      // Reduced motion removes decorative tumbling, never the pouch's actual
+      // free-flight translation and collision response.
+      const cargoPhysicsStart = source.indexOf("if (state.cargoMode === 'loose')");
+      const cargoTranslation = source.indexOf('tempCargoCandidate.copy(cargo.position).addScaledVector(state.cargoVelocity, dt)', cargoPhysicsStart);
+      const cargoDecorationGuard = source.indexOf("if (!_prefersReducedMotion)", cargoTranslation);
+      expect(cargoPhysicsStart).toBeGreaterThan(-1);
+      expect(cargoTranslation).toBeGreaterThan(cargoPhysicsStart);
+      expect(cargoDecorationGuard).toBeGreaterThan(cargoTranslation);
+      expect(source.indexOf('cargo.position.copy(tempCargoCandidate)', cargoTranslation)).toBeLessThan(cargoDecorationGuard);
+      expect(source).toContain('function updateMotionGuide');
+      expect(source).toContain('new THREE.ArrowHelper');
+      expect(source).toContain('motionGuideVisible');
+      expect(source).toContain('function addWayfindingPlacard');
+      expect(source).toContain('var hatchCollarMat');
+      expect(source).toContain('function updateRoomLighting');
+      expect(source).toContain('function setWorksiteAction(on)');
+      expect(source).toContain('var worksiteAngularImpulse = 0.14');
+      expect(source).toContain('var worksiteDuration = 1.5');
+      expect(source).toContain("emit('worksite-reaction'");
+      expect(source).toContain("emit('worksite-complete'");
+      expect(source).toContain("event.type === 'worksite-complete'");
+      expect(source).toContain('nav.worksiteComplete = true');
+      expect(source).toContain('var capillaryFlowRate = 1.3');
+      expect(source).toContain('var capillaryDoseMinimum = 2.7');
+      expect(source).toContain('var capillaryDoseMaximum = 3.3');
+      expect(source).toContain('Math.sqrt(state.capillaryDuration / capillaryWettingDuration)');
+      expect(source).toContain('function setCapillaryAction(on)');
+      expect(source).toContain('function cancelCapillaryAction(quiet)');
+      expect(source).toContain('function updateCapillary(dt, now)');
+      expect(source).toContain("emit('capillary-underfill'");
+      expect(source).toContain("emit('capillary-overflow'");
+      expect(source).toContain("emit('capillary-interrupted'");
+      expect(source).toContain("emit('capillary-complete'");
+      expect(source).toContain("event.type === 'capillary-complete'");
+      expect(source).toContain('nav.capillaryComplete = true');
+      expect(source).toContain('cv._issInteriorCapillaryAction = setCapillaryAction');
+      expect(source).toContain('cv._issInteriorCapillaryCancel = cancelCapillaryAction');
+      expect(source).toContain('cv._issInteriorCapillaryAction = null');
+      expect(source).toContain("'data-iss-interior-capillary-action': 'true'");
+      expect(source).toContain('cv._issInteriorResearchStep = null');
+      expect(source).toContain('cv._issInteriorCapillaryLastDose = null');
+      expect(source).toContain('if (wasActive) state.capillaryAttempts = Math.max(0, state.capillaryAttempts - 1)');
+      expect(source).toContain('onPointerLeave: capillaryCancel');
+      expect(source).toContain("'data-iss-interior-capillary-readout': 'true'");
+      expect(source).toContain('Target band reached. Release V now');
+      expect(source).toContain('SECURE SAMPLE FIRST // WATER VALVE LOCKED');
+      expect(source).toContain('Contained fluid transfer');
+      expect(source).toContain('var observationReach = 0.95');
+      expect(source).toContain('var observationDuration = 1.2');
+      expect(source).toContain('function setObservationAction(on)');
+      expect(source).toContain('function cancelObservationAction(quiet)');
+      expect(source).toContain('function updateObservation(dt, now)');
+      expect(source).toContain("emit('observation-blurred'");
+      expect(source).toContain("emit('observation-interrupted'");
+      expect(source).toContain("emit('observation-captured'");
+      expect(source).toContain("emit('observation-secured'");
+      expect(source).toContain('cv._issInteriorObservationAction = setObservationAction');
+      expect(source).toContain('cv._issInteriorObservationCancel = cancelObservationAction');
+      expect(source).toContain('cv._issInteriorObservationAction = null');
+      expect(source).toContain('cv._issInteriorObservationCancel = null');
+      expect(source).toContain('cv._issInteriorSecureCupola = null');
+      expect(source).toContain("'data-iss-interior-observation-action': 'true'");
+      expect(source).toContain("'data-iss-interior-observation-readout': 'true'");
+      expect(source).toContain("'data-iss-interior-stow-action': 'true'");
+      expect(source).toContain("'data-iss-interior-stow-status': cabinStowComplete ? 'complete' : 'approach'");
+      expect(source).toContain("'data-iss-interior-stow-item': 'none'");
+      expect(source).toContain("'data-iss-interior-stow-count': cabinStowComplete ? '3' : '0'");
+      expect(source).toContain("'data-iss-interior-stow-readout': 'true'");
+      expect(source).toContain("'data-iss-interior-cabin-airflow': 'true'");
+      expect(source).toContain("cabinAirflowEl.setAttribute('data-state', state.stowAirflowState)");
+      expect(source).toContain("state.stowAirflowState === 'blocked'");
+      expect(source).toContain("var cabinDiagramEnabled = d.interiorView === 'diagram'");
+      expect(source).toContain('Capture Earth frame (P)');
+      expect(source).toContain('releasing early blurs the frame');
       expect(source).not.toContain('if (roomAt(tempCandidate))');
       expect(source).toContain("emit('hatch'");
       expect(source).toContain("emit('cargo-clear'");
       expect(source).toContain("emit('orientation-recovered'");
       expect(source).toContain("emit('route-complete'");
+      expect(source).toContain('if (!state.routeComplete)');
+      expect(source).toContain('if (!preserveProgress && !state.routeComplete)');
+      expect(source).toContain('nav.routeComplete = !!nav.routeComplete || !!canvasState.routeComplete');
+      expect(source).toContain('nav.flightRoom = event.to');
+      expect(source).toContain('storedNavigation.flightRoom');
+      expect(source).not.toContain('station.interiorRoom = event.to');
+      expect(source).toContain("'data-iss-interior-room-select': r.id");
+      expect(source).toContain("'data-iss-interior-reset-route': 'true'");
+      expect(source).toContain("if (interiorView !== 'diagram' || roomDone || captured) return;");
+      expect(source).toContain("recordInteriorNavigation({ type: 'observation-captured'");
+      expect(source).toContain("source: 'diagram'");
       expect(source).toContain('function railDistance');
       expect(source).toContain('function nextRouteTarget');
       expect(source).toContain('distance > 0.68');
       expect(source).toContain('speed >= 0.12 && speed <= 0.35');
       expect(source).toContain('side: THREE.BackSide');
       expect(source).toContain('THREE.CanvasTexture');
+      expect(source).toContain('issEarthCanvases(256)');
+      expect(source).toContain('new THREE.RingGeometry(aperture, bulkheadOuterRadius');
+      expect(source).toContain('polygonOffset: true');
+      expect(source).toContain('COUNTER-PUSH NOW // FAST');
       expect(source).toContain('function addModulePlacard');
       expect(source).toContain('function addActivityBeacon');
+      expect(source).toContain('function addModuleIdentityKit');
+      const identityKitStart = source.indexOf('function addModuleIdentityKit');
+      const identityKitEnd = source.indexOf('function addRoom', identityKitStart);
+      const identityKitSource = source.slice(identityKitStart, identityKitEnd);
+      ['harmony', 'destiny', 'unity', 'tranquility', 'cupola'].forEach((roomId) =>
+        expect(identityKitSource).toContain("def.id === '" + roomId + "'"));
+      ['berth', 'scienceGlass', 'destinyWickDry', 'restraintRing', 'duct', 'controller'].forEach((landmark) =>
+        expect(identityKitSource).toContain(landmark));
+      expect(source).toContain('function updateCrewRig');
+      expect(source).toContain("handPose: 'tucked'");
+      expect(source).toContain('data-iss-hand-pose');
+      expect(source).toContain('cv._issInteriorRouteStep');
+      expect(source).toContain('cv._issInteriorRouteComplete');
+      expect(source).toContain('cv._issInteriorVisitedRooms');
+      expect(source).toContain('cv._issInteriorOrientationDone');
       expect(source).toContain('iss-interior-route-map');
       expect(source).toContain('iss-route-schematic');
       expect(source).toContain('data-iss-interior-rail-distance');
@@ -398,8 +755,34 @@ describe('space station tool', () => {
       expect(source).toContain('data-iss-interior-next-arrow');
       expect(source).toContain('data-iss-interior-event');
       expect(source).toContain('data-iss-interior-objective');
+      expect(source).toContain('data-iss-interior-reticle');
+      expect(source).toContain('data-iss-interior-orientation');
+      expect(source).toContain('data-iss-interior-braking');
+      expect(source).toContain('data-iss-interior-impact-flash');
+      expect(source).toContain('data-iss-interior-cargo-action');
+      expect(source).toContain('data-iss-interior-cargo-status');
+      expect(source).toContain('data-iss-interior-worksite-action');
+      expect(source).toContain('data-iss-interior-worksite-status');
       expect(source).toContain('grabEl.disabled = false');
-      expect(source).toContain("grabEl.setAttribute('aria-disabled', distanceToRail > 0.68 ? 'true' : 'false')");
+      expect(source).toContain("grabEl.setAttribute('aria-disabled', !state.railHeld && distanceToRail > 0.68 ? 'true' : 'false')");
+      expect(source).toContain('cv._issInteriorCargoAction = null');
+      expect(source).toContain('cv._issInteriorStowAction = null');
+      expect(source).toContain('cv._issInteriorStowSceneItems = null');
+      expect(source).toContain('cv._issInteriorCabinStow = null');
+      expect(source).toContain('cv._issInteriorCabinComplete = null');
+      expect(source).toContain('cv._issInteriorStowItems = null');
+      expect(source).toContain('cv._issInteriorStowAttempts = null');
+      expect(source).toContain('cv._issInteriorStowCatches = null');
+      expect(source).toContain('cv._issInteriorStowSecures = null');
+      expect(source).toContain('cv._issInteriorStowWarnings = null');
+      expect(source).toContain('cv._issInteriorWorksiteAction = null');
+      expect(source).toContain('cv._issInteriorEvent = null');
+      expect(source).toContain('cv._issInteriorWantRoom = null');
+      expect(source).toContain('renderer.forceContextLoss()');
+      expect(source).toContain('function handleInteriorInitFailure');
+      expect(source).toContain('cv._issInteriorRenderer = renderer');
+      expect(source).toContain("cv.addEventListener('webglcontextlost'");
+      expect(source).toContain("cv.removeEventListener('webglcontextlost'");
       expect(source).toContain('data-iss-next-maneuver');
       expect(source).toContain('data-iss-interior-fallback');
       expect(source).toContain('function showInteriorFallback');
@@ -436,6 +819,25 @@ describe('space station tool', () => {
     beforeEach(() => {
       resetStemLab();
       loadTool('stem_lab/stem_tool_spacestation.js', 'spaceStation');
+    });
+
+    it('counts a completed bulky hatch transfer toward the free-flight quest', () => {
+      const hook = window.StemLab._registry.spaceStation.questHooks.find((entry) => entry.id === 'iss_freeflight');
+      const questData = (transferComplete) => ({
+        spaceStation: {
+          ...BASE,
+          interiorNav: {
+            ...BASE.interiorNav,
+            preciseHatch: true,
+            handrailStop: true,
+            transferComplete,
+          },
+        },
+      });
+
+      expect(hook).toBeDefined();
+      expect(hook.check(questData(false))).toBe(false);
+      expect(hook.check(questData(true))).toBe(true);
     });
 
     it('seeds its state bucket from empty and lands on the 3-D station', () => {
@@ -482,13 +884,58 @@ describe('space station tool', () => {
         const freeFlight = live.host.querySelector('[data-iss-interior-view="3d"]');
         const diagram = live.host.querySelector('[data-iss-interior-view="diagram"]');
         const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        const capillaryAction = live.host.querySelector('[data-iss-interior-capillary-action]');
+        const capillaryReadout = live.host.querySelector('[data-iss-interior-capillary-readout]');
+        const observationAction = live.host.querySelector('[data-iss-interior-observation-action]');
+        const observationReadout = live.host.querySelector('[data-iss-interior-observation-readout]');
+        const stowAction = live.host.querySelector('[data-iss-interior-stow-action]');
+        const stowReadout = live.host.querySelector('[data-iss-interior-stow-readout]');
+        const cabinAirflow = live.host.querySelector('[data-iss-interior-cabin-airflow]');
         expect(freeFlight.getAttribute('aria-pressed')).toBe('true');
         expect(diagram.getAttribute('aria-pressed')).toBe('false');
         expect(canvas).not.toBeNull();
         expect(canvas.getAttribute('role')).toBe('application');
-        expect(canvas.getAttribute('aria-describedby')).toBe('iss-interior-flight-instructions iss-interior-flight-status');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-flight-instructions');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-flight-status');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-transfer-readout');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-stow-readout');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-cabin-airflow');
+        expect(canvas.getAttribute('aria-describedby')).toContain('iss-interior-observation-readout');
         expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Space Home');
-        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(5);
+        expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Q E B C V T P X ArrowUp');
+        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(10);
+        expect(stowAction.tagName).toBe('BUTTON');
+        expect(stowAction.textContent).toBe('Catch cabin item (X)');
+        expect(stowAction.getAttribute('data-iss-interior-stow-status')).toBe('approach');
+        expect(stowAction.getAttribute('data-iss-interior-stow-item')).toBe('none');
+        expect(stowAction.getAttribute('data-iss-interior-stow-count')).toBe('0');
+        expect(stowAction.getAttribute('aria-disabled')).toBe('false');
+        expect(stowAction.getAttribute('aria-describedby')).toBe('iss-interior-stow-readout iss-interior-cabin-airflow');
+        expect(stowReadout.getAttribute('role')).toBe('status');
+        expect(stowReadout.getAttribute('aria-live')).toBe('polite');
+        expect(stowReadout.textContent).toContain('zero point six five meters');
+        expect(cabinAirflow.getAttribute('data-state')).toBe('risk');
+        expect(cabinAirflow.getAttribute('role')).toBe('status');
+        expect(cabinAirflow.textContent).toContain('Airflow risk');
+        expect(capillaryAction).not.toBeNull();
+        expect(capillaryAction.getAttribute('data-iss-interior-capillary-status')).toBe('approach');
+        expect(capillaryAction.getAttribute('aria-pressed')).toBe('false');
+        expect(capillaryAction.getAttribute('aria-describedby')).toBe('iss-interior-capillary-readout');
+        expect(capillaryReadout).not.toBeNull();
+        expect(capillaryReadout.getAttribute('role')).toBe('status');
+        expect(capillaryReadout.textContent).toContain('2.7');
+        expect(capillaryAction.textContent).toBe('Dose wick (V)');
+        expect(observationAction.tagName).toBe('BUTTON');
+        expect(observationAction.textContent).toBe('Capture Earth frame (P)');
+        expect(observationAction.getAttribute('data-iss-interior-observation-status')).toBe('approach');
+        expect(observationAction.getAttribute('data-iss-interior-observation-progress')).toBe('0');
+        expect(observationAction.getAttribute('data-iss-interior-observation-target')).toBe('day');
+        expect(observationAction.getAttribute('aria-pressed')).toBe('false');
+        expect(observationAction.getAttribute('aria-describedby')).toBe('iss-interior-observation-readout');
+        expect(observationReadout.getAttribute('role')).toBe('status');
+        expect(observationReadout.getAttribute('aria-live')).toBe('polite');
+        expect(observationReadout.textContent).toContain('one point two seconds');
+        expect(live.host.querySelector('[data-iss-interior-reset-route]').tagName).toBe('BUTTON');
         expect(live.host.querySelector('.iss-interior-route-map')).not.toBeNull();
         expect(live.host.querySelector('.iss-route-schematic')).not.toBeNull();
         expect(live.host.querySelector('[data-iss-interior-rail-distance]')).not.toBeNull();
@@ -497,18 +944,119 @@ describe('space station tool', () => {
         expect(live.host.querySelector('[data-iss-interior-next-arrow]')).not.toBeNull();
         expect(live.host.querySelector('[data-iss-interior-event]')).not.toBeNull();
         expect(live.host.querySelector('[data-iss-interior-objective]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-reticle]').getAttribute('data-rate')).toBe('stopped');
+        expect(live.host.querySelector('[data-iss-interior-orientation]')).not.toBeNull();
+        expect(live.host.querySelector('[data-iss-interior-braking]').textContent).toContain('NO DRIFT');
+        expect(live.host.querySelector('[data-iss-interior-impact-flash]')).not.toBeNull();
+        const cargoAction = live.host.querySelector('[data-iss-interior-cargo-action]');
+        expect(cargoAction).not.toBeNull();
+        expect(cargoAction.getAttribute('data-iss-interior-cargo-status')).toBe('loose');
+        expect(cargoAction.getAttribute('aria-disabled')).toBe('true');
+        expect(cargoAction.textContent).toContain('Catch pouch (C)');
+        const worksiteAction = live.host.querySelector('[data-iss-interior-worksite-action]');
+        expect(worksiteAction).not.toBeNull();
+        expect(worksiteAction.getAttribute('data-iss-interior-worksite-status')).toBe('approach');
+        expect(worksiteAction.getAttribute('aria-disabled')).toBe('false');
+        expect(worksiteAction.textContent).toContain('Service filter (T)');
         expect(live.host.querySelector('[data-iss-next-maneuver]')).not.toBeNull();
         expect(live.host.querySelector('[data-iss-interior-mode]').textContent).toBe('STATIONARY');
-        expect(live.host.textContent).toContain('with no passive braking');
+        expect(live.host.textContent).toContain('Rotation continues after release');
         expect(live.host.textContent).toContain('Grab handrail');
 
         act(() => { diagram.click(); });
         expect(live.host.querySelector('[data-iss-interior-canvas]')).toBeNull();
+        expect(canvas._issInteriorObservationAction).toBeNull();
+        expect(canvas._issInteriorObservationCancel).toBeNull();
+        expect(canvas._issInteriorEvent).toBeNull();
+        expect(canvas._issInteriorWantRoom).toBeNull();
         expect(live.host.querySelector('[data-iss-interior-view="diagram"]').getAttribute('aria-pressed')).toBe('true');
         expect(live.host.querySelector('[data-iss-room-transition]').getAttribute('data-iss-room-transition')).toBe('harmony');
 
         act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
         expect(live.host.querySelector('[data-iss-interior-canvas]')).not.toBeNull();
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('preserves the physical flight room and route progress across a diagram detour', () => {
+      const routeSeed = {
+        ...BASE,
+        tab: 'interior',
+        interiorView: '3d',
+        interiorRoom: 'unity',
+        interiorSeen: { harmony: true, destiny: true, unity: true },
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'unity', routeStep: 2, orientationRecovered: true },
+      };
+      const live = mountLiveWithSeed(routeSeed);
+      try {
+        function canvasProgress() {
+          const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+          return {
+            room: canvas._issInteriorWantRoom,
+            routeStep: canvas._issInteriorRouteStep,
+            routeComplete: canvas._issInteriorRouteComplete,
+            visited: canvas._issInteriorVisitedRooms,
+            orientationDone: canvas._issInteriorOrientationDone,
+          };
+        }
+
+        const firstCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(canvasProgress()).toMatchObject({
+          room: 'unity',
+          routeStep: 2,
+          routeComplete: false,
+          visited: { harmony: true, destiny: true, unity: true },
+          orientationDone: true,
+        });
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        expect(live.host.querySelector('[data-iss-interior-canvas]')).toBeNull();
+        act(() => { live.host.querySelector('[data-iss-interior-room-select="cupola"]').click(); });
+        expect(live.host.querySelector('[data-iss-room-transition]').getAttribute('data-iss-room-transition')).toBe('cupola');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        expect(live.host.querySelector('[data-iss-interior-canvas]')).not.toBe(firstCanvas);
+        expect(canvasProgress()).toMatchObject({
+          room: 'unity',
+          routeStep: 2,
+          routeComplete: false,
+          visited: { harmony: true, destiny: true, unity: true },
+          orientationDone: true,
+        });
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('keeps a completed route sticky through diagram browsing until an explicit reset', () => {
+      const live = mountLiveWithSeed({
+        ...BASE,
+        tab: 'interior',
+        interiorView: '3d',
+        interiorRoom: 'cupola',
+        interiorSeen: { harmony: true, destiny: true, unity: true, tranquility: true, cupola: true },
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'cupola', routeStep: 4, routeComplete: true },
+      });
+      try {
+        expect(live.host.querySelector('[data-iss-nav-challenge="route"]').className).toContain('is-complete');
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-room-select="harmony"]').click(); });
+        expect(live.host.querySelector('[data-iss-room-transition]').getAttribute('data-iss-room-transition')).toBe('harmony');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        let canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(canvas._issInteriorWantRoom).toBe('cupola');
+        expect(canvas._issInteriorRouteStep).toBe(4);
+        expect(canvas._issInteriorRouteComplete).toBe(true);
+        expect(live.host.querySelector('[data-iss-nav-challenge="route"]').className).toContain('is-complete');
+
+        act(() => { live.host.querySelector('[data-iss-interior-reset-route]').click(); });
+        canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(canvas._issInteriorWantRoom).toBe('harmony');
+        expect(canvas._issInteriorRouteStep).toBe(0);
+        expect(canvas._issInteriorRouteComplete).toBe(false);
+        expect(live.host.querySelector('[data-iss-nav-challenge="route"]').className).not.toContain('is-complete');
       } finally {
         live.cleanup();
       }
@@ -520,22 +1068,520 @@ describe('space station tool', () => {
         const canvas = live.host.querySelector('[data-iss-interior-canvas]');
         expect(typeof canvas._issInteriorEvent).toBe('function');
         act(() => {
-          canvas._issInteriorEvent({ type: 'hatch', from: 'harmony', to: 'destiny', speed: 0.32 });
+          canvas._issInteriorEvent({ type: 'hatch', from: 'harmony', to: 'destiny', speed: 0.32, controlled: true });
           canvas._issInteriorEvent({ type: 'rail-grab', room: 'destiny', speed: 0.21 });
           canvas._issInteriorEvent({ type: 'cargo-clear', room: 'unity', speed: 0.18 });
+          canvas._issInteriorEvent({ type: 'collision', room: 'unity', speed: 0.44, normalSpeed: 0.31 });
         });
         expect(live.host.querySelector('[data-iss-interior-3d]').getAttribute('data-iss-interior-3d')).toBe('destiny');
         expect(live.host.querySelector('[data-iss-nav-challenge="hatch"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="rail"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
         expect(live.host.textContent).toContain('1 hatch transitions / 1 rail catches');
-        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('3 of 5 complete');
+        expect(live.host.textContent).toContain('1 hull contacts');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('3 of 10 complete');
 
         act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
         act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
         expect(live.host.querySelector('[data-iss-nav-challenge="hatch"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="rail"]').className).toContain('is-complete');
         expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists idempotent 3-D bulky hatch-transfer outcomes and resets the drill explicitly', () => {
+      const live = mountLiveWithSeed({
+        ...BASE,
+        tab: 'interior',
+        interiorView: '3d',
+        interiorRoom: 'unity',
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'unity' },
+      });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        const transferAction = live.host.querySelector('[data-iss-interior-transfer-action]');
+        const transferReadout = live.host.querySelector('[data-iss-interior-transfer-readout]');
+
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+        expect(transferAction.tagName).toBe('BUTTON');
+        expect(transferAction.textContent).toContain('(B)');
+        expect(transferAction.getAttribute('aria-describedby')).toBe('iss-interior-transfer-readout');
+        expect(transferReadout.getAttribute('role')).toBe('status');
+        expect(transferReadout.getAttribute('aria-live')).toBe('polite');
+        expect(transferReadout.textContent).toContain('Harmony');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'transfer-attempt', room: 'harmony', attempt: 1, source: '3d' });
+          canvas._issInteriorEvent({ type: 'transfer-contact', room: 'harmony', attempt: 1, contact: 1, radial: 0.91, safeRadius: 0.70, source: '3d' });
+          canvas._issInteriorEvent({ type: 'transfer-contact', room: 'harmony', attempt: 1, contact: 1, radial: 0.91, safeRadius: 0.70, source: '3d' });
+        });
+        let transferChallenge = live.host.querySelector('[data-iss-nav-challenge="transfer"]');
+        expect(canvas._issInteriorWantRoom).toBe('harmony');
+        expect(live.host.querySelector('[data-iss-interior-3d]').getAttribute('data-iss-interior-3d')).toBe('harmony');
+        expect(live.host.querySelector('[data-iss-interior-transfer-readout]').textContent).toContain('Physical');
+        expect(transferChallenge.className).not.toContain('is-complete');
+        expect(transferChallenge.textContent).toContain('clipped the rim');
+        expect(canvas._issInteriorTransferAttempts).toBe(1);
+        expect(canvas._issInteriorTransferContacts).toBe(1);
+        expect(canvas._issInteriorTransferCompletions).toBe(0);
+        expect(canvas._issInteriorTransferComplete).toBe(false);
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'transfer-attempt', room: 'harmony', attempt: 2, source: '3d' });
+          canvas._issInteriorEvent({ type: 'transfer-complete', room: 'destiny', attempt: 2, completion: 1, radial: 0.31, safeRadius: 0.70, source: '3d' });
+          canvas._issInteriorEvent({ type: 'transfer-complete', room: 'destiny', attempt: 2, completion: 1, radial: 0.31, safeRadius: 0.70, source: '3d' });
+        });
+        transferChallenge = live.host.querySelector('[data-iss-nav-challenge="transfer"]');
+        expect(transferChallenge.className).toContain('is-complete');
+        expect(transferChallenge.textContent).toContain('docked in Destiny');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+        expect(canvas._issInteriorTransferAttempts).toBe(2);
+        expect(canvas._issInteriorTransferContacts).toBe(1);
+        expect(canvas._issInteriorTransferCompletions).toBe(1);
+        expect(canvas._issInteriorTransferComplete).toBe(true);
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        let restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas._issInteriorWantRoom).toBe('harmony');
+        expect(restoredCanvas._issInteriorTransferAttempts).toBe(2);
+        expect(restoredCanvas._issInteriorTransferContacts).toBe(1);
+        expect(restoredCanvas._issInteriorTransferCompletions).toBe(1);
+        expect(restoredCanvas._issInteriorTransferComplete).toBe(true);
+
+        act(() => {
+          restoredCanvas._issInteriorEvent({ type: 'transfer-complete', room: 'destiny', attempt: 9, completion: 9, radial: 0.2, safeRadius: 0.70, source: '3d' });
+        });
+        expect(restoredCanvas._issInteriorTransferCompletions).toBe(1);
+        expect(restoredCanvas._issInteriorTransferComplete).toBe(true);
+
+        act(() => { live.host.querySelector('[data-iss-interior-reset-route]').click(); });
+        restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas._issInteriorWantRoom).toBe('harmony');
+        expect(restoredCanvas._issInteriorTransferAttempts).toBe(0);
+        expect(restoredCanvas._issInteriorTransferContacts).toBe(0);
+        expect(restoredCanvas._issInteriorTransferCompletions).toBe(0);
+        expect(restoredCanvas._issInteriorTransferComplete).toBe(false);
+        expect(live.host.querySelector('[data-iss-nav-challenge="transfer"]').className).not.toContain('is-complete');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists a pre-teleport transfer cancellation without changing outcome counts', () => {
+      const live = mountLiveWithSeed({
+        ...BASE,
+        tab: 'interior',
+        interiorView: '3d',
+        interiorRoom: 'harmony',
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'harmony' },
+      });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'transfer-attempt', room: 'harmony', attempt: 1, source: '3d' });
+          canvas._issInteriorEvent({ type: 'transfer-cancelled', room: 'harmony', to: 'unity', attempt: 1, source: '3d' });
+        });
+        expect(canvas._issInteriorWantRoom).toBe('unity');
+        expect(live.host.querySelector('[data-iss-interior-3d]').getAttribute('data-iss-interior-3d')).toBe('unity');
+        expect(canvas._issInteriorTransferAttempts).toBe(1);
+        expect(canvas._issInteriorTransferContacts).toBe(0);
+        expect(canvas._issInteriorTransferCompletions).toBe(0);
+        expect(canvas._issInteriorTransferComplete).toBe(false);
+        expect(live.host.querySelector('[data-iss-interior-transfer-readout]').textContent).toContain('cancelled');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        const restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas._issInteriorWantRoom).toBe('unity');
+        expect(restoredCanvas._issInteriorTransferAttempts).toBe(1);
+        expect(restoredCanvas._issInteriorTransferContacts).toBe(0);
+        expect(restoredCanvas._issInteriorTransferCompletions).toBe(0);
+        expect(restoredCanvas._issInteriorTransferComplete).toBe(false);
+      } finally {
+        live.cleanup();
+      }
+    });
+    it('offers an equivalent hatch-transfer diagram without moving the saved flight room', () => {
+      const live = mountLiveWithSeed({
+        ...BASE,
+        tab: 'interior',
+        interiorView: 'diagram',
+        interiorRoom: 'harmony',
+        interiorSeen: { harmony: true, destiny: true, unity: true },
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'unity', routeStep: 2 },
+      });
+      try {
+        const transferDiagram = live.host.querySelector('[data-iss-hatch-transfer-diagram]');
+        const clearanceDiagram = live.host.querySelector('[data-iss-hatch-transfer-clearance-cue]');
+        const transferGroup = live.host.querySelector('[role="group"][aria-label="Choose a bulky hatch-transfer method"]');
+        const transferDiagramReadout = live.host.querySelector('[data-iss-hatch-transfer-diagram-readout]');
+        const choice = (id) => live.host.querySelector('[data-iss-hatch-transfer-choice="' + id + '"]');
+        expect(transferDiagram).not.toBeNull();
+        expect(transferDiagram.getAttribute('data-iss-hatch-transfer-status')).toBe('ready');
+        expect(transferDiagram.getAttribute('aria-labelledby')).toBe('iss-hatch-transfer-diagram-title');
+        expect(live.host.querySelector('#iss-hatch-transfer-diagram-title').textContent).toContain('Harmony');
+        expect(clearanceDiagram.getAttribute('role')).toBe('img');
+        expect(clearanceDiagram.getAttribute('aria-labelledby')).toBe('iss-hatch-transfer-svg-title iss-hatch-transfer-svg-desc');
+        expect(clearanceDiagram.querySelector('title').textContent).toContain('combined body and bag');
+        expect(clearanceDiagram.querySelector('desc').textContent).toContain('safe center zone');
+        expect(transferGroup).not.toBeNull();
+        expect(transferDiagramReadout.getAttribute('role')).toBe('status');
+        expect(transferDiagramReadout.getAttribute('aria-live')).toBe('polite');
+        expect(transferDiagramReadout.getAttribute('aria-atomic')).toBe('true');
+        ['aligned', 'body-only', 'pull-hard'].forEach((id) => expect(choice(id).tagName).toBe('BUTTON'));
+
+        act(() => { choice('body-only').click(); });
+        expect(live.host.querySelector('[data-iss-hatch-transfer-diagram]').getAttribute('data-iss-hatch-transfer-status')).toBe('contact');
+        expect(live.host.querySelector('[data-iss-hatch-transfer-diagram-readout]').textContent).toContain('saved 3-D flight room is unchanged');
+        act(() => { choice('pull-hard').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        let canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(canvas._issInteriorWantRoom).toBe('unity');
+        expect(canvas._issInteriorTransferAttempts).toBe(2);
+        expect(canvas._issInteriorTransferContacts).toBe(2);
+        expect(canvas._issInteriorTransferCompletions).toBe(0);
+        expect(canvas._issInteriorTransferComplete).toBe(false);
+        expect(live.host.querySelector('[data-iss-nav-challenge="transfer"]').className).not.toContain('is-complete');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-room-select="harmony"]').click(); });
+        expect(live.host.querySelector('[data-iss-hatch-transfer-diagram]')).not.toBeNull();
+        act(() => { choice('aligned').click(); });
+        expect(live.host.querySelector('[data-iss-hatch-transfer-diagram]').getAttribute('data-iss-hatch-transfer-status')).toBe('complete');
+        expect(live.host.querySelector('[data-iss-hatch-transfer-diagram-readout]').textContent).toContain('bag docked in Destiny');
+        ['aligned', 'body-only', 'pull-hard'].forEach((id) => expect(choice(id).disabled).toBe(true));
+        act(() => { choice('aligned').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(canvas._issInteriorWantRoom).toBe('unity');
+        expect(canvas._issInteriorTransferAttempts).toBe(3);
+        expect(canvas._issInteriorTransferContacts).toBe(2);
+        expect(canvas._issInteriorTransferCompletions).toBe(1);
+        expect(canvas._issInteriorTransferComplete).toBe(true);
+        expect(live.host.querySelector('[data-iss-nav-challenge="transfer"]').className).toContain('is-complete');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+      } finally {
+        live.cleanup();
+      }
+    });
+    it('persists a secured cargo pouch as the existing loose-object challenge', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: '3d' });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(10);
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'cargo-caught', room: 'unity', speed: 0.12, relativeSpeed: 0.04, distance: 0.42 });
+          canvas._issInteriorEvent({ type: 'cargo-secured', room: 'unity', speed: 0, distance: 0.28 });
+        });
+
+        const cargoChallenge = live.host.querySelector('[data-iss-nav-challenge="cargo"]');
+        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(10);
+        expect(cargoChallenge.className).toContain('is-complete');
+        expect(cargoChallenge.textContent).toContain('Pouch caught and restrained safely in Unity.');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+        expect(live.host.textContent).toContain('1 pouches secured');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        expect(live.host.querySelectorAll('[data-iss-nav-challenge]').length).toBe(10);
+        expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').className).toContain('is-complete');
+        expect(live.host.querySelector('[data-iss-nav-challenge="cargo"]').textContent).toContain('Pouch caught and restrained safely in Unity.');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists idempotent Harmony cabin stow progress and completes only after three restraints', () => {
+      const live = mountLiveWithSeed({
+        ...BASE, tab: 'interior', interiorView: '3d', interiorRoom: 'harmony',
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'harmony' },
+      });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        const stowControl = live.host.querySelector('[data-iss-interior-stow-action]');
+        const diagramItems = [...live.host.querySelectorAll('[data-iss-cabin-stow] button')];
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+        expect(diagramItems).toHaveLength(3);
+        expect(diagramItems.map((button) => button.textContent)).toEqual(expect.arrayContaining([
+          expect.stringContaining('Sleeping bag'),
+          expect.stringContaining('Crew tablet'),
+          expect.stringContaining('Damp washcloth'),
+        ]));
+        diagramItems.forEach((button) => {
+          expect(button.disabled).toBe(true);
+          expect(button.getAttribute('aria-disabled')).toBe('true');
+          expect(button.textContent).toContain('Use X in the 3-D simulation');
+        });
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'stow-airflow-warning', room: 'harmony', item: 'cloth', distance: 0.42 });
+          canvas._issInteriorEvent({ type: 'stow-airflow-warning', room: 'harmony', item: 'cloth', distance: 0.42 });
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 1 });
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 1 });
+          canvas._issInteriorEvent({ type: 'stow-caught', room: 'harmony', item: 'bag', distance: 0.51, relativeSpeed: 0.12, attempt: 1 });
+          canvas._issInteriorEvent({ type: 'stow-caught', room: 'harmony', item: 'bag', distance: 0.51, relativeSpeed: 0.12, attempt: 1 });
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 2, held: 'bag' });
+          canvas._issInteriorEvent({ type: 'stow-secured', room: 'harmony', item: 'bag', count: 1, attempt: 2, braced: true });
+          canvas._issInteriorEvent({ type: 'stow-secured', room: 'harmony', item: 'bag', count: 1, attempt: 2, braced: true });
+        });
+        let stowChallenge = live.host.querySelector('[data-iss-nav-challenge="stow"]');
+        expect(stowChallenge.className).not.toContain('is-complete');
+        expect(stowChallenge.textContent).toContain('loose item reached the air return');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('0 of 10 complete');
+        expect(canvas._issInteriorCabinStow).toEqual({ bag: true });
+        expect(canvas._issInteriorStowItems).toMatchObject({ bag: 'secured' });
+        expect(canvas._issInteriorStowAttempts).toBe(2);
+        expect(canvas._issInteriorStowCatches).toBe(1);
+        expect(canvas._issInteriorStowSecures).toBe(1);
+        expect(canvas._issInteriorStowWarnings).toBe(1);
+        expect(live.host.textContent).toContain('0 / 5 jobs');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 3 });
+          canvas._issInteriorEvent({ type: 'stow-caught', room: 'harmony', item: 'tablet', distance: 0.6, relativeSpeed: 0.19, attempt: 3 });
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 4, held: 'tablet' });
+          canvas._issInteriorEvent({ type: 'stow-secured', room: 'harmony', item: 'tablet', count: 2, attempt: 4, braced: true });
+        });
+        expect(live.host.querySelector('[data-iss-nav-challenge="stow"]').className).not.toContain('is-complete');
+        expect(canvas._issInteriorCabinStow).toEqual({ bag: true, tablet: true });
+        expect(live.host.textContent).toContain('0 / 5 jobs');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 5 });
+          canvas._issInteriorEvent({ type: 'stow-caught', room: 'harmony', item: 'cloth', distance: 0.65, relativeSpeed: 0.2, attempt: 5 });
+          canvas._issInteriorEvent({ type: 'stow-attempt', room: 'harmony', attempt: 6, held: 'cloth' });
+          canvas._issInteriorEvent({ type: 'stow-secured', room: 'harmony', item: 'cloth', count: 3, attempt: 6, braced: true });
+          canvas._issInteriorEvent({ type: 'stow-secured', room: 'harmony', item: 'cloth', count: 3, attempt: 6, braced: true });
+        });
+        stowChallenge = live.host.querySelector('[data-iss-nav-challenge="stow"]');
+        expect(stowChallenge.className).toContain('is-complete');
+        expect(stowChallenge.textContent).toContain('Harmony air return clear');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+        expect(live.host.textContent).toContain('0 / 5 jobs');
+        expect(stowControl.disabled).toBe(true);
+        expect(stowControl.getAttribute('data-iss-interior-stow-status')).toBe('complete');
+        expect(stowControl.getAttribute('data-iss-interior-stow-count')).toBe('3');
+        expect(live.host.querySelector('[data-iss-interior-cabin-airflow]').getAttribute('data-state')).toBe('clear');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'stow-complete', room: 'harmony', count: 3, attempt: 6, source: '3d' });
+          canvas._issInteriorEvent({ type: 'stow-complete', room: 'harmony', count: 3, attempt: 6, source: '3d' });
+        });
+        expect(live.host.textContent).toContain('1 / 5 jobs');
+        expect(live.host.textContent).toContain('Crew attempts: 1');
+        expect(canvas._issInteriorCabinComplete).toBe(true);
+        expect(canvas._issInteriorStowAttempts).toBe(6);
+        expect(canvas._issInteriorStowCatches).toBe(3);
+        expect(canvas._issInteriorStowSecures).toBe(3);
+        expect(canvas._issInteriorStowWarnings).toBe(1);
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('clear');
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        const restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas).not.toBe(canvas);
+        expect(restoredCanvas._issInteriorCabinStow).toEqual({ bag: true, tablet: true, cloth: true });
+        expect(restoredCanvas._issInteriorStowItems).toEqual({ bag: 'secured', tablet: 'secured', cloth: 'secured' });
+        expect(restoredCanvas._issInteriorCabinComplete).toBe(true);
+        expect(restoredCanvas._issInteriorStowAttempts).toBe(6);
+        expect(restoredCanvas._issInteriorStowCatches).toBe(3);
+        expect(restoredCanvas._issInteriorStowSecures).toBe(3);
+        expect(restoredCanvas._issInteriorStowWarnings).toBe(1);
+        expect(live.host.querySelector('[data-iss-nav-challenge="stow"]').className).toContain('is-complete');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists reaction torque and a completed braced maintenance challenge', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: '3d', interiorRoom: 'tranquility' });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'worksite-reaction', room: 'tranquility', angularImpulse: 0.14, attempt: 1 });
+        });
+        const worksiteChallenge = live.host.querySelector('[data-iss-nav-challenge="worksite"]');
+        expect(worksiteChallenge.className).not.toContain('is-complete');
+        expect(worksiteChallenge.textContent).toContain('The tool spun you');
+        expect(live.host.textContent).toContain('1 reaction-torque events');
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'worksite-complete', room: 'tranquility', duration: 1.5, maxSpeed: 0, maxAngularSpeed: 0, attempt: 2, braced: true });
+        });
+        expect(worksiteChallenge.className).toContain('is-complete');
+        expect(worksiteChallenge.textContent).toContain('Tranquility filter serviced without losing body position.');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+        expect(live.host.textContent).toContain('1 filters serviced');
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        expect(live.host.querySelector('[data-iss-nav-challenge="worksite"]').className).toContain('is-complete');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('records Destiny dosing retries and restores a completed capillary transfer', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: '3d', interiorRoom: 'destiny' });
+      try {
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        const doseButton = live.host.querySelector('[data-iss-interior-capillary-action]');
+        const valveCalls = [];
+        let quietCancels = 0;
+        expect(typeof canvas._issInteriorEvent).toBe('function');
+        expect(doseButton.tagName).toBe('BUTTON');
+        expect(doseButton.getAttribute('aria-pressed')).toBe('false');
+
+        canvas._issInteriorCapillaryAction = (on) => valveCalls.push(on);
+        canvas._issInteriorCapillaryCancel = () => { quietCancels += 1; };
+        act(() => {
+          doseButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          doseButton.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }));
+          doseButton.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+          doseButton.dispatchEvent(new Event('pointerout', { bubbles: true, cancelable: true }));
+        });
+        expect(valveCalls).toEqual([true, false]);
+        expect(quietCancels).toBe(2);
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'capillary-underfill', room: 'destiny', dose: 1.2, duration: 0.92, attempt: 1 });
+          canvas._issInteriorEvent({ type: 'capillary-overflow', room: 'destiny', dose: 3.3, duration: 2.54, attempt: 2 });
+          canvas._issInteriorEvent({ type: 'capillary-interrupted', room: 'destiny', dose: 1.7, duration: 1.31, attempt: 3, reason: 'alignment' });
+        });
+
+        let capillaryChallenge = live.host.querySelector('[data-iss-nav-challenge="capillary"]');
+        expect(capillaryChallenge.className).not.toContain('is-complete');
+        expect(capillaryChallenge.textContent).toContain('Overflow stayed contained');
+        expect(live.host.textContent).toContain('1 wick underfills');
+        expect(live.host.textContent).toContain('1 contained overflows');
+        expect(live.host.textContent).toContain('0 wick transfers');
+        expect(live.host.textContent).toContain('3-D transfer interrupted');
+        expect(canvas._issInteriorCapillaryComplete).toBe(false);
+        expect(canvas._issInteriorCapillaryAttempts).toBe(3);
+        expect(canvas._issInteriorCapillaryUnderfills).toBe(1);
+        expect(canvas._issInteriorCapillaryOverflows).toBe(1);
+        expect(canvas._issInteriorCapillaryInterruptions).toBe(1);
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'capillary-complete', room: 'destiny', dose: 2.94, duration: 2.26, attempt: 4, maxSpeed: 0.01, maxAngularSpeed: 0.02, stable: true });
+        });
+
+        capillaryChallenge = live.host.querySelector('[data-iss-nav-challenge="capillary"]');
+        expect(capillaryChallenge.className).toContain('is-complete');
+        expect(capillaryChallenge.textContent).toContain('2.7');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('1 of 10 complete');
+        expect(live.host.textContent).toContain('1 wick transfers');
+        expect(live.host.textContent).toContain('Wick primed in 3-D at 2.94 mL');
+        expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('2');
+        expect(canvas._issInteriorCapillaryComplete).toBe(true);
+        expect(canvas._issInteriorCapillaryAttempts).toBe(4);
+        expect(canvas._issInteriorCapillaryTransfers).toBe(1);
+
+        expect(canvas._issInteriorCapillaryLastDose).toBeCloseTo(2.94, 5);
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        const restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas).not.toBe(canvas);
+        expect(restoredCanvas._issInteriorCapillaryComplete).toBe(true);
+        expect(restoredCanvas._issInteriorCapillaryAttempts).toBe(4);
+        expect(restoredCanvas._issInteriorCapillaryUnderfills).toBe(1);
+        expect(restoredCanvas._issInteriorCapillaryOverflows).toBe(1);
+        expect(restoredCanvas._issInteriorCapillaryInterruptions).toBe(1);
+        expect(restoredCanvas._issInteriorCapillaryTransfers).toBe(1);
+        expect(live.host.querySelector('[data-iss-nav-challenge="capillary"]').className).toContain('is-complete');
+        expect(restoredCanvas._issInteriorCapillaryLastDose).toBeCloseTo(2.94, 5);
+        expect(live.host.textContent).toContain('1 wick transfers');
+      } finally {
+        live.cleanup();
+      }
+    });
+
+    it('persists Cupola frame failures, capture, and canonical shutter closeout', () => {
+      const live = mountLiveWithSeed({
+        ...BASE,
+        tab: 'interior',
+        interiorView: '3d',
+        interiorRoom: 'cupola',
+        interiorSeen: { harmony: true, destiny: true, unity: true, tranquility: true, cupola: true },
+        interiorNav: { ...BASE.interiorNav, flightRoom: 'cupola', routeStep: 4 },
+      });
+      try {
+        const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
+        const canvas = live.host.querySelector('[data-iss-interior-canvas]');
+        const captureControl = live.host.querySelector('[data-iss-interior-observation-action]');
+        const readout = live.host.querySelector('[data-iss-interior-observation-readout]');
+        const diagramCapture = findButton('Use 3-D camera control (P)');
+        const actionCalls = [];
+        const cancelCalls = [];
+
+        expect(canvas._issInteriorWantRoom).toBe('cupola');
+        expect(diagramCapture.disabled).toBe(true);
+        expect(captureControl.tagName).toBe('BUTTON');
+        expect(captureControl.getAttribute('aria-describedby')).toBe('iss-interior-observation-readout');
+        expect(readout.getAttribute('role')).toBe('status');
+        expect(readout.getAttribute('aria-live')).toBe('polite');
+        canvas._issInteriorObservationAction = (on) => actionCalls.push(on);
+        canvas._issInteriorObservationCancel = (quiet) => cancelCalls.push(quiet);
+        act(() => {
+          captureControl.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+          captureControl.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true, cancelable: true }));
+          captureControl.dispatchEvent(new Event('pointercancel', { bubbles: true, cancelable: true }));
+          captureControl.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+        });
+        expect(actionCalls).toEqual([true, false]);
+        expect(cancelCalls).toEqual([true, true]);
+
+        act(() => {
+          canvas._issInteriorEvent({ type: 'observation-blurred', room: 'cupola', target: 'aurora', duration: 0.42, attempt: 1, alignment: 0.99 });
+          canvas._issInteriorEvent({ type: 'observation-interrupted', room: 'cupola', target: 'aurora', attempt: 2, reason: 'bracing' });
+          canvas._issInteriorEvent({ type: 'observation-captured', room: 'cupola', target: 'aurora', duration: 1.2, attempt: 3, braced: true, source: '3d' });
+        });
+
+        let observationChallenge = live.host.querySelector('[data-iss-nav-challenge="observation"]');
+        expect(observationChallenge.className).not.toContain('is-complete');
+        expect(observationChallenge.textContent).toContain('Press P again to close all seven shutters');
+        expect(live.host.querySelector('.iss-nav-challenges').getAttribute('aria-label')).toContain('0 of 10 complete');
+        expect(live.host.textContent).toContain('1 blurred Earth frames');
+        expect(live.host.textContent).toContain('1 interrupted frame locks');
+        expect(live.host.textContent).toContain('1 Earth frames captured');
+        expect(canvas._issInteriorCupolaTarget).toBe('aurora');
+        expect(canvas._issInteriorCupolaCaptured).toBe(true);
+        expect(canvas._issInteriorCupolaShutters).toBe(false);
+        expect(canvas._issInteriorObservationAttempts).toBe(3);
+        expect(canvas._issInteriorObservationBlurs).toBe(1);
+        expect(canvas._issInteriorObservationInterruptions).toBe(1);
+        expect(canvas._issInteriorObservationCaptures).toBe(1);
+
+        act(() => { live.host.querySelector('[data-iss-interior-view="diagram"]').click(); });
+        expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('captured');
+        act(() => { live.host.querySelector('[data-iss-interior-view="3d"]').click(); });
+        const restoredCanvas = live.host.querySelector('[data-iss-interior-canvas]');
+        expect(restoredCanvas).not.toBe(canvas);
+        expect(restoredCanvas._issInteriorCupolaTarget).toBe('aurora');
+        expect(restoredCanvas._issInteriorCupolaCaptured).toBe(true);
+        expect(restoredCanvas._issInteriorObservationAttempts).toBe(3);
+        expect(restoredCanvas._issInteriorObservationBlurs).toBe(1);
+        expect(restoredCanvas._issInteriorObservationInterruptions).toBe(1);
+        expect(restoredCanvas._issInteriorObservationCaptures).toBe(1);
+
+        act(() => {
+          restoredCanvas._issInteriorEvent({ type: 'observation-secured', room: 'cupola', target: 'aurora', source: '3d' });
+        });
+        act(() => { restoredCanvas._issInteriorSecureCupola(); });
+        observationChallenge = live.host.querySelector('[data-iss-nav-challenge="observation"]');
+        expect(observationChallenge.className).toContain('is-complete');
+        expect(observationChallenge.textContent).toContain('all seven pressure-window shutters secured');
+        expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('secured');
+        expect(live.host.textContent).toContain('1 / 5 jobs');
       } finally {
         live.cleanup();
       }
@@ -584,7 +1630,7 @@ describe('space station tool', () => {
     });
 
     it('turns Harmony morning life into a three-item freefall stow scan', () => {
-      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'harmony' });
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: 'diagram', interiorRoom: 'harmony' });
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         expect(live.host.textContent).toContain('0 / 3 secured');
@@ -608,7 +1654,7 @@ describe('space station tool', () => {
     });
 
     it('runs a Cupola Earth-observation capture before shutter closeout', () => {
-      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'cupola' });
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorView: 'diagram', interiorRoom: 'cupola', interiorNav: { ...BASE.interiorNav, flightRoom: 'cupola' } });
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         expect(findButton('Close shutters').disabled).toBe(true);

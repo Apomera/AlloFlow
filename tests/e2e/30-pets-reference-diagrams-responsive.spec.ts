@@ -82,6 +82,41 @@ test.describe('Pet Lab illustrated reference and responsive diagrams', () => {
     await expectContained(page, 390);
   });
 
+  test('Body language diagram state persists and renders after remount', async ({ page }) => {
+    await harness.mount(page, seed('diagrams'), undefined, { expectCanvas: false });
+
+    const bodyLanguageTab = page.getByRole('tab', { name: /Dog body language ethogram/ });
+    await bodyLanguageTab.click();
+    await expect(bodyLanguageTab).toHaveAttribute('aria-selected', 'true');
+    await expect(bodyLanguageTab).toHaveAttribute('tabindex', '0');
+
+    const panel = page.locator('#pets-diagram-panel-bodylang');
+    await expect(panel).toHaveAttribute('aria-labelledby', 'pets-diagram-tab-bodylang');
+    await expect(panel.locator('.petslab-diagram-canvas--bodylang .petslab-diagram-responsive-art'))
+      .toHaveCount(1);
+    await expect(panel.locator('.petslab-diagram-wide')).toBeVisible();
+    await expect(panel).toContainText('Reading the WHOLE body');
+
+    await expect.poll(() => page.evaluate(() => (
+      (window as any).__alloflowPetsLab?.diagramView
+    ))).toBe('bodylang');
+    await expect.poll(() => page.evaluate(() => {
+      const snapshot = JSON.parse(localStorage.getItem('petsLab.state.v2') || 'null');
+      return snapshot?.diagramView;
+    })).toBe('bodylang');
+
+    await harness.destroy(page);
+    await harness.mount(page, seed('diagrams'), undefined, { expectCanvas: false });
+
+    const restoredTab = page.getByRole('tab', { name: /Dog body language ethogram/ });
+    await expect(restoredTab).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#pets-diagram-panel-bodylang .petslab-diagram-canvas--bodylang'))
+      .toBeVisible();
+    await expect.poll(() => page.evaluate(() => (
+      (window as any).__toolData.petsLab.diagramView
+    ))).toBe('bodylang');
+  });
+
   for (const diagramView of ['skull', 'operant'] as const) {
     test(`${diagramView} diagram switches cleanly between wide and stacked layouts`, async ({ page }) => {
       await harness.mount(page, seed('diagrams', { diagramView }), undefined, { expectCanvas: false });

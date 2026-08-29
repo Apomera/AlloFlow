@@ -1,0 +1,552 @@
+{
+  "formatVersion": 1,
+  "scenarioCount": 26,
+  "scenarios": {
+    "light-idle--64px": {
+      "domSha256": "d1cfaeeeb221642580be63b1bf6f47f18977152bc110ce63c05ff012722e02d5",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-idle--200pct": {
+      "domSha256": "d1cfaeeeb221642580be63b1bf6f47f18977152bc110ce63c05ff012722e02d5",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-happy--64px": {
+      "domSha256": "9db2ee744c0dc2c45aac00a4504ead83f576a5324441307830ad1131fa626ff2",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "happy",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "happy",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-happy--200pct": {
+      "domSha256": "9db2ee744c0dc2c45aac00a4504ead83f576a5324441307830ad1131fa626ff2",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "happy",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "happy",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-thinking--64px": {
+      "domSha256": "1f38f766086807b99abbda4e22634cc5f6ffcf78c25b1031b098fb4d4bb03606",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "thinking",
+        "body": "thinking",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "thinking",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-thinking--200pct": {
+      "domSha256": "1f38f766086807b99abbda4e22634cc5f6ffcf78c25b1031b098fb4d4bb03606",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "thinking",
+        "body": "thinking",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "thinking",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-sad--64px": {
+      "domSha256": "1fd05a3cad28497d91171c8b08de7f8c7694fc473d53620e793ef3b9f3c460ad",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "sad",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "sad",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-sad--200pct": {
+      "domSha256": "1fd05a3cad28497d91171c8b08de7f8c7694fc473d53620e793ef3b9f3c460ad",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "sad",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "sad",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "dark-idle--64px": {
+      "domSha256": "3a2da750edf3dac67e5dcb6d7b97f059fdaa1bab11900abd6394b2a7ab704135",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "dark",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "dark-idle--200pct": {
+      "domSha256": "3a2da750edf3dac67e5dcb6d7b97f059fdaa1bab11900abd6394b2a7ab704135",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "dark",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "contrast-idle--64px": {
+      "domSha256": "42a584cdb7f31c4e5bf53374040c3fd9ce8626e22428293e6a15a541110a488d",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "contrast",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "contrast-idle--200pct": {
+      "domSha256": "42a584cdb7f31c4e5bf53374040c3fd9ce8626e22428293e6a15a541110a488d",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "contrast",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-listening--64px": {
+      "domSha256": "29818cde203742e6f6ef6fa330a1bb64f27998a41f4efd02345f66149bb226c3",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "listening",
+        "body": "listening",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": "listening",
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-listening--200pct": {
+      "domSha256": "29818cde203742e6f6ef6fa330a1bb64f27998a41f4efd02345f66149bb226c3",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "listening",
+        "body": "listening",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": "listening",
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-talking--64px": {
+      "domSha256": "f567d22e8a2d422960c28aa5bbb6f5475be85723dc97f2327459ede80d469f8c",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "talking",
+        "body": "talking",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "talking",
+        "voiceCue": "talking",
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-talking--200pct": {
+      "domSha256": "f567d22e8a2d422960c28aa5bbb6f5475be85723dc97f2327459ede80d469f8c",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "talking",
+        "body": "talking",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "talking",
+        "voiceCue": "talking",
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-sleeping--64px": {
+      "domSha256": "98f37d9ff2de53217be87f61f43402b17b8b39f26ef8d13e55707d643d090e12",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 0,
+        "sparkles": 0,
+        "face": "sleeping",
+        "body": "sleeping",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": ""
+      }
+    },
+    "light-sleeping--200pct": {
+      "domSha256": "98f37d9ff2de53217be87f61f43402b17b8b39f26ef8d13e55707d643d090e12",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 0,
+        "sparkles": 0,
+        "face": "sleeping",
+        "body": "sleeping",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": ""
+      }
+    },
+    "light-prop-gaze-left--64px": {
+      "domSha256": "eb327adfa7c803791575b0d9b02029348139d8465cfdab9c9a8dd5b0aee3f3c7",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "80px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(-0.85px, 0.2px)"
+      }
+    },
+    "light-prop-gaze-left--200pct": {
+      "domSha256": "eb327adfa7c803791575b0d9b02029348139d8465cfdab9c9a8dd5b0aee3f3c7",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "80px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(-0.85px, 0.2px)"
+      }
+    },
+    "light-prop-gaze-right--64px": {
+      "domSha256": "c6142e6ea271c80306f525f70df7b2da2b8d922f980aa33d4209ab1f6e5d5890",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "80px",
+        "avatarRight": "410px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0.85px, 0.2px)"
+      }
+    },
+    "light-prop-gaze-right--200pct": {
+      "domSha256": "c6142e6ea271c80306f525f70df7b2da2b8d922f980aa33d4209ab1f6e5d5890",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 4,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "80px",
+        "avatarRight": "410px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0.85px, 0.2px)"
+      }
+    },
+    "light-scholar-specs--64px": {
+      "domSha256": "e307ec82cbdbb6cd0053591399d5127a9d45f28aedfa5ea127ffe82b7a5c8059",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 0,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-scholar-specs--200pct": {
+      "domSha256": "e307ec82cbdbb6cd0053591399d5127a9d45f28aedfa5ea127ffe82b7a5c8059",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 0,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-librarian-kit--64px": {
+      "domSha256": "f9125986ba67e450266b61efa0832128cdbbec49ff6bad454c9bedc91c2ab5b0",
+      "measurements": {
+        "width": 64,
+        "height": 64,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 0,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    },
+    "light-librarian-kit--200pct": {
+      "domSha256": "f9125986ba67e450266b61efa0832128cdbbec49ff6bad454c9bedc91c2ab5b0",
+      "measurements": {
+        "width": 128,
+        "height": 128,
+        "theme": "light",
+        "motionDisabled": true,
+        "cores": 2,
+        "sparkles": 0,
+        "face": "idle",
+        "body": "ready",
+        "avatarTop": "20px",
+        "avatarRight": "24px",
+        "avatarTransform": "translateY(0px) scale(1)",
+        "avatarOpacity": "",
+        "avatarFilter": "",
+        "mouth": "idle",
+        "voiceCue": null,
+        "eyeTransform": "translate(0px, 0px)"
+      }
+    }
+  }
+}

@@ -4621,12 +4621,21 @@
       var sourceTool = stCleanText(artwork.sourceTool || 'artStudio', 60) || 'artStudio';
       var isSourcebook = sourceTool === 'sourcebook';
       var title = stCleanText(artwork.title || (isSourcebook ? 'Sourcebook visual asset' : 'Art Studio artwork'), 120) || 'Visual asset';
+      var usageIntent = artwork.preparation && ['flexible', 'background', 'focal', 'reference', 'texture', 'accent'].indexOf(artwork.preparation.usageIntent) !== -1
+        ? artwork.preparation.usageIntent
+        : 'flexible';
       var created = stCreateDoc('letter-portrait', title, now);
       stAppend(created, { type: 'doc.template', template: isSourcebook ? 'sourcebook-asset' : 'artstudio-artwork' }, 'import', now);
-      var frame = { x: 72, y: 120, w: Math.min(672, created.canvas.w - 144), h: Math.min(672, created.canvas.h - 240) };
+      var frame = usageIntent === 'background' || usageIntent === 'texture'
+        ? { x: 0, y: 0, w: created.canvas.w, h: created.canvas.h }
+        : (usageIntent === 'accent'
+          ? { x: 48, y: 48, w: created.canvas.w - 96, h: Math.min(180, created.canvas.h - 96) }
+          : { x: 72, y: 120, w: Math.min(672, created.canvas.w - 144), h: Math.min(672, created.canvas.h - 240) });
       var origin = isSourcebook ? 'stem-sourcebook' : 'stem-artstudio';
       var image = stMakeImage(source, stCleanText(artwork.altText || '', 300), frame, origin);
-      image.fit = artwork.preparation && artwork.preparation.mode === 'fit' ? 'contain' : 'cover';
+      image.fit = ['background', 'texture', 'accent'].indexOf(usageIntent) !== -1
+        ? 'cover'
+        : (artwork.preparation && artwork.preparation.mode === 'fit' ? 'contain' : 'cover');
       image.provenance = {
         origin: origin,
         sourceTool: sourceTool,
@@ -4639,6 +4648,7 @@
         rightsType: stCleanText(artwork.rightsType || '', 20),
         rightsNote: stCleanText(artwork.rightsNote || '', 500),
         attribution: stCleanText(artwork.attribution || '', 1200),
+        usageIntent: usageIntent,
         preparation: artwork.preparation && typeof artwork.preparation === 'object' ? stClone(artwork.preparation) : null,
         createdAt: Number(artwork.createdAt) || now,
       };

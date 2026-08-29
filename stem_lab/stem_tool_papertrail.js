@@ -323,7 +323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
 
       // ─────────── HOME ───────────
       if (view === 'home') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : 'transparent', borderRadius: 12 } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn(null, __alloT('stem.paperTrail.tools', 'Tools')),
             h('h2', { className: 'text-xl font-black' }, '📄 ' + __alloT('stem.paperTrail.title', 'PaperTrail: Official Documents'))
@@ -381,7 +381,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           Promise.resolve().then(function() { setPT({ seenDocs: nextSeen }); });
           if (Object.keys(nextSeen).length === 2) awardXP(10, 'Decoded two documents');
         }
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : 'transparent', borderRadius: 12 } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn('home', __alloT('stem.paperTrail.documents', 'Documents')),
             h('h2', { className: 'text-lg font-black' }, doc.icon + ' ' + doc.title)
@@ -435,7 +435,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
           if (opt.ok) awardXP(5, 'Pressure scenario');
           announceToSR(opt.ok ? __alloT('stem.paperTrail.good_sr', 'That is the protective choice. Explanation below.') : __alloT('stem.paperTrail.risky_sr', 'That one carries risk. Explanation below.'));
         }
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : 'transparent', borderRadius: 12 } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail')),
             h('h2', { className: 'text-lg font-black' }, '🛡️ ' + __alloT('stem.paperTrail.pressure', 'Pressure scenarios')),
@@ -476,7 +476,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
         var wIdx = d.workCurrent || 0;
         var ws = WORK_SCENARIOS[wIdx];
         var wsPicked = ws && wsDone[ws.id];
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : 'transparent', borderRadius: 12 } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail')),
             h('h2', { className: 'text-lg font-black' }, '⚖️ ' + __alloT('stem.paperTrail.work_title', 'Work rights & disclosure'))
@@ -541,7 +541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('paperTrail')))
       }
 
       if (view === 'scripts') {
-        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text } },
+        return h('div', { className: 'max-w-3xl mx-auto p-4 animate-in fade-in duration-200', style: { color: pal.text, background: isDark ? '#0f172a' : 'transparent', borderRadius: 12 } },
           h('div', { className: 'flex items-center gap-3 flex-wrap mb-3' },
             backBtn('home', __alloT('stem.paperTrail.back_home', 'PaperTrail')),
             h('h2', { className: 'text-lg font-black' }, '💬 ' + __alloT('stem.paperTrail.scripts', 'What to say'))

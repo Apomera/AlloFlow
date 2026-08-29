@@ -179,17 +179,17 @@ describe('Pets Lab — hook order across the view dispatch', () => {
     }
   });
 
-  it('ESC still dismisses the Toxic Foods Sleuth modal from the hoisted slot', () => {
+  it('ESC still dismisses the Household Hazard Sleuth inline game from the hoisted slot', () => {
     const app = mountPetsLab(loadPetsLab());
     try {
       app.goTo('nutrition');
       app.set('tfsOpen', true);
       app.pressEscape();
-      expect(app.data().tfsOpen, 'ESC on the nutrition view should close the modal').toBe(false);
+      expect(app.data().tfsOpen, 'ESC on the nutrition view should close the inline game').toBe(false);
       expect(hookErrors()).toEqual([]);
 
       // Off the nutrition view the listener must be detached: ESC elsewhere
-      // must NOT touch the modal flag.
+      // must NOT touch the game-open flag.
       app.set('tfsOpen', true);
       app.goTo('menu');
       app.pressEscape();

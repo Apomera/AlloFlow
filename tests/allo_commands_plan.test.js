@@ -828,23 +828,26 @@ describe('voice loop spoken replies and language', () => {
 
 // Coverage batch (2026-08-04): 10 commands from the audit's gap list.
 describe('coverage batch commands', () => {
-  it('generation trio is registered, source-gated, and awaits completion', async () => {
+  it('lesson resource generators are registered, source-gated, and await completion', async () => {
     const log = [];
     const { ctx } = mkCtx({
       generateNoteTaking: () => Promise.resolve().then(() => log.push('notes')),
       generateAnchorChart: () => Promise.resolve().then(() => log.push('chart')),
+      generateMemoryAid: () => Promise.resolve().then(() => log.push('memory-aid')),
       generateConceptSort: () => Promise.resolve().then(() => log.push('sort')),
     });
     const pr = await AC.runPlan(ctx, [
       { commandId: 'generate_note_taking', params: {} },
       { commandId: 'generate_anchor_chart', params: {} },
+      { commandId: 'generate_memory_aid', params: {} },
       { commandId: 'generate_concept_sort', params: {} },
     ]);
     expect(pr.ok).toBe(true);
-    expect(log).toEqual(['notes', 'chart', 'sort']);
+    expect(log).toEqual(['notes', 'chart', 'memory-aid', 'sort']);
     // And they vanish without source, like their siblings.
     const bare = mkCtx({ hasSourceOrAnalysis: false }).ctx;
     expect(AC.buildAlloCommands(bare).find((c) => c.id === 'generate_anchor_chart')).toBeUndefined();
+    expect(AC.buildAlloCommands(bare).find((c) => c.id === 'generate_memory_aid')).toBeUndefined();
   });
 
   it('glossary games are glossary-gated and run the host handler', () => {

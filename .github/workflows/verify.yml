@@ -77,6 +77,19 @@ jobs:
         run: npx playwright install chromium
       - name: Run deterministic Adventure journeys
         run: npx playwright test tests/e2e/adventure-journey.spec.ts
+      - id: allobot_visual
+        name: AlloBot reviewed visual baseline
+        run: npm run verify:allobot-visual
+      - name: Capture AlloBot visual diagnostics
+        if: failure() && steps.allobot_visual.outcome == 'failure'
+        run: npm run visual:allobot
+      - name: Upload AlloBot visual diagnostics
+        if: failure() && steps.allobot_visual.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: allobot-visual-diagnostics
+          path: test-results/allobot-visual-qa/**
+          if-no-files-found: ignore
 
   unit:
     name: Unit tests (shard ${{ matrix.shard }}/8)

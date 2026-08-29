@@ -537,9 +537,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           // Progress banner — encourages exploration of all 8 modules.
           h('div', {
             'aria-live': 'polite',
-            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
+            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex flex-wrap items-center justify-between gap-4'
           },
-            h('div', { className: 'flex items-center gap-3' },
+            h('div', { className: 'flex min-w-0 flex-1 items-center gap-3' },
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🎯'),
               h('div', null,
                 h('div', { className: 'font-bold text-slate-800' },

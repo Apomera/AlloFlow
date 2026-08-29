@@ -34,6 +34,24 @@ function extractProfiles() {
   return eval('(' + SRC.slice(o, j) + ')');
 }
 
+function extractFunction(name) {
+  const marker = `function ${name}(`;
+  const start = SRC.indexOf(marker);
+  if (start < 0) throw new Error(`Missing ${name}`);
+  const open = SRC.indexOf('{', start);
+  let depth = 0;
+  let end = open;
+  for (; end < SRC.length; end++) {
+    if (SRC[end] === '{') depth += 1;
+    else if (SRC[end] === '}') {
+      depth -= 1;
+      if (depth === 0) { end += 1; break; }
+    }
+  }
+  // eslint-disable-next-line no-eval
+  return eval('(' + SRC.slice(start, end) + ')');
+}
+
 const PROFILES = extractProfiles();
 const IDS = Object.keys(PROFILES);
 
@@ -117,8 +135,9 @@ describe('beyond one lifetime the figure is named and priced correctly', () => {
     expect(r.multiGen).toBe(true);
   });
 
-  it('the headline label stops saying "Lifetime" once it is not one', () => {
-    expect(SRC).toMatch(/multiGen \? 'Cost over ' \+ costYears \+ ' yr' : 'Lifetime cost'/);
+  it('labels projected dollars as a baseline instead of claiming a complete lifetime total', () => {
+    expect(SRC).toContain("'Baseline planned cost'");
+    expect(SRC).not.toMatch(/multiGen \? 'Cost over ' \+ costYears \+ ' yr' : 'Lifetime cost'/);
   });
 
   it('states the successive-animal reality instead of leaving it inferred', () => {
@@ -131,6 +150,49 @@ describe('beyond one lifetime the figure is named and priced correctly', () => {
   it('the composition bar tracks the headline rather than diverging', () => {
     expect(SRC).toMatch(/var setup = p\.firstYear \* costAnimals;/);
     expect(SRC).toMatch(/var ongoing = p\.annual \* Math\.max\(0, costYears - costAnimals\);/);
+    expect(SRC).toMatch(/var total = setup \+ ongoing \|\| 1;/);
+    expect(SRC).not.toMatch(/var total = setup \+ ongoing \+ (?:reserve|p\.emergencyFund)/);
+  });
+});
+
+describe('local research estimates stay bounded and species-scoped', () => {
+  const normalize = extractFunction('normalizeCostEstimates');
+
+  it('keeps only known species, known fields, and finite whole-dollar values', () => {
+    expect(normalize({
+      'cat-indoor': {
+        firstYear: '2200.6',
+        annual: -8,
+        emergencyFund: 150000,
+        privateNote: 'PRIVATE',
+      },
+      reptile: { annual: 475 },
+      removedSpecies: { firstYear: 99999, annual: 99999, emergencyFund: 99999 },
+    })).toEqual({
+      'cat-indoor': { firstYear: 2201, annual: 0, emergencyFund: 100000 },
+      reptile: { annual: 475 },
+    });
+  });
+
+  it('rejects containers and non-finite values without manufacturing inputs', () => {
+    expect(normalize(null)).toEqual({});
+    expect(normalize([])).toEqual({});
+    expect(normalize({
+      'cat-indoor': ['PRIVATE'],
+      'dog-large': {
+        firstYear: Infinity,
+        annual: 'not-a-number',
+        emergencyFund: null,
+      },
+      'dog-small': { firstYear: true, annual: '', emergencyFund: {} },
+    })).toEqual({});
+  });
+
+  it('persists the mode and sanitized estimate map through the shared snapshot path', () => {
+    expect(SRC).toContain("'costSpecies', 'costYears', 'costMode', 'costEstimates'");
+    expect(SRC).toContain("snapshot.costMode = snapshot.costMode === 'local' ? 'local' : 'illustrative'");
+    expect(SRC).toContain('snapshot.costEstimates = normalizeCostEstimates(snapshot.costEstimates)');
+    expect(SRC).toContain('var costEstimates = normalizeCostEstimates(d.costEstimates)');
   });
 });
 

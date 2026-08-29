@@ -208,6 +208,43 @@ export function renderTool(toolId, toolData, overrides) {
 }
 
 /**
+ * React SSR escapes text children, including quotes inside a <style> element.
+ * HTML treats style contents as raw text, so feeding that serialized markup
+ * straight to a browser leaves entities such as &quot; literal and can silently
+ * invalidate declarations like grid-template-areas. Decode each style block
+ * exactly once and preserve its parse boundary, matching the client render.
+ */
+export function extractReactSsrStyles(markup) {
+  const doc = globalThis.document;
+  if (!doc) throw new Error('extractReactSsrStyles requires a DOM document.');
+  const host = doc.createElement('div');
+  const decoder = doc.createElement('textarea');
+  host.innerHTML = markup;
+  const cssSheets = [...host.querySelectorAll('style')].map((style) => {
+    decoder.innerHTML = style.textContent || '';
+    const css = decoder.value;
+    style.remove();
+    return css;
+  });
+  return { html: host.innerHTML, cssSheets };
+}
+
+/**
+ * Prepare one rendered STEM tool for a real-browser fixture. Styles inserted
+ * into document.head by the tool come first; styles emitted inline by React
+ * follow in their original order, as they do in the application.
+ */
+export function prepareStemBrowserRender(markup) {
+  const prepared = extractReactSsrStyles(markup);
+  const headCssSheets = [...globalThis.document.head.querySelectorAll('style')]
+    .map((style) => style.textContent || '');
+  return {
+    html: prepared.html,
+    cssSheets: [...headCssSheets, ...prepared.cssSheets],
+  };
+}
+
+/**
  * Asserts the SSR output contains an H7b'' inquiry signature. The
  * canonical anchors (in order of preference) are: the "Inquiry widget —
  * no score, no reveal" italic design note, the "I'm stuck" opt-in

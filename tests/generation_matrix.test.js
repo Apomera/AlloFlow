@@ -55,12 +55,14 @@ describe('Generation Matrix module contract', () => {
   it('pins the exact dispatcher and universal differentiation allowlists', () => {
     expect(Matrix.DIFFERENTIABLE_TYPES).toEqual([
       'simplified', 'glossary', 'quiz', 'faq', 'outline', 'sentence-frames',
-      'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+      'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid',
+      'applied-challenge',
     ]);
     expect(Matrix.MULTILINGUAL_FANOUT_TYPES).toEqual([
       'simplified', 'outline', 'image', 'quiz', 'faq', 'sentence-frames',
       'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
-      'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona',
+      'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'memory-aid',
+      'applied-challenge', 'persona',
     ]);
     expect(Matrix.getResourcePolicy('analysis')).toMatchObject({
       cardinality: 'source-global-singleton', scope: 'source', allowVariants: false,

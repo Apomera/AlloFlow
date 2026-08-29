@@ -64,9 +64,14 @@ describe('Submission Inbox identity foundation', () => {
     const plainHtml = pipeline.generateFullPackHTML(history, 'Identity test', false, {}, config);
     const plainDom = new JSDOM(plainHtml);
     const plainIdentity = JSON.parse(plainDom.window.document.getElementById('alloflow-submission-identity').textContent);
+    const plainDocumentId = plainDom.window.document.querySelector('meta[name="alloflow-document-id"]')?.content;
     expect(plainIdentity).toEqual(config);
+    expect(plainDocumentId).toMatch(/^[a-f0-9]{32}$/);
     expect(plainHtml).toContain("kind: 'alloflow-student-submission'");
     expect(plainHtml).toContain('assignmentId: identity.assignmentId');
+    expect(plainHtml).toContain('documentId: _documentId');
+    expect(plainHtml).toContain("safeNick + '-' + safeDoc + '-answers' + docSuffix");
+    expect(plainHtml).toContain('storageVersion: 2, documentId: _documentId, entries: entries');
 
     const encryptedHtml = pipeline.generateFullPackHTML(history, 'Identity test', false, {}, {
       ...config,
@@ -75,8 +80,16 @@ describe('Submission Inbox identity foundation', () => {
     const encryptedDom = new JSDOM(encryptedHtml);
     const encryptedIdentity = JSON.parse(encryptedDom.window.document.getElementById('alloflow-submission-identity').textContent);
     expect(encryptedIdentity).toEqual(config);
+    expect(encryptedDom.window.document.querySelector('meta[name="alloflow-document-id"]')?.content).toBe(plainDocumentId);
     expect(encryptedHtml).toContain('schemaVersion: 2');
     expect(encryptedHtml).toContain('assignmentId: identity.assignmentId');
+    expect(encryptedHtml).toContain('documentId: payload.documentId');
+    expect(encryptedHtml).toContain("safeTitle + docSuffix + '-' + dateStr");
+    expect(encryptedHtml).toContain("window.__alloflowText('submissionFor'");
+    expect(encryptedHtml).toContain('meta name="alloflow-document-id"');
+    expect(encryptedHtml).toContain('@media(prefers-color-scheme:dark)');
+    expect(encryptedHtml).toContain('@media(forced-colors:active)');
+    expect(encryptedHtml).toContain("window.__alloflowText('resourceIdLabel'");
     expect(encryptedHtml).not.toContain('LRN-');
   });
 
@@ -124,11 +137,14 @@ describe('Submission Inbox identity foundation', () => {
     const app = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
     expect(app).toContain('alloNormalizeRosterIdentity(parsed)');
+    expect(app).toContain('const classId = alloSafeRosterLearnerId(value.classId)');
+    expect(app).toContain('const submissionKey = hasSubmissionKey ? alloSanitizeRosterSubmissionKey');
+    expect(app).toContain('const participants = Object.create(null);');
     expect(app).toContain('assignmentId: offlineAssignmentId');
     expect(app).toContain('return alloStableAssignmentId(history');
     expect(teacher).toContain('const classId = normalizedRoster.classId');
     expect(teacher).toContain("const keyId = alloTeacherStableId('KEY')");
-    expect(teacher).toContain('exportVersion: 3');
+    expect(teacher).toContain('exportVersion: 4');
     expect(teacher).toContain('learnerIds: asRecord(data.learnerIds)');
   });
 });

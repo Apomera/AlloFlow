@@ -16,12 +16,13 @@ describe('Calculus guided-mission input accessibility', () => {
       "'aria-label':'Exact integral value'",
       "'aria-label':'Riemann-sum error at n equals 4'",
       "'aria-label':'Riemann-sum error at n equals 8'",
-      "'aria-label':'Predicted error at n equals 16'",
+      "'aria-label':'Estimated error at n equals 16'",
+      "'aria-label':'Measured error at n equals 16'",
       "'aria-label':'Derivative value at x '+item[0]",
       "'aria-label':'Derivative at x equals 1 for 2x squared'",
       "'aria-label':'Triangle area in meters'",
       "'aria-label':'Definite integral value in meters'",
-      "'aria-label':'Predicted distance in 5 seconds in meters'",
+      "'aria-label':'Estimated distance in 5 seconds in meters'",
     ].forEach((label) => expect(source).toContain(label));
   });
 });

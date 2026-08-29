@@ -2,20 +2,35 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
+let toolConfig;
+let physics;
+
 function state(overrides = {}) {
   return {
     skatelab: {
       mode: 'halfpipe',
+      viewMode: '2d',
       vehicle: 'skate',
-      pumps: 3,
-      trickId: 'kickflip',
       gravity: 9.81,
       surfaceId: 'standard',
       windId: 'calm',
-      speedMph: 18,
-      angleDeg: 30,
+      riderMassKg: 62,
+      bodyPositionId: 'neutral',
+      airDrag: true,
+      pumps: 3,
+      rotationTarget: 360,
+      spinRate: 260,
+      speedMph: 17,
+      angleDeg: 35,
       gapFt: 15,
-      tour: { open: false, step: 0, seen: true },
+      cameraAzimuth: 38,
+      showVectors: true,
+      showTrail: true,
+      showEnergy: true,
+      estimateChallenge: false,
+      estimateValue: '',
+      experiments: [],
+      stats: { runs: 0, successful: 0, withinTen: 0 },
       ...overrides,
     },
   };
@@ -23,252 +38,262 @@ function state(overrides = {}) {
 
 beforeAll(() => {
   resetStemLab();
-  loadTool('stem_lab/stem_tool_skatelab.js', 'skatelab');
+  toolConfig = loadTool('stem_lab/stem_tool_skatelab.js', 'skatelab');
+  physics = window.__alloSkatePhysicsPure;
 });
 
-describe('Skate Lab UX refinement', () => {
-  it('renders one primary launch action instead of duplicate run buttons', () => {
+describe('Skate Lab physics-first workbench', () => {
+  it('renders one primary launch action and identifies the overhaul', () => {
     const html = renderTool('skatelab', state());
 
+    expect(html).toContain('data-skatelab-overhaul="physics-first"');
+    expect(html).toContain('data-skatelab-run-focus="true"');
     expect(html.match(/data-skatelab-launch=/g)).toHaveLength(1);
     expect(html.match(/Drop In!/g)).toHaveLength(1);
+    expect(html).toContain('Build a setup. Run the model. Explain the motion.');
   });
 
-  it('keeps the Predict-mode recovery action operable so it can focus the input', () => {
-    const html = renderTool('skatelab', state({ predictMode: true, predictionInput: '' }));
-    const launch = html.match(/<button[^>]*data-skatelab-launch="focus"[^>]*>/)?.[0] || '';
+  it('offers 2D and 3D views driven by the same live outputs', () => {
+    const twoD = renderTool('skatelab', state({ viewMode: '2d' }));
+    const threeD = renderTool('skatelab', state({ viewMode: '3d', cameraAzimuth: 25 }));
 
-    expect(launch).toContain('aria-disabled="true"');
-    expect(launch).toContain('aria-controls="sk-predict-input"');
-    expect(launch).not.toContain(' disabled=""');
-    expect(html).toContain('id="sk-predict-input"');
+    expect(twoD).toContain('2D side view');
+    expect(twoD).toContain('aria-pressed="true">2D side view');
+    expect(twoD).toContain('Halfpipe physics simulation in 2D view');
+    expect(threeD).toContain('aria-pressed="true">3D orbit view');
+    expect(threeD).toContain('Halfpipe physics simulation in 3D view');
+    expect(threeD).toContain('Camera azimuth');
+    expect(twoD).toContain('8.0 ft');
+    expect(threeD).toContain('8.0 ft');
   });
 
-  it('uses an arrow-key-ready tab pattern and identifies the canvas as static output', () => {
-    const html = renderTool('skatelab', state());
+  it('uses an arrow-key-ready tab pattern for the two experiment modes', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap = renderTool('skatelab', state({ mode: 'gap' }));
 
-    expect(html).toContain('role="tablist"');
-    expect(html).toContain('id="sk-mode-tab-halfpipe"');
-    expect(html).toContain('role="tab"');
-    expect(html).toContain('aria-selected="true"');
-    expect(html).toContain('role="tabpanel"');
-    expect(html).toContain('aria-labelledby="sk-mode-tab-halfpipe"');
-    expect(html).toMatch(/<canvas[^>]*role="img"/);
-    expect(html).toMatch(/<canvas[^>]*data-a11y-static="true"/);
-    expect(html).toMatch(/<canvas[^>]*aria-describedby="sk-canvas-summary"/);
-    expect(html).not.toMatch(/<canvas[^>]*tabindex=/);
+    expect(halfpipe).toContain('role="tablist"');
+    expect(halfpipe).toMatch(/id="sk-mode-tab-halfpipe"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+    expect(halfpipe).toContain('role="tabpanel"');
+    expect(halfpipe).toContain('aria-labelledby="sk-mode-tab-halfpipe"');
+    expect(gap).toMatch(/id="sk-mode-tab-gap"[^>]*aria-selected="true"[^>]*tabindex="0"/);
+    expect(gap).toContain('aria-labelledby="sk-mode-tab-gap"');
+    expect(gap).toContain('Launch Jump');
   });
 
-  it('surfaces thermal loss in the post-run status without relying on the canvas', () => {
-    const html = renderTool('skatelab', state({
-      lastResult: {
-        mode: 'halfpipe', landed: true, vMph: 12, hFt: 2.1, airTime: 1.2,
-        completed: 360, rotation: 360, score: 50,
-        energyInputJ: 1200, mechanicalJ: 864, thermalJ: 336,
-      },
-    }));
+  it('exposes a static canvas image with a changing text equivalent', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap3d = renderTool('skatelab', state({ mode: 'gap', viewMode: '3d', windId: 'tail' }));
+
+    expect(halfpipe).toMatch(/<canvas[^>]*role="img"/);
+    expect(halfpipe).toMatch(/<canvas[^>]*data-a11y-static="true"/);
+    expect(halfpipe).toMatch(/<canvas[^>]*aria-describedby="sk-canvas-summary"/);
+    expect(halfpipe).not.toMatch(/<canvas[^>]*(?:width|height)=/);
+    expect(halfpipe).not.toMatch(/<canvas[^>]*tabindex=/);
+    expect(halfpipe).toContain('following the curved halfpipe transition');
+    expect(halfpipe).toContain('Bottom load');
+    expect(gap3d).toContain('Gap-jump projectile simulation in 3D view');
+    expect(gap3d).toContain('following a drag-adjusted projectile arc');
+    expect(gap3d).toContain('Tailwind');
+  });
+
+  it('requires a valid nonnegative estimate only when the challenge is enabled', () => {
+    const blocked = renderTool('skatelab', state({ estimateChallenge: true, estimateValue: '' }));
+    const valid = renderTool('skatelab', state({ estimateChallenge: true, estimateValue: '8.0' }));
+
+    expect(blocked).toContain('id="sk-estimate"');
+    expect(blocked).toContain('aria-invalid="true"');
+    expect(blocked).toContain('aria-describedby="sk-estimate-error"');
+    expect(blocked).toContain('id="sk-estimate-error"');
+    expect(blocked).toContain('role="alert"');
+    expect(blocked).toMatch(/data-skatelab-launch="true"[^>]*disabled/);
+    expect(valid).not.toContain('id="sk-estimate-error"');
+    expect(valid).not.toMatch(/data-skatelab-launch="true"[^>]*disabled/);
+  });
+
+  it('makes every numeric control and note field explicitly labelable', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap = renderTool('skatelab', state({ mode: 'gap' }));
+
+    for (const id of ['sk-gravity', 'sk-pumps', 'sk-rotation-target', 'sk-spin-rate', 'sk-rider-mass', 'sk-estimate', 'sk-hypothesis']) {
+      expect(halfpipe).toContain('for="' + id + '"');
+      expect(halfpipe).toContain('id="' + id + '"');
+    }
+    for (const id of ['sk-speed', 'sk-angle', 'sk-gap']) {
+      expect(gap).toContain('for="' + id + '"');
+      expect(gap).toContain('id="' + id + '"');
+    }
+  });
+
+  it('uses native radio inputs for surface, vehicle, and wind choices', () => {
+    const halfpipe = renderTool('skatelab', state());
+    const gap = renderTool('skatelab', state({ mode: 'gap' }));
+
+    expect(halfpipe).toMatch(/id="sk-surface-standard"[^>]*type="radio"[^>]*checked/);
+    expect(halfpipe).toMatch(/id="sk-vehicle-skate"[^>]*type="radio"[^>]*checked/);
+    expect(gap).toMatch(/id="sk-wind-calm"[^>]*type="radio"[^>]*checked/);
+    expect(halfpipe.match(/role="radiogroup"/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('surfaces energy transfer and the plugged-in equations outside the canvas', () => {
+    const html = renderTool('skatelab', state({ surfaceId: 'rough' }));
+
+    expect(html).toContain('Energy ledger');
+    expect(html).toContain('mechanical energy');
+    expect(html).toContain('thermal transfer');
+    expect(html).toContain('J mechanical');
+    expect(html).toContain('J thermal');
+    expect(html).toContain('J input');
+    expect(html).toContain('h = E/(mg)');
+    expect(html).toContain('θ = ωt');
+  });
+
+  it('shows projectile quantities, wind, and the 45-degree investigation prompt', () => {
+    const html = renderTool('skatelab', state({ mode: 'gap', windId: 'head' }));
+
+    expect(html).toContain('Horizontal range');
+    expect(html).toContain('Peak height');
+    expect(html).toContain('Flight time');
+    expect(html).toContain('Landing load');
+    expect(html).toContain('Headwind');
+    expect(html).toContain('range peaks at 45°');
+    expect(html).toContain('Quadratic drag:');
+    expect(html).toContain('ideal no-drag reference');
+  });
+
+  it('renders a concise measured-result status with replay outside it', () => {
+    const result = physics.simHalfpipe({
+      pumps: 3,
+      vehicle: 'skate',
+      gravity: 9.81,
+      surfaceId: 'standard',
+      rotationTarget: 360,
+      spinRate: 260,
+    });
+    const html = renderTool('skatelab', state({ lastResult: result, lastSim: result }));
 
     expect(html).toContain('role="status"');
-    expect(html).toContain('Heat transferred:');
-    expect(html).toContain('336 J');
-    expect(html).toContain('28% of launch energy');
+    expect(html).toContain(result.landed ? 'Aligned landing:' : 'Rotation mismatch:');
+    expect(html).toContain('>Replay</button>');
+    const status = html.match(/<div class="sk-status"[^>]*>(.*?)<\/div>/)?.[1] || '';
+    expect(status).not.toContain('Replay');
   });
 
-  it('includes responsive rails, touch targets, visible focus, and reduced motion CSS', () => {
+  it('renders recent experiments as an accessible table', () => {
+    const html = renderTool('skatelab', state({
+      experiments: [{
+        id: 1,
+        mode: 'gap',
+        view: '3d',
+        setup: '17 mph · 35° · 15 ft gap',
+        measured: 17.8,
+        unit: 'ft',
+        estimate: 18,
+        errorPct: 1.1,
+        landed: true,
+      }],
+    }));
+
+    expect(html).toContain('Recent Skate Lab experiments');
+    expect(html).toContain('<th scope="col">Measured</th>');
+    expect(html).toContain('17.8 ft');
+    expect(html).toContain('1.1%');
+    expect(html).toContain('Landed');
+  });
+
+  it('keeps the inquiry prompt labeled and tied to the physics loop', () => {
+    const html = renderTool('skatelab', state());
+
+    expect(html).toContain('data-skatelab-inquiry-panel="true"');
+    expect(html).toContain('Physics inquiry and experiment log');
+    expect(html).toContain('for="sk-hypothesis"');
+    expect(html).toContain('aria-label="Skate flight hang-time hypothesis"');
+    expect(html).toContain('Run an experiment to add measured results here.');
+  });
+
+  it('exposes the timeline, rotational-inertia choices, and aerodynamic model', () => {
+    const halfpipe = renderTool('skatelab', state({ bodyPositionId: 'tuck' }));
+    const gap = renderTool('skatelab', state({ mode: 'gap', windId: 'cross_right', airDrag: true }));
+
+    expect(halfpipe).toContain('Motion timeline');
+    expect(halfpipe).toContain('id="sk-playhead"');
+    expect(halfpipe).toContain('Body position');
+    expect(halfpipe).toMatch(/id="sk-body-position-tuck"[^>]*checked/);
+    expect(halfpipe).toContain('Effective rotational inertia');
+    expect(gap).toContain('Quadratic air drag');
+    expect(gap).toMatch(/id="sk-wind-cross_right"[^>]*checked/);
+    expect(gap).toContain('Crosswind right');
+    expect(gap).toContain('Landing angle');
+    expect(gap).toContain('Lateral drift');
+    expect(gap).toContain('Landing load');
+    expect(gap).toContain('ideal no-drag reference');
+    expect(gap).toContain('estimated landing load');
+    expect(gap).toContain('0.45 m of compression');
+    expect(halfpipe).toContain('Transition: v-bottom');
+  });
+
+  it('removes generated-trick and AI-coach dependencies from the active module', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+    const questIds = toolConfig.questHooks.map((quest) => quest.id);
+
+    expect(source).not.toContain('callGemini');
+    expect(source).not.toContain('customTricks');
+    expect(source).not.toContain('AI coach');
+    expect(questIds).not.toContain('sk_coach_3');
+    expect(questIds).toContain('sk_compare_views');
+    expect(questIds).toContain('sk_surface_test');
+  });
+
+  it('contains a perspective projection and routes both views through one scene model', () => {
     const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
 
-    expect(source).toContain('.sk-scenario-rail{display:flex');
-    expect(source).toContain('overflow-x:auto');
-    expect(source).toContain('button[data-sk-focusable=true]{min-height:36px}');
-    expect(source).toContain('button:focus-visible');
-    expect(source).toContain('@media(prefers-reduced-motion:reduce)');
+    expect(source).toContain('function project3D(point, camera, width, height)');
+    expect(source).toContain('function drawHalfpipe3D');
+    expect(source).toContain('function drawGap3D');
+    expect(source).toContain('function drawScene(canvas, sim, progress, config)');
+    expect(source).toContain('sampleHalfpipe(sim, progress)');
+    expect(source).toContain('sampleGapJump(sim, progress)');
+    expect(source).toContain('function mesh3D');
+    expect(source).toContain('trajectoryPointAt(sim.flightPath');
+    expect(source).toContain('transitionPointAt(sim.transitionPath');
+    expect(source).toContain('sim.idealFlightPath');
+    expect(source).toContain('sim.bottomNormalG');
+    expect(source).toContain('window.ResizeObserver');
+    expect(source).toContain('var dt = 1 / 180');
   });
 
-  it('converts the 1.2 meter landing tolerance before reporting overshoot feet', () => {
+  it('includes responsive reflow, visible focus, reduced motion, and forced colors', () => {
+    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+
+    expect(source).toContain('@container(max-width:820px)');
+    expect(source).toContain('@container(max-width:520px)');
+    expect(source).toContain('min-block-size:40px');
+    expect(source).toContain(':focus-visible');
+    expect(source).toContain('@media(prefers-reduced-motion:reduce)');
+    expect(source).toContain('@media(forced-colors:active)');
+    expect(source).toContain('outline:3px solid Highlight!important');
+  });
+
+  it('retains the corrected landing-zone overshoot conversion', () => {
     const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
 
     expect(source).toContain("((sim.clearance - 1.2) * M2FT).toFixed(1) + ' ft.'");
     expect(source).not.toContain('(sim.clearance * M2FT - 1.2).toFixed(1)');
   });
 
-  it('locks every run-sensitive configuration choice during an attempt', () => {
-    const halfpipe = renderTool('skatelab', state({ running: true }));
-    const gap = renderTool('skatelab', state({ mode: 'gap', running: true }));
-
-    expect(halfpipe).toMatch(/id="sk-surface-standard"[^>]*disabled/);
-    expect(halfpipe).toMatch(/id="sk-vehicle-skate"[^>]*disabled/);
-    expect(halfpipe).toMatch(/id="sk-mode-tab-halfpipe"[^>]*disabled/);
-    expect(gap).toMatch(/id="sk-wind-calm"[^>]*disabled/);
-  });
-
-  it('uses roving focus for surface, vehicle, and wind radio groups', () => {
-    const halfpipe = renderTool('skatelab', state());
-    const gap = renderTool('skatelab', state({ mode: 'gap' }));
-
-    expect(halfpipe).toMatch(/id="sk-surface-standard"[^>]*tabindex="0"/);
-    expect(halfpipe).toMatch(/id="sk-surface-rough"[^>]*tabindex="-1"/);
-    expect(halfpipe).toMatch(/id="sk-vehicle-skate"[^>]*tabindex="0"/);
-    expect(gap).toMatch(/id="sk-wind-calm"[^>]*tabindex="0"/);
-    expect(gap).toMatch(/id="sk-wind-head_strong"[^>]*tabindex="-1"/);
-  });
-
-  it('traps dialog focus and handles Escape consistently', () => {
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(source).toContain('function _dialogKeyDown(e, closeDialog)');
-    expect(source).toContain("if (e.key !== 'Tab') return;");
-    expect(source.match(/_dialogKeyDown\(e,/g)).toHaveLength(8);
-  });
-
-  it('exposes required prediction errors programmatically', () => {
-    const invalid = renderTool('skatelab', state({ predictMode: true, predictionInput: '-1' }));
-    const valid = renderTool('skatelab', state({ predictMode: true, predictionInput: '2.5' }));
-
-    expect(invalid).toContain('required=""');
-    expect(invalid).toContain('aria-required="true"');
-    expect(invalid).toContain('aria-invalid="true"');
-    expect(invalid).toContain('id="sk-predict-error"');
-    expect(invalid).toContain('role="alert"');
-    expect(valid).not.toContain('id="sk-predict-error"');
-  });
-
-  it('provides a programmatic title and description for the inquiry trajectory', () => {
-    const html = renderTool('skatelab', state());
-
-    expect(html).toContain('aria-labelledby="sk-inquiry-trajectory-title sk-inquiry-trajectory-desc"');
-    expect(html).toContain('<title id="sk-inquiry-trajectory-title">Projectile trajectory</title>');
-    expect(html).toContain('<desc id="sk-inquiry-trajectory-desc">');
-  });
-
-  it('applies roving tab stops to every rendered custom radio', () => {
-    const html = renderTool('skatelab', state());
-    const radios = html.match(/role="radio"/g) || [];
-    const radioTabStops = html.match(/role="radio"[^>]*tabindex="(?:0|-1)"/g) || [];
-
-    expect(radios.length).toBeGreaterThan(0);
-    expect(radioTabStops).toHaveLength(radios.length);
-  });
-
-  it('manages initial dialog focus and restores focus to the opener', () => {
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(source).toContain('dialogReturnFocusRef.current = document.activeElement');
-    expect(source).toContain(`document.querySelector('.skatelab-shell [role="dialog"]')`);
-    expect(source).toContain("if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus()");
-    expect(source).not.toContain("outline: 'none'");
-  });
-
-  it('uses an accessible custom confirmation dialog instead of native confirm', () => {
-    const html = renderTool('skatelab', state({
-      confirmAction: {
-        type: 'deleteScenario',
-        id: 'custom-1',
-        title: 'Delete custom scenario?',
-        message: 'This cannot be undone.',
-        confirmLabel: 'Delete scenario',
+  it('renders safely from a legacy Skate Lab state bucket', () => {
+    const html = renderTool('skatelab', {
+      skatelab: {
+        mode: 'halfpipe',
+        vehicle: 'skate',
+        pumps: 3,
+        trickId: 'kickflip',
+        gravity: 9.81,
+        surfaceId: 'standard',
       },
-    }));
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
+    });
 
-    expect(html).toContain('role="dialog"');
-    expect(html).toContain('aria-labelledby="sk-confirm-title"');
-    expect(html).toContain('aria-describedby="sk-confirm-description"');
-    expect(html).toContain('autofocus=""');
-    expect(source).not.toMatch(/\b(?:window\.)?confirm\s*\(/);
-  });
-
-  it('associates explicit labels with the remaining text fields', () => {
-    const saveDialog = renderTool('skatelab', state({ saveModalDraft: { label: '' } }));
-    const inquiry = renderTool('skatelab', state({
-      spinIQ: { understood: true, explanation: '', speed: 6, angle: 45, mass: 70, rotSpeed: 360, log: [] },
-    }));
-
-    expect(saveDialog).toContain('for="sk-save-scenario-name"');
-    expect(saveDialog).toContain('id="sk-save-scenario-name"');
-    expect(inquiry).toContain('for="sk-inquiry-explanation"');
-    expect(inquiry).toContain('id="sk-inquiry-explanation"');
-  });
-
-  it('uses a modifier shortcut instead of a conflicting single-character shortcut', () => {
-    const html = renderTool('skatelab', state());
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(html).toContain('aria-keyshortcuts="Alt+M"');
-    expect(html).toContain('Mute / unmute (Alt+M)');
-    expect(source).toContain('if (!e.altKey || e.ctrlKey || e.metaKey');
-    expect(source).not.toContain("if (e.key !== 'm' && e.key !== 'M') return;");
-  });
-
-  it('provides static, text-equivalent outcomes when reduced motion is requested', () => {
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
-    expect(source.match(/if \(skPrefersReducedMotion\(\)\)/g)).toHaveLength(2);
-    expect(source).toContain('Reduced motion result.');
-    expect(source).toContain('cancelReducedHalfpipe');
-    expect(source).toContain('cancelReducedGap');
-  });
-  it('keeps static-canvas audit exemptions narrow and description-dependent', () => {
-    for (const auditPath of ['dev-tools/check_stem_a11y.cjs', 'dev-tools/check_stem_visual_qa.cjs']) {
-      const auditSource = readFileSync(auditPath, 'utf8');
-      expect(auditSource).toContain("attr(el, 'data-a11y-static') === 'true'");
-      expect(auditSource).toContain('meaningfulName(name) && hasDescription');
-      expect(auditSource).toContain('!staticImageCanvas');
-    }
-  });
-
-  it('describes the current canvas scene and latest outcome in text', () => {
-    const halfpipe = renderTool('skatelab', state({
-      lastResult: {
-        mode: 'halfpipe', landed: true, hFt: 3.24, completed: 358,
-        vMph: 14, airTime: 1.1, rotation: 360, score: 80,
-      },
-    }));
-    const gap = renderTool('skatelab', state({
-      mode: 'gap',
-      lastResult: {
-        mode: 'gap', landed: false, rangeFt: 12.34, gapFt: 15,
-        peakFt: 4, hangTime: 1, clearance: -2.66, score: 10,
-      },
-    }));
-
-    expect(halfpipe).toContain('aria-describedby="sk-canvas-summary"');
-    expect(halfpipe).toContain('id="sk-canvas-summary"');
-    expect(halfpipe).toContain('Latest attempt: landed, reaching 3.2 feet above the lip and rotating 358 degrees.');
-    expect(gap).toContain('Latest attempt: missed the landing, traveling 12.3 feet.');
-  });
-
-  it('supports forced colors and WCAG 2.5.8 minimum target sizing', () => {
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(source).toContain('@media(forced-colors:active)');
-    expect(source).toContain('outline:3px solid Highlight!important');
-    expect(source).toContain('min-block-size:24px;min-inline-size:24px');
-    expect(source).toContain('.sk-canvas-summary{border-color:CanvasText!important');
-  });
-  it('keeps first-visit focus stable until the learner starts the tour', () => {
-    const html = renderTool('skatelab', state({ tour: { open: false, step: 0, seen: false } }));
-    const source = readFileSync('stem_lab/stem_tool_skatelab.js', 'utf8');
-
-    expect(html).toContain('Start tour');
-    expect(html).toContain('Start the 5-step tour');
-    expect(html).not.toContain('role="dialog"');
-    expect(source).not.toContain('Auto-open tour on first mount');
-    expect(source).not.toContain("upd({ tour: Object.assign({}, d.tour, { open: true, step: 0 }) });");
-  });
-
-  it('keeps replay controls outside the result status announcement', () => {
-    const html = renderTool('skatelab', state({
-      lastResult: {
-        mode: 'halfpipe', landed: true, hFt: 2.5, completed: 360,
-        vMph: 12, airTime: 1.2, rotation: 360, score: 50,
-      },
-      lastSim: { mode: 'halfpipe' },
-    }));
-    const resultStatus = html.match(/<div role="status" aria-atomic="true"[^>]*>([^<]*)<\/div>/)?.[1] || '';
-
-    expect(resultStatus).toContain('Clean landing');
-    expect(resultStatus).not.toContain('Replay');
-    expect(html).toContain('Replay last attempt at 50 percent speed');
+    expect(html).toContain('data-skatelab-overhaul="physics-first"');
+    expect(html).toContain('Halfpipe energy');
+    expect(html).toContain('Energy ledger');
   });
 });

@@ -45,6 +45,7 @@ beforeAll(() => {
 
 beforeEach(() => {
   window.localStorage.clear();
+  document.body.classList.remove('alloflow-launchpad-active');
   closed = false;
   container = document.createElement('div');
   document.body.appendChild(container);
@@ -54,6 +55,7 @@ beforeEach(() => {
 afterEach(async () => {
   await act(async () => root.unmount());
   container.remove();
+  document.body.classList.remove('alloflow-launchpad-active');
 });
 
 describe('guided modal a11y', () => {
@@ -64,6 +66,37 @@ describe('guided modal a11y', () => {
     expect(dialog.getAttribute('aria-modal')).toBe('true');
     expect(dialog.getAttribute('aria-labelledby')).toBe('ai-backend-title');
     expect(container.querySelector('#ai-backend-title')).toBeTruthy();
+    expect(document.activeElement).toBe(dialog);
+  });
+
+  it('contains forward and reverse Tab movement without relying on the host trap', async () => {
+    await render();
+    const dialog = container.querySelector('[role="dialog"]');
+    const focusable = Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled])'));
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    expect(first).toBeTruthy();
+    expect(last).toBeTruthy();
+
+    last.focus();
+    await act(async () => {
+      last.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true }));
+    });
+    expect(document.activeElement).toBe(first);
+
+    first.focus();
+    await act(async () => {
+      first.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true }));
+    });
+    expect(document.activeElement).toBe(last);
+  });
+
+  it('raises the settings dialog above the launch pad, even with a lab mounted behind it', async () => {
+    document.body.classList.add('alloflow-launchpad-active');
+    await render({ showStemLab: true });
+    const overlay = container.querySelector('[data-ai-backend-modal-overlay="true"]');
+    expect(overlay).toBeTruthy();
+    expect(Number(overlay.style.zIndex)).toBeGreaterThan(2147483001);
   });
 
   it('announces the current step via a live status line on every view', async () => {

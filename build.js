@@ -402,6 +402,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'MathManipulativeGraderModule',
+        filename: 'math_manipulative_grader_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'CmapHandlersModule',
         filename: 'concept_map_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1193,6 +1198,16 @@ const MODULES = [
     {
         name: 'AnchorChartsModule',
         filename: 'anchor_charts_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'MemoryAidModule',
+        filename: 'memory_aid_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AppliedChallengeModule',
+        filename: 'applied_challenge_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {

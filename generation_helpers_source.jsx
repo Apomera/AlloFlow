@@ -4,7 +4,8 @@
 const FULL_PACK_FALLBACK_TYPES = new Set([
   'analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames',
   'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz',
-  'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart',
+  'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid',
+  'applied-challenge',
   'alignment-report', 'math', 'gemini-bridge'
 ]);
 const getFullPackKnownTypes = () => {
@@ -90,10 +91,11 @@ const _fingerprintFullPackGenerationContextValue = (value) => {
 };
 const _FULL_PACK_DIFFERENTIATION_CONTEXT_TYPES = Object.freeze([
   'glossary', 'simplified', 'image', 'quiz', 'brainstorm',
-  'sentence-frames', 'alignment-report', 'timeline',
+  'sentence-frames', 'alignment-report', 'timeline', 'memory-aid',
+  'applied-challenge',
 ]);
 const _FULL_PACK_LESSON_DNA_CONTEXT_TYPES = Object.freeze([
-  'quiz', 'sentence-frames', 'adventure',
+  'quiz', 'sentence-frames', 'adventure', 'memory-aid', 'applied-challenge',
 ]);
 const _buildFullPackScopedGenerationContext = (
   baseFingerprint, differentiationContext, lessonDNA, batchConfig
@@ -163,6 +165,7 @@ const _FULL_PACK_TOOL_OVERRIDE_FIELDS = Object.freeze({
   dbq: 'dbqCustomInstructions',
   'note-taking': 'noteTakingCustomInstructions',
   'anchor-chart': 'anchorChartCustomInstructions',
+  'memory-aid': 'memoryAidCustomInstructions',
 });
 const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
   'outlineType', 'visualStyle', 'visualCustomStyle', 'visualLayoutMode',
@@ -170,6 +173,10 @@ const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
   'quizMode', 'quizCount', 'quizMcqCount', 'quizReflectionCount',
   'passAnalysisToQuiz', 'cellGameDifficulty', 'faqCount',
   'noteTakingTemplateType', 'anchorChartType',
+  'memoryAidSelectionMode', 'memoryAidTypes', 'memoryAidAuthorshipMode',
+  'memoryAidReflectionLevel', 'memoryAidReasoningRequired', 'memoryAidCount',
+  'appliedChallengeSelectionMode', 'appliedChallengeFamily',
+  'appliedChallengeAgencyMode', 'appliedChallengeScope',
   'frameType', 'fillInTheBlank', 'vocabularyType', 'isAdventureStoryMode',
   'isSocialStoryMode', 'isImmersiveMode', 'adventureChanceMode',
   'adventureConsistentCharacters', 'adventureFreeResponseEnabled',
@@ -1074,8 +1081,399 @@ const _estimateFullPackCapacity = (aiCalls, imageCalls, profile = {}, workload =
   };
 };
 
+const _MATH_TASK_TYPES = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
+const _GENERATED_MATH_LIMITS = Object.freeze({
+  title: 500,
+  text: 12000,
+  graph: 250000,
+  problems: 200,
+  steps: 50,
+  arrayItems: 200,
+  recordKeys: 80,
+  depth: 6,
+  nodes: 4096
+});
+const _GENERATED_MATH_UNREADABLE = Symbol('generated-math-unreadable');
+const _GENERATED_MATH_BLOCKED_KEYS = new Set(['__proto__', 'prototype', 'constructor']);
+const _GENERATED_MATH_RESERVED_VERIFICATION_KEYS = new Set([
+  '_verification', '_originalAnswer', '_verified', '_computedResult'
+]);
+const _createGeneratedMathTraversalBudget = () => ({ remaining: _GENERATED_MATH_LIMITS.nodes });
+const _claimGeneratedMathTraversalNode = budget => {
+  if (!budget || !Number.isFinite(budget.remaining) || budget.remaining <= 0) return false;
+  budget.remaining -= 1;
+  return true;
+};
+const _isGeneratedMathArray = value => {
+  try { return Array.isArray(value); } catch (_) { return false; }
+};
+const _isGeneratedMathRecord = value => {
+  try { return !!value && typeof value === 'object' && !Array.isArray(value); } catch (_) { return false; }
+};
+const _readGeneratedMathOwn = (record, key) => {
+  try {
+    if (!_isGeneratedMathRecord(record) || !Object.prototype.hasOwnProperty.call(record, key)) {
+      return _GENERATED_MATH_UNREADABLE;
+    }
+    return record[key];
+  } catch (_) {
+    return _GENERATED_MATH_UNREADABLE;
+  }
+};
+const _generatedMathArrayEntries = (value, limit) => {
+  if (!_isGeneratedMathArray(value)) return [];
+  let length;
+  try {
+    const declaredLength = Number(value.length);
+    if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) return [];
+    length = Math.min(declaredLength, limit);
+  } catch (_) { return []; }
+  const entries = [];
+  for (let index = 0; index < length; index += 1) {
+    try {
+      if (Object.prototype.hasOwnProperty.call(value, index)) entries.push([index, value[index]]);
+    } catch (_) {}
+  }
+  return entries;
+};
+const _snapshotGeneratedMathValue = (
+  value,
+  options = {},
+  depth = 0,
+  seen = new WeakSet(),
+  traversalBudget = null
+) => {
+  const activeBudget = traversalBudget || _createGeneratedMathTraversalBudget();
+  const maxText = Number.isFinite(options.maxText) ? Math.max(0, options.maxText) : _GENERATED_MATH_LIMITS.text;
+  const maxArray = Number.isFinite(options.maxArray) ? Math.max(0, options.maxArray) : _GENERATED_MATH_LIMITS.arrayItems;
+  const maxKeys = Number.isFinite(options.maxKeys) ? Math.max(0, options.maxKeys) : _GENERATED_MATH_LIMITS.recordKeys;
+  const maxDepth = Number.isFinite(options.maxDepth) ? Math.max(0, options.maxDepth) : _GENERATED_MATH_LIMITS.depth;
+  if (!_claimGeneratedMathTraversalNode(activeBudget)) return _GENERATED_MATH_UNREADABLE;
+  if (value === null) return null;
+  if (typeof value === 'string') return value.slice(0, maxText);
+  if (typeof value === 'number') return Number.isFinite(value) ? value : _GENERATED_MATH_UNREADABLE;
+  if (typeof value === 'boolean') return value;
+  if (depth >= maxDepth || (!_isGeneratedMathArray(value) && !_isGeneratedMathRecord(value))) {
+    return _GENERATED_MATH_UNREADABLE;
+  }
+  if (seen.has(value)) return _GENERATED_MATH_UNREADABLE;
+  seen.add(value);
+  try {
+    if (_isGeneratedMathArray(value)) {
+      const copied = [];
+      for (const [, item] of _generatedMathArrayEntries(value, maxArray)) {
+        if (activeBudget.remaining <= 0) break;
+        const safeItem = _snapshotGeneratedMathValue(item, options, depth + 1, seen, activeBudget);
+        if (safeItem !== _GENERATED_MATH_UNREADABLE) copied.push(safeItem);
+      }
+      return copied;
+    }
+    const copied = {};
+    let inspectedKeys = 0;
+    try {
+      // Iterate incrementally so the key limit also bounds descriptor/property
+      // work for ordinary records; Object.keys(...).slice(...) first allocates
+      // and examines the entire key set.
+      for (const key in value) {
+        if (inspectedKeys >= maxKeys || activeBudget.remaining <= 0) break;
+        inspectedKeys += 1;
+        if (_GENERATED_MATH_BLOCKED_KEYS.has(key) || _GENERATED_MATH_RESERVED_VERIFICATION_KEYS.has(key)) continue;
+        let isOwn = false;
+        try { isOwn = Object.prototype.hasOwnProperty.call(value, key); } catch (_) {}
+        if (!isOwn) continue;
+        const raw = _readGeneratedMathOwn(value, key);
+        if (raw === _GENERATED_MATH_UNREADABLE) continue;
+        const safeValue = _snapshotGeneratedMathValue(raw, options, depth + 1, seen, activeBudget);
+        if (safeValue !== _GENERATED_MATH_UNREADABLE) copied[key] = safeValue;
+      }
+    } catch (_) {}
+    return copied;
+  } finally {
+    seen.delete(value);
+  }
+};
+const _snapshotGeneratedMathRecord = (
+  value,
+  knownKeys = [],
+  options = {},
+  traversalBudget = null
+) => {
+  if (!_isGeneratedMathRecord(value)) return null;
+  const activeBudget = traversalBudget || _createGeneratedMathTraversalBudget();
+  if (!_claimGeneratedMathTraversalNode(activeBudget)) return null;
+  const maxKeys = Number.isFinite(options.maxKeys) ? Math.max(0, options.maxKeys) : _GENERATED_MATH_LIMITS.recordKeys;
+  const copied = {};
+  const attemptedKeys = new Set();
+  const seen = new WeakSet();
+  seen.add(value);
+  for (const key of knownKeys) {
+    if (activeBudget.remaining <= 0) break;
+    if (_GENERATED_MATH_BLOCKED_KEYS.has(key) || _GENERATED_MATH_RESERVED_VERIFICATION_KEYS.has(key) || attemptedKeys.has(key)) continue;
+    attemptedKeys.add(key);
+    const raw = _readGeneratedMathOwn(value, key);
+    if (raw === _GENERATED_MATH_UNREADABLE) continue;
+    const safeValue = _snapshotGeneratedMathValue(raw, options, 1, seen, activeBudget);
+    if (safeValue !== _GENERATED_MATH_UNREADABLE) copied[key] = safeValue;
+  }
+  let inspectedKeys = 0;
+  try {
+    for (const key in value) {
+      if (inspectedKeys >= maxKeys || activeBudget.remaining <= 0) break;
+      inspectedKeys += 1;
+      if (_GENERATED_MATH_BLOCKED_KEYS.has(key) || _GENERATED_MATH_RESERVED_VERIFICATION_KEYS.has(key) || attemptedKeys.has(key)) continue;
+      attemptedKeys.add(key);
+      let isOwn = false;
+      try { isOwn = Object.prototype.hasOwnProperty.call(value, key); } catch (_) {}
+      if (!isOwn) continue;
+      const raw = _readGeneratedMathOwn(value, key);
+      if (raw === _GENERATED_MATH_UNREADABLE) continue;
+      const safeValue = _snapshotGeneratedMathValue(raw, options, 1, seen, activeBudget);
+      if (safeValue !== _GENERATED_MATH_UNREADABLE) copied[key] = safeValue;
+    }
+  } catch (_) {}
+  seen.delete(value);
+  return copied;
+};
+const _mathText = (value, maxLength = _GENERATED_MATH_LIMITS.text) => {
+  try {
+    if (typeof value === 'string') return value.slice(0, maxLength).trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value).slice(0, maxLength);
+  } catch (_) {}
+  return '';
+};
+const _normalizeGeneratedMathSteps = (steps, traversalBudget = null) => {
+  const activeBudget = traversalBudget || _createGeneratedMathTraversalBudget();
+  const candidates = _isGeneratedMathArray(steps)
+    ? _generatedMathArrayEntries(steps, _GENERATED_MATH_LIMITS.steps).map(([, step]) => step)
+    : ((typeof steps === 'string' || _isGeneratedMathRecord(steps)) ? [steps] : []);
+  return candidates.reduce((normalized, step) => {
+    if (typeof step === 'string') {
+      const explanation = _mathText(step);
+      if (explanation) normalized.push({ explanation, latex: '' });
+      return normalized;
+    }
+    const safeStep = _snapshotGeneratedMathRecord(
+      step,
+      ['explanation', 'description', 'text', 'latex', 'math', 'expression'],
+      {},
+      activeBudget
+    );
+    if (!safeStep) return normalized;
+    const explanation = _mathText(safeStep.explanation) || _mathText(safeStep.description) || _mathText(safeStep.text);
+    const latex = _mathText(safeStep.latex) || _mathText(safeStep.math);
+    const expression = _mathText(safeStep.expression);
+    if (!explanation && !latex && !expression) return normalized;
+    normalized.push({
+      ...safeStep,
+      explanation,
+      latex,
+      ...(expression ? { expression } : {})
+    });
+    return normalized;
+  }, []);
+};
+const _GENERATED_MATH_EXPRESSION_LIMIT = 500;
+const _evaluateGeneratedNumericExpression = (expression) => {
+  try {
+    if (typeof expression !== 'string') return null;
+    if (expression.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
+    const source = expression.trim();
+    if (!source ||
+        !/^[0-9+\-*/().%^\s]+$/.test(source) ||
+        source.includes('//') || source.includes('/*') || source.includes('*/')) return null;
+    const numericTokens = source.match(/(?:\d+(?:\.\d*)?|\.\d+)/g) || [];
+    for (const token of numericTokens) {
+      if (!token.includes('.') && !Number.isSafeInteger(Number(token))) return null;
+    }
+    const result = Function('"use strict"; return (' + source.replace(/\^/g, '**') + ')')();
+    if (typeof result !== 'number' || !Number.isFinite(result)) return null;
+    const rounded = Math.round(result * 10000) / 10000;
+    if (!Number.isFinite(rounded)) return null;
+    return Number.isInteger(rounded) && !Number.isSafeInteger(rounded) ? null : rounded;
+  } catch (_) {
+    return null;
+  }
+};
+const _parseGeneratedPlainNumber = (answer) => {
+  if (typeof answer === 'string' && answer.length > _GENERATED_MATH_EXPRESSION_LIMIT) return null;
+  const source = typeof answer === 'number' && Number.isFinite(answer)
+    ? String(answer)
+    : (typeof answer === 'string' ? answer.trim() : '');
+  if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(source)) return null;
+  const parsed = Number(source);
+  if (!Number.isFinite(parsed)) return null;
+  return Number.isInteger(parsed) && !Number.isSafeInteger(parsed) ? null : parsed;
+};
+const verifyGeneratedMathProblems = (problems) => {
+  const verifiedProblems = [];
+  for (const [, problem] of _generatedMathArrayEntries(problems, _GENERATED_MATH_LIMITS.problems)) {
+    const traversalBudget = _createGeneratedMathTraversalBudget();
+    const current = _snapshotGeneratedMathRecord(
+      problem,
+      ['question', 'problem', 'prompt', 'expression', 'answer', 'correct_answer', 'taskType', 'id', 'problemId', 'steps'],
+      {},
+      traversalBudget
+    );
+    if (!current || Object.keys(current).length === 0) continue;
+    const verification = { verified: false, mismatch: false, computed: null, autoCorrected: false };
+    const next = { ...current };
+    const computed = _evaluateGeneratedNumericExpression(current.expression);
+    const answerNumber = _parseGeneratedPlainNumber(current.answer);
+    if (computed !== null) {
+      verification.computed = computed;
+      if (answerNumber !== null) {
+        verification.verified = Math.abs(computed - answerNumber) < 0.01;
+        verification.mismatch = !verification.verified;
+        if (verification.mismatch) {
+          next._originalAnswer = current.answer;
+          next.answer = String(computed);
+          verification.autoCorrected = true;
+        }
+      }
+    }
+    if (_isGeneratedMathArray(current.steps)) {
+      next.steps = [];
+      const stepTraversalBudget = _createGeneratedMathTraversalBudget();
+      for (const [, step] of _generatedMathArrayEntries(current.steps, _GENERATED_MATH_LIMITS.steps)) {
+        const safeStep = _snapshotGeneratedMathRecord(
+          step,
+          ['explanation', 'description', 'text', 'latex', 'math', 'expression'],
+          {},
+          stepTraversalBudget
+        );
+        if (!safeStep || Object.keys(safeStep).length === 0) continue;
+        const stepResult = _evaluateGeneratedNumericExpression(safeStep.expression);
+        next.steps.push(stepResult === null
+          ? safeStep
+          : { ...safeStep, _computedResult: stepResult, _verified: true });
+      }
+    }
+    verifiedProblems.push({ ...next, _verification: verification });
+  }
+  return verifiedProblems;
+};
+const normalizeGeneratedMathContent = (rawContent, fallbackQuestion = '', resourceId = 'math') => {
+  const rawIsArray = _isGeneratedMathArray(rawContent);
+  const raw = rawIsArray ? null : (_isGeneratedMathRecord(rawContent) ? rawContent : null);
+  const rawTitle = raw ? _readGeneratedMathOwn(raw, 'title') : _GENERATED_MATH_UNREADABLE;
+  const rawGraphData = raw ? _readGeneratedMathOwn(raw, 'graphData') : _GENERATED_MATH_UNREADABLE;
+  const rawGraphAlt = raw ? _readGeneratedMathOwn(raw, 'graphAlt') : _GENERATED_MATH_UNREADABLE;
+  const safeGraphData = rawGraphData === _GENERATED_MATH_UNREADABLE
+    ? null
+    : _snapshotGeneratedMathValue(rawGraphData, { maxText: _GENERATED_MATH_LIMITS.graph });
+  const normalizedContent = {
+    title: _mathText(rawTitle, _GENERATED_MATH_LIMITS.title) || 'Math & STEM Solver',
+    problems: [],
+    graphData: safeGraphData === _GENERATED_MATH_UNREADABLE ? null : safeGraphData,
+    graphAlt: _mathText(rawGraphAlt, 2000) || null
+  };
+  const stableResourceId = _mathText(resourceId, 500) || 'math';
+  const usedIds = new Set();
+  const claimProblemId = (candidate, sourceIndex) => {
+    const preferred = _mathText(candidate.id, 500) || _mathText(candidate.problemId, 500) || `${stableResourceId}-problem-${sourceIndex + 1}`;
+    let id = preferred;
+    let suffix = 2;
+    while (usedIds.has(id)) id = `${preferred}-${suffix++}`;
+    usedIds.add(id);
+    return id;
+  };
+  const normalizeProblem = (candidate, sourceIndex, allowFallbackQuestion = false) => {
+    const traversalBudget = _createGeneratedMathTraversalBudget();
+    const source = (typeof candidate === 'string' || (typeof candidate === 'number' && Number.isFinite(candidate)))
+      ? { question: candidate }
+      : candidate;
+    const directQuestion = ['question', 'problem', 'prompt', 'expression'].reduce((found, key) => {
+      if (found) return found;
+      const value = _readGeneratedMathOwn(source, key);
+      return value === _GENERATED_MATH_UNREADABLE ? '' : _mathText(value);
+    }, '');
+    const safeSource = _snapshotGeneratedMathRecord(
+      source,
+      ['question', 'problem', 'prompt', 'expression', 'answer', 'correct_answer', 'taskType', 'id', 'problemId', 'steps', 'realWorld', 'manipulativeSupport', 'manipulativeResponse'],
+      {},
+      traversalBudget
+    );
+    if (!safeSource) return null;
+    const question = directQuestion
+      || _mathText(safeSource.question)
+      || _mathText(safeSource.problem)
+      || _mathText(safeSource.prompt)
+      || _mathText(safeSource.expression)
+      || (allowFallbackQuestion ? _mathText(fallbackQuestion) : '');
+    if (!question) return null;
+    const rawTaskType = _mathText(safeSource.taskType).toLowerCase();
+    return {
+      ...safeSource,
+      id: claimProblemId(safeSource, sourceIndex),
+      question,
+      taskType: _MATH_TASK_TYPES.has(rawTaskType) ? rawTaskType : 'simplify',
+      // safeSource is already bounded. Use a separate bounded normalization
+      // pass so a large optional sibling cannot consume the steps' budget.
+      steps: _normalizeGeneratedMathSteps(safeSource.steps)
+    };
+  };
+
+  const rawProblems = rawIsArray
+    ? rawContent
+    : (raw ? _readGeneratedMathOwn(raw, 'problems') : _GENERATED_MATH_UNREADABLE);
+  if (_isGeneratedMathArray(rawProblems)) {
+    for (const [sourceIndex, problem] of _generatedMathArrayEntries(rawProblems, _GENERATED_MATH_LIMITS.problems)) {
+      const normalized = normalizeProblem(problem, sourceIndex);
+      if (normalized) normalizedContent.problems.push(normalized);
+    }
+  } else {
+    const singleProblemFields = _snapshotGeneratedMathRecord(
+      raw,
+      ['question', 'problem', 'prompt', 'expression', 'answer', 'correct_answer', 'taskType', 'id', 'problemId', 'steps', 'realWorld', 'manipulativeSupport', 'manipulativeResponse']
+    );
+    if (singleProblemFields) {
+      delete singleProblemFields.title;
+      delete singleProblemFields.problems;
+      delete singleProblemFields.graphData;
+      delete singleProblemFields.graphAlt;
+    }
+    const singleProblem = normalizeProblem(singleProblemFields, 0, true);
+    if (singleProblem) normalizedContent.problems = [singleProblem];
+  }
+  return normalizedContent;
+};
+
+const _activeMathGenerationRuns = new WeakMap();
+let _mathGeneratedResourceCounter = 0;
+const _safeMathGenerationErrorText = error => {
+  try {
+    if (error && typeof error.message === 'string') return error.message.slice(0, 2000);
+    if (typeof error === 'string') return error.slice(0, 2000);
+  } catch (_) {}
+  return 'Unknown generation error';
+};
+const _safeMathGenerationTranslation = (translate, key, fallback) => {
+  try {
+    const translated = typeof translate === 'function' ? translate(key) : '';
+    return typeof translated === 'string' && translated ? translated.slice(0, 2000) : fallback;
+  } catch (_) {
+    return fallback;
+  }
+};
+const _nextMathGeneratedResourceId = history => {
+  const occupied = new Set();
+  for (const [, artifact] of _generatedMathArrayEntries(history, 10000)) {
+    const rawId = _readGeneratedMathOwn(artifact, 'id');
+    const id = rawId === _GENERATED_MATH_UNREADABLE ? '' : _mathText(rawId, 500);
+    if (id) occupied.add(id);
+  }
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    _mathGeneratedResourceCounter += 1;
+    let randomPart = '';
+    try { randomPart = Math.random().toString(36).slice(2, 11); } catch (_) {}
+    const candidate = `math-${Date.now().toString(36)}-${randomPart || 'local'}-${_mathGeneratedResourceCounter.toString(36)}`;
+    if (!occupied.has(candidate)) return candidate;
+  }
+  _mathGeneratedResourceCounter += 1;
+  return `math-${Date.now().toString(36)}-fallback-${_mathGeneratedResourceCounter.toString(36)}`;
+};
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
-  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setGenerationStage, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, verifyMathProblems, flyToElement } = deps;
+  const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setGenerationStage, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, flyToElement } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
   // rule (gloss into English when the content is not English) if an older host
   // has not threaded the resolver yet, so a stale CDN never silently changes
@@ -1106,16 +1504,21 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           addToast('Please enter a topic or problem first', 'error');
           return;
       }
-      setIsProcessing(true);
-      if (typeof setGenerationStage === 'function') setGenerationStage('analyze');
-      setGenerationStep(t('status.solving'));
-      setError(null);
-      if (switchView) {
-          setGeneratedContent(null);
-          setActiveView('math');
-      }
-      setShowMathAnswers(false);
+      const generationOwner = typeof setGeneratedContent === 'function' ? setGeneratedContent : deps;
+      const generationToken = {};
+      _activeMathGenerationRuns.set(generationOwner, generationToken);
+      const isCurrentMathGeneration = () => _activeMathGenerationRuns.get(generationOwner) === generationToken;
       try {
+          setIsProcessing(true);
+          if (typeof setGenerationStage === 'function') setGenerationStage('analyze');
+          setGenerationStep(_safeMathGenerationTranslation(t, 'status.solving', 'Solving...'));
+          setError(null);
+          if (switchView) {
+              setGeneratedContent(null);
+              setActiveView('math');
+          }
+          setShowMathAnswers(false);
+          if (!isCurrentMathGeneration()) return;
           let prompt = "";
           const effectiveMode = modeOverride || mathMode;
           if (effectiveMode === 'Freeform Builder') {
@@ -1251,6 +1654,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           }
           console.error('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
           const result = await callGemini(prompt, true);
+          if (!isCurrentMathGeneration()) return;
           console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
           let rawContent;
           let cleaned;
@@ -1274,47 +1678,19 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               }
               if (!rawContent) throw new Error("Parsed JSON is null after all strategies");
           } catch (parseErr) {
-              console.error('[MATH] JSON Parse Error:', parseErr, 'Cleaned input:', cleaned?.substring(0, 300));
-              warnLog("Math Parse Error:", parseErr);
+              let cleanedPreview = '';
+              try { cleanedPreview = typeof cleaned === 'string' ? cleaned.slice(0, 300) : ''; } catch (_) {}
+              try { console.error('[MATH] JSON Parse Error:', _safeMathGenerationErrorText(parseErr), 'Cleaned input:', cleanedPreview); } catch (_) {}
+              try { warnLog("Math Parse Error:", parseErr); } catch (_) {}
               throw new Error("Failed to parse Math JSON. The AI response was not valid.");
           }
-          let normalizedContent = {
-              title: rawContent.title || 'Math & STEM Solver',
-              problems: [],
-              graphData: rawContent.graphData || null
-          };
-          const normalizeSteps = (steps) => {
-              if (!Array.isArray(steps)) return [];
-              return steps.map(s => {
-                  if (typeof s === 'string') return { explanation: s, latex: '' };
-                  return s;
-              });
-          };
-          // Normalize taskType: default missing/invalid to 'simplify' (most common).
-          // The renderer's directive map has fallback handling, but defaulting here
-          // makes downstream logic (analytics, validators, manipulative auto-attach)
-          // simpler since they can assume the field exists.
-          const VALID_TASK_TYPES = new Set(['simplify','solve','evaluate','factor','graph','compute','word_problem','prove','convert']);
-          const normalizeTaskType = (raw) => {
-              const t = (raw || '').toString().trim().toLowerCase();
-              return VALID_TASK_TYPES.has(t) ? t : 'simplify';
-          };
-          if (Array.isArray(rawContent.problems)) {
-              normalizedContent.problems = rawContent.problems.map(p => ({
-                  ...p,
-                  taskType: normalizeTaskType(p.taskType),
-                  steps: normalizeSteps(p.steps)
-              }));
-          } else {
-              normalizedContent.problems = [{
-                  question: rawContent.problem || problemToSolve,
-                  taskType: normalizeTaskType(rawContent.taskType),
-                  answer: rawContent.answer,
-                  steps: normalizeSteps(rawContent.steps || (Array.isArray(rawContent.steps) ? rawContent.steps : [])),
-                  realWorld: rawContent.realWorld
-              }];
+          if (!isCurrentMathGeneration()) return;
+          const mathResourceId = _nextMathGeneratedResourceId(history);
+          let normalizedContent = normalizeGeneratedMathContent(rawContent, problemToSolve, mathResourceId);
+          if (normalizedContent.problems.length === 0) {
+            throw new Error('The AI response did not contain any usable math problems.');
           }
-          normalizedContent.problems = verifyMathProblems(normalizedContent.problems);
+          normalizedContent.problems = verifyGeneratedMathProblems(normalizedContent.problems);
           const verifiedCount = normalizedContent.problems.filter(p => p._verification?.verified).length;
           const mismatchCount = normalizedContent.problems.filter(p => p._verification?.mismatch).length;
           if (mismatchCount > 0) {
@@ -1324,7 +1700,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
           }
           const newItem = {
-              id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+              id: mathResourceId,
               type: 'math',
               data: normalizedContent,
               meta: `${mathSubject} - ${mathMode}`,
@@ -1332,15 +1708,22 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               timestamp: new Date(),
               config: {}
           };
-          setGeneratedContent({ type: 'math', data: normalizedContent, id: newItem.id });
+          // Keep the active artifact byte-for-byte aligned with the history
+          // entry. Dropping meta/title/config here made a freshly generated
+          // activity behave differently from the same activity reopened from
+          // history (and previously left MathView without its subject meta).
+          if (!isCurrentMathGeneration()) return;
+          setGeneratedContent(newItem);
+          if (!isCurrentMathGeneration()) return;
           setHistory(prev => [...prev, newItem]);
+          if (!isCurrentMathGeneration()) return;
           if (autoSnapshotManipulatives && normalizedContent.problems) {
             const newSnaps = [];
             normalizedContent.problems.forEach((p, idx) => {
               const manip = p.manipulativeSupport || p.manipulativeResponse;
               if (manip && manip.tool && manip.state) {
                 newSnaps.push({
-                  id: 'auto-' + Date.now() + '-' + idx,
+                  id: 'auto-' + mathResourceId + '-' + idx,
                   tool: manip.tool,
                   label: 'P' + (idx + 1) + ': ' + (manip.tool === 'base10' ? (manip.state.hundreds || 0) + 'H ' + (manip.state.tens || 0) + 'T ' + (manip.state.ones || 0) + 'O' : manip.tool === 'coordinate' ? (manip.state.points?.length || 0) + ' points' : manip.tool),
                   mode: 'auto',
@@ -1355,15 +1738,21 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             }
           }
           console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
-          addToast(t('math.success_toast'), "success");
-          flyToElement('tour-tool-math');
+          try { addToast(_safeMathGenerationTranslation(t, 'math.success_toast', 'Math activity generated.'), "success"); } catch (_) {}
+          try { flyToElement('tour-tool-math'); } catch (_) {}
       } catch (e) {
-          console.error('[MATH] Generation failed:', e.message, e.stack);
-          warnLog("Unhandled error:", e);
-          setError(t('math.error_generation'));
-          addToast(t('math.error_generation'), "error");
+          if (!isCurrentMathGeneration()) return;
+          const errorText = _safeMathGenerationErrorText(e);
+          try { console.error('[MATH] Generation failed:', errorText); } catch (_) {}
+          try { warnLog("Unhandled error:", e); } catch (_) {}
+          const userError = _safeMathGenerationTranslation(t, 'math.error_generation', 'Math generation failed. Please try again.');
+          try { setError(userError); } catch (_) {}
+          try { addToast(userError, "error"); } catch (_) {}
       } finally {
-          setIsProcessing(false);
+          if (isCurrentMathGeneration()) {
+            _activeMathGenerationRuns.delete(generationOwner);
+            try { setIsProcessing(false); } catch (_) {}
+          }
       }
 };
 
@@ -2602,6 +2991,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 case 'dbq': userOverride = dbqCustomInstructions; break;
                 case 'note-taking': userOverride = noteTakingCustomInstructions; break;
                 case 'anchor-chart': userOverride = anchorChartCustomInstructions; break;
+                case 'memory-aid': userOverride = memoryAidCustomInstructions; break;
             }
             const combinedInstructions = `${directive} ${userOverride ? `(User Note: ${userOverride})` : ''}`.trim();
             const stepConfig = {
@@ -3977,6 +4367,8 @@ const handleRetryFailedFullPack = async (priorRun, deps) => {
 };window.AlloModules = window.AlloModules || {};
 window.AlloModules.GenerationHelpers = {
   handleGenerateMath,
+  normalizeGeneratedMathContent,
+  verifyGeneratedMathProblems,
   handleGenerateFullPack,
   handlePlanFullPack,
   getFullPackEditableResourceTypes,

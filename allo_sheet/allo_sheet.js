@@ -4,6 +4,9 @@
   var Sheet = window.AlloSheetAdapter;
   var Analysis = window.AlloSheetAnalysis;
   var Workspace = window.AlloSheetWorkspace;
+  var Casebook = window.AlloSheetCasebook;
+  var CasebookUI = window.AlloSheetCasebookUI;
+  var casebookUi = null;
   if (!Sheet) throw new Error('AlloSheet adapter did not load.');
   if (!Analysis) throw new Error('AlloSheet analysis module did not load.');
   if (!Workspace) throw new Error('AlloSheet workspace module did not load.');
@@ -1511,6 +1514,107 @@
         : tables[0].id;
       activateLocalTable(requestedActive, { focusCell: options.focusCell === true });
     }
+    if (casebookUi) casebookUi.refresh();
+  }
+
+  function updateLocalTableOption(table) {
+    if (!table) return;
+    var option = Array.prototype.find.call(byId('tableSelect').options, function (item) {
+      return item.value === table.id;
+    });
+    if (option) {
+      option.textContent = table.title + ' (' + table.records.length + ' row' + (table.records.length === 1 ? '' : 's') + ')';
+    }
+  }
+
+  function installCasebookWorkspace(tables, definition) {
+    var createdAt = new Date().toISOString();
+    var origin = createLocalOrigin(
+      'blank',
+      'allosheet_casebook',
+      'AlloSheet Observation Casebook',
+      { schema: Casebook.kind, privacyMode: definition.privacyMode },
+      createdAt
+    );
+    origin.classification = {
+      level: definition.privacyMode === 'learner-support' ? 'sensitive-education-record' : 'observation-data',
+      identifierIncluded: definition.privacyMode === 'learner-support',
+      notesIncluded: true,
+      declarationKnown: definition.privacyMode === 'learner-support'
+    };
+    origin.privacy.scope = definition.privacyMode === 'learner-support'
+      ? 'local-learner-support-authoring'
+      : 'local-observation-authoring';
+    installLocalTables(tables, {
+      kind: 'casebook',
+      workspaceTitle: definition.title,
+      workspaceCreatedAt: createdAt,
+      origin: origin,
+      activeTableId: Casebook.tableIds.observations,
+      outerTitle: definition.title,
+      outerDescription: 'This configurable casebook is a browser-local AlloSheet workspace. Entries are not saved automatically.',
+      desktopHint: 'Download the all-table workspace to keep cases, parameters, and observations together. The file is unencrypted.',
+      heading: 'Observation casebook workspace',
+      description: 'Log reviewed observations, inspect the timeline, compare cases, and use the consent-gated assistant when useful.',
+      badge: 'Casebook ready',
+      serviceDetail: definition.cases.length + ' cases and ' + definition.parameters.length + ' parameters are ready for observation.',
+      focusCell: false
+    });
+    text(byId('workspaceFileStatus'), 'This new casebook has not been saved. Download the all-table workspace when you are ready to keep it.');
+  }
+
+  function appendCasebookRecord(tableId, record, kind) {
+    var table = state.localTables.find(function (item) { return item.id === tableId; });
+    if (!table || !record || !record.fields) throw new Error('The casebook table is unavailable.');
+    if (table.records.length >= Sheet.MAX_RECORDS) {
+      throw new Error('This table has reached the current 200-row AlloSheet workspace limit. Save this period and begin a new casebook before adding more.');
+    }
+    if (table.records.some(function (item) { return String(item.id) === String(record.id); })) {
+      throw new Error('That casebook record identifier already exists.');
+    }
+    table.records.push(record);
+    table.sourceRowCount = table.records.length;
+    table.sourceModified = true;
+    table.dirty = table.savePoint === null
+      ? true
+      : localTableSnapshot(table.columns, table.records) !== table.savePoint;
+    state.canvasDirty = state.localTables.some(function (item) { return item.dirty === true; });
+    bumpDataRevision();
+    resetLocalReviewState(
+      kind === 'case' ? 'A case was added locally.' : 'A reviewed observation was added locally.'
+    );
+    updateLocalTableOption(table);
+    if (currentTableId() === table.id) {
+      state.columns = table.columns;
+      state.records = table.records;
+      renderDataTable();
+    }
+    text(byId('workspaceFileStatus'), 'Casebook changes are not saved automatically. Download the all-table workspace when you are ready to keep them.');
+    text(byId('canvasFileStatus'), 'Local casebook changes are not saved automatically. The all-table workspace keeps the complete casebook.');
+    if (casebookUi) casebookUi.refresh();
+  }
+
+  function prepareCasebookAgentRows(recordIds, instruction) {
+    if (!state.canvasMode || !state.localTables.length) return;
+    if (!activateLocalTable(Casebook.tableIds.observations, { focusCell: false })) return;
+    var wanted = new Set((recordIds || []).map(String));
+    document.querySelectorAll('.row-share-checkbox').forEach(function (checkbox) {
+      checkbox.checked = wanted.has(String(checkbox.dataset.recordId));
+    });
+    updateSelectedRows();
+    var selectedValues = document.querySelector('input[name="agentScope"][value="selected-values"]');
+    if (selectedValues) selectedValues.checked = true;
+    clearValuesConsent();
+    updateConsentVisibility();
+    byId('agentInstruction').value = String(instruction || '').slice(0, 800);
+    clearAgentError();
+    setView('table');
+    var first = document.querySelector('.row-share-checkbox:checked');
+    (first || byId('dataTableScroll')).focus();
+    announce(
+      state.selectedIds.size + ' recent observation row' + (state.selectedIds.size === 1 ? '' : 's')
+        + ' prepared for review. Nothing has been sent. Inspect the rows, then approve the assistant request if appropriate.'
+    );
   }
 
   function clearNewSheetError() {
@@ -1915,6 +2019,7 @@
     byId('undoButton').disabled = false;
     text(byId('undoSummary'), 'Direct edit applied to record ' + record.id + ', ' + field + '. One-step undo is available.');
     announce('Cell updated locally. One-step undo is available.');
+    if (casebookUi) casebookUi.refresh();
   }
 
   function downloadCanvasCsv() {
@@ -2800,7 +2905,8 @@
       editor: { button: byId('editorTab'), panel: byId('editorView') },
       table: { button: byId('tableTab'), panel: byId('tableView') },
       audit: { button: byId('auditTab'), panel: byId('auditView') },
-      analysis: { button: byId('analysisTab'), panel: byId('analysisView') }
+      analysis: { button: byId('analysisTab'), panel: byId('analysisView') },
+      casebook: { button: byId('casebookTab'), panel: byId('casebookView') }
     };
     Object.keys(views).forEach(function (key) {
       var active = key === view;
@@ -3234,12 +3340,25 @@
     byId('tableTab').addEventListener('click', function () { setView('table'); });
     byId('auditTab').addEventListener('click', function () { setView('audit'); });
     byId('analysisTab').addEventListener('click', function () { setView('analysis'); });
+    if (casebookUi) {
+      byId('casebookTab').addEventListener('click', function () {
+        setView('casebook');
+        casebookUi.refresh();
+      });
+      byId('showCasebookButton').addEventListener('click', casebookUi.openBuilder);
+      casebookUi.bind();
+    } else {
+      byId('casebookTab').disabled = true;
+      byId('casebookTab').title = 'The observation casebook module did not load.';
+      byId('showCasebookButton').disabled = true;
+    }
     var workbookTabs = [
       { name: 'editor', button: byId('editorTab') },
       { name: 'table', button: byId('tableTab') },
       { name: 'audit', button: byId('auditTab') },
       { name: 'analysis', button: byId('analysisTab') }
     ];
+    if (casebookUi) workbookTabs.push({ name: 'casebook', button: byId('casebookTab') });
     workbookTabs.forEach(function (tab, index) {
       tab.button.addEventListener('keydown', function (event) {
         var nextIndex = null;
@@ -3357,9 +3476,23 @@
     });
   }
 
+  if (Casebook && CasebookUI) {
+    casebookUi = CasebookUI.create({
+      model: Casebook,
+      getTables: function () { return state.localTables; },
+      announce: announce,
+      setView: setView,
+      confirmReplacement: confirmLocalReplacement,
+      installCasebook: installCasebookWorkspace,
+      appendRecord: appendCasebookRecord,
+      prepareAgentRows: prepareCasebookAgentRows
+    });
+  }
+
   applyInitialTheme();
   restoreSessionFields();
   bindEvents();
+  if (casebookUi) casebookUi.initialize();
   updateAgentAvailability();
   updateConsentVisibility();
   beginHandshake();

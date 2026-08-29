@@ -1,4 +1,4 @@
-// Pets Lab — progression reachability + duplicated-data guards.
+// Pets Lab — progression reachability + canonical-data guards.
 //
 // Two failure classes this tool has already demonstrated once each:
 //
@@ -9,14 +9,9 @@
 //     goal here is checked against the real data for whether a student can
 //     actually get there.
 //
-//  2. DUPLICATED DATA DRIFTING. The body-language signal list exists TWICE —
-//     once as the quiz source in renderBodyLang, once re-derived in
-//     renderDecoderMastery — and mastery is keyed on `species + '|' + signal`
-//     from the FIRST while the progress view reads the SECOND. They agree
-//     today. Nothing was stopping them diverging, and the day they do, a
-//     student's decoded signals silently stop appearing in their log while
-//     the badge counts them. Same shape as the three-copies traps elsewhere
-//     in this repo.
+//  2. DUPLICATED DATA DRIFTING. Quiz, persistence, and mastery all key progress
+//     on `species + '|' + signal`. They must consume one canonical signal
+//     helper so a wording edit cannot silently orphan learner progress.
 
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
@@ -43,34 +38,26 @@ function arrayAfter(marker, from = 0) {
   return eval('(' + SRC.slice(open, i) + ')');
 }
 
-const QUIZ_SETS = arrayAfter('var sets = [', SRC.indexOf('function renderBodyLang'));
-const MASTERY_SETS = arrayAfter('var sets = [', SRC.indexOf('function renderDecoderMastery'));
+const QUIZ_SETS = arrayAfter('return [', SRC.indexOf('function bodyLanguageSignalSets'));
 const TR_MOMENTS = arrayAfter('var TR_MOMENTS = [');
 
 const signalKeys = (sets) =>
   sets.flatMap((s) => s.items.map((it) => s.species + '|' + it.signal));
 
-describe('body-language signal list — the two copies must agree', () => {
-  it('mastery keys written by the quiz are all readable by the progress view', () => {
-    // The quiz writes decoderMastery[species|signal]; the mastery view looks
-    // each one up from its own copy. Anything only in the quiz is a signal a
-    // student can decode and never see credited.
-    const fromQuiz = signalKeys(QUIZ_SETS);
-    const fromView = new Set(signalKeys(MASTERY_SETS));
-    const orphaned = fromQuiz.filter((k) => !fromView.has(k));
-    expect(orphaned, 'decodable signals that the progress view cannot display').toEqual([]);
+describe('body-language signal list — every consumer uses one canonical source', () => {
+  it('quiz, canonical counter, and mastery view consume bodyLanguageSignalSets', () => {
+    const quiz = SRC.slice(SRC.indexOf('function renderBodyLang()'), SRC.indexOf('function renderCost()'));
+    const counter = SRC.slice(SRC.indexOf('function canonicalBodyLanguageSignalKeys()'), SRC.indexOf('function normalizeBodyLanguageQuiz('));
+    const mastery = SRC.slice(SRC.indexOf('function renderDecoderMastery()'), SRC.indexOf('// VIEW ROUTER'));
+    expect(quiz).toMatch(/var sets = bodyLanguageSignalSets\(\)/);
+    expect(counter).toMatch(/bodyLanguageSignalSets\(\)\.forEach/);
+    expect(mastery).toMatch(/var sets = bodyLanguageSignalSets\(\)/);
   });
 
-  it('the progress view lists nothing the quiz cannot award', () => {
-    const fromQuiz = new Set(signalKeys(QUIZ_SETS));
-    const unreachable = signalKeys(MASTERY_SETS).filter((k) => !fromQuiz.has(k));
-    expect(unreachable, 'signals shown as goals that no quiz question can grant').toEqual([]);
-  });
-
-  it('species labels match exactly, emoji included', () => {
-    // The key is built by string concatenation, so a changed emoji or a
-    // stray space silently orphans an entire species' progress.
-    expect(MASTERY_SETS.map((s) => s.species)).toEqual(QUIZ_SETS.map((s) => s.species));
+  it('canonical species labels stay exact and unique, emoji included', () => {
+    const species = QUIZ_SETS.map((s) => s.species);
+    expect(species).toEqual(['🐕 Dogs', '🐈 Cats', '🐰 Rabbits', '🦜 Birds']);
+    expect(new Set(signalKeys(QUIZ_SETS)).size).toBe(signalKeys(QUIZ_SETS).length);
   });
 });
 

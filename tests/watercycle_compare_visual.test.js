@@ -19,8 +19,8 @@ describe('Water Cycle visual Scenario Compare', () => {
       expect(source).toContain('role: "status"');
       expect(source).toContain('"aria-atomic": "true"');
       expect(source).toContain('Experiment steps');
-      expect(source).toContain('Comparison ready: record a prediction before reading the evidence.');
-      expect(source).toContain('Prediction recorded: compare the bars and pathway mix as evidence, then save the observation.');
+      expect(source).toMatch(/Comparison ready: read the evidence(?:, then| and) select the strongest modeled shift\./);
+      expect(source).toMatch(/Evidence claim (?:selected|recorded): compare the (?:highlighted )?bars and pathway mix, then save the observation\./);
       expect(source).toContain('className: "wc-compare-bar-card"');
       expect(source).toContain('"aria-label": "Evaporation baseline " + wcBaselineEvaporationIndex.toFixed(2)');
       expect(source).toContain('"aria-label": "Runoff baseline " + wcBaselineLandIndices.runoff');
@@ -32,7 +32,8 @@ describe('Water Cycle visual Scenario Compare', () => {
       expect(source).toContain('renderWcRouteMixBar("Base", wcBaselineRouteShares)');
       expect(source).toContain('renderWcRouteMixBar("Now", wcRouteShares)');
       expect(source).toContain('is-prediction-evidence');
-      expect(source).toContain('Prediction evidence to check');
+      expect(source.match(/Evidence for the claim check\./g)).toHaveLength(3);
+      expect(source).not.toContain('Prediction evidence to check');
       expect(source).toContain('wcPredictionEvidenceMetrics.indexOf("evaporation")');
     });
   });

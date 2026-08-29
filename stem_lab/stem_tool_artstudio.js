@@ -356,12 +356,30 @@ window.StemLab = window.StemLab || {
       return (function() {
 const d = labToolData.artStudio || {};
 
+          const ART_STUDIO_MAX_ANIM_KEYFRAMES = 12;
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, [key]: val } }));
           const updMany = (values) => setLabToolData(prev => ({ ...prev, artStudio: { ...prev.artStudio, ...values } }));
+          const copyArtStudioPixels = function (source) {
+            var pixels = source && source.data ? source.data : source;
+            return new Uint8ClampedArray(pixels || 0);
+          };
           const _artistWorksState = React.useState({ profileId: '', status: 'idle', message: '', items: [] });
           const artistWorksState = _artistWorksState[0];
           const setArtistWorksState = _artistWorksState[1];
           const artistWorksRequestRef = React.useRef(0);
+          const stereoAnimRuntimeRef = React.useRef(null);
+          if (!stereoAnimRuntimeRef.current) {
+            stereoAnimRuntimeRef.current = { timer: null, frames: [], renderGeneration: 0 };
+          }
+          const _stereoAnimRef = stereoAnimRuntimeRef.current;
+          React.useEffect(function () {
+            return function () {
+              _stereoAnimRef.renderGeneration += 1;
+              if (_stereoAnimRef.timer) clearInterval(_stereoAnimRef.timer);
+              _stereoAnimRef.timer = null;
+              _stereoAnimRef.frames = [];
+            };
+          }, []);
           const _artistCompareIdsState = React.useState(Array.isArray(d.artistCompareIds) ? d.artistCompareIds.slice(0, 3) : []);
           const artistCompareIds = _artistCompareIdsState[0];
           const setArtistCompareIds = _artistCompareIdsState[1];
@@ -502,8 +520,30 @@ const d = labToolData.artStudio || {};
           };
           const openStudioHome = function () {
             persistWatercolorBeforeLeave();
-            upd('studioHome', true);
+            var nextState = { studioHome: true };
+            if (tab === 'stereogram') {
+              _cancelStereoAnimWork(false);
+              nextState.stereoAnimPlaying = false;
+              nextState.stereoAnimRendering = false;
+              nextState.stereoAnimProgress = 0;
+              nextState.stereoAnimAiMotionStatus = '';
+            }
+            updMany(nextState);
             focusArtStudioTarget('artstudio-home-title');
+          };
+          const closeArtStudio = function (nextTool) {
+            persistWatercolorBeforeLeave();
+            if (tab === 'stereogram') {
+              _cancelStereoAnimWork(true);
+              updMany({
+                stereoAnimPlaying: false,
+                stereoAnimRendering: false,
+                stereoAnimHasFrames: false,
+                stereoAnimProgress: 0,
+                stereoAnimAiMotionStatus: ''
+              });
+            }
+            setStemLabTool(nextTool);
           };
           const captureCurrentArtwork = function () {
             if (typeof document === 'undefined') return null;
@@ -571,8 +611,53 @@ const d = labToolData.artStudio || {};
           };
           const selectArtStudioTab = function (nextTab, label) {
             if (nextTab !== 'watercolor') persistWatercolorBeforeLeave();
-            updMany({ tab: nextTab, artNavGroup: artStudioGroupForTab(nextTab).id, studioHome: false, studioStarted: true });
+            var nextState = { tab: nextTab, artNavGroup: artStudioGroupForTab(nextTab).id, studioHome: false, studioStarted: true };
+            if (tab === 'stereogram' && nextTab !== 'stereogram') {
+              _cancelStereoAnimWork(true);
+              nextState.stereoAnimPlaying = false;
+              nextState.stereoAnimRendering = false;
+              nextState.stereoAnimHasFrames = false;
+              nextState.stereoAnimProgress = 0;
+              nextState.stereoAnimAiMotionStatus = '';
+            }
+            updMany(nextState);
             if (typeof canvasNarrate === 'function') canvasNarrate('artStudio', 'tabSwitch', 'Switched to ' + label + ' canvas tool.', { debounce: 500 });
+          };
+          const createArtStudioSnapshotData = function () {
+            var snapshot = { ...d };
+            if (Array.isArray(snapshot.stereoAnimKeyframes)) {
+              snapshot.stereoAnimKeyframes = snapshot.stereoAnimKeyframes.slice(-ART_STUDIO_MAX_ANIM_KEYFRAMES);
+            }
+            // Rendered output frames live in the component runtime, not tool data.
+            // Reset matching UI flags so a restored snapshot never claims that
+            // missing frames are playing or still rendering.
+            snapshot.stereoAnimPlaying = false;
+            snapshot.stereoAnimRendering = false;
+            snapshot.stereoAnimHasFrames = false;
+            snapshot.stereoAnimProgress = 0;
+            snapshot.stereoAnimIndex = 0;
+            snapshot.stereoAnimAiGenerating = false;
+            snapshot.stereoAnimAiMotionStatus = '';
+            return snapshot;
+          };
+          const saveArtStudioSnapshot = function () {
+            persistWatercolorBeforeLeave();
+            if (typeof setToolSnapshots !== 'function') {
+              if (typeof addToast === 'function') addToast('Snapshot saving is not available here.', 'warning');
+              return;
+            }
+            var now = Date.now();
+            var snapshotLabel = 'Art Studio - ' + (ART_STUDIO_TAB_LABELS[tab] || 'Workspace');
+            setToolSnapshots(function (prev) {
+              return (prev || []).concat([{
+                id: 'art-' + now,
+                tool: 'artStudio',
+                label: snapshotLabel,
+                data: createArtStudioSnapshotData(),
+                timestamp: now
+              }]);
+            });
+            if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Art snapshot saved!', 'success');
           };
           const reducedMotion = typeof window !== 'undefined' && typeof window.matchMedia === 'function' &&
             window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -2264,13 +2349,21 @@ const d = labToolData.artStudio || {};
 
             var cx = W / 2, cy = H / 2;
 
-            var folds = d.symmetryFolds || 6;
-
-            var drawing = false;
+            var requestedFolds = parseInt(d.symmetryFolds, 10);
+            var folds = isFinite(requestedFolds) ? Math.max(2, Math.min(24, requestedFolds)) : 6;
 
             var brushSize = d.brushSize || 3;
+            var requestedBrushOpacity = Number(d.symBrushOpacity);
+            var brushOpacity = isFinite(requestedBrushOpacity) ? Math.max(0.1, Math.min(1, requestedBrushOpacity)) : 1;
 
             var brushColor = 'hsl(' + (d.hue || 0) + ',' + (d.sat || 100) + '%,' + (d.lit || 50) + '%)';
+            var colorMode = d.symBrushMode || 'rainbow';
+            var strokeMode = ['dots', 'freehand', 'line'].indexOf(d.symStrokeMode) !== -1 ? d.symStrokeMode : 'freehand';
+            var legacyPatternMode = d.symMirrorOnly ? 'kaleidoscope' : 'rotate';
+            var patternMode = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : legacyPatternMode;
+            var copyCount = patternMode === 'bilateral' ? 1 : folds;
+            var reflectCopies = patternMode === 'kaleidoscope' || patternMode === 'bilateral';
+            var patternName = patternMode === 'bilateral' ? 'bilateral mirror' : patternMode === 'kaleidoscope' ? 'kaleidoscope' : 'rotational';
             var keyboardCursor = canvas._symmetryKeyboardCursor || { x: cx, y: cy };
             keyboardCursor.x = Math.max(0, Math.min(W, keyboardCursor.x));
             keyboardCursor.y = Math.max(0, Math.min(H, keyboardCursor.y));
@@ -2285,7 +2378,7 @@ const d = labToolData.artStudio || {};
                 cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
                 cursor.style.display = show ? 'block' : 'none';
               }
-              canvas.setAttribute('aria-label', 'Symmetry drawing canvas with ' + folds + ' folds. Keyboard cursor at x ' +
+              canvas.setAttribute('aria-label', 'Symmetry drawing canvas in ' + patternName + ' mode with ' + (patternMode === 'bilateral' ? '2 reflected copies' : folds + ' folds') + ', using ' + (strokeMode === 'dots' ? 'dot stamps' : strokeMode === 'line' ? 'straight lines' : 'continuous freehand') + '. Keyboard cursor at x ' +
                 Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
             }
 
@@ -2297,39 +2390,94 @@ const d = labToolData.artStudio || {};
 
 
 
-            if (!canvas._symInit) {
-
-              canvas._symInit = true;
-
+            function paintSymmetryBackground() {
+              ctx.globalAlpha = 1;
               ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-
               ctx.strokeStyle = 'rgba(255,255,255,0.06)'; ctx.lineWidth = 0.5;
-
-              for (var i = 0; i < folds; i++) {
-
-                var angle = (i / folds) * Math.PI * 2;
-
+              if (patternMode === 'bilateral') {
                 ctx.beginPath(); ctx.moveTo(cx, cy);
-
-                ctx.lineTo(cx + Math.cos(angle) * Math.max(W, H), cy + Math.sin(angle) * Math.max(W, H));
-
+                ctx.moveTo(cx, 0); ctx.lineTo(cx, H);
                 ctx.stroke();
-
+              } else {
+                for (var guideIndex = 0; guideIndex < folds; guideIndex++) {
+                  var guideAngle = (guideIndex / folds) * Math.PI * 2;
+                  ctx.beginPath(); ctx.moveTo(cx, cy);
+                  ctx.lineTo(cx + Math.cos(guideAngle) * Math.max(W, H), cy + Math.sin(guideAngle) * Math.max(W, H));
+                  ctx.stroke();
+                }
               }
-
             }
 
+            function captureSymmetryCanvas() {
+              try { return ctx.getImageData(0, 0, W, H); } catch (e) { return null; }
+            }
 
+            function restoreSymmetryCanvas(snapshot) {
+              if (!snapshot) return false;
+              try { ctx.putImageData(snapshot, 0, 0); return true; } catch (e) { return false; }
+            }
+
+            function recordSymmetryChange(before) {
+              if (!before) return;
+              canvas._symUndo = (canvas._symUndo || []).concat([before]).slice(-20);
+              canvas._symRedo = [];
+            }
+
+            function undoSymmetry() {
+              var history = canvas._symUndo || [];
+              if (!history.length) {
+                if (typeof announceToSR === 'function') announceToSR('Nothing to undo.');
+                return;
+              }
+              var current = captureSymmetryCanvas();
+              var previous = history[history.length - 1];
+              if (!restoreSymmetryCanvas(previous)) return;
+              canvas._symUndo = history.slice(0, -1);
+              if (current) canvas._symRedo = (canvas._symRedo || []).concat([current]).slice(-20);
+              if (typeof announceToSR === 'function') announceToSR('Undid the last symmetry change.');
+            }
+
+            function redoSymmetry() {
+              var future = canvas._symRedo || [];
+              if (!future.length) {
+                if (typeof announceToSR === 'function') announceToSR('Nothing to redo.');
+                return;
+              }
+              var current = captureSymmetryCanvas();
+              var next = future[future.length - 1];
+              if (!restoreSymmetryCanvas(next)) return;
+              if (current) canvas._symUndo = (canvas._symUndo || []).concat([current]).slice(-20);
+              canvas._symRedo = future.slice(0, -1);
+              if (typeof announceToSR === 'function') announceToSR('Redid the symmetry change.');
+            }
+
+            function clearSymmetry() {
+              var before = captureSymmetryCanvas();
+              paintSymmetryBackground();
+              canvas._prevX = null; canvas._prevY = null;
+              recordSymmetryChange(before);
+              if (typeof announceToSR === 'function') announceToSR('Cleared the symmetry artwork.');
+            }
+
+            canvas._symUndoAction = undoSymmetry;
+            canvas._symRedoAction = redoSymmetry;
+            canvas._symClearAction = clearSymmetry;
+
+            if (!canvas._symInit) {
+              canvas._symInit = true;
+              canvas._symUndo = [];
+              canvas._symRedo = [];
+              paintSymmetryBackground();
+            } else {
+              if (!Array.isArray(canvas._symUndo)) canvas._symUndo = [];
+              if (!Array.isArray(canvas._symRedo)) canvas._symRedo = [];
+            }
 
             // In rainbow mode, pick a color based on distance from center or time; otherwise use selected
 
-            var mode = d.symBrushMode || 'rainbow';
-
-            var mirrorOnly = d.symMirrorOnly || false;
 
 
-
-            function drawSymmetric(ex, ey, isStart) {
+            function drawSymmetric(ex, ey, isStart, forceLine) {
 
               var dx = ex - cx, dy = ey - cy, dist = Math.sqrt(dx * dx + dy * dy);
 
@@ -2339,7 +2487,7 @@ const d = labToolData.artStudio || {};
 
               var drawColor = brushColor;
 
-              if (mode === 'rainbow') {
+              if (colorMode === 'rainbow') {
 
                 drawColor = 'hsl(' + ((Date.now() / 10) % 360) + ', 100%, 50%)';
 
@@ -2348,6 +2496,7 @@ const d = labToolData.artStudio || {};
 
 
               ctx.lineWidth = brushSize * 2; // match stroke width to circle diam
+              ctx.globalAlpha = brushOpacity;
 
               ctx.lineCap = 'round';
 
@@ -2361,19 +2510,20 @@ const d = labToolData.artStudio || {};
 
               // If it's the very first dot of a stroke, just draw a dot
 
-              if (isStart || canvas._prevX === null || canvas._prevY === null) {
+              if (isStart || canvas._prevX === null || canvas._prevY === null || (strokeMode === 'dots' && !forceLine)) {
 
-                for (var i = 0; i < folds; i++) {
+                for (var i = 0; i < copyCount; i++) {
 
-                  var angle = baseAngle + (i / folds) * Math.PI * 2;
+                  var copyRotation = (i / copyCount) * Math.PI * 2;
+                  var angle = baseAngle + copyRotation;
 
                   ctx.beginPath(); ctx.arc(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, brushSize, 0, Math.PI * 2);
 
                   ctx.fill();
 
-                  if (mirrorOnly) {
+                  if (reflectCopies) {
 
-                    var mirrorAngle = -baseAngle + (i / folds) * Math.PI * 2;
+                    var mirrorAngle = (patternMode === 'bilateral' ? Math.PI - baseAngle : -baseAngle) + copyRotation;
 
                     ctx.beginPath(); ctx.arc(cx + Math.cos(mirrorAngle) * dist, cy + Math.sin(mirrorAngle) * dist, brushSize, 0, Math.PI * 2);
 
@@ -2395,11 +2545,12 @@ const d = labToolData.artStudio || {};
 
 
 
-                 for (var j = 0; j < folds; j++) {
+                 for (var j = 0; j < copyCount; j++) {
 
-                    var curAngle = baseAngle + (j / folds) * Math.PI * 2;
+                    var segmentRotation = (j / copyCount) * Math.PI * 2;
+                    var curAngle = baseAngle + segmentRotation;
 
-                    var pAngle = prevBaseAngle + (j / folds) * Math.PI * 2;
+                    var pAngle = prevBaseAngle + segmentRotation;
 
                     ctx.beginPath();
 
@@ -2411,11 +2562,11 @@ const d = labToolData.artStudio || {};
 
 
 
-                    if (mirrorOnly) {
+                    if (reflectCopies) {
 
-                       var mCurAngle = -baseAngle + (j / folds) * Math.PI * 2;
+                       var mCurAngle = (patternMode === 'bilateral' ? Math.PI - baseAngle : -baseAngle) + segmentRotation;
 
-                       var mPAngle = -prevBaseAngle + (j / folds) * Math.PI * 2;
+                       var mPAngle = (patternMode === 'bilateral' ? Math.PI - prevBaseAngle : -prevBaseAngle) + segmentRotation;
 
                        ctx.beginPath();
 
@@ -2441,62 +2592,92 @@ const d = labToolData.artStudio || {};
 
 
 
-            function handleDraw(e, isStart) {
-
+            function eventPoint(e) {
               var rect = canvas.getBoundingClientRect();
-
-              var ex = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-
-              var ey = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-
-              drawSymmetric(ex * (W / rect.width), ey * (H / rect.height), isStart);
-
+              var source = e.touches && e.touches[0] ? e.touches[0] : e;
+              var displayW = rect.width || canvas.clientWidth || W;
+              var displayH = rect.height || canvas.clientHeight || H;
+              return {
+                x: ((source.clientX - rect.left) * (W / displayW)),
+                y: ((source.clientY - rect.top) * (H / displayH))
+              };
             }
 
+            function handleDraw(e, isStart) {
+              var point = eventPoint(e);
+              drawSymmetric(point.x, point.y, isStart);
+              return point;
+            }
 
+            function restoreLineSnapshot() {
+              if (!canvas._symLineSnapshot) return;
+              restoreSymmetryCanvas(canvas._symLineSnapshot);
+            }
 
-            canvas.onmousedown = canvas.ontouchstart = function (e) {
+            function finishPointer(e, cancelled) {
+              if (!canvas._symDrawing) return;
+              var before = canvas._symStrokeStartSnapshot;
+              if (strokeMode === 'line') {
+                restoreLineSnapshot();
+                if (!cancelled && e) {
+                  canvas._prevX = canvas._symLineStart.x;
+                  canvas._prevY = canvas._symLineStart.y;
+                  handleDraw(e, false);
+                }
+              }
+              if (!cancelled || strokeMode !== 'line') recordSymmetryChange(before);
+              canvas._symDrawing = false;
+              canvas._symLineStart = null;
+              canvas._symLineSnapshot = null;
+              canvas._symStrokeStartSnapshot = null;
+              canvas._prevX = null; canvas._prevY = null;
+              try { if (e && e.pointerId !== undefined) canvas.releasePointerCapture(e.pointerId); } catch (err) {}
+            }
 
-               e.preventDefault();
-
-               drawing = true;
-
-               canvas._prevX = null; canvas._prevY = null;
-
-               handleDraw(e, true);
-
+            canvas.style.touchAction = 'none';
+            canvas.onpointerdown = function (e) {
+              if (e.button !== undefined && e.button !== 0) return;
+              e.preventDefault();
+              canvas._symDrawing = true;
+              canvas._prevX = null; canvas._prevY = null;
+              var point = eventPoint(e);
+              canvas._symLineStart = point;
+              canvas._symStrokeStartSnapshot = captureSymmetryCanvas();
+              canvas._symLineSnapshot = strokeMode === 'line' ? canvas._symStrokeStartSnapshot : null;
+              drawSymmetric(point.x, point.y, true);
+              try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
             };
-
-            canvas.onmousemove = canvas.ontouchmove = function (e) {
-
-               if (drawing) {
-
-                 e.preventDefault();
-
-                 handleDraw(e, false);
-
-               }
-
+            canvas.onpointermove = function (e) {
+              if (!canvas._symDrawing) return;
+              e.preventDefault();
+              if (strokeMode === 'line') {
+                restoreLineSnapshot();
+                canvas._prevX = canvas._symLineStart.x;
+                canvas._prevY = canvas._symLineStart.y;
+              }
+              handleDraw(e, strokeMode === 'dots');
             };
-
-            canvas.onmouseup = canvas.ontouchend = function () {
-
-               drawing = false;
-
-               canvas._prevX = null; canvas._prevY = null;
-
-            };
-
-            canvas.onmouseleave = function () {
-
-               drawing = false;
-
-               canvas._prevX = null; canvas._prevY = null;
-
-            };
+            canvas.onpointerup = function (e) { finishPointer(e, false); };
+            canvas.onpointercancel = function (e) { finishPointer(e, true); };
+            canvas.onlostpointercapture = function (e) { finishPointer(e, false); };
+            // Remove the legacy mouse/touch property handlers so a pointer gesture
+            // cannot be delivered twice on browsers that synthesize mouse events.
+            canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = canvas.onmouseleave = null;
+            canvas.ontouchstart = canvas.ontouchmove = canvas.ontouchend = null;
             canvas.onfocus = function () { updateKeyboardCursor(true); };
             canvas.onblur = function () { updateKeyboardCursor(false); };
             canvas.onkeydown = function (event) {
+              var historyKey = String(event.key || '').toLowerCase();
+              if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
+                event.preventDefault();
+                if (event.shiftKey) redoSymmetry(); else undoSymmetry();
+                return;
+              }
+              if ((event.ctrlKey || event.metaKey) && historyKey === 'y') {
+                event.preventDefault();
+                redoSymmetry();
+                return;
+              }
               var step = event.altKey ? 1 : 10;
               var oldX = keyboardCursor.x, oldY = keyboardCursor.y;
               var moved = true;
@@ -2510,9 +2691,11 @@ const d = labToolData.artStudio || {};
               if (moved) {
                 event.preventDefault();
                 if (event.shiftKey) {
+                  var lineBefore = captureSymmetryCanvas();
                   canvas._prevX = oldX; canvas._prevY = oldY;
-                  drawSymmetric(keyboardCursor.x, keyboardCursor.y, false);
+                  drawSymmetric(keyboardCursor.x, keyboardCursor.y, false, true);
                   canvas._prevX = null; canvas._prevY = null;
+                  recordSymmetryChange(lineBefore);
                 }
                 canvas._symmetryKeyboardCursor = keyboardCursor;
                 updateKeyboardCursor(true);
@@ -2524,8 +2707,10 @@ const d = labToolData.artStudio || {};
               }
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
+                var stampBefore = captureSymmetryCanvas();
                 canvas._prevX = null; canvas._prevY = null;
                 drawSymmetric(keyboardCursor.x, keyboardCursor.y, true);
+                recordSymmetryChange(stampBefore);
                 if (typeof announceToSR === 'function') {
                   announceToSR('Placed symmetric marks at x ' + Math.round(keyboardCursor.x) + ', y ' + Math.round(keyboardCursor.y) + '.');
                 }
@@ -2656,8 +2841,6 @@ const d = labToolData.artStudio || {};
             }
 
           };
-
-            var _stereoAnimRef = { timer: null, frames: [] };
 
             function _sirdsRenderSync(W, H, dmData, dmW, dmH, pType, pWidth, maxShift, aiPat) {
 
@@ -2843,13 +3026,15 @@ const d = labToolData.artStudio || {};
 
             }
 
-            function _renderAnimFrames(nFrames, presetId, pType, pWidth, maxShift, aiPat, onProgress, onDone) {
+            function _renderAnimFrames(nFrames, presetId, pType, pWidth, maxShift, aiPat, onProgress, onDone, renderGeneration) {
 
               var W = 512, H = 512, dmW = 400, dmH = 400;
 
               var frames = []; var i = 0;
 
               function step() {
+
+                if (!_isStereoAnimRenderActive(renderGeneration)) return;
 
                 if (i >= nFrames) { onDone(frames); return; }
 
@@ -2877,7 +3062,31 @@ const d = labToolData.artStudio || {};
 
             }
 
-            function _playStereoAnim(canvasId, fps, upd2) {
+            function _cancelStereoAnimWork(clearFrames) {
+
+              _stereoAnimRef.renderGeneration += 1;
+
+              _stopStereoAnim();
+
+              if (clearFrames) _stereoAnimRef.frames = [];
+
+            }
+
+            function _beginStereoAnimRender() {
+
+              _cancelStereoAnimWork(true);
+
+              return _stereoAnimRef.renderGeneration;
+
+            }
+
+            function _isStereoAnimRenderActive(renderGeneration) {
+
+              return renderGeneration === _stereoAnimRef.renderGeneration;
+
+            }
+
+            function _playStereoAnim(canvasId, fps) {
 
               _stopStereoAnim();
 
@@ -2893,15 +3102,25 @@ const d = labToolData.artStudio || {};
 
               var idx = 0;
 
-              _stereoAnimRef.timer = setInterval(function() {
+              var drawNextFrame = function() {
+
+                if (c.isConnected === false || _stereoAnimRef.frames !== frames) {
+
+                  _stopStereoAnim();
+
+                  return;
+
+                }
 
                 ctx.drawImage(frames[idx], 0, 0);
 
                 idx = (idx + 1) % frames.length;
 
-                if (upd2) upd2('stereoAnimIndex', idx);
+              };
 
-              }, 1000 / fps);
+              drawNextFrame();
+
+              _stereoAnimRef.timer = setInterval(drawNextFrame, 1000 / Math.max(1, Number(fps) || 8));
 
             }
 
@@ -3287,7 +3506,7 @@ const d = labToolData.artStudio || {};
             var surpriseTabs = ['watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'sculpt3d'];
             return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", 'data-artstudio-home': 'true' },
               React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
-                React.createElement("button", { type: "button", onClick: function () { setStemLabTool(null); }, className: "p-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, 'Creative desk'),
                   React.createElement("p", { className: "truncate text-lg font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
@@ -3346,7 +3565,7 @@ const d = labToolData.artStudio || {};
           return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200" },
 
             React.createElement("div", { className: "relative z-20 mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-slate-300 bg-white/95 p-2 shadow-sm" },
-              React.createElement("button", { type: "button", onClick: function () { persistWatercolorBeforeLeave(); setStemLabTool(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 hover:bg-slate-100 rounded-xl text-slate-700", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
               React.createElement("div", { className: "min-w-0" },
                 React.createElement("p", { className: "text-[10px] font-black uppercase tracking-[0.16em] text-pink-700" }, 'Creative desk'),
                 React.createElement("h3", { className: "truncate text-sm sm:text-base font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', "Art & Design Studio"))
@@ -3359,11 +3578,11 @@ const d = labToolData.artStudio || {};
                   React.createElement("summary", { className: "cursor-pointer list-none rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800", 'aria-label': "Open Studio actions" }, "Actions"),
                   React.createElement("div", { className: "absolute right-0 mt-2 w-56 space-y-1 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl" },
                     React.createElement("p", { className: "px-2 py-1 text-[10px] font-black uppercase tracking-wider text-slate-500" }, 'Save or continue in'),
-                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.artstudio.snapshot', "Snapshot"), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'art-' + Date.now(), tool: 'artStudio', label: __alloT('stem.artstudio.art_studio', 'Art Studio'), data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Art snapshot saved!', 'success'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, __alloT('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot")),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.artstudio.snapshot', "Snapshot"), onClick: saveArtStudioSnapshot, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-800 hover:bg-rose-50" }, __alloT('stem.artstudio.snapshot_2', "\uD83D\uDCF8 Snapshot")),
                     typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('page-designer'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-indigo-800 hover:bg-indigo-50", title: "Insert this static image into Page Designer" }, "↗ Page Designer"),
                     typeof onUseArtwork === 'function' && canvasArtworkAvailable && React.createElement("button", { type: "button", onClick: function () { sendArtworkTo('visual-support'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-violet-800 hover:bg-violet-50", title: "Save this static image as a Visual Support" }, "＋ Visual Support"),
                     typeof onUseArtwork === 'function' && !canvasArtworkAvailable && React.createElement("p", { className: "rounded-lg bg-slate-50 px-2.5 py-2 text-[11px] text-slate-600" }, 'Artwork handoff is available in canvas labs.'),
-                    React.createElement("button", { type: "button", onClick: function () { persistWatercolorBeforeLeave(); setStemLabTool('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
+                    React.createElement("button", { type: "button", onClick: function () { closeArtStudio('archStudio'); }, className: "w-full rounded-lg px-2.5 py-2 text-left text-xs font-bold text-amber-800 hover:bg-amber-50", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Architecture Studio"))
                   )
                 )
               )
@@ -4197,19 +4416,45 @@ const d = labToolData.artStudio || {};
 
                 }),
 
+                React.createElement("input", { type: "range", min: 2, max: 24, step: 1, value: Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6)), "aria-label": "Custom symmetry fold count", "aria-valuetext": (Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6))) + " folds", onChange: function (e) { upd('symmetryFolds', parseInt(e.target.value, 10)); }, className: "w-24 accent-violet-600" }),
+
+                React.createElement("output", { className: "min-w-[24px] text-xs font-black text-violet-700" }, Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6))),
+
                 React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-3" }, "Brush:"),
 
                 React.createElement("input", { type: "range", min: 1, max: 10, value: d.brushSize || 3, 'aria-label': __alloT('stem.artstudio.brush_size', 'Brush size'), onChange: function (e) { upd('brushSize', parseInt(e.target.value)); }, className: "w-20 accent-pink-600" }),
 
-                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Mode:"),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Opacity:"),
+
+                React.createElement("input", { type: "range", min: 10, max: 100, step: 5, value: Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100), "aria-label": "Symmetry brush opacity", "aria-valuetext": Math.round((isFinite(Number(d.symBrushOpacity)) ? Math.max(0.1, Math.min(1, Number(d.symBrushOpacity))) : 1) * 100) + " percent", onChange: function (e) { upd('symBrushOpacity', parseInt(e.target.value, 10) / 100); }, className: "w-20 accent-pink-600" }),
+
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Stroke:"),
+
+                [{ id: 'dots', label: '\u2022 Dots', aria: 'Dot stamp stroke mode' }, { id: 'freehand', label: '\u223F Freehand', aria: 'Continuous freehand stroke mode' }, { id: 'line', label: '\u2571 Line', aria: 'Straight line stroke mode' }].map(function (stroke) {
+                  return React.createElement("button", { key: stroke.id, "aria-label": stroke.aria, "aria-pressed": (d.symStrokeMode || 'freehand') === stroke.id, onClick: function () { upd('symStrokeMode', stroke.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symStrokeMode || 'freehand') === stroke.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, stroke.label);
+                }),
+
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Color:"),
 
                 React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'solid', onClick: function () { upd('symBrushMode', 'solid'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'solid' ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.solid', "\uD83D\uDD8C Solid")),
 
                 React.createElement("button", { "aria-pressed": (d.symBrushMode || 'rainbow') === 'rainbow', onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-600 via-yellow-700 to-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, __alloT('stem.artstudio.rainbow', "\uD83C\uDF08 Rainbow")),
 
-                React.createElement("button", { "aria-pressed": !!d.symMirrorOnly, onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
+                React.createElement("span", { className: "text-xs font-bold text-slate-600 ml-2" }, "Pattern:"),
 
-                React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "transition-colors ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
+                [{ id: 'rotate', label: '\u27F3 Rotate', aria: 'Rotational symmetry pattern' }, { id: 'kaleidoscope', label: '\uD83E\uDE9E Kaleidoscope', aria: 'Kaleidoscope reflected symmetry pattern' }, { id: 'bilateral', label: '\u2194 Bilateral', aria: 'Bilateral mirror symmetry pattern' }].map(function (pattern) {
+                  var activePattern = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : (d.symMirrorOnly ? 'kaleidoscope' : 'rotate');
+                  return React.createElement("button", { key: pattern.id, "aria-label": pattern.aria, "aria-pressed": activePattern === pattern.id, onClick: function () {
+                    if (activePattern === pattern.id) return;
+                    updMany({ symPatternMode: pattern.id, symMirrorOnly: pattern.id === 'kaleidoscope', symmetryClear: Date.now() });
+                  }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (activePattern === pattern.id ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, pattern.label);
+                }),
+
+                React.createElement("button", { "aria-label": "Undo symmetry change", onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symUndoAction) c._symUndoAction(); }, className: "ml-auto px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B6 Undo"),
+
+                React.createElement("button", { "aria-label": "Redo symmetry change", onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symRedoAction) c._symRedoAction(); }, className: "px-2 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200" }, "\u21B7 Redo"),
+
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (c && c._symClearAction) c._symClearAction(); else upd('symmetryClear', Date.now()); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-700 hover:bg-red-100" }, __alloT('stem.artstudio.clear_3', "\uD83D\uDDD1 Clear")),
 
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
@@ -4254,13 +4499,13 @@ const d = labToolData.artStudio || {};
               ),
 
               React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "mb-1 text-xs text-slate-200 text-center" },
-                "Keyboard: Arrow keys move the drawing cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps mirrored marks; Home returns to center; Alt makes one-pixel moves."
+                "Pointer: drag for dots or freehand; in Line mode, drag from start to end. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to center; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes."
               ),
               React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 512, height: 512, role: "img",
-                'aria-label': 'Symmetry drawing canvas with ' + (d.symmetryFolds || 6) + ' folds.',
+                'aria-label': 'Symmetry drawing canvas in ' + ((d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'bilateral' ? 'bilateral mirror' : (d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'kaleidoscope' ? 'kaleidoscope' : 'rotational') + ' mode, using ' + ((d.symStrokeMode || 'freehand') === 'dots' ? 'dot stamps' : (d.symStrokeMode || 'freehand') === 'line' ? 'straight lines' : 'continuous freehand') + '.',
                 'aria-describedby': "artstudio-symmetry-keyboard-help",
-                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
-                key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symMirrorOnly ? 'm' : 'r'),
+                'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
+                key: 'sym-' + (d.symmetryFolds || 6) + '-' + (d.symmetryClear || 0) + '-' + (d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')),
                 className: "rounded-xl border-2 border-pink-200 shadow-lg cursor-crosshair mx-auto block mt-3 flex-shrink-0 focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
                 style: { maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', background: 'var(--allo-stem-canvas, #0f172a)' } }),
               React.createElement("span", {
@@ -4430,9 +4675,47 @@ const d = labToolData.artStudio || {};
               var sel = Math.min(d.sculptSel || 0, Math.max(0, parts.length - 1));
               var gallery = d.sculptGallery || {};
               var sculptAuto = d.sculptAuto === undefined ? !reducedMotion : !!d.sculptAuto;
+              var sculptMode = ['move', 'rotate', 'scale'].indexOf(d.sculptInteractMode) !== -1 ? d.sculptInteractMode : 'orbit';
+              var sculptMirrorAxis = ['x', 'y', 'z'].indexOf(d.sculptMirrorAxis) !== -1 ? d.sculptMirrorAxis : 'x';
+              var requestedSculptSnap = Number(d.sculptSnap);
+              var sculptSnap = [0.1, 0.25, 0.5].indexOf(requestedSculptSnap) !== -1 ? requestedSculptSnap : 0;
+              var sculptUndo = Array.isArray(d.sculptUndo) ? d.sculptUndo : [];
+              var sculptRedo = Array.isArray(d.sculptRedo) ? d.sculptRedo : [];
               var sculptSummary = recipe ? ((recipe.name || 'Custom sculpture') + ' with ' + parts.length + (parts.length === 1 ? ' part' : ' parts')) : 'Empty sculpture scene';
-              var setRecipe = function(r) { upd('sculptRecipe', r); };
+              var rawSelectedPart = parts[sel] || null;
+              var selectedPart = rawSelectedPart ? Object.assign({}, rawSelectedPart, {
+                size: Array.isArray(rawSelectedPart.size) ? rawSelectedPart.size : [0.4, 0.4, 0.4],
+                position: Array.isArray(rawSelectedPart.position) ? rawSelectedPart.position : [0, 0.5, 0],
+                rotation: Array.isArray(rawSelectedPart.rotation) ? rawSelectedPart.rotation : [0, 0, 0],
+                color: typeof rawSelectedPart.color === 'string' ? rawSelectedPart.color : '#818cf8'
+              }) : null;
+              function snapSculptValue(value, bypass, snapOverride) {
+                var increment = typeof snapOverride === 'number' ? snapOverride : sculptSnap;
+                if (bypass || !increment) return Math.round(value * 1000) / 1000;
+                return Math.round((Math.round(value / increment) * increment) * 1000) / 1000;
+              }
+              var setRecipe = function(r) {
+                var next = r ? P3D.normalizeRecipe(r) : null;
+                if (JSON.stringify(next) === JSON.stringify(recipe)) return;
+                updMany({
+                  sculptRecipe: next,
+                  sculptUndo: sculptUndo.concat([recipe]).slice(-20),
+                  sculptRedo: []
+                });
+              };
               var partOp = function(op) { var next = op(P3D, recipe); if (next !== recipe) setRecipe(next); };
+              var undoSculpt = function() {
+                if (!sculptUndo.length) return;
+                var previous = sculptUndo[sculptUndo.length - 1] || null;
+                updMany({ sculptRecipe: previous, sculptUndo: sculptUndo.slice(0, -1), sculptRedo: sculptRedo.concat([recipe]).slice(-20), sculptSel: 0 });
+                if (typeof announceToSR === 'function') announceToSR('Undid the last sculpture change.');
+              };
+              var redoSculpt = function() {
+                if (!sculptRedo.length) return;
+                var next = sculptRedo[sculptRedo.length - 1] || null;
+                updMany({ sculptRecipe: next, sculptUndo: sculptUndo.concat([recipe]).slice(-20), sculptRedo: sculptRedo.slice(0, -1), sculptSel: 0 });
+                if (typeof announceToSR === 'function') announceToSR('Redid the sculpture change.');
+              };
               var _cnvBox = { current: null };
               // ── preview lifecycle (callback ref; state cached ON the canvas) ──
               var sculptRef = function(cnv) {
@@ -4441,9 +4724,10 @@ const d = labToolData.artStudio || {};
                 var THREE = window.THREE;
                 cnv.dataset.auto = sculptAuto ? '1' : '0';
                 cnv.dataset.summary = sculptSummary;
+                cnv.dataset.snap = sculptSnap ? String(sculptSnap) : 'off';
                 if (cnv._p3d && !cnv._p3d.drag) cnv._p3d.auto = sculptAuto;
                 if (cnv._p3d && cnv._p3d.updateA11y) cnv._p3d.updateA11y();
-                else cnv.setAttribute('aria-label', '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '.');
+                else cnv.setAttribute('aria-label', '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '. Position snapping ' + (sculptSnap ? sculptSnap + ' units' : 'off') + '.');
                 if (!cnv._p3d) {
                   var scene3 = new THREE.Scene(); scene3.background = new THREE.Color('#0f172a');
                   var cam = new THREE.PerspectiveCamera(45, cnv.width / cnv.height, 0.1, 100);
@@ -4459,7 +4743,8 @@ const d = labToolData.artStudio || {};
                     var yawDegrees = Math.round((((state.yaw * 180 / Math.PI) % 360) + 360) % 360);
                     var pitchDegrees = Math.round(state.pitch * 180 / Math.PI);
                     cnv.setAttribute('aria-label', '3D sculpture preview. ' + cnv.dataset.summary + '. View angle ' +
-                      yawDegrees + ' degrees, elevation ' + pitchDegrees + ' degrees. Auto-rotation ' + (state.auto ? 'running' : 'paused') + '.');
+                      yawDegrees + ' degrees, elevation ' + pitchDegrees + ' degrees. Auto-rotation ' + (state.auto ? 'running' : 'paused') +
+                      '. Position snapping ' + (cnv.dataset.snap === 'off' ? 'off' : cnv.dataset.snap + ' units') + '.');
                   }
                   cnv._p3d.updateA11y = updateSculptViewLabel;
                   function announceSculptView(message) {
@@ -4469,29 +4754,157 @@ const d = labToolData.artStudio || {};
                     announceToSR(message + ' View angle ' + Math.round((((state.yaw * 180 / Math.PI) % 360) + 360) % 360) +
                       ' degrees, elevation ' + Math.round(state.pitch * 180 / Math.PI) + ' degrees.');
                   }
-                  function endSculptDrag() {
-                    if (cnv._p3d) {
-                      cnv._p3d.drag = null;
-                      cnv._p3d.auto = cnv.dataset.auto === '1';
-                      updateSculptViewLabel();
-                    }
+                  function findPartMesh(root, partIndex) {
+                    var found = null;
+                    if (root && root.traverse) root.traverse(function(item) {
+                      if (!found && item.userData && item.userData.prim3dPartIndex === partIndex) found = item;
+                    });
+                    return found;
                   }
-                  // Drag to orbit; the configured rotation preference is restored on release.
+                  function pickSculptPart(ev, st) {
+                    if (!st.obj || !THREE.Raycaster || !THREE.Vector2) return st.selectedIndex;
+                    try {
+                      var rect = cnv.getBoundingClientRect();
+                      var pointer = new THREE.Vector2(
+                        ((ev.clientX - rect.left) / (rect.width || cnv.clientWidth || cnv.width)) * 2 - 1,
+                        -((ev.clientY - rect.top) / (rect.height || cnv.clientHeight || cnv.height)) * 2 + 1
+                      );
+                      var raycaster = new THREE.Raycaster();
+                      raycaster.setFromCamera(pointer, st.cam);
+                      var hits = raycaster.intersectObject(st.obj, true) || [];
+                      for (var hitIndex = 0; hitIndex < hits.length; hitIndex++) {
+                        var hit = hits[hitIndex].object;
+                        if (hit && hit.userData && typeof hit.userData.prim3dPartIndex === 'number') return hit.userData.prim3dPartIndex;
+                      }
+                    } catch (e) {}
+                    return st.selectedIndex;
+                  }
+                  function endSculptDrag(cancelled) {
+                    var st = cnv._p3d;
+                    if (!st || !st.drag) return;
+                    var drag = st.drag;
+                    if (drag.kind !== 'orbit') {
+                      if (cancelled && drag.mesh) {
+                        if (drag.kind === 'move' && drag.mesh.position && drag.mesh.position.set) {
+                          drag.mesh.position.set(drag.start[0], drag.start[1], drag.start[2]);
+                        } else if (drag.kind === 'rotate' && drag.mesh.rotation && drag.mesh.rotation.set) {
+                          drag.mesh.rotation.set(drag.start[0] * Math.PI / 180, drag.start[1] * Math.PI / 180, drag.start[2] * Math.PI / 180);
+                        } else if (drag.kind === 'scale' && drag.mesh.scale && drag.mesh.scale.set) {
+                          drag.mesh.scale.set(1, 1, 1);
+                        }
+                      } else if (drag.moved && st.recipe && P3D.updatePart && st.commitRecipe) {
+                        var transformPatch = {};
+                        transformPatch[drag.kind === 'move' ? 'position' : drag.kind === 'rotate' ? 'rotation' : 'size'] = drag.current.slice();
+                        var next = P3D.updatePart(st.recipe, drag.index, transformPatch);
+                        st.recipe = next;
+                        st.commitRecipe(next);
+                        if (typeof announceToSR === 'function') announceToSR((drag.kind === 'move' ? 'Moved' : drag.kind === 'rotate' ? 'Rotated' : 'Scaled') + ' part ' + (drag.index + 1) + '.');
+                      }
+                    }
+                    st.drag = null;
+                    st.auto = !!drag.resumeAuto;
+                    updateSculptViewLabel();
+                  }
+                  // Orbit the view, or directly move, rotate, or scale a selected part.
                   cnv.style.touchAction = 'none';
-                  cnv.addEventListener('pointerdown', function(ev) { cnv._p3d.drag = { x: ev.clientX, y: ev.clientY }; cnv._p3d.auto = false; updateSculptViewLabel(); try { cnv.setPointerCapture(ev.pointerId); } catch (e) {} });
+                  cnv.addEventListener('pointerdown', function(ev) {
+                    var st = cnv._p3d; if (!st) return;
+                    var resumeAuto = cnv.dataset.auto === '1';
+                    if (st.interactionMode !== 'orbit' && st.recipe && st.recipe.parts && st.recipe.parts.length) {
+                      var index = pickSculptPart(ev, st);
+                      index = Math.max(0, Math.min(st.recipe.parts.length - 1, typeof index === 'number' ? index : 0));
+                      var transformKind = st.interactionMode;
+                      var startField = transformKind === 'move' ? 'position' : transformKind === 'rotate' ? 'rotation' : 'size';
+                      var start = st.recipe.parts[index][startField].slice();
+                      st.drag = { kind: transformKind, x: ev.clientX, y: ev.clientY, index: index, start: start, raw: start.slice(), current: start.slice(), moved: false, mesh: findPartMesh(st.obj, index), resumeAuto: resumeAuto };
+                      st.selectedIndex = index;
+                      if (st.selectPart) st.selectPart(index);
+                      if (typeof announceToSR === 'function') announceToSR('Selected part ' + (index + 1) + '. Drag to ' + transformKind + ' it.');
+                    } else {
+                      st.drag = { kind: 'orbit', x: ev.clientX, y: ev.clientY, resumeAuto: resumeAuto };
+                    }
+                    st.auto = false;
+                    updateSculptViewLabel();
+                    try { cnv.setPointerCapture(ev.pointerId); } catch (e) {}
+                  });
                   cnv.addEventListener('pointermove', function(ev) {
                     var st = cnv._p3d; if (!st || !st.drag) return;
-                    st.yaw += (ev.clientX - st.drag.x) * 0.01;
-                    st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + (ev.clientY - st.drag.y) * 0.008));
-                    st.drag = { x: ev.clientX, y: ev.clientY };
+                    var dx = ev.clientX - st.drag.x, dy = ev.clientY - st.drag.y;
+                    if (st.drag.kind === 'move') {
+                      st.drag.raw[0] = Math.max(-4, Math.min(4, st.drag.raw[0] + dx * 0.006));
+                      st.drag.raw[1] = Math.max(-4, Math.min(8, st.drag.raw[1] - dy * 0.006));
+                      st.drag.current[0] = snapSculptValue(st.drag.raw[0], ev.altKey, st.snap);
+                      st.drag.current[1] = snapSculptValue(st.drag.raw[1], ev.altKey, st.snap);
+                      if (st.drag.mesh && st.drag.mesh.position && st.drag.mesh.position.set) st.drag.mesh.position.set(st.drag.current[0], st.drag.current[1], st.drag.current[2]);
+                    } else if (st.drag.kind === 'rotate') {
+                      st.drag.raw[0] = Math.max(-360, Math.min(360, st.drag.raw[0] - dy * 0.5));
+                      st.drag.raw[1] = Math.max(-360, Math.min(360, st.drag.raw[1] + dx * 0.5));
+                      for (var rotationAxis = 0; rotationAxis < 3; rotationAxis++) st.drag.current[rotationAxis] = Math.round(st.drag.raw[rotationAxis] * 10) / 10;
+                      if (st.drag.mesh && st.drag.mesh.rotation && st.drag.mesh.rotation.set) {
+                        st.drag.mesh.rotation.set(st.drag.current[0] * Math.PI / 180, st.drag.current[1] * Math.PI / 180, st.drag.current[2] * Math.PI / 180);
+                      }
+                    } else if (st.drag.kind === 'scale') {
+                      var scaleFactor = Math.exp((dx - dy) * 0.008);
+                      for (var sizeAxis = 0; sizeAxis < st.drag.raw.length; sizeAxis++) {
+                        st.drag.raw[sizeAxis] = Math.max(0.02, Math.min(4, st.drag.raw[sizeAxis] * scaleFactor));
+                        st.drag.current[sizeAxis] = Math.round(st.drag.raw[sizeAxis] * 1000) / 1000;
+                      }
+                      if (st.drag.mesh && st.drag.mesh.scale && st.drag.mesh.scale.set) {
+                        var previewScale = st.drag.current[0] / st.drag.start[0];
+                        st.drag.mesh.scale.set(previewScale, previewScale, previewScale);
+                      }
+                    } else {
+                      st.yaw += dx * 0.01;
+                      st.pitch = Math.max(0.05, Math.min(1.45, st.pitch + dy * 0.008));
+                    }
+                    if (st.drag.kind !== 'orbit') st.drag.moved = st.drag.moved || Math.abs(dx) + Math.abs(dy) > 0;
+                    st.drag.x = ev.clientX; st.drag.y = ev.clientY;
                     updateSculptViewLabel();
                   });
-                  cnv.addEventListener('pointerup', endSculptDrag);
-                  cnv.addEventListener('pointercancel', endSculptDrag);
+                  cnv.addEventListener('pointerup', function() { endSculptDrag(false); });
+                  cnv.addEventListener('pointercancel', function() { endSculptDrag(true); });
                   cnv.onkeydown = function(event) {
                     var st = cnv._p3d;
                     if (!st) return;
-                    if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+                    if (st.interactionMode === 'move' && st.recipe && P3D.updatePart &&
+                        (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown')) {
+                      event.preventDefault();
+                      var activeSnap = event.altKey ? 0 : (Number(st.snap) || 0);
+                      var moveStep = event.altKey ? 0.02 : (activeSnap || 0.1);
+                      var moveAxis = event.key === 'ArrowLeft' || event.key === 'ArrowRight' ? 0 : event.key === 'ArrowUp' || event.key === 'ArrowDown' ? 1 : 2;
+                      var moveDirection = event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === 'PageDown' ? -1 : 1;
+                      var movedPosition = st.recipe.parts[st.selectedIndex].position.slice();
+                      movedPosition[moveAxis] = snapSculptValue(movedPosition[moveAxis] + moveDirection * moveStep, event.altKey, activeSnap);
+                      var movedRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { position: movedPosition });
+                      st.recipe = movedRecipe;
+                      if (st.commitRecipe) st.commitRecipe(movedRecipe);
+                      if (typeof announceToSR === 'function') announceToSR('Moved part ' + (st.selectedIndex + 1) + ' ' + (event.key === 'PageUp' ? 'closer' : event.key === 'PageDown' ? 'farther' : event.key.replace('Arrow', '').toLowerCase()) + '.');
+                    } else if (st.interactionMode === 'rotate' && st.recipe && P3D.updatePart &&
+                        (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown')) {
+                      event.preventDefault();
+                      var rotationStep = event.altKey ? 1 : 15;
+                      var rotationAxis = event.key === 'ArrowUp' || event.key === 'ArrowDown' ? 0 : event.key === 'ArrowLeft' || event.key === 'ArrowRight' ? 1 : 2;
+                      var rotationDirection = event.key === 'ArrowLeft' || event.key === 'ArrowDown' || event.key === 'PageDown' ? -1 : 1;
+                      var rotatedValues = st.recipe.parts[st.selectedIndex].rotation.slice();
+                      rotatedValues[rotationAxis] = Math.max(-360, Math.min(360, rotatedValues[rotationAxis] + rotationDirection * rotationStep));
+                      var rotatedRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { rotation: rotatedValues });
+                      st.recipe = rotatedRecipe;
+                      if (st.commitRecipe) st.commitRecipe(rotatedRecipe);
+                      if (typeof announceToSR === 'function') announceToSR('Rotated part ' + (st.selectedIndex + 1) + ' by ' + rotationDirection * rotationStep + ' degrees.');
+                    } else if (st.interactionMode === 'scale' && st.recipe && P3D.updatePart &&
+                        (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown' || event.key === 'PageUp' || event.key === 'PageDown')) {
+                      event.preventDefault();
+                      var growPart = event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'PageUp';
+                      var keyboardScaleFactor = event.altKey ? 1.02 : 1.1;
+                      if (!growPart) keyboardScaleFactor = 1 / keyboardScaleFactor;
+                      var scaledValues = st.recipe.parts[st.selectedIndex].size.map(function(value) {
+                        return Math.max(0.02, Math.min(4, Math.round(value * keyboardScaleFactor * 1000) / 1000));
+                      });
+                      var scaledRecipe = P3D.updatePart(st.recipe, st.selectedIndex, { size: scaledValues });
+                      st.recipe = scaledRecipe;
+                      if (st.commitRecipe) st.commitRecipe(scaledRecipe);
+                      if (typeof announceToSR === 'function') announceToSR('Scaled part ' + (st.selectedIndex + 1) + ' ' + (growPart ? 'larger.' : 'smaller.'));
+                    } else if (event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key === 'ArrowUp' || event.key === 'ArrowDown') {
                       event.preventDefault();
                       var step = event.altKey ? 0.02 : 0.12;
                       if (event.key === 'ArrowLeft') st.yaw -= step;
@@ -4534,6 +4947,17 @@ const d = labToolData.artStudio || {};
                     cnv._p3dAnim = requestAnimationFrame(loop);
                   };
                   loop();
+                }
+                var liveState = cnv._p3d;
+                if (liveState) {
+                  liveState.interactionMode = sculptMode;
+                  liveState.recipe = recipe;
+                  liveState.selectedIndex = sel;
+                  liveState.commitRecipe = setRecipe;
+                  liveState.selectPart = function(index) { upd('sculptSel', index); };
+                  liveState.snap = sculptSnap;
+                  cnv.dataset.mode = sculptMode;
+                  cnv.dataset.snap = sculptSnap ? String(sculptSnap) : 'off';
                 }
                 // (re)build the sculpture when the recipe changed
                 var st2 = cnv._p3d;
@@ -4579,20 +5003,78 @@ const d = labToolData.artStudio || {};
                   if (typeof announceToSR === 'function') announceToSR('Unable to save the sculpture picture.');
                 }
               };
+              var placeDroppedShape = function(event) {
+                event.preventDefault();
+                var shape = '';
+                try { shape = event.dataTransfer.getData('application/x-artstudio-shape') || event.dataTransfer.getData('text/plain'); } catch (e) {}
+                if ((P3D.SHAPES || []).indexOf(shape) === -1) return;
+                var next = P3D.addPart(recipe, shape);
+                if (!next || !next.parts || !next.parts.length) return;
+                var index = next.parts.length - 1;
+                var rect = event.currentTarget.getBoundingClientRect();
+                var width = rect.width || event.currentTarget.clientWidth || 480;
+                var height = rect.height || event.currentTarget.clientHeight || 420;
+                var x = Math.max(-2, Math.min(2, ((event.clientX - rect.left) / width - 0.5) * 3));
+                var y = Math.max(0.05, Math.min(2.5, (1 - (event.clientY - rect.top) / height) * 1.8));
+                x = snapSculptValue(x, false);
+                y = snapSculptValue(y, false);
+                if (P3D.updatePart) next = P3D.updatePart(next, index, { position: [x, y, 0] });
+                setRecipe(next);
+                upd('sculptSel', index);
+                if (typeof announceToSR === 'function') announceToSR('Added ' + shape + ' at the drop position.');
+              };
+              var mirrorSelectedPart = function() {
+                if (!recipe || !selectedPart || !P3D.duplicatePart || !P3D.updatePart) return;
+                var next = P3D.duplicatePart(recipe, sel);
+                if (!next || !next.parts || next.parts.length <= parts.length) {
+                  if (typeof announceToSR === 'function') announceToSR('Unable to add another sculpture part.');
+                  return;
+                }
+                var mirroredIndex = sel + 1;
+                var mirrorAxisIndex = sculptMirrorAxis === 'y' ? 1 : sculptMirrorAxis === 'z' ? 2 : 0;
+                var mirroredPosition = selectedPart.position.slice();
+                mirroredPosition[mirrorAxisIndex] = -mirroredPosition[mirrorAxisIndex];
+                mirroredPosition = mirroredPosition.map(function(value) { return snapSculptValue(value, false); });
+                var mirroredRotation = selectedPart.rotation.map(function(value, axis) { return axis === mirrorAxisIndex ? value : -value; });
+                next = P3D.updatePart(next, mirroredIndex, { position: mirroredPosition, rotation: mirroredRotation });
+                setRecipe(next);
+                upd('sculptSel', mirroredIndex);
+                if (typeof announceToSR === 'function') announceToSR('Created a mirrored copy of part ' + (sel + 1) + ' on the ' + sculptMirrorAxis.toUpperCase() + ' axis.');
+              };
               return React.createElement("div", { className: "grid md:grid-cols-2 gap-4" },
                 // preview column
+                React.createElement('div', { className: 'contents' },
+                  React.createElement('div', { className: 'md:col-span-2 -mb-2 flex flex-wrap gap-2 items-center' },
+                    React.createElement('div', { className: 'flex gap-1 flex-1', role: 'group', 'aria-label': 'Sculpture canvas interaction' },
+                      React.createElement('button', { className: mini + ' flex-1', 'aria-label': 'Orbit sculpture view', 'aria-pressed': sculptMode === 'orbit', onClick: function() { upd('sculptInteractMode', 'orbit'); } }, '\uD83C\uDF10 Orbit'),
+                      React.createElement('button', { className: mini + ' flex-1', 'aria-label': 'Move sculpture parts', 'aria-pressed': sculptMode === 'move', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'move'); } }, '\u270B Move'),
+                      React.createElement('button', { className: mini + ' flex-1', 'aria-label': 'Rotate sculpture parts', 'aria-pressed': sculptMode === 'rotate', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'rotate'); } }, '\u21BB Rotate'),
+                      React.createElement('button', { className: mini + ' flex-1', 'aria-label': 'Scale sculpture parts', 'aria-pressed': sculptMode === 'scale', disabled: !parts.length, onClick: function() { upd('sculptInteractMode', 'scale'); } }, '\u2922 Scale')
+                    ),
+                    React.createElement('div', { className: 'flex gap-1 items-center', role: 'group', 'aria-label': 'Position snapping' },
+                      React.createElement('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Snap:'),
+                      [{ value: 0, label: 'Off' }, { value: 0.1, label: '0.1' }, { value: 0.25, label: '0.25' }, { value: 0.5, label: '0.5' }].map(function(option) {
+                        return React.createElement('button', { key: option.label, className: mini + ' px-2', 'aria-label': option.value ? 'Snap positions to ' + option.label + ' units' : 'Turn position snapping off', 'aria-pressed': sculptSnap === option.value, onClick: function() { upd('sculptSnap', option.value); } }, option.label);
+                      })
+                    )
+                  )
+                ),
                 React.createElement("div", null,
-                  React.createElement("canvas", { role: "img", "aria-label": '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '.',
+                  React.createElement("canvas", { role: "img", "aria-label": '3D sculpture preview. ' + sculptSummary + '. Auto-rotation ' + (sculptAuto ? 'running' : 'paused') + '. Position snapping ' + (sculptSnap ? sculptSnap + ' units' : 'off') + '.',
                     ref: sculptRef,
                     width: 480,
                     height: 420,
-                    className: "w-full rounded-xl border border-slate-400 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2",
+                    className: "w-full rounded-xl border border-slate-400 focus-visible:ring-4 focus-visible:ring-pink-600 focus-visible:ring-offset-2 " + (sculptMode === 'move' ? 'cursor-move' : sculptMode === 'rotate' ? 'cursor-grabbing' : sculptMode === 'scale' ? 'cursor-ns-resize' : 'cursor-grab'),
                     tabIndex: 0,
                     "aria-describedby": "artstudio-sculpt-keyboard-help",
-                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space"
+                    "aria-keyshortcuts": "ArrowUp ArrowDown ArrowLeft ArrowRight PageUp PageDown Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space",
+                    onDragOver: function(event) { event.preventDefault(); },
+                    onDrop: placeDroppedShape
                   }),
-                  React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[11px] text-slate-600" }, "Drag to orbit. Keyboard: Arrow keys orbit; Alt with an Arrow key makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation. Manual keyboard orbit pauses auto-rotation."),
+                  React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[11px] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose a Snap grid, or hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. Arrow keys rotate its X or Y axis; Page Up or Page Down rotates Z. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Scale parts: select and drag diagonally. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
                   React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": "3D preview actions" },
+                    React.createElement("button", { className: mini, "aria-label": "Undo sculpture change", disabled: !sculptUndo.length, onClick: undoSculpt }, '\u21B6'),
+                    React.createElement("button", { className: mini, "aria-label": "Redo sculpture change", disabled: !sculptRedo.length, onClick: redoSculpt }, '\u21B7'),
                     React.createElement("button", {
                       className: mini + " flex-1",
                       "aria-label": sculptAuto ? "Pause 3D preview rotation" : "Resume 3D preview rotation",
@@ -4612,16 +5094,16 @@ const d = labToolData.artStudio || {};
                 // editor column
                 React.createElement("div", { className: "space-y-2" },
                   React.createElement("h3", { className: "font-black text-slate-700 text-sm" }, '🗿 ' + __alloT('stem.artstudio.sculpt_title', 'Sculpt with primitive shapes')),
-                  !parts.length ? React.createElement("div", null,
-                    React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from a preset')),
+                  React.createElement("div", null,
+                    React.createElement("span", { id: "artstudio-sculpt-presets-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_presets', 'Start from or morph a preset')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-presets-label" }, (P3D.PRESETS || []).map(function(ps) {
                       return React.createElement("button", { key: ps.id, className: mini, title: ps.label, "aria-label": 'Preset: ' + ps.label, onClick: function() { upd('sculptSel', 0); setRecipe(P3D.getPreset(ps.id)); } }, ps.emoji);
                     }))
-                  ) : null,
+                  ),
                   React.createElement("div", null,
-                    React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part')),
+                    React.createElement("span", { id: "artstudio-sculpt-add-label", className: "text-[11px] font-bold text-slate-600 mb-1 block" }, __alloT('stem.artstudio.sculpt_add_part', 'Add a part \u2014 click, or drag it onto the preview')),
                     React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-labelledby": "artstudio-sculpt-add-label" }, (P3D.SHAPES || []).map(function(shp) {
-                      return React.createElement("button", { key: shp, className: mini, title: 'Add ' + shp, "aria-label": 'Add ' + shp, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
+                      return React.createElement("button", { key: shp, className: mini, draggable: true, title: 'Add or drag ' + shp, "aria-label": 'Add ' + shp + '; it can also be dragged onto the preview', onDragStart: function(event) { event.dataTransfer.setData('application/x-artstudio-shape', shp); event.dataTransfer.setData('text/plain', shp); }, onClick: function() { partOp(function(P, r) { return P.addPart(r, shp); }); upd('sculptSel', parts.length); } }, SHAPE_ICONS[shp] || shp);
                     }))
                   ),
                   parts.length ? React.createElement("div", null,
@@ -4629,17 +5111,62 @@ const d = labToolData.artStudio || {};
                       return React.createElement("button", { key: i, className: mini + (i === sel ? ' ring-2 ring-pink-500' : ''), "aria-pressed": i === sel ? 'true' : 'false', "aria-label": 'Part ' + (i + 1) + ': ' + p.shape, style: { borderBottom: '3px solid ' + p.color }, onClick: function() { upd('sculptSel', i); } }, SHAPE_ICONS[p.shape] || p.shape);
                     })),
                     React.createElement("div", { className: "grid grid-cols-6 gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_move', 'Move the selected part') },
-                      [['◀', 'position', 0, -0.08, 'Left'], ['▶', 'position', 0, 0.08, 'Right'], ['⬆', 'position', 1, 0.08, 'Up'], ['⬇', 'position', 1, -0.08, 'Down'], ['↗', 'position', 2, 0.08, 'Closer'], ['↙', 'position', 2, -0.08, 'Farther']].map(function(cfg) {
-                        return React.createElement("button", { key: cfg[4], className: mini, title: cfg[4], "aria-label": cfg[4], onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, cfg[1], cfg[2], cfg[3]); }); } }, cfg[0]);
+                      [['◀', 0, -1, 'Left'], ['▶', 0, 1, 'Right'], ['⬆', 1, 1, 'Up'], ['⬇', 1, -1, 'Down'], ['↗', 2, 1, 'Closer'], ['↙', 2, -1, 'Farther']].map(function(cfg) {
+                        return React.createElement("button", { key: cfg[3], className: mini, title: cfg[3], "aria-label": cfg[3], onClick: function() { partOp(function(P, r) {
+                          var moved = selectedPart.position.slice();
+                          moved[cfg[1]] = snapSculptValue(moved[cfg[1]] + cfg[2] * (sculptSnap || 0.08), false);
+                          return P.updatePart(r, sel, { position: moved });
+                        }); } }, cfg[0]);
                       })),
-                    React.createElement("div", { className: "grid grid-cols-6 gap-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_tools', 'Shape tools') },
+                    React.createElement("div", { className: "flex items-center gap-1 mb-1", role: "group", "aria-label": "Mirror copy axis" },
+                      React.createElement("span", { className: "mr-1 text-[11px] font-bold text-slate-600" }, "Mirror axis:"),
+                      ['x', 'y', 'z'].map(function(axis) {
+                        return React.createElement("button", { key: axis, className: mini + " min-h-[32px] px-3", "aria-label": 'Mirror across ' + axis.toUpperCase() + ' axis', "aria-pressed": sculptMirrorAxis === axis, onClick: function() { upd('sculptMirrorAxis', axis); } }, axis.toUpperCase());
+                      })
+                    ),
+                    React.createElement("div", { className: "grid grid-cols-7 gap-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_tools', 'Shape tools') },
                       React.createElement("button", { className: mini, title: 'Bigger', "aria-label": 'Bigger', onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 1.25); }); } }, '➕'),
                       React.createElement("button", { className: mini, title: 'Smaller', "aria-label": 'Smaller', onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 0.8); }); } }, '➖'),
                       React.createElement("button", { className: mini, title: 'Spin', "aria-label": 'Spin', onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
                       React.createElement("button", { className: mini, title: 'Color', "aria-label": 'Change color', onClick: function() { partOp(function(P, r) { return P.recolorPart(r, sel); }); } }, '🎨'),
                       React.createElement("button", { className: mini, title: 'Duplicate', "aria-label": 'Duplicate', onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
+                      React.createElement("button", { className: mini, title: 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', "aria-label": 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', onClick: mirrorSelectedPart }, '↔'),
                       React.createElement("button", { className: mini, title: 'Remove part', "aria-label": 'Remove part', onClick: function() { partOp(function(P, r) { return P.removePart(r, sel); }); upd('sculptSel', Math.max(0, sel - 1)); } }, '✕')
-                    )
+                    ),
+                    selectedPart ? React.createElement("details", { className: "mt-2 rounded-xl border border-slate-200 bg-slate-50 p-2" },
+                      React.createElement("summary", { className: "cursor-pointer text-xs font-black text-slate-700" }, 'Fine-tune selected part'),
+                      React.createElement("div", { className: "mt-2 space-y-2" },
+                        React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+                          React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Shape',
+                            React.createElement("select", { value: selectedPart.shape, className: "mt-1 w-full rounded border border-slate-300 bg-white p-1", onChange: function(event) { var nextShape = event.target.value; partOp(function(P, r) { var starter = P.newPart(nextShape, sel); return P.updatePart(r, sel, { shape: nextShape, size: starter.size }); }); } }, (P3D.SHAPES || []).map(function(shape) { return React.createElement("option", { key: shape, value: shape }, shape); }))
+                          ),
+                          React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Color',
+                            React.createElement("input", { type: "color", value: selectedPart.color, className: "mt-1 h-8 w-full", onChange: function(event) { partOp(function(P, r) { return P.updatePart(r, sel, { color: event.target.value }); }); } })
+                          )
+                        ),
+                        React.createElement("div", null,
+                          React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, 'Size'),
+                          (selectedPart.shape === 'box' ? ['Width', 'Height', 'Depth'] : selectedPart.shape === 'sphere' ? ['Radius'] : selectedPart.shape === 'torus' ? ['Ring radius', 'Tube radius'] : ['Radius', 'Height']).map(function(label, axis) {
+                            return React.createElement("label", { key: label, className: "grid grid-cols-[72px_1fr_34px] items-center gap-1 text-[10px] text-slate-600" }, label,
+                              React.createElement("input", { type: "range", min: 0.02, max: 4, step: 0.02, value: selectedPart.size[axis], onChange: function(event) { var size = selectedPart.size.slice(); size[axis] = parseFloat(event.target.value); partOp(function(P, r) { return P.updatePart(r, sel, { size: size }); }); } }),
+                              React.createElement("output", null, Number(selectedPart.size[axis]).toFixed(2))
+                            );
+                          })
+                        ),
+                        [{ field: 'position', title: 'Position', step: sculptSnap || 0.05, min: -4, max: 4 }, { field: 'rotation', title: 'Rotation', step: 5, min: -180, max: 180 }].map(function(group) {
+                          return React.createElement("div", { key: group.field },
+                            React.createElement("p", { className: "text-[11px] font-black text-slate-600" }, group.title),
+                            ['X', 'Y', 'Z'].map(function(axisLabel, axis) {
+                              var upper = group.field === 'position' && axis === 1 ? 8 : group.max;
+                              return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[10px] text-slate-600" }, axisLabel,
+                                React.createElement("input", { type: "range", min: group.min, max: upper, step: group.step, value: selectedPart[group.field][axis], onChange: function(event) { var values = selectedPart[group.field].slice(); values[axis] = parseFloat(event.target.value); var patch = {}; patch[group.field] = values; partOp(function(P, r) { return P.updatePart(r, sel, patch); }); } }),
+                                React.createElement("output", null, Math.round(selectedPart[group.field][axis] * 100) / 100)
+                              );
+                            })
+                          );
+                        })
+                      )
+                    ) : null
                   ) : null,
                   (typeof callGemini === 'function') ? React.createElement("div", { className: "flex gap-1" },
                     React.createElement("input", { value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
@@ -7970,14 +8497,14 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex gap-1 p-1 bg-slate-100 rounded-xl border border-slate-400 mb-2", role: "group", "aria-label": "Stereogram mode" },
 
-                React.createElement("button", { "aria-pressed": (d.stereoAnimMode || 'static') === 'static', onClick: function() { _stopStereoAnim(); upd('stereoAnimMode', 'static'); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.static', "\uD83D\uDCF8 Static")),
+                React.createElement("button", { "aria-pressed": (d.stereoAnimMode || 'static') === 'static', onClick: function() { _cancelStereoAnimWork(true); updMany({ stereoAnimMode: 'static', stereoAnimPlaying: false, stereoAnimRendering: false, stereoAnimHasFrames: false, stereoAnimProgress: 0, stereoAnimAiMotionStatus: '' }); }, className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + ((d.stereoAnimMode || 'static') === 'static' ? 'bg-white shadow-md text-cyan-700' : 'text-slate-600 hover:text-slate-700') }, __alloT('stem.artstudio.static', "\uD83D\uDCF8 Static")),
 
                 React.createElement("button", { "aria-label": __alloT('stem.artstudio.animate', "Animate"), "aria-pressed": (d.stereoAnimMode || 'static') === 'animate', onClick: function() {
                   var staticDepthCanvas = document.getElementById('depthMapCanvas');
                   if (staticDepthCanvas) {
                     try {
                       var staticDepthData = staticDepthCanvas.getContext('2d').getImageData(0, 0, staticDepthCanvas.width, staticDepthCanvas.height);
-                      upd('stereoStaticDepthSnapshot', { width: staticDepthCanvas.width, height: staticDepthCanvas.height, data: Array.from(staticDepthData.data) });
+                      upd('stereoStaticDepthSnapshot', { width: staticDepthCanvas.width, height: staticDepthCanvas.height, data: copyArtStudioPixels(staticDepthData) });
                     } catch (_) {}
                   }
                   upd('stereoAnimMode', 'animate');
@@ -8969,7 +9496,17 @@ const d = labToolData.artStudio || {};
 
                         var kf = d.stereoAnimKeyframes ? d.stereoAnimKeyframes.slice() : [];
 
-                        kf.push({ width: c.width, height: c.height, data: Array.from(imgData.data) });
+                        if (kf.length >= ART_STUDIO_MAX_ANIM_KEYFRAMES) {
+
+                          if (typeof addToast === 'function') addToast('Keep up to ' + ART_STUDIO_MAX_ANIM_KEYFRAMES + ' keyframes. Remove one before capturing another.', 'warning');
+
+                          if (typeof announceToSR === 'function') announceToSR('Keyframe limit reached. Remove a keyframe before capturing another.');
+
+                          return;
+
+                        }
+
+                        kf.push({ width: c.width, height: c.height, data: copyArtStudioPixels(imgData) });
 
                         upd('stereoAnimKeyframes', kf);
 
@@ -9110,7 +9647,7 @@ const d = labToolData.artStudio || {};
 
                             var imgData = ctx.getImageData(0, 0, 400, 400);
 
-                            upd('stereoAnimUploadedDepth', { width: 400, height: 400, data: Array.from(imgData.data) });
+                            upd('stereoAnimUploadedDepth', { width: 400, height: 400, data: copyArtStudioPixels(imgData) });
 
                             if (typeof addToast === 'function') addToast('\uD83D\uDCF8 Depth map uploaded!', 'success');
 
@@ -9257,7 +9794,7 @@ const d = labToolData.artStudio || {};
 
                                 var imgData = c.getContext('2d').getImageData(0, 0, 400, 400);
 
-                                upd('stereoAnimAiDepth', { width: 400, height: 400, data: Array.from(imgData.data) });
+                                upd('stereoAnimAiDepth', { width: 400, height: 400, data: copyArtStudioPixels(imgData) });
 
                                 upd('stereoAnimAiGenerating', false);
 
@@ -9459,13 +9996,15 @@ const d = labToolData.artStudio || {};
 
 
 
-                        _stopStereoAnim();
+                        var renderGeneration = _beginStereoAnimRender();
 
-                        upd('stereoAnimRendering', true);
-
-                        upd('stereoAnimProgress', 0);
-
-                        upd('stereoAnimAiMotionStatus', '');
+                        updMany({
+                          stereoAnimRendering: true,
+                          stereoAnimProgress: 0,
+                          stereoAnimAiMotionStatus: '',
+                          stereoAnimHasFrames: false,
+                          stereoAnimPlaying: false
+                        });
 
                         if (typeof announceToSR === 'function') announceToSR('Rendering animated stereogram.');
 
@@ -9526,15 +10065,21 @@ const d = labToolData.artStudio || {};
 
                             return new Promise(function(resolve) {
 
+                              if (!_isStereoAnimRenderActive(renderGeneration)) { resolve(null); return; }
+
                               var dpPrompt = 'A smooth high-quality grayscale depth map: ' + pose + ' ' +
                                 'Closest parts pure white, furthest pure black. No text or artifacts. ' +
                                 'Fill the entire square frame. Subject style: ' + motionPrompt + '.';
 
                               callImagen(dpPrompt, 400).then(function(base64) {
 
+                                if (!_isStereoAnimRenderActive(renderGeneration)) { resolve(null); return; }
+
                                 var img = new Image();
 
                                 img.onload = function() {
+
+                                  if (!_isStereoAnimRenderActive(renderGeneration)) { resolve(null); return; }
 
                                   var c = document.createElement('canvas'); c.setAttribute('aria-hidden', 'true'); c.width = 400; c.height = 400;
 
@@ -9552,6 +10097,8 @@ const d = labToolData.artStudio || {};
 
                               }).catch(function(err) {
 
+                                if (!_isStereoAnimRenderActive(renderGeneration)) { resolve(null); return; }
+
                                 console.warn('[AI Motion] Imagen failed for frame ' + idx + ':', err && err.message);
 
                                 resolve(fallbackKf);
@@ -9563,6 +10110,8 @@ const d = labToolData.artStudio || {};
                           };
 
                           callGemini(storyboardPrompt, true).then(function(rawResponse) {
+
+                            if (!_isStereoAnimRenderActive(renderGeneration)) return;
 
                             // callGemini returns the raw text body — with jsonMode=true that's a JSON
                             // string we have to parse ourselves. Be defensive: some model responses
@@ -9635,6 +10184,8 @@ const d = labToolData.artStudio || {};
 
                             var generateNext = function(i) {
 
+                              if (!_isStereoAnimRenderActive(renderGeneration)) return;
+
                               if (i >= nF) {
 
                                 // All depth maps generated — hand off to stereogram render
@@ -9654,6 +10205,8 @@ const d = labToolData.artStudio || {};
 
                               generateFrame(i, String(poses[i] || motionPrompt), fallback).then(function(kf) {
 
+                                if (!_isStereoAnimRenderActive(renderGeneration)) return;
+
                                 keyframes.push(kf || anchorKf);
 
                                 upd('stereoAnimProgress', Math.round((i + 1) / nF * 50));
@@ -9667,6 +10220,8 @@ const d = labToolData.artStudio || {};
                             generateNext(0);
 
                           }).catch(function(err) {
+
+                            if (!_isStereoAnimRenderActive(renderGeneration)) return;
 
                             console.warn('[AI Motion] Storyboard / pipeline failed:', err);
 
@@ -9690,6 +10245,8 @@ const d = labToolData.artStudio || {};
 
                             function step() {
 
+                              if (!_isStereoAnimRenderActive(renderGeneration)) return;
+
                               if (fi2 >= nF) {
 
                                 _stereoAnimRef.frames = renderedFrames;
@@ -9708,7 +10265,7 @@ const d = labToolData.artStudio || {};
 
                                 if (reducedMotion) upd('stereoAnimPlaying', false);
 
-                                else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd); }
+                                else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8); }
 
                                 return;
 
@@ -9784,9 +10341,11 @@ const d = labToolData.artStudio || {};
 
                               if (reducedMotion) upd('stereoAnimPlaying', false);
 
-                              else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd); }
+                              else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8); }
 
-                            }
+                            },
+
+                            renderGeneration
 
                           );
 
@@ -9900,6 +10459,8 @@ const d = labToolData.artStudio || {};
 
                           function renderStep() {
 
+                            if (!_isStereoAnimRenderActive(renderGeneration)) return;
+
                             if (fi >= nF) {
 
                               _stereoAnimRef.frames = frames;
@@ -9912,7 +10473,7 @@ const d = labToolData.artStudio || {};
 
                               if (reducedMotion) upd('stereoAnimPlaying', false);
 
-                              else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd); }
+                              else { upd('stereoAnimPlaying', true); _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8); }
 
                               return;
 
@@ -9948,9 +10509,7 @@ const d = labToolData.artStudio || {};
 
                       onClick: function() {
 
-                        _stopStereoAnim();
-
-                        _stereoAnimRef.frames = [];
+                        _cancelStereoAnimWork(true);
 
                         // Also clear the output canvas and repaint the placeholder
                         // banner. Without this the last rendered frame stays painted
@@ -10079,7 +10638,7 @@ const d = labToolData.artStudio || {};
 
                         } else {
 
-                          _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8, upd); upd('stereoAnimPlaying', true);
+                          _playStereoAnim('stereoAnimCanvas', d.stereoAnimSpeed || 8); upd('stereoAnimPlaying', true);
 
                           if (typeof announceToSR === 'function') announceToSR('Animated stereogram playing.');
 

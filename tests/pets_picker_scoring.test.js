@@ -49,8 +49,21 @@ function extractBands() {
   return eval('(' + SRC.slice(open, i) + ')');
 }
 
+function extractNamedFunction(name) {
+  const start = SRC.indexOf('function ' + name + '(');
+  const open = SRC.indexOf('{', start);
+  let depth = 0, i = open;
+  for (; i < SRC.length; i++) {
+    if (SRC[i] === '{') depth++;
+    else if (SRC[i] === '}') { depth--; if (depth === 0) { i++; break; } }
+  }
+  // eslint-disable-next-line no-eval
+  return eval('(' + SRC.slice(start, i) + ')');
+}
+
 const CANDIDATES = extractCandidates();
 const BANDS = extractBands();
+const pickerReasonCues = extractNamedFunction('pickerReasonCues');
 const byId = (id) => CANDIDATES.find((c) => c.id === id);
 const band = (id) => BANDS.find((b) => b.id === id);
 
@@ -105,6 +118,24 @@ describe('Pet Picker — age bands make the safety rules reachable', () => {
       .sort((a, b) => b.score - a.score);
     expect(ranked[0].id).not.toBe('reptile-beginner');
   });
+
+  it('applies the CDC under-5 rodent caution instead of rewarding guinea pigs', () => {
+    const guinea = byId('guinea-pair');
+    expect(guinea.fit(withKids('under5')))
+      .toBeLessThan(guinea.fit(withKids('10plus')));
+
+    const restrictiveProfiles = [
+      withKids('under5'),
+      withKids('under5', { housing: 'apartment', allergies: true, budget: 'low', experience: 'first' }),
+      withKids('under5', { housing: 'rural', hours: 14, budget: 'high', experience: 'lots' }),
+    ];
+    for (const inputs of restrictiveProfiles) {
+      const ranked = CANDIDATES
+        .map((candidate) => ({ id: candidate.id, score: candidate.fit(inputs) }))
+        .sort((a, b) => b.score - a.score);
+      expect(['guinea-pair', 'reptile-beginner']).not.toContain(ranked[0].id);
+    }
+  });
 });
 
 describe('Pet Picker — scoring stays coherent', () => {
@@ -149,5 +180,78 @@ describe('Pet Picker — scoring stays coherent', () => {
     // A cat tolerates being alone — the two must not move together.
     expect(byId('cat').fit(opts({ hours: 12 })))
       .toBeGreaterThanOrEqual(byId('cat').fit(opts({ hours: 2 })));
+  });
+
+  it('keeps every visible score factor exactly aligned with the computed score', () => {
+    const housings = ['apartment', 'house', 'rural'];
+    const hours = [0, 4, 6, 8, 10, 14];
+    const budgets = ['low', 'medium', 'high'];
+    const experiences = ['first', 'some', 'lots'];
+    for (const housing of housings) {
+      for (const ageBand of BANDS) {
+        for (const allergies of [false, true]) {
+          for (const alone of hours) {
+            for (const budget of budgets) {
+              for (const experience of experiences) {
+                const inputs = withKids(ageBand.id, {
+                  housing,
+                  allergies,
+                  hours: alone,
+                  budget,
+                  experience,
+                });
+                for (const candidate of CANDIDATES) {
+                  const score = candidate.fit(inputs);
+                  const reasons = pickerReasonCues(candidate.id, inputs, score);
+                  expect(
+                    reasons[0]?.label,
+                    candidate.id + ' fell back instead of explaining its score',
+                  ).not.toBe('Current computed score');
+                  expect(
+                    reasons.reduce((sum, reason) => sum + reason.delta, 0),
+                    candidate.id + ' reason total drifted from its score',
+                  ).toBe(score);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
+  it('avoids size-based and child-tolerance shortcuts in learner guidance', () => {
+    const candidateText = JSON.stringify(CANDIDATES);
+    expect(candidateText).not.toMatch(/Good with kids when raised right/i);
+    expect(candidateText).not.toMatch(/generally kid-tolerant/i);
+    expect(candidateText).not.toMatch(/small dogs more first-time-owner friendly/i);
+    expect(candidateText).toMatch(/adult caregiver/i);
+    expect(candidateText).toMatch(/Children under 5 should avoid rodent contact/i);
+  });
+});
+
+describe('Pet Picker — readiness and uncertainty are real outcomes', () => {
+  it('persists only the four bounded readiness checks', () => {
+    const persistSlice = SRC.slice(
+      SRC.indexOf('var PETS_PERSIST_KEYS'),
+      SRC.indexOf('var PETS_EVIDENCE_MODULE_LABELS'),
+    );
+    expect(persistSlice).toMatch(/'pickReadiness'/);
+    expect(SRC).toMatch(/\['housing', 'caregiver', 'budget', 'backup'\]/);
+    expect(SRC).toMatch(/snapshot\.pickReadiness = safePickReadiness/);
+  });
+
+  it('labels rankings as model output rather than adoption matches', () => {
+    expect(SRC).toMatch(/Ranked comparison/);
+    expect(SRC).toMatch(/not confidence or proof of suitability/);
+    expect(SRC).toMatch(/MODEL LEADER/);
+    expect(SRC).not.toMatch(/TOP MATCH|TIED TOP/);
+  });
+
+  it('makes waiting explicit until every readiness essential is confirmed', () => {
+    expect(SRC).toMatch(/Pause before choosing/);
+    expect(SRC).toMatch(/Waiting is the responsible outcome/);
+    expect(SRC).toMatch(/Ready to research/);
+    expect(SRC).toMatch(/still does not approve an adoption/);
   });
 });

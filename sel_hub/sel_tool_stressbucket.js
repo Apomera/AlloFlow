@@ -19496,6 +19496,36 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
         var fillH = (fill / 100) * (bucketH - 30);
         var fillY = bucketY + (bucketH - fillH) - 10;
         var fillColor = overflowing ? _sbkBg('#ef4444') : (fill > 70 ? '#f97316' : (fill > 40 ? '#facc15' : '#14b8a6'));
+        var balanceTone = overflowing
+          ? { icon: '\u26A0\uFE0F', label: 'Overflowing', title: 'Your bucket is at capacity', accent: '#ef4444', text: '#fca5a5' }
+          : net > 5
+            ? { icon: '\u2191', label: 'High load', title: 'More is coming in than going out', accent: '#f59e0b', text: '#fed7aa' }
+            : net > 0
+              ? { icon: '\u25D0', label: 'Watch the balance', title: 'Your bucket is gradually filling', accent: '#f59e0b', text: '#fde68a' }
+              : net === 0
+                ? { icon: '\u2713', label: 'Balanced', title: 'Inflow and outflow are balanced', accent: '#14b8a6', text: '#99f6e4' }
+                : { icon: '\u2193', label: 'More room', title: 'Your supports are creating room', accent: '#a78bfa', text: '#c4b5fd' };
+        var nextAction = overflowing
+          ? 'Share one heavy inflow with a trusted person who can help reduce it.'
+          : net > 5
+            ? 'Choose one inflow to reduce or one realistic support to strengthen.'
+            : net > 0
+              ? 'Add one small tap you can actually use today.'
+              : net === 0
+                ? 'Protect the supports that are keeping this balance steady.'
+                : 'Notice which support is helping most and keep it available.';
+        var capacityUsed = Math.round(fill);
+
+        function balanceStat(label, value, detail, color) {
+          return h('div', {
+            key: label,
+            style: { padding: '10px 12px', borderRadius: 10, background: _sbkBg('#1e293b'), border: '1px solid ' + _sbkBd('#334155'), borderTop: '3px solid ' + _sbkBd(color), minHeight: 72 }
+          },
+            h('div', { style: { color: _sbkFg(color), fontSize: 20, fontWeight: 900, lineHeight: 1 } }, value),
+            h('div', { style: { marginTop: 5, color: _sbkFg('#e2e8f0'), fontSize: 11, fontWeight: 800 } }, label),
+            h('div', { style: { marginTop: 2, color: _sbkFg('#94a3b8'), fontSize: 10, lineHeight: 1.35 } }, detail)
+          );
+        }
 
         // Accessibility description, computed from live data
         var svgDesc = 'Stress bucket showing capacity at ' + Math.round(fill) + ' percent. ' +
@@ -19508,26 +19538,50 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
 
         return h('div', null,
           // Summary line
-          h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Stress bucket balance', style: { display: 'flex', alignItems: 'center', gap: 10, padding: 10, borderRadius: 8, background: overflowing ? 'rgba(239,68,68,0.15)' : '#0f172a', border: '1px solid ' + (overflowing ? _sbkBg('#ef4444') : _sbkBg('#1e293b')), marginBottom: 12, flexWrap: 'wrap' } },
-            h('div', { style: { flex: 1, minWidth: 200 } },
-              h('div', { style: { fontSize: 12, color: _sbkFg('#94a3b8'), fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Right now'),
-              h('div', { style: { fontSize: 16, color: overflowing ? _sbkFg('#fca5a5') : _sbkFg('#e2e8f0'), fontWeight: 800 } },
-                overflowing ? '⚠️ Your bucket is overflowing' :
-                  (net > 5 ? 'Your bucket is filling faster than it is draining' :
-                    (net > 0 ? 'Slightly more in than out right now' :
-                      (net === 0 ? 'Roughly balanced today' : 'Draining faster than filling'))))
+          h('section', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Stress bucket balance', style: { padding: 14, borderRadius: 14, background: 'linear-gradient(135deg, ' + balanceTone.accent + '1a, ' + _sbkBg('#0f172a') + ')', border: '1px solid ' + _sbkBd(balanceTone.accent), boxShadow: '0 14px 34px rgba(2,6,23,0.18)', marginBottom: 12 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 11, flexWrap: 'wrap' } },
+              h('span', { 'aria-hidden': 'true', style: { width: 42, height: 42, borderRadius: 12, display: 'grid', placeItems: 'center', background: balanceTone.accent + '22', border: '1px solid ' + _sbkBd(balanceTone.accent), color: _sbkFg(balanceTone.text), fontSize: 21, fontWeight: 900, flexShrink: 0 } }, balanceTone.icon),
+              h('div', { style: { flex: '1 1 230px' } },
+                h('div', { style: { color: _sbkFg(balanceTone.text), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } }, balanceTone.label),
+                h('div', { style: { marginTop: 3, color: _sbkFg('#e2e8f0'), fontSize: 17, fontWeight: 900, lineHeight: 1.25 } }, balanceTone.title)
+              ),
+              h('span', { style: { padding: '6px 10px', borderRadius: 999, background: balanceTone.accent + '22', border: '1px solid ' + _sbkBd(balanceTone.accent), color: _sbkFg(balanceTone.text), fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' } }, capacityUsed + '% used')
             ),
-            h('div', { style: { fontSize: 12, color: _sbkFg('#94a3b8'), textAlign: 'right' } },
-              h('div', null, 'Inflow: ' + inflow),
-              h('div', null, 'Outflow: ' + outflow)
+            h('div', { style: { marginTop: 12 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, marginBottom: 5, color: _sbkFg('#94a3b8'), fontSize: 10.5, fontWeight: 800 } },
+                h('span', null, 'Capacity used'),
+                h('span', null, Math.max(0, 100 - capacityUsed) + '% room')
+              ),
+              h('div', {
+                role: 'progressbar', 'aria-label': 'Stress bucket capacity used',
+                'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': capacityUsed,
+                'aria-valuetext': capacityUsed + ' percent used. ' + balanceTone.title + '.',
+                style: { height: 10, borderRadius: 999, background: _sbkBg('#1e293b'), border: '1px solid ' + _sbkBd('#334155'), overflow: 'hidden' }
+              },
+                h('div', { style: { width: capacityUsed + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, ' + fillColor + ', ' + balanceTone.accent + ')', transition: 'width 220ms ease' } })
+              )
+            ),
+            h('div', { 'aria-label': 'Stress bucket totals', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(132px, 1fr))', gap: 8, marginTop: 12 } },
+              balanceStat('Inflow', inflow, stressors.length + ' stressor' + (stressors.length === 1 ? '' : 's'), '#fb7185'),
+              balanceStat('Outflow', outflow, taps.length + ' support tap' + (taps.length === 1 ? '' : 's'), '#a78bfa'),
+              balanceStat('Net balance', (net > 0 ? '+' : '') + net, net > 0 ? 'more coming in' : net < 0 ? 'more draining out' : 'even right now', balanceTone.text)
+            ),
+            h('div', { style: { marginTop: 10, padding: '9px 11px', borderRadius: 9, background: _sbkBg('#1e293b'), borderLeft: '3px solid ' + _sbkBd(balanceTone.accent), color: _sbkFg('#cbd5e1'), fontSize: 11.5, lineHeight: 1.5 } },
+              h('strong', { style: { color: _sbkFg(balanceTone.text) } }, 'Next move: '), nextAction
             )
           ),
 
           // SVG bucket
-          h('div', { style: { padding: 10, borderRadius: 12, background: _sbkBg('#0b1220'), border: '1px solid #1e293b', marginBottom: 12, overflowX: 'auto', textAlign: 'center' } },
+          h('div', { style: { padding: 10, borderRadius: 14, background: 'radial-gradient(circle at 50% 45%, ' + balanceTone.accent + '18 0%, transparent 58%), ' + _sbkBg('#0b1220'), border: '1px solid ' + _sbkBd('#1e293b'), boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)', marginBottom: 12, overflowX: 'auto', textAlign: 'center' } },
             h('svg', { width: '100%', viewBox: '0 0 620 480', style: { maxWidth: 620 }, 'aria-labelledby': 'stressbucket-svg-title stressbucket-svg-desc', role: 'img' },
               h('title', { id: 'stressbucket-svg-title' }, 'Stress Bucket visualization'),
               h('desc', { id: 'stressbucket-svg-desc' }, svgDesc),
+              h('defs', null,
+                h('linearGradient', { id: 'stressbucket-fill-gradient', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                  h('stop', { offset: '0%', stopColor: fillColor, stopOpacity: 0.96 }),
+                  h('stop', { offset: '100%', stopColor: fillColor, stopOpacity: 0.58 })
+                )
+              ),
               // Stressor inflows (top, pouring in)
               stressors.slice(0, 8).map(function(s, i) {
                 var w = WEIGHTS.find(function(w) { return w.value === s.weight; }) || WEIGHTS[1];
@@ -19553,9 +19607,10 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('stressBucket')))
               fill > 0 ? h('rect', {
                 x: bucketX + 24, y: fillY,
                 width: bucketW - 48, height: fillH,
-                fill: fillColor, opacity: 0.75,
+                fill: 'url(#stressbucket-fill-gradient)', opacity: 1,
                 clipPath: 'polygon(0% 0%, 100% 0%, 92% 100%, 8% 100%)'
               }) : null,
+              fill > 0 ? h('ellipse', { cx: bucketX + bucketW / 2, cy: fillY, rx: bucketW / 2 - 25, ry: 6, fill: fillColor, opacity: 0.9 }) : null,
 
               // Overflow drips
               overflowing ? h('g', null,

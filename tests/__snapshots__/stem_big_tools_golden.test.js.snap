@@ -68,11 +68,11 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for nutritionLab 1`] = `
 {
-  "buttons": 19,
+  "buttons": 24,
   "inputs": 0,
-  "lengthBucket": 119,
+  "lengthBucket": 165,
   "selects": 0,
-  "sha": "525ef2960c69a165",
+  "sha": "cb1ad1185e934e14",
   "svgs": 0,
 }
 `;

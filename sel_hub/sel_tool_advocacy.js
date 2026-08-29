@@ -17366,10 +17366,11 @@ window.SelHub = window.SelHub || {
         { id: 'print',     label: '\uD83D\uDDA8 Print' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Self-Advocacy tabs',
+      var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(t) {
+        h('div', { role: 'tablist', 'aria-label': 'Self-Advocacy tabs', style: { display: 'flex', gap: 2 } },
+          tabs.map(function(t) {
           var isActive = activeTab === t.id;
           return h('button', { 'aria-label': t.label,
             key: t.id,
@@ -17380,7 +17381,8 @@ window.SelHub = window.SelHub || {
               background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _advFg(ACCENT) : _advFg('#94a3b8'), transition: 'all 0.15s'
             }
           }, t.label);
-        }),
+          })
+        ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled, onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
         h('button', { 'aria-label': Object.keys(earnedBadges).length + '/' + BADGES.length + ' badges earned', 'aria-expanded': !!showBadgesPanel, onClick: function() { upd('showBadgesPanel', !showBadgesPanel); }, style: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _advFg('#94a3b8'), position: 'relative' } },
           '\uD83C\uDFC5',

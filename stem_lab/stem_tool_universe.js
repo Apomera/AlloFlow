@@ -2847,6 +2847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             '[data-universe-tool] .uni-card[data-uni=\'rose\']{--uni-accent:#f43f5e;--uni-tint:#f43f5e14;--uni-tint-dark:#f43f5e24;--uni-line:#f43f5e33;--uni-line-strong:#f43f5e80;--uni-chip:#f43f5e12;}',
             '[data-universe-tool] .uni-card[data-uni=\'stone\']{--uni-accent:#78716c;--uni-tint:#78716c14;--uni-tint-dark:#78716c24;--uni-line:#78716c33;--uni-line-strong:#78716c80;--uni-chip:#78716c12;}',
             '[data-universe-tool] .uni-card[data-uni=\'slate\']{--uni-accent:#64748b;--uni-tint:#64748b14;--uni-tint-dark:#64748b24;--uni-line:#64748b33;--uni-line-strong:#64748b80;--uni-chip:#64748b12;}',
+            '@media (max-height:500px){[data-universe-tool] .uni-index{position:static;}}',
             '@media (prefers-reduced-motion: reduce){[data-universe-tool] .uni-card,[data-universe-tool] .uni-toggle{transition:none;}}'
           ].join('');
 

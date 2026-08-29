@@ -58,7 +58,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     if (document.getElementById('allo-ll-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-ll-focus-css';
-    st.textContent = '[data-ll-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    st.textContent = '[data-ll-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}' +
+      '[data-ll-focusable][href="#ll-menu-categories"]:focus{position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;display:inline-block!important;padding:6px 12px!important;background:#2563eb!important;color:#fff!important;text-decoration:none!important;font-weight:700!important;border-radius:6px!important;margin-bottom:10px!important}';
     if (document.head) document.head.appendChild(st);
   })();
 

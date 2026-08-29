@@ -35,6 +35,14 @@ describe('_alloExportFilename', () => {
     expect(fname('<title>ab</title>', 'alloflow-export')).toBe('alloflow-export');
     expect(fname(null, 'alloflow-export')).toBe('alloflow-export');
   });
+  it('normalizes Unicode and protects Windows-reserved or deceptive basenames', () => {
+    expect(fname('<title>Cafe\u0301 lesson</title>', 'x')).toBe('Café lesson');
+    expect(fname('<title>CON</title>', 'x')).toBe('_CON');
+    expect(fname('<title>LPT9. </title>', 'x')).toBe('_LPT9');
+    expect(fname('<title>Safe\u202Ename\u0007. </title>', 'x')).toBe('Safename');
+    expect(fname('<html></html>', 'NUL. ')).toBe('_NUL');
+    expect(fname('<html></html>', 'bad/name. ')).toBe('bad name');
+  });
   it('all three download sites route through it', () => {
     const n = (src.match(/_alloExportFilename\(/g) || []).length;
     expect(n).toBeGreaterThanOrEqual(3); // 3 call sites (definition uses `= (…)`)

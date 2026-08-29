@@ -417,8 +417,10 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ["enabled"],
     reason: "Changes an Adventure response-support setting."
   },
+  generate_applied_challenge: { requires: ["source"], produces: ["applied-challenge"] },
   generate_note_taking: { requires: ["source"], produces: ["note-taking"] },
   generate_anchor_chart: { requires: ["source"], produces: ["anchor-chart"] },
+  generate_memory_aid: { requires: ["source"], produces: ["memory-aid"] },
   generate_concept_sort: { requires: ["source"], produces: ["concept-sort"] },
   start_memory_game: { requires: ["glossary"] },
   start_matching_game: { requires: ["glossary"] },
@@ -1222,6 +1224,7 @@ function buildAlloCommands(ctx, opts = {}) {
       return t("cmd.filter_glossary_done", "Glossary filter: ") + tier + ".";
     } },
     { id: "generate_anchor_chart", icon: "\u{1F4CC}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateAnchorChart === "function", label: t("cmd.generate_anchor_chart", "Make an anchor chart"), aliases: ["anchor chart", "class poster", "reference chart"], hint: t("cmd.generate_anchor_chart_hint", "Generate an anchor chart from the current content"), runAsync: (c) => Promise.resolve(c.generateAnchorChart()).then(() => t("cmd.generate_anchor_chart_ready", "Anchor chart ready.")) },
+    { id: "generate_memory_aid", icon: "\u{1F9E0}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateMemoryAid === "function", label: t("cmd.generate_memory_aid", "Make a memory aid"), aliases: ["memory aid", "mnemonic", "make a mnemonic", "study cue"], hint: t("cmd.generate_memory_aid_hint", "Generate a Memory Aid Studio resource from the current content"), runAsync: (c) => Promise.resolve(c.generateMemoryAid()).then(() => t("cmd.generate_memory_aid_ready", "Memory Aid Studio ready.")) },
     { id: "generate_brainstorm", icon: "\u{1F9E9}", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateBrainstorm === "function", label: t("cmd.generate_brainstorm", "Make a brainstorm web"), aliases: ["brainstorm", "idea web", "mind web", "concept web"], hint: t("cmd.generate_brainstorm_hint", "Generate a brainstorm organizer from the current content"), runAsync: (c) => Promise.resolve(c.generateBrainstorm()).then(() => t("cmd.generate_brainstorm_ready", "Brainstorm web ready.")) },
     { id: "generate_concept_sort", icon: "\u{1F5C2}\uFE0F", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateConceptSort === "function", label: t("cmd.generate_concept_sort", "Make a concept sort"), aliases: ["concept sort", "card sort", "sorting activity"], hint: t("cmd.generate_concept_sort_hint", "Generate a concept-sorting activity from the current content"), runAsync: (c) => Promise.resolve(c.generateConceptSort()).then(() => t("cmd.generate_concept_sort_ready", "Concept sort ready.")) },
     { id: "generate_faq", icon: "\u2753", roles: "teacher", when: (c) => !!c.hasSourceOrAnalysis && typeof c.generateFaq === "function", label: t("cmd.generate_faq", "Make an FAQ list"), aliases: ["faq", "frequently asked questions", "question list"], hint: t("cmd.generate_faq_hint", "Generate an FAQ list from the current content"), runAsync: (c) => Promise.resolve(c.generateFaq()).then(() => t("cmd.generate_faq_ready", "FAQ list ready.")) },
@@ -2185,6 +2188,41 @@ function listMainVoiceEditableFields(context = {}) {
       });
       addConnections();
     }
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === "applied-challenge") {
+    const challengeData = generatedContent.data && typeof generatedContent.data === "object" ? generatedContent.data : {};
+    const workspace = challengeData.workspace && typeof challengeData.workspace === "object" ? challengeData.workspace : {};
+    const compactIds = /* @__PURE__ */ new Set(["workingQuestion", "possibilities", "evidence", "tradeoffs", "response", "transferReflection"]);
+    const phaseFields = [
+      { id: "workingQuestion", label: "Frame the challenge", aliases: ["challenge question", "working question"] },
+      { id: "stakeholders", label: "People, systems, and constraints", aliases: ["stakeholders", "people and systems"] },
+      { id: "possibilities", label: "Possibilities", aliases: ["options", "possible approaches"] },
+      { id: "evidence", label: "Evidence and lesson connections", aliases: ["evidence", "lesson connections"] },
+      { id: "assumptions", label: "Assumptions and uncertainties", aliases: ["assumptions", "uncertainties"] },
+      { id: "tradeoffs", label: "Tradeoffs and alternatives", aliases: ["tradeoffs", "alternatives"] },
+      { id: "response", label: "Draft deliverable", aliases: ["draft response", "deliverable"], maxLength: 12e3 },
+      { id: "testReflection", label: "Test or challenge the draft", aliases: ["test reflection", "challenge the draft"] },
+      { id: "revision", label: "Revision", aliases: ["revised response", "revision note"], maxLength: 12e3 },
+      { id: "transferReflection", label: "Transfer reflection", aliases: ["transfer", "where else this applies"] }
+    ];
+    const visibleFields = challengeData.scope === "compact" ? phaseFields.filter((phase) => compactIds.has(phase.id)) : phaseFields;
+    const setWorkspaceValue = (key, next, maxLength) => {
+      const bounded = String(next == null ? "" : next).slice(0, maxLength || 8e3);
+      handleNoteUpdate("workspace", (current) => ({
+        ...current && typeof current === "object" ? current : workspace,
+        [key]: bounded
+      }));
+      handleNoteUpdate("coachHint", "");
+      handleNoteUpdate("feedback", null);
+    };
+    visibleFields.forEach((phase) => fields.push({
+      id: "applied-challenge-" + phase.id,
+      label: phase.label,
+      aliases: phase.aliases,
+      value: typeof workspace[phase.id] === "string" ? workspace[phase.id] : "",
+      maxLength: phase.maxLength || 8e3,
+      setValue: (next) => setWorkspaceValue(phase.id, next, phase.maxLength || 8e3)
+    }));
   }
   return fields;
 }
@@ -5962,6 +6000,7 @@ const CMD_GROUP = {
   set_adventure_typing_pace: "accessibility",
   filter_glossary: "create",
   generate_anchor_chart: "create",
+  generate_memory_aid: "create",
   generate_brainstorm: "create",
   generate_concept_sort: "create",
   generate_faq: "create",

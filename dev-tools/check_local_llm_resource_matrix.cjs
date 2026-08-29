@@ -73,6 +73,8 @@ const CASES = [
   { type: 'persona', expect: (item) => Array.isArray(item.data) && item.data.length >= 1 && item.data[0].name },
   { type: 'note-taking', config: { templateType: 'cornell-notes' }, expect: (item) => item.data && item.data.templateType === 'cornell-notes' && Array.isArray(item.data.cues) && item.data.cues.length > 0 },
   { type: 'anchor-chart', expect: (item) => item.data && Array.isArray(item.data.sections) && item.data.sections.length >= 2 },
+  { type: 'memory-aid', config: { memoryAidCount: 3, memoryAidAuthorshipMode: 'progressive' }, expect: (item) => item.data && Array.isArray(item.data.cards) && item.data.cards.length === 3 && item.data.cards.map((card) => card.mode).join(',') === 'generated,scaffolded,student-authored' },
+  { type: 'applied-challenge', config: { appliedChallengeSelectionMode: 'auto', appliedChallengeAgencyMode: 'progressive', appliedChallengeScope: 'standard' }, expect: (item) => item.data && item.data.family === 'decide' && item.data.brief && item.data.brief.lockedLessonFacts.length >= 2 && item.data.workspace && item.data.workspace.response === '' },
 ].filter((item) => !ONLY_TYPES || ONLY_TYPES.has(item.type));
 
 function cleanJson(raw) {
@@ -257,6 +259,86 @@ function cannedResponse(type, prompt, jsonMode) {
       ],
     });
   }
+  if (type === 'memory-aid') {
+    return json({
+      title: 'Remember Rights and Evidence',
+      instructions: 'Study an example, complete a scaffold, then create your own memory aid.',
+      cards: [
+        {
+          target: 'Government should protect rights',
+          essentialFacts: ['Government should protect rights.', 'Leaders should listen to citizens.'],
+          type: 'acronym-acrostic',
+          mode: 'generated',
+          aiExample: 'Rights Invite Government Help Today',
+          mapping: 'The opening letters cue rights, input, government, help, and today.',
+          scaffoldStarter: '',
+          scaffoldSteps: [],
+          coachPrompts: ['Which word cues rights?'],
+          studentPrompt: 'Adapt the example or make a new one.',
+          reasoningPrompt: 'Explain how each cue retrieves the facts.',
+        },
+        {
+          target: 'Evidence supports a claim',
+          essentialFacts: ['Evidence supports a claim.', 'Evidence should come from the source.'],
+          type: 'analogy-pattern',
+          mode: 'scaffolded',
+          aiExample: '',
+          mapping: 'The support in the analogy represents evidence.',
+          scaffoldStarter: 'Evidence is like ___ because ___.',
+          scaffoldSteps: ['Choose something that provides support.', 'Connect it to a claim.'],
+          coachPrompts: ['What does the support represent?'],
+          studentPrompt: 'Complete and personalize the analogy.',
+          reasoningPrompt: 'Explain why the analogy is accurate.',
+        },
+        {
+          target: 'Sudden change can create conflict',
+          essentialFacts: ['Sudden change can create conflict.', 'Uncertainty was part of the debate.'],
+          type: 'story-chain',
+          mode: 'student-authored',
+          aiExample: '',
+          mapping: '',
+          scaffoldStarter: '',
+          scaffoldSteps: [],
+          coachPrompts: ['What vivid event could cue conflict and uncertainty?'],
+          studentPrompt: 'Create a short story chain that retrieves both facts.',
+          reasoningPrompt: 'Explain how the story connects to both facts.',
+        },
+      ],
+    });
+  }
+  if (type === 'applied-challenge') {
+    return json({
+      title: 'Rights in a Changing Community',
+      instructions: 'Use lesson evidence to compare options, make a recommendation, test it, and revise.',
+      family: 'decide',
+      fitReason: 'The lesson presents competing civic goals, so a constrained decision makes the tradeoffs visible.',
+      brief: {
+        context: 'A community group is revising a public-participation process after a period of rapid change.',
+        role: 'Community evidence advisor',
+        audience: 'A community planning committee',
+        drivingQuestion: 'Which participation approach best protects rights while responding to change?',
+        seedDirection: 'Apply the lesson ideas about rights, evidence, citizen input, conflict, and uncertainty.',
+        lockedLessonFacts: ['Government should protect rights.', 'Leaders should listen to citizens.', 'Sudden change can create conflict.'],
+        openQuestions: ['Which groups currently participate?', 'What resources are available?'],
+        stakeholders: ['Residents', 'Community leaders', 'People often excluded from decisions'],
+        criteria: ['Protects rights', 'Uses evidence', 'Includes meaningful citizen input'],
+        constraints: ['No invented survey results', 'The recommendation must acknowledge uncertainty'],
+        deliverable: 'A recommendation memo that compares at least two options.',
+        evidenceBoundary: 'Lesson facts are established here; local conditions and participation rates remain unknown.',
+      },
+      supports: {
+        parallelExample: {
+          context: 'A library choosing how to extend weekend access',
+          move: 'The decision maker compared two schedules against access, staffing, and cost criteria before recommending a limited pilot.',
+          whyItHelps: 'The example models criteria and tradeoffs without answering the civic challenge.',
+        },
+        frameStarter: 'We need to decide among ___ because the lesson shows ___.',
+        frameChoices: ['Focus on representation', 'Focus on conflict prevention'],
+        coachPrompts: ['Which criterion matters most, and why?', 'What would the strongest alternative argue?'],
+        phasePrompts: {},
+      },
+    });
+  }
   return json({ ok: true });
 }
 
@@ -396,6 +478,13 @@ function makeDeps(caseState, currentTypeRef) {
     dbqCustomInstructions: '',
     noteTakingCustomInstructions: '',
     anchorChartCustomInstructions: '',
+    memoryAidCustomInstructions: '',
+    memoryAidSelectionMode: 'auto-mix',
+    memoryAidTypes: ['acronym-acrostic', 'chunking', 'story-chain'],
+    memoryAidAuthorshipMode: 'progressive',
+    memoryAidReflectionLevel: 'quick',
+    memoryAidReasoningRequired: false,
+    memoryAidCount: 3,
     personaCustomInstructions: '',
     sourceTopic: 'Rights and evidence',
     history,
@@ -598,6 +687,8 @@ function makeDeps(caseState, currentTypeRef) {
       persona: 'Persona Chat',
       'note-taking': 'Note Taking',
       'anchor-chart': 'Anchor Chart',
+      'memory-aid': 'Memory Aid Studio',
+      'applied-challenge': 'Applied Challenge Studio',
     }[type] || type),
     performDeepVerification: async () => ({ text: '', sources: [] }),
     repairGeneratedText: async () => null,
@@ -708,6 +799,7 @@ const CUSTOM_FIELDS = [
   // fields were created.
   'conceptSortCustomInstructions', 'dbqCustomInstructions',
   'noteTakingCustomInstructions', 'anchorChartCustomInstructions',
+  'memoryAidCustomInstructions',
   // 2026-07-29: dispatcher persona branch gained a resolver case + interpolation
   // so pack/guided-retry paths match the panel's handleGeneratePersonas path.
   'personaCustomInstructions',

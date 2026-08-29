@@ -1369,14 +1369,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
       },
 
         // ── Header ──
-        el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12 } },
+        el('div', { style: { padding: '20px 24px 16px', borderBottom: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
           el('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': t('stem.climateExplorer.back_to_stem_lab', 'Back to STEAM Lab'), style: { background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 16 } }, '\u2190'),
           el('div', { style: { fontSize: 28 } }, '\uD83C\uDF0D'),
           el('div', null,
             el('h2', { style: { margin: 0, fontSize: 20, fontWeight: 900, background: 'linear-gradient(90deg, #22c55e, #3b82f6, #a855f7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } }, 'Climate Explorer'),
             el('p', { style: { margin: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, 'Understand \u2022 Calculate \u2022 Act')
           ),
-          el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center' } },
+          el('div', { style: { marginLeft: 'auto', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
             el('button', { onClick: exportClimateReport, title: t('stem.climateExplorer.export_your_climate_report_to_clipboar', 'Export your climate report to clipboard'),
               style: { padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(96,165,250,0.3)', background: 'rgba(96,165,250,0.08)', color: '#60a5fa', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83D\uDCC4 Export'),
             el('button', { onClick: function() { upd('quizOpen', !quizOpen); }, style: { padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(168,85,247,0.3)', background: quizOpen ? 'rgba(168,85,247,0.2)' : 'rgba(168,85,247,0.08)', color: '#c084fc', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '\uD83E\uDDE0 Quiz'),
@@ -1543,7 +1543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // ── Badge Panel (collapsible) ──
         el('section', { 'data-climate-mission-panel': 'true',
           style: { margin: '12px 24px 0', padding: 14, borderRadius: 12, background: 'linear-gradient(135deg, rgba(6,78,59,0.78), rgba(15,23,42,0.92))', border: '1px solid rgba(74,222,128,0.28)', color: '#ecfdf5', boxShadow: '0 16px 36px rgba(2,8,23,0.22)' } },
-          el('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0,1.2fr) minmax(230px,0.8fr)', gap: 12 } },
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(230px,1fr))', gap: 12 } },
             el('div', null,
               el('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: '#86efac', letterSpacing: 0, marginBottom: 4 } }, t('stem.climateExplorer.climate_mission', 'Climate mission')),
               el('div', { style: { fontSize: 20, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 } }, ceTabTitles[tab] || t('stem.climateExplorer.climate_explorer', 'Climate Explorer')),

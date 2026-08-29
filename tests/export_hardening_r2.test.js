@@ -59,7 +59,7 @@ describe('plain-language summary popup — XSS + language hardening (R2 #1/#2)',
   });
 });
 
-describe('BRF braille — both lanes delegate to one canonical, inline fallback corrected (R2 #3/#4/#5)', () => {
+describe('BRF braille — both lanes delegate to one canonical, fallbacks corrected (R2 #3/#4/#5)', () => {
   it('both export lanes prefer the shared canonical window.AlloBraille.toGrade1BRF', () => {
     expect(viewAudit).toMatch(/window\.AlloBraille\.toGrade1BRF\(text, \{ withMeta: true \}\)/);
     expect(viewPreview).toMatch(/window\.AlloBraille\.toGrade1BRF\(text, \{ withMeta: true \}\)/);
@@ -73,8 +73,11 @@ describe('BRF braille — both lanes delegate to one canonical, inline fallback 
     expect(viewPreview).not.toMatch(/numMode && \(\(ch >= 'a'.*ch >= 'A'/);
   });
 
-  it('both inline fallbacks return drop metadata when the shared plugin is unavailable', () => {
-    expect(viewAudit).toMatch(/_toBRF\(text, \{ withMeta: true \}\)/);
+  it('both fallback lanes return drop metadata when the shared plugin is unavailable', () => {
+    // The remediation lane now centralizes HTML flattening + BRF generation in
+    // _buildBrailleBrf; the builder lane keeps its local text-only fallback.
+    expect(viewAudit).toMatch(/_altFmtToBRF\(text, Object\.assign\(\{ withMeta: true \}/);
+    expect(viewAudit).toMatch(/const _g1 = _buildBrailleBrf\(html\)/);
     expect(viewPreview).toMatch(/_toBRF\(text, \{ withMeta: true \}\)/);
   });
 
@@ -85,7 +88,7 @@ describe('BRF braille — both lanes delegate to one canonical, inline fallback 
 
   it('remediation braille extraction strips style/script via DOMParser, not a greedy whole-doc regex', () => {
     // The old bug embossed <style> bodies and ate text across newlines with &[^;]+;.
-    expect(viewAudit).toMatch(/new DOMParser\(\)\.parseFromString\(html, 'text\/html'\)[\s\S]{0,400}querySelectorAll\('script, style, title/);
+    expect(viewAudit).toMatch(/new DOMParser\(\)\.parseFromString\(String\(html\), 'text\/html'\)[\s\S]{0,400}querySelectorAll\('script, style, title/);
     // The greedy across-newline entity strip must be gone from the braille path.
     expect(viewAudit).toMatch(/details\.allo-chart-data > summary/);
     expect(viewAudit).not.toMatch(/data-allo-crop-ui\], details\.allo-math-source, details\.allo-chart-data/);
@@ -158,14 +161,15 @@ describe('ePub validity — well-formed XHTML + namespaced root (R2 #7/#8)', () 
   });
 
   it('remediation nav labels are escaped and the read-along SMIL seq has epub:textref', () => {
-    expect(viewAudit).toMatch(/_navEsc\(m\[2\]\)/);
+    expect(viewAudit).toMatch(/const navEsc = \(s\) => _expXmlEsc/);
+    expect(viewAudit).toMatch(/navEsc\(m\[2\]\)/);
     expect(viewAudit).toMatch(/<seq epub:textref="content\.xhtml">/);
   });
 
   it('declares embedded SVG and MathML in every EPUB content manifest lane', () => {
     expect(viewPreview).toContain("if (_clone.querySelector('svg')) _contentProps.push('svg')");
     expect(viewPreview).toContain('${_contentPropAttr}');
-    expect(viewAudit).toContain("if (/<svg\\b/i.test(html)) _epubContentProps.push('svg')");
+    expect(viewAudit).toContain("if (/<svg\\b/i.test(html)) props.push('svg')");
     expect(viewAudit).toContain("if (/<math\\b/i.test(bodyHtml)) _moContentProperties.push('mathml')");
   });
 });

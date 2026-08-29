@@ -1973,7 +1973,8 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var gapState = followingVehicleRoadState(');
     expect(src).toContain('var rearState = followingVehicleRoadState(');
     expect(src).toContain('var aiFollowState = followingVehicleRoadState(');
-    expect(src).toContain('var playerAhead = playerFollowState.ahead;');
+    expect(src).toContain(
+      'var playerAhead = playerSameLane ? playerFollowState.ahead : Infinity;');
     expect(src).not.toContain('var otherAhead = (other.y - t.y) * tDirSign2;');
     expect(src).not.toContain('var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);');
     expect(src).not.toContain('var sameLaneAsNearest;');
@@ -2007,9 +2008,10 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).not.toContain('headingAt(t.y)');
     expect(src).toContain('var emRoadAhead = 0;');
     expect(src).toContain('emRoadAhead = (emNowFrame.longitudinal - carNowFrame.longitudinal)');
-    expect(src).toContain('if (!em.checked && emRoadAhead > -6)');
+    expect(src).toContain('var emResponseDistance = Math.max(6, emFollow.holdGap + 0.25)');
+    expect(src).toContain('if (!em.responded && !em.checked && emRoadAhead > -emResponseDistance)');
     expect(src).toContain('if (em.life <= 0 || emRoadAhead > 20)');
-    expect(src).toContain('var emFallbackSign = Math.sin(em.heading) > 0 ? 1 : -1;');
+    expect(src).toContain('var emFallbackSign = Number(em._travelSign) < 0 ? -1 : 1;');
     expect(src).not.toContain('if (!em.checked && em.y < car.y + 6)');
     expect(src).not.toContain('em.y -= em.speed * dt;');
     expect(src).toContain('var cyPlayerStation = cyPlayerFrame.longitudinal;');
@@ -2243,7 +2245,7 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).toContain('var streamedDrive = continuousScenarioWorld ||');
     expect(src).toContain('pedsRef.current = streamedDrive ? [] : spawnPedestrians(scn);');
     expect(src).toContain('alignTrafficToStreamedWorld(infiniteWorldRef.current, trafficRef.current);');
-    expect(src).toContain('var bikeLaneOff = bicycleLaneOffsetFor(cyProfile, cyDirSign);');
+    expect(src).toContain('var riderLaneOff = vulnerableRoadUserLaneOffset(');
     expect(src).not.toContain('infiniteWorldRef.current = createInfiniteWorld(worldSeed);');
     expect(src).toContain('var mainProfile = roadProfileAt(world, station, null);');
     expect(src).toContain('var mainFrame = mainRoadLocalPoint(world, x, y);');

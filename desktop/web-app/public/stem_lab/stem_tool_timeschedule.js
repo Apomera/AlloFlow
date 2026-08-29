@@ -1113,7 +1113,7 @@
                   h('span', { className: 'block text-[10px] ' +
                     (selected ? 'text-white' : 'text-slate-700') }, item[3]))));
           })),
-        h('main', { id: 'ts-tab-panel', role: 'tabpanel', 'aria-labelledby': 'ts-tab-' + tab,
+        h('div', { id: 'ts-tab-panel', role: 'tabpanel', 'aria-labelledby': 'ts-tab-' + tab,
           className: 'rounded-2xl border border-slate-200 bg-slate-50/70 p-3 sm:p-5 shadow-sm' },
           view),
         h('footer', { className: 'rounded-xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs text-sky-900 flex flex-col sm:flex-row sm:justify-between gap-2' },

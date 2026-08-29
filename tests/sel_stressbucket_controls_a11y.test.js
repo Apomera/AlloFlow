@@ -26,4 +26,28 @@ describe('Stress Bucket control accessibility', () => {
     expect(text).toContain("'aria-label': 'Weight for new stressor'");
     expect(text).toContain("'aria-label': 'Capacity for new tap'");
   });
+
+  it('summarizes capacity with a semantic meter and scan-friendly totals', () => {
+    const text = source();
+    expect(text).toContain("role: 'progressbar', 'aria-label': 'Stress bucket capacity used'");
+    expect(text).toContain("'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': capacityUsed");
+    expect(text).toContain("'aria-valuetext': capacityUsed + ' percent used. ' + balanceTone.title + '.'");
+    expect(text).toContain("'aria-label': 'Stress bucket totals'");
+    expect(text).toContain("balanceStat('Inflow'");
+    expect(text).toContain("balanceStat('Outflow'");
+    expect(text).toContain("balanceStat('Net balance'");
+    expect(text).toContain("}, 'Next move: '), nextAction");
+  });
+
+  it('gives each balance state a distinct visual message and richer bucket fill', () => {
+    const text = source();
+    expect(text).toContain("label: 'Overflowing', title: 'Your bucket is at capacity'");
+    expect(text).toContain("label: 'High load', title: 'More is coming in than going out'");
+    expect(text).toContain("label: 'Watch the balance', title: 'Your bucket is gradually filling'");
+    expect(text).toContain("label: 'Balanced', title: 'Inflow and outflow are balanced'");
+    expect(text).toContain("label: 'More room', title: 'Your supports are creating room'");
+    expect(text).toContain("id: 'stressbucket-fill-gradient'");
+    expect(text).toContain("fill: 'url(#stressbucket-fill-gradient)', opacity: 1");
+    expect(text).toContain("fill > 0 ? h('ellipse'");
+  });
 });

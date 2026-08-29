@@ -150,7 +150,7 @@ describe('live-session reward transport source contract', () => {
   });
 
   it('renders an accessible private recognition control in the live dock', () => {
-    expect(anti).toContain('aria-label="AlloHaven recognition reason"');
+    expect(anti).toContain("aria-label={t('allohaven.reason_aria') || 'AlloHaven recognition reason'}");
     expect(anti).toContain("aria-label={'Recognize ' + (entry.name || 'student')");
     expect(anti).toContain('Awards are private; no behavior notes are synced.');
   });
@@ -232,7 +232,7 @@ describe('live-session reward transport source contract', () => {
     );
     expect(panel).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(panel).toContain('aria-controls="allohaven-recognition-delivery-audit"');
-    expect(panel).toContain('aria-label="Recent private AlloHaven recognition deliveries"');
+    expect(panel).toContain("aria-label={t('allohaven.recent_deliveries_aria') || 'Recent private AlloHaven recognition deliveries'}");
     expect(panel).toContain('Teacher-only delivery audit. No balances, rankings, or behavior notes.');
     expect(panel).not.toMatch(/publicHavenBalance|leaderboard|behaviorNote:/i);
   });
@@ -276,7 +276,7 @@ describe('live-session reward transport source contract', () => {
     );
     expect(panel).toContain('role="switch"');
     expect(panel).toContain('aria-checked={havenRecognitionConfig.enabled}');
-    expect(panel).toContain('aria-label="AlloHaven per-student session token cap"');
+    expect(panel).toContain("aria-label={t('allohaven.token_cap_aria') || 'AlloHaven per-student session token cap'}");
     expect(panel).toContain('It remains off by default.');
     expect(panel).toContain('skipped at session cap');
     expect(anti).toContain('disabled={!canRecognizeStudent}');

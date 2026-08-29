@@ -116,6 +116,31 @@ describe('AlloBot accessory integrity', () => {
     }
   });
 
+  it('connects the hands to the shell and gives the jetpack material layers', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('hardwareVisual');
+      expect(source).toContain('leftArmPath');
+      expect(source).toContain('rightArmPath');
+      expect(source).toContain('data-allobot-arm');
+      expect(source).toContain('data-allobot-arm-layer');
+      expect(source).toContain('data-allobot-shoulder');
+      expect(source).toContain('data-allobot-hand-layer');
+      expect(source).toContain('data-allobot-jetpack-layer');
+      expect(source).toContain('data-allobot-hardware-theme');
+      expect(source).toContain('data-allobot-shell-layer');
+    }
+    expect(SRC.match(/data-allobot-arm="(?:left|right)"/g)).toHaveLength(2);
+    expect(SRC.match(/data-allobot-hand-layer="palm"/g)).toHaveLength(2);
+    for (const layer of ['harness', 'reactor', 'tank-left', 'tank-right', 'tank-seams', 'pod-highlights', 'nozzle-left', 'nozzle-right']) {
+      expect(SRC).toContain(`data-allobot-jetpack-layer="${layer}"`);
+    }
+    for (const layer of ['body', 'rim', 'lower-contour']) {
+      expect(SRC).toContain(`data-allobot-shell-layer="${layer}"`);
+    }
+    expect(SRC).toContain('data-allobot-hand="left" data-allobot-hand-layer="palm"');
+    expect(SRC).toContain('fill={`url(#${svgPaintIds.body})`}');
+  });
+
   it('reduce-motion gating is intact (idle CSS, SMIL pause, blink self-gate)', () => {
     // CSS idle classes are named so the reduce-motion kill rule catches them
     for (const cls of ['animate-allobot-float', 'animate-allobot-perk', 'animate-allobot-tick', 'animate-allobot-sway']) {
@@ -273,6 +298,54 @@ describe('AlloBot accessory integrity', () => {
     }
   });
 
+  it('classifies and normalizes every wearable or mixed accessory around its authored anchor', () => {
+    const renderedKeys = [...new Set(
+      [...SRC.matchAll(/effectiveAccessory === '([a-z][a-z-]+)'/g)].map((match) => match[1]),
+    )];
+    const sideMapStart = SRC.indexOf('const ALLOBOT_SIDE_ACCESSORY_SIDE');
+    const sideMapEnd = SRC.indexOf('});', sideMapStart);
+    const sideKeys = new Set(
+      [...SRC.slice(sideMapStart, sideMapEnd).matchAll(/(?:'([a-z][a-z-]+)'|\b([a-z][a-z-]+)):\s*'(?:left|right)'/g)]
+        .map((match) => match[1] || match[2]),
+    );
+    const profileMapStart = SRC.indexOf('const ALLOBOT_NON_SIDE_ACCESSORY_PROFILE');
+    const profileMapEnd = SRC.indexOf('});', profileMapStart);
+    expect(profileMapStart, 'non-side accessory profile map missing').toBeGreaterThan(-1);
+    expect(profileMapEnd, 'non-side accessory profile map end missing').toBeGreaterThan(profileMapStart);
+    const profileEntries = [...SRC.slice(profileMapStart, profileMapEnd).matchAll(
+      /(?:'([a-z][a-z-]+)'|\b([a-z][a-z-]+)):\s*\{\s*placement:\s*'([a-z-]+)',\s*scale:\s*([\d.]+),\s*origin:\s*'([^']+)',\s*depth:\s*'([a-z-]+)'\s*\}/g,
+    )].map((match) => ({
+      key: match[1] || match[2],
+      placement: match[3],
+      scale: Number(match[4]),
+      origin: match[5],
+      depth: match[6],
+    }));
+    const nonSideKeys = renderedKeys.filter((key) => !sideKeys.has(key)).sort();
+    expect(profileEntries.map(({ key }) => key).sort()).toEqual(nonSideKeys);
+    for (const profile of profileEntries) {
+      expect(profile.scale, `${profile.key} should stay within the calibrated wearable scale range`).toBeGreaterThanOrEqual(0.94);
+      expect(profile.scale, `${profile.key} should stay within the calibrated wearable scale range`).toBeLessThanOrEqual(1.04);
+      expect(['head', 'hand-adjacent', 'face-and-side', 'head-and-side', 'head-and-ears']).toContain(profile.placement);
+      expect(['wearable', 'hand', 'face', 'mixed']).toContain(profile.depth);
+      expect(profile.origin, `${profile.key} should anchor in the SVG view box`).toMatch(/^\d+% \d+%$/);
+    }
+
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('ALLOBOT_NON_SIDE_ACCESSORY_PROFILE');
+      expect(source).toContain('nonSideAccessoryProfile');
+      expect(source).toContain('centeredAccessoryVisualStyle');
+      expect(source).toContain('data-accessory-silhouette');
+      expect(source).toContain('data-accessory-depth');
+      expect(source).toContain('data-accessory-origin');
+      expect(source).toMatch(/transformBox:\s*["']view-box["']/);
+    }
+    expect(SRC).toContain("'magnifying-glass': { placement: 'hand-adjacent'");
+    expect(SRC).toContain("'sorting-cubes': { placement: 'head-and-side'");
+    expect(SRC).toContain("'phoneme-headset': { placement: 'head-and-ears'");
+    expect(SRC).toContain('style={sideAccessoryVisualStyle || centeredAccessoryVisualStyle}');
+  });
+
   it('keeps high-contrast expressions visible against the black visor', () => {
     for (const source of [SRC, MOD]) {
       expect(source).toMatch(/eye:\s*["']#FFFFFF["']/);
@@ -288,6 +361,47 @@ describe('AlloBot accessory integrity', () => {
     }
   });
 
+  it('layers the visor and reinforces each mood with non-color face cues', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('visorVisual');
+      expect(source).toContain('data-allobot-visor-layer');
+      expect(source).toContain('data-allobot-face-state');
+      expect(source).toContain('data-allobot-expression-cues');
+      expect(source).toContain('data-allobot-eye');
+      expect(source).toContain('data-allobot-mouth');
+      expect(source).toContain('happy-cheeks');
+      expect(source).toContain('sad-tear');
+      expect(source).toContain('thinking-dots');
+    }
+    for (const layer of ['frame', 'screen', 'reflection', 'lower-bevel', 'bezel']) {
+      expect(SRC).toContain(`data-allobot-visor-layer="${layer}"`);
+    }
+    expect(SRC).toContain('data-allobot-eye-sparkle="left-primary"');
+    expect(SRC).toMatch(/data-allobot-eye="left"[\s\S]*?stroke=\{visorVisual\.eyeOutline\}/);
+    expect(SRC).toContain('data-allobot-face-state={faceVisualState}');
+  });
+
+  it('shows listening and talking with motion-independent directional visor cues', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('faceVisualState');
+      expect(source).toContain('voiceCueState');
+      expect(source).toContain('voiceCueDirection');
+      expect(source).toContain('voiceCuePaths');
+      expect(source).toContain('data-allobot-voice-cue');
+      expect(source).toContain('data-allobot-voice-direction');
+      expect(source).toContain('data-allobot-voice-cue-motion');
+      expect(source).toContain('data-allobot-voice-cue-layer');
+      for (const state of ['listening', 'talking', 'inbound', 'outbound']) expect(source).toContain(state);
+    }
+    expect(SRC.match(/data-allobot-voice-cue-layer=/g)).toHaveLength(6);
+    expect(SRC).toContain("isListening ? 'listening' : (isTalking ? 'talking' : effectiveMood)");
+    expect(SRC).toContain("voiceCueState === 'listening' ? 'inbound'");
+    expect(SRC).toContain("voiceCueState === 'talking' ? 'outbound'");
+    expect(SRC).toContain("const eyeCoreRx = voiceCueState === 'listening' ? 2.15 : 1.85;");
+    expect(SRC).toContain('M 46 58 Q 50 55 54 58 Q 50 62 46 58');
+    expect(SRC).toContain('className={!motionDisabled ? "animate-pulse motion-reduce:animate-none" : undefined}');
+  });
+
   it('uses a prop-aware gaze, reaching hand, and opposite held-tool silhouette', () => {
     for (const source of [SRC, MOD]) {
       expect(source).toContain('propGazeX');
@@ -296,11 +410,68 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('rightHandX');
       expect(source).toContain('data-held-item-side');
       expect(source).toContain('heldItemRenderSide');
-      expect(source).toContain('scale(-1 1)');
+      expect(source).toMatch(/heldItemRenderSide === ['"]left['"] \? -1 : 1/);
     }
   });
 
-  it('anchors the face while pupils track props and shares accessory color with the shell', () => {
+  it('anchors every held tool to the live palm and draws a foreground grasp', () => {
+    const tools = ['pointer', 'pencil', 'calculator', 'map', 'clipboard', 'hourglass', 'magnifying-glass', 'book', 'globe', 'wand', 'paintbrush', 'flashlight'];
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('ALLOBOT_HELD_ITEM_GRIP');
+      expect(source).toContain('heldItemAuthoredGrip');
+      expect(source).toContain('heldItemGripX');
+      expect(source).toContain('heldItemGripY');
+      expect(source).toContain('heldItemArtworkTransform');
+      expect(source).toContain('heldItemMotionClass');
+      expect(source).toContain('data-allobot-held-item-grip');
+      expect(source).toContain('data-allobot-held-item-authored-grip');
+      expect(source).toContain('data-allobot-held-item-motion');
+      expect(source).toContain('data-allobot-live-grip');
+      expect(source).toContain('data-allobot-held-item-grip-overlay');
+    }
+    for (const tool of tools) {
+      const key = tool.includes('-') ? `'${tool}': { x:` : `${tool}: { x:`;
+      expect(SRC, `missing authored grip for ${tool}`).toContain(key);
+    }
+    expect(SRC).toContain("heldItem !== 'flashlight'");
+    expect(SRC).toContain("heldItem === 'pencil' && activeView === 'quiz'");
+    expect(SRC).toContain('transform={`translate(${leftHandX}, ${leftHandY}) rotate(15)`}');
+    expect(SRC).toContain('transform={`translate(${leftHandX}, ${leftHandY}) rotate(${aimAngle})`}');
+    expect(SRC).not.toContain("transformOrigin: '90px 65px'");
+    expect(SRC).not.toContain("'translate(100 0) scale(-1 1)'");
+    expect(SRC).toContain('transform-origin: 90px 65px;');
+  });
+
+  it('braces broad held props with a mirrored support hand below the visor', () => {
+    const supportedTools = ['map', 'clipboard', 'book'];
+    const mapStart = SRC.indexOf('const ALLOBOT_HELD_ITEM_SUPPORT_GRIP');
+    const mapEnd = SRC.indexOf('});', mapStart);
+    const supportEntries = [...SRC.slice(mapStart, mapEnd).matchAll(/(?:'([^']+)'|\b([a-z][a-z-]+)):\s*\{\s*x:\s*(\d+),\s*y:\s*(\d+)\s*\}/g)]
+      .map((match) => match[1] || match[2]);
+    expect(supportEntries.sort()).toEqual([...supportedTools].sort());
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('ALLOBOT_HELD_ITEM_SUPPORT_GRIP');
+      expect(source).toContain('heldItemSupportAuthoredGrip');
+      expect(source).toContain('heldItemUsesSupportHand');
+      expect(source).toContain('heldItemSupportSide');
+      expect(source).toContain('heldItemSupportX');
+      expect(source).toContain('heldItemSupportY');
+      expect(source).toContain('data-allobot-arm-role');
+      expect(source).toContain('data-allobot-hand-role');
+      expect(source).toContain('data-allobot-held-item-support');
+      expect(source).toContain('data-allobot-held-item-support-grip');
+      expect(source).toContain('braced');
+    }
+    expect(SRC).toContain('&& !accessoryRenderSide');
+    expect(SRC).toContain("heldItemSupportSide === 'left'");
+    expect(SRC).toContain("heldItemSupportSide === 'right'");
+    expect(SRC).toContain("['M', 19, 61, 'Q', 46, 78");
+    expect(SRC).toContain("['M', 81, 61, 'Q', 54, 78");
+    expect(SRC).toContain("transform: !heldItemUsesSupportHand && isMoving");
+    expect(SRC.match(/data-allobot-held-item-support-grip=/g)).toHaveLength(1);
+  });
+
+  it('anchors the face while soft eye cores acknowledge props and shares accessory color with the shell', () => {
     expect(SRC).not.toContain('translate(${eyePosition.x + propGazeX}px');
     for (const source of [SRC, MOD]) {
       expect(source).toContain('resolvedGazeX');
@@ -311,6 +482,71 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('animate-allobot-accessory-arrive-left');
       expect(source).toContain('animate-allobot-accessory-arrive-right');
     }
+  });
+
+  it('uses a soft opt-in gaze and pastel sparkle eyes instead of visor-dark pupils', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('data-allobot-eye-core');
+      expect(source).toContain('data-allobot-eye-sparkle');
+      expect(source).toContain('data-allobot-soft-gaze');
+      expect(source).toContain('data-allobot-eye-details');
+      expect(source).toContain('data-allobot-face-cue');
+      expect(source).toContain('soft-cheeks');
+      expect(source).toContain('eyeCoreVisual');
+      expect(source).toContain('faceLensesCoverEyes');
+      expect(source).toContain('eyeDetailsVisible');
+      expect(source).toContain('cheekOpacity');
+      expect(source).toContain('isHovered');
+    }
+    expect(SRC).toContain("if (motionDisabled || !isHovered)");
+    expect(SRC).toContain('const maxFeatureRadius = 1.35;');
+    expect(SRC).toContain('const maxVisorRadius = 0.35;');
+    expect(SRC).toContain("fill={eyeCoreVisual.fill}");
+    expect(SRC).toContain("const eyeDetailsVisible = blinkScale >= 0.5;");
+    expect(SRC).toContain("!faceLensesCoverEyes &&");
+    expect(SRC).not.toMatch(/data-allobot-eye-core=[\s\S]{0,220}?fill=\{colors\.screenBg\}/);
+    const eyeCorePalette = SRC.match(/const eyeCoreVisual =[\s\S]*?const eyeCoreRx/)?.[0] || '';
+    const eyeCoreFills = [...eyeCorePalette.matchAll(/fill: '(#[0-9A-F]{6})'/gi)].map((match) => match[1]);
+    expect(eyeCoreFills.length).toBeGreaterThanOrEqual(5);
+    for (const hex of eyeCoreFills) {
+      const red = Number.parseInt(hex.slice(1, 3), 16);
+      const green = Number.parseInt(hex.slice(3, 5), 16);
+      const blue = Number.parseInt(hex.slice(5, 7), 16);
+      const perceivedLightness = (0.2126 * red + 0.7152 * green + 0.0722 * blue) / 255;
+      expect(perceivedLightness).toBeGreaterThan(0.68);
+    }
+    expect(SRC).toContain('M 43 58.5 Q 50 63.5 57 58.5');
+    expect(SRC).not.toContain('M 45 58.5 Q 50 63 55 58.5');
+  });
+
+  it('mounts responsive side props to a mirrored accent dock beneath their artwork', () => {
+    for (const source of [SRC, MOD]) {
+      expect(source).toContain('accessoryDockNudge');
+      expect(source).toContain('accessoryDockShellX');
+      expect(source).toContain('accessoryDockEdgeX');
+      expect(source).toContain('accessoryDockPath');
+      expect(source).toContain('accessoryDockSignalPath');
+      expect(source).toContain('accessoryDockState');
+      expect(source).toContain('data-allobot-accessory-dock');
+      expect(source).toContain('data-allobot-accessory-dock-state');
+      expect(source).toContain('data-allobot-accessory-dock-accent');
+      expect(source).toContain('data-allobot-accessory-dock-layer');
+      for (const state of ['connected', 'releasing']) expect(source).toContain(state);
+    }
+    for (const layer of ['tether-shadow', 'tether-signal', 'shell-port', 'shell-core', 'edge-port', 'edge-core']) {
+      expect(SRC).toContain(`data-allobot-accessory-dock-layer="${layer}"`);
+    }
+    expect(SRC.match(/data-allobot-accessory-dock-layer=/g)).toHaveLength(6);
+    expect(SRC).toContain("const accessoryDockShellX = accessoryRenderSide === 'left' ? 22 : 78;");
+    expect(SRC).toContain("const accessoryDockState = accExiting ? 'releasing' : 'connected';");
+    expect(SRC).toContain('data-allobot-accessory-dock-accent={accessoryAccent}');
+    expect(SRC).toContain('className={!motionDisabled && !accExiting ? "animate-pulse motion-reduce:animate-none" : undefined}');
+    const reflectionIndex = SRC.indexOf('data-allobot-accessory-reflection');
+    const dockIndex = SRC.indexOf('data-allobot-accessory-dock={accessoryRenderSide}');
+    const visorIndex = SRC.indexOf('data-allobot-visor={theme}');
+    expect(reflectionIndex).toBeGreaterThan(-1);
+    expect(dockIndex).toBeGreaterThan(reflectionIndex);
+    expect(visorIndex).toBeGreaterThan(dockIndex);
   });
 
   it('gives the newest learning props one quiet, reduced-motion-safe visual verb each', () => {

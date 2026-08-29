@@ -5,6 +5,7 @@
  */
 
 const { execSync } = require('child_process');
+const { transformSync } = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
@@ -12,19 +13,17 @@ const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'view_sidebar_panels_source.jsx');
 const OUTPUT = path.join(ROOT, 'view_sidebar_panels_module.js');
 const DEPLOY_OUT = path.join(ROOT, 'desktop/web-app', 'public', 'view_sidebar_panels_module.js');
-const TMP = path.join(ROOT, '_tmp_view_sidebar_panels_entry.jsx');
 
 if (!fs.existsSync(SOURCE)) { console.error('[ViewSidebarPanels] Source not found'); process.exit(1); }
-fs.writeFileSync(TMP, '/* global React */\n' + fs.readFileSync(SOURCE, 'utf-8'), 'utf-8');
 
 console.log('[ViewSidebarPanels] Compiling with esbuild...');
+let compiled = '';
 try {
-    execSync('npx esbuild "' + TMP + '" --bundle=false --format=esm --jsx=transform --jsx-factory=React.createElement --jsx-fragment=React.Fragment --outfile="' + TMP + '.compiled.js" --target=es2020', { cwd: ROOT, stdio: 'inherit' });
-} catch (e) { console.error('[ViewSidebarPanels] esbuild failed'); try { fs.unlinkSync(TMP); } catch(_){} process.exit(1); }
-
-const compiled = fs.readFileSync(TMP + '.compiled.js', 'utf-8').replace(/\/\*.*global.*\*\/\n/g, '').trim();
-try { fs.unlinkSync(TMP); } catch(_){}
-try { fs.unlinkSync(TMP + '.compiled.js'); } catch(_){}
+    compiled = transformSync('/* global React */\n' + fs.readFileSync(SOURCE, 'utf-8'), {
+        loader: 'jsx', format: 'esm', jsxFactory: 'React.createElement',
+        jsxFragment: 'React.Fragment', target: 'es2020',
+    }).code.replace(/\/\*.*global.*\*\/\n/g, '').trim();
+} catch (e) { console.error('[ViewSidebarPanels] esbuild failed'); console.error(e && e.message ? e.message : e); process.exit(1); }
 
 const outputCode = `(function() {
 'use strict';

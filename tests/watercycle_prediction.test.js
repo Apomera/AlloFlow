@@ -7,7 +7,7 @@ const WATER_CYCLE_PATHS = [
 ];
 
 describe('Water Cycle prediction-and-evidence loop', () => {
-  it('offers a compact hypothesis choice before showing the evidence result', () => {
+  it('asks for a prediction before revealing comparison evidence', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
@@ -18,9 +18,22 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       expect(source).toContain("storage: { label: 'More snow or ice storage'");
       expect(source).toContain("mixed: { label: 'A mixed or small shift'");
       expect(source).toContain('className: "wc-prediction-strip" +');
-      expect(source).toContain('"aria-label": "Prediction check"');
-      expect(source).toContain('"aria-label": "Choose a predicted scenario shift"');
+      expect(source).toContain('"data-watercycle-evidence-interpretation": "true"');
+      expect(source).toMatch(/"aria-label": "(?:Scenario evidence interpretation|Evidence interpretation check)"/);
+      expect(source).toContain('"Read the evidence"');
+      expect(source).toContain('"Make a prediction"');
+      expect(source).toContain('Before reading the evidence, what will shift most?');
+      expect(source).toContain('Choose one claim before the comparison is revealed. This is evidence-reading practice, not a score.');
       expect(source).toContain('onClick: function() { recordWcPrediction(predictionId); }');
+
+      expect(source).toContain('wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {');
+      expect(source).toContain('className: "wc-compare-bars"');
+      expect(source).toContain('"data-watercycle-evidence-interpretation": "true"');
+
+      expect(source).not.toContain('"Predict first"');
+      expect(source).not.toMatch(/Which (?:modeled )?pathway shows the strongest (?:modeled )?shift\?/);
+      expect(source).not.toContain('"aria-label": "Prediction check"');
+      expect(source).not.toContain('"aria-label": "Choose a predicted scenario shift"');
     });
   });
 
@@ -39,18 +52,37 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       expect(source).toContain('var wcPredictionEvidenceMetrics = [];');
       expect(source).toContain('Evidence to check: runoff ');
       expect(source).toContain('className: "wc-prediction-evidence"');
+      expect(source).toContain('className: "wc-prediction-result-badge " + (wcPredictionMatched ? "is-agrees" : "is-differs")');
+      expect(source).not.toContain('wcPredictionMatched ? "is-match" : "is-mismatch"');
     });
   });
 
-  it('clears a stale hypothesis when a learner changes or resets the scenario', () => {
+  it('clears a stale claim when a learner changes or resets the scenario', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain("wcScenarioPreset: 'custom', wcPrediction: ''");
       expect(source).toContain("var resetWcPrediction = function()");
-      expect(source).toContain('"aria-label": "Make a new scenario prediction"');
+      expect(source).toMatch(/"aria-label": "Choose a (?:different|new) evidence claim"/);
       expect(source).toContain('wcPrediction: \'\'');
       expect(source).toContain("updMulti({ wcScenarioBaseline: null, wcPrediction: '', wcReplayedObservation: '' });");
+    });
+  });
+
+  it('records an interpretation without awarding points for agreement', () => {
+    WATER_CYCLE_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const handlerStart = source.indexOf('var recordWcPrediction = function(predictionId)');
+      const handlerEnd = source.indexOf('var resetWcPrediction = function()', handlerStart);
+
+      expect(handlerStart).toBeGreaterThan(-1);
+      expect(handlerEnd).toBeGreaterThan(handlerStart);
+
+      const recordHandler = source.slice(handlerStart, handlerEnd);
+      expect(recordHandler).toContain("upd('wcPrediction', predictionId);");
+      expect(recordHandler).toMatch(/Evidence claim (?:selected|recorded):/);
+      expect(recordHandler).not.toMatch(/awardStemXP|awardXP|researchPoints|completedChallenges|celebrate|addToast/);
+      expect(source).toContain('evidence-reading practice, not a score.');
     });
   });
 });

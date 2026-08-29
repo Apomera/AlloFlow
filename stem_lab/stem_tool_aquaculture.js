@@ -61,6 +61,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     s.id = 'aquaculturelab-css';
     s.textContent = [
       '.aq-btn:focus-visible { outline: 2px solid #14b8a6; outline-offset: 2px; }',
+      // The Import label wraps a visually hidden file input: the INPUT takes focus,
+      // so the label needs :focus-within or the ring would be invisible.
+      '.aq-btn:focus-within { outline: 2px solid #14b8a6; outline-offset: 2px; }',
       '.aq-card { background: linear-gradient(135deg, rgba(8,30,28,0.92), rgba(4,18,18,0.92)); border: 1px solid rgba(20,184,166,0.22); border-radius: 12px; padding: 14px 16px; color: #e2e8f0; }',
       '.aq-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(20,184,166,0.12); color:#a7f3d0; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
       '@media (prefers-reduced-motion: reduce) { .aq-bob { animation: none !important; } .aq-pulse { animation: none !important; } }',
@@ -684,7 +687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   // DATA: ACHIEVEMENTS
   // ───────────────────────────────────────────────────────────
   var ACHIEVEMENTS = [
-    { id: 'first-cast', name: 'First Cast', icon: '⚓', desc: 'Cast off from the dock for the first time.' },
+    { id: 'first-cast', name: 'First Cast', icon: '\u2693', desc: 'Cast off from the dock for the first time.' },
     { id: 'red-right', name: 'Red Right Returning', icon: '🟥', desc: 'Pass a red nun on starboard correctly.' },
     { id: 'first-dropper', name: 'First Dropper', icon: '🪢', desc: 'Deploy your first seeded line.' },
     { id: 'full-farm', name: 'Full Farm', icon: '🦪', desc: 'Deploy all 5 droppers.' },
@@ -7407,6 +7410,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     { id: 'low-food', name: 'Low-food interval', prompt: 'Cold, clear water carries little chlorophyll-a. Separate food limitation from acute stress.', values: { temperature: 9, salinity: 30, oxygen: 8.6, pH: 8.1, chlorophyll: .7, fouling: 8, attachment: 88 } }
   ];
 
+  var AQ_FIELD_MISSION_SCENARIOS = [
+    {
+      id: 'training',
+      name: 'Clear-water training',
+      badge: 'Training-day reader',
+      difficulty: 'Foundations',
+      tide: 'Flooding tide',
+      weather: 'Cool and clear',
+      currentLabel: 'Gentle current',
+      briefing: 'Visibility is good and the channel has a gentle current. Establish a careful baseline at the surface and beside the crop.',
+      question: 'Which small depth differences are worth repeating on the next tide?',
+      currentDrift: .05,
+      waveScale: 1,
+      fieldVariation: { temp: .18, salinity: .12, DO: .18, pH: .012, chlA: .22 },
+      scene: { sky: '#c4d8e3', fog: '#c4d8e3', water: '#3a6b6c', ambient: .7, sun: .7 },
+      readings: {
+        surface: { temp: 14.1, salinity: 28.4, DO: 8.45, pH: 8.04, chlA: 7.1 },
+        crop: { temp: 13.5, salinity: 28.7, DO: 8.05, pH: 8.00, chlA: 6.4 }
+      }
+    },
+    {
+      id: 'freshet',
+      name: 'After-rain freshet',
+      badge: 'Freshet investigator',
+      difficulty: 'Intermediate',
+      tide: 'Ebbing after rain',
+      weather: 'Overcast; rain easing',
+      currentLabel: 'Stronger outward flow',
+      briefing: 'Fresh runoff can form a low-salinity surface layer while denser marine water remains below. The outgoing flow also asks for earlier steering corrections.',
+      question: 'Does the salinity signal persist at crop depth, and when should the crew resample?',
+      currentDrift: .095,
+      waveScale: 1.25,
+      fieldVariation: { temp: .16, salinity: .18, DO: .18, pH: .012, chlA: .2 },
+      scene: { sky: '#9fb4bd', fog: '#9fb4bd', water: '#46686a', ambient: .62, sun: .42 },
+      readings: {
+        surface: { temp: 12.4, salinity: 13.5, DO: 8.35, pH: 7.72, chlA: 4.8 },
+        crop: { temp: 11.9, salinity: 24.8, DO: 7.72, pH: 7.86, chlA: 3.9 }
+      }
+    },
+    {
+      id: 'heat-slack',
+      name: 'Warm slack tide',
+      badge: 'Heat-watch investigator',
+      difficulty: 'Challenge',
+      tide: 'Slack low tide',
+      weather: 'Warm and hazy',
+      currentLabel: 'Very little flushing',
+      briefing: 'A warm, weakly flushed afternoon can reduce dissolved oxygen, especially beside dense crop. Slow down and treat the paired readings as a prompt to verify.',
+      question: 'Which signal needs the most urgent repeat measurement before any farm decision?',
+      currentDrift: .018,
+      waveScale: .65,
+      fieldVariation: { temp: .2, salinity: .1, DO: .14, pH: .01, chlA: .25 },
+      scene: { sky: '#e4cab1', fog: '#e4cab1', water: '#3d7770', ambient: .78, sun: .88 },
+      readings: {
+        surface: { temp: 23.3, salinity: 27.3, DO: 4.75, pH: 7.86, chlA: 15.2 },
+        crop: { temp: 22.9, salinity: 27.6, DO: 3.85, pH: 7.79, chlA: 12.8 }
+      }
+    }
+  ];
+
+  function aqFieldMissionScenario(id) {
+    var requested = String(id || '');
+    return AQ_FIELD_MISSION_SCENARIOS.find(function(item) { return item.id === requested; }) || AQ_FIELD_MISSION_SCENARIOS[0];
+  }
+
+  function aqMissionProbeWarnings(raw) {
+    var reading = raw && typeof raw === 'object' ? raw : {};
+    var temp = Number(reading.temp), salinity = Number(reading.salinity), oxygen = Number(reading.DO), pH = Number(reading.pH), chl = Number(reading.chlA);
+    var warnings = [];
+    if (temp > 21) warnings.push('Temperature high (>21\u00B0C) - mussel stress risk');
+    if (salinity < 18) warnings.push('Salinity low (<18 PSU) - compare surface and crop depth');
+    if (oxygen < 6) warnings.push('Dissolved oxygen low (<6 mg/L) - verify promptly');
+    if (pH < 7.8) warnings.push('pH low (<7.8) - repeat with a calibrated sensor');
+    if (chl > 25) warnings.push('Chlorophyll-a high - check current HAB and closure information');
+    return warnings;
+  }
+
+  function aqMissionScenarioProbeReading(scenarioId, depth, mode, vary, profileOverride) {
+    var scenario = aqFieldMissionScenario(scenarioId);
+    var sampleDepth = depth === 'crop' ? 'crop' : 'surface';
+    var base = profileOverride && typeof profileOverride === 'object' ? profileOverride : scenario.readings[sampleDepth];
+    var spread = scenario.fieldVariation;
+    function fieldValue(key) {
+      return Number(base[key]) + (vary ? (Math.random() - .5) * 2 * Number(spread[key] || 0) : 0);
+    }
+    var reading = {
+      depth: sampleDepth,
+      temp: fieldValue('temp').toFixed(1),
+      salinity: fieldValue('salinity').toFixed(1),
+      DO: fieldValue('DO').toFixed(2),
+      pH: fieldValue('pH').toFixed(2),
+      chlA: fieldValue('chlA').toFixed(1),
+      timestamp: Date.now(),
+      mode: String(mode || '').slice(0, 30)
+    };
+    reading.warnings = aqMissionProbeWarnings(reading);
+    return reading;
+  }
+
   function aqSanitizeMusselReadings(raw) {
     var source = raw && typeof raw === 'object' ? raw : {};
     return {
@@ -7420,8 +7522,100 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     };
   }
 
+  function aqSanitizeMissionProbeReading(raw, expectedDepth) {
+    if (!raw || typeof raw !== 'object') return null;
+    var source = raw;
+    function fixed(value, fallback, min, max, digits) {
+      var numeric = Number(value);
+      if (!Number.isFinite(numeric)) numeric = fallback;
+      return Number(aqEcoClamp(numeric, min, max).toFixed(digits)).toFixed(digits);
+    }
+    var depth = source.depth === 'crop' ? 'crop' : (source.depth === 'surface' ? 'surface' : (expectedDepth === 'crop' ? 'crop' : 'surface'));
+    return {
+      depth: depth,
+      temp: fixed(source.temp, 14, 0, 30, 1),
+      salinity: fixed(source.salinity, 28, 0, 38, 1),
+      DO: fixed(source.DO, 8.1, 0, 14, 2),
+      pH: fixed(source.pH, 8.05, 6.5, 9, 2),
+      chlA: fixed(source.chlA, 7, 0, 30, 1),
+      timestamp: Math.max(0, Number(source.timestamp) || 0),
+      mode: String(source.mode || '').slice(0, 30),
+      warnings: (Array.isArray(source.warnings) ? source.warnings : []).slice(0, 8).map(function(item) { return String(item || '').slice(0, 180); })
+    };
+  }
+
+  function aqSanitizeMissionSummary(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var source = raw;
+    var requestedScenarioId = String(source.scenarioId || '');
+    var missionScenario = AQ_FIELD_MISSION_SCENARIOS.find(function(item) { return item.id === requestedScenarioId; }) || null;
+    return {
+      scenarioId: missionScenario ? missionScenario.id : '',
+      scenarioName: missionScenario ? missionScenario.name : '',
+      tide: missionScenario ? missionScenario.tide : '',
+      weather: missionScenario ? missionScenario.weather : '',
+      elapsedSeconds: Math.max(0, Math.min(86400, Math.round(Number(source.elapsedSeconds) || 0))),
+      fuelRemaining: Math.max(0, Math.min(100, Math.round(Number(source.fuelRemaining) || 0))),
+      buoyViolations: Math.max(0, Math.min(999, Math.round(Number(source.buoyViolations) || 0))),
+      droppersDeployed: Math.max(0, Math.min(5, Math.round(Number(source.droppersDeployed) || 0))),
+      surfaceReading: aqSanitizeMissionProbeReading(source.surfaceReading, 'surface'),
+      cropDepthReading: aqSanitizeMissionProbeReading(source.cropDepthReading, 'crop')
+    };
+  }
+
+  function aqMissionReadingToMusselReadings(raw, fallback) {
+    var reading = aqSanitizeMissionProbeReading(raw, raw && raw.depth);
+    if (!reading) return null;
+    var base = aqSanitizeMusselReadings(fallback);
+    return aqSanitizeMusselReadings({
+      temperature: reading.temp,
+      salinity: reading.salinity,
+      oxygen: reading.DO,
+      pH: reading.pH,
+      chlorophyll: reading.chlA,
+      fouling: base.fouling,
+      attachment: base.attachment
+    });
+  }
+
+  function aqCompareMissionDepthReadings(rawSummary) {
+    var summary = aqSanitizeMissionSummary(rawSummary);
+    if (!summary || !summary.surfaceReading || !summary.cropDepthReading) return null;
+    var surface = summary.surfaceReading, crop = summary.cropDepthReading;
+    var specs = [
+      { id: 'temperature', label: 'Temperature', key: 'temp', unit: '\u00B0C', digits: 1 },
+      { id: 'salinity', label: 'Salinity', key: 'salinity', unit: 'PSU', digits: 1 },
+      { id: 'oxygen', label: 'Dissolved oxygen', key: 'DO', unit: 'mg/L', digits: 2 },
+      { id: 'pH', label: 'pH', key: 'pH', unit: '', digits: 2 },
+      { id: 'chlorophyll', label: 'Chlorophyll-a', key: 'chlA', unit: '\u00B5g/L', digits: 1 }
+    ];
+    return {
+      summary: summary,
+      surface: surface,
+      crop: crop,
+      metrics: specs.map(function(spec) {
+        var surfaceValue = Number(surface[spec.key]), cropValue = Number(crop[spec.key]);
+        return Object.assign({}, spec, { surface: surfaceValue, crop: cropValue, delta: Number((cropValue - surfaceValue).toFixed(spec.digits)) });
+      })
+    };
+  }
+
+  function aqDescribeMissionDepthComparison(surfaceReading, cropReading) {
+    var comparison = aqCompareMissionDepthReadings({ surfaceReading: surfaceReading, cropDepthReading: cropReading });
+    if (!comparison) return '';
+    function phrase(metricId, sameLabel, lowerLabel, higherLabel) {
+      var metric = comparison.metrics.find(function(item) { return item.id === metricId; });
+      if (!metric || Math.abs(metric.delta) < .05) return 'about the same ' + sameLabel;
+      return Math.abs(metric.delta).toFixed(metric.digits) + (metric.unit ? ' ' + metric.unit : '') + ' ' + (metric.delta < 0 ? lowerLabel : higherLabel);
+    }
+    return 'Paired depth comparison: crop water is ' +
+      phrase('temperature', 'temperature', 'cooler', 'warmer') + ', ' +
+      phrase('oxygen', 'dissolved oxygen', 'lower in dissolved oxygen', 'higher in dissolved oxygen') + ', and ' +
+      phrase('salinity', 'salinity', 'lower in salinity', 'higher in salinity') + '.';
+  }
+
   function aqDefaultMusselHealthWorkspace() {
-    return Object.assign({}, aqSanitizeMusselReadings(MUSSEL_HEALTH_PRESETS[0].values), { scenarioId: 'balanced', prediction: '', observation: '', checks: [] });
+    return Object.assign({}, aqSanitizeMusselReadings(MUSSEL_HEALTH_PRESETS[0].values), { scenarioId: 'balanced', prediction: '', observation: '', evidenceSource: '', evidenceMissionCompletedAt: 0, checks: [] });
   }
 
   function aqSanitizeMusselHealthWorkspace(raw) {
@@ -7439,12 +7633,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         modelVersion: String(record.modelVersion || 'legacy').slice(0, 40),
         scenarioId: String(record.scenarioId || '').slice(0, 40),
         prediction: String(record.prediction || '').slice(0, 80),
+        evidenceSource: ['mission-surface', 'mission-crop'].indexOf(record.evidenceSource) >= 0 ? record.evidenceSource : '',
+        evidenceMissionCompletedAt: Math.max(0, Number(record.evidenceMissionCompletedAt) || 0),
         observation: String(record.observation || '').slice(0, 600)
       };
     });
     var scenarioId = MUSSEL_HEALTH_PRESETS.some(function(preset) { return preset.id === source.scenarioId; }) ? source.scenarioId : 'custom';
     var prediction = ['none', 'temperature', 'salinity', 'oxygen', 'pH', 'chlorophyll', 'fouling', 'attachment'].indexOf(source.prediction) >= 0 ? source.prediction : '';
-    return Object.assign({}, readings, { scenarioId: scenarioId, prediction: prediction, observation: String(source.observation || '').slice(0, 600), checks: checks });
+    var evidenceSource = ['mission-surface', 'mission-crop'].indexOf(source.evidenceSource) >= 0 ? source.evidenceSource : '';
+    return Object.assign({}, readings, { scenarioId: scenarioId, prediction: prediction, observation: String(source.observation || '').slice(0, 600), evidenceSource: evidenceSource, evidenceMissionCompletedAt: Math.max(0, Number(source.evidenceMissionCompletedAt) || 0), checks: checks });
   }
 
   function aqAssessMusselHealth(raw) {
@@ -7571,6 +7768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
   function initFarmSim(canvas, opts) {
     var THREE = window.THREE;
     if (!THREE || !canvas) return null;
+    var missionScenario = aqFieldMissionScenario(opts && opts.missionScenarioId);
 
     var reducedMotion = false;
     try { reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
@@ -7580,10 +7778,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var H = canvas.clientHeight || 420;
 
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xc4d8e3); // overcast Maine sky
+    scene.background = new THREE.Color(missionScenario.scene.sky);
     scene.fog = new THREE.Fog(0xc4d8e3, 60, 380); // fog synced to the overcast-sky bg — seamless horizon
 
     var camera = new THREE.PerspectiveCamera(65, W / H, 0.5, 1000);
+    scene.fog.color = new THREE.Color(missionScenario.scene.fog);
     camera.position.set(0, 4, 12);
     camera.lookAt(0, 1.5, 0);
 
@@ -7614,9 +7813,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     })();
 
     // Lights
-    var ambient = new THREE.AmbientLight(0xe6eef2, 0.7);
+    var ambient = new THREE.AmbientLight(0xe6eef2, missionScenario.scene.ambient);
     scene.add(ambient);
-    var sun = new THREE.DirectionalLight(0xfff2c8, 0.7);
+    var sun = new THREE.DirectionalLight(0xfff2c8, missionScenario.scene.sun);
     sun.position.set(50, 80, 30);
     scene.add(sun);
     var hemi = new THREE.HemisphereLight(0xc8d8e0, 0x3a5a4f, 0.55);
@@ -7624,7 +7823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     // Water plane (river — slightly browner than open ocean)
     var waterGeo = new THREE.PlaneGeometry(1200, 1200, 80, 80);
-    var waterMat = new THREE.MeshLambertMaterial({ color: 0x3a6b6c, transparent: true, opacity: 0.95 });
+    var waterMat = new THREE.MeshLambertMaterial({ color: missionScenario.scene.water, transparent: true, opacity: 0.95 });
     var water = new THREE.Mesh(waterGeo, waterMat);
     water.rotation.x = -Math.PI / 2;
     scene.add(water);
@@ -7654,6 +7853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     motor.position.set(0, 0.6, -2.4);
     boat.add(motor);
     boat.position.set(0, 0, 6);
+    boat.rotation.y = Math.PI; // model bow is +z; mission heading 0 travels up-river toward -z
     scene.add(boat);
 
     // Buoyage — narrow channel
@@ -7675,13 +7875,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       scene.add(g);
       buoys.push(g);
     }
-    // up-river is +z (toward land) in our convention; player starts south of channel, heads north.
-    addBuoy(-4, -5, 'red-nun');
-    addBuoy(4, -5, 'green-can');
-    addBuoy(-4, -25, 'red-nun');
-    addBuoy(4, -25, 'green-can');
-    addBuoy(-4, -50, 'red-nun');
-    addBuoy(4, -50, 'green-can');
+    // Up-river is -z. In IALA-B, inbound red nuns occupy the vessel's starboard (+x) side.
+    addBuoy(4, -5, 'red-nun');
+    addBuoy(-4, -5, 'green-can');
+    addBuoy(4, -25, 'red-nun');
+    addBuoy(-4, -25, 'green-can');
+    addBuoy(4, -50, 'red-nun');
+    addBuoy(-4, -50, 'green-can');
 
     // ─── Lease (yellow corner buoys marking 1-acre rectangle)
     var lease = new THREE.Group();
@@ -7754,49 +7954,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     // ─── Boat state
     var boatState = {
       pos: new THREE.Vector3(0, 0, 6),
-      heading: 0, // facing north (+z) — toward lease up-river
+      heading: 0, // facing north (-z) toward the up-river lease
       speed: 0,
       throttle: 0,
       droppersDeployed: (opts && opts.initialDroppers) || 0,
       probeReadingsCount: 0,
+      surfaceSampled: false,
+      cropDepthSampled: false,
+      surfaceReading: null,
+      cropDepthReading: null,
       passedRedNun: false,
       reachedLease: false,
       returnedHome: false,
       dockReminderShown: false,
+      buoyViolations: 0,
+      fuelWarningShown: false,
+      fuelEmptyShown: false,
       fuel: 100
     };
     boat.position.copy(boatState.pos);
 
-    // Probe readings: realistic-but-randomized
-    function takeProbeReading() {
-      var temp = 18 + (Math.random() - 0.5) * 8; // 14-22
-      var salinity = 26 + (Math.random() - 0.5) * 6;
-      // Dissolved O2 falls as water warms (warmer water holds less oxygen) — couple DO to temp so
-      // the probe stops contradicting the tool's own "warmer water holds less O2" lesson, and so the
-      // low-DO warning below is actually reachable (warm water now dips toward/under the 6 mg/L floor).
-      var DO = 9.5 - (temp - 14) * 0.45 + (Math.random() - 0.5) * 1.4;
-      var pH = 7.7 + Math.random() * 0.4;
-      var chl = 4 + Math.random() * 12;
-      return {
-        temp: temp.toFixed(1),
-        salinity: salinity.toFixed(1),
-        DO: DO.toFixed(2),
-        pH: pH.toFixed(2),
-        chlA: chl.toFixed(1),
-        timestamp: Date.now(),
-        // Quick assessment
-        warnings: (function() {
-          var w = [];
-          if (temp > 21) w.push('Temp high (>21°C) — mussel stress risk');
-          if (DO < 6) w.push('DO low (<6 mg/L) — below optimal for mussels, monitor');
-          if (pH < 7.8) w.push('pH low (<7.8) — acidification window');
-          if (chl > 25) w.push('Chl-a high — check DMR for HAB closures');
-          return w;
-        })()
-      };
+    // One shared profile keeps paired readings meaningfully comparable while retaining field variation.
+    var missionWaterProfile = {
+      surface: missionScenario.readings.surface,
+      crop: missionScenario.readings.crop
+    };
+    function takeProbeReading(depth) {
+      var sampleDepth = depth === 'crop' ? 'crop' : 'surface';
+      return aqMissionScenarioProbeReading(missionScenario.id, sampleDepth, '3d', true, missionWaterProfile[sampleDepth]);
     }
 
     var keys = {};
+    var actionRequests = {};
     var suspended = !!document.hidden;
     function onKeyDown(e) {
       var target = e.target;
@@ -7810,15 +7999,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         if (opts && opts.onExit) opts.onExit();
         return;
       }
-      if (e.repeat && (key === 'f' || key === 'p')) return;
-      keys[key] = true;
-      if ({ ' ': 1, w: 1, a: 1, s: 1, d: 1, arrowup: 1, arrowdown: 1, arrowleft: 1, arrowright: 1, f: 1, p: 1 }[key]) e.preventDefault();
+      if (e.repeat && (key === 'f' || key === 'p' || key === 'c')) return;
+      if (key === 'f' || key === 'p' || key === 'c') actionRequests[key] = true;
+      else keys[key] = true;
+      if ({ ' ': 1, w: 1, a: 1, s: 1, d: 1, arrowup: 1, arrowdown: 1, arrowleft: 1, arrowright: 1, f: 1, p: 1, c: 1 }[key]) e.preventDefault();
     }
     function onKeyUp(e) {
       if (e.target !== canvas) return;
-      keys[e.key.toLowerCase()] = false;
+      var key = e.key.toLowerCase();
+      if (key === 'f' || key === 'p' || key === 'c') return;
+      keys[key] = false;
     }
-    function clearKeys() { keys = {}; }
+    function clearKeys() {
+      keys = {};
+      actionRequests = {};
+    }
     function onWindowBlur() { suspended = true; clearKeys(); }
     function onWindowFocus() { suspended = !!document.hidden; lastT = performance.now(); }
     function onVisibilityChange() {
@@ -7837,6 +8032,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
+    function describeDepthComparison(surface, crop) {
+      return aqDescribeMissionDepthComparison(surface, crop);
+    }
+
 
     var t0 = performance.now();
     var raf = null;
@@ -7864,6 +8063,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (keys['a'] || keys['arrowleft']) steer = 1;
       if (keys['d'] || keys['arrowright']) steer = -1;
       if (keys[' ']) accel = 1.4;
+      if (boatState.fuel <= 0) accel = 0;
 
       boatState.throttle += (accel - boatState.throttle) * 0.04;
       boatState.speed += boatState.throttle * 5 * dt;
@@ -7872,59 +8072,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (boatState.speed < -2.5) boatState.speed = -2.5;
       boatState.heading += steer * dt * 0.85 * Math.min(1, Math.abs(boatState.speed) / 2 + 0.2);
 
-      // Up-river current (gentle southerly drift — water flows out toward sea)
-      var currentDrift = 0.05; // small constant southerly drift
+      // Scenario current: direction and strength follow the selected field condition.
+      var currentDrift = missionScenario.currentDrift;
       var dx = Math.sin(boatState.heading) * boatState.speed * dt;
       var dz = Math.cos(boatState.heading) * boatState.speed * dt;
       boatState.pos.x += dx;
       boatState.pos.z -= dz; // -z is up-river/north
       boatState.pos.z += currentDrift * dt * 8; // current pushes player back south
-      boatState.fuel -= Math.abs(boatState.throttle) * dt * 0.4;
+      boatState.fuel = Math.max(0, boatState.fuel - Math.abs(boatState.throttle) * dt * 0.4);
+      if (boatState.fuel < 25 && !boatState.fuelWarningShown) {
+        boatState.fuelWarningShown = true;
+        statusCb({ type: 'warning', text: 'Fuel below 25% — finish lease work and plan the return.' });
+        aqAnnounce('Fuel below 25 percent. Finish lease work and plan the return.');
+      }
+      if (boatState.fuel <= 0 && !boatState.fuelEmptyShown) {
+        boatState.fuelEmptyShown = true;
+        statusCb({ type: 'violation', text: 'Fuel exhausted — exit and restart the mission.' });
+        aqAnnounce('Fuel exhausted. Exit and restart the mission.');
+      }
 
       boat.position.x = boatState.pos.x;
       boat.position.z = boatState.pos.z;
-      boat.rotation.y = boatState.heading;
+      boat.rotation.y = boatState.heading + Math.PI;
       if (!reducedMotion) {
         boat.position.y = Math.sin(elapsed * 1.4) * 0.05;
         boat.rotation.z = Math.sin(elapsed * 1.1) * 0.035;
       } else { boat.position.y = 0; boat.rotation.z = 0; }
 
       // Mission events
+      var dLease = boat.position.distanceTo(leaseMarker.position);
+      var dDock = boat.position.distanceTo(dock.position);
+      var inbound = Math.cos(boatState.heading) > 0.35 && boatState.speed > 0.5;
       if (!boatState.passedRedNun) {
         for (var ib = 0; ib < buoys.length; ib++) {
           var bb = buoys[ib];
           if (bb.userData.type !== 'red-nun') continue;
           var d = boat.position.distanceTo(bb.position);
-          if (d < 4) {
+          if (d > 5.5) bb.userData.wrongSideWarned = false;
+          if (d < 4 && inbound) {
             var toBuoy = new THREE.Vector3().subVectors(bb.position, boat.position);
-            var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
-            if (localX > 0.4) {
+            var starboardOffset = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
+            if (starboardOffset > 0.4) {
               boatState.passedRedNun = true;
               aqAnnounce('Correctly passed red nun on starboard heading up-river. Red right returning.');
               statusCb({ type: 'milestone', text: 'Passed first red nun on starboard ✓' });
-            } else if (localX < -0.4) {
+              break;
+            } else if (starboardOffset < -0.4 && !bb.userData.wrongSideWarned) {
+              bb.userData.wrongSideWarned = true;
+              boatState.buoyViolations += 1;
               aqAnnounce('Wrong side. In IALA-B, returning vessels keep red on starboard. The Bagaduce up-river counts as "returning."');
-              statusCb({ type: 'violation', text: 'Buoyage violation — review IALA-B' });
+              statusCb({ type: 'violation', text: 'Buoyage violation — move left of the red nun and retry inbound' });
             }
           }
         }
       }
 
-      // Reached lease
-      if (!boatState.reachedLease) {
-        var dLease = boat.position.distanceTo(leaseMarker.position);
-        if (dLease < 6) {
-          boatState.reachedLease = true;
-          aqAnnounce('Reached your LPA lease. Press F to drop a seeded line, or P to take a water-quality probe reading.');
-          statusCb({ type: 'milestone', text: 'Reached lease — press F to drop dropper, P to probe' });
-        }
+      if (!boatState.reachedLease && dLease < 6) {
+        boatState.reachedLease = true;
+        aqAnnounce('Reached your LPA lease. Deploy all five seeded lines first, then compare surface and crop-depth samples.');
+        statusCb({ type: 'milestone', text: 'Reached lease — deploy droppers before taking the paired samples' });
       }
 
-      // F = drop seeded line (only at lease, up to 5)
-      if (boatState.reachedLease && keys['f']) {
-        keys['f'] = false;
-        if (boatState.droppersDeployed >= 5) {
-          statusCb({ type: 'info', text: 'All 5 droppers deployed.' });
+      // One-shot farm actions always produce contextual feedback and are consumed exactly once.
+      if (actionRequests['f']) {
+        actionRequests['f'] = false;
+        if (!boatState.reachedLease || dLease >= 10) {
+          statusCb({ type: 'info', text: 'Dropper unavailable — move inside the yellow lease markers.' });
+          aqAnnounce('Move inside the yellow lease markers before deploying a dropper.');
+        } else if (!boatState.passedRedNun) {
+          statusCb({ type: 'info', text: 'Lease work locked — complete the inbound red-right-returning check.' });
+          aqAnnounce('Complete the inbound red-right-returning check before beginning lease work.');
+        } else if (boatState.droppersDeployed >= 5) {
+          statusCb({ type: 'info', text: 'All 5 droppers are already deployed.' });
+          aqAnnounce('All five droppers are already deployed.');
         } else {
           boatState.droppersDeployed += 1;
           rebuildDroppers(boatState.droppersDeployed);
@@ -7933,35 +8153,87 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         }
       }
 
-      // P = probe reading (at lease)
-      if (boatState.reachedLease && keys['p']) {
-        keys['p'] = false;
-        var r = takeProbeReading();
-        boatState.probeReadingsCount += 1;
-        statusCb({
-          type: 'probe',
-          reading: r,
-          text: 'Probe: T=' + r.temp + '°C  S=' + r.salinity + ' PSU  DO=' + r.DO + ' mg/L  pH=' + r.pH + '  Chl-a=' + r.chlA + ' µg/L' + (r.warnings.length ? '  ⚠ ' + r.warnings.length + ' warning(s)' : '')
-        });
-        aqAnnounce('Probe reading taken. ' + (r.warnings.length ? r.warnings.length + ' warnings.' : 'All parameters in optimal range.'));
+      if (actionRequests['p']) {
+        actionRequests['p'] = false;
+        if (!boatState.reachedLease || dLease >= 10) {
+          statusCb({ type: 'info', text: 'Surface sample unavailable — move beside the lease.' });
+          aqAnnounce('Move beside the lease before taking a surface sample.');
+        } else if (!boatState.passedRedNun) {
+          statusCb({ type: 'info', text: 'Sampling locked — complete the inbound navigation check.' });
+          aqAnnounce('Complete the inbound navigation check before sampling.');
+        } else if (boatState.droppersDeployed < 5) {
+          statusCb({ type: 'info', text: 'Sampling comes next — deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's') + ' first.' });
+          aqAnnounce('Deploy all five droppers before comparing depth samples.');
+        } else {
+          var surfaceReading = takeProbeReading('surface');
+          boatState.surfaceSampled = true;
+          boatState.surfaceReading = surfaceReading;
+          boatState.probeReadingsCount += 1;
+          statusCb({
+            type: 'probe',
+            reading: surfaceReading,
+            text: 'Surface sample: T=' + surfaceReading.temp + '°C  S=' + surfaceReading.salinity + ' PSU  DO=' + surfaceReading.DO + ' mg/L  pH=' + surfaceReading.pH + '  Chl-a=' + surfaceReading.chlA + ' µg/L' + (surfaceReading.warnings.length ? '  ⚠ ' + surfaceReading.warnings.length + ' warning(s)' : '')
+          });
+          if (boatState.cropDepthReading) statusCb({ type: 'comparison', text: describeDepthComparison(surfaceReading, boatState.cropDepthReading) });
+          aqAnnounce(boatState.cropDepthReading ? describeDepthComparison(surfaceReading, boatState.cropDepthReading) : 'Surface sample recorded. Now take a crop-depth sample with C before returning.');
+        }
+      }
+
+      if (actionRequests['c']) {
+        actionRequests['c'] = false;
+        if (!boatState.reachedLease || dLease >= 10) {
+          statusCb({ type: 'info', text: 'Crop-depth sample unavailable — move beside the suspended mussels.' });
+          aqAnnounce('Move beside the suspended mussels before taking a crop-depth sample.');
+        } else if (!boatState.passedRedNun) {
+          statusCb({ type: 'info', text: 'Sampling locked — complete the inbound navigation check.' });
+          aqAnnounce('Complete the inbound navigation check before sampling.');
+        } else if (boatState.droppersDeployed < 5) {
+          statusCb({ type: 'info', text: 'Sampling comes next — deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's') + ' first.' });
+          aqAnnounce('Deploy all five droppers before comparing depth samples.');
+        } else {
+          var cropReading = takeProbeReading('crop');
+          boatState.cropDepthSampled = true;
+          boatState.cropDepthReading = cropReading;
+          boatState.probeReadingsCount += 1;
+          statusCb({
+            type: 'probe',
+            reading: cropReading,
+            text: 'Crop-depth sample: T=' + cropReading.temp + '°C  S=' + cropReading.salinity + ' PSU  DO=' + cropReading.DO + ' mg/L  pH=' + cropReading.pH + '  Chl-a=' + cropReading.chlA + ' µg/L' + (cropReading.warnings.length ? '  ⚠ ' + cropReading.warnings.length + ' warning(s)' : '')
+          });
+          if (boatState.surfaceReading) statusCb({ type: 'comparison', text: describeDepthComparison(boatState.surfaceReading, cropReading) });
+          aqAnnounce(boatState.surfaceReading ? describeDepthComparison(boatState.surfaceReading, cropReading) : 'Crop-depth sample recorded. Add a surface sample before returning.');
+        }
       }
 
       // Returned home
       if (boatState.reachedLease && !boatState.returnedHome) {
-        var dDock = boat.position.distanceTo(dock.position);
         if (dDock > 6) boatState.dockReminderShown = false;
-        if (dDock < 4 && Math.abs(boatState.speed) < 1 && boatState.passedRedNun && boatState.droppersDeployed >= 5) {
+        if (dDock < 4 && Math.abs(boatState.speed) < 1 && boatState.passedRedNun && boatState.droppersDeployed >= 5 && boatState.surfaceSampled && boatState.cropDepthSampled) {
           boatState.returnedHome = true;
           aqAnnounce('Docked. Mission summary available.');
-          statusCb({ type: 'complete', text: 'Mission complete — review summary' });
+          statusCb({
+            type: 'complete',
+            text: 'Mission complete — review the captain’s debrief',
+            summary: {
+              scenarioId: missionScenario.id,
+              elapsedSeconds: Math.round(elapsed),
+              fuelRemaining: Math.round(boatState.fuel),
+              buoyViolations: boatState.buoyViolations,
+              droppersDeployed: boatState.droppersDeployed,
+              surfaceReading: boatState.surfaceReading,
+              cropDepthReading: boatState.cropDepthReading
+            }
+          });
         }
         else if (dDock < 4 && Math.abs(boatState.speed) < 1 && !boatState.dockReminderShown) {
           boatState.dockReminderShown = true;
           var missing = [];
           if (!boatState.passedRedNun) missing.push('pass the red nun correctly');
           if (boatState.droppersDeployed < 5) missing.push('deploy ' + (5 - boatState.droppersDeployed) + ' more dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's'));
+          if (!boatState.surfaceSampled) missing.push('take a surface sample');
+          if (!boatState.cropDepthSampled) missing.push('take a crop-depth sample');
           aqAnnounce('Docked, but the mission is not complete. Still needed: ' + missing.join(' and ') + '.');
-          statusCb({ type: 'info', text: 'Mission incomplete - still need to ' + missing.join(' and ') });
+          statusCb({ type: 'info', text: 'Mission incomplete — still need to ' + missing.join(' and ') });
         }
       }
 
@@ -7970,7 +8242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         for (var iv = 0; iv < waterPosArr.length / 3; iv++) {
           var px = waterPosArr[iv * 3];
           var pz = waterPosArr[iv * 3 + 1];
-          waterPosArr[iv * 3 + 2] = initialZ[iv] + Math.sin(px * 0.09 + elapsed * 1.0) * 0.12 + Math.cos(pz * 0.10 + elapsed * 0.85) * 0.10;
+          waterPosArr[iv * 3 + 2] = initialZ[iv] + (Math.sin(px * 0.09 + elapsed * 1.0) * 0.12 + Math.cos(pz * 0.10 + elapsed * 0.85) * 0.10) * missionScenario.waveScale;
         }
         waterPositions.needsUpdate = true;
       }
@@ -7988,12 +8260,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       // HUD
       if (now - lastHudUpdate >= 200) {
         lastHudUpdate = now;
+        var nextObjective = 'Reach the yellow lease';
+        var nextTarget = leaseMarker.position;
+        if (!boatState.passedRedNun) {
+          nextObjective = 'Pass a red nun on starboard';
+          var nearestRed = null;
+          var nearestRedDistance = Infinity;
+          for (var ir = 0; ir < buoys.length; ir++) {
+            if (buoys[ir].userData.type !== 'red-nun') continue;
+            var redDistance = boat.position.distanceTo(buoys[ir].position);
+            if (redDistance < nearestRedDistance) {
+              nearestRedDistance = redDistance;
+              nearestRed = buoys[ir];
+            }
+          }
+          if (nearestRed) nextTarget = nearestRed.position;
+        } else if (!boatState.reachedLease) {
+          nextObjective = 'Reach the yellow lease';
+        } else if (boatState.droppersDeployed < 5) {
+          nextObjective = 'Deploy ' + (5 - boatState.droppersDeployed) + ' seeded dropper' + (5 - boatState.droppersDeployed === 1 ? '' : 's');
+        } else if (!boatState.surfaceSampled) {
+          nextObjective = 'Take a surface sample (P)';
+        } else if (!boatState.cropDepthSampled) {
+          nextObjective = 'Take a crop-depth sample (C)';
+        } else if (!boatState.returnedHome) {
+          nextObjective = 'Return to the landing and stop';
+          nextTarget = dock.position;
+        } else {
+          nextObjective = 'Mission complete — review the debrief';
+          nextTarget = dock.position;
+        }
         hudCb({
+          scenarioId: missionScenario.id,
+          scenarioName: missionScenario.name,
+          tide: missionScenario.tide,
+          weather: missionScenario.weather,
+          currentLabel: missionScenario.currentLabel,
           speed: boatState.speed,
           heading: boatState.heading,
           fuel: boatState.fuel,
+          x: boatState.pos.x,
+          z: boatState.pos.z,
+          atLease: dLease < 10,
+          nextObjective: nextObjective,
+          targetX: nextTarget.x,
+          targetZ: nextTarget.z,
+          targetDistance: boat.position.distanceTo(nextTarget),
+          missionProgress: (boatState.passedRedNun ? 1 : 0) + (boatState.reachedLease ? 1 : 0) + (boatState.droppersDeployed >= 5 ? 1 : 0) + (boatState.surfaceSampled && boatState.cropDepthSampled ? 1 : 0) + (boatState.returnedHome ? 1 : 0),
+          buoyViolations: boatState.buoyViolations,
           droppersDeployed: boatState.droppersDeployed,
           probeReadingsCount: boatState.probeReadingsCount,
+          surfaceSampled: boatState.surfaceSampled,
+          cropDepthSampled: boatState.cropDepthSampled,
           passedRedNun: boatState.passedRedNun,
           reachedLease: boatState.reachedLease,
           returnedHome: boatState.returnedHome,
@@ -8019,7 +8337,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     return {
       setControl: function(key, active) {
         if (!alive) return;
-        keys[String(key || '').toLowerCase()] = !!active;
+        var controlKey = String(key || '').toLowerCase();
+        if (controlKey === 'f' || controlKey === 'p' || controlKey === 'c') {
+          if (active) actionRequests[controlKey] = true;
+          return;
+        }
+        keys[controlKey] = !!active;
       },
       dispose: function() {
         alive = false;
@@ -8116,10 +8439,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
     var teacherPlan = teacherPlanHook[0], setTeacherPlan = teacherPlanHook[1];
     var regionHook = useState(stateInit.region);
     var region = regionHook[0], setRegion = regionHook[1];
+    var missionScenarioHook = useState(aqFieldMissionScenario(stateInit.missionScenarioId).id);
+    var missionScenarioId = missionScenarioHook[0], setMissionScenarioId = missionScenarioHook[1];
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     var sim = simHook[0], setSim = simHook[1];
-    var guidedMissionHook = useState({ active: false, step: 0, droppers: 0, probed: false, feedback: 'Choose guided 2D to complete the same mission without WebGL.', reflection: '', evidence: aqSanitizeEvidence(null) });
+    var guidedMissionHook = useState({ active: false, scenarioId: missionScenarioId, step: 0, droppers: 0, probed: false, surfaceSampled: false, cropDepthSampled: false, surfaceReading: null, cropDepthReading: null, feedback: 'Choose guided 2D to complete the same mission without WebGL.', reflection: '', evidence: aqSanitizeEvidence(null) });
     var guidedMission = guidedMissionHook[0], setGuidedMission = guidedMissionHook[1];
+    var missionDebriefHook = useState(null);
+    var missionDebrief = missionDebriefHook[0], setMissionDebrief = missionDebriefHook[1];
+    var missionDebriefNoteHook = useState('');
+    var missionDebriefNote = missionDebriefNoteHook[0], setMissionDebriefNote = missionDebriefNoteHook[1];
     var hudHook = useState({});
     var hud = hudHook[0], setHud = hudHook[1];
     var statusHook = useState([]);
@@ -8203,15 +8532,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         });
       }
       if (ev.type === 'complete') {
+        var missionSummary = aqSanitizeMissionSummary(ev.summary) || aqSanitizeMissionSummary({});
         var s3 = loadState();
         s3.completedMissions = s3.completedMissions || {};
-        s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d' };
-        saveState(s3);
+        s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d', summary: missionSummary };
+        var missionStored = saveState(s3);
         setCompletedMissions(Object.assign({}, s3.completedMissions));
+        setMissionDebrief(missionSummary);
+        setMissionDebriefNote('');
+        setLearningNotice(missionStored ? { kind: 'success', message: '3D boat mission completed. Add an optional captain’s note to strengthen the evidence.' } : { kind: 'error', message: 'The mission is complete, but this browser could not store the result.' });
       }
     }
 
     function startSim() {
+      if (guidedMission.active) {
+        aqAnnounce('Close the guided route before launching the 3D mission.');
+        return;
+      }
+      setHud({});
+      setStatus([]);
+      setMissionDebrief(null);
+      setMissionDebriefNote('');
       function actuallyStart() {
         setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
         if (initTimerRef.current) clearTimeout(initTimerRef.current);
@@ -8227,12 +8568,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             farmRef.current = initFarmSim(c, {
               onHudUpdate: setHud,
               onStatus: pushStatus,
+              missionScenarioId: missionScenarioId,
               initialDroppers: loadState().droppersDeployed || 0,
               onExit: stopSim
             });
             if (!farmRef.current) throw new Error('Farm simulation failed to initialize');
             try { c.focus(); } catch (focusError) {}
-            aqAnnounce('AquacultureLab 3D sim launched. Focus is in the farm view. WASD or arrow keys steer, F drops a seeded line at the lease, P takes a water-quality probe reading, and Escape exits.');
+            var launchedScenario = aqFieldMissionScenario(missionScenarioId);
+            pushStatus({ type: 'briefing', text: launchedScenario.name + ' - ' + launchedScenario.tide + ', ' + launchedScenario.currentLabel + '. ' + launchedScenario.question });
+            aqAnnounce(launchedScenario.name + ' 3D mission launched. ' + launchedScenario.currentLabel + '. Focus is in the farm view. WASD or arrow keys steer, F drops a seeded line, P records a surface sample, C records a crop-depth sample, and Escape exits.');
           } catch (err) {
             console.error('[Aquaculture] WebGL / 3D initialization failed:', err);
             setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
@@ -8255,6 +8599,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       if (farmRef.current && farmRef.current.dispose) farmRef.current.dispose();
       farmRef.current = null;
       setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
+    }
+    function save3DMissionNote() {
+      var note = String(missionDebriefNote || '').trim();
+      if (!missionDebrief || note.length < 20) {
+        aqAnnounce('Add at least 20 characters before saving the captain’s note.');
+        return;
+      }
+      var savedMissionState = loadState();
+      var nextMissionRecords = Object.assign({}, savedMissionState.completedMissions || {});
+      var previousMissionRecord = nextMissionRecords['mission-1'] || {};
+      nextMissionRecords['mission-1'] = Object.assign({}, previousMissionRecord, {
+        completedAt: previousMissionRecord.completedAt || Date.now(),
+        mode: '3d',
+        reflection: note.slice(0, 600),
+        summary: missionDebrief
+      });
+      savedMissionState.completedMissions = nextMissionRecords;
+      var noteStored = saveState(savedMissionState);
+      setCompletedMissions(nextMissionRecords);
+      setLearningNotice(noteStored ? { kind: 'success', message: 'Captain’s debrief note saved with the 3D mission evidence.' } : { kind: 'error', message: 'The note is ready, but this browser could not store it.' });
+      aqAnnounce(noteStored ? 'Captain’s debrief note saved.' : 'Captain’s note could not be saved.');
     }
 
     function setFarmControl(key, active) {
@@ -8641,7 +9006,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           choiceIndex: typeof record.choiceIndex === 'number' ? record.choiceIndex : undefined,
           choice: String(record.choice || '').slice(0, 160),
           reflection: String(record.reflection || '').slice(0, 600),
-          evidence: aqSanitizeEvidence(record.evidence)
+          evidence: aqSanitizeEvidence(record.evidence),
+          summary: aqSanitizeMissionSummary(record.summary)
         };
       });
       var quizCheckpointResults = {};
@@ -8835,11 +9201,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
           '<p><strong>Reasoning:</strong> ' + aqEscapeHtml(evidence.reasoning).replace(/\n/g, '<br>') + '</p>' +
           '<p><strong>Next test:</strong> ' + aqEscapeHtml(evidence.nextTest).replace(/\n/g, '<br>') + '</p></div>';
       }
+      function missionSummaryMarkup(rawSummary) {
+        var summary = aqSanitizeMissionSummary(rawSummary);
+        if (!summary || !summary.surfaceReading || !summary.cropDepthReading) return '';
+        function sampleRow(label, reading) {
+          return '<tr><th scope="row">' + label + '</th><td>' + reading.temp + ' \u00B0C</td><td>' + reading.salinity + ' PSU</td><td>' + reading.DO + ' mg/L</td><td>' + reading.pH + '</td><td>' + reading.chlA + ' \u00B5g/L</td></tr>';
+        }
+        var fieldContext = summary.scenarioId ? '<p><strong>Field condition:</strong> ' + aqEscapeHtml(summary.scenarioName) + ' \u00B7 ' + aqEscapeHtml(summary.tide) + ' \u00B7 ' + aqEscapeHtml(summary.weather) + '</p>' : '';
+        var performance = summary.elapsedSeconds
+          ? '<p><strong>Mission performance:</strong> ' + summary.elapsedSeconds + ' seconds \u00B7 ' + summary.fuelRemaining + '% fuel remaining \u00B7 ' + summary.buoyViolations + ' navigation corrections \u00B7 ' + summary.droppersDeployed + '/5 droppers</p>'
+          : '<p><strong>Mission performance:</strong> ' + summary.droppersDeployed + '/5 droppers deployed in guided mode</p>';
+        return '<div class="mission-samples">' + fieldContext + performance + '<table><caption>Paired boat-probe record</caption><thead><tr><th>Depth</th><th>Temperature</th><th>Salinity</th><th>Dissolved oxygen</th><th>pH</th><th>Chlorophyll-a</th></tr></thead><tbody>' +
+          sampleRow('Surface', summary.surfaceReading) + sampleRow('Crop depth', summary.cropDepthReading) + '</tbody></table><p class="area">These paired readings are learning evidence, not a food-safety or harvest-status determination.</p></div>';
+      }
       var missionMarkup = portfolio.missions.length ? portfolio.missions.map(function(item) {
         return '<article><h3>' + aqEscapeHtml(item.id.replace('mission-', 'Mission ')) + '</h3>' +
           (item.choice ? '<p><strong>Decision:</strong> ' + aqEscapeHtml(item.choice) + '</p>' : '') +
           (item.reflection ? '<p><strong>Evidence:</strong> ' + aqEscapeHtml(item.reflection).replace(/\n/g, '<br>') + '</p>' : '') +
-          structuredEvidenceMarkup(item.evidence) + '</article>';
+          structuredEvidenceMarkup(item.evidence) + missionSummaryMarkup(item.summary) + '</article>';
       }).join('') : '<p>No missions completed yet.</p>';
       var ecosystemMarkup = portfolio.ecosystemExperiments.length ? portfolio.ecosystemExperiments.map(function(item) {
         var environment = ECOSYSTEM_ENVIRONMENTS[item.environmentId] || { name: item.environmentId };
@@ -8856,6 +9235,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         var readings = aqSanitizeMusselReadings(item.readings);
         return '<article><h3>' + aqEscapeHtml(item.status) + ' · priority signal: ' + aqEscapeHtml(item.prioritySignal || item.limitingFactor) + '</h3>' +
           '<p><strong>Context:</strong> scenario ' + aqEscapeHtml(item.scenarioId || 'custom') + ' · model ' + aqEscapeHtml(item.modelVersion || 'legacy') + (item.prediction ? ' · prediction ' + aqEscapeHtml(item.prediction) : '') + '</p>' +
+          (item.evidenceSource ? '<p><strong>Evidence source:</strong> boat mission ' + (item.evidenceSource === 'mission-surface' ? 'surface sample' : 'crop-depth sample') + '</p>' : '') +
           '<p><strong>Readings:</strong> temperature ' + readings.temperature + ' °C · salinity ' + readings.salinity + ' PSU · dissolved oxygen ' + readings.oxygen + ' mg/L · pH ' + readings.pH + ' · chlorophyll-a ' + readings.chlorophyll + ' µg/L · biofouling ' + readings.fouling + '% · attachment ' + readings.attachment + '%</p>' +
           '<p><strong>Field explanation:</strong> ' + aqEscapeHtml(item.observation).replace(/\n/g, '<br>') + '</p></article>';
       }).join('') : '<p>No mussel field checks saved yet.</p>';
@@ -8865,7 +9245,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         return '<li><strong>' + aqEscapeHtml(path.title) + '</strong>: ' + path.completed + ' completed, ' + path.visited + ' visited, ' + path.total + ' total</li>';
       }).join('') + '</ul>';
       return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
-        '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
+        '<title>Aquaculture Lab Learning Portfolio</title><style>body{font-family:Arial,sans-serif;max-width:850px;margin:36px auto;padding:0 22px;color:#102a2a;line-height:1.55}h1,h2,h3{color:#064e3b}header{border-bottom:4px solid #0f766e;margin-bottom:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat,article{border:1px solid #99b8b3;border-radius:10px;padding:12px}.stat b{display:block;font-size:24px;color:#0f766e}.area,li span{color:#475569;font-size:13px}.mission-samples{margin-top:12px;padding-top:8px;border-top:1px solid #cbd5e1}table{width:100%;border-collapse:collapse;font-size:13px}caption{text-align:left;font-weight:700;color:#0f766e;padding:5px 0}th,td{padding:6px;text-align:left;border-bottom:1px solid #cbd5e1}@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}table{font-size:11px}}@media print{body{margin:0;max-width:none}.stat,article{break-inside:avoid}}</style></head><body>' +
         '<header><h1>Aquaculture Lab Learning Portfolio</h1><p>Exported ' + aqEscapeHtml(portfolio.exportedAt) + '</p></header>' +
         '<section class="stats"><div class="stat"><b>' + portfolio.summary.topicsVisited + '</b>Topics visited</div><div class="stat"><b>' + portfolio.summary.topicsCompleted + '</b>Lessons completed</div><div class="stat"><b>' + portfolio.summary.missionsCompleted + '</b>Missions completed</div><div class="stat"><b>' + portfolio.summary.topicsSaved + '</b>Saved topics</div><div class="stat"><b>' + portfolio.summary.reflections + '</b>Reflections</div><div class="stat"><b>' + portfolio.summary.ecosystemExperiments + '</b>Ecosystem experiments</div><div class="stat"><b>' + portfolio.summary.musselHealthChecks + '</b>Mussel field checks</div><div class="stat"><b>' + portfolio.summary.pathsCompleted + '</b>Paths completed</div></section>' +
         '<section><h2>Learning route</h2>' + profileMarkup + '</section><section><h2>Guided paths</h2>' + pathMarkup + '</section><section><h2>Completed lessons</h2>' + completedMarkup + '</section><section><h2>Mission evidence</h2>' + missionMarkup + '</section><section><h2>Ecosystem experiment evidence</h2>' + ecosystemMarkup + '</section><section><h2>Mussel field-check evidence</h2>' + musselMarkup + '</section><section><h2>Saved topics</h2>' + savedMarkup + '</section><section><h2>Reflections</h2>' + noteMarkup + '</section></body></html>';
@@ -8883,6 +9263,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       compareEcosystemRuns: aqCompareEcosystemRuns,
       assessMusselHealth: aqAssessMusselHealth,
       sanitizeMusselHealthWorkspace: aqSanitizeMusselHealthWorkspace,
+      sanitizeMissionSummary: aqSanitizeMissionSummary,
+      fieldMissionScenario: aqFieldMissionScenario,
+      missionScenarioProbeReading: aqMissionScenarioProbeReading,
+      describeMissionDepthComparison: aqDescribeMissionDepthComparison,
+      missionReadingToMusselReadings: aqMissionReadingToMusselReadings,
+      compareMissionDepthReadings: aqCompareMissionDepthReadings,
       contentTrustForTopic: aqContentTrustForTopic,
       sanitizeEcosystemWorkspace: aqSanitizeEcosystemWorkspace,
       sanitizeLearnerProfile: aqSanitizeLearnerProfile,
@@ -9033,23 +9419,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       }
     }
 
+    function selectFieldMissionScenario(id) {
+      if (sim.active || guidedMission.active) {
+        aqAnnounce('Finish or exit the current mission before changing field conditions.');
+        return;
+      }
+      var scenario = aqFieldMissionScenario(id);
+      setMissionScenarioId(scenario.id);
+      var savedScenarioState = loadState();
+      savedScenarioState.missionScenarioId = scenario.id;
+      saveState(savedScenarioState);
+      setMissionDebrief(null);
+      aqAnnounce(scenario.name + ' selected. ' + scenario.currentLabel + '.');
+    }
+
+    function handleFieldMissionScenarioKeyDown(event, index) {
+      var handled = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+      if (handled.indexOf(event.key) < 0 || sim.active || guidedMission.active) return;
+      event.preventDefault();
+      var nextIndex = index;
+      if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % AQ_FIELD_MISSION_SCENARIOS.length;
+      else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + AQ_FIELD_MISSION_SCENARIOS.length) % AQ_FIELD_MISSION_SCENARIOS.length;
+      else if (event.key === 'Home') nextIndex = 0;
+      else nextIndex = AQ_FIELD_MISSION_SCENARIOS.length - 1;
+      var radios = event.currentTarget.parentElement.querySelectorAll('[role="radio"]');
+      if (radios[nextIndex]) radios[nextIndex].focus();
+      selectFieldMissionScenario(AQ_FIELD_MISSION_SCENARIOS[nextIndex].id);
+    }
+
+    function closeGuidedMission() {
+      setGuidedMission(function(previous) { return Object.assign({}, previous, { active: false }); });
+      aqAnnounce('Guided route closed. Choose another field condition or replay this one.');
+    }
+
     function startGuidedMission() {
-      setGuidedMission({ active: true, step: 0, droppers: 0, probed: false, feedback: 'At the landing: review the mission, then depart when ready.', reflection: '', evidence: aqSanitizeEvidence(null) });
-      aqAnnounce('Guided 2D boat mission opened at the town landing.');
+      var scenario = aqFieldMissionScenario(missionScenarioId);
+      setGuidedMission({ active: true, scenarioId: scenario.id, step: 0, droppers: 0, probed: false, surfaceSampled: false, cropDepthSampled: false, surfaceReading: null, cropDepthReading: null, feedback: scenario.name + ': ' + scenario.currentLabel + '. Review the mission, then depart when ready.', reflection: '', evidence: aqSanitizeEvidence(null) });
+      aqAnnounce(scenario.name + ' guided 2D boat mission opened at the town landing.');
     }
 
     function guidedMissionAction(action) {
       setGuidedMission(function(previous) {
         var next = Object.assign({}, previous);
-        if (action === 'depart' && previous.step === 0) { next.step = 1; next.feedback = 'Under way. A red nun marks the channel ahead.'; }
+        var scenario = aqFieldMissionScenario(previous.scenarioId);
+        if (action === 'depart' && previous.step === 0) { next.step = 1; next.feedback = 'Under way in ' + scenario.currentLabel.toLowerCase() + '. A red nun marks the channel ahead.'; }
         else if (action === 'port' && previous.step === 1) { next.feedback = 'That would put the red nun on port while returning from sea. Reconsider red-right-returning.'; }
         else if (action === 'starboard' && previous.step === 1) { next.step = 2; next.feedback = 'Correct: the red nun stays on starboard as you travel up-river.'; }
         else if (action === 'shoreline' && previous.step === 2) { next.feedback = 'The shoreline shortcut is shallow and leaves the marked channel. Choose the safer route.'; }
         else if (action === 'channel' && previous.step === 2) { next.step = 3; next.feedback = 'You followed the marked channel and entered the yellow-buoy lease at low speed.'; }
-        else if (action === 'dropper' && previous.step === 3) { next.droppers = Math.min(5, previous.droppers + 1); next.feedback = 'Seeded dropper ' + next.droppers + ' of 5 deployed inside the lease.'; if (next.droppers >= 5) { next.step = 4; next.feedback = 'All five droppers are placed. Take a water-quality probe before leaving.'; } }
-        else if (action === 'probe' && previous.step === 4) {
-          next.probed = true; next.step = 5; next.feedback = 'Probe logged: 13.2°C, salinity 29.8 ppt, dissolved oxygen 8.1 mg/L, pH 7.9.';
-          var reading = { temp: '13.2', salinity: '29.8', DO: '8.1', pH: '7.9', timestamp: Date.now(), mode: 'guided-2d' };
+        else if (action === 'dropper' && previous.step === 3) { next.droppers = Math.min(5, previous.droppers + 1); next.feedback = 'Seeded dropper ' + next.droppers + ' of 5 deployed inside the lease.'; if (next.droppers >= 5) { next.step = 4; next.feedback = 'All five droppers are placed. Compare a surface sample with one taken at crop depth before leaving.'; } }
+        else if ((action === 'surface-probe' || action === 'crop-probe') && previous.step === 4) {
+          var sampleDepth = action === 'crop-probe' ? 'crop' : 'surface';
+          var reading = aqMissionScenarioProbeReading(scenario.id, sampleDepth, 'guided-2d', false);
+          if (sampleDepth === 'surface') {
+            next.surfaceSampled = true;
+            next.surfaceReading = reading;
+          } else {
+            next.cropDepthSampled = true;
+            next.cropDepthReading = reading;
+          }
+          next.probed = next.surfaceSampled && next.cropDepthSampled;
+          next.step = next.probed ? 5 : 4;
+          next.feedback = next.probed ? (aqDescribeMissionDepthComparison(next.surfaceReading, next.cropDepthReading) + ' ' + scenario.question + ' Treat this visit as evidence, not a universal depth rule.') : (sampleDepth === 'surface' ? 'Surface sample logged. Now sample beside the mussels at crop depth.' : 'Crop-depth sample logged. Add the surface sample for comparison.');
           setProbes(function(existing) { var readings = (existing || []).concat([reading]).slice(-50), saved = loadState(); saved.probeReadings = readings; saveState(saved); return readings; });
           setDroppers(5);
         }
@@ -9066,7 +9497,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var reflection = String(guidedMission.reflection || '').trim();
       if (guidedMission.step !== 6 || reflection.length < 20) { aqAnnounce('Finish the route and add at least 20 characters of evidence.'); return; }
       var saved = loadState(), nextCompleted = Object.assign({}, saved.completedMissions || {});
-      nextCompleted['mission-1'] = { completedAt: Date.now(), mode: 'guided-2d', choice: 'Red nun to starboard; marked channel; five droppers; probe; return', reflection: reflection.slice(0, 600), evidence: aqSanitizeEvidence(guidedMission.evidence) };
+      nextCompleted['mission-1'] = {
+        completedAt: Date.now(),
+        mode: 'guided-2d',
+        choice: aqFieldMissionScenario(guidedMission.scenarioId).name + '; red nun to starboard; marked channel; five droppers; paired surface and crop-depth samples; return',
+        reflection: reflection.slice(0, 600),
+        evidence: aqSanitizeEvidence(guidedMission.evidence),
+        summary: aqSanitizeMissionSummary({
+          scenarioId: guidedMission.scenarioId,
+          droppersDeployed: guidedMission.droppers,
+          surfaceReading: guidedMission.surfaceReading,
+          cropDepthReading: guidedMission.cropDepthReading
+        })
+      };
       saved.completedMissions = nextCompleted; saved.droppersDeployed = Math.max(Number(saved.droppersDeployed) || 0, 5);
       var stored = saveState(saved); setCompletedMissions(nextCompleted);
       setLearningNotice(stored ? { kind: 'success', message: 'Guided boat mission evidence saved to your portfolio.' } : { kind: 'error', message: 'The mission is complete, but this browser could not store the evidence.' });
@@ -9102,11 +9545,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return { route: route, label: label, location: getTopicLocation(route) };
     }
 
-    function adaptiveNextAction(profile, model, workspace, missions, progress) {
+    function adaptiveNextAction(profile, model, workspace, missions, progress, musselWorkspace) {
       if (profile.role === 'teacher' || profile.goal === 'teach') return { route: 'teacherstudio', label: 'Open Teacher Studio', reason: 'You chose a teaching goal; shape the next investigation into an assignment.', tone: '#c4b5fd' };
       if (profile.role === 'career' || profile.goal === 'career') return { route: 'careers', label: 'Explore aquaculture careers', reason: 'Connect the system decisions you have made with real roles and training pathways.', tone: '#c4b5fd' };
       if (model.status === 'Critical') return { route: 'water', label: 'Investigate water quality', reason: 'Your current ecosystem has a critical signal. Diagnose oxygen, ammonia, or compatibility before adding complexity.', tone: '#fda4af' };
       if (!missions['mission-1']) return { route: 'sim', label: 'Open the boat mission', reason: 'Practice buoyage, lease navigation, deployment, and probe evidence in the field workflow.', tone: '#5eead4' };
+      var pairedMission = aqSanitizeMissionSummary((missions['mission-1'] || {}).summary);
+      if (pairedMission && pairedMission.surfaceReading && pairedMission.cropDepthReading && !(((musselWorkspace || {}).checks || []).length)) return { route: 'musseldeep', label: 'Interpret your paired samples', reason: 'Your boat mission captured two depths. Compare them in the Mussel Health station and save one evidence-based field check.', tone: '#7dd3fc' };
       if (!(workspace.experiments || []).length) return { route: 'ecosystem', label: 'Run your first ecosystem experiment', reason: 'You completed the mission; now compare organisms and water conditions in the systems workspace.', tone: '#2dd4bf' };
       if (profile.goal === 'plan' || profile.role === 'grower') return { route: 'lease', label: 'Build the farm case', reason: 'Transfer the biological design into site, lease, safety, and market decisions.', tone: '#fbbf24' };
       var nextJourney = (LEARNING_JOURNEYS || []).find(function(journey) { return journey.topics.some(function(topicId) { return !((progress.completedTopics || {})[topicId]); }); });
@@ -9129,9 +9574,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return stored;
     }
 
+    function loadMissionEvidenceAtDepth(depth, summaryOverride) {
+      var sampleDepth = depth === 'surface' ? 'surface' : 'crop';
+      var missionRecord = (completedMissions || {})['mission-1'] || {};
+      var summary = aqSanitizeMissionSummary(summaryOverride || missionRecord.summary);
+      var reading = summary && (sampleDepth === 'surface' ? summary.surfaceReading : summary.cropDepthReading);
+      if (!reading) {
+        setMusselHealthNotice('Complete both boat-mission samples before loading field evidence.');
+        aqAnnounce('Paired boat-mission evidence is not available yet.');
+        return false;
+      }
+      var mapped = aqMissionReadingToMusselReadings(reading, MUSSEL_HEALTH_PRESETS[0].values);
+      var sourceLabel = sampleDepth === 'surface' ? 'surface' : 'crop depth';
+      setMusselPrediction('');
+      setMusselAssessmentRevealed(false);
+      setMusselDeletedCheck(null);
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, mapped, {
+        scenarioId: 'custom',
+        prediction: '',
+        evidenceSource: 'mission-' + sampleDepth,
+        evidenceMissionCompletedAt: Math.max(0, Number(missionRecord.completedAt) || Date.now())
+      }), 'Loaded five ' + sourceLabel + ' boat-probe signals. Biofouling and attachment were not measured; inspect those separately before interpreting the model.');
+      aqAnnounce('Boat-mission ' + sourceLabel + ' evidence loaded. Make a prediction before revealing the model.');
+      return true;
+    }
+
+    function openMissionEvidenceAtHealth(depth, summaryOverride) {
+      if (loadMissionEvidenceAtDepth(depth, summaryOverride)) {
+        navigateToTopic('musseldeep', 'Opening the Mussel health station with your boat-mission evidence.');
+      }
+    }
+
     function updateMusselHealthReading(key, value) {
       var patch = {}; patch[key] = Number(value);
-      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, patch), 'Field signal updated. Compare the full pattern before deciding.');
+      var missionWaterSignal = ['temperature', 'salinity', 'oxygen', 'pH', 'chlorophyll'].indexOf(key) >= 0;
+      if (missionWaterSignal && musselHealthWorkspace.evidenceSource) { patch.evidenceSource = ''; patch.evidenceMissionCompletedAt = 0; }
+      var notice = missionWaterSignal && musselHealthWorkspace.evidenceSource ? 'Water signal adjusted. The original boat readings remain in the paired record, while this is now a custom case.' : 'Field signal updated. Compare the full pattern before deciding.';
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, patch), notice);
     }
 
     function selectMusselHealthPrediction(value) {
@@ -9160,7 +9639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       setMusselPrediction('');
       setMusselAssessmentRevealed(false);
       setMusselDeletedCheck(null);
-      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, preset.values, { scenarioId: preset.id, prediction: '' }), preset.prompt + ' Make a prediction before revealing the model.');
+      persistMusselHealthWorkspace(Object.assign({}, musselHealthWorkspace, preset.values, { scenarioId: preset.id, prediction: '', evidenceSource: '', evidenceMissionCompletedAt: 0 }), preset.prompt + ' Make a prediction before revealing the model.');
       aqAnnounce(preset.name + ' scenario loaded. Make a prediction before revealing the model.');
     }
 
@@ -9191,6 +9670,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         modelVersion: assessment.modelVersion,
         scenarioId: musselHealthWorkspace.scenarioId,
         prediction: musselPrediction,
+        evidenceSource: musselHealthWorkspace.evidenceSource,
+        evidenceMissionCompletedAt: musselHealthWorkspace.evidenceMissionCompletedAt,
         observation: observation
       };
       var checks = [record].concat(existingChecks);
@@ -9221,7 +9702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
 
     function loadMusselHealthCheck(check) {
       if (!check || !check.readings) return;
-      var next = Object.assign({}, musselHealthWorkspace, check.readings, { scenarioId: check.scenarioId || 'custom', prediction: check.prediction || '' });
+      var next = Object.assign({}, musselHealthWorkspace, check.readings, { scenarioId: check.scenarioId || 'custom', prediction: check.prediction || '', evidenceSource: check.evidenceSource || '', evidenceMissionCompletedAt: check.evidenceMissionCompletedAt || 0 });
       setMusselPrediction(check.prediction || '');
       setMusselAssessmentRevealed(true);
       persistMusselHealthWorkspace(next, 'Saved readings loaded. Your current explanation draft and evidence history were kept.');
@@ -9740,7 +10221,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { key: 'explain', label: 'Explain', detail: evidenceQuality.score + '/4 evidence moves' + (evidenceQuality.score === 4 ? ' · portfolio-ready' : ' · ' + evidenceQuality.nextPrompt), done: evidenceQuality.score === 4, current: !evidenceQuality.score || evidenceQuality.score < 4 }
       ];
       var doneCount = stages.filter(function(stage) { return stage.done; }).length;
-      var next = adaptiveNextAction(learnerProfile, model, ecosystemWorkspace, completedMissions || {}, learningProgress);
+      var next = adaptiveNextAction(learnerProfile, model, ecosystemWorkspace, completedMissions || {}, learningProgress, musselHealthWorkspace);
       function stageCard(stage) {
         var tone = stage.done ? '#86efac' : stage.current ? '#fde68a' : '#cbd5e1';
         var badge = stage.done ? 'DONE' : stage.current ? 'NOW' : 'NEXT';
@@ -9830,7 +10311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var recommendedJourney = journeySummaries.find(function(summary) { return !summary.complete; }) || journeySummaries[0];
       var recommendedLocation = getTopicLocation(recommendedJourney.nextTopic);
       var profileNext = profileRecommendation(learnerProfile);
-      var adaptiveNext = adaptiveNextAction(learnerProfile, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace, completedMissions || {}, learningProgress);
+      var adaptiveNext = adaptiveNextAction(learnerProfile, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace, completedMissions || {}, learningProgress, musselHealthWorkspace);
       var ecosystemExperimentCount = (ecosystemWorkspace.experiments || []).length;
       var musselFieldCheckCount = (musselHealthWorkspace.checks || []).length;
       var opsRoutes = [
@@ -9919,14 +10400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   style: { minHeight: 44, padding: '9px 11px', borderRadius: 8, cursor: 'pointer',
                     background: '#fde68a', color: '#2a1900', border: '1px solid #fef3c7', fontSize: 12, fontWeight: 900 } },
                   'Download backup'),
-                h('label', { className: 'aq-btn', role: 'button', tabIndex: 0,
-                  onKeyDown: function(event) {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      var fileInput = document.getElementById('aq-portfolio-import');
-                      if (fileInput) fileInput.click();
-                    }
-                  },
+                h('label', { className: 'aq-btn',
                   style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, boxSizing: 'border-box', padding: '9px 11px',
                     borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12, fontWeight: 900 } },
                   'Import & merge',
@@ -10061,7 +10535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               scenarioOpen && scenario ? h('div', { className: 'aq-scenario-panel', style: {
                 marginTop: 10, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75'
               } },
-                h('h4', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 13 } }, 'Decision point'),
+                h('h3', { style: { margin: '0 0 6px', color: '#e9d5ff', fontSize: 13 } }, 'Decision point'),
                 h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, scenario.prompt),
                 h('div', { role: 'group', 'aria-label': 'Choose a response for ' + m.title, style: { display: 'grid', gap: 7 } },
                   scenario.choices.map(function(choice, choiceIndex) {
@@ -10269,9 +10743,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('label', { htmlFor: 'aq-teacher-note', style: { display: 'block', marginTop: 8, color: '#dbeafe', fontSize: 11.5, fontWeight: 850 } }, 'Teacher note (optional)'), h('textarea', { id: 'aq-teacher-note', rows: 4, maxLength: 600, value: teacherPlan.teacherNote, onChange: function(event) { persistTeacherPlan({ teacherNote: event.target.value }); }, placeholder: 'Add local context, materials, accommodations, or due-date guidance…', style: { boxSizing: 'border-box', width: '100%', minHeight: 90, marginTop: 5, padding: 9, borderRadius: 8, resize: 'vertical', background: '#031714', color: '#f8fafc', border: '1px solid #789b97' } })),
           h('section', { className: 'aq-content-card aq-teacher-card', style: cardStyle, 'aria-labelledby': 'aq-teacher-preview-heading' }, h('div', { className: 'aq-section-kicker aq-teacher-kicker', style: headerStyle }, 'Live assignment preview'), h('h2', { id: 'aq-teacher-preview-heading', style: { margin: '0 0 6px', color: '#f8fafc', fontSize: 20 } }, template.title), h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } }, [teacherPlan.duration + ' minutes', teacherPlan.audience === 'middle' ? 'Middle grades' : teacherPlan.audience === 'adult' ? 'Adult / workforce' : 'High school', template.checkpoint].map(function(tag) { return h('span', { key: tag, style: { padding: '3px 7px', borderRadius: 999, color: '#d1fae5', background: 'rgba(45,212,191,.1)', border: '1px solid #5eead4', fontSize: 10, fontWeight: 850 } }, tag); })), h('h3', { style: { margin: '0 0 4px', color: '#c4b5fd', fontSize: 12.5 } }, 'Driving question'), h('p', { style: { margin: '0 0 11px', color: '#e2e8f0', fontSize: 12.5, lineHeight: 1.55 } }, template.question), h('h3', { style: { margin: '0 0 5px', color: '#c4b5fd', fontSize: 12.5 } }, 'Investigation sequence'), h('ol', { style: { margin: 0, paddingLeft: 20, color: '#e2e8f0', fontSize: 12, lineHeight: 1.65 } }, template.steps.map(function(step, index) { return h('li', { key: index }, step); })), teacherPlan.includeReflection ? h('div', { style: { marginTop: 11, padding: 9, borderRadius: 8, background: 'rgba(96,165,250,.1)', border: '1px solid #60a5fa', color: '#dbeafe', fontSize: 11.5 } }, h('b', null, 'Evidence prompt: '), 'What changed, what evidence supports your explanation, and what would you test next?') : null, h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 13 } }, h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic(template.route, 'Opening the student investigation workspace'); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 900 } }, 'Open student workspace →'), h('button', { type: 'button', className: 'aq-btn', onClick: exportTeacherPlan, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: '#c4b5fd', color: '#24133f', border: '1px solid #ede9fe', fontSize: 12, fontWeight: 900 } }, 'Download printable assignment')))));
     }
+    function fieldScenarioDiagram(scenario) {
+      var flowWidth = Math.max(1.5, Math.min(5, scenario.currentDrift * 38));
+      return h('figure', { className: 'aq-field-condition-figure', style: { margin: 0 } },
+        h('svg', { viewBox: '0 0 360 170', role: 'img', 'aria-labelledby': 'aq-field-condition-title aq-field-condition-desc', style: { display: 'block', width: '100%', minHeight: 170, borderRadius: 10, background: scenario.scene.sky, border: '1px solid #789b97' } },
+          h('title', { id: 'aq-field-condition-title' }, scenario.name + ' sampling cross-section'),
+          h('desc', { id: 'aq-field-condition-desc' }, 'Conceptual side view of the skiff, surface water, suspended mussel crop, two probe depths, and the ' + scenario.currentLabel.toLowerCase() + '.'),
+          h('defs', null, h('marker', { id: 'aq-field-flow-arrow', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#e0f2fe' }))),
+          h('rect', { x: 0, y: 58, width: 360, height: 112, fill: scenario.scene.water }),
+          h('path', { d: 'M0 58 C55 51 105 65 165 58 S285 51 360 58', fill: 'none', stroke: '#e0f2fe', strokeWidth: 3, opacity: .8 }),
+          h('g', { transform: 'translate(57 42)' },
+            h('path', { d: 'M-25 0 L25 0 L16 14 L-17 14 Z', fill: '#f5f1e8', stroke: '#334155', strokeWidth: 2 }),
+            h('rect', { x: -8, y: -13, width: 20, height: 13, rx: 2, fill: '#3a5566' })),
+          h('line', { x1: 193, y1: 61, x2: 193, y2: 145, stroke: '#f8fafc', strokeWidth: 2 }),
+          [105, 130, 148].map(function(y) { return h('ellipse', { key: y, cx: 193, cy: y, rx: 13, ry: 7, fill: '#2a2233', stroke: '#c4b5fd', strokeWidth: 1.5 }); }),
+          h('line', { x1: 245, y1: 79, x2: 330, y2: 79, stroke: '#e0f2fe', strokeWidth: flowWidth, markerEnd: 'url(#aq-field-flow-arrow)' }),
+          h('circle', { cx: 125, cy: 65, r: 7, fill: '#bae6fd', stroke: '#082f49', strokeWidth: 2 }),
+          h('circle', { cx: 226, cy: 132, r: 7, fill: '#c4b5fd', stroke: '#312e81', strokeWidth: 2 }),
+          h('text', { x: 117, y: 85, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, 'SURFACE'),
+          h('text', { x: 226, y: 153, textAnchor: 'middle', fill: '#f8fafc', fontSize: 10, fontWeight: 800 }, 'CROP DEPTH'),
+          h('text', { x: 285, y: 68, textAnchor: 'middle', fill: '#f8fafc', fontSize: 9.5, fontWeight: 800 }, scenario.currentLabel.toUpperCase()),
+          h('text', { x: 12, y: 20, fill: '#0f172a', fontSize: 11, fontWeight: 900 }, scenario.weather),
+          h('text', { x: 12, y: 36, fill: '#334155', fontSize: 10, fontWeight: 800 }, scenario.tide)),
+        h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Conceptual mission briefing - not to scale. Measure both depths instead of predicting the profile.'));
+    }
+
+    function fieldScenarioChoice(scenario, index, locked) {
+      var selected = missionScenarioId === scenario.id;
+      return h('button', {
+        key: scenario.id,
+        type: 'button',
+        role: 'radio',
+        'aria-checked': selected,
+        'aria-disabled': locked,
+        disabled: locked,
+        tabIndex: selected ? 0 : -1,
+        className: 'aq-btn aq-field-scenario-choice',
+        onClick: function() { selectFieldMissionScenario(scenario.id); },
+        onKeyDown: function(event) { handleFieldMissionScenarioKeyDown(event, index); },
+        style: {
+          minHeight: 76,
+          padding: '9px 10px',
+          textAlign: 'left',
+          borderRadius: 9,
+          cursor: locked ? 'not-allowed' : 'pointer',
+          opacity: locked && !selected ? .62 : 1,
+          background: selected ? 'linear-gradient(135deg,#0f766e,#155e75)' : '#0b2b28',
+          color: '#f8fafc',
+          border: '2px solid ' + (selected ? '#99f6e4' : '#527a75')
+        }
+      },
+        h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'start' } },
+          h('b', { style: { fontSize: 12.5 } }, scenario.name),
+          h('span', { style: { padding: '2px 5px', borderRadius: 999, background: selected ? 'rgba(236,254,255,.2)' : '#123a36', color: '#dbeafe', fontSize: 9, fontWeight: 900 } }, scenario.difficulty)),
+        h('span', { style: { display: 'block', marginTop: 5, color: '#dbeafe', fontSize: 10.5, lineHeight: 1.35 } }, scenario.tide + ' - ' + scenario.currentLabel));
+    }
+
+    function fieldMissionBriefing() {
+      var scenario = aqFieldMissionScenario(missionScenarioId);
+      var locked = !!(sim.active || guidedMission.active);
+      return h('section', { className: 'aq-content-card aq-field-mission-briefing', 'aria-labelledby': 'aq-field-briefing-heading', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(15,118,110,.22),rgba(30,64,175,.2))', border: '1px solid #67e8f9' }) },
+        h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Field Mission - Conditions Desk'),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'start', flexWrap: 'wrap' } },
+          h('div', null,
+            h('h2', { id: 'aq-field-briefing-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Choose today\'s tide and weather'),
+            h('p', { style: { margin: 0, maxWidth: 760, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'The same condition drives the 3D environment, current, paired probe record, guided route, and debrief. Replay a different day to compare evidence.')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: '#0b2b28', color: '#99f6e4', border: '1px solid #5eead4', fontSize: 10, fontWeight: 900 } }, '3 replayable field days')),
+        h('fieldset', { className: 'aq-field-scenario-fieldset', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #789b97' } },
+          h('legend', { style: { padding: '0 6px', color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'Select one condition for either mission mode'),
+          h('div', { role: 'radiogroup', 'aria-label': 'Boat mission field conditions', style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 } }, AQ_FIELD_MISSION_SCENARIOS.map(function(item, index) { return fieldScenarioChoice(item, index, locked); })),
+          locked ? h('div', { role: 'status', style: { marginTop: 7, color: '#fde68a', fontSize: 10.5 } }, 'Condition locked during this run. Finish or exit to choose another field day.') : null),
+        h('div', { className: 'aq-field-condition-layout', style: { display: 'grid', gridTemplateColumns: 'minmax(260px,.9fr) minmax(0,1.1fr)', gap: 12, alignItems: 'center', marginTop: 11 } },
+          fieldScenarioDiagram(scenario),
+          h('section', { 'aria-labelledby': 'aq-selected-field-heading', style: { padding: 11, borderRadius: 10, background: '#031714', border: '1px solid #527a75' } },
+            h('h3', { id: 'aq-selected-field-heading', style: { margin: '0 0 7px', color: '#bae6fd', fontSize: 15 } }, scenario.name),
+            h('div', { className: 'aq-field-condition-tags', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, [scenario.tide, scenario.weather, scenario.currentLabel].map(function(label) { return h('span', { key: label, style: { padding: '3px 6px', borderRadius: 999, color: '#d1fae5', background: '#123a36', border: '1px solid #527a75', fontSize: 10, fontWeight: 850 } }, label); })),
+            h('p', { style: { margin: '9px 0 0', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, scenario.briefing),
+            h('div', { style: { marginTop: 9, padding: 9, borderRadius: 8, background: 'rgba(30,64,175,.18)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 11.5, lineHeight: 1.5 } }, h('b', null, 'Evidence question: '), scenario.question),
+            h('p', { style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Illustrative learning conditions, not a forecast, closure notice, or harvest-status determination.'))));
+    }
+
     function guided2DMissionPanel() {
-      var steps = ['Leave the town landing', 'Pass the red nun correctly', 'Follow the marked channel to the lease', 'Deploy five seeded droppers', 'Take a water-quality probe', 'Return to the landing'];
+      var steps = ['Leave the town landing', 'Pass the red nun correctly', 'Follow the marked channel to the lease', 'Deploy five seeded droppers', 'Compare surface and crop-depth samples', 'Return to the landing'];
       var complete = guidedMission.step >= 6;
+      var guidedScenario = aqFieldMissionScenario(guidedMission.active ? guidedMission.scenarioId : missionScenarioId);
       var guidedInvestigationPrompt = aqInvestigationPrompt(region, aqCalculateEcosystem(ecosystemWorkspace), ecosystemWorkspace);
       function actionButton(label, action, tone) {
         return h('button', { key: action, type: 'button', className: 'aq-btn', onClick: function() { guidedMissionAction(action); }, style: { minHeight: 44, padding: '9px 12px', borderRadius: 8, cursor: 'pointer', background: tone || '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 11.5, fontWeight: 900 } }, label);
@@ -10281,25 +10836,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       else if (guidedMission.step === 1) actions = h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Keep red nun to starboard', 'starboard'), actionButton('Keep red nun to port', 'port', '#fecdd3'));
       else if (guidedMission.step === 2) actions = h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } }, actionButton('Follow the marked channel', 'channel'), actionButton('Cut close to shore', 'shoreline', '#fecdd3'));
       else if (guidedMission.step === 3) actions = actionButton('Deploy seeded dropper ' + (guidedMission.droppers + 1) + ' of 5', 'dropper', '#fde68a');
-      else if (guidedMission.step === 4) actions = actionButton('Take probe reading', 'probe', '#bae6fd');
+      else if (guidedMission.step === 4) actions = h('div', { className: 'aq-guided-sample-actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+        guidedMission.surfaceSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 11.5, fontWeight: 900 } }, '✓ Surface sample') : actionButton('Take surface sample', 'surface-probe', '#bae6fd'),
+        guidedMission.cropDepthSampled ? h('span', { style: { padding: '10px 12px', borderRadius: 8, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 11.5, fontWeight: 900 } }, '✓ Crop-depth sample') : actionButton('Take crop-depth sample', 'crop-probe', '#c4b5fd'));
       else if (guidedMission.step === 5) actions = actionButton('Return and secure the vessel', 'return', '#c4b5fd');
       return h('section', { className: 'aq-content-card aq-guided-mission', style: Object.assign({}, cardStyle, { background: 'linear-gradient(135deg,rgba(4,47,46,.96),rgba(30,41,59,.95))' }), 'aria-labelledby': 'aq-guided-mission-heading' },
         h('div', { className: 'aq-section-kicker aq-guided-kicker', style: headerStyle }, 'Boat Mission · Guided 2D'),
         h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'start', flexWrap: 'wrap' } },
           h('div', null,
             h('h2', { id: 'aq-guided-mission-heading', style: { margin: '0 0 5px', color: '#f8fafc', fontSize: 20 } }, 'Complete the same field decisions without WebGL'),
-            h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'Buoyage, route choice, lease work, probe evidence, and return-to-dock completion match the 3D mission in a structured, screen-reader-friendly format.')),
-          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: complete ? '#86efac' : '#0b2b28', color: complete ? '#052e24' : '#d1fae5', border: '1px solid #5eead4', fontSize: 10.5, fontWeight: 900 } }, complete ? 'Route complete' : (guidedMission.step + 1) + ' of 6')),
+            h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 12, lineHeight: 1.55 } }, 'Buoyage, route choice, lease work, paired depth samples, and return-to-dock completion match the 3D mission in a structured, screen-reader-friendly format.')),
+          h('span', { style: { padding: '4px 8px', borderRadius: 999, background: complete ? '#86efac' : '#0b2b28', color: complete ? '#052e24' : '#d1fae5', border: '1px solid #5eead4', fontSize: 10.5, fontWeight: 900 } }, (complete ? 'Route complete' : (guidedMission.step + 1) + ' of 6') + ' - ' + guidedScenario.name)),
+        h('div', { className: 'aq-guided-condition', style: { marginTop: 9, padding: '7px 9px', borderRadius: 8, background: 'rgba(30,64,175,.14)', color: '#dbeafe', border: '1px solid #60a5fa', fontSize: 10.8 } }, h('b', null, guidedScenario.name + ': '), guidedScenario.tide + ' - ' + guidedScenario.currentLabel),
         !guidedMission.active ? h('div', { style: { marginTop: 12, padding: 11, borderRadius: 9, background: '#031714', border: '1px solid #527a75' } },
           h('p', { style: { margin: '0 0 9px', color: '#e2e8f0', fontSize: 11.5 } }, 'Use this mode when 3D is unavailable, motion is uncomfortable, or you prefer explicit choices and written feedback.'),
-          h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 950 } }, completedMissions['mission-1'] ? 'Run guided mission again' : 'Start guided 2D mission')) :
+          h('button', { type: 'button', className: 'aq-btn', disabled: sim.active, 'aria-disabled': sim.active, onClick: startGuidedMission, style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: sim.active ? 'not-allowed' : 'pointer', opacity: sim.active ? .55 : 1, background: '#99f6e4', color: '#032522', border: '1px solid #ccfbf1', fontSize: 12, fontWeight: 950 } }, completedMissions['mission-1'] ? 'Run guided mission again' : 'Start guided 2D mission')) :
           h('div', { style: { marginTop: 12 } },
             h('ol', { className: 'aq-guided-steps', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7, margin: 0, padding: 0, listStyle: 'none' } }, steps.map(function(label, index) { var done = guidedMission.step > index, current = guidedMission.step === index; return h('li', { key: label, 'aria-current': current ? 'step' : undefined, style: { padding: 8, borderRadius: 8, background: done ? 'rgba(134,239,172,.12)' : current ? 'rgba(125,211,252,.13)' : '#061a18', color: done ? '#bbf7d0' : current ? '#bae6fd' : '#cbd5e1', border: '1px solid ' + (done ? '#4ade80' : current ? '#7dd3fc' : '#416c67'), fontSize: 10.5, fontWeight: 800 } }, (done ? '✓ ' : (index + 1) + '. ') + label); })),
             h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: 10, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, lineHeight: 1.5 } }, guidedMission.feedback),
+            guidedMission.surfaceReading && guidedMission.cropDepthReading ? h('section', { className: 'aq-guided-sample-comparison', 'aria-labelledby': 'aq-guided-comparison-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: 'rgba(30,64,175,.14)', border: '1px solid #7dd3fc' } },
+              h('h3', { id: 'aq-guided-comparison-heading', style: { margin: '0 0 6px', color: '#dbeafe', fontSize: 13 } }, 'Paired depth record'),
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', color: '#e2e8f0', fontSize: 11.5 } },
+                h('caption', { style: { textAlign: 'left', color: '#bae6fd', paddingBottom: 6 } }, guidedScenario.name + ' - illustrative readings from the same lease visit'),
+                h('thead', null, h('tr', null, ['Depth', 'Temp', 'Salinity', 'DO', 'pH', 'Chl-a'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: '5px 6px', textAlign: 'left', borderBottom: '1px solid #527a75' } }, label); }))),
+                h('tbody', null, [
+                  { label: 'Surface', reading: guidedMission.surfaceReading },
+                  { label: 'Crop depth', reading: guidedMission.cropDepthReading }
+                ].map(function(row) { return h('tr', { key: row.label }, h('th', { scope: 'row', style: { padding: '6px', textAlign: 'left', color: '#f8fafc' } }, row.label), h('td', { style: { padding: 6 } }, row.reading.temp + '°C'), h('td', { style: { padding: 6 } }, row.reading.salinity + ' PSU'), h('td', { style: { padding: 6 } }, row.reading.DO + ' mg/L'), h('td', { style: { padding: 6 } }, row.reading.pH), h('td', { style: { padding: 6 } }, row.reading.chlA + ' µg/L')); }))),
+              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, aqDescribeMissionDepthComparison(guidedMission.surfaceReading, guidedMission.cropDepthReading) + ' Treat this visit as evidence, not a universal depth rule.')) : null,
             h('div', { style: { marginTop: 9 } }, actions),
             complete ? h('div', { style: { marginTop: 11, padding: 10, borderRadius: 9, background: '#061a18', border: '1px solid #4ade80' } },
               h('label', { htmlFor: 'aq-guided-reflection', style: { display: 'block', color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'What navigation or farm-work evidence shows that you completed the mission safely?'),
-              h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, probe result, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),              h('details', { className: 'aq-structured-evidence', style: { marginTop: 9, borderRadius: 8, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
+              h('textarea', { id: 'aq-guided-reflection', rows: 3, maxLength: 600, value: guidedMission.reflection, onChange: function(event) { var value = String(event.target.value || '').slice(0, 600); setGuidedMission(function(previous) { return Object.assign({}, previous, { reflection: value }); }); }, placeholder: 'Explain the buoy choice, route, deployment, depth comparison, or return procedure…', style: { boxSizing: 'border-box', width: '100%', minHeight: 84, marginTop: 6, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 13 } }),              h('details', { className: 'aq-structured-evidence', style: { marginTop: 9, borderRadius: 8, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
                 h('summary', { style: { minHeight: 40, boxSizing: 'border-box', padding: '8px 9px', cursor: 'pointer', color: '#f8fafc', fontSize: 11, fontWeight: 900, listStylePosition: 'inside' } }, 'Organize your mission evidence · optional'),
                 evidenceCoachCard(guidedMission.evidence, guidedInvestigationPrompt, function() { updateGuidedEvidenceField('claim', guidedInvestigationPrompt); }),
                 h('div', { style: { display: 'grid', gap: 8, padding: '0 9px 9px' } },
@@ -10308,20 +10876,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   h('label', { htmlFor: 'aq-guided-reasoning', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Reasoning', h('textarea', { id: 'aq-guided-reasoning', rows: 2, maxLength: 500, value: guidedMission.evidence.reasoning, onChange: function(event) { updateGuidedEvidenceField('reasoning', event.target.value); }, placeholder: 'Why did those choices reduce risk?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })),
                   h('label', { htmlFor: 'aq-guided-next-test', style: { color: '#dbeafe', fontSize: 10.8, fontWeight: 850 } }, 'Next test', h('textarea', { id: 'aq-guided-next-test', rows: 2, maxLength: 500, value: guidedMission.evidence.nextTest, onChange: function(event) { updateGuidedEvidenceField('nextTest', event.target.value); }, placeholder: 'What would you practice or measure next?', style: { boxSizing: 'border-box', width: '100%', marginTop: 4, padding: 7, borderRadius: 7, background: '#061a18', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12 } })))),
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } }, h('span', { style: { color: guidedMission.reflection.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, guidedMission.reflection.trim().length + '/600 characters · 20 needed'), h('button', { type: 'button', className: 'aq-btn', disabled: guidedMission.reflection.trim().length < 20, onClick: completeGuidedMission, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: guidedMission.reflection.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: guidedMission.reflection.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11.5, fontWeight: 900 } }, 'Save mission evidence'))) : null,
-            h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, marginTop: 9, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 850 } }, 'Restart guided route')));
+            complete && completedMissions['mission-1'] && completedMissions['mission-1'].mode === 'guided-2d' ? h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop'); }, style: { minHeight: 42, marginTop: 9, marginRight: 8, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11.5, fontWeight: 900 } }, 'Analyze saved samples \u2192') : null,
+            h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 9 } },
+              h('button', { type: 'button', className: 'aq-btn', onClick: startGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 10.5, fontWeight: 850 } }, 'Replay this condition'),
+              complete ? h('button', { type: 'button', className: 'aq-btn', onClick: closeGuidedMission, style: { minHeight: 38, padding: '6px 9px', borderRadius: 7, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 10.5, fontWeight: 850 } }, 'Choose another condition') : null)));
     }
     function simTab() {
+      var clampRoute = function(value, min, max) { return Math.max(min, Math.min(max, Number(value) || 0)); };
+      var routeBoatX = 80 + clampRoute(hud.x, -15, 15) * 4;
+      var routeBoatY = 18 + (clampRoute(hud.z, -100, 10) + 100) / 110 * 76;
+      var routeTargetX = 80 + clampRoute(hud.targetX, -15, 15) * 4;
+      var routeTargetY = 18 + (clampRoute(hud.targetZ, -100, 10) + 100) / 110 * 76;
+      var missionProgressCount = Math.max(0, Math.min(5, Number(hud.missionProgress) || 0));
+      var activeMissionProbes = (Number(hud.probeReadingsCount) || 0) > 0 ? probes.slice(-(Number(hud.probeReadingsCount) || 0)) : [];
+      var active3DScenario = aqFieldMissionScenario(hud.scenarioId || missionScenarioId);
+      var debriefScenario = missionDebrief && missionDebrief.scenarioId ? aqFieldMissionScenario(missionDebrief.scenarioId) : null;
+      var debriefSurface = missionDebrief && missionDebrief.surfaceReading;
+      var debriefCrop = missionDebrief && missionDebrief.cropDepthReading;
+      var debriefBadges = missionDebrief ? ['Lease operator', 'Paired sampler'] : [];
+      if (debriefScenario) debriefBadges.push(debriefScenario.badge);
+      if (missionDebrief && missionDebrief.buoyViolations === 0) debriefBadges.unshift('Safe navigator');
+      if (missionDebrief && missionDebrief.fuelRemaining >= 70) debriefBadges.push('Fuel steward');
       return h('div', null,
         regionBar(),
         labPulse(),
+        fieldMissionBriefing(),
         guided2DMissionPanel(),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Boat Mission · 3D Mode'),
+          h('div', { className: 'aq-3d-condition-banner', style: { margin: '8px 0 2px', padding: '8px 10px', borderRadius: 8, background: '#031714', color: '#dbeafe', border: '1px solid #527a75', fontSize: 11 } }, h('b', { style: { color: '#99f6e4' } }, active3DScenario.name + ': '), active3DScenario.weather + ' - ' + active3DScenario.currentLabel),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'three.js r128 loads from cdnjs (~600 KB) on demand.'),
-            h('button', { className: 'aq-btn', onClick: startSim,
+            h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Load 3D engine + launch sim')) : null,
+              'Load 3D engine + launch ' + active3DScenario.name)) : null,
           sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '⏳ Loading three.js…') : null,
           sim.threeError ? h('div', { style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine / WebGL failed to load or initialize'),
@@ -10335,34 +10923,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             }, 'Retry 3D Mode')
           ) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
-            h('button', { className: 'aq-btn', onClick: startSim,
+            h('button', { className: 'aq-btn', disabled: guidedMission.active, 'aria-disabled': guidedMission.active, onClick: startSim,
               style: { padding: '12px 24px', background: '#14b8a6', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Cast off — head up-river to your lease')) : null,
-          sim.active ? h('div', { style: { position: 'relative' } },
-            h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D aquaculture farm simulator', 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P Escape', onPointerDown: function (event) { try { event.currentTarget.focus(); } catch (error) {} }, onFocus: function (event) { event.currentTarget.style.outline = '3px solid #5eead4'; event.currentTarget.style.outlineOffset = '-3px'; }, onBlur: function (event) { event.currentTarget.style.outline = 'none'; }, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: '#c4d8e3', outline: 'none' },
-              'aria-label': '3D Bagaduce River farm scene. WASD or arrow keys to pilot, F to drop a seeded line at lease, P to take a water-quality probe reading.' }),
-            h('div', { style: { position: 'absolute', top: 10, left: 10, background: 'rgba(4,18,18,0.78)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              'Cast off in ' + active3DScenario.name)) : null,
+          sim.active ? h('div', { className: 'aq-3d-sim-shell', style: { position: 'relative' } },
+            h('canvas', { ref: canvasRef, tabIndex: 0, role: 'application', 'aria-roledescription': 'Interactive 3D aquaculture farm simulator', 'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P C Escape', onPointerDown: function (event) { try { event.currentTarget.focus(); } catch (error) {} }, onFocus: function (event) { event.currentTarget.style.outline = '3px solid #5eead4'; event.currentTarget.style.outlineOffset = '-3px'; }, onBlur: function (event) { event.currentTarget.style.outline = 'none'; }, style: { width: '100%', height: 460, display: 'block', borderRadius: 8, background: active3DScenario.scene.sky, outline: 'none' },
+              'aria-label': active3DScenario.name + ' 3D Bagaduce River farm scene with ' + active3DScenario.currentLabel.toLowerCase() + '. WASD or arrow keys to pilot, F to drop a seeded line, P for a surface sample, and C for a crop-depth sample at the lease.' }),
+            h('div', { className: 'aq-3d-stats', style: { position: 'absolute', top: 10, left: 10, background: 'rgba(4,18,18,0.88)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', fontFamily: 'ui-monospace, Menlo, monospace' } },
+              h('div', null, 'Field day: ', h('b', { style: { color: '#bae6fd' } }, active3DScenario.name)),
+              h('div', null, 'Current: ', h('b', { style: { color: '#bae6fd' } }, active3DScenario.currentLabel)),
               h('div', null, 'Speed: ', h('b', { style: { color: '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
               h('div', null, 'Fuel: ', h('b', { style: { color: (hud.fuel || 100) < 30 ? '#fb923c' : '#86efac' } }, Math.max(0, hud.fuel || 0).toFixed(0) + '%')),
               h('div', null, 'Droppers: ', h('b', { style: { color: '#fbbf24' } }, (hud.droppersDeployed || 0) + '/5')),
-              h('div', null, 'Probes: ', h('b', { style: { color: '#5eead4' } }, hud.probeReadingsCount || 0))),
-            h('div', { style: { position: 'absolute', top: 10, right: 10, background: 'rgba(4,18,18,0.78)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220 } },
-              h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 4 } }, 'Mission 1'),
-              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Passed red nun' : '• Pass red nun on starboard'),
-              h('div', { style: { fontSize: 10 } }, hud.reachedLease ? '✓ Reached lease' : '• Reach lease (yellow buoys)'),
-              h('div', { style: { fontSize: 10 } }, (hud.droppersDeployed >= 5) ? '✓ All droppers deployed' : '• Deploy 5 droppers (F)'),
-              h('div', { style: { fontSize: 10 } }, hud.returnedHome ? '✓ Returned' : '• Return to landing')),
-            probes.length > 0 && (function() {
-              var latest = probes[probes.length - 1];
-              var doVals = probes.map(function(r) { return parseFloat(r.DO); }).filter(function(v) { return !isNaN(v); });
+              h('div', null, 'Samples: ', h('b', { style: { color: hud.surfaceSampled && hud.cropDepthSampled ? '#86efac' : '#5eead4' } }, (hud.surfaceSampled ? 'surface ✓' : 'surface —') + ' · ' + (hud.cropDepthSampled ? 'crop ✓' : 'crop —')))),
+            h('aside', { className: 'aq-3d-mission-hud', 'aria-labelledby': 'aq-3d-objective-heading', style: { position: 'absolute', top: 10, right: 10, width: 224, boxSizing: 'border-box', background: 'rgba(4,18,18,0.9)', padding: '9px 10px', borderRadius: 9, border: '1px solid rgba(94,234,212,.42)', fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)' } },
+              h('div', { style: { marginBottom: 4, color: '#bae6fd', fontSize: 9, fontWeight: 850 } }, active3DScenario.tide + ' - ' + active3DScenario.currentLabel),
+              h('div', { id: 'aq-3d-objective-heading', style: { fontWeight: 900, color: '#5eead4', fontSize: 10, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Current objective'),
+              h('div', { id: 'aq-3d-objective-text', style: { marginTop: 3, color: '#f8fafc', fontSize: 12, fontWeight: 850, lineHeight: 1.3 } }, hud.nextObjective || 'Pass a red nun on starboard'),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 5, color: '#bae6fd', fontSize: 9.5 } },
+                h('span', null, 'Target ' + Math.max(0, Number(hud.targetDistance) || 0).toFixed(0) + ' m'),
+                h('span', null, missionProgressCount + '/5 complete')),
+              h('div', { role: 'progressbar', 'aria-label': '3D mission progress', 'aria-valuemin': 0, 'aria-valuemax': 5, 'aria-valuenow': missionProgressCount, 'aria-valuetext': missionProgressCount + ' of 5 mission milestones complete', style: { height: 5, margin: '5px 0 6px', borderRadius: 999, overflow: 'hidden', background: '#163f3b' } },
+                h('span', { style: { display: 'block', width: (missionProgressCount / 5 * 100) + '%', height: '100%', background: '#5eead4' } })),
+              h('svg', { className: 'aq-3d-route-map', viewBox: '0 0 160 108', role: 'img', 'aria-labelledby': 'aq-3d-route-title aq-3d-route-desc', style: { display: 'block', width: '100%', height: 108, borderRadius: 7, background: '#cfe8ed' } },
+                h('title', { id: 'aq-3d-route-title' }, 'Live route map from landing to mussel lease'),
+                h('desc', { id: 'aq-3d-route-desc' }, 'The boat marker moves between the southern landing, inbound red and green channel buoys, and the northern yellow lease. A dashed line points to the current target.'),
+                h('rect', { x: 53, y: 9, width: 54, height: 18, rx: 3, fill: 'rgba(250,204,21,.24)', stroke: '#a16207', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                h('text', { x: 80, y: 20, textAnchor: 'middle', fill: '#713f12', fontSize: 7, fontWeight: 800 }, 'MUSSEL LEASE'),
+                h('path', { d: 'M80 28 V92', fill: 'none', stroke: '#528b9a', strokeWidth: 18, opacity: .28 }),
+                [43, 61, 79].map(function(y) { return h('g', { key: y }, h('polygon', { points: '94,' + (y + 4) + ' 102,' + (y + 4) + ' 98,' + (y - 4), fill: '#c8302a' }), h('rect', { x: 59, y: y - 4, width: 8, height: 8, fill: '#2a7c44' })); }),
+                h('rect', { x: 62, y: 95, width: 36, height: 7, rx: 2, fill: '#8a6c47' }),
+                h('text', { x: 80, y: 93, textAnchor: 'middle', fill: '#3f3f46', fontSize: 7, fontWeight: 700 }, 'LANDING'),
+                h('line', { x1: routeBoatX, y1: routeBoatY, x2: routeTargetX, y2: routeTargetY, stroke: '#7c3aed', strokeWidth: 1.6, strokeDasharray: '4 3' }),
+                h('circle', { cx: routeTargetX, cy: routeTargetY, r: 4.5, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.7 }),
+                h('g', { transform: 'translate(' + routeBoatX + ' ' + routeBoatY + ') rotate(' + ((Number(hud.heading) || 0) * 180 / Math.PI) + ')' },
+                  h('polygon', { points: '0,-7 5,5 0,3 -5,5', fill: '#0f172a', stroke: '#f8fafc', strokeWidth: 1.2 }))),
+              hud.buoyViolations ? h('div', { style: { marginTop: 5, color: '#fdba74', fontSize: 9.5 } }, 'Navigation corrections: ' + hud.buoyViolations) : null),
+            activeMissionProbes.length > 0 && (function() {
+              var latest = activeMissionProbes[activeMissionProbes.length - 1];
+              var doVals = activeMissionProbes.map(function(r) { return parseFloat(r.DO); }).filter(function(v) { return !isNaN(v); });
               var n = doVals.length;
               var W = 188, H = 38, pad = 2;
               var doMin = Math.min.apply(null, doVals.concat([5])), doMax = Math.max.apply(null, doVals.concat([10]));
               var sx = function(i) { return pad + (n === 1 ? W - 2 * pad : i / (n - 1) * (W - 2 * pad)); };
               var sy = function(v) { return pad + (1 - (v - doMin) / ((doMax - doMin) || 1)) * (H - 2 * pad); };
               var pts = doVals.map(function(v, i) { return sx(i).toFixed(1) + ',' + sy(v).toFixed(1); }).join(' ');
-              return h('div', { style: { position: 'absolute', top: 108, right: 10, background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204 } },
-                h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, '💧 Water quality (latest)'),
+              return h('div', { className: 'aq-3d-probe-hud', style: { position: 'absolute', top: 238, right: 10, background: 'rgba(4,18,18,0.9)', padding: 8, borderRadius: 8, fontSize: 10, color: 'var(--allo-stem-text, #e2e8f0)', width: 204, boxSizing: 'border-box' } },
+                h('div', { style: { fontWeight: 800, color: '#5eead4', marginBottom: 3 } }, '💧 Latest · ' + (latest.depth === 'crop' ? 'crop depth' : 'surface')),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '2px 8px', marginBottom: 4, fontFamily: 'ui-monospace, Menlo, monospace' } },
                   h('span', null, 'Temp ' + latest.temp + '°C'),
                   h('span', null, 'Sal ' + latest.salinity),
@@ -10375,22 +10982,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 n > 1 && h('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, 'Dissolved O₂ across your ' + n + ' probes — warmer water holds less.'));
             })(),
 
-            h('div', { style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.85)', padding: 8, borderRadius: 8 } },
+            h('div', { className: 'aq-3d-status-log', 'aria-label': 'Recent mission events', style: { position: 'absolute', bottom: 10, left: 10, right: 88, maxHeight: 100, overflowY: 'auto', background: 'rgba(4,18,18,0.9)', padding: 8, borderRadius: 8 } },
               (status || []).slice(-4).map(function(ev, ei) {
-                var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')));
+                var color = ev.type === 'probe' ? '#5eead4' : (ev.type === 'comparison' ? '#c4b5fd' : (ev.type === 'dropper' ? '#fbbf24' : (ev.type === 'warning' ? '#fde68a' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#a7f3d0')))));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
-            h('div', { role: 'group', 'aria-label': 'On-screen vessel controls', style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.82)' } },
+            h('div', { className: 'aq-3d-controls', role: 'group', 'aria-label': 'On-screen vessel controls', style: { position: 'absolute', left: 10, bottom: 116, width: 'min(250px, calc(100% - 20px))', display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5, padding: 7, borderRadius: 9, background: 'rgba(4,18,18,0.88)' } },
               [
                 { key: 'arrowup', label: 'Forward', hold: true },
                 { key: 'arrowleft', label: 'Turn left', hold: true },
                 { key: 'arrowdown', label: 'Reverse', hold: true },
                 { key: 'arrowright', label: 'Turn right', hold: true },
                 { key: ' ', label: 'Boost', hold: true },
-                { key: 'f', label: 'Drop line', hold: false },
-                { key: 'p', label: 'Take probe', hold: false }
+                { key: 'f', label: 'Drop line', hold: false, stage: 'lease' },
+                { key: 'p', label: 'Surface sample', hold: false, stage: 'sample' },
+                { key: 'c', label: 'Crop-depth sample', hold: false, stage: 'sample' }
               ].map(function(c) {
-                var props = { key: c.key, type: 'button', className: 'aq-btn', 'aria-label': c.label, style: { minHeight: 38, padding: '5px 6px', border: '1px solid rgba(94,234,212,0.45)', borderRadius: 7, background: 'rgba(15,23,42,0.88)', color: '#ecfeff', fontSize: 10, fontWeight: 800, cursor: 'pointer', touchAction: 'none' } };
+                var actionUnavailable = (c.stage === 'lease' && (!hud.atLease || !hud.passedRedNun)) || (c.stage === 'sample' && (!hud.atLease || !hud.passedRedNun || (hud.droppersDeployed || 0) < 5));
+                var actionHint = !hud.passedRedNun ? 'Complete red-right-returning first.' : (!hud.atLease ? 'Move inside the yellow lease markers.' : 'Deploy all five droppers first.');
+                var props = { key: c.key, type: 'button', className: 'aq-btn', 'aria-label': c.label, 'aria-describedby': c.stage ? 'aq-3d-objective-text' : undefined, disabled: actionUnavailable, title: actionUnavailable ? actionHint : undefined, style: { minHeight: 38, padding: '5px 6px', border: '1px solid rgba(94,234,212,0.45)', borderRadius: 7, background: 'rgba(15,23,42,0.88)', color: '#ecfeff', opacity: actionUnavailable ? .48 : 1, fontSize: 10, fontWeight: 800, cursor: actionUnavailable ? 'not-allowed' : 'pointer', touchAction: 'none' } };
                 if (c.hold) {
                   props.onPointerDown = function(event) { event.preventDefault(); try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} setFarmControl(c.key, true); };
                   props.onPointerUp = function(event) { setFarmControl(c.key, false); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (_) {} };
@@ -10405,8 +11015,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 return h('button', props, c.label);
               })
             ),
-            h('button', { onClick: stopSim, className: 'aq-btn',
-              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.85)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null
+            h('button', { type: 'button', onClick: stopSim, className: 'aq-btn aq-3d-exit',
+              style: { position: 'absolute', bottom: 10, right: 10, padding: '6px 12px', background: 'rgba(220,38,38,0.9)', color: '#fff', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '✕ Exit sim')) : null,
+          missionDebrief ? h('section', { className: 'aq-3d-debrief', 'aria-labelledby': 'aq-3d-debrief-heading', style: { marginTop: 12, padding: 13, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.22),rgba(6,95,70,.2))', border: '1px solid #86efac' } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'start', flexWrap: 'wrap' } },
+              h('div', null,
+                h('div', { style: { color: '#86efac', fontSize: 10, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.08em' } }, 'Mission complete'),
+                h('h3', { id: 'aq-3d-debrief-heading', style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 20 } }, 'Captain’s debrief'),
+                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, (debriefScenario ? debriefScenario.name + ' - ' + debriefScenario.tide + '. ' : '') + 'The route result is saved. Review what the mission measured, then add an optional evidence note.')),
+              h('div', { style: { display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' } }, debriefBadges.map(function(badge) { return h('span', { key: badge, style: { padding: '4px 7px', borderRadius: 999, background: 'rgba(134,239,172,.14)', color: '#bbf7d0', border: '1px solid #4ade80', fontSize: 9.5, fontWeight: 850 } }, badge); }))),
+            h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: 7, margin: '10px 0 0' } },
+              [
+                { label: 'Elapsed', value: missionDebrief.elapsedSeconds + ' sec' },
+                { label: 'Fuel remaining', value: missionDebrief.fuelRemaining + '%' },
+                { label: 'Navigation corrections', value: String(missionDebrief.buoyViolations) },
+                { label: 'Droppers', value: missionDebrief.droppersDeployed + '/5' }
+              ].map(function(metric) { return h('div', { key: metric.label, style: { padding: 8, borderRadius: 8, background: '#031714', border: '1px solid #527a75' } }, h('dt', { style: { color: '#94a3b8', fontSize: 9.5 } }, metric.label), h('dd', { style: { margin: '2px 0 0', color: '#f8fafc', fontSize: 14, fontWeight: 900 } }, metric.value)); })),
+            debriefSurface && debriefCrop ? h('section', { className: 'aq-3d-depth-debrief', 'aria-labelledby': 'aq-3d-depth-heading', style: { marginTop: 10, padding: 10, borderRadius: 9, background: '#031714', border: '1px solid #7dd3fc' } },
+              h('h4', { id: 'aq-3d-depth-heading', style: { margin: '0 0 6px', color: '#bae6fd', fontSize: 12.5 } }, 'Surface ↔ crop-depth comparison'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 7 } },
+                [{ label: 'Surface', reading: debriefSurface }, { label: 'Crop depth', reading: debriefCrop }].map(function(sample) { return h('div', { key: sample.label, style: { padding: 8, borderRadius: 7, background: '#061a18', color: '#e2e8f0', fontSize: 10.5, lineHeight: 1.45 } }, h('b', { style: { color: '#f8fafc' } }, sample.label), h('div', null, sample.reading.temp + '°C · DO ' + sample.reading.DO + ' mg/L'), h('div', null, sample.reading.salinity + ' PSU · pH ' + sample.reading.pH)); })),
+              h('p', { style: { margin: '7px 0 0', color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } }, aqDescribeMissionDepthComparison(debriefSurface, debriefCrop) + ' This pair describes one simulated visit; verify patterns with repeated field measurements.')) : null,
+            h('label', { htmlFor: 'aq-3d-debrief-note', style: { display: 'block', marginTop: 10, color: '#d1fae5', fontSize: 11.5, fontWeight: 850 } }, 'Optional captain’s evidence note'),
+            h('textarea', { id: 'aq-3d-debrief-note', rows: 3, maxLength: 600, value: missionDebriefNote, onChange: function(event) { setMissionDebriefNote(String(event.target.value || '').slice(0, 600)); }, placeholder: 'What navigation choice or paired reading best supports your conclusion?', style: { boxSizing: 'border-box', width: '100%', minHeight: 80, marginTop: 5, padding: 9, resize: 'vertical', borderRadius: 8, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontSize: 12.5 } }),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginTop: 7 } },
+              h('span', { style: { color: missionDebriefNote.trim().length >= 20 ? '#86efac' : '#cbd5e1', fontSize: 10.5 } }, missionDebriefNote.length + '/600 characters · 20 needed to save'),
+              h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                h('button', { type: 'button', className: 'aq-btn', disabled: missionDebriefNote.trim().length < 20, onClick: save3DMissionNote, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: missionDebriefNote.trim().length >= 20 ? 'pointer' : 'not-allowed', opacity: missionDebriefNote.trim().length >= 20 ? 1 : .55, background: '#86efac', color: '#052e24', border: '1px solid #bbf7d0', fontSize: 11, fontWeight: 900 } }, 'Save captain’s note'),
+                h('button', { type: 'button', className: 'aq-btn', onClick: function() { openMissionEvidenceAtHealth('crop', missionDebrief); }, style: { minHeight: 42, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 11, fontWeight: 900 } }, 'Analyze crop-depth evidence \u2192')))) : null
         ),
         h('div', { className: 'aq-content-card', style: cardStyle },
           h('div', { className: 'aq-section-kicker', style: headerStyle }, 'Controls'),
@@ -10418,7 +11054,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               { k: 'D / →', d: 'Turn right', c: '#a7f3d0' },
               { k: 'Space', d: 'Boost', c: '#fbbf24' },
               { k: 'F', d: 'Drop seeded line (at lease)', c: '#5eead4' },
-              { k: 'P', d: 'Probe water quality (at lease)', c: '#bef264' }
+              { k: 'P', d: 'Record a surface sample (at lease)', c: '#bef264' },
+              { k: 'C', d: 'Record a crop-depth sample beside mussels', c: '#c4b5fd' }
             ].map(function(c, i) {
               return h('div', { key: i, style: { padding: 8, background: 'var(--allo-stem-deeper, rgba(15,23,42,0.55))', borderRadius: 6, borderLeft: '3px solid ' + c.c } },
                 h('div', { style: { fontWeight: 800, color: c.c, fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 2 } }, c.k),
@@ -10430,34 +11067,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       return h('div', null, regionBar(), h('div', { className: 'aq-content-card', style: cardStyle },
         h('div', { className: 'aq-section-kicker', style: headerStyle }, '🗺 Chart Room (Bagaduce River)'),
         h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } }, 'Stylized Bagaduce River chart. In a real sim, you\'d use NOAA chart 13309 (Penobscot Bay). Narrow channels — set + drift on river current matters as much as wind.'),
-        h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': 'Bagaduce River chart showing channel buoys and lease area' },
+        h('svg', { viewBox: '0 0 600 400', role: 'img', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(20,184,166,0.3)' }, 'aria-label': 'Bagaduce River route chart. The town landing is south, the mussel lease is north, inbound red nuns are on starboard to the east, and green cans are on port to the west.' },
           h('rect', { x: 0, y: 0, width: 600, height: 60, fill: '#a8c595' }),
           h('text', { x: 18, y: 28, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Castine / Penobscot Peninsula'),
           h('rect', { x: 0, y: 320, width: 600, height: 80, fill: '#a8c595' }),
           h('text', { x: 18, y: 360, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Brooksville side'),
-          h('rect', { x: 270, y: 60, width: 60, height: 10, fill: '#8a6c47' }),
-          h('text', { x: 275, y: 56, fill: '#3b4d2b', fontSize: 10 }, 'Town landing'),
+          h('rect', { x: 270, y: 320, width: 60, height: 10, fill: '#8a6c47' }),
+          h('text', { x: 275, y: 316, fill: '#3b4d2b', fontSize: 10 }, 'Town landing'),
           h('text', { x: 18, y: 75, fill: '#3b4d2b', fontSize: 10, fontStyle: 'italic' }, 'Bagaduce River — narrow, ~3 nm long'),
-          // Channel buoys
+          h('path', { d: 'M335 300 V112', fill: 'none', stroke: '#7c3aed', strokeWidth: 2, strokeDasharray: '6 4' }),
+          h('polygon', { points: '335,103 328,116 342,116', fill: '#7c3aed' }),
+          h('text', { x: 346, y: 205, fill: '#5b21b6', fontSize: 9, fontWeight: 700 }, 'Inbound / returning'),
+          // Channel buoys: red is east/starboard when traveling north from the landing.
           h('g', null,
-            [{ x: 250, y: 110 }, { x: 250, y: 180 }, { x: 250, y: 250 }].map(function(b, i) {
+            [{ x: 350, y: 125 }, { x: 350, y: 190 }, { x: 350, y: 255 }].map(function(b, i) {
               return h('g', { key: 'r' + i },
                 h('polygon', { points: (b.x - 7) + ',' + (b.y + 10) + ' ' + (b.x + 7) + ',' + (b.y + 10) + ' ' + b.x + ',' + (b.y - 4), fill: '#c8302a' }),
                 h('text', { x: b.x + 12, y: b.y + 5, fill: '#9b1c17', fontSize: 9, fontWeight: 700 }, 'R' + (i * 2 + 2)));
             })),
           h('g', null,
-            [{ x: 350, y: 110 }, { x: 350, y: 180 }, { x: 350, y: 250 }].map(function(b, i) {
+            [{ x: 250, y: 125 }, { x: 250, y: 190 }, { x: 250, y: 255 }].map(function(b, i) {
               return h('g', { key: 'g' + i },
                 h('rect', { x: b.x - 6, y: b.y - 4, width: 12, height: 14, fill: '#2a7c44' }),
-                h('text', { x: b.x + 12, y: b.y + 5, fill: '#155b2f', fontSize: 9, fontWeight: 700 }, 'G' + (i * 2 + 1)));
+                h('text', { x: b.x - 12, y: b.y + 5, fill: '#155b2f', fontSize: 9, fontWeight: 700, textAnchor: 'end' }, 'G' + (i * 2 + 1)));
             })),
           // Lease rectangle
-          h('rect', { x: 270, y: 280, width: 60, height: 30, fill: 'none', stroke: '#facc15', strokeWidth: 2, strokeDasharray: '4,3' }),
-          h('circle', { cx: 280, cy: 285, r: 3, fill: '#facc15' }),
-          h('circle', { cx: 320, cy: 285, r: 3, fill: '#facc15' }),
-          h('circle', { cx: 280, cy: 305, r: 3, fill: '#facc15' }),
-          h('circle', { cx: 320, cy: 305, r: 3, fill: '#facc15' }),
-          h('text', { x: 340, y: 298, fill: '#9a7800', fontSize: 10, fontWeight: 700 }, 'Your LPA (1 acre)'),
+          h('rect', { x: 270, y: 70, width: 60, height: 30, fill: 'none', stroke: '#a16207', strokeWidth: 2, strokeDasharray: '4,3' }),
+          h('circle', { cx: 280, cy: 75, r: 3, fill: '#a16207' }),
+          h('circle', { cx: 320, cy: 75, r: 3, fill: '#a16207' }),
+          h('circle', { cx: 280, cy: 95, r: 3, fill: '#a16207' }),
+          h('circle', { cx: 320, cy: 95, r: 3, fill: '#a16207' }),
+          h('text', { x: 340, y: 88, fill: '#713f12', fontSize: 10, fontWeight: 700 }, 'Your LPA (1 acre)'),
           // Depth labels
           h('text', { x: 130, y: 175, fill: '#5a8ba5', fontSize: 9 }, 'depths 4-12 m'),
           // Compass
@@ -21716,13 +22356,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         { id: 'fouling', label: 'Biofouling' },
         { id: 'chlorophyll', label: 'Chlorophyll-a / food proxy' }
       ];
+      var musselCultureStages = [
+        { id: 'collect', number: '1', title: 'Collect spat', lines: ['Larvae settle on', 'collector material'], tone: '#0e7490' },
+        { id: 'transfer', number: '2', title: 'Transfer seed', lines: ['Move seed into socks', 'or suspended gear'], tone: '#7c3aed' },
+        { id: 'maintain', number: '3', title: 'Grow + maintain', lines: ['Check density, fouling,', 'attachment, and water'], tone: '#0f766e' },
+        { id: 'handle', number: '4', title: 'Harvest + handle', lines: ['Follow permits, closures,', 'and cold-chain rules'], tone: '#b45309' }
+      ];
+      var musselEvidenceSteps = [
+        { id: 'surface', title: '1. Measure at the surface', note: 'Record depth, tide, and time.' },
+        { id: 'crop', title: '2. Repeat beside the crop', note: 'Use the same calibrated method.' },
+        { id: 'compare', title: '3. Compare the pattern', note: 'Look across signals, not at one value.' },
+        { id: 'inspect', title: '4. Inspect + verify', note: 'Check instrument, gear, and stock.' },
+        { id: 'record', title: '5. Record the next action', note: 'Keep food-safety decisions separate.' }
+      ];
       function predictionLabel(id) {
         var option = predictionOptions.find(function(item) { return item.id === id; });
         return option ? option.label : 'No prediction';
       }
+      var missionEvidenceRecord = (completedMissions || {})['mission-1'] || {};
+      var missionDepthComparison = aqCompareMissionDepthReadings(missionEvidenceRecord.summary);
+      var missionEvidenceDepth = musselHealthWorkspace.evidenceSource === 'mission-surface' ? 'surface' : (musselHealthWorkspace.evidenceSource === 'mission-crop' ? 'crop' : '');
       var selectedPreset = MUSSEL_HEALTH_PRESETS.find(function(preset) { return preset.id === musselHealthWorkspace.scenarioId; });
-      var scenarioName = selectedPreset ? selectedPreset.name : 'Custom field case';
-      var scenarioPrompt = selectedPreset ? selectedPreset.prompt : 'You adjusted or loaded a custom set of readings. Identify the pattern, then decide what evidence you would collect next.';
+      var scenarioIsModified = !!selectedPreset && Object.keys(selectedPreset.values).some(function(key) {
+        return Math.abs(Number(musselHealthWorkspace[key]) - Number(selectedPreset.values[key])) > .001;
+      });
+      var scenarioName = selectedPreset ? selectedPreset.name + (scenarioIsModified ? ' · adjusted' : '') : 'Custom field case';
+      var scenarioPrompt = selectedPreset
+        ? selectedPreset.prompt + (scenarioIsModified ? ' You changed at least one reading, so treat this as an adjusted version of the case.' : '')
+        : 'You adjusted or loaded a custom set of readings. Identify the pattern, then decide what evidence you would collect next.';
+      if (missionEvidenceDepth) {
+        scenarioName = 'Boat mission \u00B7 ' + (missionEvidenceDepth === 'surface' ? 'surface' : 'crop-depth') + ' evidence';
+        scenarioPrompt = 'Five water signals came from the ' + (missionEvidenceDepth === 'surface' ? 'surface' : 'crop-depth') + ' boat probe. Biofouling and attachment remain balanced placeholders until you inspect the stock.';
+      }
       var statusMeta = {
         optimal: { label: 'Within reference band', symbol: '✓', color: '#86efac', background: 'rgba(34,197,94,.10)' },
         watch: { label: 'Watch and compare', symbol: '!', color: '#fde68a', background: 'rgba(245,158,11,.11)' },
@@ -21731,6 +22396,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       var neutralMeta = { label: 'Hidden until reveal', symbol: '—', color: '#bfdbfe', background: 'rgba(30,64,175,.09)' };
       var historyFull = (musselHealthWorkspace.checks || []).length >= 10;
       var predictionMatches = musselPrediction === assessment.priorityFactor.id || (musselPrediction === 'none' && assessment.priorityFactor.id === 'none');
+      var currentStepIndex = musselAssessmentRevealed ? 4 : (musselPrediction ? 2 : 1);
+      function handleMusselPresetKeyDown(event, index) {
+        var handledKeys = ['ArrowRight', 'ArrowDown', 'ArrowLeft', 'ArrowUp', 'Home', 'End'];
+        if (handledKeys.indexOf(event.key) < 0) return;
+        event.preventDefault();
+        var nextIndex = index;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % MUSSEL_HEALTH_PRESETS.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + MUSSEL_HEALTH_PRESETS.length) % MUSSEL_HEALTH_PRESETS.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else nextIndex = MUSSEL_HEALTH_PRESETS.length - 1;
+        var radios = event.currentTarget.parentElement.querySelectorAll('[role="radio"]');
+        if (radios[nextIndex]) {
+          radios[nextIndex].focus();
+        }
+        applyMusselHealthPreset(MUSSEL_HEALTH_PRESETS[nextIndex]);
+      }
       return h('div', null,
         h('div', { className: 'aq-mussel-health-card', style: cardStyle },
           h('div', { className: 'aq-mussel-health-kicker', style: headerStyle }, 'Blue mussel field investigation'),
@@ -21746,9 +22427,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
             h('ol', { className: 'aq-mussel-steps', 'aria-label': 'Mussel investigation steps',
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(125px,1fr))', gap: 7, margin: '14px 0 0', padding: 0, listStyle: 'none' } },
               ['1 · Choose case', '2 · Predict', '3 · Inspect', '4 · Reveal', '5 · Explain + save'].map(function(step, index) {
-                var active = index < 3 ? true : musselAssessmentRevealed;
-                return h('li', { key: step, style: { padding: '7px 8px', borderRadius: 8, color: active ? '#ecfeff' : '#94a3b8', background: active ? 'rgba(13,148,136,.16)' : 'rgba(15,23,42,.5)', border: '1px solid ' + (active ? '#5eead4' : '#475569'), fontSize: 11.5, fontWeight: 850 } }, step);
+                var stepState = index < currentStepIndex ? 'complete' : (index === currentStepIndex ? 'current' : 'upcoming');
+                var current = stepState === 'current';
+                var complete = stepState === 'complete';
+                var stepColor = current ? '#f5f3ff' : (complete ? '#ecfeff' : '#94a3b8');
+                var stepBackground = current ? 'rgba(109,40,217,.24)' : (complete ? 'rgba(13,148,136,.16)' : 'rgba(15,23,42,.5)');
+                var stepBorder = current ? '#c4b5fd' : (complete ? '#5eead4' : '#475569');
+                return h('li', { key: step, 'data-step-state': stepState, 'aria-current': current ? 'step' : undefined, 'aria-label': step + ', ' + stepState,
+                  style: { padding: '7px 8px', borderRadius: 8, color: stepColor, background: stepBackground, border: '1px solid ' + stepBorder, fontSize: 11.5, fontWeight: current ? 950 : 850 } },
+                  h('span', { 'aria-hidden': 'true' }, complete ? '✓ ' : (current ? '→ ' : '')), step);
               })),
+            missionDepthComparison ? h('section', { className: 'aq-mussel-mission-evidence', 'aria-labelledby': 'aq-mussel-mission-evidence-heading', 'data-loaded-depth': missionEvidenceDepth || 'none',
+              style: { marginTop: 12, padding: 12, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.2),rgba(6,78,59,.18))', border: '1px solid #7dd3fc' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 9, alignItems: 'start', flexWrap: 'wrap' } },
+                h('div', null,
+                  h('div', { style: { color: '#93c5fd', fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '.06em' } }, 'Latest boat mission \u00B7 paired evidence' + (missionDepthComparison.summary.scenarioName ? ' \u00B7 ' + missionDepthComparison.summary.scenarioName : '')),
+                  h('h3', { id: 'aq-mussel-mission-evidence-heading', style: { margin: '3px 0', color: '#f8fafc', fontSize: 16 } }, 'Choose which depth to analyze'),
+                  h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, 'Both samples came from one lease visit. Load either depth, make a prediction, then test whether the model priority changes.')),
+                h('span', { style: { padding: '4px 8px', borderRadius: 999, color: '#d1fae5', background: '#0b2b28', border: '1px solid #5eead4', fontSize: 10, fontWeight: 900 } }, missionEvidenceDepth ? (missionEvidenceDepth === 'surface' ? 'Surface loaded' : 'Crop depth loaded') : 'Not loaded')),
+              h('div', { className: 'aq-mussel-mission-evidence-grid', style: { display: 'grid', gridTemplateColumns: 'minmax(210px,.7fr) minmax(360px,1.3fr)', gap: 10, marginTop: 10, alignItems: 'stretch' } },
+                h('figure', { className: 'aq-mussel-mission-profile', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
+                  h('svg', { viewBox: '0 0 300 180', role: 'img', 'aria-labelledby': 'aq-mussel-mission-profile-title aq-mussel-mission-profile-desc', style: { display: 'block', width: '100%', height: 'auto' } },
+                    h('title', { id: 'aq-mussel-mission-profile-title' }, 'Paired boat-probe depth profile'),
+                    h('desc', { id: 'aq-mussel-mission-profile-desc' }, 'A surface probe and a crop-depth probe from the same visit are connected vertically. The exact five-signal comparison appears in the adjacent table.'),
+                    h('rect', { x: 0, y: 0, width: 300, height: 180, rx: 10, fill: '#082f49' }),
+                    h('path', { d: 'M0 42 C45 34 78 49 120 41 S210 35 300 44 V180 H0 Z', fill: '#0e7490', opacity: .64 }),
+                    h('line', { x1: 0, y1: 42, x2: 300, y2: 42, stroke: '#a5f3fc', strokeWidth: 3 }),
+                    h('line', { x1: 66, y1: 52, x2: 66, y2: 132, stroke: '#dbeafe', strokeWidth: 2, strokeDasharray: '5 4' }),
+                    h('circle', { cx: 66, cy: 58, r: 9, fill: missionEvidenceDepth === 'surface' ? '#fef08a' : '#fde68a', stroke: '#fff7ed', strokeWidth: missionEvidenceDepth === 'surface' ? 4 : 2 }),
+                    h('circle', { cx: 66, cy: 128, r: 9, fill: missionEvidenceDepth === 'crop' ? '#bbf7d0' : '#86efac', stroke: '#ecfdf5', strokeWidth: missionEvidenceDepth === 'crop' ? 4 : 2 }),
+                    h('text', { x: 88, y: 62, fill: '#fef3c7', fontSize: 12, fontWeight: 800 }, 'Surface \u00B7 ' + missionDepthComparison.surface.temp + '\u00B0C \u00B7 DO ' + missionDepthComparison.surface.DO),
+                    h('text', { x: 88, y: 132, fill: '#d1fae5', fontSize: 12, fontWeight: 800 }, 'Crop \u00B7 ' + missionDepthComparison.crop.temp + '\u00B0C \u00B7 DO ' + missionDepthComparison.crop.DO),
+                    h('text', { x: 16, y: 26, fill: '#cffafe', fontSize: 11, fontWeight: 800 }, 'same visit'),
+                    h('text', { x: 88, y: 99, fill: '#bfdbfe', fontSize: 10.5 }, 'compare, then interpret')),
+                  h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Highlighted ring = depth currently loaded into the seven-signal model.')),
+                h('div', { style: { overflowX: 'auto' } },
+                  h('table', { className: 'aq-mussel-mission-evidence-table', style: { width: '100%', borderCollapse: 'collapse', minWidth: 520, color: '#e2e8f0', fontSize: 11 } },
+                    h('caption', { style: { textAlign: 'left', color: '#bfdbfe', paddingBottom: 6, fontWeight: 850 } }, 'Crop-depth change relative to the surface'),
+                    h('thead', null, h('tr', { style: { background: '#0f2d2a' } }, ['Signal', 'Surface', 'Crop depth', 'Change'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 7, textAlign: 'left', borderBottom: '1px solid #789b97' } }, label); }))),
+                    h('tbody', null, missionDepthComparison.metrics.map(function(metric) {
+                      var surfaceText = metric.surface.toFixed(metric.digits) + (metric.unit ? ' ' + metric.unit : '');
+                      var cropText = metric.crop.toFixed(metric.digits) + (metric.unit ? ' ' + metric.unit : '');
+                      var deltaText = (metric.delta > 0 ? '+' : '') + metric.delta.toFixed(metric.digits) + (metric.unit ? ' ' + metric.unit : '');
+                      return h('tr', { key: metric.id },
+                        h('th', { scope: 'row', style: { padding: 7, textAlign: 'left', borderBottom: '1px solid #345c57' } }, metric.label),
+                        h('td', { style: { padding: 7, borderBottom: '1px solid #345c57', fontFamily: 'monospace' } }, surfaceText),
+                        h('td', { style: { padding: 7, borderBottom: '1px solid #345c57', fontFamily: 'monospace' } }, cropText),
+                        h('td', { style: { padding: 7, borderBottom: '1px solid #345c57', color: metric.delta === 0 ? '#cbd5e1' : '#fde68a', fontFamily: 'monospace', fontWeight: 850 } }, deltaText));
+                    }))))),
+              h('p', { id: 'aq-mussel-mission-evidence-note', style: { margin: '9px 0 0', color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } },
+                h('strong', { style: { color: '#fef3c7' } }, 'Measured by probe: '), 'temperature, salinity, dissolved oxygen, pH, and chlorophyll-a. ',
+                h('strong', { style: { color: '#fecdd3' } }, 'Not measured: '), 'biofouling and attachment; those begin as balanced placeholders and require a separate stock inspection.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 9 } },
+                ['surface', 'crop'].map(function(depth) {
+                  var selected = missionEvidenceDepth === depth;
+                  return h('button', { key: depth, type: 'button', className: 'aq-btn aq-mussel-mission-depth', 'aria-pressed': selected, 'aria-describedby': 'aq-mussel-mission-evidence-note', onClick: function() { loadMissionEvidenceAtDepth(depth); },
+                    style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: selected ? '#fef08a' : (depth === 'crop' ? '#bbf7d0' : '#bae6fd'), color: '#082f49', border: '2px solid ' + (selected ? '#fff7ed' : '#e0f2fe'), fontSize: 11.5, fontWeight: 900 } }, depth === 'surface' ? 'Use surface in model' : 'Use crop depth in model');
+                }),
+                h('button', { type: 'button', className: 'aq-btn', onClick: function() { navigateToTopic('sim', 'Opening the boat mission to collect a new paired water profile.'); }, style: { minHeight: 44, padding: '8px 11px', borderRadius: 8, cursor: 'pointer', background: '#163f3b', color: '#f8fafc', border: '1px solid #789b97', fontSize: 11.5, fontWeight: 850 } }, 'Collect a new profile \u2192'))) : null,
             h('figure', { className: 'aq-mussel-lease-figure', style: { margin: '12px 0 0', padding: 9, borderRadius: 10, background: '#061a25', border: '1px solid #527a75' } },
               h('svg', { viewBox: '0 0 720 210', role: 'img', 'aria-labelledby': 'aq-mussel-lease-title aq-mussel-lease-desc', style: { display: 'block', width: '100%', height: 'auto', maxHeight: 230 } },
                 h('title', { id: 'aq-mussel-lease-title' }, 'Mussel raft and crop-depth sampling cross-section'),
@@ -21772,12 +22508,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                 h('text', { x: 90, y: 94, fill: '#cffafe', fontSize: 12 }, 'Compare depth'),
                 h('text', { x: 90, y: 112, fill: '#cffafe', fontSize: 12 }, '+ tide + time')),
               h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.45 } }, 'One surface reading can miss conditions around the crop. Scenario prompts ask you to compare depth, tidal phase, and timing.')),
+            h('details', { className: 'aq-mussel-visual-guide', style: { marginTop: 10, borderRadius: 10, background: '#031714', border: '1px solid #527a75', overflow: 'hidden' } },
+              h('summary', { style: { minHeight: 44, boxSizing: 'border-box', padding: '11px 12px', cursor: 'pointer', color: '#f8fafc', fontSize: 12.5, fontWeight: 900 } }, 'Explore two more diagrams · culture journey + evidence ladder'),
+              h('div', { style: { padding: '0 10px 10px' } },
+                h('p', { style: { margin: '0 0 9px', color: '#cbd5e1', fontSize: 11.5, lineHeight: 1.5 } }, 'These diagrams organize the investigation; they do not prescribe a universal production timeline or replace local operating procedures.'),
+                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(290px,1fr))', gap: 10 } },
+                  h('figure', { className: 'aq-mussel-culture-figure', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
+                    h('svg', { viewBox: '0 0 420 325', role: 'img', 'aria-labelledby': 'aq-mussel-culture-title aq-mussel-culture-desc', style: { display: 'block', width: '100%', height: 'auto' } },
+                      h('title', { id: 'aq-mussel-culture-title' }, 'Four-stage suspended mussel culture journey'),
+                      h('desc', { id: 'aq-mussel-culture-desc' }, 'A looping diagram moves from collecting spat to transferring seed, maintaining suspended stock, and harvesting with required handling checks.'),
+                      h('defs', null,
+                        h('marker', { id: 'aq-mussel-culture-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' },
+                          h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#99f6e4' }))),
+                      h('rect', { x: 0, y: 0, width: 420, height: 325, rx: 12, fill: '#031714' }),
+                      h('path', { d: 'M200 82 H214', fill: 'none', stroke: '#99f6e4', strokeWidth: 3, markerEnd: 'url(#aq-mussel-culture-arrow)' }),
+                      h('path', { d: 'M310 140 V178', fill: 'none', stroke: '#99f6e4', strokeWidth: 3, markerEnd: 'url(#aq-mussel-culture-arrow)' }),
+                      h('path', { d: 'M220 242 H204', fill: 'none', stroke: '#99f6e4', strokeWidth: 3, markerEnd: 'url(#aq-mussel-culture-arrow)' }),
+                      musselCultureStages.map(function(stage, index) {
+                        var positions = [{ x: 20, y: 25 }, { x: 220, y: 25 }, { x: 220, y: 185 }, { x: 20, y: 185 }];
+                        var position = positions[index];
+                        return h('g', { key: stage.id },
+                          h('rect', { x: position.x, y: position.y, width: 180, height: 115, rx: 12, fill: stage.tone, opacity: .92, stroke: '#d1fae5', strokeWidth: 1.5 }),
+                          h('circle', { cx: position.x + 27, cy: position.y + 29, r: 16, fill: '#031714', stroke: '#f8fafc' }),
+                          h('text', { x: position.x + 27, y: position.y + 34, textAnchor: 'middle', fill: '#f8fafc', fontSize: 14, fontWeight: 900 }, stage.number),
+                          h('text', { x: position.x + 51, y: position.y + 34, fill: '#f8fafc', fontSize: 14, fontWeight: 900 }, stage.title),
+                          stage.lines.map(function(line, lineIndex) {
+                            return h('text', { key: line, x: position.x + 18, y: position.y + 68 + lineIndex * 20, fill: '#ecfeff', fontSize: 12 }, line);
+                          }));
+                      })),
+                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'A learning sequence, not a fixed calendar: timing and methods vary with site, gear, permits, and operator practice.')),
+                  h('figure', { className: 'aq-mussel-evidence-figure', style: { margin: 0, padding: 8, borderRadius: 9, background: '#061a25', border: '1px solid #416c67' } },
+                    h('svg', { viewBox: '0 0 420 325', role: 'img', 'aria-labelledby': 'aq-mussel-evidence-title aq-mussel-evidence-desc', style: { display: 'block', width: '100%', height: 'auto' } },
+                      h('title', { id: 'aq-mussel-evidence-title' }, 'Five-step field evidence ladder'),
+                      h('desc', { id: 'aq-mussel-evidence-desc' }, 'A vertical path moves from a surface measurement through crop-depth repetition, comparison, inspection, and recording a separate next action.'),
+                      h('defs', null,
+                        h('marker', { id: 'aq-mussel-evidence-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' },
+                          h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#c4b5fd' }))),
+                      h('rect', { x: 0, y: 0, width: 420, height: 325, rx: 12, fill: '#031714' }),
+                      [64, 122, 180, 238].map(function(y) {
+                        return h('path', { key: y, d: 'M210 ' + y + ' V' + (y + 10), fill: 'none', stroke: '#c4b5fd', strokeWidth: 3, markerEnd: 'url(#aq-mussel-evidence-arrow)' });
+                      }),
+                      musselEvidenceSteps.map(function(step, index) {
+                        var y = 18 + index * 58;
+                        return h('g', { key: step.id },
+                          h('rect', { x: 20, y: y, width: 380, height: 46, rx: 10, fill: index % 2 ? '#123a36' : '#1e293b', stroke: index === 4 ? '#fca5a5' : '#789b97', strokeWidth: 1.5 }),
+                          h('text', { x: 38, y: y + 19, fill: '#f8fafc', fontSize: 13, fontWeight: 900 }, step.title),
+                          h('text', { x: 38, y: y + 36, fill: '#cbd5e1', fontSize: 11.5 }, step.note));
+                      })),
+                    h('figcaption', { style: { marginTop: 6, color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'The ladder turns one reading into a repeatable evidence trail instead of a diagnosis.'))))),
+            h('aside', { className: 'aq-mussel-3d-launch', style: { display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center', flexWrap: 'wrap', marginTop: 10, padding: 11, borderRadius: 10, background: 'linear-gradient(135deg,rgba(30,64,175,.22),rgba(13,148,136,.18))', border: '1px solid #7dd3fc' } },
+              h('div', { style: { flex: '1 1 300px' } },
+                h('div', { style: { color: '#bae6fd', fontSize: 10.5, fontWeight: 950, textTransform: 'uppercase', letterSpacing: '.07em' } }, 'Playable lease mission'),
+                h('h3', { style: { margin: '3px 0 4px', color: '#f8fafc', fontSize: 15 } }, 'Pilot, deploy, and compare depth samples'),
+                h('p', { style: { margin: 0, color: '#dbeafe', fontSize: 11.5, lineHeight: 1.5 } }, 'Use keyboard or on-screen controls in 3D, or complete the same buoyage, dropper, surface-sample, crop-depth, and return decisions in guided 2D.')),
+              h('button', { type: 'button', className: 'aq-btn aq-mussel-open-mission', onClick: function() { navigateToTopic('sim', 'Opening the playable lease mission. Choose guided 2D or launch the 3D farm.'); },
+                style: { minHeight: 44, padding: '9px 13px', borderRadius: 8, cursor: 'pointer', background: '#bae6fd', color: '#082f49', border: '1px solid #e0f2fe', fontSize: 12, fontWeight: 950 } }, 'Open 3D + guided mission →')),
             h('fieldset', { className: 'aq-mussel-scenarios', style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #527a75' } },
               h('legend', { style: { padding: '0 6px', color: '#f8fafc', fontSize: 13, fontWeight: 900 } }, '1 · Choose a field case'),
               h('div', { role: 'radiogroup', 'aria-label': 'Mussel field scenarios', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
-                MUSSEL_HEALTH_PRESETS.map(function(preset) {
+                MUSSEL_HEALTH_PRESETS.map(function(preset, presetIndex) {
                   var selected = musselHealthWorkspace.scenarioId === preset.id;
-                  return h('button', { key: preset.id, type: 'button', role: 'radio', 'aria-checked': selected, className: 'aq-btn aq-mussel-preset', onClick: function() { applyMusselHealthPreset(preset); },
+                  return h('button', { key: preset.id, type: 'button', role: 'radio', 'aria-checked': selected, tabIndex: selected ? 0 : -1, className: 'aq-btn aq-mussel-preset', onClick: function() { applyMusselHealthPreset(preset); }, onKeyDown: function(event) { handleMusselPresetKeyDown(event, presetIndex); },
                     style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', background: selected ? '#0f766e' : '#123a36', color: '#f8fafc', border: '2px solid ' + (selected ? '#99f6e4' : '#789b97'), fontSize: 11.5, fontWeight: 850 } }, preset.name);
                 }))),
             h('section', { 'aria-labelledby': 'aq-mussel-case-heading', style: { marginTop: 9, padding: 10, borderRadius: 9, background: 'rgba(8,145,178,.12)', border: '1px solid #67e8f9' } },
@@ -21785,14 +22576,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
               h('p', { style: { margin: '4px 0 0', color: '#e0f2fe', fontSize: 12, lineHeight: 1.5 } }, scenarioPrompt)),
             h('fieldset', { style: { margin: '12px 0 0', padding: 10, borderRadius: 9, border: '1px solid #818cf8', background: 'rgba(67,56,202,.10)' } },
               h('legend', { style: { padding: '0 6px', color: '#e0e7ff', fontSize: 13, fontWeight: 900 } }, '2 · Predict before the model answers'),
-              h('div', { style: { display: 'flex', gap: 8, alignItems: 'end', flexWrap: 'wrap' } },
-                h('label', { htmlFor: 'aq-mussel-prediction', style: { display: 'grid', gap: 5, flex: '1 1 260px', color: '#e2e8f0', fontSize: 12, fontWeight: 800 } },
+              h('div', null,
+                h('label', { htmlFor: 'aq-mussel-prediction', style: { display: 'grid', gap: 5, maxWidth: 520, color: '#e2e8f0', fontSize: 12, fontWeight: 800 } },
                   'Which signal will need attention first?',
                   h('select', { id: 'aq-mussel-prediction', value: musselPrediction, onChange: function(event) { selectMusselHealthPrediction(event.target.value); },
                     style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, background: '#071f1d', color: '#f8fafc', border: '1px solid #a5b4fc', fontSize: 13 } },
-                    predictionOptions.map(function(option) { return h('option', { key: option.id || 'blank', value: option.id }, option.label); }))),
-                h('button', { type: 'button', className: 'aq-btn aq-mussel-reveal', disabled: !musselPrediction, onClick: revealMusselHealthAssessment,
-                  style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, cursor: musselPrediction ? 'pointer' : 'not-allowed', opacity: musselPrediction ? 1 : .55, background: '#c4b5fd', color: '#1e1b4b', border: '1px solid #e0e7ff', fontSize: 12.5, fontWeight: 950 } }, musselAssessmentRevealed ? 'Reveal again' : '4 · Reveal model'))),
+                    predictionOptions.map(function(option) { return h('option', { key: option.id || 'blank', value: option.id }, option.label); }))))),
             h('p', { id: 'aq-mussel-health-notice', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
               style: { margin: '9px 0 0', padding: '8px 10px', borderRadius: 7, background: 'rgba(15,118,110,.15)', color: '#ccfbf1', fontSize: 12, lineHeight: 1.45 } },
               musselHealthNotice,
@@ -21806,21 +22595,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                   var factor = assessment.factors.find(function(item) { return item.id === control.id; });
                   var meta = musselAssessmentRevealed ? statusMeta[factor.status] : neutralMeta;
                   var valueText = factor.value + (control.unit ? ' ' + control.unit : '');
+                  var missionMeasuredSignal = !!missionEvidenceDepth && ['temperature', 'salinity', 'oxygen', 'pH', 'chlorophyll'].indexOf(control.id) >= 0;
+                  var sourceDescriptionId = missionEvidenceDepth ? ' aq-mussel-' + control.id + '-source' : '';
+                  var sourceLabel = missionMeasuredSignal ? 'boat probe \u00B7 ' + (missionEvidenceDepth === 'surface' ? 'surface' : 'crop depth') : 'not measured by probe \u00B7 inspect stock';
                   return h('div', { key: control.id, style: { padding: 10, borderRadius: 9, background: meta.background, border: '1px solid ' + meta.color } },
-                    h('label', { htmlFor: 'aq-mussel-' + control.id, style: { display: 'block', color: '#f8fafc', fontSize: 12, fontWeight: 850 } }, control.label),
+                    h('label', { htmlFor: 'aq-mussel-' + control.id, style: { display: 'flex', justifyContent: 'space-between', gap: 7, alignItems: 'center', flexWrap: 'wrap', color: '#f8fafc', fontSize: 12, fontWeight: 850 } }, control.label,
+                      missionEvidenceDepth ? h('span', { id: 'aq-mussel-' + control.id + '-source', style: { padding: '2px 6px', borderRadius: 999, color: missionMeasuredSignal ? '#dbeafe' : '#fee2e2', background: missionMeasuredSignal ? 'rgba(59,130,246,.16)' : 'rgba(244,63,94,.14)', border: '1px solid ' + (missionMeasuredSignal ? '#60a5fa' : '#fb7185'), fontSize: 9.5, fontWeight: 900 } }, sourceLabel) : null),
                     h('input', { id: 'aq-mussel-' + control.id, type: 'range', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
                       'aria-valuetext': valueText + (musselAssessmentRevealed ? ', ' + meta.label : ', interpretation hidden until reveal'),
-                      'aria-describedby': 'aq-mussel-' + control.id + '-signal', onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
+                      'aria-describedby': 'aq-mussel-' + control.id + '-signal' + sourceDescriptionId, onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
                       style: { width: '100%', margin: '9px 0 6px', accentColor: meta.color } }),
                     h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
                       h('label', { htmlFor: 'aq-mussel-' + control.id + '-number', style: { color: '#cbd5e1', fontSize: 11 } }, 'Exact value'),
                       h('input', { id: 'aq-mussel-' + control.id + '-number', type: 'number', min: control.min, max: control.max, step: control.step, value: musselHealthWorkspace[control.id],
-                        'aria-label': control.label + ' exact value', 'aria-describedby': 'aq-mussel-' + control.id + '-signal', onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
+                        'aria-label': control.label + ' exact value', 'aria-describedby': 'aq-mussel-' + control.id + '-signal' + sourceDescriptionId, onChange: function(event) { updateMusselHealthReading(control.id, event.target.value); },
                         style: { width: 82, minHeight: 38, boxSizing: 'border-box', padding: '6px 7px', borderRadius: 7, background: '#031714', color: '#f8fafc', border: '1px solid #789b97', fontFamily: 'monospace', fontSize: 13 } }),
                       h('span', { style: { color: meta.color, fontSize: 12, fontWeight: 900 } }, control.unit || 'pH')),
                     h('div', { id: 'aq-mussel-' + control.id + '-signal', style: { marginTop: 6, color: '#e2e8f0', fontSize: 11.5, lineHeight: 1.45 } },
                       musselAssessmentRevealed ? h(React.Fragment, null, h('strong', { style: { color: meta.color } }, meta.symbol + ' ' + meta.label + '. '), factor.signal) : 'Interpretation hidden. Compare the readings and commit to a prediction first.'));
                 }))),
+            h('section', { className: 'aq-mussel-reveal-step', 'aria-labelledby': 'aq-mussel-reveal-heading',
+              style: { marginTop: 12, padding: 11, borderRadius: 9, background: 'rgba(67,56,202,.10)', border: '1px solid #818cf8' } },
+              h('h3', { id: 'aq-mussel-reveal-heading', style: { margin: 0, color: '#e0e7ff', fontSize: 14 } }, '4 · Reveal and compare'),
+              musselAssessmentRevealed
+                ? h('p', { style: { margin: '6px 0 0', color: '#ddd6fe', fontSize: 12, lineHeight: 1.5 } },
+                    h('strong', { style: { color: '#bbf7d0' } }, 'Model revealed. '),
+                    'Adjust the readings to test how the priority changes. Changing your prediction hides the model so you can try again.')
+                : h('div', { style: { display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 7 } },
+                    h('p', { style: { flex: '1 1 280px', margin: 0, color: '#ddd6fe', fontSize: 12, lineHeight: 1.5 } }, 'Inspect all seven readings, commit to your prediction, then compare it with the model.'),
+                    h('button', { type: 'button', className: 'aq-btn aq-mussel-reveal', disabled: !musselPrediction, onClick: revealMusselHealthAssessment,
+                      style: { minHeight: 44, padding: '9px 14px', borderRadius: 8, cursor: musselPrediction ? 'pointer' : 'not-allowed', opacity: musselPrediction ? 1 : .55, background: '#c4b5fd', color: '#1e1b4b', border: '1px solid #e0e7ff', fontSize: 12.5, fontWeight: 950 } }, 'Reveal model'))),
             h('aside', { className: 'aq-mussel-food-safety', style: { marginTop: 12, padding: 11, borderRadius: 9, background: 'rgba(127,29,29,.18)', border: '2px solid #fca5a5', color: '#fee2e2', fontSize: 12, lineHeight: 1.5 } },
               h('strong', null, 'Food safety is not assessed. '),
               'Do not use this model to decide whether shellfish are safe to harvest or eat. ',
@@ -21879,6 +22683,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
                     h('div', null,
                       h('div', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900 } }, check.status + ' · priority: ' + (check.prioritySignal || check.limitingFactor)),
                       h('div', { style: { marginTop: 2, color: '#bfdbfe', fontSize: 11 } }, savedLabel + ' · model ' + (check.modelVersion || 'legacy'))),
+                      check.evidenceSource ? h('div', { style: { marginTop: 2, color: '#99f6e4', fontSize: 10.5, fontWeight: 850 } }, 'Boat mission source \u00B7 ' + (check.evidenceSource === 'mission-surface' ? 'surface sample' : 'crop-depth sample')) : null,
                     h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                       h('button', { type: 'button', className: 'aq-btn', onClick: function() { loadMusselHealthCheck(check); },
                         'aria-label': 'Load ' + check.status + ' mussel field check saved ' + savedLabel + ', check ' + (checkIndex + 1) + ' of ' + musselHealthWorkspace.checks.length,
@@ -22951,6 +23756,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
         '@media(prefers-reduced-motion:reduce){.aq-lab-shell *{scroll-behavior:auto!important}.aq-btn,.aq-library-summary,.aq-metric-card,.aq-journey-card,.aq-operation-tile,.aq-mission-card,.aq-checkpoint-card,.aq-eco-organism,.aq-eco-environment,.aq-progress-fill,.aq-content-card,.aq-topic-group,.aq-topic-group-summary,.aq-topic-content tbody tr,.aq-topic-content input,.aq-topic-content textarea,.aq-topic-content select{transition:none!important}.aq-btn:hover,.aq-metric-card:hover,.aq-journey-card:hover,.aq-operation-tile:hover{transform:none!important}}' +
         '@media(max-width:620px){.aq-lab-shell{padding:10px!important;border-radius:12px!important}.aq-topic-nav{padding:10px!important}.aq-nav-heading{align-items:stretch!important}.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.aq-primary-nav button{width:100%}.aq-topic-search-row{grid-template-columns:1fr}.aq-topic-search-clear{width:100%}.aq-topic-pager{grid-template-columns:1fr!important}.aq-topic-pager button{text-align:left!important}.aq-reading-toggle{width:100%}.aq-lesson-header{align-items:stretch!important}.aq-lesson-actions{width:100%;display:grid!important;grid-template-columns:1fr}.aq-lesson-actions .aq-btn{width:100%}.aq-home-card{padding:12px!important}.aq-content-card{padding:12px!important}.aq-section-kicker:after{display:none}.aq-topic-content table{display:block;overflow-x:auto}.aq-journey-card{min-height:0!important}.aq-eco-environments,.aq-eco-organism-grid,.aq-eco-sliders{grid-template-columns:1fr!important}.aq-eco-dashboard dl{grid-template-columns:1fr 1fr!important}}'),
       h('a', { href: '#aq-topic-content', className: 'aq-skip-link' }, 'Skip to lesson content'),
+      h('style', null, '@media(max-width:620px){.aq-3d-sim-shell{display:grid!important;gap:8px!important}.aq-3d-sim-shell canvas{height:360px!important}.aq-3d-stats,.aq-3d-mission-hud,.aq-3d-probe-hud,.aq-3d-status-log,.aq-3d-controls,.aq-3d-exit{position:static!important;inset:auto!important;width:auto!important;max-width:none!important;box-sizing:border-box!important}.aq-3d-stats{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.aq-3d-mission-hud{order:2}.aq-3d-probe-hud{order:3}.aq-3d-status-log{order:4;max-height:140px!important}.aq-3d-controls{order:5;grid-template-columns:repeat(2,minmax(0,1fr))!important}.aq-3d-exit{order:6;min-height:44px}.aq-3d-debrief dl{grid-template-columns:repeat(2,minmax(0,1fr))!important}.aq-3d-depth-debrief>div{grid-template-columns:1fr!important}}'),
+      h('style', null, '@media(max-width:760px){.aq-field-condition-layout{grid-template-columns:minmax(0,1fr)!important}.aq-field-scenario-fieldset [role="radiogroup"]{grid-template-columns:1fr!important}.aq-field-condition-figure{max-width:480px}.aq-mussel-mission-evidence-grid{grid-template-columns:minmax(0,1fr)!important}.aq-mussel-mission-profile{max-width:440px}}'),
       tabBar(),
       h('main', { id: 'aq-topic-content', ref: contentRef, tabIndex: -1,
         className: 'aq-topic-content', 'aria-labelledby': 'aq-topic-heading' },

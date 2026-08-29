@@ -67,7 +67,7 @@ function loadMeasurementMath() {
   const start = SOURCE.indexOf('  function formatVolume(vol)');
   const end = SOURCE.indexOf('  var ACHIEVEMENTS = [', start);
   const body = SOURCE.slice(start, end);
-  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, buildRepresentationSentenceStarter, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
+  return new Function(body + '\nreturn { measuredVolume, enrichMeasurement, formatVolume, parseVolumePrediction, compareVolumePrediction, diagnoseVolumePrediction, comparePredictionRevision, evaluateVolumePrediction, geometryMeasurementTargetKey, normalizeVolumeEstimateTargetKeys, commitVolumeEstimateDraft, resolveVolumeEstimateMeasurement, objectiveEvidenceFor, buildEvidenceReflectionPrompt, buildVolumeRepresentations, buildRepresentationExploration, recommendVolumeRepresentation, buildRepresentationConnectionReadiness, buildRepresentationSentenceStarter, determinePredictionScaffold, buildRetrievalCheckpoint, checkRetrievalAnswer, escapeReportHtml, misconceptionGuidance, summarizeLearningEvidence, countExposedCubeFaces, completeMeasurementRecords, summarizePredictionAccuracy, serializeEventDetailValue, formatSessionEventDetails, measurementDetailsForReport, elapsedSecondsForEvent, questionDetailsForReport, compareMeasurementRecords, measurementLayerFor, belongsToMeasuredComponent };')();
 }
 
 describe('Geometry World measurement model', () => {
@@ -183,9 +183,50 @@ describe('Geometry World measurement model', () => {
     const exact = math.compareVolumePrediction('24', 24);
     const over = math.compareVolumePrediction('30', 24);
     const under = math.compareVolumePrediction('23', 24);
-    expect(exact).toMatchObject({ relation: 'exact', percentError: 0, accuracyLabel: 'Exact match!' });
+    expect(exact).toMatchObject({ relation: 'exact', percentError: 0, accuracyLabel: 'Estimate matched the measured volume' });
     expect(over).toMatchObject({ relation: 'over', percentError: 25 });
     expect(under).toMatchObject({ relation: 'under', percentError: 4 });
+  });
+
+  it('compares only an estimate committed for that structure before evidence', () => {
+    const structure = {
+      minX: 0, minY: 0, minZ: 0, L: 2, W: 1, H: 1,
+      count: 2, occupiedVolume: 2, boundingVolume: 2, missingVolume: 0,
+      isComplete: true, isSolidPrism: true, hasFractions: false,
+      blocks: [{ x: 1, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }]
+    };
+    const reordered = { ...structure, blocks: [...structure.blocks].reverse() };
+    const other = {
+      ...structure, minX: 5,
+      blocks: [{ x: 6, y: 0, z: 0 }, { x: 5, y: 0, z: 0 }]
+    };
+    const targetKey = math.geometryMeasurementTargetKey(structure);
+
+    expect(targetKey).toBeTruthy();
+    expect(math.geometryMeasurementTargetKey(reordered)).toBe(targetKey);
+    expect(math.commitVolumeEstimateDraft({ input: '' }, targetKey, [])).toMatchObject({ ok: false, code: 'invalid_estimate' });
+    expect(math.commitVolumeEstimateDraft({ input: '3' }, '', [])).toMatchObject({ ok: false, code: 'no_target' });
+    expect(math.commitVolumeEstimateDraft({ input: '3' }, targetKey, [targetKey])).toMatchObject({ ok: false, code: 'already_observed' });
+
+    const draft = { input: '3', strategy: 'layers', reason: 'I counted two spaces and estimated one more.' };
+    const committed = math.commitVolumeEstimateDraft(draft, targetKey, []);
+    draft.input = '99';
+    expect(committed).toMatchObject({ ok: true, code: 'committed' });
+    expect(committed.commitment).toMatchObject({ input: '3', prediction: 3, targetKey });
+
+    const mismatch = math.resolveVolumeEstimateMeasurement(other, committed.commitment, []);
+    expect(mismatch).toMatchObject({ status: 'target_mismatch', comparison: null, nextCommitment: committed.commitment, consumed: false });
+    expect(mismatch.observedTargetKeys).toContain(math.geometryMeasurementTargetKey(other));
+
+    const compared = math.resolveVolumeEstimateMeasurement(structure, committed.commitment, mismatch.observedTargetKeys);
+    expect(compared).toMatchObject({ status: 'compared', nextCommitment: null, consumed: true });
+    expect(compared.comparison).toMatchObject({ prediction: 3, actual: 2, strategy: 'layers' });
+    expect(compared.observedTargetKeys).toContain(targetKey);
+
+    const observation = math.resolveVolumeEstimateMeasurement(structure, null, []);
+    expect(observation).toMatchObject({ status: 'observation', comparison: null, consumed: false });
+    const repeat = math.resolveVolumeEstimateMeasurement(structure, committed.commitment, observation.observedTargetKeys);
+    expect(repeat).toMatchObject({ status: 'already_observed', comparison: null, consumed: false });
   });
 
 
@@ -550,13 +591,18 @@ describe('Geometry World measurement model', () => {
     // and still tags the event as touch — asserted here instead of the old locals.
     expect(SOURCE).toContain("engine.performMeasurement('touch');");
     expect(SOURCE).toContain("blocks: m.count, input: inputMode || 'key' });");
-    expect(SOURCE).toContain('(((engine._predictionState || {}).history) || []).concat');
+    expect(SOURCE).toContain('(predictionState.history || []).concat');
     expect(SOURCE).toContain("'Composite structure'");
     expect(SOURCE).toContain("'Bounding box ' + measureResult.boundingVolume");
-    expect(SOURCE).toContain("'aria-label': 'Predicted volume in cubic units'");
+    expect(SOURCE).toContain("'aria-label': 'Estimated volume in cubic units'");
     expect(SOURCE).toContain("'data-geometry-prediction-result': 'true'");
-    expect(SOURCE).toContain('var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction');
-    expect(SOURCE).toContain("'data-geometry-prediction-cycle': 'predict-explain'");
+    expect(SOURCE).toContain("'data-geometry-estimate-result': 'committed-before-measurement'");
+    expect(SOURCE).toContain('var estimateOutcome = resolveVolumeEstimateMeasurement');
+    expect(SOURCE).toContain("'data-geometry-prediction-cycle': 'commit-before-measure'");
+    expect(SOURCE).toContain("'data-geometry-estimation-challenge': 'draft-commit-measure-reflect'");
+    expect(SOURCE).toContain('This is an ungraded estimate. Aim at one unmeasured structure');
+    expect(SOURCE).toContain('Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.');
+    expect(SOURCE).toContain("'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit'");
     expect(SOURCE).toContain("'data-geometry-misconception-feedback': predictionResult.diagnosisCode");
     expect(SOURCE).toContain("'data-geometry-revision-result': 'true'");
     expect(SOURCE).toContain("eng.logEvent('prediction_revision'");
@@ -575,14 +621,20 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain('COMPARE LATEST TWO COMPLETE');
     expect(SOURCE).toContain('incompleteMeasurementAttempts: allMeasurements.length - measurements.length');
     expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements'");
-    expect(SOURCE).toContain('correctMeasurements: predictionSummary.predictionsWithin10Percent');
-    expect(SOURCE).toContain('Predictions within 10%');
-    expect(SOURCE).toContain('Avg prediction error');
+    expect(SOURCE).toContain("policy: 'descriptive-ungraded'");
+    expect(SOURCE).toContain('averageAbsolutePercentDifference: predictionSummary.averagePredictionPercentError');
+    expect(SOURCE).toContain('Estimates compared<br>');
+    expect(SOURCE).toContain('Avg absolute difference<br>');
+    expect(SOURCE).not.toContain('correctMeasurements: predictionSummary.predictionsWithin10Percent');
+    expect(SOURCE).not.toContain('Predictions within 10%');
+    expect(SOURCE).not.toContain('Avg prediction error');
     expect(SOURCE).not.toContain('m.data.blocks === m.data.volume');
     expect(SOURCE).toContain('var details = formatSessionEventDetails(entry.data)');
     expect(SOURCE).not.toContain("key + '=' + entry.data[key]");
     expect(SOURCE).toContain('measurementDetails: measurementDetailsForReport(measurements)');
     expect(SOURCE).toContain('Measurement-Level Evidence');
+    expect(SOURCE).toContain('<th>Measured V</th><th>Committed estimate</th><th>Absolute % difference (descriptive, ungraded)</th>');
+    expect(SOURCE).not.toContain('<th>Actual V</th><th>Prediction</th><th>Error</th>');
     expect(SOURCE).toContain('questionDetails: questionDetailsForReport(log)');
     expect(SOURCE).not.toContain('Math.round(q.timestamp)');
   });

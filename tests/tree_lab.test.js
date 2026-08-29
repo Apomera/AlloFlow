@@ -873,8 +873,9 @@ describe('Tree Life Lab — banks and mirrors', () => {
 
     const summer = render({ treeLab: { view: 'transport', tree: t, season: 'summer', bandOverride: 'g68' } });
     expect(summer).toContain('litres a day');          // xylem carries a real volume
-    expect(summer).toContain('Source right now: the leaves');
+    expect(summer).toContain('Whole-year source: canopy photosynthesis');
     expect(summer).toContain('Stored reserves');
+    expect(summer).not.toContain('Source right now');
     expect(summer).toContain('Trace the flow');
     expect(summer).toContain('allo-tree-pipe-path is-xylem');
     expect(summer).toContain('Water still rises');
@@ -882,11 +883,13 @@ describe('Tree Life Lab — banks and mirrors', () => {
     // Spring runs the phloem the other way: the tree builds a canopy out of last
     // year's store before it has leaves to make sugar with.
     const spring = render({ treeLab: { view: 'transport', tree: t, season: 'spring', bandOverride: 'g68' } });
-    expect(spring).toContain('stored reserves in the roots and trunk');
+    expect(spring).toContain('Stored reserves');
     expect(spring).toContain('New leaves');
-    // ...and the store cannot be a destination while it is the source.
-    const springSinks = spring.slice(spring.indexOf('Source right now'));
-    expect(springSinks).not.toContain('Stored reserves');
+    // The route is seasonal, but the bars remain the complete whole-year plan.
+    const springPlan = spring.slice(spring.indexOf('Where the whole-year carbon plan goes'));
+    expect(springPlan).toContain('Whole-year source: canopy photosynthesis');
+    expect(springPlan).toContain('Stored reserves');
+    expect(spring).not.toContain('Source right now');
   });
 
   it('says a deficit year is a deficit instead of dividing zero five ways', () => {
@@ -899,7 +902,7 @@ describe('Tree Life Lab — banks and mirrors', () => {
     const html = render({
       treeLab: { view: 'transport', tree: t, season: 'summer', bandOverride: 'g912', droughtYears: [t.age] },
     });
-    expect(html).toContain('Nothing to send out');
+    expect(html).toContain('No whole-year surplus to divide');
     expect(html).toContain('Sinks become the source');
     expect(html).not.toMatch(/0 kg C/);
   });
@@ -1019,6 +1022,144 @@ describe('Tree Life Lab — banks and mirrors', () => {
     const g912only = render({ treeLab: { view: 'quiz', bandOverride: 'k2', quizSeen: { 4: 'right' } } });
     expect(g912only).toContain('Not answered yet');
   });
+  it('turns the knowledge check into an evidence-led mastery journey', () => {
+    const fresh = render({ treeLab: { view: 'quiz', bandOverride: 'k2' } });
+    expect(fresh).toContain('Canopy of understanding');
+    expect(fresh).toContain('The forest story you built');
+    expect(fresh).toContain('Find what is missing');
+    expect(fresh).toContain('role="progressbar"');
+    expect(fresh).toContain('allo-tree-quiz-leaf is-open is-current');
+
+    const rethink = render({
+      treeLab: {
+        view: 'quiz', bandOverride: 'k2',
+        quizPicks: { 0: 0 }, quizPickKey: 0, quizSeen: { 0: 'wrong' },
+      },
+    });
+    expect(rethink).toContain('Not yet - look at the clue');
+    expect(rethink).toContain('Clue from the tree');
+    expect(rethink).toContain('Try this thinking move');
+    expect(rethink).toContain('Try again');
+
+    const complete = render({
+      treeLab: {
+        view: 'quiz', bandOverride: 'k2',
+        quizSeen: { 0: 'right', 7: 'wrong', 13: 'right', 14: 'right', 15: 'right' },
+      },
+    });
+    expect(complete).toContain('Reflection clearing');
+    expect(complete).toContain('allo-tree-quiz-finale');
+    for (const step of ['Claim', 'Evidence', 'Reasoning']) expect(complete).toContain(step);
+  });
+
+  it('keeps saved choices attached to their question and repairs malformed quiz state', () => {
+    const otherQuestion = render({
+      treeLab: {
+        view: 'quiz', bandOverride: 'g35', quizIdx: 1,
+        quizPick: 3, quizPickKey: 0, quizPicks: { 0: 3 },
+      },
+    });
+    expect(otherQuestion).toContain('Idea 2 / 8');
+    expect(otherQuestion).not.toContain('class="allo-tree-quiz-feedback');
+
+    const repaired = render({
+      treeLab: {
+        view: 'quiz', bandOverride: 'k2',
+        quizIdx: 'not-a-number', quizPick: 'not-a-pick',
+      },
+    });
+    expect(repaired).toContain('Show what you know');
+    expect(repaired).toContain('Idea 1 / 5');
+    expect(repaired).not.toContain('undefined');
+  });
+
+  it('shares the visible growth goal across playback and year-step controls', () => {
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const step = src.slice(src.indexOf('function stepYears('), src.indexOf('function tick('));
+    const tick = src.slice(src.indexOf('function tick('), src.indexOf('CLOCK.beat('));
+    const reset = src.slice(src.indexOf('function resetTree('), src.indexOf('CLOCK.stop()', src.indexOf('function resetTree(')));
+    expect(step).toContain('treeGoalReached(st)');
+    expect(step).toContain('goalReached');
+    expect(tick).toContain('treeGoalReached(st)');
+    expect(reset).toContain('goalReached');
+  });
+
+  it('honors app-level reduced motion and exposes chapter progress semantics', () => {
+    const html = render({ treeLab: { view: 'grow' } }, { reduceMotion: true });
+    expect(html).toContain('is-reduced-motion');
+    expect(html).toContain('aria-labelledby="treelab-chapter-title"');
+    expect(html).toContain('aria-label="Chapter 1 of');
+    expect(html).toContain('allo-tree-workbench-mission');
+  });
+
+  it('connects the filtered chapter path with conceptual handoffs', () => {
+    const k2Grow = render({ treeLab: { view: 'grow', bandOverride: 'k2' } });
+    expect(k2Grow).toContain('data-tree-next="chem"');
+    expect(k2Grow).toContain('Tree Food');
+
+    const k2Food = render({ treeLab: { view: 'chem', bandOverride: 'k2' } });
+    expect(k2Food).toContain('data-tree-next="spread"');
+    expect(k2Food).toContain('Leaves made sugar');
+
+    const olderChem = render({ treeLab: { view: 'chem', bandOverride: 'g68' } });
+    expect(olderChem).toContain('data-tree-next="transport"');
+
+    const compare = render({ treeLab: { view: 'compare', bandOverride: 'g68' } });
+    expect(compare).toContain('data-tree-next="quiz"');
+
+    const check = render({ treeLab: { view: 'quiz', bandOverride: 'k2' } });
+    expect(check).not.toContain('data-tree-next=');
+    expect(check).not.toContain('class="allo-tree-species-context');
+  });
+
+  it('makes the immersive viewer a named, keyboard-bounded dialog', () => {
+    const full = render({ treeLab: { view: 'grow', viewerFull: true } });
+    expect(full).toContain('data-tree-fullstage="true"');
+    expect(full).toContain('role="dialog"');
+    expect(full).toContain('aria-modal="true"');
+    expect(full).toContain('aria-labelledby="treelab-full-title"');
+    expect(full).toContain('aria-describedby="treelab-full-description"');
+    expect(full).toContain('tabindex="-1"');
+    expect(full).toContain('aria-haspopup="dialog"');
+    expect(full).toContain('aria-controls="treelab-full-stage"');
+
+    const ordinary = render({ treeLab: { view: 'grow' } });
+    expect(ordinary).not.toContain('data-tree-fullstage="true"');
+
+    const src = readFileSync(resolve(process.cwd(), SOURCE), 'utf8');
+    const trap = src.slice(src.indexOf('function handleFullScreenKey('), src.indexOf('// A read-out chip'));
+    expect(trap).toContain("e.key !== 'Tab'");
+    expect(trap).toContain('querySelectorAll');
+    expect(src).toContain('FULLSCREEN_RETURN_FOCUS');
+  });
+
+  it('stages one mission action and gives primary readers their own language layer', () => {
+    const fresh = render({ treeLab: { view: 'grow', bandOverride: 'k2' } });
+    expect(fresh).toContain('data-mission-next="change"');
+    expect(fresh).toContain('Try one change. Grow 10 years. Then tell what helped or hurt your tree.');
+    expect((fresh.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
+
+    const changed = render({ treeLab: { view: 'grow', bandOverride: 'k2', light: 0.5 } });
+    expect(changed).toContain('data-mission-next="grow"');
+    expect((changed.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
+
+    const olderTree = engine().newTree('oak');
+    olderTree.age = 12;
+    const explain = render({ treeLab: { view: 'grow', bandOverride: 'k2', light: 0.5, tree: olderTree } });
+    expect(explain).toContain('data-mission-next="explain"');
+    expect((explain.match(/allo-tree-button is-primary/g) || [])).toHaveLength(1);
+
+    const spread = render({ treeLab: { view: 'spread', bandOverride: 'k2' } });
+    for (const phrase of ['Food saved', 'Starts growing', 'How far it goes', 'Try 10 years']) {
+      expect(spread).toContain(phrase);
+    }
+    expect(spread).not.toContain('The take rates below are tuned');
+
+    const quiz = render({ treeLab: { view: 'quiz', bandOverride: 'k2' } });
+    expect(quiz).toContain('A young tree grows in deep shade');
+    expect(quiz).toContain('Idea 1 / 5');
+  });
+
 
   it('draws the trunk in cross-section from the tree’s own record', () => {
     // Transport explained "phloem sits just inside the bark, xylem is deeper in the
@@ -1305,8 +1446,10 @@ describe('Tree Life Lab — season control and post-mortem', () => {
     }
     // The chosen one is the pressed one. Before this existed the season was reachable
     // only by running the clock at its slowest speed and catching the right moment.
-    const pressed = [...html.matchAll(/aria-pressed="true"[^>]*>([^<]*)/g)].map((m) => m[1]);
-    expect(pressed.join(' '), 'Autumn is selected but not marked pressed').toMatch(/Autumn/);
+    const seasonButton = html.match(/<button[^>]*allo-tree-season-choice is-current[^>]*>[\s\S]*?<\/button>/);
+    expect(seasonButton, 'Autumn season control is missing').not.toBeNull();
+    expect(seasonButton[0], 'Autumn is selected but not marked pressed').toMatch(/aria-pressed="true"/);
+    expect(seasonButton[0]).toMatch(/Autumn/);
   });
 
   it('never implies the season changed a number the model did not recompute', () => {
@@ -1988,5 +2131,956 @@ describe('The objective: targets come from the model, not from a score', () => {
     // A pioneer aspen must get there sooner than a redwood, or the goal is not
     // teaching anything about the species the student picked.
     expect(ages.aspen).toBeLessThan(ages.redwood);
+  });
+});
+
+describe('Tree Life Lab - observe, predict, explain chapter language', () => {
+  it('turns K-2 chemistry into a structured leaf-kitchen story', () => {
+    const html = render({ treeLab: { view: 'chem', bandOverride: 'k2' } });
+    expect(html).toContain('data-science-trail="chem"');
+    expect(html).toContain('Leaf kitchen');
+    expect(html).toContain('Carbon dioxide from air');
+    expect(html).toContain('Back to the air');
+    expect(html).toContain('Make a guess');
+    expect(html).toContain('Tell why');
+    expect(html).toContain('allo-tree-reaction');
+  });
+
+  it('marks chemistry evidence and decodes the response curves', () => {
+    const html = render({ treeLab: { view: 'chem', bandOverride: 'g68' } });
+    expect(html).toMatch(/data-limiting-factor="(light|water|co2|temperature)"/);
+    expect(html).toContain('Sets the pace');
+    expect(html).toContain('your tree now');
+    expect(html).toContain('flat means something else is limiting');
+    expect(html).toContain('data-reasoning-step="predict"');
+  });
+
+  it('lets Transport reveal a reversible source-to-sink story', () => {
+    const html = render({ treeLab: { view: 'transport', bandOverride: 'g68', season: 'spring' } });
+    expect(html).toContain('data-science-trail="transport"');
+    expect(html).toContain('Modelled daily flow');
+    expect(html).toContain('Evaporation pulls');
+    expect(html).toContain('Stored reserves');
+    expect(html).toContain('New leaves');
+    expect(html).toContain('where sugar starts');
+    expect(html).toContain('where sugar is used or stored');
+    expect(html).toContain('Water and sugar move through different tissues');
+  });
+
+  it('gives New Trees and Compare explicit evidence-reading scaffolds', () => {
+    const E = engine();
+    const tree = E.newTree('aspen');
+    tree.seedsBanked = 30;
+    const event = { id: 'calm', name: 'A quiet decade', icon: '\u00B7', blurb: 'No major disturbance.' };
+    const res = E.resolveSpread({ seed_wind: 6, root_sucker: 6 }, event, E.lcg(9));
+    const spread = render({ treeLab: {
+      view: 'spread', bandOverride: 'k2', speciesId: 'aspen', tree,
+      lastSpread: { event: 'calm', res }, spend: {}
+    } });
+    expect(spread).toContain('data-science-trail="spread"');
+    expect(spread).toContain('Ten years pass');
+    expect(spread).toContain('Weather and luck act');
+    expect(spread).toContain('food points');
+    expect(spread).toContain('What happened this time');
+    expect(spread).toContain('New shoot from a root');
+    expect(spread).not.toContain('Root sucker');
+    expect(spread).not.toContain('Clonal copies');
+    expect(spread).not.toContain('kg C');
+
+    const compare = render({ treeLab: { view: 'compare', bandOverride: 'g68' } });
+    expect(compare).toContain('data-science-trail="compare"');
+    expect(compare).toContain('Scrollable chart comparing tree height through time');
+    expect(compare).toContain('Swipe sideways to read the full chart');
+    expect(compare).toContain('Typical lifespan');
+    expect(compare).toContain('Height ceiling');
+  });
+});
+
+describe('Tree Life Lab - tree memory yearbook', () => {
+  function grownOak(years) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  it('invites a new learner to grow the first ring', () => {
+    const html = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: grownOak(0) },
+    });
+
+    expect(html).toContain('data-tree-memory="empty"');
+    expect(html).toContain('A lifetime record begins with one year');
+    expect(html).toContain('Grow first year');
+  });
+
+  it('makes recent rings selectable and explains the selected evidence', () => {
+    const tree = grownOak(15);
+    const focusYear = tree.history[5].year;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: focusYear,
+      },
+    });
+
+    expect(html).toContain('data-tree-memory="yearbook"');
+    expect(html.match(/data-memory-year="/g)).toHaveLength(12);
+    expect(html).toMatch(new RegExp('data-memory-year="' + focusYear + '"[^>]*aria-pressed="true"'));
+    expect(html).toContain('data-memory-detail-year="' + focusYear + '"');
+    expect(html).toContain('Net carbon');
+    expect(html).toContain('Ring width');
+    expect(html).toContain('Limiting factor');
+    expect(html).toContain('Ring width remembers carbon sent to wood');
+  });
+
+  it('falls back to the newest valid record when focus state is malformed', () => {
+    const tree = grownOak(9);
+    const newestYear = tree.history[tree.history.length - 1].year;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: 'not-a-year',
+      },
+    });
+
+    expect(html).toContain('data-memory-detail-year="' + newestYear + '"');
+    expect(html).toMatch(new RegExp('data-memory-year="' + newestYear + '"[^>]*aria-pressed="true"'));
+  });
+
+  it('turns a drought ring into a causal stress story', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = grownOak(8);
+    tree = E.simulateYear(tree, sp, { ...GOOD_ENV, soilWater: 0.001 }, ALLOC);
+    const stressYear = tree.history[tree.history.length - 1].year;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: stressYear,
+      },
+    });
+
+    expect(html).toMatch(new RegExp('data-memory-year="' + stressYear + '"[^>]*data-memory-stress="true"'));
+    expect(html).toContain('Water stress closed the stomata');
+    expect(html).toContain('drew on reserves');
+    expect(html).toContain('not a direct weather measurement');
+  });
+});
+
+describe('Tree Life Lab - tree memory pattern lens', () => {
+  function grownOak(years) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  it('decodes height, color, and dashed stress marks before the timeline', () => {
+    const tree = grownOak(1);
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: tree.history[0].year,
+      },
+    });
+
+    expect(html).toContain('data-memory-key="height-color-outline"');
+    expect(html).toContain('Height shows wood growth');
+    expect(html).toContain('Top color shows the limiter');
+    expect(html).toContain('Dashed means carbon deficit');
+    expect(html).toContain('data-memory-trend="baseline"');
+    expect(html).toContain('No earlier year to compare');
+  });
+
+  it('compares carbon and ring-width changes without overstating causality', () => {
+    const tree = grownOak(10);
+    const selected = tree.history[tree.history.length - 1];
+    const previous = tree.history[tree.history.length - 2];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-compare="' + previous.year + '-to-' + selected.year + '"');
+    expect(html).toMatch(/data-memory-trend="(wider|narrower|steady)"/);
+    expect(html).toContain('Compared with Year ' + previous.year);
+    expect(html).toContain('Net carbon change');
+    expect(html).toContain('Ring-width change');
+    expect(html).toContain('evidence, not proof');
+  });
+
+  it('recognizes a return to carbon surplus as recovery after stress', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = grownOak(8);
+    tree = E.simulateYear(tree, sp, { ...GOOD_ENV, soilWater: 0.001 }, ALLOC);
+    const stressYear = tree.history[tree.history.length - 1];
+    tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    const recoveryYear = tree.history[tree.history.length - 1];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: recoveryYear.year,
+      },
+    });
+
+    expect(stressYear.net).toBeLessThan(0);
+    expect(recoveryYear.net).toBeGreaterThanOrEqual(0);
+    expect(html).toContain('data-memory-trend="recovery"');
+    expect(html).toContain('Recovery after stress');
+    expect(html).toContain('Net carbon returned to surplus');
+  });
+});
+
+describe('Tree Life Lab - tree memory detective', () => {
+  function grownOak(years) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  function recoveryTree() {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = grownOak(8);
+    tree = E.simulateYear(tree, sp, { ...GOOD_ENV, soilWater: 0.001 }, ALLOC);
+    tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    return tree;
+  }
+
+  it('offers three evidence claims and waits without revealing a score', () => {
+    const tree = grownOak(5);
+    const selected = tree.history[tree.history.length - 1];
+    const previous = tree.history[tree.history.length - 2];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-detective="' + previous.year + '-to-' + selected.year + '"');
+    expect(html).toContain('data-memory-claim-result="waiting"');
+    expect(html.match(/data-memory-claim="(recovery|setback|continuity)"/g)).toHaveLength(3);
+    expect(html).toContain('Make an evidence-based claim');
+    expect(html).toContain('Choose the claim best supported');
+  });
+
+  it('confirms a recovery claim with the two carbon-balance records', () => {
+    const tree = recoveryTree();
+    const selected = tree.history[tree.history.length - 1];
+    const previous = tree.history[tree.history.length - 2];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+        historyClaimYear: selected.year,
+        historyClaim: 'recovery',
+      },
+    });
+
+    expect(previous.net).toBeLessThan(0);
+    expect(selected.net).toBeGreaterThanOrEqual(0);
+    expect(html).toContain('data-memory-claim-result="correct"');
+    expect(html).toMatch(/data-memory-claim="recovery"[^>]*aria-pressed="true"/);
+    expect(html).toContain('returned to surplus. That is recovery in this model.');
+  });
+
+  it('gives a retry cue and ignores an answer saved for another year', () => {
+    const tree = recoveryTree();
+    const selected = tree.history[tree.history.length - 1];
+    const previous = tree.history[tree.history.length - 2];
+    const retry = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+        historyClaimYear: selected.year,
+        historyClaim: 'continuity',
+      },
+    });
+    expect(retry).toContain('data-memory-claim-result="retry"');
+    expect(retry).toContain('Not yet. Read the surplus or deficit label');
+
+    const stale = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+        historyClaimYear: previous.year,
+        historyClaim: 'recovery',
+      },
+    });
+    expect(stale).toContain('data-memory-claim-result="waiting"');
+    expect(stale).toMatch(/data-memory-claim="recovery"[^>]*aria-pressed="false"/);
+  });
+});
+
+describe('Tree Life Lab - selected-year causal trail', () => {
+  function grownOak(years) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  it('connects conditions, leaf response, carbon, and wood in order', () => {
+    const tree = grownOak(5);
+    const selected = tree.history[tree.history.length - 1];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-causal="condition-leaf-carbon-wood"');
+    expect(html.match(/data-memory-causal-step="(condition|leaf|carbon|wood)"/g)).toHaveLength(4);
+    expect(html).toMatch(/data-memory-causal-step="carbon"[^>]*data-causal-state="surplus"/);
+    expect(html).toContain('Limiting condition');
+    expect(html).toContain('Leaf response');
+    expect(html).toContain('Carbon balance');
+    expect(html).toContain('Growth-ring record');
+    expect(html).toContain('Photosynthetic income minus maintenance respiration');
+  });
+
+  it('shows drought closing stomata before the deficit reaches wood', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = grownOak(8);
+    tree = E.simulateYear(tree, sp, { ...GOOD_ENV, soilWater: 0.001 }, ALLOC);
+    const selected = tree.history[tree.history.length - 1];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(selected.net).toBeLessThan(0);
+    expect(html).toMatch(/data-memory-causal-step="leaf"[^>]*data-causal-state="closed"/);
+    expect(html).toMatch(/data-memory-causal-step="carbon"[^>]*data-causal-state="deficit"/);
+    expect(html).toMatch(/data-memory-causal-step="wood"[^>]*data-causal-state="stress"/);
+    expect(html).toContain('Water stress restricted carbon dioxide entry');
+    expect(html).toContain('little carbon available for wood');
+  });
+
+  it('keeps older histories useful when stomatal opening was not stored', () => {
+    const tree = grownOak(4);
+    const selected = tree.history[tree.history.length - 1];
+    delete selected.aperture;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toMatch(/data-memory-causal-step="leaf"[^>]*data-causal-state="unknown"/);
+    expect(html).toContain('Not recorded');
+    expect(html).toContain('older record did not store a stomatal opening value');
+  });
+});
+
+describe('Tree Life Lab - annual Field Notes', () => {
+  function simulateWith(env) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    return E.simulateYear(E.newTree('oak'), sp, env, ALLOC);
+  }
+
+  it('stores the annual model inputs with the ring that used them', () => {
+    const env = {
+      tempC: 17.4, light: 0.42, co2ppm: 610, soilWater: 0.33,
+      forcedClose: false, drought: true,
+    };
+    const tree = simulateWith(env);
+    const record = tree.history[0];
+
+    expect(record).toMatchObject({
+      tempC: 17.4,
+      light: 0.42,
+      co2ppm: 610,
+      soilWater: 0.33,
+      drought: true,
+    });
+  });
+
+  it('reveals four condition notes while preserving the evidence boundary', () => {
+    const tree = simulateWith({
+      tempC: 17.4, light: 0.42, co2ppm: 610, soilWater: 0.33,
+      forcedClose: false, drought: false,
+    });
+    const selected = tree.history[0];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-notes="available"');
+    expect(html.match(/data-memory-field-note="(temperature|light|water|co2)"/g)).toHaveLength(4);
+    expect(html).toContain('Open the annual Field Notes');
+    expect(html).toContain('17.4\u00B0C');
+    expect(html).toContain('42%');
+    expect(html).toContain('610 ppm');
+    expect(html).toContain('Evidence boundary: this snapshot records inputs supplied to the model');
+    expect(html).toContain('not weather reconstructed from the ring');
+  });
+
+  it('labels legacy rings without fabricating missing weather inputs', () => {
+    const tree = simulateWith(GOOD_ENV);
+    const selected = tree.history[0];
+    delete selected.tempC;
+    delete selected.light;
+    delete selected.co2ppm;
+    delete selected.soilWater;
+    delete selected.drought;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-notes="legacy"');
+    expect(html).toContain('annual condition snapshots');
+    expect(html).toContain('carbon, limiter, and ring evidence remain available');
+    expect(html).not.toContain('data-memory-field-note=');
+  });
+});
+
+describe('Tree Life Lab - Field Notes Change Lens', () => {
+  function growWithEnvironments(environments) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    environments.forEach((env) => {
+      tree = E.simulateYear(tree, sp, env, ALLOC);
+    });
+    return tree;
+  }
+
+  it('shows a steady comparison when all four annual inputs are unchanged', () => {
+    const tree = growWithEnvironments([GOOD_ENV, GOOD_ENV]);
+    const selected = tree.history[1];
+    const previous = tree.history[0];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-compare="' + previous.year + '-to-' + selected.year + '"');
+    expect(html).toContain('data-largest-input-shift="steady"');
+    expect(html.match(/data-memory-condition-delta="(temperature|light|water|co2)"/g)).toHaveLength(4);
+    expect(html.match(/data-delta-state="steady"/g)).toHaveLength(4);
+    expect(html).toContain('The four stored inputs were unchanged');
+    expect(html).toContain('tree became older and larger');
+  });
+
+  it('highlights soil water as the largest shift during drought recovery', () => {
+    const drought = { ...GOOD_ENV, soilWater: 0.001, drought: true };
+    const tree = growWithEnvironments([
+      GOOD_ENV, GOOD_ENV, GOOD_ENV, drought, GOOD_ENV,
+    ]);
+    const selected = tree.history[tree.history.length - 1];
+    const previous = tree.history[tree.history.length - 2];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(previous.soilWater).toBe(0.001);
+    expect(selected.soilWater).toBe(0.75);
+    expect(html).toContain('data-largest-input-shift="water"');
+    expect(html).toMatch(/data-memory-condition-delta="water"[^>]*data-delta-state="increased"/);
+    expect(html).toContain('Largest input shift: Soil water +75 points');
+    expect(html).toContain('what changed most, not what caused the ring');
+  });
+
+  it('does not compare against a previous record whose conditions were never stored', () => {
+    const tree = growWithEnvironments([GOOD_ENV, GOOD_ENV]);
+    const selected = tree.history[1];
+    const previous = tree.history[0];
+    delete previous.tempC;
+    delete previous.light;
+    delete previous.co2ppm;
+    delete previous.soilWater;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-notes="available"');
+    expect(html).not.toContain('data-memory-field-compare=');
+    expect(html).not.toContain('data-memory-condition-delta=');
+  });
+});
+
+describe('Tree Life Lab - recreating historical conditions', () => {
+  it('validates, clamps, and loads a snapshot without double-applying drought', () => {
+    const E = engine();
+    const current = {
+      tempC: 22, light: 0.8, co2ppm: 420, soilWater: 0.7,
+      droughtYears: [2, 5, 8],
+      preservedSetting: 'yes',
+    };
+    const loaded = E.configForHistorySnapshot({
+      tempC: 60,
+      light: -0.2,
+      co2ppm: 1200,
+      soilWater: 1.4,
+    }, current, 5);
+
+    expect(loaded).toMatchObject({
+      tempC: 45,
+      light: 0,
+      co2ppm: 900,
+      soilWater: 1,
+      droughtYears: [2, 8],
+      preservedSetting: 'yes',
+    });
+    expect(current.droughtYears).toEqual([2, 5, 8]);
+  });
+
+  it('rejects incomplete or non-finite historical conditions', () => {
+    const E = engine();
+    expect(E.configForHistorySnapshot({
+      tempC: 20, light: 0.5, co2ppm: 420,
+    }, {}, 1)).toBeNull();
+    expect(E.configForHistorySnapshot({
+      tempC: 20, light: Number.NaN, co2ppm: 420, soilWater: 0.5,
+    }, {}, 1)).toBeNull();
+  });
+
+  it('offers a conditions-only experiment bridge for complete records', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    const tree = E.simulateYear(E.newTree('oak'), sp, GOOD_ENV, ALLOC);
+    const selected = tree.history[0];
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-action="load-conditions"');
+    expect(html).toContain('Recreate the annual inputs');
+    expect(html).toContain('Load these conditions');
+    expect(html).toContain('does not rewind tree age or guarantee the same ring');
+  });
+
+  it('never offers the loader when a legacy snapshot is incomplete', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    const tree = E.simulateYear(E.newTree('oak'), sp, GOOD_ENV, ALLOC);
+    const selected = tree.history[0];
+    delete selected.soilWater;
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: selected.year,
+      },
+    });
+
+    expect(html).toContain('data-memory-field-notes="legacy"');
+    expect(html).not.toContain('data-memory-field-action=');
+    expect(html).not.toContain('Load these conditions');
+  });
+});
+
+describe('Tree Life Lab - historical-condition Replay Lab', () => {
+  function growWith(environments) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    environments.forEach((env) => {
+      tree = E.simulateYear(tree, sp, env, ALLOC);
+    });
+    return tree;
+  }
+
+  function replayFor(tree, source) {
+    return {
+      sourceYear: source.year,
+      startAge: tree.age,
+      sourceRing: source.ring,
+      sourceNet: source.net,
+      tempC: source.tempC,
+      light: source.light,
+      co2ppm: source.co2ppm,
+      soilWater: source.soilWater,
+    };
+  }
+
+  function replayMarkup(tree, source, replay, controls) {
+    return render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree,
+        historyFocusYear: source.year,
+        historyReplay: replay,
+        tempC: controls.tempC,
+        light: controls.light,
+        co2ppm: controls.co2ppm,
+        soilWater: controls.soilWater,
+        droughtYears: [],
+      },
+    });
+  }
+
+  it('turns a loaded snapshot into a clearly labelled one-year replay', () => {
+    const tree = growWith([GOOD_ENV, GOOD_ENV, GOOD_ENV, GOOD_ENV]);
+    const source = tree.history[1];
+    const replay = replayFor(tree, source);
+    const html = replayMarkup(tree, source, replay, replay);
+
+    expect(html).toContain('data-memory-replay="ready"');
+    expect(html).toContain('data-replay-source-year="' + source.year + '"');
+    expect(html).toContain('data-replay-controlled-inputs="4-of-4"');
+    expect(html.match(/data-replay-control="(tempC|light|soilWater|co2ppm)"/g)).toHaveLength(4);
+    expect(html.match(/data-control-state="matched"/g)).toHaveLength(4);
+    expect(html).toContain('4 of 4 controlled inputs matched');
+    expect(html).toContain('data-replay-context="ready"');
+    expect(html.match(/data-replay-context-metric="(age|height|diameter)"/g)).toHaveLength(3);
+    expect(html).toContain('Tree context changed');
+    expect(html).toContain('Replay ready at age ' + tree.age);
+    expect(html).toContain('Grow one test year');
+    expect(html).toContain('test them on the tree as it exists now');
+  });
+
+  it('compares carbon and ring outcomes after a faithful replay', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    const before = growWith([GOOD_ENV, GOOD_ENV, GOOD_ENV, GOOD_ENV]);
+    const source = before.history[1];
+    const replay = replayFor(before, source);
+    const tree = E.simulateYear(before, sp, {
+      tempC: replay.tempC, light: replay.light, co2ppm: replay.co2ppm,
+      soilWater: replay.soilWater,
+    }, ALLOC);
+    const html = replayMarkup(tree, source, replay, replay);
+
+    expect(html).toContain('data-memory-replay="complete"');
+    expect(html).toContain('data-replay-controlled-inputs="4-of-4"');
+    expect(html).toContain('data-replay-context="complete"');
+    expect(html).toContain('Inputs stayed controlled while age, size, and maintenance demands continued changing.');
+    expect(html).toContain('data-replay-ring-specimens="paired"');
+    expect(html.match(/data-replay-ring-specimen="(historical|replay)"/g)).toHaveLength(2);
+    expect(html).toContain('Paired ring specimens');
+    expect(html).toContain('The outer band is scaled within this pair');
+    expect(html).toContain('not a literal reconstruction of the whole trunk');
+    expect(html).toContain('Same inputs, a different tree');
+    expect(html).toContain('Net carbon change');
+    expect(html).toContain('Ring-width change');
+    expect(html).toContain('Same annual inputs do not freeze tree age, size, maintenance costs, or carbon allocation.');
+  });
+
+  it('does not present a changed treatment as a same-input result', () => {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    const before = growWith([GOOD_ENV, GOOD_ENV, GOOD_ENV, GOOD_ENV]);
+    const source = before.history[1];
+    const replay = replayFor(before, source);
+    const changed = { ...replay, soilWater: 0.001 };
+    const tree = E.simulateYear(before, sp, changed, ALLOC);
+    const html = replayMarkup(tree, source, replay, changed);
+
+    expect(html).toContain('data-memory-replay="modified"');
+    expect(html).toContain('data-replay-controlled-inputs="3-of-4"');
+    expect(html).toMatch(/data-replay-control="soilWater"[^>]*data-control-state="changed"/);
+    expect(html).not.toContain('data-replay-context=');
+    expect(html).not.toContain('data-replay-ring-specimens=');
+    expect(html).toContain('Replay year used different inputs');
+    expect(html).toContain('not a same-input replay');
+    expect(html).not.toContain('Same annual inputs do not freeze');
+  });
+
+  it('asks learners to reload when controls change before the replay', () => {
+    const tree = growWith([GOOD_ENV, GOOD_ENV, GOOD_ENV, GOOD_ENV]);
+    const source = tree.history[1];
+    const replay = replayFor(tree, source);
+    const changed = { ...replay, soilWater: 0.2 };
+    const html = replayMarkup(tree, source, replay, changed);
+
+    expect(html).toContain('data-memory-replay="changed"');
+    expect(html).toContain('data-replay-controlled-inputs="3-of-4"');
+    expect(html).toMatch(/data-replay-control="soilWater"[^>]*data-control-state="changed"/);
+    expect(html.match(/data-control-state="matched"/g)).toHaveLength(3);
+    expect(html).toContain('Replay settings changed');
+    expect(html).toContain('Reload the historical conditions before growing');
+    expect(html).not.toContain('Grow one test year');
+
+    const malformed = replayMarkup(tree, source, { ...replay, sourceNet: Number.NaN }, replay);
+    expect(malformed).not.toContain('data-memory-replay=');
+  });
+});
+
+describe('Tree Life Lab - three biological clocks', () => {
+  function grownOak(years) {
+    const E = engine();
+    const sp = E.speciesById('oak');
+    let tree = E.newTree('oak');
+    for (let i = 0; i < years && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  it('separates a current snapshot, whole-year projection, and stored history', () => {
+    const html = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: grownOak(40) },
+    });
+
+    expect(html).toContain('data-tree-timescales="now-year-life"');
+    expect(html).toContain('data-tree-clock="now"');
+    expect(html).toContain('data-tree-clock="year"');
+    expect(html).toContain('data-tree-clock="lifetime"');
+    expect(html).toContain('Minutes to hours');
+    expect(html).toContain('One whole year');
+    expect(html).toContain('Across a lifetime');
+    expect(html).toMatch(/current-condition snapshot[\s\S]*whole-year projection[\s\S]*stored lifetime history/);
+  });
+
+  it('connects dry soil to closed stomata and an annual carbon deficit', () => {
+    const html = render({
+      treeLab: {
+        view: 'grow', bandOverride: 'g68', speciesId: 'oak',
+        tree: grownOak(40), soilWater: 0.02,
+      },
+    });
+
+    expect(html).toContain('data-clock-state="closed"');
+    expect(html).toContain('Mostly closed');
+    expect(html).toContain('Water stress is restricting carbon dioxide entry');
+    expect(html).toContain('data-clock-state="deficit"');
+  });
+
+  it('stops every active clock claim when the tree has died', () => {
+    const dead = grownOak(40);
+    dead.alive = false;
+    dead.causeOfDeath = 'carbon_starvation';
+    const html = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: dead },
+    });
+
+    expect(html).toContain('No active exchange');
+    expect(html).toContain('No carbon income');
+    expect(html).toContain('Stem ended');
+    expect(html.match(/data-clock-state="stopped"/g)).toHaveLength(2);
+  });
+});
+
+describe('Tree Life Lab - seasonal observatory and species lens', () => {
+  function matureTree(speciesId) {
+    const E = engine();
+    const sp = E.speciesById(speciesId);
+    let tree = E.newTree(speciesId);
+    for (let i = 0; i < 40 && tree.alive; i += 1) {
+      tree = E.simulateYear(tree, sp, GOOD_ENV, ALLOC);
+    }
+    return tree;
+  }
+
+  it('turns winter into a qualitative, species-aware field guide', () => {
+    const broad = render({
+      treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'oak', tree: matureTree('oak'), season: 'winter' },
+    });
+    const conifer = render({
+      treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'pine', tree: matureTree('pine'), season: 'winter' },
+    });
+
+    expect(broad).toContain('data-tree-season-guide="winter"');
+    expect(broad).toContain('Season field guide');
+    expect(broad).toContain('Bare');
+    expect(broad).toContain('Stopped');
+    expect(broad).toContain('Stores pay costs');
+    expect(conifer).toContain('Needles stay');
+    expect(conifer).toContain('Very low');
+    expect(broad).toMatch(/whole YEAR/);
+    expect(broad).not.toContain('<section class="allo-tree-autumn-lab"');
+  });
+
+  it('makes color change, abscission, and evergreen shedding explicit', () => {
+    const broad = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak'), season: 'autumn' },
+    });
+    const conifer = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'pine', tree: matureTree('pine'), season: 'autumn' },
+    });
+
+    expect(broad).toContain('data-tree-phenology="deciduous"');
+    expect(broad).toContain('data-current-phenology-stage="autumn"');
+    expect(broad.match(/data-phenology-stage="(spring|summer|autumn|winter)"/g)).toHaveLength(4);
+    expect(broad).toMatch(/data-phenology-stage="autumn"[^>]*data-leaf-action="falling"[^>]*aria-current="step"/);
+    expect(broad).toContain('Color + leaf fall');
+    expect(broad).toContain('chlorophyll breaks down');
+    expect(broad).toContain('abscission layer');
+    expect(broad).toContain('leaf detaches');
+    expect(broad).toContain('data-tree-autumn-lab="pigment-decoder"');
+    expect(broad.match(/data-autumn-evidence="(chlorophyll|carotenoids|anthocyanins|tannins)"/g)).toHaveLength(4);
+    expect(broad).toContain('Autumn pigment decoder');
+    expect(broad).toContain('Carotenoids');
+    expect(broad).toContain('Yellow and orange pigments already present become visible');
+    expect(broad).toContain('Anthocyanins');
+    expect(broad).toContain('Red and purple pigments can be produced');
+    expect(broad).toContain('leaf color alone cannot reconstruct one exact');
+
+    expect(conifer).toContain('data-tree-phenology="evergreen"');
+    expect(conifer).toMatch(/data-phenology-stage="autumn"[^>]*data-leaf-action="gradual-shed"[^>]*aria-current="step"/);
+    expect(conifer).toContain('Older needles shed');
+    expect(conifer).toContain('Evergreen means foliage is retained across seasons, not forever');
+    expect(conifer).toContain('forest-floor duff');
+    expect(conifer).toContain('data-tree-autumn-lab="needle-cohorts"');
+    expect(conifer.match(/data-autumn-evidence="(newest|middle|oldest)"/g)).toHaveLength(3);
+    expect(conifer).toContain('Evergreen needle-age map');
+    expect(conifer).toContain('Several needle cohorts share the canopy');
+    expect(conifer).toContain('Older needles still fall');
+  });
+
+  it('shows that species traits are model inputs and tradeoffs, not scores', () => {
+    const oak = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'oak', tree: matureTree('oak') },
+    });
+    const aspen = render({
+      treeLab: { view: 'grow', bandOverride: 'g68', speciesId: 'aspen', tree: matureTree('aspen') },
+    });
+
+    expect(oak).toContain('data-tree-species-lens="oak"');
+    expect(oak).toContain('Drought tolerance');
+    expect(oak).toContain('High');
+    expect(oak).toContain('3 routes');
+    expect(oak).toMatch(/tradeoffs, not grades/);
+    expect(aspen).toContain('data-tree-species-lens="aspen"');
+    expect(aspen).toContain('Low');
+  });
+
+  it('gives young redwood learners their own concise species story', () => {
+    const html = render({
+      treeLab: { view: 'grow', bandOverride: 'k2', speciesId: 'redwood', tree: matureTree('redwood') },
+    });
+    expect(html).toMatch(/Redwood trees can grow very tall/);
+    expect(html).toMatch(/Every kind of tree has things it does well/);
+  });
+});
+
+describe('Tree Life Lab - truthful edge states and primary-reader clarity', () => {
+  it('pauses Chemistry when the tree is no longer alive', () => {
+    const E = engine();
+    const dead = E.newTree('oak');
+    dead.alive = false;
+    dead.causeOfDeath = 'carbon_starvation';
+    dead.leafArea = 25;
+
+    const older = render({ treeLab: { view: 'chem', bandOverride: 'g68', tree: dead } });
+    expect(older).toContain('Photosynthesis has stopped');
+    expect(older).toContain('Start a new seedling');
+    expect(older).toContain('Carbon income becomes zero');
+    expect(older).not.toContain('Live reaction');
+    expect(older).not.toMatch(/class="[^"]*allo-tree-curves-card/);
+    expect(older).not.toContain('Sets the pace');
+    expect(older).not.toContain('kg C/year');
+
+    const young = render({ treeLab: { view: 'chem', bandOverride: 'k2', tree: dead } });
+    expect(young).toContain('This tree has stopped making food');
+    expect(young).not.toContain('Food for growing');
+  });
+
+  it('shows winter dormancy without summer-like water flow', () => {
+    const E = engine();
+    const oak = E.newTree('oak');
+    const pine = E.newTree('pine');
+
+    const broad = render({ treeLab: { view: 'transport', bandOverride: 'g68', speciesId: 'oak', tree: oak, season: 'winter' } });
+    expect(broad).toContain('Winter flow is very low');
+    expect(broad).toContain('Bare crown');
+    expect(broad).toContain('No leaf pull');
+    expect(broad).toContain('stored reserves');
+    expect(broad).toContain('living tissues');
+    expect(broad).not.toContain('Modelled daily flow');
+    expect(broad).not.toContain('litres move daily');
+    expect(broad).not.toContain('Evaporation pulls');
+    expect(broad).not.toContain('Source right now');
+
+    const evergreen = render({ treeLab: { view: 'transport', bandOverride: 'g68', speciesId: 'pine', tree: pine, season: 'winter' } });
+    expect(evergreen).toContain('Needles remain');
+    expect(evergreen).toContain('Stomata mostly shut');
+    expect(evergreen).toContain('stored reserves');
+    expect(evergreen).toContain('living tissues');
+    expect(evergreen).not.toContain('Modelled daily flow');
+
+    const summer = render({ treeLab: { view: 'transport', bandOverride: 'g68', speciesId: 'oak', tree: oak, season: 'summer' } });
+    expect(summer).toContain('Modelled daily flow');
+    expect(summer).toContain('Evaporation pulls');
+  });
+
+  it('treats cleared and corrupt quiz state as open, not choice A', () => {
+    const cleared = render({
+      treeLab: { view: 'quiz', bandOverride: 'k2', quizPick: null, quizPickKey: 0 },
+    });
+    expect(cleared).not.toContain('class="allo-tree-quiz-feedback');
+    expect(cleared).toContain('Answer choices');
+
+    const corrupt = render({
+      treeLab: {
+        view: 'quiz', bandOverride: 'k2',
+        quizPicks: { 0: null },
+        quizSeen: { 0: 'banana', 7: 'banana', 13: 'banana', 14: 'banana', 15: 'banana' },
+      },
+    });
+    expect(corrupt).toContain('Not answered yet');
+    expect(corrupt).not.toMatch(/class="[^"]*allo-tree-quiz-finale/);
+    expect(corrupt).not.toContain('is-banana');
+  });
+
+  it('uses friendly event and map language throughout K-2 New Trees', () => {
+    const E = engine();
+    const tree = E.newTree('aspen');
+    tree.seedsBanked = 20;
+    const res = {
+      established: 2, diverseCount: 0, clonalCount: 2, diversityIndex: 0,
+      results: [{ id: 'root_sucker', icon: 'R', attempts: 3, took: 2, diversity: 0, wiped: false, note: '' }],
+    };
+    const html = render({ treeLab: {
+      view: 'spread', bandOverride: 'k2', speciesId: 'aspen', tree,
+      lastSpread: { event: 'pathogen', res },
+      spreadLog: [{ event: 'pathogen', diverse: 0, clonal: 2 }],
+      spreadTotals: { diverse: 0, clonal: 2 },
+    } });
+
+    for (const phrase of ['Root sickness', 'A fungus can spread through roots that are joined together.', 'New-tree map', 'Read what happened', 'seeds 0 · shoots 2', 'This map shows near and far']) {
+      expect(html).toContain(phrase);
+    }
+    for (const phrase of ['Root pathogen', 'spatial pattern', 'orders of magnitude', 're-rolled']) {
+      expect(html).not.toContain(phrase);
+    }
+  });
+
+  it('uses semantic card headings and names every visible learning step', () => {
+    const grow = render({ treeLab: { view: 'grow', bandOverride: 'g68' } });
+    expect(grow).toMatch(/<h3[^>]*>[^<]+<\/h3>/);
+    expect(grow).toContain('role="group"');
+    expect(grow).toContain('aria-label="Step 1:');
   });
 });

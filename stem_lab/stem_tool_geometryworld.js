@@ -39,7 +39,7 @@
       '.gw-badge-strip{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px!important;border:1px solid rgba(251,191,36,0.18);border-radius:999px!important;background:rgba(69,26,3,0.28)!important;}',
       '.gw-shape-tray,.gw-hotbar,.gw-action-bar{background:linear-gradient(160deg,rgba(15,23,42,0.88),rgba(2,6,23,0.82))!important;border:1px solid rgba(148,163,184,0.18)!important;box-shadow:0 12px 30px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.05);backdrop-filter:blur(12px) saturate(120%)!important;}',
       '.gw-hotbar{gap:4px!important;padding:6px!important;}',
-      '.gw-hotbar-item{transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease!important;}',
+      '.gw-hotbar-item{flex:0 0 auto;transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease!important;}',
       '.gw-hotbar-item:hover{filter:brightness(1.12);transform:translateY(-2px);}',
       '.gw-hotbar-item[data-active="true"]{transform:translateY(-4px) scale(1.06);box-shadow:0 10px 22px rgba(76,29,149,0.5),0 0 0 1px rgba(196,181,253,0.28)!important;}',
       '.gw-action-bar{bottom:98px!important;justify-content:center;}',
@@ -74,7 +74,7 @@
       '.gw-history-panel{position:absolute!important;left:230px!important;bottom:150px!important;z-index:23!important;box-sizing:border-box;width:280px!important;max-width:calc(100% - 470px)!important;max-height:44%;overflow:auto;padding:10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(8,47,73,.88),rgba(15,23,42,.93))!important;box-shadow:0 16px 42px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px);scrollbar-width:thin}.gw-history-title{margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;min-height:25px;padding:4px 6px;border-radius:7px;color:#94a3b8;font-size:9px}.gw-history-row[data-current="true"]{background:rgba(8,145,178,.14);color:#e2e8f0;font-weight:700}.gw-history-row[data-incomplete="true"]{color:#fecaca}.gw-history-comparison,.gw-retrieval-card{margin-top:8px;padding:8px;border-top:1px solid rgba(103,232,249,.24);border-radius:0 0 8px 8px;background:rgba(2,6,23,.18)}.gw-retrieval-title{margin-bottom:3px;color:#67e8f9;font-size:8px;font-weight:850;letter-spacing:.08em}.gw-retrieval-controls{display:flex;align-items:center;gap:6px;margin-top:6px}.gw-retrieval-input{box-sizing:border-box;width:76px!important;min-height:30px;padding:4px 6px!important;border:1px solid rgba(103,232,249,.34)!important;border-radius:7px!important;background:rgba(2,6,23,.66)!important;color:#fff!important}.gw-retrieval-button{min-height:30px;padding:4px 10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:7px!important;background:#0e7490!important;color:#fff!important;font-size:9px!important;font-weight:800!important}',
       '.gw-inventory-panel{position:absolute!important;top:52px!important;right:280px!important;z-index:23!important;box-sizing:border-box;width:166px;padding:10px!important;border:1px solid rgba(251,191,36,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(69,26,3,.78),rgba(15,23,42,.92))!important;box-shadow:0 16px 42px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px)}.gw-inventory-title{margin-bottom:6px;color:#fde68a;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-inventory-volume{margin-bottom:7px;padding:6px;border:1px solid rgba(251,191,36,.16);border-radius:8px;background:rgba(120,53,15,.18);color:#fbbf24;font-size:13px;font-weight:850;text-align:center}.gw-inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;padding:3px 5px;border-radius:6px;color:#dbeafe;font-size:9px}.gw-inventory-row:nth-child(even){background:rgba(15,23,42,.34)}.gw-inventory-count{color:#d8b4fe;font-family:monospace;font-weight:800}@media(max-width:720px){.gw-history-panel{left:8px!important;bottom:238px!important;width:calc(50% - 12px)!important;max-width:none!important;max-height:34vh}.gw-inventory-panel{top:auto!important;right:8px!important;bottom:238px!important;width:calc(50% - 12px)}.gw-history-row{grid-template-columns:minmax(0,1fr) auto}.gw-history-row span:nth-child(3){grid-column:1/-1}}@media(max-width:420px){.gw-history-panel,.gw-inventory-panel{padding:7px!important}.gw-history-title,.gw-inventory-title{letter-spacing:.04em}.gw-inventory-row{padding-left:2px;padding-right:2px}}',
       '.gw-environment-tint{position:absolute;inset:0;z-index:5;pointer-events:none;transition:background .3s ease}.gw-environment-tint--water{background:linear-gradient(180deg,rgba(14,116,144,.12),rgba(30,64,175,.24))}.gw-environment-tint--lava{background:radial-gradient(circle at 50% 70%,rgba(251,146,60,.34),rgba(220,38,38,.18) 52%,rgba(69,10,10,.3))}.gw-environment-warning{position:absolute;left:50%;bottom:50%;display:flex;align-items:center;gap:8px;transform:translate(-50%,50%);max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(253,186,116,.62);border-radius:12px;background:rgba(67,20,7,.9);box-shadow:0 12px 32px rgba(69,10,10,.46),inset 0 1px 0 rgba(255,255,255,.08);color:#ffedd5;font-size:13px;font-weight:850;line-height:1.3;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75);backdrop-filter:blur(8px)}@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}}',
-      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-quality-resolved{max-width:72px;overflow:hidden;color:#a7f3d0;font-size:9px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.gw-quality-help{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
+      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-quality-resolved{max-width:72px;overflow:hidden;color:#a7f3d0;font-size:9px;font-weight:800;text-overflow:ellipsis;white-space:nowrap}.gw-quality-help{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for estimate"]{flex:1 1 150px;width:auto!important}}',
       '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
       '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
       '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
@@ -90,7 +90,7 @@
       '.gw-root button:active:not(:disabled){transform:translateY(1px);}',
       '.gw-root button:focus-visible,.gw-root input:focus-visible,.gw-root select:focus-visible,.gw-root textarea:focus-visible,.gw-root a[href]:focus-visible,.gw-root [tabindex]:focus-visible,.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}',
       '#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{margin:0!important;border:0!important;border-radius:0!important;}',
-      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
+      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
       '@media(max-width:520px){.gw-intro-card{padding:20px 16px;max-height:calc(100vh - 24px);overflow:auto;border-radius:18px;}.gw-primary-cta{width:100%;padding-left:20px!important;padding-right:20px!important;}}',
       '.gw-toolbar{box-sizing:border-box;display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;min-height:52px;max-height:64px;overflow:visible!important;padding:7px 10px!important;gap:8px!important}.gw-status-cluster{grid-row:auto!important;width:auto!important;overflow:visible!important;padding:0!important}.gw-compact-action{display:inline-flex;min-height:34px;align-items:center;justify-content:center;gap:5px;padding:5px 10px;border:1px solid rgba(167,139,250,.38);border-radius:9px;background:rgba(76,29,149,.34);color:#f5f3ff;font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap}.gw-compact-action:hover{background:rgba(91,33,182,.52)}.gw-compact-action[aria-expanded="true"]{border-color:#c4b5fd;background:rgba(124,58,237,.58);color:#fff}.gw-toolbar-collapse{width:34px;padding:5px}.gw-toolbar-reveal,.gw-fullscreen-quickbar{position:absolute;top:8px;left:50%;z-index:115;transform:translateX(-50%)}.gw-toolbar-reveal{display:inline-flex;min-height:36px;align-items:center;gap:6px;padding:6px 11px;border:1px solid rgba(196,181,253,.52);border-radius:10px;background:rgba(15,23,42,.92);box-shadow:0 10px 28px rgba(2,6,23,.48);color:#f5f3ff;font-size:10px;font-weight:850;cursor:pointer;backdrop-filter:blur(10px)}.gw-fullscreen-quickbar{display:none;align-items:center;gap:6px}.gw-fullscreen-quickbar .gw-compact-action{min-height:36px;background:rgba(15,23,42,.9);box-shadow:0 8px 24px rgba(2,6,23,.42);backdrop-filter:blur(9px)}',
       '.gw-prediction-panel{position:absolute!important;top:64px;left:50%;z-index:46;box-sizing:border-box;width:min(680px,calc(100% - 24px))!important;max-width:none!important;transform:translateX(-50%);border:1px solid rgba(196,181,253,.38)!important;background:linear-gradient(155deg,rgba(30,27,75,.98),rgba(15,23,42,.98))!important;box-shadow:0 22px 64px rgba(2,6,23,.62),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-prediction-heading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:6px;border-bottom:1px solid rgba(167,139,250,.2)}.gw-prediction-title{color:#f5f3ff;font-size:11px;font-weight:850}.gw-prediction-close{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border:1px solid rgba(196,181,253,.3);border-radius:8px;background:rgba(15,23,42,.62);color:#f8fafc;font-size:17px;cursor:pointer}',
@@ -524,10 +524,10 @@
     var percentError = Math.round((absoluteDifference / actualVolume) * 100);
     var relation = difference === 0 ? 'exact' : (difference > 0 ? 'over' : 'under');
     var accuracyLabel;
-    if (relation === 'exact') accuracyLabel = 'Exact match!';
-    else if (percentError <= 10) accuracyLabel = 'Very close - within 10%';
-    else if (percentError <= 25) accuracyLabel = 'Close - within 25%';
-    else accuracyLabel = 'Use the dimensions to revise your estimate';
+    if (relation === 'exact') accuracyLabel = 'Estimate matched the measured volume';
+    else if (percentError <= 10) accuracyLabel = 'Estimate and measurement are within 10%';
+    else if (percentError <= 25) accuracyLabel = 'Estimate and measurement differ by up to 25%';
+    else accuracyLabel = 'Estimate and measurement differ; use the dimensions to revise';
     return {
       prediction: predicted,
       actual: actualVolume,
@@ -603,6 +603,96 @@
     return comparison;
   }
 
+  // A committed estimate belongs to one connected structure, not merely to the
+  // next press of M. The signature is stable regardless of which cube in that
+  // structure the learner aims at because measureStructure returns the complete
+  // connected component. Including a compact hash of its occupied coordinates
+  // also distinguishes composite structures that share the same bounding box.
+  function geometryMeasurementTargetKey(measurement) {
+    if (!measurement || measurement.isComplete === false) return '';
+    var fields = [measurement.minX, measurement.minY, measurement.minZ, measurement.L, measurement.W, measurement.H, measurement.count, measurement.occupiedVolume];
+    if (fields.some(function(value) { return !Number.isFinite(Number(value)); })) return '';
+    var cells = Array.isArray(measurement.blocks) ? measurement.blocks.map(function(block) {
+      return [Number(block.x), Number(block.y), Number(block.z)].join(',');
+    }).sort().join(';') : '';
+    var hash = 2166136261;
+    for (var i = 0; i < cells.length; i++) {
+      hash ^= cells.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+    var normalized = fields.map(function(value) { return String(Math.round(Number(value) * 1000000) / 1000000); });
+    return 'gw-structure:' + normalized.join(':') + ':' + (hash >>> 0).toString(36);
+  }
+
+  function normalizeVolumeEstimateTargetKeys(keys) {
+    var seen = {};
+    return (Array.isArray(keys) ? keys : []).map(function(key) { return String(key || ''); }).filter(function(key) {
+      if (!key || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  // Snapshot the draft so later edits cannot change the value that will be
+  // compared. Structures whose evidence has already been revealed are ineligible
+  // for a new accuracy attempt; revision after evidence remains a separate step.
+  function commitVolumeEstimateDraft(draft, targetKey, observedTargetKeys) {
+    var data = draft || {};
+    var parsed = parseVolumePrediction(data.input);
+    if (parsed === null) return { ok: false, code: 'invalid_estimate', commitment: null };
+    var key = String(targetKey || '');
+    if (!key) return { ok: false, code: 'no_target', commitment: null };
+    var observed = normalizeVolumeEstimateTargetKeys(observedTargetKeys);
+    if (observed.indexOf(key) >= 0) return { ok: false, code: 'already_observed', commitment: null };
+    return {
+      ok: true,
+      code: 'committed',
+      commitment: {
+        version: 1,
+        targetKey: key,
+        input: String(data.input == null ? '' : data.input).trim(),
+        prediction: parsed,
+        strategy: String(data.strategy || '').trim(),
+        reason: String(data.reason || '').trim()
+      }
+    };
+  }
+
+  // Resolve a measurement only against a previously committed estimate for the
+  // same structure. Every complete reveal is remembered, whether it was scored or
+  // observation-only, so its exact answer cannot become a retroactive estimate.
+  function resolveVolumeEstimateMeasurement(measurement, commitment, observedTargetKeys) {
+    var targetKey = geometryMeasurementTargetKey(measurement);
+    var observed = normalizeVolumeEstimateTargetKeys(observedTargetKeys);
+    if (!targetKey) {
+      return { status: 'incomplete', targetKey: '', comparison: null, nextCommitment: commitment || null, observedTargetKeys: observed, consumed: false };
+    }
+    var wasObserved = observed.indexOf(targetKey) >= 0;
+    var nextObserved = wasObserved ? observed : observed.concat([targetKey]);
+    if (wasObserved) {
+      return { status: 'already_observed', targetKey: targetKey, comparison: null, nextCommitment: commitment || null, observedTargetKeys: nextObserved, consumed: false };
+    }
+    if (!commitment) {
+      return { status: 'observation', targetKey: targetKey, comparison: null, nextCommitment: null, observedTargetKeys: nextObserved, consumed: false };
+    }
+    if (String(commitment.targetKey || '') !== targetKey) {
+      return { status: 'target_mismatch', targetKey: targetKey, comparison: null, nextCommitment: commitment, observedTargetKeys: nextObserved, consumed: false };
+    }
+    var comparison = evaluateVolumePrediction(measurement, {
+      input: commitment.input,
+      strategy: commitment.strategy,
+      reason: commitment.reason
+    });
+    return {
+      status: comparison ? 'compared' : 'invalid_commitment',
+      targetKey: targetKey,
+      comparison: comparison,
+      nextCommitment: comparison ? null : commitment,
+      observedTargetKeys: nextObserved,
+      consumed: !!comparison
+    };
+  }
+
   function objectiveEvidenceFor(text, context) {
     var objective = String(text || '');
     var ctx = context || {};
@@ -628,7 +718,7 @@
     } else if (/revise/i.test(objective) && /reflect/i.test(objective)) {
       result = { done: !!ctx.revisionCompleted && reflectionsCompleted > 0, evidence: 'Revision: ' + (ctx.revisionCompleted ? 'saved' : 'not yet') + '; reflection: ' + reflectionsCompleted + ' saved' };
     } else if (/revise/i.test(objective)) {
-      result = { done: !!ctx.revisionCompleted, evidence: ctx.revisionCompleted ? 'Prediction revised from evidence' : 'Saved prediction revision needed' };
+      result = { done: !!ctx.revisionCompleted, evidence: ctx.revisionCompleted ? 'Estimate revised from evidence' : 'Saved estimate revision needed' };
     } else if (/reflect/i.test(objective)) {
       result = { done: reflectionsCompleted > 0, evidence: reflectionsCompleted + ' saved reflection' + (reflectionsCompleted === 1 ? '' : 's') };
     } else if (/predict|estimate|strategy|explain|reason/i.test(objective)) {
@@ -2666,6 +2756,10 @@
       var setLayerFocus = layerFocusState[1];
       var layerExplorerHeight = measureResult && measureResult.isComplete !== false ? Math.max(1, Math.ceil(Number(measureResult.H) || 1)) : 0;
       var volumePrediction = d.volumePrediction || '';
+      var volumeEstimateCommitment = d.volumeEstimateCommitment || null;
+      var volumeEstimateObservedTargets = normalizeVolumeEstimateTargetKeys(d.volumeEstimateObservedTargets);
+      var volumeEstimateCommitError = d.volumeEstimateCommitError || '';
+      var volumeEstimateDraftValid = parseVolumePrediction(volumePrediction) !== null;
       var volumeRepresentationFromKey = d.volumeRepresentationFromKey || '';
       var volumeRepresentationReason = d.volumeRepresentationReason || '';
       var volumeRepresentationInvariantChecked = !!d.volumeRepresentationInvariantChecked;
@@ -3065,6 +3159,8 @@
         engine.camera.position.set(2, 3, 2);
 
         var cnv = document.createElement('canvas');
+        // The named, focusable viewport owns the text alternative and keyboard contract.
+        cnv.setAttribute('aria-hidden', 'true');
         cnv.style.width = '100%';
         cnv.style.height = '100%';
         // A canvas is display:inline by default, so it sits on the text baseline and
@@ -3753,11 +3849,12 @@
           try { savedChat = JSON.parse(sessionStorage.getItem('gw_chat_' + gwChatKey(lesson))); } catch(e) {}
           // engine.blocksPlaced was reset to 0 at the top of loadLesson — mirror to React state
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
+          engine._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
           }
           engine._progressKey = progressKey;
         };
@@ -4348,15 +4445,15 @@
               }
               break;
             case 'KeyN': // Net unfolding for prisms; exposed-face analysis for composite structures
-              var nHit = engine.blockUnderCrosshair();
-              if (nHit && nHit.object.userData.gridPos) {
-                var ngp = nHit.object.userData.gridPos;
-                var nm = engine.measureStructure(ngp.x, ngp.y, ngp.z);
-                if (nm) {
+              // N reveals exact dimensions/surface evidence, so it must travel through
+              // the same pre-evidence commitment gate as M. This records the target as
+              // observed and compares a matching estimate that was already committed.
+              var nm = engine.performMeasurement('surface');
+              if (nm) {
                   if (nm.isComplete === false) {
                     var incompleteSurfaceMessage = 'Measurement limit reached. Surface area and a net are unavailable until the full structure is measured.';
                     upd('actionFeedback', '\uD83D\uDCCB ' + incompleteSurfaceMessage);
-                    announceToSR(incompleteSurfaceMessage);
+                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + incompleteSurfaceMessage);
                     if (engine.logEvent) engine.logEvent('surface_analysis', { shape: 'incomplete', surfaceArea: null, blocks: nm.count, measurementLimit: nm.measurementLimit });
                     setTimeout(function() { upd('actionFeedback', ''); }, 5500);
                     break;
@@ -4370,7 +4467,7 @@
                       ? 'Composite shape: no six-rectangle net. Count exposed unit faces for surface area = ' + nm.exposedSurfaceArea + ' square units.'
                       : 'Partial blocks do not use the six-rectangle prism net. Surface area depends on each partial face shape.';
                     upd('actionFeedback', '\uD83D\uDCCB ' + compositeSurfaceMessage);
-                    announceToSR(compositeSurfaceMessage);
+                    announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + compositeSurfaceMessage);
                     if (engine.logEvent) engine.logEvent('surface_analysis', { shape: nm.surfaceAreaExact ? 'composite_cubes' : 'partial_blocks', surfaceArea: nm.exposedSurfaceArea, blocks: nm.count });
                     setTimeout(function() { upd('actionFeedback', ''); }, 5500);
                     break;
@@ -4422,7 +4519,7 @@
                   totalLbl.scale.set(2.4, 0.9, 1);
                   engine.scene.add(totalLbl); engine._netHelpers.push(totalLbl);
                   upd('actionFeedback', '\uD83D\uDCCB Net: SA = 2(' + areaTop + '+' + areaFront + '+' + areaSide + ') = ' + surface);
-                  announceToSR('Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
+                  announceToSR((nm.accessibleMeasurementAnnouncement ? nm.accessibleMeasurementAnnouncement + ' ' : '') + 'Net unfolded. Surface area equals ' + surface + ' square units. Two times top ' + areaTop + ' plus front ' + areaFront + ' plus side ' + areaSide + '.');
                   if (engine.logEvent) engine.logEvent('net_unfold', { L: L, W: W, H: H, surfaceArea: surface });
                   setTimeout(function() { upd('actionFeedback', ''); }, 4000);
                   // Auto-clear after 30s so the scene doesn't get cluttered.
@@ -4433,7 +4530,6 @@
                       engine._netHelpers = [];
                     }
                   }, 30000);
-                }
               }
               break;
             case 'ShiftLeft': case 'ShiftRight': engine.moveState.sprint = true; break;
@@ -4507,8 +4603,10 @@
           setLayerFocus(0);
           sfxMeasure();
 
-          var predictionComparison = m.isComplete === false ? null : evaluateVolumePrediction(m, engine._predictionState || {});
-          var mh = (((engine._predictionState || {}).history) || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
+          var predictionState = engine._predictionState || {};
+          var estimateOutcome = resolveVolumeEstimateMeasurement(m, predictionState.commitment, predictionState.observedTargetKeys);
+          var predictionComparison = estimateOutcome.comparison;
+          var mh = (predictionState.history || []).concat([{ L: m.L, W: m.W, H: m.H, vol: m.isComplete === false ? m.count + '+' : m.formattedOccupiedVolume, occupiedVolume: m.occupiedVolume, boundingVolume: m.boundingVolume, missingVolume: m.missingVolume, hasFractions: m.hasFractions, surfaceArea: m.exposedSurfaceArea, blocks: m.count, materialCount: Object.keys(m.materialCounts || {}).length, isSolidPrism: m.isSolidPrism, isComplete: m.isComplete, estimateTargetKey: estimateOutcome.targetKey, estimateStatus: estimateOutcome.status, prediction: predictionComparison ? predictionComparison.prediction : null, percentError: predictionComparison ? predictionComparison.percentError : null, strategy: predictionComparison ? predictionComparison.strategy : '', reason: predictionComparison ? predictionComparison.reason : '', diagnosisCode: predictionComparison ? predictionComparison.diagnosisCode : '', t: Date.now() }]);
           if (mh.length > 10) mh = mh.slice(-10);
 
           var measurementFeedback = m.isComplete === false
@@ -4516,12 +4614,20 @@
             : m.isSolidPrism
               ? m.L + '×' + m.W + '×' + m.H + ' = ' + m.formattedOccupiedVolume
               : m.formattedOccupiedVolume + ' cubic units occupied (' + m.fillPercent + '% of ' + m.boundingVolume + '-unit bounding box)';
-          upd({ measureResult: m, measureHistory: mh, predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : '') });
-          announceToSR((m.isComplete === false
+          var nextPredictionState = Object.assign({}, predictionState, { commitment: estimateOutcome.nextCommitment, observedTargetKeys: estimateOutcome.observedTargetKeys, history: mh });
+          if (estimateOutcome.consumed) { nextPredictionState.input = ''; nextPredictionState.strategy = ''; nextPredictionState.reason = ''; }
+          engine._predictionState = nextPredictionState;
+          upd({ measureResult: m, measureHistory: mh, volumeEstimateCommitment: estimateOutcome.nextCommitment, volumeEstimateObservedTargets: estimateOutcome.observedTargetKeys, volumeEstimateCommitError: estimateOutcome.status === 'target_mismatch' ? 'That measurement was a different structure. Your original estimate remains locked for its aimed structure.' : '', volumePrediction: estimateOutcome.consumed ? '' : (predictionState.input || ''), predictionStrategy: estimateOutcome.consumed ? '' : (predictionState.strategy || ''), predictionReason: estimateOutcome.consumed ? '' : (predictionState.reason || ''), predictionResult: predictionComparison, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '', volumeRepresentationKey: '', volumeRepresentationFromKey: '', volumeRepresentationVisitedKeys: [], volumeRepresentationReason: '', volumeRepresentationInvariantChecked: false, volumeRepresentationEvidenceChecked: false, volumeRepresentationConnectionSaved: false, retrievalAnswer: '', retrievalResult: null, retrievalAttemptCount: 0, actionFeedback: '📏 Measured: ' + measurementFeedback + (predictionComparison ? ' • ' + predictionComparison.accuracyLabel : ' • Observation only: no eligible committed estimate was compared.') });
+          var measurementAnnouncement = (m.isComplete === false
             ? 'Measurement limit reached. At least ' + m.count + ' connected blocks were found. This result is incomplete'
             : m.isSolidPrism
             ? 'Measured solid rectangular prism: length ' + m.L + ' by width ' + m.W + ' by height ' + m.H + ' equals ' + m.formattedOccupiedVolume + ' cubic units'
-            : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your prediction was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : ''));
+            : 'Measured composite structure: ' + m.formattedOccupiedVolume + ' cubic units occupied, ' + formatVolume(m.missingVolume) + ' cubic units empty inside a ' + m.boundingVolume + ' cubic unit bounding box') + (predictionComparison ? '. Your committed estimate was ' + formatVolume(predictionComparison.prediction) + '. ' + predictionComparison.accuracyLabel : '. Observation only; no eligible committed estimate was compared.');
+          // Surface/net analysis makes a second announcement. Preserve this complete
+          // measurement message so that second announcement includes the student's
+          // committed estimate comparison instead of replacing it in the live region.
+          m.accessibleMeasurementAnnouncement = measurementAnnouncement;
+          announceToSR(measurementAnnouncement);
           setTimeout(function() { upd('actionFeedback', ''); }, 2500);
 
           if (m.isComplete !== false) {
@@ -6051,7 +6157,7 @@
           var questionsCompleted = correct.filter(function(e) { return e.data && e.data.isFinalStep; }).length;
           var questionsPerMinute = sessionDuration > 60 ? (questionsCompleted / (sessionDuration / 60)).toFixed(2) : 'N/A (session < 1 min)';
 
-          // Measurement accuracy — how many measurements matched expected volumes
+          // Estimate difference is learning evidence, not a performance score.
           var predictionSummary = summarizePredictionAccuracy(measurements);
           var learningEvidence = summarizeLearningEvidence(log);
 
@@ -6091,13 +6197,12 @@
             // Skill indicators
             measurementsTaken: measurements.length,
             incompleteMeasurementAttempts: allMeasurements.length - measurements.length,
-            predictionsMade: predictionSummary.predictionsMade,
-            exactPredictions: predictionSummary.exactPredictions,
-            predictionsWithin10Percent: predictionSummary.predictionsWithin10Percent,
-            averagePredictionPercentError: predictionSummary.averagePredictionPercentError,
-            measurementsWithoutPrediction: predictionSummary.measurementsWithoutPrediction,
-            // Backward-compatible field for existing longitudinal exports.
-            correctMeasurements: predictionSummary.predictionsWithin10Percent,
+            estimateComparison: {
+              policy: 'descriptive-ungraded',
+              compared: predictionSummary.predictionsMade,
+              averageAbsolutePercentDifference: predictionSummary.averagePredictionPercentError,
+              observationsWithoutCommittedEstimate: predictionSummary.measurementsWithoutPrediction
+            },
             blocksPlaced: blocksPlaced.length,
 
             // RTI classification
@@ -6116,7 +6221,7 @@
             // Standards alignment
             standardsAddressed: ['5.MD.C.3', '5.MD.C.4', '5.MD.C.5'],
             tool: 'AlloFlow Geometry World',
-            version: '1.0'
+            version: '1.1'
           };
 
           return report;
@@ -6159,8 +6264,6 @@
           h += '<div class="metric"><div class="val">' + r.questionsCorrect + '/' + r.questionsScored + '</div><div class="lbl">Questions right</div></div>';
           h += '<div class="metric"><div class="val">' + r.questionsPerMinute + '</div><div class="lbl">Q/min</div></div>';
           h += '<div class="metric"><div class="val">' + r.measurementsTaken + '</div><div class="lbl">Measurements</div></div>';
-          h += '<div class="metric"><div class="val">' + (r.predictionsMade ? r.predictionsWithin10Percent + '/' + r.predictionsMade : '&mdash;') + '</div><div class="lbl">Predictions within 10%</div></div>';
-          h += '<div class="metric"><div class="val">' + (r.averagePredictionPercentError === null ? '&mdash;' : r.averagePredictionPercentError + '%') + '</div><div class="lbl">Avg prediction error</div></div>';
           if (r.incompleteMeasurementAttempts > 0) h += '<div class="metric"><div class="val">' + r.incompleteMeasurementAttempts + '</div><div class="lbl">Incomplete scans</div></div>';
           h += '<div class="metric"><div class="val">' + r.blocksPlaced + '</div><div class="lbl">Blocks Placed</div></div>';
           h += '<div class="metric"><div class="val">' + r.lessonsCompleted + '/' + r.lessonsAttempted + '</div><div class="lbl">Lessons Done</div></div>';
@@ -6171,10 +6274,12 @@
           h += '<div class="metric"><div class="val">' + r.worldsCreated + '</div><div class="lbl">Worlds Created</div></div>';
           h += '<div class="metric"><div class="val">' + r.worksheetsPrinted + '</div><div class="lbl">Worksheets</div></div>';
           h += '</div>';
-          if (r.learningEvidence && (r.learningEvidence.explainedPredictions || r.learningEvidence.revisionsMade || r.learningEvidence.reflectionsCompleted || r.learningEvidence.retrievalAttempts || r.learningEvidence.representationViews || r.learningEvidence.representationConnections || r.learningEvidence.misconceptions.length)) {
+          if (r.learningEvidence && (r.learningEvidence.explainedPredictions || r.learningEvidence.revisionsMade || r.learningEvidence.reflectionsCompleted || r.learningEvidence.retrievalAttempts || r.learningEvidence.representationViews || r.learningEvidence.representationConnections || r.learningEvidence.misconceptions.length || (r.estimateComparison && r.estimateComparison.compared))) {
             var le = r.learningEvidence;
             h += '<h2>Learning Evidence</h2><div>';
-            h += '<div class="metric"><div class="val">' + le.explainedPredictions + '</div><div class="lbl">Explained predictions</div></div>';
+            h += '<div class="metric"><div class="val">' + (r.estimateComparison ? r.estimateComparison.compared : 0) + '</div><div class="lbl">Estimates compared<br><span style="font-size:8px;opacity:.7">ungraded</span></div></div>';
+            h += '<div class="metric"><div class="val">' + (!r.estimateComparison || r.estimateComparison.averageAbsolutePercentDifference === null ? '&mdash;' : r.estimateComparison.averageAbsolutePercentDifference + '%') + '</div><div class="lbl">Avg absolute difference<br><span style="font-size:8px;opacity:.7">descriptive, ungraded</span></div></div>';
+            h += '<div class="metric"><div class="val">' + le.explainedPredictions + '</div><div class="lbl">Explained estimates</div></div>';
             h += '<div class="metric"><div class="val">' + le.revisionsImproved + '/' + le.revisionsMade + '</div><div class="lbl">Revisions improved</div></div>';
             h += '<div class="metric"><div class="val">' + (le.averageRevisionImprovement === null ? '&mdash;' : le.averageRevisionImprovement + ' pts') + '</div><div class="lbl">Avg revision gain</div></div>';
             h += '<div class="metric"><div class="val">' + le.reflectionsCompleted + '</div><div class="lbl">Reflections</div></div>';
@@ -6228,7 +6333,7 @@
           });
           h += '</ul>';
           if (r.measurementDetails && r.measurementDetails.length > 0) {
-            h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Actual V</th><th>Prediction</th><th>Error</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
+            h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Measured V</th><th>Committed estimate</th><th>Absolute % difference (descriptive, ungraded)</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
             r.measurementDetails.forEach(function(m) {
               h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed || '&mdash;') + '</td><td>' + m.shape + (m.dimensions ? '<br><small>' + m.dimensions + '</small>' : '') + '</td>';
               h += '<td>' + (m.occupiedVolume === null ? '&mdash;' : formatVolume(m.occupiedVolume)) + '</td><td>' + (m.prediction === null ? '&mdash;' : formatVolume(m.prediction)) + '</td><td>' + (m.predictionPercentError === null ? '&mdash;' : m.predictionPercentError + '%') + '</td>';
@@ -6870,7 +6975,7 @@
         // (attached once in initEngine) so they can't see number-key block switches,
         // shape cycling (Q), rotation (R), or collab-mode toggling.
         engine._placeState = { selectedBlock: selectedBlock, selectedShape: selectedShape, blockRotation: blockRotation, collabMode: collabMode };
-        engine._predictionState = { input: volumePrediction, strategy: predictionStrategy, reason: predictionReason, history: measureHistory };
+        engine._predictionState = { input: volumePrediction, strategy: predictionStrategy, reason: predictionReason, commitment: volumeEstimateCommitment, observedTargetKeys: volumeEstimateObservedTargets, history: measureHistory };
         // Badges bridge — runAchievementCheck called via setTimeout from stale closures
         // needs to read the LATEST earned-badges object to avoid re-awarding duplicates.
         engine._badgesRef = earnedBadges;
@@ -6976,9 +7081,9 @@
             worldActive && el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
-              'aria-label': showPredictionPanel ? 'Close volume prediction drawer' : 'Open volume prediction drawer',
-              onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume prediction drawer opened.' : 'Volume prediction drawer closed.'); }
-            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Predict')),
+              'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
+              onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume estimate drawer opened.' : 'Volume estimate drawer closed.'); }
+            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
             worldActive && el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
@@ -7009,9 +7114,9 @@
           worldActive && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
-            'aria-label': showPredictionPanel ? 'Close volume prediction drawer' : 'Open volume prediction drawer',
+            'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
             onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); }
-          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Predict')),
+          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
           worldActive && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
@@ -7041,28 +7146,31 @@
               el('div', { style: { fontSize: '11px', color: '#c4b5fd' } }, lastBadgeNotification.desc)
             )
           ),
-          // Prediction drawer ? available on demand without consuming play space.
-          showPredictionPanel && el('section', { id: 'gw-prediction-panel', role: 'region', className: 'gw-prediction-bar gw-prediction-panel', 'aria-labelledby': 'gw-prediction-title', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'grid', alignItems: 'center', gap: '6px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '9px' } },
+          // Volume-estimate drawer — available on demand without consuming play space.
+          showPredictionPanel && el('section', { id: 'gw-prediction-panel', role: 'region', className: 'gw-prediction-bar gw-prediction-panel', 'aria-labelledby': 'gw-prediction-title', 'data-geometry-prediction-cycle': 'commit-before-measure', 'data-geometry-estimation-challenge': 'draft-commit-measure-reflect', 'data-geometry-estimate-locked': volumeEstimateCommitment ? 'true' : 'false', style: { display: 'grid', alignItems: 'center', gap: '6px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '9px' } },
             el('div', { className: 'gw-prediction-heading' },
-              el('h3', { id: 'gw-prediction-title', className: 'gw-prediction-title' }, '\uD83D\uDCDD Predict volume before measuring'),
-              el('button', { type: 'button', className: 'gw-prediction-close gw-focusable', 'aria-label': 'Close volume prediction drawer', onClick: function() { upd('showPredictionPanel', false); focusWorldSurface(); } }, '\u00D7')
+              el('h3', { id: 'gw-prediction-title', className: 'gw-prediction-title' }, '\uD83D\uDCDD Volume estimate challenge'),
+              el('button', { type: 'button', className: 'gw-prediction-close gw-focusable', 'aria-label': 'Close volume estimate drawer', onClick: function() { upd('showPredictionPanel', false); focusWorldSurface(); } }, '\u00D7')
             ),
-            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
+            el('p', { style: { gridColumn: '1 / -1', margin: 0, color: '#dbeafe', fontSize: '10px', lineHeight: 1.4 } }, 'This is an ungraded estimate. Aim at one unmeasured structure, commit your thinking, then measure that same structure.'),
+            el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Estimate V'),
             el('input', {
               id: 'gw-volume-prediction',
-              type: 'text', inputMode: 'decimal', value: volumePrediction,
-              onChange: function(ev) { upd({ volumePrediction: ev.target.value, predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' }); },
+              type: 'text', inputMode: 'decimal', value: volumePrediction, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ volumePrediction: ev.target.value, volumeEstimateCommitError: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' }); },
               placeholder: 'e.g. 24',
-              'aria-label': 'Predicted volume in cubic units',
-              title: 'Enter a prediction before measuring. Decimals and fractions such as 3/4 are supported.',
+              'aria-label': 'Estimated volume in cubic units',
+              'aria-invalid': String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'true' : 'false',
+              'aria-describedby': 'gw-volume-estimate-status',
+              title: volumeEstimateCommitment ? 'This estimate is locked until it is measured or you choose Change estimate.' : 'Enter an estimate before measuring. Decimals and fractions such as 3/4 are supported.',
               style: { width: '58px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '11px', fontFamily: 'monospace' }
             }),
             el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } }, 'cu'),
             el('label', { htmlFor: 'gw-prediction-strategy', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'using'),
             el('select', {
-              id: 'gw-prediction-strategy', value: predictionStrategy,
-              onChange: function(ev) { upd('predictionStrategy', ev.target.value); },
-              'aria-label': 'Prediction strategy',
+              id: 'gw-prediction-strategy', value: predictionStrategy, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ predictionStrategy: ev.target.value, volumeEstimateCommitError: '' }); },
+              'aria-label': 'Estimation strategy',
               style: { maxWidth: '132px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px', color: '#fff', fontSize: '9px' }
             },
               el('option', { value: '' }, predictionScaffold.strategyPrompt),
@@ -7072,12 +7180,51 @@
               el('option', { value: 'bounding box' }, 'Box \u2212 empty space')
             ),
             el('input', {
-              type: 'text', value: predictionReason,
-              onChange: function(ev) { upd('predictionReason', ev.target.value); },
+              type: 'text', value: predictionReason, disabled: !!volumeEstimateCommitment,
+              onChange: function(ev) { upd({ predictionReason: ev.target.value, volumeEstimateCommitError: '' }); },
               placeholder: predictionScaffold.reasonPrompt,
-              'aria-label': 'Brief reason for prediction',
+              'aria-label': 'Brief reason for estimate',
               style: { width: '125px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid #64748b', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
             }),
+            el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable',
+              'data-geometry-estimate-action': volumeEstimateCommitment ? 'change' : 'commit',
+              disabled: !volumeEstimateCommitment && !volumeEstimateDraftValid,
+              onClick: function() {
+                var eng = window[engineKey];
+                if (volumeEstimateCommitment) {
+                  if (eng) eng._predictionState = Object.assign({}, eng._predictionState || {}, { commitment: null });
+                  upd({ volumeEstimateCommitment: null, volumeEstimateCommitError: '' });
+                  announceToSR('Estimate unlocked. You may revise it before measuring.');
+                  return;
+                }
+                var hit = eng && eng.blockUnderCrosshair ? eng.blockUnderCrosshair() : null;
+                var gp = hit && hit.object && hit.object.userData ? hit.object.userData.gridPos : null;
+                var measurement = gp && eng && eng.measureStructure ? eng.measureStructure(gp.x, gp.y, gp.z) : null;
+                var currentEstimateState = eng && eng._predictionState ? eng._predictionState : {};
+                var observedTargets = normalizeVolumeEstimateTargetKeys(currentEstimateState.observedTargetKeys || volumeEstimateObservedTargets);
+                var result = commitVolumeEstimateDraft({ input: volumePrediction, strategy: predictionStrategy, reason: predictionReason }, geometryMeasurementTargetKey(measurement), observedTargets);
+                if (!result.ok) {
+                  var message = result.code === 'invalid_estimate'
+                    ? 'Enter a valid numerical estimate before committing.'
+                    : result.code === 'already_observed'
+                      ? 'That structure has already been measured. Aim at an unmeasured structure for a new estimate.'
+                      : 'Aim the crosshair at a complete structure before committing.';
+                  upd('volumeEstimateCommitError', message);
+                  announceToSR(message);
+                  return;
+                }
+                if (eng) eng._predictionState = Object.assign({}, currentEstimateState, { commitment: result.commitment, observedTargetKeys: observedTargets, input: volumePrediction, strategy: predictionStrategy, reason: predictionReason });
+                upd({ volumeEstimateCommitment: result.commitment, volumeEstimateCommitError: '' });
+                announceToSR('Estimate locked for the aimed structure. Measure that same structure to compare.');
+              },
+              style: { minHeight: '30px', padding: '4px 9px' }
+            }, volumeEstimateCommitment ? 'Change estimate' : 'Commit estimate'),
+            el('div', { id: 'gw-volume-estimate-status', role: 'status', 'aria-live': 'polite', 'data-geometry-estimate-status': volumeEstimateCommitment ? 'locked' : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? 'error' : 'draft', style: { gridColumn: '1 / -1', color: volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid) ? '#fecaca' : volumeEstimateCommitment ? '#a7f3d0' : '#bfdbfe', fontSize: '9px', fontWeight: volumeEstimateCommitment || volumeEstimateCommitError ? 750 : 600, lineHeight: 1.4 } },
+              volumeEstimateCommitment
+                ? 'Estimate locked for the aimed structure. Measure that same structure; the original stays fixed.'
+                : volumeEstimateCommitError || (String(volumePrediction || '').trim() && !volumeEstimateDraftValid ? 'Enter a positive number, decimal, or fraction before committing.' : 'Aim at an unmeasured structure, commit, then press M. Difference is described only for an estimate committed before measurement; it is not scored.')
+            ),
             el('div', { 'data-geometry-prediction-scaffold': predictionScaffold.level, title: predictionScaffold.cue, style: { flexBasis: '100%', display: 'flex', gap: '5px', alignItems: 'center', color: predictionScaffold.level === 'independent' ? '#86efac' : '#bfdbfe', fontSize: '9px', lineHeight: 1.3 } },
               el('span', { style: { fontWeight: 800, whiteSpace: 'nowrap' } }, predictionScaffold.label + ':'),
               el('span', null, predictionScaffold.cue)
@@ -7129,19 +7276,19 @@
                 el('span', null, 'Top layer ' + layerExplorerHeight)
               ),
               el('button', { type: 'button', className: 'gw-focusable', disabled: layerFocus === 0, 'aria-label': 'Show all layers', onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); }, style: { minHeight: 28, marginTop: '5px', padding: '3px 8px', border: '1px solid rgba(153,246,228,0.28)', borderRadius: '6px', background: 'rgba(15,23,42,0.54)', color: '#ccfbf1', fontSize: '9px', fontWeight: 800, cursor: layerFocus === 0 ? 'not-allowed' : 'pointer', opacity: layerFocus === 0 ? 0.6 : 1 } }, 'Show all layers')
-            ),            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
-              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Prediction ' + formatVolume(predictionResult.prediction) + ' \u2192 Actual ' + formatVolume(predictionResult.actual)),
-              el('div', { style: { color: predictionResult.percentError <= 10 ? '#86efac' : '#fde68a', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate)')),
+            ),            predictionResult && el('div', { 'data-geometry-prediction-result': 'true', 'data-geometry-estimate-result': 'committed-before-measurement', style: { marginTop: '2px', padding: '5px 6px', borderRadius: '4px', background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.35)' } },
+              el('div', { style: { color: '#fef3c7', fontFamily: 'monospace', fontSize: '10px' } }, 'Committed estimate ' + formatVolume(predictionResult.prediction) + ' \u2192 Measured ' + formatVolume(predictionResult.actual)),
+              el('div', { style: { color: '#bfdbfe', fontSize: '10px', fontWeight: 700 } }, predictionResult.accuracyLabel + (predictionResult.relation === 'exact' ? '. Descriptive, ungraded.' : ' (' + predictionResult.percentError + '% ' + predictionResult.relation + 'estimate). Descriptive, ungraded.')),
               (predictionResult.strategy || predictionResult.reason) && el('div', { style: { color: '#bfdbfe', fontSize: '9px' } },
                 (predictionResult.strategy ? 'Strategy: ' + predictionResult.strategy : '') + (predictionResult.reason ? ' \u2022 Reason: ' + predictionResult.reason : '')
               ),
               predictionResult.learningPrompt && el('div', { 'data-geometry-misconception-feedback': predictionResult.diagnosisCode || 'general', style: { marginTop: '3px', color: '#fff', fontSize: '10px', fontWeight: 700 } }, 'Think: ' + predictionResult.learningPrompt),
               el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap', marginTop: '4px' } },
-                el('label', { htmlFor: 'gw-prediction-revision', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'Revise'),
+                el('label', { htmlFor: 'gw-prediction-revision', style: { color: '#c4b5fd', fontSize: '9px', fontWeight: 700 } }, 'Revise after evidence'),
                 el('input', {
                   id: 'gw-prediction-revision', type: 'text', inputMode: 'decimal', value: predictionRevision,
                   onChange: function(ev) { upd({ predictionRevision: ev.target.value, predictionRevisionResult: null }); },
-                  placeholder: 'new V', 'aria-label': 'Revised volume prediction',
+                  placeholder: 'new V', 'aria-label': 'Revised volume estimate after evidence',
                   style: { width: '52px', background: '#0f172a', border: '1px solid #a78bfa', borderRadius: '4px', padding: '2px 4px', color: '#fff', fontSize: '9px' }
                 }),
                 el('input', {
@@ -8348,7 +8495,8 @@
             onClick: function() {
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
-              upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+              if (eng) eng._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
+              upd({ score: 0, answeredNpcs: {}, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             },
             title: 'Reset lesson progress and reload the world'
           }, '\u21BB Reset World')
@@ -8487,7 +8635,7 @@
           })
         ),
         // Block toolbar (bottom overlay) — with key hints and glow
-        el('div', { className: 'gw-hotbar', style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
+        el('div', { className: 'gw-hotbar', inert: openModals.length > 0 ? '' : undefined, 'aria-hidden': openModals.length > 0 ? 'true' : undefined, style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
           BLOCK_TYPES.map(function(bt, i) {
             var isActive = i === selectedBlock;
             return el('div', {
@@ -8759,7 +8907,7 @@
             return el('div', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': mh.isComplete === false ? 'true' : 'false' },
               el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
               el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
-              mh.prediction != null && el('span', { title: 'Predicted ' + formatVolume(mh.prediction) + '; ' + mh.percentError + '% off', style: { color: mh.percentError <= 10 ? '#86efac' : '#cbd5e1', fontSize: '8px' } }, 'P:' + formatVolume(mh.prediction) + ' (' + mh.percentError + '%)')
+              mh.prediction != null && el('span', { title: 'Committed estimate ' + formatVolume(mh.prediction) + '; descriptive difference ' + mh.percentError + '%', style: { color: '#bfdbfe', fontSize: '8px' } }, 'E:' + formatVolume(mh.prediction) + ' (\u0394 ' + mh.percentError + '%)')
             );
           }),
           measurementComparison && el('div', { className: 'gw-history-comparison', role: 'status', 'data-geometry-measurement-comparison': 'true' },

@@ -16948,10 +16948,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + BLUE + ', #3b82f6)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Upstander sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Upstander sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t) {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', { key: t.id, role: 'tab', className: 'sel-tab' + (a ? ' sel-tab-active' : ''), 'aria-selected': a ? 'true' : 'false', onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
@@ -16959,7 +16959,8 @@ window.SelHub = window.SelHub || {
             }, h('span', { className: a ? 'sel-hero-icon' : '', 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#60a5fa', marginLeft: '2px' } }) : null
             );
-          }),
+            })
+          ),
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: BD, fontWeight: 700, whiteSpace: 'nowrap', background: _upC('#dbeafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, className: 'sel-btn', 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         )

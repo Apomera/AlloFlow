@@ -13,7 +13,7 @@ describe('History panel move-to-unit control', () => {
     const source = readFileSync(SOURCE, 'utf8');
     expect(source).toContain('"data-help-key": "history_move_to_unit_btn"');
     expect(source).toContain('"aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`');
-    expect(source).toContain('"aria-expanded": movingItemId === item.id');
+    expect(source).toContain('"aria-expanded": movingItemId === itemInstanceId');
     expect(source).toContain('type: "button"');
     expect(source).toContain('min-h-11 min-w-11');
   });

@@ -273,8 +273,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
                 h('label', { htmlFor: 'tr-emotion1-rating', style: { fontSize: 12, color: _thFg('#94a3b8'), minWidth: 90 } }, 'Intensity:'),
                 h('input', { id: 'tr-emotion1-rating', type: 'range', min: 0, max: 100, value: draft.emotion1Rating,
                   onChange: function(e) { setDraft({ emotion1Rating: parseInt(e.target.value, 10) }); },
-                  style: { flex: 1 } }),
-                h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#ec4899'), minWidth: 40, textAlign: 'right' } }, draft.emotion1Rating + '/100')
+                  style: { flex: 1, minWidth: 0 } }),
+                h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#ec4899'), minWidth: 60, textAlign: 'right' } }, draft.emotion1Rating + '/100')
               )
             )
           ),
@@ -339,8 +339,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('thoughtRecord'))
               h('label', { htmlFor: 'tr-emotion2-rating', style: { fontSize: 12, color: _thFg('#94a3b8'), minWidth: 90 } }, 'Intensity now:'),
               h('input', { id: 'tr-emotion2-rating', type: 'range', min: 0, max: 100, value: draft.emotion2Rating,
                 onChange: function(e) { setDraft({ emotion2Rating: parseInt(e.target.value, 10) }); },
-                style: { flex: 1 } }),
-              h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#22c55e'), minWidth: 40, textAlign: 'right' } }, draft.emotion2Rating + '/100')
+                style: { flex: 1, minWidth: 0 } }),
+              h('span', { style: { fontSize: 14, fontWeight: 800, color: _thFg('#22c55e'), minWidth: 60, textAlign: 'right' } }, draft.emotion2Rating + '/100')
             )
           ),
 

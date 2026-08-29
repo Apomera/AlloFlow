@@ -9356,7 +9356,7 @@ var d = labToolData.brainAtlas || {};
                   var isWideStimCard = filteredStimTreatments.length % 2 === 1 && itemIndex === filteredStimTreatments.length - 1;
                   var isStimCompared = stimCompareIds.indexOf(item.id) >= 0;
                   var stimCompareAtLimit = stimCompareIds.length >= 2 && !isStimCompared;
-                  return React.createElement("article", { key: item.id, className: "brainatlas-psych-card", role: "listitem", "aria-labelledby": "brainatlas-stim-card-title-" + item.id, "data-brainatlas-stim-card": item.id, "data-brainatlas-stim-depth": stimGuideDepth, "data-brainatlas-wide": isWideStimCard ? "true" : "false", style: { borderLeftColor: item.color } },
+                  return React.createElement("div", { key: item.id, className: "brainatlas-psych-card", role: "listitem", "aria-labelledby": "brainatlas-stim-card-title-" + item.id, "data-brainatlas-stim-card": item.id, "data-brainatlas-stim-depth": stimGuideDepth, "data-brainatlas-wide": isWideStimCard ? "true" : "false", style: { borderLeftColor: item.color } },
                     React.createElement("div", { className: "brainatlas-psych-card-head" },
                       React.createElement("div", { className: "brainatlas-stim-title-row" },
                         React.createElement("span", { className: "brainatlas-stim-modality-mark", "aria-hidden": "true" }, item.symbol),

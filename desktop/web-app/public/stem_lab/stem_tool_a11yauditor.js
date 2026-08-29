@@ -600,7 +600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('h3', { className: 'text-sm font-bold text-teal-700 mb-2' }, t('stem.a11yauditor.what_would_you_like_to_audit', 'What would you like to audit?')),
 
             // Input mode tabs
-            h('div', { className: 'flex gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
+            h('div', { className: 'flex flex-wrap gap-1 bg-slate-100 rounded-lg p-1 mb-3' },
               [
                 { id: 'url', icon: '\uD83C\uDF10', label: t('stem.a11yauditor.website', 'Website') },
                 { id: 'html', icon: '\uD83D\uDCBB', label: 'HTML' },

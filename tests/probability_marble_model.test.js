@@ -51,7 +51,10 @@ describe('Probability Lab marble model', () => {
   it('resets simulation-only state and stops Auto-Run', () => {
     expect(window.__ProbabilityCore.resetPatch()).toEqual({
       results: [], trials: 0, convergenceHistory: [], lastResult: null,
-      _mbRemaining: null, _piPoints: [], _autoRunning: false, _bestStreak: 0,
+      _mbRemaining: null, _piPoints: [], _piTotal: 0, _piInside: 0,
+      _lastPair: null, animTick: 0, _mbShaking: false,
+      _autoRunning: false, _piSlowRunning: false, galtonFalling: [],
+      _aiExplanation: null, _aiLoading: false, _bestStreak: 0,
     });
   });
 

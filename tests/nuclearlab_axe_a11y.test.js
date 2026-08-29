@@ -80,7 +80,11 @@ const SURFACES = [
   // the toggle's aria-controls still resolves once the body is gone.
   ['index collapsed', { nkOpen: false }],
   ['index collapsed, on a route', { nkOpen: false, nkPath: 'safe' }],
-  ['index open, on a route', { nkOpen: true, nkPath: 'me' }],
+  ['index open, on a route', {
+    nkOpen: true,
+    nkPath: 'me',
+    nkRouteSeen: { me: ['weighting', 'biohalf'] },
+  }],
   ['topic index empty result', { nkQuery: 'zzzz' }],
   ['evidence challenge feedback', {
     evidenceIndex: 0,
@@ -88,10 +92,29 @@ const SURFACES = [
     evidenceChecked: { 'reactor-bomb': true },
   }],
   ['evidence challenge complete', {
+    nkPath: 'know',
+    nkRouteSeen: { know: ['detect', 'dating', 'chain', 'evidence'] },
+    pathsCompleted: ['know'],
     evidenceIndex: 4,
     evidenceChoices: { 'short-count': 'uncertain' },
     evidenceChecked: { 'short-count': true },
     evidenceMastered: ['reactor-bomb', 'inverse-square', 'low-dose-zero', 'neutron-layers', 'short-count'],
+    nkReflections: {
+      know: {
+        confidence: 'growing',
+        idea: 'A measurement needs both a value and an uncertainty.',
+        question: 'How much counting time is enough?',
+      },
+    },
+  }],
+  ['chart data tables open', {
+    nkShowChartData: true,
+    isoId: 'cs137', halves: 3,
+    bioId: 'cs137',
+    cdSrc: 'cs137', cdDist: 12.5, cdTime: 600,
+    cdRuns: [{ g: 4200, b: 250, t: 600, d: 5, s: 'cs137' }],
+    ptSrc: 'cs137', ptDist: 2.5, ptShield: 'lead', ptThick: 1,
+    shRate: 2, shPlume: 8, shEvac: 4, shPlace: 'masonry',
   }],
 ];
 
@@ -124,8 +147,8 @@ describe('nuclearLab — axe audit of every reachable surface', () => {
     // at once — which reads like a real accessibility failure and is not one.
     // Raised again from 30 s when the low-dose-risk section took the document
     // from nineteen sections to twenty: every surface here re-renders the WHOLE
-    // document before scanning it, so each new section lengthens all 41 of
-    // them. If this starts timing out again the answer is not a bigger number
+    // document before scanning it, so each new section lengthens every surface.
+    // If this starts timing out again the answer is not a bigger number
     // — it is to render once per surface and share the tree.
     }, 90000);
   }
@@ -137,7 +160,7 @@ describe('nuclearLab — checks axe cannot make for us', () => {
       host.innerHTML = renderTool('nuclearLab', { _nuclearLab: state }, ctx);
       const focusables = host.querySelectorAll('button, [tabindex="0"], input, select, textarea, a[href]');
       // Collected ONCE per surface. Re-querying every label inside the element
-      // loop made this O(controls x labels) across 24 surfaces — ~150 controls
+      // loop made this O(controls x labels) across every surface — ~150 controls
       // each — and it started timing out the moment the machine was busy.
       const labelFor = new Set(
         [...host.querySelectorAll('label[for]')].map((l) => l.getAttribute('for')));
@@ -193,6 +216,26 @@ describe('nuclearLab — checks axe cannot make for us', () => {
     // -1, never 0: these are scroll destinations, not tab stops. Putting 17
     // panels into the tab order would bury every control inside them.
     expect(host.querySelectorAll('[data-nk-sec][tabindex="0"]').length).toBe(0);
+  });
+
+  it('names every focus destination from its visible section heading', () => {
+    const surfaces = [
+      [{}, 'group'],
+      [{ nkPath: 'know' }, 'region'],
+    ];
+    for (const [state, role] of surfaces) {
+      host.innerHTML = renderTool('nuclearLab', { _nuclearLab: state });
+      const targets = [...host.querySelectorAll('[data-nk-sec]')];
+      expect(targets.length).toBeGreaterThan(3);
+      for (const target of targets) {
+        const headingId = target.getAttribute('aria-labelledby');
+        const heading = headingId && document.getElementById(headingId);
+        expect(target.getAttribute('role'), target.id + ' has the wrong navigation role').toBe(role);
+        expect(headingId, target.id + ' has no accessible name').toBeTruthy();
+        expect(heading && heading.tagName, target.id + ' is not named by a heading').toBe('H4');
+        expect((heading.textContent || '').trim().length).toBeGreaterThan(2);
+      }
+    }
   });
 
   // A panel that is both announced by hand and wrapped in a live region gets

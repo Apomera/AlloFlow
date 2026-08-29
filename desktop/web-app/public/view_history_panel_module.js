@@ -395,9 +395,26 @@ function HistoryPanel(props) {
   const historyThemeContext = React.useContext(window.AlloThemeContext || HistoryThemeFallbackContext);
   const historyTheme = historyThemeContext && (historyThemeContext.theme === "dark" || historyThemeContext.theme === "contrast") ? historyThemeContext.theme : "light";
   const getInstructionalTextProfile = (item) => {
-    const config = item && item.config && typeof item.config === "object" ? item.config : {};
-    const raw = item && (item.instructionalText || config.instructionalText || item.textProfile || config.textProfile) || null;
-    const inferredForm = item && item.type === "simplified" ? "adapted" : "original";
+    const safeField = (value2, field) => {
+      try {
+        return value2 && typeof value2 === "object" ? value2[field] : void 0;
+      } catch (_) {
+        return void 0;
+      }
+    };
+    const safeText = (value2, fallback = "", max = 240) => {
+      try {
+        const candidate = typeof value2 === "string" || typeof value2 === "number" ? String(value2) : "";
+        return (candidate || fallback).slice(0, max);
+      } catch (_) {
+        return fallback;
+      }
+    };
+    const rawConfig = safeField(item, "config");
+    const config = rawConfig && typeof rawConfig === "object" ? rawConfig : {};
+    const raw = safeField(item, "instructionalText") || safeField(config, "instructionalText") || safeField(item, "textProfile") || safeField(config, "textProfile") || null;
+    const itemType = safeText(safeField(item, "type"), "", 100);
+    const inferredForm = itemType === "simplified" ? "adapted" : "original";
     let value = raw;
     try {
       const api = window.AlloModules && window.AlloModules.InstructionalContext;
@@ -408,28 +425,38 @@ function HistoryPanel(props) {
       value = raw;
     }
     value = value && typeof value === "object" ? value : {};
-    const role = ["primary", "supplemental", "unspecified"].includes(value.role) ? value.role : "unspecified";
-    const form = ["original", "same-text-supported", "adapted"].includes(value.form) ? value.form : inferredForm;
-    const auth = value.replacementAuthorization && typeof value.replacementAuthorization === "object" ? value.replacementAuthorization : {};
-    const authorized = auth.authorized === true && auth.source === "educator";
-    const complexity = value.complexity && typeof value.complexity === "object" ? value.complexity : {};
+    const rawRole = safeField(value, "role");
+    const rawForm = safeField(value, "form");
+    const role = ["primary", "supplemental", "unspecified"].includes(rawRole) ? rawRole : "unspecified";
+    const form = ["original", "same-text-supported", "adapted"].includes(rawForm) ? rawForm : inferredForm;
+    const rawAuth = safeField(value, "replacementAuthorization");
+    const auth = rawAuth && typeof rawAuth === "object" ? rawAuth : {};
+    const authorized = safeField(auth, "authorized") === true && safeField(auth, "source") === "educator";
+    const rawComplexity = safeField(value, "complexity");
+    const complexity = rawComplexity && typeof rawComplexity === "object" ? rawComplexity : {};
+    const rawLocalStats = safeField(item, "localStats");
+    const localStats = rawLocalStats && typeof rawLocalStats === "object" ? rawLocalStats : {};
+    const sourceArtifactId = safeText(safeField(value, "sourceArtifactId"), "", 240);
+    const primaryArtifactId = safeText(safeField(value, "primaryArtifactId"), "", 240);
+    const measuredGrade = safeField(complexity, "measuredGrade");
+    const localMeasuredGrade = safeField(localStats, "gradeLevel");
     return {
       schemaVersion: 1,
       role,
       form,
-      sourceArtifactId: value.sourceArtifactId == null ? null : String(value.sourceArtifactId),
-      primaryArtifactId: value.primaryArtifactId == null ? null : String(value.primaryArtifactId),
-      designationSource: ["educator", "workflow-default", "legacy-inferred"].includes(value.designationSource) ? value.designationSource : "legacy-inferred",
+      sourceArtifactId: sourceArtifactId || null,
+      primaryArtifactId: primaryArtifactId || null,
+      designationSource: ["educator", "workflow-default", "legacy-inferred"].includes(safeField(value, "designationSource")) ? safeField(value, "designationSource") : "legacy-inferred",
       replacementAuthorization: { authorized, source: authorized ? "educator" : "none" },
       complexity: {
-        requestedGrade: complexity.requestedGrade || item && item.targetGradeLevel || config.grade || "",
-        calibrationTarget: complexity.calibrationTarget || "",
-        measuredGrade: complexity.measuredGrade != null ? complexity.measuredGrade : item && item.localStats && item.localStats.gradeLevel != null ? item.localStats.gradeLevel : null,
-        method: complexity.method || (item && item.localStats ? "flesch-kincaid" : ""),
-        status: complexity.status || "",
-        contentFingerprint: complexity.contentFingerprint || "",
-        measuredAt: complexity.measuredAt || null,
-        language: complexity.language || config.language || ""
+        requestedGrade: safeText(safeField(complexity, "requestedGrade") || safeField(item, "targetGradeLevel") || safeField(config, "grade"), "", 120),
+        calibrationTarget: safeText(safeField(complexity, "calibrationTarget"), "", 120),
+        measuredGrade: measuredGrade != null ? typeof measuredGrade === "string" || typeof measuredGrade === "number" ? measuredGrade : null : localMeasuredGrade != null && (typeof localMeasuredGrade === "string" || typeof localMeasuredGrade === "number") ? localMeasuredGrade : null,
+        method: safeText(safeField(complexity, "method") || (rawLocalStats ? "flesch-kincaid" : ""), "", 80),
+        status: safeText(safeField(complexity, "status"), "", 80),
+        contentFingerprint: safeText(safeField(complexity, "contentFingerprint"), "", 240),
+        measuredAt: safeText(safeField(complexity, "measuredAt"), "", 120) || null,
+        language: safeText(safeField(complexity, "language") || safeField(config, "language"), "", 80)
       },
       explicit: !!raw,
       authorized
@@ -437,7 +464,14 @@ function HistoryPanel(props) {
   };
   const getInstructionalTextRecord = (item) => {
     const profile = getInstructionalTextProfile(item);
-    const isTextArtifact = item && (item.type === "analysis" || item.type === "simplified" || profile.form === "same-text-supported");
+    const itemType = (() => {
+      try {
+        return item && typeof item === "object" ? item.type : "";
+      } catch (_) {
+        return "";
+      }
+    })();
+    const isTextArtifact = item && (itemType === "analysis" || itemType === "simplified" || profile.form === "same-text-supported");
     if (!profile.explicit && !isTextArtifact) return void 0;
     return {
       schemaVersion: profile.schemaVersion,
@@ -452,7 +486,14 @@ function HistoryPanel(props) {
   };
   const getInstructionalTextBadge = (item) => {
     const profile = getInstructionalTextProfile(item);
-    const isTextArtifact = item && (item.type === "analysis" || item.type === "simplified" || profile.form === "same-text-supported");
+    const itemType = (() => {
+      try {
+        return item && typeof item === "object" ? item.type : "";
+      } catch (_) {
+        return "";
+      }
+    })();
+    const isTextArtifact = item && (itemType === "analysis" || itemType === "simplified" || profile.form === "same-text-supported");
     if (!isTextArtifact && !profile.explicit) return null;
     if (profile.role === "primary") {
       if (profile.form === "adapted" && !profile.authorized) return { label: "Primary designation needs review", tone: "amber" };
@@ -462,7 +503,13 @@ function HistoryPanel(props) {
     return { label: "Text role not set", tone: "slate" };
   };
   const shareResourcePackToCommunity = () => {
-    const visibleItems = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
+    let visibleItemsCandidate = history;
+    try {
+      if (typeof getFilteredHistory === "function") visibleItemsCandidate = getFilteredHistory();
+    } catch (_) {
+      visibleItemsCandidate = [];
+    }
+    const visibleItems = getSafeArraySnapshot(visibleItemsCandidate);
     if (visibleItems.length === 0) {
       addToast && addToast(t("history.empty_general") || "No resources to share yet.", "info");
       return;
@@ -498,29 +545,33 @@ function HistoryPanel(props) {
       } else if (unauthorizedPrimaryAdaptationCount > 0) {
         addToast && addToast("An adapted text is marked primary without an explicit educator replacement decision. Review its role before publishing.", "warning");
       }
-      const cleanedItems = stripU(sanitizeForCloud(visibleItems.map((item) => ({
-        id: item.id,
-        type: item.type,
-        title: item.title,
-        timestamp: item.timestamp,
-        data: item.data,
-        meta: item.meta,
-        // Preserve instructional metadata without publishing free-form custom
-        // instructions, roster labels, interests, or other potentially
-        // identifying configuration fields to the community catalog.
-        config: item.config && typeof item.config === "object" ? {
-          grade: item.config.grade,
-          language: item.config.language,
-          standards: item.config.standards,
-          standardsContext: item.config.standardsContext,
-          instructionalContext: item.config.instructionalContext
-        } : void 0,
-        instructionalContext: item.instructionalContext || item.config && item.config.instructionalContext,
-        standardsContext: item.standardsContext,
-        instructionalText: getInstructionalTextRecord(item),
-        localStats: item.localStats,
-        targetGradeLevel: item.targetGradeLevel
-      }))));
+      const cleanedItems = stripU(sanitizeForCloud(visibleItems.map((item) => {
+        const rawConfig = getSafeArtifactField(item, "config");
+        const config = rawConfig && typeof rawConfig === "object" ? rawConfig : null;
+        return {
+          id: getSafeArtifactField(item, "id"),
+          type: getSafeArtifactField(item, "type"),
+          title: getSafeArtifactField(item, "title"),
+          timestamp: getSafeArtifactField(item, "timestamp"),
+          data: getSafeArtifactField(item, "data"),
+          meta: getSafeArtifactField(item, "meta"),
+          // Preserve instructional metadata without publishing free-form custom
+          // instructions, roster labels, interests, or other potentially
+          // identifying configuration fields to the community catalog.
+          config: config ? {
+            grade: getSafeArtifactField(config, "grade"),
+            language: getSafeArtifactField(config, "language"),
+            standards: getSafeArtifactField(config, "standards"),
+            standardsContext: getSafeArtifactField(config, "standardsContext"),
+            instructionalContext: getSafeArtifactField(config, "instructionalContext")
+          } : void 0,
+          instructionalContext: getSafeArtifactField(item, "instructionalContext") || getSafeArtifactField(config, "instructionalContext"),
+          standardsContext: getSafeArtifactField(item, "standardsContext"),
+          instructionalText: getInstructionalTextRecord(item),
+          localStats: getSafeArtifactField(item, "localStats"),
+          targetGradeLevel: getSafeArtifactField(item, "targetGradeLevel")
+        };
+      })));
       localStorage.setItem("alloflow_pending_submission", JSON.stringify({
         title: packTitle,
         source_type: "resource-pack",
@@ -547,22 +598,120 @@ function HistoryPanel(props) {
   const [isMoreActionsOpen, setIsMoreActionsOpen] = React.useState(false);
   const moreActionsButtonRef = React.useRef(null);
   const moreActionsMenuRef = React.useRef(null);
-  const unitFilteredHistory = (typeof getFilteredHistory === "function" ? getFilteredHistory() : history) || [];
-  const getResourceTypeLabel = (type) => {
-    const localizedTitle = getDefaultTitle(type);
-    return localizedTitle ? String(localizedTitle) : String(type || "resource").replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  const getSafeArtifactField = (item, field) => {
+    try {
+      return item && typeof item === "object" ? item[field] : void 0;
+    } catch (_) {
+      return void 0;
+    }
   };
-  const resourceTypes = Array.from(new Set(unitFilteredHistory.map((item) => item && item.type).filter(Boolean))).sort((a, b) => getResourceTypeLabel(a).localeCompare(getResourceTypeLabel(b)));
+  const getSafeArraySnapshot = (value, max = 1e4) => {
+    try {
+      if (!Array.isArray(value)) return [];
+    } catch (_) {
+      return [];
+    }
+    let declaredLength;
+    try {
+      declaredLength = value.length;
+    } catch (_) {
+      return [];
+    }
+    if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) return [];
+    const length = Math.min(declaredLength, max);
+    const snapshot = new Array(length);
+    for (let index = 0; index < length; index += 1) {
+      try {
+        snapshot[index] = value[index];
+      } catch (_) {
+        snapshot[index] = null;
+      }
+    }
+    return snapshot;
+  };
+  let unitFilteredHistoryCandidate = history;
+  try {
+    if (typeof getFilteredHistory === "function") unitFilteredHistoryCandidate = getFilteredHistory();
+  } catch (_) {
+    unitFilteredHistoryCandidate = [];
+  }
+  const unitFilteredHistory = getSafeArraySnapshot(unitFilteredHistoryCandidate);
+  const safeHistory = getSafeArraySnapshot(history);
+  const getSafeRowText = (value, fallback = "", max = 240) => {
+    const candidate = typeof value === "string" || typeof value === "number" ? String(value) : "";
+    const fallbackText = typeof fallback === "string" || typeof fallback === "number" ? String(fallback) : "";
+    return (candidate || fallbackText).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
+  };
+  const getSafeRowDate = (value) => {
+    try {
+      const candidate = value instanceof Date ? new Date(value.getTime()) : typeof value === "string" || typeof value === "number" ? new Date(value) : null;
+      return candidate && Number.isFinite(candidate.getTime()) ? candidate : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  const getResourceTypeLabel = (type) => {
+    let localizedTitle = "";
+    try {
+      localizedTitle = getDefaultTitle(type);
+    } catch (_) {
+    }
+    const fallback = getSafeRowText(type, "resource", 100).replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+    return getSafeRowText(localizedTitle, fallback, 160);
+  };
+  const resourceTypes = Array.from(new Set(unitFilteredHistory.map((item) => getSafeRowText(getSafeArtifactField(item, "type"), "", 100)).filter(Boolean))).sort((a, b) => getResourceTypeLabel(a).localeCompare(getResourceTypeLabel(b)));
   const displayedResourceTypes = resourceTypeFilter !== "all" && !resourceTypes.includes(resourceTypeFilter) ? [resourceTypeFilter, ...resourceTypes] : resourceTypes;
   const normalizedResourceSearch = resourceSearch.trim().toLocaleLowerCase();
   const isResourceFilterActive = normalizedResourceSearch.length > 0 || resourceTypeFilter !== "all";
   const filteredHistory = unitFilteredHistory.filter((item) => {
     if (!item) return false;
-    if (resourceTypeFilter !== "all" && item.type !== resourceTypeFilter) return false;
+    const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "", 100);
+    if (resourceTypeFilter !== "all" && itemType !== resourceTypeFilter) return false;
     if (!normalizedResourceSearch) return true;
-    const itemTitle = String(item.title || getDefaultTitle(item.type) || "");
-    const itemMeta = typeof item.meta === "string" ? item.meta : "";
-    return [itemTitle, itemMeta, item.type, getResourceTypeLabel(item.type)].join(" ").toLocaleLowerCase().includes(normalizedResourceSearch);
+    const itemTitle = getSafeRowText(
+      getSafeArtifactField(item, "title"),
+      getSafeRowText(getDefaultTitle(itemType), "Resource", 240),
+      240
+    );
+    const rawMeta = getSafeArtifactField(item, "meta");
+    const itemMeta = typeof rawMeta === "string" ? rawMeta : "";
+    return [itemTitle, itemMeta, itemType, getResourceTypeLabel(itemType)].join(" ").toLocaleLowerCase().includes(normalizedResourceSearch);
+  });
+  const legacyRowIdentityRef = React.useRef({ ids: /* @__PURE__ */ new WeakMap(), sequence: 0 });
+  const getPersistedArtifactInstanceId = (item) => {
+    try {
+      const value = item && typeof item === "object" ? item._artifactInstanceId : "";
+      return typeof value === "string" && /^artifact-[A-Za-z0-9_-]{8,128}$/.test(value) ? value : "";
+    } catch (_) {
+      return "";
+    }
+  };
+  const getSafePublicArtifactId = (item) => {
+    try {
+      const value = getSafeArtifactField(item, "id");
+      return typeof value === "string" || typeof value === "number" ? String(value).slice(0, 240) : "";
+    } catch (_) {
+      return "";
+    }
+  };
+  const getHistoryRowInstanceId = (item) => {
+    const persisted = getPersistedArtifactInstanceId(item);
+    if (persisted) return persisted;
+    if (!item || typeof item !== "object") return "legacy-row-empty";
+    const registry = legacyRowIdentityRef.current;
+    let fallback = registry.ids.get(item);
+    if (!fallback) {
+      registry.sequence += 1;
+      fallback = "legacy-row-" + registry.sequence;
+      registry.ids.set(item, fallback);
+    }
+    return fallback;
+  };
+  const generatedArtifactInstanceId = getPersistedArtifactInstanceId(generatedContent);
+  const publicHistoryIdCounts = /* @__PURE__ */ new Map();
+  safeHistory.forEach((item) => {
+    const publicId = getSafePublicArtifactId(item);
+    if (publicId) publicHistoryIdCounts.set(publicId, (publicHistoryIdCounts.get(publicId) || 0) + 1);
   });
   const canReorderResources = !isSyncMode && !isResourceFilterActive;
   const clearResourceFilters = () => {
@@ -726,7 +875,7 @@ function HistoryPanel(props) {
           closeMoreActions(false);
           initiateSaveTeacherProject();
         },
-        disabled: history.length === 0,
+        disabled: safeHistory.length === 0,
         className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
         "data-help-key": "history_save_teacher"
       },
@@ -742,7 +891,7 @@ function HistoryPanel(props) {
           closeMoreActions(false);
           initiateSaveStudentProject();
         },
-        disabled: history.length === 0,
+        disabled: safeHistory.length === 0,
         className: `flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 ${isSaveActionPulsing ? "ring-2 ring-indigo-200" : ""}`,
         "data-help-key": "history_save_student"
       },
@@ -759,7 +908,7 @@ function HistoryPanel(props) {
           closeMoreActions(false);
           shareResourcePackToCommunity();
         },
-        disabled: history.length === 0,
+        disabled: safeHistory.length === 0,
         className: "flex min-h-11 w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50",
         "data-help-key": "history_share_pack"
       },
@@ -781,7 +930,7 @@ function HistoryPanel(props) {
       /* @__PURE__ */ React.createElement(Settings, { size: 15, "aria-hidden": "true" }),
       /* @__PURE__ */ React.createElement("span", null, t("history.settings"))
     ),
-    (isTeacherMode || history.length > 0) && /* @__PURE__ */ React.createElement(
+    (isTeacherMode || safeHistory.length > 0) && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -914,220 +1063,256 @@ function HistoryPanel(props) {
         /* @__PURE__ */ React.createElement(X, { size: 12 })
       )
     ))));
-  })(), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10", role: "list", "aria-label": t("sidebar.resource_pack_history") || "Saved resources" }, filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500" }, history.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters"))), filteredHistory.map((item, idx) => {
-    const itemTitle = isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type));
-    const itemMeta = typeof item.meta === "string" ? item.meta.trim() : "";
-    const itemTypeLabel = getResourceTypeLabel(item.type);
-    const itemTextBadge = getInstructionalTextBadge(item);
-    const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
-    const itemDate = item.timestamp ? new Date(item.timestamp) : null;
-    const itemDateLabel = itemDate && Number.isFinite(itemDate.getTime()) ? itemDate.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" }) : "";
-    const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
-    const itemUnit = item.unitId ? units.find((u) => u.id === item.unitId) : null;
-    const isCurrent = !!(generatedContent && generatedContent.id === item.id);
-    const openLabel = t("common.open") || "Open";
-    const currentLabel = t("launch_pad.current_language") || "Current";
-    return /* @__PURE__ */ React.createElement(
-      "div",
-      {
-        key: item.id,
-        role: "listitem",
-        onDragEnter: (e) => canReorderResources && handleDragEnter(e, idx),
-        onDragOver: (e) => canReorderResources && e.preventDefault(),
-        onDragEnd: handleDragEnd,
-        className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : "border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
-      },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2 w-full" }, /* @__PURE__ */ React.createElement(
-        "button",
+  })(), /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "space-y-3 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar flex-grow pb-10",
+      role: filteredHistory.length > 0 ? "list" : void 0,
+      "aria-label": filteredHistory.length > 0 ? t("sidebar.resource_pack_history") || "Saved resources" : void 0
+    },
+    filteredHistory.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500" }, safeHistory.length === 0 ? t("history.empty_general") : unitFilteredHistory.length === 0 ? t("history.empty_unit") : t("history.no_filter_matches"), isResourceFilterActive && unitFilteredHistory.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearResourceFilters, className: "mx-auto mt-3 block min-h-11 rounded-lg px-3 font-bold text-indigo-700 hover:bg-indigo-50" }, t("history.clear_filters"))),
+    filteredHistory.map((item, idx) => {
+      const itemInstanceId = getHistoryRowInstanceId(item);
+      const persistedItemInstanceId = getPersistedArtifactInstanceId(item);
+      const itemPublicId = getSafePublicArtifactId(item);
+      const itemType = getSafeRowText(getSafeArtifactField(item, "type"), "resource", 100);
+      let rawDefaultItemTitle = "Resource";
+      try {
+        rawDefaultItemTitle = getDefaultTitle(itemType, item);
+      } catch (_) {
+      }
+      const defaultItemTitle = getSafeRowText(rawDefaultItemTitle, "Resource", 240);
+      const safeItemTitle = getSafeRowText(getSafeArtifactField(item, "title"), defaultItemTitle, 240);
+      const itemTitle = isTeacherMode && !isIndependentMode ? safeItemTitle : sanitizeString(safeItemTitle);
+      const rawItemMeta = getSafeArtifactField(item, "meta");
+      const itemMeta = typeof rawItemMeta === "string" ? rawItemMeta.trim().slice(0, 500) : "";
+      const itemTypeLabel = getResourceTypeLabel(itemType);
+      const itemTextBadge = getInstructionalTextBadge(item);
+      const itemTextBadgeClass = itemTextBadge && itemTextBadge.tone === "blue" ? "border-blue-200 bg-blue-50 text-blue-800" : itemTextBadge && itemTextBadge.tone === "violet" ? "border-violet-200 bg-violet-50 text-violet-800" : itemTextBadge && itemTextBadge.tone === "amber" ? "border-amber-300 bg-amber-50 text-amber-900" : "border-slate-200 bg-white text-slate-600";
+      const itemDate = getSafeRowDate(getSafeArtifactField(item, "timestamp"));
+      const itemDateLabel = itemDate ? itemDate.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" }) : "";
+      const itemDateTime = itemDateLabel ? itemDate.toISOString() : void 0;
+      const itemUnitId = getSafeRowText(getSafeArtifactField(item, "unitId"), "", 160);
+      const itemUnit = itemUnitId && Array.isArray(units) ? units.find((unit) => getSafeRowText(getSafeArtifactField(unit, "id"), "", 160) === itemUnitId) : null;
+      const itemUnitName = getSafeRowText(getSafeArtifactField(itemUnit, "name"), "Unit", 160);
+      const itemData = getSafeArtifactField(item, "data");
+      const generatedArtifactData = getSafeArtifactField(generatedContent, "data");
+      const itemFromDA = getSafeArtifactField(item, "fromDA") === true;
+      const rawDaItemIndex = getSafeArtifactField(item, "daItemIndex");
+      const itemDaItemIndex = Number.isSafeInteger(rawDaItemIndex) && rawDaItemIndex >= 0 ? rawDaItemIndex : null;
+      const itemConfigSummary = getSafeRowText(
+        getSafeArtifactField(item, "configSummary"),
+        "",
+        500
+      );
+      const isCurrent = !!generatedContent && (generatedContent === item || generatedArtifactInstanceId && persistedItemInstanceId && generatedArtifactInstanceId === persistedItemInstanceId || !generatedArtifactInstanceId && !persistedItemInstanceId && generatedArtifactData && generatedArtifactData === itemData || !generatedArtifactInstanceId && !persistedItemInstanceId && itemPublicId && publicHistoryIdCounts.get(itemPublicId) === 1 && getSafePublicArtifactId(generatedContent) === itemPublicId);
+      const openLabel = t("common.open") || "Open";
+      const currentLabel = t("launch_pad.current_language") || "Current";
+      return /* @__PURE__ */ React.createElement(
+        "div",
         {
-          type: "button",
-          draggable: editingId === null && canReorderResources,
-          onDragStart: (e) => {
-            if (!canReorderResources) {
-              e.preventDefault();
-              return;
-            }
-            handleDragStart(e, idx);
-          },
-          onKeyDown: (e) => {
-            if (!e.altKey || !canReorderResources) return;
-            if (e.key === "ArrowUp" && idx > 0) {
-              e.preventDefault();
-              moveItem(e, idx, "up");
-            } else if (e.key === "ArrowDown" && idx < filteredHistory.length - 1) {
-              e.preventDefault();
-              moveItem(e, idx, "down");
-            }
-          },
-          "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
-          "aria-disabled": !canReorderResources || editingId === item.id,
-          "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
-          className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "text-indigo-600 hover:bg-indigo-100" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"} ${editingId === item.id || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
-          "data-help-key": "history_item_drag",
-          title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
+          key: itemInstanceId,
+          role: "listitem",
+          onDragEnter: (e) => canReorderResources && handleDragEnter(e, itemInstanceId),
+          onDragOver: (e) => canReorderResources && e.preventDefault(),
+          onDragEnd: handleDragEnd,
+          className: `group flex flex-col rounded-xl border border-l-4 p-3 transition-[background-color,border-color,box-shadow] ${isCurrent ? "border-indigo-300 border-l-indigo-600 bg-indigo-50/70 text-slate-900 shadow-sm shadow-indigo-900/5" : "border-slate-200 border-l-transparent bg-white text-slate-800 hover:border-slate-300 hover:bg-slate-50/70"} ${isSyncMode ? "cursor-not-allowed opacity-60" : "cursor-default"}`
         },
-        /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
-        /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)
-      ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-2 rounded-lg shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, getIconForType(item.type)), editingId === item.id ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
-        "input",
-        {
-          "aria-label": t("common.enter_edit_title"),
-          type: "text",
-          value: editTitle,
-          onChange: (e) => setEditTitle(e.target.value),
-          className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
-          autoFocus: true
-        }
-      ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleSaveEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleCancelEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          onClick: (e) => {
-            e.stopPropagation();
-            if (isCurrent) return;
-            if (isSyncMode) {
-              addToast(t("session.teacher_control_warning"), "info");
-              return;
-            }
-            handleRestoreView(item);
-          },
-          className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
-          "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
-          "aria-current": isCurrent ? "page" : void 0,
-          "aria-disabled": isSyncMode || isCurrent
-        },
-        /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold leading-snug line-clamp-2", title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || item.fromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnit.name), item.fromDA && /* @__PURE__ */ React.createElement(
-          "span",
+        /* @__PURE__ */ React.createElement("div", { className: "flex items-stretch gap-2 w-full" }, /* @__PURE__ */ React.createElement(
+          "button",
           {
-            className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
-            title: typeof item.daItemIndex === "number" ? `Auto-generated by Dynamic Assessment for item ${item.daItemIndex + 1}` : "Auto-generated by Dynamic Assessment"
+            type: "button",
+            draggable: editingId === null && canReorderResources,
+            onDragStart: (e) => {
+              if (!canReorderResources) {
+                e.preventDefault();
+                return;
+              }
+              handleDragStart(e, itemInstanceId);
+            },
+            onKeyDown: (e) => {
+              if (!e.altKey || !canReorderResources) return;
+              if (e.key === "ArrowUp" && idx > 0) {
+                e.preventDefault();
+                moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1]));
+              } else if (e.key === "ArrowDown" && idx < filteredHistory.length - 1) {
+                e.preventDefault();
+                moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1]));
+              }
+            },
+            "aria-keyshortcuts": canReorderResources ? "Alt+ArrowUp Alt+ArrowDown" : void 0,
+            "aria-disabled": !canReorderResources || editingId === itemInstanceId,
+            "aria-label": canReorderResources ? (t("common.reorder_list") || "Reorder") + ": " + itemTitle + ". " + (t("history.position") || "Position") + " " + (idx + 1) + " " + (t("common.of") || "of") + " " + filteredHistory.length + ". " + (t("history.keyboard_reorder") || "Use Alt plus Up or Down Arrow to reorder.") : itemTitle + ". " + t("history.clear_filters_to_reorder"),
+            className: `min-h-11 min-w-11 rounded-lg flex items-center justify-center gap-0.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "text-indigo-600 hover:bg-indigo-100" : "text-slate-400 hover:bg-slate-100 hover:text-slate-700"} ${editingId === itemInstanceId || !canReorderResources ? "cursor-not-allowed opacity-40" : "cursor-grab active:cursor-grabbing"}`,
+            "data-help-key": "history_item_drag",
+            title: isResourceFilterActive ? t("history.clear_filters_to_reorder") : t("common.drag_to_reorder")
           },
-          "\u{1F52C} DA",
-          typeof item.daItemIndex === "number" ? ` \xB7 #${item.daItemIndex + 1}` : ""
-        ), itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta))), item.type === "word-sounds" && item.configSummary && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex items-center gap-1 truncate text-xs text-slate-500", title: item.configSummary }, /* @__PURE__ */ React.createElement("span", { className: "rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700" }, "\u{1F4CB} ", item.configSummary))),
-        /* @__PURE__ */ React.createElement(
-          "span",
+          /* @__PURE__ */ React.createElement(GripVertical, { size: 14, "aria-hidden": "true" }),
+          /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold", "aria-hidden": "true" }, idx + 1)
+        ), /* @__PURE__ */ React.createElement("div", { className: `self-center p-2 rounded-lg shrink-0 ${isCurrent ? "bg-indigo-100 text-indigo-700" : "bg-slate-100 text-slate-600"}` }, getIconForType(itemType)), editingId === itemInstanceId ? /* @__PURE__ */ React.createElement("div", { className: "flex min-h-11 min-w-0 flex-grow items-center gap-1", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement(
+          "input",
           {
-            "aria-hidden": "true",
-            className: `shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "border border-slate-200 bg-white text-indigo-700"}`
+            "aria-label": t("common.enter_edit_title"),
+            type: "text",
+            value: editTitle,
+            onChange: (e) => setEditTitle(e.target.value),
+            className: "min-h-11 w-full rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200",
+            autoFocus: true
+          }
+        ), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleSaveEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-emerald-700 hover:bg-emerald-50", "aria-label": t("common.save") }, /* @__PURE__ */ React.createElement(Save, { size: 14 })), /* @__PURE__ */ React.createElement("button", { onClick: (e) => handleCancelEdit(e), className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-red-700 hover:bg-red-50", "aria-label": t("common.cancel") }, /* @__PURE__ */ React.createElement(X, { size: 14 }))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: (e) => {
+              e.stopPropagation();
+              if (isCurrent) return;
+              if (isSyncMode) {
+                addToast(t("session.teacher_control_warning"), "info");
+                return;
+              }
+              handleRestoreView(item);
+            },
+            className: `min-h-11 min-w-0 flex-grow rounded-lg px-2 py-1.5 text-left flex items-center gap-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white ${isCurrent ? "cursor-default bg-indigo-50/80 text-slate-900" : "hover:bg-slate-100 text-slate-800"} aria-disabled:opacity-60`,
+            "aria-label": isCurrent ? `${itemTitle}. ${currentLabel}` : `${openLabel}: ${itemTitle}`,
+            "aria-current": isCurrent ? "page" : void 0,
+            "aria-disabled": isSyncMode || isCurrent
           },
-          isCurrent ? currentLabel : openLabel
-        )
-      ), isTeacherMode && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          "aria-label": t("common.edit"),
-          "data-help-key": "history_rename_btn",
-          onClick: (e) => handleStartEdit(e, item),
-          className: "min-h-11 min-w-11 self-center grid place-items-center rounded-lg border border-transparent text-indigo-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50",
-          title: t("actions.rename")
-        },
-        /* @__PURE__ */ React.createElement(Pencil, { size: 10 })
-      ))),
-      isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-between border-t border-slate-200 pt-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": `${t("actions.move_up") || "Move up"}: ${isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}`,
-          "data-help-key": "history_move_up_btn",
-          onClick: (e) => moveItem(e, idx, "up"),
-          disabled: !canReorderResources || idx === 0,
-          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-          title: t("actions.move_up")
-        },
-        /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "aria-label": `${t("actions.move_down") || "Move down"}: ${isTeacherMode && !isIndependentMode ? String(item.title || getDefaultTitle(item.type)) : sanitizeString(item.title || getDefaultTitle(item.type))}`,
-          "data-help-key": "history_move_down_btn",
-          onClick: (e) => moveItem(e, idx, "down"),
-          disabled: !canReorderResources || idx === filteredHistory.length - 1,
-          className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
-          title: t("actions.move_down")
-        },
-        /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
-      ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          "data-help-key": "history_move_to_unit_btn",
-          "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
-          "aria-expanded": movingItemId === item.id,
-          "aria-haspopup": "menu",
-          "aria-controls": `history-move-menu-${item.id}`,
-          onClick: () => setMovingItemId(movingItemId === item.id ? null : item.id),
-          className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${item.unitId ? "text-amber-700" : ""}`,
-          title: t("history.tooltips.move_to_unit")
-        },
-        /* @__PURE__ */ React.createElement(FolderInput, { size: 12, "aria-hidden": "true" })
-      ), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${item.id}`, role: "menu", className: "rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          role: "menuitem",
-          onClick: () => handleMoveToUnit(item.id, "uncategorized"),
-          className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!item.unitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
-        },
-        t("history.uncategorized")
-      ), units.map((u) => /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          type: "button",
-          role: "menuitem",
-          key: u.id,
-          onClick: () => handleMoveToUnit(item.id, u.id),
-          className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${item.unitId === u.id ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
-        },
-        u.name
-      )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))), movingItemId === item.id && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), item.type === "word-sounds" && /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          onClick: (e) => {
-            e.stopPropagation();
-            const words = item.data || [];
-            const config = item.lessonPlanConfig || {};
-            const lines = [
-              "Date,Resource,Word,Activity,TotalWords",
-              ...words.map((w) => {
-                const word = w.targetWord || w.word || w.displayWord || "";
-                return `${new Date(item.timestamp).toLocaleDateString()},${item.title || "Word Sounds"},${word},,${words.length}`;
-              })
-            ];
-            if (item.configSummary) {
-              lines.unshift("# Config: " + item.configSummary);
-            }
-            const csv = lines.join("\n");
-            const blob = new Blob([csv], { type: "text/csv" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `word-sounds-${new Date(item.timestamp).toISOString().split("T")[0]}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            addToast && addToast("CSV downloaded for RTI progress monitoring", "success");
+          /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold leading-snug line-clamp-2", title: itemTitle }, itemTitle), /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 flex-wrap items-center gap-1.5 text-xs text-slate-500" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${isCurrent ? "border-indigo-200 bg-white text-indigo-700" : "border-slate-200 bg-slate-100 text-slate-600"}` }, itemTypeLabel), itemTextBadge && /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-0.5 font-semibold ${itemTextBadgeClass}` }, itemTextBadge.label), itemDateLabel && /* @__PURE__ */ React.createElement("time", { dateTime: itemDateTime }, itemDateLabel)), (itemUnit || itemFromDA || itemMeta) && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex min-w-0 items-center gap-1 truncate text-xs text-slate-500" }, itemUnit && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-0.5 rounded border border-slate-200 bg-white px-1.5 py-0.5 text-slate-600" }, /* @__PURE__ */ React.createElement(Folder, { size: 8 }), " ", itemUnitName), itemFromDA && /* @__PURE__ */ React.createElement(
+            "span",
+            {
+              className: "bg-violet-100 text-violet-700 border border-violet-300 px-1 rounded font-bold",
+              title: itemDaItemIndex !== null ? `Auto-generated by Dynamic Assessment for item ${itemDaItemIndex + 1}` : "Auto-generated by Dynamic Assessment"
+            },
+            "\u{1F52C} DA",
+            itemDaItemIndex !== null ? ` \xB7 #${itemDaItemIndex + 1}` : ""
+          ), itemMeta && /* @__PURE__ */ React.createElement("span", null, isTeacherMode && !isIndependentMode ? itemMeta : sanitizeString(itemMeta))), itemType === "word-sounds" && itemConfigSummary && /* @__PURE__ */ React.createElement("div", { className: "mt-1 flex items-center gap-1 truncate text-xs text-slate-500", title: itemConfigSummary }, /* @__PURE__ */ React.createElement("span", { className: "rounded border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-violet-700" }, "\u{1F4CB} ", itemConfigSummary))),
+          /* @__PURE__ */ React.createElement(
+            "span",
+            {
+              "aria-hidden": "true",
+              className: `shrink-0 rounded-md px-2 py-1 text-xs font-bold ${isCurrent ? "bg-emerald-100 text-emerald-800" : "border border-slate-200 bg-white text-indigo-700"}`
+            },
+            isCurrent ? currentLabel : openLabel
+          )
+        ), isTeacherMode && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            "aria-label": t("common.edit"),
+            "data-help-key": "history_rename_btn",
+            onClick: (e) => handleStartEdit(e, item),
+            className: "min-h-11 min-w-11 self-center grid place-items-center rounded-lg border border-transparent text-indigo-700 transition-colors hover:border-indigo-200 hover:bg-indigo-50",
+            title: t("actions.rename")
           },
-          className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${generatedContent && generatedContent.id === item.id ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
-          title: t("common.export_csv_for_rti")
-        },
-        /* @__PURE__ */ React.createElement(Download, { size: 12 }),
-        " CSV"
-      ), /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          "aria-label": t("common.delete"),
-          onClick: (e) => handleDeleteHistoryItem(e, item.id),
-          className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
-          title: t("history.tooltips.remove_item"),
-          "data-help-key": "resource_delete_button"
-        },
-        /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
-        " ",
-        t("actions.remove")
-      ))
-    );
-  })));
+          /* @__PURE__ */ React.createElement(Pencil, { size: 10 })
+        ))),
+        isTeacherMode && /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex items-center justify-between border-t border-slate-200 pt-2", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 relative" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": `${t("actions.move_up") || "Move up"}: ${itemTitle}`,
+            "data-help-key": "history_move_up_btn",
+            onClick: (e) => moveItem(e, itemInstanceId, "up", getHistoryRowInstanceId(filteredHistory[idx - 1])),
+            disabled: !canReorderResources || idx === 0,
+            className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+            title: t("actions.move_up")
+          },
+          /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 })
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "aria-label": `${t("actions.move_down") || "Move down"}: ${itemTitle}`,
+            "data-help-key": "history_move_down_btn",
+            onClick: (e) => moveItem(e, itemInstanceId, "down", getHistoryRowInstanceId(filteredHistory[idx + 1])),
+            disabled: !canReorderResources || idx === filteredHistory.length - 1,
+            className: "min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 disabled:opacity-30",
+            title: t("actions.move_down")
+          },
+          /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
+        ), /* @__PURE__ */ React.createElement("div", { className: "relative" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            "data-help-key": "history_move_to_unit_btn",
+            "aria-label": `${t("history.tooltips.move_to_unit") || "Move to unit"}: ${itemTitle}`,
+            "aria-expanded": movingItemId === itemInstanceId,
+            "aria-haspopup": "menu",
+            "aria-controls": `history-move-menu-${itemInstanceId}`,
+            onClick: () => setMovingItemId(movingItemId === itemInstanceId ? null : itemInstanceId),
+            className: `min-h-11 min-w-11 grid place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 ${itemUnitId ? "text-amber-700" : ""}`,
+            title: t("history.tooltips.move_to_unit")
+          },
+          /* @__PURE__ */ React.createElement(FolderInput, { size: 12, "aria-hidden": "true" })
+        ), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement("div", { id: `history-move-menu-${itemInstanceId}`, role: "menu", className: "rp-menu-surface absolute left-0 top-12 z-[100] w-48 origin-top-left rounded-xl border border-slate-200 bg-white p-1 shadow-xl shadow-slate-900/15 animate-in fade-in zoom-in-95" }, /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "px-2 py-2 text-xs font-bold uppercase tracking-wider text-slate-500" }, t("history.move_to_label")), /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "flex flex-col gap-0.5 max-h-32 overflow-y-auto custom-scrollbar" }, /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            role: "menuitem",
+            onClick: () => handleMoveToUnit(itemInstanceId, "uncategorized"),
+            className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${!itemUnitId ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+          },
+          t("history.uncategorized")
+        ), units.map((u) => /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            type: "button",
+            role: "menuitem",
+            key: u.id,
+            onClick: () => handleMoveToUnit(itemInstanceId, u.id),
+            className: `min-h-11 w-full truncate rounded-lg px-2 py-2 text-left text-xs text-slate-700 hover:bg-indigo-50 ${itemUnitId === getSafeRowText(getSafeArtifactField(u, "id"), "", 160) ? "bg-indigo-50 font-bold text-indigo-700" : ""}`
+          },
+          u.name
+        )), units.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "px-2 py-2 text-xs italic text-slate-500" }, t("history.no_units")))), movingItemId === itemInstanceId && /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[90]", onClick: handleSetMovingItemIdToNull }))), itemType === "word-sounds" && /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              const words = getSafeArraySnapshot(itemData, 1e4);
+              const lines = [
+                "Date,Resource,Word,Activity,TotalWords",
+                ...words.map((w) => {
+                  const word = getSafeRowText(
+                    getSafeArtifactField(w, "targetWord") || getSafeArtifactField(w, "word") || getSafeArtifactField(w, "displayWord"),
+                    "",
+                    240
+                  );
+                  return `${(itemDate || /* @__PURE__ */ new Date()).toLocaleDateString()},${itemTitle || "Word Sounds"},${word},,${words.length}`;
+                })
+              ];
+              if (itemConfigSummary) {
+                lines.unshift("# Config: " + itemConfigSummary);
+              }
+              const csv = lines.join("\n");
+              const blob = new Blob([csv], { type: "text/csv" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `word-sounds-${(itemDate || /* @__PURE__ */ new Date()).toISOString().split("T")[0]}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+              addToast && addToast("CSV downloaded for RTI progress monitoring", "success");
+            },
+            className: `min-h-11 rounded-lg px-2 text-xs font-semibold transition-colors flex items-center gap-1 ${isCurrent ? "text-emerald-800" : "text-emerald-700"} hover:bg-emerald-50`,
+            title: t("common.export_csv_for_rti")
+          },
+          /* @__PURE__ */ React.createElement(Download, { size: 12 }),
+          " CSV"
+        ), /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            "aria-label": t("common.delete"),
+            onClick: (e) => handleDeleteHistoryItem(e, itemPublicId, item),
+            className: "min-h-11 rounded-lg px-2 text-xs font-semibold text-red-700 transition-colors hover:bg-red-50 flex items-center gap-1",
+            title: t("history.tooltips.remove_item"),
+            "data-help-key": "resource_delete_button"
+          },
+          /* @__PURE__ */ React.createElement(Trash2, { size: 12 }),
+          " ",
+          t("actions.remove")
+        ))
+      );
+    })
+  ));
 }
 
   window.AlloModules = window.AlloModules || {};

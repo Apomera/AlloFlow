@@ -108,7 +108,9 @@ describe('teacher side: ANTI source contracts', () => {
 
   it('classGoals travel with roster import (teacher_source)', () => {
     const teacherSrc = readFileSync('teacher_source.jsx', 'utf8');
-    expect(teacherSrc).toContain('...(Array.isArray(data.classGoals) ? { classGoals: data.classGoals } : {})');
+    expect(teacherSrc).toContain('const classGoals = (Array.isArray(data.classGoals) ? data.classGoals : []).map');
+    expect(teacherSrc).toContain('...(classGoals.length ? { classGoals } : {})');
+    expect(teacherSrc).not.toContain('classGoals: data.classGoals');
   });
 });
 
@@ -191,6 +193,8 @@ describe('session record: goals met land in the roster summary', () => {
   it('teacher history card renders goals met and import preserves the log', () => {
     const teacherSrc = readFileSync('teacher_source.jsx', 'utf8');
     expect(teacherSrc).toContain('Class Goals met:');
-    expect(teacherSrc).toContain('...(Array.isArray(data.classGoalLog) ? { classGoalLog: data.classGoalLog.slice(-60) } : {})');
+    expect(teacherSrc).toContain('const classGoalLog = (Array.isArray(data.classGoalLog) ? data.classGoalLog : []).map');
+    expect(teacherSrc).toContain('...(classGoalLog.length ? { classGoalLog } : {})');
+    expect(teacherSrc).not.toContain('classGoalLog: data.classGoalLog');
   });
 });

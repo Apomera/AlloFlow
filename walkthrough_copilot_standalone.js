@@ -1149,6 +1149,7 @@
   function copyText(text, what) {
     function fallback() {
       var area = document.createElement('textarea');
+      area.setAttribute('aria-label', 'Temporary field for copying walkthrough text');
       area.value = text;
       area.setAttribute('readonly', 'readonly');
       area.style.position = 'fixed';

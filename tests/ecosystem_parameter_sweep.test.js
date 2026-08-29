@@ -64,6 +64,8 @@ describe('Ecosystem calibrated presets and parameter sweep', () => {
   }
 
   async function applyPresetAndRun(label) {
+    const planButton = host.querySelector('button[data-ecosystem-plan-next="true"]');
+    if (planButton) await act(async () => planButton.click());
     const presetButton = Array.from(host.querySelectorAll('button')).find((button) =>
       button.getAttribute('aria-label')?.includes(label) && button.getAttribute('aria-label')?.includes('preset'));
     await act(async () => presetButton.click());
@@ -73,7 +75,13 @@ describe('Ecosystem calibrated presets and parameter sweep', () => {
       Extinction: { prey0: 20, pred0: 35, preyDeath: 0.03, carryingCapacity: 100 },
     }[label];
     expect(latestEcosystemState).toMatchObject(expectedPreset);
-    const runButton = host.querySelector('button[aria-label="Run Graph Simulation"]');
+    const predictionButton = host.querySelector('button[aria-label^="Prey crosses below 1."]');
+    expect(predictionButton).not.toBeNull();
+    await act(async () => predictionButton.click());
+    const commitButton = host.querySelector('button[data-ecosystem-commit-prediction="true"]');
+    expect(commitButton).not.toBeNull();
+    await act(async () => commitButton.click());
+    const runButton = host.querySelector('button[data-ecosystem-run-committed="true"]');
     expect(runButton).not.toBeNull();
     await act(async () => runButton.click());
     return latestEcosystemState.data;

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import axe from 'axe-core';
 import {
   React,
   ReactDOMClient,
@@ -48,9 +49,38 @@ async function blur(control) {
   });
 }
 
+async function keyDown(control, key) {
+  await act(async () => {
+    control.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    await Promise.resolve();
+  });
+}
+
 describe('Aquaculture blue-mussel health station', () => {
   let host;
   let root;
+  async function mountTool() {
+    resetStemLab();
+    const config = loadTool('stem_lab/stem_tool_aquaculture.js', 'aquacultureLab');
+    const Component = () => config.render(makeCtx({ React }));
+    root = ReactDOMClient.createRoot(host);
+    await act(async () => {
+      root.render(React.createElement(Component));
+      await Promise.resolve();
+    });
+  }
+
+  async function remountWithState(state) {
+    if (root) {
+      await act(async () => {
+        root.unmount();
+        await Promise.resolve();
+      });
+      root = null;
+    }
+    window.localStorage.setItem('aquacultureLab.state.v1', JSON.stringify(state));
+    await mountTool();
+  }
 
   beforeEach(async () => {
     window.localStorage.clear();
@@ -64,16 +94,9 @@ describe('Aquaculture blue-mussel health station', () => {
       addListener: vi.fn(),
       removeListener: vi.fn(),
     }));
-    resetStemLab();
-    const config = loadTool('stem_lab/stem_tool_aquaculture.js', 'aquacultureLab');
-    const Component = () => config.render(makeCtx({ React }));
     host = document.createElement('div');
     document.body.appendChild(host);
-    root = ReactDOMClient.createRoot(host);
-    await act(async () => {
-      root.render(React.createElement(Component));
-      await Promise.resolve();
-    });
+    await mountTool();
   });
 
   afterEach(() => {
@@ -121,8 +144,83 @@ describe('Aquaculture blue-mussel health station', () => {
     expect(JSON.stringify(heatwave)).not.toMatch(/\?C|\?g\/L|model\?s/);
   });
 
+  it('carries paired boat evidence into either depth of the Mussel Health model', async () => {
+    await remountWithState({
+      completedMissions: {
+        'mission-1': {
+          completedAt: 123456,
+          mode: '3d',
+          summary: {
+            elapsedSeconds: 98,
+            fuelRemaining: 84,
+            buoyViolations: 1,
+            droppersDeployed: 5,
+            surfaceReading: { depth: 'surface', temp: '14.1', salinity: '27.2', DO: '8.20', pH: '8.01', chlA: '6.5', timestamp: 100 },
+            cropDepthReading: { depth: 'crop', temp: '13.2', salinity: '27.8', DO: '5.40', pH: '7.82', chlA: '4.2', timestamp: 200 },
+          },
+        },
+      },
+    });
+    await openMusselStation();
+
+    const panel = host.querySelector('.aq-mussel-mission-evidence');
+    expect(panel).toBeTruthy();
+    expect(panel.dataset.loadedDepth).toBe('none');
+    expect(panel.querySelector('svg title').textContent).toContain('Paired boat-probe depth profile');
+    expect(panel.querySelector('svg desc').textContent).toContain('same visit');
+    expect(panel.querySelectorAll('tbody tr')).toHaveLength(5);
+    expect(panel.querySelector('.aq-mussel-mission-evidence-table').textContent).toContain('-2.80 mg/L');
+    expect(findButton(panel, 'Use crop depth').getAttribute('aria-pressed')).toBe('false');
+
+    await click(findButton(panel, 'Use crop depth'));
+    expect(host.querySelector('#aq-mussel-temperature-number').value).toBe('13.2');
+    expect(host.querySelector('#aq-mussel-oxygen-number').value).toBe('5.4');
+    expect(host.querySelector('#aq-mussel-pH-number').value).toBe('7.82');
+    expect(host.querySelector('#aq-mussel-chlorophyll-number').value).toBe('4.2');
+    expect(host.querySelector('#aq-mussel-fouling-number').value).toBe('12');
+    expect(host.querySelector('#aq-mussel-attachment-number').value).toBe('92');
+    expect(host.querySelector('#aq-mussel-case-heading').textContent).toBe('Boat mission \u00B7 crop-depth evidence');
+    expect(host.querySelector('#aq-mussel-temperature-source').textContent).toContain('boat probe');
+    expect(host.querySelector('#aq-mussel-fouling-source').textContent).toContain('not measured by probe');
+    expect(host.querySelector('#aq-mussel-temperature').getAttribute('aria-describedby')).toContain('aq-mussel-temperature-source');
+    expect(findButton(panel, 'Use crop depth').getAttribute('aria-pressed')).toBe('true');
+
+    let saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).musselHealthWorkspace;
+    expect(saved.evidenceSource).toBe('mission-crop');
+    expect(saved.evidenceMissionCompletedAt).toBe(123456);
+    await change(host.querySelector('#aq-mussel-fouling-number'), '35');
+    saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).musselHealthWorkspace;
+    expect(saved.evidenceSource).toBe('mission-crop');
+
+    await change(host.querySelector('#aq-mussel-temperature-number'), '13.3');
+    saved = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).musselHealthWorkspace;
+    expect(saved.evidenceSource).toBe('');
+    expect(host.querySelector('#aq-mussel-case-heading').textContent).toBe('Custom field case');
+
+    await click(findButton(panel, 'Use surface'));
+    expect(host.querySelector('#aq-mussel-temperature-number').value).toBe('14.1');
+    expect(host.querySelector('#aq-mussel-oxygen-number').value).toBe('8.2');
+    expect(findButton(panel, 'Use surface').getAttribute('aria-pressed')).toBe('true');
+
+    const results = await axe.run(panel, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false }, region: { enabled: false }, 'scrollable-region-focusable': { enabled: false } },
+    });
+    expect(results.violations.filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([]);
+  }, 15000);
   it('sanitizes versioned checks and prints all seven readings with safety metadata', () => {
     const helpers = window.AquacultureLearningHelpers;
+    const trainingSurface = helpers.missionScenarioProbeReading('training', 'surface', 'guided-2d', false);
+    const freshetSurface = helpers.missionScenarioProbeReading('freshet', 'surface', 'guided-2d', false);
+    const freshetCrop = helpers.missionScenarioProbeReading('freshet', 'crop', 'guided-2d', false);
+    const heatCrop = helpers.missionScenarioProbeReading('heat-slack', 'crop', 'guided-2d', false);
+    expect(helpers.fieldMissionScenario('unknown').id).toBe('training');
+    expect(trainingSurface).toMatchObject({ depth: 'surface', DO: '8.45', salinity: '28.4' });
+    expect(freshetSurface).toMatchObject({ depth: 'surface', salinity: '13.5' });
+    expect(freshetSurface.warnings.join(' ')).toContain('Salinity low');
+    expect(heatCrop).toMatchObject({ depth: 'crop', temp: '22.9', DO: '3.85' });
+    expect(heatCrop.warnings.join(' ')).toContain('Dissolved oxygen low');
+    expect(helpers.describeMissionDepthComparison(freshetSurface, freshetCrop)).toContain('11.3 PSU higher in salinity');
     const workspace = helpers.sanitizeMusselHealthWorkspace({
       temperature: 999,
       salinity: -5,
@@ -138,6 +236,8 @@ describe('Aquaculture blue-mussel health station', () => {
         modelVersion: '2026.08',
         scenarioId: 'heatwave',
         prediction: 'oxygen',
+        evidenceSource: 'mission-crop',
+        evidenceMissionCompletedAt: 400,
         observation: '<script>field note</script>',
         readings: { temperature: 24, salinity: 27, oxygen: 3.6, pH: 7.85, chlorophyll: 16, fouling: 35, attachment: 58 },
       }],
@@ -149,16 +249,43 @@ describe('Aquaculture blue-mussel health station', () => {
       prioritySignal: 'Dissolved oxygen',
       modelVersion: '2026.08',
       prediction: 'oxygen',
+      evidenceSource: 'mission-crop',
+      evidenceMissionCompletedAt: 400,
     });
 
+    const missionSummary = helpers.sanitizeMissionSummary({
+      scenarioId: 'freshet',
+      elapsedSeconds: 98,
+      fuelRemaining: 84,
+      buoyViolations: 1,
+      droppersDeployed: 5,
+      surfaceReading: { depth: 'surface', temp: '14.1', salinity: '27.2', DO: '8.20', pH: '8.01', chlA: '6.5' },
+      cropDepthReading: { depth: 'crop', temp: '13.2', salinity: '27.8', DO: '5.40', pH: '7.82', chlA: '4.2' },
+    });
+    expect(missionSummary).toMatchObject({ scenarioId: 'freshet', scenarioName: 'After-rain freshet', tide: 'Ebbing after rain' });
+    const comparison = helpers.compareMissionDepthReadings(missionSummary);
+    const mappedCrop = helpers.missionReadingToMusselReadings(missionSummary.cropDepthReading, {});
+    expect(comparison.metrics.find((metric) => metric.id === 'oxygen').delta).toBe(-2.8);
+    expect(mappedCrop).toMatchObject({ temperature: 13.2, oxygen: 5.4, fouling: 12, attachment: 92 });
     const groups = [{ id: 'species', label: 'Species', tabs: [{ id: 'musseldeep', label: 'Mussel Deep' }] }];
-    const portfolio = helpers.buildLearningPortfolio({ musselHealthWorkspace: workspace }, groups, [], '2026-08-25T12:00:00.000Z');
+    const portfolio = helpers.buildLearningPortfolio({
+      musselHealthWorkspace: workspace,
+      completedMissions: {
+        'mission-1': { completedAt: 600, mode: '3d', summary: missionSummary },
+      },
+    }, groups, [], '2026-08-25T12:00:00.000Z');
     const merged = helpers.mergeLearningPortfolio({}, portfolio, ['musseldeep']);
     const html = helpers.portfolioToHtml(portfolio);
     const trust = helpers.contentTrustForTopic('musseldeep');
 
     expect(portfolio.summary.musselHealthChecks).toBe(1);
     expect(merged.musselHealthWorkspace.checks).toHaveLength(1);
+    expect(portfolio.learning.completedMissions['mission-1'].summary.cropDepthReading.DO).toBe('5.40');
+    expect(merged.completedMissions['mission-1'].summary.surfaceReading.temp).toBe('14.1');
+    expect(html).toContain('Paired boat-probe record');
+    expect(html).toContain('Field condition:</strong> After-rain freshet');
+    expect(html).toContain('5.40 mg/L');
+    expect(html).toContain('Evidence source:</strong> boat mission crop-depth sample');
     expect(html).toContain('Mussel field-check evidence');
     expect(html).toContain('temperature 24 °C');
     expect(html).toContain('pH 7.85');
@@ -175,27 +302,43 @@ describe('Aquaculture blue-mussel health station', () => {
   it('guides a prediction before revealing seven accessible signals', async () => {
     await openMusselStation();
 
+    const steps = host.querySelector('.aq-mussel-steps');
+    const controls = host.querySelector('.aq-mussel-controls');
+    const revealStep = host.querySelector('.aq-mussel-reveal-step');
     expect(host.querySelector('.aq-mussel-factor-table')).toBeNull();
     expect(host.querySelector('.aq-mussel-result-hidden').textContent).toContain('Model result hidden');
     expect(host.querySelector('.aq-mussel-lease-figure svg title').textContent).toContain('crop-depth sampling');
     expect(host.querySelector('.aq-mussel-lease-figure svg desc').textContent).toContain('four vertical mussel droppers');
+    expect(host.querySelector('.aq-mussel-culture-figure svg title').textContent).toContain('culture journey');
+    expect(host.querySelector('.aq-mussel-evidence-figure svg title').textContent).toContain('field evidence ladder');
+    expect(host.querySelector('.aq-mussel-visual-guide summary').textContent).toContain('two more diagrams');
+    expect(findButton(host, 'Open 3D + guided mission')).toBeTruthy();
     expect(host.querySelectorAll('.aq-mussel-health-station [aria-live="polite"]')).toHaveLength(1);
     expect(host.querySelectorAll('.aq-mussel-controls input[type="range"]')).toHaveLength(7);
     expect(host.querySelectorAll('.aq-mussel-controls input[type="number"]')).toHaveLength(7);
     expect(host.querySelector('#aq-mussel-oxygen').getAttribute('aria-valuetext')).toContain('hidden until reveal');
     expect(host.querySelector('.aq-mussel-food-safety a').href).toContain('/shellfish/closures');
+    expect(steps.querySelector('[aria-current="step"]').textContent).toContain('2 · Predict');
+    expect(controls.compareDocumentPosition(revealStep) & window.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     const presets = Array.from(host.querySelectorAll('.aq-mussel-preset'));
     expect(presets).toHaveLength(5);
     expect(presets.every((button) => button.getAttribute('role') === 'radio')).toBe(true);
     expect(presets.find((button) => button.textContent.includes('Balanced')).getAttribute('aria-checked')).toBe('true');
+    expect(presets.map((button) => button.tabIndex)).toEqual([0, -1, -1, -1, -1]);
     expect(findButton(host, 'Reveal model').disabled).toBe(true);
 
-    await click(findButton(host, 'Heatwave + slack tide'));
+    await keyDown(presets[0], 'ArrowRight');
     expect(presets.find((button) => button.textContent.includes('Heatwave')).getAttribute('aria-checked')).toBe('true');
+    expect(presets.map((button) => button.tabIndex)).toEqual([-1, 0, -1, -1, -1]);
     expect(host.querySelector('#aq-mussel-case-heading').textContent).toBe('Heatwave + slack tide');
 
-    await predictAndReveal('temperature');
+    await change(host.querySelector('#aq-mussel-prediction'), 'temperature');
+    expect(steps.querySelector('[aria-current="step"]').textContent).toContain('3 · Inspect');
+    await click(findButton(host, 'Reveal model'));
+    expect(steps.querySelector('[aria-current="step"]').textContent).toContain('5 · Explain + save');
+    expect(revealStep.textContent).toContain('Model revealed');
+    expect(findButton(host, 'Reveal again')).toBeUndefined();
     expect(host.querySelectorAll('.aq-mussel-factor-table tbody tr')).toHaveLength(7);
     expect(host.querySelector('.aq-mussel-assessment').textContent).toContain('Act and verify');
     expect(host.querySelector('.aq-mussel-assessment').textContent).toContain('Dissolved oxygen');
@@ -235,6 +378,74 @@ describe('Aquaculture blue-mussel health station', () => {
     expect(host.querySelector('#aq-mussel-observation').value).toBe(draft);
   });
 
+  it('connects the visual field guide to the paired-depth lease mission', async () => {
+    await openMusselStation();
+    expect(host.querySelectorAll('.aq-mussel-visual-guide figure')).toHaveLength(2);
+    expect(host.querySelector('.aq-mussel-culture-figure svg desc').textContent).toContain('collecting spat');
+    expect(host.querySelector('.aq-mussel-evidence-figure svg desc').textContent).toContain('crop-depth repetition');
+
+    await click(findButton(host, 'Open 3D + guided mission'));
+    expect(host.querySelector('.aq-guided-mission')).toBeTruthy();
+    await click(findButton(host, 'Start guided 2D mission'));
+    expect(host.textContent).toContain('Compare surface and crop-depth samples');
+    expect(host.textContent).toContain('paired depth samples');
+  });
+
+  it('replays an after-rain field day and preserves its guided evidence', async () => {
+    await openMusselStation();
+    await click(findButton(host, 'Open 3D + guided mission'));
+
+    const briefing = host.querySelector('.aq-field-mission-briefing');
+    expect(briefing).toBeTruthy();
+    expect(briefing.querySelector('svg title').textContent).toContain('Clear-water training sampling cross-section');
+    expect(briefing.querySelector('svg desc').textContent).toContain('two probe depths');
+    let choices = Array.from(briefing.querySelectorAll('.aq-field-scenario-choice'));
+    expect(choices).toHaveLength(3);
+    expect(choices.map((choice) => choice.getAttribute('role'))).toEqual(['radio', 'radio', 'radio']);
+    expect(choices.map((choice) => choice.tabIndex)).toEqual([0, -1, -1]);
+
+    await keyDown(choices[0], 'ArrowRight');
+    choices = Array.from(briefing.querySelectorAll('.aq-field-scenario-choice'));
+    expect(choices.find((choice) => choice.textContent.includes('After-rain freshet')).getAttribute('aria-checked')).toBe('true');
+    expect(briefing.textContent).toContain('Stronger outward flow');
+    expect(briefing.textContent).toContain('Does the salinity signal persist at crop depth');
+    expect(JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).missionScenarioId).toBe('freshet');
+
+    await click(findButton(host, 'Start guided 2D mission'));
+    expect(Array.from(briefing.querySelectorAll('.aq-field-scenario-choice')).every((choice) => choice.disabled)).toBe(true);
+    for (const label of ['Depart the landing', 'Keep red nun to starboard', 'Follow the marked channel']) await click(findButton(host, label));
+    for (let count = 1; count <= 5; count += 1) await click(findButton(host, 'Deploy seeded dropper ' + count + ' of 5'));
+    await click(findButton(host, 'Take surface sample'));
+    await click(findButton(host, 'Take crop-depth sample'));
+
+    const paired = host.querySelector('.aq-guided-sample-comparison');
+    expect(paired.querySelector('caption').textContent).toContain('After-rain freshet');
+    expect(paired.textContent).toContain('13.5 PSU');
+    expect(paired.textContent).toContain('24.8 PSU');
+    expect(paired.textContent).toContain('11.3 PSU higher in salinity');
+
+    await click(findButton(host, 'Return and secure the vessel'));
+    await change(host.querySelector('#aq-guided-reflection'), 'I kept red to starboard, stayed in the channel, and compared the freshet at both sample depths.');
+    await click(findButton(host, 'Save mission evidence'));
+    const mission = JSON.parse(window.localStorage.getItem('aquacultureLab.state.v1')).completedMissions['mission-1'];
+    expect(mission.summary).toMatchObject({
+      scenarioId: 'freshet',
+      scenarioName: 'After-rain freshet',
+      tide: 'Ebbing after rain',
+      surfaceReading: { salinity: '13.5' },
+      cropDepthReading: { salinity: '24.8' },
+    });
+    expect(mission.choice).toContain('After-rain freshet');
+
+    await click(findButton(host, 'Choose another condition'));
+    expect(Array.from(briefing.querySelectorAll('.aq-field-scenario-choice')).every((choice) => !choice.disabled)).toBe(true);
+    const results = await axe.run(briefing, {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      rules: { 'color-contrast': { enabled: false }, region: { enabled: false }, 'scrollable-region-focusable': { enabled: false } },
+    });
+    expect(results.violations.filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([]);
+  }, 15000);
+
   it('saves versioned evidence, reloads readings, and supports undo with distinct labels', async () => {
     await openMusselStation();
     await click(findButton(host, 'Heatwave + slack tide'));
@@ -266,8 +477,11 @@ describe('Aquaculture blue-mussel health station', () => {
 
     await change(host.querySelector('#aq-mussel-oxygen-number'), '8.8');
     expect(host.querySelector('#aq-mussel-oxygen').value).toBe('8.8');
+    expect(host.querySelector('#aq-mussel-case-heading').textContent).toBe('Heatwave + slack tide · adjusted');
+    expect(host.querySelector('#aq-mussel-case-heading').nextElementSibling.textContent).toContain('changed at least one reading');
     await click(findButton(host, 'Load this check'));
     expect(host.querySelector('#aq-mussel-oxygen').value).toBe('3.6');
+    expect(host.querySelector('#aq-mussel-case-heading').textContent).toBe('Heatwave + slack tide');
     expect(host.querySelector('#aq-mussel-observation').value).toBe(explanation);
 
     await click(Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Remove'));
@@ -300,4 +514,24 @@ describe('Aquaculture blue-mussel health station', () => {
     expect(after).toHaveLength(10);
     expect(after.map((check) => check.id)).toEqual(before.map((check) => check.id));
   });
+
+  it('has no serious or critical accessibility findings after reveal', async () => {
+    await openMusselStation();
+    await click(findButton(host, 'Heatwave + slack tide'));
+    await predictAndReveal('oxygen');
+    host.querySelector('.aq-mussel-visual-guide').open = true;
+
+    const results = await axe.run(host.querySelector('.aq-mussel-health-station'), {
+      runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+      rules: {
+        'color-contrast': { enabled: false },
+        region: { enabled: false },
+        'scrollable-region-focusable': { enabled: false },
+      },
+    });
+    const serious = results.violations
+      .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
+      .map((violation) => `${violation.id}: ${violation.help}`);
+    expect(serious).toEqual([]);
+  }, 15000);
 });

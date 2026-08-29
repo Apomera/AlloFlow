@@ -123,14 +123,33 @@ function insert(file) {
     const block = fresh.map((k) => `${indent}${JSON.stringify(k)}: ${JSON.stringify(incoming[k])},`).join('\n');
     out = out.slice(0, m.index + m[0].length) + '\n' + block + out.slice(m.index + m[0].length);
   }
-  // Existing keys are rewritten through the parsed object only if they changed,
-  // and only within the watercycle section, by regenerating that one line.
+  // Existing keys are rewritten only if they changed, and STRICTLY inside the
+  // watercycle object.
+  //
+  // ★ A whole-file regex is wrong here and it bit: short generic key names like
+  // "previous", "next", "static" and "stage" also exist in the other tools'
+  // sections of the same pack, so `"previous": "..."` matched 24 times in one
+  // pack. The count guard refused the write rather than corrupting 24 unrelated
+  // entries, but the fix is to bound the search to this section's span.
+  const openIdx = m.index + m[0].length - 1;          // the '{' of "watercycle": {
+  let depth = 0, endIdx = -1, inStr = false;
+  for (let i = openIdx; i < out.length; i++) {
+    const c = out[i];
+    if (inStr) { if (c === '\\') i++; else if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) { endIdx = i + 1; break; } }
+  }
+  if (endIdx < 0) throw new Error(`${file}: could not find the end of the watercycle object`);
+
+  let section = out.slice(openIdx, endIdx);
   for (const k of updates) {
     const lineRe = new RegExp(`(\\n\\s*${JSON.stringify(k).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*)("(?:[^"\\\\]|\\\\.)*")`, 'g');
     let replaced = 0;
-    out = out.replace(lineRe, (whole, head) => { replaced += 1; return head + JSON.stringify(incoming[k]); });
-    if (replaced !== 1) throw new Error(`${file}: key ${k} matched ${replaced} times on update`);
+    section = section.replace(lineRe, (whole, head) => { replaced += 1; return head + JSON.stringify(incoming[k]); });
+    if (replaced !== 1) throw new Error(`${file}: key ${k} matched ${replaced} times inside stem.watercycle`);
   }
+  out = out.slice(0, openIdx) + section + out.slice(endIdx);
 
   const check = JSON.parse(out);
   for (const k of Object.keys(incoming)) {
@@ -144,7 +163,38 @@ for (const r of results) console.log(`  ${r.file}: +${r.added} new, ${r.updated}
 
 if (DRY) { console.log('  (dry run)'); process.exit(0); }
 
-for (const r of results) if (r.added || r.updated) fs.writeFileSync(r.file, r.src);
+// This repo lives under OneDrive, and the sync client intermittently holds a
+// handle on a pack while it uploads. That surfaces as `EBUSY`, `EPERM`, or a
+// bare `UNKNOWN: unknown error, open ...` — transient, not a real failure.
+// Retry with a short backoff instead of losing a finished translation batch.
+// The on-disk re-read below is still the thing that proves the write landed.
+// ★ Truncate-and-rewrite of a ~7 MB pack fails under OneDrive with a bare
+// `UNKNOWN: unknown error, open ...`, even though the file is perfectly
+// readable and a small sibling write succeeds — the sync client objects to the
+// long-held write handle, not to the permissions. Writing a temp file beside it
+// and renaming over the target replaces the file in one metadata operation,
+// which OneDrive tolerates. Retry still wraps it for genuinely transient locks.
+function writeWithRetry(file, text, attempts = 6) {
+  const tmp = file + '.tmp-write';
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      fs.writeFileSync(tmp, text);
+      fs.renameSync(tmp, file);
+      return i;
+    } catch (e) {
+      try { if (fs.existsSync(tmp)) fs.unlinkSync(tmp); } catch (_) { /* best effort */ }
+      const transient = ['EBUSY', 'EPERM', 'UNKNOWN', 'EACCES'].includes(e.code);
+      if (!transient || i === attempts) throw e;
+      const until = Date.now() + i * 400;
+      while (Date.now() < until) { /* brief spin; no async in this script */ }
+    }
+  }
+}
+for (const r of results) {
+  if (!(r.added || r.updated)) continue;
+  const tries = writeWithRetry(r.file, r.src);
+  if (tries > 1) console.log(`  (write to ${r.file} succeeded on attempt ${tries} — file was locked)`);
+}
 for (const r of results) {
   const disk = JSON.parse(fs.readFileSync(r.file, 'utf8'));
   const ok = Object.keys(incoming).filter((k) => disk.stem.watercycle[k] === incoming[k]).length;

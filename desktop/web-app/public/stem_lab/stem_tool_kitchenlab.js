@@ -1968,7 +1968,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('kitchenLab')))
             h('div', { style: subheaderStyle() }, __alloT('stem.kitchenlab.usda_safe_cooking_temperatures', '🔥 USDA Safe Cooking Temperatures')),
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.55, marginBottom: 14 } },
               __alloT('stem.kitchenlab.these_are_the_minimum_internal_tempera', 'These are the minimum internal temperatures. A meat thermometer is the only way to know for sure. Color is unreliable — pink chicken at 165°F is safe; brown chicken at 140°F is not.')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 } },
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: 12 } },
               SAFE_TEMPS.map(function(t, i) {
                 return h('div', { key: i,
                   style: { background: 'rgba(15,23,42,0.5)', borderTop: '1px solid rgba(100,116,139,0.3)', borderRight: '1px solid rgba(100,116,139,0.3)', borderBottom: '1px solid rgba(100,116,139,0.3)', borderLeft: '4px solid #fb923c', borderRadius: 10, padding: '12px 14px' } },

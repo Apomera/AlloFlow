@@ -198,7 +198,7 @@ function normalizeConstraint(raw, studentSet, seatSet, taken) {
   return out;
 }
 
-function normalizeLayout(raw, taken) {
+function normalizeLayout(raw, taken, studentSet) {
   if (!raw || typeof raw !== 'object') return null;
   var id = typeof raw.id === 'string' && raw.id.trim() ? raw.id.trim() : null;
   if (!id || taken[id]) return null;
@@ -213,7 +213,7 @@ function normalizeLayout(raw, taken) {
     var used = {};
     Object.keys(raw.assignments).forEach(function (seatId) {
       var name = raw.assignments[seatId];
-      if (seatSet[seatId] && typeof name === 'string' && name && !used[name]) {
+      if (seatSet[seatId] && typeof name === 'string' && name && studentSet[name] && !used[name]) {
         assignments[seatId] = name;
         used[name] = 1;
       }
@@ -233,17 +233,17 @@ function normalizeLayout(raw, taken) {
 // layouts) because they describe STUDENTS, not rooms.
 function normalizeSeating(raw, studentNames) {
   var src = raw && typeof raw === 'object' ? raw : {};
+  var studentSet = {};
+  (studentNames || []).forEach(function (n) { studentSet[n] = 1; });
   var layoutsTaken = {};
   var layoutsRaw = src.layouts && typeof src.layouts === 'object' ? src.layouts : {};
   var layouts = {};
   Object.keys(layoutsRaw).forEach(function (k) {
-    var l = normalizeLayout(layoutsRaw[k], layoutsTaken);
+    var l = normalizeLayout(layoutsRaw[k], layoutsTaken, studentSet);
     if (l && l.id === k) layouts[k] = l;
   });
   var layoutIds = Object.keys(layouts);
   var activeLayoutId = typeof src.activeLayoutId === 'string' && layouts[src.activeLayoutId] ? src.activeLayoutId : (layoutIds[0] || null);
-  var studentSet = {};
-  (studentNames || []).forEach(function (n) { studentSet[n] = 1; });
   var seatSet = {};
   if (activeLayoutId) layouts[activeLayoutId].seats.forEach(function (s) { seatSet[s.id] = 1; });
   var cTaken = {};
@@ -538,7 +538,6 @@ function describeSeatForStudent(rosterKey, studentName, opts) {
   opts = opts || {};
   if (!rosterKey || typeof rosterKey !== 'object' || !studentName) return null;
   var students = (rosterKey.students && typeof rosterKey.students === 'object') ? rosterKey.students : {};
-  var displayNames = (rosterKey.displayNames && typeof rosterKey.displayNames === 'object') ? rosterKey.displayNames : {};
   var names = Object.keys(students);
   var seating = normalizeSeating(rosterKey.seating, names);
   var layout = seating.activeLayoutId ? seating.layouts[seating.activeLayoutId] : null;
@@ -547,7 +546,6 @@ function describeSeatForStudent(rosterKey, studentName, opts) {
   var want = String(studentName).trim().toLowerCase();
   var key = null;
   names.forEach(function (n) { if (!key && n.trim().toLowerCase() === want) key = n; });
-  if (!key) names.forEach(function (n) { if (!key && String(displayNames[n] || '').trim().toLowerCase() === want) key = n; });
   if (!key) return null;
   var seatId = null;
   Object.keys(layout.assignments).forEach(function (sid) { if (!seatId && layout.assignments[sid] === key) seatId = sid; });
@@ -579,7 +577,7 @@ function describeSeatForStudent(rosterKey, studentName, opts) {
     var neighborNames = podMates
       .map(function (s) { return layout.assignments[s.id]; })
       .filter(Boolean)
-      .map(function (n) { return String(displayNames[n] || n); });
+      .map(function (n) { return String(n); });
     if (neighborNames.length) parts.push('next to ' + neighborNames.join(', '));
   }
   return layout.name + ': ' + parts.join(', ');
@@ -722,9 +720,8 @@ function SeatingChartPanel({ isOpen, onClose, rosterKey, setRosterKey, t, addToa
 
   const students = (rosterKey && rosterKey.students && typeof rosterKey.students === 'object') ? rosterKey.students : {};
   const groups = (rosterKey && rosterKey.groups) || {};
-  const displayNames = (rosterKey && rosterKey.displayNames) || {};
   const studentNames = React.useMemo(() => Object.keys(students).sort(), [students]);
-  const displayNameOf = (name) => (displayNames[name] && String(displayNames[name])) || name;
+  const displayNameOf = (name) => name;
   const groupColorOf = (name) => {
     const g = groups[students[name]];
     return (g && g.color) || '#94a3b8';

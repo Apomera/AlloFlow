@@ -10,8 +10,8 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const FILE = 'stem_lab/stem_tool_pets.js';
 const ID = 'petsLab';
 
-function costView(costSpecies, costYears) {
-  return renderTool(ID, { [ID]: { view: 'cost', costSpecies, costYears } });
+function costView(costSpecies, costYears, extra = {}) {
+  return renderTool(ID, { [ID]: { view: 'cost', costSpecies, costYears, ...extra } });
 }
 /** React escapes &, ' and friends in text nodes. */
 function text(html) {
@@ -26,15 +26,18 @@ afterAll(() => { vi.useRealTimers(); vi.restoreAllMocks(); });
 beforeEach(() => { resetStemLab(); loadTool(FILE, ID); });
 
 describe('cost panel labelling', () => {
-  it('says "Lifetime cost" while the span fits one animal', () => {
+  it('uses an honest baseline label while the span fits one animal', () => {
     const html = costView('guinea-pair', 6); // exactly its lifespan
-    expect(html).toContain('Lifetime cost');
+    expect(html).toContain('Baseline planned cost');
+    expect(html).toContain('6-year illustrative scenario');
+    expect(html).not.toContain('True total commitment');
     expect(html).not.toContain('successive');
   });
 
-  it('stops saying "Lifetime" once the span covers several animals', () => {
+  it('keeps the baseline label once the span covers several animals', () => {
     const html = costView('guinea-pair', 30);
-    expect(html).toContain('Cost over 30 yr');
+    expect(html).toContain('Baseline planned cost');
+    expect(html).toContain('30-year illustrative scenario');
     expect(html).not.toContain('Lifetime cost');
   });
 
@@ -65,10 +68,11 @@ describe('cost panel labelling', () => {
     expect(html).not.toMatch(/1 more goodbyes/);
   });
 
-  it('a long-lived species over the same span stays a single lifetime', () => {
+  it('a long-lived species over the same span stays a single-animal scenario', () => {
     // A parrot lives ~25, so 20 years is still one bird.
     const html = costView('parrot-medium', 20);
-    expect(html).toContain('Lifetime cost');
+    expect(html).toContain('Baseline planned cost');
+    expect(html).toContain('20-year illustrative scenario');
     expect(html).not.toContain('successive');
   });
 
@@ -79,5 +83,68 @@ describe('cost panel labelling', () => {
         expect(() => costView(id, y), id + ' at ' + y + 'y').not.toThrow();
       }
     }
+  });
+});
+
+describe('cost estimate basis and contingency accounting', () => {
+  it('starts in transparent illustrative mode without editable research fields', () => {
+    const doc = new DOMParser().parseFromString(costView('cat-indoor', 12), 'text/html');
+    expect(doc.querySelector('#cs-mode-illustrative')?.hasAttribute('checked')).toBe(true);
+    expect(doc.querySelectorAll('[data-pets-cost-input]')).toHaveLength(0);
+    expect(doc.querySelector('#pets-cost-source-status')?.textContent)
+      .toContain('not local quotes or a forecast');
+    expect(doc.body.textContent).toContain('future price changes and unexpected treatment are not forecast');
+  });
+
+  it('uses a partial local estimate while identifying every untouched starter value', () => {
+    const doc = new DOMParser().parseFromString(costView('cat-indoor', 12, {
+      costMode: 'local',
+      costEstimates: { 'cat-indoor': { annual: 1500 } },
+    }), 'text/html');
+    expect(doc.querySelector('#cs-mode-local')?.hasAttribute('checked')).toBe(true);
+    expect(doc.querySelector('#pets-cost-source-status')?.textContent)
+      .toContain('1 of 3 dollar values replaced');
+    expect(doc.querySelector('[data-pets-cost-input="annual"]')?.getAttribute('value')).toBe('1500');
+    expect(doc.querySelector('[data-pets-cost-input="annual"]')?.getAttribute('data-pets-cost-input-source')).toBe('local');
+    expect(doc.querySelector('[data-pets-cost-input="firstYear"]')?.getAttribute('data-pets-cost-input-source')).toBe('starter');
+    expect(doc.body.textContent).toContain('12-year research scenario');
+    expect(doc.body.textContent).toContain('$18,300');
+  });
+
+  it('uses all three researched values and keeps contingency outside the spending bar', () => {
+    const doc = new DOMParser().parseFromString(costView('cat-indoor', 12, {
+      costMode: 'local',
+      costEstimates: {
+        'cat-indoor': { firstYear: 2200, annual: 1400, emergencyFund: 3200 },
+      },
+    }), 'text/html');
+    const status = doc.querySelector('#pets-cost-source-status');
+    expect(status?.getAttribute('role')).toBe('status');
+    expect(status?.getAttribute('aria-live')).toBe('polite');
+    expect(status?.getAttribute('data-pets-cost-source-status')).toBe('researched');
+    expect(status?.textContent).toContain('all 3 dollar values have been replaced');
+    expect(doc.body.textContent).toContain('$17,600');
+    expect(doc.body.textContent).toContain('Separate contingency savings target: $3,200');
+    expect(doc.body.textContent).toContain('not predicted spending');
+    expect(doc.body.textContent).toContain('not added to the baseline total');
+
+    const allocation = doc.querySelector('.petslab-cost-allocation-bar');
+    expect(allocation?.getAttribute('aria-label')).toContain('Baseline planned spending $17,600');
+    expect(allocation?.getAttribute('aria-label')).not.toContain('3,200');
+    expect(allocation?.querySelectorAll('.petslab-cost-allocation-segment')).toHaveLength(2);
+  });
+
+  it('flags a fully entered zero-dollar assumption for review', () => {
+    const doc = new DOMParser().parseFromString(costView('cat-indoor', 12, {
+      costMode: 'local',
+      costEstimates: {
+        'cat-indoor': { firstYear: 2200, annual: 0, emergencyFund: 3200 },
+      },
+    }), 'text/html');
+    const status = doc.querySelector('#pets-cost-source-status');
+    expect(status?.getAttribute('data-pets-cost-source-status')).toBe('review');
+    expect(status?.textContent).toContain('all 3 values were replaced');
+    expect(status?.textContent).toContain('1 is $0');
+    expect(status?.textContent).toContain('rather than a missing cost');
   });
 });

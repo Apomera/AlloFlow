@@ -27,11 +27,15 @@ describe('exported document dialog accessibility', () => {
     expect(source).toContain("blocked.forEach(function (entry) { entry.el.setAttribute('inert', '')");
   });
 
-  it('replaces both student-name prompts and keeps URL-provided nicknames prompt-free', () => {
-    expect(source.match(/await window\.__alloflowPrompt\(\{ title: 'Save/g)).toHaveLength(2);
+  it('reuses the resolved learner identity and keeps accessible save-prompt fallbacks', () => {
+    expect(source).toContain("await window.__alloflowPrompt({ title: window.__alloflowText('saveWorkTitle'");
+    expect(source).toContain("await window.__alloflowPrompt({ title: window.__alloflowText('saveAnswersTitle'");
     expect(source).not.toContain("prompt('Enter your name or nickname so your teacher knows this is yours:')");
-    expect(source).toContain('var nickname = nicknameFromUrl || await window.__alloflowPrompt');
-    expect(source).toContain("var nick = up.get('nickname') || await window.__alloflowPrompt");
+    expect(source.match(/var learnerWorkspace = window\.__alloflowLearnerWorkspace;/g)).toHaveLength(2);
+    expect(source).toContain("var nickname = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : ''");
+    expect(source).toContain("var nick = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : ''");
+    expect(source).not.toContain('var nicknameFromUrl =');
+    expect(source).not.toContain("var nick = up.get('nickname')");
     expect(source).toContain("pbtn.addEventListener('click', async function() {");
   });
 
@@ -43,4 +47,3 @@ describe('exported document dialog accessibility', () => {
     expect(built).not.toContain("prompt('Enter your name or nickname so your teacher knows this is yours:')");
   });
 });
-

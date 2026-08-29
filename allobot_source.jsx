@@ -150,7 +150,7 @@ const ALLOBOT_BUBBLE_CSS = `
   .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="large"] { left: 32px; }
   .allobot-speech-bubble[data-allobot-bubble-placement$="left"] .allobot-thought-dot[data-allobot-thought-dot="small"] { left: 20px; }
 `;
-const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false, theme = 'light' }) => {
+const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onTyping, soundEnabled, variant = 'speech', disableAnimations = false, theme = 'light', avoidSide = null }) => {
   const { t } = useContext(LanguageContext);
   const bubbleRef = useRef(null);
   const [placement, setPlacement] = useState('top-right');
@@ -207,20 +207,49 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
   }, [text, isVisible, onTyping, soundEnabled, disableAnimations]);
   React.useLayoutEffect(() => {
     if (!isVisible || !bubbleRef.current) return;
-    const rect = bubbleRef.current.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    let newVert = 'top';
-    let newHoriz = variant === 'thought' ? 'left' : 'right';
-    if (rect.top < 10) {
-        newVert = 'bottom';
-    }
-    if (newHoriz === 'right') {
-        if (rect.left < 10) newHoriz = 'left';
-    } else {
-        if (rect.right > viewportWidth - 10) newHoriz = 'right';
-    }
-    setPlacement(`${newVert}-${newHoriz}`);
-  }, [isVisible, text, variant]);
+    const resolvePlacement = () => {
+        if (!bubbleRef.current) return;
+        const rect = bubbleRef.current.getBoundingClientRect();
+        const anchorRect = bubbleRef.current.parentElement?.getBoundingClientRect() || rect;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const viewportGutter = 10;
+        const bubbleFootprint = rect.height + (variant === 'thought' ? 32 : 16);
+        const topRoom = anchorRect.top - viewportGutter;
+        const bottomRoom = viewportHeight - anchorRect.bottom - viewportGutter;
+        const newVert = topRoom >= bubbleFootprint || topRoom >= bottomRoom ? 'top' : 'bottom';
+
+        // Placement suffixes name the attachment edge: a left attachment grows
+        // rightward, and a right attachment grows leftward. Match the occupied
+        // accessory side first, then swap only when the viewport cannot fit it.
+        const preferredAttachment = avoidSide === 'left'
+            ? 'left'
+            : (avoidSide === 'right' ? 'right' : (variant === 'thought' ? 'left' : 'right'));
+        const alternateAttachment = preferredAttachment === 'left' ? 'right' : 'left';
+        const thoughtOffset = variant === 'thought' && newVert === 'top' ? 48 : 0;
+        const availableByAttachment = {
+            left: viewportWidth - viewportGutter - (anchorRect.left + thoughtOffset),
+            right: (anchorRect.right - thoughtOffset) - viewportGutter,
+        };
+        let newHoriz = preferredAttachment;
+        if (rect.width > availableByAttachment[preferredAttachment]
+            && (rect.width <= availableByAttachment[alternateAttachment]
+                || availableByAttachment[alternateAttachment] > availableByAttachment[preferredAttachment])) {
+            newHoriz = alternateAttachment;
+        }
+        setPlacement(`${newVert}-${newHoriz}`);
+    };
+    resolvePlacement();
+    window.addEventListener('resize', resolvePlacement);
+    const resizeObserver = typeof ResizeObserver === 'undefined'
+        ? null
+        : new ResizeObserver(resolvePlacement);
+    resizeObserver?.observe(bubbleRef.current);
+    return () => {
+        window.removeEventListener('resize', resolvePlacement);
+        resizeObserver?.disconnect();
+    };
+  }, [isVisible, text, variant, avoidSide]);
   const posClasses = {
       'top-right': `bottom-full right-0 ${variant === 'thought' ? 'mb-1 me-12' : 'mb-4'} origin-bottom-right`,
       'top-left': `bottom-full left-0 ${variant === 'thought' ? 'mb-1 ms-12' : 'mb-4'} origin-bottom-left`,
@@ -249,6 +278,8 @@ const SpeechBubble = React.memo(({ text, isVisible, isTruncated, onReadMore, onT
         data-allobot-bubble={variant}
         data-allobot-bubble-theme={theme}
         data-allobot-bubble-placement={placement}
+        data-allobot-bubble-avoid-side={avoidSide || 'none'}
+        data-allobot-bubble-attachment={placement.endsWith('-left') ? 'left' : 'right'}
         data-allobot-bubble-state={isVisible ? 'visible' : 'hidden'}
         data-allobot-bubble-motion={disableAnimations ? 'static' : 'animated'}
         className={`
@@ -612,8 +643,107 @@ const BotConfettiBurst = ({ onComplete }) => {
 // aria-hidden by design: a bar chart of instantaneous loudness is noise to a
 // screen reader. The equivalent information for assistive tech is the labelled
 // mic control and its live state announcement (A5), not this.
+const ALLOBOT_MIC_METER_CSS = `
+  .allobot-mic-meter {
+      --allo-mic-shell: rgba(15, 23, 42, 0.88);
+      --allo-mic-border: rgba(165, 180, 252, 0.58);
+      --allo-mic-track: rgba(255, 255, 255, 0.24);
+      --allo-mic-on-top: #A7F3D0;
+      --allo-mic-on-bottom: #34D399;
+      --allo-mic-glow: rgba(52, 211, 153, 0.6);
+      position: relative;
+      box-sizing: border-box;
+      align-items: flex-end;
+      gap: 2px;
+      pointer-events: none;
+      user-select: none;
+  }
+  .allobot-mic-meter[data-allo-mic-placement="below"] {
+      position: absolute;
+      left: 50%;
+      bottom: -24px;
+      z-index: 12;
+      display: flex;
+      min-width: 43px;
+      min-height: 21px;
+      padding: 4px 7px 4px 13px;
+      transform: translateX(-50%);
+      border: 1px solid var(--allo-mic-border);
+      border-radius: 9999px;
+      background: var(--allo-mic-shell);
+      box-shadow: 0 5px 12px rgba(15, 23, 42, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.13);
+      backdrop-filter: blur(4px);
+  }
+  .allobot-mic-meter[data-allo-mic-placement="below"]::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 50%;
+      width: 5px;
+      height: 5px;
+      transform: translateY(-50%);
+      border-radius: 9999px;
+      background: var(--allo-mic-on-bottom);
+      box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.16), 0 0 7px var(--allo-mic-glow);
+      animation: allobot-mic-listening-pulse 1.35s ease-in-out infinite;
+  }
+  .allobot-mic-meter[data-allo-mic-placement="inline"] {
+      display: inline-flex;
+      min-height: 14px;
+      margin-inline: 3px;
+      vertical-align: middle;
+  }
+  .allobot-mic-meter[data-allo-mic-theme="dark"] {
+      --allo-mic-shell: rgba(2, 6, 23, 0.92);
+      --allo-mic-border: rgba(129, 140, 248, 0.68);
+      --allo-mic-track: rgba(226, 232, 240, 0.26);
+  }
+  .allobot-mic-meter[data-allo-mic-theme="contrast"] {
+      --allo-mic-shell: #000000;
+      --allo-mic-border: #FFFFFF;
+      --allo-mic-track: #6B7280;
+      --allo-mic-on-top: #FFFFFF;
+      --allo-mic-on-bottom: #FFFFFF;
+      --allo-mic-glow: rgba(255, 255, 255, 0.72);
+  }
+  .allobot-mic-meter[data-allo-mic-theme="contrast"][data-allo-mic-placement="below"] {
+      border-width: 2px;
+      box-shadow: 0 0 0 2px #000000;
+  }
+  .allobot-mic-bar {
+      display: block;
+      width: 3px;
+      min-width: 3px;
+      border-radius: 9999px;
+      background: var(--allo-mic-track);
+      transform: scaleY(0.86);
+      transform-origin: center bottom;
+      transition: background-color 90ms linear, box-shadow 90ms linear, transform 90ms ease-out;
+      transition-delay: calc(var(--allo-mic-index) * 12ms);
+  }
+  .allobot-mic-bar[data-allo-mic-bar-state="on"] {
+      background: linear-gradient(to top, var(--allo-mic-on-bottom), var(--allo-mic-on-top));
+      box-shadow: 0 0 5px var(--allo-mic-glow);
+      transform: scaleY(1);
+  }
+  .allobot-mic-meter[data-allo-mic-motion="static"]::before {
+      animation: none;
+  }
+  .allobot-mic-meter[data-allo-mic-motion="static"] .allobot-mic-bar {
+      transition: none;
+      transition-delay: 0ms;
+  }
+  @keyframes allobot-mic-listening-pulse {
+      0%, 100% { transform: translateY(-50%) scale(0.88); opacity: 0.72; }
+      50% { transform: translateY(-50%) scale(1.12); opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+      .allobot-mic-meter::before { animation: none !important; }
+      .allobot-mic-bar { transition: none !important; transition-delay: 0ms !important; }
+  }
+`;
 const MIC_METER_BARS = 5;
-const AlloMicMeter = React.memo(({ active, motionDisabled, placement = 'below' }) => {
+const AlloMicMeter = React.memo(({ active, motionDisabled, placement = 'below', theme = 'light' }) => {
   const [level, setLevel] = useState(0);
   useEffect(() => {
       if (!active) { setLevel(0); return undefined; }
@@ -635,28 +765,34 @@ const AlloMicMeter = React.memo(({ active, motionDisabled, placement = 'below' }
   // reassurance that the mic is live, and that survives losing the easing.
   const lit = Math.round(Math.max(0, Math.min(1, level)) * MIC_METER_BARS);
   return (
+      <>
+      <style data-allobot-mic-meter-styles="true">{ALLOBOT_MIC_METER_CSS}</style>
       <div
         aria-hidden="true"
         data-allo-mic-meter="true"
         data-allo-mic-level={lit}
-        className={placement === 'inline'
-            ? 'pointer-events-none inline-flex items-end gap-[2px] align-middle'
-            : 'pointer-events-none absolute -bottom-5 left-1/2 flex -translate-x-1/2 items-end gap-[2px] rounded-full bg-slate-900/70 px-1.5 py-1 shadow-sm'}
+        data-allo-mic-placement={placement}
+        data-allo-mic-theme={theme}
+        data-allo-mic-motion={motionDisabled ? 'static' : 'animated'}
+        className="allobot-mic-meter"
       >
         {Array.from({ length: MIC_METER_BARS }).map((_, index) => {
             const on = index < lit;
             return (
               <span
                 key={index}
-                className={`w-[3px] rounded-full ${on ? 'bg-emerald-300' : 'bg-white/25'}`}
+                data-allo-mic-bar={index + 1}
+                data-allo-mic-bar-state={on ? 'on' : 'off'}
+                className="allobot-mic-bar"
                 style={{
+                    '--allo-mic-index': index,
                     height: `${4 + index * 2}px`,
-                    transition: motionDisabled ? 'none' : 'background-color 90ms linear',
                 }}
               />
             );
         })}
       </div>
+      </>
   );
 });
 const spokenEventIds = new Set();
@@ -1470,8 +1606,62 @@ const ALLOBOT_SIDE_ACCESSORY_GAP_NUDGE = Object.freeze({
   'sentence-frames': 10,
   'choice-fan': 2,
 });
+// Wearables and mixed outfits occupy the avatar itself, so they cannot use the
+// side-prop fill-box origin without drifting off their attachment point. These
+// compact profiles normalize optical size and depth around the authored head,
+// face, or hand anchor. Keeping placement explicit also prevents a legacy
+// hand-adjacent prop from being treated like headwear simply because it is not
+// in the movable side-prop family.
+const ALLOBOT_NON_SIDE_ACCESSORY_PROFILE = Object.freeze({
+  'grad-cap': { placement: 'head', scale: 0.98, origin: '50% 30%', depth: 'wearable' },
+  'explorer-hat': { placement: 'head', scale: 0.96, origin: '50% 25%', depth: 'wearable' },
+  'magnifying-glass': { placement: 'hand-adjacent', scale: 1.02, origin: '84% 66%', depth: 'hand' },
+  artist: { placement: 'head', scale: 0.96, origin: '50% 26%', depth: 'wearable' },
+  'hard-hat': { placement: 'head', scale: 1, origin: '50% 28%', depth: 'wearable' },
+  'sleep-cap': { placement: 'head', scale: 0.98, origin: '50% 25%', depth: 'wearable' },
+  'scholar-specs': { placement: 'face-and-side', scale: 0.97, origin: '50% 52%', depth: 'face' },
+  'librarian-kit': { placement: 'face-and-side', scale: 0.95, origin: '50% 54%', depth: 'mixed' },
+  'thinking-cap': { placement: 'head', scale: 0.98, origin: '50% 28%', depth: 'wearable' },
+  'sorting-cubes': { placement: 'head-and-side', scale: 0.97, origin: '50% 46%', depth: 'mixed' },
+  'clarity-crown': { placement: 'head', scale: 1, origin: '50% 28%', depth: 'wearable' },
+  deerstalker: { placement: 'head', scale: 0.97, origin: '50% 27%', depth: 'wearable' },
+  'bard-cap': { placement: 'head', scale: 0.98, origin: '50% 26%', depth: 'wearable' },
+  'phoneme-headset': { placement: 'head-and-ears', scale: 0.97, origin: '50% 48%', depth: 'mixed' },
+});
+const ALLOBOT_DEFAULT_ACCESSORY_PROFILE = Object.freeze({
+  placement: 'center',
+  scale: 1,
+  origin: '50% 50%',
+  depth: 'none',
+});
 const ALLOBOT_AVATAR_WIDTH = 64;
 const ALLOBOT_PROP_SAFE_GUTTER = 46;
+// Every tool is authored in the shared 100x100 SVG coordinate space. Mapping
+// its actual grasp point lets one transform attach that point to either live
+// palm instead of assuming every drawing happens to meet the old 90,65 pivot.
+const ALLOBOT_HELD_ITEM_GRIP = Object.freeze({
+  pointer: { x: 90, y: 65 },
+  pencil: { x: 90, y: 65 },
+  calculator: { x: 90, y: 65 },
+  map: { x: 90, y: 65 },
+  clipboard: { x: 90, y: 65 },
+  hourglass: { x: 90, y: 65 },
+  'magnifying-glass': { x: 90, y: 65 },
+  book: { x: 90, y: 65 },
+  globe: { x: 94, y: 66 },
+  wand: { x: 92, y: 65 },
+  paintbrush: { x: 94, y: 65 },
+  flashlight: { x: 10, y: 65 },
+});
+// Broad reading/planning tools are centered around the primary palm and expose
+// a second authored contact point. The opposite arm can then curve beneath the
+// visor and visibly brace the lower edge instead of crossing the face or
+// pretending a book weighs the same as a pencil.
+const ALLOBOT_HELD_ITEM_SUPPORT_GRIP = Object.freeze({
+  map: { x: 76, y: 67 },
+  clipboard: { x: 79, y: 69 },
+  book: { x: 77, y: 70 },
+});
 
 const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = '', generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
@@ -1519,6 +1709,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   }, []);
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+  const hoverGazeEngaged = isHovered && !coarsePointer && !motionDisabled;
+  const resetHoverGaze = useCallback(() => setIsHovered(false), []);
+  useEffect(() => {
+      if (typeof window === 'undefined' || typeof document === 'undefined') return undefined;
+      const handleVisibilityChange = () => {
+          if (document.visibilityState === 'hidden') resetHoverGaze();
+      };
+      window.addEventListener('blur', resetHoverGaze);
+      document.addEventListener('visibilitychange', handleVisibilityChange);
+      return () => {
+          window.removeEventListener('blur', resetHoverGaze);
+          document.removeEventListener('visibilitychange', handleVisibilityChange);
+      };
+  }, [resetHoverGaze]);
   const [pulseScale, setPulseScale] = useState(1);
   useEffect(() => {
       if (motionDisabled) {
@@ -1604,7 +1808,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [_aimX, _aimY]);
   useEffect(() => {
-      if (motionDisabled) {
+      // A friendly glance should feel opt-in, not like the assistant is
+      // watching the pointer from across the page. Track only while the user is
+      // directly hovering Allobot; otherwise return the face to a calm center.
+      if (motionDisabled || !isHovered) {
+          setEyePosition({ x: 0, y: 0 });
+          setVisorPosition({ x: 0, y: 0 });
+          return;
+      }
+      if (coarsePointer) {
           setEyePosition({ x: 0, y: 0 });
           setVisorPosition({ x: 0, y: 0 });
           return;
@@ -1618,15 +1830,15 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           const dy = e.clientY - centerY;
           const angle = Math.atan2(dy, dx);
           const distance = Math.hypot(dx, dy);
-          const sensitivity = 100;
+          const sensitivity = 140;
           const intensity = Math.min(1, distance / sensitivity);
-          const maxVisorRadius = 1.5;
+          const maxVisorRadius = 0.35;
           const visorOffset = intensity * maxVisorRadius;
           setVisorPosition({
               x: Math.cos(angle) * visorOffset,
               y: Math.sin(angle) * visorOffset
           });
-          const maxFeatureRadius = 3.5;
+          const maxFeatureRadius = 1.35;
           const featureOffset = intensity * maxFeatureRadius;
           setEyePosition({
               x: Math.cos(angle) * featureOffset,
@@ -1635,7 +1847,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       };
       window.addEventListener('mousemove', handleMouseMove);
       return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [motionDisabled]);
+  }, [motionDisabled, isHovered, coarsePointer]);
   const [customMessage, setCustomMessage] = useState(null);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
@@ -1708,7 +1920,13 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
               : generationPhase;
   const generationProgressDasharray = generationProgressFraction === null
       ? ['18 82', '26 74', '12 88'][generationAnimationPhase]
-      : '100 0';
+      : '100 100';
+  const generationPackSlotCount = isFullPackGeneration
+      ? Math.min(6, Math.max(3, Number.isFinite(generationProgressTotal) ? Math.round(generationProgressTotal) : 4))
+      : 0;
+  const generationPackCompletedSlots = generationProgressFraction === null
+      ? 0
+      : Math.min(generationPackSlotCount, Math.max(0, Math.round(generationProgressFraction * generationPackSlotCount)));
   const [viseme, setViseme] = useState('neutral');
   const [blinkScale, setBlinkScale] = useState(1);
   const [accPop, setAccPop] = useState(false);
@@ -2424,6 +2642,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     if (isTyping) { setIsTalking(true); }
     else if (!audioPlaybackStartedRef.current) { setIsTalking(false); }
   }, []);
+  const summonAnimationTimerRef = useRef(null);
+  const sleepTransitionTimerRef = useRef(null);
+  useEffect(() => () => {
+      if (summonAnimationTimerRef.current) clearTimeout(summonAnimationTimerRef.current);
+      if (sleepTransitionTimerRef.current) clearTimeout(sleepTransitionTimerRef.current);
+      summonAnimationTimerRef.current = null;
+      sleepTransitionTimerRef.current = null;
+  }, []);
+  useEffect(() => {
+      if (!motionDisabled) return;
+      if (summonAnimationTimerRef.current) clearTimeout(summonAnimationTimerRef.current);
+      summonAnimationTimerRef.current = null;
+      setIdleAnimation(null);
+  }, [motionDisabled]);
   // Wake writes the ref BEFORE the state. speak() reads isSleepingRef, and the
   // effect that syncs the ref does not run until after this render commits — so
   // a caller that wakes and immediately speaks (summon does exactly that) would
@@ -2442,7 +2674,14 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       // few idle minutes, that snap would keep stealing the position a teacher
       // dragged it to. Position is clamped on drag, so it is always reachable.
       wake();
-      if (!motionDisabled) { setIdleAnimation('wave-hello'); setTimeout(() => setIdleAnimation(null), 1500); }
+      if (!motionDisabled) {
+          if (summonAnimationTimerRef.current) clearTimeout(summonAnimationTimerRef.current);
+          setIdleAnimation('wave-hello');
+          summonAnimationTimerRef.current = setTimeout(() => {
+              summonAnimationTimerRef.current = null;
+              setIdleAnimation(null);
+          }, 1500);
+      }
       speak(t('bot.summon_msg'));
   }, [speak, t, motionDisabled, wake]);
   // Refusing the NEXT request is not enough on its own: a 90s Kokoro clip that
@@ -2483,6 +2722,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const handleSleep = (e) => {
       e.stopPropagation();
       setCustomMessage(null);
+      if (sleepTransitionTimerRef.current) {
+          clearTimeout(sleepTransitionTimerRef.current);
+          sleepTransitionTimerRef.current = null;
+      }
       if (onHide) {
           // Silence only — deliberately NOT fallAsleep(). Flipping isSleeping
           // here would swap in the sleep cap and the greyed-out styling for the
@@ -2491,7 +2734,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           silenceSpeech();
           if (motionDisabled) { onHide(); return; }
           setIsPoofing(true);
-          setTimeout(() => { setIsPoofing(false); onHide(); }, 400);
+          sleepTransitionTimerRef.current = setTimeout(() => {
+              sleepTransitionTimerRef.current = null;
+              setIsPoofing(false);
+              onHide();
+          }, 400);
           return;
       }
       if (motionDisabled) {
@@ -2500,7 +2747,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           return;
       }
       setIsPoofing(true);
-      setTimeout(() => {
+      sleepTransitionTimerRef.current = setTimeout(() => {
+          sleepTransitionTimerRef.current = null;
           fallAsleep();
           setIsPoofing(false);
       }, 400);
@@ -3071,6 +3319,157 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return c;
   };
   const colors = getColors();
+  // Keep the face readable at its normal 64px render size. The visor uses a
+  // real outer bezel (rather than relying on one faint screen outline), while
+  // the eye outline stays tied to the active screen colour so overlays retain
+  // a clean silhouette.
+  const visorVisual = theme === 'contrast'
+      ? { frame: '#FACC15', frameEdge: '#000000', innerEdge: '#FFFFFF', eyeOutline: '#000000', cueOpacity: 1 }
+      : theme === 'dark'
+          ? { frame: '#111827', frameEdge: '#A5B4FC', innerEdge: '#6366F1', eyeOutline: colors.screenBg, cueOpacity: 0.94 }
+          : { frame: '#312E81', frameEdge: '#C7D2FE', innerEdge: '#6366F1', eyeOutline: colors.screenBg, cueOpacity: 0.88 };
+  // Voice activity needs a static silhouette as well as motion. Listening takes
+  // priority if capture and playback overlap, matching the full-body state order.
+  const faceVisualState = isSleeping
+      ? 'sleeping'
+      : (isListening ? 'listening' : (isTalking ? 'talking' : effectiveMood));
+  const voiceCueState = faceVisualState === 'listening' || faceVisualState === 'talking'
+      ? faceVisualState
+      : 'idle';
+  const voiceCueDirection = voiceCueState === 'listening' ? 'inbound' : (voiceCueState === 'talking' ? 'outbound' : 'none');
+  const voiceCueColor = theme === 'contrast'
+      ? '#FACC15'
+      : (voiceCueState === 'listening' ? '#22D3EE' : colors.eye);
+  const voiceCuePaths = voiceCueState === 'listening'
+      ? {
+          leftOuter: 'M30 41 Q24 48 30 55',
+          leftInner: 'M31.5 44 Q28 48 31.5 52',
+          rightOuter: 'M70 41 Q76 48 70 55',
+          rightInner: 'M68.5 44 Q72 48 68.5 52',
+          leftDotX: 31.5,
+          rightDotX: 68.5,
+      }
+      : {
+          leftOuter: 'M25 41 Q31 48 25 55',
+          leftInner: 'M23.5 44 Q27 48 23.5 52',
+          rightOuter: 'M75 41 Q69 48 75 55',
+          rightInner: 'M76.5 44 Q73 48 76.5 52',
+          leftDotX: 23.5,
+          rightDotX: 76.5,
+      };
+  const hardwareVisual = theme === 'contrast'
+      ? { highlight: '#FFFFFF', shadow: '#000000', joint: '#FACC15', shellContour: '#000000' }
+      : theme === 'dark'
+          ? { highlight: '#E2E8F0', shadow: '#020617', joint: '#818CF8', shellContour: '#E0E7FF' }
+          : { highlight: '#F8FAFC', shadow: '#334155', joint: '#6366F1', shellContour: '#312E81' };
+  const bodyVisualState = isPoofing
+      ? 'hiding'
+      : (isSleeping
+          ? 'sleeping'
+          : (isDragging
+              ? 'dragging'
+              : (isFlightActive
+                  ? 'flying'
+                  : (isLanding
+                      ? 'landing'
+                      : ((isCelebrating || accPop)
+                          ? 'celebrating'
+                          : (effectiveMood === 'thinking'
+                              ? 'thinking'
+                              : (isListening ? 'listening' : (isTalking ? 'talking' : 'ready'))))))));
+  const bodyPoseByState = {
+      hiding: { leftHandX: 10, rightHandX: 90, handY: 65, glowOpacity: 0.12, shadowRx: 19, shadowRy: 4.2, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.76, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
+      sleeping: { leftHandX: 8.5, rightHandX: 91.5, handY: 69, glowOpacity: 0.08, shadowRx: 24, shadowRy: 5.3, contactRx: 14, contactRy: 2.1, shadowOpacityScale: 1.18, stabilizerSpread: 18, stabilizerDrop: 5, stabilizerOpacity: 1 },
+      dragging: { leftHandX: 10, rightHandX: 90, handY: 63, glowOpacity: 0.22, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.6, shadowOpacityScale: 0.82, stabilizerSpread: 11, stabilizerDrop: -2, stabilizerOpacity: 0 },
+      flying: { leftHandX: 10, rightHandX: 90, handY: 62, glowOpacity: 0.25, shadowRx: 16, shadowRy: 3.6, contactRx: 9, contactRy: 1.4, shadowOpacityScale: 0.72, stabilizerSpread: 10, stabilizerDrop: -3, stabilizerOpacity: 0 },
+      landing: { leftHandX: 10, rightHandX: 90, handY: 67, glowOpacity: 0.24, shadowRx: 25, shadowRy: 5.6, contactRx: 15, contactRy: 2.2, shadowOpacityScale: 1.25, stabilizerSpread: 19, stabilizerDrop: 6, stabilizerOpacity: 1 },
+      celebrating: { leftHandX: 8, rightHandX: 92, handY: 55.5, glowOpacity: 0.32, shadowRx: 18, shadowRy: 4, contactRx: 10, contactRy: 1.5, shadowOpacityScale: 0.82, stabilizerSpread: 15, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
+      thinking: { leftHandX: 11.5, rightHandX: 88.5, handY: 61.5, glowOpacity: 0.27, shadowRx: 20, shadowRy: 4.5, contactRx: 11, contactRy: 1.7, shadowOpacityScale: 0.95, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.82 },
+      listening: { leftHandX: 7.5, rightHandX: 92.5, handY: 62, glowOpacity: 0.28, shadowRx: 22, shadowRy: 4.9, contactRx: 12.5, contactRy: 1.9, shadowOpacityScale: 1.02, stabilizerSpread: 16, stabilizerDrop: 3, stabilizerOpacity: 0.92 },
+      talking: { leftHandX: 9, rightHandX: 91, handY: 63, glowOpacity: 0.24, shadowRx: 21, shadowRy: 4.7, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 0.98, stabilizerSpread: 15, stabilizerDrop: 2.5, stabilizerOpacity: 0.88 },
+      ready: { leftHandX: 10, rightHandX: 90, handY: 65, glowOpacity: 0.2, shadowRx: 21, shadowRy: 4.8, contactRx: 12, contactRy: 1.8, shadowOpacityScale: 1, stabilizerSpread: 14, stabilizerDrop: 2, stabilizerOpacity: 0.84 },
+  };
+  const bodyPose = bodyPoseByState[bodyVisualState] || bodyPoseByState.ready;
+  const stabilizerFootY = 89 + bodyPose.stabilizerDrop;
+  const stabilizerLeftX = 50 - bodyPose.stabilizerSpread;
+  const stabilizerRightX = 50 + bodyPose.stabilizerSpread;
+  const stabilizerVisualState = bodyPose.stabilizerOpacity <= 0.05
+      ? 'retracted'
+      : ((bodyVisualState === 'landing' || bodyVisualState === 'sleeping') ? 'braced' : 'hover');
+  // The jetpack used to jump straight from one always-on cyan reactor to full
+  // flames. Give the exposed pod edges their own power language so the compact
+  // avatar still communicates standby, hover, braking, and thrust without
+  // depending on animation. Contrast mode swaps hue differences for white /
+  // yellow separation while the braking rings preserve a distinct silhouette.
+  const jetpackVisualState = (isPoofing || isSleeping)
+      ? 'standby'
+      : (isFlightActive ? 'thrust' : (isLanding ? 'braking' : 'hover'));
+  const jetpackSignalCyan = theme === 'contrast' ? '#FFFFFF' : '#22D3EE';
+  const jetpackSignalWarm = theme === 'contrast' ? '#FACC15' : '#F59E0B';
+  const jetpackCoreBright = theme === 'contrast' ? '#FACC15' : '#ECFEFF';
+  const jetpackPowerByState = {
+      standby: {
+          signal: jetpackSignalWarm,
+          core: theme === 'contrast' ? '#FFFFFF' : '#FDE68A',
+          coreRadius: 2.1,
+          podRadius: 0.8,
+          haloRadius: 6.7,
+          haloOpacity: 0.20,
+          conduitOpacity: 0.20,
+          nozzleOpacity: 0.14,
+          nozzleRy: 0.8,
+      },
+      hover: {
+          signal: jetpackSignalCyan,
+          core: jetpackCoreBright,
+          coreRadius: 2.8,
+          podRadius: 1.05,
+          haloRadius: 7.3,
+          haloOpacity: 0.44,
+          conduitOpacity: 0.56,
+          nozzleOpacity: 0.38,
+          nozzleRy: 1.3,
+      },
+      braking: {
+          signal: jetpackSignalWarm,
+          core: theme === 'contrast' ? '#FFFFFF' : '#FEF3C7',
+          coreRadius: 3.15,
+          podRadius: 1.2,
+          haloRadius: 7.8,
+          haloOpacity: 0.72,
+          conduitOpacity: 0.84,
+          nozzleOpacity: 0.92,
+          nozzleRy: 2.4,
+      },
+      thrust: {
+          signal: jetpackSignalCyan,
+          core: jetpackCoreBright,
+          coreRadius: 3.35,
+          podRadius: 1.25,
+          haloRadius: 8.2,
+          haloOpacity: 0.90,
+          conduitOpacity: 1,
+          nozzleOpacity: 1,
+          nozzleRy: 2.9,
+      },
+  };
+  const jetpackPower = jetpackPowerByState[jetpackVisualState] || jetpackPowerByState.hover;
+  const canBodyBreathe = !motionDisabled && !isFlightActive && !isDragging && !isLanding && !isCelebrating && !isPoofing;
+  const antennaVisualState = isSleeping
+      ? 'sleeping'
+      : (effectiveMood === 'thinking'
+          ? 'thinking'
+          : (isListening
+              ? 'listening'
+              : (isTalking ? 'talking' : (antennaAction === 'signal' ? 'signal' : (antennaAction === 'bounce' ? 'active' : 'ready')))));
+  const antennaCoreFill = isSleeping
+      ? (theme === 'contrast' ? '#FFFFFF' : '#64748B')
+      : '#FACC15';
+  const generationHudColors = theme === 'contrast'
+      ? { panel: '#000000', panelOpacity: 0.96, track: '#FFFFFF', active: '#FACC15', complete: '#FFFFFF', queued: '#525252' }
+      : theme === 'dark'
+          ? { panel: '#020617', panelOpacity: 0.92, track: '#A5F3FC', active: '#FDBA74', complete: '#67E8F9', queued: '#334155' }
+          : { panel: '#083344', panelOpacity: 0.90, track: '#CFFAFE', active: '#FDBA74', complete: '#67E8F9', queued: '#155E75' };
   // When a STEM tool is open, the bot dresses for that tool's discipline.
   const stemAccessory = (showStemLab && stemLabTool) ? alloStemAccessory(stemLabTool) : null;
   const targetAccessory = isSleeping ? 'sleep-cap' : (stemAccessory || accessory);
@@ -3106,39 +3505,152 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       ? -accessoryGapNudge
       : (accessoryRenderSide === 'right' ? accessoryGapNudge : 0));
   const accessoryAccent = ALLOBOT_SIDE_ACCESSORY_ACCENT[effectiveAccessory] || colors.glow;
-  const accessoryScale = ALLOBOT_SIDE_ACCESSORY_SCALE[effectiveAccessory] || 1;
-  const accessoryDepthFilter = !accessoryRenderSide
+  const nonSideAccessoryProfile = ALLOBOT_NON_SIDE_ACCESSORY_PROFILE[effectiveAccessory]
+      || ALLOBOT_DEFAULT_ACCESSORY_PROFILE;
+  const accessoryScale = accessoryRenderSide
+      ? (ALLOBOT_SIDE_ACCESSORY_SCALE[effectiveAccessory] || 1)
+      : nonSideAccessoryProfile.scale;
+  const accessoryPlacement = accessoryRenderSide
+      ? `side-${accessoryRenderSide}`
+      : nonSideAccessoryProfile.placement;
+  const accessoryDepth = accessoryRenderSide ? 'side' : nonSideAccessoryProfile.depth;
+  const accessoryVisualOrigin = accessoryRenderSide === 'left'
+      ? 'right center'
+      : (accessoryRenderSide === 'right' ? 'left center' : nonSideAccessoryProfile.origin);
+  const accessoryDepthFilter = accessoryDepth === 'none'
       ? undefined
       : theme === 'contrast'
-          ? 'drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #FFF)'
+          ? (accessoryDepth === 'face'
+              ? 'drop-shadow(0 0 0.8px #FFF) drop-shadow(0 1px 0 #000)'
+              : 'drop-shadow(0 1px 0 #000) drop-shadow(0 -1px 0 #FFF)')
           : theme === 'dark'
-              ? 'drop-shadow(0 1.4px 1.4px rgba(0,0,0,0.72)) drop-shadow(0 0 0.8px rgba(255,255,255,0.22))'
-              : 'drop-shadow(0 1.3px 1.2px rgba(15,23,42,0.28))';
-  const propGazeX = accessoryRenderSide === 'left' ? -1.6 : (accessoryRenderSide === 'right' ? 1.6 : 0);
-  const propGazeY = accessoryRenderSide ? 0.55 : 0;
-  const resolvedGazeX = Math.max(-3.2, Math.min(3.2, eyePosition.x + propGazeX));
-  const resolvedGazeY = Math.max(-2.2, Math.min(2.2, eyePosition.y + propGazeY));
-  const leftHandX = accessoryRenderSide === 'left' ? 6.5 : 10;
-  const leftHandY = accessoryRenderSide === 'left' ? 63.5 : 65;
-  const rightHandX = accessoryRenderSide === 'right' ? 93.5 : 90;
-  const rightHandY = accessoryRenderSide === 'right' ? 63.5 : 65;
+              ? (accessoryDepth === 'face'
+                  ? 'drop-shadow(0 0.8px 0.7px rgba(0,0,0,0.72)) drop-shadow(0 0 0.65px rgba(255,255,255,0.30))'
+                  : 'drop-shadow(0 1.4px 1.4px rgba(0,0,0,0.72)) drop-shadow(0 0 0.8px rgba(255,255,255,0.22))')
+              : (accessoryDepth === 'face'
+                  ? 'drop-shadow(0 0.7px 0.55px rgba(15,23,42,0.24))'
+                  : 'drop-shadow(0 1.3px 1.2px rgba(15,23,42,0.28))');
+  const sideAccessoryVisualStyle = accessoryRenderSide ? {
+      transform: `scale(${accessoryScale})`,
+      transformBox: 'fill-box',
+      transformOrigin: accessoryRenderSide === 'left' ? 'right center' : 'left center',
+      filter: accessoryDepthFilter,
+  } : null;
+  const centeredAccessoryVisualStyle = !accessoryRenderSide ? {
+      transform: `scale(${accessoryScale})`,
+      transformBox: 'view-box',
+      transformOrigin: nonSideAccessoryProfile.origin,
+      filter: accessoryDepthFilter,
+  } : null;
+  // A short shell-to-prop handoff makes side teaching aids feel mounted rather
+  // than detached. It mirrors from the rendered side, so viewport-driven prop
+  // relocation keeps the same port silhouette and accent signal.
+  const accessoryDockNudge = Math.min(4, accessoryGapNudge * 0.35);
+  const accessoryDockShellX = accessoryRenderSide === 'left' ? 22 : 78;
+  const accessoryDockMidX = accessoryRenderSide === 'left'
+      ? 14 - (accessoryDockNudge * 0.35)
+      : 86 + (accessoryDockNudge * 0.35);
+  const accessoryDockEdgeX = accessoryRenderSide === 'left'
+      ? 7 - accessoryDockNudge
+      : 93 + accessoryDockNudge;
+  const accessoryDockPath = ['M', accessoryDockShellX, 69, 'Q', accessoryDockMidX, 68, accessoryDockEdgeX, 60].join(' ');
+  const accessoryDockSignalPath = ['M', accessoryDockShellX, 68.2, 'Q', accessoryDockMidX, 65.2, accessoryDockEdgeX, 60].join(' ');
+  const accessoryDockState = accExiting ? 'releasing' : 'connected';
+  const propGazeX = accessoryRenderSide === 'left' ? -0.85 : (accessoryRenderSide === 'right' ? 0.85 : 0);
+  const propGazeY = accessoryRenderSide ? 0.2 : 0;
+  const resolvedGazeX = Math.max(-1.8, Math.min(1.8, eyePosition.x + propGazeX));
+  const resolvedGazeY = Math.max(-1.15, Math.min(1.15, eyePosition.y + propGazeY));
   // Keep held tools opposite a side prop so the silhouettes do not merge when
   // a left-preferring accessory has to move right on a narrow viewport.
   const heldItemRenderSide = heldItem && accessoryRenderSide === 'right' ? 'left' : 'right';
+  const heldItemHasArtwork = !!heldItem
+      && heldItem !== 'flashlight'
+      && !(heldItem === 'pencil' && activeView === 'quiz');
+  const heldItemAuthoredGrip = ALLOBOT_HELD_ITEM_GRIP[heldItem] || { x: 90, y: 65 };
+  const heldItemSupportAuthoredGrip = ALLOBOT_HELD_ITEM_SUPPORT_GRIP[heldItem] || null;
+  // A docked side prop already occupies the opposite hand; broad tools stay
+  // one-handed in that combined state instead of pulling one palm two ways.
+  const heldItemUsesSupportHand = !!heldItemSupportAuthoredGrip
+      && heldItemHasArtwork
+      && !accessoryRenderSide
+      && !isDragging;
+  const heldItemSupportSide = heldItemRenderSide === 'left' ? 'right' : 'left';
+  const baseLeftHandX = accessoryRenderSide === 'left' ? 6.5 : bodyPose.leftHandX;
+  const baseLeftHandY = accessoryRenderSide === 'left' ? 63.5 : bodyPose.handY;
+  const baseRightHandX = accessoryRenderSide === 'right' ? 93.5 : bodyPose.rightHandX;
+  const baseRightHandY = accessoryRenderSide === 'right' ? 63.5 : bodyPose.handY;
+  const heldItemGripX = heldItemRenderSide === 'left' ? baseLeftHandX : baseRightHandX;
+  const heldItemGripY = heldItemRenderSide === 'left' ? baseLeftHandY : baseRightHandY;
+  const heldItemSupportX = heldItemUsesSupportHand
+      ? heldItemGripX + ((heldItemRenderSide === 'left' ? -1 : 1) * (heldItemSupportAuthoredGrip.x - heldItemAuthoredGrip.x))
+      : null;
+  const heldItemSupportY = heldItemUsesSupportHand
+      ? heldItemGripY + (heldItemSupportAuthoredGrip.y - heldItemAuthoredGrip.y)
+      : null;
+  const leftHandX = heldItemUsesSupportHand && heldItemSupportSide === 'left' ? heldItemSupportX : baseLeftHandX;
+  const leftHandY = heldItemUsesSupportHand && heldItemSupportSide === 'left' ? heldItemSupportY : baseLeftHandY;
+  const rightHandX = heldItemUsesSupportHand && heldItemSupportSide === 'right' ? heldItemSupportX : baseRightHandX;
+  const rightHandY = heldItemUsesSupportHand && heldItemSupportSide === 'right' ? heldItemSupportY : baseRightHandY;
+  const leftHandRole = heldItemUsesSupportHand
+      ? (heldItemRenderSide === 'left' ? 'primary' : 'support')
+      : (heldItem && heldItemRenderSide === 'left' ? 'primary' : 'free');
+  const rightHandRole = heldItemUsesSupportHand
+      ? (heldItemRenderSide === 'right' ? 'primary' : 'support')
+      : (heldItem && heldItemRenderSide === 'right' ? 'primary' : 'free');
+  const leftArmPath = heldItemUsesSupportHand && heldItemSupportSide === 'left'
+      ? ['M', 19, 61, 'Q', 46, 78, leftHandX - 3.5, leftHandY - 1].join(' ')
+      : ['M', 19, 61, 'Q', leftHandX + 7, leftHandY - 5, leftHandX + 3.5, leftHandY - 1].join(' ');
+  const rightArmPath = heldItemUsesSupportHand && heldItemSupportSide === 'right'
+      ? ['M', 81, 61, 'Q', 54, 78, rightHandX + 3.5, rightHandY - 1].join(' ')
+      : ['M', 81, 61, 'Q', rightHandX - 7, rightHandY - 5, rightHandX - 3.5, rightHandY - 1].join(' ');
+  const heldItemBaseGripX = heldItemRenderSide === 'left' ? 10 : 90;
+  const heldItemBaseGripY = 65;
+  const heldItemGripOffsetX = heldItemGripX - heldItemBaseGripX;
+  const heldItemGripOffsetY = heldItemGripY - heldItemBaseGripY;
+  const heldItemArtworkTransform = `translate(${heldItemBaseGripX} ${heldItemBaseGripY}) scale(${heldItemRenderSide === 'left' ? -1 : 1} 1) translate(${-heldItemAuthoredGrip.x} ${-heldItemAuthoredGrip.y})`;
+  const heldItemMotionClass = !motionDisabled && !isSleeping && !isDragging && heldItemHasArtwork && !heldItemUsesSupportHand
+      ? (isTalking
+          ? (heldItemRenderSide === 'left' ? 'animate-gesture-left' : 'animate-gesture-right')
+          : 'animate-float-hands')
+      : '';
+  const heldItemMotionDelay = isTalking ? '0s' : (heldItemRenderSide === 'left' ? '0.2s' : '0.5s');
   const getEyeDimensions = () => {
     switch (effectiveMood) {
       case 'happy':
-        return { rx: 8.5, ry: 4 };
+        return { rx: 8.4, ry: 4.4 };
       case 'sad':
-        return { rx: 6, ry: 7.5 };
+        return { rx: 7, ry: 6.2 };
       case 'thinking':
-        return { rx: 7, ry: 7 };
+        return { rx: 7.3, ry: 6.1 };
       case 'idle':
       default:
-        return { rx: 6.5, ry: 6.5 };
+        return { rx: 7.4, ry: 6.2 };
     }
   };
-  const { rx: eyeRx, ry: eyeRy } = getEyeDimensions();
+  const baseEyeDimensions = getEyeDimensions();
+  const eyeRx = Math.min(9, baseEyeDimensions.rx + (voiceCueState === 'listening' ? 0.45 : 0));
+  const eyeRy = Math.min(7, baseEyeDimensions.ry + (voiceCueState === 'listening' ? 0.35 : 0));
+  // Keep the eyes luminous and toy-like. The previous visor-dark pupils read
+  // as watchful at small sizes, especially when combined with cursor tracking.
+  // These pastel eye cores retain gaze direction without introducing black
+  // holes in the bright eye shapes.
+  const eyeCoreVisual = theme === 'contrast'
+      ? { fill: '#FACC15', stroke: '#FFFFFF', opacity: 1 }
+      : (effectiveMood === 'happy'
+          ? { fill: '#A7F3D0', stroke: '#6EE7B7', opacity: 0.92 }
+          : (effectiveMood === 'thinking'
+              ? { fill: '#FDE68A', stroke: '#FCD34D', opacity: 0.92 }
+              : (effectiveMood === 'sad'
+                  ? { fill: '#BAE6FD', stroke: '#93C5FD', opacity: 0.9 }
+                  : { fill: '#E0F2FE', stroke: '#A5B4FC', opacity: 0.94 })));
+  const eyeCoreRx = voiceCueState === 'listening' ? 2.15 : 1.85;
+  const eyeCoreRy = Math.min(2.25, Math.max(1.35, eyeRy * 0.34));
+  const faceLensesCoverEyes = effectiveAccessory === 'scholar-specs' || effectiveAccessory === 'librarian-kit';
+  const eyeDetailsVisible = blinkScale >= 0.5;
+  const cheekColor = theme === 'contrast' ? '#FACC15' : '#F9A8D4';
+  const cheekOpacity = isSleeping
+      ? 0.28
+      : (effectiveMood === 'happy' ? 0.62 : (effectiveMood === 'sad' ? 0.16 : 0.3));
   const getMouthPath = () => {
     if (isTalking) {
       switch (viseme) {
@@ -3149,7 +3661,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         case 'dash':
            return "M 46 59 Q 50 59 54 59 Q 50 59 46 59";
         default:
-           return "M 46 59 Q 50 59 54 59 Q 50 59 46 59";
+           return "M 46 58 Q 50 55 54 58 Q 50 62 46 58";
       }
     }
     switch (effectiveMood) {
@@ -3161,7 +3673,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         return "M 47 59 Q 50 57 53 59 Q 50 61 47 59";
       case 'idle':
       default:
-        return "M 45 59 Q 50 61 55 59 Q 50 61 45 59";
+        return "M 43 58.5 Q 50 63.5 57 58.5";
     }
   };
   // The inline flight filter used to resolve to `none` while parked, which
@@ -3176,6 +3688,52 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const trailFilter = isFlightActive
       ? `${avatarDepthFilter} drop-shadow(-6px 4px 0px ${colors.gradFrom}40) drop-shadow(-12px 8px 0px ${colors.gradFrom}20)`
       : avatarDepthFilter;
+  const generationStageNames = ['analyze', 'build', 'finalize'];
+  const renderGenerationStageRail = () => (
+      <g data-allo-generation-stage-rail={generationStage || 'cycling'} aria-hidden="true">
+          <rect x="30" y="-54" width="40" height="9" rx="4.5" fill={generationHudColors.panel} fillOpacity={generationHudColors.panelOpacity} stroke={generationHudColors.track} strokeOpacity="0.58" strokeWidth="0.75" />
+          <path d="M 36 -49.5 H 64" stroke={generationHudColors.queued} strokeWidth="1" strokeLinecap="round" />
+          <path d={`M 36 -49.5 H ${[36, 50, 64][generationAnimationPhase]}`} stroke={generationHudColors.complete} strokeWidth="1" strokeLinecap="round" />
+          {generationStageNames.map((stageName, index) => {
+              const nodeState = index === generationAnimationPhase ? 'active' : (generationStage && index < generationAnimationPhase ? 'complete' : 'queued');
+              const nodeColor = nodeState === 'active' ? generationHudColors.active : (nodeState === 'complete' ? generationHudColors.complete : generationHudColors.queued);
+              const iconColor = nodeState === 'queued' ? generationHudColors.track : generationHudColors.panel;
+              return (
+                  <g key={stageName} transform={`translate(${[36, 50, 64][index]}, -49.5)`} data-allo-generation-stage-node={stageName} data-allo-generation-stage-state={nodeState}>
+                      <g className={nodeState === 'active' ? 'animate-allobot-generation-stage-node' : undefined}>
+                          <circle r="3" fill={nodeState === 'queued' ? generationHudColors.panel : nodeColor} stroke={nodeColor} strokeWidth="1" />
+                          {index === 0 && <g stroke={iconColor} strokeWidth="0.9" fill="none" strokeLinecap="round"><circle cy="-0.35" r="1.05" /><path d="M 0.75 0.45 L 1.55 1.25" /></g>}
+                          {index === 1 && <path d="M -1.25 -1.25 H 1.25 V 1.25 H -1.25 Z" stroke={iconColor} strokeWidth="0.9" fill="none" strokeLinejoin="round" />}
+                          {index === 2 && <path d="M -1.5 0 L -0.35 1.15 L 1.55 -1.2" stroke={iconColor} strokeWidth="1" fill="none" strokeLinecap="round" strokeLinejoin="round" />}
+                      </g>
+                  </g>
+              );
+          })}
+      </g>
+  );
+  const renderGenerationPackOrbit = () => {
+      if (!generationPackSlotCount) return null;
+      return (
+          <g data-allo-generation-pack-orbit="true" data-allo-generation-pack-count={generationPackSlotCount} data-allo-generation-pack-complete={generationPackCompletedSlots} aria-hidden="true">
+              <circle cx="50" cy="-25" r="23.5" fill="none" stroke={generationHudColors.track} strokeOpacity="0.30" strokeWidth="0.65" strokeDasharray="1.2 2.8" />
+              {Array.from({ length: generationPackSlotCount }).map((_, index) => {
+                  const angle = (-45 + ((270 * index) / Math.max(1, generationPackSlotCount - 1))) * (Math.PI / 180);
+                  const slotX = 50 + (Math.cos(angle) * 23.5);
+                  const slotY = -25 + (Math.sin(angle) * 23.5);
+                  const slotState = index < generationPackCompletedSlots ? 'complete' : (index === generationPackCompletedSlots ? 'active' : 'queued');
+                  const slotColor = slotState === 'active' ? generationHudColors.active : (slotState === 'complete' ? generationHudColors.complete : generationHudColors.queued);
+                  return (
+                      <g key={index} transform={`translate(${slotX}, ${slotY})`} data-allo-generation-pack-slot={index + 1} data-allo-generation-pack-state={slotState}>
+                          <g className={slotState === 'active' ? 'animate-allobot-generation-pack-node' : undefined}>
+                              <circle r="2.3" fill={generationHudColors.panel} stroke={slotColor} strokeWidth="0.9" />
+                              <circle r={slotState === 'active' ? '1.05' : '0.72'} fill={slotColor} opacity={slotState === 'queued' ? '0.55' : '1'} />
+                          </g>
+                      </g>
+                  );
+              })}
+          </g>
+      );
+  };
   const renderHologramContent = () => {
       const generationFamily = alloBotGenerationFamily(generationType, activeView);
       switch (generationFamily) {
@@ -3418,6 +3976,72 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
            external Allobot module remains polished in desktop/embedded hosts
            that do not provide the app's Tailwind bundle. Tailwind utilities
            remain on the elements as progressive enhancement. */
+        [data-allobot-control-surface="true"] {
+            --allobot-control-orbit: rgba(79, 70, 229, 0.56);
+            --allobot-control-live-glow: rgba(239, 68, 68, 0.14);
+            --allobot-satellite-bg: #FFFFFF;
+            --allobot-satellite-border: #C7D2FE;
+            --allobot-satellite-fg: #4F46E5;
+            --allobot-satellite-hover-bg: #EEF2FF;
+            --allobot-satellite-hover-fg: #3730A3;
+            --allobot-satellite-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+            --allobot-satellite-hover-shadow: 0 7px 15px rgba(49, 46, 129, 0.24);
+            --allobot-satellite-hide-bg: #E2E8F0;
+            --allobot-satellite-hide-fg: #475569;
+            --allobot-satellite-hide-border: #FFFFFF;
+            --allobot-satellite-hide-hover-bg: #FEE2E2;
+            --allobot-satellite-hide-hover-fg: #B91C1C;
+            --allobot-satellite-muted-bg: #F1F5F9;
+            --allobot-satellite-muted-fg: #475569;
+            --allobot-satellite-muted-border: #CBD5E1;
+            --allobot-satellite-listening-bg: #B91C1C;
+            --allobot-satellite-listening-fg: #FFFFFF;
+            --allobot-satellite-listening-border: #F87171;
+            --allobot-satellite-listening-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 10px rgba(15, 23, 42, 0.2);
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-theme="dark"] {
+            --allobot-control-orbit: rgba(165, 180, 252, 0.62);
+            --allobot-control-live-glow: rgba(248, 113, 113, 0.18);
+            --allobot-satellite-bg: #0F172A;
+            --allobot-satellite-border: #6366F1;
+            --allobot-satellite-fg: #C7D2FE;
+            --allobot-satellite-hover-bg: #1E1B4B;
+            --allobot-satellite-hover-fg: #F8FAFC;
+            --allobot-satellite-shadow: 0 5px 13px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+            --allobot-satellite-hover-shadow: 0 8px 18px rgba(0, 0, 0, 0.68), 0 0 0 1px rgba(165, 180, 252, 0.28);
+            --allobot-satellite-hide-bg: #1E293B;
+            --allobot-satellite-hide-fg: #CBD5E1;
+            --allobot-satellite-hide-border: #64748B;
+            --allobot-satellite-hide-hover-bg: #450A0A;
+            --allobot-satellite-hide-hover-fg: #FCA5A5;
+            --allobot-satellite-muted-bg: #111827;
+            --allobot-satellite-muted-fg: #94A3B8;
+            --allobot-satellite-muted-border: #475569;
+            --allobot-satellite-listening-bg: #991B1B;
+        }
+        [data-allobot-control-surface="true"][data-allobot-control-theme="contrast"] {
+            --allobot-control-orbit: #FACC15;
+            --allobot-control-live-glow: rgba(255, 255, 255, 0.32);
+            --allobot-satellite-bg: #000000;
+            --allobot-satellite-border: #FACC15;
+            --allobot-satellite-fg: #FFFFFF;
+            --allobot-satellite-hover-bg: #FACC15;
+            --allobot-satellite-hover-fg: #000000;
+            --allobot-satellite-shadow: 3px 3px 0 #000000, 0 0 0 1px #FFFFFF;
+            --allobot-satellite-hover-shadow: 4px 4px 0 #000000, 0 0 0 2px #FFFFFF;
+            --allobot-satellite-hide-bg: #000000;
+            --allobot-satellite-hide-fg: #FFFFFF;
+            --allobot-satellite-hide-border: #FFFFFF;
+            --allobot-satellite-hide-hover-bg: #FACC15;
+            --allobot-satellite-hide-hover-fg: #000000;
+            --allobot-satellite-muted-bg: #000000;
+            --allobot-satellite-muted-fg: #FACC15;
+            --allobot-satellite-muted-border: #FFFFFF;
+            --allobot-satellite-listening-bg: #000000;
+            --allobot-satellite-listening-fg: #FACC15;
+            --allobot-satellite-listening-border: #FACC15;
+            --allobot-satellite-listening-shadow: 0 0 0 3px #FFFFFF, 0 0 0 5px #000000;
+        }
         .allobot-satellite-control {
             position: absolute;
             box-sizing: border-box;
@@ -3429,11 +4053,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             align-items: center;
             justify-content: center;
             padding: 6px;
-            border: 2px solid #E0E7FF;
+            border: 2px solid var(--allobot-satellite-border, #C7D2FE);
             border-radius: 9999px;
-            background: #FFFFFF;
-            color: #6366F1;
-            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+            background: var(--allobot-satellite-bg, #FFFFFF);
+            color: var(--allobot-satellite-fg, #4F46E5);
+            box-shadow: var(--allobot-satellite-shadow, 0 4px 10px rgba(15, 23, 42, 0.18));
             opacity: 0;
             transform: scale(0.75);
             transform-origin: center;
@@ -3442,34 +4066,79 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
             cursor: pointer;
             z-index: 50;
         }
+        .allobot-control-orbit {
+            --allobot-orbit-current: var(--allobot-control-orbit, rgba(79, 70, 229, 0.56));
+            position: absolute;
+            inset: -3px;
+            z-index: 1;
+            border: 1px dashed var(--allobot-orbit-current);
+            border-radius: 9999px;
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.88);
+            transform-origin: center;
+            transition: opacity 180ms ease, transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+        }
+        .allobot-control-orbit::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: calc(50% - 2px);
+            width: 4px;
+            height: 4px;
+            border-radius: 9999px;
+            background: var(--allobot-orbit-current);
+            box-shadow: 0 70px 0 var(--allobot-orbit-current), -35px 35px 0 var(--allobot-orbit-current), 35px 35px 0 var(--allobot-orbit-current);
+        }
         .allobot-satellite--tl { top: -8px; left: -8px; }
         .allobot-satellite--tr { top: -8px; right: -8px; }
         .allobot-satellite--bl { bottom: -4px; left: -8px; }
         .allobot-satellite--br { bottom: -4px; right: -8px; }
-        .group:hover .allobot-satellite-control,
-        .group:focus-within .allobot-satellite-control,
+        [data-allobot-control-surface="true"]:hover .allobot-satellite-control,
+        [data-allobot-control-surface="true"]:focus-within .allobot-satellite-control,
         .allobot-satellite-control:focus-visible { opacity: 1; }
+        [data-allobot-control-visibility="persistent"] .allobot-control-orbit {
+            opacity: 0.42;
+            transform: scale(1);
+        }
+        [data-allobot-control-surface="true"]:hover .allobot-control-orbit,
+        [data-allobot-control-surface="true"]:focus-within .allobot-control-orbit {
+            opacity: 0.68;
+            transform: scale(1);
+        }
+        [data-allobot-control-live="true"] .allobot-control-orbit {
+            --allobot-orbit-current: var(--allobot-satellite-listening-border, #F87171);
+            border-style: solid;
+            box-shadow: 0 0 0 3px var(--allobot-control-live-glow, rgba(239, 68, 68, 0.14));
+            opacity: 0.86;
+            transform: scale(1);
+        }
         .allobot-satellite-control:hover,
-        .allobot-satellite-control:focus-visible { transform: scale(1); }
+        .allobot-satellite-control:focus-visible {
+            background: var(--allobot-satellite-hover-bg, #EEF2FF);
+            color: var(--allobot-satellite-hover-fg, #3730A3);
+            box-shadow: var(--allobot-satellite-hover-shadow, 0 7px 15px rgba(49, 46, 129, 0.24));
+            transform: scale(1);
+        }
         .allobot-satellite-control[data-allobot-satellite-kind="hide"] {
-            background: #E2E8F0;
-            color: #475569;
-            border-color: #FFFFFF;
+            background: var(--allobot-satellite-hide-bg, #E2E8F0);
+            color: var(--allobot-satellite-hide-fg, #475569);
+            border-color: var(--allobot-satellite-hide-border, #FFFFFF);
         }
         .allobot-satellite-control[data-allobot-satellite-kind="hide"]:hover {
-            background: #FEE2E2;
-            color: #DC2626;
+            background: var(--allobot-satellite-hide-hover-bg, #FEE2E2);
+            color: var(--allobot-satellite-hide-hover-fg, #B91C1C);
         }
         .allobot-satellite-control[data-allobot-satellite-state="muted"] {
-            background: #F1F5F9;
-            color: #475569;
-            border-color: #CBD5E1;
+            background: var(--allobot-satellite-muted-bg, #F1F5F9);
+            color: var(--allobot-satellite-muted-fg, #475569);
+            border-color: var(--allobot-satellite-muted-border, #CBD5E1);
         }
         .allobot-satellite-control[data-allobot-satellite-state="listening"] {
-            background: #B91C1C;
-            color: #FFFFFF;
-            border-color: #F87171;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 10px rgba(15, 23, 42, 0.2);
+            background: var(--allobot-satellite-listening-bg, #B91C1C);
+            color: var(--allobot-satellite-listening-fg, #FFFFFF);
+            border-color: var(--allobot-satellite-listening-border, #F87171);
+            box-shadow: var(--allobot-satellite-listening-shadow, 0 0 0 3px rgba(239, 68, 68, 0.35));
         }
         @media (hover: none), (pointer: coarse) {
             .allobot-satellite-control {
@@ -3651,7 +4320,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .animate-bot-fly-tilt { animation: bot-fly-tilt 2s ease-in-out infinite; }
         .animate-bot-land { animation: bot-land 0.5s ease-out forwards; }
         .animate-jetpack-smoke { animation: jetpack-smoke 0.8s ease-out forwards; }
-        .animate-tap-pointer { animation: tap-pointer 0.8s ease-in-out infinite; transform-origin: 75px 65px; }
+        .animate-tap-pointer { animation: tap-pointer 0.8s ease-in-out infinite; transform-origin: 90px 65px; }
         .animate-float-reaction { animation: float-reaction 1.5s ease-out forwards; }
         .animate-bot-confetti { animation: bot-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         @keyframes float-hands {
@@ -3781,6 +4450,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 .animate-allobot-generation-progress { transform-box: fill-box; transform-origin: center; animation: allobotGenerationProgress 1.6s linear infinite; }
 @keyframes allobotGenerationEnter { 0% { transform: translateY(8px) scale(0.72); opacity: 0; } 65% { transform: translateY(-1px) scale(1.04); opacity: 1; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
 .animate-allobot-generation-enter { transform-box: fill-box; transform-origin: center; animation: allobotGenerationEnter 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) 1 both; }
+.allobot-generation-family-core { transition: opacity 0.16s ease; }
+@keyframes allobotGenerationStageNode { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.16); } }
+.animate-allobot-generation-stage-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationStageNode 1.8s ease-in-out infinite; }
+@keyframes allobotGenerationPackNode { 0%, 100% { transform: scale(1); opacity: 0.82; } 50% { transform: scale(1.2); opacity: 1; } }
+.animate-allobot-generation-pack-node { transform-box: fill-box; transform-origin: center; animation: allobotGenerationPackNode 1.55s ease-in-out infinite; }
 [data-allo-generation-phase="1"] .animate-hologram-3d { animation-duration: 10s; }
 [data-allo-generation-phase="2"] .animate-hologram-3d { animation-duration: 6.5s; }
 [data-allo-generation-phase="1"] .animate-allobot-generation-scan { animation-duration: 1.9s; }
@@ -3845,6 +4519,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
     <div
       ref={containerRef}
       role="group"
+      data-allobot-control-surface="true"
+      data-allobot-control-theme={theme}
+      data-allobot-control-visibility={coarsePointer ? 'persistent' : 'reveal'}
+      data-allobot-control-live={isListening ? 'true' : 'false'}
+      data-allobot-body-state={bodyVisualState}
       tabIndex={0} data-help-key="bot_avatar"
       aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown"
       aria-describedby="allobot-move-instructions"
@@ -3867,8 +4546,11 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 ? 'transform 0.1s cubic-bezier(0.2, 0.8, 0.2, 1)'
                 : `top ${moveDuration}ms, right ${moveDuration}ms, transform ${moveDuration}ms cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s, filter 0.3s`),
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onPointerEnter={(e) => {
+          if (!coarsePointer && (e.pointerType || 'mouse') !== 'touch') setIsHovered(true);
+      }}
+      onPointerLeave={resetHoverGaze}
+      onPointerCancel={resetHoverGaze}
       onMouseDown={(e) => {
           if (isSleeping) {
               summon();
@@ -3898,6 +4580,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
             variant={effectiveMood === 'thinking' && !isTalking ? 'thought' : 'speech'}
             disableAnimations={motionDisabled}
             theme={theme}
+            avoidSide={accessoryRenderSide}
           />
           {!motionDisabled && reactions.map(r => (
               <ReactionBubble
@@ -3914,7 +4597,9 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
           ))}
           <div
             data-allobot-depth={theme}
-            className={`relative ${!motionDisabled && !isFlightActive ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
+            data-allobot-body-pose={bodyVisualState}
+            data-allobot-body-breathe={canBodyBreathe ? 'active' : 'paused'}
+            className={`relative ${canBodyBreathe ? "animate-bot-breathe" : ""} ${!motionDisabled && isCelebrating ? "animate-allo-backflip" : ""}`}
             style={{
                 filter: trailFilter,
                 transition: motionDisabled ? 'none' : 'filter 0.3s ease',
@@ -3925,9 +4610,15 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               {/* A4: sits OUTSIDE the satellite ring on purpose. The satellites
                   are opacity-0 until hover on a fine pointer, and a meter you
                   have to hover to see cannot tell you the mic is picking you up. */}
-              <AlloMicMeter active={!!isListening && !isPoofing} motionDisabled={motionDisabled} />
+              <AlloMicMeter active={!!isListening && !isPoofing} motionDisabled={motionDisabled} theme={theme} />
               {!isDragging && !isPoofing && !isSleeping && (
                   <>
+                    <div
+                        className="allobot-control-orbit"
+                        data-allobot-control-orbit={coarsePointer ? 'persistent' : 'reveal'}
+                        data-allobot-control-orbit-state={isListening ? 'listening' : 'idle'}
+                        aria-hidden="true"
+                    />
                     <button data-help-key="bot_sleep_btn"
                         data-allobot-satellite-kind="hide"
                         type="button"
@@ -4039,44 +4730,234 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 {!isFlightActive && !isDragging && (
                     <g
                         data-allobot-ground-shadow={theme}
+                        data-allobot-ground-state={bodyVisualState}
                         className={isSleeping || motionDisabled ? undefined : "animate-shadow-pulse"}
                     >
                         <ellipse
                             data-allobot-shadow-layer="ambient"
                             cx="50"
                             cy="90"
-                            rx="21"
-                            ry="4.8"
+                            rx={bodyPose.shadowRx}
+                            ry={bodyPose.shadowRy}
                             fill="#0F172A"
-                            opacity={theme === 'contrast' ? '0.28' : (theme === 'dark' ? '0.24' : '0.16')}
+                            opacity={(theme === 'contrast' ? 0.28 : (theme === 'dark' ? 0.24 : 0.16)) * bodyPose.shadowOpacityScale}
                             filter={theme === 'contrast' ? undefined : `url(#${svgPaintIds.groundShadow})`}
+                            style={{ transition: motionDisabled ? 'none' : 'rx 220ms ease, ry 220ms ease, opacity 220ms ease' }}
                         />
                         <ellipse
                             data-allobot-shadow-layer="contact"
                             cx="50"
                             cy="89.5"
-                            rx="12"
-                            ry="1.8"
+                            rx={bodyPose.contactRx}
+                            ry={bodyPose.contactRy}
                             fill={theme === 'contrast' ? '#000000' : '#020617'}
-                            opacity={theme === 'contrast' ? '0.58' : (theme === 'dark' ? '0.42' : '0.30')}
+                            opacity={(theme === 'contrast' ? 0.58 : (theme === 'dark' ? 0.42 : 0.30)) * bodyPose.shadowOpacityScale}
+                            style={{ transition: motionDisabled ? 'none' : 'rx 220ms ease, ry 220ms ease, opacity 220ms ease' }}
                         />
+                        <g
+                            data-allobot-shadow-layer="stabilizer-contact"
+                            opacity={bodyPose.stabilizerOpacity * (theme === 'contrast' ? 0.72 : 0.5)}
+                            style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease' }}
+                        >
+                            <ellipse
+                                cx={stabilizerLeftX}
+                                cy={stabilizerFootY + 2.4}
+                                rx="6.5"
+                                ry="1.55"
+                                fill={theme === 'contrast' ? '#000000' : '#020617'}
+                                style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }}
+                            />
+                            <ellipse
+                                cx={stabilizerRightX}
+                                cy={stabilizerFootY + 2.4}
+                                rx="6.5"
+                                ry="1.55"
+                                fill={theme === 'contrast' ? '#000000' : '#020617'}
+                                style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }}
+                            />
+                        </g>
                     </g>
                 )}
-                    <rect x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
-                    <circle cx="50" cy="46" r="6" fill="#06B6D4" stroke={colors.jetpackStroke} strokeWidth="2" />
-                    <circle cx="50" cy="46" r="3" fill="#67E8F9" className="animate-pulse motion-reduce:animate-none" />
-                    <path d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
-                    <path d="M10 46 H30 M10 60 H30" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
-                    <path d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
-                    <path d="M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.6" />
-                    {isFlightActive && (
-                        <g className="animate-jetpack-flame">
-                             <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
-                             <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
-                             <path d="M74 78 Q80 100 86 78 Z" fill="#F59E0B" />
-                             <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
+                    <g
+                        data-allobot-jetpack={jetpackVisualState}
+                        data-allobot-jetpack-motion={motionDisabled ? 'static' : 'animated'}
+                        data-allobot-hardware-theme={theme}
+                    >
+                        <rect data-allobot-jetpack-layer="harness" x="25" y="42" width="50" height="8" rx="2" fill={colors.jetpackStroke} />
+                        <g data-allobot-reactor-state={jetpackVisualState}>
+                            <circle
+                                data-allobot-jetpack-layer="reactor-halo"
+                                cx="50"
+                                cy="46"
+                                r={jetpackPower.haloRadius}
+                                fill="none"
+                                stroke={jetpackPower.signal}
+                                strokeWidth={theme === 'contrast' ? '1.7' : '1.3'}
+                                opacity={jetpackPower.haloOpacity}
+                                style={{ transition: motionDisabled ? 'none' : 'r 180ms ease, opacity 180ms ease, stroke 180ms ease' }}
+                            />
+                            <circle data-allobot-jetpack-layer="reactor" cx="50" cy="46" r="6" fill={hardwareVisual.shadow} stroke={colors.jetpackStroke} strokeWidth="2" />
+                            <circle
+                                data-allobot-jetpack-layer="reactor-signal"
+                                cx="50"
+                                cy="46"
+                                r="4.35"
+                                fill={jetpackPower.signal}
+                                opacity={jetpackPower.conduitOpacity}
+                                style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease, fill 180ms ease' }}
+                            />
+                            <circle
+                                data-allobot-jetpack-layer="reactor-core"
+                                cx="50"
+                                cy="46"
+                                r={jetpackPower.coreRadius}
+                                fill={jetpackPower.core}
+                                className={!motionDisabled && jetpackVisualState !== 'standby' ? "animate-pulse motion-reduce:animate-none" : undefined}
+                                style={{ transition: motionDisabled ? 'none' : 'r 180ms ease, fill 180ms ease' }}
+                            />
                         </g>
-                    )}
+                        <path data-allobot-jetpack-layer="tank-left" d="M10 36 A10 6 0 0 1 30 36 V 68 L 27 76 H 13 L 10 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                        <path data-allobot-jetpack-layer="tank-right" d="M70 36 A10 6 0 0 1 90 36 V 68 L 87 76 H 73 L 70 68 Z" fill={colors.jetpackFill} stroke={colors.jetpackStroke} strokeWidth="2" />
+                        <path data-allobot-jetpack-layer="tank-seams" d="M10 46 H30 M10 60 H30 M70 46 H90 M70 60 H90" stroke={colors.jetpackStroke} strokeWidth="1" fill="none" opacity="0.68" />
+                        <path
+                            data-allobot-jetpack-layer="power-conduits-shadow"
+                            d="M14 43 V62 Q14 68 18 71 M86 43 V62 Q86 68 82 71"
+                            stroke={hardwareVisual.shadow}
+                            strokeWidth="4"
+                            strokeLinecap="round"
+                            fill="none"
+                            opacity={theme === 'contrast' ? '1' : '0.54'}
+                        />
+                        <path
+                            data-allobot-jetpack-layer="power-conduits"
+                            d="M14 43 V62 Q14 68 18 71 M86 43 V62 Q86 68 82 71"
+                            stroke={jetpackPower.signal}
+                            strokeWidth={theme === 'contrast' ? '2' : '1.55'}
+                            strokeLinecap="round"
+                            fill="none"
+                            opacity={jetpackPower.conduitOpacity}
+                            style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease, stroke 180ms ease' }}
+                        />
+                        <path
+                            data-allobot-jetpack-layer="pod-highlights"
+                            d="M14 39 Q12 47 12.5 61 Q12.8 68 16 72 M86 39 Q88 47 87.5 61 Q87.2 68 84 72"
+                            stroke={hardwareVisual.highlight}
+                            strokeWidth={theme === 'contrast' ? '1.6' : '1.25'}
+                            strokeLinecap="round"
+                            fill="none"
+                            opacity={theme === 'contrast' ? '1' : '0.72'}
+                        />
+                        <g
+                            data-allobot-jetpack-layer="pod-signals"
+                            data-allobot-reactor-state={jetpackVisualState}
+                            opacity={jetpackPower.conduitOpacity}
+                            style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease' }}
+                        >
+                            <circle cx="14" cy="54" r="2.35" fill={hardwareVisual.shadow} stroke={jetpackPower.signal} strokeWidth="1" />
+                            <circle data-allobot-jetpack-layer="pod-signal-core" cx="14" cy="54" r={jetpackPower.podRadius} fill={jetpackPower.core} />
+                            <circle cx="86" cy="54" r="2.35" fill={hardwareVisual.shadow} stroke={jetpackPower.signal} strokeWidth="1" />
+                            <circle data-allobot-jetpack-layer="pod-signal-core" cx="86" cy="54" r={jetpackPower.podRadius} fill={jetpackPower.core} />
+                        </g>
+                        <g data-allobot-nozzle-state={jetpackVisualState}>
+                            <ellipse
+                                data-allobot-jetpack-layer="nozzle-glow"
+                                cx="20"
+                                cy="78.6"
+                                rx="5.5"
+                                ry={jetpackPower.nozzleRy}
+                                fill={jetpackPower.signal}
+                                opacity={jetpackPower.nozzleOpacity}
+                                style={{ transition: motionDisabled ? 'none' : 'ry 180ms ease, opacity 180ms ease, fill 180ms ease' }}
+                            />
+                            <ellipse
+                                data-allobot-jetpack-layer="nozzle-glow"
+                                cx="80"
+                                cy="78.6"
+                                rx="5.5"
+                                ry={jetpackPower.nozzleRy}
+                                fill={jetpackPower.signal}
+                                opacity={jetpackPower.nozzleOpacity}
+                                style={{ transition: motionDisabled ? 'none' : 'ry 180ms ease, opacity 180ms ease, fill 180ms ease' }}
+                            />
+                            <path data-allobot-jetpack-layer="nozzle-left" d="M13 72 H27 L25 78 H15 Z" fill={hardwareVisual.shadow} stroke={colors.jetpackStroke} strokeWidth="1.25" strokeLinejoin="round" />
+                            <path data-allobot-jetpack-layer="nozzle-right" d="M73 72 H87 L85 78 H75 Z" fill={hardwareVisual.shadow} stroke={colors.jetpackStroke} strokeWidth="1.25" strokeLinejoin="round" />
+                        </g>
+                        {jetpackVisualState === 'braking' && (
+                            <g
+                                data-allobot-jetpack-layer="brake-rings"
+                                fill="none"
+                                stroke={jetpackPower.signal}
+                                strokeWidth={theme === 'contrast' ? '2' : '1.5'}
+                                strokeLinecap="round"
+                            >
+                                <path d="M14 81 Q20 85 26 81" />
+                                <path d="M74 81 Q80 85 86 81" />
+                            </g>
+                        )}
+                        {jetpackVisualState === 'thrust' && (
+                            <g data-allobot-jetpack-flame="active" className="animate-jetpack-flame">
+                                 <path d="M14 78 Q20 100 26 78 Z" fill="#F59E0B" />
+                                 <path d="M17 78 Q20 90 23 78 Z" fill="#FEF3C7" />
+                                 <path d="M74 78 Q80 100 86 78 Z" fill="#F59E0B" />
+                                 <path d="M77 78 Q80 90 83 78 Z" fill="#FEF3C7" />
+                            </g>
+                        )}
+                    </g>
+                <g
+                    data-allobot-undercarriage={stabilizerVisualState}
+                    data-allobot-stabilizer-pose={[stabilizerLeftX, stabilizerFootY, stabilizerRightX, stabilizerFootY].join(',')}
+                    data-allobot-hardware-theme={theme}
+                    opacity={bodyPose.stabilizerOpacity}
+                    pointerEvents="none"
+                    style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease' }}
+                >
+                    <g data-allobot-stabilizer-side="left">
+                        <path
+                            data-allobot-stabilizer-layer="strut-shadow"
+                            d={['M', 41, 78, 'Q', 39, 85, stabilizerLeftX, stabilizerFootY - 1.5].join(' ')}
+                            stroke={hardwareVisual.shadow}
+                            strokeWidth="5"
+                            strokeLinecap="round"
+                            fill="none"
+                            style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }}
+                        />
+                        <path
+                            data-allobot-stabilizer-layer="strut-core"
+                            d={['M', 41, 78, 'Q', 39, 85, stabilizerLeftX, stabilizerFootY - 1.5].join(' ')}
+                            stroke={colors.gradFrom}
+                            strokeWidth="2.6"
+                            strokeLinecap="round"
+                            fill="none"
+                            style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }}
+                        />
+                        <circle cx={stabilizerLeftX} cy={stabilizerFootY - 1.5} r="2.7" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.1" style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }} />
+                        <ellipse data-allobot-stabilizer-layer="pad" cx={stabilizerLeftX} cy={stabilizerFootY} rx="7" ry="3.2" fill={hardwareVisual.joint} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '1.8' : '1.25'} style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }} />
+                        <path d={['M', stabilizerLeftX - 4.5, stabilizerFootY - 0.8, 'Q', stabilizerLeftX, stabilizerFootY - 3, stabilizerLeftX + 4.5, stabilizerFootY - 0.8].join(' ')} stroke={hardwareVisual.highlight} strokeWidth="0.9" strokeLinecap="round" fill="none" opacity={theme === 'contrast' ? '1' : '0.72'} style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }} />
+                    </g>
+                    <g data-allobot-stabilizer-side="right">
+                        <path
+                            data-allobot-stabilizer-layer="strut-shadow"
+                            d={['M', 59, 78, 'Q', 61, 85, stabilizerRightX, stabilizerFootY - 1.5].join(' ')}
+                            stroke={hardwareVisual.shadow}
+                            strokeWidth="5"
+                            strokeLinecap="round"
+                            fill="none"
+                            style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }}
+                        />
+                        <path
+                            data-allobot-stabilizer-layer="strut-core"
+                            d={['M', 59, 78, 'Q', 61, 85, stabilizerRightX, stabilizerFootY - 1.5].join(' ')}
+                            stroke={colors.gradFrom}
+                            strokeWidth="2.6"
+                            strokeLinecap="round"
+                            fill="none"
+                            style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }}
+                        />
+                        <circle cx={stabilizerRightX} cy={stabilizerFootY - 1.5} r="2.7" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.1" style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }} />
+                        <ellipse data-allobot-stabilizer-layer="pad" cx={stabilizerRightX} cy={stabilizerFootY} rx="7" ry="3.2" fill={hardwareVisual.joint} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '1.8' : '1.25'} style={{ transition: motionDisabled ? 'none' : 'cx 220ms ease, cy 220ms ease' }} />
+                        <path d={['M', stabilizerRightX - 4.5, stabilizerFootY - 0.8, 'Q', stabilizerRightX, stabilizerFootY - 3, stabilizerRightX + 4.5, stabilizerFootY - 0.8].join(' ')} stroke={hardwareVisual.highlight} strokeWidth="0.9" strokeLinecap="round" fill="none" opacity={theme === 'contrast' ? '1' : '0.72'} style={{ transition: motionDisabled ? 'none' : 'd 220ms ease' }} />
+                    </g>
+                </g>
                 {isFlightActive && (
                     <g transform="translate(-10, 0)" className="animate-fade-in" style={{ opacity: 0.6 }}>
                        <rect x="-20" y="20" width="30" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.4s', animationDelay: '0s' }} />
@@ -4084,23 +4965,59 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                        <rect x="-15" y="80" width="25" height="2" rx="1" fill="white" className="animate-wind-streak" style={{ animationDuration: '0.5s', animationDelay: '0.1s' }} />
                     </g>
                 )}
-                {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
-                    <g className={`animate-allobot-generation-enter${generationMotionPaused ? ' allobot-generation-paused' : ''}`}>
-                    <g data-allo-generation-family={alloBotGenerationFamily(generationType, activeView)} data-allo-generation-stage={generationStage || 'working'} data-allo-generation-phase={generationAnimationPhase} className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '2s' }}>
+                {effectiveMood === 'thinking' && !isSleeping && (
+                    <g
+                        className={motionDisabled ? 'allobot-generation-static' : `animate-allobot-generation-enter${generationMotionPaused ? ' allobot-generation-paused' : ''}`}
+                        data-allo-generation-motion={motionDisabled ? 'static' : 'animated'}
+                    >
+                    <g
+                        data-allo-generation-family={alloBotGenerationFamily(generationType, activeView)}
+                        data-allo-generation-stage={generationStage || 'working'}
+                        data-allo-generation-phase={generationAnimationPhase}
+                        data-allo-generation-batch={isFullPackGeneration ? 'full-pack' : 'single'}
+                        className="allobot-generation-hud"
+                    >
                         <circle
+                            data-allo-generation-panel="true"
+                            cx="50"
+                            cy="-25"
+                            r="15.5"
+                            fill={generationHudColors.panel}
+                            fillOpacity={generationHudColors.panelOpacity}
+                            stroke={generationHudColors.track}
+                            strokeOpacity="0.25"
+                            strokeWidth="0.7"
+                            aria-hidden="true"
+                        />
+                        <circle
+                            data-allo-generation-ring="track"
+                            cx="50"
+                            cy="-25"
+                            r="18"
+                            stroke={generationHudColors.track}
+                            strokeWidth="2"
+                            strokeOpacity="0.24"
+                            fill="none"
+                            aria-hidden="true"
+                        />
+                        <g transform="rotate(-90 50 -25)">
+                        <circle
+                            data-allo-generation-ring="progress"
                             cx="50"
                             cy="-25"
                             r="18"
                             pathLength="100"
-                            stroke="#FDBA74"
-                            strokeWidth="1"
-                            strokeOpacity="0.8"
+                            stroke={generationHudColors.active}
+                            strokeWidth="2.2"
+                            strokeOpacity="1"
+                            strokeLinecap="round"
                             strokeDasharray={generationProgressDasharray}
                             strokeDashoffset={generationProgressFraction === null ? 24 : 100 - (generationProgressFraction * 100)}
                             fill="none"
                             className={generationProgressRingClass}
                             aria-hidden="true"
                         />
+                        </g>
                         <path
                             d="M 20 -50 L 80 -50 L 54 5 L 46 5 Z"
                             fill={`url(#${svgPaintIds.beam})`}
@@ -4113,7 +5030,14 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              <animate attributeName="d" values="M 46 5 L 54 5; M 20 -50 L 80 -50; M 46 5 L 54 5" dur={motionDisabled ? 'indefinite' : '2s'} repeatCount="indefinite" />
                              <animate attributeName="stroke-opacity" values="0; 1; 0" dur={motionDisabled ? 'indefinite' : '2s'} repeatCount="indefinite" />
                         </path>
-                        <g transform="translate(50, -25)" opacity="0.9">
+                        {renderGenerationPackOrbit()}
+                        {renderGenerationStageRail()}
+                        <g
+                            transform="translate(50, -25)"
+                            className="allobot-generation-family-core"
+                            opacity={accPop ? '0.18' : '0.95'}
+                            style={{ transition: motionDisabled ? 'none' : 'opacity 160ms ease' }}
+                        >
                              <animateTransform
                                 attributeName="transform"
                                 type="translate"
@@ -4141,8 +5065,39 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         <text x="75" y="-5" fontSize="18" fill="#60A5FA" fontWeight="bold" style={STYLE_ANIMATION_DELAY_HALF}>Z</text>
                     </g>
                 )}
-                <circle cx="50" cy="50" r="45" fill={colors.glow} fillOpacity="0.2" className={isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none"} />
+                <circle
+                    data-allobot-shell-glow={bodyVisualState}
+                    cx="50" cy="50" r="45"
+                    fill={colors.glow}
+                    fillOpacity={bodyPose.glowOpacity}
+                    className={isSleeping || motionDisabled ? "" : "animate-pulse motion-reduce:animate-none"}
+                    style={{ transition: motionDisabled ? 'none' : 'fill-opacity 220ms ease' }}
+                />
                 <g
+                    data-allobot-antenna-mount={theme}
+                    data-allobot-antenna-state={antennaVisualState}
+                    pointerEvents="none"
+                >
+                    <path
+                        data-allobot-antenna-layer="socket"
+                        d="M42.5 22 Q43.5 15.5 50 14.5 Q56.5 15.5 57.5 22 Z"
+                        fill={hardwareVisual.shadow}
+                        stroke={theme === 'contrast' ? '#000000' : colors.antenna}
+                        strokeWidth={theme === 'contrast' ? '2' : '1.4'}
+                        strokeLinejoin="round"
+                    />
+                    <path
+                        data-allobot-antenna-layer="socket-highlight"
+                        d="M45.5 18.8 Q50 15.8 54.5 18.8"
+                        stroke={hardwareVisual.highlight}
+                        strokeWidth="1.15"
+                        strokeLinecap="round"
+                        fill="none"
+                        opacity={theme === 'contrast' ? '1' : '0.68'}
+                    />
+                </g>
+                <g
+                    data-allobot-antenna={antennaVisualState}
                     className={
                         isSleeping || motionDisabled ? "" :
                         (isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" :
@@ -4156,34 +5111,65 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                 >
                     {theme === 'contrast' && (
                         <path
-                            d="M50 15V5"
+                            d="M50 16V5"
                             stroke="#000000"
                             strokeWidth="7"
                             strokeLinecap="round"
                             data-allobot-antenna-outline="true"
                         />
                     )}
-                    <path d="M50 15V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
+                    <path data-allobot-antenna-layer="stalk" d="M50 16V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
                     {antennaAction === 'signal' && !motionDisabled && !isSleeping && effectiveMood !== 'thinking' && (
-                        <g>
+                        <g data-allobot-antenna-layer="signal-waves">
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
                             <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={{ animationDelay: '1.0s' }} />
                         </g>
                     )}
-                    <circle
-                        cx="50" cy="5" r="5"
-                        fill={isSleeping ? "#64748B" : "#FACC15"}
-                        stroke={theme === 'contrast' ? '#000000' : 'none'}
-                        strokeWidth={theme === 'contrast' ? '2' : '0'}
-                        data-allobot-antenna-light={theme}
+                    <g
+                        data-allobot-antenna-lamp={antennaVisualState}
                         className={
                             effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
-                            (!motionDisabled && isTalking ? "animate-pulse motion-reduce:animate-none" :
+                            (!motionDisabled && (isListening || isTalking) ? "animate-pulse motion-reduce:animate-none" :
                             (isSleeping ? "" :
                             (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
                         }
-                    />
+                        style={{ transformOrigin: '50px 5px' }}
+                    >
+                        <circle
+                            data-allobot-antenna-layer="lamp-housing"
+                            cx="50" cy="5" r="6.3"
+                            fill={hardwareVisual.shadow}
+                            stroke={theme === 'contrast' ? '#FFFFFF' : colors.antenna}
+                            strokeWidth={theme === 'contrast' ? '1.6' : '1.25'}
+                        />
+                        <circle
+                            data-allobot-antenna-layer="lamp-core"
+                            data-allobot-antenna-light={theme}
+                            data-allobot-antenna-state={antennaVisualState}
+                            cx="50" cy="5" r="4.25"
+                            fill={antennaCoreFill}
+                        />
+                        {!isSleeping && (
+                            <circle
+                                data-allobot-antenna-layer="lamp-catchlight"
+                                cx="48.5" cy="3.5" r="1.05"
+                                fill="#FFFFFF"
+                                opacity={theme === 'contrast' ? '1' : '0.82'}
+                                pointerEvents="none"
+                            />
+                        )}
+                        {isSleeping && (
+                            <path
+                                data-allobot-antenna-layer="sleep-dash"
+                                d="M47.7 5 H52.3"
+                                stroke={theme === 'contrast' ? '#000000' : '#F8FAFC'}
+                                strokeWidth="1.35"
+                                strokeLinecap="round"
+                                fill="none"
+                            />
+                        )}
+                    </g>
                 </g>
                 {effectiveMood === 'thinking' && !isSleeping && !motionDisabled && (
                     <g className="animate-pulse motion-reduce:animate-none" style={{ animationDuration: '1.5s' }}>
@@ -4204,8 +5190,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     stroke={theme === 'contrast' ? '#000000' : 'none'}
                     strokeWidth={theme === 'contrast' ? '2.5' : '0'}
                     data-allobot-shell={theme}
+                    data-allobot-shell-layer="body"
                 />
-                <circle cx="50" cy="55" r="35" fill={`url(#${svgPaintIds.rim})`} />
+                <circle data-allobot-shell-layer="rim" cx="50" cy="55" r="35" fill={`url(#${svgPaintIds.rim})`} />
+                <path
+                    data-allobot-shell-layer="lower-contour"
+                    d="M27 77 Q50 87 73 77"
+                    stroke={hardwareVisual.shellContour}
+                    strokeWidth={theme === 'contrast' ? '1.8' : '1.2'}
+                    strokeLinecap="round"
+                    fill="none"
+                    opacity={theme === 'contrast' ? '0.9' : (theme === 'dark' ? '0.46' : '0.32')}
+                />
                 {accessoryRenderSide && (
                     <g data-allobot-accessory-reflection={accessoryRenderSide} pointerEvents="none">
                         <ellipse
@@ -4228,6 +5224,69 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         />
                     </g>
                 )}
+                {accessoryRenderSide && (
+                    <g
+                        data-allobot-accessory-dock={accessoryRenderSide}
+                        data-allobot-accessory-dock-state={accessoryDockState}
+                        data-allobot-accessory-dock-accent={accessoryAccent}
+                        opacity={accExiting ? '0.24' : '1'}
+                        pointerEvents="none"
+                        style={{ transition: motionDisabled ? 'none' : 'opacity 180ms ease' }}
+                    >
+                        <path
+                            data-allobot-accessory-dock-layer="tether-shadow"
+                            d={accessoryDockPath}
+                            stroke={theme === 'contrast' ? '#000000' : hardwareVisual.shadow}
+                            strokeWidth={theme === 'contrast' ? '4.4' : '3.6'}
+                            strokeLinecap="round"
+                            fill="none"
+                        />
+                        <path
+                            data-allobot-accessory-dock-layer="tether-signal"
+                            d={accessoryDockSignalPath}
+                            stroke={accessoryAccent}
+                            strokeWidth={theme === 'contrast' ? '1.8' : '1.35'}
+                            strokeDasharray={theme === 'contrast' ? '3 2' : '2.4 2'}
+                            strokeLinecap="round"
+                            fill="none"
+                            opacity={theme === 'contrast' ? '1' : '0.82'}
+                        />
+                        <circle
+                            data-allobot-accessory-dock-layer="shell-port"
+                            cx={accessoryDockShellX}
+                            cy="69"
+                            r="4"
+                            fill={hardwareVisual.shadow}
+                            stroke={theme === 'contrast' ? '#000000' : accessoryAccent}
+                            strokeWidth={theme === 'contrast' ? '2' : '1.35'}
+                        />
+                        <circle data-allobot-accessory-dock-layer="shell-core" cx={accessoryDockShellX} cy="69" r="1.75" fill={accessoryAccent} />
+                        <circle
+                            cx={accessoryDockShellX + (accessoryRenderSide === 'left' ? -1 : 1)}
+                            cy="67.8"
+                            r="0.65"
+                            fill={hardwareVisual.highlight}
+                            opacity={theme === 'contrast' ? '1' : '0.78'}
+                        />
+                        <circle
+                            data-allobot-accessory-dock-layer="edge-port"
+                            cx={accessoryDockEdgeX}
+                            cy="60"
+                            r="2.9"
+                            fill={colors.screenBg}
+                            stroke={accessoryAccent}
+                            strokeWidth={theme === 'contrast' ? '1.8' : '1.25'}
+                        />
+                        <circle
+                            data-allobot-accessory-dock-layer="edge-core"
+                            cx={accessoryDockEdgeX}
+                            cy="60"
+                            r="1.15"
+                            fill={accessoryAccent}
+                            className={!motionDisabled && !accExiting ? "animate-pulse motion-reduce:animate-none" : undefined}
+                        />
+                    </g>
+                )}
                 {activeView === 'faq' && !isSleeping && !motionDisabled && (
                      <g className="animate-bounce motion-reduce:animate-none" style={{ animationDuration: '2.5s' }}>
                           <text x="50" y="10" fontSize="24" fill="#F59E0B" stroke="#B45309" strokeWidth="1" textAnchor="middle" fontWeight="bold" style={{ filter: 'drop-shadow(0px 2px 2px rgba(0,0,0,0.3))' }}>?</text>
@@ -4238,6 +5297,18 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     style={{ transform: `translate(${visorPosition.x + (propGazeX * 0.3)}px, ${visorPosition.y + (propGazeY * 0.3)}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}
                 >
                     <rect
+                        data-allobot-visor-layer="frame"
+                        x="18"
+                        y="28"
+                        width="64"
+                        height="40"
+                        rx="16"
+                        fill={visorVisual.frame}
+                        stroke={visorVisual.frameEdge}
+                        strokeWidth={theme === 'contrast' ? '2' : '1.25'}
+                    />
+                    <rect
+                        data-allobot-visor-layer="screen"
                         x="20"
                         y="30"
                         width="60"
@@ -4247,6 +5318,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         className="transition-colors duration-200"
                     />
                     <path
+                        data-allobot-visor-layer="reflection"
                         d="M 23 38 Q 22 32 36 32 L 68 32 Q 74 32 76 36"
                         fill="none"
                         stroke={`url(#${svgPaintIds.visor})`}
@@ -4254,25 +5326,42 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         strokeLinecap="round"
                         opacity="0.9"
                     />
+                    <path
+                        data-allobot-visor-layer="lower-bevel"
+                        d="M 24 63 Q 50 66.5 76 63"
+                        fill="none"
+                        stroke={visorVisual.innerEdge}
+                        strokeWidth={theme === 'contrast' ? '1.5' : '1'}
+                        strokeLinecap="round"
+                        opacity={theme === 'contrast' ? '1' : '0.58'}
+                    />
                     <rect
+                        data-allobot-visor-layer="bezel"
                         x="20"
                         y="30"
                         width="60"
                         height="36"
                         rx="14"
                         fill="none"
-                        stroke={theme === 'contrast' ? colors.glow : (isTalking ? "#6366F1" : "rgba(255,255,255,0.15)")}
+                        stroke={theme === 'contrast' ? colors.glow : (isTalking ? "#818CF8" : visorVisual.innerEdge)}
                         strokeWidth={theme === 'contrast' ? '3' : '2'}
+                        opacity={theme === 'contrast' ? '1' : (isTalking ? '0.95' : '0.62')}
                     />
                 </g>
                 <g
-                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-left" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.2s' }}
                 >
-                    <circle cx={leftHandX} cy={leftHandY} r="6.5" fill={colors.gradFrom} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} data-allobot-hand="left" style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
-                    <circle cx={leftHandX - 2} cy={leftHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.55'} pointerEvents="none" />
+                    <g data-allobot-arm="left" data-allobot-arm-role={leftHandRole}>
+                        <path d={leftArmPath} stroke={hardwareVisual.shadow} strokeWidth="7.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        <path data-allobot-arm-layer="core" d={leftArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        <circle data-allobot-shoulder="left" cx="19" cy="61" r="3.2" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.25" />
+                    </g>
+                    <circle data-allobot-hand="left" data-allobot-hand-layer="palm" data-allobot-hand-role={leftHandRole} cx={leftHandX} cy={leftHandY} r="6.5" fill={`url(#${svgPaintIds.body})`} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
+                    <path data-allobot-hand-layer="lower-shade" d={['M', leftHandX - 4.2, leftHandY + 2.1, 'Q', leftHandX, leftHandY + 5.2, leftHandX + 4.2, leftHandY + 2.1].join(' ')} stroke={colors.gradTo} strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.58" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                    <circle data-allobot-hand-layer="highlight" cx={leftHandX - 2} cy={leftHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.62'} pointerEvents="none" />
                     {activeView === 'image' && !isSleeping && (
-                        <g transform="translate(10, 65) rotate(15)">
+                        <g data-allobot-live-grip="palette" transform={`translate(${leftHandX}, ${leftHandY}) rotate(15)`}>
                             <path
                                 d="M -9 0 Q -5 -12 8 -12 Q 18 -10 20 2 Q 22 12 12 16 Q 0 16 -4 10 Q -12 8 -9 0 Z"
                                 fill="#D4A373"
@@ -4289,7 +5378,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     {heldItem === 'flashlight' && (
                         <circle
                             ref={flashPivotRef}
-                            cx="10" cy="65" r="0.5"
+                            cx={leftHandX} cy={leftHandY} r="0.5"
                             fill="none"
                             stroke="none"
                             pointerEvents="none"
@@ -4297,7 +5386,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         />
                     )}
                     {heldItem === 'flashlight' && (
-                        <g transform={`translate(10, 65) rotate(${aimAngle})`}>
+                        <g data-allobot-live-grip="flashlight" transform={`translate(${leftHandX}, ${leftHandY}) rotate(${aimAngle})`}>
                             <path
                                 d="M -4 -10 L 4 -10 L 6 5 L 8 8 L -8 8 L -6 5 Z"
                                 fill="#94A3B8"
@@ -4314,26 +5403,61 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             <ellipse cx="0" cy="9" rx="6" ry="2" fill="#FACC15" fillOpacity="0.8" className="animate-pulse motion-reduce:animate-none" />
                         </g>
                     )}
+                    {heldItem === 'flashlight' && (
+                        <g data-allobot-held-item-grip-overlay="left" pointerEvents="none">
+                            <circle cx={leftHandX} cy={leftHandY} r="3.25" fill={`url(#${svgPaintIds.body})`} stroke={hardwareVisual.shadow} strokeWidth="1.1" />
+                            <path d={['M', leftHandX - 2, leftHandY - 0.6, 'Q', leftHandX, leftHandY + 1.4, leftHandX + 2, leftHandY - 0.6].join(' ')} stroke={hardwareVisual.highlight} strokeWidth="0.75" strokeLinecap="round" fill="none" opacity="0.72" />
+                        </g>
+                    )}
                 </g>
                 <g
-                    className={!motionDisabled && !isSleeping && !isDragging ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
+                    className={!motionDisabled && !isSleeping && !isDragging && !heldItemUsesSupportHand ? (isTalking ? "animate-gesture-right" : "animate-float-hands") : ""}
                     style={{ animationDelay: isTalking ? '0s' : '0.5s' }}
                 >
-                    <circle cx={rightHandX} cy={rightHandY} r="6.5" fill={colors.gradFrom} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} data-allobot-hand="right" style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
-                    <circle cx={rightHandX - 2} cy={rightHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.55'} pointerEvents="none" />
+                    <g data-allobot-arm="right" data-allobot-arm-role={rightHandRole}>
+                        <path d={rightArmPath} stroke={hardwareVisual.shadow} strokeWidth="7.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        <path data-allobot-arm-layer="core" d={rightArmPath} stroke={colors.gradFrom} strokeWidth="4.5" strokeLinecap="round" fill="none" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                        <circle data-allobot-shoulder="right" cx="81" cy="61" r="3.2" fill={hardwareVisual.joint} stroke={hardwareVisual.shadow} strokeWidth="1.25" />
+                    </g>
+                    <circle data-allobot-hand="right" data-allobot-hand-layer="palm" data-allobot-hand-role={rightHandRole} cx={rightHandX} cy={rightHandY} r="6.5" fill={`url(#${svgPaintIds.body})`} stroke={theme === 'contrast' ? '#000000' : colors.jetpackStroke} strokeWidth={theme === 'contrast' ? '2' : '1.5'} style={{ transition: motionDisabled ? 'none' : 'cx 180ms ease, cy 180ms ease' }} />
+                    <path data-allobot-hand-layer="lower-shade" d={['M', rightHandX - 4.2, rightHandY + 2.1, 'Q', rightHandX, rightHandY + 5.2, rightHandX + 4.2, rightHandY + 2.1].join(' ')} stroke={colors.gradTo} strokeWidth="1.1" strokeLinecap="round" fill="none" opacity="0.58" style={{ transition: motionDisabled ? 'none' : 'd 180ms ease' }} />
+                    <circle data-allobot-hand-layer="highlight" cx={rightHandX - 2} cy={rightHandY - 2} r="1.35" fill="#FFFFFF" opacity={theme === 'contrast' ? '0.9' : '0.62'} pointerEvents="none" />
                 </g>
-                {heldItem && !isSleeping && !isDragging && (
+                {heldItemHasArtwork && !isSleeping && !isDragging && (
                     <g
                         id={svgPaintIds.heldItem}
                         data-allobot-held-item="true"
                         data-held-item-side={heldItemRenderSide}
-                        className={`animate-in fade-in slide-in-from-bottom-2 duration-300 ${isMoving ? "transition-transform motion-reduce:transition-none duration-100 ease-out" : ""}`}
-                        style={{
-                            transformOrigin: '90px 65px',
-                            transform: isMoving ? `rotate(${propRotation}deg)` : undefined
-                        }}
+                        data-allobot-held-item-grip={`${heldItemGripX},${heldItemGripY}`}
+                        data-allobot-held-item-authored-grip={`${heldItemAuthoredGrip.x},${heldItemAuthoredGrip.y}`}
+                        data-allobot-held-item-support={heldItemUsesSupportHand ? heldItemSupportSide : 'none'}
+                        className="animate-in fade-in slide-in-from-bottom-2 duration-300"
                     >
-                        <g transform={heldItemRenderSide === 'left' ? 'translate(100 0) scale(-1 1)' : undefined}>
+                        <g
+                            data-allobot-held-item-motion={heldItemMotionClass || 'static'}
+                            className={heldItemMotionClass}
+                            style={{ animationDelay: heldItemMotionDelay }}
+                        >
+                        <g
+                            data-allobot-held-item-rotation={heldItemUsesSupportHand ? 'braced' : (isMoving ? 'moving' : 'resting')}
+                            className="transition-transform motion-reduce:transition-none"
+                            style={{
+                                transformOrigin: `${heldItemGripX}px ${heldItemGripY}px`,
+                                transformBox: 'view-box',
+                                transform: !heldItemUsesSupportHand && isMoving ? `rotate(${propRotation}deg)` : undefined,
+                                transition: motionDisabled ? 'none' : 'transform 100ms ease-out',
+                            }}
+                        >
+                        <g
+                            data-allobot-live-grip={heldItemRenderSide}
+                            style={{
+                                transform: `translate(${heldItemGripOffsetX}px, ${heldItemGripOffsetY}px)`,
+                                transformBox: 'view-box',
+                                transformOrigin: '0 0',
+                                transition: motionDisabled ? 'none' : 'transform 180ms ease',
+                            }}
+                        >
+                        <g data-allobot-held-item-artwork={heldItem} transform={heldItemArtworkTransform}>
                         {heldItem === 'pointer' && (
                             <g className="animate-tap-pointer">
                                 <line x1="90" y1="65" x2="115" y2="25" stroke="#D4A373" strokeWidth="3" strokeLinecap="round" />
@@ -4364,21 +5488,23 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                              </g>
                         )}
                         {heldItem === 'map' && (
-                             <g transform="translate(85, 43) rotate(5)">
-                                <path d="M0 2 C 5 0, 15 0, 22 2 L 22 26 C 15 24, 5 24, 0 26 Z" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
-                                <path d="M2 2 C 6 1, 16 1, 20 2" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
-                                <path d="M2 26 C 6 25, 16 25, 20 26" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
-                                <path d="M12 9 L18 15 M18 9 L12 15" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
-                                <path d="M4 20 Q 8 14 12 15" stroke="#92400E" strokeWidth="1.5" strokeDasharray="2 1" fill="none" />
+                             <g transform="translate(73, 43) rotate(3 17 14)">
+                                <path d="M0 2 C 8 0, 24 0, 34 2 L 34 26 C 24 24, 8 24, 0 26 Z" fill="#FEF3C7" stroke="#D97706" strokeWidth="1" />
+                                <path d="M11 1.5 V25 M23 1.5 V25" stroke="#D97706" strokeWidth="0.7" fill="none" opacity="0.42" />
+                                <path d="M2 2 C 10 1, 25 1, 32 2 M2 26 C 10 25, 25 25, 32 26" stroke="#D97706" strokeWidth="0.5" fill="none" opacity="0.5" />
+                                <path d="M21 8 L27 14 M27 8 L21 14" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M5 20 Q 11 13 18 15 T 28 19" stroke="#92400E" strokeWidth="1.5" strokeDasharray="2 1" fill="none" />
                              </g>
                         )}
                         {heldItem === 'clipboard' && (
-                             <g transform="translate(88, 50) rotate(-5)">
-                                <rect x="0" y="0" width="18" height="22" fill="#9CA3AF" rx="1" />
-                                <rect x="2" y="2" width="14" height="18" fill="white" />
-                                <line x1="4" y1="5" x2="14" y2="5" stroke="#CBD5E1" strokeWidth="1" />
-                                <line x1="4" y1="9" x2="14" y2="9" stroke="#CBD5E1" strokeWidth="1" />
-                                <line x1="4" y1="13" x2="14" y2="13" stroke="#CBD5E1" strokeWidth="1" />
+                             <g transform="translate(77, 43) rotate(-3 13 15)">
+                                <rect x="0" y="0" width="26" height="30" fill="#9CA3AF" stroke="#475569" strokeWidth="0.8" rx="2" />
+                                <rect x="2.5" y="3" width="21" height="24" fill="white" rx="1" />
+                                <rect x="8" y="-1.5" width="10" height="5" rx="2" fill="#475569" stroke="#1F2937" strokeWidth="0.7" />
+                                <line x1="6" y1="8" x2="20" y2="8" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <line x1="6" y1="13" x2="20" y2="13" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <line x1="6" y1="18" x2="18" y2="18" stroke="#CBD5E1" strokeWidth="1.2" />
+                                <path d="M6 23 L9 26 L14 20" stroke="#22C55E" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
                              </g>
                         )}
                         {heldItem === 'hourglass' && (
@@ -4399,13 +5525,12 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                             </g>
                         )}
                         {heldItem === 'book' && (
-                             <g transform="translate(90, 45) rotate(-10)">
-                                <rect x="0" y="0" width="24" height="32" rx="2" fill="#4B5563" stroke="#1F2937" strokeWidth="1"/>
-                                <rect x="3" y="2" width="20" height="28" rx="1" fill="#F8FAFC" />
-                                <line x1="7" y1="8" x2="19" y2="8" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                                <line x1="7" y1="14" x2="19" y2="14" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                                <line x1="7" y1="20" x2="19" y2="20" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
-                                <line x1="7" y1="26" x2="15" y2="26" stroke="#94A3B8" strokeWidth="1.5" strokeLinecap="round" />
+                             <g transform="translate(75, 42) rotate(-2 15 17)">
+                                <path d="M0 4 Q8 0 15 4 V33 Q8 29 0 32 Z" fill="#F8FAFC" stroke="#334155" strokeWidth="1" />
+                                <path d="M15 4 Q22 0 30 4 V32 Q22 29 15 33 Z" fill="#F8FAFC" stroke="#334155" strokeWidth="1" />
+                                <path d="M15 4 V33" stroke="#4B5563" strokeWidth="1.4" />
+                                <path d="M3 9 Q8 7 12 9 M3 14 Q8 12 12 14 M3 19 Q8 17 12 19 M18 9 Q23 7 27 9 M18 14 Q23 12 27 14 M18 19 Q23 17 27 19" stroke="#94A3B8" strokeWidth="1.1" fill="none" strokeLinecap="round" />
+                                <path d="M0 32 Q8 29 15 33 Q22 29 30 32" stroke="#1F2937" strokeWidth="1.4" fill="none" />
                              </g>
                         )}
                         {heldItem === 'globe' && (
@@ -4435,9 +5560,51 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <circle cx="2" cy="-18" r="2.5" fill="#3B82F6" className="animate-pulse motion-reduce:animate-none" />
                             </g>
                         )}
+                        <g data-allobot-held-item-grip-overlay={heldItemRenderSide} pointerEvents="none">
+                            <circle
+                                cx={heldItemAuthoredGrip.x}
+                                cy={heldItemAuthoredGrip.y}
+                                r="3.25"
+                                fill={`url(#${svgPaintIds.body})`}
+                                stroke={hardwareVisual.shadow}
+                                strokeWidth="1.1"
+                            />
+                            <path
+                                d={['M', heldItemAuthoredGrip.x - 2, heldItemAuthoredGrip.y - 0.6, 'Q', heldItemAuthoredGrip.x, heldItemAuthoredGrip.y + 1.4, heldItemAuthoredGrip.x + 2, heldItemAuthoredGrip.y - 0.6].join(' ')}
+                                stroke={hardwareVisual.highlight}
+                                strokeWidth="0.75"
+                                strokeLinecap="round"
+                                fill="none"
+                                opacity="0.72"
+                            />
+                        </g>
+                        {heldItemUsesSupportHand && heldItemSupportAuthoredGrip && (
+                            <g data-allobot-held-item-support-grip={heldItemSupportSide} pointerEvents="none">
+                                <circle
+                                    cx={heldItemSupportAuthoredGrip.x}
+                                    cy={heldItemSupportAuthoredGrip.y}
+                                    r="3.4"
+                                    fill={`url(#${svgPaintIds.body})`}
+                                    stroke={hardwareVisual.shadow}
+                                    strokeWidth="1.1"
+                                />
+                                <path
+                                    d={['M', heldItemSupportAuthoredGrip.x - 2.2, heldItemSupportAuthoredGrip.y - 0.4, 'Q', heldItemSupportAuthoredGrip.x, heldItemSupportAuthoredGrip.y + 1.7, heldItemSupportAuthoredGrip.x + 2.2, heldItemSupportAuthoredGrip.y - 0.4].join(' ')}
+                                    stroke={hardwareVisual.highlight}
+                                    strokeWidth="0.8"
+                                    strokeLinecap="round"
+                                    fill="none"
+                                    opacity="0.76"
+                                />
+                            </g>
+                        )}
+                        </g>
+                        </g>
+                        </g>
                         </g>
                     </g>
                 )}
+                <g data-allobot-face-state={faceVisualState}>
                 {isSleeping ? (
                     <g className="transition-all motion-reduce:transition-none duration-500">
                         <path d="M34 49 Q39 53 44 49" stroke={colors.eye} strokeWidth="3" fill="none" strokeLinecap="round" />
@@ -4445,33 +5612,53 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     </g>
                 ) : (
                     <g>
-                        {/* Keep the eye sockets anchored in the visor; only the pupils
+                        {/* Keep the eye sockets anchored in the visor; only the soft eye details
                             track the pointer/prop so Allobot looks rather than sliding
                             its whole face—including its mouth—around the screen. */}
                         <ellipse
+                            data-allobot-eye="left"
                             cx="38" cy="48"
                             rx={eyeRx} ry={eyeRy * blinkScale}
                             fill={colors.eye}
+                            stroke={visorVisual.eyeOutline}
+                            strokeWidth={theme === 'contrast' ? '1.5' : '1.1'}
                             className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                         />
                         <ellipse
+                            data-allobot-eye="right"
                             cx="62" cy="48"
                             rx={eyeRx} ry={eyeRy * blinkScale}
                             fill={colors.eye}
+                            stroke={visorVisual.eyeOutline}
+                            strokeWidth={theme === 'contrast' ? '1.5' : '1.1'}
                             className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
                         />
                         <g
                             data-allobot-prop-gaze={accessoryRenderSide || 'center'}
-                            style={{ transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? 'none' : 'transform 0.1s ease-out' }}
+                            data-allobot-soft-gaze={hoverGazeEngaged ? 'engaged' : (accessoryRenderSide ? 'prop' : 'resting')}
+                            data-allobot-eye-details={eyeDetailsVisible ? (faceLensesCoverEyes ? 'simplified' : 'visible') : 'hidden'}
+                            opacity={eyeDetailsVisible ? 1 : 0}
+                            style={{ transform: `translate(${resolvedGazeX}px, ${resolvedGazeY}px)`, transition: motionDisabled ? 'none' : 'transform 0.22s cubic-bezier(0.22, 1, 0.36, 1)' }}
                         >
-                            <ellipse cx="38" cy="48" rx="2.5" ry={Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale} fill={colors.screenBg} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
-                            <ellipse cx="62" cy="48" rx="2.5" ry={Math.min(2.6, Math.max(1.6, eyeRy * 0.42)) * blinkScale} fill={colors.screenBg} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
-                            <circle cx="37.2" cy="47.1" r={0.75 * blinkScale} fill="white" opacity="0.9" />
-                            <circle cx="61.2" cy="47.1" r={0.75 * blinkScale} fill="white" opacity="0.9" />
+                            <ellipse data-allobot-eye-core="left" cx="38" cy="48" rx={eyeCoreRx} ry={eyeCoreRy * blinkScale} fill={eyeCoreVisual.fill} stroke={eyeCoreVisual.stroke} strokeWidth="0.55" opacity={eyeCoreVisual.opacity} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            <ellipse data-allobot-eye-core="right" cx="62" cy="48" rx={eyeCoreRx} ry={eyeCoreRy * blinkScale} fill={eyeCoreVisual.fill} stroke={eyeCoreVisual.stroke} strokeWidth="0.55" opacity={eyeCoreVisual.opacity} className="transition-all motion-reduce:transition-none duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]" />
+                            {!faceLensesCoverEyes && (
+                                <>
+                                    <circle data-allobot-eye-sparkle="left-primary" cx="37.35" cy="47.25" r={0.72 * blinkScale} fill="#FFFFFF" opacity="0.98" />
+                                    <circle data-allobot-eye-sparkle="right-primary" cx="61.35" cy="47.25" r={0.72 * blinkScale} fill="#FFFFFF" opacity="0.98" />
+                                    <circle data-allobot-eye-sparkle="left-secondary" cx="38.75" cy="49" r={0.3 * blinkScale} fill="#FFFFFF" opacity="0.78" />
+                                    <circle data-allobot-eye-sparkle="right-secondary" cx="62.75" cy="49" r={0.3 * blinkScale} fill="#FFFFFF" opacity="0.78" />
+                                </>
+                            )}
                         </g>
                     </g>
                 )}
+                <g data-allobot-face-cue="soft-cheeks" opacity={cheekOpacity} pointerEvents="none">
+                    <ellipse cx="28.5" cy="56.5" rx="2.8" ry="1.25" fill={cheekColor} />
+                    <ellipse cx="71.5" cy="56.5" rx="2.8" ry="1.25" fill={cheekColor} />
+                </g>
                 <path
+                    data-allobot-mouth={isTalking ? 'talking' : effectiveMood}
                     d={getMouthPath()}
                     stroke={colors.mouth}
                     strokeWidth={theme === 'contrast' ? '2.5' : '2'}
@@ -4480,22 +5667,72 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                     fill="none"
                     className="mouth-transition"
                 />
+                {voiceCueState !== 'idle' && !isSleeping && (
+                    <g
+                        data-allobot-voice-cue={voiceCueState}
+                        data-allobot-voice-direction={voiceCueDirection}
+                        data-allobot-voice-cue-motion={motionDisabled ? 'static' : 'animated'}
+                        className={!motionDisabled ? "animate-pulse motion-reduce:animate-none" : undefined}
+                        opacity={theme === 'contrast' ? '1' : '0.9'}
+                        style={{ animationDuration: voiceCueState === 'listening' ? '1.6s' : '1s' }}
+                        pointerEvents="none"
+                    >
+                        <path data-allobot-voice-cue-layer="outer-left" d={voiceCuePaths.leftOuter} stroke={voiceCueColor} strokeWidth={theme === 'contrast' ? '2' : '1.5'} strokeLinecap="round" fill="none" />
+                        <path data-allobot-voice-cue-layer="inner-left" d={voiceCuePaths.leftInner} stroke={voiceCueColor} strokeWidth={theme === 'contrast' ? '1.6' : '1.1'} strokeLinecap="round" fill="none" />
+                        <path data-allobot-voice-cue-layer="outer-right" d={voiceCuePaths.rightOuter} stroke={voiceCueColor} strokeWidth={theme === 'contrast' ? '2' : '1.5'} strokeLinecap="round" fill="none" />
+                        <path data-allobot-voice-cue-layer="inner-right" d={voiceCuePaths.rightInner} stroke={voiceCueColor} strokeWidth={theme === 'contrast' ? '1.6' : '1.1'} strokeLinecap="round" fill="none" />
+                        <circle data-allobot-voice-cue-layer="status-left" cx={voiceCuePaths.leftDotX} cy="48" r="1.15" fill={voiceCueColor} stroke={colors.screenBg} strokeWidth="0.45" />
+                        <circle data-allobot-voice-cue-layer="status-right" cx={voiceCuePaths.rightDotX} cy="48" r="1.15" fill={voiceCueColor} stroke={colors.screenBg} strokeWidth="0.45" />
+                    </g>
+                )}
                 {!isSleeping && effectiveMood !== 'idle' && (
-                    <g className="transition-all motion-reduce:transition-none duration-300">
+                    <g
+                        data-allobot-expression-cues={effectiveMood}
+                        className="transition-all motion-reduce:transition-none duration-300"
+                        opacity={visorVisual.cueOpacity}
+                    >
                         {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'sad' && <path d="M33 39 Q38 41 43 43" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'thinking' && <path d="M33 42 Q38 42 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'sad' && <path d="M57 43 Q62 41 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'happy' && (
+                            <path
+                                data-allobot-face-cue="happy-cheeks"
+                                d="M27 55 Q30 58 33 55 M67 55 Q70 58 73 55"
+                                stroke={colors.mouth}
+                                strokeWidth="1.5"
+                                fill="none"
+                                strokeLinecap="round"
+                            />
+                        )}
+                        {effectiveMood === 'sad' && (
+                            <path
+                                data-allobot-face-cue="sad-tear"
+                                d="M29 55 C29 55 26.5 58.2 26.5 60.2 A2.5 2.5 0 0 0 31.5 60.2 C31.5 58.2 29 55 29 55 Z"
+                                fill={colors.eye}
+                            />
+                        )}
+                        {effectiveMood === 'thinking' && (
+                            <g data-allobot-face-cue="thinking-dots" fill={colors.eye}>
+                                <circle cx="71" cy="55.5" r="1.1" />
+                                <circle cx="73.5" cy="58.5" r="0.9" />
+                                <circle cx="71.5" cy="61.2" r="0.7" />
+                            </g>
+                        )}
                     </g>
                 )}
+                </g>
                 {effectiveAccessory && (
                     <g
                         id={svgPaintIds.accessories}
                         data-allobot-accessories="true"
                         data-accessory-side={accessoryRenderSide || 'center'}
                         data-accessory-preferred-side={accessoryPreferredSide || 'center'}
+                        data-accessory-silhouette={accessoryPlacement}
+                        data-accessory-depth={accessoryDepth}
+                        data-accessory-origin={accessoryVisualOrigin}
                         className={`${accExiting ? 'allobot-exiting ' : ''}${effectiveMood === 'thinking' ? 'allobot-thinking' : (accPop ? 'allobot-pop' : '')}`.trim() || undefined}
                     >
                       <g transform={accessoryTranslateX ? `translate(${accessoryTranslateX} 0)` : undefined}>
@@ -4505,12 +5742,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         >
                           <g
                               data-accessory-scale={accessoryScale}
-                              style={accessoryRenderSide ? {
-                                  transform: `scale(${accessoryScale})`,
-                                  transformBox: 'fill-box',
-                                  transformOrigin: accessoryRenderSide === 'left' ? 'right center' : 'left center',
-                                  filter: accessoryDepthFilter,
-                              } : undefined}
+                              style={sideAccessoryVisualStyle || centeredAccessoryVisualStyle}
                           >
                          {effectiveAccessory === 'grad-cap' && (
                             <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">

@@ -91,6 +91,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     return parseFloat(value.toFixed(6)).toString();
   }
 
+  function parseNumericDraft(rawValue) {
+    var rawText = rawValue === null || rawValue === undefined ? '' : String(rawValue);
+    var text = rawText.trim().replace(/\u2212/g, '-');
+    if (text === '' || text === '+' || text === '-' || text === '.' || text === '+.' || text === '-.' || /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)[eE][+-]?$/.test(text)) {
+      return { valid: false, complete: false, value: NaN, message: 'Finish entering a number.' };
+    }
+    if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(text)) {
+      return { valid: false, complete: true, value: NaN, message: 'Enter a valid number.' };
+    }
+    var value = Number(text);
+    if (!Number.isFinite(value)) return { valid: false, complete: true, value: NaN, message: 'Enter a finite number.' };
+    return { valid: true, complete: true, value: value, message: '' };
+  }
+
   function describeTemperatureConversion(value, from, to) {
     var check = validateTemperatureValue(value, from);
     if (!check.valid || !Object.prototype.hasOwnProperty.call(UNIT_FACTORS.temperature, to)) {
@@ -328,6 +342,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   window.__UnitConvertCore = Object.assign({}, window.__UnitConvertCore || {}, {
     factors: UNIT_FACTORS,
     validateTemperatureValue: validateTemperatureValue,
+    parseNumericDraft: parseNumericDraft,
     describeTemperatureConversion: describeTemperatureConversion,
     convertUnitValue: convertUnitValue,
     formatUnitNumber: formatUnitNumber,
@@ -392,6 +407,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var cat = CATEGORIES[d.category];
         var validUnits = Object.keys(cat.units);
         d.value = Number.isFinite(Number(d.value)) ? Number(d.value) : 1;
+        var valueDraft = typeof d.valueDraft === 'string' ? d.valueDraft : String(d.value);
+        var valueDraftState = parseNumericDraft(valueDraft);
+        var conversionValue = valueDraftState.valid ? valueDraftState.value : NaN;
         d.fromUnit = Object.prototype.hasOwnProperty.call(cat.units, d.fromUnit) ? d.fromUnit : validUnits[0];
         d.toUnit = Object.prototype.hasOwnProperty.call(cat.units, d.toUnit) ? d.toUnit : (validUnits[1] || validUnits[0]);
 
@@ -405,17 +423,20 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           return formatUnitNumber(n, significantFigures);
         };
 
-        var temperatureCheck = d.category === 'temperature'
-          ? validateTemperatureValue(d.value, d.fromUnit)
-          : { valid: true, message: '' };
-        var result = convert(d.value, d.fromUnit, d.toUnit);
+        var temperatureCheck = !valueDraftState.valid
+          ? { valid: false, message: valueDraftState.message }
+          : d.category === 'temperature'
+            ? validateTemperatureValue(conversionValue, d.fromUnit)
+            : { valid: true, message: '' };
+        var result = temperatureCheck.valid ? convert(conversionValue, d.fromUnit, d.toUnit) : NaN;
         var fmtResult = Number.isFinite(result) ? fmt(result) : '—';
         var temperatureReasoning = d.category === 'temperature' && temperatureCheck.valid
-          ? describeTemperatureConversion(d.value, d.fromUnit, d.toUnit)
+          ? describeTemperatureConversion(conversionValue, d.fromUnit, d.toUnit)
           : null;
 
         // ── FORMULA ──
         var getFormula = function() {
+          if (!temperatureCheck.valid) return 'Enter a complete, valid number to see the conversion.';
           if (d.category === 'temperature') {
             if (d.fromUnit === '\u00B0C' && d.toUnit === '\u00B0F') return 'F = C \u00D7 9/5 + 32';
             if (d.fromUnit === '\u00B0F' && d.toUnit === '\u00B0C') return 'C = (F \u2212 32) \u00D7 5/9';
@@ -525,8 +546,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var facts = FACTS[d.category] || [];
         var factIdx = d.factIdx || 0;
         var currentFact = facts[factIdx % facts.length];
-        var baseValue = d.category === 'temperature' ? d.value : d.value * (cat.units[d.fromUnit] || 1);
-        var refText = REFS[d.category] ? REFS[d.category](baseValue) : null;
+        var baseValue = d.category === 'temperature' ? conversionValue : conversionValue * (cat.units[d.fromUnit] || 1);
+        var refText = temperatureCheck.valid && REFS[d.category] ? REFS[d.category](baseValue) : null;
 
         // ── Badge state ──
         var badges = d.badges || {};
@@ -539,6 +560,27 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
         var quizTotal = d.quizTotal || 0;
         var historySaveCount = d.historySaveCount || 0;
         var wordProblem = d.wordProblem && typeof d.wordProblem === 'object' ? d.wordProblem : null;
+
+        function updateConversionValueDraft(rawValue) {
+          var raw = String(rawValue);
+          var parsed = parseNumericDraft(raw);
+          var patch = { valueDraft: raw };
+          if (parsed.valid) patch.value = parsed.value;
+          upd(patch);
+          if (!parsed.valid) return;
+          checkBadges({ firstConvert: true });
+          if (d.category === 'temperature') {
+            var tu = Object.assign({}, tempUnitsUsed);
+            tu[d.fromUnit] = true;
+            tu[d.toUnit] = true;
+            upd('tempUnitsUsed', tu);
+            if (Object.keys(tu).length >= 3) checkBadges({ tempMaster: true });
+          }
+        }
+
+        function reportConversionValueError() {
+          if (!temperatureCheck.valid && typeof announceToSR === 'function') announceToSR(temperatureCheck.message);
+        }
 
         // ── Badge checker ──
         function checkBadges(updates) {
@@ -1010,22 +1052,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
                 h('div', { className: 'text-center' },
                   h('input', {
-                    type: 'number', value: d.value,
+                    type: 'text', inputMode: 'decimal', value: valueDraft,
                     'aria-label': t('stem.unitconvert.value_to_convert', 'Value to convert'),
                     min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
-                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
-                    onChange: function(e) {
-                      upd('value', parseFloat(e.target.value) || 0);
-                      checkBadges({ firstConvert: true });
-                      // Track temp units for badge
-                      if (d.category === 'temperature') {
-                        var tu = Object.assign({}, tempUnitsUsed);
-                        tu[d.fromUnit] = true; tu[d.toUnit] = true;
-                        upd('tempUnitsUsed', tu);
-                        if (Object.keys(tu).length >= 3) checkBadges({ tempMaster: true });
-                      }
-                    },
+                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-value-error',
+                    autoComplete: 'off', spellCheck: false,
+                    onChange: function(e) { updateConversionValueDraft(e.target.value); },
+                    onBlur: reportConversionValueError,
+                    onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
                     className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1 tracking-tight',
                     step: '0.01'
                   }),
@@ -1066,7 +1101,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               ),
 
               !temperatureCheck.valid && h('div', {
-                id: 'unitconvert-temperature-error',
+                id: 'unitconvert-value-error',
                 role: 'alert',
                 className: 'mt-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
               }, '⚠️ ' + temperatureCheck.message),
@@ -1092,7 +1127,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               // \u2500\u2500 Dimensional-analysis cancellation card \u2500\u2500
               // Shows the canonical chem/physics technique: multiply by (1 toUnit / N fromUnit)
               // and watch the fromUnit cancel. Skipped for temperature (additive offset).
-              d.category !== 'temperature' && (function() {
+              d.category !== 'temperature' && temperatureCheck.valid && (function() {
                 var fF = cat.units[d.fromUnit] || 1;
                 var tF = cat.units[d.toUnit] || 1;
                 if (fF === tF) return null;
@@ -1194,7 +1229,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             ),
 
             // Visual comparison bars (non-temperature)
-            d.category !== 'temperature' && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
+            d.category !== 'temperature' && temperatureCheck.valid && h('div', { className: 'mt-3 bg-slate-50 rounded-xl border p-3' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-2' }, t('stem.unitconvert.visual_comparison', '\uD83D\uDCCA Visual Comparison')),
               (function() {
                 var fF = cat.units[d.fromUnit] || 1;
@@ -1339,12 +1374,15 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-xs font-bold text-slate-600' }, 'All ' + cat.label.replace(/[^\w\s]/g, '').trim() + ' conversions for:'),
                 h('div', { className: 'flex items-center gap-2' },
                   h('input', {
-                    type: 'number', value: d.value,
+                    type: 'text', inputMode: 'decimal', value: valueDraft,
                     min: d.category === 'temperature' ? ({ '°C': -273.15, '°F': -459.67, K: 0 })[d.fromUnit] : undefined,
                     'aria-invalid': temperatureCheck.valid ? undefined : 'true',
-                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-temperature-error',
+                    'aria-describedby': temperatureCheck.valid ? undefined : 'unitconvert-value-error',
                     'aria-label': t('stem.unitconvert.table_value_to_convert', 'Value to convert in unit table'),
-                    onChange: function(e) { upd('value', parseFloat(e.target.value) || 0); },
+                    autoComplete: 'off', spellCheck: false,
+                    onChange: function(e) { updateConversionValueDraft(e.target.value); },
+                    onBlur: reportConversionValueError,
+                    onKeyDown: function(e) { if (e.key === 'Enter') e.currentTarget.blur(); },
                     className: 'w-24 text-right text-sm font-bold border border-slate-400 rounded-lg px-2 py-1 outline-none focus:ring-2 focus:ring-cyan-500',
                     step: '0.01'
                   }),
@@ -1356,7 +1394,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 )
               ),
               !temperatureCheck.valid && h('div', {
-                id: 'unitconvert-temperature-error',
+                id: 'unitconvert-value-error',
                 role: 'alert',
                 className: 'm-3 rounded-lg border border-red-300 bg-red-50 p-3 text-center text-sm font-bold text-red-800'
               }, '⚠️ ' + temperatureCheck.message),
@@ -1365,7 +1403,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('tr', { className: 'bg-cyan-50' },
                     h('th', { scope: 'col', className: 'text-left px-4 py-2 text-xs font-bold text-cyan-700' }, t('stem.unitconvert.unit', 'Unit')),
                     h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, t('stem.unitconvert.value', 'Value')),
-                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' }, '')
+                    h('th', { scope: 'col', className: 'text-right px-4 py-2 text-xs font-bold text-cyan-700' },
+                      h('span', { className: 'sr-only' }, t('stem.unitconvert.action', 'Action')))
                   )
                 ),
                 h('tbody', null,
@@ -1702,7 +1741,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           })(),
 
           // ── Keyboard shortcuts legend ──
-          h('div', { className: 'text-[11px] text-slate-600 text-center mt-3 space-x-3' },
+          h('div', { className: 'text-[11px] text-center mt-3 space-x-3 rounded-lg p-2', style: { color: 'var(--allo-stem-text-soft, #475569)', background: 'var(--allo-stem-panel, #f8fafc)' } },
             h('span', null, t('stem.unitconvert.1_4_tabs', '1-4 Tabs')),
             h('span', null, t('stem.unitconvert.n_next_quiz', 'N Next Quiz')),
             h('span', null, t('stem.unitconvert.b_badges', 'B Badges')),

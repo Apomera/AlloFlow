@@ -47,6 +47,20 @@ function readMirrorScreen(html) {
   };
 }
 
+function readFocusGuide(html, kind) {
+  const tag = html.match(new RegExp(`<div[^>]*data-op-focus-guide="${kind}"[^>]*>`))?.[0];
+  expect(tag, `${kind} focus alignment guide`).toBeTruthy();
+  const attr = (name) => tag.match(new RegExp(`${name}="([^"]+)"`))?.[1];
+  const numberOrNull = (name) => attr(name) === 'none' ? null : Number(attr(name));
+  return {
+    state: attr('data-focus-state'),
+    capturable: attr('data-focus-capturable') === 'true',
+    offset: numberOrNull('data-focus-offset-cm'),
+    relative: numberOrNull('data-focus-relative'),
+    bundleRatio: Number(attr('data-blur-aperture-ratio'))
+  };
+}
+
 beforeEach(() => { resetStemLab(); loadTool('stem_lab/stem_tool_optics.js', 'opticsLab'); });
 
 describe('opticsLab — renders real body (Rules-of-Hooks fix)', () => {
@@ -117,6 +131,12 @@ describe('opticsLab — thin-lens engine (rendered)', () => {
     expect(sharpHtml).toContain('data-op-lens-screen-handle="true"');
     expect(sharpHtml).toContain('data-op-lens-screen-spot="true"');
     expect(sharpHtml).toContain('Sharp focus: the screen and real image plane coincide');
+    const sharpGuide = readFocusGuide(sharpHtml, 'lens');
+    expect(sharpGuide.state).toBe('sharp');
+    expect(sharpGuide.offset).toBe(0);
+    expect(sharpGuide.relative).toBe(0);
+    expect(sharpGuide.bundleRatio).toBe(0);
+    expect(sharpHtml).toContain('Aligned at focus | blur 0.0% aperture');
 
     const blurredHtml = render({
       mode: 'lenses', lensType: 'converging', lensFocal: 10,
@@ -127,6 +147,50 @@ describe('opticsLab — thin-lens engine (rendered)', () => {
     expect(blurred.bundleRatio).toBeCloseTo(2 / 3, 6);
     expect(blurredHtml).toContain('10.0 cm beyond the real image plane');
     expect(blurredHtml).toContain('66.7% of the aperture width');
+    const blurredGuide = readFocusGuide(blurredHtml, 'lens');
+    expect(blurredGuide.state).toBe('blurred');
+    expect(blurredGuide.offset).toBe(10);
+    expect(blurredGuide.relative).toBeCloseTo(2 / 3, 6);
+    expect(blurredGuide.bundleRatio).toBeCloseTo(2 / 3, 6);
+    expect(blurredHtml).toContain('data-op-focus-track="true"');
+    expect(blurredHtml).toContain('data-op-focus-marker="true"');
+    expect(blurredHtml).toContain('Offset +10.0 cm | blur 66.7% aperture');
+  });
+
+  it('links lens height and screen focus to the relationship that is currently being manipulated', () => {
+    const screenHtml = render({
+      mode: 'lenses', lensType: 'converging', lensFocal: 10,
+      lensDo: 30, lensObjH: 5, lensScreenCm: 25,
+      opActiveVariable: 'lensScreenCm'
+    });
+    expect(screenHtml).toContain('data-op-formula-context="lens-screen"');
+    expect(screenHtml).toContain('blur / aperture = |1 - ');
+    expect(screenHtml).toContain('physical screen coincide');
+
+    const heightHtml = render({
+      mode: 'lenses', lensType: 'converging', lensFocal: 10,
+      lensDo: 30, lensObjH: 8, lensScreenCm: 25,
+      opActiveVariable: 'lensObjH', opMissionStage: { lenses: 0 }
+    });
+    expect(heightHtml).toContain('data-op-lens-object-height-control="true"');
+    expect(heightHtml).toContain('aria-label="Lens object height"');
+    expect(heightHtml).toContain('data-op-lens-height-handle="true"');
+    expect(heightHtml).toContain('data-op-lens-height-grip="true"');
+    expect(heightHtml).toContain('Image tip 4.0 cm below the optical axis');
+    expect(heightHtml).toContain('data-op-formula-context="lens-height"');
+    expect(heightHtml).toContain('h_i = m ');
+    expect(heightHtml).toContain('does not change image distance or magnification');
+    expect(heightHtml).toContain('Mission 1/3: Capture a sharp lens image.');
+    expect(heightHtml).toContain('class="opticslab-mission" data-complete="false"');
+
+    const sharpMissionHtml = render({
+      mode: 'lenses', lensType: 'converging', lensFocal: 10,
+      lensDo: 30, lensObjH: 8, lensScreenCm: 15,
+      opMissionStage: { lenses: 0 }
+    });
+    expect(sharpMissionHtml).toContain('Mission 1/3: Capture a sharp lens image.');
+    expect(sharpMissionHtml).toContain('class="opticslab-mission" data-complete="true"');
+    expect(sharpMissionHtml).toContain('Complete - the live model meets the target.');
   });
 
   it('makes virtual and infinite images explicitly non-capturable', () => {
@@ -140,6 +204,12 @@ describe('opticsLab — thin-lens engine (rendered)', () => {
     expect(virtualScreen.bundleRatio).toBe(3);
     expect(virtualHtml).toContain('No screen focus: this is a virtual image');
     expect(virtualHtml).not.toContain('data-op-place-screen-at-image="true"');
+    const virtualGuide = readFocusGuide(virtualHtml, 'lens');
+    expect(virtualGuide.state).toBe('virtual');
+    expect(virtualGuide.capturable).toBe(false);
+    expect(virtualGuide.offset).toBeNull();
+    expect(virtualHtml).toContain('data-op-focus-no-target="true"');
+    expect(virtualHtml).toContain('The image is virtual, so no real screen position can capture it.');
 
     const infinityHtml = render({
       mode: 'lenses', lensType: 'converging', lensFocal: 10,
@@ -150,6 +220,9 @@ describe('opticsLab — thin-lens engine (rendered)', () => {
     expect(infinityScreen.capturable).toBe(false);
     expect(infinityScreen.bundleRatio).toBe(1);
     expect(infinityHtml).toContain('No finite screen focus: the outgoing bundle is parallel');
+    const infinityGuide = readFocusGuide(infinityHtml, 'lens');
+    expect(infinityGuide.state).toBe('infinity');
+    expect(infinityHtml).toContain('Outgoing rays are parallel, so the image is at infinity');
   });
 });
 
@@ -182,6 +255,12 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(blurredHtml).toContain('data-op-place-mirror-screen-at-image="true"');
     expect(blurredHtml).toContain('10.0 cm beyond the real image plane');
     expect(blurredHtml).toContain('66.7% of the mirror aperture width');
+    const blurredGuide = readFocusGuide(blurredHtml, 'mirror');
+    expect(blurredGuide.state).toBe('blurred');
+    expect(blurredGuide.offset).toBe(10);
+    expect(blurredGuide.relative).toBeCloseTo(2 / 3, 6);
+    expect(blurredGuide.bundleRatio).toBeCloseTo(2 / 3, 6);
+    expect(blurredHtml).toContain('Offset +10.0 cm | blur 66.7% aperture');
 
     const sharpHtml = render({
       mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
@@ -191,6 +270,10 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(sharp.state).toBe('sharp');
     expect(sharp.bundleRatio).toBe(0);
     expect(sharpHtml).toContain('Sharp focus: the sampling screen and real image plane coincide');
+    const sharpGuide = readFocusGuide(sharpHtml, 'mirror');
+    expect(sharpGuide.state).toBe('sharp');
+    expect(sharpGuide.offset).toBe(0);
+    expect(sharpHtml).toContain('Aligned at focus | blur 0.0% aperture');
 
     const virtualHtml = render({
       mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
@@ -202,6 +285,10 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(virtualScreen.capturable).toBe(false);
     expect(virtualHtml).toContain('No screen focus: this is a virtual image behind the mirror');
     expect(virtualHtml).not.toContain('data-op-place-mirror-screen-at-image="true"');
+    const virtualGuide = readFocusGuide(virtualHtml, 'mirror');
+    expect(virtualGuide.state).toBe('virtual');
+    expect(virtualGuide.capturable).toBe(false);
+    expect(virtualHtml).toContain('data-op-focus-no-target="true"');
 
     const infinityHtml = render({
       mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
@@ -212,6 +299,8 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(infinityScreen.bundleRatio).toBe(1);
     expect(infinityScreen.capturable).toBe(false);
     expect(infinityHtml).toContain('No finite screen focus: the reflected bundle is parallel');
+    const infinityGuide = readFocusGuide(infinityHtml, 'mirror');
+    expect(infinityGuide.state).toBe('infinity');
 
     const offBenchHtml = render({
       mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
@@ -222,6 +311,45 @@ describe('opticsLab — mirror engine (rendered)', () => {
     expect(offBench.capturable).toBe(true);
     expect(offBenchHtml).toContain('outside the 2-42 cm screen range');
     expect(offBenchHtml).not.toContain('data-op-place-mirror-screen-at-image="true"');
+    const offBenchGuide = readFocusGuide(offBenchHtml, 'mirror');
+    expect(offBenchGuide.state).toBe('out-of-range');
+    expect(offBenchHtml).toContain('The real focus lies outside the movable screen range.');
+  });
+
+  it('makes mirror height directly controllable and turns sharp screen capture into an active learning target', () => {
+    const heightHtml = render({
+      mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
+      reflDo: 30, reflObjH: 8, reflScreenCm: 25,
+      opActiveVariable: 'reflObjH', opMissionStage: { reflection: 0 }
+    });
+    expect(heightHtml).toContain('data-op-mirror-object-height-control="true"');
+    expect(heightHtml).toContain('aria-label="Mirror object height"');
+    expect(heightHtml).toContain('data-op-mirror-height-handle="true"');
+    expect(heightHtml).toContain('data-op-mirror-height-grip="true"');
+    expect(heightHtml).toContain('Image tip 4.0 cm below the optical axis');
+    expect(heightHtml).toContain('data-op-formula-context="mirror-height"');
+    expect(heightHtml).toContain('h_i = m ');
+    expect(heightHtml).toContain('does not change image distance or magnification');
+    expect(heightHtml).toContain('Mission 1/3: Capture a sharp mirror image.');
+    expect(heightHtml).toContain('class="opticslab-mission" data-complete="false"');
+
+    const screenFormulaHtml = render({
+      mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
+      reflDo: 30, reflObjH: 8, reflScreenCm: 25,
+      opActiveVariable: 'reflScreenCm'
+    });
+    expect(screenFormulaHtml).toContain('data-op-formula-context="mirror-screen"');
+    expect(screenFormulaHtml).toContain('blur / aperture = |1 - ');
+    expect(screenFormulaHtml).toContain('reaches zero only when a real image plane and the sampling screen coincide');
+
+    const sharpMissionHtml = render({
+      mode: 'reflection', reflMirrorType: 'concave', reflFocal: 10,
+      reflDo: 30, reflObjH: 8, reflScreenCm: 15,
+      opMissionStage: { reflection: 0 }
+    });
+    expect(sharpMissionHtml).toContain('Mission 1/3: Capture a sharp mirror image.');
+    expect(sharpMissionHtml).toContain('class="opticslab-mission" data-complete="true"');
+    expect(sharpMissionHtml).toContain('Complete - the live model meets the target.');
   });
 
   it('plane mirror keeps physical rays in front and locates the symmetric virtual image with equal-angle arcs', () => {
@@ -263,7 +391,9 @@ describe('opticsLab — mirror engine (rendered)', () => {
     });
     expect(real).toContain('data-op-mirror-3d-host="true"');
     expect(real).toContain('aria-label="Mirror 3D controls"');
+    expect(real).toContain('aria-roledescription="interactive 3D model"');
     expect(real).toContain('aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown + - 0"');
+    expect(real).toContain('Press zero to reset the camera.');
     expect(real).toContain('converge 15.0 centimeters in front of the mirror');
     expect(real).toContain('cross at a real inverted image, and continue');
     expect(real).toContain('bright circular thin-mirror aperture');
@@ -336,5 +466,27 @@ describe('opticsLab — Fresnel interface energy', () => {
     expect(html).toContain('data-op-fresnel-status="tir"');
     expect(html).toContain('Total internal reflection: 100.0% reflected and 0.0% transmitted');
     expect(html).not.toContain('data-op-refraction-ray="transmitted"');
+  });
+});
+
+describe('opticsLab — polarization state agreement', () => {
+  it('keeps the QWP analyzer angle-independent in the calculator, then resumes Malus at P3', () => {
+    [0, 45, 90, 135].forEach((angle) => {
+      const html = render({
+        mode: 'polarization', polQwp: true, polTheta2: angle, polShowMath: true
+      });
+      expect(html).toContain('data-op-polarization-calc-mode="circular"');
+      expect(html).toContain('data-final-intensity="0.250000"');
+      expect(html).toContain('P₂ then transmits half at every axis');
+      expect(html).toContain('I2 = 1/2 I_QWP = 0.2500 I0');
+    });
+
+    const withP3 = render({
+      mode: 'polarization', polQwp: true, polTheta2: 45,
+      polUseP3: true, polTheta3: 90, polShowMath: true
+    });
+    expect(withP3).toContain('data-final-intensity="0.125000"');
+    expect(withP3).toContain('after P₂ the light is linear again');
+    expect(withP3).toContain('Step 3: P₂ → P₃');
   });
 });

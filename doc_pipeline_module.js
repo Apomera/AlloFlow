@@ -460,6 +460,8 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   dbq: { label: 'Document-Based Question', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'document-packet', notes: 'Exports sources, prompts, and rubric; essay capture is handled by worksheet/submission flows.' },
   'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
   'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
+  'memory-aid': { label: 'Memory Aid Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'memory-aid-workshop', notes: 'Exports teacher-checked facts, models or scaffolds, optional safe visual cues, student work areas, reasoning, and saved feedback.' },
+  'applied-challenge': { label: 'Applied Challenge Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'applied-challenge-workshop', notes: 'Exports the challenge brief, lesson-fact review status, supports, persistent student workspace, revision, transfer reflection, and saved feedback without the private source excerpt.' },
   math: { label: 'STEAM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
   'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
   'gemini-bridge': { label: 'Generated Interactive Artifact', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'code-snapshot', notes: 'Exports the generated artifact/code text. Running apps need packaged assets and sandboxing.' },
@@ -37498,11 +37500,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // When false (default), keep the existing interactive HTML so the
       // student can type on screen.
       const isWorksheet = cfg.isWorksheet === true;
+      const _worksheetSpaceScale = ({ compact: 0.75, standard: 1, extended: 1.5 })[cfg.worksheetResponseSpace] || 1;
       const ruledLines = (numLines = 4, label = '') => {
-          const lines = Array.from({length: Math.max(1, numLines)}, () =>
-              '<div class="alloflow-ruled-line" style="border-bottom: 1px solid #94a3b8; height: 28px; margin-bottom: 4px; break-inside: avoid;"></div>'
+          const lineCount = Math.max(1, Math.round(numLines * _worksheetSpaceScale));
+          const lines = Array.from({length: lineCount}, () =>
+              '<div class="alloflow-ruled-line" style="border-bottom: 1px solid #64748b; height: 28px; margin-bottom: 4px; break-inside: avoid; page-break-inside: avoid;"></div>'
           ).join('');
-          return `<div class="alloflow-ruled-response" data-allo-print-response="lines" style="margin-top: 8px; break-inside: avoid;">${label ? `<div style="font-size: 0.85em; color: #64748b; margin-bottom: 6px; font-weight: 600;">${_escTxt(label)}</div>` : ''}${lines}</div>`;
+          const flowClass = lineCount > 6 ? ' alloflow-ruled-response-long' : '';
+          return `<div class="alloflow-ruled-response${flowClass}" data-allo-print-response="lines" data-allo-print-lines="${lineCount}" style="margin-top: 8px; break-inside: ${lineCount > 6 ? 'auto' : 'avoid'}; page-break-inside: ${lineCount > 6 ? 'auto' : 'avoid'};">${label ? `<div class="alloflow-ruled-label" style="font-size: 0.85em; color: #475569; margin-bottom: 6px; font-weight: 600; break-after: avoid; page-break-after: avoid;">${_escTxt(label)}</div>` : ''}${lines}</div>`;
       };
       const fillableCircle = () =>
           '<span class="alloflow-print-bubble" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
@@ -38238,6 +38243,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      <span>${_escTxt(entry.text)}</span>
                      ${entry.translation ? `<span class="alloflow-venn-card-translation">(${_escTxt(entry.translation)})</span>` : ''}
                    </button>
+                   <select hidden class="alloflow-venn-response" data-allo-response-key="${_escTxt((item.id || 'venn') + ':venn:' + entry.itemIndex + ':placement')}" data-allo-response-type="venn-sort" data-allo-part-label="Placement" data-allo-question="${_escTxt(entry.text)}" aria-label="Placement for ${_escTxt(entry.text)}">
+                     <option value="">Not placed</option>
+                     <option value="setA">${_vennSetATitle} only</option>
+                     <option value="shared">${_vennSharedTitle}</option>
+                     <option value="setB">${_vennSetBTitle} only</option>
+                   </select>
                  </div>
                `).join('');
                const _vennPrintCards = _vennActivityItems.map((entry, index) => `
@@ -38363,6 +38374,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      if (!bank) return;
                      function cards() { return Array.prototype.slice.call(root.querySelectorAll('.alloflow-venn-card')); }
                      function announce(message) { if (status) status.textContent = message || ''; }
+                     function setResponse(card, zone, emit) {
+                       var response = card && card.querySelector('.alloflow-venn-response');
+                       if (!response) return;
+                       response.value = zone || '';
+                       if (emit !== false) response.dispatchEvent(new Event('change', { bubbles: true }));
+                     }
+                     function restorePlacements() {
+                       cards().forEach(function (card) {
+                         var response = card.querySelector('.alloflow-venn-response');
+                         var zone = response && response.value;
+                         var target = zone ? root.querySelector('[data-venn-zone-target="' + zone + '"]') : null;
+                         if (target) target.appendChild(card);
+                         else bank.appendChild(card);
+                       });
+                     }
                      function clearMarks() { cards().forEach(function (card) { card.classList.remove('is-correct', 'is-wrong'); }); }
                      function clearSelection() {
                        if (selected) {
@@ -38397,7 +38423,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          if (!target) return;
                          var itemButton = selected.querySelector('.alloflow-venn-card-button');
                          var label = ((itemButton && itemButton.textContent) || 'Item').trim();
+                         var zone = button.getAttribute('data-venn-place-zone') || '';
                          target.appendChild(selected);
+                         setResponse(selected, zone);
                          clearSelection();
                          announce(label + ' placed in ' + button.textContent.replace(/^Place selected item in\s*/i, '') + '.');
                        });
@@ -38407,6 +38435,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        var itemButton = selected.querySelector('.alloflow-venn-card-button');
                        var label = ((itemButton && itemButton.textContent) || 'Item').trim();
                        bank.appendChild(selected);
+                       setResponse(selected, '');
                        clearSelection();
                        announce(label + ' returned to the item bank.');
                      });
@@ -38417,14 +38446,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          var j = Math.floor(Math.random() * (i + 1));
                          var temp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = temp;
                        }
-                       shuffled.forEach(function (card) { bank.appendChild(card); });
+                       shuffled.forEach(function (card) { bank.appendChild(card); setResponse(card, ''); });
                        clearSelection(); clearMarks(); announce('Items shuffled.');
                      });
                      var resetButton = root.querySelector('.alloflow-venn-reset-button');
                      if (resetButton) resetButton.addEventListener('click', function () {
                        cards().sort(function (a, b) {
                          return Number(a.getAttribute('data-venn-item-index')) - Number(b.getAttribute('data-venn-item-index'));
-                       }).forEach(function (card) { bank.appendChild(card); });
+                       }).forEach(function (card) { bank.appendChild(card); setResponse(card, ''); });
                        clearSelection(); clearMarks(); announce('Sort reset.');
                      });
                      var checkButton = root.querySelector('.alloflow-venn-check-button');
@@ -38441,6 +38470,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        });
                        announce(correct + ' of ' + all.length + ' correct. ' + (all.length - placed) + ' item' + (all.length - placed === 1 ? '' : 's') + ' still in the bank.');
                      });
+                     window.addEventListener('alloflow-responses-restored', restorePlacements);
                    })();
                  </script>
                `;
@@ -39879,11 +39909,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // in order. Answer key on a fresh page so teacher can withhold it.
               // Indices stamped onto each strip so kids can reference them
               // ("strip #3 goes after strip #1") and so teachers can call them out.
-              const _tlInteractive = (cfg.timelineInteractive !== false && !isWorksheet);
+              const _tlInteractive = (cfg.timelineInteractive !== false && !isWorksheet && !isTeacher);
+              const _tlCanSelfCheck = cfg.assessmentMode !== true;
+              const _tlStableHash = (value) => {
+                  let h = 2166136261;
+                  const text = String(value == null ? '' : value);
+                  for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+                  return h >>> 0;
+              };
+              let _tlPresentation = rawItems.map((te, originalIndex) => ({
+                  te,
+                  originalIndex,
+                  responseId: _tlStableHash(`${item.id || 'timeline'}:${originalIndex}:${String(te?.event || '')}`).toString(36)
+              }));
+              if (cfg.assessmentMode === true) {
+                  _tlPresentation = _tlPresentation.slice().sort((a, b) => _tlStableHash(`${item.id || ''}:${a.responseId}:assessment`) - _tlStableHash(`${item.id || ''}:${b.responseId}:assessment`));
+                  if (_tlPresentation.every((entry, index) => entry.originalIndex === index)) _tlPresentation.push(_tlPresentation.shift());
+              }
               const stripsHtml = `
                   <div class="alloflow-tl-strips" data-tl-section="${item.id}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
-                      ${rawItems.map((te, idx) => `
-                          <div class="alloflow-tl-strip" data-original-index="${idx}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
+                      ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="Event order" data-allo-question="${_escTxt(title || 'Timeline')}" aria-label="Student order for ${_escTxt(title || 'timeline')}" value="">` : ''}
+                      ${_tlPresentation.map(({ te, originalIndex, responseId }, idx) => `
+                          <div class="alloflow-tl-strip"${_tlCanSelfCheck ? ` data-original-index="${originalIndex}"` : ''} data-initial-index="${idx}" data-tl-response-id="${responseId}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
                               <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:0.75em;color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
                                   <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▲</button>
@@ -39917,17 +39964,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </ol>
                   </div>
               `;
+              const _tlDigitalInstructions = _tlCanSelfCheck
+                  ? 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence, then press <strong>Check Order</strong>. Your order is saved automatically. Or print and cut along the dashed lines to arrange physically.'
+                  : 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence. Your order is saved automatically and can be submitted to your teacher. Or print and cut along the dashed lines to arrange physically.';
               const instructionsHtml = `
                   <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.9em;color:#713f12;break-inside:avoid;page-break-inside:avoid;">
                       <strong>How to use:</strong> ${_tlInteractive
-                          ? 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence, then press <strong>Check Order</strong>. Or print and cut along the dashed lines to arrange physically.'
+                          ? _tlDigitalInstructions
                           : 'Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.'}
                   </div>
               `;
               const interactiveControlsHtml = _tlInteractive ? `
                   <div class="alloflow-tl-controls" data-tl-section="${item.id}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
                       <button type="button" class="alloflow-tl-shuffle-btn" style="padding:8px 16px;background:#f8fafc;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">🔀 Shuffle</button>
-                      <button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">🎯 Check Order</button>
+                      ${_tlCanSelfCheck ? '<button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">🎯 Check Order</button>' : ''}
                       <button type="button" class="alloflow-tl-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">↻ Reset</button>
                       <div class="alloflow-tl-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em;font-weight:700;color:#1e293b;margin-left:0.5rem;"></div>
                   </div>
@@ -39980,6 +40030,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // 'medium' = 80px matches the prior hardcoded value.
           const _csImgPxMap = { small: 56, medium: 80, large: 110, xl: 150 };
           const _csImgPx = _csImgPxMap[cfg.conceptSortImageSize] || _csImgPxMap.medium;
+          const _csCanSelfCheck = cfg.assessmentMode !== true;
 
           const categoryCardsHtml = `
               <div class="alloflow-cs-categories" data-cs-section="${item.id}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
@@ -40014,6 +40065,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: 0.75em; color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
                               <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${ci.content}</div>
+                              ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + idx + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="Category" data-allo-question="Concept sort item ${idx + 1}" aria-label="Category placement for concept sort item ${idx + 1}"><option value="">Not sorted</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
                           </div>
                       `;
                   }).join('')}
@@ -40042,7 +40094,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const interactiveControlsHtml = (cfg.conceptSortInteractive !== false && !isWorksheet) ? `
               <div class="alloflow-cs-controls" data-cs-section="${item.id}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
-                  <button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>
+                  ${_csCanSelfCheck ? '<button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>' : ''}
                   <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;">↻ Reset</button>
                   <div class="alloflow-cs-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em; font-weight:700; color:#1e293b; margin-left:0.5rem;"></div>
               </div>
@@ -40077,9 +40129,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       </div>
                   `).join('')}
-                  ${item.data.synthesisPrompt ? `<div style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:avoid;"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${item.data.synthesisPrompt}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
                   ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${r.criteria}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['1'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['2'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['3'] || ''}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${r['4'] || ''}</td></tr>`).join('')}</table></div>` : ''}
-                  ${item.data.teacherNotes ? `<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
+                  ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${item.data.teacherNotes}</div>` : ''}
               </div>
           `;
       } else if (item.type === 'gemini-bridge') {
@@ -40612,10 +40664,194 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${feedbackBadge}
               </div>
           `;
+      } else if (item.type === 'memory-aid') {
+          // Memory Aid Studio export. Preserve the pedagogically important
+          // separation between checked facts and the student's creative cue.
+          // The interactive app owns AI calls; exports are static, portable,
+          // and usable as a print worksheet or a snapshot of saved work.
+          const d = item.data || {};
+          const cards = Array.isArray(d.cards) ? d.cards : [];
+          const escapeHtml = (value) => String(value == null ? '' : value)
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+          const safeDataImage = (value) => {
+              const candidate = String(value == null ? '' : value).trim();
+              if (!candidate || candidate.length > 6 * 1024 * 1024) return '';
+              const match = candidate.match(/^data:image\/(png|jpe?g|gif|webp);base64,([\s\S]+)$/i);
+              if (!match) return '';
+              const payload = match[2].replace(/\s/g, '');
+              if (!payload || payload.length % 4 === 1 || !/^[A-Za-z0-9+/]+={0,2}$/.test(payload)) return '';
+              const sourceMime = match[1].toLowerCase();
+              return 'data:image/' + (sourceMime === 'jpg' ? 'jpeg' : sourceMime) + ';base64,' + payload;
+          };
+          const listHtml = (items) => (Array.isArray(items) ? items : []).filter(Boolean)
+              .map(value => '<li style="margin-bottom:4px;">' + escapeHtml(value) + '</li>').join('');
+          const typeLabels = {
+              'acronym-acrostic': 'Acronym or acrostic', 'rhyme-rhythm': 'Rhyme or rhythm',
+              chunking: 'Chunking', 'story-chain': 'Story chain',
+              'keyword-association': 'Keyword association', 'visual-association': 'Visual association',
+              'analogy-pattern': 'Analogy or pattern', 'sequence-cue': 'Sequence cue'
+          };
+          const modeLabels = { generated: 'AI example', scaffolded: 'Build with support', 'student-authored': 'Student-authored' };
+          const cardsHtml = cards.map((card, index) => {
+              const c = card && typeof card === 'object' ? card : {};
+              const visualImage = safeDataImage(c.visualImage || c.imageUrl);
+              const visualAlt = String(c.visualAlt || ('Visual memory cue for ' + (c.target || 'this memory target'))).trim().slice(0, 800);
+              const visualReview = c.visualReview && typeof c.visualReview === 'object' ? c.visualReview : {};
+              const visualReviewStatus = ['approved', 'needs-revision'].includes(visualReview.status) ? visualReview.status : 'unreviewed';
+              const visualReviewLabel = visualReviewStatus === 'approved'
+                  ? 'Teacher approved'
+                  : visualReviewStatus === 'needs-revision'
+                    ? 'Teacher requested revision'
+                    : 'Not yet teacher-reviewed';
+              const visualReviewColors = visualReviewStatus === 'approved'
+                  ? 'border-color:#6ee7b7;background:#ecfdf5;color:#065f46;'
+                  : visualReviewStatus === 'needs-revision'
+                    ? 'border-color:#fcd34d;background:#fffbeb;color:#78350f;'
+                    : 'border-color:#cbd5e1;background:#f8fafc;color:#334155;';
+              const visualReviewHtml = visualImage
+                  ? '<div style="margin-top:8px;padding:8px 10px;border:1px solid;border-radius:6px;' + visualReviewColors + '"><strong>' + visualReviewLabel + '</strong>'
+                    + (visualReview.note ? '<div style="margin-top:4px;white-space:pre-wrap;"><strong>' + (visualReviewStatus === 'unreviewed' ? 'Teacher note retained for revision:' : 'Teacher note:') + '</strong> ' + escapeHtml(String(visualReview.note).slice(0, 1000)) + '</div>' : '') + '</div>'
+                  : '';
+              const visualCheck = c.visualCheck && typeof c.visualCheck === 'object' ? c.visualCheck : null;
+              const visualCheckAlignment = visualCheck && ['supports', 'mixed', 'unclear'].includes(visualCheck.alignment)
+                  ? visualCheck.alignment
+                  : 'unclear';
+              const visualCheckLabel = visualCheckAlignment === 'supports'
+                  ? 'Supports the intended cue'
+                  : visualCheckAlignment === 'mixed'
+                    ? 'Mixed or partial support'
+                    : 'Unclear from the image';
+              const visualCheckHtml = visualImage && visualCheck
+                  ? '<section style="margin-top:8px;padding:10px;border:1px solid #a5f3fc;border-radius:6px;background:#ecfeff;color:#164e63;break-inside:avoid;"><h4 style="margin:0 0 4px;">AI visual check <span style="font-weight:normal;">(advisory)</span></h4>'
+                    + '<p style="margin:4px 0;"><strong>Alignment:</strong> ' + visualCheckLabel + '</p>'
+                    + '<p style="margin:4px 0;"><strong>Visible strength:</strong> ' + escapeHtml(String(visualCheck.strength || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:4px 0;"><strong>Possible concern:</strong> ' + escapeHtml(String(visualCheck.concern || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:4px 0;"><strong>Suggested change:</strong> ' + escapeHtml(String(visualCheck.suggestedChange || '').slice(0, 1000)) + '</p>'
+                    + '<p style="margin:6px 0 0;font-size:0.8em;">This feedback does not replace teacher approval.</p></section>'
+                  : '';
+              const visualHtml = visualImage
+                  ? '<figure style="margin:12px 0 0;padding:10px;border:1px solid #f0abfc;border-radius:8px;background:#fdf4ff;break-inside:avoid;">'
+                    + '<h4 style="margin:0 0 8px;color:#701a75;">Optional visual cue</h4>'
+                    + '<img src="' + escapeHtml(visualImage) + '" alt="' + escapeHtml(visualAlt) + '" style="display:block;max-width:100%;max-height:360px;width:auto;height:auto;margin:0 auto;border-radius:6px;object-fit:contain;" />'
+                    + '<figcaption aria-hidden="true" style="margin-top:7px;font-size:0.8em;color:#475569;"><strong>Image description:</strong> ' + escapeHtml(visualAlt) + '</figcaption></figure>'
+                    + visualReviewHtml + visualCheckHtml
+                  : '';
+              const facts = listHtml(c.essentialFacts || c.facts);
+              const scaffoldSteps = listHtml(c.scaffoldSteps);
+              const coachPrompts = listHtml(c.coachPrompts);
+              const modeBlock = c.mode === 'generated' && c.aiExample
+                  ? '<section style="margin-top:12px;padding:12px;border:1px solid #99f6e4;border-radius:8px;background:#f0fdfa;"><h4 style="margin:0 0 6px;color:#115e59;">AI example</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.aiExample) + '</div></section>'
+                  : c.mode === 'scaffolded'
+                    ? '<section style="margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;"><h4 style="margin:0 0 6px;color:#3730a3;">Build it with support</h4>'
+                      + (c.scaffoldStarter ? '<div style="white-space:pre-wrap;font-weight:600;">' + escapeHtml(c.scaffoldStarter) + '</div>' : '')
+                      + (scaffoldSteps ? '<ol style="margin:8px 0 0;padding-left:22px;">' + scaffoldSteps + '</ol>' : '') + '</section>'
+                    : '<section style="margin-top:12px;padding:12px;border:1px solid #ddd6fe;border-radius:8px;background:#f5f3ff;"><h4 style="margin:0 0 6px;color:#5b21b6;">Coach questions</h4>'
+                      + (coachPrompts ? '<ul style="margin:0;padding-left:22px;">' + coachPrompts + '</ul>' : '<div>Choose a cue and connect every part to an accurate fact.</div>') + '</section>';
+              const draft = String(c.studentDraft || '').trim();
+              const reasoning = String(c.studentReasoning || '').trim();
+              const reflectionVisible = d.reflectionLevel !== 'none';
+              const feedback = c.feedback && typeof c.feedback === 'object' ? c.feedback : null;
+              const feedbackHtml = feedback ? '<section style="margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;break-inside:avoid;"><h4 style="margin:0 0 8px;color:#065f46;">Feedback for the next revision</h4>'
+                  + '<p style="margin:4px 0;"><strong>A strength:</strong> ' + escapeHtml(feedback.strength) + '</p>'
+                  + '<p style="margin:4px 0;"><strong>Accuracy check:</strong> ' + escapeHtml(feedback.accuracyCheck) + '</p>'
+                  + '<p style="margin:4px 0;"><strong>One next step:</strong> ' + escapeHtml(feedback.nextStep) + '</p>'
+                  + (feedback.question ? '<p style="margin:4px 0;"><strong>Think about:</strong> ' + escapeHtml(feedback.question) + '</p>' : '') + '</section>' : '';
+              return '<article style="margin:0 0 18px;padding:16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
+                  + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
+                  + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || 'Memory target') + '</h3>'
+                  + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || 'Memory aid') + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || 'Student-authored') + '</div></div>'
+                  + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">What must stay accurate</h4>'
+                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>No checked facts were supplied.</div>') + '</section>'
+                  + modeBlock
+                  + (c.mapping ? '<section style="margin-top:12px;"><h4 style="margin:0 0 5px;color:#0f172a;">How the cue connects</h4><div style="white-space:pre-wrap;">' + escapeHtml(c.mapping) + '</div></section>' : '')
+                  + visualHtml
+                  + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">Create, remix, or personalize your memory aid</h4>'
+                  + (c.studentPrompt ? '<p style="margin:0 0 8px;color:#475569;">' + escapeHtml(c.studentPrompt) + '</p>' : '')
+                  + '<div style="min-height:64px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;white-space:pre-wrap;">' + (draft ? escapeHtml(draft) : '&nbsp;') + '</div></section>'
+                  + (reflectionVisible ? '<section style="margin-top:12px;padding:12px;border:1px solid #bae6fd;border-radius:8px;background:#f0f9ff;"><h4 style="margin:0 0 5px;color:#075985;">' + (d.reflectionLevel === 'full' ? 'Explain and revise' : 'Quick connection') + (d.reasoningRequired ? ' (required before feedback)' : ' (optional)') + '</h4>'
+                    + (c.reasoningPrompt ? '<p style="margin:0 0 8px;color:#334155;">' + escapeHtml(c.reasoningPrompt) + '</p>' : '')
+                    + '<div style="min-height:48px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;white-space:pre-wrap;">' + (reasoning ? escapeHtml(reasoning) : '&nbsp;') + '</div></section>' : '')
+                  + feedbackHtml + '</article>';
+          }).join('');
+          return `
+              <div class="section memory-aid-export" id="${item.id}" style="background:#f8fffe;border:1px solid #99f6e4;border-radius:10px;padding:8px 14px 14px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0f766e;color:#134e4a;">&#129504; ${title} <span style="font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;">(Memory Aid Studio)</span></h2>
+                  ${d.instructions ? '<p style="margin:0 0 14px;color:#334155;">' + escapeHtml(d.instructions) + '</p>' : ''}
+                  ${cardsHtml || '<p>No memory targets yet.</p>'}
+              </div>
+          `;
+      } else if (item.type === 'applied-challenge') {
+          const d = item.data || {};
+          const brief = d.brief && typeof d.brief === 'object' ? d.brief : {};
+          const supports = d.supports && typeof d.supports === 'object' ? d.supports : {};
+          const workspace = d.workspace && typeof d.workspace === 'object' ? d.workspace : {};
+          const escapeHtml = (value) => String(value == null ? '' : value)
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;');
+          const listHtml = (values) => (Array.isArray(values) ? values : []).filter(Boolean)
+              .map((value) => '<li style=\'margin-bottom:4px;\'>' + escapeHtml(value) + '</li>').join('');
+          const familyLabels = { investigate: 'Investigate', design: 'Design', decide: 'Decide', propose: 'Propose', explore: 'Explore' };
+          const factList = listHtml(brief.lockedLessonFacts);
+          const factHeading = brief.factVerified === true ? 'Teacher-verified lesson facts' : 'Lesson facts awaiting teacher review';
+          const unknownList = listHtml(brief.openQuestions);
+          const criteriaList = listHtml(brief.criteria);
+          const constraintList = listHtml(brief.constraints);
+          const fieldLabels = {
+              workingQuestion: 'Frame the challenge', stakeholders: 'People, systems, and constraints',
+              possibilities: 'Possibilities', evidence: 'Evidence and lesson connections',
+              assumptions: 'Assumptions and uncertainties', tradeoffs: 'Tradeoffs and alternatives',
+              response: 'Draft deliverable', testReflection: 'Test or challenge the draft',
+              revision: 'Revision', transferReflection: 'Transfer reflection'
+          };
+          const workspaceHtml = Object.keys(fieldLabels).map((key) => {
+              const value = String(workspace[key] || '').trim();
+              return '<section style=\'margin-top:10px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;break-inside:avoid;\'>'
+                  + '<h4 style=\'margin:0 0 6px;color:#9a3412;\'>' + escapeHtml(fieldLabels[key]) + '</h4>'
+                  + '<div style=\'min-height:48px;white-space:pre-wrap;color:#1e293b;\'>' + (value ? escapeHtml(value) : '&nbsp;') + '</div></section>';
+          }).join('');
+          const example = supports.parallelExample && typeof supports.parallelExample === 'object' ? supports.parallelExample : {};
+          const supportHtml = (example.context || example.move || supports.frameStarter)
+              ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;\'><h3 style=\'margin:0 0 6px;color:#3730a3;\'>Support that fades</h3>'
+                + (example.context ? '<p><strong>Parallel context:</strong> ' + escapeHtml(example.context) + '</p>' : '')
+                + (example.move ? '<p style=\'white-space:pre-wrap;\'>' + escapeHtml(example.move) + '</p>' : '')
+                + (supports.frameStarter ? '<p><strong>Frame starter:</strong> ' + escapeHtml(supports.frameStarter) + '</p>' : '') + '</section>'
+              : '';
+          const feedback = d.feedback && typeof d.feedback === 'object' ? d.feedback : null;
+          const feedbackStatusLabel = feedback && feedback.status === 'grounded'
+              ? 'Grounded in verified facts'
+              : feedback && feedback.status === 'needs-check' ? 'Fact check needed' : 'Developing';
+          const feedbackHtml = feedback ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;\'><h3 style=\'margin:0 0 6px;color:#065f46;\'>Feedback for the next revision</h3>'
+              + '<p><strong>Review status:</strong> ' + escapeHtml(feedbackStatusLabel) + '</p>'
+              + '<p><strong>A strength:</strong> ' + escapeHtml(feedback.strength) + '</p>'
+              + '<p><strong>Lesson connection:</strong> ' + escapeHtml(feedback.lessonConnectionCheck) + '</p>'
+              + '<p><strong>Evidence, assumptions, or constraints:</strong> ' + escapeHtml(feedback.evidenceOrConstraintCheck) + '</p>'
+              + '<p><strong>One next step:</strong> ' + escapeHtml(feedback.nextStep) + '</p></section>' : '';
+          return `
+              <div class='section applied-challenge-export' id='${escapeHtml(item.id)}' style='background:#fffaf5;border:1px solid #fed7aa;border-radius:10px;padding:8px 14px 14px;'>
+                  <h2 class='resource-header' role='heading' aria-level='2' style='border-left:4px solid #c2410c;color:#7c2d12;'>&#127919; ${title} <span style='font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;'>(Applied Challenge Studio - ${escapeHtml(familyLabels[d.family] || d.family || 'Challenge')})</span></h2>
+                  ${d.instructions ? '<p style=\'color:#334155;\'>' + escapeHtml(d.instructions) + '</p>' : ''}
+                  ${d.fitReason ? '<p style=\'padding:8px;background:#ffedd5;border-radius:6px;\'><strong>Why this challenge fits:</strong> ' + escapeHtml(d.fitReason) + '</p>' : ''}
+                  <section style='padding:12px;border:1px solid #fed7aa;border-radius:8px;background:#fff7ed;'>
+                    <h3 style='margin:0 0 8px;color:#9a3412;'>Challenge brief</h3>
+                    ${brief.context ? '<p>' + escapeHtml(brief.context) + '</p>' : ''}
+                    ${brief.drivingQuestion ? '<p><strong>Driving question:</strong> ' + escapeHtml(brief.drivingQuestion) + '</p>' : ''}
+                    ${brief.seedDirection ? '<p><strong>Lesson-grounded direction:</strong> ' + escapeHtml(brief.seedDirection) + '</p>' : ''}
+                    ${factList ? '<h4>' + factHeading + '</h4><ul>' + factList + '</ul>' : ''}
+                    ${unknownList ? '<h4>Open questions</h4><ul>' + unknownList + '</ul>' : ''}
+                    ${criteriaList ? '<h4>Success criteria</h4><ul>' + criteriaList + '</ul>' : ''}
+                    ${constraintList ? '<h4>Constraints</h4><ul>' + constraintList + '</ul>' : ''}
+                    ${brief.deliverable ? '<p><strong>Deliverable:</strong> ' + escapeHtml(brief.deliverable) + '</p>' : ''}
+                    ${brief.evidenceBoundary ? '<p><strong>Evidence boundary:</strong> ' + escapeHtml(brief.evidenceBoundary) + '</p>' : ''}
+                  </section>
+                  ${supportHtml}
+                  <h3 style='margin:16px 0 6px;color:#7c2d12;'>Student problem-solving workspace</h3>
+                  ${workspaceHtml}
+                  ${feedbackHtml}
+              </div>
+          `;
       } else if (item.type === 'anchor-chart') {
           // EL-style anchor chart. Type-aware layout (Tier 1) + hand-drawn poster
-          // aesthetic (Tier 2): per-section marker colours, marker fonts (Google
-          // Fonts online, system-cursive fallback offline), slight rotation jitter.
+          // aesthetic (Tier 2): per-section marker colours, opt-in marker web
+          // fonts with system-cursive fallbacks, and slight rotation jitter.
           const d = item.data || {};
           const sections = Array.isArray(d.sections) ? d.sections : [];
           const chartType = d.chartType || d.type || 'reference';
@@ -40633,6 +40869,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _acJit = (key) => { let h = 0; key = String(key || 'x'); for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0; return (((Math.abs(h) % 21) - 10) / 10 * 0.9).toFixed(2); };
           const _acTF = "'Permanent Marker','Marker Felt','Comic Sans MS',cursive";
           const _acBF = "'Patrick Hand','Caveat','Bradley Hand','Comic Sans MS',cursive";
+          const _acFontImport = config && config.readerWebFonts === true
+              ? "<style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>"
+              : '';
           const _acCaption = (layout === 'process' && sections.length > 1) ? 'Follow the steps in order &#8595;'
               : (layout === 'comparison' && sections.length > 1) ? 'Compare side by side &#8596;'
               : (layout === 'concept-map') ? 'Central idea branches into&#8230;' : '';
@@ -40671,7 +40910,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-family:' + _acBF + ';font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em;color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
-              <style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>
+              ${_acFontImport}
               <div class="section" id="${item.id}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
                   <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${title} <span style="font-size:0.6em;font-weight:normal;color:#a1887f;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></h2>
                   ${_acCaptionHtml}
@@ -40857,7 +41096,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       };
       const _studentEntries = _materializeRenderable(historyItems, false);
       const _teacherEntries = cfg.includeTeacherKey ? _materializeRenderable(historyItems, true) : [];
-      const _wrapSection = (item, idx, total, html) => {
+      const _wrapSection = (item, idx, total, html, isTeacher = false) => {
         if (!html) return '';
         const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
         // Marker pill above each section — number + type label. aria-hidden
@@ -40871,8 +41110,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         const terminator = idx < total - 1
           ? `<div aria-hidden="true" style="text-align:center;margin:18px 0 4px;color:${tv.color};opacity:0.45;font-size:14px;letter-spacing:10px;line-height:1;">◆ ◆ ◆</div>`
           : '';
+        // A paper packet is easily separated after the first sheet. Give each
+        // later STUDENT resource a compact identity row without adding screen
+        // clutter or repeating it in the teacher-key appendix. It is hidden in
+        // normal HTML and revealed only by the worksheet-scoped print rules.
+        const continuationStrip = isWorksheet && !isTeacher && idx > 0
+          ? `<div class="alloflow-worksheet-continuation" role="group" aria-label="Worksheet continuation identification">
+              <span class="alloflow-worksheet-continuation-field"><strong>${_escTxt(t('export.name_label'))}:</strong><span class="alloflow-worksheet-continuation-line" aria-hidden="true"></span></span>
+              <span class="alloflow-worksheet-continuation-field"><strong>${_escTxt(t('export.date_label'))}:</strong><span class="alloflow-worksheet-continuation-line" aria-hidden="true"></span></span>
+              <span class="alloflow-worksheet-continuation-topic"><strong>${_escTxt(t('export.topic'))}:</strong> ${_escTxt(topic || t('export.default_lesson_title'))}</span>
+            </div>`
+          : '';
         const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
-        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}" style="position:relative;">${marker}${html}${terminator}</div>`;
+        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}" style="position:relative;">${continuationStrip}${marker}${html}${terminator}</div>`;
       };
       const _buildTOC = (items, isTeacher) => {
         if (items.length < 2) return '';  // single-resource exports don't need a TOC
@@ -40896,8 +41146,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           </nav>
         `;
       };
-      const studentContent = _studentEntries.map((entry, i) => _wrapSection(entry.item, i, _studentEntries.length, entry.html)).join('');
-      const teacherContent = _teacherEntries.map((entry, i) => _wrapSection(entry.item, i, _teacherEntries.length, entry.html)).join('');
+      const studentContent = _studentEntries.map((entry, i) => _wrapSection(entry.item, i, _studentEntries.length, entry.html, false)).join('');
+      const teacherContent = _teacherEntries.map((entry, i) => _wrapSection(entry.item, i, _teacherEntries.length, entry.html, true)).join('');
       const studentTOC = _buildTOC(_studentEntries.map(entry => entry.item), false);
       const teacherTOC = _buildTOC(_teacherEntries.map(entry => entry.item), true);
       const isRtl = isRtlLang(leveledTextLanguage);
@@ -41039,8 +41289,100 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           : '',
       ].join('');
       const exportFontSize = cfg.fontSize ? `${cfg.fontSize}px` : '16px';
+      const _printPageMargin = ['0.5in', '1in', '1.5in'].includes(cfg.pageMargin) ? cfg.pageMargin : '1in';
+      const _printMarginInches = parseFloat(_printPageMargin) || 1;
+      const _printPageDimensions = ({ letter: [8.5, 11], legal: [8.5, 14], a4: [8.27, 11.69] })[cfg.pageSize] || [8.5, 11];
+      const _printPageHeight = cfg.pageOrientation === 'landscape' ? _printPageDimensions[0] : _printPageDimensions[1];
+      const _printPrintableHeight = Math.max(2, _printPageHeight - (_printMarginInches * 2));
+      const _printImageMaxHeight = Math.max(2, _printPrintableHeight - 0.25).toFixed(2) + 'in';
+      // Captioned figures need their own reserve. Without it, an image that
+      // exactly fills the printable box pushes its caption over the edge and
+      // some print engines clip the bottom of the surrounding figure.
+      const _printFigureImageMaxHeight = Math.max(1.5, _printPrintableHeight - 0.9).toFixed(2) + 'in';
       const studentTitlePrefix = isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
+      const _documentLanguageMap = {'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'};
+      const _documentLanguage = _documentLanguageMap[leveledTextLanguage || currentUiLanguage] || 'en';
+      const _runtimeCopyCatalog = {
+        en: {
+          workspaceTitle: 'Who is working on this resource?', workspaceDescription: 'Enter a name or nickname to keep autosaved answers and annotations separate on a shared device. You can also use this resource once without storing your work in this browser.', nameLabel: 'Name or nickname', continueAutosave: 'Continue with autosave', useOnce: 'Use once without autosave', requiredName: 'Enter a name or nickname.', oneTimeNotice: 'One-time session: browser autosave is off. You can still download your answers and annotations.',
+          saveWorkTitle: 'Save your work', saveWorkDescription: 'Enter a name or nickname so your teacher can identify this submission.', saveWorkConfirm: 'Save work', saveAnswersTitle: 'Save your answers', saveAnswersDescription: 'Enter a name or nickname so your teacher can identify this answer file.', saveAnswersConfirm: 'Save answers', cancel: 'Cancel', saveMyAnswers: 'Save my answers', savedAnswers: 'Saved! Send the file to your teacher', saveErrorPrefix: 'Could not save your answers: ',
+          saveToolsLabel: 'Save and submit your work', doneTitle: 'Done with your work?', answerFileDescription: 'Save a file of your answers and send it to your teacher.', answerFileHelp: 'Saves a .json file your teacher opens in AlloFlow.', encryptedMailboxDescription: 'Send your encrypted work directly to your teacher’s Class Mailbox. If sending fails, an encrypted file downloads instead.', encryptedFileDescription: 'Save an encrypted file with your answers and send it to your teacher.', encryptionHelp: 'Your responses are encrypted with your class key. Only your teacher can open them.', saveMyWork: 'Save my work', saving: 'Saving…', savedDownload: 'Saved — download started', saveAgain: 'Save my work again', saveUnavailable: 'Save unavailable (key missing)', encryptionUnavailable: 'Encryption is not available in this browser. Use a newer browser to save submissions.', sending: 'Sending to your teacher…', sent: 'Sent to your teacher', sentToTeacher: 'Your encrypted work was sent to your teacher', sendAgain: 'Send my work again', mailboxFallback: 'Could not reach your teacher’s Class Mailbox. An encrypted file will download instead; send that file to your teacher.', workSaveErrorPrefix: 'Could not save your work: ',
+          skipToContent: 'Skip to content', readingToolsLabel: 'Reading and annotation tools', toolsLabel: 'Tools', accessibilityInfoLabel: 'Accessibility information', accessibilityTitle: 'Accessibility features', accessibilityDescription: 'This document includes semantic structure, heading hierarchy, table headers, landmarks, language metadata, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim; verify it with an accessibility checker before relying on it for compliance. Created with AlloFlow.', submissionFor: 'Submission for {name}', worksheetLabel: 'Worksheet', savedLabel: 'Saved', encryptedClassKey: 'Encrypted with class key', encryptedFileHelp: 'This file contains encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt it.', resourceIdLabel: 'Resource ID', printLinksTitle: 'Web links for this resource',
+          readAloudUnavailable: 'Read-aloud audio wasn’t available for this passage. The passage text is still available below.', readAloudPartial: 'Audio is available for {ready} of {total} sentences. Read the text for the missing portions.'
+        },
+        es: {
+          workspaceTitle: '¿Quién está trabajando en este recurso?', workspaceDescription: 'Escribe un nombre o apodo para mantener separadas las respuestas y anotaciones guardadas automáticamente en un dispositivo compartido. También puedes usar este recurso una vez sin guardar el trabajo en este navegador.', nameLabel: 'Nombre o apodo', continueAutosave: 'Continuar con guardado automático', useOnce: 'Usar una vez sin guardar', requiredName: 'Escribe un nombre o apodo.', oneTimeNotice: 'Sesión única: el guardado automático del navegador está desactivado. Aún puedes descargar tus respuestas y anotaciones.',
+          saveWorkTitle: 'Guardar tu trabajo', saveWorkDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar esta entrega.', saveWorkConfirm: 'Guardar trabajo', saveAnswersTitle: 'Guardar tus respuestas', saveAnswersDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar este archivo de respuestas.', saveAnswersConfirm: 'Guardar respuestas', cancel: 'Cancelar', saveMyAnswers: 'Guardar mis respuestas', savedAnswers: '¡Guardado! Envía el archivo a tu docente', saveErrorPrefix: 'No se pudieron guardar tus respuestas: ',
+          saveToolsLabel: 'Guardar y entregar tu trabajo', doneTitle: '¿Terminaste tu trabajo?', answerFileDescription: 'Guarda un archivo con tus respuestas y envíalo a tu docente.', answerFileHelp: 'Guarda un archivo .json que tu docente abre en AlloFlow.', encryptedMailboxDescription: 'Envía tu trabajo cifrado directamente al buzón de clase de tu docente. Si el envío falla, se descargará un archivo cifrado.', encryptedFileDescription: 'Guarda un archivo cifrado con tus respuestas y envíalo a tu docente.', encryptionHelp: 'Tus respuestas se cifran con la clave de la clase. Solo tu docente puede abrirlas.', saveMyWork: 'Guardar mi trabajo', saving: 'Guardando…', savedDownload: 'Guardado — se inició la descarga', saveAgain: 'Volver a guardar mi trabajo', saveUnavailable: 'No se puede guardar (falta la clave)', encryptionUnavailable: 'El cifrado no está disponible en este navegador. Usa un navegador más reciente para guardar entregas.', sending: 'Enviando a tu docente…', sent: 'Enviado a tu docente', sentToTeacher: 'Tu trabajo cifrado se envió a tu docente', sendAgain: 'Volver a enviar mi trabajo', mailboxFallback: 'No se pudo acceder al buzón de clase de tu docente. Se descargará un archivo cifrado; envíaselo a tu docente.', workSaveErrorPrefix: 'No se pudo guardar tu trabajo: ',
+          skipToContent: 'Saltar al contenido', readingToolsLabel: 'Herramientas de lectura y anotación', toolsLabel: 'Herramientas', accessibilityInfoLabel: 'Información de accesibilidad', accessibilityTitle: 'Funciones de accesibilidad', accessibilityDescription: 'Este documento incluye estructura semántica, jerarquía de encabezados, encabezados de tabla, regiones, metadatos de idioma, orden lógico de lectura y un diseño optimizado para impresión. Esto no constituye una declaración de conformidad WCAG o PDF/UA validada de forma independiente; compruébalo con una herramienta de accesibilidad antes de usarlo como prueba de conformidad. Creado con AlloFlow.', submissionFor: 'Entrega de {name}', worksheetLabel: 'Hoja de trabajo', savedLabel: 'Guardado', encryptedClassKey: 'Cifrado con la clave de la clase', encryptedFileHelp: 'Este archivo contiene respuestas cifradas. Ábrelo en AlloFlow (Generador de documentos → Importar entregas) con el archivo de clave de clase correspondiente para descifrarlo.', resourceIdLabel: 'ID del recurso', printLinksTitle: 'Enlaces web de este recurso',
+          readAloudUnavailable: 'El audio de lectura en voz alta no estuvo disponible para este pasaje. El texto del pasaje sigue disponible abajo.', readAloudPartial: 'Hay audio disponible para {ready} de {total} oraciones. Lee el texto de las partes que faltan.'
+        },
+        fr: {
+          workspaceTitle: 'Qui travaille sur cette ressource ?', workspaceDescription: 'Saisissez un nom ou un pseudonyme pour séparer les réponses et annotations enregistrées automatiquement sur un appareil partagé. Vous pouvez aussi utiliser cette ressource une seule fois sans enregistrer votre travail dans ce navigateur.', nameLabel: 'Nom ou pseudonyme', continueAutosave: 'Continuer avec l’enregistrement automatique', useOnce: 'Utiliser une fois sans enregistrer', requiredName: 'Saisissez un nom ou un pseudonyme.', oneTimeNotice: 'Session unique : l’enregistrement automatique du navigateur est désactivé. Vous pouvez toujours télécharger vos réponses et annotations.',
+          saveWorkTitle: 'Enregistrer votre travail', saveWorkDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce travail.', saveWorkConfirm: 'Enregistrer le travail', saveAnswersTitle: 'Enregistrer vos réponses', saveAnswersDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce fichier de réponses.', saveAnswersConfirm: 'Enregistrer les réponses', cancel: 'Annuler', saveMyAnswers: 'Enregistrer mes réponses', savedAnswers: 'Enregistré ! Envoyez le fichier à votre enseignant', saveErrorPrefix: 'Impossible d’enregistrer vos réponses : ',
+          saveToolsLabel: 'Enregistrer et remettre votre travail', doneTitle: 'Vous avez terminé votre travail ?', answerFileDescription: 'Enregistrez un fichier de vos réponses et envoyez-le à votre enseignant.', answerFileHelp: 'Enregistre un fichier .json que votre enseignant ouvre dans AlloFlow.', encryptedMailboxDescription: 'Envoyez votre travail chiffré directement à la boîte de classe de votre enseignant. En cas d’échec, un fichier chiffré sera téléchargé.', encryptedFileDescription: 'Enregistrez un fichier chiffré avec vos réponses et envoyez-le à votre enseignant.', encryptionHelp: 'Vos réponses sont chiffrées avec la clé de votre classe. Seul votre enseignant peut les ouvrir.', saveMyWork: 'Enregistrer mon travail', saving: 'Enregistrement…', savedDownload: 'Enregistré — téléchargement lancé', saveAgain: 'Enregistrer à nouveau mon travail', saveUnavailable: 'Enregistrement indisponible (clé manquante)', encryptionUnavailable: 'Le chiffrement n’est pas disponible dans ce navigateur. Utilisez un navigateur plus récent pour enregistrer vos travaux.', sending: 'Envoi à votre enseignant…', sent: 'Envoyé à votre enseignant', sentToTeacher: 'Votre travail chiffré a été envoyé à votre enseignant', sendAgain: 'Envoyer à nouveau mon travail', mailboxFallback: 'Impossible de joindre la boîte de classe de votre enseignant. Un fichier chiffré sera téléchargé à la place ; envoyez-le à votre enseignant.', workSaveErrorPrefix: 'Impossible d’enregistrer votre travail : ',
+          skipToContent: 'Aller au contenu', readingToolsLabel: 'Outils de lecture et d’annotation', toolsLabel: 'Outils', accessibilityInfoLabel: 'Informations sur l’accessibilité', accessibilityTitle: 'Fonctions d’accessibilité', accessibilityDescription: 'Ce document comprend une structure sémantique, une hiérarchie de titres, des en-têtes de tableau, des régions, des métadonnées de langue, un ordre de lecture logique et une mise en page optimisée pour l’impression. Il ne s’agit pas d’une déclaration de conformité WCAG ou PDF/UA validée indépendamment ; vérifiez-la avec un outil d’accessibilité avant de vous y fier comme preuve de conformité. Créé avec AlloFlow.', submissionFor: 'Travail de {name}', worksheetLabel: 'Feuille de travail', savedLabel: 'Enregistré', encryptedClassKey: 'Chiffré avec la clé de la classe', encryptedFileHelp: 'Ce fichier contient des réponses chiffrées. Ouvrez-le dans AlloFlow (Générateur de documents → Importer les travaux) avec le fichier de clé de classe correspondant pour le déchiffrer.', resourceIdLabel: 'ID de la ressource', printLinksTitle: 'Liens Web de cette ressource',
+          readAloudUnavailable: 'L’audio de lecture à voix haute n’était pas disponible pour ce passage. Le texte du passage reste disponible ci-dessous.', readAloudPartial: 'L’audio est disponible pour {ready} phrases sur {total}. Lisez le texte des parties manquantes.'
+        },
+        pt: {
+          workspaceTitle: 'Quem está trabalhando neste recurso?', workspaceDescription: 'Digite um nome ou apelido para manter separadas as respostas e anotações salvas automaticamente em um dispositivo compartilhado. Você também pode usar este recurso uma vez sem salvar o trabalho neste navegador.', nameLabel: 'Nome ou apelido', continueAutosave: 'Continuar com salvamento automático', useOnce: 'Usar uma vez sem salvar', requiredName: 'Digite um nome ou apelido.', oneTimeNotice: 'Sessão única: o salvamento automático do navegador está desativado. Você ainda pode baixar suas respostas e anotações.',
+          saveWorkTitle: 'Salvar seu trabalho', saveWorkDescription: 'Digite um nome ou apelido para que seu professor possa identificar esta entrega.', saveWorkConfirm: 'Salvar trabalho', saveAnswersTitle: 'Salvar suas respostas', saveAnswersDescription: 'Digite um nome ou apelido para que seu professor possa identificar este arquivo de respostas.', saveAnswersConfirm: 'Salvar respostas', cancel: 'Cancelar', saveMyAnswers: 'Salvar minhas respostas', savedAnswers: 'Salvo! Envie o arquivo ao seu professor', saveErrorPrefix: 'Não foi possível salvar suas respostas: ',
+          saveToolsLabel: 'Salvar e enviar seu trabalho', doneTitle: 'Terminou seu trabalho?', answerFileDescription: 'Salve um arquivo com suas respostas e envie-o ao seu professor.', answerFileHelp: 'Salva um arquivo .json que seu professor abre no AlloFlow.', encryptedMailboxDescription: 'Envie seu trabalho criptografado diretamente para a caixa da turma do seu professor. Se o envio falhar, um arquivo criptografado será baixado.', encryptedFileDescription: 'Salve um arquivo criptografado com suas respostas e envie-o ao seu professor.', encryptionHelp: 'Suas respostas são criptografadas com a chave da turma. Somente seu professor pode abri-las.', saveMyWork: 'Salvar meu trabalho', saving: 'Salvando…', savedDownload: 'Salvo — download iniciado', saveAgain: 'Salvar meu trabalho novamente', saveUnavailable: 'Não é possível salvar (chave ausente)', encryptionUnavailable: 'A criptografia não está disponível neste navegador. Use um navegador mais recente para salvar envios.', sending: 'Enviando ao seu professor…', sent: 'Enviado ao seu professor', sentToTeacher: 'Seu trabalho criptografado foi enviado ao seu professor', sendAgain: 'Enviar meu trabalho novamente', mailboxFallback: 'Não foi possível acessar a caixa da turma do seu professor. Um arquivo criptografado será baixado; envie-o ao seu professor.', workSaveErrorPrefix: 'Não foi possível salvar seu trabalho: ',
+          skipToContent: 'Ir para o conteúdo', readingToolsLabel: 'Ferramentas de leitura e anotação', toolsLabel: 'Ferramentas', accessibilityInfoLabel: 'Informações de acessibilidade', accessibilityTitle: 'Recursos de acessibilidade', accessibilityDescription: 'Este documento inclui estrutura semântica, hierarquia de títulos, cabeçalhos de tabela, regiões, metadados de idioma, ordem lógica de leitura e layout otimizado para impressão. Esta não é uma declaração de conformidade WCAG ou PDF/UA validada de forma independente; verifique-a com uma ferramenta de acessibilidade antes de usá-la como prova de conformidade. Criado com AlloFlow.', submissionFor: 'Envio de {name}', worksheetLabel: 'Folha de atividades', savedLabel: 'Salvo', encryptedClassKey: 'Criptografado com a chave da turma', encryptedFileHelp: 'Este arquivo contém respostas criptografadas. Abra-o no AlloFlow (Gerador de documentos → Importar envios) com o arquivo de chave da turma correspondente para descriptografá-lo.', resourceIdLabel: 'ID do recurso', printLinksTitle: 'Links da Web deste recurso',
+          readAloudUnavailable: 'O áudio de leitura em voz alta não estava disponível para esta passagem. O texto da passagem continua disponível abaixo.', readAloudPartial: 'O áudio está disponível para {ready} de {total} frases. Leia o texto das partes que faltam.'
+        },
+        ar: {
+          workspaceTitle: 'من يعمل على هذا المورد؟', workspaceDescription: 'أدخل اسمًا أو اسمًا مستعارًا للفصل بين الإجابات والتعليقات المحفوظة تلقائيًا على جهاز مشترك. يمكنك أيضًا استخدام هذا المورد مرة واحدة من دون حفظ عملك في هذا المتصفح.', nameLabel: 'الاسم أو الاسم المستعار', continueAutosave: 'المتابعة مع الحفظ التلقائي', useOnce: 'الاستخدام مرة واحدة من دون حفظ', requiredName: 'أدخل اسمًا أو اسمًا مستعارًا.', oneTimeNotice: 'جلسة لمرة واحدة: الحفظ التلقائي في المتصفح متوقف. لا يزال بإمكانك تنزيل إجاباتك وتعليقاتك.',
+          saveWorkTitle: 'حفظ عملك', saveWorkDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على هذا التسليم.', saveWorkConfirm: 'حفظ العمل', saveAnswersTitle: 'حفظ إجاباتك', saveAnswersDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على ملف الإجابات هذا.', saveAnswersConfirm: 'حفظ الإجابات', cancel: 'إلغاء', saveMyAnswers: 'حفظ إجاباتي', savedAnswers: 'تم الحفظ! أرسل الملف إلى معلمك', saveErrorPrefix: 'تعذّر حفظ إجاباتك: ',
+          saveToolsLabel: 'حفظ عملك وتسليمه', doneTitle: 'هل انتهيت من عملك؟', answerFileDescription: 'احفظ ملفًا يتضمن إجاباتك وأرسله إلى معلمك.', answerFileHelp: 'يحفظ ملف .json يفتحه معلمك في AlloFlow.', encryptedMailboxDescription: 'أرسل عملك المشفّر مباشرة إلى صندوق بريد الصف الخاص بمعلمك. إذا فشل الإرسال، فسيتم تنزيل ملف مشفّر بدلًا منه.', encryptedFileDescription: 'احفظ ملفًا مشفّرًا يتضمن إجاباتك وأرسله إلى معلمك.', encryptionHelp: 'إجاباتك مشفّرة بمفتاح الصف. لا يمكن فتحها إلا من قِبل معلمك.', saveMyWork: 'حفظ عملي', saving: 'جارٍ الحفظ…', savedDownload: 'تم الحفظ — بدأ التنزيل', saveAgain: 'حفظ عملي مرة أخرى', saveUnavailable: 'الحفظ غير متاح (المفتاح مفقود)', encryptionUnavailable: 'التشفير غير متاح في هذا المتصفح. استخدم متصفحًا أحدث لحفظ التسليمات.', sending: 'جارٍ الإرسال إلى معلمك…', sent: 'تم الإرسال إلى معلمك', sentToTeacher: 'تم إرسال عملك المشفّر إلى معلمك', sendAgain: 'إرسال عملي مرة أخرى', mailboxFallback: 'تعذّر الوصول إلى صندوق بريد الصف الخاص بمعلمك. سيتم تنزيل ملف مشفّر بدلًا منه؛ أرسله إلى معلمك.', workSaveErrorPrefix: 'تعذّر حفظ عملك: ',
+          skipToContent: 'الانتقال إلى المحتوى', readingToolsLabel: 'أدوات القراءة والتعليق', toolsLabel: 'الأدوات', accessibilityInfoLabel: 'معلومات إمكانية الوصول', accessibilityTitle: 'ميزات إمكانية الوصول', accessibilityDescription: 'يتضمن هذا المستند بنية دلالية وتسلسلًا هرميًا للعناوين ورؤوس جداول ومعالم وبيانات وصفية للغة وترتيب قراءة منطقيًا وتخطيطًا محسّنًا للطباعة. لا يُعد هذا ادعاءً بالتوافق مع WCAG أو PDF/UA تم التحقق منه بصورة مستقلة؛ تحقّق منه باستخدام أداة لإمكانية الوصول قبل الاعتماد عليه كدليل على التوافق. أُنشئ باستخدام AlloFlow.', submissionFor: 'تسليم {name}', worksheetLabel: 'ورقة العمل', savedLabel: 'تم الحفظ', encryptedClassKey: 'مشفّر بمفتاح الصف', encryptedFileHelp: 'يحتوي هذا الملف على إجابات مشفّرة. افتحه في AlloFlow (منشئ المستندات ← استيراد التسليمات) باستخدام ملف مفتاح الصف المطابق لفك تشفيره.', resourceIdLabel: 'معرّف المورد', printLinksTitle: 'روابط الويب لهذا المورد',
+          readAloudUnavailable: 'لم يكن صوت القراءة متاحًا لهذا المقطع. لا يزال نص المقطع متاحًا أدناه.', readAloudPartial: 'الصوت متاح لـ {ready} من أصل {total} جملة. اقرأ النص للأجزاء المفقودة.'
+        },
+        zh: {
+          workspaceTitle: '谁在使用此资源？', workspaceDescription: '请输入姓名或昵称，以便在共用设备上分别保存自动保存的答案和批注。你也可以仅使用一次，而不在此浏览器中保存学习内容。', nameLabel: '姓名或昵称', continueAutosave: '继续并自动保存', useOnce: '仅使用一次，不保存', requiredName: '请输入姓名或昵称。', oneTimeNotice: '一次性会话：浏览器自动保存已关闭。你仍可下载答案和批注。',
+          saveWorkTitle: '保存你的学习内容', saveWorkDescription: '请输入姓名或昵称，以便老师识别这份提交。', saveWorkConfirm: '保存学习内容', saveAnswersTitle: '保存你的答案', saveAnswersDescription: '请输入姓名或昵称，以便老师识别此答案文件。', saveAnswersConfirm: '保存答案', cancel: '取消', saveMyAnswers: '保存我的答案', savedAnswers: '已保存！请将文件发送给老师', saveErrorPrefix: '无法保存你的答案：',
+          saveToolsLabel: '保存并提交你的学习内容', doneTitle: '完成学习内容了吗？', answerFileDescription: '保存答案文件并将其发送给老师。', answerFileHelp: '保存一个可由老师在 AlloFlow 中打开的 .json 文件。', encryptedMailboxDescription: '将加密后的学习内容直接发送到老师的班级邮箱。如果发送失败，系统会改为下载加密文件。', encryptedFileDescription: '保存含有答案的加密文件并发送给老师。', encryptionHelp: '你的答案使用班级密钥加密，只有老师可以打开。', saveMyWork: '保存我的学习内容', saving: '正在保存…', savedDownload: '已保存 — 已开始下载', saveAgain: '再次保存我的学习内容', saveUnavailable: '无法保存（缺少密钥）', encryptionUnavailable: '此浏览器不支持加密。请使用较新的浏览器保存提交内容。', sending: '正在发送给老师…', sent: '已发送给老师', sentToTeacher: '加密后的学习内容已发送给老师', sendAgain: '再次发送我的学习内容', mailboxFallback: '无法连接到老师的班级邮箱。系统将改为下载加密文件；请将该文件发送给老师。', workSaveErrorPrefix: '无法保存你的学习内容：',
+          skipToContent: '跳到内容', readingToolsLabel: '阅读和批注工具', toolsLabel: '工具', accessibilityInfoLabel: '无障碍信息', accessibilityTitle: '无障碍功能', accessibilityDescription: '本文档包含语义结构、标题层级、表头、页面区域、语言元数据、合理的阅读顺序以及打印优化布局。这并非经过独立验证的 WCAG 或 PDF/UA 合规声明；在将其作为合规依据之前，请使用无障碍检查工具进行验证。由 AlloFlow 创建。', submissionFor: '{name} 的提交', worksheetLabel: '学习单', savedLabel: '已保存', encryptedClassKey: '已使用班级密钥加密', encryptedFileHelp: '此文件包含加密答案。请在 AlloFlow 中使用匹配的班级密钥文件打开它（文档生成器 → 导入提交内容）以进行解密。', resourceIdLabel: '资源 ID', printLinksTitle: '此资源的网页链接',
+          readAloudUnavailable: '此段落无法提供朗读音频。段落文字仍显示在下方。', readAloudPartial: '共 {total} 句，其中 {ready} 句有音频。请阅读缺少音频部分的文字。'
+        }
+      };
+      const _runtimeLanguage = String(_documentLanguage || 'en').toLowerCase().split('-')[0];
+      const _runtimeCopy = { ..._runtimeCopyCatalog.en, ...(_runtimeCopyCatalog[_runtimeLanguage] || {}) };
+      // Four independently mixed 32-bit lanes form a deterministic 128-bit
+      // content identity. It is based on resource content, not rendered body
+      // length or generation date, so unrelated equal-length exports cannot
+      // share a learner autosave bucket.
+      const _fingerprint128 = (input) => {
+        const source = String(input == null ? '' : input);
+        let a = 0x811c9dc5, b = 0x9e3779b9, c = 0x85ebca6b, d = 0xc2b2ae35;
+        for (let i = 0; i < source.length; i++) {
+          const code = source.charCodeAt(i);
+          a = Math.imul(a ^ code, 0x01000193);
+          b = Math.imul(b ^ (code + i), 0x27d4eb2d);
+          c = Math.imul(c ^ (code + (i << 1)), 0x165667b1);
+          d = Math.imul(d ^ (code + (i << 2)), 0x9e3779b1);
+        }
+        const finish = (value) => {
+          value ^= value >>> 16; value = Math.imul(value, 0x85ebca6b);
+          value ^= value >>> 13; value = Math.imul(value, 0xc2b2ae35);
+          value ^= value >>> 16;
+          return (value >>> 0).toString(16).padStart(8, '0');
+        };
+        return finish(a) + finish(b) + finish(c) + finish(d);
+      };
+      const _storageIdentitySeed = JSON.stringify({
+        version: 2,
+        topic: String(lessonTopic || ''),
+        worksheet: !!isWorksheet,
+        student: _studentEntries.map((entry) => ({
+          id: String((entry.item && entry.item.id) || ''),
+          type: String((entry.item && entry.item.type) || ''),
+          title: String((entry.item && entry.item.title) || ''),
+          html: String(entry.html || '')
+        }))
+      });
+      const _storageDocId = _fingerprint128(_storageIdentitySeed);
       const teacherIntro = t('export.teacher_copy_intro');
       const noStudentMsg = t('export.no_student_content');
       const noTeacherMsg = t('export.no_teacher_content');
@@ -41121,10 +41463,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Visible CTA inserted right before the footer.
       const _submissionSaveButton = _hasSubmission ? `
         <div id="alloflow-save-cta" style="margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
-          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">Done with your work?</p>
-          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_mailboxTarget ? "Click below to send your encrypted work straight to your teacher's Class Mailbox. If sending fails, an encrypted file downloads instead - send that file to your teacher." : 'Click below to save an encrypted file with your answers. Send the downloaded file to your teacher.'}</p>
-          <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 Save my work</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 Your responses are encrypted with your class key. Only your teacher can open the file.</p>
+          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">${_runtimeCopy.doneTitle}</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_mailboxTarget ? _runtimeCopy.encryptedMailboxDescription : _runtimeCopy.encryptedFileDescription}</p>
+          <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 ${_runtimeCopy.saveMyWork}</button>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 ${_runtimeCopy.encryptionHelp}</p>
         </div>
       ` : '';
       // Click handler — appended inside the existing DOMContentLoaded block.
@@ -41139,52 +41481,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     if (!btn || !keyEl) return;
                     var publicJwk;
                     try { publicJwk = JSON.parse(keyEl.textContent); }
-                    catch (e) { btn.disabled = true; btn.textContent = 'Save unavailable (key missing)'; return; }
+                    catch (e) { btn.disabled = true; btn.textContent = window.__alloflowText('saveUnavailable', 'Save unavailable (key missing)'); return; }
                     var identity = {};
                     try { var identityEl = document.getElementById('alloflow-submission-identity'); identity = identityEl ? JSON.parse(identityEl.textContent) : {}; }
                     catch (e) { identity = {}; }
                     var _esc = function(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
                     var _collectResponses = function() {
-                        var out = {};
-                        var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
-                        try {
-                            for (var i = 0; i < localStorage.length; i++) {
-                                var k = localStorage.key(i);
-                                if (!k) continue;
-                                for (var p = 0; p < prefixes.length; p++) {
-                                    if (k.indexOf(prefixes[p]) === 0) {
-                                        if (typeof _namedLegacyStorageKeys !== 'undefined' && _namedLegacyStorageKeys.has(k)) break;
-                                        out[k] = localStorage.getItem(k);
-                                        break;
-                                    }
-                                }
-                            }
-                        } catch (e) { /* private mode */ }
-                        // Radio MCQ selections (not auto-saved, captured live)
-                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) {
-                            if (q.querySelector('[data-allo-response-key]')) return;
-                            var checked = q.querySelector('input[type="radio"]:checked');
-                            if (checked) {
-                                var name = checked.getAttribute('name') || ('q' + idx);
-                                out['allo-mcq:' + name] = checked.value;
-                            }
-                        });
-                        var named = typeof _collectNamedResponses === 'function' ? _collectNamedResponses() : {};
-                        Object.keys(named).forEach(function(key) { out[key] = named[key]; });
-                        return out;
+                        return typeof _collectAllResponses === 'function' ? _collectAllResponses() : {};
                     };
                     btn.addEventListener('click', async function() {
                         if (typeof window.__alloflowEncryptSubmission !== 'function') {
-                            window.__alloflowNotify('Encryption not available in this browser. You may need a more modern browser to save submissions.', 'error');
+                            window.__alloflowNotify(window.__alloflowText('encryptionUnavailable', 'Encryption is not available in this browser. Use a newer browser to save submissions.'), 'error');
                             return;
                         }
-                        var urlParams = new URLSearchParams(window.location.search);
-                        var nicknameFromUrl = urlParams.get('nickname');
-                        var nickname = nicknameFromUrl || await window.__alloflowPrompt({ title: 'Save your work', description: 'Enter a name or nickname so your teacher can identify this submission.', label: 'Name or nickname', confirmLabel: 'Save work', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
+                        var learnerWorkspace = window.__alloflowLearnerWorkspace;
+                        var nickname = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : '';
+                        if (!nickname) nickname = await window.__alloflowPrompt({ title: window.__alloflowText('saveWorkTitle', 'Save your work'), description: window.__alloflowText('saveWorkDescription', 'Enter a name or nickname so your teacher can identify this submission.'), label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveWorkConfirm', 'Save work'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
                         if (!nickname) return;
                         nickname = String(nickname).trim().slice(0, 60);
                         if (!nickname) return;
-                        btn.disabled = true; btn.textContent = 'Saving…';
+                        btn.disabled = true; btn.textContent = window.__alloflowText('saving', 'Saving…');
                         try {
                             var payload = {
                                 nickname: nickname,
@@ -41193,6 +41509,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 responses: _collectResponses(),
                                 responseManifest: _collectResponseManifest(),
                                 schemaVersion: 3,
+                                storageVersion: 2,
+                                documentId: _documentId,
                                 ...(identity.classId ? { classId: identity.classId } : {}),
                                 ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}),
                                 ...(identity.dueDate ? { dueDate: identity.dueDate } : {})
@@ -41203,6 +41521,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 nickname: payload.nickname,
                                 docTitle: payload.docTitle,
                                 timestamp: payload.timestamp,
+                                documentId: payload.documentId,
                                 wrappedKey: encrypted.wrappedKey,
                                 iv: encrypted.iv,
                                 ciphertext: encrypted.ciphertext
@@ -41220,7 +41539,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             }
                             var mailboxDelivered = false;
                             if (mailboxTarget) {
-                                btn.textContent = 'Sending to your teacher...';
+                                btn.textContent = window.__alloflowText('sending', 'Sending to your teacher…');
                                 try {
                                     if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') throw new Error('secure random unavailable');
                                     var submissionEnvelope = JSON.stringify({
@@ -41230,6 +41549,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                         nickname: payload.nickname,
                                         docTitle: payload.docTitle,
                                         timestamp: payload.timestamp,
+                                        documentId: payload.documentId,
                                         wrappedKey: encrypted.wrappedKey,
                                         iv: encrypted.iv,
                                         ciphertext: encrypted.ciphertext,
@@ -41255,34 +41575,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                         receipt = parsedResp;
                                     }
                                     mailboxDelivered = true;
-                                    btn.textContent = String.fromCharCode(10003) + ' Sent to your teacher';
-                                    window.__alloflowNotify('Your encrypted work was sent to your teacher' + (receipt && receipt.filename ? ' (' + receipt.filename + ')' : '') + '.', 'success');
-                                    setTimeout(function() { btn.disabled = false; btn.textContent = 'Send my work again'; }, 1500);
+                                    btn.textContent = String.fromCharCode(10003) + ' ' + window.__alloflowText('sent', 'Sent to your teacher');
+                                    window.__alloflowNotify(window.__alloflowText('sentToTeacher', 'Your encrypted work was sent to your teacher') + (receipt && receipt.filename ? ' (' + receipt.filename + ')' : '') + '.', 'success');
+                                    setTimeout(function() { btn.disabled = false; btn.textContent = window.__alloflowText('sendAgain', 'Send my work again'); }, 1500);
                                 } catch (mailboxErr) {
                                     mailboxDelivered = false;
-                                    window.__alloflowNotify("Could not reach your teacher's Class Mailbox (" + (mailboxErr && mailboxErr.message ? mailboxErr.message : 'offline') + '). Saving an encrypted file instead - send it to your teacher.', 'warning');
+                                    window.__alloflowNotify(window.__alloflowText('mailboxFallback', 'Could not reach your teacher’s Class Mailbox. An encrypted file will download instead; send that file to your teacher.') + ' (' + (mailboxErr && mailboxErr.message ? mailboxErr.message : 'offline') + ')', 'warning');
                                 }
                             }
                             if (!mailboxDelivered) {
-                            var subHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Submission: ' + _esc(nickname) + ' — ' + _esc(payload.docTitle) + '</title><style>body{font-family:system-ui;max-width:600px;margin:3rem auto;padding:2rem;text-align:center;color:#334155}h1{color:#1e3a5f}.card{background:#f1f5f9;border-radius:12px;padding:24px;margin-top:24px}.tag{display:inline-block;background:#dbeafe;color:#1e40af;padding:4px 12px;border-radius:999px;font-size:0.85rem;font-weight:600}</style></head><body><h1>📝 Submission for ' + _esc(nickname) + '</h1><div class="card"><p><strong>Worksheet:</strong> ' + _esc(payload.docTitle) + '</p><p><strong>Saved:</strong> ' + new Date().toLocaleString() + '</p><p class="tag">🔐 Encrypted with class key</p><p style="font-size:0.85rem;color:#64748b;margin-top:16px;">This file contains the student\\'s encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt.</p></div><' + 'script type="application/json" id="alloflow-submission">' + JSON.stringify(fileJson).replace(/</g, '\\\\u003c') + '<' + '/script></body></html>';
+                            var subLang = String(document.documentElement.lang || 'en').replace(/[^a-zA-Z0-9-]/g, '').slice(0, 20) || 'en';
+                            var subDir = document.documentElement.dir === 'rtl' ? 'rtl' : 'ltr';
+                            var subHeading = window.__alloflowText('submissionFor', 'Submission for {name}', { name: nickname });
+                            var subDocId = String(payload.documentId || '').slice(0, 8);
+                            var subHtml = '<!DOCTYPE html><html lang="' + _esc(subLang) + '" dir="' + subDir + '"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="alloflow-document-id" content="' + _esc(payload.documentId) + '"><title>' + _esc(subHeading) + ' — ' + _esc(payload.docTitle) + '</title><style>:root{color-scheme:light dark}*{box-sizing:border-box}body{font-family:system-ui,-apple-system,sans-serif;margin:0;min-height:100vh;background:#f8fafc;color:#1e293b}main{max-width:650px;margin:0 auto;padding:3rem 1.25rem;text-align:center}h1{color:#0f3d63}.card{background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:24px;margin-top:24px;box-shadow:0 8px 24px rgba(15,23,42,.08)}.tag{display:inline-block;background:#dbeafe;color:#1e3a8a;padding:5px 12px;border-radius:999px;font-size:.85rem;font-weight:700}.muted{font-size:.85rem;color:#475569;margin-top:16px}.doc-id{font-family:ui-monospace,SFMono-Regular,monospace;overflow-wrap:anywhere}@media(prefers-color-scheme:dark){body{background:#020617;color:#f8fafc}h1{color:#f8fafc}.card{background:#1e293b;border-color:#64748b;box-shadow:none}.tag{background:#1d4ed8;color:#fff}.muted{color:#e2e8f0}}@media(forced-colors:active){.card,.tag{border:2px solid CanvasText}.tag{background:Canvas;color:CanvasText}}</style></head><body><main><h1>📝 ' + _esc(subHeading) + '</h1><div class="card"><p><strong>' + _esc(window.__alloflowText('worksheetLabel', 'Worksheet')) + ':</strong> ' + _esc(payload.docTitle) + '</p><p><strong>' + _esc(window.__alloflowText('savedLabel', 'Saved')) + ':</strong> ' + _esc(new Date().toLocaleString(subLang)) + '</p>' + (subDocId ? '<p class="doc-id"><strong>' + _esc(window.__alloflowText('resourceIdLabel', 'Resource ID')) + ':</strong> ' + _esc(subDocId) + '</p>' : '') + '<p class="tag">🔐 ' + _esc(window.__alloflowText('encryptedClassKey', 'Encrypted with class key')) + '</p><p class="muted">' + _esc(window.__alloflowText('encryptedFileHelp', 'This file contains encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt it.')) + '</p></div><' + 'script type="application/json" id="alloflow-submission">' + JSON.stringify(fileJson).replace(/</g, '\\\\u003c') + '<' + '/script></main></body></html>';
                             var blob = new Blob([subHtml], { type: 'text/html;charset=utf-8' });
                             var url2 = URL.createObjectURL(blob);
                             var a = document.createElement('a');
                             var safeName = nickname.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
                             var safeTitle = (payload.docTitle || 'worksheet').replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 40);
                             var dateStr = new Date().toISOString().slice(0, 10);
+                            var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
                             a.href = url2;
-                            a.download = safeName + '-' + safeTitle + '-' + dateStr + '.alloflow.html';
+                            a.download = safeName + '-' + safeTitle + docSuffix + '-' + dateStr + '.alloflow.html';
                             document.body.appendChild(a);
                             a.click();
                             setTimeout(function() { URL.revokeObjectURL(url2); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
-                            btn.textContent = '✓ Saved — download started';
-                            setTimeout(function() { btn.disabled = false; btn.textContent = '📝 Save my work again'; }, 1500);
+                            btn.textContent = '✓ ' + window.__alloflowText('savedDownload', 'Saved — download started');
+                            setTimeout(function() { btn.disabled = false; btn.textContent = '📝 ' + window.__alloflowText('saveAgain', 'Save my work again'); }, 1500);
                             }
                         } catch (e) {
                             btn.disabled = false;
-                            btn.textContent = '📝 Save my work';
-                            window.__alloflowNotify('Could not save your work: ' + (e && e.message ? e.message : 'unknown error'), 'error');
+                            btn.textContent = '📝 ' + window.__alloflowText('saveMyWork', 'Save my work');
+                            window.__alloflowNotify(window.__alloflowText('workSaveErrorPrefix', 'Could not save your work: ') + (e && e.message ? e.message : 'unknown error'), 'error');
                         }
                     });
                 })();
@@ -41363,12 +41688,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _headerColors = _accessibleHeaderColors(theme.headerBg) || { bg: theme.headerBg, fg: theme.headerText || '#ffffff' };
       const rawHtml = `
       <!DOCTYPE html>
-      <html lang="${({'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh'})[leveledTextLanguage || currentUiLanguage] || 'en'}" dir="${direction}" data-alloflow-base-theme="${_baseReadingTheme}"${_baseReadingTheme === 'dark' ? ' data-alloflow-theme="dark"' : ''}>
+      <html lang="${_documentLanguage}" dir="${direction}" data-alloflow-output="${isWorksheet ? 'worksheet' : 'interactive'}" data-alloflow-base-theme="${_baseReadingTheme}"${_baseReadingTheme === 'dark' ? ' data-alloflow-theme="dark"' : ''}>
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="alloflow-document-id" content="${_storageDocId}">
 
         <title>${String(lessonTopic || '').replace(/[<>&]/g, (c) => c === '<' ? '&lt;' : c === '>' ? '&gt;' : '&amp;').slice(0, 80) || pageTitle} — ${pageTitle}</title>
+        <script type="application/json" id="alloflow-runtime-copy">${_jsonForScript(_runtimeCopy)}</script>
         <script type="application/json" id="alloflow-interactive-object-profile">${_jsonForScript(_objectProfileManifest)}</script>
         ${_submissionPublicKeyJson}
         ${_submissionIdentityJson}
@@ -41578,8 +41905,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             }
           }
           .worksheet-header { margin-bottom: 40px; padding: 20px; border: 2px solid #e2e8f0; border-radius: 8px; background: #f8fafc; }
-          .header-row { display: flex; gap: 30px; }
-          .header-item { display: flex; align-items: flex-end; gap: 10px; }
+          .alloflow-worksheet-continuation { display: none; }
+          .header-row { display: flex; flex-wrap: wrap; gap: 20px 30px; }
+          .header-item { display: flex; align-items: flex-end; gap: 10px; min-width: min(220px, 100%); }
           .label { font-weight: bold; color: #475569; font-size: 1.1em; white-space: nowrap; }
           .line { border-bottom: 2px solid #cbd5e1; flex-grow: 1; width: 100%; min-width: 50px; }
           .page-break { page-break-before: always; border-top: 2px dashed #ccc; margin: 4rem 0; padding-top: 2rem; text-align: center; color: #999; }
@@ -41589,7 +41917,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           a { text-decoration: underline; }
           @media (forced-colors: active) { .section { border: 2px solid CanvasText; } th { border: 1px solid CanvasText; } }
           @media print {
-            body { padding: 0.5in; margin: 0; font-size: 11.5pt; line-height: 1.5; }
+            body { padding: 0; margin: 0; font-size: 11.5pt; line-height: 1.5; }
             /* Orphans/widows control — keeps a single word from being orphaned
                on a new line at the top of a printed page, or stranded at the
                bottom. Particularly important for dyslexic readers, who lose
@@ -41618,12 +41946,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
             .page-break:after { content: ""; }
             .section { page-break-inside: auto; break-inside: auto; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
-            .resource-header, .card, .quiz-box, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
+            .resource-header, .card, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
+            .quiz-box, .alloflow-dbq-synthesis-worksheet, .alloflow-ruled-response-long { page-break-inside: auto !important; break-inside: auto !important; }
+            .question.alloflow-question-long { page-break-inside: auto; break-inside: auto; }
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
             .interactive-blank { border-bottom: 1px solid #333; }
-            .alloflow-response-group, .alloflow-numeric-response, .alloflow-ruled-response { break-inside: avoid; page-break-inside: avoid; }
+            .alloflow-response-group, .alloflow-numeric-response, .alloflow-ruled-response:not(.alloflow-ruled-response-long) { break-inside: avoid; page-break-inside: avoid; }
             .worksheet-header { border: none; padding: 0; margin-bottom: 30px; }
             .line { border-bottom: 1px solid #000; }
             .export-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -41637,14 +41967,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             tfoot { display: table-footer-group; }
             thead th { position: static; }
             tr { page-break-inside: avoid; }
-            /* Print: drop the interactive max-height cap so PDFs print full-size. */
-            img { max-width: 100%; max-height: none; page-break-inside: avoid; }
+            table { max-width: 100%; }
+            th, td { overflow-wrap: anywhere; word-break: normal; }
+            pre, code, a { overflow-wrap: anywhere; word-break: break-word; }
+            /* Keep extreme portrait scans inside the physical printable box. */
+            img { max-width: 100%; max-height: ${_printImageMaxHeight}; object-fit: contain; page-break-inside: avoid; break-inside: avoid; }
+            /* Reserve caption room even before runtime classes are applied; the
+               uncaptioned class override restores the full printable height. */
+            figure img { max-height: ${_printFigureImageMaxHeight}; }
+            figure:not(.alloflow-captioned-figure) img { max-height: ${_printImageMaxHeight}; }
+            svg, canvas, video, iframe { max-width: 100% !important; page-break-inside: avoid; break-inside: avoid; }
+            svg, canvas, video { height: auto !important; max-height: ${_printImageMaxHeight}; object-fit: contain; }
+            iframe { max-height: ${_printImageMaxHeight}; }
             h1, h2, h3 { page-break-after: avoid; }
             audio { display: none; }
             a { color: inherit; text-decoration: none; }
+            a[data-alloflow-print-link-number]::after { content: " [" attr(data-alloflow-print-link-number) "]"; font-size: 0.8em; font-weight: 700; }
+            .alloflow-print-link-reference.alloflow-has-links { display: block !important; page-break-inside: auto; break-inside: auto; }
+            .alloflow-print-link-reference li { overflow-wrap: anywhere; word-break: break-word; margin-bottom: 0.35rem; }
           }
           .a11y-badge { margin-top: 2rem; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 0.75rem; color: #166534; }
           .a11y-badge strong { display: block; margin-bottom: 4px; }
+          .alloflow-print-link-reference { display: none; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #94a3b8; font-size: 0.82rem; }
           /* Tier 1 visual structure (May 13 2026): TOC + section markers +
              decorative terminators. TOC links underline on hover and get a
              visible focus ring (WCAG 2.4.7). Print mode strips the shadows
@@ -41728,8 +42072,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             html[data-alloflow-base-theme="dark"] .alloflow-cs-image-frame,
             html[data-alloflow-base-theme="dark"] .alloflow-cs-answer-card { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           }
-          /* Zero the browser-default page box margin so it does not stack with the body's 0.5in print padding (~1in combined otherwise). */
-          @page { margin: 0; }
+          /* Real page-box margins repeat on every sheet; body padding does not reliably
+             repeat after browser page fragmentation and can leave later pages edge-clipped. */
+          @page { margin: ${_printPageMargin}; }
           /* Skip-to-content link: reveal it when keyboard-focused. The link is hidden via an inline left:-9999px, so this override needs !important to beat the inline style. */
           a.sr-only:focus { position: fixed !important; left: 8px !important; top: 8px !important; width: auto !important; height: auto !important; padding: 8px 14px !important; overflow: visible !important; background: #1e293b; color: #ffffff; border-radius: 6px; z-index: 100000; font: 600 14px/1.2 system-ui, -apple-system, sans-serif; }
 
@@ -42117,6 +42462,132 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           html[data-alloflow-theme="hc"] #alloflow-savejson-cta button { background: #000000 !important; color: #ffff00 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] #alloflow-reader-line { background: rgba(255,255,0,0.38); border-color: #000000; }
           html[data-alloflow-theme="hc"] .alloflow-reader-mask { background: rgba(0,0,0,0.72); }
+          /* Final worksheet-only print layer. Dark and low-glare modes remain
+             unchanged in the saved HTML; paper uses economical white structural
+             surfaces and dark ink. Diagram/activity interiors are excluded from
+             neutralization and retain their instructional color coding. */
+          @media print {
+            html[data-alloflow-output="worksheet"],
+            body[data-alloflow-output="worksheet"] {
+              color-scheme: light !important;
+              background: #ffffff !important;
+              color: #111827 !important;
+              -webkit-print-color-adjust: economy !important;
+              print-color-adjust: economy !important;
+            }
+            body[data-alloflow-output="worksheet"] :is(
+              .export-header, .section, .resource-header, .worksheet-header,
+              .alloflow-toc, .quiz-box, .question, .reflection-block, details,
+              .a11y-badge, .brand-header, .brand-footer, footer[role="contentinfo"]
+            ) {
+              background: #ffffff !important;
+              background-image: none !important;
+              color: #111827 !important;
+              border-color: #64748b !important;
+              box-shadow: none !important;
+              -webkit-print-color-adjust: economy !important;
+              print-color-adjust: economy !important;
+            }
+            body[data-alloflow-output="worksheet"] .export-header {
+              border: 0 !important;
+              border-bottom: 2px solid #334155 !important;
+              border-radius: 0 !important;
+              padding: 12px 0 !important;
+            }
+            body[data-alloflow-output="worksheet"] :is(
+              .export-header .export-title, .export-header .export-meta,
+              .section > h1, .section > h2, .section > h3, .resource-header,
+              .quiz-box h2, .quiz-box h3, .quiz-box h4,
+              details summary, details summary h3, .reflection-block > p:first-child,
+              .alloflow-toc h2, .alloflow-toc a, .a11y-badge strong,
+              footer[role="contentinfo"]
+            ) { color: #111827 !important; }
+            body[data-alloflow-output="worksheet"] :is(
+              th, td, tbody tr, tbody tr:nth-child(even),
+              .alloflow-glossary-section thead tr,
+              .alloflow-glossary-section tbody tr,
+              .alloflow-glossary-section tbody tr:nth-child(even)
+            ) {
+              background: #ffffff !important;
+              background-image: none !important;
+              color: #111827 !important;
+              border-color: #64748b !important;
+              -webkit-print-color-adjust: economy !important;
+              print-color-adjust: economy !important;
+            }
+            body[data-alloflow-output="worksheet"] :is(
+              .alloflow-glossary-section tbody td,
+              .alloflow-glossary-section tbody .gloss-term,
+              .alloflow-faq-item summary, .alloflow-faq-item summary h3,
+              .alloflow-faq-answer
+            ) { color: #111827 !important; }
+            body[data-alloflow-output="worksheet"] .interactive-textarea {
+              background-color: #ffffff !important;
+              background-image: linear-gradient(#cbd5e1 1px, transparent 1px) !important;
+              color: #111827 !important;
+              border-color: #64748b !important;
+              -webkit-print-color-adjust: economy !important;
+              print-color-adjust: economy !important;
+            }
+            body[data-alloflow-output="worksheet"] :is(
+              input.alloflow-response-input, .alloflow-response-select
+            ) {
+              background: #ffffff !important;
+              color: #111827 !important;
+              border-color: #64748b !important;
+            }
+            body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation {
+              display: flex !important;
+              align-items: flex-end;
+              flex-wrap: wrap;
+              gap: 8px 20px;
+              margin: 0 0 10px;
+              padding: 0 0 7px;
+              border-bottom: 1px solid #94a3b8;
+              color: #111827 !important;
+              font-size: 9.5pt;
+              line-height: 1.2;
+              break-inside: avoid;
+              page-break-inside: avoid;
+              break-after: avoid;
+              page-break-after: avoid;
+            }
+            body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation-field {
+              display: flex;
+              align-items: flex-end;
+              gap: 6px;
+              flex: 1 1 135px;
+            }
+            body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation-line {
+              display: inline-block;
+              min-width: 72px;
+              flex: 1 1 72px;
+              border-bottom: 1px solid #111827;
+              height: 1em;
+            }
+            body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation-topic {
+              flex: 2 1 240px;
+              overflow-wrap: anywhere;
+            }
+            body[data-alloflow-output="worksheet"] :is(
+              .venn-print-wrapper, .flowchart-print-wrapper, .ce-print-wrapper,
+              .ps-print-wrapper, .tchart-print-wrapper, .fishbone-print-wrapper,
+              .cmap-print-wrapper, .mindmap-print-wrapper, .palace-print-wrapper,
+              .cspace-print-wrapper, .outline-print-wrapper,
+              .alloflow-cs-categories, .alloflow-cs-strips, .alloflow-tl-strips
+            ),
+            body[data-alloflow-output="worksheet"] :is(
+              .venn-print-wrapper, .flowchart-print-wrapper, .ce-print-wrapper,
+              .ps-print-wrapper, .tchart-print-wrapper, .fishbone-print-wrapper,
+              .cmap-print-wrapper, .mindmap-print-wrapper, .palace-print-wrapper,
+              .cspace-print-wrapper, .outline-print-wrapper,
+              .alloflow-cs-categories, .alloflow-cs-strips, .alloflow-tl-strips
+            ) * {
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+          }
+
           /* Keep the banner title at its palette-verified foreground in every
              reader mode. Generic h1 theme rules used to override this inline
              color, leaving the title gray or dark against the banner. */
@@ -42124,13 +42595,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .export-header .export-meta { color: ${_headerColors.fg} !important; opacity: 1 !important; }
         </style>
       </head>
-      <body>
-        <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">Skip to content</a>
+      <body${isWorksheet ? ' data-alloflow-output="worksheet"' : ''}>
+        <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">${_runtimeCopy.skipToContent}</a>
         ${_brandHeaderHTML}
-        <aside class="alloflow-reading-tools-shell expanded" aria-label="Reading and annotation tools">
+        <aside class="alloflow-reading-tools-shell expanded" aria-label="${_runtimeCopy.readingToolsLabel}">
         <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
         <button type="button" class="alloflow-tools-toggle" aria-expanded="true" aria-controls="alloflow-tools-panel">
-          <span>Tools</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
+          <span>${_runtimeCopy.toolsLabel}</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
         </button>
         <div id="alloflow-tools-panel" class="alloflow-tools-panel">
         <div class="alloflow-reading-tools">
@@ -42223,6 +42694,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // These helpers provide announced feedback and keyboard-safe text entry.
           (function () {
             var promptSequence = 0;
+            var runtimeCopy = {};
+            try {
+              var runtimeCopyEl = document.getElementById('alloflow-runtime-copy');
+              runtimeCopy = runtimeCopyEl && runtimeCopyEl.textContent ? JSON.parse(runtimeCopyEl.textContent) : {};
+            } catch (e) { runtimeCopy = {}; }
+            var documentId = '';
+            try {
+              var documentIdEl = document.querySelector('meta[name="alloflow-document-id"]');
+              documentId = String((documentIdEl && documentIdEl.content) || '').trim().toLowerCase();
+              if (!/^[a-f0-9]{32}$/.test(documentId)) documentId = '';
+            } catch (e) { documentId = ''; }
+            window.__alloflowDocumentId = documentId;
+            window.__alloflowText = function (key, fallback, variables) {
+              var value = Object.prototype.hasOwnProperty.call(runtimeCopy, key) ? runtimeCopy[key] : fallback;
+              value = String(value == null ? '' : value);
+              var replacements = variables && typeof variables === 'object' ? variables : {};
+              return value.replace(/\{([a-zA-Z0-9_]+)\}/g, function (match, name) {
+                return Object.prototype.hasOwnProperty.call(replacements, name) ? String(replacements[name]) : match;
+              });
+            };
             window.__alloflowNotify = function (message, type) {
               try {
                 if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') {
@@ -42343,6 +42834,58 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 input.focus(); input.select();
               });
             };
+            // One learner workspace is shared by answers and annotations. A
+            // nickname link is an explicit scope and never prompts. An
+            // unscoped file asks before either runtime reads browser storage;
+            // declining creates a one-time workspace with persistence off.
+            window.__alloflowGetLearnerWorkspace = (function () {
+              var workspacePromise = null;
+              function publish(nickname, persist) {
+                var workspace = Object.freeze({
+                  nickname: String(nickname || '').trim().slice(0, 60),
+                  persist: persist === true
+                });
+                window.__alloflowLearnerWorkspace = workspace;
+                return workspace;
+              }
+              return function () {
+                if (workspacePromise) return workspacePromise;
+                // Print/PDF preparation must never block on a learner prompt.
+                // It is a non-persistent rendering pass, so publish the same
+                // one-time workspace used when a learner declines autosave.
+                if (window.__alloflowPrintExport === true) {
+                  workspacePromise = Promise.resolve(publish('', false));
+                  return workspacePromise;
+                }
+                var linkedNickname = '';
+                try { linkedNickname = String(new URLSearchParams(window.location.search).get('nickname') || '').trim().slice(0, 60); } catch (e) {}
+                if (linkedNickname) {
+                  workspacePromise = Promise.resolve(publish(linkedNickname, true));
+                  return workspacePromise;
+                }
+                workspacePromise = new Promise(function (resolve) {
+                  function chooseWorkspace() {
+                    window.__alloflowPrompt({
+                      title: window.__alloflowText('workspaceTitle', 'Who is working on this resource?'),
+                      description: window.__alloflowText('workspaceDescription', 'Enter a name or nickname to keep autosaved answers and annotations separate on a shared device. You can also use this resource once without storing your work in this browser.'),
+                      label: window.__alloflowText('nameLabel', 'Name or nickname'),
+                      confirmLabel: window.__alloflowText('continueAutosave', 'Continue with autosave'),
+                      cancelLabel: window.__alloflowText('useOnce', 'Use once without autosave'),
+                      maxLength: 60,
+                      requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.')
+                    }).then(function (value) {
+                      var nickname = String(value || '').trim().slice(0, 60);
+                      var workspace = publish(nickname, !!nickname);
+                      if (!workspace.persist) window.__alloflowNotify(window.__alloflowText('oneTimeNotice', 'One-time session: browser autosave is off. You can still download your answers and annotations.'), 'info');
+                      resolve(workspace);
+                    });
+                  }
+                  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chooseWorkspace, { once: true });
+                  else chooseWorkspace();
+                });
+                return workspacePromise;
+              };
+            })();
           })();
         </script>
         <script>
@@ -42796,16 +43339,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           (function () {
             // Storage key — same scheme as the existing interactive-textarea
             // autosave so different exports don't collide.
-            function __annoInit() {
+            async function __annoInit() {
+            var _learnerWorkspace = await window.__alloflowGetLearnerWorkspace();
+            var _workspacePersist = !!(_learnerWorkspace && _learnerWorkspace.persist);
             var docTitle = (document.title || 'doc').slice(0, 40);
             var bodyLen = (document.body.textContent || '').length;
-            // Per-student namespace on SHARED devices: localStorage is per-browser-profile, so
-            // without this two students on one device see/edit each other's annotations. Use the
-            // export's existing ?nickname= convention; absent (single-student) → unscoped key,
-            // byte-identical to before, so no saved notes are orphaned. (sec-annot-storekey)
-            var _annoNick = '';
-            try { _annoNick = String(new URLSearchParams(window.location.search).get('nickname') || '').trim().slice(0, 60); } catch (e) {}
-            var STORE_KEY = 'alloflow-annotations|' + docTitle + '|' + bodyLen + (_annoNick ? '|u:' + _annoNick : '');
+            // Persistent learner work always has an explicit nickname scope.
+            // A one-time workspace deliberately has no storage key, so legacy
+            // unscoped notes remain untouched and cannot be restored here.
+            var _annoNick = _workspacePersist ? _learnerWorkspace.nickname : '';
+            var _annoDocId = String(window.__alloflowDocumentId || '');
+            var _legacyAnnoKey = _workspacePersist ? ('alloflow-annotations|' + docTitle + '|' + bodyLen + '|u:' + _annoNick) : '';
+            var STORE_KEY = (_workspacePersist && _annoDocId) ? ('alloflow-annotations:v2|' + _annoDocId + '|u:' + encodeURIComponent(_annoNick)) : '';
+            var _annoMigrationClaimKey = _legacyAnnoKey ? ('alloflow-storage-migration:v2:annotations:' + encodeURIComponent(_legacyAnnoKey)) : '';
 
             // Load teacher annotations from embedded script tag.
             var teacherAnno = [];
@@ -42828,7 +43374,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             // Load student annotations from localStorage.
             var studentAnno = [];
             try {
-              var saved = localStorage.getItem(STORE_KEY);
+              var saved = STORE_KEY ? localStorage.getItem(STORE_KEY) : null;
+              if (saved === null && STORE_KEY && _legacyAnnoKey) {
+                var legacySaved = localStorage.getItem(_legacyAnnoKey);
+                var priorClaim = _annoMigrationClaimKey ? localStorage.getItem(_annoMigrationClaimKey) : null;
+                if (legacySaved !== null && (!priorClaim || priorClaim === _annoDocId)) {
+                  saved = legacySaved;
+                  localStorage.setItem(STORE_KEY, legacySaved);
+                  if (_annoMigrationClaimKey) localStorage.setItem(_annoMigrationClaimKey, _annoDocId);
+                }
+              }
               if (saved) {
                 var arr = JSON.parse(saved);
                 if (Array.isArray(arr)) studentAnno = arr;
@@ -42836,6 +43391,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             } catch (e) {}
 
             function saveStudent() {
+              if (!STORE_KEY) return;
               try { localStorage.setItem(STORE_KEY, JSON.stringify(studentAnno)); } catch (e) {}
             }
 
@@ -43628,8 +44184,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             var noteColor = 'yellow';
             var hlColor = 'yellow';
             try {
-              var savedNc = localStorage.getItem('alloflow-anno-note-color');
-              var savedHc = localStorage.getItem('alloflow-anno-hl-color');
+              var savedNc = _workspacePersist ? localStorage.getItem('alloflow-anno-note-color') : null;
+              var savedHc = _workspacePersist ? localStorage.getItem('alloflow-anno-hl-color') : null;
               if (savedNc && ['yellow','green','blue','pink'].indexOf(savedNc) !== -1) noteColor = savedNc;
               if (savedHc && ['yellow','green','blue','pink'].indexOf(savedHc) !== -1) hlColor = savedHc;
             } catch (e) {}
@@ -43637,8 +44193,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             var drawColor = 'red';
             var drawWidth = 4;
             try {
-              var savedDc = localStorage.getItem('alloflow-anno-draw-color');
-              var savedDw = parseInt(localStorage.getItem('alloflow-anno-draw-width'), 10);
+              var savedDc = _workspacePersist ? localStorage.getItem('alloflow-anno-draw-color') : null;
+              var savedDw = _workspacePersist ? parseInt(localStorage.getItem('alloflow-anno-draw-width'), 10) : NaN;
               if (savedDc && Object.prototype.hasOwnProperty.call(DRAW_COLORS, savedDc)) drawColor = savedDc;
               if ([2, 4, 8].indexOf(savedDw) !== -1) drawWidth = savedDw;
             } catch (e) {}
@@ -44368,28 +44924,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               var ncBtn = e.target && e.target.closest && e.target.closest('[data-rt-note-color]');
               if (ncBtn) {
                 noteColor = ncBtn.getAttribute('data-rt-note-color');
-                try { localStorage.setItem('alloflow-anno-note-color', noteColor); } catch (er) {}
+                if (_workspacePersist) { try { localStorage.setItem('alloflow-anno-note-color', noteColor); } catch (er) {} }
                 applyColorSwatchPressed();
                 return;
               }
               var hcBtn = e.target && e.target.closest && e.target.closest('[data-rt-hl-color]');
               if (hcBtn) {
                 hlColor = hcBtn.getAttribute('data-rt-hl-color');
-                try { localStorage.setItem('alloflow-anno-hl-color', hlColor); } catch (er) {}
+                if (_workspacePersist) { try { localStorage.setItem('alloflow-anno-hl-color', hlColor); } catch (er) {} }
                 applyColorSwatchPressed();
                 return;
               }
               var dcBtn = e.target && e.target.closest && e.target.closest('[data-rt-draw-color]');
               if (dcBtn) {
                 drawColor = dcBtn.getAttribute('data-rt-draw-color');
-                try { localStorage.setItem('alloflow-anno-draw-color', drawColor); } catch (er) {}
+                if (_workspacePersist) { try { localStorage.setItem('alloflow-anno-draw-color', drawColor); } catch (er) {} }
                 applyColorSwatchPressed();
                 return;
               }
               var dwBtn = e.target && e.target.closest && e.target.closest('[data-rt-draw-width]');
               if (dwBtn) {
                 drawWidth = parseInt(dwBtn.getAttribute('data-rt-draw-width'), 10) || 4;
-                try { localStorage.setItem('alloflow-anno-draw-width', String(drawWidth)); } catch (er) {}
+                if (_workspacePersist) { try { localStorage.setItem('alloflow-anno-draw-width', String(drawWidth)); } catch (er) {} }
                 applyColorSwatchPressed();
                 return;
               }
@@ -44518,34 +45074,79 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             ${teacherTOC}
             ${teacherContent || `<p>${noTeacherMsg}</p>`}
         </div>` : ''}
-        <div class="a11y-badge" role="note" aria-label="Accessibility information">
-          <strong>♿ Accessibility Features</strong>
-          This document was built with accessibility in mind: semantic HTML structure, heading hierarchy, table header scope, landmark regions, a language attribute, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim — verify with veraPDF / PAC or an accessibility checker before relying on it for compliance. Created with AlloFlow.
+        <section id="alloflow-print-link-reference" class="alloflow-print-link-reference" aria-label="${_runtimeCopy.printLinksTitle}">
+          <h2>${_runtimeCopy.printLinksTitle}</h2><ol></ol>
+        </section>
+        <div class="a11y-badge" role="note" aria-label="${_runtimeCopy.accessibilityInfoLabel}">
+          <strong>♿ ${_runtimeCopy.accessibilityTitle}</strong>
+          ${_runtimeCopy.accessibilityDescription}
         </div>
         </main>
-        <aside class="alloflow-export-save-tools" aria-label="Save your work">
+        <aside class="alloflow-export-save-tools" aria-label="${_runtimeCopy.saveToolsLabel}">
         ${_submissionSaveButton}
         <div id="alloflow-savejson-cta" style="display:none;margin:32px auto 16px;text-align:center;padding:18px 20px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;max-width:600px;break-inside:avoid;page-break-inside:avoid;">
-          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">Done with your work?</p>
-          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">Save a file of your answers and send it to your teacher.</p>
-          <button type="button" id="alloflow-savejson-btn" style="padding:10px 22px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(79,70,229,0.22);">&#128190; Save my answers</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">Saves a .json file your teacher opens in AlloFlow.</p>
+          <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">${_runtimeCopy.doneTitle}</p>
+          <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_runtimeCopy.answerFileDescription}</p>
+          <button type="button" id="alloflow-savejson-btn" style="padding:10px 22px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(79,70,229,0.22);">&#128190; ${_runtimeCopy.saveMyAnswers}</button>
+          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">${_runtimeCopy.answerFileHelp}</p>
         </div>
         </aside>
         <footer role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
+            document.addEventListener('DOMContentLoaded', async () => {
+                // Runtime classes replace print-critical :has() selectors so
+                // older browsers retain safe page breaks and caption reserves.
+                document.querySelectorAll('.alloflow-ruled-response-long').forEach((response) => {
+                    const question = response.closest('.question');
+                    if (question) question.classList.add('alloflow-question-long');
+                });
+                document.querySelectorAll('figure').forEach((figure) => {
+                    if (figure.querySelector('figcaption')) figure.classList.add('alloflow-captioned-figure');
+                });
+                // Paper copies cannot preserve clickable destinations. Number
+                // external links in place and add a deduplicated print-only list.
+                const printLinkReference = document.getElementById('alloflow-print-link-reference');
+                const printLinkList = printLinkReference ? printLinkReference.querySelector('ol') : null;
+                if (printLinkReference && printLinkList) {
+                    const printLinkNumbers = new Map();
+                    document.querySelectorAll('#main-export-content a[href]').forEach((link) => {
+                        const rawHref = String(link.getAttribute('href') || '').trim();
+                        if (!rawHref || rawHref.charAt(0) === '#') return;
+                        let absolute;
+                        try { absolute = new URL(rawHref, document.baseURI); } catch (e) { return; }
+                        if (absolute.protocol !== 'http:' && absolute.protocol !== 'https:') return;
+                        const href = absolute.href;
+                        let number = printLinkNumbers.get(href);
+                        if (!number) {
+                            if (printLinkNumbers.size >= 40) return;
+                            number = printLinkNumbers.size + 1;
+                            printLinkNumbers.set(href, number);
+                            const item = document.createElement('li');
+                            const label = String(link.textContent || '').replace(/\s+/g, ' ').trim();
+                            item.textContent = label && label !== href ? label + ' — ' + href : href;
+                            printLinkList.appendChild(item);
+                        }
+                        link.setAttribute('data-alloflow-print-link-number', String(number));
+                    });
+                    if (printLinkNumbers.size > 0) printLinkReference.classList.add('alloflow-has-links');
+                }
                 const textareas = document.querySelectorAll('.interactive-textarea');
                 // Stable key prefix per document: title + a hash of body text length
                 // makes the autosave bucket unique to this resource without leaking
                 // across docs. Falls back to 'doc' if title is empty.
-                // Per-student namespace on shared devices (same ?nickname= convention as the
-                // annotation STORE_KEY; absent → unscoped, byte-identical to before). (sec-annot-storekey)
-                let _docNick = '';
-                try { _docNick = String(new URLSearchParams(window.location.search).get('nickname') || '').trim().slice(0, 60); } catch (e) {}
-                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length + (_docNick ? '|u:' + _docNick : '');
+                // Answers and annotations await the same single-shot learner
+                // choice. Persistent work always has a nickname namespace;
+                // one-time work uses live controls only and never touches its
+                // legacy unscoped storage bucket.
+                const _learnerWorkspace = await window.__alloflowGetLearnerWorkspace();
+                const _documentId = String(window.__alloflowDocumentId || '');
+                const _storageEnabled = !!(_learnerWorkspace && _learnerWorkspace.persist && /^[a-f0-9]{32}$/.test(_documentId));
+                const _docNick = _storageEnabled ? _learnerWorkspace.nickname : '';
+                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length + (_storageEnabled ? '|u:' + _docNick : '|one-time');
+                const _v2ResponsePrefix = _storageEnabled ? ('allo-response:v2:' + _documentId + ':u:' + encodeURIComponent(_docNick) + ':') : '';
+                const _responseMigrationClaimKey = _storageEnabled ? ('alloflow-storage-migration:v2:responses:' + encodeURIComponent(_docKey)) : '';
                 // Hash a string to a short stable id for use in storage keys.
                 const _hash = (s) => {
                     let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
@@ -44584,6 +45185,29 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     if (!_responseGroups[key]) _responseGroups[key] = [];
                     _responseGroups[key].push(control);
                 });
+                const _legacyNamedHashOwners = Object.create(null);
+                Object.keys(_responseGroups).forEach((key) => {
+                    const hash = _hash(key);
+                    _legacyNamedHashOwners[hash] = (_legacyNamedHashOwners[hash] || 0) + 1;
+                });
+                const _readV2WithLegacy = (v2Key, legacyKey, legacyIsUnambiguous) => {
+                    if (!_storageEnabled || !v2Key) return null;
+                    try {
+                        const current = localStorage.getItem(v2Key);
+                        // Empty string is an intentional v2 tombstone. Returning
+                        // it prevents a cleared answer from reviving from v1.
+                        if (current !== null) return current;
+                        if (!legacyIsUnambiguous || !legacyKey) return null;
+                        const legacy = localStorage.getItem(legacyKey);
+                        if (legacy === null) return null;
+                        const claim = _responseMigrationClaimKey ? localStorage.getItem(_responseMigrationClaimKey) : null;
+                        if (claim && claim !== _documentId) return null;
+                        localStorage.setItem(v2Key, legacy);
+                        if (_responseMigrationClaimKey) localStorage.setItem(_responseMigrationClaimKey, _documentId);
+                        return legacy;
+                    } catch (e) { return null; }
+                };
+                const _namedResponseStorageKey = (key) => _v2ResponsePrefix + 'named:' + encodeURIComponent(String(key == null ? '' : key));
                 const _responseValue = (controls) => {
                     if (!controls || !controls.length) return '';
                     const type = String(controls[0].type || '').toLowerCase();
@@ -44595,8 +45219,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     return String(controls[0].value == null ? '' : controls[0].value);
                 };
                 const _restoreResponseGroup = (key, controls) => {
-                    let saved = '';
-                    try { saved = localStorage.getItem('allo-response:' + _docKey + ':' + _hash(key)) || ''; } catch (e) {}
+                    if (!_storageEnabled) return;
+                    const legacyHash = _hash(key);
+                    const saved = _readV2WithLegacy(
+                        _namedResponseStorageKey(key),
+                        'allo-response:' + _docKey + ':' + legacyHash,
+                        _legacyNamedHashOwners[legacyHash] === 1
+                    ) || '';
                     if (!saved) return;
                     const type = String(controls[0]?.type || '').toLowerCase();
                     if (type === 'checkbox') {
@@ -44610,12 +45239,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     }
                 };
                 const _saveResponseGroup = (key) => {
+                    if (!_storageEnabled) return;
                     const controls = _responseGroups[key] || [];
                     const value = _responseValue(controls);
                     try {
-                        const storageKey = 'allo-response:' + _docKey + ':' + _hash(key);
-                        if (value && value !== '[]') localStorage.setItem(storageKey, value);
-                        else localStorage.removeItem(storageKey);
+                        const storageKey = _namedResponseStorageKey(key);
+                        localStorage.setItem(storageKey, value && value !== '[]' ? value : '');
                     } catch (e) {}
                 };
                 const _responseTimers = {};
@@ -44663,10 +45292,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         if (!control) return;
                         const questionEl = control.closest ? control.closest('.question') : null;
                         const keyPart = clean(String(key).split(':').pop(), 60).toLowerCase();
-                        let responseType = questionEl ? clean(questionEl.getAttribute('data-item-type'), 60).toLowerCase() : '';
+                        let responseType = clean(control.getAttribute('data-allo-response-type'), 60).toLowerCase();
+                        if (!responseType) responseType = questionEl ? clean(questionEl.getAttribute('data-item-type'), 60).toLowerCase() : '';
                         if (!responseType && key.indexOf(':reflection:') >= 0) responseType = 'reflection';
                         if (!responseType) responseType = control.tagName === 'TEXTAREA' ? 'free-response' : 'structured-response';
-                        let question = '';
+                        let question = clean(control.getAttribute('data-allo-question'), 500);
                         if (questionEl) {
                             const prompt = questionEl.querySelector('p strong');
                             if (prompt) question = clean(prompt.textContent, 500).replace(/^\\d+\\.\\s*/, '');
@@ -44697,23 +45327,43 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             key: _responsePayloadKey(key),
                             question: question || 'Response',
                             responseType: responseType,
-                            partLabel: partLabels[keyPart] || clean(keyPart.replace(/[-_]+/g, ' '), 100) || 'Response',
+                            partLabel: clean(control.getAttribute('data-allo-part-label'), 100) || partLabels[keyPart] || clean(keyPart.replace(/[-_]+/g, ' '), 100) || 'Response',
                             valueLabels: valueLabels,
                             manualReview: aiFreeformTypes.indexOf(responseType) === -1
                         });
                     });
-                    return { schemaVersion: 1, entries: entries };
+                    return { schemaVersion: 1, storageVersion: 2, documentId: _documentId, entries: entries };
                 };
                 try {
                     window.__alloflowSubmissionResponseContract = {
                         schemaVersion: 1,
+                        storageVersion: 2,
+                        documentId: _documentId,
                         collectNamedResponses: _collectNamedResponses,
                         collectManifest: _collectResponseManifest
                     };
                 } catch (e) {}
                 // Default soft cap. Honors any explicit maxlength on the textarea.
                 const _DEFAULT_MAX = 1500;
-                const _namedLegacyStorageKeys = new Set();
+                const _legacyStorageKey = (control, prefix, fallback, idx) => {
+                    const labelKey = (control.getAttribute('aria-label') || control.getAttribute('placeholder') || (fallback + idx)).slice(0, 80);
+                    return prefix + _docKey + ':' + _hash(labelKey);
+                };
+                const _v2LegacyStorageKey = (control, kind, fallback, idx) => {
+                    const labelKey = (control.getAttribute('aria-label') || control.getAttribute('placeholder') || (fallback + idx)).slice(0, 80);
+                    return _v2ResponsePrefix + 'legacy:' + encodeURIComponent(kind + ':' + idx + ':' + labelKey);
+                };
+                const _legacyStorageOwners = Object.create(null);
+                Array.from(textareas || []).forEach((control, idx) => {
+                    if (control.hasAttribute('data-allo-response-key')) return;
+                    const key = _legacyStorageKey(control, 'allo-ta:', 'ta', idx);
+                    _legacyStorageOwners[key] = (_legacyStorageOwners[key] || 0) + 1;
+                });
+                Array.from(document.querySelectorAll('.interactive-blank')).forEach((control, idx) => {
+                    if (control.hasAttribute('data-allo-response-key')) return;
+                    const key = _legacyStorageKey(control, 'allo-bx:', 'bx', idx);
+                    _legacyStorageOwners[key] = (_legacyStorageOwners[key] || 0) + 1;
+                });
                 textareas.forEach((tx, idx) => {
                     // ── Auto-resize (existing behavior) ──
                     tx.style.height = 'auto';
@@ -44721,11 +45371,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     // ── Build a stable storage key per textarea ──
                     const labelKey = (tx.getAttribute('aria-label') || tx.getAttribute('placeholder') || ('ta' + idx)).slice(0, 80);
                     const storageKey = 'allo-ta:' + _docKey + ':' + _hash(labelKey);
+                    const v2StorageKey = _v2LegacyStorageKey(tx, 'textarea', 'ta', idx);
                     const hasNamedResponse = tx.hasAttribute('data-allo-response-key');
-                    if (hasNamedResponse) _namedLegacyStorageKeys.add(storageKey);
                     // ── Restore prior value (autosave) ──
                     try {
-                        const saved = hasNamedResponse ? '' : localStorage.getItem(storageKey);
+                        const saved = (!_storageEnabled || hasNamedResponse) ? null : _readV2WithLegacy(v2StorageKey, storageKey, _legacyStorageOwners[storageKey] === 1);
                         if (saved && !tx.value) {
                             tx.value = saved;
                             tx.style.height = 'auto';
@@ -44756,12 +45406,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         this.style.height = (this.scrollHeight) + 'px';
                         updateCounter();
                         // debounce save 400ms — feels instant but avoids a write per keystroke
-                        if (!hasNamedResponse) {
+                        if (!hasNamedResponse && _storageEnabled) {
                             if (saveTimer) clearTimeout(saveTimer);
                             saveTimer = setTimeout(() => {
                                 try {
-                                    if (tx.value) localStorage.setItem(storageKey, tx.value);
-                                    else localStorage.removeItem(storageKey);
+                                    localStorage.setItem(v2StorageKey, tx.value || '');
                                 } catch (e) { /* swallow */ }
                             }, 400);
                         }
@@ -44851,25 +45500,70 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 document.querySelectorAll('.interactive-blank').forEach((bx, idx) => {
                     const labelKey = (bx.getAttribute('aria-label') || bx.getAttribute('placeholder') || ('bx' + idx)).slice(0, 80);
                     const storageKey = 'allo-bx:' + _docKey + ':' + _hash(labelKey);
+                    const v2StorageKey = _v2LegacyStorageKey(bx, 'blank', 'bx', idx);
                     const hasNamedResponse = bx.hasAttribute('data-allo-response-key');
-                    if (hasNamedResponse) _namedLegacyStorageKeys.add(storageKey);
                     try {
-                        const saved = hasNamedResponse ? '' : localStorage.getItem(storageKey);
+                        const saved = (!_storageEnabled || hasNamedResponse) ? null : _readV2WithLegacy(v2StorageKey, storageKey, _legacyStorageOwners[storageKey] === 1);
                         if (saved && !bx.value) bx.value = saved;
                     } catch (e) {}
                     let saveTimer = null;
                     bx.addEventListener('input', function() {
-                        if (!hasNamedResponse) {
+                        if (!hasNamedResponse && _storageEnabled) {
                             if (saveTimer) clearTimeout(saveTimer);
                             saveTimer = setTimeout(() => {
                                 try {
-                                    if (bx.value) localStorage.setItem(storageKey, bx.value);
-                                    else localStorage.removeItem(storageKey);
+                                    localStorage.setItem(v2StorageKey, bx.value || '');
                                 } catch (e) {}
                             }, 400);
                         }
                     });
                 });
+                // Submission files must reflect what is on screen now, not the
+                // last debounced localStorage write. This also keeps Save usable
+                // in private/storage-denied browsers and avoids stale cleared
+                // answers leaking into a submission.
+                const _collectAllResponses = () => {
+                    const out = {};
+                    Array.from(textareas || []).slice(0, 500).forEach((tx, idx) => {
+                        if (tx.hasAttribute('data-allo-response-key')) return;
+                        const value = String(tx.value == null ? '' : tx.value);
+                        if (value) out[_legacyStorageKey(tx, 'allo-ta:', 'ta', idx)] = value;
+                    });
+                    Array.from(document.querySelectorAll('.interactive-blank')).slice(0, 500).forEach((bx, idx) => {
+                        if (bx.hasAttribute('data-allo-response-key')) return;
+                        const value = String(bx.value == null ? '' : bx.value);
+                        if (value) out[_legacyStorageKey(bx, 'allo-bx:', 'bx', idx)] = value;
+                    });
+                    document.querySelectorAll('.question[data-correct]').forEach((q, idx) => {
+                        if (q.querySelector('[data-allo-response-key]')) return;
+                        const checked = q.querySelector('input[type="radio"]:checked');
+                        if (checked) out['allo-mcq:' + (checked.getAttribute('name') || ('q' + idx))] = checked.value;
+                    });
+                    const named = typeof _collectNamedResponses === 'function' ? _collectNamedResponses() : {};
+                    Object.keys(named).forEach((key) => { out[key] = named[key]; });
+                    return out;
+                };
+                const _flushResponseAutosaves = () => {
+                    if (!_storageEnabled) return;
+                    Object.keys(_responseGroups || {}).forEach((key) => _saveResponseGroup(key));
+                    Array.from(textareas || []).forEach((tx, idx) => {
+                        if (tx.hasAttribute('data-allo-response-key')) return;
+                        const key = _v2LegacyStorageKey(tx, 'textarea', 'ta', idx);
+                        try { localStorage.setItem(key, tx.value || ''); } catch (e) {}
+                    });
+                    Array.from(document.querySelectorAll('.interactive-blank')).forEach((bx, idx) => {
+                        if (bx.hasAttribute('data-allo-response-key')) return;
+                        const key = _v2LegacyStorageKey(bx, 'blank', 'bx', idx);
+                        try { localStorage.setItem(key, bx.value || ''); } catch (e) {}
+                    });
+                };
+                window.addEventListener('pagehide', _flushResponseAutosaves);
+                document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') _flushResponseAutosaves(); });
+                try {
+                    window.__alloflowSubmissionResponseContract = window.__alloflowSubmissionResponseContract || { schemaVersion: 1 };
+                    window.__alloflowSubmissionResponseContract.collectAllResponses = _collectAllResponses;
+                    window.__alloflowSubmissionResponseContract.flushAutosaves = _flushResponseAutosaves;
+                } catch (e) {}
                 // ── Glossary flash-card interactions (May 11 2026) ──
                 // Hide each card's back by default, reveal on click. Master
                 // Show all / Hide all / Shuffle act on the grid. Print uses
@@ -44960,10 +45654,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         var checkBtn = ctrl.querySelector('.alloflow-cs-check-btn');
                         var resetBtn = ctrl.querySelector('.alloflow-cs-reset-btn');
                         var resultsEl = ctrl.querySelector('.alloflow-cs-results');
-                        if (!stripsContainer || !categoriesContainer || !checkBtn || !resetBtn) return;
+                        if (!stripsContainer || !categoriesContainer || !resetBtn) return;
                         var selectedStrip = null;
                         var clearSelection = function() {
-                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-pressed', 'false'); }
+                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-selected', 'false'); }
                             selectedStrip = null;
                             categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.remove('alloflow-cs-droptarget'); });
                             categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = true; });
@@ -44979,20 +45673,39 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 '.alloflow-cs-categories[data-cs-section="' + sectionId + '"] .alloflow-cs-strip'
                             ));
                         };
+                        var setResponse = function(s, categoryId, emit) {
+                            var response = s && s.querySelector('.alloflow-cs-response');
+                            if (!response) return;
+                            response.value = categoryId || '';
+                            if (emit !== false) response.dispatchEvent(new Event('change', { bubbles: true }));
+                        };
+                        var restorePlacements = function() {
+                            allStrips().forEach(function(s) {
+                                var response = s.querySelector('.alloflow-cs-response');
+                                var categoryId = response && response.value;
+                                var target = categoryId ? categoriesContainer.querySelector('[data-dropzone-for="' + categoryId + '"]') : null;
+                                if (target) {
+                                    target.appendChild(s);
+                                    target.classList.add('alloflow-cs-has-strips');
+                                } else {
+                                    stripsContainer.appendChild(s);
+                                }
+                            });
+                        };
                         var wireStrip = function(s) {
-                            s.setAttribute('role', 'button');
                             s.setAttribute('tabindex', '0');
-                            s.setAttribute('aria-pressed', 'false');
+                            s.setAttribute('aria-selected', 'false');
+                            s.setAttribute('aria-label', 'Select sortable item: ' + ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim());
                             var pick = function() {
                                 clearMarks();
                                 if (selectedStrip === s) { clearSelection(); return; }
                                 clearSelection();
                                 selectedStrip = s;
                                 s.classList.add('alloflow-cs-selected');
-                                s.setAttribute('aria-pressed', 'true');
+                                s.setAttribute('aria-selected', 'true');
                                 categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.add('alloflow-cs-droptarget'); });
                                 categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = false; });
-                                resultsEl.textContent = 'Selected ' + (s.textContent || 'item').trim() + '. Choose a category.';
+                                resultsEl.textContent = 'Selected ' + ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim() + '. Choose a category.';
                             };
                             s.addEventListener('click', pick);
                             s.addEventListener('keydown', function(e) {
@@ -45007,10 +45720,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             if (!target) return;
                             var placeSelected = function() {
                                 if (!selectedStrip) return;
-                                var itemLabel = (selectedStrip.textContent || 'item').trim();
+                                var itemLabel = ((selectedStrip.querySelector('.alloflow-cs-item-text') || selectedStrip).textContent || 'item').trim();
                                 var categoryLabel = z.getAttribute('data-category-label') || 'category';
+                                var categoryId = z.getAttribute('data-category-id') || '';
                                 target.appendChild(selectedStrip);
                                 target.classList.add('alloflow-cs-has-strips');
+                                setResponse(selectedStrip, categoryId);
                                 clearSelection();
                                 resultsEl.textContent = 'Placed ' + itemLabel + ' in ' + categoryLabel + '.';
                             };
@@ -45020,7 +45735,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 placeSelected();
                             });
                         });
-                        checkBtn.addEventListener('click', function() {
+                        if (checkBtn) checkBtn.addEventListener('click', function() {
                             clearMarks();
                             var correct = 0, wrong = 0, skipped = 0;
                             allStrips().forEach(function(s) {
@@ -45044,6 +45759,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             // Move all strips back to the original strips container.
                             // Preserve original strip-idx ordering for fairness.
                             allStrips().forEach(function(s) {
+                                setResponse(s, '');
                                 if (s.parentNode !== stripsContainer) {
                                     var target = s.parentNode;
                                     stripsContainer.appendChild(s);
@@ -45062,6 +45778,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             clearSelection();
                             resultsEl.textContent = '';
                         });
+                        window.addEventListener('alloflow-responses-restored', restorePlacements);
                     });
                 })();
                 // ── Sequence Builder (timeline) interactive reorder ──
@@ -45095,6 +45812,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         var checkBtn = ctrl.querySelector('.alloflow-tl-check-btn');
                         var resetBtn = ctrl.querySelector('.alloflow-tl-reset-btn');
                         var resultsEl = ctrl.querySelector('.alloflow-tl-results');
+                        var response = container.querySelector('.alloflow-tl-response');
+                        var updateResponse = function() {
+                            if (!response) return;
+                            response.value = JSON.stringify(Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip')).map(function(s) {
+                                return s.getAttribute('data-tl-response-id') || '';
+                            }).filter(Boolean));
+                            response.dispatchEvent(new Event('change', { bubbles: true }));
+                        };
+                        var applySavedOrder = function() {
+                            if (!response || !response.value) return false;
+                            var ids = [];
+                            try { ids = JSON.parse(response.value); } catch (e) { ids = []; }
+                            if (!Array.isArray(ids) || ids.length === 0) return false;
+                            var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
+                            var byId = Object.create(null);
+                            strips.forEach(function(s) { byId[s.getAttribute('data-tl-response-id') || ''] = s; });
+                            var restored = 0;
+                            ids.forEach(function(id) { if (byId[id]) { container.appendChild(byId[id]); delete byId[id]; restored++; } });
+                            strips.forEach(function(s) { if (s.parentElement === container && byId[s.getAttribute('data-tl-response-id') || '']) container.appendChild(s); });
+                            return restored > 0;
+                        };
                         var clearMarks = function() {
                             container.querySelectorAll('.alloflow-tl-strip').forEach(function(s) {
                                 s.classList.remove('alloflow-tl-correct', 'alloflow-tl-wrong');
@@ -45112,6 +45850,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             strips.forEach(function(s) { container.appendChild(s); });
                             // Update scissor numbers to reflect new visual order
                             renumberScissors();
+                            updateResponse();
                         };
                         var renumberScissors = function() {
                             var strips = container.querySelectorAll('.alloflow-tl-strip');
@@ -45126,6 +45865,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             if (prev && prev.classList.contains('alloflow-tl-strip')) {
                                 container.insertBefore(strip, prev);
                                 renumberScissors();
+                                updateResponse();
                                 if (strip.querySelector('.alloflow-tl-up')) strip.querySelector('.alloflow-tl-up').focus();
                             }
                         };
@@ -45135,6 +45875,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             if (next && next.classList.contains('alloflow-tl-strip')) {
                                 container.insertBefore(next, strip);
                                 renumberScissors();
+                                updateResponse();
                                 if (strip.querySelector('.alloflow-tl-down')) strip.querySelector('.alloflow-tl-down').focus();
                             }
                         };
@@ -45163,17 +45904,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         if (resetBtn) resetBtn.addEventListener('click', function() {
                             clearMarks();
                             var strips = Array.prototype.slice.call(container.querySelectorAll('.alloflow-tl-strip'));
-                            // Restore to AI's original chronological order (data-original-index ascending)
+                            // Practice resets to the canonical order. Graded
+                            // timelines reset only to their safe shuffled order.
+                            var orderAttr = checkBtn ? 'data-original-index' : 'data-initial-index';
                             strips.sort(function(a, b) {
-                                return parseInt(a.getAttribute('data-original-index') || '0', 10)
-                                     - parseInt(b.getAttribute('data-original-index') || '0', 10);
+                                return parseInt(a.getAttribute(orderAttr) || '0', 10)
+                                     - parseInt(b.getAttribute(orderAttr) || '0', 10);
                             });
                             strips.forEach(function(s) { container.appendChild(s); });
                             renumberScissors();
+                            updateResponse();
                         });
-                        // Auto-shuffle on first load so the student opens to a puzzle
-                        // (vs. the AI's already-correct chronological order).
-                        shuffleStrips();
+                        // Wait until the shared response layer restores local
+                        // storage. Only a brand-new activity is auto-shuffled.
+                        var initialized = false;
+                        window.addEventListener('alloflow-responses-restored', function() {
+                            if (initialized) return;
+                            initialized = true;
+                            if (applySavedOrder()) renumberScissors();
+                            else shuffleStrips();
+                        });
                     });
                 })();
                 // ── Brainstorm mind-map spoke expand/collapse (May 11 2026) ──
@@ -45209,30 +45959,32 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     if (document.querySelectorAll('.interactive-textarea, .interactive-blank, .question[data-correct], [data-allo-response-key]').length === 0) { if (pcta) pcta.style.display = 'none'; return; }
                     if (pcta) pcta.style.display = 'block';
                     var _pcollect = function() {
-                        var out = {};
-                        var prefixes = ['allo-ta:' + _docKey + ':', 'allo-bx:' + _docKey + ':'];
-                        try { for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (!k) continue; for (var p = 0; p < prefixes.length; p++) { if (k.indexOf(prefixes[p]) === 0) { if (typeof _namedLegacyStorageKeys !== 'undefined' && _namedLegacyStorageKeys.has(k)) break; out[k] = localStorage.getItem(k); break; } } } } catch (e) {}
-                        document.querySelectorAll('.question[data-correct]').forEach(function(q, idx) { if (q.querySelector('[data-allo-response-key]')) return; var ch = q.querySelector('input[type=\"radio\"]:checked'); if (ch) { out['allo-mcq:' + (ch.getAttribute('name') || ('q' + idx))] = ch.value; } });
-                        var named = typeof _collectNamedResponses === 'function' ? _collectNamedResponses() : {};
-                        Object.keys(named).forEach(function(key) { out[key] = named[key]; });
-                        return out;
+                        return typeof _collectAllResponses === 'function' ? _collectAllResponses() : {};
                     };
                     pbtn.addEventListener('click', async function() {
-                        var up = new URLSearchParams(window.location.search);
-                        var nick = up.get('nickname') || await window.__alloflowPrompt({ title: 'Save your answers', description: 'Enter a name or nickname so your teacher can identify this answer file.', label: 'Name or nickname', confirmLabel: 'Save answers', cancelLabel: 'Cancel', maxLength: 60, requiredMessage: 'Enter a name or nickname.' });
+                        var learnerWorkspace = window.__alloflowLearnerWorkspace;
+                        var nick = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : '';
+                        if (!nick) nick = await window.__alloflowPrompt({ title: window.__alloflowText('saveAnswersTitle', 'Save your answers'), description: window.__alloflowText('saveAnswersDescription', 'Enter a name or nickname so your teacher can identify this answer file.'), label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveAnswersConfirm', 'Save answers'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var payload = { schemaVersion: 3, kind: 'alloflow-student-submission', nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
+                        var payload = { schemaVersion: 3, storageVersion: 2, kind: 'alloflow-student-submission', documentId: _documentId, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-                            a.download = (nick.replace(/[^a-z0-9]+/gi, '_').slice(0, 40) || 'student') + '-answers-' + new Date().toISOString().slice(0, 10) + '.json';
+                            var safeNick = nick.replace(/[^a-z0-9]+/gi, '_').slice(0, 40) || 'student';
+                            var safeDoc = String(document.title || 'worksheet').split('—')[0].replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'worksheet';
+                            var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
+                            a.download = safeNick + '-' + safeDoc + '-answers' + docSuffix + '-' + new Date().toISOString().slice(0, 10) + '.json';
                             document.body.appendChild(a); a.click();
                             setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(a.href); }, 200);
-                            pbtn.textContent = 'Saved! Send the file to your teacher';
-                            setTimeout(function() { pbtn.textContent = 'Save my answers'; }, 2600);
-                        } catch (e) { window.__alloflowNotify('Could not save your answers: ' + e.message, 'error'); }
+                            pbtn.textContent = window.__alloflowText('savedAnswers', 'Saved! Send the file to your teacher');
+                            setTimeout(function() { pbtn.textContent = window.__alloflowText('saveMyAnswers', 'Save my answers'); }, 2600);
+                        } catch (e) { window.__alloflowNotify(window.__alloflowText('saveErrorPrefix', 'Could not save your answers: ') + e.message, 'error'); }
                     });
                 })();
+                // Every form control is restored first, then every activity
+                // runtime has a listener. A single late signal lets sorting
+                // activities rebuild their visual state without a race.
+                try { window.dispatchEvent(new Event('alloflow-responses-restored')); } catch (e) {}
             });
         </script>
         ${_brandFooterHTML}

@@ -25,6 +25,20 @@ const SCENE_TIMEOUT = 90000;
 
 const FILE = 'stem_lab/stem_tool_galaxy.js';
 
+// Scene morphology is generated from finite random samples. Use a uniform,
+// reproducible stream so RMS-axis assertions measure the implementation rather
+// than occasionally sampling an unlucky particle distribution.
+function createSeededRandom(seed) {
+  let state = seed >>> 0;
+  return () => {
+    state += 0x6D2B79F5;
+    let value = state;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 describe('galaxy 3-D scene builder', () => {
   let host;
   let root;
@@ -33,8 +47,10 @@ describe('galaxy 3-D scene builder', () => {
   let restoreLoops;
   let canvasStub;
   let errorSpy;
+  let randomSpy;
 
   beforeEach(() => {
+    randomSpy = vi.spyOn(Math, 'random').mockImplementation(createSeededRandom(0x5EEDC0DE));
     resetStemLab();
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     window._galaxyHasLoadedOnce = true;
@@ -60,6 +76,7 @@ describe('galaxy 3-D scene builder', () => {
     restoreLoops();
     restoreThree();
     restoreCanvas();
+    randomSpy.mockRestore();
     delete window._galaxyPPLoaded;
     delete globalThis.IS_REACT_ACT_ENVIRONMENT;
     delete window.THREE;
@@ -369,6 +386,38 @@ describe('galaxy 3-D scene builder', () => {
     // Cleanup nulls its own handle; calling again must stay a no-op.
     expect(canvas._galaxyCleanup).toBeNull();
     assertClean();
+  }, SCENE_TIMEOUT);
+
+  it('waits for the Aladin Lite v3 readiness promise before constructing the atlas', async () => {
+    let resolveInit;
+    const init = new Promise((resolve) => { resolveInit = resolve; });
+    const aladin = vi.fn(() => ({
+      destroy() {},
+      setFov() {},
+      gotoObject(_target, callbacks) { if (callbacks && callbacks.success) callbacks.success(); },
+      gotoRaDec() {},
+      newImageSurvey(id) { return id; },
+      setImageSurvey() {},
+      removeLayers() {},
+      addCatalog() {},
+    }));
+    window.A = { init, aladin };
+
+    await mountGalaxy({ ...LIGHT, simMode: 'realSky' });
+    const container = host.querySelector('#galaxy-real-sky-aladin');
+    expect(container).not.toBeNull();
+    expect(aladin, 'atlas constructed before A.init resolved').not.toHaveBeenCalled();
+
+    await React.act(async () => {
+      resolveInit();
+      await init;
+      await Promise.resolve();
+    });
+
+    expect(aladin).toHaveBeenCalledTimes(1);
+    expect(container._galaxyAladin).toBeTruthy();
+    expect(host.querySelector('[data-galaxy-live-survey-badge="true"]')).not.toBeNull();
+    delete window.A;
   }, SCENE_TIMEOUT);
 
   it('disposes the Real Sky atlas when its container unmounts', async () => {

@@ -59,6 +59,43 @@ describe('static audit UI heuristics', () => {
     expect(report).not.toContain('INPUT-001');
   });
 
+  it('recognizes an input label after a nested callback closes', () => {
+    const report = scanFixture([
+      "h('textarea', { value: reflection, onChange: function (event) {",
+      '  patchState(function (current) {',
+      '    return Object.assign({}, current, { reflection: event.target.value });',
+      '  });',
+      "}, rows: 4, 'aria-label': 'Theory comparison reflection' });",
+    ].join('\n'));
+    expect(report).not.toContain('INPUT-001');
+  });
+
+  it('does not borrow an accessible name from a following sibling control', () => {
+    const report = scanFixture([
+      "h('input', { value: title, onChange: function (event) {",
+      '  update(function (current) {',
+      '    return Object.assign({}, current, { title: event.target.value });',
+      '  });',
+      '} });',
+      "h('input', { value: summary, 'aria-label': 'Summary' });",
+    ].join('\n'));
+    expect(report).toContain('INPUT-001');
+  });
+
+  it('does not report file inputs explicitly removed from the accessibility tree', () => {
+    const report = scanFixture([
+      "h('input', { type: 'file', className: 'hidden', onChange: chooseJson });",
+      "h('input', { type: 'file', style: { display: 'none' }, onChange: chooseSlides });",
+      "h('input', { type: 'file', tabIndex: -1, 'aria-hidden': true, onChange: chooseHtml });",
+    ].join('\n'));
+    expect(report).not.toContain('INPUT-001');
+  });
+
+  it('still reports a visible unlabeled file input', () => {
+    const report = scanFixture("h('input', { type: 'file', accept: '.json' });");
+    expect(report).toContain('INPUT-001');
+  });
+
   it('does not misclassify a native confirmation mechanism as a 3.3.4 failure', () => {
     const report = scanFixture('button.onclick = () => window.confirm("Delete this item?");');
     expect(report).not.toContain('CONFIRM-001');
@@ -105,6 +142,39 @@ describe('static audit UI heuristics', () => {
       ');',
     ].join('\n'));
     expect(report).not.toContain('SVG-001');
+  });
+
+  it('recognizes an SVG excluded by a multiline aria-hidden parent', () => {
+    const report = scanFixture([
+      "return h('div', {",
+      "  className: 'decorative-overlay',",
+      "  'aria-hidden': 'true'",
+      '},',
+      "  h('svg', { viewBox: '0 0 20 20' },",
+      "    h('path', { d: 'M0 0L20 20' })",
+      '  )',
+      ');',
+    ].join('\n'));
+    expect(report).not.toContain('SVG-001');
+  });
+
+  it('recognizes a nearby scope assignment on composed table-header props', () => {
+    const report = scanFixture([
+      "var props = { className: 'cell' };",
+      'if (cellIndex === 0) {',
+      "  props.scope = 'row';",
+      "  return h('th', props, cell);",
+      '}',
+    ].join('\n'));
+    expect(report).not.toContain('SCOPE-001');
+  });
+
+  it('still reports composed table-header props without a scope assignment', () => {
+    const report = scanFixture([
+      "var props = { className: 'cell' };",
+      "return h('th', props, cell);",
+    ].join('\n'));
+    expect(report).toContain('SCOPE-001');
   });
   it('does not borrow aria-hidden from a closed sibling before an SVG', () => {
     const report = scanFixture([

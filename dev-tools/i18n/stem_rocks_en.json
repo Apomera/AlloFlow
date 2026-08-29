@@ -2,6 +2,7 @@
   "ai_connection_error": "Connection error. Please try again.",
   "ai_offline_no_key": "AI Petrologist is currently offline. Key not configured.",
   "ai_no_response": "I could not generate a response. Try again!",
+  "sulfur": "Sulfur",
   "which_rock_type_forms_from_cooled_magma": "Which rock type forms from cooled magma?",
   "correct_igneous_rocks_solidify_from_molten_magma": "Correct! Igneous rocks solidify from molten magma.",
   "incorrect_sedimentary_rocks_form_from_compressed_layers_of": "Incorrect. Sedimentary rocks form from compressed layers of sediment.",

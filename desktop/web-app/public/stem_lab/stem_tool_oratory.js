@@ -3840,7 +3840,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Achievements
             h('div', { className: cardClass },
               h('h4', { className: headingClass + ' text-sm mb-3' }, t('stem.oratory.achievements', 'Achievements')),
-              h('div', { className: 'space-y-2' },
+              h('div', { className: 'space-y-2', role: 'list', 'aria-label': t('stem.oratory.achievements', 'Achievements') },
                 renderAchievement('\uD83C\uDFA4', 'Vocal Warm-up', warmUpsCompleted >= 1, warmUpsCompleted + '/1 completed'),
                 renderAchievement('\uD83D\uDCCA', '5 Phrases Analyzed', phrasesAnalyzed >= 5, phrasesAnalyzed + '/5 phrases'),
                 renderAchievement('\uD83C\uDFC6', 'Smooth Pacing', achievedSmoothPacing, achievedSmoothPacing ? 'Achieved!' : 'Not yet'))),
@@ -3962,7 +3962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
 
           // Tab navigation
           h('div', {
-            className: 'flex gap-1 p-1 rounded-xl ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
+            className: 'flex flex-wrap gap-1 p-1 rounded-xl ' + (isDark ? 'bg-slate-800' : 'bg-slate-100'),
             role: 'tablist',
             'aria-label': t('stem.oratory.oratory_lab_sections', 'Oratory Lab sections')
           },

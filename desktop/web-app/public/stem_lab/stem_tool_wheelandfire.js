@@ -36,14 +36,16 @@
       '.wheel-fire-shell[data-experience-mode="guided"] .wheel-fire-advanced{display:none!important}',
       '.wheel-fire-shell:not([data-experience-mode="research"]) .wheel-fire-research-only{display:none!important}',
       '.wheel-fire-spin{transform-origin:center;animation:wheelFireSpin 1.4s linear infinite}',
-      '.wheel-fire-wheel-motion{animation:wheelFireDash 1.4s linear infinite}',
-      '.wheel-fire-wobble-motion{animation:wheelFireWobble 1.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}',
+      '.wheel-fire-wheel-motion{animation:wheelFireDash 1s linear infinite}',
+      '.wheel-fire-wobble-motion{animation:wheelFireWobble 1.2s linear infinite;transform-box:fill-box;transform-origin:center}',
       '.wheel-fire-flame-motion{animation:wheelFireFlame 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}',
+      '.wheel-fire-flow-motion{animation:wheelFireFlow 1.6s linear infinite}',
       '.wheel-fire-heat-pulse{animation:wheelFireHeat 2.4s ease-in-out infinite}',
       '@keyframes wheelFireSpin{to{transform:rotate(360deg)}}',
-      '@keyframes wheelFireDash{to{stroke-dashoffset:-72}}',
-      '@keyframes wheelFireWobble{0%,100%{transform:translateX(var(--wheel-fire-wobble-neg,0px))}50%{transform:translateX(var(--wheel-fire-wobble,0px))}}',
+      '@keyframes wheelFireDash{to{stroke-dashoffset:var(--wheel-fire-orbit-shift,-420)}}',
+      '@keyframes wheelFireWobble{0%,100%{transform:translate(var(--wheel-fire-wobble,0px),0px)}12.5%{transform:translate(var(--wheel-fire-wobble-diag,0px),var(--wheel-fire-wobble-depth-diag,0px))}25%{transform:translate(0px,var(--wheel-fire-wobble-depth,0px))}37.5%{transform:translate(var(--wheel-fire-wobble-diag-neg,0px),var(--wheel-fire-wobble-depth-diag,0px))}50%{transform:translate(var(--wheel-fire-wobble-neg,0px),0px)}62.5%{transform:translate(var(--wheel-fire-wobble-diag-neg,0px),var(--wheel-fire-wobble-depth-diag-neg,0px))}75%{transform:translate(0px,var(--wheel-fire-wobble-depth-neg,0px))}87.5%{transform:translate(var(--wheel-fire-wobble-diag,0px),var(--wheel-fire-wobble-depth-diag-neg,0px))}}',
       '@keyframes wheelFireFlame{50%{transform:scaleY(.9) translateY(2px);opacity:.75}}',
+      '@keyframes wheelFireFlow{to{stroke-dashoffset:-40}}',
       '@keyframes wheelFireHeat{50%{opacity:.68}}',
       '@container(max-width:760px){.wheel-fire-main{grid-template-columns:1fr}.wheel-fire-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.wheel-fire-stage-line{grid-template-columns:repeat(3,minmax(0,1fr))}}',
       '@media(max-width:480px){.wheel-fire-stats{grid-template-columns:1fr}}',
@@ -283,6 +285,46 @@
     }
     return total;
   }
+  function analyzeOpeningFloor(vessel) {
+    vessel = normalizeVessel(vessel);
+    var cavityThresholdCm = .6;
+    var floorRing = RING_COUNT;
+    var floorInnerRadiusCm = 0;
+    for (var i = 1; i < RING_COUNT; i++) {
+      var innerRadius = Math.max(0, vessel.radii[i] - vessel.thickness[i]);
+      if (innerRadius >= cavityThresholdCm) {
+        floorRing = i;
+        floorInnerRadiusCm = innerRadius;
+        break;
+      }
+    }
+    var hasCavity = floorRing < RING_COUNT;
+    var ringHeightCm = vessel.heightCm / Math.max(1, RING_COUNT - 1);
+    var floorThicknessCm = hasCavity ? floorRing * ringHeightCm : vessel.heightCm;
+    var cavityDepthCm = hasCavity ? Math.max(0, vessel.heightCm - floorThicknessCm) : 0;
+    var targetRing = hasCavity ? floorRing : Math.round((RING_COUNT - 1) * .42);
+    var state = !hasCavity ? 'solid-blank' : (floorRing <= 1 ? 'puncture-risk' : (floorThicknessCm < .65 ? 'thin-floor' : (floorThicknessCm <= 1.6 ? 'working-floor' : 'thick-floor')));
+    var label = state === 'solid-blank' ? 'solid blank' : (state === 'puncture-risk' ? 'base puncture risk' : (state === 'thin-floor' ? 'thin modeled floor' : (state === 'working-floor' ? 'moderate modeled floor' : 'thick modeled floor')));
+    var summary = state === 'solid-blank'
+      ? 'No cavity wider than ' + cavityThresholdCm.toFixed(1) + ' cm is detected, so the model treats the blank as solid and suggests opening near ring ' + (targetRing + 1) + '.'
+      : (state === 'puncture-risk'
+        ? 'The cavity reaches ring ' + (floorRing + 1) + ', leaving only one modeled vertical interval beneath it; another deep opening pass can behave like a base puncture.'
+        : 'The cavity begins at ring ' + (floorRing + 1) + ', leaving a ' + floorThicknessCm.toFixed(2) + ' cm modeled floor and a ' + cavityDepthCm.toFixed(2) + ' cm cavity depth.');
+    return {
+      state: state,
+      label: label,
+      hasCavity: hasCavity,
+      cavityThresholdCm: cavityThresholdCm,
+      floorRing: floorRing,
+      targetRing: targetRing,
+      ringHeightCm: ringHeightCm,
+      floorThicknessCm: floorThicknessCm,
+      cavityDepthCm: cavityDepthCm,
+      floorInnerRadiusCm: floorInnerRadiusCm,
+      summary: summary,
+      note: 'Floor thickness is a vertical ring-resolution proxy derived from the first cavity ring, not a measured base thickness, wall section, or safe studio instruction.'
+    };
+  }
   function preserveVolume(vessel, target) {
     for (var pass = 0; pass < 5; pass++) {
       var current = vesselVolume(vessel);
@@ -295,6 +337,38 @@
     }
     return vessel;
   }
+  var PYROMETRIC_CONES = [
+    { label: '010', slowC: 891, mediumC: 903, fastC: 915, temperature: 903 },
+    { label: '09', slowC: 907, mediumC: 920, fastC: 930, temperature: 920 },
+    { label: '08', slowC: 922, mediumC: 942, fastC: 956, temperature: 942 },
+    { label: '07', slowC: 962, mediumC: 976, fastC: 987, temperature: 976 },
+    { label: '06', slowC: 981, mediumC: 998, fastC: 1013, temperature: 998 },
+    { label: '05', slowC: 1021, mediumC: 1031, fastC: 1044, temperature: 1031 },
+    { label: '04', slowC: 1046, mediumC: 1063, fastC: 1077, temperature: 1063 },
+    { label: '03', slowC: 1071, mediumC: 1086, fastC: 1104, temperature: 1086 },
+    { label: '02', slowC: 1078, mediumC: 1102, fastC: 1122, temperature: 1102 },
+    { label: '01', slowC: 1093, mediumC: 1119, fastC: 1138, temperature: 1119 },
+    { label: '1', slowC: 1109, mediumC: 1137, fastC: 1154, temperature: 1137 },
+    { label: '2', slowC: 1112, mediumC: 1142, fastC: 1164, temperature: 1142 },
+    { label: '3', slowC: 1115, mediumC: 1152, fastC: 1170, temperature: 1152 },
+    { label: '4', slowC: 1141, mediumC: 1162, fastC: 1183, temperature: 1162 },
+    { label: '5', slowC: 1159, mediumC: 1186, fastC: 1207, temperature: 1186 },
+    { label: '6', slowC: 1185, mediumC: 1222, fastC: 1243, temperature: 1222 },
+    { label: '7', slowC: 1201, mediumC: 1239, fastC: 1257, temperature: 1239 },
+    { label: '8', slowC: 1211, mediumC: 1249, fastC: 1271, temperature: 1249 },
+    { label: '9', slowC: 1224, mediumC: 1260, fastC: 1280, temperature: 1260 },
+    { label: '10', slowC: 1251, mediumC: 1285, fastC: 1305, temperature: 1285 }
+  ];
+  var WITNESS_CONE_MOUNT_ANGLE_DEGREES = 8;
+  function coneReferenceRamp(ramp) {
+    var requestedRamp = clamp(finite(ramp, 60), 15, 300);
+    return [15, 60, 150].reduce(function (nearest, candidate) { return Math.abs(candidate - requestedRamp) < Math.abs(nearest - requestedRamp) ? candidate : nearest; }, 15);
+  }
+  function coneReferenceTemperature(cone, ramp) {
+    cone = cone || PYROMETRIC_CONES[0];
+    var referenceRamp = coneReferenceRamp(ramp);
+    return referenceRamp === 15 ? cone.slowC : (referenceRamp === 60 ? cone.mediumC : cone.fastC);
+  }
   function estimateHeatwork(settings) {
     settings = settings || {};
     var target = clamp(finite(settings.temperature, 950), 600, 1350);
@@ -304,16 +378,650 @@
     var slowGain = Math.max(0, 95 - ramp) * 0.045;
     var fastLoss = Math.max(0, ramp - 150) * 0.085;
     var effectiveTemp = clamp(target + soakGain + slowGain - fastLoss, 600, 1375);
-    var cones = [
-      { temperature: 900, label: '010' }, { temperature: 950, label: '08' }, { temperature: 999, label: '06' },
-      { temperature: 1060, label: '04' }, { temperature: 1101, label: '02' }, { temperature: 1137, label: '1' },
-      { temperature: 1167, label: '2' }, { temperature: 1196, label: '4' }, { temperature: 1222, label: '6' },
-      { temperature: 1241, label: '7' }, { temperature: 1263, label: '8' }, { temperature: 1280, label: '9' },
-      { temperature: 1305, label: '10' }
-    ];
+    var coneHeatworkTemperature = clamp(target + soakGain, 600, 1375);
+    var cones = PYROMETRIC_CONES;
     var nearest = cones[0];
-    for (var i = 1; i < cones.length; i++) if (Math.abs(cones[i].temperature - effectiveTemp) < Math.abs(nearest.temperature - effectiveTemp)) nearest = cones[i];
-    return { target: target, ramp: ramp, soak: soak, effectiveTemp: effectiveTemp, cone: nearest.label };
+    for (var i = 1; i < cones.length; i++) if (Math.abs(coneReferenceTemperature(cones[i], ramp) - coneHeatworkTemperature) < Math.abs(coneReferenceTemperature(nearest, ramp) - coneHeatworkTemperature)) nearest = cones[i];
+    return { target: target, ramp: ramp, soak: soak, effectiveTemp: effectiveTemp, coneHeatworkTemperature: coneHeatworkTemperature, cone: nearest.label, coneTemperature: coneReferenceTemperature(nearest, ramp), coneIndex: cones.indexOf(nearest), referenceRampCPerHour: coneReferenceRamp(ramp) };
+  }
+  function estimateWitnessConePack(settings) {
+    settings = settings || {};
+    var ramp = clamp(finite(settings.ramp, 110), 30, 300);
+    var targetTemperature = clamp(finite(settings.targetTemperature, finite(settings.temperature, 950)), 600, 1350);
+    var targetSoak = clamp(finite(settings.targetSoak, finite(settings.soak, 10)), 0, 90);
+    var observedTemperature = clamp(finite(settings.observedTemperature, targetTemperature), 600, 1350);
+    var observedSoak = clamp(finite(settings.observedSoak, targetSoak), 0, 90);
+    var targetHeatwork = estimateHeatwork({ temperature: targetTemperature, ramp: ramp, soak: targetSoak });
+    var observedHeatwork = estimateHeatwork({ temperature: observedTemperature, ramp: ramp, soak: observedSoak });
+    var requestedTarget = String(settings.targetCone || targetHeatwork.cone);
+    var targetIndex = PYROMETRIC_CONES.findIndex(function (cone) { return cone.label === requestedTarget; });
+    if (targetIndex < 0) targetIndex = targetHeatwork.coneIndex;
+    function coneState(bendDegrees) {
+      return bendDegrees < 5 ? 'standing' : (bendDegrees < 25 ? 'softening' : (bendDegrees <= 75 ? 'bending' : (bendDegrees < 88 ? 'strong bend' : 'fully down')));
+    }
+    function roleCone(role, offset) {
+      var coneIndex = Math.max(0, Math.min(PYROMETRIC_CONES.length - 1, targetIndex + offset));
+      var cone = PYROMETRIC_CONES[coneIndex];
+      var previous = PYROMETRIC_CONES[Math.max(0, coneIndex - 1)];
+      var next = PYROMETRIC_CONES[Math.min(PYROMETRIC_CONES.length - 1, coneIndex + 1)];
+      var coneTemperature = coneReferenceTemperature(cone, ramp);
+      var previousTemperature = coneReferenceTemperature(previous, ramp);
+      var nextTemperature = coneReferenceTemperature(next, ramp);
+      var lowerGap = coneIndex > 0 ? coneTemperature - previousTemperature : nextTemperature - coneTemperature;
+      var upperGap = coneIndex < PYROMETRIC_CONES.length - 1 ? nextTemperature - coneTemperature : lowerGap;
+      var bendWindowC = clamp((lowerGap + upperGap) / 2 * 1.3, 24, 48);
+      var bendDegrees = clamp((observedHeatwork.coneHeatworkTemperature - (coneTemperature - bendWindowC / 2)) / bendWindowC, 0, 1) * 90;
+      return {
+        role: role,
+        label: cone.label,
+        referenceTemperature: coneTemperature,
+        bendWindowC: bendWindowC,
+        bendDegrees: bendDegrees,
+        state: coneState(bendDegrees),
+        duplicatedAtScaleBoundary: coneIndex === targetIndex && offset !== 0
+      };
+    }
+    var cones = [roleCone('guide', -1), roleCone('firing', 0), roleCone('guard', 1)];
+    var firingCone = cones[1];
+    var interpretation = firingCone.bendDegrees < 25 ? 'below target range' : (firingCone.bendDegrees <= 75 ? 'target range' : 'above target range');
+    var summary = 'Guide cone ' + cones[0].label + ' ' + Math.round(cones[0].bendDegrees) + '°; firing cone ' + cones[1].label + ' ' + Math.round(cones[1].bendDegrees) + '° (' + interpretation + '); guard cone ' + cones[2].label + ' ' + Math.round(cones[2].bendDegrees) + '°.';
+    return {
+      targetCone: PYROMETRIC_CONES[targetIndex].label,
+      targetConeTemperature: coneReferenceTemperature(PYROMETRIC_CONES[targetIndex], ramp),
+      referenceRampCPerHour: coneReferenceRamp(ramp),
+      observedEffectiveTemperature: observedHeatwork.effectiveTemp,
+      targetHeatwork: targetHeatwork,
+      observedHeatwork: observedHeatwork,
+      cones: cones,
+      guideCone: cones[0],
+      firingCone: firingCone,
+      guardCone: cones[2],
+      interpretation: interpretation,
+      summary: summary,
+      note: 'Comparative three-cone teaching model. Reference endpoints use the closest modeled witness-cone chart column at 15, 60, or 150°C/h, while soak response is simplified; real firings require the correct cone type, mounting, heating-rate chart, witness placement, and bend template.'
+    };
+  }
+  function interpretWitnessConeSequence(pack) {
+    pack = pack || {};
+    var guide = pack.guideCone || {};
+    var firing = pack.firingCone || {};
+    var guard = pack.guardCone || {};
+    var guideBend = clamp(finite(guide.bendDegrees, 0), 0, 90);
+    var firingBend = clamp(finite(firing.bendDegrees, 0), 0, 90);
+    var guardBend = clamp(finite(guard.bendDegrees, 0), 0, 90);
+    var guideLabel = guide.label || '?';
+    var firingLabel = firing.label || '?';
+    var guardLabel = guard.label || '?';
+    var note = 'Use physical witness cones and the correct measurement template to make real firing decisions.';
+    if (guideBend >= 88 && firingBend >= 88 && guardBend >= 88) return { phase: 'saturated', label: 'Pack saturated', summary: 'Guide cone ' + guideLabel + ', firing cone ' + firingLabel + ', and guard cone ' + guardLabel + ' are fully down; this pack cannot resolve how far above its modeled range the heatwork went.', note: note };
+    if (guardBend >= 5) return { phase: 'excess', label: 'Excess heatwork', summary: 'Guard cone ' + guardLabel + ' has begun responding after firing cone ' + firingLabel + '; this modeled pack is beyond the target neighborhood.', note: note };
+    if (firingBend > 75) return { phase: 'above-target', label: 'Above target band', summary: 'Firing cone ' + firingLabel + ' has passed the 25°–75° target band while guard cone ' + guardLabel + ' still stands.', note: note };
+    if (firingBend >= 25) return { phase: 'target', label: 'Target band reached', summary: 'Firing cone ' + firingLabel + ' is within the 25°–75° target band while guard cone ' + guardLabel + ' remains below it.', note: note };
+    if (firingBend >= 5) return { phase: 'near-target', label: 'Firing cone softening', summary: 'Firing cone ' + firingLabel + ' has begun bending but has not reached the 25° target-band boundary.', note: note };
+    if (guideBend >= 5) return { phase: 'approaching', label: 'Approaching target', summary: 'Guide cone ' + guideLabel + ' has responded while firing cone ' + firingLabel + ' still stands; modeled target heatwork has not been reached.', note: note };
+    return { phase: 'not-started', label: 'Not yet readable', summary: 'Guide cone ' + guideLabel + ' is still standing; this pack has not begun recording the target heatwork neighborhood.', note: note };
+  }
+  function interpretConeHeatworkMemory(settings) {
+    settings = settings || {};
+    var pack = settings.pack || {};
+    var guide = pack.guideCone || {};
+    var firing = pack.firingCone || {};
+    var segmentId = String(settings.segmentId || 'ramp');
+    var currentTemperatureC = clamp(finite(settings.currentTemperatureC, 20), -100, 1800);
+    var zoneName = String(settings.zoneName || 'Selected zone');
+    var guideLabel = guide.label || '?';
+    var firingLabel = firing.label || pack.targetCone || '?';
+    var guideBend = clamp(finite(guide.bendDegrees, 0), 0, 90);
+    var firingBend = clamp(finite(firing.bendDegrees, 0), 0, 90);
+    var temperatureLead = zoneName + ' temperature now is about ' + Math.round(currentTemperatureC) + '°C';
+    var note = 'The temperature-now label is a modeled zone estimate; retained cone bend is a heatwork record, not a live thermometer.';
+    if (segmentId === 'cool') {
+      if (firingBend >= 5) return { state: 'retained', label: 'Heatwork retained', visualLabel: 'retained heatwork', summary: temperatureLead + '; firing cone ' + firingLabel + ' retains its ' + Math.round(firingBend) + '° peak-heatwork bend.', note: note };
+      if (guideBend >= 5) return { state: 'retained', label: 'Heatwork retained', visualLabel: 'retained heatwork', summary: temperatureLead + '; guide cone ' + guideLabel + ' retains its ' + Math.round(guideBend) + '° peak-heatwork bend while firing cone ' + firingLabel + ' remains standing.', note: note };
+      return { state: 'cooling-unreadable', label: 'No target record', visualLabel: 'pack unreadable', summary: temperatureLead + '; the guide cone still stands, so this modeled target pack never entered its readable range.', note: note };
+    }
+    if (firingBend >= 5) return { state: 'accumulating-target', label: 'Target cone recording', visualLabel: 'heatwork record', summary: temperatureLead + '; firing cone ' + firingLabel + ' is at ' + Math.round(firingBend) + '° as time and temperature accumulate heatwork.', note: note };
+    if (guideBend >= 5) return { state: 'accumulating-guide', label: 'Guide cone recording', visualLabel: 'heatwork record', summary: temperatureLead + '; guide cone ' + guideLabel + ' has begun responding while firing cone ' + firingLabel + ' remains standing.', note: note };
+    return { state: 'not-recording', label: 'Before cone response', visualLabel: 'not yet recording', summary: temperatureLead + '; guide cone ' + guideLabel + ' still stands, so the target neighborhood is not yet recorded.', note: note };
+  }
+  function witnessConeGeometry(bendDegrees, settings) {
+    settings = settings || {};
+    var bend = clamp(finite(bendDegrees, 0), 0, 90);
+    var anchorX = finite(settings.x, 0);
+    var baseY = finite(settings.baseY, 0);
+    var length = clamp(finite(settings.length, 20), 8, 60);
+    var baseWidth = clamp(finite(settings.baseWidth, 10), 4, 24);
+    var mountAngleDegrees = clamp(finite(settings.mountAngleDegrees, 0), 0, 30);
+    var halfBase = baseWidth / 2;
+    var visualAngleDegrees = mountAngleDegrees + bend / 90 * (90 - mountAngleDegrees);
+    var mountAngle = mountAngleDegrees * Math.PI / 180;
+    var angle = visualAngleDegrees * Math.PI / 180;
+    var controlAngle = mountAngle + (angle - mountAngle) * .42;
+    var controlLength = length * .56;
+    var controlX = anchorX + Math.sin(controlAngle) * controlLength;
+    var controlY = baseY - Math.cos(controlAngle) * controlLength;
+    var tipX = anchorX + Math.sin(angle) * length;
+    var tipY = baseY - Math.cos(angle) * length;
+    var midHalfWidth = halfBase * .5;
+    var normalX = Math.cos(controlAngle);
+    var normalY = Math.sin(controlAngle);
+    var leftControlX = controlX - normalX * midHalfWidth;
+    var leftControlY = controlY - normalY * midHalfWidth;
+    var rightControlX = controlX + normalX * midHalfWidth;
+    var rightControlY = controlY + normalY * midHalfWidth;
+    function point(x, y) { return x.toFixed(1) + ' ' + y.toFixed(1); }
+    var baseLeft = { x: anchorX - halfBase, y: baseY };
+    var baseRight = { x: anchorX + halfBase, y: baseY };
+    return {
+      bendDegrees: bend,
+      bendRatio: bend / 90,
+      mountAngleDegrees: mountAngleDegrees,
+      visualAngleDegrees: visualAngleDegrees,
+      baseLeft: baseLeft,
+      baseRight: baseRight,
+      control: { x: controlX, y: controlY },
+      tip: { x: tipX, y: tipY },
+      path: 'M' + point(baseLeft.x, baseLeft.y) + ' Q' + point(leftControlX, leftControlY) + ' ' + point(tipX, tipY) + ' Q' + point(rightControlX, rightControlY) + ' ' + point(baseRight.x, baseRight.y) + ' Z',
+      centerlinePath: 'M' + point(anchorX, baseY) + ' Q' + point(controlX, controlY) + ' ' + point(tipX, tipY)
+    };
+  }
+  function summarizeWitnessConeZones(packs, zoneNames) {
+    packs = Array.isArray(packs) ? packs : [];
+    zoneNames = Array.isArray(zoneNames) ? zoneNames : [];
+    var zones = packs.map(function (pack, index) {
+      if (!pack || !pack.firingCone) return null;
+      return {
+        index: index,
+        name: zoneNames[index] || ('Zone ' + (index + 1)),
+        bendDegrees: clamp(finite(pack.firingCone.bendDegrees, 0), 0, 90),
+        state: pack.firingCone.state || 'standing',
+        interpretation: pack.interpretation || 'below target range'
+      };
+    }).filter(Boolean);
+    var note = 'Cone-angle spread is comparative, not a temperature difference or a kiln-uniformity certification.';
+    if (!zones.length) return { zones: [], resolution: 'unavailable', label: 'unavailable', spreadDegrees: 0, targetCount: 0, hottestZone: null, coolestZone: null, summary: 'No modeled witness packs are available for comparison.', note: note };
+    var hottestZone = zones.reduce(function (best, zone) { return zone.bendDegrees > best.bendDegrees ? zone : best; }, zones[0]);
+    var coolestZone = zones.reduce(function (best, zone) { return zone.bendDegrees < best.bendDegrees ? zone : best; }, zones[0]);
+    var spreadDegrees = hottestZone.bendDegrees - coolestZone.bendDegrees;
+    var targetCount = zones.filter(function (zone) { return zone.interpretation === 'target range'; }).length;
+    if (zones.length < 2) return { zones: zones, resolution: 'one-location', label: 'one location', spreadDegrees: 0, targetCount: targetCount, hottestZone: hottestZone, coolestZone: coolestZone, summary: 'One witness location is modeled; compare packs at multiple physical locations to assess heatwork uniformity.', note: note };
+    var allStanding = zones.every(function (zone) { return zone.bendDegrees < 5; });
+    var allFullyDown = zones.every(function (zone) { return zone.bendDegrees >= 88; });
+    if (allStanding) return { zones: zones, resolution: 'limited-standing', label: 'not yet readable', spreadDegrees: spreadDegrees, targetCount: targetCount, hottestZone: hottestZone, coolestZone: coolestZone, summary: 'All ' + zones.length + ' modeled firing cones are still standing, so zone uniformity is not readable yet.', note: note };
+    if (allFullyDown) return { zones: zones, resolution: 'limited-saturated', label: 'saturated', spreadDegrees: spreadDegrees, targetCount: targetCount, hottestZone: hottestZone, coolestZone: coolestZone, summary: 'All ' + zones.length + ' modeled firing cones are fully down, so saturation hides any remaining zone difference.', note: note };
+    var targetSummary = targetCount === zones.length ? 'All ' + zones.length + ' zones are in the target bend range.' : (targetCount + ' of ' + zones.length + ' zones ' + (targetCount === 1 ? 'is' : 'are') + ' in the target bend range.');
+    var label = spreadDegrees <= 5 ? 'closely matched' : (spreadDegrees <= 20 ? 'noticeable difference' : 'uneven heatwork');
+    var summary = spreadDegrees <= 5 ? 'Firing-cone bends are closely matched across ' + zones.length + ' modeled zones; spread is about ' + Math.round(spreadDegrees) + '°. ' + targetSummary : hottestZone.name + ' shows more modeled heatwork than ' + coolestZone.name + '; firing-cone bend differs by about ' + Math.round(spreadDegrees) + '°. ' + targetSummary;
+    return { zones: zones, resolution: 'readable', label: label, spreadDegrees: spreadDegrees, targetCount: targetCount, hottestZone: hottestZone, coolestZone: coolestZone, summary: summary, note: note };
+  }
+  function potteryWheelDriveGeometry(rpm, cameraTilt, settings) {
+    settings = settings || {};
+    var speedRpm = clamp(finite(rpm, 0), 0, 120);
+    var tiltDegrees = clamp(finite(cameraTilt, 42), 20, 70);
+    var speedRatio = speedRpm / 120;
+    var perspectiveDepth = tiltDegrees / 70;
+    var centerX = finite(settings.centerX, 260);
+    var wheelheadY = finite(settings.wheelheadY, 415);
+    var wheelheadRx = clamp(finite(settings.wheelheadRx, 158), 100, 190);
+    var wheelheadRy = 16 + perspectiveDepth * 22;
+    var wheelheadThickness = clamp(3 + perspectiveDepth * 3, 4, 6);
+    var splashPanRx = wheelheadRx + 38;
+    var splashPanRy = wheelheadRy + 9;
+    var rotationTrackRx = wheelheadRx - 16;
+    var rotationTrackRy = Math.max(8, wheelheadRy - 6);
+    var rotationCircumference = Math.PI * (3 * (rotationTrackRx + rotationTrackRy) - Math.sqrt((3 * rotationTrackRx + rotationTrackRy) * (rotationTrackRx + 3 * rotationTrackRy)));
+    var registrationArcLength = clamp(rotationCircumference * .045, 18, 28);
+    var rotationPeriodSeconds = speedRpm > 0 ? 60 / speedRpm : null;
+    var rotationSecondsLabel = rotationPeriodSeconds === null ? null : (rotationPeriodSeconds >= 10 ? rotationPeriodSeconds.toFixed(1) : rotationPeriodSeconds.toFixed(2));
+    var rotationPeriodLabel = rotationPeriodSeconds === null ? 'stopped' : rotationSecondsLabel + ' s/rev';
+    var rotationLabel = rotationPeriodSeconds === null ? 'stopped · 0 RPM' : Math.round(speedRpm) + ' RPM · ' + rotationPeriodLabel;
+    var pedalToeY = 441 + speedRatio * 10;
+    var pedalTravelPct = Math.round(speedRatio * 100);
+    var pedalState = speedRpm <= 2 ? 'released' : (speedRatio < .35 ? 'lightly-pressed' : (speedRatio < .75 ? 'mid-travel' : 'deeply-pressed'));
+    var pedalStateLabel = pedalState === 'released' ? 'released' : (pedalState === 'lightly-pressed' ? 'lightly pressed' : (pedalState === 'mid-travel' ? 'mid travel' : 'deeply pressed'));
+    function number(value) { return Number(value).toFixed(1); }
+    function point(x, y) { return number(x) + ' ' + number(y); }
+    function polygon(points) { return 'M' + points.map(function (entry) { return point(entry[0], entry[1]); }).join(' L') + ' Z'; }
+    var sideBottomY = wheelheadY + wheelheadThickness;
+    var wheelheadSidePath = 'M' + point(centerX - wheelheadRx, wheelheadY) + ' Q' + point(centerX, wheelheadY + wheelheadRy) + ' ' + point(centerX + wheelheadRx, wheelheadY) + ' L' + point(centerX + wheelheadRx, sideBottomY) + ' Q' + point(centerX, sideBottomY + wheelheadRy) + ' ' + point(centerX - wheelheadRx, sideBottomY) + ' Z';
+    var pedalPath = polygon([[374, 450], [438, pedalToeY], [430, pedalToeY + 7], [376, 459]]);
+    return {
+      speedRpm: speedRpm,
+      speedRatio: speedRatio,
+      tiltDegrees: tiltDegrees,
+      perspectiveDepth: perspectiveDepth,
+      motionDurationSeconds: rotationPeriodSeconds,
+      driveHousingPath: 'M196 424 L324 424 L343 458 L177 458 Z',
+      splashPan: { cx: centerX, cy: 420, rx: splashPanRx, ry: splashPanRy },
+      wheelhead: { cx: centerX, cy: wheelheadY, rx: wheelheadRx, ry: wheelheadRy, thickness: wheelheadThickness, sidePath: wheelheadSidePath },
+      rotation: { state: rotationPeriodSeconds === null ? 'stopped' : 'turning', periodSeconds: rotationPeriodSeconds, secondsLabel: rotationSecondsLabel, periodLabel: rotationPeriodLabel, label: rotationLabel, cx: centerX, cy: wheelheadY, rx: rotationTrackRx, ry: rotationTrackRy, circumferencePx: rotationCircumference, markerLengthPx: registrationArcLength, dashArray: number(registrationArcLength) + ' ' + number(rotationCircumference - registrationArcLength), dashOffset: -rotationCircumference },
+      spindle: { path: 'M249 438 L271 438 L274 450 L246 450 Z', hubCx: centerX, hubCy: 450, hubRx: 14, hubRy: 4 },
+      pedal: { path: pedalPath, toeX: 438, toeY: pedalToeY, travelPct: pedalTravelPct, state: pedalState, stateLabel: pedalStateLabel, highlightPath: 'M379 450 L433 ' + number(pedalToeY + 1) },
+      summary: 'Wheel hardware shows the wheel head, splash pan, drive housing, and a speed pedal at ' + pedalTravelPct + ' percent schematic travel for ' + Math.round(speedRpm) + ' RPM.' + (rotationPeriodSeconds === null ? ' The wheel head is stopped.' : ' The wheel head completes one revolution every ' + rotationSecondsLabel + ' seconds.'),
+      note: 'Pedal travel is a linear visual cue, not a model of a specific wheel, controller curve, torque, braking, or safe operating technique. The registration mark uses 60 divided by RPM seconds per revolution; its direction is schematic, and reduced-motion preferences suppress the repeating cue.'
+    };
+  }
+  function potteryWheelWobbleGeometry(wobble, centered, rpm, settings) {
+    settings = settings || {};
+    var wobbleRatio = clamp(finite(wobble, 0), 0, 1);
+    var centeredPercent = clamp(finite(centered, 100), 0, 100);
+    var speedRpm = clamp(finite(rpm, 0), 0, 120);
+    var depthRatio = clamp(finite(settings.depthRatio, .18), .08, .45);
+    var amplitudePx = clamp(wobbleRatio * 16 + (100 - centeredPercent) * .04, 0, 16);
+    var depthAmplitudePx = amplitudePx * depthRatio;
+    var diagonalAmplitudePx = amplitudePx * Math.SQRT1_2;
+    var diagonalDepthPx = depthAmplitudePx * Math.SQRT1_2;
+    var cycleSeconds = speedRpm > 0 ? 60 / speedRpm : null;
+    var cycleSecondsLabel = cycleSeconds === null ? null : (cycleSeconds >= 10 ? cycleSeconds.toFixed(1) : cycleSeconds.toFixed(2));
+    var speedLoadIndex = clamp((amplitudePx / 16) * Math.pow(speedRpm / 60, 2), 0, 4);
+    var loadState = speedRpm <= 0 ? 'stopped' : (amplitudePx <= .4 ? 'minimal' : (speedLoadIndex < .25 ? 'low' : (speedLoadIndex < .75 ? 'moderate' : 'high')));
+    var motionState = amplitudePx <= .4 ? 'centered' : (speedRpm > 0 ? 'orbiting' : 'stationary-offset');
+    var summary = motionState === 'centered' ? 'The modeled clay is visually centered on the wheel axis.' : (motionState === 'stationary-offset' ? 'The clay holds a visible off-center position while the wheel is stopped.' : 'The off-center clay follows an elliptical path once per ' + cycleSecondsLabel + '-second wheel revolution; comparative speed-related imbalance is ' + loadState + '.');
+    return {
+      wobbleRatio: wobbleRatio,
+      centeredPercent: centeredPercent,
+      speedRpm: speedRpm,
+      amplitudePx: amplitudePx,
+      depthAmplitudePx: depthAmplitudePx,
+      diagonalAmplitudePx: diagonalAmplitudePx,
+      diagonalDepthPx: diagonalDepthPx,
+      cycleSeconds: cycleSeconds,
+      cycleSecondsLabel: cycleSecondsLabel,
+      speedLoadIndex: speedLoadIndex,
+      loadState: loadState,
+      motionState: motionState,
+      summary: summary,
+      note: 'Wobble offset is a schematic view derived from centering and wobble, not a displacement measurement. The comparative speed-load cue scales with RPM squared to reflect circular-motion acceleration; it is not force in newtons.'
+    };
+  }
+  function potteryWheelSurfaceKinematics(rpm, radiusCm, settings) {
+    settings = settings || {};
+    var speedRpm = clamp(finite(rpm, 0), 0, 120);
+    var radius = clamp(finite(radiusCm, 0), 0, 50);
+    var ringNumber = Math.round(clamp(finite(settings.ringNumber, 1), 1, RING_COUNT));
+    var revolutionsPerSecond = speedRpm / 60;
+    var circumferenceCm = 2 * Math.PI * radius;
+    var angularVelocityRadPerSecond = 2 * Math.PI * revolutionsPerSecond;
+    var surfaceSpeedCmPerSecond = circumferenceCm * revolutionsPerSecond;
+    var state = speedRpm <= 0 ? 'stopped' : (radius <= 0 ? 'on-axis' : 'moving');
+    var speedLabel = surfaceSpeedCmPerSecond < 100 ? surfaceSpeedCmPerSecond.toFixed(1) : Math.round(surfaceSpeedCmPerSecond).toString();
+    var displayLabel = Math.round(speedRpm) + ' RPM · ring ' + ringNumber + ' · ' + (state === 'stopped' ? 'stopped' : speedLabel + ' cm/s');
+    var summary = state === 'stopped' ? 'At work ring ' + ringNumber + ', local clay surface speed is 0 because the wheel is stopped.' : 'At work ring ' + ringNumber + ', a ' + radius.toFixed(2) + '-centimeter radius at ' + Math.round(speedRpm) + ' RPM gives a local clay surface speed of ' + speedLabel + ' centimeters per second.';
+    return {
+      state: state,
+      speedRpm: speedRpm,
+      radiusCm: radius,
+      ringNumber: ringNumber,
+      revolutionsPerSecond: revolutionsPerSecond,
+      circumferenceCm: circumferenceCm,
+      angularVelocityRadPerSecond: angularVelocityRadPerSecond,
+      surfaceSpeedCmPerSecond: surfaceSpeedCmPerSecond,
+      speedLabel: speedLabel,
+      displayLabel: displayLabel,
+      summary: summary,
+      note: 'Local surface speed uses 2 pi times radius times RPM divided by 60. It is tangential clay speed, not hand speed, relative slip, drag, or force.'
+    };
+  }
+  function potteryWheelWholeFormKinematics(rpm, radii) {
+    var speedRpm = clamp(finite(rpm, 0), 0, 120);
+    var validRadii = (Array.isArray(radii) ? radii : []).map(function (radius) {
+      return clamp(finite(radius, 0), 0, 50);
+    }).filter(function (radius) { return radius > 0; });
+    if (!validRadii.length) validRadii = [0];
+    var minRadiusCm = Math.min.apply(Math, validRadii);
+    var maxRadiusCm = Math.max.apply(Math, validRadii);
+    var revolutionsPerSecond = speedRpm / 60;
+    var speedFactor = 2 * Math.PI * revolutionsPerSecond;
+    var minSurfaceSpeedCmPerSecond = minRadiusCm * speedFactor;
+    var maxSurfaceSpeedCmPerSecond = maxRadiusCm * speedFactor;
+    var state = speedRpm <= 0 ? 'stopped' : 'moving';
+    function speedLabel(value) { return value < 100 ? value.toFixed(1) : Math.round(value).toString(); }
+    var minSpeedLabel = speedLabel(minSurfaceSpeedCmPerSecond);
+    var maxSpeedLabel = speedLabel(maxSurfaceSpeedCmPerSecond);
+    var rangeLabel = Math.abs(maxSurfaceSpeedCmPerSecond - minSurfaceSpeedCmPerSecond) < .05 ? minSpeedLabel : minSpeedLabel + '–' + maxSpeedLabel;
+    var displayLabel = Math.round(speedRpm) + ' RPM · whole form · ' + (state === 'stopped' ? 'stopped' : rangeLabel + ' cm/s');
+    var summary = state === 'stopped'
+      ? 'Across the whole form, clay surface speed is 0 because the wheel is stopped.'
+      : 'Across the whole form at ' + Math.round(speedRpm) + ' RPM, modeled clay surface speed ranges from ' + minSpeedLabel + ' to ' + maxSpeedLabel + ' centimeters per second as radius changes from ' + minRadiusCm.toFixed(2) + ' to ' + maxRadiusCm.toFixed(2) + ' centimeters.';
+    return {
+      state: state,
+      speedRpm: speedRpm,
+      revolutionsPerSecond: revolutionsPerSecond,
+      minRadiusCm: minRadiusCm,
+      maxRadiusCm: maxRadiusCm,
+      minSurfaceSpeedCmPerSecond: minSurfaceSpeedCmPerSecond,
+      maxSurfaceSpeedCmPerSecond: maxSurfaceSpeedCmPerSecond,
+      minSpeedLabel: minSpeedLabel,
+      maxSpeedLabel: maxSpeedLabel,
+      displayLabel: displayLabel,
+      summary: summary,
+      note: 'Whole-form surface-speed range uses 2 pi times each modeled ring radius times RPM divided by 60. It reports tangential clay speed across the form, not hand speed, relative slip, drag, or force.'
+    };
+  }
+  function potteryWheelWetFilmGeometry(moisture, lubrication, rpm, pressure, settings) {
+    settings = settings || {};
+    var method = settings.method === 'coil' ? 'coil' : 'wheel';
+    var bodyMoistureRatio = clamp(finite(moisture, .78), 0, 1);
+    var lubricationPct = clamp(finite(lubrication, 30), 0, 100);
+    var lubricationRatio = lubricationPct / 100;
+    var speedRpm = method === 'wheel' ? clamp(finite(rpm, 0), 0, 120) : 0;
+    var speedRatio = speedRpm / 120;
+    var pressureRatio = clamp(finite(pressure, 48), 0, 100) / 100;
+    var excessRatio = clamp((lubricationRatio - .72) / .28, 0, 1);
+    var state = lubricationPct < 20 ? 'dry-contact' : (lubricationPct <= 72 ? 'working-film' : 'excess-film');
+    var label = state === 'dry-contact' ? 'dry contact' : (state === 'working-film' ? 'working film' : 'excess film');
+    var sheenOpacity = clamp(.04 + bodyMoistureRatio * .22 + lubricationRatio * .18, .04, .44);
+    var contactFilmOpacity = clamp(lubricationRatio * .62 + excessRatio * .16, 0, .78);
+    var contactFilmWidthPx = clamp(1.2 + lubricationRatio * 4.4 + excessRatio * 2.2, 1.2, 7.8);
+    var panSlipRatio = method === 'wheel' ? clamp(lubricationRatio * (.32 + pressureRatio * .18) + excessRatio * .5, 0, 1) : 0;
+    var panSlipOpacity = method === 'wheel' ? clamp(.08 + panSlipRatio * .68, .08, .76) : 0;
+    var panSlipWidthPx = method === 'wheel' ? clamp(.8 + panSlipRatio * 10, .8, 10.8) : 0;
+    var splashTendency = method === 'wheel' ? clamp(excessRatio * Math.pow(speedRatio, 2) * (.55 + pressureRatio * .45), 0, 1) : 0;
+    var dropletCount = splashTendency > .72 ? 3 : (splashTendency > .38 ? 2 : (splashTendency > .1 ? 1 : 0));
+    var centerX = finite(settings.centerX, 260);
+    var panY = finite(settings.panY, 420);
+    var panRx = clamp(finite(settings.panRx, 196), 80, 240);
+    var panRy = clamp(finite(settings.panRy, 38), 12, 80);
+    var dropletTemplates = [
+      { side: -1, inset: 24, rise: 6, radius: 2.3 },
+      { side: 1, inset: 27, rise: 11, radius: 2.7 },
+      { side: 1, inset: 8, rise: 19, radius: 2.1 }
+    ];
+    var droplets = dropletTemplates.slice(0, dropletCount).map(function (drop, index) {
+      return {
+        id: index + 1,
+        cx: centerX + drop.side * (panRx - drop.inset),
+        cy: panY - panRy * .34 - splashTendency * drop.rise,
+        radius: drop.radius
+      };
+    });
+    var bodyMoisturePct = Math.round(bodyMoistureRatio * 100);
+    var summary = state === 'dry-contact'
+      ? 'At ' + Math.round(lubricationPct) + '% surface lubrication, the model shows dry contact and comparatively more drag; clay-body moisture remains a separate ' + bodyMoisturePct + '%.'
+      : (state === 'working-film'
+        ? 'At ' + Math.round(lubricationPct) + '% surface lubrication, the model shows a working film that reduces contact drag; clay-body moisture remains a separate ' + bodyMoisturePct + '%.'
+        : 'At ' + Math.round(lubricationPct) + '% surface lubrication, the model shows excess film that broadens the contact cue and reduces control; clay-body moisture remains a separate ' + bodyMoisturePct + '%.');
+    if (method === 'coil') summary += ' Handbuilding retains the surface-sheen interpretation but suppresses powered splash-pan accumulation.';
+    return {
+      method: method,
+      state: state,
+      label: label,
+      bodyMoistureRatio: bodyMoistureRatio,
+      bodyMoisturePct: bodyMoisturePct,
+      lubricationPct: lubricationPct,
+      lubricationRatio: lubricationRatio,
+      speedRpm: speedRpm,
+      pressureRatio: pressureRatio,
+      excessRatio: excessRatio,
+      sheenOpacity: sheenOpacity,
+      contactFilmOpacity: contactFilmOpacity,
+      contactFilmWidthPx: contactFilmWidthPx,
+      panSlipRatio: panSlipRatio,
+      panSlipOpacity: panSlipOpacity,
+      panSlipWidthPx: panSlipWidthPx,
+      splashTendency: splashTendency,
+      dropletCount: dropletCount,
+      pool: { cx: centerX, cy: panY, rx: Math.max(1, panRx - 8), ry: Math.max(1, panRy - 5) },
+      droplets: droplets,
+      summary: summary,
+      note: 'Clay-body moisture and surface lubrication are modeled separately. Sheen, film width, pan slip, and droplets are comparative visual cues, not measurements of water content, slip volume, spray range, material chemistry, or safe cleanup practice.'
+    };
+  }
+  function potteryWheelContactGeometry(tool, method, workRing, pressure, handSupport, contactSpan, settings) {
+    settings = settings || {};
+    method = method === 'coil' ? 'coil' : 'wheel';
+    var wheelProfiles = {
+      center: { id: 'centering-brace', label: 'two-hand centering brace', shortLabel: 'centering brace', outsideKind: 'hand-brace', insideKind: 'hand-brace', outsideRole: 'driving brace', insideRole: 'opposing brace', insideSurface: 'outer-left', targetMode: 'whole-form', supportRelevant: false },
+      open: { id: 'opening-pair', label: 'opening finger with outside brace', shortLabel: 'opening pair', outsideKind: 'hand', insideKind: 'opening-finger', outsideRole: 'outside brace', insideRole: 'opening finger', targetMode: 'selected-ring', supportRelevant: true },
+      pull: { id: 'pulling-pair', label: 'paired-finger pull', shortLabel: 'pull pair', outsideKind: 'hand', insideKind: 'pulling-finger', outsideRole: 'outside finger', insideRole: 'inside supporting finger', targetMode: 'selected-ring', supportRelevant: true },
+      belly: { id: 'expansion-pair', label: 'inside expansion with outside guide', shortLabel: 'expansion pair', outsideKind: 'hand', insideKind: 'expansion-finger', outsideRole: 'outside guide', insideRole: 'inside expanding finger', targetMode: 'selected-ring', supportRelevant: true },
+      collar: { id: 'collaring-pair', label: 'outside collar with inside guide', shortLabel: 'collaring pair', outsideKind: 'hand', insideKind: 'guiding-finger', outsideRole: 'outside collaring hand', insideRole: 'inside guide', targetMode: 'selected-ring', supportRelevant: true },
+      smooth: { id: 'rib-support', label: 'exterior rib with inside support', shortLabel: 'rib + support', outsideKind: 'rib', insideKind: 'supporting-hand', outsideRole: 'exterior rib', insideRole: 'inside support', targetMode: 'selected-ring', supportRelevant: true },
+      trim: { id: 'trim-support', label: 'trimming loop with stabilizing hand', shortLabel: 'trim + stabilize', outsideKind: 'trim-loop', insideKind: 'stabilizing-hand', outsideRole: 'trimming edge', insideRole: 'stabilizing hand', targetMode: 'lower-zone', supportRelevant: true }
+    };
+    var coilProfiles = {
+      'add-coil': { id: 'coil-placement', label: 'coil placement with rim support', shortLabel: 'coil placement', outsideKind: 'coil', insideKind: 'rim-support', outsideRole: 'placing hand and coil', insideRole: 'rim support', targetMode: 'rim', supportRelevant: true },
+      open: { id: 'pinch-opening', label: 'pinch opening with opposing support', shortLabel: 'pinch pair', outsideKind: 'hand', insideKind: 'pinching-finger', outsideRole: 'outside pinch', insideRole: 'inside pinch support', targetMode: 'selected-ring', supportRelevant: true },
+      belly: { id: 'handbuild-expansion', label: 'inside push with outside guide', shortLabel: 'push-out pair', outsideKind: 'hand', insideKind: 'expansion-finger', outsideRole: 'outside guide', insideRole: 'inside push', targetMode: 'selected-ring', supportRelevant: true },
+      collar: { id: 'handbuild-collar', label: 'draw-in pinch with inside guide', shortLabel: 'draw-in pair', outsideKind: 'hand', insideKind: 'guiding-finger', outsideRole: 'outside draw-in pinch', insideRole: 'inside guide', targetMode: 'selected-ring', supportRelevant: true },
+      paddle: { id: 'paddle-support', label: 'paddle with inside support', shortLabel: 'paddle + support', outsideKind: 'paddle', insideKind: 'supporting-hand', outsideRole: 'outside paddle', insideRole: 'inside support', targetMode: 'selected-ring', supportRelevant: true },
+      smooth: { id: 'hand-smoothing', label: 'smoothing fingers with inside support', shortLabel: 'smoothing pair', outsideKind: 'hand', insideKind: 'supporting-hand', outsideRole: 'outside smoothing fingers', insideRole: 'inside support', targetMode: 'selected-ring', supportRelevant: true },
+      trim: { id: 'scrape-support', label: 'scraper with stabilizing hand', shortLabel: 'scrape + stabilize', outsideKind: 'scraper', insideKind: 'stabilizing-hand', outsideRole: 'outside scraper', insideRole: 'stabilizing hand', targetMode: 'lower-zone', supportRelevant: true }
+    };
+    var profiles = method === 'coil' ? coilProfiles : wheelProfiles;
+    var fallbackTool = method === 'coil' ? 'add-coil' : 'center';
+    var toolId = Object.prototype.hasOwnProperty.call(profiles, tool) ? tool : fallbackTool;
+    var profile = profiles[toolId];
+    var target = potteryFormingTarget(toolId, workRing);
+    var requestedRing = target.requestedRing;
+    var targetRing = target.ring;
+    var pressurePct = clamp(finite(pressure, 48), 0, 100);
+    var supportPct = clamp(finite(handSupport, 55), 0, 100);
+    var spanRings = Math.round(clamp(finite(contactSpan, 9), 3, 11));
+    var centerX = finite(settings.centerX, 260);
+    var bottomY = finite(settings.bottomY, 406);
+    var heightPx = clamp(finite(settings.heightPx, 220), 35, 380);
+    var scale = clamp(finite(settings.scale, 10.2), 1, 30);
+    var rimY = bottomY - heightPx;
+    var ringPitchPx = heightPx / Math.max(1, RING_COUNT - 1);
+    var radii = Array.isArray(settings.radii) ? settings.radii : [];
+    var thickness = Array.isArray(settings.thickness) ? settings.thickness : [];
+    var radiusCm = clamp(finite(radii[targetRing], finite(settings.radiusCm, 6)), .4, 20);
+    var wallCm = clamp(finite(thickness[targetRing], finite(settings.wallCm, 1)), .1, radiusCm);
+    var outerRadiusPx = clamp(radiusCm * scale, 6, 190);
+    var innerRadiusPx = clamp(Math.max(.6, radiusCm - wallCm) * scale, 5, Math.max(5, outerRadiusPx - 1));
+    var contactY = bottomY - targetRing / Math.max(1, RING_COUNT - 1) * heightPx;
+    var modeledSpanRings = profile.targetMode === 'whole-form' ? RING_COUNT : (profile.targetMode === 'rim' ? 5 : spanRings);
+    var contactHeightPx = profile.targetMode === 'whole-form'
+      ? clamp(heightPx * .38, 18, 68)
+      : (profile.targetMode === 'rim' ? clamp(ringPitchPx * 5 * .72, 10, 38) : clamp(spanRings * ringPitchPx * .72, 8, 58));
+    var outsideX = centerX + outerRadiusPx + 7;
+    var insideX = profile.insideSurface === 'outer-left' ? centerX - outerRadiusPx - 7 : centerX + innerRadiusPx - 4;
+    var pressureRatio = pressurePct / 100;
+    var supportRatio = supportPct / 100;
+    var visualInsideRatio = profile.supportRelevant ? supportRatio : pressureRatio;
+    var outsidePad = { cx: outsideX, cy: contactY, rx: 3.8 + pressureRatio * 3.2, ry: contactHeightPx / 2, opacity: .34 + pressureRatio * .58, strokeWidth: 1.4 + pressureRatio * 1.5 };
+    var insidePad = { cx: insideX, cy: contactY, rx: 3.8 + visualInsideRatio * 3.2, ry: contactHeightPx / 2, opacity: .28 + visualInsideRatio * .64, strokeWidth: 1.4 + visualInsideRatio * 1.5 };
+    function number(value) { return Number(value).toFixed(1); }
+    function point(x, y) { return number(x) + ' ' + number(y); }
+    function polygon(points) { return 'M' + points.map(function (entry) { return point(entry[0], entry[1]); }).join(' L') + ' Z'; }
+    var outsideStartX = clamp(outsideX + 52, outsideX + 18, 506);
+    var outsideStartY = clamp(contactY + contactHeightPx * .34 + 20, 78, 442);
+    var outsideArmPath = 'M' + point(outsideStartX, outsideStartY) + ' Q' + point(outsideX + 26, contactY + contactHeightPx * .24 + 8) + ' ' + point(outsideX, contactY);
+    var insideArmPath;
+    if (profile.insideSurface === 'outer-left') {
+      var insideStartX = clamp(insideX - 52, 14, insideX - 18);
+      var insideStartY = clamp(contactY + contactHeightPx * .34 + 20, 78, 442);
+      insideArmPath = 'M' + point(insideStartX, insideStartY) + ' Q' + point(insideX - 26, contactY + contactHeightPx * .24 + 8) + ' ' + point(insideX, contactY);
+    } else {
+      var cavityStartX = centerX + clamp(innerRadiusPx * .26, 6, 24);
+      var cavityStartY = clamp(rimY - 11, 48, bottomY - 12);
+      var cavityControlX = centerX + clamp(innerRadiusPx * .52, 10, 48);
+      var cavityControlY = clamp(cavityStartY + (contactY - cavityStartY) * .48, 54, bottomY - 5);
+      insideArmPath = 'M' + point(cavityStartX, cavityStartY) + ' Q' + point(cavityControlX, cavityControlY) + ' ' + point(insideX, contactY);
+    }
+    var implement = { kind: 'none' };
+    var halfHeight = contactHeightPx / 2;
+    if (profile.outsideKind === 'rib') {
+      implement = { kind: 'rib', path: 'M' + point(outsideX - 2, contactY - halfHeight - 2) + ' Q' + point(outsideX + 11, contactY - halfHeight * .58) + ' ' + point(outsideX + 10, contactY + halfHeight * .72) + ' L' + point(outsideX + 1, contactY + halfHeight + 2) + ' Z' };
+    } else if (profile.outsideKind === 'paddle') {
+      implement = { kind: 'paddle', path: polygon([[outsideX - 2, contactY - halfHeight - 3], [outsideX + 13, contactY - halfHeight + 1], [outsideX + 13, contactY + halfHeight - 1], [outsideX - 2, contactY + halfHeight + 3]]) };
+    } else if (profile.outsideKind === 'scraper') {
+      implement = { kind: 'scraper', path: polygon([[outsideX - 3, contactY - halfHeight], [outsideX + 13, contactY], [outsideX - 3, contactY + halfHeight]]) };
+    } else if (profile.outsideKind === 'trim-loop') {
+      implement = { kind: 'trim-loop', handlePath: 'M' + point(outsideX + 38, contactY + 22) + ' L' + point(outsideX + 7, contactY + 2), loop: { cx: outsideX + 1, cy: contactY, rx: 7, ry: clamp(halfHeight * .42, 4, 11) } };
+    } else if (profile.outsideKind === 'coil') {
+      implement = { kind: 'coil', path: 'M' + point(centerX - outerRadiusPx, contactY) + ' A' + number(outerRadiusPx) + ' ' + number(Math.max(3, contactHeightPx * .34)) + ' 0 0 0 ' + point(centerX + outerRadiusPx, contactY) };
+    }
+    var insideTouchPct = profile.supportRelevant ? supportPct : pressurePct;
+    var difference = pressurePct - insideTouchPct;
+    var balanceState = Math.abs(difference) <= 12 ? 'balanced' : (difference > 0 ? 'outside-led' : 'inside-led');
+    var balanceLabel = profile.supportRelevant
+      ? (balanceState === 'balanced' ? 'near-balanced touch' : (balanceState === 'outside-led' ? 'outside-led touch' : 'inside-led touch'))
+      : 'matched opposing brace';
+    var targetLabel = profile.targetMode === 'whole-form' ? 'the whole modeled form' : (profile.targetMode === 'rim' ? 'the top five modeled rim rings' : (profile.targetMode === 'lower-zone' ? 'lower-exterior work ring ' + (targetRing + 1) + ', constrained to rings ' + (target.minRing + 1) + '–' + (target.maxRing + 1) : 'work ring ' + (targetRing + 1) + ' across ' + modeledSpanRings + ' modeled rings'));
+    var summary = profile.label.charAt(0).toUpperCase() + profile.label.slice(1) + ' is shown at ' + targetLabel + '. ';
+    if (profile.targetMode === 'whole-form') summary += 'Centering uses the pressure-driven opposing brace and rotational averaging rather than the selected ring or inside-support control.';
+    else summary += 'The outside cue follows ' + Math.round(pressurePct) + '% pressure and the inside cue follows ' + Math.round(supportPct) + '% support, producing ' + balanceLabel + ' in this comparative model.';
+    return {
+      method: method,
+      tool: toolId,
+      id: profile.id,
+      label: profile.label,
+      shortLabel: profile.shortLabel,
+      outsideKind: profile.outsideKind,
+      insideKind: profile.insideKind,
+      outsideRole: profile.outsideRole,
+      insideRole: profile.insideRole,
+      supportRelevant: profile.supportRelevant,
+      targetMode: profile.targetMode,
+      requestedRing: requestedRing,
+      targetRing: targetRing,
+      targetMinRing: target.minRing,
+      targetMaxRing: target.maxRing,
+      targetZoneRingCount: target.zoneRingCount,
+      modeledSpanRings: modeledSpanRings,
+      contactHeightPx: contactHeightPx,
+      pressurePct: pressurePct,
+      supportPct: supportPct,
+      insideTouchPct: insideTouchPct,
+      balanceState: balanceState,
+      balanceLabel: balanceLabel,
+      outsideArmPath: outsideArmPath,
+      insideArmPath: insideArmPath,
+      outsideArmWidthPx: 4.8 + pressureRatio * 3.2,
+      insideArmWidthPx: 4.8 + visualInsideRatio * 3.2,
+      outsidePad: outsidePad,
+      insidePad: insidePad,
+      implement: implement,
+      summary: summary,
+      note: 'Contact silhouettes and tool angles are schematic role cues, not hand anatomy, measured contact area, force, posture, ergonomics, or technique and safety instruction.'
+    };
+  }
+  function kilnShelfPerspectiveGeometry(y, settings) {
+    settings = settings || {};
+    var backY = finite(y, 0);
+    var backLeft = finite(settings.backLeft, 151);
+    var backRight = Math.max(backLeft + 80, finite(settings.backRight, 405));
+    var depth = clamp(finite(settings.depth, 10), 4, 30);
+    var frontOutsetLeft = clamp(finite(settings.frontOutsetLeft, finite(settings.leftInset, 15)), 4, 40);
+    var frontOutsetRight = clamp(finite(settings.frontOutsetRight, finite(settings.rightInset, 19)), 4, 40);
+    var thickness = clamp(finite(settings.thickness, 4), 2, 12);
+    var frontY = backY + depth;
+    var frontLeft = Math.min(backLeft - 4, finite(settings.frontLeft, backLeft - frontOutsetLeft));
+    var frontRight = Math.max(backRight + 4, finite(settings.frontRight, backRight + frontOutsetRight));
+    var lowerLeft = frontLeft + Math.min(4, thickness);
+    var lowerRight = frontRight - Math.min(4, thickness);
+    function point(x, pointY) { return Number(x).toFixed(1) + ' ' + Number(pointY).toFixed(1); }
+    var surfacePath = 'M' + point(backLeft, backY) + ' L' + point(backRight, backY) + ' L' + point(frontRight, frontY) + ' L' + point(frontLeft, frontY) + ' Z';
+    var frontFacePath = 'M' + point(frontLeft, frontY) + ' L' + point(frontRight, frontY) + ' L' + point(lowerRight, frontY + thickness) + ' L' + point(lowerLeft, frontY + thickness) + ' Z';
+    var supportInset = clamp((frontRight - frontLeft) * .055, 10, 22);
+    return {
+      backY: backY,
+      frontY: frontY,
+      depth: depth,
+      thickness: thickness,
+      backLeft: backLeft,
+      backRight: backRight,
+      frontLeft: frontLeft,
+      frontRight: frontRight,
+      frontOutsetLeft: frontOutsetLeft,
+      frontOutsetRight: frontOutsetRight,
+      surfacePath: surfacePath,
+      frontFacePath: frontFacePath,
+      backEdgePath: 'M' + point(backLeft, backY) + ' L' + point(backRight, backY),
+      frontEdgePath: 'M' + point(frontLeft, frontY) + ' L' + point(frontRight, frontY),
+      supportXs: [frontLeft + supportInset, frontRight - supportInset]
+    };
+  }
+  function kilnWallCutawayGeometry(settings) {
+    settings = settings || {};
+    var centerX = finite(settings.centerX, 280);
+    var halfWidth = clamp(finite(settings.halfWidth, 204), 140, 250);
+    var topY = finite(settings.topY, 28);
+    var bottomY = Math.max(topY + 180, finite(settings.bottomY, 344));
+    var shoulderY = clamp(finite(settings.shoulderY, 95), topY + 35, bottomY - 70);
+    var capHalfWidth = clamp(finite(settings.capHalfWidth, 142), 70, halfWidth - 30);
+    var maximumInset = Math.min(60, halfWidth - 80);
+    var layerDefinitions = [
+      { id: 'outer-casing', label: 'outer casing', inset: 0 },
+      { id: 'insulating-refractory', label: 'insulating refractory', inset: 9 },
+      { id: 'hot-face-lining', label: 'hot-face lining', inset: 32 },
+      { id: 'chamber-opening', label: 'chamber opening', inset: 50 }
+    ];
+    function number(value) { return Number(value).toFixed(1); }
+    function layerGeometry(definition) {
+      var inset = clamp(finite(definition.inset, 0), 0, maximumInset);
+      var left = centerX - halfWidth + inset;
+      var right = centerX + halfWidth - inset;
+      var layerTopY = topY + inset * .8;
+      var layerBottomY = bottomY - inset * .28;
+      var layerShoulderY = shoulderY + inset * .2;
+      var controlY = topY + 10 + inset * .76;
+      var capLeft = centerX - capHalfWidth + inset * .4;
+      var capRight = centerX + capHalfWidth - inset * .4;
+      var path = 'M' + number(left) + ' ' + number(layerBottomY) + ' V' + number(layerShoulderY) + ' Q' + number(left) + ' ' + number(controlY) + ' ' + number(capLeft) + ' ' + number(layerTopY) + ' H' + number(capRight) + ' Q' + number(right) + ' ' + number(controlY) + ' ' + number(right) + ' ' + number(layerShoulderY) + ' V' + number(layerBottomY) + ' Z';
+      return {
+        id: definition.id,
+        label: definition.label,
+        inset: inset,
+        left: left,
+        right: right,
+        topY: layerTopY,
+        bottomY: layerBottomY,
+        shoulderY: layerShoulderY,
+        controlY: controlY,
+        capLeft: capLeft,
+        capRight: capRight,
+        path: path
+      };
+    }
+    var layers = layerDefinitions.map(layerGeometry);
+    return {
+      centerX: centerX,
+      halfWidth: halfWidth,
+      topY: topY,
+      bottomY: bottomY,
+      layers: layers,
+      outerCasing: layers[0],
+      insulatingRefractory: layers[1],
+      hotFaceLining: layers[2],
+      chamberOpening: layers[3]
+    };
+  }
+  function kilnChamberPerspectiveGeometry(wallCutaway, settings) {
+    settings = settings || {};
+    var cutaway = wallCutaway && wallCutaway.chamberOpening ? wallCutaway : kilnWallCutawayGeometry();
+    var front = cutaway.chamberOpening;
+    var depth = clamp(finite(settings.depth, 10), 6, 24);
+    function number(value) { return Number(value).toFixed(1); }
+    function point(x, y) { return number(x) + ' ' + number(y); }
+    function polygon(points) { return 'M' + points.map(function (entry) { return point(entry[0], entry[1]); }).join(' L') + ' Z'; }
+    var rear = {
+      left: front.left + depth,
+      right: front.right - depth,
+      topY: front.topY + depth * .8,
+      bottomY: front.bottomY - depth,
+      shoulderY: front.shoulderY + depth * .4,
+      controlY: front.controlY + depth * .65,
+      capLeft: front.capLeft + depth * .4,
+      capRight: front.capRight - depth * .4
+    };
+    rear.path = 'M' + point(rear.left, rear.bottomY) + ' V' + number(rear.shoulderY) + ' Q' + point(rear.left, rear.controlY) + ' ' + point(rear.capLeft, rear.topY) + ' H' + number(rear.capRight) + ' Q' + point(rear.right, rear.controlY) + ' ' + point(rear.right, rear.shoulderY) + ' V' + number(rear.bottomY) + ' Z';
+    var ceilingReturn = { id: 'ceiling', path: polygon([[front.capLeft, front.topY], [front.capRight, front.topY], [rear.capRight, rear.topY], [rear.capLeft, rear.topY]]) };
+    var leftReturn = { id: 'left-wall', path: 'M' + point(front.left, front.bottomY) + ' V' + number(front.shoulderY) + ' Q' + point(front.left, front.controlY) + ' ' + point(front.capLeft, front.topY) + ' L' + point(rear.capLeft, rear.topY) + ' Q' + point(rear.left, rear.controlY) + ' ' + point(rear.left, rear.shoulderY) + ' V' + number(rear.bottomY) + ' Z' };
+    var rightReturn = { id: 'right-wall', path: 'M' + point(front.capRight, front.topY) + ' Q' + point(front.right, front.controlY) + ' ' + point(front.right, front.shoulderY) + ' V' + number(front.bottomY) + ' L' + point(rear.right, rear.bottomY) + ' V' + number(rear.shoulderY) + ' Q' + point(rear.right, rear.controlY) + ' ' + point(rear.capRight, rear.topY) + ' Z' };
+    var hearthFloor = { id: 'hearth-floor', path: polygon([[front.left, front.bottomY], [front.right, front.bottomY], [rear.right, rear.bottomY], [rear.left, rear.bottomY]]) };
+    return {
+      depth: depth,
+      front: front,
+      rear: rear,
+      ceilingReturn: ceilingReturn,
+      leftReturn: leftReturn,
+      rightReturn: rightReturn,
+      hearthFloor: hearthFloor,
+      returns: [ceilingReturn, leftReturn, rightReturn, hearthFloor]
+    };
   }
   function estimateThermalHistory(settings) {
     settings = settings || {};
@@ -361,6 +1069,72 @@
       cursor = segmentEnd;
     }
     return { progressPct: progress, elapsedHours: elapsedHours, totalHours: totalHours, segmentId: 'ramp', phaseLabel: 'Heating', segmentProgressPct: 0, temperatureC: finite(history.roomTemperature, 20) };
+  }
+  function kilnHeatSourceState(kilnType, sample, settings) {
+    settings = settings || {};
+    sample = sample || {};
+    var supportedTypes = ['electric', 'gas', 'wood', 'open'];
+    var type = supportedTypes.indexOf(kilnType) >= 0 ? kilnType : 'electric';
+    var segmentId = ['ramp', 'soak', 'cool'].indexOf(sample.segmentId) >= 0 ? sample.segmentId : 'ramp';
+    var temperatureC = clamp(finite(sample.temperatureC, 20), 20, 1400);
+    var targetTemperatureC = clamp(Math.max(temperatureC, finite(settings.temperature, Math.max(950, temperatureC))), 600, 1400);
+    var rampRate = clamp(finite(settings.ramp, 110), 30, 300);
+    var temperatureRatio = clamp((temperatureC - 20) / Math.max(80, targetTemperatureC - 20), 0, 1);
+    var rampRatio = clamp(rampRate / 300, .1, 1);
+    var activeInput = segmentId !== 'cool';
+    var state = segmentId === 'cool' ? 'cooling-source-off' : (segmentId === 'soak' ? 'peak-hold' : 'heating-input');
+    var sourceActivityRatio = 0;
+    if (segmentId === 'ramp') sourceActivityRatio = clamp(.62 + rampRatio * .18 + (1 - temperatureRatio) * .12, .62, .94);
+    if (segmentId === 'soak') sourceActivityRatio = type === 'electric' ? .38 : (type === 'gas' ? .46 : .58);
+    var activeFlameOpacityRatio = activeInput ? clamp(sourceActivityRatio * (.32 + temperatureRatio * .68), 0, .95) : 0;
+    var fuelBedGlowRatio = 0;
+    if (type === 'wood' || type === 'open') fuelBedGlowRatio = activeInput ? clamp(.16 + temperatureRatio * .5, .16, .68) : clamp(temperatureRatio * .62, 0, .62);
+    var flowVisibilityRatio = segmentId === 'cool' ? clamp(.18 + temperatureRatio * .36, .18, .54) : (segmentId === 'soak' ? .72 : 1);
+    var flowMotionSeconds = segmentId === 'cool' ? 4.2 : (segmentId === 'soak' ? 2.4 : 1.6);
+    var sourceLabel = '';
+    var sceneLabel = '';
+    var activeFlowLabel = type === 'electric' ? 'element heat + chamber circulation' : (type === 'gas' ? 'burner → flue circulation' : (type === 'wood' ? 'firebox → flue circulation' : 'flame + plume circulation'));
+    if (segmentId === 'cool') {
+      if (type === 'electric') { sourceLabel = 'elements off'; sceneLabel = 'elements off · stored heat'; }
+      if (type === 'gas') { sourceLabel = 'burner off'; sceneLabel = 'burner off · stored heat'; }
+      if (type === 'wood') { sourceLabel = 'active flame ended'; sceneLabel = 'flame ended · firebox embers'; }
+      if (type === 'open') { sourceLabel = 'active flame ended'; sceneLabel = 'flame ended · fuel-bed embers'; }
+    } else if (segmentId === 'soak') {
+      if (type === 'electric') { sourceLabel = 'elements cycling to hold peak'; sceneLabel = 'elements holding peak'; }
+      if (type === 'gas') { sourceLabel = 'burner holding peak'; sceneLabel = 'burner holding peak'; }
+      if (type === 'wood') { sourceLabel = 'firebox tending at peak'; sceneLabel = 'firebox tending at peak'; }
+      if (type === 'open') { sourceLabel = 'fuel bed near peak'; sceneLabel = 'fuel bed near peak'; }
+    } else {
+      if (type === 'electric') { sourceLabel = 'elements active'; sceneLabel = 'elements active'; }
+      if (type === 'gas') { sourceLabel = 'burner active'; sceneLabel = 'burner active'; }
+      if (type === 'wood') { sourceLabel = 'firebox active'; sceneLabel = 'firebox active'; }
+      if (type === 'open') { sourceLabel = 'open flame active'; sceneLabel = 'open flame active'; }
+    }
+    var summary = segmentId === 'cool'
+      ? sourceLabel + '; chamber glow remains because the kiln and load retain heat, while slower routes show comparative equalization.'
+      : (segmentId === 'soak'
+        ? sourceLabel + '; reduced source glow distinguishes peak holding from ramp heating.'
+        : sourceLabel + '; pulsing source glow marks active heat input while chamber glow tracks modeled temperature.');
+    return {
+      kilnType: type,
+      segmentId: segmentId,
+      state: state,
+      activeInput: activeInput,
+      temperatureC: temperatureC,
+      targetTemperatureC: targetTemperatureC,
+      storedHeatRatio: temperatureRatio,
+      sourceActivityRatio: sourceActivityRatio,
+      activeFlameOpacityRatio: activeFlameOpacityRatio,
+      fuelBedGlowRatio: fuelBedGlowRatio,
+      flowVisibilityRatio: flowVisibilityRatio,
+      flowMotionSeconds: flowMotionSeconds,
+      flowMode: segmentId === 'cool' ? 'stored-heat-equalization' : 'source-driven-circulation',
+      flowLabel: segmentId === 'cool' ? 'stored heat equalizing + venting' : activeFlowLabel,
+      sourceLabel: sourceLabel,
+      sceneLabel: sceneLabel,
+      summary: summary,
+      note: 'Source brightness and motion are phase-aware teaching cues, not controller duty cycle, burner setting, fuel rate, draft, or safety evidence. This model treats the cooling segment as source-off stored-heat loss; it does not simulate powered cooling, relights, or individual kiln controls.'
+    };
   }
   function estimateKilnMaterialState(vessel, sample, settings) {
     vessel = normalizeVessel(vessel);
@@ -428,6 +1202,445 @@
       glazeColor: glaze.color
     };
   }
+  function estimateKilnLoadEffects(settings) {
+    settings = settings || {};
+    var loadDensity = clamp(finite(settings.loadDensity, 55), 20, 95);
+    var airAccess = clamp(finite(settings.airAccess, 60), 20, 100);
+    var zoneSpreadMultiplier = clamp(1 + (loadDensity - 55) / 160 - (airAccess - 60) / 220, .65, 1.55);
+    var heatAccessFactor = clamp(1 + (airAccess - 60) / 200 - (loadDensity - 55) / 180, .58, 1.35);
+    var pieceCount = loadDensity < 40 ? 1 : (loadDensity < 75 ? 2 : 3);
+    var label = zoneSpreadMultiplier > 1.24 ? 'crowded / restricted heat paths' : (zoneSpreadMultiplier < .82 ? 'open heat paths' : 'balanced heat access');
+    return {
+      loadDensity: loadDensity,
+      airAccess: airAccess,
+      zoneSpreadMultiplier: zoneSpreadMultiplier,
+      heatAccessFactor: heatAccessFactor,
+      coreLagMultiplier: 1 / heatAccessFactor,
+      pieceCount: pieceCount,
+      label: label,
+      summary: Math.round(loadDensity) + '% relative ware load with ' + Math.round(airAccess) + '% air access gives ' + label + '.'
+    };
+  }
+  function kilnHeatFlowGeometry(kilnType, settings) {
+    settings = settings || {};
+    var supportedTypes = ['electric', 'gas', 'wood', 'open'];
+    var type = supportedTypes.indexOf(kilnType) >= 0 ? kilnType : 'electric';
+    var loadEffects = estimateKilnLoadEffects(settings);
+    var loadRatio = clamp((loadEffects.loadDensity - 20) / 75, 0, 1);
+    var airRestrictionRatio = clamp((100 - loadEffects.airAccess) / 80, 0, 1);
+    var restrictionRatio = clamp(loadRatio * .55 + airRestrictionRatio * .45, 0, 1);
+    var pathwayOpennessRatio = 1 - restrictionRatio;
+    var shieldingRatio = clamp(.18 + loadRatio * .52 + airRestrictionRatio * .30, .18, 1);
+    var bypassGapPx = 14 + pathwayOpennessRatio * 22;
+    var flowOpacity = .34 + pathwayOpennessRatio * .50;
+    var strokeWidth = 2.4 + pathwayOpennessRatio * 1.8;
+    var shadowOpacity = .06 + shieldingRatio * .34;
+    var defaults = [155, 240, 315];
+    var suppliedShelfYs = Array.isArray(settings.shelfFrontYs) ? settings.shelfFrontYs : [];
+    var shelfFrontYs = defaults.map(function (fallback, index) { return clamp(finite(suppliedShelfYs[index], fallback), 100, 335); });
+    var accessLabel = restrictionRatio < .28 ? 'open bypass channels' : (restrictionRatio < .68 ? 'moderate bypass channels' : 'restricted bypass channels');
+    var shieldingLabel = shieldingRatio < .38 ? 'light shelf shielding' : (shieldingRatio < .72 ? 'moderate shelf shielding' : 'strong shelf shielding');
+    var sourceMode = type === 'electric' ? 'distributed-elements' : (type === 'gas' ? 'burner-to-flue' : (type === 'wood' ? 'firebox-to-flue' : 'open-plume'));
+    var mechanismLabel = type === 'electric' ? 'element radiation + buoyant circulation' : (type === 'gas' ? 'burner-to-flue hot-gas circulation' : (type === 'wood' ? 'firebox-to-flue hot-gas circulation' : 'open flame and plume exposure'));
+    var shortLabel = type === 'electric' ? 'element heat + chamber circulation' : (type === 'gas' ? 'burner → flue circulation' : (type === 'wood' ? 'firebox → flue circulation' : 'open plume exposure'));
+    var note = 'Arrows are schematic circulation routes, not gas velocity or computational fluid dynamics. Dark shelf-shadow bands mark reduced direct radiant line-of-sight; they do not predict cold spots because shelves and ware also absorb, conduct, and re-radiate heat.';
+    if (type === 'open') {
+      return {
+        kilnType: type,
+        enclosed: false,
+        sourceMode: sourceMode,
+        mechanismLabel: mechanismLabel,
+        shortLabel: shortLabel,
+        accessLabel: accessLabel,
+        shieldingLabel: shieldingLabel,
+        restrictionRatio: restrictionRatio,
+        pathwayOpennessRatio: pathwayOpennessRatio,
+        pathwayOpennessPct: pathwayOpennessRatio * 100,
+        shieldingRatio: shieldingRatio,
+        bypassGapPx: bypassGapPx,
+        flowOpacity: flowOpacity,
+        strokeWidth: strokeWidth,
+        flowPaths: [],
+        shelfShadows: [],
+        summary: 'Open firing uses plume exposure rather than enclosed shelf-circulation geometry.',
+        note: 'Open-firing plume paths are schematic and do not predict local atmosphere, flame contact, ash deposition, or temperature.'
+      };
+    }
+    function number(value) { return Number(value).toFixed(1); }
+    function point(x, y) { return number(x) + ' ' + number(y); }
+    var flowPaths = [];
+    var leftSideX = 148 - restrictionRatio * 10;
+    var rightSideX = 412 + restrictionRatio * 10;
+    if (type === 'electric') {
+      flowPaths.push({
+        id: 'left-wall-rise',
+        kind: 'main',
+        weight: 1.12,
+        d: 'M' + point(leftSideX, shelfFrontYs[2] + 18) + ' C' + point(leftSideX - 18, shelfFrontYs[2] - 10) + ' ' + point(leftSideX - 10, shelfFrontYs[1] + 28) + ' ' + point(leftSideX, shelfFrontYs[1] + 10) + ' C' + point(leftSideX + 12, shelfFrontYs[1] - 12) + ' ' + point(leftSideX - 14, shelfFrontYs[0] + 28) + ' ' + point(leftSideX, shelfFrontYs[0] + 9) + ' C' + point(leftSideX + 10, shelfFrontYs[0] - 12) + ' ' + point(190, shelfFrontYs[0] - 38) + ' ' + point(230, shelfFrontYs[0] - 42)
+      });
+      flowPaths.push({
+        id: 'right-wall-return',
+        kind: 'main',
+        weight: 1.12,
+        d: 'M' + point(330, shelfFrontYs[0] - 42) + ' C' + point(378, shelfFrontYs[0] - 37) + ' ' + point(rightSideX - 10, shelfFrontYs[0] - 10) + ' ' + point(rightSideX, shelfFrontYs[0] + 10) + ' C' + point(rightSideX + 14, shelfFrontYs[0] + 30) + ' ' + point(rightSideX - 12, shelfFrontYs[1] - 10) + ' ' + point(rightSideX, shelfFrontYs[1] + 11) + ' C' + point(rightSideX + 12, shelfFrontYs[1] + 32) + ' ' + point(rightSideX + 18, shelfFrontYs[2] - 10) + ' ' + point(rightSideX, shelfFrontYs[2] + 18)
+      });
+      shelfFrontYs.forEach(function (shelfY, index) {
+        var bayY = shelfY - 18 - pathwayOpennessRatio * 4;
+        var leftStart = leftSideX + 5;
+        var rightStart = rightSideX - 5;
+        var leftToRight = index % 2 === 0;
+        var d = leftToRight
+          ? 'M' + point(leftStart, bayY + 6) + ' C' + point(leftStart + 58, bayY - bypassGapPx / 2) + ' ' + point(rightStart - 58, bayY + bypassGapPx / 2) + ' ' + point(rightStart, bayY - 6)
+          : 'M' + point(rightStart, bayY - 6) + ' C' + point(rightStart - 58, bayY + bypassGapPx / 2) + ' ' + point(leftStart + 58, bayY - bypassGapPx / 2) + ' ' + point(leftStart, bayY + 6);
+        flowPaths.push({ id: ['upper-bay', 'middle-bay', 'lower-bay'][index], kind: 'bay', weight: .9, d: d });
+      });
+    } else {
+      var woodBias = type === 'wood' ? 12 : 0;
+      var lowerBayY = shelfFrontYs[2] - 18 - pathwayOpennessRatio * 4;
+      var middleBayY = shelfFrontYs[1] - 18 - pathwayOpennessRatio * 4;
+      var upperBayY = shelfFrontYs[0] - 18 - pathwayOpennessRatio * 4;
+      flowPaths.push({
+        id: 'source-to-exhaust',
+        kind: 'main',
+        weight: 1.25,
+        d: 'M' + point(type === 'wood' ? 82 : 96, 318) + ' C' + point(140 + woodBias, 320) + ' ' + point(160 - woodBias, lowerBayY + 14) + ' ' + point(208, lowerBayY) + ' C' + point(282 + woodBias, lowerBayY - bypassGapPx / 3) + ' ' + point(354, lowerBayY + bypassGapPx / 3) + ' ' + point(rightSideX, lowerBayY - 8) + ' C' + point(rightSideX + 20, middleBayY + 20) + ' ' + point(rightSideX + 14, middleBayY + 3) + ' ' + point(rightSideX - 5, middleBayY) + ' C' + point(342, middleBayY - bypassGapPx / 3) + ' ' + point(232 - woodBias, middleBayY + bypassGapPx / 3) + ' ' + point(leftSideX, middleBayY - 7) + ' C' + point(leftSideX - 18, upperBayY + 22) + ' ' + point(leftSideX - 12, upperBayY + 4) + ' ' + point(leftSideX + 10, upperBayY) + ' C' + point(230, upperBayY - bypassGapPx / 3) + ' ' + point(340 + woodBias, upperBayY + bypassGapPx / 3) + ' ' + point(rightSideX - 2, upperBayY - 8) + ' C' + point(rightSideX + 18, upperBayY - 20) + ' ' + point(438, 92) + ' ' + point(452, 70)
+      });
+      shelfFrontYs.forEach(function (shelfY, index) {
+        var bayY = shelfY - 18 - pathwayOpennessRatio * 4;
+        var reverse = index % 2 === 1;
+        var left = leftSideX + 8;
+        var right = rightSideX - 8;
+        var d = reverse
+          ? 'M' + point(right, bayY - 5) + ' C' + point(right - 74, bayY + bypassGapPx / 2) + ' ' + point(left + 74, bayY - bypassGapPx / 2) + ' ' + point(left, bayY + 5)
+          : 'M' + point(left, bayY + 5) + ' C' + point(left + 74, bayY - bypassGapPx / 2) + ' ' + point(right - 74, bayY + bypassGapPx / 2) + ' ' + point(right, bayY - 5);
+        flowPaths.push({ id: ['upper-bypass', 'middle-bypass', 'lower-bypass'][index], kind: 'bay', weight: .72, d: d });
+      });
+    }
+    var shadowShiftX = type === 'electric' ? 0 : 8;
+    var shelfShadows = shelfFrontYs.map(function (shelfY, index) {
+      return {
+        id: ['upper-shelf', 'middle-shelf', 'lower-shelf'][index],
+        cx: 280 + shadowShiftX,
+        cy: shelfY + 10,
+        rx: 58 + shieldingRatio * 40 + index * 3,
+        ry: 5 + shieldingRatio * 5,
+        opacity: shadowOpacity
+      };
+    });
+    return {
+      kilnType: type,
+      enclosed: true,
+      sourceMode: sourceMode,
+      mechanismLabel: mechanismLabel,
+      shortLabel: shortLabel,
+      accessLabel: accessLabel,
+      shieldingLabel: shieldingLabel,
+      restrictionRatio: restrictionRatio,
+      pathwayOpennessRatio: pathwayOpennessRatio,
+      pathwayOpennessPct: pathwayOpennessRatio * 100,
+      shieldingRatio: shieldingRatio,
+      bypassGapPx: bypassGapPx,
+      flowOpacity: flowOpacity,
+      strokeWidth: strokeWidth,
+      flowPaths: flowPaths,
+      shelfShadows: shelfShadows,
+      summary: mechanismLabel + ' with ' + accessLabel + ', ' + shieldingLabel + ', and ' + Math.round(pathwayOpennessRatio * 100) + '% comparative pathway openness.',
+      note: note
+    };
+  }
+  function estimateWareCoreTemperature(vessel, sample, settings, zoneTemperature) {
+    vessel = normalizeVessel(vessel);
+    sample = sample || {};
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var walls = vessel.thickness.slice(3);
+    var averageWallCm = walls.reduce(function (sum, wall) { return sum + wall; }, 0) / Math.max(1, walls.length);
+    var segmentId = sample.segmentId || 'ramp';
+    var zoneC = clamp(finite(zoneTemperature, sample.temperatureC), 20, 1400);
+    var rateCPerHour = segmentId === 'cool' ? clamp(finite(settings.coolingRate, 100), 30, 300) : clamp(finite(settings.ramp, 110), 30, 300);
+    var thermalFactor = .55 + body.thermalSensitivity;
+    var loadEffects = estimateKilnLoadEffects(settings);
+    var steadyLagC = clamp(rateCPerHour * Math.pow(Math.max(.2, averageWallCm), 1.45) * thermalFactor / 16 * loadEffects.coreLagMultiplier, 0, 160);
+    var lagC = steadyLagC;
+    if (segmentId === 'soak') lagC *= 1 - .92 * clamp(finite(sample.segmentProgressPct, 0), 0, 100) / 100;
+    var coreC = segmentId === 'cool' ? zoneC + lagC : zoneC - lagC;
+    if (segmentId === 'cool') coreC = Math.min(coreC, Math.max(zoneC, clamp(finite(settings.temperature, zoneC), zoneC, 1400)));
+    coreC = clamp(coreC, 20, 1400);
+    var differenceC = coreC - zoneC;
+    var surfaceTemperatureC = zoneC + differenceC * .18;
+    var midWallTemperatureC = zoneC + differenceC * .58;
+    var surfaceToCoreDifferenceC = coreC - surfaceTemperatureC;
+    return {
+      zoneTemperatureC: zoneC,
+      surfaceTemperatureC: surfaceTemperatureC,
+      midWallTemperatureC: midWallTemperatureC,
+      coreTemperatureC: coreC,
+      differenceC: differenceC,
+      lagMagnitudeC: Math.abs(differenceC),
+      surfaceToCoreDifferenceC: surfaceToCoreDifferenceC,
+      surfaceToCoreGradientC: Math.abs(surfaceToCoreDifferenceC),
+      averageWallCm: averageWallCm,
+      rateCPerHour: rateCPerHour,
+      loadDensity: loadEffects.loadDensity,
+      airAccess: loadEffects.airAccess,
+      heatAccessFactor: loadEffects.heatAccessFactor,
+      direction: Math.abs(differenceC) < 1 ? 'near equilibrium' : (differenceC > 0 ? 'core hotter than zone' : 'core cooler than zone')
+    };
+  }
+  function estimateWareThermalStress(vessel, sample, settings, coreModel) {
+    vessel = normalizeVessel(vessel);
+    sample = sample || {};
+    settings = settings || {};
+    var body = materialProfile(vessel);
+    var core = coreModel || estimateWareCoreTemperature(vessel, sample, settings, finite(sample.temperatureC, 20));
+    var segmentId = sample.segmentId || 'ramp';
+    var segmentProgressPct = clamp(finite(sample.segmentProgressPct, 0), 0, 100);
+    var zoneTemperatureC = clamp(finite(core.zoneTemperatureC, sample.temperatureC), 20, 1400);
+    var activeRateCPerHour = segmentId === 'cool' ? clamp(finite(settings.coolingRate, 100), 30, 300) : clamp(finite(settings.ramp, 110), 30, 300);
+    var phaseMotionFactor = segmentId === 'soak' ? clamp((100 - segmentProgressPct) / 100 * .22, 0, .22) : 1;
+    var wallFactor = clamp(.72 + core.averageWallCm / 2.4, .85, 2.15);
+    var quartzWindow = clamp(1 - Math.abs(zoneTemperatureC - 573) / 150, 0, 1);
+    var lowTemperatureCoolingWindow = segmentId === 'cool' ? clamp(1 - Math.abs(zoneTemperatureC - 226) / 120, 0, 1) : 0;
+    var transitionMultiplier = 1 + quartzWindow * .55 + lowTemperatureCoolingWindow * .4;
+    var gradientContribution = core.surfaceToCoreGradientC * (.75 + body.thermalSensitivity) * wallFactor * 1.3;
+    var rateContribution = activeRateCPerHour / 300 * body.thermalSensitivity * 16 * phaseMotionFactor;
+    var openExposureMultiplier = settings.kilnType === 'open' ? 1.18 : 1;
+    var stressPct = clamp((gradientContribution + rateContribution) * transitionMultiplier * openExposureMultiplier, 0, 100);
+    var level = stressPct < 20 ? 'low transient stress' : (stressPct < 45 ? 'watch the gradient' : (stressPct < 70 ? 'high thermal stress' : 'severe thermal stress'));
+    var tensionMode = core.surfaceToCoreGradientC < 1 ? 'near-equilibrium wall' : (core.surfaceToCoreDifferenceC > 0 ? 'surface tension while cooling' : (segmentId === 'soak' ? 'core tension during equalization' : 'core tension while heating'));
+    var transitionLabel = quartzWindow >= .35 ? 'silica-change neighborhood near 573°C' : (lowTemperatureCoolingWindow >= .35 ? 'low-temperature silica-change neighborhood' : 'outside the highlighted silica-change windows');
+    return {
+      stressPct: stressPct,
+      level: level,
+      tensionMode: tensionMode,
+      transitionLabel: transitionLabel,
+      transitionStrengthPct: Math.max(quartzWindow, lowTemperatureCoolingWindow) * 100,
+      zoneTemperatureC: zoneTemperatureC,
+      surfaceToCoreGradientC: core.surfaceToCoreGradientC,
+      averageWallCm: core.averageWallCm,
+      activeRateCPerHour: activeRateCPerHour,
+      bodyThermalSensitivity: body.thermalSensitivity,
+      segmentId: segmentId,
+      summary: Math.round(stressPct) + '% modeled transient stress: ' + level + ', ' + tensionMode + ', ' + transitionLabel + '.'
+    };
+  }
+  function estimateWareThermalTrace(vessel, history, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    history = history || estimateThermalHistory(settings);
+    var body = materialProfile(vessel);
+    var walls = vessel.thickness.slice(3);
+    var averageWallCm = walls.reduce(function (sum, wall) { return sum + wall; }, 0) / Math.max(1, walls.length);
+    var loadEffects = estimateKilnLoadEffects(settings);
+    var timeConstantHours = clamp(Math.pow(Math.max(.2, averageWallCm), 1.45) * (.55 + body.thermalSensitivity) / 16 * loadEffects.coreLagMultiplier, .006, .75);
+    var progressValues = [];
+    function addProgress(value) {
+      value = clamp(finite(value, 0), 0, 100);
+      if (!progressValues.some(function (existing) { return Math.abs(existing - value) < .0001; })) progressValues.push(value);
+    }
+    for (var index = 0; index <= 40; index++) addProgress(index * 2.5);
+    var elapsedBoundary = 0;
+    (history.segments || []).forEach(function (segment) {
+      elapsedBoundary += Math.max(0, finite(segment.durationHours, 0));
+      if (history.totalHours > 0) addProgress(elapsedBoundary / history.totalHours * 100);
+    });
+    progressValues.sort(function (a, b) { return a - b; });
+    var points = [];
+    var previousSample = null;
+    var coreTemperatureC = finite(history.roomTemperature, 20);
+    var maximumLagPoint = null;
+    var maximumGradientPoint = null;
+    progressValues.forEach(function (progressPct) {
+      var sample = sampleThermalHistory(history, progressPct);
+      var zoneTemperatureC = clamp(finite(sample.temperatureC, 20), 20, 1400);
+      var rateCPerHour = 0;
+      if (previousSample) {
+        var elapsedStep = Math.max(0, sample.elapsedHours - previousSample.elapsedHours);
+        if (elapsedStep > 0) {
+          var previousZoneC = clamp(finite(previousSample.temperatureC, 20), 20, 1400);
+          rateCPerHour = (zoneTemperatureC - previousZoneC) / elapsedStep;
+          var decay = Math.exp(-elapsedStep / timeConstantHours);
+          coreTemperatureC = zoneTemperatureC - rateCPerHour * timeConstantHours + (coreTemperatureC - previousZoneC + rateCPerHour * timeConstantHours) * decay;
+        }
+      } else {
+        coreTemperatureC = zoneTemperatureC;
+      }
+      coreTemperatureC = clamp(coreTemperatureC, 20, 1400);
+      var differenceC = coreTemperatureC - zoneTemperatureC;
+      var surfaceTemperatureC = zoneTemperatureC + differenceC * .18;
+      var midWallTemperatureC = zoneTemperatureC + differenceC * .58;
+      var surfaceToCoreDifferenceC = coreTemperatureC - surfaceTemperatureC;
+      var coreModel = {
+        zoneTemperatureC: zoneTemperatureC,
+        surfaceTemperatureC: surfaceTemperatureC,
+        midWallTemperatureC: midWallTemperatureC,
+        coreTemperatureC: coreTemperatureC,
+        differenceC: differenceC,
+        lagMagnitudeC: Math.abs(differenceC),
+        surfaceToCoreDifferenceC: surfaceToCoreDifferenceC,
+        surfaceToCoreGradientC: Math.abs(surfaceToCoreDifferenceC),
+        averageWallCm: averageWallCm,
+        rateCPerHour: Math.abs(rateCPerHour),
+        loadDensity: loadEffects.loadDensity,
+        airAccess: loadEffects.airAccess,
+        heatAccessFactor: loadEffects.heatAccessFactor,
+        direction: Math.abs(differenceC) < 1 ? 'near equilibrium' : (differenceC > 0 ? 'core hotter than zone' : 'core cooler than zone')
+      };
+      var stress = estimateWareThermalStress(vessel, sample, settings, coreModel);
+      var point = Object.assign({}, sample, coreModel, {
+        sample: Object.assign({}, sample),
+        stress: stress,
+        stressPct: stress.stressPct,
+        tensionMode: stress.tensionMode
+      });
+      points.push(point);
+      if (!maximumLagPoint || point.lagMagnitudeC > maximumLagPoint.lagMagnitudeC) maximumLagPoint = point;
+      if (!maximumGradientPoint || point.surfaceToCoreGradientC > maximumGradientPoint.surfaceToCoreGradientC) maximumGradientPoint = point;
+      previousSample = sample;
+    });
+    maximumLagPoint = maximumLagPoint || points[0] || null;
+    maximumGradientPoint = maximumGradientPoint || points[0] || null;
+    var maximumLagC = maximumLagPoint ? maximumLagPoint.lagMagnitudeC : 0;
+    var maximumLagRelation = !maximumLagPoint || maximumLagPoint.lagMagnitudeC < 1 ? 'near chamber temperature' : (maximumLagPoint.differenceC > 0 ? 'hotter than the chamber' : 'cooler than the chamber');
+    return {
+      points: points,
+      timeConstantHours: timeConstantHours,
+      timeConstantMinutes: timeConstantHours * 60,
+      averageWallCm: averageWallCm,
+      maximumLagC: maximumLagC,
+      maximumLagPoint: maximumLagPoint,
+      maximumGradientC: maximumGradientPoint ? maximumGradientPoint.surfaceToCoreGradientC : 0,
+      maximumGradientPoint: maximumGradientPoint,
+      summary: 'Largest modeled chamber-to-core difference ' + Math.round(maximumLagC) + '°C during ' + (maximumLagPoint ? maximumLagPoint.phaseLabel.toLowerCase() : 'the schedule') + ' near chamber ' + Math.round(maximumLagPoint ? maximumLagPoint.zoneTemperatureC : 20) + '°C, with the core ' + maximumLagRelation + '.',
+      note: 'Continuous first-order comparative heat-response model; not a thermocouple, finite-element analysis, or crack prediction.'
+    };
+  }
+  function sampleWareThermalTrace(trace, progressPct, zoneTemperature) {
+    var points = trace && Array.isArray(trace.points) ? trace.points : [];
+    if (!points.length) return null;
+    var progress = clamp(finite(progressPct, 0), 0, 100);
+    var before = points[0];
+    var after = points[points.length - 1];
+    for (var index = 1; index < points.length; index++) {
+      if (progress <= points[index].progressPct) {
+        before = points[index - 1];
+        after = points[index];
+        break;
+      }
+      before = points[index];
+    }
+    if (progress <= points[0].progressPct) after = points[0];
+    if (progress >= points[points.length - 1].progressPct) before = after = points[points.length - 1];
+    var span = Math.max(.000001, after.progressPct - before.progressPct);
+    var ratio = before === after ? 0 : clamp((progress - before.progressPct) / span, 0, 1);
+    function mix(field) { return finite(before[field], 0) + (finite(after[field], finite(before[field], 0)) - finite(before[field], 0)) * ratio; }
+    var sampled = {
+      progressPct: progress,
+      elapsedHours: mix('elapsedHours'),
+      totalHours: mix('totalHours'),
+      segmentId: ratio < .5 ? before.segmentId : after.segmentId,
+      phaseLabel: ratio < .5 ? before.phaseLabel : after.phaseLabel,
+      segmentProgressPct: mix('segmentProgressPct'),
+      zoneTemperatureC: mix('zoneTemperatureC'),
+      surfaceTemperatureC: mix('surfaceTemperatureC'),
+      midWallTemperatureC: mix('midWallTemperatureC'),
+      coreTemperatureC: mix('coreTemperatureC'),
+      averageWallCm: mix('averageWallCm'),
+      rateCPerHour: mix('rateCPerHour'),
+      loadDensity: mix('loadDensity'),
+      airAccess: mix('airAccess'),
+      heatAccessFactor: mix('heatAccessFactor'),
+      stressPct: mix('stressPct'),
+      tensionMode: ratio < .5 ? before.tensionMode : after.tensionMode,
+      timeConstantHours: finite(trace.timeConstantHours, 0)
+    };
+    if (typeof zoneTemperature === 'number' && isFinite(zoneTemperature)) {
+      var zoneOffsetC = clamp(zoneTemperature, 20, 1400) - sampled.zoneTemperatureC;
+      sampled.zoneTemperatureC = clamp(sampled.zoneTemperatureC + zoneOffsetC, 20, 1400);
+      sampled.surfaceTemperatureC = clamp(sampled.surfaceTemperatureC + zoneOffsetC, 20, 1400);
+      sampled.midWallTemperatureC = clamp(sampled.midWallTemperatureC + zoneOffsetC, 20, 1400);
+      sampled.coreTemperatureC = clamp(sampled.coreTemperatureC + zoneOffsetC, 20, 1400);
+    }
+    sampled.differenceC = sampled.coreTemperatureC - sampled.zoneTemperatureC;
+    sampled.lagMagnitudeC = Math.abs(sampled.differenceC);
+    sampled.surfaceToCoreDifferenceC = sampled.coreTemperatureC - sampled.surfaceTemperatureC;
+    sampled.surfaceToCoreGradientC = Math.abs(sampled.surfaceToCoreDifferenceC);
+    sampled.direction = Math.abs(sampled.differenceC) < 1 ? 'near equilibrium' : (sampled.differenceC > 0 ? 'core hotter than zone' : 'core cooler than zone');
+    return sampled;
+  }
+  function estimateScheduleThermalStress(vessel, history, settings) {
+    vessel = normalizeVessel(vessel);
+    settings = settings || {};
+    history = history || estimateThermalHistory(settings);
+    var peakStress = null;
+    var peakSample = null;
+    var trace = estimateWareThermalTrace(vessel, history, settings);
+    trace.points.forEach(function (point) {
+      var sample = point.sample;
+      var stress = point.stress;
+      if (!peakStress || stress.stressPct > peakStress.stressPct) {
+        peakStress = stress;
+        peakSample = sample;
+      }
+    });
+    peakStress = peakStress || estimateWareThermalStress(vessel, {}, settings);
+    peakSample = peakSample || sampleThermalHistory(history, 0);
+    return {
+      peakStressPct: peakStress.stressPct,
+      peakStress: peakStress,
+      peakSample: peakSample,
+      trace: trace,
+      summary: 'Peak modeled transient stress ' + Math.round(peakStress.stressPct) + '% (' + peakStress.level + ') during ' + peakSample.phaseLabel.toLowerCase() + ' near ' + Math.round(peakSample.temperatureC) + '°C.'
+    };
+  }
+  function estimateThermalTransitionWindows(history, vessel) {
+    history = history || estimateThermalHistory({});
+    vessel = normalizeVessel(vessel || makeVessel('stoneware', 'bowl'));
+    var body = materialProfile(vessel);
+    var segments = Array.isArray(history.segments) ? history.segments : [];
+    var totalHours = Math.max(.0001, finite(history.totalHours, 0));
+    var definitions = [
+      { id: 'silica-heat', segmentId: 'ramp', label: 'Silica-change neighborhood · heat-up', shortLabel: '573° heat-up', entryC: 500, exitC: 650 },
+      { id: 'silica-cool', segmentId: 'cool', label: 'Silica-change neighborhood · cool-down', shortLabel: '573° cool-down', entryC: 650, exitC: 500 },
+      { id: 'low-silica-cool', segmentId: 'cool', label: 'Low-temperature silica-change neighborhood · cool-down', shortLabel: 'low-temp cool', entryC: 300, exitC: 150 }
+    ];
+    var windows = [];
+    var cursorHours = 0;
+    segments.forEach(function (segment) {
+      var durationHours = Math.max(0, finite(segment.durationHours, 0));
+      definitions.filter(function (definition) { return definition.segmentId === segment.id; }).forEach(function (definition) {
+        var segmentStartC = finite(segment.startC, 20);
+        var segmentEndC = finite(segment.endC, segmentStartC);
+        var minimumC = Math.min(segmentStartC, segmentEndC);
+        var maximumC = Math.max(segmentStartC, segmentEndC);
+        var entryC = clamp(definition.entryC, minimumC, maximumC);
+        var exitC = clamp(definition.exitC, minimumC, maximumC);
+        if (Math.abs(entryC - exitC) < 1 || Math.abs(segmentEndC - segmentStartC) < 1) return;
+        var entryRatio = clamp((entryC - segmentStartC) / (segmentEndC - segmentStartC), 0, 1);
+        var exitRatio = clamp((exitC - segmentStartC) / (segmentEndC - segmentStartC), 0, 1);
+        var entryHours = cursorHours + durationHours * entryRatio;
+        var exitHours = cursorHours + durationHours * exitRatio;
+        var startHours = Math.min(entryHours, exitHours);
+        var endHours = Math.max(entryHours, exitHours);
+        windows.push({
+          id: definition.id,
+          label: definition.label,
+          shortLabel: definition.shortLabel,
+          direction: segment.id === 'cool' ? 'cooling' : 'heating',
+          startTemperatureC: Math.min(entryC, exitC),
+          endTemperatureC: Math.max(entryC, exitC),
+          startElapsedHours: startHours,
+          endElapsedHours: endHours,
+          startProgressPct: startHours / totalHours * 100,
+          endProgressPct: endHours / totalHours * 100,
+          bodySensitivityPct: body.thermalSensitivity * 100,
+          note: definition.label + ' is a comparative teaching band; exact mineral changes depend on the clay recipe.'
+        });
+      });
+      cursorHours += durationHours;
+    });
+    return windows;
+  }
   function estimateFiredPorosity(bodyOrId, effectiveTemp, kilnType) {
     var body = typeof bodyOrId === 'string' ? clayBody(bodyOrId) : (bodyOrId || CLAY_BODIES.stoneware);
     var maturation = clamp((finite(effectiveTemp, 950) - (body.maturity - 210)) / 210, 0, 1);
@@ -494,8 +1707,12 @@
     var atmosphere = kilnType === 'electric' ? 'oxidation' : (settings.atmosphere || 'oxidation');
     var heatwork = estimateHeatwork({ temperature: target, ramp: ramp, soak: soak });
     var thermalHistory = estimateThermalHistory({ temperature: target, ramp: ramp, soak: soak, coolingRate: coolingRate });
+    var thermalTransitionWindows = estimateThermalTransitionWindows(thermalHistory, vessel);
     var fired = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
-    var thermalRisk = clamp((coolingRate * body.thermalSensitivity) / 140 * 100, 0, 100);
+    var thermalStressSettings = { temperature: target, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, loadDensity: finite(settings.loadDensity, finite(settings.kilnLoadDensity, 55)), airAccess: finite(settings.airAccess, finite(settings.kilnAirAccess, 60)) };
+    var thermalStress = estimateScheduleThermalStress(vessel, thermalHistory, thermalStressSettings);
+    var wareThermalTrace = thermalStress.trace;
+    var thermalRisk = thermalStress.peakStressPct;
     var rampRisk = clamp((ramp - 150) / 150 * 100, 0, 100);
     var maturityDistance = Math.abs(heatwork.effectiveTemp - body.maturity);
     var maturityRisk = clamp(maturityDistance / 230 * 100, 0, 100);
@@ -518,6 +1735,9 @@
       atmosphere: atmosphere,
       heatwork: heatwork,
       thermalHistory: thermalHistory,
+      thermalTransitionWindows: thermalTransitionWindows,
+      thermalStress: thermalStress,
+      wareThermalTrace: wareThermalTrace,
       maturationPct: fired.maturation * 100,
       porosityPct: fired.porosity * 100,
       thermalRiskPct: thermalRisk,
@@ -582,6 +1802,20 @@
       var irregularity = clamp(Math.abs(wall - neighborWall) / Math.max(0.18, neighborWall) * 0.55, 0, 1);
       var coilJoint = settings.method === 'coil' ? clamp(1 - vessel.coilBond, 0, 1) : clamp(1 - vessel.coilBond, 0, 1) * 0.18;
       var supportBenefit = handSupport * (thin * 0.1 + overhang * 0.06);
+      var signals = [
+        { id: 'thin-wall', label: 'thin wall', strength: thin * 0.62 },
+        { id: 'outward-overhang', label: 'outward overhang', strength: overhang * 0.22 },
+        { id: 'thick-section', label: 'thick section', strength: thick * 0.14 },
+        { id: 'wall-irregularity', label: 'wall irregularity', strength: irregularity * 0.12 },
+        { id: 'coil-joint', label: 'weak coil joint', strength: coilJoint * 0.16 },
+        { id: 'wet-clay', label: 'very wet clay', strength: wetWeakness * 0.08 },
+        { id: 'low-compression', label: 'low compression', strength: (1 - vessel.compression) * 0.08 },
+        { id: 'body-plasticity', label: 'lower body plasticity', strength: (1 - body.plasticity) * 0.08 },
+        { id: 'excess-lubrication', label: 'excess lubrication', strength: excessLubrication * 0.1 },
+        { id: 'collapsed-form', label: 'existing collapse', strength: vessel.collapsed ? 0.7 : 0 }
+      ];
+      var dominantSignal = signals[0];
+      for (var signalIndex = 1; signalIndex < signals.length; signalIndex++) if (signals[signalIndex].strength > dominantSignal.strength) dominantSignal = signals[signalIndex];
       var risk = clamp(
         thin * 0.62 + overhang * 0.22 + thick * 0.14 + irregularity * 0.12 + wetWeakness * 0.08 +
         (1 - vessel.compression) * 0.08 + coilJoint * 0.16 + (1 - body.plasticity) * 0.08 + excessLubrication * 0.1 - supportBenefit + (vessel.collapsed ? 0.7 : 0),
@@ -593,13 +1827,41 @@
         radiusCm: radius,
         outwardSlope: outwardSlope,
         thinRisk: thin,
+        thickRisk: thick,
         overhangRisk: overhang,
         irregularity: irregularity,
+        dominantSignalId: dominantSignal.id,
+        dominantSignalLabel: dominantSignal.label,
         risk: risk,
         status: risk >= 0.67 ? 'High local risk' : (risk >= 0.4 ? 'Watch this ring' : 'Lower local risk')
       });
     }
     return risks;
+  }
+  function summarizeRingRiskProfile(vessel, settings) {
+    var risks = analyzeRingRisks(vessel, settings);
+    var critical = risks[0];
+    var highCount = 0;
+    var watchCount = 0;
+    for (var i = 0; i < risks.length; i++) {
+      if (risks[i].risk > critical.risk) critical = risks[i];
+      if (risks[i].risk >= 0.67) highCount += 1;
+      else if (risks[i].risk >= 0.4) watchCount += 1;
+    }
+    var lowerCount = Math.max(0, risks.length - highCount - watchCount);
+    return {
+      rings: risks,
+      criticalRing: critical.index,
+      criticalRiskPct: critical.risk * 100,
+      criticalStatus: critical.status,
+      criticalSignalId: critical.dominantSignalId,
+      criticalSignalLabel: critical.dominantSignalLabel,
+      highCount: highCount,
+      watchCount: watchCount,
+      lowerCount: lowerCount,
+      summary: 'Ring ' + (critical.index + 1) + ' carries the highest comparative local signal at ' + Math.round(critical.risk * 100) + '%, led by ' + critical.dominantSignalLabel + '. The profile contains ' + highCount + ' high, ' + watchCount + ' watch, and ' + lowerCount + ' lower-signal rings.',
+      note: 'Ring risk combines modeled wall thickness, slope, irregularity, moisture, compression, material, support, and handling inputs. It is not measured stress, failure probability, a safe-thickness limit, or studio safety guidance.'
+    };
   }
   function analyzeVessel(vessel, settings) {
     vessel = normalizeVessel(vessel);
@@ -630,16 +1892,19 @@
     var stability = 100 - vessel.wobble * 40 - centrifugal * (26 + wetWeakness * 12) - thinRisk * 36 - Math.max(0, slenderness - 1.55) * 27 - overhangRisk * 20 - jointRisk * 24 - (1 - vessel.compression) * 11 + supportBenefit - excessLubrication * 9 - (vessel.collapsed ? 75 : 0);
     stability = clamp(stability, 0, 100);
     var capacity = vesselCapacity(vessel);
+    var openingFloor = analyzeOpeningFloor(vessel);
     var body = materialProfile(vessel);
-    var ringRisks = analyzeRingRisks(vessel, settings);
-    var criticalRing = ringRisks[0];
-    for (var riskIndex = 1; riskIndex < ringRisks.length; riskIndex++) if (ringRisks[riskIndex].risk > criticalRing.risk) criticalRing = ringRisks[riskIndex];
+    var ringRiskProfile = summarizeRingRiskProfile(vessel, settings);
     var volume = vesselVolume(vessel);
     var shape = slenderness > 1.7 ? 'tall vessel' : (vessel.radii[RING_COUNT - 1] < maxRadius * 0.62 ? 'necked jar' : (vessel.heightCm < maxRadius * 2 ? 'bowl form' : 'cylinder form'));
     return {
       volumeCm3: volume,
       massG: volume * body.density,
       capacityMl: capacity,
+      floorThicknessCm: openingFloor.floorThicknessCm,
+      cavityDepthCm: openingFloor.cavityDepthCm,
+      openingFloorState: openingFloor.state,
+      openingFloorRing: openingFloor.floorRing,
       minWallCm: minWall,
       maxWallCm: maxWall,
       averageWallCm: average,
@@ -654,8 +1919,12 @@
       contactSpan: Math.round(clamp(finite(settings.contactSpan, 9), 3, 11)),
       compression: vessel.compression * 100,
       coilBond: vessel.coilBond * 100,
-      criticalRing: criticalRing.index,
-      maxRingRisk: criticalRing.risk * 100,
+      ringRiskProfile: ringRiskProfile,
+      criticalRing: ringRiskProfile.criticalRing,
+      maxRingRisk: ringRiskProfile.criticalRiskPct,
+      criticalRingSignal: ringRiskProfile.criticalSignalLabel,
+      highRiskRingCount: ringRiskProfile.highCount,
+      watchRiskRingCount: ringRiskProfile.watchCount,
       shape: shape,
       status: vessel.collapsed ? 'Collapsed' : (stability >= 75 ? 'Stable' : (stability >= 48 ? 'Watch closely' : 'High collapse risk'))
     };
@@ -674,6 +1943,7 @@
       contributors.push({ id: id, label: label, evidence: evidence, action: action, severity: clamp(finite(severity, 0), 0, 100) });
     }
     var structural = vessel.collapsed || defects.indexOf('structural collapse') >= 0;
+    var openingFailure = defects.indexOf('base puncture') >= 0;
     var drying = defects.indexOf('drying crack') >= 0 || defects.indexOf('coil separation') >= 0 || defects.indexOf('steam crack') >= 0;
     var thermal = defects.indexOf('thermal crack') >= 0 || defects.indexOf('dunting crack') >= 0 || defects.indexOf('body deformation') >= 0 || defects.indexOf('uneven heatwork') >= 0;
     var glaze = defects.some(function (defect) { return ['underfired glaze', 'running glaze', 'thin glaze coverage', 'crazing risk', 'shivering risk'].indexOf(defect) >= 0; });
@@ -688,6 +1958,10 @@
       if (stats.lubrication > 78) add('lubrication', 'Excess surface lubrication', Math.round(stats.lubrication) + '% lubrication reduced control and softened the contact zone.', 'Use less water or slip and repeat at the same support, pressure, and wheel speed.', stats.lubrication - 12);
       if (vessel.centered < 65 || vessel.wobble > 0.42) add('centering', 'Centering and wobble', Math.round(vessel.centered) + '% centered with ' + Math.round(vessel.wobble * 100) + '% wobble.', 'Center the clay before repeating the shaping move.', Math.max(100 - vessel.centered, vessel.wobble * 100));
       if (settings.method === 'coil' && stats.coilBond < 58) add('coil-bond', 'Weak coil consolidation', Math.round(stats.coilBond) + '% modeled coil bond reduced continuity.', 'Paddle or smooth the joint before adding another coil.', 100 - stats.coilBond);
+    }
+    if (openingFailure) {
+      var openingFloor = analyzeOpeningFloor(vessel);
+      add('base-puncture', 'Opening reached the modeled base', openingFloor.summary, 'Undo to the previous checkpoint, focus the cavity floor, and compare one gentler or shallower opening pass.', 92);
     }
     if (drying) {
       var dryingRisk = estimateDryingRisk(vessel, settings) * 100;
@@ -713,7 +1987,7 @@
     }
     if (!contributors.length) add('recorded-flags', 'Recorded model flags', defects.join(', ') || 'The vessel entered a modeled failure state.', 'Return to a safe checkpoint and change one input before repeating.', 55);
     contributors.sort(function (a, b) { return b.severity - a.severity; });
-    var eventLabel = structural ? 'Structural collapse' : (drying ? 'Drying failure' : (thermal ? 'Thermal failure' : (glaze ? 'Glaze-surface failure' : (maturity ? 'Maturation mismatch' : 'Modeled defect'))));
+    var eventLabel = structural ? 'Structural collapse' : (openingFailure ? 'Opening-floor failure' : (drying ? 'Drying failure' : (thermal ? 'Thermal failure' : (glaze ? 'Glaze-surface failure' : (maturity ? 'Maturation mismatch' : 'Modeled defect')))));
     var primary = contributors[0];
     return {
       ready: true,
@@ -727,12 +2001,72 @@
       primaryAction: primary.action
     };
   }
+  function potteryFormingTarget(tool, requestedRing) {
+    var toolId = String(tool || 'shape');
+    var requested = Math.round(clamp(finite(requestedRing, RING_COUNT * .55), 0, RING_COUNT - 1));
+    if (toolId === 'center') {
+      return { mode: 'whole-form', requestedRing: requested, ring: Math.round((RING_COUNT - 1) * .44), minRing: 0, maxRing: RING_COUNT - 1, zoneRingCount: RING_COUNT, label: 'whole modeled form' };
+    }
+    if (toolId === 'add-coil') {
+      return { mode: 'rim', requestedRing: requested, ring: RING_COUNT - 1, minRing: RING_COUNT - 5, maxRing: RING_COUNT - 1, zoneRingCount: 5, label: 'top five modeled rim rings' };
+    }
+    if (toolId === 'trim') {
+      var trimMaxRing = Math.max(1, Math.floor(RING_COUNT * .34) - 1);
+      return { mode: 'lower-zone', requestedRing: requested, ring: Math.round(clamp(requested, 1, trimMaxRing)), minRing: 1, maxRing: trimMaxRing, zoneRingCount: trimMaxRing, label: 'lower exterior rings 2–' + (trimMaxRing + 1) };
+    }
+    return { mode: 'selected-ring', requestedRing: requested, ring: requested, minRing: 0, maxRing: RING_COUNT - 1, zoneRingCount: RING_COUNT, label: 'selected work ring' };
+  }
+  function estimateFormingDisplacement(beforeVessel, afterVessel, ringIndex, tool) {
+    var before = normalizeVessel(beforeVessel);
+    var after = normalizeVessel(afterVessel, before.clayBody);
+    var activeTool = String(tool || 'shape');
+    var target = potteryFormingTarget(activeTool, ringIndex);
+    var requestedRing = target.requestedRing;
+    var sampleRing = activeTool === 'add-coil' ? RING_COUNT - 2 : target.ring;
+    var beforeOuter = before.radii[sampleRing];
+    var afterOuter = after.radii[sampleRing];
+    var beforeInner = Math.max(0, beforeOuter - before.thickness[sampleRing]);
+    var afterInner = Math.max(0, afterOuter - after.thickness[sampleRing]);
+    var outerDeltaCm = afterOuter - beforeOuter;
+    var innerDeltaCm = afterInner - beforeInner;
+    var wallDeltaCm = after.thickness[sampleRing] - before.thickness[sampleRing];
+    var heightDeltaCm = after.heightCm - before.heightCm;
+    var clayVolumeDeltaCm3 = vesselVolume(after) - vesselVolume(before);
+    var threshold = .005;
+    var changes = [];
+    if (activeTool === 'add-coil' && clayVolumeDeltaCm3 > .5) changes.push('clay is added at the rim');
+    if (activeTool === 'trim' && clayVolumeDeltaCm3 < -.5) changes.push('clay is removed from the lower exterior');
+    if (Math.abs(outerDeltaCm) >= threshold) changes.push('outer wall moves ' + Math.abs(outerDeltaCm).toFixed(2) + ' cm ' + (outerDeltaCm > 0 ? 'outward' : 'inward'));
+    if (Math.abs(innerDeltaCm) >= threshold) changes.push('cavity ' + (innerDeltaCm > 0 ? 'widens' : 'narrows') + ' ' + Math.abs(innerDeltaCm).toFixed(2) + ' cm');
+    if (Math.abs(wallDeltaCm) >= threshold) changes.push('wall ' + (wallDeltaCm > 0 ? 'thickens' : 'thins') + ' ' + Math.abs(wallDeltaCm).toFixed(2) + ' cm');
+    if (Math.abs(heightDeltaCm) >= threshold) changes.push('height ' + (heightDeltaCm > 0 ? 'rises' : 'falls') + ' ' + Math.abs(heightDeltaCm).toFixed(2) + ' cm');
+    if (!changes.length && activeTool === 'center') changes.push('the rotating profile averages toward neighboring rings');
+    if (!changes.length && (activeTool === 'smooth' || activeTool === 'paddle')) changes.push('nearby rings become more even with little local displacement');
+    if (!changes.length) changes.push('little measurable displacement is predicted at this ring');
+    return {
+      requestedRing: requestedRing,
+      sampleRing: sampleRing,
+      tool: activeTool,
+      outerDeltaCm: outerDeltaCm,
+      innerDeltaCm: innerDeltaCm,
+      wallDeltaCm: wallDeltaCm,
+      heightDeltaCm: heightDeltaCm,
+      clayVolumeDeltaCm3: clayVolumeDeltaCm3,
+      changed: Math.abs(outerDeltaCm) >= threshold || Math.abs(innerDeltaCm) >= threshold || Math.abs(wallDeltaCm) >= threshold || Math.abs(heightDeltaCm) >= threshold || Math.abs(clayVolumeDeltaCm3) >= .5,
+      summary: changes.join('; ') + '.'
+    };
+  }
+  function formingToolGestureMode(tool) {
+    if (tool === 'center') return 'single-global';
+    if (tool === 'add-coil') return 'single-rim';
+    return 'ring-drag';
+  }
   function applyTool(vessel, tool, ringIndex, settings) {
     vessel = normalizeVessel(vessel);
     if (vessel.stage !== 'wet' && !(vessel.stage === 'leather-hard' && tool === 'trim')) return copyVessel(vessel);
     var next = copyVessel(vessel);
     settings = settings || {};
-    ringIndex = Math.round(clamp(finite(ringIndex, RING_COUNT * 0.55), 0, RING_COUNT - 1));
+    ringIndex = potteryFormingTarget(tool, ringIndex).ring;
     var pressure = clamp(finite(settings.pressure, 48), 0, 100) / 100;
     var rpm = clamp(finite(settings.rpm, 58), 0, 120);
     var method = settings.method === 'coil' ? 'coil' : 'wheel';
@@ -804,31 +2138,42 @@
           next.radii[i] = clamp(next.radii[i] + force * 0.22, 1.2, 12.5);
           next.thickness[i] = clamp(next.thickness[i] + force * 0.32, 0.22, next.radii[i]);
         }
-        next.heightCm = clamp(next.heightCm + force * 0.68, 5, 38);
-        next.compression = clamp(next.compression - force * 0.055, 0, 1);
-        next.coilBond = clamp(next.coilBond - force * 0.11, 0, 1);
-        next.lastOutcome = 'A new coil added clay mass and height at the rim. Paddle or smooth the joint to consolidate it before drying.';
+        next.heightCm = clamp(next.heightCm + force * (0.58 + handSupport * 0.18), 5, 38);
+        next.compression = clamp(next.compression - force * (0.07 - handSupport * 0.025), 0, 1);
+        next.coilBond = clamp(next.coilBond - force * (0.15 - handSupport * 0.07), 0, 1);
+        next.lastOutcome = handSupport >= 0.55
+          ? 'A supported coil added clay mass and height at the rim. Paddle or smooth the joint to consolidate it before drying.'
+          : 'A new coil added clay at the rim, but limited support left a weaker modeled joint. Support, paddle, or smooth it before drying.';
       }
       if (tool === 'open' || tool === 'pull' || tool === 'belly' || tool === 'collar') next.compression = clamp(next.compression + handSupport * force * 0.012, 0, 1);
     }
 
     if (preserve) preserveVolume(next, before);
+    if (tool === 'open') {
+      var openingFloor = analyzeOpeningFloor(next);
+      if (openingFloor.state === 'puncture-risk') {
+        if (next.defects.indexOf('base puncture') === -1) next.defects.push('base puncture');
+        next.lastOutcome = 'The cavity reached the lowest modeled opening interval, creating a base-puncture flag. Undo and compare a shallower opening pass.';
+      }
+    }
     if (tool === 'trim') next.removedVolume = finite(next.removedVolume, 0) + Math.max(0, before - vesselVolume(next));
     next.actions = finite(next.actions, 0) + 1;
     if (method === 'wheel' && tool !== 'center') {
       var imbalance = (rpm / 120) * pressure * (1 - next.centered / 100);
       next.wobble = clamp(next.wobble + imbalance * 0.035 * (1 - handSupport * 0.42) + excessLubrication * pressure * 0.025 - (tool === 'smooth' ? force * 0.03 : 0), 0, 1);
     }
-    var stats = analyzeVessel(next, settings);
-    if (!next.collapsed && stats.stability < 16 && force > 0.43 && tool !== 'center' && tool !== 'smooth' && tool !== 'paddle') {
-      next.collapsed = true;
-      next.heightCm = clamp(next.heightCm * 0.72, 5, 38);
-      for (i = Math.floor(RING_COUNT * 0.48); i < RING_COUNT; i++) {
-        var slump = (i / (RING_COUNT - 1) - 0.48) * 1.7;
-        next.radii[i] = clamp(next.radii[i] * (1 + slump * 0.28), 1.2, 12.5);
+    if (!next.collapsed && tool !== 'center' && tool !== 'smooth' && tool !== 'paddle') {
+      var stats = analyzeVessel(next, settings);
+      if (stats.stability < 16 && force > 0.43) {
+        next.collapsed = true;
+        next.heightCm = clamp(next.heightCm * 0.72, 5, 38);
+        for (i = Math.floor(RING_COUNT * 0.48); i < RING_COUNT; i++) {
+          var slump = (i / (RING_COUNT - 1) - 0.48) * 1.7;
+          next.radii[i] = clamp(next.radii[i] * (1 + slump * 0.28), 1.2, 12.5);
+        }
+        next.defects.push('structural collapse');
+        next.lastOutcome = 'The wall could not support the combined pressure, speed, touch balance, height, and moisture, so the upper form slumped.';
       }
-      next.defects.push('structural collapse');
-      next.lastOutcome = 'The wall could not support the combined pressure, speed, touch balance, height, and moisture, so the upper form slumped.';
     }
     return next;
   }
@@ -932,14 +2277,18 @@
     var atmosphere = kilnType === 'electric' ? 'oxidation' : (settings.atmosphere || 'oxidation');
     var body = materialProfile(next);
     var heatwork = estimateHeatwork({ temperature: target, ramp: ramp, soak: soak });
+    var thermalHistory = estimateThermalHistory({ temperature: target, ramp: ramp, soak: soak, coolingRate: coolingRate });
+    var thermalStress = estimateScheduleThermalStress(next, thermalHistory, { temperature: target, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, loadDensity: finite(settings.loadDensity, 55), airAccess: finite(settings.airAccess, 60) });
+    var peakThermalSegment = thermalStress.peakSample.segmentId;
+    var loadEffects = estimateKilnLoadEffects(settings);
     var firedState = estimateFiredPorosity(body, heatwork.effectiveTemp, kilnType);
     var defects = copyArray(next.defects);
     var outcome = [];
     var glazeOutcome = null;
     if (next.stage === 'bone-dry') {
       if (next.moisture > 0.04) defects.push('steam crack');
-      if (ramp > 190) defects.push('thermal crack');
-      if (coolingRate * body.thermalSensitivity > 100) defects.push('dunting crack');
+      if (ramp > 190 || (thermalStress.peakStressPct >= 70 && peakThermalSegment !== 'cool')) defects.push('thermal crack');
+      if (coolingRate * body.thermalSensitivity > 100 || (thermalStress.peakStressPct >= 70 && peakThermalSegment === 'cool')) defects.push('dunting crack');
       if (heatwork.effectiveTemp < 820) defects.push('underfired bisque');
       if (heatwork.effectiveTemp > 1120 && body.id === 'earthenware') defects.push('body deformation');
       scaleVessel(next, 1 - body.shrinkage * 0.23);
@@ -956,7 +2305,8 @@
       var delta = heatwork.effectiveTemp - body.maturity;
       if (delta < -90) defects.push('underfired body');
       if (delta > 80) defects.push('overfired body');
-      if (coolingRate * body.thermalSensitivity > 100) defects.push('dunting crack');
+      if (thermalStress.peakStressPct >= 70 && peakThermalSegment !== 'cool') defects.push('thermal crack');
+      if (coolingRate * body.thermalSensitivity > 100 || (thermalStress.peakStressPct >= 70 && peakThermalSegment === 'cool')) defects.push('dunting crack');
       if (heatwork.effectiveTemp < glaze.maturity - 70) defects.push('underfired glaze');
       if (next.glazeThickness > 78 && heatwork.effectiveTemp > glaze.maturity + 35) defects.push('running glaze');
       if (next.glazeThickness < 20) defects.push('thin glaze coverage');
@@ -978,7 +2328,8 @@
     }
     next.lastGlazeOutcome = glazeOutcome;
     next.defects = defects.filter(function (value, index, array) { return array.indexOf(value) === index; });
-    next.firingLog.push({ stage: next.stage, temperature: Math.round(target), effectiveTemperature: Math.round(heatwork.effectiveTemp), cone: heatwork.cone, ramp: Math.round(ramp), soak: Math.round(soak), coolingRate: Math.round(coolingRate), kilnType: kilnType, atmosphere: atmosphere, materialRecipe: normalizeRecipe(next.materialRecipe), glazeOutcome: glazeOutcome, maturation: next.maturation, porosity: next.firedPorosity, defects: copyArray(next.defects) });
+    next.firingLog.push({ stage: next.stage, temperature: Math.round(target), effectiveTemperature: Math.round(heatwork.effectiveTemp), cone: heatwork.cone, ramp: Math.round(ramp), soak: Math.round(soak), coolingRate: Math.round(coolingRate), kilnType: kilnType, atmosphere: atmosphere, loadDensity: loadEffects.loadDensity, airAccess: loadEffects.airAccess, thermalStressPct: thermalStress.peakStressPct, thermalStressPhase: thermalStress.peakSample.phaseLabel, thermalStressTemperature: thermalStress.peakSample.temperatureC, materialRecipe: normalizeRecipe(next.materialRecipe), glazeOutcome: glazeOutcome, maturation: next.maturation, porosity: next.firedPorosity, defects: copyArray(next.defects) });
+    outcome.push(thermalStress.summary);
     next.lastOutcome = outcome.join(' ') + (glazeOutcome ? ' ' + glazeOutcome.summary : '') + (next.defects.length ? ' Inspect: ' + next.defects.join(', ') + '.' : ' No modeled defects were triggered.');
     return next;
   }
@@ -1329,7 +2680,7 @@
     var glazeSeal = vessel.stage === 'glaze-fired' ? clamp(vessel.glazeThickness / 100 * 0.92, 0, 0.92) : 0;
     var defectWeights = {
       'structural collapse': 1, 'drying crack': 0.52, 'coil separation': 0.58, 'thermal crack': 0.60,
-      'dunting crack': 0.68, 'crazing risk': 0.20, 'shivering risk': 0.42, 'body deformation': 0.45,
+      'dunting crack': 0.68, 'base puncture': 0.78, 'crazing risk': 0.20, 'shivering risk': 0.42, 'body deformation': 0.45,
       'running glaze': 0.12, 'thin glaze coverage': 0.14, 'uneven heatwork': 0.16
     };
     var defectPenalty = vessel.defects.reduce(function (highest, defect) { return Math.max(highest, defectWeights[defect] || 0.08); }, 0);
@@ -1501,17 +2852,49 @@
     materialProfile: materialProfile,
     vesselVolume: vesselVolume,
     vesselCapacity: vesselCapacity,
+    analyzeOpeningFloor: analyzeOpeningFloor,
     estimateHeatwork: estimateHeatwork,
+    PYROMETRIC_CONES: PYROMETRIC_CONES.map(function (cone) { return Object.assign({}, cone); }),
+    WITNESS_CONE_MOUNT_ANGLE_DEGREES: WITNESS_CONE_MOUNT_ANGLE_DEGREES,
+    coneReferenceRamp: coneReferenceRamp,
+    coneReferenceTemperature: coneReferenceTemperature,
+    estimateWitnessConePack: estimateWitnessConePack,
+    interpretWitnessConeSequence: interpretWitnessConeSequence,
+    interpretConeHeatworkMemory: interpretConeHeatworkMemory,
+    witnessConeGeometry: witnessConeGeometry,
+    summarizeWitnessConeZones: summarizeWitnessConeZones,
+    potteryWheelDriveGeometry: potteryWheelDriveGeometry,
+    potteryWheelWobbleGeometry: potteryWheelWobbleGeometry,
+    potteryWheelSurfaceKinematics: potteryWheelSurfaceKinematics,
+    potteryWheelWholeFormKinematics: potteryWheelWholeFormKinematics,
+    potteryWheelWetFilmGeometry: potteryWheelWetFilmGeometry,
+    potteryWheelContactGeometry: potteryWheelContactGeometry,
+    kilnShelfPerspectiveGeometry: kilnShelfPerspectiveGeometry,
+    kilnWallCutawayGeometry: kilnWallCutawayGeometry,
+    kilnChamberPerspectiveGeometry: kilnChamberPerspectiveGeometry,
+    kilnHeatFlowGeometry: kilnHeatFlowGeometry,
     estimateThermalHistory: estimateThermalHistory,
     sampleThermalHistory: sampleThermalHistory,
+    kilnHeatSourceState: kilnHeatSourceState,
     estimateKilnMaterialState: estimateKilnMaterialState,
+    estimateKilnLoadEffects: estimateKilnLoadEffects,
+    estimateWareCoreTemperature: estimateWareCoreTemperature,
+    estimateWareThermalStress: estimateWareThermalStress,
+    estimateWareThermalTrace: estimateWareThermalTrace,
+    sampleWareThermalTrace: sampleWareThermalTrace,
+    estimateScheduleThermalStress: estimateScheduleThermalStress,
+    estimateThermalTransitionWindows: estimateThermalTransitionWindows,
     estimateFiredPorosity: estimateFiredPorosity,
     analyzeGlazeOutcome: analyzeGlazeOutcome,
     analyzeFiringSchedule: analyzeFiringSchedule,
     compareMaterialProfiles: compareMaterialProfiles,
     analyzeRingRisks: analyzeRingRisks,
+    summarizeRingRiskProfile: summarizeRingRiskProfile,
     analyzeVessel: analyzeVessel,
     analyzeFailureContributors: analyzeFailureContributors,
+    estimateFormingDisplacement: estimateFormingDisplacement,
+    potteryFormingTarget: potteryFormingTarget,
+    formingToolGestureMode: formingToolGestureMode,
     applyTool: applyTool,
     dryVessel: dryVessel,
     fireVessel: fireVessel,
@@ -1555,7 +2938,10 @@
       var view = data.view || 'shape';
       var method = data.method === 'coil' ? 'coil' : 'wheel';
       var activeTool = data.activeTool || (method === 'coil' ? 'add-coil' : 'center');
-      var workRing = Math.round(clamp(finite(data.workRing, 22), 0, RING_COUNT - 1));
+      var activeGestureMode = formingToolGestureMode(activeTool);
+      var requestedWorkRing = Math.round(clamp(finite(data.workRing, 22), 0, RING_COUNT - 1));
+      var activeTarget = potteryFormingTarget(activeTool, requestedWorkRing);
+      var workRing = activeTarget.mode === 'lower-zone' ? activeTarget.ring : requestedWorkRing;
       var pressure = clamp(finite(data.pressure, 48), 5, 100);
       var rpm = method === 'coil' ? 0 : clamp(finite(data.rpm, 58), 0, 120);
       var handSupport = clamp(finite(data.handSupport, 55), 0, 100);
@@ -1564,19 +2950,26 @@
       var cameraTilt = clamp(finite(data.cameraTilt, 42), 20, 70);
       var settings = { pressure: pressure, rpm: rpm, method: method, handSupport: handSupport, lubrication: lubrication, contactSpan: contactSpan };
       var stats = analyzeVessel(vessel, settings);
+      var ringRiskProfile = stats.ringRiskProfile;
+      var openingFloor = analyzeOpeningFloor(vessel);
       var failureSettings = Object.assign({}, settings, { humidity: data.humidity, dryingRate: data.dryingRate, temperature: data.kilnTemp, ramp: data.ramp, soak: data.soak, coolingRate: data.coolingRate, kilnType: data.kilnType, atmosphere: data.atmosphere });
       var failureReport = analyzeFailureContributors(vessel, failureSettings);
       var geometry = profileGeometry(vessel);
       var formingPreviewAvailable = vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && activeTool === 'trim');
       var formingPreviewVessel = formingPreviewAvailable ? applyTool(vessel, activeTool, workRing, settings) : copyVessel(vessel);
+      var formingPreviewFloor = analyzeOpeningFloor(formingPreviewVessel);
+      var formingFlow = estimateFormingDisplacement(vessel, formingPreviewVessel, workRing, activeTool);
       var formingPreviewStats = analyzeVessel(formingPreviewVessel, settings);
+      var formingPreviewRiskProfile = formingPreviewStats.ringRiskProfile;
       var formingPreviewGeometry = profileGeometry(formingPreviewVessel);
       var formingPreviewStabilityDelta = formingPreviewStats.stability - stats.stability;
       var formingPreviewWallDelta = formingPreviewStats.minWallCm - stats.minWallCm;
       var formingPreviewCapacityDelta = formingPreviewStats.capacityMl - stats.capacityMl;
       var formingPreviewHeightDelta = formingPreviewVessel.heightCm - vessel.heightCm;
-      var formingPreviewChanged = Math.abs(formingPreviewStabilityDelta) >= 0.05 || Math.abs(formingPreviewWallDelta) >= 0.001 || Math.abs(formingPreviewCapacityDelta) >= 0.05 || Math.abs(formingPreviewHeightDelta) >= 0.01 || formingPreviewVessel.collapsed !== vessel.collapsed;
-      var formingPreviewRisky = formingPreviewVessel.collapsed || formingPreviewStats.stability < 48 || formingPreviewStabilityDelta < -6 || formingPreviewStats.minWallCm < 0.45;
+      var formingPreviewFloorDelta = formingPreviewFloor.floorThicknessCm - openingFloor.floorThicknessCm;
+      var formingPreviewPeakRiskDelta = formingPreviewRiskProfile.criticalRiskPct - ringRiskProfile.criticalRiskPct;
+      var formingPreviewChanged = formingFlow.changed || Math.abs(formingPreviewStabilityDelta) >= 0.05 || Math.abs(formingPreviewWallDelta) >= 0.001 || Math.abs(formingPreviewCapacityDelta) >= 0.05 || Math.abs(formingPreviewHeightDelta) >= 0.01 || (activeTool === 'open' && Math.abs(formingPreviewFloorDelta) >= 0.01) || formingPreviewVessel.collapsed !== vessel.collapsed;
+      var formingPreviewRisky = formingPreviewVessel.collapsed || formingPreviewStats.stability < 48 || formingPreviewStabilityDelta < -6 || formingPreviewStats.minWallCm < 0.45 || (activeTool === 'open' && (formingPreviewFloor.state === 'puncture-risk' || formingPreviewFloor.floorThicknessCm < .5));
       function currentDimensionSettings() {
         var body = materialProfile(vessel);
         var kilnType = data.kilnType || 'electric';
@@ -1605,9 +2998,9 @@
           return Object.assign({}, previous, { wheelAndFire: Object.assign({}, previous.wheelAndFire || {}, patch) });
         });
       }
-      function vesselChange(previous, next) {
-        var beforeStats = analyzeVessel(previous, settings);
-        var afterStats = analyzeVessel(next, settings);
+      function vesselChange(previous, next, beforeStats, afterStats) {
+        beforeStats = beforeStats || analyzeVessel(previous, settings);
+        afterStats = afterStats || analyzeVessel(next, settings);
         return {
           beforeStage: previous.stage,
           afterStage: next.stage,
@@ -1621,7 +3014,7 @@
       }
       function commitVessel(next, message, extra) {
         var history = copyArray(data.history).concat([copyVessel(vessel)]).slice(-24);
-        patchData(Object.assign({ vessel: next, history: history, future: [], lastChange: vesselChange(vessel, next), dragStartVessel: null, dragging: false }, extra || {}));
+        patchData(Object.assign({ vessel: next, history: history, future: [], lastChange: vesselChange(vessel, next, stats), dragStartVessel: null, dragging: false }, extra || {}));
         announce(message || next.lastOutcome || 'Pottery state updated.');
       }
       function setView(next) {
@@ -1649,9 +3042,10 @@
           announce('Shaping is unavailable after the clay has dried.');
           return;
         }
-        var next = applyTool(vessel, activeTool, index, settings);
+        var targetIndex = potteryFormingTarget(activeTool, index).ring;
+        var next = applyTool(vessel, activeTool, targetIndex, settings);
         if (options && options.drag) {
-          patchData({ vessel: next, history: copyArray(data.history), future: [], lastChange: vesselChange(vessel, next), dragStartVessel: options.start ? copyVessel(vessel) : (data.dragStartVessel || copyVessel(vessel)), dragging: true });
+          patchData({ vessel: next, workRing: targetIndex, future: [], dragStartVessel: options.start ? copyVessel(vessel) : (data.dragStartVessel || copyVessel(vessel)), dragging: true });
           return;
         }
         commitVessel(next, next.lastOutcome);
@@ -1659,7 +3053,7 @@
       function finishGesture() {
         if (!data.dragStartVessel) return;
         var history = copyArray(data.history).concat([copyVessel(data.dragStartVessel)]).slice(-24);
-        patchData({ history: history, future: [], dragStartVessel: null, dragging: false });
+        patchData({ history: history, future: [], lastChange: vesselChange(data.dragStartVessel, vessel), dragStartVessel: null, dragging: false });
         announce(vessel.lastOutcome || 'Pottery drag gesture completed.');
       }
       function undo() {
@@ -1800,7 +3194,7 @@
           { label: 'Run two use tests', progress: Math.min(2, performanceCount) + '/2', complete: performanceCount >= 2 }
         ];
         var guideText = isNew ? 'Pottery is a sequence: shape → dry slowly → fire → optionally glaze → fire again → test. Start with one small shaping change and watch the measurements respond.' : (
-          vessel.stage === 'wet' ? 'Make one small change at a time. Select a tool, choose a work zone, then apply it and read the outcome below the canvas.' :
+          vessel.stage === 'wet' ? 'Make one small change at a time. Center acts once across the whole form; local tools use the selected work zone. Apply one action or drag through new rings, then read the outcome below the canvas.' :
           vessel.stage === 'leather-hard' ? 'Leather-hard clay is firm but still trimmable. Use Trim or Scrape for a controlled change, then review drying before firing.' :
           vessel.stage === 'bone-dry' ? 'Bone-dry means free water has left the clay. Review the modeled drying history, then run the bisque firing when the schedule makes sense.' :
           vessel.stage === 'bisque' ? 'Bisque is the first fired checkpoint. Apply a glaze in Dry & fire, then run a glaze firing; the surface outcome is still a model to test.' :
@@ -1816,7 +3210,7 @@
           h('p', { className: 'text-xs text-teal-950' }, guideText),
           isNew ? h('ol', { className: 'list-decimal pl-5 text-xs text-teal-950 space-y-1' },
             h('li', null, 'Choose Potter\'s wheel or Handbuild coils.'),
-            h('li', null, 'Choose a tool, then click or drag the profile; the blue dashed line marks the work zone.'),
+            h('li', null, 'Choose Center for one whole-form action, Add coil for one rim action, or a local tool to click or drag; the blue dashed line appears only for a local work zone.'),
             h('li', null, 'Apply the tool and watch stability, wall thickness, capacity, and the latest outcome.')
           ) : null,
           collapseNote,
@@ -1833,39 +3227,113 @@
       }
       function vesselSvg() {
         var selectedY = geometry.bottom - workRing / (RING_COUNT - 1) * geometry.heightPx;
-        var contactRadius = Math.max(1, Math.floor(contactSpan / 2));
-        var contactTopRing = Math.min(RING_COUNT - 1, workRing + contactRadius);
-        var contactBottomRing = Math.max(0, workRing - contactRadius);
-        var contactTopY = geometry.bottom - contactTopRing / (RING_COUNT - 1) * geometry.heightPx;
-        var contactBottomY = geometry.bottom - contactBottomRing / (RING_COUNT - 1) * geometry.heightPx;
         var selectedOuterRadius = vessel.radii[workRing] * geometry.scale;
         var selectedInnerRadius = Math.max(8, (vessel.radii[workRing] - vessel.thickness[workRing]) * geometry.scale);
-        var perspectiveDepth = cameraTilt / 70;
-        var wheelEllipseRy = 16 + perspectiveDepth * 22;
+        var selectedWallCm = vessel.thickness[workRing];
+        var selectedWallState = selectedWallCm < .45 ? 'very thin' : (selectedWallCm < .75 ? 'thin' : (selectedWallCm > 2.2 ? 'thick' : 'moderate'));
+        var selectedWallColor = selectedWallCm < .45 ? '#fb7185' : (selectedWallCm < .75 ? '#fbbf24' : (selectedWallCm > 2.2 ? '#fdba74' : '#bef264'));
+        var selectedWallLabel = 'Ring ' + (workRing + 1) + ' wall ' + selectedWallCm.toFixed(2) + ' cm · ' + selectedWallState;
+        var wholeFormTarget = activeGestureMode === 'single-global';
+        var rimTarget = activeGestureMode === 'single-rim';
+        var localRingTarget = activeGestureMode === 'ring-drag';
+        var lowerZoneTarget = activeTarget.mode === 'lower-zone';
+        var openingToolTarget = activeTool === 'open';
+        var localSurface = potteryWheelSurfaceKinematics(method === 'wheel' ? rpm : 0, vessel.radii[workRing], { ringNumber: workRing + 1 });
+        var wholeFormSurface = potteryWheelWholeFormKinematics(method === 'wheel' ? rpm : 0, vessel.radii);
+        var displayedSurface = wholeFormTarget ? wholeFormSurface : localSurface;
+        var showTouchForces = data.showTouchForces !== false;
+        var modeledInsideTouch = wholeFormTarget ? pressure : handSupport;
+        var touchDifference = pressure - modeledInsideTouch;
+        var touchDifferenceMagnitude = Math.abs(touchDifference);
+        var touchRelationship = wholeFormTarget ? 'matched opposing centering brace' : (touchDifferenceMagnitude <= 12 ? 'near-balanced touch' : (touchDifference > 0 ? 'outside touch exceeds inside support by ' + Math.round(touchDifferenceMagnitude) + ' points' : 'inside support exceeds outside touch by ' + Math.round(touchDifferenceMagnitude) + ' points'));
+        var outsideForceLength = 24 + pressure * .44;
+        var insideForceLength = 24 + modeledInsideTouch * .44;
+        var showFormingFlow = data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewChanged && formingFlow.changed;
+        var flowRing = formingFlow.sampleRing;
+        var flowY = geometry.bottom - flowRing / (RING_COUNT - 1) * geometry.heightPx;
+        var flowOuterRadius = vessel.radii[flowRing] * geometry.scale;
+        var flowInnerRadius = Math.max(8, (vessel.radii[flowRing] - vessel.thickness[flowRing]) * geometry.scale);
+        var outerFlowLength = clamp(Math.abs(formingFlow.outerDeltaCm) * geometry.scale * 3.2, 18, 52);
+        var innerFlowLength = clamp(Math.abs(formingFlow.innerDeltaCm) * geometry.scale * 3.2, 18, 52);
+        var heightFlowLength = clamp(Math.abs(formingFlow.heightDeltaCm) * 90, 18, 48);
+        var wheelDrive = potteryWheelDriveGeometry(rpm, cameraTilt);
+        var wetFilm = potteryWheelWetFilmGeometry(vessel.moisture, lubrication, method === 'wheel' ? rpm : 0, pressure, { method: method, centerX: wheelDrive.splashPan.cx, panY: wheelDrive.splashPan.cy, panRx: wheelDrive.splashPan.rx, panRy: wheelDrive.splashPan.ry });
+        var contactGeometry = potteryWheelContactGeometry(activeTool, method, workRing, pressure, handSupport, contactSpan, { centerX: geometry.center, bottomY: geometry.bottom, heightPx: geometry.heightPx, scale: geometry.scale, radii: vessel.radii, thickness: vessel.thickness });
+        var perspectiveDepth = wheelDrive.perspectiveDepth;
+        var wheelEllipseRy = wheelDrive.wheelhead.ry;
         var rimOuterRx = vessel.radii[RING_COUNT - 1] * geometry.scale;
         var rimInnerRx = Math.max(5, (vessel.radii[RING_COUNT - 1] - vessel.thickness[RING_COUNT - 1]) * geometry.scale);
         var rimEllipseRy = Math.max(3, rimOuterRx * (0.055 + perspectiveDepth * 0.075));
-        var wobblePx = method === 'wheel' && rpm > 0 ? clamp((vessel.wobble * 16 + (100 - vessel.centered) * .04) * (rpm / 60), 0, 16) : 0;
+        var selectedWorkRingRx = selectedOuterRadius + 3;
+        var selectedWorkRingRy = Math.max(3, selectedWorkRingRx * (0.035 + perspectiveDepth * 0.035));
+        var selectedWorkRingLeft = geometry.center - selectedWorkRingRx;
+        var selectedWorkRingRight = geometry.center + selectedWorkRingRx;
+        var selectedWorkRingRearPath = 'M' + selectedWorkRingLeft.toFixed(1) + ' ' + selectedY.toFixed(1) + ' A' + selectedWorkRingRx.toFixed(1) + ' ' + selectedWorkRingRy.toFixed(1) + ' 0 0 1 ' + selectedWorkRingRight.toFixed(1) + ' ' + selectedY.toFixed(1);
+        var selectedWorkRingFrontPath = 'M' + selectedWorkRingLeft.toFixed(1) + ' ' + selectedY.toFixed(1) + ' A' + selectedWorkRingRx.toFixed(1) + ' ' + selectedWorkRingRy.toFixed(1) + ' 0 0 0 ' + selectedWorkRingRight.toFixed(1) + ' ' + selectedY.toFixed(1);
+        var lowerZoneTopY = geometry.bottom - activeTarget.maxRing / (RING_COUNT - 1) * geometry.heightPx;
+        var lowerZoneBottomY = geometry.bottom - activeTarget.minRing / (RING_COUNT - 1) * geometry.heightPx;
+        var openingFloorY = openingFloor.hasCavity ? geometry.bottom - openingFloor.floorRing / (RING_COUNT - 1) * geometry.heightPx : geometry.top;
+        var previewOpeningFloorY = formingPreviewFloor.hasCavity ? geometry.bottom - formingPreviewFloor.floorRing / (RING_COUNT - 1) * geometry.heightPx : geometry.top;
+        var openingFloorColor = openingFloor.state === 'puncture-risk' ? '#fb7185' : (openingFloor.state === 'thin-floor' ? '#fbbf24' : '#67e8f9');
+        var criticalRisk = ringRiskProfile.rings[ringRiskProfile.criticalRing];
+        var criticalRiskY = geometry.bottom - criticalRisk.index / (RING_COUNT - 1) * geometry.heightPx;
+        var criticalRiskX = geometry.center + vessel.radii[criticalRisk.index] * geometry.scale;
+        var previewCriticalRisk = formingPreviewRiskProfile.rings[formingPreviewRiskProfile.criticalRing];
+        var previewCriticalRiskY = formingPreviewGeometry.bottom - previewCriticalRisk.index / (RING_COUNT - 1) * formingPreviewGeometry.heightPx;
+        var previewCriticalRiskX = formingPreviewGeometry.center + formingPreviewVessel.radii[previewCriticalRisk.index] * formingPreviewGeometry.scale;
+        var showPredictedRiskPeak = data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewChanged && (previewCriticalRisk.index !== criticalRisk.index || Math.abs(formingPreviewPeakRiskDelta) >= .5);
+        function ringRiskColor(ringRisk) { return ringRisk.risk >= .67 ? '#fb7185' : (ringRisk.risk >= .4 ? '#fbbf24' : '#a3e635'); }
+        function ringRiskWidth(ringRisk) { return ringRisk.risk >= .67 ? 6.5 : (ringRisk.risk >= .4 ? 4.8 : 3.2); }
+        function ringRiskDash(ringRisk) { return ringRisk.risk >= .67 ? undefined : (ringRisk.risk >= .4 ? '6 3' : '2 4'); }
+        var wheelWobble = potteryWheelWobbleGeometry(vessel.wobble, vessel.centered, method === 'wheel' ? rpm : 0, { depthRatio: wheelDrive.rotation.ry / wheelDrive.rotation.rx });
+        var wobblePx = method === 'wheel' ? wheelWobble.amplitudePx : 0;
         var wobbleLabel = vessel.wobble <= .12 && vessel.centered >= 90 ? 'low wobble' : (vessel.wobble <= .28 && vessel.centered >= 70 ? 'visible wobble' : 'strong wobble');
         var body = materialProfile(vessel);
         var fillColor = vessel.surfaceColor || body.color;
         var cavityColor = data.showCrossSection ? '#f6e4cb' : '#211711';
-        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(vessel.centered) + ' percent centered with ' + wobbleLabel + ', ' + Math.round(stats.compression) + ' percent compression, stage ' + stageLabel(vessel.stage) + '. Active tool ' + activeTool + ' at ring ' + (workRing + 1) + ' of ' + RING_COUNT + ', with ' + Math.round(handSupport) + ' percent inside support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span.' + (formingPreviewAvailable && formingPreviewChanged ? ' The dashed profile predicts the next result, with stability changing by ' + formingPreviewStabilityDelta.toFixed(1) + ' points.' : '');
+        var activeTargetDescription = wholeFormTarget ? 'across the whole form' : (rimTarget ? 'at the rim' : (lowerZoneTarget ? 'at lower-exterior ring ' + (workRing + 1) + ', constrained to rings ' + (activeTarget.minRing + 1) + ' through ' + (activeTarget.maxRing + 1) : 'at ring ' + (workRing + 1) + ' of ' + RING_COUNT));
+        var targetControlSummary = wholeFormTarget
+          ? ', with ' + Math.round(pressure) + ' percent matched brace pressure and ' + Math.round(lubrication) + ' percent lubrication. Inside-hand support, contact span, and work height do not affect this Center pass. '
+          : (rimTarget
+            ? ', with ' + Math.round(handSupport) + ' percent rim support and ' + Math.round(lubrication) + ' percent lubrication. Contact span and work height do not affect this Add coil pass. '
+            : (lowerZoneTarget
+              ? ', with ' + Math.round(handSupport) + ' percent stabilizing support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span. Upper pointer positions are clamped to the modeled lower trim zone. The selected wall is ' + selectedWallCm.toFixed(2) + ' centimeters, ' + selectedWallState + '. '
+              : ', with ' + Math.round(handSupport) + ' percent inside support, ' + Math.round(lubrication) + ' percent lubrication, and a ' + contactSpan + ' ring contact span. Outside touch is ' + Math.round(pressure) + ' percent and inside support is ' + Math.round(handSupport) + ' percent: ' + touchRelationship + '. The selected wall is ' + selectedWallCm.toFixed(2) + ' centimeters, ' + selectedWallState + '. '));
+        var svgLabel = 'Interactive pottery profile: ' + stats.shape + ', ' + vessel.heightCm.toFixed(1) + ' centimeters tall, minimum wall ' + stats.minWallCm.toFixed(2) + ' centimeters, ' + Math.round(stats.stability) + ' percent stability, ' + Math.round(vessel.centered) + ' percent centered with ' + wobbleLabel + ', ' + Math.round(stats.compression) + ' percent compression, stage ' + stageLabel(vessel.stage) + '. Active tool ' + activeTool + ' ' + activeTargetDescription + targetControlSummary + wetFilm.summary + ' ' + wetFilm.note + (formingPreviewAvailable ? ' ' + contactGeometry.summary + ' ' + contactGeometry.note : ' Contact geometry is inactive because the clay is no longer in a modeled forming stage.') + (formingPreviewAvailable && formingPreviewChanged ? ' The dashed profile predicts the next result, with stability changing by ' + formingPreviewStabilityDelta.toFixed(1) + ' points. Clay-flow preview: ' + formingFlow.summary : '') + (openingToolTarget ? ' Opening-floor proxy: ' + openingFloor.summary + ' ' + openingFloor.note : '') + (data.showCrossSection ? ' Wall-risk scan: ' + ringRiskProfile.summary + ' ' + ringRiskProfile.note + (showPredictedRiskPeak ? ' The gold dashed halo marks the predicted peak at ring ' + (previewCriticalRisk.index + 1) + ', ' + Math.round(previewCriticalRisk.risk * 100) + ' percent.' : '') : '') + (method === 'wheel' ? ' ' + displayedSurface.summary + ' ' + displayedSurface.note + ' ' + wheelDrive.summary + ' ' + wheelDrive.note + ' ' + wheelWobble.summary + ' ' + wheelWobble.note : ' The wheel hardware is stationary for handbuilding; no powered pedal response is shown.');
         function ringFromEvent(event) {
           var rect = event.currentTarget.getBoundingClientRect();
           var ratio = clamp((event.clientY - rect.top) / Math.max(1, rect.height), 0, 1);
-          return Math.round((1 - ratio) * (RING_COUNT - 1));
+          return potteryFormingTarget(activeTool, Math.round((1 - ratio) * (RING_COUNT - 1))).ring;
         }
         return h('svg', {
-          viewBox: '0 0 520 460', role: 'img', tabIndex: 0, 'aria-label': svgLabel, 'aria-describedby': 'wheel-fire-vessel-help', 'aria-keyshortcuts': 'ArrowUp ArrowDown Enter Space',
-          className: 'w-full min-h-[320px] rounded-2xl border-2 border-amber-300 bg-[#2b211c] cursor-crosshair',
-          onPointerDown: function (event) { if (event.button !== 0) return; var index = ringFromEvent(event); patchData({ workRing: index }); if (vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && activeTool === 'trim')) { patchData({ dragStartVessel: copyVessel(vessel), dragging: true }); applyActive(index, { drag: true, start: true }); } try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {} },
-          onPointerMove: function (event) { if (event.buttons === 1) { var index = ringFromEvent(event); patchData({ workRing: index }); applyActive(index, { drag: true }); } },
-          onPointerUp: function (event) { finishGesture(); try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) {} },
-          onPointerCancel: finishGesture,
+          viewBox: '0 0 520 460', role: 'img', tabIndex: 0, 'aria-label': svgLabel, 'aria-describedby': 'wheel-fire-vessel-help', 'aria-keyshortcuts': localRingTarget ? 'ArrowUp ArrowDown Enter Space' : 'Enter Space', 'data-wheel-fire-target-mode': formingPreviewAvailable ? contactGeometry.targetMode : activeTarget.mode, 'data-wheel-fire-target-constrained': lowerZoneTarget ? 'true' : undefined, 'data-wheel-fire-target-zone-min': lowerZoneTarget ? activeTarget.minRing + 1 : undefined, 'data-wheel-fire-target-zone-max': lowerZoneTarget ? activeTarget.maxRing + 1 : undefined, 'data-wheel-fire-opening-floor-state': openingToolTarget ? openingFloor.state : undefined, 'data-wheel-fire-opening-floor-cm': openingToolTarget ? openingFloor.floorThicknessCm.toFixed(2) : undefined, 'data-wheel-fire-opening-floor-ring': openingToolTarget && openingFloor.hasCavity ? openingFloor.floorRing + 1 : undefined, 'data-wheel-fire-wet-film': wetFilm.state, 'data-wheel-fire-body-moisture': wetFilm.bodyMoisturePct, 'data-wheel-fire-surface-lubrication': Math.round(wetFilm.lubricationPct), 'data-wheel-fire-splash-tendency': wetFilm.splashTendency.toFixed(3), 'data-wheel-fire-contact-mode': formingPreviewAvailable ? contactGeometry.id : undefined, 'data-wheel-fire-contact-target': formingPreviewAvailable ? contactGeometry.targetMode : undefined,
+          'data-wheel-fire-ring-risk-map-visible': data.showCrossSection ? 'true' : undefined,
+          'data-wheel-fire-risk-peak-ring': data.showCrossSection ? criticalRisk.index + 1 : undefined,
+          'data-wheel-fire-risk-peak-pct': data.showCrossSection ? (criticalRisk.risk * 100).toFixed(1) : undefined,
+          'data-wheel-fire-risk-preview-ring': data.showCrossSection && showPredictedRiskPeak ? previewCriticalRisk.index + 1 : undefined,
+          className: 'w-full min-h-[320px] rounded-2xl border-2 border-amber-300 bg-[#2b211c] ' + (localRingTarget ? 'cursor-crosshair' : 'cursor-pointer'),
+          onPointerDown: function (event) {
+            if (event.button !== 0) return;
+            var index = ringFromEvent(event);
+            var canShape = vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && activeTool === 'trim');
+            if (!canShape) { if (localRingTarget) patchData({ workRing: index }); return; }
+            if (!localRingTarget) { applyActive(rimTarget ? RING_COUNT - 1 : workRing); return; }
+            event.currentTarget.__wheelFireLastAppliedRing = index;
+            applyActive(index, { drag: true, start: true });
+            try { event.currentTarget.setPointerCapture(event.pointerId); } catch (error) {}
+          },
+          onPointerMove: function (event) {
+            if (event.buttons !== 1 || activeGestureMode !== 'ring-drag') return;
+            var index = ringFromEvent(event);
+            if (event.currentTarget.__wheelFireLastAppliedRing === index || index === workRing) return;
+            event.currentTarget.__wheelFireLastAppliedRing = index;
+            applyActive(index, { drag: true });
+          },
+          onPointerUp: function (event) { if (activeGestureMode === 'ring-drag') finishGesture(); event.currentTarget.__wheelFireLastAppliedRing = null; try { event.currentTarget.releasePointerCapture(event.pointerId); } catch (error) {} },
+          onPointerCancel: function (event) { if (activeGestureMode === 'ring-drag') finishGesture(); if (event.currentTarget) event.currentTarget.__wheelFireLastAppliedRing = null; },
           onKeyDown: function (event) {
-            if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { event.preventDefault(); patchData({ workRing: clamp(workRing + (event.key === 'ArrowUp' ? 1 : -1), 0, RING_COUNT - 1) }); }
-            else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); applyActive(workRing); }
+            if ((event.key === 'ArrowUp' || event.key === 'ArrowDown') && localRingTarget) { event.preventDefault(); patchData({ workRing: potteryFormingTarget(activeTool, workRing + (event.key === 'ArrowUp' ? 1 : -1)).ring }); }
+            else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); applyActive(rimTarget ? RING_COUNT - 1 : workRing); }
             else if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undo(); }
           }
         },
@@ -1876,6 +3344,12 @@
               h('stop', { offset: '52%', stopColor: '#f0c2a0' }),
               h('stop', { offset: '76%', stopColor: fillColor }),
               h('stop', { offset: '100%', stopColor: '#3b241d' })),
+            h('linearGradient', { id: 'wheel-fire-wet-sheen', x1: '0', y1: '0', x2: '1', y2: '.18' },
+              h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: 0 }),
+              h('stop', { offset: '39%', stopColor: '#f0f9ff', stopOpacity: .08 }),
+              h('stop', { offset: '58%', stopColor: '#f8fafc', stopOpacity: .82 }),
+              h('stop', { offset: '73%', stopColor: '#bae6fd', stopOpacity: .12 }),
+              h('stop', { offset: '100%', stopColor: '#e0f2fe', stopOpacity: 0 })),
             h('linearGradient', { id: 'wheel-fire-metal-gradient', x1: '0', y1: '0', x2: '0', y2: '1' },
               h('stop', { offset: '0%', stopColor: '#b8a58f' }),
               h('stop', { offset: '48%', stopColor: '#66574c' }),
@@ -1883,46 +3357,150 @@
             h('radialGradient', { id: 'wheel-fire-workshop-glow', cx: '50%', cy: '30%', r: '75%' },
               h('stop', { offset: '0%', stopColor: '#5b4638' }),
               h('stop', { offset: '100%', stopColor: '#171210' })),
-            h('filter', { id: 'wheel-fire-shadow', x: '-30%', y: '-20%', width: '160%', height: '160%' }, h('feDropShadow', { dx: '0', dy: '8', stdDeviation: '7', floodColor: '#000', floodOpacity: '.48' }))
+            h('filter', { id: 'wheel-fire-shadow', x: '-30%', y: '-20%', width: '160%', height: '160%' }, h('feDropShadow', { dx: '0', dy: '8', stdDeviation: '7', floodColor: '#000', floodOpacity: '.48' })),
+            h('marker', { id: 'wheel-fire-force-outside', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#fb923c' })),
+            h('marker', { id: 'wheel-fire-force-support', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#2dd4bf' })),
+            h('marker', { id: 'wheel-fire-clay-flow-arrow', viewBox: '0 0 8 8', refX: 7, refY: 4, markerWidth: 7, markerHeight: 7, orient: 'auto' }, h('path', { d: 'M0 0 L8 4 L0 8 Z', fill: '#facc15' }))
           ),
           h('rect', { x: 0, y: 0, width: 520, height: 460, rx: 18, fill: 'url(#wheel-fire-workshop-glow)', 'aria-hidden': 'true' }),
           h('path', { d: 'M0 315 L520 275 L520 460 L0 460 Z', fill: '#241b17', opacity: .78, 'aria-hidden': 'true' }),
           [55, 150, 260, 370, 465].map(function (x) { return h('line', { key: 'floor-' + x, x1: 260, y1: 300, x2: x, y2: 460, stroke: '#8a6f5c', strokeWidth: 1, opacity: .16, 'aria-hidden': 'true' }); }),
-          h('path', { d: 'M196 424 L324 424 L343 458 L177 458 Z', fill: 'url(#wheel-fire-metal-gradient)', stroke: '#181311', strokeWidth: 3, 'aria-hidden': 'true' }),
-          h('ellipse', { cx: 260, cy: 420, rx: 196, ry: wheelEllipseRy + 9, fill: '#201a17', stroke: '#8a7664', strokeWidth: 4, 'aria-hidden': 'true' }),
-          h('ellipse', { cx: 260, cy: 415, rx: 158, ry: wheelEllipseRy, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#d0b99e', strokeWidth: 4, 'aria-hidden': 'true' }),
-          method === 'wheel' && rpm > 0 ? h('ellipse', { className: 'wheel-fire-wheel-motion', cx: 260, cy: 415, rx: 142, ry: Math.max(8, wheelEllipseRy - 6), fill: 'none', stroke: '#f5d7a8', strokeWidth: 3, strokeDasharray: '28 14', opacity: .58, style: { animationDuration: clamp(3.2 - rpm / 45, .55, 3.2).toFixed(2) + 's' }, 'aria-hidden': 'true' }) : null,
-          h('path', { d: 'M374 444 q34 -10 64 5 l-8 8 q-28 -4 -54 4z', fill: '#6f5c4c', stroke: '#211915', strokeWidth: 2, 'aria-hidden': 'true' }),
-          h('rect', { x: 78, y: contactTopY, width: 364, height: Math.max(6, contactBottomY - contactTopY), rx: 8, fill: '#22d3ee', opacity: .12, 'aria-hidden': 'true' }),
-          wobblePx > .6 ? h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimOuterRx + wobblePx, ry: rimEllipseRy + 3, fill: 'none', stroke: '#fb7185', strokeWidth: 1.5, strokeDasharray: '6 6', opacity: .72, 'aria-hidden': 'true' }) : null,
-          h('g', { className: wobblePx > .4 ? 'wheel-fire-wobble-motion' : '', style: { '--wheel-fire-wobble': wobblePx.toFixed(1) + 'px', '--wheel-fire-wobble-neg': (-wobblePx).toFixed(1) + 'px', animationDuration: clamp(2.2 - rpm / 75, .65, 2.2).toFixed(2) + 's' } },
+          lowerZoneTarget ? h('g', { 'data-wheel-fire-trim-zone': 'true', 'data-wheel-fire-trim-zone-min': activeTarget.minRing + 1, 'data-wheel-fire-trim-zone-max': activeTarget.maxRing + 1, 'aria-hidden': 'true' },
+            h('rect', { x: 14, y: lowerZoneTopY, width: 492, height: Math.max(8, lowerZoneBottomY - lowerZoneTopY), rx: 8, fill: '#cbd5e1', opacity: .08 }),
+            h('path', { d: 'M30 ' + lowerZoneTopY.toFixed(1) + ' H54 M38 ' + lowerZoneTopY.toFixed(1) + ' V' + lowerZoneBottomY.toFixed(1) + ' M30 ' + lowerZoneBottomY.toFixed(1) + ' H54', fill: 'none', stroke: '#e2e8f0', strokeWidth: 2, strokeDasharray: '5 4', opacity: .9 }),
+            h('text', { x: 58, y: lowerZoneTopY + 14, fill: '#f8fafc', fontSize: 11, fontWeight: 700 }, 'lower trim zone · rings ' + (activeTarget.minRing + 1) + '–' + (activeTarget.maxRing + 1))
+          ) : null,
+          h('g', { 'data-wheel-fire-wheel-hardware': 'true', 'aria-hidden': 'true' },
+            h('path', { 'data-wheel-fire-drive-housing': 'true', d: wheelDrive.driveHousingPath, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#181311', strokeWidth: 3 }),
+            h('ellipse', { 'data-wheel-fire-splash-pan': 'true', cx: wheelDrive.splashPan.cx, cy: wheelDrive.splashPan.cy, rx: wheelDrive.splashPan.rx, ry: wheelDrive.splashPan.ry, fill: '#201a17', stroke: '#8a7664', strokeWidth: 4 }),
+            method === 'wheel' && wetFilm.panSlipRatio > .005 ? h('ellipse', { 'data-wheel-fire-pan-slip': wetFilm.state, 'data-wheel-fire-pan-slip-ratio': wetFilm.panSlipRatio.toFixed(3), cx: wetFilm.pool.cx, cy: wetFilm.pool.cy, rx: wetFilm.pool.rx, ry: wetFilm.pool.ry, fill: 'none', stroke: '#7dd3fc', strokeWidth: wetFilm.panSlipWidthPx, opacity: wetFilm.panSlipOpacity }) : null,
+            h('path', { 'data-wheel-fire-wheel-head-side': 'true', d: wheelDrive.wheelhead.sidePath, fill: '#3d332d', stroke: '#171311', strokeWidth: 2 }),
+            h('ellipse', { 'data-wheel-fire-wheel-head': 'true', cx: wheelDrive.wheelhead.cx, cy: wheelDrive.wheelhead.cy, rx: wheelDrive.wheelhead.rx, ry: wheelDrive.wheelhead.ry, fill: 'url(#wheel-fire-metal-gradient)', stroke: '#d0b99e', strokeWidth: 4 }),
+            method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-track': 'true', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#d0b99e', strokeWidth: 1.5, opacity: .24 }) : null,
+            method === 'wheel' ? h('ellipse', { 'data-wheel-fire-rotation-marker': wheelDrive.rotation.state, 'data-wheel-fire-revolution-seconds': wheelDrive.rotation.periodSeconds === null ? 'stopped' : wheelDrive.rotation.periodSeconds.toFixed(3), className: wheelDrive.rotation.periodSeconds === null ? undefined : 'wheel-fire-wheel-motion', cx: wheelDrive.rotation.cx, cy: wheelDrive.rotation.cy, rx: wheelDrive.rotation.rx, ry: wheelDrive.rotation.ry, fill: 'none', stroke: '#f5d7a8', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: wheelDrive.rotation.dashArray, strokeDashoffset: 0, opacity: wheelDrive.rotation.periodSeconds === null ? .48 : .9, style: wheelDrive.rotation.periodSeconds === null ? undefined : { animationDuration: wheelDrive.rotation.periodSeconds.toFixed(3) + 's', '--wheel-fire-orbit-shift': wheelDrive.rotation.dashOffset.toFixed(1) } }) : null,
+            h('g', { 'data-wheel-fire-spindle': 'true' },
+              h('path', { d: wheelDrive.spindle.path, fill: '#433a34', stroke: '#171311', strokeWidth: 1.5 }),
+              h('ellipse', { cx: wheelDrive.spindle.hubCx, cy: wheelDrive.spindle.hubCy, rx: wheelDrive.spindle.hubRx, ry: wheelDrive.spindle.hubRy, fill: '#a28e7d', stroke: '#211915', strokeWidth: 1.5 })
+            ),
+            method === 'wheel' ? h('g', { 'data-wheel-fire-speed-pedal': wheelDrive.pedal.travelPct, 'data-wheel-fire-pedal-state': wheelDrive.pedal.state },
+              h('path', { d: wheelDrive.pedal.path, fill: '#6f5c4c', stroke: '#211915', strokeWidth: 2 }),
+              h('path', { d: wheelDrive.pedal.highlightPath, fill: 'none', stroke: '#cbb69f', strokeWidth: 2, strokeLinecap: 'round' })
+            ) : null,
+            method === 'wheel' ? h('g', { 'data-wheel-fire-hardware-labels': 'true' },
+              h('text', { 'data-wheel-fire-hardware-label': 'splash-pan', x: 20, y: 397, fill: '#fef3c7', fontSize: 11, fontWeight: 700 }, 'splash pan'),
+              h('line', { x1: 80, y1: 394, x2: 96, y2: 408, stroke: '#d0b99e', strokeWidth: 1.5 }),
+              h('text', { 'data-wheel-fire-wet-film-label': wetFilm.state, x: 20, y: 414, fill: wetFilm.state === 'excess-film' ? '#fecdd3' : '#bae6fd', fontSize: 11, fontWeight: 700 }, wetFilm.label + ' · body ' + wetFilm.bodyMoisturePct + '% moisture'),
+              h('text', { 'data-wheel-fire-hardware-label': 'wheel-head', x: 500, y: 370, fill: '#fef3c7', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'wheel head'),
+              h('text', { 'data-wheel-fire-rotation-label': 'true', x: 500, y: 384, fill: '#fef3c7', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, wheelDrive.rotation.label),
+              h('line', { x1: 454, y1: 389, x2: 416, y2: 404, stroke: '#d0b99e', strokeWidth: 1.5 }),
+              h('text', { 'data-wheel-fire-hardware-label': 'speed-pedal', x: 500, y: 438, fill: '#fef3c7', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'speed pedal · ' + wheelDrive.pedal.travelPct + '%'),
+              h('line', { x1: 458, y1: 435, x2: wheelDrive.pedal.toeX + 3, y2: wheelDrive.pedal.toeY, stroke: '#d0b99e', strokeWidth: 1.5 })
+            ) : null
+          ),
+          formingPreviewAvailable ? h('rect', { 'data-wheel-fire-contact-zone': contactGeometry.targetMode, x: 78, y: contactGeometry.outsidePad.cy - contactGeometry.contactHeightPx / 2, width: 364, height: contactGeometry.contactHeightPx, rx: 8, fill: '#22d3ee', opacity: .12, 'aria-hidden': 'true' }) : null,
+          method === 'wheel' ? h('g', { 'data-wheel-fire-centering-axis': 'true', 'aria-hidden': 'true' },
+            h('line', { x1: geometry.center, x2: geometry.center, y1: Math.max(58, geometry.top - 18), y2: wheelDrive.wheelhead.cy + 4, stroke: '#fef3c7', strokeWidth: 1.5, strokeDasharray: '5 6', opacity: .28 }),
+            h('circle', { cx: geometry.center, cy: wheelDrive.wheelhead.cy, r: 3.5, fill: '#fef3c7', opacity: .55 })
+          ) : null,
+          method === 'wheel' && wobblePx > .6 ? h('ellipse', { 'data-wheel-fire-wobble-orbit': wheelWobble.motionState, 'data-wheel-fire-speed-load': wheelWobble.loadState, 'data-wheel-fire-wobble-cycle-seconds': wheelWobble.cycleSeconds === null ? 'stopped' : wheelWobble.cycleSeconds.toFixed(3), cx: geometry.center, cy: geometry.top, rx: rimOuterRx + wobblePx, ry: rimEllipseRy + wheelWobble.depthAmplitudePx, fill: 'none', stroke: '#fb7185', strokeWidth: 1.5, strokeDasharray: '6 6', opacity: .72, 'aria-hidden': 'true' }) : null,
+          method === 'wheel' && localRingTarget && wetFilm.contactFilmOpacity > .01 ? h('path', { 'data-wheel-fire-contact-film': 'rear', 'data-wheel-fire-film-state': wetFilm.state, d: selectedWorkRingRearPath, fill: 'none', stroke: '#bae6fd', strokeWidth: wetFilm.contactFilmWidthPx, strokeLinecap: 'round', opacity: wetFilm.contactFilmOpacity * .48, 'aria-hidden': 'true' }) : null,
+          method === 'wheel' && localRingTarget ? h('path', { 'data-wheel-fire-work-ring-arc': 'rear', d: selectedWorkRingRearPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .42, 'aria-hidden': 'true' }) : null,
+          h('g', { 'data-wheel-fire-clay-orbit': method === 'wheel' ? wheelWobble.motionState : undefined, 'data-wheel-fire-speed-load': method === 'wheel' ? wheelWobble.loadState : undefined, 'data-wheel-fire-wobble-cycle-seconds': method === 'wheel' ? (wheelWobble.cycleSeconds === null ? 'stopped' : wheelWobble.cycleSeconds.toFixed(3)) : undefined, className: method === 'wheel' && wheelWobble.motionState === 'orbiting' ? 'wheel-fire-wobble-motion' : undefined, style: method === 'wheel' ? { '--wheel-fire-wobble': wobblePx.toFixed(1) + 'px', '--wheel-fire-wobble-neg': (-wobblePx).toFixed(1) + 'px', '--wheel-fire-wobble-diag': wheelWobble.diagonalAmplitudePx.toFixed(1) + 'px', '--wheel-fire-wobble-diag-neg': (-wheelWobble.diagonalAmplitudePx).toFixed(1) + 'px', '--wheel-fire-wobble-depth': wheelWobble.depthAmplitudePx.toFixed(1) + 'px', '--wheel-fire-wobble-depth-neg': (-wheelWobble.depthAmplitudePx).toFixed(1) + 'px', '--wheel-fire-wobble-depth-diag': wheelWobble.diagonalDepthPx.toFixed(1) + 'px', '--wheel-fire-wobble-depth-diag-neg': (-wheelWobble.diagonalDepthPx).toFixed(1) + 'px', animationDuration: wheelWobble.cycleSeconds === null ? undefined : wheelWobble.cycleSeconds.toFixed(3) + 's', transform: wheelWobble.motionState === 'stationary-offset' ? 'translate(' + wobblePx.toFixed(1) + 'px, 0px)' : undefined } : undefined },
             h('path', { d: geometry.outer, fill: data.showCrossSection ? fillColor : 'url(#wheel-fire-clay-gradient)', stroke: '#e2aa82', strokeWidth: 2, filter: 'url(#wheel-fire-shadow)' }),
+            h('path', { 'data-wheel-fire-clay-sheen': wetFilm.state, 'data-wheel-fire-body-moisture': wetFilm.bodyMoisturePct, d: geometry.outer, fill: 'url(#wheel-fire-wet-sheen)', opacity: wetFilm.sheenOpacity, pointerEvents: 'none', 'aria-hidden': 'true' }),
             h('path', { d: geometry.cavity, fill: cavityColor, stroke: data.showCrossSection ? '#8e5b3d' : '#130d0a', strokeWidth: 2 }),
             h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimOuterRx, ry: rimEllipseRy, fill: fillColor, stroke: '#f1c39f', strokeWidth: 2, opacity: .98, 'aria-hidden': 'true' }),
+            h('path', { 'data-wheel-fire-rim-sheen': wetFilm.state, d: 'M' + (geometry.center - rimOuterRx).toFixed(1) + ' ' + geometry.top.toFixed(1) + ' A' + rimOuterRx.toFixed(1) + ' ' + rimEllipseRy.toFixed(1) + ' 0 0 1 ' + (geometry.center + rimOuterRx).toFixed(1) + ' ' + geometry.top.toFixed(1), fill: 'none', stroke: '#f0f9ff', strokeWidth: 2.2, strokeLinecap: 'round', opacity: wetFilm.sheenOpacity * .9, 'aria-hidden': 'true' }),
             h('ellipse', { cx: geometry.center, cy: geometry.top, rx: rimInnerRx, ry: Math.max(2, rimEllipseRy * .72), fill: cavityColor, stroke: '#704832', strokeWidth: 2, 'aria-hidden': 'true' }),
+            data.showCrossSection ? h('g', { 'data-wheel-fire-ring-risk-map': 'true', 'data-wheel-fire-risk-peak-ring': criticalRisk.index + 1, 'data-wheel-fire-risk-peak-pct': (criticalRisk.risk * 100).toFixed(1), 'data-wheel-fire-risk-high-count': ringRiskProfile.highCount, 'data-wheel-fire-risk-watch-count': ringRiskProfile.watchCount, pointerEvents: 'none', 'aria-hidden': 'true' },
+              ringRiskProfile.rings.slice(1).map(function (ringRisk) {
+                var lowerIndex = ringRisk.index - 1;
+                var x1 = geometry.center + vessel.radii[lowerIndex] * geometry.scale;
+                var y1 = geometry.bottom - lowerIndex / (RING_COUNT - 1) * geometry.heightPx;
+                var x2 = geometry.center + vessel.radii[ringRisk.index] * geometry.scale;
+                var y2 = geometry.bottom - ringRisk.index / (RING_COUNT - 1) * geometry.heightPx;
+                var statusId = ringRisk.risk >= .67 ? 'high' : (ringRisk.risk >= .4 ? 'watch' : 'lower');
+                return h('path', { key: 'wall-risk-' + ringRisk.index, 'data-wheel-fire-ring-risk': ringRisk.index + 1, 'data-wheel-fire-ring-risk-status': statusId, 'data-wheel-fire-ring-risk-pct': (ringRisk.risk * 100).toFixed(1), 'data-wheel-fire-ring-risk-signal': ringRisk.dominantSignalId, d: 'M' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' L' + x2.toFixed(1) + ' ' + y2.toFixed(1), fill: 'none', stroke: ringRiskColor(ringRisk), strokeWidth: ringRiskWidth(ringRisk), strokeDasharray: ringRiskDash(ringRisk), strokeLinecap: 'round', opacity: ringRisk.risk >= .4 ? .96 : .66 });
+              }),
+              h('circle', { 'data-wheel-fire-risk-peak-marker': 'current', cx: criticalRiskX, cy: criticalRiskY, r: 8, fill: 'none', stroke: '#f8fafc', strokeWidth: 2.5 }),
+              showPredictedRiskPeak ? h('circle', { 'data-wheel-fire-risk-peak-marker': 'predicted', 'data-wheel-fire-risk-preview-ring': previewCriticalRisk.index + 1, 'data-wheel-fire-risk-preview-pct': (previewCriticalRisk.risk * 100).toFixed(1), cx: previewCriticalRiskX, cy: previewCriticalRiskY, r: 12, fill: 'none', stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 3' }) : null
+            ) : null,
             data.showFormingPreview !== false && formingPreviewAvailable && formingPreviewChanged ? h('path', { d: formingPreviewGeometry.outer, fill: 'none', stroke: formingPreviewVessel.collapsed ? '#fb7185' : '#fbbf24', strokeWidth: 3, strokeDasharray: '9 6', opacity: .95, pointerEvents: 'none', 'aria-hidden': 'true' }) : null,
             [4, 9, 14, 19, 24, 29, 34].map(function (ring) {
               var y = geometry.bottom - ring / (RING_COUNT - 1) * geometry.heightPx;
               var radius = vessel.radii[ring] * geometry.scale;
               return h('ellipse', { key: ring, cx: geometry.center, cy: y, rx: radius, ry: Math.max(2.4, radius * (0.035 + perspectiveDepth * 0.035)), fill: 'none', stroke: '#fff1df', strokeWidth: 1, opacity: method === 'coil' ? .3 : .16 });
             }),
+            localRingTarget ? h('g', { 'data-wheel-fire-local-wall-ruler': 'true', 'aria-hidden': 'true' },
+              h('line', { x1: geometry.center + selectedInnerRadius, x2: geometry.center + selectedOuterRadius, y1: selectedY, y2: selectedY, stroke: selectedWallColor, strokeWidth: 5, strokeLinecap: 'round' }),
+              h('line', { x1: geometry.center + selectedInnerRadius, x2: geometry.center + selectedInnerRadius, y1: selectedY - 6, y2: selectedY + 6, stroke: selectedWallColor, strokeWidth: 2 }),
+              h('line', { x1: geometry.center + selectedOuterRadius, x2: geometry.center + selectedOuterRadius, y1: selectedY - 6, y2: selectedY + 6, stroke: selectedWallColor, strokeWidth: 2 }),
+              h('line', { x1: geometry.center + selectedOuterRadius + 5, x2: 498, y1: selectedY, y2: selectedY, stroke: selectedWallColor, strokeWidth: 1, strokeDasharray: '4 4', opacity: .8 }),
+              h('text', { x: 500, y: clamp(selectedY - 9, 62, 406), fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, selectedWallLabel)
+            ) : null,
             vessel.defects.indexOf('drying crack') >= 0 || vessel.defects.indexOf('thermal crack') >= 0 || vessel.defects.indexOf('dunting crack') >= 0 ? h('path', { d: 'M' + (geometry.center + vessel.radii[19] * geometry.scale * .62) + ',' + (geometry.bottom - 19 / 35 * geometry.heightPx) + ' l-12,18 9,15 -15,17', fill: 'none', stroke: '#2a1711', strokeWidth: 4, strokeLinecap: 'round' }) : null
           ),
-          h('path', { d: 'M64 420 A196 ' + (wheelEllipseRy + 9).toFixed(1) + ' 0 0 0 456 420', fill: 'none', stroke: '#c1a98f', strokeWidth: 5, opacity: .75, 'aria-hidden': 'true' }),
-          h('line', { x1: 80, x2: 440, y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 }),
-          h('circle', { cx: 62, cy: selectedY, r: 9, fill: '#06b6d4', stroke: '#cffafe', strokeWidth: 3 }),
-          h('circle', { cx: geometry.center - selectedInnerRadius + 5, cy: selectedY, r: 4 + handSupport * .035, fill: '#f0fdfa', stroke: '#0f766e', strokeWidth: 2, opacity: .95, 'aria-hidden': 'true' }),
-          h('circle', { cx: geometry.center + selectedOuterRadius + 8, cy: selectedY, r: 5, fill: lubrication > 78 ? '#fb7185' : '#38bdf8', stroke: '#e0f2fe', strokeWidth: 2, 'aria-hidden': 'true' }),
-          h('text', { x: 20, y: 25, fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, method === 'wheel' ? Math.round(rpm) + ' RPM' : 'Handbuilding'),
+          openingToolTarget ? h('g', { 'data-wheel-fire-opening-floor': 'true', 'data-wheel-fire-opening-floor-state': openingFloor.state, 'aria-hidden': 'true' },
+            h('line', { 'data-wheel-fire-opening-floor-bracket': 'true', x1: 70, x2: 70, y1: geometry.bottom, y2: openingFloorY, stroke: openingFloorColor, strokeWidth: 3, strokeLinecap: 'round' }),
+            h('line', { x1: 62, x2: 78, y1: geometry.bottom, y2: geometry.bottom, stroke: openingFloorColor, strokeWidth: 2 }),
+            h('line', { x1: 62, x2: 78, y1: openingFloorY, y2: openingFloorY, stroke: openingFloorColor, strokeWidth: 2 }),
+            h('line', { 'data-wheel-fire-opening-floor-level': 'current', x1: 78, x2: geometry.center, y1: openingFloorY, y2: openingFloorY, stroke: openingFloorColor, strokeWidth: 2, strokeDasharray: '6 5', opacity: .9 }),
+            h('circle', { cx: geometry.center, cy: openingFloorY, r: 4.5, fill: openingFloorColor, stroke: '#ecfeff', strokeWidth: 1.5 }),
+            h('text', { x: 84, y: clamp(openingFloorY - 8, 96, 394), fill: openingFloorColor, fontSize: 11, fontWeight: 700 }, 'floor proxy ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm'),
+            formingPreviewAvailable && Math.abs(formingPreviewFloorDelta) >= .01 ? h('g', { 'data-wheel-fire-opening-floor-preview': formingPreviewFloor.state },
+              h('line', { x1: 78, x2: geometry.center, y1: previewOpeningFloorY, y2: previewOpeningFloorY, stroke: '#facc15', strokeWidth: 2.5, strokeDasharray: '4 4', opacity: .95 }),
+              h('text', { x: 84, y: clamp(previewOpeningFloorY + 15, 110, 404), fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'next ' + formingPreviewFloor.floorThicknessCm.toFixed(2) + ' cm')
+            ) : null
+          ) : null,
+          h('path', { 'data-wheel-fire-splash-pan-front': 'true', d: 'M64 420 A196 ' + (wheelEllipseRy + 9).toFixed(1) + ' 0 0 0 456 420', fill: 'none', stroke: '#c1a98f', strokeWidth: 5, opacity: .75, 'aria-hidden': 'true' }),
+          method === 'wheel' && wetFilm.droplets.length ? h('g', { 'data-wheel-fire-slip-splash': wetFilm.state, 'data-wheel-fire-slip-droplet-count': wetFilm.dropletCount, 'aria-hidden': 'true' }, wetFilm.droplets.map(function (drop) { return h('circle', { key: 'slip-drop-' + drop.id, 'data-wheel-fire-slip-droplet': 'true', cx: drop.cx, cy: drop.cy, r: drop.radius, fill: '#bae6fd', stroke: '#e0f2fe', strokeWidth: .8, opacity: .88 }); })) : null,
+          method === 'wheel' && localRingTarget && wetFilm.contactFilmOpacity > .01 ? h('path', { 'data-wheel-fire-contact-film': 'front', 'data-wheel-fire-film-state': wetFilm.state, d: selectedWorkRingFrontPath, fill: 'none', stroke: '#e0f2fe', strokeWidth: wetFilm.contactFilmWidthPx, strokeLinecap: 'round', opacity: wetFilm.contactFilmOpacity, 'aria-hidden': 'true' }) : null,
+          localRingTarget ? (method === 'wheel' ? h('g', { 'data-wheel-fire-work-ring-kinematics': 'true', 'data-wheel-fire-surface-state': localSurface.state, 'data-wheel-fire-local-surface-speed': localSurface.surfaceSpeedCmPerSecond.toFixed(2), 'aria-hidden': 'true' },
+            h('line', { x1: 71, x2: Math.max(71, selectedWorkRingLeft), y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 }),
+            h('path', { 'data-wheel-fire-work-ring': 'true', 'data-wheel-fire-work-ring-arc': 'front', d: selectedWorkRingFrontPath, fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5, strokeDasharray: '7 7', strokeLinecap: 'round', opacity: .95 })
+          ) : h('line', { 'data-wheel-fire-work-ring': 'true', x1: 80, x2: 440, y1: selectedY, y2: selectedY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 7', opacity: .9 })) : null,
+          formingPreviewAvailable ? h('g', { 'data-wheel-fire-contact-geometry': contactGeometry.id, 'data-wheel-fire-contact-tool': contactGeometry.tool, 'data-wheel-fire-contact-target': contactGeometry.targetMode, 'data-wheel-fire-contact-balance': contactGeometry.balanceState, 'data-wheel-fire-contact-span-rings': contactGeometry.modeledSpanRings, pointerEvents: 'none', 'aria-hidden': 'true' },
+            h('path', { 'data-wheel-fire-contact-silhouette': 'outside', d: contactGeometry.outsideArmPath, fill: 'none', stroke: '#fdba74', strokeWidth: contactGeometry.outsideArmWidthPx, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: .48 }),
+            h('path', { 'data-wheel-fire-contact-silhouette': 'inside', d: contactGeometry.insideArmPath, fill: 'none', stroke: '#99f6e4', strokeWidth: contactGeometry.insideArmWidthPx, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: .46 }),
+            h('ellipse', { 'data-wheel-fire-contact-pad': 'outside', 'data-wheel-fire-contact-kind': contactGeometry.outsideKind, 'data-wheel-fire-contact-role': contactGeometry.outsideRole, cx: contactGeometry.outsidePad.cx, cy: contactGeometry.outsidePad.cy, rx: contactGeometry.outsidePad.rx, ry: contactGeometry.outsidePad.ry, fill: '#fb923c', stroke: '#ffedd5', strokeWidth: contactGeometry.outsidePad.strokeWidth, opacity: contactGeometry.outsidePad.opacity }),
+            h('ellipse', { 'data-wheel-fire-contact-pad': 'inside', 'data-wheel-fire-contact-kind': contactGeometry.insideKind, 'data-wheel-fire-contact-role': contactGeometry.insideRole, cx: contactGeometry.insidePad.cx, cy: contactGeometry.insidePad.cy, rx: contactGeometry.insidePad.rx, ry: contactGeometry.insidePad.ry, fill: '#2dd4bf', stroke: '#ccfbf1', strokeWidth: contactGeometry.insidePad.strokeWidth, opacity: contactGeometry.insidePad.opacity }),
+            contactGeometry.implement.kind === 'trim-loop' ? h('g', { 'data-wheel-fire-contact-implement': 'trim-loop' },
+              h('path', { d: contactGeometry.implement.handlePath, fill: 'none', stroke: '#d6b27a', strokeWidth: 5, strokeLinecap: 'round' }),
+              h('ellipse', { cx: contactGeometry.implement.loop.cx, cy: contactGeometry.implement.loop.cy, rx: contactGeometry.implement.loop.rx, ry: contactGeometry.implement.loop.ry, fill: 'none', stroke: '#cbd5e1', strokeWidth: 2.4 })
+            ) : (contactGeometry.implement.kind !== 'none' ? h('path', { 'data-wheel-fire-contact-implement': contactGeometry.implement.kind, d: contactGeometry.implement.path, fill: contactGeometry.implement.kind === 'coil' ? 'none' : (contactGeometry.implement.kind === 'scraper' ? '#cbd5e1' : '#d6b27a'), stroke: contactGeometry.implement.kind === 'coil' ? '#e2aa82' : '#f8fafc', strokeWidth: contactGeometry.implement.kind === 'coil' ? 5 : 1.8, strokeLinecap: 'round', strokeLinejoin: 'round', opacity: .96 }) : null),
+            h('text', { 'data-wheel-fire-contact-label': contactGeometry.id, x: 20, y: 84, fill: '#fef3c7', fontSize: 11, fontWeight: 700 }, 'Contact · ' + contactGeometry.shortLabel)
+          ) : null,
+          showTouchForces && formingPreviewAvailable ? h('g', { 'data-wheel-fire-touch-forces': 'true', 'data-wheel-fire-force-target': contactGeometry.targetMode, 'data-wheel-fire-inside-touch': contactGeometry.insideTouchPct, 'aria-hidden': 'true' },
+            h('line', { x1: contactGeometry.outsidePad.cx + 8 + outsideForceLength, x2: contactGeometry.outsidePad.cx + 8, y1: contactGeometry.outsidePad.cy - 11, y2: contactGeometry.outsidePad.cy - 11, stroke: '#fb923c', strokeWidth: 2.4 + pressure * .025, strokeLinecap: 'round', markerEnd: 'url(#wheel-fire-force-outside)' }),
+            h('line', { x1: contactGeometry.insidePad.cx - 8 - insideForceLength, x2: contactGeometry.insidePad.cx - 8, y1: contactGeometry.insidePad.cy + 11, y2: contactGeometry.insidePad.cy + 11, stroke: '#2dd4bf', strokeWidth: 2.4 + modeledInsideTouch * .025, strokeLinecap: 'round', markerEnd: 'url(#wheel-fire-force-support)' }),
+            h('text', { x: 20, y: 65, fill: '#fff7ed', fontSize: 11, fontWeight: 700 }, wholeFormTarget ? 'Matched centering brace · ' + Math.round(pressure) + '% each side · whole-form target' : (rimTarget ? 'Rim placement · pressure ' + Math.round(pressure) + '% · rim support ' + Math.round(handSupport) + '%' : (lowerZoneTarget ? 'Trim touch · tool pressure ' + Math.round(pressure) + '% · stabilizing support ' + Math.round(handSupport) + '%' : 'Relative touch: outside ' + Math.round(pressure) + '% · inside support ' + Math.round(handSupport) + '% · ' + touchRelationship)))
+          ) : null,
+          showFormingFlow ? h('g', { 'data-wheel-fire-forming-flow': 'true', 'aria-hidden': 'true' },
+            Math.abs(formingFlow.outerDeltaCm) >= .005 ? h('g', null,
+              h('line', { x1: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 : geometry.center + flowOuterRadius + 10 + outerFlowLength, x2: formingFlow.outerDeltaCm > 0 ? geometry.center + flowOuterRadius + 10 + outerFlowLength : geometry.center + flowOuterRadius + 10, y1: clamp(flowY - 34, 88, 398), y2: clamp(flowY - 34, 88, 398), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('text', { x: Math.min(496, geometry.center + flowOuterRadius + 14), y: clamp(flowY - 41, 80, 390), fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'outer ' + (formingFlow.outerDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.outerDeltaCm).toFixed(2) + ' cm')
+            ) : null,
+            Math.abs(formingFlow.innerDeltaCm) >= .005 ? h('g', null,
+              h('line', { x1: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 - innerFlowLength : geometry.center + flowInnerRadius - 10, x2: formingFlow.innerDeltaCm > 0 ? geometry.center + flowInnerRadius - 10 : geometry.center + flowInnerRadius - 10 - innerFlowLength, y1: clamp(flowY + 34, 92, 402), y2: clamp(flowY + 34, 92, 402), stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('text', { x: geometry.center + flowInnerRadius - 14, y: clamp(flowY + 49, 106, 418), fill: '#fef08a', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'cavity ' + (formingFlow.innerDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.innerDeltaCm).toFixed(2) + ' cm')
+            ) : null,
+            Math.abs(formingFlow.heightDeltaCm) >= .005 ? h('g', null,
+              h('line', { x1: 98, x2: 98, y1: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 : geometry.top + 58 - heightFlowLength, y2: formingFlow.heightDeltaCm > 0 ? geometry.top + 58 - heightFlowLength : geometry.top + 58, stroke: '#facc15', strokeWidth: 3, strokeDasharray: '6 4', markerEnd: 'url(#wheel-fire-clay-flow-arrow)' }),
+              h('text', { x: 108, y: geometry.top + 52 - heightFlowLength / 2, fill: '#fef08a', fontSize: 11, fontWeight: 700 }, 'height ' + (formingFlow.heightDeltaCm > 0 ? '+' : '−') + Math.abs(formingFlow.heightDeltaCm).toFixed(2) + ' cm')
+            ) : null,
+            activeTool === 'trim' && formingFlow.clayVolumeDeltaCm3 < -.5 ? h('g', null, [0, 1, 2].map(function (chip) { return h('circle', { key: 'chip-' + chip, cx: geometry.center + flowOuterRadius + 22 + chip * 10, cy: flowY - 5 + chip * 7, r: 2.5 + chip * .5, fill: '#facc15' }); })) : null
+          ) : null,
+          localRingTarget ? h('circle', { 'data-wheel-fire-work-ring-marker': 'true', cx: 62, cy: selectedY, r: 9, fill: '#06b6d4', stroke: '#cffafe', strokeWidth: 3 }) : null,
+          h('text', { 'data-wheel-fire-surface-speed-label': method === 'wheel' ? 'true' : undefined, 'data-wheel-fire-surface-scope': method === 'wheel' ? (wholeFormTarget ? 'whole-form' : 'selected-ring') : undefined, 'data-wheel-fire-whole-form-kinematics': method === 'wheel' && wholeFormTarget ? 'true' : undefined, 'data-wheel-fire-min-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.minSurfaceSpeedCmPerSecond.toFixed(2) : undefined, 'data-wheel-fire-max-surface-speed': method === 'wheel' && wholeFormTarget ? wholeFormSurface.maxSurfaceSpeedCmPerSecond.toFixed(2) : undefined, x: 20, y: 25, fill: '#fef3c7', fontSize: 13, fontWeight: 800 }, method === 'wheel' ? displayedSurface.displayLabel : 'Handbuilding'),
           h('text', { x: 500, y: 25, fill: '#fef3c7', fontSize: 13, textAnchor: 'end' }, data.showCrossSection ? 'Material cutaway' : '3D wheel · ' + Math.round(cameraTilt) + '° tilt'),
-          h('text', { x: 20, y: 45, fill: '#cffafe', fontSize: 11, fontWeight: 700 }, 'Support ' + Math.round(handSupport) + '% · slip ' + Math.round(lubrication) + '% · contact ' + contactSpan + ' rings'),
+          h('text', { x: 20, y: 45, fill: wetFilm.state === 'excess-film' ? '#fecdd3' : '#cffafe', fontSize: 11, fontWeight: 700 }, wholeFormTarget ? 'Brace pressure ' + Math.round(pressure) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · all ' + RING_COUNT + ' rings' : (rimTarget ? 'Rim support ' + Math.round(handSupport) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · top 5 rings' : (lowerZoneTarget ? 'Trim ring ' + (workRing + 1) + ' · lower zone ' + (activeTarget.minRing + 1) + '–' + (activeTarget.maxRing + 1) + ' · ' + contactSpan + '-ring contact' : (openingToolTarget ? 'Floor proxy ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm · cavity depth ' + openingFloor.cavityDepthCm.toFixed(2) + ' cm · ring ' + (workRing + 1) : 'Support ' + Math.round(handSupport) + '% · ' + wetFilm.label + ' ' + Math.round(lubrication) + '% · ' + contactSpan + '-ring contact')))),
           method === 'wheel' ? h('text', { x: 500, y: 45, fill: vessel.centered >= 70 ? '#d9f99d' : '#fecdd3', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'Centering ' + Math.round(vessel.centered) + '% · ' + wobbleLabel) : null
         );
       }
       function shapePanel() {
         var wheelTools = [
           { id: 'center', label: 'Center', icon: '◎', help: 'Reduce wobble and average the rotational profile.' },
-          { id: 'open', label: 'Open', icon: '◯', help: 'Create or widen the interior cavity.' },
+          { id: 'open', label: 'Open', icon: '◯', help: 'Widen the cavity and study the remaining modeled floor.' },
           { id: 'pull', label: 'Pull wall', icon: '↟', help: 'Trade wall thickness for height.' },
           { id: 'belly', label: 'Expand', icon: '↔', help: 'Push the profile outward.' },
           { id: 'collar', label: 'Collar', icon: '→←', help: 'Narrow the profile.' },
@@ -1931,7 +3509,7 @@
         ];
         var coilTools = [
           { id: 'add-coil', label: 'Add coil', icon: '⊕', help: 'Add clay mass and height at the rim.' },
-          { id: 'open', label: 'Pinch open', icon: '◯', help: 'Thin and open the wall locally.' },
+          { id: 'open', label: 'Pinch open', icon: '◯', help: 'Pinch the cavity locally and monitor the modeled floor.' },
           { id: 'belly', label: 'Push out', icon: '↔', help: 'Expand a local section.' },
           { id: 'collar', label: 'Draw in', icon: '→←', help: 'Narrow a local section.' },
           { id: 'paddle', label: 'Paddle', icon: '▥', help: 'Compress and regularize coils.' },
@@ -1940,15 +3518,34 @@
         ];
         var tools = method === 'wheel' ? wheelTools : coilTools;
         var selectedTool = tools.filter(function (tool) { return tool.id === activeTool; })[0] || tools[0];
+        var selectedGestureMode = formingToolGestureMode(selectedTool.id);
+        var selectedTarget = potteryFormingTarget(selectedTool.id, workRing);
+        var selectedLowerZone = selectedTarget.mode === 'lower-zone';
+        var selectedOpeningTool = selectedTool.id === 'open';
+        var selectedTargetRing = selectedTarget.ring;
+        var canFocusRiskRing = selectedTarget.mode === 'selected-ring';
+        var selectedRingRisk = ringRiskProfile.rings[selectedTargetRing];
+        var previewSelectedRingRisk = formingPreviewRiskProfile.rings[selectedTargetRing];
+        var applyButtonLabel = selectedGestureMode === 'single-global' ? 'Center whole form' : (selectedGestureMode === 'single-rim' ? 'Add one coil at rim' : (selectedLowerZone ? 'Apply ' + selectedTool.label + ' at lower-zone ring ' + (selectedTargetRing + 1) + ' of ' + (selectedTarget.maxRing + 1) : 'Apply ' + selectedTool.label + ' at work zone ' + (workRing + 1) + ' of ' + RING_COUNT));
         function toolAllowed(tool) { return vessel.stage === 'wet' || (vessel.stage === 'leather-hard' && tool.id === 'trim'); }
         var toolStageNote = vessel.stage === 'wet' ? 'Wet clay accepts the full forming toolkit.' : (vessel.stage === 'leather-hard' ? 'Leather-hard clay only accepts Trim/Scrape in this model.' : 'Shaping is paused after leather-hard; continue in Dry & fire.');
+        function focusOpeningFloor() {
+          patchData({ workRing: openingFloor.targetRing, showCrossSection: true });
+          announce('Focused the modeled cavity floor at ring ' + (openingFloor.targetRing + 1) + ' and opened the material cutaway.');
+        }
+        function inspectHighestRiskRing() {
+          var riskPatch = { showCrossSection: true };
+          if (canFocusRiskRing) riskPatch.workRing = ringRiskProfile.criticalRing;
+          patchData(riskPatch);
+          announce((canFocusRiskRing ? 'Focused' : 'Revealed') + ' the highest comparative wall-risk signal at ring ' + (ringRiskProfile.criticalRing + 1) + ' in the material cutaway.');
+        }
         function useSaferTouchSetup() {
           var safer = {
             pressure: Math.round(clamp(pressure - 15, 15, 80)),
-            handSupport: Math.round(Math.max(75, handSupport)),
-            lubrication: Math.round(clamp(lubrication, 20, 60)),
-            contactSpan: Math.round(Math.max(7, contactSpan))
+            lubrication: Math.round(clamp(lubrication, 20, 60))
           };
+          if (selectedGestureMode !== 'single-global') safer.handSupport = Math.round(Math.max(75, handSupport));
+          if (selectedGestureMode === 'ring-drag') safer.contactSpan = Math.round(Math.max(7, contactSpan));
           if (method === 'wheel') safer.rpm = Math.round(clamp(rpm - 15, 20, 75));
           patchData(safer);
           announce('Loaded a safer comparative touch setup. Review the new forecast before applying the tool.');
@@ -1958,9 +3555,10 @@
           var reasons = [];
           if (pressure >= 75) reasons.push('high pressure');
           if (method === 'wheel' && rpm >= 80) reasons.push('high wheel speed');
-          if (handSupport < 35) reasons.push('low inside support');
+          if (selectedGestureMode !== 'single-global' && handSupport < 35) reasons.push(selectedGestureMode === 'single-rim' ? 'low rim support' : 'low inside support');
           if (lubrication > 78) reasons.push('excess lubrication');
-          if (contactSpan <= 4) reasons.push('concentrated contact');
+          if (selectedGestureMode === 'ring-drag' && contactSpan <= 4) reasons.push('concentrated contact');
+          if (selectedOpeningTool && formingPreviewFloor.state === 'puncture-risk') reasons.push('opening reaches the lowest modeled floor interval');
           var title = formingPreviewVessel.collapsed ? 'Collapse forecast' : (formingPreviewRisky ? 'High-risk forecast' : 'Before you shape');
           var outcome = formingPreviewChanged ? (formingPreviewVessel.lastOutcome || 'The model predicts a measurable profile change.') : 'This setup predicts little measurable change at the selected ring.';
           var reasonText = reasons.length ? 'Main setup signals: ' + reasons.join(', ') + '.' : 'The selected touch inputs remain within the model’s lower-risk comparative range.';
@@ -1971,9 +3569,14 @@
             ),
             h('p', { className: 'text-xs' }, outcome),
             h('p', { className: 'text-[11px] font-bold' }, 'Predicted: stability ' + signed(formingPreviewStabilityDelta, 1, ' pts') + ' · minimum wall ' + signed(formingPreviewWallDelta, 2, ' cm') + ' · height ' + signed(formingPreviewHeightDelta, 2, ' cm') + ' · capacity ' + signed(formingPreviewCapacityDelta, 0, ' mL')),
+            selectedOpeningTool ? h('p', { 'data-wheel-fire-opening-floor-forecast': formingPreviewFloor.state, 'data-wheel-fire-opening-floor-current': openingFloor.floorThicknessCm.toFixed(2), 'data-wheel-fire-opening-floor-next': formingPreviewFloor.floorThicknessCm.toFixed(2), className: 'text-[11px]' },
+              h('strong', null, 'Opening floor: '), openingFloor.floorThicknessCm.toFixed(2) + ' cm now → ' + formingPreviewFloor.floorThicknessCm.toFixed(2) + ' cm predicted. ',
+              Math.abs(formingPreviewFloorDelta) < .01 ? 'This work ring widens the cavity without changing the vertical floor proxy; focus the cavity floor to study opening depth.' : (formingPreviewFloorDelta < 0 ? 'The modeled cavity deepens by ' + Math.abs(formingPreviewFloorDelta).toFixed(2) + ' cm.' : 'The modeled floor proxy increases by ' + formingPreviewFloorDelta.toFixed(2) + ' cm after volume redistribution.')
+            ) : null,
+            formingPreviewChanged ? h('p', { className: 'text-[11px]' }, h('strong', null, 'Clay-flow preview: '), formingFlow.summary, selectedGestureMode === 'single-global' ? ' The arrow samples ring ' + (formingFlow.sampleRing + 1) + '; Center still acts across all ' + RING_COUNT + ' modeled rings.' : (selectedGestureMode === 'single-rim' ? ' The cue stays at the top five modeled rim rings; pressing or dragging elsewhere does not move the coil target.' : (selectedLowerZone ? ' The cue and work ring stay within lower-exterior rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + '; higher pointer positions clamp to the top of that zone.' : (formingFlow.sampleRing !== formingFlow.requestedRing ? ' The cue is shown at ring ' + (formingFlow.sampleRing + 1) + ', where this tool acts.' : '')))) : null,
             h('p', { className: 'text-[11px]' }, reasonText),
             h('div', { className: 'flex flex-wrap items-center gap-3' },
-              h('label', { className: 'flex items-center gap-2 text-xs font-bold' }, h('input', { type: 'checkbox', checked: data.showFormingPreview !== false, onChange: function (event) { patchData({ showFormingPreview: event.target.checked }); } }), 'Show predicted profile'),
+              h('label', { className: 'flex items-center gap-2 text-xs font-bold' }, h('input', { type: 'checkbox', checked: data.showFormingPreview !== false, onChange: function (event) { patchData({ showFormingPreview: event.target.checked }); } }), 'Show predicted profile and clay flow'),
               formingPreviewRisky ? h('button', { type: 'button', onClick: useSaferTouchSetup, className: 'rounded-lg border border-rose-500 bg-white px-3 py-2 text-xs font-black text-rose-900' }, 'Use safer touch setup') : null
             )
           );
@@ -1981,13 +3584,33 @@
         return h('section', { id: 'wheel-fire-panel-shape', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-shape', className: 'space-y-3' },
           h('div', { className: 'wheel-fire-main' },
             h('div', { className: 'space-y-2' }, vesselSvg(),
-              h('p', { id: 'wheel-fire-vessel-help', className: 'text-[11px] text-slate-600 text-center' }, 'Pointer: press or drag on the vessel. The blue dashed line is the selected work ring; the pale cyan band shows contact span. The inner marker shows support, the outer marker shows lubricated contact, and the dashed amber outline predicts the next profile. Keyboard: use Arrow keys, then press Enter or Space to apply the active tool.'),
+              h('p', { id: 'wheel-fire-vessel-help', className: 'text-[11px] text-slate-600 text-center' },
+                h('span', { className: 'block font-bold text-slate-700' }, 'Center applies once to the whole form. Add coil applies once at the rim. Trim/Scrape stays in the highlighted lower zone. Open adds a cavity-floor ruler. Other local tools apply where you press or drag, once per newly entered ring.'),
+                selectedGestureMode === 'single-global'
+                  ? h('span', { className: 'block', 'data-wheel-fire-whole-form-help': 'true' }, 'Center target: press once anywhere on the vessel or use Center whole form. The pale cyan band and paired braces represent a whole-form pass, so no local work-ring marker or wall ruler is shown. Orange and teal arrows show matched opposing brace pressure; inside-hand support, contact span, and work height do not affect Center. The dashed amber outline predicts the next profile. Keyboard: press Enter or Space to apply Center.')
+                  : (selectedGestureMode === 'single-rim'
+                    ? h('span', { className: 'block', 'data-wheel-fire-rim-target-help': 'true' }, 'Rim target: press once anywhere on the vessel or use Add one coil at rim. The coil and support cues stay at the top five modeled rings, so no local work-ring marker or wall ruler is shown. Hand pressure, rim support, surface lubrication, and clay moisture affect placement; contact span and work height do not. Paddle or smooth the new joint before drying. Keyboard: press Enter or Space to add one coil.')
+                    : (selectedLowerZone
+                      ? h('span', { className: 'block', 'data-wheel-fire-lower-zone-help': 'true' }, 'Lower trim target: press or drag within the highlighted lower-exterior band. Pointer positions above the band clamp to its top ring, so Trim/Scrape cannot report removing clay from an unaffected upper wall. The blue dashed line and wall ruler show the actual constrained ring; the pale cyan band shows contact span. Trimming removes modeled mass rather than redistributing it. Keyboard: Arrow keys stay within rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + ', then Enter or Space applies the tool.')
+                      : (selectedOpeningTool
+                        ? h('span', { className: 'block', 'data-wheel-fire-opening-floor-help': 'true' }, 'Opening target: press or drag on the cavity. The cyan bracket shows the current modeled floor proxy from the wheel head to the first open cavity ring; a gold line predicts the next floor when the selected pass would deepen it. Use Focus cavity floor to move the work ring to that boundary and open the material cutaway. Repeated deep passes can add a recoverable base-puncture flag, so compare the forecast before applying. The ruler is a vertical ring-resolution proxy, not measured base thickness or studio safety guidance. Keyboard: use Arrow keys, then Enter or Space to apply Open.')
+                        : h('span', { className: 'block', 'data-wheel-fire-local-target-help': 'true' }, 'Local target: press or drag on the vessel. The blue dashed line is the selected work ring; the pale cyan band shows the active contact zone. The local wall ruler measures from the cavity to the outer surface. Orange and teal arrows compare outside touch with inside support at that contact zone; their percentages are relative controls, not force in newtons. Gold arrows show measured predicted displacement of the outer wall, cavity, or height. Neutral orange and teal contact silhouettes show outside and inside roles; their height follows the modeled contact span, and the outside shape becomes a rib, paddle, or scraper when applicable. These silhouettes show interaction roles—not hand anatomy, measured contact area, force, posture, ergonomics, or technique and safety instruction. The dashed amber outline predicts the next profile. Keyboard: use Arrow keys, then press Enter or Space to apply the active tool.')))),
+                selectedGestureMode === 'single-global'
+                  ? h('span', { className: 'block mt-1' }, ' In wheel mode, the whole-form speed range reports the slowest and fastest modeled ring speeds from 2πr × RPM ÷ 60. Wider rings travel farther each revolution. This is tangential clay speed, not hand speed, relative slip, drag, or force.')
+                  : (selectedGestureMode === 'single-rim'
+                    ? h('span', { className: 'block mt-1' }, ' Handbuilding keeps the powered wheel stationary. The highlighted top-five-ring band is a schematic coil-placement target, not a measured coil diameter, contact area, or hand position.')
+                    : h('span', { className: 'block mt-1' }, ' In wheel mode, the cyan work-ring ellipse reports local clay speed from 2πr × RPM ÷ 60, so wider rings travel farther each revolution. This is tangential clay speed, not hand speed, relative slip, drag, or force.')),
+                h('span', { className: 'block mt-1' }, selectedGestureMode === 'single-global' ? ' Clay-body moisture and surface lubrication are separate modeled inputs. Center uses the whole-form sheen and splash-pan trace instead of a selected-ring film. Moderate lubrication shows a working film; above 72% it becomes excess film, reduces modeled control, and can produce a comparative splash cue as wheel speed rises. Film width, pan slip, and droplets are schematic—not measured water content, slip volume, spray range, chemistry, or cleanup guidance.' : (selectedGestureMode === 'single-rim' ? ' Clay-body moisture and surface lubrication are separate modeled inputs. Handbuilding keeps the clay sheen but suppresses powered splash-pan accumulation. Lubrication remains a comparative contact-film control, not measured water content, slip volume, material chemistry, or cleanup guidance.' : ' Clay-body moisture and surface lubrication are separate modeled inputs. The clay sheen combines both, while the selected-ring film and splash-pan trace respond to surface lubrication. Moderate lubrication shows a working film; above 72% it becomes excess film, reduces modeled control, and can produce a comparative splash cue as wheel speed rises. Film width, pan slip, and droplets are schematic—not measured water content, slip volume, spray range, chemistry, or cleanup guidance.')),
+                data.showCrossSection ? h('span', { className: 'block mt-1', 'data-wheel-fire-ring-risk-help': 'true' }, ' The material cutaway adds a wall-risk scan along the right profile edge: thin lime dashes mean lower signal, amber dashes mean watch, and a rose solid edge means high. A white circle marks the current peak; a gold dashed halo marks the predicted peak when the next pass changes it. The scan combines wall thickness, slope, irregularity, moisture, compression, material, support, and handling inputs. It is comparative—not measured stress, failure probability, a safe-thickness limit, or studio safety guidance.') : null,
+                h('span', { className: 'block mt-1' }, ' Off-center clay follows one perspective-compressed elliptical wobble path per revolution; reduced-motion settings hold one visible phase. The gold registration mark makes one circuit per modeled revolution (60 divided by RPM). The labeled speed pedal follows selected RPM as a schematic travel cue. The orbit and pedal travel are schematic; they do not model measured displacement, rotation direction, a specific wheel\'s pedal curve, torque, braking, or safe operating technique.')
+              ),
               formingForecast(),
               h('div', { className: 'wheel-fire-stats', role: 'group', 'aria-label': 'Live vessel measurements' },
                 metricCard('Stability', percent(stats.stability), stats.status, stats.stability >= 55 ? 'border-emerald-300' : 'border-red-300'),
                 metricCard('Minimum wall', stats.minWallCm.toFixed(2) + ' cm', 'Average ' + stats.averageWallCm.toFixed(2) + ' cm'),
                 metricCard('Clay mass', Math.round(stats.massG) + ' g', 'Approx. volume ' + Math.round(stats.volumeCm3) + ' cm³'),
-                metricCard('Capacity', Math.round(stats.capacityMl) + ' mL', stats.shape)
+                metricCard('Capacity', Math.round(stats.capacityMl) + ' mL', stats.shape),
+                selectedOpeningTool ? metricCard('Opening floor', openingFloor.floorThicknessCm.toFixed(2) + ' cm proxy', openingFloor.cavityDepthCm.toFixed(2) + ' cm cavity · ' + openingFloor.label, openingFloor.state === 'puncture-risk' ? 'border-rose-400' : 'border-cyan-300') : null
               ),
               h('details', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-3' },
                 h('summary', { className: 'cursor-pointer text-xs font-black text-amber-950' }, 'What do these numbers mean?'),
@@ -1995,7 +3618,8 @@
                   h('div', null, h('dt', { className: 'font-black' }, 'Stability'), h('dd', null, 'How well the current shape tolerates pressure, speed, moisture, height, and overhang.')),
                   h('div', null, h('dt', { className: 'font-black' }, 'Minimum wall'), h('dd', null, 'The thinnest modeled zone. Thinner can save clay but may reduce strength or make drying harder to control.')),
                   h('div', null, h('dt', { className: 'font-black' }, 'Clay mass'), h('dd', null, 'An approximate amount of clay. Adding a coil increases mass; trimming removes it.')),
-                  h('div', null, h('dt', { className: 'font-black' }, 'Capacity'), h('dd', null, 'Modeled interior volume. Opening, pulling, and expanding change it even when the outside silhouette looks similar.'))
+                  h('div', null, h('dt', { className: 'font-black' }, 'Capacity'), h('dd', null, 'Modeled interior volume. Opening, pulling, and expanding change it even when the outside silhouette looks similar.')),
+                  selectedOpeningTool ? h('div', { 'data-wheel-fire-opening-floor-definition': 'true' }, h('dt', { className: 'font-black' }, 'Opening floor'), h('dd', null, 'A vertical ring-resolution proxy from the wheel head to the first open cavity ring. It helps compare opening depth, but it is not a measured base thickness or safety instruction.')) : null
                 )
               )
             ),
@@ -2012,15 +3636,31 @@
                 h('label', { htmlFor: 'wheel-fire-clay', className: 'block text-xs font-bold text-slate-700' }, 'Clay body',
                   h('select', { id: 'wheel-fire-clay', value: vessel.clayBody, onChange: function (event) { resetClay(vessel.preset || 'lump', event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 px-2 py-2 bg-white' }, Object.keys(CLAY_BODIES).map(function (id) { return h('option', { key: id, value: id }, CLAY_BODIES[id].name); }))),
                 rangeControl('wheel-fire-pressure', 'Hand pressure', pressure, 5, 100, '%', function (value) { patchData({ pressure: value }); }),
-                rangeControl('wheel-fire-hand-support', 'Inside-hand support', handSupport, 0, 100, '%', function (value) { patchData({ handSupport: value }); }),
+                rangeControl('wheel-fire-hand-support', selectedLowerZone ? 'Stabilizing support' : 'Inside-hand support', handSupport, 0, 100, '%', function (value) { patchData({ handSupport: value }); }, selectedGestureMode === 'single-global'),
                 rangeControl('wheel-fire-lubrication', 'Surface lubrication', lubrication, 0, 100, '%', function (value) { patchData({ lubrication: value }); }),
-                h('div', { className: 'wheel-fire-advanced' }, rangeControl('wheel-fire-contact-span', 'Contact span', contactSpan, 3, 11, ' rings', function (value) { patchData({ contactSpan: Math.round(value) }); })),
+                h('div', { className: 'wheel-fire-advanced' }, rangeControl('wheel-fire-contact-span', 'Contact span', contactSpan, 3, 11, ' rings', function (value) { patchData({ contactSpan: Math.round(value) }); }, selectedGestureMode !== 'ring-drag')),
                 h('div', { className: 'wheel-fire-advanced' }, rangeControl('wheel-fire-camera-tilt', '3D camera tilt', cameraTilt, 20, 70, '°', function (value) { patchData({ cameraTilt: value }); })),
-                h('p', { className: 'text-[11px] text-slate-600' }, 'Inside support balances exterior force. Moderate water or slip reduces drag; excess can reduce control. A wider contact span distributes the same move across more rings.'),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Clay moisture describes modeled water in the body; surface lubrication describes added water or slip at contact. A moderate film reduces modeled drag; above 72% it becomes excess and reduces control. A wider contact span distributes the same move across more rings.'),
                 rangeControl('wheel-fire-rpm', 'Wheel speed', rpm, 0, 120, ' RPM', function (value) { patchData({ rpm: value }); }, method !== 'wheel'),
                 rangeControl('wheel-fire-moisture', 'Clay moisture', vessel.moisture * 100, 5, 100, '%', function (value) { var next = copyVessel(vessel); next.moisture = value / 100; next.lastOutcome = 'Clay moisture adjusted for the simulation.'; commitVessel(next, next.lastOutcome); }),
-                rangeControl('wheel-fire-height', 'Work height (ring)', workRing + 1, 1, RING_COUNT, ' / ' + RING_COUNT, function (value) { patchData({ workRing: value - 1 }); }),
-                h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, h('input', { type: 'checkbox', checked: !!data.showCrossSection, onChange: function (event) { patchData({ showCrossSection: event.target.checked }); } }), 'Show material cross-section')
+                rangeControl('wheel-fire-height', selectedLowerZone ? 'Trim height (lower ring)' : 'Work height (ring)', workRing + 1, selectedLowerZone ? selectedTarget.minRing + 1 : 1, selectedLowerZone ? selectedTarget.maxRing + 1 : RING_COUNT, ' / ' + (selectedLowerZone ? selectedTarget.maxRing + 1 : RING_COUNT), function (value) { patchData({ workRing: potteryFormingTarget(selectedTool.id, value - 1).ring }); }, selectedGestureMode !== 'ring-drag'),
+                selectedGestureMode === 'single-global' ? h('p', { 'data-wheel-fire-whole-form-controls': 'true', className: 'rounded-lg border border-teal-200 bg-teal-50 p-2 text-[11px] font-bold text-teal-950' }, 'Center target · all ' + RING_COUNT + ' rings. Hand pressure, wheel speed, surface lubrication, and clay moisture affect this pass. Inside-hand support, contact span, and work height are disabled because Center does not use them.') : null,
+                selectedGestureMode === 'single-rim' ? h('p', { 'data-wheel-fire-rim-controls': 'true', className: 'rounded-lg border border-teal-200 bg-teal-50 p-2 text-[11px] font-bold text-teal-950' }, 'Add coil target · top 5 rim rings. Hand pressure, inside support, surface lubrication, and clay moisture affect placement. Contact span and work height are disabled because the target stays at the rim.') : null,
+                selectedLowerZone ? h('p', { 'data-wheel-fire-lower-zone-controls': 'true', className: 'rounded-lg border border-slate-300 bg-slate-50 p-2 text-[11px] font-bold text-slate-800' }, selectedTool.label + ' target · lower exterior rings ' + (selectedTarget.minRing + 1) + '–' + (selectedTarget.maxRing + 1) + '. Pointer, keyboard, slider, preview, and physics all use this same constrained zone; clay removed here is subtracted from modeled mass.') : null,
+                selectedOpeningTool ? h('div', { 'data-wheel-fire-opening-floor-controls': 'true', 'data-wheel-fire-opening-floor-control-state': openingFloor.state, className: 'rounded-lg border p-2 space-y-2 ' + (openingFloor.state === 'puncture-risk' ? 'border-rose-300 bg-rose-50 text-rose-950' : 'border-cyan-300 bg-cyan-50 text-cyan-950') },
+                  h('p', { className: 'text-[11px]' }, h('strong', null, 'Opening floor · ' + openingFloor.floorThicknessCm.toFixed(2) + ' cm proxy · ' + openingFloor.cavityDepthCm.toFixed(2) + ' cm cavity. '), openingFloor.label + '. ' + openingFloor.summary),
+                  h('button', { type: 'button', 'data-wheel-fire-opening-floor-focus': 'true', onClick: focusOpeningFloor, className: 'rounded-lg border border-cyan-700 bg-white px-3 py-2 text-xs font-black text-cyan-950' }, 'Focus cavity floor · ring ' + (openingFloor.targetRing + 1))
+                ) : null,
+                h('div', { 'data-wheel-fire-ring-risk-controls': 'true', 'data-wheel-fire-ring-risk-current-peak': ringRiskProfile.criticalRiskPct.toFixed(1), 'data-wheel-fire-ring-risk-preview-peak': formingPreviewRiskProfile.criticalRiskPct.toFixed(1), className: 'rounded-lg border p-2 space-y-2 ' + (ringRiskProfile.criticalRiskPct >= 67 ? 'border-rose-300 bg-rose-50 text-rose-950' : (ringRiskProfile.criticalRiskPct >= 40 ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-lime-300 bg-lime-50 text-lime-950')) },
+                  h('p', { className: 'text-[11px]' }, h('strong', null, 'Wall-risk scan · peak ring ' + (ringRiskProfile.criticalRing + 1) + ' at ' + Math.round(ringRiskProfile.criticalRiskPct) + '%. '), ringRiskProfile.criticalStatus + '; strongest signal: ' + ringRiskProfile.criticalSignalLabel + '. Profile count: ' + ringRiskProfile.highCount + ' high · ' + ringRiskProfile.watchCount + ' watch · ' + ringRiskProfile.lowerCount + ' lower.'),
+                  h('p', { 'data-wheel-fire-selected-ring-risk': selectedTargetRing + 1, 'data-wheel-fire-selected-ring-risk-current': (selectedRingRisk.risk * 100).toFixed(1), 'data-wheel-fire-selected-ring-risk-next': (previewSelectedRingRisk.risk * 100).toFixed(1), className: 'text-[11px]' }, formingPreviewAvailable ? (canFocusRiskRing ? 'Selected ring ' + (selectedTargetRing + 1) + ': ' + Math.round(selectedRingRisk.risk * 100) + '% now → ' + Math.round(previewSelectedRingRisk.risk * 100) + '% predicted; current signal led by ' + selectedRingRisk.dominantSignalLabel + '. Predicted profile peak: ring ' + (formingPreviewRiskProfile.criticalRing + 1) + ' at ' + Math.round(formingPreviewRiskProfile.criticalRiskPct) + '%.' : 'Next ' + selectedTool.label + ' preview: peak ' + Math.round(ringRiskProfile.criticalRiskPct) + '% at ring ' + (ringRiskProfile.criticalRing + 1) + ' → ' + Math.round(formingPreviewRiskProfile.criticalRiskPct) + '% at ring ' + (formingPreviewRiskProfile.criticalRing + 1) + '.') : 'Next-pass risk preview is paused because this clay is no longer in an active forming stage.'),
+                  h('p', { 'data-wheel-fire-ring-risk-legend': 'true', className: 'text-[11px]' }, 'Cutaway edge: lime dashed = lower · amber dashed = watch · rose solid = high. White circle = current peak; gold dashed halo = predicted peak. Comparative model only—not a safe-thickness rule.'),
+                  h('button', { type: 'button', 'data-wheel-fire-ring-risk-inspect': 'true', onClick: inspectHighestRiskRing, className: 'rounded-lg border border-slate-500 bg-white px-3 py-2 text-xs font-black text-slate-900' }, canFocusRiskRing ? 'Inspect highest-risk ring · ' + (ringRiskProfile.criticalRing + 1) : 'Reveal wall-risk scan · peak ring ' + (ringRiskProfile.criticalRing + 1))
+                ),
+                h('div', { className: 'flex flex-wrap gap-3' },
+                  h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, h('input', { type: 'checkbox', checked: !!data.showCrossSection, onChange: function (event) { patchData({ showCrossSection: event.target.checked }); } }), 'Show material cross-section + wall-risk scan'),
+                  h('label', { className: 'flex items-center gap-2 text-xs font-bold text-slate-700' }, h('input', { type: 'checkbox', checked: data.showTouchForces !== false, onChange: function (event) { patchData({ showTouchForces: event.target.checked }); } }), 'Show touch-force arrows')
+                )
               ),
               h('div', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3' },
                 h('h3', { className: 'font-black text-teal-950 mb-2' }, 'Clay tools'),
@@ -2029,7 +3669,7 @@
                 h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Clay shaping tools' }, tools.map(function (tool) {
                   return h('button', { type: 'button', key: tool.id, 'data-tooltip': tool.help, disabled: !toolAllowed(tool), 'aria-label': tool.label + '. ' + tool.help, 'aria-pressed': activeTool === tool.id, onClick: function () { patchData({ activeTool: tool.id }); }, className: 'min-h-[42px] rounded-lg border px-2 py-2 text-xs font-bold disabled:opacity-40 ' + (activeTool === tool.id ? 'bg-teal-700 text-white border-teal-800' : 'bg-white text-teal-900 border-teal-300') }, tool.icon + ' ' + tool.label);
                 })),
-                h('button', { type: 'button', disabled: !toolAllowed(selectedTool), onClick: function () { applyActive(workRing); }, className: 'mt-2 w-full rounded-lg bg-teal-800 text-white px-3 py-2 font-black text-sm disabled:opacity-40' }, 'Apply ' + selectedTool.label + ' at work zone ' + (workRing + 1) + ' of ' + RING_COUNT)
+                h('button', { type: 'button', disabled: !toolAllowed(selectedTool), onClick: function () { applyActive(selectedTargetRing); }, className: 'mt-2 w-full rounded-lg bg-teal-800 text-white px-3 py-2 font-black text-sm disabled:opacity-40' }, applyButtonLabel)
               ),
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', { type: 'button', onClick: undo, disabled: !copyArray(data.history).length, className: 'rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold disabled:opacity-40' }, '↶ Undo'),
@@ -2704,7 +4344,7 @@
             ),
             h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left font-black text-indigo-950 mb-2' }, 'Process comparison'),
-              h('thead', null, h('tr', null, h('th', { className: 'text-left p-2' }, 'Lens'), h('th', { scope: 'col', className: 'text-left p-2' }, selected.name), h('th', { scope: 'col', className: 'text-left p-2' }, compare.name))),
+              h('thead', null, h('tr', null, h('th', { scope: 'col', className: 'text-left p-2' }, 'Lens'), h('th', { scope: 'col', className: 'text-left p-2' }, selected.name), h('th', { scope: 'col', className: 'text-left p-2' }, compare.name))),
               h('tbody', null, compareRow('Place', selected.place, compare.place), compareRow('Forming', selected.forming, compare.forming), compareRow('Use', selected.use, compare.use), compareRow('Science', selected.science, compare.science))
             ))
           ),
@@ -2735,7 +4375,11 @@
         var soak = clamp(finite(data.soak, 10), 0, 90);
         var coolingRate = clamp(finite(data.coolingRate, 100), 30, 300);
         var kilnType = data.kilnType || 'electric';
+        var kilnProbeZone = ['top', 'middle', 'bottom'].indexOf(data.kilnProbeZone) >= 0 ? data.kilnProbeZone : 'middle';
         var atmosphere = kilnType === 'electric' ? 'oxidation' : (data.atmosphere || 'oxidation');
+        var kilnLoadDensity = clamp(finite(data.kilnLoadDensity, 55), 20, 95);
+        var kilnAirAccess = clamp(finite(data.kilnAirAccess, 60), 20, 100);
+        var kilnLoadEffects = estimateKilnLoadEffects({ loadDensity: kilnLoadDensity, airAccess: kilnAirAccess });
         var dimensionalSettings = currentDimensionSettings();
         var glazeId = data.glazeId || 'clear';
         var glazeThickness = clamp(finite(data.glazeThickness, 50), 5, 100);
@@ -2747,26 +4391,30 @@
         var glazePreview = analyzeGlazeOutcome(glazePreviewVessel, { temperature: kilnTemp, ramp: ramp, soak: soak, kilnType: kilnType, atmosphere: atmosphere });
         var firingSchedules = copyArray(data.firingSchedules);
         var scheduleLabel = String(data.scheduleLabel || '').slice(0, 48);
-        var currentSchedule = analyzeFiringSchedule(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, glazeId: glazeId, glazeThickness: glazeThickness });
+        var currentSchedule = analyzeFiringSchedule(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, loadDensity: kilnLoadDensity, airAccess: kilnAirAccess, glazeId: glazeId, glazeThickness: glazeThickness });
         var previewSegments = currentSchedule.thermalHistory.segments;
         var previewDefaultElapsed = previewSegments[0].durationHours + previewSegments[1].durationHours * .5;
         var previewDefaultPhase = currentSchedule.thermalHistory.totalHours ? previewDefaultElapsed / currentSchedule.thermalHistory.totalHours * 100 : 50;
         var kilnPreviewPhase = clamp(finite(data.kilnPreviewPhase, previewDefaultPhase), 0, 100);
         var kilnSample = sampleThermalHistory(currentSchedule.thermalHistory, kilnPreviewPhase);
+        var kilnSourceState = kilnHeatSourceState(kilnType, kilnSample, { temperature: kilnTemp, ramp: ramp });
         var kilnPreviewLabel = kilnSample.phaseLabel;
         var kilnPreviewTemp = kilnSample.temperatureC;
         var kilnMaterialState = estimateKilnMaterialState(vessel, kilnSample, { temperature: kilnTemp, glazeId: glazeId });
+        var wareTraceSettings = { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, loadDensity: kilnLoadDensity, airAccess: kilnAirAccess };
+        var wareThermalTrace = currentSchedule.wareThermalTrace || estimateWareThermalTrace(vessel, currentSchedule.thermalHistory, wareTraceSettings);
+        var kilnWarePoint = sampleWareThermalTrace(wareThermalTrace, kilnPreviewPhase, kilnPreviewTemp) || estimateWareCoreTemperature(vessel, kilnSample, wareTraceSettings, kilnPreviewTemp);
         function advanceDrying() { var next = dryVessel(vessel, { humidity: humidity, dryingRate: dryingRate }); commitVessel(next, next.lastOutcome); }
-        function fire() { var next = fireVessel(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere }); commitVessel(next, next.lastOutcome); }
+        function fire() { var next = fireVessel(vessel, { temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, loadDensity: kilnLoadDensity, airAccess: kilnAirAccess }); commitVessel(next, next.lastOutcome); }
         function applyGlaze() { var next = glazeVessel(vessel, glazeId, glazeThickness); commitVessel(next, next.lastOutcome); }
         function saveFiringSchedule() {
           var label = scheduleLabel.trim() || 'Firing schedule ' + (firingSchedules.length + 1);
-          var schedule = { id: Date.now(), label: label, temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, glazeId: glazeId, glazeThickness: glazeThickness, savedAt: new Date().toISOString() };
+          var schedule = { id: Date.now(), label: label, temperature: kilnTemp, ramp: ramp, soak: soak, coolingRate: coolingRate, kilnType: kilnType, atmosphere: atmosphere, kilnLoadDensity: kilnLoadDensity, kilnAirAccess: kilnAirAccess, glazeId: glazeId, glazeThickness: glazeThickness, savedAt: new Date().toISOString() };
           patchData({ firingSchedules: [schedule].concat(firingSchedules).slice(0, 8), scheduleLabel: '' });
           announce(label + ' saved to the firing comparison shelf.');
         }
         function loadFiringSchedule(schedule) {
-          patchData({ kilnTemp: schedule.temperature, ramp: schedule.ramp, soak: schedule.soak, coolingRate: schedule.coolingRate, kilnType: schedule.kilnType, atmosphere: schedule.atmosphere, glazeId: schedule.glazeId || glazeId, glazeThickness: schedule.glazeThickness || glazeThickness });
+          patchData({ kilnTemp: schedule.temperature, ramp: schedule.ramp, soak: schedule.soak, coolingRate: schedule.coolingRate, kilnType: schedule.kilnType, atmosphere: schedule.atmosphere, kilnLoadDensity: finite(schedule.kilnLoadDensity, kilnLoadDensity), kilnAirAccess: finite(schedule.kilnAirAccess, kilnAirAccess), glazeId: schedule.glazeId || glazeId, glazeThickness: schedule.glazeThickness || glazeThickness });
           announce((schedule.label || 'Firing schedule') + ' loaded into the kiln controls. No firing was started.');
         }
         function removeFiringSchedule(id) {
@@ -2785,34 +4433,153 @@
           var peakY = 168 - clamp((kilnTemp - 20) / 1330, 0, 1) * 124;
           var markerX = plotStart + plotWidth * kilnPreviewPhase / 100;
           var markerY = 168 - clamp((kilnPreviewTemp - 20) / 1330, 0, 1) * 124;
+          var coreMarkerY = 168 - clamp((kilnWarePoint.coreTemperatureC - 20) / 1330, 0, 1) * 124;
+          var coreDifferenceMagnitude = Math.abs(kilnWarePoint.differenceC);
+          var coreDifferenceLabel = coreDifferenceMagnitude < 1 ? 'near chamber temperature' : Math.round(coreDifferenceMagnitude) + '°C ' + (kilnWarePoint.differenceC > 0 ? 'hotter' : 'cooler') + ' than the chamber';
+          var coreLabelX = markerX > 360 ? markerX - 10 : markerX + 10;
+          var coreLabelAnchor = markerX > 360 ? 'end' : 'start';
+          var coreLabelY = clamp(coreMarkerY + (coreDifferenceMagnitude < 3 ? 36 : (kilnWarePoint.differenceC > 0 ? -11 : 16)), 38, 158);
+          var peakStressSample = currentSchedule.thermalStress.peakSample;
+          var peakStressX = plotStart + plotWidth * peakStressSample.progressPct / 100;
+          var peakStressY = 168 - clamp((peakStressSample.temperatureC - 20) / 1330, 0, 1) * 124;
+          var peakStressLabelY = peakStressY < 54 ? peakStressY + 24 : peakStressY - 10;
+          var peakStressDiamond = 'M' + peakStressX.toFixed(1) + ' ' + (peakStressY - 7).toFixed(1) + ' L' + (peakStressX + 7).toFixed(1) + ' ' + peakStressY.toFixed(1) + ' L' + peakStressX.toFixed(1) + ' ' + (peakStressY + 7).toFixed(1) + ' L' + (peakStressX - 7).toFixed(1) + ' ' + peakStressY.toFixed(1) + ' Z';
+          var transitionWindows = currentSchedule.thermalTransitionWindows || [];
           var curve = 'M28 168 L' + riseEnd + ' ' + peakY.toFixed(1) + ' L' + coolStart.toFixed(1) + ' ' + peakY.toFixed(1) + ' L472 168';
+          var coreCurve = wareThermalTrace.points.map(function (point, index) {
+            var pointX = plotStart + plotWidth * point.progressPct / 100;
+            var pointY = 168 - clamp((point.coreTemperatureC - 20) / 1330, 0, 1) * 124;
+            return (index ? 'L' : 'M') + pointX.toFixed(1) + ' ' + pointY.toFixed(1);
+          }).join(' ');
+          var maximumLagPoint = wareThermalTrace.maximumLagPoint;
+          var maximumLagDescription = maximumLagPoint ? Math.round(wareThermalTrace.maximumLagC) + ' degrees Celsius during ' + maximumLagPoint.phaseLabel.toLowerCase() + ' near chamber ' + Math.round(maximumLagPoint.zoneTemperatureC) + ' degrees Celsius' : 'not available';
           return h('figure', { className: 'rounded-xl border border-orange-200 bg-orange-50 p-2' },
-            h('svg', { viewBox: '0 0 500 190', role: 'img', 'aria-label': 'Time-scaled kiln schedule at ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours, currently ' + kilnPreviewLabel.toLowerCase() + ' at about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius.', className: 'w-full' },
+            h('svg', { viewBox: '0 0 500 190', role: 'img', 'aria-label': 'Time-scaled kiln schedule at ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours, currently ' + kilnPreviewLabel.toLowerCase() + '. The kiln chamber is about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius and the representative ware core is about ' + Math.round(kilnWarePoint.coreTemperatureC) + ' degrees Celsius, ' + coreDifferenceLabel + '. The solid orange line follows chamber temperature and the dashed blue line follows the continuous comparative ware-core response. Largest modeled chamber-to-core difference: ' + maximumLagDescription + '. A diamond marks peak modeled transient stress of ' + Math.round(currentSchedule.thermalStress.peakStressPct) + ' percent during ' + peakStressSample.phaseLabel.toLowerCase() + ' near ' + Math.round(peakStressSample.temperatureC) + ' degrees Celsius. Three labeled teaching bands mark silica-change neighborhoods on heat-up and cool-down.', className: 'w-full' },
               h('title', null, 'Time-scaled kiln schedule'),
-              h('desc', null, 'The horizontal position is proportional to modeled schedule time. A teal marker follows heating, peak soak, and cooling.'),
+              h('desc', null, 'The horizontal position is proportional to modeled schedule time. A solid orange line shows chamber temperature; a directly labeled dashed blue line shows a representative ware core responding continuously over time. Two connected markers show the current chamber-to-core difference. A labeled diamond marks peak thermal stress; translucent labeled bands mark two silica-change neighborhoods during cooling and one during heating.'),
+              transitionWindows.map(function (transitionWindow) {
+                var startX = plotStart + plotWidth * transitionWindow.startProgressPct / 100;
+                var endX = plotStart + plotWidth * transitionWindow.endProgressPct / 100;
+                var bandColor = transitionWindow.id === 'low-silica-cool' ? '#ddd6fe' : '#fef3c7';
+                var edgeColor = transitionWindow.id === 'low-silica-cool' ? '#7c3aed' : '#b45309';
+                return h('g', { key: transitionWindow.id, 'data-wheel-fire-transition-window': transitionWindow.id, 'aria-hidden': 'true' },
+                  h('rect', { x: startX, y: 24, width: Math.max(4, endX - startX), height: 144, fill: bandColor, opacity: .42 }),
+                  h('line', { x1: startX, x2: startX, y1: 24, y2: 168, stroke: edgeColor, strokeWidth: 1.5, strokeDasharray: '4 4', opacity: .72 }),
+                  h('line', { x1: endX, x2: endX, y1: 24, y2: 168, stroke: edgeColor, strokeWidth: 1.5, strokeDasharray: '4 4', opacity: .72 })
+                );
+              }),
               [44, 85, 126, 168].map(function (y) { return h('line', { key: y, x1: 28, x2: 472, y1: y, y2: y, stroke: '#fed7aa', strokeWidth: 1 }); }),
+              transitionWindows.map(function (transitionWindow, index) {
+                var startX = plotStart + plotWidth * transitionWindow.startProgressPct / 100;
+                var endX = plotStart + plotWidth * transitionWindow.endProgressPct / 100;
+                var centerX = (startX + endX) / 2;
+                var textAnchor = centerX > 430 ? 'end' : (centerX < 70 ? 'start' : 'middle');
+                var labelX = clamp(centerX, 70, 430);
+                return h('text', { key: transitionWindow.id + '-label', x: labelX, y: [36, 58, 80][index] || 80, textAnchor: textAnchor, fill: transitionWindow.id === 'low-silica-cool' ? '#5b21b6' : '#92400e', fontSize: 11, fontWeight: 700, 'aria-hidden': 'true' }, transitionWindow.shortLabel);
+              }),
               h('path', { d: curve, fill: 'none', stroke: '#c2410c', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+              h('path', { 'data-wheel-fire-core-trace': 'true', d: coreCurve, fill: 'none', stroke: '#1d4ed8', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', strokeDasharray: '8 5' }),
               h('line', { x1: markerX, x2: markerX, y1: 24, y2: 168, stroke: '#0f766e', strokeWidth: 2, strokeDasharray: '5 5', opacity: .8, 'aria-hidden': 'true' }),
+              h('line', { 'data-wheel-fire-current-core-gap': 'true', x1: markerX, x2: markerX, y1: markerY, y2: coreMarkerY, stroke: '#1e3a8a', strokeWidth: 4, strokeLinecap: 'round', 'aria-hidden': 'true' }),
+              h('path', { 'data-wheel-fire-peak-stress': 'true', d: peakStressDiamond, fill: '#be123c', stroke: '#fff7ed', strokeWidth: 2, 'aria-hidden': 'true' }),
+              h('text', { x: clamp(peakStressX, 72, 428), y: peakStressLabelY, textAnchor: 'middle', fill: '#881337', fontSize: 11, fontWeight: 700 }, 'peak stress ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '%'),
               h('circle', { cx: markerX, cy: markerY, r: 7, fill: '#0f766e', stroke: '#ccfbf1', strokeWidth: 3, 'aria-hidden': 'true' }),
+              h('circle', { 'data-wheel-fire-current-core': 'true', cx: markerX, cy: coreMarkerY, r: 5.5, fill: '#1d4ed8', stroke: '#dbeafe', strokeWidth: 2.5, 'aria-hidden': 'true' }),
+              h('text', { 'data-wheel-fire-core-label': 'true', x: coreLabelX, y: coreLabelY, textAnchor: coreLabelAnchor, fill: '#1e3a8a', fontSize: 11, fontWeight: 700 }, 'ware core ' + Math.round(kilnWarePoint.coreTemperatureC) + '°C'),
               h('text', { x: clamp(markerX, 55, 445), y: 20, textAnchor: 'middle', fill: '#115e59', fontSize: 11, fontWeight: 700 }, kilnSample.elapsedHours.toFixed(1) + ' h'),
               h('circle', { cx: riseEnd, cy: peakY, r: 6, fill: '#9a3412' }),
               h('text', { x: 28, y: 184, fill: '#7c2d12', fontSize: 12 }, 'room'),
-              h('text', { x: riseEnd, y: Math.max(16, peakY - 10), textAnchor: 'middle', fill: '#7c2d12', fontSize: 12, fontWeight: 700 }, Math.round(kilnTemp) + '°C'),
+              h('text', { x: riseEnd, y: Math.max(16, peakY - 10), textAnchor: 'middle', fill: '#7c2d12', fontSize: 12, fontWeight: 700 }, 'kiln chamber ' + Math.round(kilnTemp) + '°C'),
               h('text', { x: (riseEnd + coolStart) / 2, y: Math.min(184, peakY + 18), textAnchor: 'middle', fill: '#7c2d12', fontSize: 11 }, Math.round(soak) + ' min soak'),
               h('text', { x: 472, y: 184, textAnchor: 'end', fill: '#7c2d12', fontSize: 12 }, 'cool')
             ),
-            h('figcaption', { className: 'text-[11px] text-orange-950' }, 'Teal marker: ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours. Effective heatwork: ' + Math.round(heatwork.effectiveTemp) + '°C equivalent · rough cone neighborhood ' + heatwork.cone + '. Witness cones remain the real kiln check.')
+            h('figcaption', { className: 'text-[11px] text-orange-950' }, 'Teal marker: ' + kilnSample.elapsedHours.toFixed(1) + ' of ' + history.totalHours.toFixed(1) + ' modeled hours. Solid orange: kiln chamber · dashed blue: representative ware core. At the selected time the core is ' + coreDifferenceLabel + '. ' + wareThermalTrace.summary + ' Effective heatwork: ' + Math.round(heatwork.effectiveTemp) + '°C equivalent · rough cone neighborhood ' + heatwork.cone + '. The trace is comparative; witness cones and kiln-rated instruments remain the real kiln checks.')
           );
         }
         function kilnCutaway() {
           var heatRatio = clamp((kilnPreviewTemp - 100) / 1200, 0, 1);
-          var zoneSpread = kilnType === 'open' ? 120 : (kilnType === 'wood' ? 55 : (kilnType === 'gas' ? 28 : 14));
+          var baseZoneSpread = kilnType === 'open' ? 120 : (kilnType === 'wood' ? 55 : (kilnType === 'gas' ? 28 : 14));
+          var zoneSpread = baseZoneSpread * kilnLoadEffects.zoneSpreadMultiplier;
           var zoneTemps = [kilnPreviewTemp - zoneSpread * .45, kilnPreviewTemp, kilnPreviewTemp + zoneSpread * .55];
+          var probeZoneIds = ['top', 'middle', 'bottom'];
+          var probeIndex = Math.max(0, probeZoneIds.indexOf(kilnProbeZone));
+          var probeZoneNames = kilnType === 'open' ? ['Upper plume', 'Ware level', 'Fuel bed'] : ['Top shelf', 'Middle shelf', 'Bottom shelf'];
+          var probeZoneName = probeZoneNames[probeIndex];
+          var probeTemperature = zoneTemps[probeIndex];
+          var wareZoneTemperature = kilnType === 'open' ? zoneTemps[1] : probeTemperature;
+          var wareCore = sampleWareThermalTrace(wareThermalTrace, kilnPreviewPhase, wareZoneTemperature) || estimateWareCoreTemperature(vessel, kilnSample, wareTraceSettings, wareZoneTemperature);
+          var wareCoreDifferenceMagnitude = Math.abs(wareCore.differenceC);
+          var wareCoreDifferenceLabel = wareCoreDifferenceMagnitude < 1 ? 'near its surrounding zone' : Math.round(wareCoreDifferenceMagnitude) + '°C ' + (wareCore.differenceC > 0 ? 'hotter' : 'cooler') + ' than its surrounding zone';
+          var wareCoreLocation = kilnType === 'open' ? 'Ware-level' : probeZoneName;
+          var wareCoreMarkerColor = wareCore.differenceC > 1 ? '#fb7185' : (wareCore.differenceC < -1 ? '#facc15' : '#86efac');
+          var wareSurfaceMarkerColor = wareCore.differenceC > 1 ? '#67e8f9' : (wareCore.differenceC < -1 ? '#fb923c' : '#86efac');
+          var wareMidMarkerColor = wareCore.differenceC > 1 ? '#fbbf24' : (wareCore.differenceC < -1 ? '#fde68a' : '#bbf7d0');
+          var wareThermalDirection = wareCore.surfaceToCoreGradientC < 1 ? 'nearly uniform through the wall' : (wareCore.surfaceToCoreDifferenceC > 0 ? 'core warmer than surface' : 'surface warmer than core');
+          var wareThermalStress = estimateWareThermalStress(vessel, kilnSample, { temperature: kilnTemp, ramp: ramp, coolingRate: coolingRate, kilnType: kilnType, loadDensity: kilnLoadDensity, airAccess: kilnAirAccess }, wareCore);
+          var wareStressColor = wareThermalStress.stressPct >= 70 ? '#fb7185' : (wareThermalStress.stressPct >= 45 ? '#f97316' : (wareThermalStress.stressPct >= 20 ? '#facc15' : '#86efac'));
+          var wareStressRadius = 15 + wareThermalStress.stressPct / 100 * 8;
+          var coneSoakMinutes = kilnSample.segmentId === 'ramp' ? 0 : (kilnSample.segmentId === 'soak' ? soak * kilnSample.segmentProgressPct / 100 : soak);
+          var coneReferenceBase = kilnSample.segmentId === 'cool' ? kilnTemp : kilnPreviewTemp;
+          var zoneConePacks = [-zoneSpread * .45, 0, zoneSpread * .55].map(function (zoneOffset) {
+            return estimateWitnessConePack({
+              targetTemperature: kilnTemp,
+              targetSoak: soak,
+              targetCone: heatwork.cone,
+              observedTemperature: clamp(coneReferenceBase + zoneOffset, 600, 1350),
+              observedSoak: coneSoakMinutes,
+              ramp: ramp
+            });
+          });
+          var probeConePack = zoneConePacks[probeIndex];
+          var probeConeReading = interpretWitnessConeSequence(probeConePack);
+          var probeObservation = interpretConeHeatworkMemory({ segmentId: kilnSample.segmentId, currentTemperatureC: probeTemperature, zoneName: probeZoneName, pack: probeConePack });
+          var probeConeBend = probeConePack.firingCone.bendDegrees;
+          var coneZoneSummary = summarizeWitnessConeZones(kilnType === 'open' ? [probeConePack] : zoneConePacks, kilnType === 'open' ? [probeZoneName] : probeZoneNames);
           var showZones = data.showKilnHeatZones !== false;
           var temperatureDelta = Math.abs(zoneTemps[2] - zoneTemps[0]);
           var previewScale = 1 - kilnMaterialState.firingShrinkagePct / 100;
           var bodyDevelopmentOpacity = clamp(kilnMaterialState.maturityProgressPct / 100, 0, 1);
           var glazeDevelopmentOpacity = clamp(kilnMaterialState.glazeDevelopmentPct / 100, 0, 1);
+          function enclosedLoadLayout(index) {
+            if (kilnLoadEffects.pieceCount === 1) return [{ x: 280, scale: .86 - index * .04 }];
+            if (kilnLoadEffects.pieceCount === 2) return [{ x: 210 + index * 28, scale: .92 - index * .06 }, { x: 330 - index * 18, scale: .72 }];
+            return [{ x: 190 + index * 10, scale: .7 - index * .02 }, { x: 280, scale: .8 - index * .03 }, { x: 370 - index * 10, scale: .68 }];
+          }
+          function openLoadLayout() {
+            var count = kilnLoadEffects.pieceCount + (kilnLoadDensity >= 90 ? 1 : 0);
+            if (count === 1) return [{ x: 280, baseY: 306, scale: 1.05 }];
+            if (count === 2) return [{ x: 228, baseY: 306, scale: 1.05 }, { x: 318, baseY: 314, scale: .86 }];
+            if (count === 3) return [{ x: 198, baseY: 308, scale: .78 }, { x: 280, baseY: 306, scale: .9 }, { x: 362, baseY: 314, scale: .74 }];
+            return [{ x: 170, baseY: 310, scale: .68 }, { x: 242, baseY: 306, scale: .76 }, { x: 318, baseY: 312, scale: .72 }, { x: 390, baseY: 310, scale: .64 }];
+          }
+          var kilnWallCutaway = kilnWallCutawayGeometry();
+          var kilnChamberPerspective = kilnChamberPerspectiveGeometry(kilnWallCutaway);
+          var kilnShelfYs = [145, 230, 305];
+          var kilnShelfGeometries = kilnShelfYs.map(function (shelfY) { return kilnShelfPerspectiveGeometry(shelfY); });
+          var kilnHeatFlow = kilnHeatFlowGeometry(kilnType, { loadDensity: kilnLoadDensity, airAccess: kilnAirAccess, shelfFrontYs: kilnShelfGeometries.map(function (shelf) { return shelf.frontY; }) });
+          var kilnHeatFlowColor = atmosphere === 'reduction' ? '#d8b4fe' : (kilnType === 'electric' ? '#fde68a' : '#fed7aa');
+          var selectedShelf = kilnShelfGeometries[probeIndex];
+          var selectedShelfY = selectedShelf.frontY;
+          var selectedWare = enclosedLoadLayout(probeIndex)[0];
+          var selectedWareX = selectedWare.x;
+          var selectedWareScale = selectedWare.scale;
+          var selectedWareCoreY = selectedShelfY - 2 - vessel.heightCm * selectedWareScale * previewScale * .5;
+          var openLoadPieces = openLoadLayout();
+          var openThermalPiece = openLoadPieces[0];
+          var openThermalX = openThermalPiece.x;
+          var openThermalY = openThermalPiece.baseY - 7;
+          var representativePieceCount = kilnType === 'open' ? openLoadPieces.length : kilnLoadEffects.pieceCount;
+          var representativePieceLabel = representativePieceCount + ' representative ' + (representativePieceCount === 1 ? 'piece' : 'pieces') + (kilnType === 'open' ? ' around the fuel bed' : ' per shelf');
+          function thermalStressIndicator(cx, cy, key) {
+            var outward = wareThermalStress.tensionMode.indexOf('surface tension') === 0;
+            var directions = wareThermalStress.tensionMode === 'near-equilibrium wall' ? [] : [[1, 0], [-1, 0], [0, 1], [0, -1]];
+            var startRadius = outward ? wareStressRadius - 2 : wareStressRadius + 8;
+            var endRadius = outward ? wareStressRadius + 8 : wareStressRadius - 2;
+            return h('g', { key: key, 'data-wheel-fire-thermal-stress': 'true', 'data-wheel-fire-stress-mode': wareThermalStress.tensionMode, 'aria-hidden': 'true' },
+              h('circle', { cx: cx, cy: cy, r: wareStressRadius, fill: 'none', stroke: wareStressColor, strokeWidth: 1.5 + wareThermalStress.stressPct / 100 * 2.5, strokeDasharray: wareThermalStress.stressPct < 20 ? '2 5' : (wareThermalStress.stressPct < 45 ? '5 4' : null), opacity: .95 }),
+              directions.map(function (direction, index) { return h('line', { key: index, x1: cx + direction[0] * startRadius, y1: cy + direction[1] * startRadius, x2: cx + direction[0] * endRadius, y2: cy + direction[1] * endRadius, stroke: wareStressColor, strokeWidth: 2, markerEnd: 'url(#wheel-fire-stress-arrow)', opacity: (.35 + wareThermalStress.stressPct / 100 * .65).toFixed(2) }); })
+            );
+          }
           function piecePath(cx, baseY, scale) {
             var left = [], right = [];
             var visualScale = scale * previewScale;
@@ -2828,7 +4595,7 @@
           function miniaturePiece(cx, baseY, scale, key) {
             var visualScale = scale * previewScale;
             var path = piecePath(cx, baseY, scale);
-            return h('g', { key: key, 'aria-hidden': 'true' },
+            return h('g', { key: key, 'data-wheel-fire-load-piece': 'true', 'aria-hidden': 'true' },
               h('ellipse', { cx: cx, cy: baseY + 2, rx: vessel.radii[0] * visualScale, ry: Math.max(2, vessel.radii[0] * visualScale * .22), fill: '#1f1410', opacity: .45 }),
               h('path', { d: path, fill: kilnMaterialState.bodyColor, stroke: '#f5c6a0', strokeWidth: 1.5 }),
               h('path', { d: path, fill: kilnMaterialState.firedColor, opacity: bodyDevelopmentOpacity.toFixed(2), stroke: 'none' }),
@@ -2836,51 +4603,212 @@
               h('ellipse', { cx: cx, cy: baseY - vessel.heightCm * visualScale, rx: vessel.radii[RING_COUNT - 1] * visualScale, ry: Math.max(2, vessel.radii[RING_COUNT - 1] * visualScale * .2), fill: glazeDevelopmentOpacity > .2 ? kilnMaterialState.glazeColor : '#2a1711', stroke: '#f5c6a0', strokeWidth: 1, opacity: glazeDevelopmentOpacity > .2 ? (.55 + glazeDevelopmentOpacity * .4).toFixed(2) : 1 })
             );
           }
-          var sceneLabel = (kilnType === 'open' ? 'Open-firing section' : kilnType + ' kiln cutaway') + ' during ' + kilnPreviewLabel.toLowerCase() + ' at about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius. Material state: ' + kilnMaterialState.label + '. Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + ' percent. Atmosphere: ' + atmosphere + '. ' + (showZones ? 'Modeled top, middle, and bottom temperatures are labeled.' : 'Heat-zone labels are hidden.');
+          function kilnFurniturePost(cx, topY, bottomY, key) {
+            var topHalfWidth = 5;
+            var bottomHalfWidth = 4;
+            var postPath = 'M' + (cx - topHalfWidth) + ' ' + topY + ' L' + (cx + topHalfWidth) + ' ' + topY + ' L' + (cx + bottomHalfWidth) + ' ' + bottomY + ' L' + (cx - bottomHalfWidth) + ' ' + bottomY + ' Z';
+            return h('g', { key: key, 'data-wheel-fire-kiln-post': key, 'aria-hidden': 'true' },
+              h('path', { d: postPath, fill: '#6f5445', stroke: '#2f1d17', strokeWidth: 1.5 }),
+              h('line', { x1: cx - 1, y1: topY + 2, x2: cx - 1, y2: bottomY - 1, stroke: '#d6a77f', strokeWidth: 1.5, opacity: .55 }),
+              h('ellipse', { cx: cx, cy: topY, rx: topHalfWidth, ry: 2.2, fill: '#b18a70', stroke: '#f2c49f', strokeWidth: 1 })
+            );
+          }
+          function witnessConePackVisual(pack, centerX, baseY, key, selected) {
+            var roleColors = { guide: '#fde68a', firing: '#67e8f9', guard: '#c4b5fd' };
+            var spacing = selected ? 42 : 28;
+            var coneLength = selected ? 26 : 19;
+            var coneWidth = selected ? 11 : 9;
+            var plaqueLeft = centerX - spacing - coneWidth;
+            var plaqueRight = centerX + spacing + coneWidth;
+            var plaqueDepth = selected ? 7 : 5;
+            var plaquePath = 'M' + plaqueLeft + ' ' + (baseY - 1) + ' L' + plaqueRight + ' ' + (baseY - 1) + ' L' + (plaqueRight - 5) + ' ' + (baseY + plaqueDepth) + ' L' + (plaqueLeft + 5) + ' ' + (baseY + plaqueDepth) + ' Z';
+            return h('g', { key: key, 'data-wheel-fire-witness-pack': key, 'data-wheel-fire-cone-form': 'large-plaque', 'data-wheel-fire-selected-cone-pack': selected ? 'true' : undefined, 'data-wheel-fire-heatwork-memory': selected ? probeObservation.state : undefined, 'aria-hidden': 'true' },
+              selected ? h('rect', { x: centerX - 68, y: baseY - 48, width: 136, height: 56, rx: 8, fill: '#083344', opacity: .28, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '5 4' }) : null,
+              selected ? [25, 75].map(function (boundaryAngle) {
+                var boundaryGeometry = witnessConeGeometry(boundaryAngle, { x: centerX, baseY: baseY, length: coneLength, baseWidth: coneWidth, mountAngleDegrees: WITNESS_CONE_MOUNT_ANGLE_DEGREES });
+                return h('path', { key: 'target-boundary-' + boundaryAngle, 'data-wheel-fire-cone-target-boundary': String(boundaryAngle), d: boundaryGeometry.path, fill: 'none', stroke: roleColors.firing, strokeWidth: 1.4, strokeDasharray: boundaryAngle === 25 ? '3 3' : '6 3', opacity: .58 });
+              }) : null,
+              h('path', { 'data-wheel-fire-cone-plaque': 'true', d: plaquePath, fill: '#9a6b4f', stroke: selected ? '#fed7aa' : '#5b3525', strokeWidth: selected ? 1.5 : 1 }),
+              pack.cones.map(function (cone, index) { return h('ellipse', { key: 'slot-' + cone.role, 'data-wheel-fire-cone-plaque-slot': cone.role, cx: centerX + (index - 1) * spacing, cy: baseY + 1, rx: coneWidth * .58, ry: selected ? 2.4 : 1.8, fill: '#3f251a', stroke: selected ? '#fed7aa' : '#5b3525', strokeWidth: .8 }); }),
+              pack.cones.map(function (cone, index) {
+                var x = centerX + (index - 1) * spacing;
+                var geometry = witnessConeGeometry(cone.bendDegrees, { x: x, baseY: baseY, length: coneLength, baseWidth: coneWidth, mountAngleDegrees: WITNESS_CONE_MOUNT_ANGLE_DEGREES });
+                return h('g', { key: cone.role },
+                  h('path', { 'data-wheel-fire-cone-role': cone.role, 'data-wheel-fire-cone-curved': 'true', 'data-wheel-fire-cone-state': cone.state, 'data-wheel-fire-cone-bend': Math.round(cone.bendDegrees), 'data-wheel-fire-cone-mount-angle': WITNESS_CONE_MOUNT_ANGLE_DEGREES, d: geometry.path, fill: selected ? roleColors[cone.role] : '#f5deb3', stroke: selected ? roleColors[cone.role] : '#5b3525', strokeWidth: selected ? 2 : 1 }),
+                  selected ? h('path', { 'data-wheel-fire-cone-spine': cone.role, d: geometry.centerlinePath, fill: 'none', stroke: '#fff7ed', strokeWidth: 1, opacity: .42 }) : null
+                );
+              }),
+              selected ? pack.cones.map(function (cone, index) { return h('text', { key: 'label-' + cone.role, 'data-wheel-fire-cone-role-label': cone.role, x: centerX + (index - 1) * spacing, y: baseY - 35, fill: roleColors[cone.role], fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, cone.role + ' ' + cone.label); }) : null,
+              selected ? h('text', { 'data-wheel-fire-heatwork-memory-label': 'true', x: centerX, y: baseY + 19, fill: '#a5f3fc', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, probeObservation.visualLabel) : null
+            );
+          }
+          var sceneLabel = (kilnType === 'open' ? 'Open-firing section' : kilnType + ' kiln cutaway') + ' during ' + kilnPreviewLabel.toLowerCase() + ' at about ' + Math.round(kilnPreviewTemp) + ' degrees Celsius. Inspecting the ' + probeZoneName.toLowerCase() + ' at about ' + Math.round(probeTemperature) + ' degrees Celsius; its modeled witness three-cone pack targets cone ' + probeConePack.targetCone + '. The rendered large cones use a three-hole plaque and an 8-degree starting lean; self-supporting cones instead have their mounting height and angle built in. ' + probeConePack.summary + ' Read the selected pack: ' + probeConeReading.summary + ' A magnified representative ware section at ' + wareCoreLocation.toLowerCase() + ' runs from a modeled surface near ' + Math.round(wareCore.surfaceTemperatureC) + ' degrees through mid-wall near ' + Math.round(wareCore.midWallTemperatureC) + ' degrees to a core near ' + Math.round(wareCore.coreTemperatureC) + ' degrees, with a surface-to-core difference of about ' + Math.round(wareCore.surfaceToCoreGradientC) + ' degrees and the ' + wareThermalDirection + '. Material state: ' + kilnMaterialState.label + '. Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + ' percent. Atmosphere: ' + atmosphere + '. ' + (showZones ? 'Modeled top, middle, and bottom temperatures are labeled.' : 'Heat-zone labels are hidden.');
+          sceneLabel += ' Temperature now versus heatwork: ' + probeObservation.summary + ' ' + probeObservation.note;
+          sceneLabel += ' Heat source state: ' + kilnSourceState.summary + ' ' + kilnSourceState.note;
+          sceneLabel += ' Loading model: ' + kilnLoadEffects.summary + ' The scene shows ' + representativePieceLabel + '.';
+          sceneLabel += ' Modeled transient thermal stress is ' + Math.round(wareThermalStress.stressPct) + ' percent: ' + wareThermalStress.level + ', ' + wareThermalStress.tensionMode + ', ' + wareThermalStress.transitionLabel + '.';
+          sceneLabel += ' Witness comparison: ' + coneZoneSummary.summary;
+          if (kilnType !== 'open') {
+            sceneLabel += ' Heat-route cue: ' + kilnHeatFlow.summary + ' ' + kilnHeatFlow.note;
+            sceneLabel += ' Perspective kiln furniture shows three shelves supported by six posts; these are placement cues rather than loading or clearance guidance.';
+            sceneLabel += ' The wall cutaway separates an outer casing, insulating refractory, and hot-face lining around the chamber. Layer widths and colors are schematic; they are not construction specifications, condition assessments, or surface-temperature readings.';
+            sceneLabel += ' Chamber perspective shows a smaller rear arch, curved ceiling and side returns, a hearth floor, and shelf fronts widening toward the opening. These are schematic depth cues, not measured interior dimensions, placement, or loading clearances.';
+          }
           var enclosedScene = h('g', null,
-            h('path', { d: 'M76 344 V95 Q76 38 138 28 H422 Q484 38 484 95 V344 Z', fill: 'url(#wheel-fire-kiln-wall)', stroke: '#43261b', strokeWidth: 5 }),
-            h('path', { d: 'M126 330 V105 Q126 76 158 68 H402 Q434 76 434 105 V330 Z', fill: '#28100c', stroke: '#f4b183', strokeWidth: 4 }),
-            h('rect', { className: 'wheel-fire-heat-pulse', x: 130, y: 72, width: 300, height: 254, rx: 28, fill: 'url(#wheel-fire-kiln-heat)', opacity: (.12 + heatRatio * .72).toFixed(2) }),
-            [145, 235, 320].map(function (y, index) { return h('g', { key: 'shelf-' + y }, h('path', { d: 'M136 ' + y + ' L424 ' + y + ' L405 ' + (y + 10) + ' L151 ' + (y + 10) + ' Z', fill: '#8b6b59', stroke: '#f2c49f', strokeWidth: 2 }), miniaturePiece(210 + index * 28, y - 2, .92 - index * .06, 'piece-' + y), miniaturePiece(330 - index * 18, y - 2, .72, 'piece-b-' + y)); }),
-            kilnType === 'electric' ? h('g', { 'aria-hidden': 'true' }, [105, 155, 205, 255].map(function (y) { return h('path', { key: y, d: 'M132 ' + y + ' q14 -12 28 0 t28 0 M428 ' + y + ' q-14 -12 -28 0 t-28 0', fill: 'none', stroke: heatRatio > .25 ? '#ffb347' : '#7c6254', strokeWidth: 5, opacity: .9 }); })) : h('g', { className: 'wheel-fire-flame-motion', 'aria-hidden': 'true' },
-              h('path', { d: 'M90 310 C138 322 150 278 186 294 C224 310 192 252 238 266 C286 280 268 216 318 232 C370 248 354 168 414 182', fill: 'none', stroke: atmosphere === 'reduction' ? '#c084fc' : '#fb923c', strokeWidth: 16, strokeLinecap: 'round', opacity: (.22 + heatRatio * .7).toFixed(2) }),
-              h('path', { d: 'M94 310 C150 318 158 280 196 292 C244 306 218 252 260 266 C312 280 298 224 344 234 C390 244 390 196 424 190', fill: 'none', stroke: '#fde68a', strokeWidth: 5, strokeLinecap: 'round', opacity: heatRatio.toFixed(2) })
+            h('path', { 'data-wheel-fire-wall-layer': 'outer-casing', d: kilnWallCutaway.outerCasing.path, fill: 'url(#wheel-fire-kiln-wall)', stroke: '#211915', strokeWidth: 5 }),
+            h('path', { 'data-wheel-fire-wall-layer': 'insulating-refractory', d: kilnWallCutaway.insulatingRefractory.path, fill: 'url(#wheel-fire-kiln-insulation)', stroke: '#4a2d21', strokeWidth: 1 }),
+            h('path', { 'data-wheel-fire-wall-layer': 'hot-face-lining', d: kilnWallCutaway.hotFaceLining.path, fill: 'url(#wheel-fire-kiln-hot-face)', stroke: '#8a5a3c', strokeWidth: 1 }),
+            h('path', { 'data-wheel-fire-chamber-opening': 'true', d: kilnWallCutaway.chamberOpening.path, fill: '#28100c', stroke: '#f4b183', strokeWidth: 4 }),
+            h('g', { 'data-wheel-fire-chamber-depth': 'true', 'aria-hidden': 'true' },
+              h('path', { 'data-wheel-fire-rear-chamber': 'true', d: kilnChamberPerspective.rear.path, fill: 'url(#wheel-fire-kiln-rear)', stroke: '#7c4a32', strokeWidth: 1.5 }),
+              h('path', { 'data-wheel-fire-chamber-return': 'ceiling', d: kilnChamberPerspective.ceilingReturn.path, fill: '#6a4532', opacity: .88 }),
+              h('path', { 'data-wheel-fire-chamber-return': 'left-wall', d: kilnChamberPerspective.leftReturn.path, fill: '#5a3829', opacity: .92 }),
+              h('path', { 'data-wheel-fire-chamber-return': 'right-wall', d: kilnChamberPerspective.rightReturn.path, fill: '#40271e', opacity: .94 }),
+              h('path', { 'data-wheel-fire-chamber-return': 'hearth-floor', 'data-wheel-fire-hearth-floor': 'true', d: kilnChamberPerspective.hearthFloor.path, fill: 'url(#wheel-fire-kiln-hearth)' })
             ),
-            h('path', { d: 'M434 90 Q468 88 480 60', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#7dd3fc', strokeWidth: 7, strokeDasharray: '12 8', opacity: .75, 'aria-hidden': 'true' }),
+            h('rect', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-chamber-heat': kilnSourceState.activeInput ? 'active-input' : 'stored-heat', x: 130, y: 72, width: 300, height: 254, rx: 28, fill: 'url(#wheel-fire-kiln-heat)', opacity: (.12 + heatRatio * .72).toFixed(2) }),
+            h('g', { 'data-wheel-fire-shelf-shielding': 'true', 'aria-hidden': 'true' },
+              kilnHeatFlow.shelfShadows.map(function (shadow) { return h('ellipse', { key: shadow.id, 'data-wheel-fire-shelf-shadow': shadow.id, cx: shadow.cx, cy: shadow.cy, rx: shadow.rx, ry: shadow.ry, fill: '#120706', opacity: shadow.opacity.toFixed(2) }); })
+            ),
+            h('g', { 'data-wheel-fire-air-path': 'true', 'data-wheel-fire-flow-mechanism': kilnHeatFlow.sourceMode, 'data-wheel-fire-flow-mode': kilnSourceState.flowMode, 'aria-hidden': 'true' },
+              kilnHeatFlow.flowPaths.map(function (route) { return h('path', { key: route.id, className: 'wheel-fire-flow-motion', style: { animationDuration: kilnSourceState.flowMotionSeconds + 's' }, 'data-wheel-fire-heat-flow-path': route.id, 'data-wheel-fire-flow-kind': route.kind, d: route.d, fill: 'none', stroke: kilnHeatFlowColor, strokeWidth: (kilnHeatFlow.strokeWidth * finite(route.weight, 1)).toFixed(2), strokeLinecap: 'round', strokeDasharray: route.kind === 'main' ? '10 8' : '7 7', markerEnd: 'url(#wheel-fire-flow-arrow)', opacity: (kilnHeatFlow.flowOpacity * (.28 + heatRatio * .72) * kilnSourceState.flowVisibilityRatio).toFixed(2) }); })
+            ),
+            h('text', { x: 150, y: 88, fill: '#fff7ed', fontSize: 11 }, 'modeled routes · ' + kilnHeatFlow.accessLabel),
+            kilnHeatFlow.enclosed ? h('g', { 'data-wheel-fire-shelf-shadow-label': 'true', 'aria-hidden': 'true' },
+              h('line', { x1: 126, y1: kilnHeatFlow.shelfShadows[1].cy + 14, x2: kilnHeatFlow.shelfShadows[1].cx - kilnHeatFlow.shelfShadows[1].rx + 4, y2: kilnHeatFlow.shelfShadows[1].cy, stroke: '#fed7aa', strokeWidth: 1.5 }),
+              h('text', { x: 122, y: kilnHeatFlow.shelfShadows[1].cy + 18, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'shelf shielding')
+            ) : null,
+            h('g', { 'data-wheel-fire-depth-labels': 'true', 'aria-hidden': 'true' },
+              h('text', { 'data-wheel-fire-depth-label': 'rear-chamber', x: 280, y: 108, fill: '#ffedd5', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'rear chamber'),
+              h('line', { x1: 280, y1: 334, x2: 280, y2: 325, stroke: '#fed7aa', strokeWidth: 1.5 }),
+              h('text', { 'data-wheel-fire-depth-label': 'hearth-floor', x: 280, y: 348, fill: '#ffedd5', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, 'hearth floor')
+            ),
+            h('g', { 'data-wheel-fire-wall-labels': 'true', 'aria-hidden': 'true' },
+              h('text', { 'data-wheel-fire-wall-label': 'outer-casing', x: 14, y: 180, fill: '#d6ccc6', fontSize: 11, fontWeight: 700 }, 'casing'),
+              h('line', { x1: 53, y1: 176, x2: 80, y2: 176, stroke: '#d6ccc6', strokeWidth: 1.5 }),
+              h('text', { 'data-wheel-fire-wall-label': 'insulating-refractory', x: 14, y: 206, fill: '#e7b98c', fontSize: 11, fontWeight: 700 }, 'insulation'),
+              h('line', { x1: 72, y1: 202, x2: 96, y2: 202, stroke: '#e7b98c', strokeWidth: 1.5 }),
+              h('text', { 'data-wheel-fire-wall-label': 'hot-face-lining', x: 14, y: 232, fill: '#fed7aa', fontSize: 11, fontWeight: 700 }, 'hot face'),
+              h('line', { x1: 63, y1: 228, x2: 116, y2: 228, stroke: '#fed7aa', strokeWidth: 1.5 })
+            ),
+            h('g', { 'data-wheel-fire-kiln-furniture': 'true', 'aria-hidden': 'true' },
+              kilnShelfGeometries.map(function (shelf, shelfIndex) {
+                var supportBottomY = shelfIndex < kilnShelfGeometries.length - 1 ? kilnShelfGeometries[shelfIndex + 1].frontY : kilnChamberPerspective.front.bottomY;
+                return shelf.supportXs.map(function (postX, postIndex) { return kilnFurniturePost(postX, shelf.frontY + shelf.thickness, supportBottomY, 'shelf-' + shelfIndex + '-post-' + postIndex); });
+              }),
+              h('line', { x1: 126, y1: 190, x2: kilnShelfGeometries[0].supportXs[0], y2: 190, stroke: '#f2c49f', strokeWidth: 1.5 }),
+              h('text', { x: 122, y: 194, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'kiln posts')
+            ),
+            kilnShelfGeometries.map(function (shelf, index) {
+              return h('g', { key: 'shelf-' + shelf.backY },
+                h('path', { 'data-wheel-fire-kiln-shelf': 'surface', 'data-wheel-fire-shelf-depth': shelf.depth, d: shelf.surfacePath, fill: '#8b6b59', stroke: '#f2c49f', strokeWidth: 2 }),
+                h('path', { 'data-wheel-fire-kiln-shelf-front': 'true', d: shelf.frontFacePath, fill: '#5f463a', stroke: '#2f1d17', strokeWidth: 1.5 }),
+                h('path', { 'data-wheel-fire-kiln-shelf-back-edge': 'true', d: shelf.backEdgePath, fill: 'none', stroke: '#f6d3b5', strokeWidth: 1, opacity: .72 }),
+                index === probeIndex ? h('path', { 'data-wheel-fire-selected-shelf': probeZoneIds[index], d: shelf.surfacePath, fill: 'none', stroke: '#67e8f9', strokeWidth: 4, opacity: .95, 'aria-hidden': 'true' }) : null,
+                enclosedLoadLayout(index).map(function (piece, pieceIndex) { return miniaturePiece(piece.x, shelf.frontY - 2, piece.scale, 'piece-' + shelf.backY + '-' + pieceIndex); })
+              );
+            }),
+            h('g', { 'data-wheel-fire-ware-core': 'true', 'data-wheel-fire-thermal-section': 'true', 'aria-hidden': 'true' },
+              thermalStressIndicator(selectedWareX, selectedWareCoreY, 'enclosed-stress'),
+              h('circle', { cx: selectedWareX, cy: selectedWareCoreY, r: 12, fill: wareSurfaceMarkerColor, stroke: '#fff7ed', strokeWidth: 2 }),
+              h('circle', { cx: selectedWareX, cy: selectedWareCoreY, r: 8, fill: wareMidMarkerColor, stroke: '#7c2d12', strokeWidth: 1 }),
+              h('circle', { cx: selectedWareX, cy: selectedWareCoreY, r: 4, fill: wareCoreMarkerColor, stroke: '#fff7ed', strokeWidth: 1 }),
+              h('line', { x1: selectedWareX - 10, y1: selectedWareCoreY - 5, x2: selectedWareX - 30, y2: selectedWareCoreY - 17, stroke: wareCoreMarkerColor, strokeWidth: 1.5 }),
+              h('text', { x: selectedWareX - 34, y: selectedWareCoreY - 5, fill: wareStressColor, fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'stress ' + Math.round(wareThermalStress.stressPct) + '% | ' + wareThermalStress.tensionMode),
+              h('text', { x: selectedWareX - 34, y: selectedWareCoreY - 19, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'section ' + Math.round(wareCore.surfaceTemperatureC) + '° → ' + Math.round(wareCore.coreTemperatureC) + '°')
+            ),
+            h('g', { 'aria-hidden': 'true' },
+              h('path', { d: 'M476 ' + [118, 207, 296][probeIndex] + ' H350', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              h('circle', { 'data-wheel-fire-temperature-now': Math.round(probeTemperature), cx: 350, cy: [118, 207, 296][probeIndex], r: 7, fill: '#083344', stroke: '#a5f3fc', strokeWidth: 3 }),
+              h('text', { x: 472, y: [106, 195, 284][probeIndex], fill: '#cffafe', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'T now')
+            ),
+            kilnType === 'electric' ? h('g', { 'data-wheel-fire-heat-source': 'electric-elements', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' }, [105, 155, 205, 255].map(function (y) {
+              var elementPath = 'M132 ' + y + ' q14 -12 28 0 t28 0 M428 ' + y + ' q-14 -12 -28 0 t-28 0';
+              return h('g', { key: y, 'data-wheel-fire-element-bank': String(y) },
+                h('path', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, d: elementPath, fill: 'none', stroke: '#fb923c', strokeWidth: 11, opacity: (kilnSourceState.sourceActivityRatio * .22).toFixed(2) }),
+                h('path', { d: elementPath, fill: 'none', stroke: kilnSourceState.activeInput ? '#ffb347' : '#7c6254', strokeWidth: 5, opacity: (kilnSourceState.activeInput ? .58 + kilnSourceState.sourceActivityRatio * .42 : .62).toFixed(2) })
+              );
+            })) : h('g', { className: kilnSourceState.activeInput ? 'wheel-fire-flame-motion' : undefined, 'data-wheel-fire-heat-source': kilnType + '-source', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' },
+              kilnType === 'wood' ? h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'wood-firebox', cx: 108, cy: 307, rx: 34, ry: 12, fill: '#fb923c', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2) }) : null,
+              h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M90 310 C138 322 150 278 186 294 C224 310 192 252 238 266 C286 280 268 216 318 232 C370 248 354 168 414 182', fill: 'none', stroke: atmosphere === 'reduction' ? '#c084fc' : '#fb923c', strokeWidth: 16, strokeLinecap: 'round', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' }),
+              h('path', { d: 'M94 310 C150 318 158 280 196 292 C244 306 218 252 260 266 C312 280 298 224 344 234 C390 244 390 196 424 190', fill: 'none', stroke: '#fde68a', strokeWidth: 5, strokeLinecap: 'round', opacity: kilnSourceState.activeInput ? kilnSourceState.activeFlameOpacityRatio.toFixed(2) : '0.00' })
+            ),
+            h('path', { className: 'wheel-fire-flow-motion', style: { animationDuration: kilnSourceState.flowMotionSeconds + 's' }, 'data-wheel-fire-exhaust-mode': kilnSourceState.flowMode, d: 'M434 90 Q468 88 480 60', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#7dd3fc', strokeWidth: 7, strokeDasharray: '12 8', opacity: ((.45 + kilnAirAccess / 200) * kilnSourceState.flowVisibilityRatio).toFixed(2), 'aria-hidden': 'true' }),
             h('text', { x: 458, y: 48, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, 'exhaust'),
-            h('text', { x: 94, y: 327, fill: '#fff7ed', fontSize: 11 }, kilnType === 'electric' ? 'elements' : 'burner / firebox'),
+            h('text', { x: 94, y: 48, fill: '#fff7ed', fontSize: 11 }, 'Load ' + Math.round(kilnLoadDensity) + '% | air access ' + Math.round(kilnAirAccess) + '%'),
+            h('text', { 'data-wheel-fire-flow-label': 'true', x: 280, y: 66, fill: '#fff7ed', fontSize: 11, fontWeight: 700, textAnchor: 'middle' }, kilnSourceState.flowLabel),
+            h('text', { 'data-wheel-fire-source-label': 'true', x: 94, y: 327, fill: '#fff7ed', fontSize: 11 }, kilnSourceState.sceneLabel),
             showZones ? zoneTemps.map(function (temperature, index) { var y = [118, 207, 296][index]; return h('g', { key: 'zone-' + index }, h('line', { x1: 440, x2: 467, y1: y, y2: y, stroke: '#fef3c7', strokeWidth: 1 }), h('text', { x: 474, y: y + 4, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, Math.round(temperature) + '°')); }) : null,
-            [146, 236, 321].map(function (y, index) { var bend = clamp((zoneTemps[index] - body.maturity + 90) / 180, 0, 1); return h('path', { key: 'cone-' + y, d: 'M382 ' + (y - 6) + ' l8 -24 l' + (5 + bend * 9).toFixed(1) + ' 24 z', fill: '#f5deb3', stroke: '#5b3525', strokeWidth: 1, transform: 'rotate(' + (bend * 24).toFixed(1) + ' 390 ' + (y - 6) + ')', 'aria-hidden': 'true' }); })
+            kilnShelfGeometries.map(function (shelf, index) { return witnessConePackVisual(zoneConePacks[index], 390, shelf.frontY - 5, 'zone-' + probeZoneIds[index], index === probeIndex); })
           );
           var openScene = h('g', null,
             h('path', { d: 'M20 330 Q150 300 280 326 T540 322 V380 H20 Z', fill: '#4a3023', stroke: '#24150f', strokeWidth: 4 }),
             h('ellipse', { cx: 280, cy: 322, rx: 190, ry: 38, fill: '#1e1410', stroke: '#8d6e57', strokeWidth: 4 }),
+            h('ellipse', { className: kilnSourceState.activeInput ? 'wheel-fire-heat-pulse' : undefined, 'data-wheel-fire-fuel-glow': 'open-fuel-bed', cx: 280, cy: 318, rx: 128, ry: 24, fill: '#fb923c', opacity: kilnSourceState.fuelBedGlowRatio.toFixed(2), 'aria-hidden': 'true' }),
             [[170, 322, 310, 282], [215, 286, 356, 326], [128, 302, 256, 344], [290, 340, 422, 296]].map(function (log, index) { return h('line', { key: 'log-' + index, x1: log[0], y1: log[1], x2: log[2], y2: log[3], stroke: index % 2 ? '#8b5e3c' : '#6b4226', strokeWidth: 18, strokeLinecap: 'round' }); }),
-            miniaturePiece(228, 306, 1.05, 'open-piece-1'), miniaturePiece(318, 314, .86, 'open-piece-2'),
-            h('g', { className: 'wheel-fire-flame-motion', 'aria-hidden': 'true' },
-              h('path', { d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: (.18 + heatRatio * .78).toFixed(2) })
+            openLoadPieces.map(function (piece, index) { return miniaturePiece(piece.x, piece.baseY, piece.scale, 'open-piece-' + index); }),
+            h('g', { className: kilnSourceState.activeInput ? 'wheel-fire-flame-motion' : undefined, 'data-wheel-fire-heat-source': 'open-fuel-bed', 'data-wheel-fire-source-state': kilnSourceState.state, 'data-wheel-fire-source-active': String(kilnSourceState.activeInput), 'aria-hidden': 'true' },
+              h('path', { 'data-wheel-fire-active-flame': String(kilnSourceState.activeInput), d: 'M160 306 C138 248 190 238 178 182 C222 216 216 260 232 300 Z M248 310 C224 236 284 224 266 142 C330 206 286 246 326 306 Z M330 308 C322 258 370 244 352 190 C408 236 374 278 398 312 Z', fill: 'url(#wheel-fire-open-flame)', opacity: kilnSourceState.activeInput ? (.18 + kilnSourceState.activeFlameOpacityRatio * .78).toFixed(2) : '0.00' })
             ),
-            h('path', { d: 'M250 135 C210 90 286 72 250 28 M330 172 C382 118 310 94 352 42', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#cbd5e1', strokeWidth: 12, strokeLinecap: 'round', opacity: .38, strokeDasharray: '18 12' }),
+            h('g', { 'data-wheel-fire-ware-core': 'true', 'data-wheel-fire-thermal-section': 'true', 'aria-hidden': 'true' },
+              thermalStressIndicator(openThermalX, openThermalY, 'open-stress'),
+              h('circle', { cx: openThermalX, cy: openThermalY, r: 12, fill: wareSurfaceMarkerColor, stroke: '#fff7ed', strokeWidth: 2 }),
+              h('circle', { cx: openThermalX, cy: openThermalY, r: 8, fill: wareMidMarkerColor, stroke: '#7c2d12', strokeWidth: 1 }),
+              h('circle', { cx: openThermalX, cy: openThermalY, r: 4, fill: wareCoreMarkerColor, stroke: '#fff7ed', strokeWidth: 1 }),
+              h('line', { x1: openThermalX + 10, y1: openThermalY - 5, x2: openThermalX + 28, y2: openThermalY - 23, stroke: wareCoreMarkerColor, strokeWidth: 1.5 }),
+              h('text', { x: openThermalX + 32, y: openThermalY - 10, fill: wareStressColor, fontSize: 11, fontWeight: 700 }, 'stress ' + Math.round(wareThermalStress.stressPct) + '% | ' + wareThermalStress.tensionMode),
+              h('text', { x: openThermalX + 32, y: openThermalY - 26, fill: '#fff7ed', fontSize: 11, fontWeight: 700 }, 'section ' + Math.round(wareCore.surfaceTemperatureC) + '° → ' + Math.round(wareCore.coreTemperatureC) + '°')
+            ),
+            h('path', { className: 'wheel-fire-flow-motion', style: { animationDuration: kilnSourceState.flowMotionSeconds + 's' }, 'data-wheel-fire-air-path': 'true', 'data-wheel-fire-flow-mode': kilnSourceState.flowMode, d: 'M250 135 C210 90 286 72 250 28 M330 172 C382 118 310 94 352 42', fill: 'none', stroke: atmosphere === 'reduction' ? '#a78bfa' : '#cbd5e1', strokeWidth: 12, strokeLinecap: 'round', opacity: ((.08 + kilnAirAccess / 200) * kilnSourceState.flowVisibilityRatio).toFixed(2), strokeDasharray: '18 12' }),
+            h('text', { x: 24, y: 28, fill: '#fff7ed', fontSize: 11 }, 'Load ' + Math.round(kilnLoadDensity) + '% | air access ' + Math.round(kilnAirAccess) + '%'),
+            h('g', { 'aria-hidden': 'true' },
+              h('ellipse', { cx: 300, cy: [96, 220, 310][probeIndex], rx: 70, ry: probeIndex === 2 ? 22 : 28, fill: 'none', stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '7 5' }),
+              h('path', { d: 'M510 ' + [96, 220, 310][probeIndex] + ' H300', fill: 'none', stroke: '#67e8f9', strokeWidth: 3, strokeDasharray: '7 5' }),
+              h('circle', { 'data-wheel-fire-temperature-now': Math.round(probeTemperature), cx: 300, cy: [96, 220, 310][probeIndex], r: 7, fill: '#083344', stroke: '#a5f3fc', strokeWidth: 3 }),
+              h('text', { x: 500, y: [84, 208, 298][probeIndex], fill: '#cffafe', fontSize: 11, fontWeight: 700, textAnchor: 'end' }, 'T now')
+            ),
+            witnessConePackVisual(probeConePack, 420, 112, 'open-' + kilnProbeZone, true),
             showZones ? h('g', null, h('text', { x: 24, y: 56, fill: '#fff7ed', fontSize: 12, fontWeight: 700 }, 'Upper plume ≈ ' + Math.round(zoneTemps[0]) + '°C'), h('text', { x: 24, y: 76, fill: '#fff7ed', fontSize: 12, fontWeight: 700 }, 'Fuel bed ≈ ' + Math.round(zoneTemps[2]) + '°C')) : null,
+            h('text', { 'data-wheel-fire-source-label': 'true', x: 24, y: 356, fill: '#fff7ed', fontSize: 11 }, kilnSourceState.sceneLabel),
             h('text', { x: 510, y: 356, fill: '#fff7ed', fontSize: 11, textAnchor: 'end' }, 'Open firing: uneven heat and atmosphere exposure')
           );
           return h('figure', { className: 'rounded-xl border border-orange-300 bg-[#24130e] p-3 space-y-2', 'aria-labelledby': 'wheel-fire-kiln-cutaway-title' },
             h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2 text-orange-50' }, h('h3', { id: 'wheel-fire-kiln-cutaway-title', className: 'font-black' }, kilnType === 'open' ? 'Open-firing 3D section' : '3D kiln cutaway'), h('span', { className: 'text-xs font-bold' }, kilnPreviewLabel + ' · ' + Math.round(kilnPreviewTemp) + '°C · ' + atmosphere + ' · ' + kilnSample.elapsedHours.toFixed(1) + '/' + kilnSample.totalHours.toFixed(1) + ' h')),
             h('svg', { viewBox: '0 0 560 380', role: 'img', 'aria-label': sceneLabel, className: 'w-full min-h-[300px] rounded-xl bg-[#1b0d09]' },
               h('defs', null,
-                h('linearGradient', { id: 'wheel-fire-kiln-wall', x1: '0', x2: '1' }, h('stop', { offset: '0%', stopColor: '#5a3526' }), h('stop', { offset: '46%', stopColor: '#d6a77f' }), h('stop', { offset: '100%', stopColor: '#5b3325' })),
+                h('linearGradient', { id: 'wheel-fire-kiln-wall', x1: '0', x2: '1' }, h('stop', { offset: '0%', stopColor: '#292421' }), h('stop', { offset: '46%', stopColor: '#918077' }), h('stop', { offset: '100%', stopColor: '#372e2a' })),
+                h('linearGradient', { id: 'wheel-fire-kiln-insulation', x1: '0', x2: '1' }, h('stop', { offset: '0%', stopColor: '#654333' }), h('stop', { offset: '48%', stopColor: '#b9825f' }), h('stop', { offset: '100%', stopColor: '#684434' })),
+                h('linearGradient', { id: 'wheel-fire-kiln-hot-face', x1: '0', x2: '1' }, h('stop', { offset: '0%', stopColor: '#8b5a3c' }), h('stop', { offset: '48%', stopColor: '#e7b98c' }), h('stop', { offset: '100%', stopColor: '#8f5d3f' })),
+                h('radialGradient', { id: 'wheel-fire-kiln-rear', cx: '50%', cy: '42%', r: '66%' }, h('stop', { offset: '0%', stopColor: '#442016' }), h('stop', { offset: '72%', stopColor: '#24100c' }), h('stop', { offset: '100%', stopColor: '#120706' })),
+                h('linearGradient', { id: 'wheel-fire-kiln-hearth', x1: '0', y1: '0', x2: '0', y2: '1' }, h('stop', { offset: '0%', stopColor: '#321a13' }), h('stop', { offset: '100%', stopColor: '#80563e' })),
                 h('linearGradient', { id: 'wheel-fire-kiln-heat', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '48%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fde68a' })),
-                h('linearGradient', { id: 'wheel-fire-open-flame', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '55%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fef3c7' }))
+                h('linearGradient', { id: 'wheel-fire-open-flame', x1: '0', y1: '1', x2: '0', y2: '0' }, h('stop', { offset: '0%', stopColor: '#dc2626' }), h('stop', { offset: '55%', stopColor: '#fb923c' }), h('stop', { offset: '100%', stopColor: '#fef3c7' })),
+                h('marker', { id: 'wheel-fire-flow-arrow', markerWidth: 7, markerHeight: 7, refX: 6, refY: 3.5, orient: 'auto', markerUnits: 'strokeWidth' }, h('path', { d: 'M0 0 L7 3.5 L0 7 Z', fill: kilnHeatFlowColor })),
+                h('marker', { id: 'wheel-fire-stress-arrow', markerWidth: 6, markerHeight: 6, refX: 5, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' }, h('path', { d: 'M0 0 L6 3 L0 6 Z', fill: wareStressColor }))
               ),
               kilnType === 'open' ? openScene : enclosedScene
             ),
             h('div', { role: 'status', 'aria-live': 'polite', className: 'space-y-1 text-orange-50' },
               h('p', { className: 'text-xs' }, h('strong', null, kilnMaterialState.label + '. '), kilnMaterialState.description),
-              h('p', { className: 'text-[11px] font-bold text-orange-100' }, 'Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + '% · body development ' + Math.round(kilnMaterialState.maturityProgressPct) + '%' + (kilnMaterialState.glazeDevelopmentPct > 0 ? ' · glaze development ' + Math.round(kilnMaterialState.glazeDevelopmentPct) + '%' : '') + ' · load Δ ≈ ' + Math.round(temperatureDelta) + '°C')
+              h('p', { 'data-wheel-fire-loading-status': 'true', className: 'text-[11px] font-bold text-amber-100' }, 'Loading model: ' + Math.round(kilnLoadDensity) + '% relative ware load | ' + Math.round(kilnAirAccess) + '% air access | ' + kilnLoadEffects.label + ' | zone spread x' + kilnLoadEffects.zoneSpreadMultiplier.toFixed(2) + ' | core lag x' + kilnLoadEffects.coreLagMultiplier.toFixed(2) + ' | ' + representativePieceLabel),
+              h('p', { 'data-wheel-fire-source-status': kilnSourceState.state, className: 'text-[11px] font-bold text-amber-100' }, 'Heat source now: ' + kilnSourceState.summary),
+              kilnType !== 'open' ? h('p', { 'data-wheel-fire-heat-flow-status': 'true', className: 'text-[11px] font-bold text-amber-100' }, 'Heat-route cue: ' + kilnHeatFlow.summary) : null,
+              h('p', { className: 'text-[11px] font-bold text-orange-100' }, 'Modeled firing shrinkage ' + kilnMaterialState.firingShrinkagePct.toFixed(1) + '% · body development ' + Math.round(kilnMaterialState.maturityProgressPct) + '%' + (kilnMaterialState.glazeDevelopmentPct > 0 ? ' · glaze development ' + Math.round(kilnMaterialState.glazeDevelopmentPct) + '%' : '') + ' · load Δ ≈ ' + Math.round(temperatureDelta) + '°C'),
+              h('p', { 'data-wheel-fire-cone-pack-status': 'true', className: 'text-[11px] font-bold text-cyan-100' }, 'Probe: ' + probeZoneName + ' · ' + Math.round(probeTemperature) + '°C · three-cone pack targeting cone ' + probeConePack.targetCone + ' · large cones in an 8° plaque mount · guide ' + probeConePack.guideCone.label + ' ' + Math.round(probeConePack.guideCone.bendDegrees) + '° · firing ' + probeConePack.firingCone.label + ' ' + Math.round(probeConeBend) + '° (' + probeConePack.interpretation + ') · guard ' + probeConePack.guardCone.label + ' ' + Math.round(probeConePack.guardCone.bendDegrees) + '°'),
+              h('p', { 'data-wheel-fire-cone-reading': probeConeReading.phase, className: 'text-[11px] font-bold text-cyan-100' }, 'Read the pack — ' + probeConeReading.label + ': ' + probeConeReading.summary + ' Temperature now vs heatwork — ' + probeObservation.label + ': ' + probeObservation.summary),
+              h('p', { 'data-wheel-fire-cone-uniformity': coneZoneSummary.resolution, className: 'text-[11px] font-bold text-cyan-100' }, (kilnType === 'open' ? 'Witness comparison: ' : 'Across modeled packs: ') + coneZoneSummary.summary + ' ' + coneZoneSummary.note),
+              h('p', { 'data-wheel-fire-thermal-stress-status': 'true', className: 'text-[11px] font-bold text-yellow-100' }, 'Representative ware thermal section: ' + wareCoreLocation + ' · surface ≈ ' + Math.round(wareCore.surfaceTemperatureC) + '°C → mid-wall ≈ ' + Math.round(wareCore.midWallTemperatureC) + '°C → core ≈ ' + Math.round(wareCore.coreTemperatureC) + '°C · surface↔core Δ ≈ ' + Math.round(wareCore.surfaceToCoreGradientC) + '°C · ' + wareThermalDirection + ' · ' + wareCoreDifferenceLabel + ' · ' + wareThermalStress.summary + ' Cycle peak ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '% during ' + currentSchedule.thermalStress.peakSample.phaseLabel.toLowerCase() + ' near ' + Math.round(currentSchedule.thermalStress.peakSample.temperatureC) + '°C · average wall ' + wareCore.averageWallCm.toFixed(2) + ' cm')
             ),
-            h('div', { className: 'rounded-lg bg-orange-50 p-2' }, rangeControl('wheel-fire-kiln-phase', 'Preview schedule time', kilnPreviewPhase, 0, 100, '%', function (value) { patchData({ kilnPreviewPhase: value }); })),
-            h('label', { className: 'flex items-center gap-2 text-xs font-bold text-orange-50' }, h('input', { type: 'checkbox', checked: showZones, onChange: function (event) { patchData({ showKilnHeatZones: event.target.checked }); } }), 'Show modeled heat zones'),
-            h('figcaption', { className: 'text-[11px] text-orange-100' }, 'Schedule position follows the selected ramp, soak, and cooling durations. Spatial temperatures, transformations, shrinkage, and flow paths are comparative teaching cues, not computational fluid dynamics. Real firings use witness cones, kiln-rated instruments, ventilation, and trained supervision.')
+            h('div', { className: 'rounded-lg bg-orange-50 p-2 space-y-2' },
+              rangeControl('wheel-fire-kiln-phase', 'Preview schedule time', kilnPreviewPhase, 0, 100, '%', function (value) { patchData({ kilnPreviewPhase: value }); }),
+              h('button', { type: 'button', 'data-wheel-fire-jump-peak': 'true', onClick: function () { patchData({ kilnPreviewPhase: currentSchedule.thermalStress.peakSample.progressPct }); announce('Preview moved to cycle peak modeled transient stress: ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '% during ' + currentSchedule.thermalStress.peakSample.phaseLabel.toLowerCase() + ' near ' + Math.round(currentSchedule.thermalStress.peakSample.temperatureC) + '°C.'); }, className: 'rounded-lg border border-orange-400 bg-white px-3 py-2 text-xs font-black text-orange-950' }, 'Jump to peak stress (' + Math.round(currentSchedule.thermalStress.peakStressPct) + '%)')
+            ),
+            h('div', { className: 'flex flex-wrap items-end gap-3' },
+              h('label', { htmlFor: 'wheel-fire-kiln-probe-zone', className: 'flex-1 min-w-[180px] text-xs font-bold text-orange-50' }, 'Inspect heatwork zone', h('select', { id: 'wheel-fire-kiln-probe-zone', value: kilnProbeZone, onChange: function (event) { patchData({ kilnProbeZone: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-orange-200 bg-white p-2 text-slate-900' }, probeZoneIds.map(function (id, index) { return h('option', { key: id, value: id }, probeZoneNames[index]); }))),
+              h('label', { className: 'flex items-center gap-2 pb-2 text-xs font-bold text-orange-50' }, h('input', { type: 'checkbox', checked: showZones, onChange: function (event) { patchData({ showKilnHeatZones: event.target.checked }); } }), 'Show modeled heat zones')
+            ),
+            h('p', { className: 'text-[11px] text-orange-100' }, 'Stress halo arrows point outward for modeled surface tension during cooling and inward for modeled core tension during heating. This is a comparative teaching estimate, not a crack prediction. Load and air-access controls are not kiln capacity, stacking, clearance, or safe-loading guidance.' + (kilnType !== 'open' ? ' Kiln wall bands are schematic and do not indicate safe-touch temperatures, construction condition, or a kiln specification. Chamber-depth cues likewise do not show measured loading or clearance geometry.' : '')),
+            h('figcaption', { className: 'text-[11px] text-orange-100' }, 'Schedule position follows the selected ramp, soak, and cooling durations. In each three-cone pack the guide responds first, the firing cone is the target, and the guard responds after excess heatwork. “T now” marks the modeled instantaneous zone temperature; cone bend records accumulated heatwork and retains its peak response during cooling. ' + kilnSourceState.note + (kilnType !== 'open' ? ' ' + kilnHeatFlow.note + ' Enclosed-kiln shelf surfaces, front faces, and support posts are perspective placement cues—not loading, clearance, structural, or capacity guidance. Wall bands distinguish outer casing, insulating refractory, and hot face; their widths and colors are schematic—not a kiln design, condition assessment, or surface-temperature reading. The rear arch, curved returns, hearth plane, and widening shelf fronts are schematic depth cues—not measured chamber geometry, placement, or clearance guidance. Real kiln construction varies by kiln type and manufacturer.' : '') + ' The rendered pack represents large witness cones in a three-hole plaque with an 8° starting lean. Self-supporting witness cones instead provide their own base, height, and built-in angle and do not use this plaque. On the selected pack, dashed 25° and 75° silhouettes bracket the firing cone’s comparative target band. Reference endpoints use the closest modeled witness-cone 15, 60, or 150°C/h chart column; modeled soak response remains simplified. The 25°–75° firing-cone target band is comparative—not a controller program; real cone selection and bend interpretation depend on cone type, mounting, heating rate, manufacturer charts, witness placement, and measurement templates. Curved cone silhouettes show modeled deformation, not a measurement template. The magnified thermal rings are schematic, not wall-thickness scale. Their surface, mid-wall, and core temperatures are comparative estimates based on average wall thickness, clay-body thermal sensitivity, and the selected ramp or cooling rate—not thermocouple readings. Spatial temperatures, transformations, shrinkage, and flow paths are comparative teaching cues, not computational fluid dynamics. Real firings use witness cones, kiln-rated instruments, ventilation, and trained supervision.')
           );
         }
         function focusDryingHotspot(index) {
@@ -2985,7 +4913,7 @@
               h('h3', { id: 'wheel-fire-dimensional-history-title', className: 'font-black text-indigo-950' }, 'Dimensional shrinkage budget'),
               h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Forward projection from the current stage. Height, diameter, capacity, and minimum wall are model checkpoints—not a substitute for measuring the real piece.')
             ),
-            h('div', { className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
+            h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Projected dimensional checkpoints table', className: 'overflow-x-auto rounded-lg border border-indigo-200 bg-white' },
               h('table', { className: 'w-full text-xs border-collapse' },
                 h('caption', { className: 'text-left p-2 font-black text-indigo-950' }, 'Projected dimensional checkpoints'),
                 h('thead', null, h('tr', { className: 'bg-indigo-100' }, ['Checkpoint', 'Height', 'Diameter', 'Capacity', 'Min wall', 'Height Δ', 'Capacity Δ'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-indigo-200' }, label); }))),
@@ -3097,7 +5025,7 @@
           return h('section', { className: 'rounded-xl border border-orange-200 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-thermal-history-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-thermal-history-title', className: 'font-black text-orange-950' }, 'Modeled thermal history'),
-              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + '°C. The model does not include kiln load, controller cycling, thermocouple lag, or witness-cone behavior.')
+              h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + '°C. The chamber schedule itself omits controller cycling and thermocouple behavior. The dashed ware-core trace adds only a comparative response to wall thickness, body sensitivity, load density, and air access; it is not a measurement or witness-cone model.')
             ),
             h('div', { className: 'space-y-2', 'aria-label': 'Modeled thermal history segments' }, history.segments.map(function (segment) {
               return h('div', { key: segment.id },
@@ -3122,7 +5050,7 @@
           ),
           stageStrip(),
           kilnCutaway(),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
             h('div', { className: 'rounded-xl border border-sky-300 bg-sky-50 p-3 space-y-3' },
               h('h3', { className: 'font-black text-sky-950' }, '1. Controlled drying'),
               rangeControl('wheel-fire-humidity', 'Room humidity', humidity, 10, 95, '%', function (value) { patchData({ humidity: value }); }),
@@ -3139,6 +5067,11 @@
               rangeControl('wheel-fire-ramp', 'Heating ramp', ramp, 30, 300, '°C/h', function (value) { patchData({ ramp: value }); }),
               rangeControl('wheel-fire-soak', 'Peak soak', soak, 0, 90, ' min', function (value) { patchData({ soak: value }); }),
               rangeControl('wheel-fire-cooling', 'Cooling rate', coolingRate, 30, 300, '°C/h', function (value) { patchData({ coolingRate: value }); }),
+              h('div', { className: 'wheel-fire-advanced space-y-3' },
+                rangeControl('wheel-fire-kiln-load', 'Relative ware load', kilnLoadDensity, 20, 95, '%', function (value) { patchData({ kilnLoadDensity: value }); }),
+                rangeControl('wheel-fire-kiln-air', 'Air access around ware', kilnAirAccess, 20, 100, '%', function (value) { patchData({ kilnAirAccess: value }); }),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Comparative teaching controls only: not kiln capacity, stacking, clearance, or safe-loading guidance.')
+              ),
               h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Schedule label', h('input', { maxLength: 48, value: scheduleLabel, onChange: function (event) { patchData({ scheduleLabel: event.target.value }); }, placeholder: 'e.g. slow stoneware test', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal' })),
               h('button', { type: 'button', onClick: saveFiringSchedule, className: 'w-full rounded-lg border border-orange-400 bg-orange-50 text-orange-950 px-3 py-2 text-xs font-black' }, 'Save firing scenario'),
               firingCurve(),
@@ -3157,12 +5090,13 @@
             firingSchedules.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-orange-200 bg-white' },
               h('table', { className: 'w-full text-xs border-collapse' },
                 h('caption', { className: 'text-left p-3 font-black text-orange-950' }, 'Saved firing hypotheses'),
-                h('thead', null, h('tr', { className: 'bg-orange-100' }, ['Schedule', 'Kiln', 'Target', 'Effective', 'Cone', 'Score', 'Porosity', 'Glaze surface', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
+                h('thead', null, h('tr', { className: 'bg-orange-100' }, ['Schedule', 'Kiln', 'Loading', 'Target', 'Effective', 'Cone', 'Score', 'Porosity', 'Glaze surface', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
                 h('tbody', null, firingSchedules.map(function (schedule) {
                   var scheduleComparison = analyzeFiringSchedule(vessel, schedule);
                   return h('tr', { key: schedule.id },
                     h('th', { scope: 'row', className: 'text-left align-top p-2 border-b border-orange-100' }, schedule.label || 'Unnamed schedule'),
                     h('td', { className: 'align-top p-2 border-b border-orange-100' }, schedule.kilnType || 'electric'),
+                    h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(finite(schedule.kilnLoadDensity, 55)) + '% load / ' + Math.round(finite(schedule.kilnAirAccess, 60)) + '% air'),
                     h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(scheduleComparison.temperature) + '°C'),
                     h('td', { className: 'align-top p-2 border-b border-orange-100' }, Math.round(scheduleComparison.heatwork.effectiveTemp) + '°C'),
                     h('td', { className: 'align-top p-2 border-b border-orange-100' }, scheduleComparison.heatwork.cone),

@@ -2938,6 +2938,8 @@ const DOM_TO_TOOL_ID_MAP = {
   'tour-tool-wordsounds': 'ui-tool-wordsounds',
   'tour-tool-note-taking': 'note-taking',
   'tour-tool-anchor-chart': 'anchor-chart',
+  'tour-tool-memory-aid': 'memory-aid',
+  'tour-tool-applied-challenge': 'applied-challenge',
   'tour-input-panel': 'source-input',
   'ui-tool-glossary': 'glossary',
   'ui-tool-simplified': 'simplified',
@@ -3301,6 +3303,8 @@ const _ALLO_STATION_STYLES = {
     'tchart':                { icon: '\u{1FAA7}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'T-chart' },
     'note-taking':           { icon: '\u{1F4D2}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Notes' },
     'anchor-chart':          { icon: '\u{1F4CC}', shape: 'square',  fill: '#fff7ed', stroke: '#f97316', label: 'Anchor chart' },
+    'memory-aid':            { icon: '\u{1F9E0}', shape: 'square',  fill: '#f0fdfa', stroke: '#0f766e', label: 'Memory aid' },
+    'applied-challenge':     { icon: '\u{1F3AF}', shape: 'hex',     fill: '#fff7ed', stroke: '#c2410c', label: 'Applied challenge' },
     'sentence-frames':       { icon: '\u{1F4AC}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Writing' },
     'timeline':              { icon: '\u{1F4C5}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Timeline' },
     'video-transcript':      { icon: '\u{1F3AC}', shape: 'capsule', fill: '#ecfeff', stroke: '#0891b2', label: 'Video words' },
@@ -3422,10 +3426,10 @@ const safeGetItem = (key, fallback = null) => {
     try { return localStorage.getItem(key); } catch(e) { return fallback; }
 };
 const safeSetItem = (key, value) => {
-    try { localStorage.setItem(key, value); } catch(e) { /* silent - storage unavailable */ }
+    try { localStorage.setItem(key, value); return true; } catch(e) { return false; }
 };
 const safeRemoveItem = (key) => {
-    try { localStorage.removeItem(key); } catch(e) { /* silent */ }
+    try { localStorage.removeItem(key); return true; } catch(e) { return false; }
 };
 // Owns only the PDF-remediation cache keys. Keeping this logic in one small,
 // storage-parameterized helper makes the two user promises independently true:
@@ -6030,6 +6034,8 @@ const getIconForType = (type) => {
         case 'faq': return <FileQuestion size={16} />;
         case 'directions': return <ClipboardList size={16} />;
         case 'brainstorm': return <Lightbulb size={16} />;
+        case 'memory-aid': return <Lightbulb size={16} />;
+        case 'applied-challenge': return <Target size={16} />;
         case 'sentence-frames': return <Quote size={16} />;
         case 'adventure': return <MapIcon size={16} />;
         case 'alignment-report': return <ShieldCheck size={16} />;
@@ -6437,7 +6443,8 @@ const ALLO_GENERATION_METRICS = (() => {
   const resourceTypes = new Set([
     'simplified', 'quiz', 'adventure', 'sentence-frames', 'brainstorm', 'faq',
     'outline', 'image', 'timeline', 'lesson-plan', 'glossary', 'persona',
-    'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'gemini-bridge',
+    'concept-sort', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid',
+    'applied-challenge', 'gemini-bridge',
   ]);
   const blank = () => ({
     v: 1,
@@ -7737,7 +7744,28 @@ const countWords = (text) => {
       .replace(/\*/g, '');
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
-const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const normalizeRosterSessionCodename = (value) => {
+  const raw = String(value || '');
+  const canonical = (typeof raw.normalize === 'function' ? raw.normalize('NFKC') : raw).toLowerCase();
+  const compact = canonical.replace(/[^\p{L}\p{M}\p{N}]/gu, '');
+  return /[\p{L}\p{N}]/u.test(compact) ? compact : '';
+};
+const buildUniqueRosterSessionCodenameIndex = (students) => {
+  const safeStudents = students && typeof students === 'object' && !Array.isArray(students) ? students : {};
+  const index = Object.create(null);
+  const ambiguous = new Set();
+  Object.entries(safeStudents).forEach(([name, groupId]) => {
+    const normalized = normalizeRosterSessionCodename(name);
+    if (!normalized || ambiguous.has(normalized)) return;
+    if (Object.prototype.hasOwnProperty.call(index, normalized)) {
+      delete index[normalized];
+      ambiguous.add(normalized);
+      return;
+    }
+    index[normalized] = { name, groupId };
+  });
+  return index;
+};
 const LIVE_ROSTER_PRESENCE_CONNECTED_MS = 95000;
 const LIVE_ROSTER_PRESENCE_STALE_MS = 200000;
 const classifyLiveRosterPresence = ({ entry, now = Date.now() } = {}) => {
@@ -8358,24 +8386,304 @@ const alloNormalizeLearnerReadingPreference = (value) => {
   if (typeof value.updatedAt === 'string' && value.updatedAt.trim()) normalized.updatedAt = value.updatedAt.trim().slice(0, 48);
   return normalized;
 };
+const alloSafeRosterLearnerId = (value) => {
+  const id = typeof value === 'string' ? value.trim().slice(0, 160) : '';
+  return /^[A-Za-z0-9_-]{1,160}$/.test(id) && !['__proto__', 'prototype', 'constructor'].includes(id) ? id : '';
+};
+const alloSanitizeRosterSubmissionKey = (value, classId) => {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  const jwk = value.publicJwk;
+  if (!jwk || typeof jwk !== 'object' || Array.isArray(jwk) || jwk.kty !== 'RSA') return null;
+  const modulus = typeof jwk.n === 'string' && /^[A-Za-z0-9_-]{16,2048}$/.test(jwk.n) ? jwk.n : '';
+  const exponent = typeof jwk.e === 'string' && /^[A-Za-z0-9_-]{1,16}$/.test(jwk.e) ? jwk.e : '';
+  if (!modulus || !exponent) return null;
+  const keyClassId = alloSafeRosterLearnerId(value.classId);
+  if (classId && keyClassId && classId !== keyClassId) return null;
+  const publicJwk = { kty: 'RSA', n: modulus, e: exponent };
+  if (typeof jwk.alg === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(jwk.alg)) publicJwk.alg = jwk.alg;
+  if (typeof jwk.ext === 'boolean') publicJwk.ext = jwk.ext;
+  if (jwk.use === 'enc') publicJwk.use = 'enc';
+  const keyOps = (Array.isArray(jwk.key_ops) ? jwk.key_ops : []).filter(op => op === 'encrypt').slice(0, 1);
+  if (keyOps.length) publicJwk.key_ops = keyOps;
+  const safe = { publicJwk, classId: classId || keyClassId };
+  const keyId = alloSafeRosterLearnerId(value.keyId);
+  if (keyId) safe.keyId = keyId;
+  if (typeof value.createdAt === 'string') safe.createdAt = value.createdAt.slice(0, 48);
+  return safe;
+};
+const alloSanitizeRosterIdentityHistory = (value, students, groups) => {
+  const boundedNumber = (raw, max = 100000) => {
+    const parsed = Number(raw);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
+  };
+  const boundedText = (raw, max = 160) => typeof raw === 'string' ? raw.trim().slice(0, max) : '';
+  const valueSet = raw => {
+    const out = Object.create(null);
+    Object.keys(raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}).forEach(key => { out[key] = 1; });
+    return out;
+  };
+  const studentSet = valueSet(students);
+  const groupSet = valueSet(groups);
+  const filterCodenames = raw => {
+    const seen = Object.create(null);
+    return (Array.isArray(raw) ? raw : []).filter(codename => {
+      if (typeof codename !== 'string' || !studentSet[codename] || seen[codename]) return false;
+      seen[codename] = 1;
+      return true;
+    }).slice(0, 250);
+  };
+  const mapValid = (raw, mapper, limit, fromEnd = false) => {
+    const safe = (Array.isArray(raw) ? raw : []).map(mapper).filter(Boolean);
+    return fromEnd ? safe.slice(-limit) : safe.slice(0, limit);
+  };
+  const sanitizeOrganizer = raw => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const type = boundedText(raw.type, 40).replace(/[^a-z0-9_-]/gi, '');
+    const statuses = new Set(['waiting', 'loading', 'ready', 'failed', 'working', 'attempted', 'complete']);
+    const status = statuses.has(raw.status) ? raw.status : '';
+    if (!type && !status) return null;
+    return {
+      type: type || 'organizer',
+      status: status || 'waiting',
+      score: boundedNumber(raw.score),
+      correct: boundedNumber(raw.correct),
+      total: boundedNumber(raw.total),
+      attempts: boundedNumber(raw.attempts, 10000)
+    };
+  };
+  const sanitizeInsight = raw => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+    const safe = {
+      schemaVersion: 2,
+      activityCount: boundedNumber(raw.activityCount, 60),
+      submissions: boundedNumber(raw.submissions),
+      revisions: boundedNumber(raw.revisions),
+      feedbackSent: boundedNumber(raw.feedbackSent),
+      votesCast: boundedNumber(raw.votesCast),
+      participantsWithRecordedResponse: boundedNumber(raw.participantsWithRecordedResponse, 250),
+      followUpCodenames: filterCodenames(raw.followUpCodenames),
+      evidenceScope: 'teacher-device-derived-participation'
+    };
+    safe.evidenceCohorts = mapValid(raw.evidenceCohorts, cohort => {
+      if (!cohort || typeof cohort !== 'object' || Array.isArray(cohort)) return null;
+      const codenames = filterCodenames(cohort.codenames);
+      const code = boundedText(cohort.code, 80).replace(/[^a-z0-9_-]/gi, '');
+      if (!codenames.length || !code) return null;
+      return {
+        code,
+        intent: cohort.intent === 'celebrate' ? 'celebrate' : 'support',
+        label: boundedText(cohort.label, 140) || 'Evidence cohort',
+        count: codenames.length,
+        codenames,
+        recommendedAction: boundedText(cohort.recommendedAction, 240)
+      };
+    }, 8);
+    safe.byKind = mapValid(raw.byKind, item => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+      const kind = boundedText(item.kind, 40).replace(/[^a-z0-9_-]/gi, '');
+      return kind ? {
+        kind,
+        activityCount: boundedNumber(item.activityCount, 60),
+        invited: boundedNumber(item.invited),
+        submitted: boundedNumber(item.submitted),
+        revised: boundedNumber(item.revised),
+        completionPercent: boundedNumber(item.completionPercent, 100)
+      } : null;
+    }, 60);
+    safe.groups = mapValid(raw.groups, item => {
+      if (!item || typeof item !== 'object' || Array.isArray(item)) return null;
+      const groupId = boundedText(item.groupId, 80);
+      return groupId && groupSet[groupId] ? {
+        groupId,
+        participantCount: boundedNumber(item.participantCount, 250),
+        activityOpportunities: boundedNumber(item.activityOpportunities),
+        submissions: boundedNumber(item.submissions),
+        revisions: boundedNumber(item.revisions),
+        followUpCount: boundedNumber(item.followUpCount, 250)
+      } : null;
+    }, 100);
+    safe.nextMoves = mapValid(raw.nextMoves, move => {
+      if (!move || typeof move !== 'object' || Array.isArray(move)) return null;
+      const code = boundedText(move.code, 80).replace(/[^a-z0-9_-]/gi, '');
+      const label = boundedText(move.label, 240);
+      return code && label ? { code, count: boundedNumber(move.count), label } : null;
+    }, 4);
+    return safe;
+  };
+  const sourceProgress = value?.progressHistory && typeof value.progressHistory === 'object' && !Array.isArray(value.progressHistory)
+    ? value.progressHistory : {};
+  const progressHistory = Object.create(null);
+  Object.keys(students || {}).forEach(codename => {
+    const entries = mapValid(sourceProgress[codename], entry => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
+      const sessionId = boundedText(entry.sessionId);
+      if (!sessionId) return null;
+      const groupId = boundedText(entry.groupId, 80);
+      const safe = {
+        sessionId,
+        timestamp: typeof entry.timestamp === 'string' ? entry.timestamp.slice(0, 48) : null,
+        groupId: groupId && groupSet[groupId] ? groupId : null,
+        responseCount: boundedNumber(entry.responseCount, 10000),
+        resourcesOpened: boundedNumber(entry.resourcesOpened, 1000),
+        liveActivityCount: boundedNumber(entry.liveActivityCount, 1000),
+        liveSubmissionCount: boundedNumber(entry.liveSubmissionCount, 1000),
+        liveRevisionCount: boundedNumber(entry.liveRevisionCount, 1000)
+      };
+      const organizer = sanitizeOrganizer(entry.organizer);
+      if (organizer) safe.organizer = organizer;
+      return safe;
+    }, 30, true);
+    if (entries.length) progressHistory[codename] = entries;
+  });
+  const sessionHistory = mapValid(value?.sessionHistory, session => {
+    if (!session || typeof session !== 'object' || Array.isArray(session)) return null;
+    const id = boundedText(session.id);
+    if (!id) return null;
+    const participants = Object.create(null);
+    const rawParticipants = session.participants && typeof session.participants === 'object' && !Array.isArray(session.participants)
+      ? session.participants : {};
+    Object.keys(rawParticipants).forEach(codename => {
+      if (Object.keys(participants).length >= 500 || !studentSet[codename]) return;
+      const record = rawParticipants[codename];
+      if (!record || typeof record !== 'object' || Array.isArray(record)) return;
+      const groupId = boundedText(record.groupId, 80);
+      const safeRecord = {
+        groupId: groupId && groupSet[groupId] ? groupId : null,
+        joinedAt: typeof record.joinedAt === 'string' ? record.joinedAt.slice(0, 48) : null,
+        responseCount: boundedNumber(record.responseCount, 10000),
+        resourcesOpened: boundedNumber(record.resourcesOpened, 1000),
+        liveActivityCount: boundedNumber(record.liveActivityCount, 1000),
+        liveSubmissionCount: boundedNumber(record.liveSubmissionCount, 1000),
+        liveRevisionCount: boundedNumber(record.liveRevisionCount, 1000)
+      };
+      const organizer = sanitizeOrganizer(record.organizer);
+      if (organizer) safeRecord.organizer = organizer;
+      participants[codename] = safeRecord;
+    });
+    const safe = {
+      schemaVersion: 2,
+      id,
+      startedAt: typeof session.startedAt === 'string' ? session.startedAt.slice(0, 48) : null,
+      endedAt: typeof session.endedAt === 'string' ? session.endedAt.slice(0, 48) : null,
+      durationMinutes: session.durationMinutes === null ? null : boundedNumber(session.durationMinutes),
+      mode: session.mode === 'mailbox' ? 'mailbox' : 'firebase',
+      resourceTitles: (Array.isArray(session.resourceTitles) ? session.resourceTitles : []).map(title => boundedText(title)).filter(Boolean).slice(0, 20),
+      participants,
+      absentCodenames: filterCodenames(session.absentCodenames)
+    };
+    const unmatchedCount = Math.max(
+      Array.isArray(session.unmatchedCodenames) ? session.unmatchedCodenames.map(String).filter(Boolean).slice(0, 250).length : 0,
+      boundedNumber(session.unmatchedCount, 250)
+    );
+    if (unmatchedCount) safe.unmatchedCount = unmatchedCount;
+    safe.classGoals = mapValid(session.classGoals, goal => {
+      if (!goal || typeof goal !== 'object' || Array.isArray(goal)) return null;
+      const label = boundedText(goal.label, 80);
+      return label ? {
+        label,
+        mode: goal.mode === 'independent' ? 'independent' : 'interdependent',
+        tokens: Number(goal.tokens) === 2 ? 2 : 1,
+        delivered: boundedNumber(goal.delivered, 250),
+        at: boundedNumber(goal.at, Number.MAX_SAFE_INTEGER)
+      } : null;
+    }, 40);
+    safe.liveActivities = mapValid(session.liveActivities, activity => {
+      if (!activity || typeof activity !== 'object' || Array.isArray(activity)) return null;
+      const kind = boundedText(activity.kind, 40).replace(/[^a-z0-9_-]/gi, '');
+      if (!kind) return null;
+      const out = { kind, phase: boundedText(activity.phase, 20) || 'closed' };
+      ['invited', 'submitted', 'revised', 'approved', 'hidden', 'revealed', 'feedbackSent', 'guesses', 'showcased', 'votesCast']
+        .forEach(field => { out[field] = boundedNumber(activity[field]); });
+      out.startedAt = boundedNumber(activity.startedAt, Number.MAX_SAFE_INTEGER);
+      out.endedAt = boundedNumber(activity.endedAt, Number.MAX_SAFE_INTEGER);
+      return out;
+    }, 60);
+    if (session.organizerActivity && typeof session.organizerActivity === 'object' && !Array.isArray(session.organizerActivity)) {
+      const type = boundedText(session.organizerActivity.type, 40).replace(/[^a-z0-9_-]/gi, '');
+      if (type) {
+        const statusCounts = {};
+        ['waiting', 'loading', 'ready', 'failed', 'working', 'attempted', 'complete']
+          .forEach(status => { statusCounts[status] = boundedNumber(session.organizerActivity.statusCounts?.[status], 250); });
+        safe.organizerActivity = {
+          type,
+          wasLiveAtEnd: session.organizerActivity.wasLiveAtEnd === true,
+          participantCount: boundedNumber(session.organizerActivity.participantCount, 250),
+          statusCounts,
+          followUpCodenames: filterCodenames(session.organizerActivity.followUpCodenames)
+        };
+      }
+    }
+    const insightBrief = sanitizeInsight(session.insightBrief);
+    if (insightBrief) safe.insightBrief = insightBrief;
+    const teacherNote = typeof session.teacherNote === 'string'
+      ? session.teacherNote.replace(/\u000d\u000a?/g, '\n').replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').trim().slice(0, 1000)
+      : '';
+    if (teacherNote) safe.teacherNote = teacherNote;
+    if (session.followUpPlan && typeof session.followUpPlan === 'object' && !Array.isArray(session.followUpPlan)) {
+      const resourceId = boundedText(session.followUpPlan.resourceId);
+      if (resourceId && !['__proto__', 'prototype', 'constructor'].includes(resourceId)) {
+        const cohortCode = boundedText(session.followUpPlan.cohortCode, 80);
+        const audience = session.followUpPlan.audience === 'cohort' && cohortCode ? 'cohort' : 'class';
+        safe.followUpPlan = {
+          schemaVersion: 1,
+          resourceId,
+          resourceTitle: boundedText(session.followUpPlan.resourceTitle, 140) || 'Follow-up resource',
+          resourceType: boundedText(session.followUpPlan.resourceType, 80),
+          audience,
+          cohortCode: audience === 'cohort' ? cohortCode : '',
+          cohortLabel: audience === 'cohort' ? (boundedText(session.followUpPlan.cohortLabel, 120) || 'Evidence cohort') : 'Whole class',
+          cohortCount: audience === 'cohort' ? boundedNumber(session.followUpPlan.cohortCount, 250) : 0,
+          status: session.followUpPlan.status === 'completed' ? 'completed' : 'planned',
+          plannedAt: typeof session.followUpPlan.plannedAt === 'string' ? session.followUpPlan.plannedAt.slice(0, 48) : ''
+        };
+      }
+    }
+    return safe;
+  }, 30, true);
+  return { progressHistory, sessionHistory };
+};
+
 const alloNormalizeRosterIdentity = (value) => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return value;
   const students = value.students && typeof value.students === 'object' && !Array.isArray(value.students) ? value.students : {};
-  const legacyClassId = typeof value.submissionKey?.classId === 'string' ? value.submissionKey.classId.trim() : '';
-  const classId = typeof value.classId === 'string' && value.classId.trim() ? value.classId.trim() : (legacyClassId || alloStableIdentityId('CLS'));
+  const groups = value.groups && typeof value.groups === 'object' && !Array.isArray(value.groups) ? value.groups : {};
+  const legacyClassId = alloSafeRosterLearnerId(value.submissionKey?.classId);
+  const classId = alloSafeRosterLearnerId(value.classId) || legacyClassId || alloStableIdentityId('CLS');
   const currentIds = value.learnerIds && typeof value.learnerIds === 'object' && !Array.isArray(value.learnerIds) ? value.learnerIds : {};
   const currentPreferences = value.learnerPreferences && typeof value.learnerPreferences === 'object' && !Array.isArray(value.learnerPreferences) ? value.learnerPreferences : {};
-  const learnerIds = {};
-  const learnerPreferences = {};
+  const learnerIds = Object.create(null);
+  const learnerPreferences = Object.create(null);
+  const usedLearnerIds = Object.create(null);
   const readingThemeDefault = alloNormalizeReadingTheme(value.readingThemeDefault, 'default');
-  let changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault;
+  const history = alloSanitizeRosterIdentityHistory(value, students, groups);
+  const currentProgressHistory = value.progressHistory && typeof value.progressHistory === 'object' && !Array.isArray(value.progressHistory) ? value.progressHistory : {};
+  const currentSessionHistory = Array.isArray(value.sessionHistory) ? value.sessionHistory : [];
+  const hasSubmissionKey = Object.prototype.hasOwnProperty.call(value, 'submissionKey');
+  const submissionKey = hasSubmissionKey ? alloSanitizeRosterSubmissionKey(value.submissionKey, classId) : null;
+  let historyChanged = false;
+  let submissionKeyChanged = false;
+  try {
+    historyChanged = JSON.stringify(currentProgressHistory) !== JSON.stringify(history.progressHistory)
+      || JSON.stringify(currentSessionHistory) !== JSON.stringify(history.sessionHistory);
+    submissionKeyChanged = hasSubmissionKey && JSON.stringify(value.submissionKey) !== JSON.stringify(submissionKey);
+  } catch (_) {
+    historyChanged = true;
+    submissionKeyChanged = hasSubmissionKey;
+  }
+  const hasLegacyIdentityMap = Object.prototype.hasOwnProperty.call(value, 'displayNames')
+    || Object.prototype.hasOwnProperty.call(value, 'importAliases');
+  let changed = classId !== value.classId || readingThemeDefault !== value.readingThemeDefault || hasLegacyIdentityMap || historyChanged || submissionKeyChanged;
   Object.keys(students).forEach(codename => {
-    const existing = typeof currentIds[codename] === 'string' ? currentIds[codename].trim() : '';
-    const learnerId = existing || alloStableIdentityId('LRN');
+    const rawExisting = typeof currentIds[codename] === 'string' ? currentIds[codename].trim() : '';
+    let existing = alloSafeRosterLearnerId(rawExisting);
+    if (existing && usedLearnerIds[existing]) existing = '';
+    let learnerId = existing;
+    while (!learnerId || usedLearnerIds[learnerId]) learnerId = alloStableIdentityId('LRN');
+    usedLearnerIds[learnerId] = 1;
     learnerIds[codename] = learnerId;
-    if (!existing) changed = true;
-    const preferenceSource = Object.prototype.hasOwnProperty.call(currentPreferences, learnerId)
-      ? currentPreferences[learnerId] : currentPreferences[codename];
+    if (!existing || existing !== rawExisting) changed = true;
+    const preferenceSource = existing && Object.prototype.hasOwnProperty.call(currentPreferences, existing)
+      ? currentPreferences[existing] : currentPreferences[codename];
     const preference = alloNormalizeLearnerReadingPreference(preferenceSource);
     if (preference) learnerPreferences[learnerId] = preference;
     if (preferenceSource && JSON.stringify(preferenceSource) !== JSON.stringify(preference)) changed = true;
@@ -8383,7 +8691,23 @@ const alloNormalizeRosterIdentity = (value) => {
   });
   if (Object.keys(currentIds).length !== Object.keys(learnerIds).length) changed = true;
   if (Object.keys(currentPreferences).length !== Object.keys(learnerPreferences).length) changed = true;
-  return changed ? { ...value, classId, learnerIds, learnerPreferences, readingThemeDefault } : value;
+  if (!changed) return value;
+  const safeValue = { ...value };
+  delete safeValue.displayNames;
+  delete safeValue.importAliases;
+  if (hasSubmissionKey) {
+    if (submissionKey) safeValue.submissionKey = submissionKey;
+    else delete safeValue.submissionKey;
+  }
+  return {
+    ...safeValue,
+    classId,
+    learnerIds,
+    learnerPreferences,
+    readingThemeDefault,
+    progressHistory: history.progressHistory,
+    sessionHistory: history.sessionHistory
+  };
 };
 const alloStableAssignmentId = (resources, fallbackTitle = '') => {
   const list = Array.isArray(resources) ? resources : [];
@@ -9946,6 +10270,182 @@ const _alloNormalizePortableAacBoardPackage = (...args) => { const api = _alloLi
 const _alloBuildLiveAacPayload = (...args) => { const api = _alloLiveAacModule(); return api && typeof api.buildLive === 'function' ? api.buildLive(...args) : null; };
 const _alloReadLiveAacPayload = (...args) => { const api = _alloLiveAacModule(); return api && typeof api.readLive === 'function' ? api.readLive(...args) : null; };
 const _alloBuildLocalAacPayload = (...args) => { const api = _alloLiveAacModule(); return api && typeof api.buildLocal === 'function' ? api.buildLocal(...args) : null; };
+// BEGIN ALLO_ARTIFACT_INSTANCE_IDENTITY
+// Public resource ids are portable content identifiers and imported packs can
+// legitimately contain duplicates. This separate, enumerable id identifies one
+// history row. It survives JSON, structuredClone, object spreads, and metadata
+// updates while normalization remaps missing, malformed, or colliding values.
+const ALLO_ARTIFACT_INSTANCE_ID_FIELD = '_artifactInstanceId';
+const ALLO_ARTIFACT_INSTANCE_ID_PATTERN = /^artifact-[A-Za-z0-9_-]{8,128}$/;
+const ALLO_ARTIFACT_HISTORY_LIMIT = 10000;
+let _alloArtifactInstanceSequence = 0;
+const _alloArtifactUsedIdSet = (candidate) => {
+  try { return candidate instanceof Set ? candidate : new Set(); }
+  catch (_) { return new Set(); }
+};
+const getArtifactInstanceId = (artifact) => {
+  try {
+    const value = artifact && typeof artifact === 'object'
+      ? artifact[ALLO_ARTIFACT_INSTANCE_ID_FIELD]
+      : '';
+    return typeof value === 'string' && ALLO_ARTIFACT_INSTANCE_ID_PATTERN.test(value) ? value : '';
+  } catch (_) { return ''; }
+};
+const _alloSafeArtifactPublicIdValue = (value) => {
+  try {
+    return typeof value === 'string' || typeof value === 'number'
+      ? String(value).slice(0, 240)
+      : '';
+  } catch (_) { return ''; }
+};
+const getArtifactPublicId = (artifact) => {
+  try { return _alloSafeArtifactPublicIdValue(artifact && typeof artifact === 'object' ? artifact.id : ''); }
+  catch (_) { return ''; }
+};
+const _alloSafeArtifactField = (artifact, field) => {
+  try { return artifact && typeof artifact === 'object' ? artifact[field] : undefined; }
+  catch (_) { return undefined; }
+};
+const _alloArtifactListLength = (items) => {
+  let length;
+  try { length = items.length; } catch (_) { return -1; }
+  if (!Number.isSafeInteger(length) || length < 0) return -1;
+  return Math.min(length, ALLO_ARTIFACT_HISTORY_LIMIT);
+};
+const _alloCreateArtifactInstanceId = (usedIds) => {
+  const used = _alloArtifactUsedIdSet(usedIds);
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    let token = '';
+    try {
+      if (typeof window !== 'undefined' && window.crypto && typeof window.crypto.randomUUID === 'function') {
+        token = window.crypto.randomUUID();
+      }
+    } catch (_) {}
+    if (!token) {
+      _alloArtifactInstanceSequence += 1;
+      token = Date.now().toString(36) + '-' + _alloArtifactInstanceSequence.toString(36)
+        + '-' + Math.random().toString(36).slice(2, 14);
+    }
+    token = String(token).replace(/[^A-Za-z0-9_-]/g, '').slice(0, 128);
+    if (token.length < 8) continue;
+    const candidate = 'artifact-' + token;
+    if (!used.has(candidate)) return candidate;
+  }
+  do {
+    _alloArtifactInstanceSequence += 1;
+    var fallback = 'artifact-fallback-' + Date.now().toString(36) + '-' + _alloArtifactInstanceSequence.toString(36);
+  } while (used.has(fallback));
+  return fallback;
+};
+const ensureArtifactInstanceId = (artifact, usedIds) => {
+  if (!artifact || typeof artifact !== 'object') return artifact;
+  try { if (Array.isArray(artifact)) return artifact; }
+  catch (_) { return null; }
+  const used = _alloArtifactUsedIdSet(usedIds);
+  const existing = getArtifactInstanceId(artifact);
+  if (existing && !used.has(existing)) {
+    used.add(existing);
+    return artifact;
+  }
+  const instanceId = _alloCreateArtifactInstanceId(used);
+  let normalized = artifact;
+  // Missing ids may be assigned in place so a newly generated object passed to
+  // both state setters retains one identity. Collisions are always cloned so
+  // changing the later row cannot rewrite the earlier row's identity.
+  if (!existing) {
+    try {
+      Object.defineProperty(artifact, ALLO_ARTIFACT_INSTANCE_ID_FIELD, {
+        value: instanceId,
+        enumerable: true,
+        configurable: true,
+        writable: true,
+      });
+    } catch (_) {}
+  }
+  if (getArtifactInstanceId(artifact) !== instanceId) {
+    try { normalized = { ...artifact, [ALLO_ARTIFACT_INSTANCE_ID_FIELD]: instanceId }; }
+    catch (_) { normalized = { [ALLO_ARTIFACT_INSTANCE_ID_FIELD]: instanceId }; }
+  }
+  used.add(instanceId);
+  return normalized;
+};
+const normalizeArtifactInstanceIds = (items) => {
+  try { if (!Array.isArray(items)) return items; }
+  catch (_) { return []; }
+  const length = _alloArtifactListLength(items);
+  if (length < 0) return [];
+  const used = new Set();
+  // Always return a plain bounded array. This is the only reliable way to keep
+  // proxy-supplied or own spoofed collection methods out of application state
+  // without reading (and potentially invoking) those untrusted properties.
+  const normalized = new Array(length);
+  for (let index = 0; index < length; index += 1) {
+    let item;
+    try { item = items[index]; }
+    catch (_) { normalized[index] = null; continue; }
+    const next = ensureArtifactInstanceId(item, used);
+    normalized[index] = next;
+  }
+  return normalized;
+};
+const sameArtifactInstance = (left, right) => {
+  if (!left || !right) return false;
+  if (left === right) return true;
+  const leftId = getArtifactInstanceId(left);
+  const rightId = getArtifactInstanceId(right);
+  if (leftId && rightId) return leftId === rightId;
+  try { return !!left.data && left.data === right.data; } catch (_) { return false; }
+};
+const _alloArtifactMatchesInstanceId = (artifact, instanceId) => {
+  const canonical = getArtifactInstanceId(artifact);
+  return canonical ? canonical === instanceId : getArtifactPublicId(artifact) === _alloSafeArtifactPublicIdValue(instanceId);
+};
+const findArtifactInstanceIndex = (items, instanceId, fallbackPublicId) => {
+  try { if (!Array.isArray(items)) return -1; } catch (_) { return -1; }
+  const safeFallbackId = _alloSafeArtifactPublicIdValue(fallbackPublicId);
+  const length = _alloArtifactListLength(items);
+  if (length < 0) return -1;
+  for (let index = 0; index < length; index += 1) {
+    let item;
+    try { item = items[index]; } catch (_) { continue; }
+    if (instanceId ? getArtifactInstanceId(item) === instanceId : (safeFallbackId && getArtifactPublicId(item) === safeFallbackId)) {
+      return index;
+    }
+  }
+  return -1;
+};
+const removeArtifactInstanceFromList = (items, instanceId, fallbackPublicId) => {
+  try { if (!Array.isArray(items)) return items; } catch (_) { return []; }
+  const length = _alloArtifactListLength(items);
+  if (length < 0) return [];
+  const targetIndex = findArtifactInstanceIndex(items, instanceId, fallbackPublicId);
+  // A canonical instance id is authoritative. If a stale callback references
+  // an instance that is already gone, this must be a no-op rather than falling
+  // through to a duplicated public id and deleting its surviving sibling.
+  if (targetIndex < 0) return items;
+  const next = new Array(Math.max(0, length - 1));
+  let writeIndex = 0;
+  for (let readIndex = 0; readIndex < length; readIndex += 1) {
+    if (readIndex === targetIndex) continue;
+    try { next[writeIndex] = items[readIndex]; }
+    catch (_) { next[writeIndex] = null; }
+    writeIndex += 1;
+  }
+  return next;
+};
+if (typeof window !== 'undefined') {
+  window.AlloArtifactIdentity = {
+    INSTANCE_PROPERTY: ALLO_ARTIFACT_INSTANCE_ID_FIELD,
+    getArtifactInstanceId,
+    getArtifactPublicId,
+    ensureArtifactInstanceId,
+    normalizeArtifactInstanceIds,
+    sameArtifactInstance,
+    findArtifactInstanceIndex,
+    removeArtifactInstanceFromList,
+  };
+}
+// END ALLO_ARTIFACT_INSTANCE_IDENTITY
 function LiveAacBoardDialog(props) {
   const Real = _alloLiveAacModule() && _alloLiveAacModule().LiveAacBoardDialog;
   return Real && Real !== LiveAacBoardDialog ? React.createElement(Real, props) : null;
@@ -10454,18 +10954,21 @@ const AlloFlowContent = () => {
   const mergeCloudAndLocal = (localItems, cloudItems) => {
       const itemMap = new Map();
       localItems.forEach(item => {
-          itemMap.set(item.id, item);
+          const instanceId = getArtifactInstanceId(item);
+          itemMap.set(instanceId ? 'instance:' + instanceId : 'legacy:' + getArtifactPublicId(item), item);
       });
       cloudItems.forEach(cloudItem => {
-          const localItem = itemMap.get(cloudItem.id);
+          const instanceId = getArtifactInstanceId(cloudItem);
+          const mergeKey = instanceId ? 'instance:' + instanceId : 'legacy:' + getArtifactPublicId(cloudItem);
+          const localItem = itemMap.get(mergeKey);
           if (localItem) {
               const localTime = new Date(localItem.timestamp).getTime();
               const cloudTime = new Date(cloudItem.timestamp).getTime();
               if (cloudTime > localTime) {
-                  itemMap.set(cloudItem.id, cloudItem);
+                  itemMap.set(mergeKey, cloudItem);
               }
           } else {
-              itemMap.set(cloudItem.id, cloudItem);
+              itemMap.set(mergeKey, cloudItem);
           }
       });
       return Array.from(itemMap.values()).sort((a, b) =>
@@ -10506,7 +11009,7 @@ const AlloFlowContent = () => {
       else if (typeof window.__alloLazyGuidedModeBanner === 'function') window.__alloLazyGuidedModeBanner();
     } catch (_) {}
   }, [guidedMode]);
-  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
+  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'memory-aid', 'applied-challenge', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
   const GUIDED_DELIVERY_EVIDENCE_KEYS = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
   const normalizeGuidedPlanBrief = (raw) => {
     if (!raw || typeof raw !== 'object') return null;
@@ -11391,7 +11894,13 @@ Return ONLY JSON in this shape:
       }, 1000);
       return () => clearTimeout(handler);
   }, [studentResponses, isTeacherMode, showStudentEntry]);
-  const [generatedContent, setGeneratedContent] = useState(null);
+  const [generatedContent, _setGeneratedContent] = useState(null);
+  const setGeneratedContent = useCallback((nextContent) => {
+      _setGeneratedContent(previous => {
+          const candidate = typeof nextContent === 'function' ? nextContent(previous) : nextContent;
+          return ensureArtifactInstanceId(candidate);
+      });
+  }, []);
   // ── Process Provenance P1 (docs/PROCESS_PROVENANCE_DESIGN_2026-08-04.md) ──
   // The ledger records ONLY in student-link mode, and NOTHING is transmitted
   // unless the student ticks consent in the Work Story panel at submit time.
@@ -11647,13 +12156,16 @@ Return ONLY JSON in this shape:
     throw new Error("[handleCheckMathWork] MathHelpers module not loaded - reload the page");
   };
   const handleResetMathCheck = (resourceId, problemIdx) => {
-      setMathCheckResults(prev => ({
-          ...prev,
-          [resourceId]: {
-              ...(prev[resourceId] || {}),
-              [problemIdx]: { checking: false, verdict: null, score: 0, feedback: '', checked: false }
-          }
-      }));
+      setMathCheckResults(prev => {
+          const previousResult = prev[resourceId]?.[problemIdx] || {};
+          return {
+              ...prev,
+              [resourceId]: {
+                  ...(prev[resourceId] || {}),
+                  [problemIdx]: { ...previousResult, checking: false, verdict: null, score: 0, feedback: '', checked: false }
+              }
+          };
+      });
   };
 const [mathHintData, setMathHintData] = useState({});
 const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer, steps) => {
@@ -12218,7 +12730,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '740290f90';
+    var pluginCdnVersion = '1787962438524';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -12577,32 +13089,32 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=740290f90');
-    loadModule('MailboxScriptSource', 'https://alloflow-cdn.pages.dev/mailbox_script_source_module.js?v=740290f90');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=740290f90');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=740290f90');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=740290f90');
-    loadModule('DeviceAccessCode', 'https://alloflow-cdn.pages.dev/device_access_code_module.js?v=740290f90');
-    loadModule('AlloDeviceVault', 'https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=740290f90');
-    loadModule('AlloRecoveryVaultIntegration', 'https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=740290f90');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('MailboxScriptSource', './mailbox_script_source_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
+    loadModule('DeviceAccessCode', './device_access_code_module.js');
+    loadModule('AlloDeviceVault', './allo_device_vault_module.js');
+    loadModule('AlloRecoveryVaultIntegration', './allo_recovery_vault_integration_module.js');
     // Shared quest/goal vocabulary for directions goals, STEAM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=740290f90');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=cc9eb976');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=740290f90');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=740290f90');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=740290f90');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=740290f90');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=740290f90');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=740290f90');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=5f7f65c4');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=eac1e2a4');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=740290f90');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=740290f90');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=740290f90');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -12615,41 +13127,41 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=740290f90'); }; })();
-    loadModule('AlloSheetTransferAdapter', 'https://alloflow-cdn.pages.dev/allo_sheet/transfer_adapter.js?v=740290f90');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=740290f90');
-    loadModule('AlloSheetHostBridge', 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=740290f90');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
     window.__alloLazyBehaviorLens = (function() { var started = false; return function() { if (started) return; started = true;
       const startBehaviorLens = function() {
         if (!(window.AlloModules && window.AlloModules.BehaviorLensWorkspace)) return false;
         window.removeEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=740290f90');
+        loadModule('BehaviorLens', './behavior_lens_module.js');
         return true;
       };
       if (!startBehaviorLens()) {
         window.addEventListener('alloflow:module-registry-changed', startBehaviorLens);
-        loadModule('BehaviorLensWorkspace', 'https://alloflow-cdn.pages.dev/behavior_lens_workspace_module.js?v=740290f90');
+        loadModule('BehaviorLensWorkspace', './behavior_lens_workspace_module.js');
       }
     }; })();
     if (window.__alloBehaviorLensRequested) window.__alloLazyBehaviorLens();
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=740290f90');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=740290f90');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=740290f90');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=740290f90'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=740290f90'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=740290f90'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=740290f90'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // UDL Walkthrough (Aug 3 2026) — admin/coach classroom-visit tool,
     // lazy-loaded from the Educator Hub card.
     window.__alloLazyUdlWalkthrough = (function() { var L=false; return function() { if(L)return; L=true; loadModule('UdlWalkthrough', 'https://alloflow-cdn.pages.dev/udl_walkthrough_module.js?v=uw080307'); }; })();
@@ -12661,67 +13173,67 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // Meeting Documentation is its third tool (needs callGemini).
     window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
-    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=740290f90'); }; })();
+    window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', './educator_evaluation_module.js'); }; })();
     // Math Studio (Aug 17 2026) — the former STEM Lab Create tab, math-owned.
-    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', 'https://alloflow-cdn.pages.dev/math_create_module.js?v=740290f90'); }; })();
+    window.__alloLazyMathCreate = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MathCreate', './math_create_module.js'); }; })();
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
-    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=740290f90'); }; })();
+    window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', './stem_lab/stem_tool_eligibility.js'); }; })();
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=740290f90');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=740290f90');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=740290f90');
-    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=740290f90'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    window.__alloLazyReadingLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ReadingLibrary', './reading_library_module.js'); }; })();
     if (window.__alloReadingLibraryRequested) window.__alloLazyReadingLibrary();
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=740290f90');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=740290f90');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=740290f90');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=740290f90');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=740290f90');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=740290f90');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=740290f90');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=740290f90');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
     window.__alloLazyQuickStartWizard = function() {
-      loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=740290f90');
+      loadModule('QuickStartWizard', './quickstart_module.js');
     };
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=740290f90');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=740290f90');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=740290f90'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=740290f90'); }; })();
-    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=740290f90'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=740290f90'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=740290f90'); }; })();
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyLearningWebExplorer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningWebExplorer', './learning_web_explorer_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=740290f90'); }; })();
+    window.__alloLazyVisualPanel = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualPanelModule', './visual_panel_module.js'); }; })();
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=740290f90');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=740290f90');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=0be128c6');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=740290f90');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=740290f90');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=740290f90');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=740290f90');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=740290f90');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=740290f90'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // Process Provenance (Work Story). Stable label pin, like the storage
     // module: this file is not in build.js MODULES, so a hash pin would freeze.
     window.__alloLazyProvenance = (function() { var L=false; return function() { if(L)return; L=true; loadModule('Provenance', 'https://alloflow-cdn.pages.dev/allo_provenance_module.js?v=prov-p1'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=740290f90');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=740290f90');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=740290f90'); }; })();
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
     // Large document features stay off the network until a workflow actually
     // needs them. These loaders deliberately have no permanent "requested"
     // latch: the registry owns deduplication and an exact failed-module retry.
@@ -12729,7 +13241,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=740290f90');
+      loadModule('DocPipelineModule', './doc_pipeline_module.js');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -12782,50 +13294,50 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloEnsureDocPipeline = function() {
       return window.__alloEnsureLazyModule('DocPipelineModule', '__alloLazyDocPipeline', 'createDocPipeline');
     };
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', 'https://alloflow-cdn.pages.dev/view_video_library_module.js?v=740290f90'); }; })();
-    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js?v=740290f90'); }; })();
-    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js?v=740290f90'); }; })();
-    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', 'https://alloflow-cdn.pages.dev/view_assignment_center_module.js?v=740290f90'); }; })();
-    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', 'https://alloflow-cdn.pages.dev/view_directions_result_module.js?v=740290f90'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=740290f90'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=0b3560bb'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=740290f90'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=740290f90');
-    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=740290f90'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { try { window.__alloLazyDocPipeline(); } catch (_) {} if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazyVideoLibrary = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoLibrary', './view_video_library_module.js'); }; })();
+    window.__alloLazyVideoRefPlayer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VideoRefPlayer', './view_video_ref_player_module.js'); }; })();
+    window.__alloLazyEndSessionPreview = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EndSessionPreview', './view_end_session_preview_module.js'); }; })();
+    window.__alloLazyAssignmentCenter = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AssignmentCenter', './view_assignment_center_module.js'); }; })();
+    window.__alloLazyDirectionsResult = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DirectionsResult', './view_directions_result_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); try { window.__alloLazyEndSessionPreview(); } catch (_) {} }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    window.__alloLazyGuidedModeBanner = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js'); }; })();
     if (window.__alloGuidedBannerRequested) window.__alloLazyGuidedModeBanner();
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=740290f90');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ae1abf00');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=740290f90');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=740290f90');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=740290f90');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=740290f90');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=740290f90');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=740290f90'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=740290f90'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=740290f90'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=740290f90'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=740290f90'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=740290f90'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=740290f90'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', 'https://alloflow-cdn.pages.dev/lexical_graph_module.js?v=740290f90'); loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=740290f90'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=740290f90'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=740290f90');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=740290f90');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=740290f90');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LexicalGraph', './lexical_graph_module.js'); loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=740290f90');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=740290f90');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=740290f90');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
     window.__alloLazyPdfAuditView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.PdfAuditView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.PdfAuditView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('PdfAuditView');
-      loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=740290f90');
+      loadModule('PdfAuditView', './view_pdf_audit_module.js');
       return true;
     };
     window.__alloEnsurePdfAuditView = function() {
@@ -12834,14 +13346,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('PdfAuditView', '__alloLazyPdfAuditView', 'PdfAuditView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('SemanticReview', 'https://alloflow-cdn.pages.dev/semantic_review_module.js?v=740290f90');
-    loadModule('ReviewDocumentSession', 'https://alloflow-cdn.pages.dev/review_document_session_module.js?v=740290f90');
+    loadModule('SemanticReview', './semantic_review_module.js');
+    loadModule('ReviewDocumentSession', './review_document_session_module.js');
     window.__alloLazyExportPreviewView = function() {
       try { window.__alloLazyDocPipeline(); } catch (_) {}
       if (window.AlloModules && window.AlloModules.ExportPreviewView) return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.ExportPreviewView;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('ExportPreviewView');
-      loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=740290f90');
+      loadModule('ExportPreviewView', './view_export_preview_module.js');
       return true;
     };
     window.__alloEnsureExportPreviewView = function() {
@@ -12850,16 +13362,16 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         window.__alloEnsureLazyModule('ExportPreviewView', '__alloLazyExportPreviewView', 'ExportPreviewView')
       ]).then(function(values) { return values[1]; });
     };
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=740290f90');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=740290f90');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=740290f90');
-    loadModule('AppStyles', 'https://alloflow-cdn.pages.dev/app_styles_module.js?v=740290f90');
-    loadModule('LiveAac', 'https://alloflow-cdn.pages.dev/live_aac_module.js?v=740290f90');
-    loadModule('SharedActivity', 'https://alloflow-cdn.pages.dev/shared_activity_module.js?v=740290f90');
-    loadModule('GuidedModeConfig', 'https://alloflow-cdn.pages.dev/guided_mode_config_module.js?v=740290f90');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=740290f90');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=740290f90');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=740290f90');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('AppStyles', './app_styles_module.js');
+    loadModule('LiveAac', './live_aac_module.js');
+    loadModule('SharedActivity', './shared_activity_module.js');
+    loadModule('GuidedModeConfig', './guided_mode_config_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // Current module builds invoke _upgradeModuleScopeExtras after registration.
     // Keep this short poll only for stale cached module copies that predate the
@@ -12880,12 +13392,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d02240b3');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=740290f90');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=740290f90');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=740290f90');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=740290f90');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
     // Capability index (dev-tools/build_tool_index.cjs): what each STEM tool
     // actually DOES, ~110 KB for 139 tools. The lesson-plan prompt ranks and
     // caps against this instead of dumping every tool name, and unlike
@@ -12908,22 +13420,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           .catch(function () {});
       } catch (_) {}
     })();
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=740290f90');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=740290f90');
-    loadModule('StandardsContext', 'https://alloflow-cdn.pages.dev/standards_context_module.js?v=740290f90');
-    loadModule('InstructionalContext', 'https://alloflow-cdn.pages.dev/instructional_context_module.js?v=740290f90');
-    loadModule('GenerationMatrix', 'https://alloflow-cdn.pages.dev/generation_matrix_module.js?v=740290f90');
-    loadModule('StandardsProvider', 'https://alloflow-cdn.pages.dev/standards_provider_module.js?v=740290f90');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('StandardsContext', './standards_context_module.js');
+    loadModule('InstructionalContext', './instructional_context_module.js');
+    loadModule('GenerationMatrix', './generation_matrix_module.js');
+    loadModule('StandardsProvider', './standards_provider_module.js');
     // Learning Web owns durable cross-view graph snapshots; domain modules keep
     // their richer standards, audit, unit, and lexical records. The engine is
     // eager here because the Alignment Map can render before Throughline opens.
-    loadModule('ConceptGraphEngine', 'https://alloflow-cdn.pages.dev/concept_graph_engine_module.js?v=740290f90');
-    loadModule('LearningWebRegistry', 'https://alloflow-cdn.pages.dev/learning_web_registry_module.js?v=740290f90');
+    loadModule('ConceptGraphEngine', './concept_graph_engine_module.js');
+    loadModule('LearningWebRegistry', './learning_web_registry_module.js');
     // Driving Questions Board. The contract carries the invariants both
     // transports enforce; the view module is inert until a surface mounts it.
-    loadModule('QuestionBoardContract', 'https://alloflow-cdn.pages.dev/question_board_contract_module.js?v=740290f90');
-    loadModule('QuestionBoardView', 'https://alloflow-cdn.pages.dev/question_board_view_module.js?v=740290f90');
-    loadModule('QuestionBoardTransport', 'https://alloflow-cdn.pages.dev/question_board_transport_module.js?v=740290f90');
+    loadModule('QuestionBoardContract', './question_board_contract_module.js');
+    loadModule('QuestionBoardView', './question_board_view_module.js');
+    loadModule('QuestionBoardTransport', './question_board_transport_module.js');
 
     // Reviewed local standards snapshots (Learning Commons v1.11.0, CC BY 4.0).
     // DELIBERATE enablement per LEARNING_COMMONS_SNAPSHOT_IMPORT.md: publishing a
@@ -12938,70 +13450,73 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       loadModule('StandardsSnapshotCcssEla', 'https://alloflow-cdn.pages.dev/standards_snapshots/ccss-ela.js?v=e805fe3c7');
     }; })();
     if (window.__alloStandardsSnapshotsRequested) window.__alloLazyStandardsSnapshots();
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=740290f90');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=740290f90');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=740290f90');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=740290f90');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=740290f90');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=740290f90');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=740290f90');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=740290f90');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=b57c8bf0');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=74d2bdc6');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=740290f90');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=740290f90');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=740290f90');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=740290f90');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=740290f90');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=740290f90');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=709cc2a8');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=740290f90');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=740290f90');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=740290f90');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=740290f90');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=740290f90');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=740290f90');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=7c43afe4');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=740290f90');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=740290f90');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=740290f90');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=740290f90');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=740290f90');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=73c1139b'); }; })();
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('MathManipulativeGraderModule', './math_manipulative_grader_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', './view_simplified_module.js'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=740290f90');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=740290f90');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=740290f90');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=740290f90');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=740290f90');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=740290f90');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=50b12072'); }; })();
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', './view_persona_chat_module.js'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=740290f90');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=740290f90');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=740290f90');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=740290f90');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=740290f90');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=740290f90');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=740290f90');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=740290f90');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=740290f90');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=740290f90');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=740290f90');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=740290f90');
-    loadModule('ConceptQuestEngineModule', 'https://alloflow-cdn.pages.dev/concept_quest_engine.js?v=740290f90');
-    loadModule('ConceptQuestTeacherModule', 'https://alloflow-cdn.pages.dev/concept_quest_teacher_module.js?v=740290f90');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=740290f90');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('MemoryAidModule', './memory_aid_module.js');
+    loadModule('AppliedChallengeModule', './applied_challenge_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('ConceptQuestEngineModule', './concept_quest_engine.js');
+    loadModule('ConceptQuestTeacherModule', './concept_quest_teacher_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     window.__alloLazyMathJs = (function() { var started=false; return function() {
       if (started || window.math) return;
       started = true;
@@ -13144,6 +13659,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_moonmission.js',
         'stem_lab/stem_tool_music.js',
         'stem_lab/stem_tool_geometryworld.js',
+        'stem_lab/stem_tool_geometryworld_builder.js',
         'stem_lab/stem_tool_freeforms.js',
         'stem_lab/stem_tool_spaceexplorer.js',
         'stem_lab/stem_tool_roadready.js',
@@ -14177,6 +14693,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         x: Math.max(0, Math.min(100, Number.isFinite(Number(prepared.x)) ? Number(prepared.x) : 50)),
         y: Math.max(0, Math.min(100, Number.isFinite(Number(prepared.y)) ? Number(prepared.y) : 50)),
         tile: Math.max(60, Math.min(360, Number.isFinite(Number(prepared.tile)) ? Number(prepared.tile) : 180)),
+        usageIntent: ['flexible', 'background', 'focal', 'reference', 'texture', 'accent'].includes(prepared.usageIntent) ? prepared.usageIntent : 'flexible',
       },
       createdAt: Date.now(),
     };
@@ -15163,6 +15680,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     } catch(e) { return null; }
   });
   const [isRosterKeyOpen, setIsRosterKeyOpen] = useState(false);
+  const [rosterBatchOpenRequest, setRosterBatchOpenRequest] = useState(0);
+  const [rosterStorageError, setRosterStorageError] = useState('');
+  const rosterStorageWarningRef = useRef(false);
   const [isSubmissionInboxOpen, setIsSubmissionInboxOpen] = useState(false);
   const [isSeatingChartOpen, setIsSeatingChartOpen] = useState(false);
   const [isUdlWalkthroughOpen, setIsUdlWalkthroughOpen] = useState(false);
@@ -15200,9 +15720,26 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isMtssTriageOpen, setIsMtssTriageOpen] = useState(false);
   useEffect(() => {
     try {
-      if (rosterKey) safeSetItem('alloflow_roster_key', JSON.stringify(rosterKey));
-      else safeRemoveItem('alloflow_roster_key');
-    } catch(e) { /* Canvas */ }
+      const safeRoster = rosterKey ? alloNormalizeRosterIdentity(rosterKey) : null;
+      const saved = safeRoster
+        ? safeSetItem('alloflow_roster_key', JSON.stringify(safeRoster))
+        : safeRemoveItem('alloflow_roster_key');
+      if (saved) {
+        rosterStorageWarningRef.current = false;
+        setRosterStorageError('');
+      } else {
+        setIsStorageDisabled(true);
+        setRosterStorageError('Roster changes are not saved on this device.');
+        if (!rosterStorageWarningRef.current) {
+          rosterStorageWarningRef.current = true;
+          addToastRef.current?.('Roster changes are not saved on this device. Export or print a backup before leaving.', 'error');
+        }
+      }
+    } catch(e) {
+      setIsStorageDisabled(true);
+      setRosterStorageError('Roster changes are not saved on this device.');
+      warnLog('Roster storage failed', e);
+    }
   }, [rosterKey]);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState('');
@@ -17835,6 +18372,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-tool-wordsounds', text: t('tour.wordsounds_text'), title: t('tour.wordsounds_title') },
       { id: 'tour-tool-outline', text: t('tour.outline_text'), title: t('tour.outline_title') },
       { id: 'tour-tool-anchor-chart', text: t('tour.anchor_chart_text'), title: t('tour.anchor_chart_title') },
+      { id: 'tour-tool-memory-aid', text: t('tour.memory_aid_text') || 'Create a purposeful mix of memory aids. You can model one, scaffold one, coach student authorship, and ask students to explain why their cue works.', title: t('tour.memory_aid_title') || 'Memory Aid Studio' },
+      { id: 'tour-tool-applied-challenge', text: t('tour.applied_challenge_text') || 'Create one sustained transfer challenge. Auto Match or choose Investigate, Design, Decide, Propose, or Explore, then decide how much AI framing to provide while students own the work.', title: t('tour.applied_challenge_title') || 'Applied Challenge Studio' },
       { id: 'tour-tool-visual', text: t('tour.visual_text'), title: t('tour.visual_title') },
       { id: 'tour-tool-faq', text: t('tour.faq_text'), title: t('tour.faq_title') },
       { id: 'tour-tool-scaffolds', text: t('tour.scaffolds_text'), title: t('tour.scaffolds_title') },
@@ -19273,7 +19812,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleSetSelectedInventoryItemToNull = React.useCallback(() => setSelectedInventoryItem(null), []);
   const handleSetIsTimelineGameToTrue = React.useCallback(() => setIsTimelineGame(true), []);
   const handleSetIsConceptSortGameToTrue = React.useCallback(() => setIsConceptSortGame(true), []);
-  const handleSetShowMathAnswersToTrue = React.useCallback(() => setShowMathAnswers(true), []);
   const handleSetProgressionDataToNull = React.useCallback(() => setProgressionData(null), []);
   const handleSetInteractionModeToRead = React.useCallback(() => setInteractionMode('read'), []);
   const handleSetRunTourToFalse = React.useCallback(() => setRunTour(false), []);
@@ -19417,47 +19955,297 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const handleToggleImmersiveHideUI = React.useCallback(() => setImmersiveHideUI(prev => !prev), []);
   const handleToggleImmersiveShowChoices = React.useCallback(() => setImmersiveShowChoices(prev => !prev), []);
   const handleToggleIsEditingTimeline = React.useCallback(() => setIsEditingTimeline(prev => !prev), []);
-  const handleMathProblemEdit = (pIdx, field, value, stepIdx = null) => {
-    setGeneratedContent(prev => {
-      if (!prev || !prev.data || !prev.data.problems) return prev;
-      const updatedProblems = [...prev.data.problems];
-      const problem = { ...updatedProblems[pIdx] };
+  const getMathResourceStateKey = artifact => {
+    try {
+      const helper = window.AlloModules?.MathHelpers;
+      if (typeof helper?.getMathResourceInstanceId === 'function') {
+        const instanceKey = helper.getMathResourceInstanceId(artifact, history);
+        if (instanceKey) return String(instanceKey);
+      }
+      if (typeof helper?.getMathResourceId === 'function') {
+        const sharedKey = helper.getMathResourceId(artifact);
+        if (sharedKey) return String(sharedKey);
+      }
+    } catch (_) {}
+    const data = artifact?.data && typeof artifact.data === 'object' && !Array.isArray(artifact.data)
+      ? artifact.data
+      : {};
+    const seed = data.title || data.problem || artifact?.timestamp || 'math';
+    const supplied = typeof artifact?.id === 'string' || typeof artifact?.id === 'number'
+      ? String(artifact.id).trim()
+      : '';
+    const stableHash = value => {
+      const text = String(value == null ? '' : value);
+      let hash = 2166136261;
+      for (let index = 0; index < text.length; index += 1) {
+        hash ^= text.charCodeAt(index);
+        hash = Math.imul(hash, 16777619);
+      }
+      return (hash >>> 0).toString(36);
+    };
+    if (!supplied) return 'legacy-math-' + stableHash(seed);
+    return Object.prototype.hasOwnProperty.call(Object.prototype, supplied)
+      ? 'math-resource-' + stableHash(String(seed) + '|' + supplied)
+      : supplied;
+  };
+  const mathActiveResourceKeyRef = useRef(null);
+  const handleMathProblemEdit = (pIdx, field, value, stepIdx = null, viewProblemKey = null, viewResourceId = null) => {
+    const existingData = generatedContent?.data;
+    const existingProblem = Array.isArray(existingData?.problems)
+      ? existingData.problems[pIdx]
+      : pIdx === 0 && existingData && (existingData.problem != null || existingData.question != null)
+        ? {
+            question: existingData.problem ?? existingData.question,
+            answer: existingData.answer,
+            taskType: existingData.taskType,
+            expression: existingData.expression,
+            steps: existingData.steps,
+            realWorld: existingData.realWorld,
+            manipulativeSupport: existingData.manipulativeSupport,
+            manipulativeResponse: existingData.manipulativeResponse,
+            _verification: existingData._verification
+          }
+        : null;
+    const resourceId = viewResourceId != null
+      ? String(viewResourceId)
+      : getMathResourceStateKey(generatedContent);
+    // A delayed modal/keyboard callback must not edit (or clear state for) a
+    // resource that is no longer the committed math view.
+    if (mathActiveResourceKeyRef.current !== resourceId) return;
+    const problemKey = viewProblemKey ?? (existingProblem && (existingProblem.id ?? existingProblem.problemId));
+    if (resourceId && problemKey != null) {
+      const stableKey = String(problemKey);
+      window.AlloModules?.MathHelpers?.invalidateMathProblemRequests?.(resourceId, stableKey);
+      const removeNestedProblem = previous => {
+        if (!previous || typeof previous !== 'object' || !Object.prototype.hasOwnProperty.call(previous, resourceId)) return previous || {};
+        const resourceState = previous[resourceId];
+        if (!resourceState || typeof resourceState !== 'object' || !Object.prototype.hasOwnProperty.call(resourceState, stableKey)) return previous;
+        const next = { ...previous };
+        const nextResource = { ...resourceState };
+        delete nextResource[stableKey];
+        if (Object.keys(nextResource).length) next[resourceId] = nextResource;
+        else delete next[resourceId];
+        return next;
+      };
+      setStudentResponses(removeNestedProblem);
+      setMathCheckResults(removeNestedProblem);
+      setMathHintData(previous => {
+        const next = { ...(previous || {}) };
+        const resourceState = next[resourceId];
+        if (resourceState && typeof resourceState === 'object' && !Array.isArray(resourceState)) {
+          const nextResource = { ...resourceState };
+          delete nextResource[stableKey];
+          if (Object.keys(nextResource).length) next[resourceId] = nextResource;
+          else delete next[resourceId];
+        }
+        delete next[`${resourceId}_${stableKey}`];
+        return next;
+      });
+      if (mathActiveResourceKeyRef.current === resourceId) {
+        setMathStudentAnswers(previous => {
+          if (!previous || typeof previous !== 'object' || !Object.prototype.hasOwnProperty.call(previous, stableKey)) return previous || {};
+          const next = { ...previous };
+          delete next[stableKey];
+          return next;
+        });
+      }
+    }
+    const patchMathArtifact = artifact => {
+      if (!artifact || !artifact.data || typeof artifact.data !== 'object' || Array.isArray(artifact.data)) return artifact;
+      if (getMathResourceStateKey(artifact) !== resourceId) return artifact;
+      const artifactData = artifact.data;
+      const legacyProblem = pIdx === 0 && (artifactData.problem != null || artifactData.question != null)
+        ? {
+            question: artifactData.problem ?? artifactData.question,
+            answer: artifactData.answer,
+            taskType: artifactData.taskType,
+            expression: artifactData.expression,
+            steps: artifactData.steps,
+            realWorld: artifactData.realWorld,
+            manipulativeSupport: artifactData.manipulativeSupport,
+            manipulativeResponse: artifactData.manipulativeResponse,
+            _verification: artifactData._verification
+          }
+        : null;
+      const sourceProblems = Array.isArray(artifactData.problems)
+        ? artifactData.problems
+        : legacyProblem ? [legacyProblem] : null;
+      // Contract-equivalent legacy path: pIdx === 0 && existingProblem ? [existingProblem] : null.
+      // Deriving from each artifact keeps the active and history patches pure.
+      if (!sourceProblems) return artifact;
+      const updatedProblems = [...sourceProblems];
+      const currentProblem = updatedProblems[pIdx];
+      if (!currentProblem || typeof currentProblem !== 'object' || Array.isArray(currentProblem)) return artifact;
+      const problem = {
+        ...currentProblem,
+        ...(currentProblem.id == null && currentProblem.problemId == null && viewProblemKey != null ? { id: String(viewProblemKey) } : {})
+      };
       if (stepIdx !== null && field === 'step_explanation') {
-        const updatedSteps = [...(problem.steps || [])];
-        updatedSteps[stepIdx] = { ...updatedSteps[stepIdx], explanation: value };
+        const updatedSteps = Array.isArray(problem.steps) ? [...problem.steps] : [];
+        updatedSteps[stepIdx] = { ...(updatedSteps[stepIdx] && typeof updatedSteps[stepIdx] === 'object' ? updatedSteps[stepIdx] : {}), explanation: value };
         problem.steps = updatedSteps;
       } else if (stepIdx !== null && field === 'step_latex') {
-        const updatedSteps = [...(problem.steps || [])];
-        updatedSteps[stepIdx] = { ...updatedSteps[stepIdx], latex: value };
+        const updatedSteps = Array.isArray(problem.steps) ? [...problem.steps] : [];
+        updatedSteps[stepIdx] = { ...(updatedSteps[stepIdx] && typeof updatedSteps[stepIdx] === 'object' ? updatedSteps[stepIdx] : {}), latex: value };
         problem.steps = updatedSteps;
       } else {
         problem[field] = value;
       }
-      if (problem._verification) {
+      if (problem._verification && typeof problem._verification === 'object' && !Array.isArray(problem._verification)) {
         problem._verification = { ...problem._verification, verified: false, edited: true };
       }
       updatedProblems[pIdx] = problem;
-      const updatedData = { ...prev.data, problems: updatedProblems };
-      const historyIdx = history.findIndex(h => h.id === prev.id);
-      if (historyIdx >= 0) {
-        const updatedHistory = [...history];
-        updatedHistory[historyIdx] = { ...updatedHistory[historyIdx], data: updatedData };
-        setHistory(updatedHistory);
-      }
-      return { ...prev, data: updatedData };
+      return {
+        ...artifact,
+        _mathResourceStateKey: resourceId,
+        data: { ...artifactData, problems: updatedProblems }
+      };
+    };
+    // Keep both updater functions pure. React may replay them in Strict Mode
+    // or abandon a concurrent render, so one setter must never enqueue another.
+    setGeneratedContent(previous => patchMathArtifact(previous));
+    setHistory(previousHistory => {
+      if (!Array.isArray(previousHistory)) return previousHistory;
+      const historyIdx = previousHistory.findIndex(h => getMathResourceStateKey(h) === resourceId);
+      if (historyIdx < 0) return previousHistory;
+      const currentArtifact = previousHistory[historyIdx];
+      const updatedArtifact = patchMathArtifact(currentArtifact);
+      if (updatedArtifact === currentArtifact) return previousHistory;
+      const updatedHistory = [...previousHistory];
+      updatedHistory[historyIdx] = updatedArtifact;
+      return updatedHistory;
     });
   };
-  const toggleMathEdit = (pIdx) => {
-    const key = `${generatedContent?.id}_${pIdx}`;
+  const getMathEditorProblemKey = (pIdx, viewProblemKey = null) => {
+    const problem = Array.isArray(generatedContent?.data?.problems) ? generatedContent.data.problems[pIdx] : null;
+    return String(viewProblemKey ?? problem?.id ?? problem?.problemId ?? pIdx);
+  };
+  const getMathEditorStateKey = (pIdx, viewProblemKey = null, viewResourceId = null) => JSON.stringify([
+    String(viewResourceId ?? getMathResourceStateKey(generatedContent)),
+    getMathEditorProblemKey(pIdx, viewProblemKey)
+  ]);
+  const toggleMathEdit = (pIdx, viewProblemKey = null, viewResourceId = null) => {
+    const key = getMathEditorStateKey(pIdx, viewProblemKey, viewResourceId);
     setMathEditingProblem(prev => ({ ...prev, [key]: !prev[key] }));
   };
-  const isMathEditing = (pIdx) => {
-    const key = `${generatedContent?.id}_${pIdx}`;
+  const isMathEditing = (pIdx, viewProblemKey = null, viewResourceId = null) => {
+    const key = getMathEditorStateKey(pIdx, viewProblemKey, viewResourceId);
     return !!mathEditingProblem[key];
   };
-const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(prev => !prev), []);
   const [mathSelfGradeMode, setMathSelfGradeMode] = useState(false);
   const [mathStudentAnswers, setMathStudentAnswers] = useState({});
+  const getMathStoredProblemKeys = artifact => {
+      const data = artifact?.data;
+      const problems = Array.isArray(data?.problems)
+          ? data.problems
+          : data && (data.problem != null || data.question != null) ? [data] : [];
+      return problems.map((problem, index) => String(problem?.__viewKey ?? problem?.id ?? problem?.problemId ?? index));
+  };
+  const clearMathResourceState = React.useCallback((resourceId, clearAssessment = false, legacyProblemKeys = []) => {
+      const key = String(resourceId ?? '');
+      if (!key) return;
+      window.AlloModules?.MathHelpers?.invalidateMathResourceRequests?.(key);
+      const removeNestedResource = previous => {
+          if (!previous || typeof previous !== 'object' || !Object.prototype.hasOwnProperty.call(previous, key)) return previous || {};
+          const next = { ...previous };
+          delete next[key];
+          return next;
+      };
+      setStudentResponses(removeNestedResource);
+      setMathCheckResults(removeNestedResource);
+      setMathHintData(previous => {
+          const next = { ...(previous || {}) };
+          delete next[key];
+          legacyProblemKeys.forEach(problemKey => delete next[`${key}_${String(problemKey)}`]);
+          return next;
+      });
+      setMathEditingProblem(previous => Object.fromEntries(
+          Object.entries(previous || {}).filter(([entryKey]) => {
+              try {
+                  const decoded = JSON.parse(entryKey);
+                  return !Array.isArray(decoded) || String(decoded[0]) !== key;
+              } catch (_) {
+                  return !legacyProblemKeys.some(problemKey => entryKey === `${key}_${String(problemKey)}`);
+              }
+          })
+      ));
+      if (clearAssessment) {
+          setMathStudentAnswers({});
+          setMathSelfGradeMode(false);
+          setShowMathAnswers(false);
+      }
+  }, []);
+  const mathSelfGradeSubmissionRef = useRef('');
+  const mathSelfGradeContextRef = useRef(null);
+  // Identifies the resource that owns the raw assessment draft state. Keeping
+  // this in state lets a new resource render with neutral props immediately,
+  // before any effect has a chance to clear the previous resource's draft.
+  const [mathAssessmentStateKey, setMathAssessmentStateKey] = useState(null);
+  const resetAllMathRuntimeState = React.useCallback(() => {
+      window.AlloModules?.MathHelpers?.invalidateAllMathRequests?.();
+      setStudentResponses({});
+      setMathCheckResults({});
+      setMathHintData({});
+      setMathEditingProblem({});
+      setMathStudentAnswers({});
+      setMathSelfGradeMode(false);
+      setShowMathAnswers(false);
+      setMathEditInput('');
+      setIsMathEditingChat(false);
+      setMathAssessmentStateKey(null);
+      mathSelfGradeSubmissionRef.current = '';
+      mathSelfGradeContextRef.current = null;
+  }, []);
+  const mathSelfGradeContextKey = activeView === 'math' && generatedContent?.type === 'math'
+      ? getMathResourceStateKey(generatedContent)
+      : null;
+  React.useLayoutEffect(() => {
+      mathActiveResourceKeyRef.current = mathSelfGradeContextKey;
+      return () => {
+          if (mathActiveResourceKeyRef.current === mathSelfGradeContextKey) {
+              mathActiveResourceKeyRef.current = null;
+          }
+      };
+  }, [mathSelfGradeContextKey]);
+  React.useLayoutEffect(() => {
+      if (mathSelfGradeContextRef.current === mathSelfGradeContextKey
+          && mathAssessmentStateKey === mathSelfGradeContextKey) return;
+      mathSelfGradeContextRef.current = mathSelfGradeContextKey;
+      mathSelfGradeSubmissionRef.current = '';
+      setMathAssessmentStateKey(mathSelfGradeContextKey);
+      setMathStudentAnswers({});
+      setMathSelfGradeMode(false);
+      setShowMathAnswers(false);
+  }, [mathAssessmentStateKey, mathSelfGradeContextKey]);
+  const mathAssessmentContextIsCurrent = mathSelfGradeContextKey !== null
+      && mathAssessmentStateKey === mathSelfGradeContextKey;
+  const effectiveMathStudentAnswers = mathAssessmentContextIsCurrent ? mathStudentAnswers : {};
+  const effectiveMathSelfGradeMode = mathAssessmentContextIsCurrent && mathSelfGradeMode;
+  const effectiveShowMathAnswers = mathAssessmentContextIsCurrent && showMathAnswers;
+  const isCommittedMathAssessmentContext = resourceId => {
+      const key = resourceId == null ? null : String(resourceId);
+      return key !== null
+          && key === mathSelfGradeContextKey
+          && key === mathAssessmentStateKey
+          && mathSelfGradeContextRef.current === key
+          && mathActiveResourceKeyRef.current === key;
+  };
+  const handleToggleShowMathAnswers = React.useCallback(() => {
+      const key = mathSelfGradeContextKey;
+      if (key === null
+          || key !== mathAssessmentStateKey
+          || mathSelfGradeContextRef.current !== key
+          || mathActiveResourceKeyRef.current !== key) return;
+      setShowMathAnswers(previous => !previous);
+  }, [mathAssessmentStateKey, mathSelfGradeContextKey]);
+  const handleSetShowMathAnswersToTrue = React.useCallback(() => {
+      const key = mathSelfGradeContextKey;
+      if (key === null
+          || key !== mathAssessmentStateKey
+          || mathSelfGradeContextRef.current !== key
+          || mathActiveResourceKeyRef.current !== key) return;
+      setShowMathAnswers(true);
+  }, [mathAssessmentStateKey, mathSelfGradeContextKey]);
   const [nlChallenge, setNlChallenge] = useState(null);
   const [nlAnswer, setNlAnswer] = useState('');
   const [nlFeedback, setNlFeedback] = useState(null);
@@ -19493,39 +20281,58 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setExploreScore({ correct: 0, total: 0 });
   }, [exploreScore, stemLabTool]);
   const handleToggleMathSelfGrade = React.useCallback(() => {
-      setMathSelfGradeMode(prev => !prev);
-      if (mathSelfGradeMode) setMathStudentAnswers({});
-  }, [mathSelfGradeMode]);
-  const submitMathSelfGrade = () => {
-      if (!generatedContent?.data?.problems) return;
-      const problems = generatedContent.data.problems;
-      let correct = 0;
-      let total = problems.length;
-      problems.forEach((p, idx) => {
-          const studentAns = mathStudentAnswers[idx];
-          if (studentAns !== undefined && studentAns !== '') {
-              const expected = String(p.answer || p.correct_answer || '').trim().toLowerCase();
-              const given = String(studentAns).trim().toLowerCase();
-              if (given === expected) correct++;
-          }
-      });
+      const key = mathSelfGradeContextKey;
+      if (key === null
+          || key !== mathAssessmentStateKey
+          || mathSelfGradeContextRef.current !== key
+          || mathActiveResourceKeyRef.current !== key) return;
+      setMathStudentAnswers({});
+      mathSelfGradeSubmissionRef.current = '';
+      setShowMathAnswers(false);
+      setMathSelfGradeMode(previous => !previous);
+  }, [mathAssessmentStateKey, mathSelfGradeContextKey]);
+  const submitMathSelfGrade = (resourceId, problemsOverride) => {
+      const requestedResourceId = resourceId == null ? mathSelfGradeContextKey : String(resourceId);
+      if (!isCommittedMathAssessmentContext(requestedResourceId)) return;
+      const problems = (Array.isArray(problemsOverride) ? problemsOverride : generatedContent?.data?.problems)
+          ?.filter(problem => problem && typeof problem === 'object' && !Array.isArray(problem)) || [];
+      const mathHelpers = window.AlloModules && window.AlloModules.MathHelpers;
+      if (typeof mathHelpers?.gradeMathSelfAssessment !== 'function') {
+          addToast('Assessment grading tools are still loading. Try again in a moment.', 'error');
+          return;
+      }
+      const grade = mathHelpers.gradeMathSelfAssessment(problems, mathStudentAnswers);
+      if (!grade.total) {
+          addToast('This assessment has no valid problems to grade.', 'error');
+          return;
+      }
+      if (grade.results.some(problem => !problem.response.trim())) {
+          addToast('Answer every problem before submitting.', 'error');
+          return;
+      }
+      const gradedProblems = grade.results;
+      const correct = grade.score;
+      const total = grade.total;
+      const percentage = grade.percentage;
+      const sourceId = requestedResourceId;
+      const submittedAnswers = grade.answers;
+      const submissionSignature = JSON.stringify([sourceId, submittedAnswers]);
+      if (mathSelfGradeSubmissionRef.current === submissionSignature) return;
+      mathSelfGradeSubmissionRef.current = submissionSignature;
       const result = {
-          id: 'math-result-' + Date.now(),
+          id: 'math-result-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
           type: 'stem-assessment',
-          title: (generatedContent.title || 'Math Assessment') + ' — Results',
+          title: (generatedContent?.data?.title || generatedContent?.title || 'Math Assessment') + ' — Results',
           timestamp: Date.now(),
           data: {
-              score: correct,
-              total: total,
-              percentage: Math.round((correct / total) * 100),
-              answers: { ...mathStudentAnswers },
-              sourceId: generatedContent.id
+              ...grade,
+              sourceId
           }
       };
       setHistory(prev => [...prev, result]);
-      addToast(t('toasts.assessment_submitted') + correct + '/' + total + ' (' + Math.round((correct/total)*100) + '%)', 'success');
       setMathSelfGradeMode(false);
       setMathStudentAnswers({});
+      addToast(t('toasts.assessment_submitted') + correct + '/' + total + ' (' + percentage + '%)', 'success');
   };
   const handleToggleIsEditingLessonPlan = React.useCallback(() => setIsEditingLessonPlan(prev => !prev), []);
   const handleToggleSocraticAutoRead = React.useCallback(() => setSocraticAutoRead(prev => !prev), []);
@@ -20737,7 +21544,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       setClozeInstanceSet(new Set());
   }, [generatedContent?.id]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
-  const [history, setHistory] = useState([]);
+  const [history, _setHistory] = useState([]);
+  const setHistory = useCallback((nextHistory) => {
+      _setHistory(previous => {
+          const candidate = typeof nextHistory === 'function' ? nextHistory(previous) : nextHistory;
+          return normalizeArtifactInstanceIds(candidate);
+      });
+  }, []);
   const [canvasRecoveryDecisionMade, setCanvasRecoveryDecisionMade] = useState(() => !isCanvas);
   const [shellDeepLinkTool, setShellDeepLinkTool] = useState(() => _alloReadShellDeepLinkTool());
   useEffect(() => {
@@ -21310,7 +22123,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const addedIds = added.map(item => item?.id).filter(Boolean);
     if (addedIds.length) setGuidedCreatedHistoryIds(previous => Array.from(new Set([...(previous || []), ...addedIds])));
     if (!guidedAutoAdvance || guidedStepError) return;
-    const HISTORY_ADVANCE_STEPS = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'anchor-chart': 'anchor-chart', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'note-taking': 'note-taking', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'dbq': 'dbq', 'math': 'math', 'adventure': 'adventure', 'quiz': 'quiz', 'alignment-report': 'alignment', 'lesson-plan': 'lesson-plan', 'directions': 'directions', 'word-sounds': 'ui-tool-wordsounds' };
+    const HISTORY_ADVANCE_STEPS = { 'analysis': 'analysis', 'glossary': 'glossary', 'simplified': 'simplified', 'outline': 'outline', 'anchor-chart': 'anchor-chart', 'memory-aid': 'memory-aid', 'applied-challenge': 'applied-challenge', 'image': 'image', 'faq': 'faq', 'sentence-frames': 'sentence-frames', 'note-taking': 'note-taking', 'brainstorm': 'brainstorm', 'persona': 'persona', 'timeline': 'timeline', 'concept-sort': 'concept-sort', 'dbq': 'dbq', 'math': 'math', 'adventure': 'adventure', 'quiz': 'quiz', 'alignment-report': 'alignment', 'lesson-plan': 'lesson-plan', 'directions': 'directions', 'word-sounds': 'ui-tool-wordsounds' };
     const currentIndex = guidedStep;
     const current = guidedActiveSteps[currentIndex];
     const matching = [...added].reverse().find(item => HISTORY_ADVANCE_STEPS[item?.type] === current?.id);
@@ -27657,6 +28470,9 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     fontSize: 16,
     useAppFont: false,
     pageMargin: '1in',
+    // Paper worksheets can trade page count for handwriting room without
+    // changing the digital HTML layout.
+    worksheetResponseSpace: 'standard', // 'compact' | 'standard' | 'extended'
     // Display-mode toggles (May 11 2026):
     //   glossaryDisplayMode: 'table' | 'flash-cards' | 'language-cards'
     //   timelineDisplayMode: 'list' | 'cuttable-strips'
@@ -27691,7 +28507,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // Bump this when DEFAULT_EXPORT_CONFIG gains fields or any preset field's
   // semantics change. Old presets are merged over current defaults on load
   // so users don't silently lose recently-added toggle defaults.
-  const _EXPORT_PRESET_SCHEMA_VERSION = 5;
+  const _EXPORT_PRESET_SCHEMA_VERSION = 6;
   // Migrate one preset object to the current schema. Idempotent: a preset
   // already at the current version round-trips unchanged. Tolerant of
   // malformed shapes (missing config, missing theme, etc.).
@@ -27786,6 +28602,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // editable updates on generatedContent.data.
   const [noteTakingTemplateType, setNoteTakingTemplateType] = useState('cornell-notes');
   const [anchorChartType, setAnchorChartType] = useState('auto');
+  const [memoryAidSelectionMode, setMemoryAidSelectionMode] = useState('auto-mix');
+  const [memoryAidTypes, setMemoryAidTypes] = useState(['acronym-acrostic', 'chunking', 'story-chain']);
+  const [memoryAidAuthorshipMode, setMemoryAidAuthorshipMode] = useState('progressive');
+  const [memoryAidReflectionLevel, setMemoryAidReflectionLevel] = useState('quick');
+  const [memoryAidReasoningRequired, setMemoryAidReasoningRequired] = useState(false);
+  const [memoryAidCount, setMemoryAidCount] = useState(3);
   // Per-resource custom instructions for the four types whose dispatcher
   // branches consumed effCustomInstructions while the resolver had no case for
   // them (structurally always '') — added 2026-07-28 with the resolver fix.
@@ -27808,6 +28630,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [dbqCustomInstructions, setDbqCustomInstructions] = useState('');
   const [noteTakingCustomInstructions, setNoteTakingCustomInstructions] = useState('');
   const [anchorChartCustomInstructions, setAnchorChartCustomInstructions] = useState('');
+  const [memoryAidCustomInstructions, setMemoryAidCustomInstructions] = useState('');
   // Universal default image style (Universal Settings panel). Persisted like
   // its per-resource siblings; per-resource styles override it at use sites.
   const [universalImageStyle, setUniversalImageStyle] = useState(() => {
@@ -27821,7 +28644,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       // the icon URLs it generates with callImagen — through this handler. Without 'anchor-chart'
       // here, every anchor update hit `return prev` and was silently dropped, so generated icons
       // never stuck (the slot kept showing the prompt text). (2026-06-30)
-      if (!prev || (prev.type !== 'note-taking' && prev.type !== 'anchor-chart')) return prev;
+      // Memory Aid Studio and Applied Challenge Studio use the same active-artifact and history update path.
+      if (!prev || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(prev.type)) return prev;
       // Accept a functional updater so concurrent writes merge against the LATEST value instead of a
       // stale snapshot — the anchor auto-gen fires one callImagen per section in parallel, and a
       // plain-value write would let the last one to resolve clobber the others' icons.
@@ -27880,10 +28704,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // set instead of presenting every generator with equal visual weight.
   const TOOL_CATALOG_GROUPS = {
     essentials: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions', 'package-deliver'],
-    access: ['analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'image', 'faq', 'sentence-frames'],
-    engage: ['brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure'],
+    access: ['analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'memory-aid', 'image', 'faq', 'sentence-frames'],
+    engage: ['brainstorm', 'applied-challenge', 'persona', 'timeline', 'concept-sort', 'math', 'adventure'],
     assess: ['dbq', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver'],
-    all: ['analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan', 'directions', 'package-deliver', 'alignment'],
+    all: ['analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'image', 'faq', 'sentence-frames', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'lesson-plan', 'directions', 'package-deliver', 'alignment'],
   };
   const TOOL_CATALOG_SEARCH = {
     analysis: 'understand analyze reading level concepts accuracy',
@@ -27892,6 +28716,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     'ui-tool-wordsounds': 'phonics decoding sounds words',
     outline: 'organizer concept map visual structure',
     'note-taking': 'notes cornell template study',
+    'memory-aid': 'mnemonic memory recall acronym rhyme rhythm chunking story visual association student authored scaffold',
+    'applied-challenge': 'applied problem solving transfer research question investigate design decide recommendation proposal business plan pitch philosophical exploration evidence tradeoffs constraints revision student workspace',
     'anchor-chart': 'poster chart classroom reference',
     image: 'visual diagram illustration support',
     faq: 'questions answers misconceptions',
@@ -30006,24 +30832,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
               groups,
               readingThemeDefault: alloNormalizeReadingTheme(rosterKey.readingThemeDefault, 'default')
           };
-          const rosterByNormalizedCodename = {};
-          Object.keys(rosterKey.students || {}).forEach(codename => {
-              const normalized = String(codename || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-              if (normalized) rosterByNormalizedCodename[normalized] = codename;
-          });
+          const rosterByNormalizedCodename = buildUniqueRosterSessionCodenameIndex(rosterKey.students);
+          let syncedStudentCount = 0;
           Object.entries(sessionData?.roster || {}).forEach(([uid, liveLearner]) => {
-              const normalized = String(liveLearner?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-              const codename = rosterByNormalizedCodename[normalized];
+              const normalized = normalizeRosterSessionCodename(liveLearner?.name);
+              const matched = rosterByNormalizedCodename[normalized];
+              if (!matched) return;
+              const codename = matched.name;
+              const targetGroupId = matched.groupId && rosterKey.groups?.[matched.groupId] ? matched.groupId : null;
+              updates[`roster.${uid}.groupId`] = targetGroupId;
+              syncedStudentCount++;
               const learnerId = codename && rosterKey.learnerIds?.[codename];
               const preference = alloNormalizeLearnerReadingPreference(learnerId ? rosterKey.learnerPreferences?.[learnerId] : null);
               updates[`roster.${uid}.readingTheme`] = preference?.readingTheme || null;
               updates[`roster.${uid}.readingThemeFavorites`] = preference?.favoriteReadingThemes || null;
               updates[`roster.${uid}.readingPreferenceAt`] = null;
           });
-          // Replace the group collection and refresh matched learner preferences so
-          // removed/reset choices do not remain stuck in a live session.
+          // Replace groups, align matched assignments, and refresh preferences so
+          // moved, unassigned, removed, or reset choices do not remain stuck.
           await updateDoc(sessionRef, updates);
-          addToast(t('roster.synced') || `Synced ${Object.keys(rosterKey.groups).length} groups to live session`, "success");
+          addToast(t('roster.synced') || `Synced ${Object.keys(rosterKey.groups).length} groups and ${syncedStudentCount} matched codename${syncedStudentCount === 1 ? '' : 's'} to live session`, "success");
       } catch(e) {
           warnLog("Roster sync error:", e);
           addToast(t('roster.sync_error') || "Could not sync roster to session", "error");
@@ -30035,14 +30863,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const updates = {};
       let assignmentCount = 0;
       let preferenceCount = 0;
-      const rosterByCodename = {};
-      Object.entries(rosterKey.students).forEach(([name, groupId]) => {
-          const normalized = String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (normalized) rosterByCodename[normalized] = { name, groupId };
-      });
+      const rosterByCodename = buildUniqueRosterSessionCodenameIndex(rosterKey.students);
       Object.entries(sessionData.roster).forEach(([uid, student]) => {
           if (!student?.name) return;
-          const normalized = String(student.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+          const normalized = normalizeRosterSessionCodename(student.name);
           const matched = rosterByCodename[normalized];
           if (!matched) return;
           if (!student.groupId && matched.groupId && rosterKey.groups?.[matched.groupId]) {
@@ -30072,18 +30896,15 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       setRosterKey(previous => {
           if (!previous?.students) return previous;
           const normalizedRoster = alloNormalizeRosterIdentity(previous);
-          const codenameByNormalized = {};
-          Object.keys(normalizedRoster.students).forEach(codename => {
-              const normalized = String(codename || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-              if (normalized) codenameByNormalized[normalized] = codename;
-          });
+          const codenameByNormalized = buildUniqueRosterSessionCodenameIndex(normalizedRoster.students);
           let changed = false;
           const learnerPreferences = { ...(normalizedRoster.learnerPreferences || {}) };
           Object.values(sessionData.roster).forEach(liveLearner => {
               const preferenceAt = Number(liveLearner?.readingPreferenceAt);
               if (!Number.isFinite(preferenceAt) || preferenceAt <= 0 || preferenceAt > Date.now() + 24 * 60 * 60 * 1000) return;
-              const normalized = String(liveLearner?.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-              const codename = codenameByNormalized[normalized];
+              const normalized = normalizeRosterSessionCodename(liveLearner?.name);
+              const matched = codenameByNormalized[normalized];
+              const codename = matched?.name;
               const learnerId = codename && normalizedRoster.learnerIds?.[codename];
               if (!learnerId) return;
               const preference = alloNormalizeLearnerReadingPreference({
@@ -30547,6 +31368,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       dbqCustomInstructions,
       noteTakingCustomInstructions,
       anchorChartCustomInstructions,
+      memoryAidCustomInstructions,
       outlineType,
       visualStyle,
       visualCustomStyle,
@@ -30555,6 +31377,12 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       quizMcqCount,
       noteTakingTemplateType,
       anchorChartType,
+      memoryAidSelectionMode,
+      memoryAidTypes,
+      memoryAidAuthorshipMode,
+      memoryAidReflectionLevel,
+      memoryAidReasoningRequired,
+      memoryAidCount,
       frameType,
       fillInTheBlank,
       vocabularyType,
@@ -30650,10 +31478,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (_m && typeof _m.handleGenerateMath === "function") return _m.handleGenerateMath(inputOverride, switchView, modeOverride, _alloGenerationHelpersDeps());
     throw new Error("[handleGenerateMath] GenerationHelpers module not loaded - reload the page");
   };
-  const handleMathEdit = async (editInstruction) => {
+  const handleMathEdit = async (editInstruction, viewResourceId = null) => {
     const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (viewResourceId != null && String(viewResourceId) !== getMathResourceStateKey(generatedContent)) return;
+    const mathResourceId = getMathResourceStateKey(generatedContent);
     if (_m && typeof _m.handleMathEdit === "function") return _m.handleMathEdit(editInstruction, {
         generatedContent,
+        history,
+        mathResourceId,
         leveledTextLanguage,
         translationMode,
         resolveTranslationPolicy,
@@ -30662,12 +31494,20 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         mathSubject,
         setIsMathEditingChat,
         setGeneratedContent,
+        setHistory,
         setMathEditInput,
         callGemini,
         cleanJson,
         safeJsonParse,
         addToast,
         warnLog,
+        onMathProblemsChanged: (changedResourceId) => {
+          const resourceId = changedResourceId != null
+            ? String(changedResourceId)
+            : getMathResourceStateKey(generatedContent);
+          const clearActiveAssessment = mathActiveResourceKeyRef.current === resourceId;
+          clearMathResourceState(resourceId, clearActiveAssessment, getMathStoredProblemKeys(generatedContent));
+        },
       });
     throw new Error("[handleMathEdit] MathHelpers module not loaded - reload the page");
   };
@@ -36988,6 +37828,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setDbqCustomInstructions('');
       setNoteTakingCustomInstructions('');
       setAnchorChartCustomInstructions('');
+      setMemoryAidCustomInstructions('');
       // Lesson-SCOPED context (as opposed to teacher preferences like quiz item
       // count or image style, which SHOULD persist across lessons). Everything
       // below describes the lesson you just left; carrying it into the next one
@@ -37024,6 +37865,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       cancelActiveProjectLoad();
       cancelActiveFileIntakeOperations('canvas-workspace-clear');
       invalidateLocalDataHydration();
+      resetAllMathRuntimeState();
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
       setHistory([]);
       setGeneratedContent(null);
@@ -37046,7 +37888,6 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setActiveBlueprint(null);
       setBlueprintExecutionResult(null);
       resetCanvasWorkspaceSettings();
-      setStudentResponses({});
       setStudentProgressLog([]);
       setStickers([]);
       setGuidedMode(false);
@@ -37180,6 +38021,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       setCanvasRecoverySaveStatus('restoring');
       try {
           const workspace = snapshot.workspace;
+          resetAllMathRuntimeState();
           resetCanvasWorkspaceSettings();
           const restoredHistory = hydrateHistory(workspace.history);
           setHistory(restoredHistory);
@@ -39153,6 +39995,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     cancelActiveProjectLoad();
     cancelActiveFileIntakeOperations('workspace-clear');
     invalidateLocalDataHydration();
+    resetAllMathRuntimeState();
     setHistory([]);
     setGeneratedContent(null);
     setActiveView('input');
@@ -39565,6 +40408,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         addToast,
         warnLog,
         hydrateHistory,
+        normalizeArtifactInstanceIds,
         setStickers,
         setConceptMasteryLocal,
         // Teacher-side mastery bank for imported student files (retention
@@ -39593,6 +40437,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             setCanvasRecoverySaveStatus('restoring');
         },
         onProjectLoadComplete: ({ success }) => {
+            if (success) resetAllMathRuntimeState();
             if (!canvasRecoveryImportPreviousIdRef.current) return;
             if (!success) {
                 canvasRecoveryCurrentIdRef.current = canvasRecoveryImportPreviousIdRef.current;
@@ -40316,23 +41161,77 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   }, [adventureState, activeView, generatedContent]);
   const handleDuplicateResource = () => {
     if (!generatedContent) return;
-    const contentCopy = structuredClone(generatedContent);
+    let contentCopy;
+    try { contentCopy = structuredClone(generatedContent); }
+    catch (_) {
+      addToast(t('errors.invalid_resource') || 'This resource could not be duplicated.', 'error');
+      return;
+    }
     const newId = Date.now().toString() + Math.random().toString(36).substr(2, 9);
-    const newItem = {
-        ...contentCopy,
+    const { [ALLO_ARTIFACT_INSTANCE_ID_FIELD]: _discardedInstanceId, ...detachedCopy } = contentCopy;
+    const usedInstanceIds = new Set((Array.isArray(history) ? history : []).map(getArtifactInstanceId).filter(Boolean));
+    const contentType = _alloSafeArtifactPublicIdValue(_alloSafeArtifactField(contentCopy, 'type'));
+    const rawContentTitle = _alloSafeArtifactField(contentCopy, 'title');
+    let fallbackContentTitle = 'Resource';
+    try { fallbackContentTitle = getDefaultTitle(contentType, contentCopy); } catch (_) {}
+    const contentTitle = typeof rawContentTitle === 'string' || typeof rawContentTitle === 'number'
+        ? String(rawContentTitle).slice(0, 240)
+        : _alloSafeArtifactPublicIdValue(fallbackContentTitle) || 'Resource';
+    const newItem = ensureArtifactInstanceId({
+        ...detachedCopy,
         id: newId,
-        title: `${contentCopy.title || getDefaultTitle(contentCopy.type)} (${t('common.copy')})`,
+        title: `${contentTitle} (${t('common.copy')})`,
         timestamp: new Date(),
         config: {}
-    };
+    }, usedInstanceIds);
     setHistory(prev => [...prev, newItem]);
     setGeneratedContent(newItem); setWordSoundsCustomTerms(generatedTerms); setWsPreloadedWords(generatedTerms);
     addToast(t('toasts.resource_duplicated'), "success");
   };
-  const handleDeleteHistoryItem = (e, id) => {
-    e.stopPropagation();
-    setHistory(prev => prev.filter(item => item.id !== id));
-    if (generatedContent && generatedContent.id === id) {
+  const handleDeleteHistoryItem = (e, id, itemRef = null) => {
+    try { if (e && typeof e.stopPropagation === 'function') e.stopPropagation(); } catch (_) {}
+    const safePublicId = _alloSafeArtifactPublicIdValue(id);
+    const requestedInstanceId = getArtifactInstanceId(itemRef);
+    const referencedIndex = findArtifactInstanceIndex(history, requestedInstanceId, safePublicId);
+    let deletedArtifact = null;
+    try { if (referencedIndex >= 0) deletedArtifact = history[referencedIndex] || null; } catch (_) {}
+    const deletedArtifactType = _alloSafeArtifactPublicIdValue(_alloSafeArtifactField(deletedArtifact, 'type'));
+    const generatedArtifactType = _alloSafeArtifactPublicIdValue(_alloSafeArtifactField(generatedContent, 'type'));
+    const mathStateResourceId = deletedArtifact
+      ? getMathResourceStateKey(deletedArtifact)
+      : safePublicId;
+    const deletingActiveResource = !!generatedContent && !!deletedArtifact && (
+      sameArtifactInstance(generatedContent, deletedArtifact)
+      || (generatedArtifactType === 'math'
+        && deletedArtifactType === 'math'
+        && getMathResourceStateKey(generatedContent) === mathStateResourceId)
+      || (!requestedInstanceId && !itemRef && getArtifactPublicId(generatedContent) === safePublicId)
+    );
+    clearMathResourceState(mathStateResourceId, deletingActiveResource, getMathStoredProblemKeys(deletedArtifact));
+    setHistory(prev => {
+      if (!Array.isArray(prev)) return prev;
+      if (requestedInstanceId) {
+        return removeArtifactInstanceFromList(prev, requestedInstanceId, safePublicId);
+      }
+      let targetIndex = findArtifactInstanceIndex(prev, requestedInstanceId, safePublicId);
+      if (targetIndex < 0 && deletedArtifactType === 'math') {
+        const length = _alloArtifactListLength(prev);
+        for (let index = 0; index < length; index += 1) {
+          let candidate;
+          try { candidate = prev[index]; } catch (_) { continue; }
+          if (_alloSafeArtifactPublicIdValue(_alloSafeArtifactField(candidate, 'type')) === 'math'
+              && getMathResourceStateKey(candidate) === mathStateResourceId) {
+            targetIndex = index;
+            break;
+          }
+        }
+      }
+      if (targetIndex < 0) return prev;
+      const next = [...prev];
+      next.splice(targetIndex, 1);
+      return next;
+    });
+    if (deletingActiveResource) {
         setGeneratedContent(null);
       setMbJoinError(false);
       setMbJoinRetryable(false);
@@ -40341,17 +41240,24 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     }
   };
   const handleStartEdit = (e, item) => {
-    e.stopPropagation();
-    setEditingId(item.id);
-    setEditTitle(item.title || getDefaultTitle(item.type, item));
+    try { if (e && typeof e.stopPropagation === 'function') e.stopPropagation(); } catch (_) {}
+    const itemType = _alloSafeArtifactPublicIdValue(_alloSafeArtifactField(item, 'type'));
+    const itemTitle = _alloSafeArtifactField(item, 'title');
+    let fallbackItemTitle = 'Resource';
+    try { fallbackItemTitle = getDefaultTitle(itemType, item); } catch (_) {}
+    fallbackItemTitle = _alloSafeArtifactPublicIdValue(fallbackItemTitle) || 'Resource';
+    setEditingId(getArtifactInstanceId(item) || getArtifactPublicId(item));
+    setEditTitle(typeof itemTitle === 'string' || typeof itemTitle === 'number'
+      ? String(itemTitle).slice(0, 240)
+      : fallbackItemTitle);
   };
   const handleSaveEdit = (e) => {
     e.stopPropagation();
     if (editingId) {
         setHistory(prev => prev.map(item =>
-            item.id === editingId ? { ...item, title: editTitle } : item
+            _alloArtifactMatchesInstanceId(item, editingId) ? { ...item, title: editTitle } : item
         ));
-        if (generatedContent && generatedContent.id === editingId) {
+        if (generatedContent && _alloArtifactMatchesInstanceId(generatedContent, editingId)) {
             setGeneratedContent(prev => ({ ...prev, title: editTitle }));
         }
         setEditingId(null);
@@ -40405,6 +41311,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           case 'lingua-submission': return t('output.title_lingua_submission') || 'Lingua Learning Record';
           case 'note-taking': return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
           case 'anchor-chart': return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
+          case 'memory-aid': return t('help_mode.tool_memory_aid') || 'Memory Aid Studio';
+          case 'applied-challenge': return t('help_mode.tool_applied_challenge') || 'Applied Challenge Studio';
           case 'readingBook': return t('readinglib_book_resource') || 'Illustrated story';
           case 'readingSet': return t('readinglib_set_resource') || 'Reading set';
           case 'aac-board': return 'AAC Board';
@@ -41507,36 +42415,43 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (_m && typeof _m.handleAdventureChoice === "function") return _m.handleAdventureChoice(choice, _alloAdventureHandlersDeps());
     throw new Error("[handleAdventureChoice] AdventureHandlers module not loaded - reload the page");
   };
-  const handleDragStart = (e, position) => {
-    dragItem.current = position;
+  const handleDragStart = (e, itemInstanceId) => {
+    dragItem.current = itemInstanceId || null;
   };
-  const handleDragEnter = (e, position) => {
-    dragOverItem.current = position;
-    const copyListItems = [...history];
-    const dragItemContent = copyListItems[dragItem.current];
-    copyListItems.splice(dragItem.current, 1);
-    copyListItems.splice(dragOverItem.current, 0, dragItemContent);
-    dragItem.current = position;
-    setHistory(copyListItems);
+  const handleDragEnter = (e, targetInstanceId) => {
+    const draggedInstanceId = dragItem.current;
+    if (!draggedInstanceId || !targetInstanceId || draggedInstanceId === targetInstanceId) return;
+    dragOverItem.current = targetInstanceId;
+    setHistory(previous => {
+      const fromIndex = previous.findIndex(item => _alloArtifactMatchesInstanceId(item, draggedInstanceId));
+      const toIndex = previous.findIndex(item => _alloArtifactMatchesInstanceId(item, targetInstanceId));
+      if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) return previous;
+      const copyListItems = [...previous];
+      const [dragItemContent] = copyListItems.splice(fromIndex, 1);
+      copyListItems.splice(toIndex, 0, dragItemContent);
+      return copyListItems;
+    });
   };
   const handleDragEnd = () => {
     dragItem.current = null;
     dragOverItem.current = null;
   };
-  const moveItem = (e, index, direction) => {
+  const moveItem = (e, itemInstanceId, direction, adjacentInstanceId) => {
     e.stopPropagation();
     const newHistory = [...history];
-    let movedItemTitle = "";
-    if (direction === 'up' && index > 0) {
-      movedItemTitle = newHistory[index].title || "Item";
-      [newHistory[index], newHistory[index - 1]] = [newHistory[index - 1], newHistory[index]];
+    const index = newHistory.findIndex(item => _alloArtifactMatchesInstanceId(item, itemInstanceId));
+    const adjacentIndex = adjacentInstanceId
+      ? newHistory.findIndex(item => _alloArtifactMatchesInstanceId(item, adjacentInstanceId))
+      : index + (direction === 'up' ? -1 : 1);
+    if (index < 0 || adjacentIndex < 0 || adjacentIndex >= newHistory.length || index === adjacentIndex) return;
+    const movedItemTitle = newHistory[index].title || "Item";
+    [newHistory[index], newHistory[adjacentIndex]] = [newHistory[adjacentIndex], newHistory[index]];
+    setHistory(newHistory);
+    if (direction === 'up') {
       addToast(t('toasts.resource_moved_up', { title: movedItemTitle }) || `Moved ${movedItemTitle} up`, "info");
-    } else if (direction === 'down' && index < newHistory.length - 1) {
-      movedItemTitle = newHistory[index].title || "Item";
-      [newHistory[index], newHistory[index + 1]] = [newHistory[index + 1], newHistory[index]];
+    } else {
       addToast(t('toasts.resource_moved_down', { title: movedItemTitle }) || `Moved ${movedItemTitle} down`, "info");
     }
-    setHistory(newHistory);
   };
   useEffect(() => {
     return () => {
@@ -42973,6 +43888,7 @@ ${_alloActivityContext(activity)}
         addAction('generate_analysis', 'Analyze the content', 'Surface key ideas, evidence, and possible teaching moves.');
         addAction('generate_note_taking', 'Create guided notes', 'Turn the content into a structured note-taking support.');
         addAction('generate_anchor_chart', 'Make an anchor chart', 'Create a concise visual reference for the lesson.');
+        addAction('generate_memory_aid', 'Make a memory aid', 'Create a mix of modelled, scaffolded, and student-authored retrieval cues.');
         addAction('generate_concept_sort', 'Make a concept sort', 'Create a compare-and-classify activity around the content.');
         addAction('generate_faq', 'Make an FAQ', 'Anticipate common learner questions and answers.');
         addAction('generate_brainstorm', 'Make a brainstorm web', 'Open the topic into connected ideas and examples.');
@@ -43097,6 +44013,8 @@ ${_alloActivityContext(activity)}
         generate_analysis: () => handleGenerate('analysis', null, false, null, { rethrowErrors: true }),
         generate_note_taking: () => handleGenerate('note-taking', null, false, null, { rethrowErrors: true }),
         generate_anchor_chart: () => handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true }),
+        generate_memory_aid: () => handleGenerate('memory-aid', null, false, null, { rethrowErrors: true }),
+        generate_applied_challenge: () => handleGenerate('applied-challenge', null, false, null, { rethrowErrors: true }),
         generate_concept_sort: () => handleGenerate('concept-sort', null, false, null, { rethrowErrors: true }),
         generate_faq: () => handleGenerate('faq', null, false, null, { rethrowErrors: true }),
         generate_brainstorm: () => handleGenerate('brainstorm', null, false, null, { rethrowErrors: true }),
@@ -43829,6 +44747,8 @@ ${_alloActivityContext(activity)}
       toggleReviewGame: () => { handleToggleIsReviewGame(); return true; },
       generateNoteTaking: () => handleGenerate('note-taking', null, false, null, { rethrowErrors: true }),
       generateAnchorChart: () => handleGenerate('anchor-chart', null, false, null, { rethrowErrors: true }),
+      generateMemoryAid: () => handleGenerate('memory-aid', null, false, null, { rethrowErrors: true }),
+      generateAppliedChallenge: () => handleGenerate('applied-challenge', null, false, null, { rethrowErrors: true }),
       generateConceptSort: () => handleGenerate('concept-sort', null, false, null, { rethrowErrors: true }),
       contentIsGlossary: !!generatedContent && generatedContent.type === 'glossary',
       resetScaffolds: handleResetScaffolds,         // self-confirms via setConfirmDialog
@@ -44042,7 +44962,8 @@ ${_alloActivityContext(activity)}
       differentiationRange, differentiationTypes, differentiationCustomGrades,
       translationMode, translationTargetChoices, resolveTranslationPolicy,
       useEmojis, universalImageStyle, imageGenerationStyle, imageAspectRatio, outlineType, visualStyle,
-      visualCustomStyle, visualLayoutMode, quizMode, noteTakingTemplateType, anchorChartType, mcqVisualMode,
+      visualCustomStyle, visualLayoutMode, quizMode, noteTakingTemplateType, anchorChartType,
+      memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, mcqVisualMode,
       isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode,
       adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode,
       vocabularyType: typeof vocabularyType !== 'undefined' ? vocabularyType : undefined,
@@ -44066,6 +44987,7 @@ ${_alloActivityContext(activity)}
       dbqCustomInstructions: typeof dbqCustomInstructions !== 'undefined' ? dbqCustomInstructions : undefined,
       noteTakingCustomInstructions: typeof noteTakingCustomInstructions !== 'undefined' ? noteTakingCustomInstructions : undefined,
       anchorChartCustomInstructions: typeof anchorChartCustomInstructions !== 'undefined' ? anchorChartCustomInstructions : undefined,
+      memoryAidCustomInstructions: typeof memoryAidCustomInstructions !== 'undefined' ? memoryAidCustomInstructions : undefined,
       personaCustomInstructions: typeof personaCustomInstructions !== 'undefined' ? personaCustomInstructions : undefined,
       fillInTheBlank: typeof fillInTheBlank !== 'undefined' ? fillInTheBlank : undefined,
       includeBibliography: typeof includeBibliography !== 'undefined' ? includeBibliography : undefined,
@@ -44942,6 +45864,12 @@ ${_alloActivityContext(activity)}
         outlineCustomInstructions,
         noteTakingTemplateType,
         anchorChartType,
+        memoryAidSelectionMode,
+        memoryAidTypes,
+        memoryAidAuthorshipMode,
+        memoryAidReflectionLevel,
+        memoryAidReasoningRequired,
+        memoryAidCount,
         visualCustomInstructions,
         lessonCustomAdditions,
         timelineTopic,
@@ -45071,6 +45999,7 @@ ${_alloActivityContext(activity)}
         dbqCustomInstructions,
         noteTakingCustomInstructions,
         anchorChartCustomInstructions,
+        memoryAidCustomInstructions,
         personaCustomInstructions,
         creativeMode,
         faqCount,
@@ -46312,9 +47241,9 @@ ${_alloActivityContext(activity)}
           return t('concept_sort.explanation_unavailable') || "Couldn't generate an explanation right now. Try again in a moment.";
       }
   }, [gradeLevel, callGemini]);
-  const handleMoveToUnit = (itemId, targetUnitId) => {
+  const handleMoveToUnit = (itemInstanceId, targetUnitId) => {
       setHistory(prev => prev.map(item =>
-          item.id === itemId
+          _alloArtifactMatchesInstanceId(item, itemInstanceId)
               ? { ...item, unitId: targetUnitId === 'uncategorized' ? null : targetUnitId }
               : item
       ));
@@ -50013,6 +50942,46 @@ ${_alloActivityContext(activity)}
           anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
                 })}
             </div>
+            <div style={{display: isGuidedToolVisible('memory-aid') ? undefined : 'none'}} id="tour-tool-memory-aid" data-help-key="tool_memory_aid" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'memory-aid' ? 'border-teal-600 shadow-xl shadow-teal-500/20' : 'border-slate-200 hover:border-teal-200 shadow-lg shadow-teal-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_memory_aid') || 'Toggle Memory Aid Studio'}
+                    data-help-key="tool_memory_aid"
+                    aria-expanded={expandedTools.includes('memory-aid')} onClick={() => toggleTool('memory-aid')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-teal-50 transition-colors"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><Lightbulb size={16}/> {t('sidebar.tool_memory_aid') || 'Memory Aid Studio'}</div>
+                  {expandedTools.includes('memory-aid') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                {expandedTools.includes('memory-aid') && window.AlloModules && window.AlloModules.MemoryAidPanel && React.createElement(window.AlloModules.MemoryAidPanel, {
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
+                  memoryAidSelectionMode, setMemoryAidSelectionMode,
+                  memoryAidTypes, setMemoryAidTypes,
+                  memoryAidAuthorshipMode, setMemoryAidAuthorshipMode,
+                  memoryAidReflectionLevel, setMemoryAidReflectionLevel,
+                  memoryAidReasoningRequired, setMemoryAidReasoningRequired,
+                  memoryAidCount, setMemoryAidCount,
+                  memoryAidCustomInstructions, setMemoryAidCustomInstructions,
+                  t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('applied-challenge') ? undefined : 'none'}} id='tour-tool-applied-challenge' data-help-key='tool_applied_challenge' className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
+                ${activeView === 'applied-challenge' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
+              `}>
+                <button
+                    aria-label={t('common.toggle_applied_challenge') || 'Toggle Applied Challenge Studio'}
+                    data-help-key='tool_applied_challenge'
+                    aria-expanded={expandedTools.includes('applied-challenge')} onClick={() => toggleTool('applied-challenge')}
+                    className='w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors'
+                >
+                  <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
+                  {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
+                </button>
+                {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t
+                })}
+            </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
               `}>
@@ -50966,7 +51935,7 @@ ${_alloActivityContext(activity)}
                 </button>
               </div>
             )}
-            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} t={t} />}
+            {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && !isParentMode && <TeacherHistoryTab handleApplyRosterGroup={handleApplyRosterGroup} hasSourceOrAnalysis={hasSourceOrAnalysis} rosterKey={rosterKey} setIsRosterKeyOpen={setIsRosterKeyOpen} onDifferentiateByGroup={() => { setRosterBatchOpenRequest(request => request + 1); setIsRosterKeyOpen(true); }} t={t} />}
             {(!isTeacherMode || activeSidebarTab === 'history') && <HistoryPanel activeSidebarTab={activeSidebarTab} activeStation={activeStation} activeUnitId={activeUnitId} addToast={addToast} cloudSyncStatus={cloudSyncStatus} editTitle={editTitle} editingId={editingId} generatedContent={generatedContent} getDefaultTitle={getDefaultTitle} getFilteredHistory={getFilteredHistory} getIconForType={getIconForType} handleCancelEdit={handleCancelEdit} handleClearHistory={handleClearHistory} handleCreateUnit={handleCreateUnit} handleDeleteHistoryItem={handleDeleteHistoryItem} handleDeleteUnit={handleDeleteUnit} handleDragEnd={handleDragEnd} handleDragEnter={handleDragEnter} handleDragStart={handleDragStart} handleLoadProject={handleLoadProject} handleMoveToUnit={handleMoveToUnit} handleRestoreView={handleRestoreView} handleSaveEdit={handleSaveEdit} handleSetIsProjectSettingsOpenToTrue={handleSetIsProjectSettingsOpenToTrue} handleSetIsUnitModalOpenToFalse={handleSetIsUnitModalOpenToFalse} handleSetIsUnitModalOpenToTrue={handleSetIsUnitModalOpenToTrue} handleSetMovingItemIdToNull={handleSetMovingItemIdToNull} handleStartEdit={handleStartEdit} handleToggleIsHistoryMaximized={handleToggleIsHistoryMaximized} history={history} initiateSaveStudentProject={initiateSaveStudentProject} initiateSaveTeacherProject={initiateSaveTeacherProject} isCloudSyncEnabled={isCloudSyncEnabled} isCanvas={isCanvas} canvasRecoverySaveStatus={canvasRecoverySaveStatus} canvasRecoverySnapshotCount={canvasRecoveryVaultState.enabled ? canvasRecoveryVaultState.snapshotCount : canvasRecoveryStore.snapshots.length} onOpenDeviceRecovery={openCanvasRecoveryManager} isHistoryMaximized={isHistoryMaximized} isIndependentMode={isIndependentMode} isParentMode={isParentMode} isSaveActionPulsing={isSaveActionPulsing} isStorageDisabled={isStorageDisabled} isSyncMode={isSyncMode} isTeacherMode={isTeacherMode} isUnitModalOpen={isUnitModalOpen} lastSaved={lastSaved} moveItem={moveItem} movingItemId={movingItemId} newUnitName={newUnitName} pendingSync={pendingSync} projectFileInputRef={projectFileInputRef} sanitizeString={sanitizeString} activeSelStation={activeSelStation} setActiveSelStation={setActiveSelStation} setActiveStation={setActiveStation} setActiveUnitId={setActiveUnitId} setEditTitle={setEditTitle} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setMovingItemId={setMovingItemId} setNewUnitName={setNewUnitName} setSelHubTab={setSelHubTab} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTab={setStemLabTab} t={t} onVisualizeUnit={openThroughlineForUnit} units={units} />}
         </div>
         {isWide && !isFullscreen && !isZenMode && (
@@ -52186,6 +53155,16 @@ ${_alloActivityContext(activity)}
                     // Phase 10: interactive grading + XP
                     callGemini, addXp, addToast,
                 })}
+                {activeView === 'memory-aid' && window.AlloModules && window.AlloModules.MemoryAidView && React.createElement(window.AlloModules.MemoryAidView, {
+                    generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, callGemini, callImagen, callGeminiImageEdit, callGeminiVision,
+                    handleSpeak, handleDownloadAudio, downloadingContentId,
+                    addToast, gradeLevel, universalImageStyle,
+                })}
+                {activeView === 'applied-challenge' && window.AlloModules && window.AlloModules.AppliedChallengeView && React.createElement(window.AlloModules.AppliedChallengeView, {
+                    generatedContent, isTeacherMode, isProcessing,
+                    handleNoteUpdate, callGemini, addToast, gradeLevel,
+                })}
                 {activeView === 'image' && window.AlloModules && window.AlloModules.ImageView && React.createElement(window.AlloModules.ImageView, {
                     t, leveledTextLanguage, fillInTheBlank, generatedContent,
                     singleImageOverride, isTeacherMode, imageRefinementInput, isProcessing,
@@ -52295,13 +53274,18 @@ ${_alloActivityContext(activity)}
                 })()}
                 {activeView === 'math' && window.AlloModules && window.AlloModules.MathView && React.createElement(window.AlloModules.MathView, {
                     t, generatedContent, isTeacherMode, isIndependentMode, isProcessing,
-                    showMathAnswers, mathSelfGradeMode, mathEditInput, isMathEditingChat,
+                    mathResourceId: mathSelfGradeContextKey,
+                    showMathAnswers: effectiveShowMathAnswers,
+                    mathSelfGradeMode: effectiveMathSelfGradeMode,
+                    mathStudentAnswers: effectiveMathStudentAnswers,
+                    mathEditInput, isMathEditingChat,
                     mathHintData, mathCheckResults, mathSubject, studentResponses,
                     gridPoints, base10Value, numberLineMarkers, fractionPieces,
                     cubeDims, angleValue, labToolData, cubeBuilderMode, cubePositions,
                     setStemLabTool, setStemLabTab, setShowStemLab,
-                    setGridPoints, setBase10Value, setNumberLineRange,
-                    setFractionPieces, setCubeDims, setAngleValue, setMathEditInput,
+                    setGridPoints, setBase10Value, setNumberLineMarkers, setNumberLineRange,
+                    setFractionPieces, setCubeDims, setAngleValue, setMathEditInput, setMathStudentAnswers,
+                    setLabToolData,
                     setCubeBuilderMode, setCubePositions, setCubeBuilderChallenge, setCubeBuilderFeedback,
                     handleToggleShowMathAnswers, handleSetShowMathAnswersToTrue,
                     handleToggleMathSelfGrade, submitMathSelfGrade,
@@ -53794,6 +54778,9 @@ ${_alloActivityContext(activity)}
                               onClick={() => {
                                 const label = draft.label.trim().slice(0, 80);
                                 if (!label) return;
+                                const requestedGroupId = typeof draft.team === 'string' && draft.team.indexOf('group:') === 0 ? draft.team.slice(6) : '';
+                                const goalTeam = requestedGroupId && !(rosterKey && rosterKey.groups && rosterKey.groups[requestedGroupId])
+                                  ? 'class' : draft.team;
                                 const goal = normalizeClassGoal({
                                   id: 'goal-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
                                   label,
@@ -53801,7 +54788,7 @@ ${_alloActivityContext(activity)}
                                   tokens: draft.tokens,
                                   allowance: draft.allowance,
                                   mode: draft.mode,
-                                  team: draft.team,
+                                  team: goalTeam,
                                   tracked: draft.trackedMetric !== 'none' ? { metric: draft.trackedMetric, threshold: draft.trackedThreshold } : null,
                                   active: true,
                                 });
@@ -54455,6 +55442,8 @@ ${_alloActivityContext(activity)}
         onClose={() => setIsRosterKeyOpen(false)}
         rosterKey={rosterKey}
         setRosterKey={setRosterKey}
+        batchOpenRequest={rosterBatchOpenRequest}
+        rosterStorageError={rosterStorageError}
         onApplyGroup={handleApplyRosterGroup}
         onBatchGenerate={handleBatchGenerateForRoster}
         onSyncToSession={handleSyncRosterToSession}

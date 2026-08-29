@@ -12,6 +12,13 @@ import { describe, expect, it } from 'vitest';
 import { makeAppsScriptHarness, repositoryFixture, teacher, snapshot, GS_SOURCE, DOMAIN, ADMIN, EVALUATOR, TEACHER_ONE, TEACHER_TWO, FIXED_NOW } from './helpers/educator_evaluation_gs_harness.js';
 
 const teacherIds = workspace => workspace.teachers.map(item => item.id).sort();
+function performReviewedDirectoryChange(harness, kind, candidate) {
+  const review = harness.invoke('reviewPortalDirectoryChange', { kind, candidate }).review;
+  return harness.invoke('performPortalDirectoryChange', {
+    reviewToken: review.token,
+    acknowledgeImpact: true,
+  });
+}
 function seedCohortHistory(harness) {
   const boot = harness.invoke('bootstrap');
   const formal = (id, teacherId, value, finalizedAt = '2026-06-01T12:00:00.000Z') => ({
@@ -173,7 +180,9 @@ describe('Educator Evaluation Apps Script concurrency and append-only records', 
     harness.setActiveEmail(ADMIN);
     const health = harness.invoke('getPortalSetupHealth');
     expect(health.checks.workspaceCommitRecoveryRequired).toBe(true);
-    expect(health.checks.workspaceMetadataIntact).toBe(false);
+    // Health is intentionally read-only: the last confirmed canonical file and
+    // its metadata remain intact while the newer journal waits for recovery.
+    expect(health.checks.workspaceMetadataIntact).toBe(true);
 
     workspaceFile.setContent = originalSetContent;
     harness.setActiveEmail(EVALUATOR);
@@ -279,9 +288,13 @@ describe('Educator Evaluation Apps Script notification and cohort privacy', () =
     const harness = repositoryFixture();
     harness.setActiveEmail(EVALUATOR);
     const secret = 'Student-specific evidence that must never enter email';
-    const result = harness.invoke('sendPortalNotification', {
+    const review = harness.invoke('reviewPortalNotification', {
       teacherId: 't1', target: 'teacher', text: secret, evaluationBody: secret,
-      educatorName: 'Teacher One', rating: 'Unsatisfactory', recipient: `attacker@${DOMAIN}`,
+      educatorName: 'Teacher One', rating: 'Unsatisfactory',
+      reviewToken: 'attacker-token', acknowledged: true,
+    }).review;
+    const result = harness.invoke('sendPortalNotification', {
+      teacherId: 't1', target: 'teacher', reviewToken: review.token, acknowledged: true,
     });
     expect(result).toMatchObject({ ok: true, sent: true, target: 'teacher' });
     expect(harness.sentMail).toHaveLength(1);
@@ -298,9 +311,11 @@ describe('Educator Evaluation Apps Script notification and cohort privacy', () =
   it('does not notify an assigned evaluator whose member account is inactive', () => {
     const harness = repositoryFixture();
     harness.setActiveEmail(ADMIN);
-    harness.invoke('adminUpsertMember', { email: EVALUATOR, displayName: 'Principal Rivera', role: 'evaluator', active: false });
+    performReviewedDirectoryChange(harness, 'member', {
+      email: EVALUATOR, displayName: 'Principal Rivera', role: 'evaluator', active: false,
+    });
     harness.setActiveEmail(TEACHER_ONE);
-    const error = harness.invokeError('sendPortalNotification', { teacherId: 't1', target: 'evaluator' });
+    const error = harness.invokeError('reviewPortalNotification', { teacherId: 't1', target: 'evaluator' });
     expect(error.code).toBe('not_configured');
     expect(harness.sentMail).toHaveLength(0);
   });
@@ -365,9 +380,21 @@ describe('Educator Evaluation Apps Script hardened setup and request boundary', 
 
     const harness = repositoryFixture();
     harness.setActiveEmail(ADMIN);
-    const demote = harness.invokeError('adminUpsertMember', { email: ADMIN, displayName: 'Repository Administrator', role: 'evaluator', active: true });
+    const demoteReview = harness.invoke('reviewPortalDirectoryChange', {
+      kind: 'member',
+      candidate: { email: ADMIN, displayName: 'Repository Administrator', role: 'evaluator', active: true },
+    }).review;
+    const demote = harness.invokeError('performPortalDirectoryChange', {
+      reviewToken: demoteReview.token, acknowledgeImpact: true,
+    });
     expect(demote.code).toBe('bad_member');
-    const deactivate = harness.invokeError('adminUpsertMember', { email: ADMIN, displayName: 'Repository Administrator', role: 'admin', active: false });
+    const deactivateReview = harness.invoke('reviewPortalDirectoryChange', {
+      kind: 'member',
+      candidate: { email: ADMIN, displayName: 'Repository Administrator', role: 'admin', active: false },
+    }).review;
+    const deactivate = harness.invokeError('performPortalDirectoryChange', {
+      reviewToken: deactivateReview.token, acknowledgeImpact: true,
+    });
     expect(deactivate.code).toBe('bad_member');
     expect(harness.invoke('verifyDeploymentIdentity')).toMatchObject({ email: ADMIN, role: 'admin' });
   });
@@ -787,10 +814,16 @@ describe('Educator Evaluation Apps Script server-derived lifecycle records', () 
       ['observation', 100],
     ]);
     const snapshots = saved.workspace.cycleSnapshots.filter(item => item.teacherId === 'peer-01');
-    expect(snapshots).toHaveLength(1);
-    expect(snapshots[0]).toMatchObject({ finalizedAt: FIXED_NOW, finalScore: 2, academicYear: '2026-27' });
-    expect(snapshots[0].id).not.toBe('client-forged-snapshot');
-    expect(snapshots[0].weightSnapshot).toEqual(released.weightSnapshot);
+    const historicalSnapshots = snapshots.filter(item => item.academicYear === '2025-26');
+    expect(historicalSnapshots.map(item => [item.id, item.finalScore]).sort()).toEqual([
+      ['peer-01-a', 0],
+      ['peer-01-b', 2],
+    ]);
+    const currentSnapshots = snapshots.filter(item => item.academicYear === '2026-27');
+    expect(currentSnapshots).toHaveLength(1);
+    expect(currentSnapshots[0]).toMatchObject({ finalizedAt: FIXED_NOW, finalScore: 2 });
+    expect(snapshots.some(item => item.id === 'client-forged-snapshot')).toBe(false);
+    expect(currentSnapshots[0].weightSnapshot).toEqual(released.weightSnapshot);
   });
 });
 

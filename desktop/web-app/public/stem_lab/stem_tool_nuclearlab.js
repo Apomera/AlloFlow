@@ -695,6 +695,231 @@
       takeaway: 'A measurement without uncertainty cannot carry the word “proves.”' }
   ];
 
+  // Keep reflective writing out of the 21-section parent render. A controlled
+  // textarea on that parent would rebuild every chart and simulator on each
+  // keystroke, which is a poor writing experience on a modest device. This
+  // small child owns the draft; only Save or Clear touches persisted tool data.
+  function NKReflectionEditor(props) {
+    var React = props.React;
+    var h = React.createElement;
+    var confidenceOptions = [
+      { id: 'building', label: 'Still building the idea' },
+      { id: 'growing', label: 'More confident' },
+      { id: 'explain', label: 'Ready to explain it' }
+    ];
+    var saved = props.saved && typeof props.saved === 'object' ? props.saved : {};
+    var savedConfidence = confidenceOptions.some(function (option) {
+      return option.id === saved.confidence;
+    }) ? saved.confidence : '';
+    var savedIdea = typeof saved.idea === 'string' ? saved.idea.slice(0, 280) : '';
+    var savedQuestion = typeof saved.question === 'string' ? saved.question.slice(0, 280) : '';
+    var stConfidence = React.useState(savedConfidence);
+    var confidence = stConfidence[0], setConfidence = stConfidence[1];
+    var stIdea = React.useState(savedIdea);
+    var idea = stIdea[0], setIdea = stIdea[1];
+    var stQuestion = React.useState(savedQuestion);
+    var question = stQuestion[0], setQuestion = stQuestion[1];
+    var stNotice = React.useState('');
+    var notice = stNotice[0], setNotice = stNotice[1];
+    var key = props.routeKey;
+    var headingId = 'nk-reflection-heading-' + key;
+    var helpId = 'nk-reflection-help-' + key;
+    var ideaId = 'nk-reflection-idea-' + key;
+    var ideaCountId = ideaId + '-count';
+    var questionId = 'nk-reflection-question-' + key;
+    var questionCountId = questionId + '-count';
+    var savedHas = !!(savedConfidence || savedIdea || savedQuestion);
+    var draftHas = !!(confidence || idea.trim() || question.trim());
+    var dirty = confidence !== savedConfidence
+      || idea.trim() !== savedIdea
+      || question.trim() !== savedQuestion;
+    var canSave = draftHas && dirty;
+    var dark = props.isDark;
+    var bodyInk = dark ? '#e2e8f0' : '#334155';
+    var quietInk = dark ? '#cbd5e1' : '#475569';
+    var fieldBackground = dark ? 'rgba(15,23,42,0.82)' : '#fff';
+    var fieldBorder = '#64748b';
+
+    function changed(setter, value) {
+      setter(value);
+      if (notice) setNotice('');
+    }
+    function submit(event) {
+      event.preventDefault();
+      if (!canSave) return;
+      var cleanIdea = idea.trim();
+      var cleanQuestion = question.trim();
+      setIdea(cleanIdea);
+      setQuestion(cleanQuestion);
+      setNotice('Reflection saved with your lab progress.');
+      props.onSave({
+        confidence: confidence,
+        idea: cleanIdea,
+        question: cleanQuestion
+      });
+    }
+    function clearReflection() {
+      setConfidence('');
+      setIdea('');
+      setQuestion('');
+      setNotice('Saved reflection cleared.');
+      props.onClear();
+    }
+
+    var status = notice || (savedHas && !dirty
+      ? 'Reflection saved for this route.'
+      : (dirty ? 'Unsaved changes.' : 'Nothing saved yet.'));
+
+    return h('section', {
+      'data-nk-reflection': key,
+      'aria-labelledby': headingId,
+      className: 'mt-3 rounded-xl border p-3',
+      style: {
+        borderColor: 'rgba(34,211,238,0.58)',
+        background: dark ? 'rgba(8,47,73,0.28)' : 'rgba(236,254,255,0.92)'
+      }
+    },
+      h('h5', {
+        id: headingId,
+        className: 'text-xs font-black',
+        style: { color: dark ? '#22d3ee' : '#0e7490' }
+      }, props.routeQuestion ? 'Finish your route' : 'Capture what you learned'),
+      props.routeQuestion
+        ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: bodyInk } },
+            props.routeIcon + ' ' + props.routeQuestion)
+        : null,
+      h('p', {
+        id: helpId,
+        className: 'text-[11px] mt-1 leading-relaxed',
+        style: { color: quietInk }
+      }, 'Optional. There is no right answer and no score. Your note stays with your lab progress.'),
+      h('form', { className: 'mt-2', onSubmit: submit },
+        h('fieldset', { 'aria-describedby': helpId },
+          h('legend', { className: 'text-[11px] font-black mb-1', style: { color: bodyInk } },
+            'How ready are you to explain this question in your own words?'),
+          h('div', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-2' },
+            confidenceOptions.map(function (option) {
+              var selected = confidence === option.id;
+              return h('label', {
+                key: option.id,
+                className: 'min-h-11 flex items-center gap-2 rounded-lg border px-3 py-2 text-[11px] font-bold cursor-pointer',
+                style: selected
+                  ? {
+                      borderColor: '#22d3ee',
+                      background: dark ? 'rgba(34,211,238,0.2)' : 'rgba(207,250,254,0.96)',
+                      color: dark ? '#cffafe' : '#164e63'
+                    }
+                  : {
+                      borderColor: fieldBorder,
+                      background: fieldBackground,
+                      color: bodyInk
+                    }
+              },
+                h('input', {
+                  type: 'radio',
+                  name: 'nk-reflection-confidence-' + key,
+                  value: option.id,
+                  'aria-label': option.label,
+                  checked: selected,
+                  onChange: function () { changed(setConfidence, option.id); },
+                  style: {
+                    width: '1.15rem',
+                    height: '1.15rem',
+                    accentColor: '#0891b2',
+                    flexShrink: 0
+                  }
+                }),
+                h('span', null, option.label));
+            })
+          )
+        ),
+        h('div', { className: 'mt-3' },
+          h('label', { htmlFor: ideaId, className: 'block text-[11px] font-black', style: { color: bodyInk } },
+            'One idea I can explain now'),
+          h('textarea', {
+            id: ideaId,
+            value: idea,
+            maxLength: 280,
+            rows: 3,
+            'aria-describedby': helpId + ' ' + ideaCountId,
+            onChange: function (event) { changed(setIdea, event.target.value); },
+            className: 'mt-1 w-full rounded-lg border p-2.5 text-sm',
+            style: {
+              minHeight: '5.5rem',
+              resize: 'vertical',
+              background: fieldBackground,
+              borderColor: fieldBorder,
+              color: bodyInk
+            }
+          }),
+          h('p', {
+            id: ideaCountId,
+            className: 'mt-1 text-[10px] text-right',
+            style: { color: quietInk }
+          }, idea.length + ' of 280 characters')
+        ),
+        h('div', { className: 'mt-3' },
+          h('label', { htmlFor: questionId, className: 'block text-[11px] font-black', style: { color: bodyInk } },
+            'One question I still have (optional)'),
+          h('textarea', {
+            id: questionId,
+            value: question,
+            maxLength: 280,
+            rows: 3,
+            'aria-describedby': helpId + ' ' + questionCountId,
+            onChange: function (event) { changed(setQuestion, event.target.value); },
+            className: 'mt-1 w-full rounded-lg border p-2.5 text-sm',
+            style: {
+              minHeight: '5.5rem',
+              resize: 'vertical',
+              background: fieldBackground,
+              borderColor: fieldBorder,
+              color: bodyInk
+            }
+          }),
+          h('p', {
+            id: questionCountId,
+            className: 'mt-1 text-[10px] text-right',
+            style: { color: quietInk }
+          }, question.length + ' of 280 characters')
+        ),
+        h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
+          h('button', {
+            type: 'submit',
+            disabled: !canSave,
+            className: 'min-h-11 px-4 py-2 rounded-lg text-[11px] font-black',
+            style: {
+              background: '#0e7490',
+              border: '1px solid #0e7490',
+              color: '#fff',
+              opacity: canSave ? 1 : 0.55
+            }
+          }, savedHas ? 'Save changes' : 'Save reflection'),
+          savedHas
+            ? h('button', {
+                type: 'button',
+                onClick: clearReflection,
+                className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold',
+                style: {
+                  background: 'transparent',
+                  border: '1px solid ' + fieldBorder,
+                  color: quietInk
+                }
+              }, 'Clear saved reflection')
+            : null,
+          h('p', {
+            'data-nk-reflection-status': key,
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            className: 'text-[11px] font-bold',
+            style: { color: dark ? '#a7f3d0' : '#047857' }
+          }, status)
+        )
+      )
+    );
+  }
+
   // ── Readable ink. The accent colours below are chosen to sit on a DARK
   //    card, and most of them do that well. Put the same hex on the light
   //    theme's near-white card and it collapses: a static audit of every
@@ -999,8 +1224,11 @@
         check: function (d) { return !!(d && d.doseWeighted && (d.wrTried || []).length >= 3); } },
       { id: 'nk_biohalf', label: 'Compare four nuclides inside a body', icon: '🫀',
         check: function (d) { return !!(d && (d.bioSeen || []).length >= 4); } },
-      { id: 'nk_paths', label: 'Follow two question routes through the lab', icon: '🧭',
-        check: function (d) { return !!(d && (d.pathsTried || []).length >= 2); } },
+      { id: 'nk_paths', label: 'Complete two question routes through the lab', icon: '🧭',
+        check: function (d) {
+          var paths = d && Array.isArray(d.pathsCompleted) ? d.pathsCompleted : [];
+          return paths.filter(function (id, i) { return paths.indexOf(id) === i; }).length >= 2;
+        } },
       { id: 'nk_shelter', label: 'Find where shelter beats evacuation, and where it stops', icon: '🏠',
         check: function (d) { return !!(d && d.shelterUsed && (d.shSeen || []).length >= 3); } },
       { id: 'nk_protect', label: 'Work out a stay time with all three levers', icon: '⏱️',
@@ -2341,14 +2569,30 @@
         // modes continue to render every matching section.
         if (typeof nkPath !== 'undefined' && nkPath && nkPath.steps.indexOf(id) === -1) return null;
         var children = Array.prototype.slice.call(arguments, 2);
+        var headingId = 'nkheading-' + id;
+        var hasHeading = false;
+        children = children.map(function (child) {
+          if (!hasHeading && React.isValidElement(child) && child.type === 'h4') {
+            hasHeading = true;
+            return React.cloneElement(child, { id: headingId });
+          }
+          return child;
+        });
         // A route was only walkable from the index: read a step, scroll back up,
         // open the drawer, find the next one. Sections on the active route now
         // carry their own step footer, so it can be followed straight through.
         var footer = nkRouteFooter(id, accent);
         var node = card.apply(null, [accent].concat(footer ? children.concat([footer]) : children));
         return React.cloneElement(node, {
+          key: 'nksec-' + id,
           id: 'nksec-' + id,
           'data-nk-sec': id,
+          // A programmatically focused div does not inherit the name of a child
+          // heading. Give the focus destination an explicit accessible name.
+          // Short routes can also be useful landmarks; the 22-section full lab
+          // uses groups so landmark navigation does not become another long list.
+          role: nkPath ? 'region' : 'group',
+          'aria-labelledby': hasHeading ? headingId : undefined,
           // tabIndex -1 so nkGoTo can move FOCUS here, not just the viewport.
           // Scrolling alone left a keyboard user's focus back on the index
           // button: the page moved, the next Tab went to the next index button,
@@ -2370,9 +2614,9 @@
       var heading = function (accent, text) {
         return h('h4', { className: 'text-xs font-black mb-2', style: { color: ink(accent) } }, text);
       };
-      var pill = function (on, accent, label, onClick, aria) {
+      var pill = function (on, accent, label, onClick, aria, itemKey) {
         return h('button', {
-          key: label, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': aria || label,
+          key: itemKey || label, type: 'button', 'aria-pressed': on ? 'true' : 'false', 'aria-label': aria || label,
           onClick: onClick,
           className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-bold transition-colors',
           style: on
@@ -2559,7 +2803,129 @@
       var nkGroup = d.nkGroup || 'all';
       var nkPathId = d.nkPath || null;
       var nkPath = nkPathId ? NK_PATHS.filter(function (p) { return p.id === nkPathId; })[0] : null;
+      // A route should resume rather than forget. Store only section ids from
+      // that route, in route order, and keep completion separate from exposure:
+      // every step must have opened AND the evidence challenge must be mastered.
+      // This also makes the route quest truthful; selecting two pills is no
+      // longer enough to claim that two routes were completed.
+      var nkRouteSeenMap = d.nkRouteSeen
+        && typeof d.nkRouteSeen === 'object'
+        && !Array.isArray(d.nkRouteSeen)
+          ? d.nkRouteSeen
+          : {};
+      var nkPathsCompleted = Array.isArray(d.pathsCompleted)
+        ? d.pathsCompleted.filter(function (id, i, all) {
+            return all.indexOf(id) === i && NK_PATHS.some(function (route) { return route.id === id; });
+          })
+        : [];
+      function nkRouteSeenFor(route) {
+        var raw = Array.isArray(nkRouteSeenMap[route.id]) ? nkRouteSeenMap[route.id] : [];
+        return route.steps.filter(function (id) { return raw.indexOf(id) !== -1; });
+      }
+      function nkRouteProgressFor(route) {
+        var seen = nkRouteSeenFor(route);
+        var complete = seen.length === route.steps.length
+          && nkPathsCompleted.indexOf(route.id) !== -1;
+        var nextId = route.steps.filter(function (id) { return seen.indexOf(id) === -1; })[0]
+          || (complete ? route.steps[0] : route.steps[route.steps.length - 1]);
+        return {
+          seen: seen,
+          count: seen.length,
+          total: route.steps.length,
+          nextId: nextId,
+          complete: complete
+        };
+      }
+      function nkRecordRouteStep(routeId, sectionId) {
+        var route = NK_PATHS.filter(function (item) { return item.id === routeId; })[0];
+        if (!route || route.steps.indexOf(sectionId) === -1) return false;
+        var before = nkRouteProgressFor(route);
+        var afterCount = before.count + (before.seen.indexOf(sectionId) === -1 ? 1 : 0);
+        var willComplete = !before.complete
+          && evidenceComplete
+          && afterCount === route.steps.length;
+
+        setToolData(function (prev) {
+          var base = (prev && prev._nuclearLab) || {};
+          var rawMap = base.nkRouteSeen
+            && typeof base.nkRouteSeen === 'object'
+            && !Array.isArray(base.nkRouteSeen)
+              ? base.nkRouteSeen
+              : {};
+          var rawSeen = Array.isArray(rawMap[routeId]) ? rawMap[routeId] : [];
+          var seen = route.steps.filter(function (id) { return rawSeen.indexOf(id) !== -1; });
+          var seenChanged = seen.indexOf(sectionId) === -1;
+          if (seenChanged) {
+            seen = route.steps.filter(function (id) {
+              return id === sectionId || rawSeen.indexOf(id) !== -1;
+            });
+          }
+
+          var masteredCount = EVIDENCE_CLAIMS.filter(function (claim) {
+            return Array.isArray(base.evidenceMastered)
+              && base.evidenceMastered.indexOf(claim.id) !== -1;
+          }).length;
+          var completed = Array.isArray(base.pathsCompleted)
+            ? base.pathsCompleted.filter(function (id, i, all) {
+                return all.indexOf(id) === i && NK_PATHS.some(function (item) { return item.id === id; });
+              })
+            : [];
+          var completionChanged = seen.length === route.steps.length
+            && masteredCount === EVIDENCE_CLAIMS.length
+            && completed.indexOf(routeId) === -1;
+          if (!seenChanged && !completionChanged) return prev;
+
+          var cur = Object.assign({}, base);
+          if (seenChanged) {
+            var nextMap = Object.assign({}, rawMap);
+            nextMap[routeId] = seen;
+            cur.nkRouteSeen = nextMap;
+          }
+          if (completionChanged) cur.pathsCompleted = completed.concat([routeId]);
+          var next = Object.assign({}, prev);
+          next._nuclearLab = cur;
+          return next;
+        });
+        return willComplete;
+      }
+      var nkActiveRouteProgress = nkPath ? nkRouteProgressFor(nkPath) : null;
+      var nkActiveRouteNext = nkPath && !nkActiveRouteProgress.complete
+        ? NK_SECTIONS.filter(function (section) {
+            return section.id === nkActiveRouteProgress.nextId;
+          })[0]
+        : null;
+      // Reflections are kept separately for each question-led route. Completing
+      // one question should not make an old answer appear under a different one;
+      // the all-topics view gets its own general-lab note.
+      var nkReflectionKey = nkPath ? nkPath.id : 'all';
+      var nkReflections = d.nkReflections
+        && typeof d.nkReflections === 'object'
+        && !Array.isArray(d.nkReflections)
+          ? d.nkReflections
+          : {};
+      var nkSavedReflection = nkReflections[nkReflectionKey]
+        && typeof nkReflections[nkReflectionKey] === 'object'
+          ? nkReflections[nkReflectionKey]
+          : {};
+      function nkSaveReflection(reflection) {
+        var allowed = ['building', 'growing', 'explain'];
+        var clean = {
+          confidence: allowed.indexOf(reflection.confidence) !== -1 ? reflection.confidence : '',
+          idea: String(reflection.idea || '').trim().slice(0, 280),
+          question: String(reflection.question || '').trim().slice(0, 280)
+        };
+        if (!(clean.confidence || clean.idea || clean.question)) return;
+        var next = Object.assign({}, nkReflections);
+        next[nkReflectionKey] = clean;
+        upd({ nkReflections: next });
+      }
+      function nkClearReflection() {
+        var next = Object.assign({}, nkReflections);
+        delete next[nkReflectionKey];
+        upd({ nkReflections: next });
+      }
       var nkLargeText = !!d.nkLargeText;
+      var nkShowChartData = !!d.nkShowChartData;
       var nkSystemReducedMotion = !!(typeof window !== 'undefined' && window.matchMedia
         && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
       var nkReduceMotion = typeof d.nkReduceMotion === 'boolean' ? d.nkReduceMotion : nkSystemReducedMotion;
@@ -2577,7 +2943,11 @@
         : NK_SECTIONS.filter(nkMatches);
       function nkGoTo(s) {
         var target = typeof document !== 'undefined' && document.getElementById('nksec-' + s.id);
+        var routeCompletedNow = false;
         if (target) {
+          if (nkPath && nkPath.steps.indexOf(s.id) !== -1) {
+            routeCompletedNow = nkRecordRouteStep(nkPath.id, s.id);
+          }
           try { target.scrollIntoView({ behavior: nkReduceMotion ? 'auto' : 'smooth', block: 'start' }); }
           catch (e) { target.scrollIntoView(); }
           // Then take focus with it, so Tab continues from the section the
@@ -2591,7 +2961,10 @@
         // and 53% after — half the screen, permanently, for navigation the
         // reader has just finished with.
         if (d.nkOpen !== false) upd({ nkOpen: false });
-        if (typeof announceToSR === 'function') announceToSR('Jumped to ' + s.label + '.');
+        if (typeof announceToSR === 'function') {
+          announceToSR('Jumped to ' + s.label + '.'
+            + (routeCompletedNow ? ' Route complete: ' + nkPath.q : ''));
+        }
       }
       function nkReviewTopic(id) {
         var section = NK_SECTIONS.filter(function (s) { return s.id === id; })[0];
@@ -2623,11 +2996,11 @@
       // there is nothing telling a reader where in the document they are, and
       // "where am I" is the question a long page has to keep answering.
       //
-      // Written imperatively on purpose. Routing this through React state would
-      // re-render all twenty-one sections on every boundary crossed — measured at
-      // ~100 ms on a throttled CPU — so scrolling would hitch repeatedly just to
-      // move a highlight. The observer writes to the two buttons that change and
-      // touches nothing else.
+      // Written imperatively on purpose. Routing the highlight through React
+      // state would re-render all twenty-one sections on every boundary crossed.
+      // In all-topics mode the observer still touches only the two buttons that
+      // change. On a short question route, a section that remains current for
+      // 900 ms is persisted once so ordinary scrolling can resume later too.
       React.useEffect(function () {
         if (typeof IntersectionObserver !== 'function' || typeof document === 'undefined') return;
         var root = document.querySelector('[data-nuclear-lab]');
@@ -2636,6 +3009,7 @@
         if (!targets.length) return;
         var current = null;
         var visible = {};
+        var dwellTimer = null;
 
         function paint(id, on) {
           var btn = root.querySelector('[data-nk-jump="' + id + '"]');
@@ -2667,13 +3041,25 @@
             if (visible[id] < bestTop) { bestTop = visible[id]; best = id; }
           });
           if (best === current) return;
+          if (dwellTimer) {
+            clearTimeout(dwellTimer);
+            dwellTimer = null;
+          }
           if (current) paint(current, false);
           current = best;
           if (current) paint(current, true);
+          if (current && nkPathId) {
+            var dwellId = current;
+            dwellTimer = setTimeout(function () {
+              nkRecordRouteStep(nkPathId, dwellId);
+              dwellTimer = null;
+            }, 900);
+          }
         }, { rootMargin: '-25% 0px -60% 0px', threshold: 0 });
 
         for (var i = 0; i < targets.length; i++) io.observe(targets[i]);
         return function () {
+          if (dwellTimer) clearTimeout(dwellTimer);
           if (current) paint(current, false);
           io.disconnect();
         };
@@ -2687,6 +3073,7 @@
         if (!nkPath) return null;
         var at = nkPath.steps.indexOf(id);
         if (at === -1) return null;
+        var routeProgress = nkRouteProgressFor(nkPath);
         var sectionOf = function (sid) {
           return NK_SECTIONS.filter(function (x) { return x.id === sid; })[0];
         };
@@ -2721,8 +3108,16 @@
           }),
           prev ? stepBtn(prev, 'prev') : null,
           next ? stepBtn(next, 'next')
-            : h('span', { className: 'text-[11px] font-bold', style: { color: ink('#34d399') } },
-                '✓ End of this route')
+            : h('span', {
+                className: 'text-[11px] font-bold',
+                style: { color: ink(routeProgress.complete ? '#34d399' : '#22d3ee') }
+              }, routeProgress.complete
+                ? '✓ Route complete'
+                : (routeProgress.count < routeProgress.total
+                  ? (evidenceComplete
+                    ? 'Open every route step to complete this route'
+                    : 'Open every route step and finish the evidence challenge')
+                  : 'Finish the evidence challenge to complete this route'))
         );
       }
 
@@ -2736,6 +3131,70 @@
             : { background: isDark ? 'rgba(148,163,184,0.12)' : 'rgba(255,255,255,0.95)', color: isDark ? '#e2e8f0' : '#334155', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(100,116,139,0.28)') }
         }, label);
       };
+
+      // Canvas summaries give the shape and the currently selected value. Some
+      // readers need the numbers themselves, though: screen-reader users,
+      // students who reason better from a table, and anyone checking the model.
+      // Keep these tables opt-in so the default long page remains compact and
+      // fast. The first column is a row header, not merely a styled data cell.
+      function nkChartTable(id, caption, columns, makeRows, accent) {
+        if (!nkShowChartData) return null;
+        var rows = typeof makeRows === 'function' ? makeRows() : makeRows;
+        var rule = isDark ? 'rgba(148,163,184,0.28)' : 'rgba(100,116,139,0.24)';
+        return h('div', {
+          key: 'chart-table-' + id,
+          'data-nk-chart-table': id,
+          className: 'nk-chart-table mt-2 rounded-lg border overflow-x-auto',
+          style: {
+            borderColor: accent + '70',
+            background: isDark ? 'rgba(15,23,42,0.72)' : 'rgba(255,255,255,0.96)'
+          }
+        },
+          h('table', { className: 'w-full text-left text-[11px]', style: { borderCollapse: 'collapse', minWidth: columns.length > 4 ? '42rem' : '30rem' } },
+            h('caption', { className: 'px-2.5 py-2 text-left font-black', style: { color: ink(accent) } }, caption),
+            h('thead', null,
+              h('tr', null, columns.map(function (column, i) {
+                return h('th', {
+                  key: id + '-head-' + i, scope: 'col',
+                  className: 'px-2.5 py-1.5 align-bottom',
+                  style: { color: isDark ? '#e2e8f0' : '#334155', borderTop: '1px solid ' + rule, background: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(241,245,249,0.95)' }
+                }, column);
+              }))
+            ),
+            h('tbody', null, rows.map(function (row, rowIndex) {
+              return h('tr', { key: id + '-row-' + rowIndex }, row.map(function (cell, cellIndex) {
+                var props = {
+                  key: id + '-cell-' + rowIndex + '-' + cellIndex,
+                  className: 'px-2.5 py-1.5 align-top',
+                  style: { color: isDark ? '#e2e8f0' : '#334155', borderTop: '1px solid ' + rule }
+                };
+                if (cellIndex === 0) {
+                  props.scope = 'row';
+                  props.style.fontWeight = 700;
+                  return h('th', props, cell);
+                }
+                return h('td', props, cell);
+              }));
+            }))
+          )
+        );
+      }
+
+      // Route navigation and reading order must tell the same story. Filtering
+      // sections alone left them in the full lab's source order, so browse-mode
+      // screen-reader navigation and ordinary scrolling could encounter step 2
+      // before step 1. Reorder the actual keyed section elements; fall back to
+      // source order if a future route accidentally names a missing section.
+      function nkOrderSections() {
+        var nodes = Array.prototype.slice.call(arguments).filter(Boolean);
+        if (!nkPath) return nodes;
+        var byId = {};
+        nodes.forEach(function (node) {
+          if (node && node.props) byId[node.props['data-nk-sec']] = node;
+        });
+        var ordered = nkPath.steps.map(function (id) { return byId[id]; }).filter(Boolean);
+        return ordered.length === nkPath.steps.length ? ordered : nodes;
+      }
 
       // Every section stays open, so the index is pure navigation — nothing here
       // marks a topic as engaged. The quest hooks still measure real interaction.
@@ -2757,7 +3216,7 @@
             // but aria-expanded already carries the state and pointing at an
             // id that is not in the document is not something to rely on.
             'aria-controls': nkOpen ? 'nk-index-body' : undefined,
-            'aria-label': (nkOpen ? 'Hide' : 'Show') + ' the topic index, ' + NK_SECTIONS.length + ' topics'
+            'aria-label': (nkOpen ? 'Hide' : 'Show') + ' ' + NK_PATHS.length + ' question routes and the topic index, ' + NK_SECTIONS.length + ' topics'
               + (nkPath ? ', currently following the route "' + nkPath.q + '"' : ''),
             onClick: function () { upd({ nkOpen: !nkOpen }); if (typeof beep === 'function') beep(); },
             className: 'min-h-11 px-2.5 py-1.5 rounded-lg text-[11px] font-black',
@@ -2766,10 +3225,12 @@
               color: isDark ? '#c4b5fd' : '#6d28d9',
               border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.3)' : 'rgba(167,139,250,0.35)')
             }
-          }, '🧭 ' + NK_SECTIONS.length + ' topics ' + (nkOpen ? '▾' : '▸')),
+          }, '🧭 Routes · ' + NK_SECTIONS.length + ' ' + (nkOpen ? '▾' : '▸')),
           nkPath && !nkOpen
             ? h('span', { className: 'text-[11px] font-bold', style: { color: ink('#22d3ee') } },
-                nkPath.icon + ' ' + nkPath.q)
+                (nkActiveRouteProgress.complete ? '✓ ' : '')
+                + nkPath.icon + ' ' + nkPath.q
+                + ' · ' + nkActiveRouteProgress.count + '/' + nkActiveRouteProgress.total)
             : null,
           h('label', { htmlFor: 'nk-topic-search', className: 'sr-only' }, 'Search topics'),
           h('input', {
@@ -2785,7 +3246,10 @@
             }
           }),
           h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'text-[10px] font-bold', style: { color: isDark ? '#94a3b8' : '#475569' } },
-            nkPath ? 'route: ' + nkVisible.length + ' steps'
+            nkPath
+              ? (nkActiveRouteProgress.complete
+                ? 'route complete'
+                : 'route: ' + nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' opened')
               : (nkVisible.length === NK_SECTIONS.length ? 'showing all' : 'showing ' + nkVisible.length)),
           h('div', { role: 'group', 'aria-label': 'Reading display options', className: 'flex flex-wrap gap-1' },
             nkDisplayToggle(nkLargeText, 'A+ Text', 'Use larger text throughout the nuclear lab', function () {
@@ -2795,6 +3259,10 @@
             nkDisplayToggle(nkReduceMotion, nkReduceMotion ? 'Motion: low' : 'Motion: standard', 'Reduce non-essential motion throughout the nuclear lab', function () {
               upd({ nkReduceMotion: !nkReduceMotion });
               if (typeof announceToSR === 'function') announceToSR('Low motion ' + (!nkReduceMotion ? 'on.' : 'off.'));
+            }),
+            nkDisplayToggle(nkShowChartData, 'Chart data', 'Display numerical data tables beneath charts', function () {
+              upd({ nkShowChartData: !nkShowChartData });
+              if (typeof announceToSR === 'function') announceToSR('Chart data tables ' + (!nkShowChartData ? 'shown.' : 'hidden.'));
             })
           )
         ),
@@ -2808,10 +3276,27 @@
               'START WITH A QUESTION'),
             h('div', { className: 'flex flex-wrap gap-1' },
               NK_PATHS.map(function (route) {
-                return pill(nkPathId === route.id, '#22d3ee', route.icon + ' ' + route.q, function () {
-                  var on = nkPathId === route.id;
-                  var first = !on && NK_SECTIONS.filter(function (x) { return x.id === route.steps[0]; })[0];
-                  nkPendingTargetRef.current = first || null;
+                var on = nkPathId === route.id;
+                var progress = nkRouteProgressFor(route);
+                var resume = NK_SECTIONS.filter(function (x) { return x.id === progress.nextId; })[0];
+                var resumeNumber = route.steps.indexOf(progress.nextId) + 1;
+                var visibleLabel = (progress.complete ? '✓ ' : '') + route.icon + ' ' + route.q
+                  + (progress.complete
+                    ? ' · complete'
+                    : (progress.count
+                      ? ' · ' + progress.count + '/' + progress.total
+                      : ' · ' + progress.total + ' steps'));
+                var aria = (on
+                  ? 'Leave the route: '
+                  : (progress.complete
+                    ? 'Review completed route: '
+                    : (progress.count ? 'Resume route: ' : 'Follow the route: ')))
+                  + route.q + ' ' + progress.count + ' of ' + progress.total + ' steps opened.'
+                  + (!on && !progress.complete && resume
+                    ? ' Next is step ' + resumeNumber + ': ' + resume.label + '.'
+                    : '');
+                return pill(on, '#22d3ee', visibleLabel, function () {
+                  nkPendingTargetRef.current = on ? null : (resume || null);
                   // Taking a route clears the search and the category, because
                   // three filters fighting each other is worse than none.
                   upd({ nkPath: on ? null : route.id, nkQuery: '', nkGroup: 'all' });
@@ -2819,12 +3304,49 @@
                     pushOnce('pathsTried', route.id);
                   }
                   if (typeof beep === 'function') beep();
-                }, (nkPathId === route.id ? 'Leave the route: ' : 'Follow the route: ') + route.q
-                   + '. ' + route.steps.length + ' topics, starting with ' + route.steps[0] + '.');
+                }, aria, route.id);
               })
             ),
-            nkPath ? h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
-              nkPath.why) : null
+            nkPath ? h(React.Fragment, null,
+              h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
+                nkPath.why),
+              h('div', {
+                'data-nk-route-overview': nkPath.id,
+                className: 'mt-1.5 flex flex-wrap items-center gap-2 rounded-lg border px-2.5 py-2',
+                style: {
+                  borderColor: nkActiveRouteProgress.complete ? 'rgba(52,211,153,0.65)' : 'rgba(34,211,238,0.45)',
+                  background: isDark ? 'rgba(8,47,73,0.3)' : 'rgba(236,254,255,0.9)'
+                }
+              },
+                h('span', { className: 'text-[11px] font-black', style: { color: ink(nkActiveRouteProgress.complete ? '#34d399' : '#22d3ee') } },
+                  nkActiveRouteProgress.complete
+                    ? '✓ Route complete'
+                    : nkActiveRouteProgress.count + ' of ' + nkActiveRouteProgress.total + ' steps opened'),
+                h('progress', {
+                  value: nkActiveRouteProgress.count,
+                  max: nkActiveRouteProgress.total,
+                  'aria-label': nkPath.q + ': ' + nkActiveRouteProgress.count + ' of '
+                    + nkActiveRouteProgress.total + ' steps opened'
+                    + (nkActiveRouteProgress.complete ? ', route complete' : ''),
+                  className: 'flex-1 min-w-[8rem] h-2',
+                  style: { accentColor: nkActiveRouteProgress.complete ? '#059669' : '#0891b2' }
+                }),
+                nkActiveRouteNext
+                  ? h('button', {
+                      type: 'button',
+                      onClick: function () { nkGoTo(nkActiveRouteNext); },
+                      'aria-label': 'Continue ' + nkPath.q + ' at step '
+                        + (nkPath.steps.indexOf(nkActiveRouteNext.id) + 1) + ': ' + nkActiveRouteNext.label,
+                      className: 'min-h-11 px-3 py-2 rounded-lg text-[11px] font-black',
+                      style: {
+                        background: '#0e7490',
+                        color: '#fff',
+                        border: '1px solid #0e7490'
+                      }
+                    }, 'Continue: ' + nkActiveRouteNext.label + ' →')
+                  : null
+              )
+            ) : null
           ),
           // These pills stay fully legible while a route is active. Dimming
           // them read as "disabled" when they are not — they are the way OFF a
@@ -2886,11 +3408,12 @@
         'data-nuclear-lab': 'true',
         'data-nk-large-text': nkLargeText ? 'true' : 'false',
         'data-nk-reduce-motion': nkReduceMotion ? 'true' : 'false',
+        'data-nk-chart-data': nkShowChartData ? 'true' : 'false',
         className: 'nk-readable relative max-w-5xl mx-auto animate-in fade-in duration-200',
         style: { background: isDark ? '#0f172a' : undefined, borderRadius: isDark ? 12 : undefined, '--nk-focus': isDark ? '#fbbf24' : '#6d28d9' }
       },
         h('style', null,
-          '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
+          '.nk-readable button:focus-visible,.nk-readable input:focus-visible,.nk-readable textarea:focus-visible,.nk-readable select:focus-visible,.nk-readable a:focus-visible{outline:3px solid var(--nk-focus)!important;outline-offset:3px}' +
           '.nk-readable [data-nk-sec]:focus{outline:3px solid var(--nk-focus);outline-offset:3px}' +
           '.nk-readable .nk-skip-link{position:absolute;left:-9999px;top:.5rem;z-index:60;min-height:44px;padding:.5rem .75rem;border-radius:.5rem;background:#fbbf24;color:#0b1020;font-weight:800;border:2px solid #0b1020}' +
           '.nk-readable .nk-skip-link:focus{left:.5rem}' +
@@ -2899,6 +3422,7 @@
           '.nk-readable[data-nk-reduce-motion="true"]{animation:none!important}' +
           '.nk-readable[data-nk-reduce-motion="true"] *,.nk-readable[data-nk-reduce-motion="true"] *::before,.nk-readable[data-nk-reduce-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}' +
           '@media (prefers-reduced-motion:reduce){.nk-readable{animation:none!important}.nk-readable *,.nk-readable *::before,.nk-readable *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}' +
+          '@media (max-height:500px){.nk-readable nav[aria-label="Nuclear lab topics"]{position:static!important}}' +
           '@media (max-width:640px){' +
           '.nk-readable .text-\\[11px\\]{font-size:.875rem!important;line-height:1.35rem!important}' +
           '.nk-readable .text-\\[10px\\]{font-size:.75rem!important;line-height:1.1rem!important}' +
@@ -2932,6 +3456,8 @@
 
         nkIndex,
 
+        nkOrderSections(
+
         // ── 1. decay ──
         sec('halflife', '#a78bfa',
           heading(ink('#c4b5fd'), '⏳ 1. Half-life: stable under ordinary conditions'),
@@ -2961,6 +3487,30 @@
           ),
           h('p', { id: 'nk-decay-description', className: 'text-[11px] mt-2 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             h('b', null, iso.name + ' (' + iso.decay + '): '), iso.use),
+          nkChartTable(
+            'decay',
+            'Decay curve values for ' + iso.name + '. Selected point plus half-life landmarks.',
+            ['Half-lives elapsed', 'Time elapsed', 'Nuclei remaining'],
+            function () {
+              var marks = [0, 1, 2, 3, 4, 5, 7, 10];
+              var found = false;
+              for (var mi = 0; mi < marks.length; mi++) {
+                if (Math.abs(marks[mi] - halves) < 1e-9) found = true;
+              }
+              if (!found) marks.push(halves);
+              marks.sort(function (a, b) { return a - b; });
+              return marks.map(function (mark) {
+                var selected = Math.abs(mark - halves) < 1e-9;
+                var whole = Math.abs(mark - Math.round(mark)) < 1e-9;
+                return [
+                  (selected ? 'Selected: ' : '') + nkFmt(mark, whole ? 0 : 2),
+                  nkYears(mark * iso.hl),
+                  nkFmt(Math.pow(0.5, mark) * 100, mark >= 7 ? 3 : 2) + '%'
+                ];
+              });
+            },
+            '#a78bfa'
+          ),
           ponder('halflife', '#a78bfa',
             halves >= 7
               ? 'After ' + nkFmt(halves, 0) + ' half-lives less than 1% is left — but never exactly zero. Why can this curve never actually reach the axis?'
@@ -3290,6 +3840,17 @@
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-binding-description', className: 'text-[10px] mb-2', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Mass number across, MeV per nucleon up. The marked peak is where nothing can release energy by changing at all.'),
+          nkChartTable(
+            'binding',
+            'All plotted binding-energy values. Energy is in megaelectronvolts per nucleon.',
+            ['Isotope', 'Mass number', 'Binding energy per nucleon'],
+            function () {
+              return BINDING.map(function (point) {
+                return [point.sym, String(point.a), point.be.toFixed(3) + ' MeV'];
+              });
+            },
+            '#38bdf8'
+          ),
 
           h('div', { className: 'flex flex-wrap gap-1 mb-2' },
             REACTIONS.map(function (r) {
@@ -3423,6 +3984,25 @@
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-bio-description', className: 'text-[10px] mt-1', style: { color: isDark ? '#94a3b8' : '#475569' } },
             'Grey: decay alone. Colour: what is actually left, once the body is also getting rid of it.'),
+          nkChartTable(
+            'biohalf',
+            'Body-burden values for ' + bio.name + ' across five effective half-lives.',
+            ['Point', 'Time since intake', 'Decay alone', 'Decay plus excretion'],
+            function () {
+              var rows = [];
+              for (var life = 0; life <= 5; life++) {
+                var days = life * bioEff;
+                rows.push([
+                  life === 0 ? 'Intake' : life + ' effective half-' + (life === 1 ? 'life' : 'lives'),
+                  nkYears(days / 365.25),
+                  nkFmt(Math.pow(0.5, days / bio.tp) * 100, 1) + '%',
+                  nkFmt(Math.pow(0.5, days / bioEff) * 100, 1) + '%'
+                ]);
+              }
+              return rows;
+            },
+            bio.colour
+          ),
           h('p', { className: 'text-[11px] mt-2 font-bold', style: { color: ink(bio.colour) } },
             bioDriver === 'biology'
               ? 'Biology is running this one. The physical half-life is ' + nkFmt(bioRatio, bioRatio > 100 ? 0 : 1) + ' times the biological one, so decay barely enters the calculation and the effective half-life lands within ' + nkFmt(Math.max(bioGapPct, 0.1), 1) + '% of the biological figure alone.'
@@ -3760,6 +4340,46 @@
               style: { width: '100%', height: '100%', display: 'block' } })),
           h('p', { id: 'nk-count-description', className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#e2e8f0' : '#334155' } },
             'The curve is the inverse square law, and it is not a property of radiation — it is a property of spheres. The same gammas spread over a surface four times larger when you step twice as far back. Doubling your distance does more than most shielding, costs nothing, and is why the first rule of a radiation area is stand further away.'),
+          nkChartTable(
+            'counter',
+            'Inverse-square model and saved counter runs for ' + cdSrc.name + '.',
+            ['Point', 'Distance', 'Count time', 'Source count', 'Background count', 'Net rate'],
+            function () {
+              var marks = [3, 5, 10, 20, 40, 60];
+              var currentFound = false;
+              for (var ci = 0; ci < marks.length; ci++) {
+                if (Math.abs(marks[ci] - cdDist) < 1e-9) currentFound = true;
+              }
+              if (!currentFound) marks.push(cdDist);
+              marks.sort(function (a, b) { return a - b; });
+              var rows = marks.map(function (mark) {
+                var selected = Math.abs(mark - cdDist) < 1e-9;
+                return [
+                  'Model at ' + nkFmt(mark, mark % 1 ? 1 : 0) + ' cm' + (selected ? ' (selected)' : ''),
+                  nkFmt(mark, mark % 1 ? 1 : 0) + ' cm',
+                  'not applicable',
+                  'not applicable',
+                  'not applicable',
+                  cdNetRateAt(mark).toFixed(3) + ' counts/s (model)'
+                ];
+              });
+              cdRuns.forEach(function (run, runIndex) {
+                var runSrc = COUNT_SOURCES.filter(function (source) { return source.id === run.s; })[0] || cdSrc;
+                var net = (run.g - run.b) / run.t;
+                var sigma = Math.sqrt(run.g + run.b) / run.t;
+                rows.push([
+                  'Run ' + (runIndex + 1) + ': ' + runSrc.name,
+                  nkFmt(run.d, run.d % 1 ? 1 : 0) + ' cm',
+                  nkFmt(run.t, 0) + ' s',
+                  nkFmt(run.g, 0),
+                  nkFmt(run.b, 0),
+                  net.toFixed(3) + ' ± ' + sigma.toFixed(3) + ' counts/s'
+                ]);
+              });
+              return rows;
+            },
+            '#2dd4bf'
+          ),
           cdDist < 6 ? h('p', { className: 'text-[11px] mt-1 font-bold', style: { color: ink('#fb923c') } },
             '⚠️ Below about 6 cm the model is stretched. The tube window is no longer small compared with the distance, so the neat 1/d² stops holding and a real measurement would read lower than the curve promises.') : null,
 
@@ -3820,6 +4440,32 @@
             stat('Initial dose rate', nkFmt(ptRate, ptRate < 1 ? 4 : 2) + ' mSv/h', ink(ptSrc.colour)),
             stat('Shield cuts it to', ptThick > 0 ? nkFmt(ptAtten * 100, ptAtten < 0.01 ? 3 : 1) + '%' : 'no shield', ink('#94a3b8')),
             stat('Dose in first hour', nkFmt(ptFirstHourDose, ptFirstHourDose < 1 ? 4 : 2) + ' mSv', ink('#fbbf24'))
+          ),
+          nkChartTable(
+            'protect',
+            'Initial dose-rate values for ' + ptSrc.nuclide + ', unshielded and behind the selected shield.',
+            ['Distance', 'Unshielded initial rate', 'With ' + nkFmt(ptThick, 1) + ' cm of ' + ptShield.name.toLowerCase()],
+            function () {
+              var marks = [0.3, 0.5, 1, 2, 5, 10];
+              var found = false;
+              for (var pi = 0; pi < marks.length; pi++) {
+                if (Math.abs(marks[pi] - ptDist) < 1e-9) found = true;
+              }
+              if (!found) marks.push(ptDist);
+              marks.sort(function (a, b) { return a - b; });
+              function rateText(value) {
+                return nkFmt(value, value < 0.001 ? 6 : (value < 0.1 ? 4 : (value < 1 ? 3 : 2))) + ' mSv/h';
+              }
+              return marks.map(function (mark) {
+                var selected = Math.abs(mark - ptDist) < 1e-9;
+                return [
+                  nkFmt(mark, 1) + ' m' + (selected ? ' (selected)' : ''),
+                  rateText(ptRateAt(mark, 0)),
+                  rateText(ptRateAt(mark))
+                ];
+              });
+            },
+            '#38bdf8'
           ),
 
           h('p', { className: 'text-[11px] font-bold mt-2 mb-1', style: { color: isDark ? '#cbd5e1' : '#475569' } }, 'How long until you reach…'),
@@ -3943,6 +4589,38 @@
           h('div', { id: 'nk-shelter-summary', className: 'grid grid-cols-2 gap-2' },
             stat('Shelter here', nkFmt(shShelterDose, shShelterDose < 10 ? 1 : 0) + ' mSv', ink(shPlace.colour)),
             stat('Evacuate now', nkFmt(shEvacDose, shEvacDose < 10 ? 1 : 0) + ' mSv', ink('#f87171'))
+          ),
+          nkChartTable(
+            'shelter',
+            'Dose comparison for sheltering in ' + shPlace.name.toLowerCase() + ' during a ' + nkFmt(shPlume, 0) + '-hour release.',
+            ['Hours to get clear', 'Dose if sheltering', 'Dose if evacuating'],
+            function () {
+              var marks = [0, 1, 2, 4, 6, 8, 10, 12];
+              function addMark(value) {
+                if (value < 0 || value > 12) return;
+                for (var si = 0; si < marks.length; si++) {
+                  if (Math.abs(marks[si] - value) < 1e-9) return;
+                }
+                marks.push(value);
+              }
+              addMark(shEvac);
+              addMark(shBreakEven);
+              marks.sort(function (a, b) { return a - b; });
+              function doseText(value) {
+                return nkFmt(value, value < 1 ? 3 : (value < 10 ? 2 : 1)) + ' mSv';
+              }
+              return marks.map(function (mark) {
+                var notes = [];
+                if (Math.abs(mark - shEvac) < 1e-9) notes.push('selected');
+                if (Math.abs(mark - shBreakEven) < 1e-9) notes.push('break-even');
+                return [
+                  nkFmt(mark, mark % 1 ? 1 : 0) + ' h' + (notes.length ? ' (' + notes.join(', ') + ')' : ''),
+                  doseText(shShelterDose),
+                  doseText(shEvacDoseAt(mark))
+                ];
+              });
+            },
+            '#a3e635'
           ),
           h('div', { className: 'mt-2 rounded-lg border p-2.5', style: { borderColor: 'rgba(163,230,53,0.5)', background: isDark ? 'rgba(15,23,42,0.6)' : 'rgba(247,254,231,0.9)' } },
             h('p', { className: 'text-sm font-black mb-1', style: { color: ink('#65a30d') } },
@@ -4263,16 +4941,6 @@
               evidenceMastered.length + ' of ' + EVIDENCE_CLAIMS.length + ' mastered')
           ),
 
-          evidenceComplete ? h('aside', {
-            role: 'note', 'aria-label': 'Evidence challenge complete',
-            className: 'mt-2 rounded-lg border p-2.5',
-            style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
-          },
-            h('p', { className: 'text-[11px] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
-            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
-              'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number below to compare the reasoning again.')
-          ) : null,
-
           h('nav', { 'aria-label': 'Evidence challenge claims', className: 'mt-2' },
             h('ol', { className: 'flex flex-wrap gap-1.5' },
               EVIDENCE_CLAIMS.map(function (claim, i) {
@@ -4375,10 +5043,24 @@
                   var mastered = evidenceMastered;
                   var firstMastery = correct && mastered.indexOf(evidenceClaim.id) === -1;
                   if (firstMastery) mastered = mastered.concat([evidenceClaim.id]);
-                  var firstCompletion = firstMastery && mastered.length === EVIDENCE_CLAIMS.length && !d.evidenceAwarded;
-                  upd({ evidenceChecked: checked, evidenceMastered: mastered, evidenceAwarded: d.evidenceAwarded || firstCompletion });
+                  var evidenceNowComplete = firstMastery && mastered.length === EVIDENCE_CLAIMS.length;
+                  var firstCompletion = evidenceNowComplete && !d.evidenceAwarded;
+                  var routeCompletes = evidenceNowComplete
+                    && nkPath
+                    && nkActiveRouteProgress.count === nkActiveRouteProgress.total
+                    && !nkActiveRouteProgress.complete;
+                  var patch = {
+                    evidenceChecked: checked,
+                    evidenceMastered: mastered,
+                    evidenceAwarded: d.evidenceAwarded || firstCompletion
+                  };
+                  if (routeCompletes) patch.pathsCompleted = nkPathsCompleted.concat([nkPath.id]);
+                  upd(patch);
                   if (typeof announceToSR === 'function') {
-                    announceToSR(correct ? 'Evidence match. ' + evidenceClaim.takeaway : 'Take another look. Best verdict: ' + evidenceVerdict.label + '.');
+                    announceToSR((correct
+                      ? 'Evidence match. ' + evidenceClaim.takeaway
+                      : 'Take another look. Best verdict: ' + evidenceVerdict.label + '.')
+                      + (routeCompletes ? ' Route complete: ' + nkPath.q : ''));
                   }
                   if (firstCompletion && !d.evidenceAwarded) {
                     if (typeof celebrate === 'function') celebrate();
@@ -4412,7 +5094,29 @@
                 style: { background: 'transparent', color: isDark ? '#cbd5e1' : '#475569', border: '1px solid ' + (isDark ? 'rgba(148,163,184,0.35)' : 'rgba(100,116,139,0.3)') }
               }, 'Start over')
             )
-          )
+          ),
+
+          evidenceComplete ? h('aside', {
+            role: 'note', 'aria-label': 'Evidence challenge complete',
+            className: 'mt-3 rounded-lg border p-2.5',
+            style: { borderColor: 'rgba(52,211,153,0.65)', background: isDark ? 'rgba(6,78,59,0.28)' : 'rgba(236,253,245,0.96)' }
+          },
+            h('p', { className: 'text-[11px] font-black', style: { color: ink('#059669') } }, '✓ Challenge complete'),
+            h('p', { className: 'text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#d1fae5' : '#065f46' } },
+              'You separated direct support, contradiction, and uncertainty across all five claims. Revisit any number above to compare the reasoning again.')
+          ) : null,
+
+          evidenceComplete ? h(NKReflectionEditor, {
+            key: 'nk-reflection-' + nkReflectionKey,
+            React: React,
+            routeKey: nkReflectionKey,
+            routeQuestion: nkPath ? nkPath.q : '',
+            routeIcon: nkPath ? nkPath.icon : '',
+            saved: nkSavedReflection,
+            isDark: isDark,
+            onSave: nkSaveReflection,
+            onClear: nkClearReflection
+          }) : null
         ),
 
         // ── bridges ──
@@ -4437,6 +5141,7 @@
                 h('span', { className: 'block text-[11px] mt-1 leading-relaxed', style: { color: isDark ? '#cbd5e1' : '#475569' } }, b.why));
             })
           )
+        )
         ),
 
         h('footer', { className: 'mt-3 rounded-lg border p-3 text-center', style: { borderColor: isDark ? 'rgba(148,163,184,.25)' : 'rgba(100,116,139,.22)' } },

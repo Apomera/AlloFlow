@@ -42,9 +42,136 @@ const SKIP_PATTERNS = [
   /blockly_runtime\.bundle\.js$/,
   // Dev probe artifact (1.4MB), never shipped as UI.
   /_codex_pdf_parse_probe\.js$/,
+  // Generated BehaviorLens staging outputs. The canonical shipped module is
+  // behavior_lens_module.js; these files are recreated by _bl_* patch scripts.
+  /_bl_[^\\/]+\.updated\.js$/,
 ];
 
 // ── Anti-Pattern Definitions ───────────────────────────────────────────────
+
+/**
+ * Return a renderer call's props expression without borrowing attributes from
+ * a later sibling. Delimiter matching is necessary because callback bodies and
+ * nested style objects can close many lines before the props do.
+ */
+function rendererPropsContext(lines, lineNum, tagPattern, maxLines = 80) {
+  const windowText = lines.slice(lineNum - 1, Math.min(lines.length, lineNum - 1 + maxLines)).join('\n');
+  const tag = tagPattern.exec(windowText);
+  if (!tag) return windowText;
+
+  let start = tag.index + tag[0].length;
+  while (/\s/.test(windowText[start] || '')) start++;
+  if (windowText[start] !== ',') return windowText.slice(tag.index);
+  start++;
+  while (/\s/.test(windowText[start] || '')) start++;
+
+  const stack = [];
+  let quote = null;
+  let escaped = false;
+  let lineComment = false;
+  let blockComment = false;
+  let regex = false;
+  let regexClass = false;
+  let previousSignificant = '';
+
+  for (let i = start; i < windowText.length; i++) {
+    const character = windowText[i];
+    const next = windowText[i + 1];
+
+    if (lineComment) {
+      if (character === '\n') lineComment = false;
+      continue;
+    }
+    if (blockComment) {
+      if (character === '*' && next === '/') {
+        blockComment = false;
+        i++;
+      }
+      continue;
+    }
+    if (quote) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === quote) quote = null;
+      continue;
+    }
+    if (regex) {
+      if (escaped) escaped = false;
+      else if (character === '\\') escaped = true;
+      else if (character === '[') regexClass = true;
+      else if (character === ']') regexClass = false;
+      else if (character === '/' && !regexClass) regex = false;
+      continue;
+    }
+    if (character === '/' && next === '/') {
+      lineComment = true;
+      i++;
+      continue;
+    }
+    if (character === '/' && next === '*') {
+      blockComment = true;
+      i++;
+      continue;
+    }
+    if (character === '"' || character === "'" || character === '`') {
+      quote = character;
+      continue;
+    }
+    if (character === '/' && (!previousSignificant || /[({[=,:;!?&|+\-*%^~<>]/.test(previousSignificant))) {
+      regex = true;
+      regexClass = false;
+      continue;
+    }
+    if (character === '(' || character === '[' || character === '{') stack.push(character);
+    else if (character === ')' || character === ']' || character === '}') {
+      if (stack.length === 0) return windowText.slice(start, i);
+      stack.pop();
+    } else if (character === ',' && stack.length === 0) {
+      return windowText.slice(start, i);
+    }
+    if (!/\s/.test(character)) previousSignificant = character;
+  }
+
+  return windowText.slice(start);
+}
+
+/**
+ * A renderer canvas assigned to a local and referenced only by a one-line
+ * console statement is a diagnostic probe, not part of the rendered tree.
+ * Stay conservative: any non-console reference keeps the canvas auditable.
+ */
+function isConsoleOnlyCanvasProbe(line, lineNum, lines) {
+  const declaration = /^\s*(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:h|createElement)\(\s*['"]canvas['"]/.exec(line);
+  if (!declaration) return false;
+
+  const reference = new RegExp(
+    '(?:^|[^A-Za-z0-9_$])'
+      + declaration[1].replace(/\$/g, '\\$')
+      + '(?=$|[^A-Za-z0-9_$])'
+  );
+  const consoleStartPattern = /^\s*(?:(?:[A-Za-z_$][\w$]*|\([^;\n]*\))\s*&&\s*)?console\.(?:debug|dir|error|info|log|table|warn)\s*\(/;
+  const consoleOnly = /^\s*(?:(?:[A-Za-z_$][\w$]*|\([^;\n]*\))\s*&&\s*)?console\.(?:debug|dir|error|info|log|table|warn)\s*\([\s\S]*\)\s*;?\s*$/;
+
+  for (let i = 0; i < lines.length; i++) {
+    if (i === lineNum - 1) continue;
+    const candidate = lines[i];
+    if (!reference.test(candidate)) continue;
+    if (/^\s*(?:\/\/|\/\*|\*)/.test(candidate)) continue;
+    if (consoleOnly.test(candidate)) continue;
+
+    const firstPossibleStart = Math.max(0, i - 12);
+    let start = i;
+    while (start >= firstPossibleStart && !consoleStartPattern.test(lines[start])) start--;
+    if (start < firstPossibleStart) return false;
+
+    const endLimit = Math.min(lines.length, start + 24);
+    let end = start;
+    while (end < endLimit && !/\)\s*;?\s*$/.test(lines[end])) end++;
+    if (end >= endLimit || i > end) return false;
+    if (!consoleOnly.test(lines.slice(start, end + 1).join('\n'))) return false;
+  }
+  return true;
+}
 
 const CHECKS = [
   {
@@ -138,22 +265,26 @@ const CHECKS = [
     severity: 'critical',
     description: 'Canvas element lacks a role and text alternative, or explicit exclusion when decorative',
     test(line, lineNum, lines) {
+      // Documentation examples do not create canvas elements.
+      if (/^\s*(?:\/\/|\/\*|\*)/.test(line)) return false;
       const isCanvas = /h\(\s*['"]canvas['"]/.test(line) || /createElement\(\s*['"]canvas['"]/.test(line);
       if (!isCanvas) return false;
-      // Read the element's whole props object, not a fixed 5-line peek. Real
+      if (isConsoleOnlyCanvasProbe(line, lineNum, lines)) return false;
+      // Read the element's whole props expression, not a fixed line window. Real
       // canvases in this codebase declare `ref`, sizing, and a long inline
       // draw callback before reaching role/aria-label, so a short window
       // reported 13 already-labelled canvases as missing a text alternative.
-      // Stop at the line that closes the call so a sibling element's role is
-      // never borrowed, and include two lines above to catch a decorative
-      // canvas whose aria-hidden sits on its immediate wrapper.
+      // Delimiter matching is load-bearing: a nested callback can close with
+      // `});` dozens of lines before the canvas props end (Space Station's
+      // interior renderer is one example). Include two lines above to retain
+      // the existing immediate-wrapper decorative-canvas check.
       const start = Math.max(0, lineNum - 3);
-      const scanned = [];
-      for (let i = lineNum - 1; i < Math.min(lines.length, lineNum + 60); i++) {
-        scanned.push(lines[i]);
-        if (i > lineNum - 1 && /^\s*\}\)/.test(lines[i])) break;
-      }
-      const context = lines.slice(start, lineNum - 1).concat(scanned).join(' ');
+      const propsContext = rendererPropsContext(
+        lines,
+        lineNum,
+        /(?:^|[^\w$])(?:h|createElement)\(\s*['"]canvas['"]/
+      );
+      const context = lines.slice(start, lineNum - 1).join(' ') + ' ' + propsContext;
       // A canvas used only as an internal drawing/mask buffer has no user-facing
       // information to name. Explicit aria-hidden is the correct 1.1.1 treatment.
       if (/["']?aria-hidden["']?\s*[:=]\s*["']?true["']?/.test(context)) return false;
@@ -222,12 +353,38 @@ const CHECKS = [
       if (/aria-hidden/.test(context)) return false;
 
       // A decorative child also inherits exclusion from an aria-hidden parent.
-      // Only inspect the immediately preceding line and require that it opens a
-      // renderer call whose props are complete but whose child list is still
-      // open (`},` at end). This catches a parent call followed by h('svg',
-      // ...) without borrowing aria-hidden from a closed sibling.
-      const immediateParent = lines[lineNum - 2] || '';
-      if (/(?:^|[^\w$])(?:h|createElement)\(\s*['"][^'"]+['"]\s*,\s*\{.*["']?aria-hidden["']?\s*:\s*(?:["']true["']|true).*\}\s*,\s*$/.test(immediateParent)) return false;
+      // The parent's props may span several lines. Walk back only a small local
+      // window, require aria-hidden on that candidate's own props, and prove its
+      // renderer call is still open at the SVG line. The open-call check keeps a
+      // closed aria-hidden sibling from being borrowed as an ancestor.
+      for (let parentIndex = lineNum - 2; parentIndex >= Math.max(0, lineNum - 14); parentIndex--) {
+        const parentLine = lines[parentIndex] || '';
+        const parentTag = /(?:^|[^\w$])(?:h|createElement)\(\s*['"][^'"]+['"]/.exec(parentLine);
+        if (!parentTag) continue;
+        const parentProps = rendererPropsContext(
+          lines,
+          parentIndex + 1,
+          /(?:^|[^\w$])(?:h|createElement)\(\s*['"][^'"]+['"]/
+        );
+        if (!/["']?aria-hidden["']?\s*[:=]\s*(?:["']true["']|true)/.test(parentProps)) continue;
+
+        const callText = lines.slice(parentIndex, lineNum - 1).join('\n').slice(parentTag.index);
+        let callDepth = 0;
+        let callQuote = null;
+        let callEscaped = false;
+        for (const character of callText) {
+          if (callQuote) {
+            if (callEscaped) callEscaped = false;
+            else if (character === '\\') callEscaped = true;
+            else if (character === callQuote) callQuote = null;
+            continue;
+          }
+          if (character === '"' || character === "'" || character === '`') callQuote = character;
+          else if (character === '(') callDepth++;
+          else if (character === ')') callDepth--;
+        }
+        if (callDepth > 0) return false;
+      }
 
       // Props can be a shared variable rather than an inline object, e.g.
       //   var common = { viewBox: ..., 'aria-hidden': 'true' };
@@ -263,20 +420,28 @@ const CHECKS = [
       const isInput = /h\(\s*['"](?:input|textarea|select)['"]/.test(line) ||
                       /createElement\(\s*['"](?:input|textarea|select)['"]/.test(line);
       if (!isInput) return false;
-      // Read the element's whole props object rather than a fixed window. These
+      // Read the element's whole props expression rather than a fixed window. These
       // controls routinely declare value/onChange/className/style before
       // reaching aria-label, and a 9-line peek reported plenty of properly
-      // labelled inputs as bare. Stop at the line closing the call so a
-      // sibling element's label is never credited to this one.
-      const scanned = [];
-      for (let i = lineNum - 1; i < Math.min(lines.length, lineNum + 60); i++) {
-        scanned.push(lines[i]);
-        if (i > lineNum - 1 && /^\s*\}\)/.test(lines[i])) break;
-      }
-      const context = scanned.join(' ');
-      // Hidden inputs and file pickers are not user-facing; the type may sit
-      // several lines below the opening call.
+      // labelled inputs as bare. Match nested delimiters so a callback's `});`
+      // cannot be mistaken for the end of the input, and stop before siblings.
+      const context = rendererPropsContext(
+        lines,
+        lineNum,
+        /(?:^|[^\w$])(?:h|createElement)\(\s*['"](?:input|textarea|select)['"]/
+      );
+      // Controls explicitly removed from the accessibility tree do not need an
+      // accessible name. Keep visible file inputs in scope: only exempt file
+      // choosers hidden behind a separately named trigger button.
       if (/type\s*[:=]\s*['"]hidden['"]/.test(context)) return false;
+      const className = /className\s*[:=]\s*['"]([^'"]*)['"]/.exec(context);
+      const isHiddenFileInput = /type\s*[:=]\s*['"]file['"]/.test(context) && (
+        (className && className[1].split(/\s+/).includes('hidden')) ||
+        /display\s*:\s*['"]none['"]/.test(context) ||
+        /["']?aria-hidden["']?\s*[:=]\s*(?:true|['"]true['"])/.test(context) ||
+        /(?:^|[,\s])hidden\s*[:=]\s*(?:true|['"]true['"])/.test(context)
+      );
+      if (isHiddenFileInput) return false;
       if (/aria-label/.test(context)) return false;
       if (/aria-labelledby/.test(context)) return false;
       if (/id\s*[:=]/.test(context)) return false; // might have htmlFor association
@@ -556,12 +721,27 @@ const CHECKS = [
     test(line, lineNum, lines) {
       const isTh = /h\(\s*['"]th['"]/.test(line) || /createElement\(\s*['"]th['"]/.test(line);
       if (!isTh) return false;
-      const propLines = [line];
-      for (let i = lineNum; i < Math.min(lines.length, lineNum + 8); i++) {
-        propLines.push(lines[i]);
-        if (/^\s*\}/.test(lines[i])) break;
+      const context = rendererPropsContext(
+        lines,
+        lineNum,
+        /(?:^|[^\w$])(?:h|createElement)\(\s*['"]th['"]/
+      );
+      if (/\bscope\s*[:=]/.test(context) || /setAttribute\(\s*['"]scope['"]/.test(context)) return false;
+
+      // Row-header builders often compose a shared props object, assign scope
+      // inside the same branch, then pass the identifier to h('th', props, ...).
+      // Resolve only a nearby direct assignment so an unrelated or later scope
+      // mutation cannot suppress a genuine finding.
+      const propsMatch = /(?:h|createElement)\(\s*['"]th['"]\s*,\s*([A-Za-z_$][\w$]*)/.exec(line);
+      if (propsMatch) {
+        const propsName = propsMatch[1].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const prior = lines.slice(Math.max(0, lineNum - 6), lineNum - 1).join(' ');
+        const assignedScope = new RegExp(
+          "\\b" + propsName + "(?:\\.scope|\\[\\s*['\"]scope['\"]\\s*\\])\\s*="
+        );
+        if (assignedScope.test(prior)) return false;
       }
-      return !/\bscope\s*[:=]/.test(propLines.join(' ')) && !/setAttribute\(\s*['"]scope['"]/.test(propLines.join(' '));
+      return true;
     },
     fix: 'Add scope="col" to column headers, scope="row" to row headers.',
   },
@@ -728,11 +908,39 @@ function detectGlobalBaselines() {
 const DETACHED_NODE_CHECKS = new Set(['CANVAS-001', 'INPUT-001']);
 const DETACHED_NODE_PATTERN = /createElement\(\s*['"](?:canvas|input|textarea)['"]/;
 
+const CREATED_NODE_DECLARATION = /(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*document\.createElement\(\s*['"](?:canvas|input|textarea)['"]/;
+
+/**
+ * Treat a programmatic node as detached only when bounded local data flow shows
+ * no DOM insertion, return, focus/removal, or portal escape.
+ */
+function createdNodeHasNoLocalTreeEscape(finding) {
+  if (!finding.line) return false;
+  let source;
+  try { source = fs.readFileSync(path.resolve(ROOT, finding.file), 'utf8'); } catch (_) { return false; }
+
+  const lines = source.split(/\r?\n/);
+  const declaration = CREATED_NODE_DECLARATION.exec(lines[finding.line - 1] || '');
+  if (!declaration) return false;
+
+  const identifier = declaration[1].replace(/\$/g, '\\$');
+  const reference = '(?<![A-Za-z0-9_$])' + identifier + '(?![A-Za-z0-9_$])';
+  const local = lines.slice(Math.max(0, finding.line - 21), Math.min(lines.length, finding.line + 400)).join('\n');
+
+  const treeEscapes = [
+    new RegExp('(?:appendChild|insertBefore|replaceChildren|\\.append|\\.prepend)\\s*\\([^\\n;]*' + reference),
+    new RegExp('\\breturn\\s+' + reference),
+    new RegExp(reference + '\\.(?:after|before|focus|remove|replaceWith)\\s*\\('),
+    new RegExp('(?:createPortal|replaceWith)\\s*\\([^\\n;]*' + reference),
+  ];
+  return !treeEscapes.some((pattern) => pattern.test(local));
+}
+
 function applyGlobalBaselineCoverage(findings) {
   const present = detectGlobalBaselines();
   for (const f of findings) {
     if (DETACHED_NODE_CHECKS.has(f.checkId) && DETACHED_NODE_PATTERN.test(f.snippet || '')) {
-      f.notInAccessibilityTree = true;
+      if (createdNodeHasNoLocalTreeEscape(f)) f.notInAccessibilityTree = true;
       continue;
     }
     if (!present[f.checkId]) continue;
@@ -839,7 +1047,11 @@ function generateReport(allFindings, outputJson, filesScanned) {
       + (reasons.length ? ` — ${reasons.join(', ')}, ${findings.length - baselineHere - detachedHere} actionable` : ''));
     console.log(`  Fix: ${findings[0].fix}`);
     // Show up to 5 example locations
-    const examples = findings.slice(0, 5);
+    const examples = findings.slice().sort((a, b) => {
+      const aCovered = !!(a.coveredByGlobalBaseline || a.notInAccessibilityTree);
+      const bCovered = !!(b.coveredByGlobalBaseline || b.notInAccessibilityTree);
+      return Number(aCovered) - Number(bCovered);
+    }).slice(0, 5);
     for (const ex of examples) {
       const loc = ex.line ? `${ex.file}:${ex.line}` : ex.file;
       console.log(`    - ${loc}`);

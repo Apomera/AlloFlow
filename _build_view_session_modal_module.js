@@ -16,7 +16,7 @@ const TMP = path.join(ROOT, '_tmp_session_modal_entry.jsx');
 if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__sessionModalExports = { SessionModal, countValidRosterQuizResponses, summarizeRosterLiveActivities, buildRosterSessionInsightBrief, buildRosterSessionSummary, shouldSaveRosterSessionSummary, saveRosterSessionSummary };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__sessionModalExports = { SessionModal, countValidRosterQuizResponses, summarizeRosterLiveActivities, buildRosterSessionInsightBrief, buildRosterSessionSummary, shouldSaveRosterSessionSummary, sanitizeRosterSessionForStorage, saveRosterSessionSummary };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 
 console.log('Compiling view_session_modal_source.jsx with esbuild...');
@@ -61,6 +61,7 @@ ${compiled}
     buildRosterSessionInsightBrief: buildRosterSessionInsightBrief,
     buildRosterSessionSummary: buildRosterSessionSummary,
     shouldSaveRosterSessionSummary: shouldSaveRosterSessionSummary,
+    sanitizeRosterSessionForStorage: sanitizeRosterSessionForStorage,
     saveRosterSessionSummary: saveRosterSessionSummary
   };
   console.log('[CDN] SessionModal loaded');

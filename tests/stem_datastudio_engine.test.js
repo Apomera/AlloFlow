@@ -147,6 +147,11 @@ describe('source pins', () => {
     expect(src).toContain('stem_tool_datastudio.js loaded');
     expect(src).not.toContain('stem_tool_creative.js loaded');
   });
+
+  it('gives both inquiry textareas programmatic names', () => {
+    expect(src).toContain("'aria-label': t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl'");
+    expect(src).toContain("'aria-label': t('stem.datastudio.explain_chart_visualization_principles'");
+  });
 });
 
 describe('deployment copies', () => {

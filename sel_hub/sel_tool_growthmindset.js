@@ -349,10 +349,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + EMERALD + ', #34d399)', transition: 'width 0.5s ease', borderRadius: '0 2px 2px 0', animation: 'selGrowBar 0.6s ease-out' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Growth Mindset sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t, ti) {
+          h('div', { role: 'tablist', 'aria-label': 'Growth Mindset sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t, ti) {
             var active = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
@@ -375,7 +375,8 @@ window.SelHub = window.SelHub || {
               t.label,
               explored && !active ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#34d399', marginLeft: '2px', flexShrink: 0 } }) : null
             );
-          }),
+            })
+          ),
           // Progress badge
           h('span', { className: 'sel-badge', style: { marginLeft: '8px', fontSize: '10px', color: EMERALD_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _gmC('#d1fae5'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } },
             exploredCount + '/' + TABS.length
@@ -509,19 +510,25 @@ window.SelHub = window.SelHub || {
             facts.map(function(f, i) {
               var explored = !!brainExplored[i];
               var current = i === brainFactIdx % facts.length;
-              return h('div', {
-                key: i, role: 'button', tabIndex: 0,
+              return h('button', {
+                key: i, type: 'button',
                 'aria-label': 'Fact ' + (i + 1) + ' of ' + facts.length + (explored ? ' (explored)' : '') + (current ? ' (current)' : ''),
                 onClick: function() { upd({ brainFactIdx: i, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[i] = true; return o; })()) }); },
-                onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); upd({ brainFactIdx: i, brainExplored: Object.assign({}, brainExplored, (function() { var o = {}; o[i] = true; return o; })()) }); } },
                 className: 'sel-progress-dot',
                 style: {
+                  width: current ? '32px' : '24px', height: '24px', padding: 0, border: 'none',
+                  borderRadius: '12px', cursor: 'pointer', background: 'transparent',
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: {
+                  display: 'block',
                   width: current ? '28px' : explored ? '12px' : '10px', height: current ? '12px' : '10px',
-                  borderRadius: '6px', cursor: 'pointer',
+                  borderRadius: '6px',
                   background: current ? 'linear-gradient(135deg, ' + EMERALD + ', #34d399)' : explored ? '#6ee7b7' : _gmC('#e5e7eb'),
                   boxShadow: current ? '0 2px 8px rgba(5,150,105,0.4)' : 'none'
-                }
-              });
+                } })
+              );
             })
           )
         );

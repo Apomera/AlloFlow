@@ -37,7 +37,8 @@
     st.textContent = [
       '.graphcalc-shell{--gc-panel:var(--allo-stem-panel,#f8fafc);--gc-deeper:var(--allo-stem-deeper,#e2e8f0);--gc-card:#eef2ff;--gc-card-strong:#e0e7ff;--gc-text:var(--allo-stem-text,#0f172a);--gc-muted:#475569;--gc-border:var(--allo-stem-border,#cbd5e1);--gc-accent:#4338ca;--gc-accent-soft:#e0e7ff;--gc-accent-border:#818cf8;--gc-button-bg:#eef2ff;--gc-button-text:#3730a3;--gc-danger:#991b1b;}',
       '.theme-dark .graphcalc-shell{--gc-card:rgba(99,102,241,.16);--gc-card-strong:rgba(99,102,241,.24);--gc-muted:#cbd5e1;--gc-accent:#c7d2fe;--gc-accent-soft:rgba(99,102,241,.22);--gc-accent-border:#818cf8;--gc-button-bg:rgba(99,102,241,.18);--gc-button-text:#c7d2fe;--gc-danger:#fca5a5;}',
-      '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);}'
+      '.theme-contrast .graphcalc-shell{--gc-card:var(--allo-stem-panel,#fff);--gc-card-strong:var(--allo-stem-panel,#fff);--gc-muted:var(--allo-stem-text,#000);--gc-accent:var(--allo-stem-text,#000);--gc-accent-soft:var(--allo-stem-button-bg,#fff);--gc-accent-border:var(--allo-stem-border,#000);--gc-button-bg:var(--allo-stem-button-bg,#fff);--gc-button-text:var(--allo-stem-button-text,#000);--gc-danger:var(--allo-stem-text,#000);}',
+      '@media (max-width:640px){.graphcalc-shell{height:auto!important;min-height:100%;overflow:visible!important}.graphcalc-header{align-items:flex-start!important;flex-wrap:wrap}.graphcalc-header-actions{margin-left:0!important;flex-wrap:wrap}.graphcalc-layout{flex:none!important;flex-direction:column!important;overflow:visible!important;min-width:0}.graphcalc-left-sidebar,.graphcalc-main-panel,.graphcalc-right-sidebar{width:100%!important;min-width:0}.graphcalc-left-sidebar,.graphcalc-right-sidebar{display:block!important}.graphcalc-left-sidebar{border-right:0!important;border-bottom:1px solid var(--gc-border)}.graphcalc-main-panel{flex:none!important;min-height:360px}.graphcalc-right-sidebar{border-left:0!important;border-top:1px solid var(--gc-border)}.graphcalc-side-tabs{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}.graphcalc-side-tabs button{min-width:0;min-height:44px}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -778,11 +779,11 @@
           h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, d._srMsg || ''),
 
           // Header
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
+          h('div', { className: 'graphcalc-header', style: { display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'linear-gradient(135deg, #1e1b4b, #312e81)', borderBottom: '1px solid rgba(99,102,241,0.2)' } },
             h('button', { 'aria-label': __alloT('stem.graphcalc.back', 'Back'), onClick: function() { setStemLabTool(null); }, style: { background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '8px', padding: '6px 12px', color: '#c7d2fe', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' } }, __alloT('stem.graphcalc.back_2', '\u2190 Back')),
             h('div', { style: { fontWeight: 'bold', fontSize: '16px', color: '#c7d2fe' } }, __alloT('stem.graphcalc.graphing_calculator', '\uD83D\uDCC8 Graphing Calculator')),
             h('span', { style: { fontSize: '10px', color: '#818cf8', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' } }, gradeIntros[band] || ''),
-            h('div', { style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
+            h('div', { className: 'graphcalc-header-actions', style: { marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' } },
               h('span', { style: { background: tierInfo.color + '22', color: tierInfo.color, padding: '3px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', border: '1px solid ' + tierInfo.color + '44' } }, tierInfo.icon + ' ' + tierInfo.name),
               h('select', { value: tier, onChange: function(e) { SOUNDS.tierChange(); upd('tier', e.target.value); }, 'aria-label': __alloT('stem.graphcalc.difficulty_tier', 'Difficulty tier'), style: { background: 'rgba(255,255,255,0.1)', border: '1px solid #818cf8', borderRadius: '6px', padding: '3px 8px', color: '#c7d2fe', fontSize: '10px', cursor: 'pointer' } },
                 h('option', { value: 'explorer' }, __alloT('stem.graphcalc.explorer_2', '\uD83D\uDFE2 Explorer')), h('option', { value: 'analyst' }, __alloT('stem.graphcalc.analyst_2', '\uD83D\uDFE1 Analyst')),
@@ -794,10 +795,10 @@
           ),
 
           // 3-column layout
-          h('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
+          h('div', { className: 'graphcalc-layout', style: { display: 'flex', flex: 1, overflow: 'hidden' } },
 
             // Left sidebar
-            h('div', { style: { width: '220px', borderRight: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
+            h('div', { className: 'graphcalc-left-sidebar', style: { width: '220px', borderRight: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
               h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + gcBorder, fontSize: '11px', fontWeight: 'bold', color: gcAccent, letterSpacing: '1px' } }, __alloT('stem.graphcalc.functions', '\uD83D\uDCDD FUNCTIONS')),
               h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px' } },
                 funcs.map(function(fn, i) {
@@ -883,7 +884,7 @@
             ),
 
             // Center — Canvas
-            h('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
+            h('div', { className: 'graphcalc-main-panel', style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
               h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default', touchAction: d.traceMode ? 'none' : 'auto' },
                 onPointerDown: function(e) { if (!d.traceMode) return; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} updateTraceFromPointer(e); },
                 onPointerMove: function(e) { if (!d.traceMode || (e.pointerType === 'mouse' && e.buttons !== 1)) return; updateTraceFromPointer(e); } }),
@@ -914,15 +915,15 @@
                   h('label', { style: { fontSize: '11px', color: gcText, display: 'flex', alignItems: 'center', gap: '3px', fontWeight: 700 } }, 'Step:', h('input', { type: 'number', step: 'any', value: tableStep, onChange: function(e) { upd('tableStep', e.target.value); }, onBlur: function(e) { upd('tableStep', gcNormalizeTableStep(e.target.value)); }, style: { width: '40px', padding: '1px 3px', borderRadius: '3px', border: '1px solid ' + gcBorder, background: gcPanel, color: gcText, fontFamily: 'monospace', fontSize: '11px' } }))
                 ),
                 h('table', { style: { width: '100%', fontSize: '11px', fontFamily: 'monospace', borderCollapse: 'collapse' } },
-                  h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'x'), h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: funcs[0] ? funcs[0].color : gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'y\u2081'))),
+                  h('caption', { className: 'sr-only' }, __alloT('stem.graphcalc.graphcalc_data_table', 'graphcalc data table')), h('thead', null, h('tr', null, h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'x'), h('th', { scope: 'col', style: { padding: '3px 10px', textAlign: 'right', color: gcAccent, fontWeight: 'bold', borderBottom: '1px solid ' + gcBorder } }, 'y\u2081'))),
                   h('tbody', null, tableRows.map(function(r, ri) { return h('tr', { key: ri, style: { background: ri % 2 === 0 ? 'transparent' : gcCard } }, h('td', { style: { padding: '2px 10px', textAlign: 'right', color: gcMuted } }, r.x), h('td', { style: { padding: '2px 10px', textAlign: 'right', color: gcText } }, r.y)); }))
                 )
               ) : null
             ),
 
             // Right sidebar
-            h('div', { style: { width: '230px', borderLeft: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
-              h('div', { style: { display: 'flex', borderBottom: '1px solid ' + gcBorder } },
+            h('div', { className: 'graphcalc-right-sidebar', style: { width: '230px', borderLeft: '1px solid ' + gcBorder, display: 'flex', flexDirection: 'column', background: gcDeeper } },
+              h('div', { className: 'graphcalc-side-tabs', style: { display: 'flex', borderBottom: '1px solid ' + gcBorder } },
                 [{ id: 'coach', label: __alloT('stem.graphcalc.coach', '\uD83D\uDCA1 Coach') }, { id: 'challenge', label: __alloT('stem.graphcalc.tasks', '\uD83C\uDFAF Tasks') }, { id: 'ai', label: __alloT('stem.graphcalc.ai', '\uD83E\uDD16 AI') }, { id: 'badges', label: '\uD83C\uDFC5', ariaLabel: __alloT('stem.graphcalc.badges', 'Badges') }, { id: 'inquiry', label: __alloT('stem.graphcalc.inquiry', '\u2754 Inquiry') }].map(function(st) {
                   var active = (d._sideTab || 'coach') === st.id;
                   return h('button', { 'aria-label': st.ariaLabel || st.label, key: st.id, onClick: function() { upd('_sideTab', st.id); }, style: { flex: 1, padding: '8px 4px', fontSize: '11px', fontWeight: 'bold', color: active ? gcAccent : gcMuted, background: active ? gcAccentSoft : 'transparent', borderTop: 'none', borderRight: 'none', borderLeft: 'none', borderBottom: active ? '2px solid ' + gcAccentBorder : '2px solid transparent', cursor: 'pointer' } }, st.label);
@@ -975,7 +976,7 @@
                 h('div', { style: { fontSize: '10px', color: gcAccent, fontWeight: 'bold', marginBottom: '8px' } }, '\uD83C\uDFC5 ' + badges.length + '/' + BADGES.length + ' Earned'),
                 BADGES.map(function(b) {
                   var earned = badges.indexOf(b.id) >= 0;
-                  return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? gcCardStrong : gcCard, border: '1px solid ' + gcBorder, opacity: earned ? 1 : 0.72 } },
+                  return h('div', { key: b.id, style: { padding: '8px', marginBottom: '4px', borderRadius: '8px', background: earned ? gcCardStrong : gcCard, border: '1px solid ' + gcBorder } },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '16px' } }, earned ? b.icon : '\uD83D\uDD12'),
                       h('div', null, h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: earned ? gcAccent : gcMuted } }, b.label), h('div', { style: { fontSize: '11px', color: gcMuted } }, __alloT('stem.graphcalc.' + (b.id) + '_desc', b.desc))),
@@ -1052,7 +1053,7 @@
                         h('li', null, __alloT('stem.graphcalc.can_you_get_the_same_shape_with_two_di', 'Can you get the same shape with two different settings?'))))
                   ),
                   h('div', { style: { padding: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
-                    h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: '#047857', cursor: 'pointer' } },
+                    h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: gcText, cursor: 'pointer' } },
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       __alloT('stem.graphcalc.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },

@@ -978,7 +978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
-                    h('h3', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.welder_s_defect_catalog_2', "Welder's Defect Catalog"))
+                    h('h2', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.welder_s_defect_catalog_2', "Welder's Defect Catalog"))
                   ),
                   h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
                     h('div', { className: 'h-full bg-orange-600 transition-all', style: { width: catalogPct + '%' } })

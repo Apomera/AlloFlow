@@ -80,10 +80,30 @@
   // ══════════════════════════════════════════════════════════════
   var STORAGE_KEY = 'alloflow_archstudio_builds';
   function loadGallery() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch (e) { return []; }
+    try {
+      var parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+      if (!Array.isArray(parsed)) return [];
+      return parsed.slice(-50).map(function (item, index) {
+        if (!item || typeof item !== 'object') return null;
+        var savedBlocks = sanitizeArchBlocks(item.blocks);
+        if (!savedBlocks.length) return null;
+        return {
+          id: String(item.id || ('arch_saved_' + index)).slice(0, 100),
+          name: String(item.name || 'Saved build').slice(0, 80),
+          blocks: savedBlocks,
+          blockCount: savedBlocks.length,
+          dims: String(item.dims || ''),
+          stability: Math.max(0, Math.min(100, Number(item.stability) || 0)),
+          timestamp: Number(item.timestamp) || 0
+        };
+      }).filter(Boolean);
+    } catch (e) { return []; }
   }
   function saveGallery(arr) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(arr)); } catch (e) { /* quota */ }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify((Array.isArray(arr) ? arr : []).slice(-50)));
+      return true;
+    } catch (e) { return false; }
   }
 
   // ══════════════════════════════════════════════════════════════
@@ -238,15 +258,129 @@
     stone: 0x94a3b8, brick: 0xb45309, wood: 0x92400e,
     glass: 0x38bdf8, marble: 0xf1f5f9, metal: 0xcbd5e1
   };
+  var ARCH_BRICK_HEX = {
+    stone: 0xef4444, brick: 0xf59e0b, wood: 0x22c55e,
+    glass: 0x3b82f6, marble: 0xf8fafc, metal: 0x1e293b
+  };
+  var ARCH_MAT_COLOR = {
+    stone: '#94a3b8', brick: '#b45309', wood: '#92400e',
+    glass: '#38bdf8', marble: '#f1f5f9', metal: '#cbd5e1'
+  };
+  var ARCH_SHAPE_IDS = {
+    block: true, slab: true, ramp: true, column: true, arch: true, roof: true,
+    pyramid: true, dome: true, cylinder: true, lbeam: true, window: true, door: true
+  };
+  var ARCH_MATERIAL_IDS = { stone: true, brick: true, wood: true, glass: true, marble: true, metal: true };
+  var ARCH_XZ_MIN = -64, ARCH_XZ_MAX = 64, ARCH_Y_MIN = 0, ARCH_Y_MAX = 31;
+  var ARCH_MAX_BLOCKS = 4096;
+
+  function normalizeArchRotation(value) {
+    var n = Number(value);
+    if (!isFinite(n)) n = 0;
+    n = Math.round(n / 90) * 90;
+    return ((n % 360) + 360) % 360;
+  }
+
+  function normalizeArchColor(value, material) {
+    var own = String(value || '').trim();
+    var match = own.match(/#[0-9a-f]{6}/i);
+    return match ? match[0].toLowerCase() : (ARCH_MAT_COLOR[material] || ARCH_MAT_COLOR.stone);
+  }
+
+  // Shared validation boundary for saved and shared builds. It keeps malformed
+  // or oversized imports from making the renderer unusable, and also repairs
+  // older builds that stored CSS variables instead of plain colours.
+  function sanitizeArchBlocks(input) {
+    if (!Array.isArray(input)) return [];
+    var clean = [], seen = {};
+    for (var i = 0; i < input.length && clean.length < ARCH_MAX_BLOCKS; i++) {
+      var raw = input[i];
+      if (!raw || typeof raw !== 'object') continue;
+      var x = Math.round(Number(raw.x)), y = Math.round(Number(raw.y)), z = Math.round(Number(raw.z));
+      if (!isFinite(x) || !isFinite(y) || !isFinite(z)) continue;
+      if (x < ARCH_XZ_MIN || x > ARCH_XZ_MAX || z < ARCH_XZ_MIN || z > ARCH_XZ_MAX || y < ARCH_Y_MIN || y > ARCH_Y_MAX) continue;
+      var key = x + ',' + y + ',' + z;
+      if (seen[key]) continue;
+      seen[key] = true;
+      var shape = Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, raw.shape) ? raw.shape : 'block';
+      var material = Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, raw.material) ? raw.material : 'stone';
+      clean.push({
+        x: x, y: y, z: z,
+        shape: shape,
+        material: material,
+        color: normalizeArchColor(raw.color, material),
+        rotation: normalizeArchRotation(raw.rotation)
+      });
+    }
+    return clean;
+  }
+
+  function reflectArchRotation(rotation, axis) {
+    var r = normalizeArchRotation(rotation);
+    return axis === 'z' ? normalizeArchRotation(-r) : normalizeArchRotation(180 - r);
+  }
+
+  function getArchUnsupportedKeys(currentBlocks) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    var occupied = {}, unsupported = {};
+    current.forEach(function (b) { occupied[b.x + ',' + b.y + ',' + b.z] = true; });
+    current.forEach(function (b) {
+      if (b.y > ARCH_Y_MIN && !occupied[b.x + ',' + (b.y - 1) + ',' + b.z]) {
+        unsupported[b.x + ',' + b.y + ',' + b.z] = true;
+      }
+    });
+    return unsupported;
+  }
+
+  function settleArchBlocks(currentBlocks) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    var columns = {};
+    current.forEach(function (b) {
+      var key = b.x + ',' + b.z;
+      if (!columns[key]) columns[key] = [];
+      columns[key].push(b);
+    });
+    var settled = [], moved = 0;
+    Object.keys(columns).forEach(function (key) {
+      columns[key].sort(function (a, b) { return a.y - b.y; }).forEach(function (b, index) {
+        if (b.y !== index) moved++;
+        settled.push(Object.assign({}, b, { y: index }));
+      });
+    });
+    settled.sort(function (a, b) { return a.y - b.y || a.x - b.x || a.z - b.z; });
+    return { blocks: settled, moved: moved };
+  }
+
+  function changeArchCamera(current, action) {
+    var base = current || {};
+    var next = {
+      rotX: isFinite(base.rotX) ? base.rotX : -24,
+      rotY: isFinite(base.rotY) ? base.rotY : -38,
+      scale: isFinite(base.scale) ? base.scale : 1
+    };
+    if (action === 'reset') return { rotX: -24, rotY: -38, scale: 1 };
+    if (action === 'left') next.rotY -= 15;
+    else if (action === 'right') next.rotY += 15;
+    else if (action === 'up') next.rotX -= 10;
+    else if (action === 'down') next.rotX += 10;
+    else if (action === 'zoomIn') next.scale += 0.15;
+    else if (action === 'zoomOut') next.scale -= 0.15;
+    next.rotX = Math.max(-88, Math.min(88, next.rotX));
+    next.scale = Math.max(0.3, Math.min(3, Math.round(next.scale * 100) / 100));
+    return next;
+  }
 
   var ArchGL = (function () {
     var DEG = Math.PI / 180;
     var T = null;
     var state = 'idle';
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var batch = null, groundMesh = null;
+    var batch = null, groundMesh = null, groundGrid = null, previewMesh = null;
+    var customMeshes = [];
+    var raycaster = null, pointer = null, latestBlocks = [], latestAllBlocks = [];
     var rafId = 0, capacity = 0, resizeObs = null;
-    var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
+    var pending = null, appliedSig = '', appliedCamSig = '', previewSig = '', dirty = true;
+    var gridLineCount = 0;
     var extent = { w: 1, d: 1, h: 1 }, centre = { x: 0, z: 0 };
 
     function fail(reason) {
@@ -257,6 +391,8 @@
     function build() {
       scene = new T.Scene();
       camera = new T.PerspectiveCamera(45, 1, 0.1, 3000);
+      raycaster = new T.Raycaster();
+      pointer = new T.Vector2();
       scene.add(new T.HemisphereLight(0xe2e8f0, 0x1e293b, 0.9));
       var sun = new T.DirectionalLight(0xffffff, 0.62);
       sun.position.set(24, 40, 30);
@@ -270,17 +406,149 @@
       scene.add(groundMesh);
     }
 
+    function clearCustomMeshes() {
+      customMeshes.forEach(function (mesh) {
+        if (scene) scene.remove(mesh);
+        if (mesh.geometry) mesh.geometry.dispose();
+        if (mesh.material) mesh.material.dispose();
+      });
+      customMeshes = [];
+    }
+
+    function clearPreview() {
+      if (!previewMesh) return;
+      if (scene) scene.remove(previewMesh);
+      if (previewMesh.geometry) previewMesh.geometry.dispose();
+      if (previewMesh.material) previewMesh.material.dispose();
+      previewMesh = null;
+      previewSig = '';
+      dirty = true;
+    }
+
+    function clearGroundGrid() {
+      if (!groundGrid) return;
+      if (scene) scene.remove(groundGrid);
+      if (groundGrid.geometry) groundGrid.geometry.dispose();
+      if (groundGrid.material) groundGrid.material.dispose();
+      groundGrid = null;
+      gridLineCount = 0;
+    }
+
+    function buildPlacementGrid(minX, maxX, minZ, maxZ) {
+      clearGroundGrid();
+      var gx0 = Math.max(ARCH_XZ_MIN, Math.floor(minX) - 3);
+      var gx1 = Math.min(ARCH_XZ_MAX, Math.ceil(maxX) + 3);
+      var gz0 = Math.max(ARCH_XZ_MIN, Math.floor(minZ) - 3);
+      var gz1 = Math.min(ARCH_XZ_MAX, Math.ceil(maxZ) + 3);
+      if (gx1 - gx0 < 9) {
+        var xPad = 9 - (gx1 - gx0);
+        gx0 = Math.max(ARCH_XZ_MIN, gx0 - Math.ceil(xPad / 2));
+        gx1 = Math.min(ARCH_XZ_MAX, gx0 + 9);
+        gx0 = Math.max(ARCH_XZ_MIN, gx1 - 9);
+      }
+      if (gz1 - gz0 < 9) {
+        var zPad = 9 - (gz1 - gz0);
+        gz0 = Math.max(ARCH_XZ_MIN, gz0 - Math.ceil(zPad / 2));
+        gz1 = Math.min(ARCH_XZ_MAX, gz0 + 9);
+        gz0 = Math.max(ARCH_XZ_MIN, gz1 - 9);
+      }
+      var xStart = gx0 - 0.5 - centre.x, xEnd = gx1 + 0.5 - centre.x;
+      var zStart = gz0 - 0.5 - centre.z, zEnd = gz1 + 0.5 - centre.z;
+      var vertices = [];
+      for (var gx = gx0; gx <= gx1 + 1; gx++) {
+        var wx = gx - 0.5 - centre.x;
+        vertices.push(wx, 0.006, zStart, wx, 0.006, zEnd);
+      }
+      for (var gz = gz0; gz <= gz1 + 1; gz++) {
+        var wz = gz - 0.5 - centre.z;
+        vertices.push(xStart, 0.006, wz, xEnd, 0.006, wz);
+      }
+      var geometry = new T.BufferGeometry();
+      geometry.setAttribute('position', new T.Float32BufferAttribute(vertices, 3));
+      groundGrid = new T.LineSegments(geometry, new T.LineBasicMaterial({ color: 0x64748b, transparent: true, opacity: 0.58 }));
+      groundGrid.renderOrder = 2;
+      scene.add(groundGrid);
+      gridLineCount = vertices.length / 6;
+      groundMesh.scale.set(Math.max(1, xEnd - xStart) / 400, Math.max(1, zEnd - zStart) / 400, 1);
+    }
+
+    // The host's voxel batch is ideal for ordinary blocks. Architecture Studio
+    // also promises eleven non-cube objects, so those use their real geometry
+    // instead of silently rendering every selection as the same cube.
+    function makeArchGeometry(shape) {
+      var s, g;
+      switch (shape) {
+        case 'slab': return new T.BoxGeometry(0.94, 0.46, 0.94);
+        case 'ramp':
+          s = new T.Shape();
+          s.moveTo(-0.47, -0.47); s.lineTo(0.47, -0.47); s.lineTo(0.47, 0.47); s.closePath();
+          g = new T.ExtrudeGeometry(s, { depth: 0.94, bevelEnabled: false }); g.center(); return g;
+        case 'column': return new T.CylinderGeometry(0.33, 0.33, 0.94, 16);
+        case 'cylinder': return new T.CylinderGeometry(0.47, 0.47, 0.94, 32);
+        case 'lbeam':
+          s = new T.Shape();
+          s.moveTo(-0.47, -0.47); s.lineTo(0.47, -0.47); s.lineTo(0.47, 0.47);
+          s.lineTo(0, 0.47); s.lineTo(0, 0); s.lineTo(-0.47, 0); s.closePath();
+          g = new T.ExtrudeGeometry(s, { depth: 0.94, bevelEnabled: false }); g.center(); return g;
+        case 'window': return new T.BoxGeometry(0.94, 0.94, 0.28);
+        case 'door': return new T.BoxGeometry(0.94, 0.94, 0.38);
+        case 'arch':
+          g = new T.TorusGeometry(0.42, 0.12, 8, 18, Math.PI); g.rotateX(Math.PI / 2); return g;
+        case 'roof':
+          s = new T.Shape();
+          s.moveTo(-0.47, -0.33); s.lineTo(0.47, -0.33); s.lineTo(0, 0.33); s.closePath();
+          g = new T.ExtrudeGeometry(s, { depth: 0.94, bevelEnabled: false }); g.center(); return g;
+        case 'pyramid': return new T.ConeGeometry(0.47, 0.94, 4);
+        case 'dome': return new T.SphereGeometry(0.47, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+        default: return new T.BoxGeometry(0.94, 0.94, 0.94);
+      }
+    }
+
+    function updatePreview(target, options) {
+      options = options || {};
+      var mode = options.mode || 'place';
+      var cell = target && (mode === 'place' ? target.place : target.block);
+      if (state !== 'ready' || !scene || !cell) { clearPreview(); return; }
+      if (!isFinite(cell.x) || !isFinite(cell.y) || !isFinite(cell.z)
+          || cell.x < ARCH_XZ_MIN || cell.x > ARCH_XZ_MAX || cell.z < ARCH_XZ_MIN || cell.z > ARCH_XZ_MAX
+          || cell.y < ARCH_Y_MIN || cell.y > ARCH_Y_MAX) { clearPreview(); return; }
+      var shape = mode === 'place' ? (options.shape || 'block') : 'block';
+      var rotation = mode === 'place' ? normalizeArchRotation(options.rotation) : 0;
+      var nextSig = mode + '|' + cell.x + ',' + cell.y + ',' + cell.z + '|' + shape + '|' + rotation + '|' + (options.hex || 0);
+      if (nextSig === previewSig) return;
+      clearPreview();
+      var geometry = mode === 'place' ? makeArchGeometry(shape) : new T.BoxGeometry(1.02, 1.02, 1.02);
+      var color = mode === 'erase' ? 0xef4444 : mode === 'paint' ? 0xc084fc : (options.hex == null ? 0x60a5fa : options.hex);
+      previewMesh = new T.Mesh(geometry, new T.MeshBasicMaterial({
+        color: color, transparent: true, opacity: mode === 'place' ? 0.42 : 0.55,
+        wireframe: true, depthWrite: false
+      }));
+      var yOffset = shape === 'slab' ? 0.23 : shape === 'dome' ? 0 : 0.5;
+      previewMesh.position.set(cell.x - centre.x, cell.y + yOffset, cell.z - centre.z);
+      previewMesh.rotation.y = rotation * DEG;
+      previewMesh.renderOrder = 4;
+      scene.add(previewMesh);
+      previewSig = nextSig;
+      dirty = true;
+    }
+
     function apply(m) {
       var bs = m.blocks || [];
-      var n = bs.length;
-      if (!batch || capacity < n) {
+      latestAllBlocks = bs;
+      clearPreview();
+      var cubeBlocks = bs.filter(function (b) { return !b.shape || b.shape === 'block'; });
+      latestBlocks = cubeBlocks;
+      var cubeCount = cubeBlocks.length;
+      if (cubeCount && (!batch || capacity < cubeCount)) {
         if (batch) batch.dispose(scene);
-        capacity = Math.max(64, n);
+        capacity = Math.max(64, cubeCount);
         batch = window.StemLab.makeVoxelBatch(T, {
           capacity: capacity, size: 0.94, edges: true, edgeOpacity: 0.26
         });
         batch.addTo(scene);
       }
+
+      clearCustomMeshes();
 
       var minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity, maxY = 0;
       bs.forEach(function (b) {
@@ -288,23 +556,53 @@
         if (b.z < minZ) minZ = b.z; if (b.z > maxZ) maxZ = b.z;
         if (b.y > maxY) maxY = b.y;
       });
-      if (!n) { minX = maxX = minZ = maxZ = 0; }
+      if (!bs.length) { minX = maxX = minZ = maxZ = 0; }
       centre = { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2 };
       extent = { w: maxX - minX + 1, d: maxZ - minZ + 1, h: maxY + 1 };
 
-      for (var i = 0; i < n; i++) {
-        var b = bs[i];
+      for (var i = 0; i < cubeCount; i++) {
+        var b = cubeBlocks[i];
         // A block's own colour wins when the student has painted it; otherwise
         // the material decides. Both arrive as hex from the caller.
         batch.set(i, b.x - centre.x, b.y + 0.5, b.z - centre.z, 1, b.hex);
       }
-      batch.commit(n);
+      if (batch) batch.commit(cubeCount);
 
-      var span = Math.max(extent.w, extent.d) * 1.8 + 6;
-      groundMesh.scale.set(span / 400, span / 400, 1);
+      bs.forEach(function (b) {
+        var shape = b.shape || 'block';
+        if (shape === 'block') return;
+        var isGlass = b.material === 'glass';
+        var mesh = new T.Mesh(makeArchGeometry(shape), new T.MeshPhongMaterial({
+          color: b.hex,
+          transparent: isGlass,
+          opacity: isGlass ? 0.48 : 1,
+          shininess: b.material === 'metal' ? 100 : b.material === 'marble' ? 80 : 40,
+          flatShading: b.material === 'stone' || b.material === 'brick'
+        }));
+        var yOffset = shape === 'slab' ? 0.23 : shape === 'dome' ? 0 : 0.5;
+        mesh.position.set(b.x - centre.x, b.y + yOffset, b.z - centre.z);
+        mesh.rotation.y = ((b.rotation || 0) % 360) * DEG;
+        mesh.userData.archBlock = b;
+        scene.add(mesh);
+        customMeshes.push(mesh);
+      });
+
+      buildPlacementGrid(minX, maxX, minZ, maxZ);
     }
 
     function applyCam(m) {
+      if (m.blueprintView) {
+        camera.up.set(0, 0, -1);
+        var topHalfV = Math.tan(22.5 * DEG);
+        var topHalfH = topHalfV * (camera.aspect || 1.6);
+        var topDist = Math.max((extent.w / 2) / topHalfH, (extent.d / 2) / topHalfV, 3) * 1.25
+                    / Math.max(0.25, m.scale);
+        camera.position.set(0, extent.h / 2 + topDist, 0.001);
+        camera.lookAt(0, extent.h / 2, 0);
+        camera.updateProjectionMatrix();
+        return;
+      }
+      camera.up.set(0, 1, 0);
       var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
       var az = -m.rotY * DEG;
       // Fit the projected box: a long low building and a narrow tower need
@@ -343,7 +641,7 @@
       var m = pending;
       try {
         if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; appliedCamSig = ''; }
-        var cs = m.rotX + ',' + m.rotY + ',' + m.scale;
+        var cs = m.rotX + ',' + m.rotY + ',' + m.scale + ',' + (m.blueprintView ? 1 : 0);
         if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
         if (!dirty) return;
         dirty = false;
@@ -358,17 +656,94 @@
     return {
       isReady: function () { return state === 'ready'; },
       submit: function (m) { pending = m; },
+      pick: function (clientX, clientY) {
+        if (state !== 'ready' || !renderer || !camera || !raycaster || !pointer || !canvasEl || !groundMesh) return null;
+        var rect = canvasEl.getBoundingClientRect();
+        if (!rect.width || !rect.height) return null;
+        pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+        raycaster.setFromCamera(pointer, camera);
+        var targets = [];
+        if (batch && batch.mesh && latestBlocks.length) targets.push(batch.mesh);
+        customMeshes.forEach(function (mesh) { targets.push(mesh); });
+        targets.push(groundMesh);
+        var hits = raycaster.intersectObjects(targets, false);
+        for (var hi = 0; hi < hits.length; hi++) {
+          var hit = hits[hi];
+          if ((batch && hit.object === batch.mesh && hit.instanceId != null) || (hit.object.userData && hit.object.userData.archBlock)) {
+            var b = batch && hit.object === batch.mesh ? latestBlocks[hit.instanceId] : hit.object.userData.archBlock;
+            if (!b) continue;
+            var normal = hit.face && hit.face.normal ? hit.face.normal : { x: 0, y: 1, z: 0 };
+            if (normal.clone) {
+              normal = normal.clone();
+              if (hit.object !== (batch && batch.mesh) && normal.transformDirection) normal.transformDirection(hit.object.matrixWorld);
+            }
+            return {
+              kind: 'block',
+              block: { x: b.x, y: b.y, z: b.z },
+              place: {
+                x: b.x + Math.round(normal.x || 0),
+                y: b.y + Math.round(normal.y || 0),
+                z: b.z + Math.round(normal.z || 0)
+              }
+            };
+          }
+          if (hit.object === groundMesh) {
+            return {
+              kind: 'ground', block: null,
+              place: {
+                x: Math.round(hit.point.x + centre.x),
+                y: 0,
+                z: Math.round(hit.point.z + centre.z)
+              }
+            };
+          }
+        }
+        return null;
+      },
       debug: function () {
         if (state !== 'ready' || !renderer) return { state: state };
         var gl = renderer.getContext();
+        var shapeCounts = {};
+        latestAllBlocks.forEach(function (b) { var sid = b.shape || 'block'; shapeCounts[sid] = (shapeCounts[sid] || 0) + 1; });
         return {
           state: state,
-          blockCount: batch ? batch.drawnCount() : 0,
-          outlineCount: batch ? batch.outlinedCount() : 0,
+          blockCount: (batch ? batch.drawnCount() : 0) + customMeshes.length,
+          outlineCount: (batch ? batch.outlinedCount() : 0) + customMeshes.length,
+          customShapeCount: customMeshes.length,
+          shapeCounts: shapeCounts,
+          gridLineCount: gridLineCount,
+          previewVisible: !!previewMesh,
+          renderHexes: latestAllBlocks.map(function (b) { return b.hex; }),
+          viewMode: pending && pending.blueprintView ? 'blueprint' : 'perspective',
+          styleMode: pending && pending.styleMode ? pending.styleMode : 'architect',
           extent: extent,
           canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
           contextLost: gl ? gl.isContextLost() : null
         };
+      },
+      preview: function (target, options) { updatePreview(target, options); },
+      clearPreview: clearPreview,
+      capturePng: function () {
+        if (state !== 'ready' || !renderer || !scene || !camera || !canvasEl) return null;
+        clearPreview();
+        renderer.render(scene, camera);
+        return canvasEl.toDataURL('image/png');
+      },
+      stlGeometries: function (blocks) {
+        if (!T && window.THREE) T = window.THREE;
+        if (!T) return [];
+        return (blocks || []).map(function (b) {
+          var shape = b.shape || 'block';
+          var geometry = makeArchGeometry(shape);
+          var yOffset = shape === 'slab' ? 0.23 : shape === 'dome' ? 0 : 0.5;
+          var matrix = new T.Matrix4();
+          var position = new T.Vector3(b.x || 0, (b.y || 0) + yOffset, b.z || 0);
+          var rotation = new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 1, 0), ((b.rotation || 0) % 360) * DEG);
+          matrix.compose(position, rotation, new T.Vector3(1, 1, 1));
+          geometry.applyMatrix4(matrix);
+          return geometry;
+        });
       },
       mount: function (el) {
         if (canvasEl === el) return;
@@ -403,12 +778,16 @@
         else window.removeEventListener('resize', resize);
         if (scene) {
           if (batch) batch.dispose(scene);
+          clearPreview();
+          clearGroundGrid();
+          clearCustomMeshes();
           if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
         }
         if (renderer) { try { renderer.dispose(); } catch (e) {} }
-        batch = null; groundMesh = null;
+        batch = null; groundMesh = null; groundGrid = null; previewMesh = null; customMeshes = [];
         renderer = scene = camera = null; canvasEl = null; pending = null;
-        capacity = 0; appliedSig = ''; appliedCamSig = '';
+        raycaster = pointer = null; latestBlocks = []; latestAllBlocks = [];
+        capacity = 0; gridLineCount = 0; appliedSig = ''; appliedCamSig = ''; previewSig = '';
         if (state !== 'failed') state = 'idle';
       }
     };
@@ -416,9 +795,117 @@
 
   // Hook-free tool, so the drag anchor lives at module scope alongside the
   // renderer rather than in a useRef.
-  var archDrag = { current: null };
+  var archDrag = { current: null, suppressClick: false };
+
+  // Pure authoring reducer shared by the 3D picker and the accessible floor
+  // grid. Returning the original array means the requested edit was a no-op.
+  function applySingleArchEdit(currentBlocks, edit) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    edit = edit || {};
+    var mode = edit.mode || 'place';
+    var cell = mode === 'place' ? edit.place : edit.block;
+    if (!cell || !isFinite(cell.x) || !isFinite(cell.y) || !isFinite(cell.z)) return current;
+    var x = Math.round(cell.x), y = Math.round(cell.y), z = Math.round(cell.z);
+    if (y < ARCH_Y_MIN || y > ARCH_Y_MAX || x < ARCH_XZ_MIN || x > ARCH_XZ_MAX || z < ARCH_XZ_MIN || z > ARCH_XZ_MAX) return current;
+    var atCell = function (b) { return b.x === x && b.y === y && b.z === z; };
+
+    if (mode === 'erase') {
+      if (!current.some(atCell)) return current;
+      return current.filter(function (b) { return !atCell(b); });
+    }
+    if (mode === 'paint') {
+      var found = false;
+      var painted = current.map(function (b) {
+        if (!atCell(b)) return b;
+        found = true;
+        if ((b.material || 'stone') === (edit.material || 'stone') && (b.color || '#94a3b8') === (edit.color || '#94a3b8')) return b;
+        return Object.assign({}, b, { material: edit.material || 'stone', color: edit.color || '#94a3b8' });
+      });
+      if (!found) return current;
+      var changed = painted.some(function (b, i) { return b !== current[i]; });
+      return changed ? painted : current;
+    }
+    if (current.some(atCell)) return current;
+    return current.concat([{
+      x: x, y: y, z: z,
+      shape: edit.shape || 'block',
+      material: edit.material || 'stone',
+      color: edit.color || '#94a3b8',
+      rotation: normalizeArchRotation(edit.rotation)
+    }]);
+  }
+
+  // Symmetry mirrors one edit across the clearly defined X=0 plane. The two
+  // cells are reduced together, so one click also remains one undo step.
+  function applyArchEdit(currentBlocks, edit) {
+    var current = Array.isArray(currentBlocks) ? currentBlocks : [];
+    edit = edit || {};
+    var next = applySingleArchEdit(current, edit);
+    if (!edit.symmetry) return next;
+
+    var mode = edit.mode || 'place';
+    var cellKey = mode === 'place' ? 'place' : 'block';
+    var cell = edit[cellKey];
+    if (!cell || !isFinite(cell.x)) return next;
+    var mirrorX = -Math.round(cell.x);
+    if (mirrorX === Math.round(cell.x)) return next;
+    var mirrored = Object.assign({}, edit);
+    mirrored.symmetry = false;
+    mirrored.rotation = reflectArchRotation(edit.rotation, 'x');
+    mirrored[cellKey] = Object.assign({}, cell, { x: mirrorX });
+    return applySingleArchEdit(next, mirrored);
+  }
+
+  function getArchGridAxisBounds(hasBlocks, minValue, maxValue) {
+    if (!hasBlocks) return [0, 9];
+    var lo = Math.max(-64, Math.round(minValue) - 1);
+    var hi = Math.min(64, Math.round(maxValue) + 1);
+    if (hi - lo + 1 > 32) {
+      var mid = Math.round((minValue + maxValue) / 2);
+      lo = mid - 15; hi = lo + 31;
+      if (lo < -64) { lo = -64; hi = -33; }
+      if (hi > 64) { hi = 64; lo = 33; }
+      return [lo, hi];
+    }
+    while (hi - lo + 1 < 10 && (lo > -64 || hi < 64)) {
+      if (lo > -64) lo--;
+      if (hi - lo + 1 < 10 && hi < 64) hi++;
+    }
+    return [lo, hi];
+  }
+
+  function selectArchDisplayBlocks(currentBlocks, options) {
+    options = options || {};
+    var visible = Array.isArray(currentBlocks) ? currentBlocks : [];
+    var replay = options.undoStack || [];
+    if (options.showReplay && options.replayStep >= 0 && options.replayStep < replay.length) {
+      visible = replay[options.replayStep] || [];
+    }
+    if (options.viewLayer != null && options.viewLayer >= 0) {
+      visible = visible.filter(function (b) { return b.y === options.viewLayer; });
+    }
+    if (options.showSlice && options.sliceZSelected) {
+      visible = visible.filter(function (b) { return b.z === options.sliceZ; });
+    }
+    if (options.filterMaterial) {
+      visible = visible.filter(function (b) { return (b.material || 'stone') === options.filterMaterial; });
+    }
+    if (options.filterShape) {
+      visible = visible.filter(function (b) { return (b.shape || 'block') === options.filterShape; });
+    }
+    return visible;
+  }
+
   function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
   try { window.__alloArchGL = ArchGL; } catch (e) {}
+  try { window.__alloArchEditBlocks = applyArchEdit; } catch (e) {}
+  try { window.__alloArchGridAxisBounds = getArchGridAxisBounds; } catch (e) {}
+  try { window.__alloArchDisplayBlocks = selectArchDisplayBlocks; } catch (e) {}
+  try { window.__alloArchSanitizeBlocks = sanitizeArchBlocks; } catch (e) {}
+  try { window.__alloArchSettleBlocks = settleArchBlocks; } catch (e) {}
+  try { window.__alloArchUnsupportedKeys = getArchUnsupportedKeys; } catch (e) {}
+  try { window.__alloArchChangeCamera = changeArchCamera; } catch (e) {}
+  try { window.__alloArchReflectRotation = reflectArchRotation; } catch (e) {}
 
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
@@ -473,6 +960,16 @@
     var showGallery = d.showGallery || false;
     var showTemplates = d.showTemplates || false;
     var viewLayer = d.viewLayer != null ? d.viewLayer : -1; // -1 = all layers
+    var editorView = d.editorView || '3d';
+    var editLayer = d.editLayer != null ? Math.max(0, Math.min(31, d.editLayer)) : 0;
+    var showSlice = d.showSlice || false;
+    var sliceZ = d.sliceZ != null ? d.sliceZ : -1;
+    var sliceZSelected = d.sliceZSelected === true || (d.sliceZSelected == null && d.sliceZ != null && d.sliceZ >= 0);
+    var showHeatmap = d.showHeatmap || false;
+    var showReplay = d.showReplay || false;
+    var replayStep = d.replayStep != null ? d.replayStep : -1;
+    var filterMaterial = d.filterMaterial || '';
+    var filterShape = d.filterShape || '';
     var budgetEnabled = d.budgetEnabled || false;
     var budget = d.budget != null ? d.budget : 200;
     var aiAdvice = d.aiAdvice || '';
@@ -524,11 +1021,49 @@
 
     // ── Lookups ──
     var volLookup = {};
-    shapes.forEach(function (s) { volLookup[s.id] = s.vol; });
+    var shapeIconById = {};
+    shapes.forEach(function (s) { volLookup[s.id] = s.vol; shapeIconById[s.id] = s.icon; });
     var matColorLookup = {};
     var matWeightLookup = {};
     var matCostLookup = {};
     materials.forEach(function (m) { matColorLookup[m.id] = m.color; matWeightLookup[m.id] = m.weight; matCostLookup[m.id] = m.cost; });
+
+    var archDisplayBlocks = selectArchDisplayBlocks(blocks, {
+      showReplay: showReplay,
+      replayStep: replayStep,
+      undoStack: undoStack,
+      viewLayer: viewLayer,
+      showSlice: showSlice,
+      sliceZ: sliceZ,
+      sliceZSelected: sliceZSelected,
+      filterMaterial: filterMaterial,
+      filterShape: filterShape
+    });
+
+    var archUnsupportedKeys = getArchUnsupportedKeys(blocks);
+    var archBlockLoads = {};
+    var archMaxLoad = 0;
+    if (showHeatmap && blocks.length) {
+      var archColumns = {};
+      blocks.forEach(function (b) {
+        var columnKey = b.x + ',' + b.z;
+        if (!archColumns[columnKey]) archColumns[columnKey] = [];
+        archColumns[columnKey].push(b);
+      });
+      Object.keys(archColumns).forEach(function (columnKey) {
+        var column = archColumns[columnKey].slice().sort(function (a, b) { return a.y - b.y; });
+        var cumulative = 0;
+        var previousY = null;
+        for (var loadIndex = column.length - 1; loadIndex >= 0; loadIndex--) {
+          var loadBlock = column[loadIndex];
+          if (previousY != null && previousY - loadBlock.y > 1) cumulative = 0;
+          cumulative += (volLookup[loadBlock.shape || 'block'] || 1) * (matWeightLookup[loadBlock.material || 'stone'] || 2.0);
+          archBlockLoads[loadBlock.x + ',' + loadBlock.y + ',' + loadBlock.z] = cumulative;
+          if (cumulative > archMaxLoad) archMaxLoad = cumulative;
+          previousY = loadBlock.y;
+        }
+      });
+    }
 
     // ── 3D building view (opt-in; the floor plans stay the floor) ──
     // Always on: this drives the tool's MAIN viewport, which until now
@@ -536,32 +1071,61 @@
     // failure path sets, not a default.
     var archShow3d = d.hide3d !== true;
     var archRot = d.rot3d || { rotX: -24, rotY: -38, scale: 1 };
+    var setArchCamera = function (action) {
+      var nextCamera = changeArchCamera(archRot, action);
+      if (action === 'reset' || (blueprintView && action !== 'zoomIn' && action !== 'zoomOut')) upd({ rot3d: nextCamera, blueprintView: false });
+      else upd('rot3d', nextCamera);
+    };
     function archHexFor(b) {
+      if (showHeatmap && archMaxLoad > 0) {
+        var loadKey = b.x + ',' + b.y + ',' + b.z;
+        if (archUnsupportedKeys[loadKey]) return 0xef4444;
+        var load = archBlockLoads[loadKey] || 0;
+        var pct = Math.max(0, Math.min(1, load / archMaxLoad));
+        var from = pct < 0.5 ? [34, 197, 94] : [234, 179, 8];
+        var to = pct < 0.5 ? [234, 179, 8] : [239, 68, 68];
+        var local = pct < 0.5 ? pct * 2 : (pct - 0.5) * 2;
+        var rr = Math.round(from[0] + (to[0] - from[0]) * local);
+        var gg = Math.round(from[1] + (to[1] - from[1]) * local);
+        var bb = Math.round(from[2] + (to[2] - from[2]) * local);
+        return (rr << 16) | (gg << 8) | bb;
+      }
+      if (styleMode === 'bricks') return ARCH_BRICK_HEX[b.material || 'stone'] || ARCH_BRICK_HEX.stone;
       var own = String(b.color || '').trim();
       if (/^#[0-9a-f]{6}$/i.test(own)) return parseInt(own.slice(1), 16);
       var m = ARCH_MAT_HEX[b.material || 'stone'];
       return m == null ? 0x94a3b8 : m;
     }
-    var archGlAlt = 'Three-dimensional view of your build: ' + blocks.length
-      + (blocks.length === 1 ? ' block' : ' blocks')
-      + '. Use the turn and tilt buttons to look around it.';
+    var archGlAlt = 'Three-dimensional view of your build: ' + archDisplayBlocks.length
+      + (archDisplayBlocks.length === 1 ? ' visible block' : ' visible blocks')
+      + (archDisplayBlocks.length !== blocks.length ? ' of ' + blocks.length + ' total' : '')
+      + '. Use the camera controls to look around it.';
     if (archShow3d) {
       ArchGL.submit({
-        blocks: blocks.map(function (b) {
-          return { x: b.x || 0, y: b.y || 0, z: b.z || 0, hex: archHexFor(b) };
+        blocks: archDisplayBlocks.map(function (b) {
+          return {
+            x: b.x || 0, y: b.y || 0, z: b.z || 0,
+            shape: b.shape || 'block', material: b.material || 'stone',
+            rotation: b.rotation || 0, hex: archHexFor(b)
+          };
         }),
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
+        blueprintView: blueprintView,
+        styleMode: styleMode,
         onReady: function () { upd('gl3dReadyAt', Date.now()); },
         onFail: function () {
           upd('hide3d', true);
           if (typeof addToast === 'function') addToast('The 3D view could not load. Showing floor plans.', 'info');
         },
-        sig: blocks.map(function (b) {
-          return (b.x || 0) + ',' + (b.y || 0) + ',' + (b.z || 0) + ',' + (b.material || '') + ',' + (b.color || '');
-        }).join('|')
+        sig: archDisplayBlocks.map(function (b) {
+          return (b.x || 0) + ',' + (b.y || 0) + ',' + (b.z || 0) + ',' + (b.shape || 'block') + ','
+            + (b.material || '') + ',' + (b.color || '') + ',' + (b.rotation || 0);
+        }).join('|') + '|view:' + (blueprintView ? 'blueprint' : 'perspective')
+          + '|style:' + styleMode + '|heat:' + (showHeatmap ? 'on' : 'off')
       });
     }
     var archGlLive = archShow3d && ArchGL.isReady();
+    var mainUse3d = archShow3d && editorView !== 'grid';
 
     // ── Basic Stats ──
     var totalBlocks = blocks.length;
@@ -621,11 +1185,9 @@
       analysis.totalWeight = sumW.toFixed(1);
       analysis.materialCount = Object.keys(matSet).length;
 
-      var groundY = minY;
-      var floating = 0;
-      blocks.forEach(function (b) {
-        if (b.y > groundY && !blockMap[b.x + ',' + (b.y - 1) + ',' + b.z]) floating++;
-      });
+      // Y=0 is the actual ground plane. A wholly elevated import must not be
+      // treated as supported merely because its lowest block is above ground.
+      var floating = Object.keys(archUnsupportedKeys).length;
       analysis.unsupported = floating;
       analysis.supportedPct = totalBlocks > 0 ? Math.round(((totalBlocks - floating) / totalBlocks) * 100) : 100;
 
@@ -731,6 +1293,79 @@
       return stack;
     };
 
+    var commitArchEdit = function (target) {
+      if (showReplay) {
+        if (announceToSR) announceToSR('Exit construction replay before editing.');
+        return false;
+      }
+      var edit = {
+        mode: mode,
+        place: target && target.place,
+        block: target && target.block,
+        shape: activeShape,
+        material: activeMaterial,
+        color: activeColor,
+        rotation: activeRotation,
+        symmetry: symmetryMode
+      };
+      var preview = applyArchEdit(blocks, edit);
+      if (preview === blocks) return false;
+
+      if (typeof ctx.setToolData === 'function') {
+        ctx.setToolData(function (p) {
+          var a = Object.assign({}, p.archStudio || {});
+          var current = a.blocks || [];
+          var next = applyArchEdit(current, edit);
+          if (next === current) return p;
+          var history = (a.undoStack || []).slice();
+          history.push(JSON.parse(JSON.stringify(current)));
+          if (history.length > 50) history = history.slice(-50);
+          var materialsSeen = Object.assign({}, a.materialsUsed || {});
+          var stylesSeen = Object.assign({}, a.stylesUsed || {});
+          if (mode !== 'erase') materialsSeen[activeMaterial] = true;
+          stylesSeen[styleMode] = true;
+          return Object.assign({}, p, { archStudio: Object.assign({}, a, {
+            blocks: next,
+            undoStack: history,
+            redoStack: [],
+            materialsUsed: materialsSeen,
+            stylesUsed: stylesSeen
+          }) });
+        });
+      } else {
+        upd({ blocks: preview, undoStack: pushUndo(blocks), redoStack: [] });
+      }
+
+      if (soundEnabled) {
+        if (mode === 'erase') sfxErase(); else sfxPlace();
+      }
+      var cell = mode === 'place' ? edit.place : edit.block;
+      if (announceToSR && cell) {
+        announceToSR((mode === 'place' ? 'Placed ' + activeShape : mode === 'erase' ? 'Removed block' : 'Painted block')
+          + ' at X ' + Math.round(cell.x) + ', Y ' + Math.round(cell.y) + ', Z ' + Math.round(cell.z) + '.'
+          + (symmetryMode && Math.round(cell.x) !== 0 ? ' Mirrored across X equals zero.' : ''));
+      }
+      return true;
+    };
+
+    var editAtPointer = function (ev) {
+      if (archDrag.suppressClick) { archDrag.suppressClick = false; return; }
+      if (showReplay) {
+        if (announceToSR) announceToSR('Exit construction replay before editing.');
+        return;
+      }
+      var target = ArchGL.pick(ev.clientX, ev.clientY);
+      if (target) commitArchEdit(target);
+      ArchGL.clearPreview();
+    };
+
+    var editAtGridCell = function (x, z) {
+      commitArchEdit({
+        place: { x: x, y: editLayer, z: z },
+        block: { x: x, y: editLayer, z: z }
+      });
+    };
+
     var doUndo = function () {
       if (!undoStack || undoStack.length === 0) return;
       var stack = undoStack.slice();
@@ -783,14 +1418,17 @@
       var item = {
         id: 'arch_' + Date.now(),
         name: name,
-        blocks: JSON.parse(JSON.stringify(blocks)),
+        blocks: sanitizeArchBlocks(blocks),
         blockCount: blocks.length,
         dims: buildW + '\u00D7' + buildD + '\u00D7' + buildH,
         stability: analysis.stability,
         timestamp: Date.now()
       };
       var updated = galleryItems.concat([item]);
-      saveGallery(updated);
+      if (!saveGallery(updated)) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F This browser could not save the build. Storage may be full or unavailable.', 'error');
+        return;
+      }
       upd('_galleryRefresh', Date.now());
       if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Build saved: ' + name, 'success');
       if (soundEnabled) sfxSave();
@@ -810,7 +1448,10 @@
 
     var deleteBuild = function (id) {
       var updated = galleryItems.filter(function (g) { return g.id !== id; });
-      saveGallery(updated);
+      if (!saveGallery(updated)) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F The saved build could not be removed from browser storage.', 'error');
+        return;
+      }
       upd('_galleryRefresh', Date.now());
       if (ctx.addToast) ctx.addToast('\uD83D\uDDD1\uFE0F Build deleted', 'info');
     };
@@ -821,7 +1462,8 @@
     var templates = makeTemplates();
 
     var loadTemplate = function (tpl) {
-      var newBlocks = tpl.blocks();
+      var newBlocks = (tpl.blocks)();
+      newBlocks = sanitizeArchBlocks(newBlocks);
       var newUndo = pushUndo(blocks);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -840,12 +1482,19 @@
       var newUndo = pushUndo(blocks);
       var mid = (minX + maxX) / 2;
       var mirrored = blocks.map(function (b) {
-        return Object.assign({}, b, { x: Math.round(mid + (mid - b.x)) });
+        return Object.assign({}, b, {
+          x: Math.round(mid + (mid - b.x)),
+          rotation: reflectArchRotation(b.rotation, 'x')
+        });
       });
       // Merge: keep original + add non-overlapping mirrored
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
       var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      if (!added.length) {
+        if (ctx.addToast) ctx.addToast('The build is already mirrored across its X centerline.', 'info');
+        return;
+      }
       var merged = blocks.concat(added);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -860,11 +1509,18 @@
       var newUndo = pushUndo(blocks);
       var mid = (minZ + maxZ) / 2;
       var mirrored = blocks.map(function (b) {
-        return Object.assign({}, b, { z: Math.round(mid + (mid - b.z)) });
+        return Object.assign({}, b, {
+          z: Math.round(mid + (mid - b.z)),
+          rotation: reflectArchRotation(b.rotation, 'z')
+        });
       });
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
       var added = mirrored.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      if (!added.length) {
+        if (ctx.addToast) ctx.addToast('The build is already mirrored across its Z centerline.', 'info');
+        return;
+      }
       var merged = blocks.concat(added);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -972,7 +1628,8 @@
       var canvas = document.getElementById('arch-studio-canvas');
       if (!canvas) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Canvas not ready', 'error'); return; }
       try {
-        var url = canvas.toDataURL('image/png');
+        var url = ArchGL.capturePng();
+        if (!url) throw new Error('renderer-not-ready');
         var a = document.createElement('a');
         a.href = url;
         a.download = 'archstudio_screenshot_' + Date.now() + '.png';
@@ -1031,7 +1688,8 @@
     var exportShareCode = function () {
       if (blocks.length === 0) return;
       try {
-        var data = { v: 1, b: blocks.map(function (b) { return [b.x, b.y, b.z, b.shape || 'block', b.material || 'stone', b.color || '', b.rotation || 0]; }) };
+        var exportBlocks = sanitizeArchBlocks(blocks);
+        var data = { v: 1, b: exportBlocks.map(function (b) { return [b.x, b.y, b.z, b.shape, b.material, b.color, b.rotation]; }) };
         var json = JSON.stringify(data);
         var code = btoa(json);
         upd({ shareCode: code, showShare: true });
@@ -1039,6 +1697,8 @@
         if (navigator.clipboard) {
           navigator.clipboard.writeText(code).then(function () {
             if (ctx.addToast) ctx.addToast('\uD83D\uDCCB Share code copied to clipboard!', 'success');
+          }).catch(function () {
+            if (ctx.addToast) ctx.addToast('\uD83D\uDCE4 Share code generated. Copy it from the Share panel.', 'info');
           });
         } else {
           if (ctx.addToast) ctx.addToast('\uD83D\uDCE4 Share code generated! Copy it below.', 'info');
@@ -1051,19 +1711,26 @@
     var importShareCode = function (code) {
       if (!code) return;
       try {
-        var json = atob(code.trim());
+        var trimmedCode = String(code).trim();
+        if (!trimmedCode || trimmedCode.length > 500000) throw new Error('Invalid size');
+        var json = atob(trimmedCode);
         var data = JSON.parse(json);
-        if (!data.b || !Array.isArray(data.b)) throw new Error('Invalid');
-        var imported = data.b.map(function (arr) {
+        if (!data || data.v !== 1 || !Array.isArray(data.b) || data.b.length > ARCH_MAX_BLOCKS) throw new Error('Invalid');
+        var decoded = data.b.map(function (arr) {
+          if (!Array.isArray(arr)) return null;
           return { x: arr[0], y: arr[1], z: arr[2], shape: arr[3] || 'block', material: arr[4] || 'stone', color: arr[5] || '#94a3b8', rotation: arr[6] || 0 };
         });
+        var imported = sanitizeArchBlocks(decoded);
+        if (data.b.length && !imported.length) throw new Error('No valid blocks');
+        var skipped = data.b.length - imported.length;
         var newUndo = pushUndo(blocks);
         ctx.setToolData(function (p) {
           var a = Object.assign({}, p.archStudio || {});
-          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [] }) });
+          return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: imported, undoStack: newUndo, redoStack: [], importCode: '' }) });
         });
-        if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Imported ' + imported.length + ' blocks!', 'success');
+        if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Imported ' + imported.length + ' blocks' + (skipped ? '; skipped ' + skipped + ' invalid or duplicate entr' + (skipped === 1 ? 'y' : 'ies') : '') + '.', skipped ? 'info' : 'success');
         if (soundEnabled) sfxLoad();
+        if (announceToSR) announceToSR('Imported ' + imported.length + ' blocks.' + (skipped ? ' Skipped ' + skipped + ' invalid or duplicate entries.' : ''));
       } catch (e) {
         if (ctx.addToast) ctx.addToast('\u26A0\uFE0F Invalid share code!', 'error');
       }
@@ -1093,13 +1760,18 @@
     // ══════════════════════════════════════════════════════════════
     var duplicateBuild = function (dx, dy, dz) {
       if (blocks.length === 0) return;
-      var newUndo = pushUndo(blocks);
       var duped = blocks.map(function (b) {
         return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz });
       });
+      duped = sanitizeArchBlocks(duped);
       var existing = {};
       blocks.forEach(function (b) { existing[b.x + ',' + b.y + ',' + b.z] = true; });
       var added = duped.filter(function (b) { return !existing[b.x + ',' + b.y + ',' + b.z]; });
+      if (!added.length) {
+        if (ctx.addToast) ctx.addToast('\u26A0\uFE0F No blocks could be copied inside the build limits.', 'info');
+        return;
+      }
+      var newUndo = pushUndo(blocks);
       var merged = blocks.concat(added);
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
@@ -1156,27 +1828,18 @@
     // ══════════════════════════════════════════════════════════════
     var applyGravity = function () {
       if (blocks.length === 0) return;
+      var result = settleArchBlocks(blocks);
+      if (result.moved === 0) {
+        if (ctx.addToast) ctx.addToast('\u2705 Every block is already settled on the ground or a support.', 'info');
+        return;
+      }
       var newUndo = pushUndo(blocks);
-      // Sort blocks by Y ascending; drop each floating block to nearest support
-      var sorted = blocks.slice().sort(function (a, b) { return a.y - b.y; });
-      var occupied = {};
-      var groundY = minY;
-      var settled = [];
-      var moved = 0;
-      sorted.forEach(function (b) {
-        // Find lowest available Y for this (x,z) column
-        var targetY = groundY;
-        while (occupied[b.x + ',' + targetY + ',' + b.z]) targetY++;
-        if (targetY !== b.y) moved++;
-        var nb = Object.assign({}, b, { y: targetY });
-        settled.push(nb);
-        occupied[nb.x + ',' + nb.y + ',' + nb.z] = true;
-      });
       ctx.setToolData(function (p) {
         var a = Object.assign({}, p.archStudio || {});
-        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: settled, undoStack: newUndo, redoStack: [] }) });
+        return Object.assign({}, p, { archStudio: Object.assign({}, a, { blocks: result.blocks, undoStack: newUndo, redoStack: [] }) });
       });
-      if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + moved + ' block' + (moved !== 1 ? 's' : '') + ' dropped.', 'info');
+      if (ctx.addToast) ctx.addToast('\u2B07\uFE0F Gravity applied! ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped.', 'info');
+      if (announceToSR) announceToSR('Gravity applied. ' + result.moved + ' block' + (result.moved !== 1 ? 's' : '') + ' dropped to the ground or nearest support.');
       playTone(200, 0.3, 'sine', 0.1);
       setTimeout(function () { playTone(120, 0.4, 'sine', 0.08); }, 150);
     };
@@ -1280,9 +1943,7 @@
     // ══════════════════════════════════════════════════════════════
     // ── Cross-Section Slicer (Z-depth) ──
     // ══════════════════════════════════════════════════════════════
-    var showSlice = d.showSlice || false;
-    var sliceZ = d.sliceZ != null ? d.sliceZ : -1; // -1 = all, else a specific Z
-    var sliceBlocks = sliceZ >= 0 ? blocks.filter(function (b) { return b.z === sliceZ; }) : [];
+    var sliceBlocks = sliceZSelected ? blocks.filter(function (b) { return b.z === sliceZ; }) : [];
     var sliceZLevels = [];
     if (totalBlocks > 0) {
       var zSet = {};
@@ -1293,34 +1954,12 @@
     // ══════════════════════════════════════════════════════════════
     // ── Structural Load Heatmap ──
     // ══════════════════════════════════════════════════════════════
-    var showHeatmap = d.showHeatmap || false;
-    var blockLoads = {}; // key => load value
-    if (showHeatmap && totalBlocks > 0) {
-      // Compute load: each block bears its own weight + weight of all blocks directly above in same (x,z) column
-      var columnBlocks = {}; // 'x,z' => [blocks sorted by y asc]
-      blocks.forEach(function (b) {
-        var key = b.x + ',' + b.z;
-        if (!columnBlocks[key]) columnBlocks[key] = [];
-        columnBlocks[key].push(b);
-      });
-      Object.keys(columnBlocks).forEach(function (key) {
-        var col = columnBlocks[key].sort(function (a, b) { return a.y - b.y; });
-        var cumWeight = 0;
-        for (var ci = col.length - 1; ci >= 0; ci--) {
-          var bw = (volLookup[col[ci].shape || 'block'] || 1) * (matWeightLookup[col[ci].material || 'stone'] || 2.0);
-          cumWeight += bw;
-          blockLoads[col[ci].x + ',' + col[ci].y + ',' + col[ci].z] = cumWeight;
-        }
-      });
-    }
-    var maxLoad = 0;
-    Object.keys(blockLoads).forEach(function (k) { if (blockLoads[k] > maxLoad) maxLoad = blockLoads[k]; });
+    var blockLoads = showHeatmap ? archBlockLoads : {};
+    var maxLoad = showHeatmap ? archMaxLoad : 0;
 
     // ══════════════════════════════════════════════════════════════
     // ── Time-Lapse Replay ──
     // ══════════════════════════════════════════════════════════════
-    var showReplay = d.showReplay || false;
-    var replayStep = d.replayStep != null ? d.replayStep : -1; // -1 = not replaying
     var replayFrames = (undoStack || []).length;
 
     var startReplay = function () {
@@ -1343,8 +1982,6 @@
     // ── Block Search / Filter ──
     // ══════════════════════════════════════════════════════════════
     var showFilter = d.showFilter || false;
-    var filterMaterial = d.filterMaterial || '';
-    var filterShape = d.filterShape || '';
     var filteredBlocks = blocks.filter(function (b) {
       if (filterMaterial && (b.material || 'stone') !== filterMaterial) return false;
       if (filterShape && (b.shape || 'block') !== filterShape) return false;
@@ -1453,19 +2090,16 @@
     // ── STL Export ──
     // ══════════════════════════════════════════════════════════════
     var exportSTL = function () {
-      if (!window.THREE || !window._archScene || blocks.length === 0) return;
-      var THREE = window.THREE;
-      var geos = [];
-      window._archScene.blockMeshes.forEach(function (m) {
-        var g = m.geometry.clone(); g.applyMatrix4(m.matrixWorld); geos.push(g);
-      });
-      if (geos.length === 0) return;
+      if (blocks.length === 0) return;
+      var geos = ArchGL.stlGeometries(blocks);
+      if (geos.length === 0) { if (ctx.addToast) ctx.addToast('\u26A0\uFE0F 3D engine is not ready for STL export', 'error'); return; }
       var positions = [], normals = [];
       geos.forEach(function (g) {
         var idx = g.index, pos = g.getAttribute('position'), nrm = g.getAttribute('normal');
         if (idx) { for (var i = 0; i < idx.count; i++) { var vi = idx.getX(i); positions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi)); normals.push(nrm ? nrm.getX(vi) : 0, nrm ? nrm.getY(vi) : 1, nrm ? nrm.getZ(vi) : 0); } }
-        else { for (var j = 0; j < pos.count; j++) { positions.push(pos.getX(j), pos.getY(j), pos.getZ(j)); normals.push(nrm ? nrm.getX(j) : 0, nrm ? nrm.getY(j) : 1, nrm ? nrm.getZ(j) : 0); } }
+          else { for (var j = 0; j < pos.count; j++) { positions.push(pos.getX(j), pos.getY(j), pos.getZ(j)); normals.push(nrm ? nrm.getX(j) : 0, nrm ? nrm.getY(j) : 1, nrm ? nrm.getZ(j) : 0); } }
       });
+      geos.forEach(function (g) { if (g.dispose) g.dispose(); });
       var triCount = positions.length / 9, bufLen = 84 + triCount * 50;
       var buf = new ArrayBuffer(bufLen), dv = new DataView(buf);
       for (var h = 0; h < 80; h++) dv.setUint8(h, 0);
@@ -1624,6 +2258,73 @@
       } }, label);
     };
 
+    var cameraBtn = function (label, glyph, action) {
+      return el('button', { key: action, type: 'button', 'aria-label': label, title: label, onClick: function () { setArchCamera(action); }, style: {
+        width: 30, height: 28, padding: 0, borderRadius: 6, border: '1px solid #475569', background: 'rgba(30,41,59,.92)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800
+      } }, glyph);
+    };
+
+    var renderBuildGrid = function () {
+      var xBounds = getArchGridAxisBounds(blocks.length > 0, minX, maxX);
+      var zBounds = getArchGridAxisBounds(blocks.length > 0, minZ, maxZ);
+      var gridMinX = xBounds[0], gridMaxX = xBounds[1];
+      var gridMinZ = zBounds[0], gridMaxZ = zBounds[1];
+      var cols = gridMaxX - gridMinX + 1;
+      var rows = gridMaxZ - gridMinZ + 1;
+      var cellPx = Math.max(28, Math.min(48, Math.floor(520 / Math.max(cols, rows, 1))));
+      var layerMap = {};
+      blocks.forEach(function (b) {
+        if (b.y === editLayer) layerMap[b.x + ',' + b.z] = b;
+      });
+      var cells = [];
+      for (var gz = gridMinZ; gz <= gridMaxZ; gz++) {
+        for (var gx = gridMinX; gx <= gridMaxX; gx++) {
+          (function (x, z) {
+            var b = layerMap[x + ',' + z];
+            var action = mode === 'place' ? 'place ' + activeShape : mode === 'erase' ? 'remove block' : 'paint block';
+            cells.push(el('button', {
+              key: x + ',' + z,
+              type: 'button',
+              role: 'gridcell',
+              'data-arch-cell': x + ',' + editLayer + ',' + z,
+              'aria-label': (b ? (b.shape || 'block') : 'Empty cell') + ' at X ' + x + ', Y ' + editLayer + ', Z ' + z + '; ' + action,
+              onClick: function () { editAtGridCell(x, z); },
+              title: 'X ' + x + '  Z ' + z + (b ? ' - ' + (b.shape || 'block') : ''),
+              style: {
+                width: cellPx, height: cellPx, padding: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                borderRadius: 5,
+                border: b ? '2px solid rgba(255,255,255,.55)' : '1px solid rgba(100,116,139,.55)',
+                background: b ? (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8') : 'rgba(30,41,59,.72)',
+                color: b ? '#fff' : '#64748b',
+                fontSize: b ? Math.max(14, Math.floor(cellPx * 0.42)) : 13,
+                cursor: (mode === 'erase' || mode === 'paint') ? (b ? 'pointer' : 'default') : 'pointer',
+                boxShadow: b ? 'inset 0 0 0 1px rgba(15,23,42,.35)' : 'none'
+              }
+            }, b ? (shapeIconById[b.shape || 'block'] || '\uD83E\uDDF1') : (mode === 'place' ? '+' : '')));
+          })(gx, gz);
+        }
+      }
+
+      return el('div', { style: { flex: 1, minHeight: 260, display: 'flex', flexDirection: 'column', padding: '54px 16px 14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 20%, rgba(30,41,59,.9), rgba(15,23,42,1))' } },
+        !archShow3d && el('div', { role: 'status', style: { margin: '0 auto 8px', padding: '6px 10px', borderRadius: 8, background: 'rgba(245,158,11,.12)', border: '1px solid rgba(245,158,11,.45)', color: '#fde68a', fontSize: 11 } },
+          '3D is unavailable, but the floor grid is fully editable.'),
+        el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+          el('button', { type: 'button', disabled: editLayer <= 0, 'aria-label': 'Previous floor', onClick: function () { upd('editLayer', Math.max(0, editLayer - 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer > 0 ? '#e2e8f0' : '#475569', cursor: editLayer > 0 ? 'pointer' : 'default' } }, '\u2212'),
+          el('strong', { style: { minWidth: 92, textAlign: 'center', color: '#f8fafc', fontSize: 12 } }, 'Floor Y=' + editLayer),
+          el('button', { type: 'button', disabled: editLayer >= 31, 'aria-label': 'Next floor', onClick: function () { upd('editLayer', Math.min(31, editLayer + 1)); }, style: { width: 32, height: 28, borderRadius: 7, border: '1px solid #475569', background: 'rgba(30,41,59,.8)', color: editLayer < 31 ? '#e2e8f0' : '#475569', cursor: editLayer < 31 ? 'pointer' : 'default' } }, '+'),
+          el('span', { style: { color: '#94a3b8', fontSize: 11 } }, mode === 'place' ? 'Select a cell to place ' + activeShape : mode === 'erase' ? 'Select a block to remove it' : 'Select a block to paint it')
+        ),
+        el('div', { style: { flex: 1, minHeight: 0, overflow: 'auto' } },
+          el('div', { role: 'grid', 'aria-label': 'Architecture build grid, floor ' + editLayer, style: {
+            display: 'grid', gridTemplateColumns: 'repeat(' + cols + ', ' + cellPx + 'px)', gap: 3,
+            width: 'max-content', margin: '0 auto', padding: 8, borderRadius: 10,
+            background: 'rgba(2,6,23,.48)', border: '1px solid rgba(71,85,105,.7)'
+          } }, cells)
+        )
+      );
+    };
+
     // ══════════════════════════════════════════════════════════════
     // ── RENDER ──
     // ══════════════════════════════════════════════════════════════
@@ -1638,8 +2339,8 @@
       else if (k === 'a' || k === 'A') { e.preventDefault(); upd('mode', 'paint'); if (announceToSR) announceToSR('Paint mode.'); }
       else if (k === 'r' || k === 'R') {
         e.preventDefault();
-        var nextDeg = ((d.rotation || 0) + 90) % 360;
-        upd('rotation', nextDeg);
+        var nextDeg = (activeRotation + 90) % 360;
+        upd('activeRotation', nextDeg);
         if (announceToSR) announceToSR('Rotated to ' + nextDeg + ' degrees.');
       } else if (k >= '1' && k <= '9') {
         var idx = parseInt(k, 10) - 1;
@@ -1683,10 +2384,16 @@
         + '.theme-contrast #arch-studio-region{'
         + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
         + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
-        + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}'),
+        + '--allo-stem-button-bg:#000000;--allo-stem-button-text:#00ff00;--allo-stem-button-border:#00ff00;}'
+        + '@media(max-width:680px){'
+        + '#arch-studio-region .arch-studio-header{flex-wrap:nowrap!important;overflow-x:auto;}'
+        + '#arch-studio-region .arch-studio-main{flex-direction:column;overflow:auto!important;}'
+        + '#arch-studio-region .arch-studio-sidebar{width:auto!important;max-height:230px;flex:none;border-right:0!important;border-bottom:1px solid #334155;}'
+        + '#arch-studio-region .arch-studio-viewport{min-height:360px;flex:none!important;}'
+        + '}'),
 
       // ── Header bar ──
-      el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderBottom: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
+      el('div', { className: 'arch-studio-header', style: { display: 'flex', alignItems: 'center', gap: 6, padding: '8px 12px', background: 'linear-gradient(90deg,var(--allo-stem-panel, #1e293b),var(--allo-stem-canvas, #0f172a))', borderBottom: '1px solid var(--allo-stem-border, #334155)', flexWrap: 'wrap' } },
         el('button', { onClick: function () { ctx.setStemLabTool(''); }, style: { background: 'rgba(71,85,105,.5)', border: 'none', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', fontSize: 13, fontWeight: 600 } }, '\u2190 Back'),
         el('span', { style: { fontSize: 18 } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
         el('span', { style: { fontWeight: 700, fontSize: 15, color: '#f8fafc' } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
@@ -1731,12 +2438,12 @@
       ),
 
       // ── Main content: sidebar + viewport ──
-      el('div', { style: { display: 'flex', flex: 1, overflow: 'hidden' } },
+      el('div', { className: 'arch-studio-main', style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' } },
 
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('div', { style: { width: 185, background: 'var(--allo-stem-panel, #1e293b)', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 12 } },
+        el('div', { className: 'arch-studio-sidebar', style: { width: 185, flexShrink: 0, background: 'var(--allo-stem-panel, #1e293b)', padding: '10px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 12 } },
 
           // Mode selector
           el('div', null,
@@ -1808,7 +2515,7 @@
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3 } },
               ['#ef4444','#f97316','#f59e0b','#eab308','#84cc16','#22c55e','#14b8a6','#06b6d4','#3b82f6','#6366f1','#8b5cf6','#a855f7','#ec4899','#f43f5e','#f8fafc','#94a3b8','#94a3b8','#1e293b'].map(function (c) {
                 return el('button', { key: c, onClick: function () { upd('activeColor', c); }, title: c, style: {
-                  width: 20, height: 20, borderRadius: 5, background: c, cursor: 'pointer',
+                  width: 24, height: 24, borderRadius: 5, background: c, cursor: 'pointer',
                   border: activeColor === c ? '3px solid #fff' : '1px solid rgba(255,255,255,.2)',
                   boxShadow: activeColor === c ? '0 0 6px ' + c + '88' : 'none',
                   transform: activeColor === c ? 'scale(1.15)' : 'scale(1)', transition: 'all 0.15s ease'
@@ -1823,7 +2530,7 @@
             el('div', { style: { display: 'flex', gap: 3 } },
               el('button', { onClick: mirrorBuildX, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2194\uFE0F X'),
               el('button', { onClick: mirrorBuildZ, disabled: !blocks.length, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6, background: 'transparent', color: blocks.length ? '#94a3b8' : '#475569', cursor: blocks.length ? 'pointer' : 'default' } }, '\u2195\uFE0F Z'),
-              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
+              el('button', { onClick: function () { upd('symmetryMode', !symmetryMode); }, 'aria-pressed': symmetryMode, 'aria-label': 'Symmetry: mirror edits across X equals zero', title: 'Mirror place, paint, and erase edits across X=0', style: { flex: 1, padding: '5px 4px', fontSize: 10, fontWeight: 600, border: symmetryMode ? '2px solid #f472b6' : '1px solid #334155', borderRadius: 6, background: symmetryMode ? 'rgba(244,114,182,.15)' : 'transparent', color: symmetryMode ? '#f9a8d4' : '#94a3b8', cursor: 'pointer' } }, symmetryMode ? '\u2705 Sym' : '\uD83E\uDE9E Sym')
             )
           ),
 
@@ -1871,7 +2578,7 @@
             el('div', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDDC2\uFE0F Layer View'),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
               el('span', { style: { fontSize: 10, color: viewLayer === -1 ? '#4ade80' : '#f59e0b', fontWeight: 700, minWidth: 28 } }, viewLayer === -1 ? 'All' : 'Y' + viewLayer),
-              el('input', { type: 'range', 'aria-label': 'All', min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
+              el('input', { type: 'range', 'aria-label': 'Visible floor layer', 'aria-valuetext': viewLayer === -1 ? 'All floors' : 'Floor Y equals ' + viewLayer, min: -1, max: Math.max(0, maxY), step: 1, value: viewLayer, onChange: function (e) { upd('viewLayer', parseInt(e.target.value)); }, style: { flex: 1, height: 4, accentColor: '#60a5fa' } })
             ),
             viewLayer >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
               blocks.filter(function (b) { return b.y === viewLayer; }).length + ' blocks at Y=' + viewLayer
@@ -2149,7 +2856,7 @@
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 3, marginBottom: 6 } },
               colorSwatches.map(function (c) {
                 return el('button', { key: c, onClick: function () { upd({ activeColor: c, customColor: c }); }, style: {
-                  width: 18, height: 18, borderRadius: 4, border: customColor === c ? '2px solid #fff' : '1px solid #475569',
+                  width: 24, height: 24, borderRadius: 4, border: customColor === c ? '2px solid #fff' : '1px solid #475569',
                   background: c, cursor: 'pointer', padding: 0
                 } });
               })
@@ -2168,18 +2875,18 @@
           showSlice && el('div', null,
             el('div', { style: { fontSize: 10, fontWeight: 700, color: '#67e8f9', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDD2C Cross-Section (Z)'),
             el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginBottom: 4 } },
-              el('button', { onClick: function () { upd('sliceZ', -1); }, style: {
+              el('button', { onClick: function () { upd({ sliceZ: -1, sliceZSelected: false }); }, style: {
                 padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                background: sliceZ === -1 ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === -1 ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === -1 ? '#67e8f9' : '#94a3b8'
+                background: !sliceZSelected ? 'rgba(34,211,238,.2)' : 'transparent', border: !sliceZSelected ? '1px solid #22d3ee' : '1px solid #334155', color: !sliceZSelected ? '#67e8f9' : '#94a3b8'
               } }, 'All'),
               sliceZLevels.map(function (z) {
-                return el('button', { key: z, onClick: function () { upd('sliceZ', z); }, style: {
+                return el('button', { key: z, onClick: function () { upd({ sliceZ: z, sliceZSelected: true }); }, style: {
                   padding: '3px 6px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                  background: sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZ === z ? '#67e8f9' : '#94a3b8'
+                  background: sliceZSelected && sliceZ === z ? 'rgba(34,211,238,.2)' : 'transparent', border: sliceZSelected && sliceZ === z ? '1px solid #22d3ee' : '1px solid #334155', color: sliceZSelected && sliceZ === z ? '#67e8f9' : '#94a3b8'
                 } }, 'Z=' + z);
               })
             ),
-            sliceZ >= 0 && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
+            sliceZSelected && el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '4px 6px', background: 'rgba(30,41,59,.5)', borderRadius: 6 } },
               '\uD83D\uDD2C Slice Z=' + sliceZ + ': ' + sliceBlocks.length + ' block' + (sliceBlocks.length !== 1 ? 's' : ''),
               el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 2, marginTop: 3 } },
                 sliceBlocks.map(function (b, i) {
@@ -2345,74 +3052,122 @@
         // ══════════════════════════════════════════════════════════
         // ── Main viewport area ──
         // ══════════════════════════════════════════════════════════
-        el('div', { style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
+        el('div', { className: 'arch-studio-viewport', style: { flex: 1, minWidth: 0, minHeight: 0, display: 'flex', flexDirection: 'column', position: 'relative' } },
           // The build itself. This viewport previously rendered a spinner that
           // never resolved: threeReady reads a host flag this tool never set,
           // and the canvas behind it had no ref and no renderer anywhere in the
           // file, so the panel was dead on both branches. The overlay below it
           // has always promised "Drag - Orbit" and "Scroll - Zoom", so those are
           // wired here rather than left as decoration.
-          archShow3d && el('canvas', {
+          mainUse3d && el('canvas', {
             ref: archGlRef,
             id: 'arch-studio-canvas',
             'data-arch-gl': 'true',
             role: 'img',
+            tabIndex: 0,
             'data-a11y-static': 'true',
             'aria-describedby': 'arch-gl-description',
             'aria-label': archGlAlt,
-            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: 'grab' },
+            style: { flex: 1, width: '100%', display: 'block', minHeight: 260, visibility: archGlLive ? 'visible' : 'hidden', cursor: showReplay ? 'default' : mode === 'place' ? 'crosshair' : mode === 'erase' ? 'not-allowed' : 'pointer' },
             onPointerDown: function (ev) {
+              ArchGL.clearPreview();
+              archDrag.suppressClick = false;
               archDrag.current = { x: ev.clientX, y: ev.clientY, rx: archRot.rotX, ry: archRot.rotY };
               try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
             },
             onPointerMove: function (ev) {
-              if (!archDrag.current) return;
+              if (!archDrag.current) {
+                if (showReplay) { ArchGL.clearPreview(); return; }
+                var hoverTarget = ArchGL.pick(ev.clientX, ev.clientY);
+                ArchGL.preview(hoverTarget, {
+                  mode: mode, shape: activeShape, rotation: activeRotation,
+                  hex: archHexFor({ x: hoverTarget && hoverTarget.place ? hoverTarget.place.x : 0, y: hoverTarget && hoverTarget.place ? hoverTarget.place.y : 0, z: hoverTarget && hoverTarget.place ? hoverTarget.place.z : 0, material: activeMaterial, color: activeColor })
+                });
+                return;
+              }
+              var dx = ev.clientX - archDrag.current.x;
+              var dy = ev.clientY - archDrag.current.y;
+              if (dx * dx + dy * dy > 25) archDrag.suppressClick = true;
               upd('rot3d', Object.assign({}, archRot, {
-                rotX: Math.max(-88, Math.min(88, archDrag.current.rx + (ev.clientY - archDrag.current.y) * 0.4)),
-                rotY: archDrag.current.ry + (ev.clientX - archDrag.current.x) * 0.4
+                rotX: Math.max(-88, Math.min(88, archDrag.current.rx + dy * 0.4)),
+                rotY: archDrag.current.ry + dx * 0.4
               }));
             },
             onPointerUp: function (ev) {
               archDrag.current = null;
               try { ev.currentTarget.releasePointerCapture(ev.pointerId); } catch (_) {}
             },
-            onPointerCancel: function () { archDrag.current = null; },
+            onPointerCancel: function () { archDrag.current = null; archDrag.suppressClick = false; ArchGL.clearPreview(); },
+            onPointerLeave: function () { if (!archDrag.current) ArchGL.clearPreview(); },
+            onClick: editAtPointer,
+            onKeyDown: function (ev) {
+              var cameraKeys = {
+                ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
+                '+': 'zoomIn', '=': 'zoomIn', '-': 'zoomOut', '_': 'zoomOut', Home: 'reset', '0': 'reset'
+              };
+              var cameraAction = cameraKeys[ev.key];
+              if (cameraAction) {
+                ev.preventDefault();
+                setArchCamera(cameraAction);
+                if (announceToSR) announceToSR(cameraAction === 'reset' ? 'Three-dimensional view reset.' : 'Three-dimensional view adjusted.');
+                return;
+              }
+              if (ev.key === 'Enter' || ev.key === ' ') {
+                ev.preventDefault();
+                upd('editorView', 'grid');
+                if (announceToSR) announceToSR('Floor grid opened for keyboard building.');
+              }
+            },
             onWheel: function (ev) {
               upd('rot3d', Object.assign({}, archRot, {
                 scale: Math.max(0.3, Math.min(3, (archRot.scale || 1) + (ev.deltaY > 0 ? -0.12 : 0.12)))
               }));
             }
           }),
-          archShow3d && !archGlLive && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
+          mainUse3d && !archGlLive && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 14 } },
             el('div', { style: { textAlign: 'center' } },
               el('div', { style: { fontSize: 32, marginBottom: 8, animation: 'spin 2s linear infinite' } }, '⚙️'),
-              'Loading 3D engine...'
+              el('div', null, 'Loading 3D engine...'),
+              el('button', { type: 'button', onClick: function () { upd('editorView', 'grid'); }, style: { marginTop: 10, padding: '6px 10px', borderRadius: 7, border: '1px solid #64748b', background: 'rgba(30,41,59,.8)', color: '#e2e8f0', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, 'Build in the floor grid now')
             )
           ),
-          !archShow3d && el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 20 } },
-            'The 3D view could not load on this device. The floor plans in the panel still show every storey of your build.'),
+          !mainUse3d && renderBuildGrid(),
+          mainUse3d && archGlLive && archDisplayBlocks.length === 0 && el('div', { role: 'status', style: { position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%,-50%)', pointerEvents: 'none', padding: '8px 12px', borderRadius: 9, background: 'rgba(15,23,42,.78)', border: '1px solid #475569', color: '#e2e8f0', fontSize: 12, fontWeight: 700, textAlign: 'center' } },
+            blocks.length === 0 ? '\uD83E\uDDF1 Click the ground to place your first ' + activeShape : 'No blocks match the current layer, slice, replay, or filter view.'),
           el('p', { id: 'arch-gl-description', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } },
-            'A three-dimensional view of the structure you have built, coloured by material. Drag to orbit, scroll to zoom. The floor plans in the side panel show the same blocks one storey at a time.'),
+            'A three-dimensional view of the structure you have built, coloured by material. Click the ground or a block face to build. Drag or use the arrow keys to orbit, scroll or use plus and minus to zoom, and press Home or zero to reset. Press Enter to open the keyboard-authoring floor grid.'),
 
           // Controls overlay (top-right)
-          el('div', { style: { position: 'absolute', top: 8, right: 8, background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
+          mainUse3d && el('div', { style: { position: 'absolute', top: 8, right: 8, pointerEvents: 'none', background: 'rgba(15,23,42,.85)', borderRadius: 10, padding: '6px 10px', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, backdropFilter: 'blur(8px)', border: '1px solid var(--allo-stem-border, #1e293b)' } },
             el('div', null, '\uD83D\uDD04 Drag \u2014 Orbit'),
             el('div', null, '\uD83D\uDD0D Scroll \u2014 Zoom'),
-            // Pan and click-to-place are not implemented. They were listed here
-            // for as long as the viewport was a spinner, so nothing ever
-            // contradicted them; now that the panel actually responds, an
-            // unlisted gesture is better than an advertised one that does
-            // nothing. Blocks are placed from the side panel.
-            // opacity 0.65 dimmed the soft text to an effective #657286 on the
-            // #0f172a overlay = 3.65:1, under the 4.5:1 AA floor for 11px text.
-            // 0.85 keeps this line visually subordinate to the two gestures above
-            // it while measuring 5.41:1.
-            el('div', { style: { opacity: 0.85 } }, '\uD83E\uDDF1 Place blocks from the panel'),
+            el('div', { style: { opacity: 0.9 } }, showReplay ? '\u23EA Replay is read-only' : '\uD83D\uDC49 Click \u2014 ' + (mode === 'place' ? 'Place' : mode === 'erase' ? 'Erase' : 'Paint')),
+            archDisplayBlocks.length !== blocks.length && el('div', { style: { color: '#93c5fd', fontWeight: 700 } }, '\uD83D\uDC41 ' + archDisplayBlocks.length + '/' + blocks.length + ' visible'),
             symmetryMode && el('div', { style: { color: '#f9a8d4', fontWeight: 700 } }, '\uD83E\uDE9E Symmetry ON')
           ),
 
+          mainUse3d && el('div', { role: 'group', 'aria-label': 'Three-dimensional camera controls', style: {
+            position: 'absolute', right: 8, bottom: 8, zIndex: 7, display: 'flex', flexWrap: 'wrap', gap: 3,
+            maxWidth: 228, padding: 4, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155'
+          } },
+            cameraBtn('Rotate view left', '\u21B6', 'left'),
+            cameraBtn('Rotate view right', '\u21B7', 'right'),
+            cameraBtn('Tilt view up', '\u2191', 'up'),
+            cameraBtn('Tilt view down', '\u2193', 'down'),
+            cameraBtn('Zoom in', '+', 'zoomIn'),
+            cameraBtn('Zoom out', '\u2212', 'zoomOut'),
+            cameraBtn('Reset three-dimensional view', '\u27F2', 'reset')
+          ),
+
+          // A real keyboard-operable authoring surface is always available;
+          // it also becomes the automatic fallback if WebGL cannot start.
+          el('div', { style: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 6, pointerEvents: 'none', display: 'flex', gap: 3, padding: 3, borderRadius: 9, background: 'rgba(15,23,42,.88)', border: '1px solid #334155' } },
+            archShow3d && el('button', { type: 'button', 'aria-pressed': mainUse3d, onClick: function () { upd('editorView', '3d'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: mainUse3d ? '1px solid #60a5fa' : '1px solid transparent', background: mainUse3d ? 'rgba(96,165,250,.2)' : 'transparent', color: mainUse3d ? '#bfdbfe' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, '3D Build'),
+            el('button', { type: 'button', 'aria-pressed': !mainUse3d, onClick: function () { upd('editorView', 'grid'); }, style: { pointerEvents: 'auto', padding: '4px 8px', borderRadius: 6, border: !mainUse3d ? '1px solid #2dd4bf' : '1px solid transparent', background: !mainUse3d ? 'rgba(45,212,191,.18)' : 'transparent', color: !mainUse3d ? '#99f6e4' : '#94a3b8', cursor: 'pointer', fontSize: 10, fontWeight: 700 } }, 'Floor Grid')
+          ),
+
           // Mode indicator (top-left)
-          el('div', { style: { position: 'absolute', top: 8, left: 8, background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
+          el('div', { style: { position: 'absolute', top: 8, left: 8, pointerEvents: 'none', background: mode === 'place' ? 'rgba(34,197,94,.2)' : mode === 'erase' ? 'rgba(239,68,68,.2)' : 'rgba(168,85,247,.2)', border: '1px solid ' + (mode === 'place' ? '#22c55e' : mode === 'erase' ? '#ef4444' : '#a855f7'), borderRadius: 8, padding: '4px 10px', fontSize: 11, fontWeight: 700, color: mode === 'place' ? '#4ade80' : mode === 'erase' ? '#f87171' : '#c084fc' } },
             (mode === 'place' ? '\u2795 Place' : mode === 'erase' ? '\u274C Erase' : '\uD83C\uDFA8 Paint') + ' Mode',
             activeRotation > 0 && el('span', { style: { marginLeft: 6, fontSize: 11, color: '#fbbf24' } }, activeRotation + '\u00B0')
           ),

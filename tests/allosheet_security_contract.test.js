@@ -776,16 +776,19 @@ describe('AlloSheet security and deployment contracts', () => {
     expect(build).toMatch(/COMPANION_ASSET_DIRS\s*=\s*\[[\s\S]*'allo_sheet'/);
     const document = new DOMParser().parseFromString(html, 'text/html');
     const scripts = Array.from(document.querySelectorAll('script'));
-    expect(scripts).toHaveLength(4);
+    expect(scripts).toHaveLength(7);
     expect(scripts.every((script) => Boolean(script.src))).toBe(true);
-    expect(scripts.every((script) => script.src.includes('?v=8'))).toBe(true);
+    expect(scripts.every((script) => new URL(script.src).search.length > 1)).toBe(true);
     expect(scripts.map((script) => new URL(script.src).pathname.split('/').pop())).toEqual([
       'allo_sheet_adapter.js',
       'allo_sheet_analysis.js',
       'allo_sheet_workspace.js',
+      'allo_sheet_casebook.js',
+      'voice_module.js',
+      'allo_sheet_casebook_ui.js',
       'allo_sheet.js',
     ]);
-    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=8');
+    expect(document.querySelector('link[rel="stylesheet"]').href).toContain('?v=9');
     expect(document.querySelector('iframe').getAttribute('sandbox')).toContain('allow-scripts');
     expect(document.querySelector('[role="tablist"]')).not.toBeNull();
     expect(document.querySelector('#artifactReview').getAttribute('role')).toBe('dialog');

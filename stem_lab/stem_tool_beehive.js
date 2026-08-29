@@ -52,7 +52,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     if (document.getElementById('allo-beehive-motion-reduce-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-beehive-motion-reduce-css';
-    st.textContent = '@media (prefers-reduced-motion: reduce) { [data-beehive-root="true"], [data-beehive-root="true"] *, [data-beehive-root="true"] *::before, [data-beehive-root="true"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { [data-beehive-root="true"], [data-beehive-root="true"] *, [data-beehive-root="true"] *::before, [data-beehive-root="true"] *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }';
     document.head.appendChild(st);
   })();
 
@@ -165,7 +165,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       '[data-beehive-root="true"] [data-mobile-rail]::-webkit-scrollbar { height:6px; } [data-beehive-root="true"] [data-mobile-rail]::-webkit-scrollbar-thumb { background:rgba(var(--bee-accent-rgb),.48); border-radius:999px; }' +
       '[data-beehive-focus-panel] { animation:bee-panel-arrive .22s ease-out both; }' +
       '@keyframes bee-cycle-clock { from{transform:scaleX(0)} to{transform:scaleX(1)} } @keyframes bee-stage-breathe { 0%,100%{opacity:.48} 50%{opacity:.74} } @keyframes bee-live-pulse { 0%,100%{opacity:.66;transform:scale(.86)} 50%{opacity:1;transform:scale(1.08)} } @keyframes bee-progress-sheen { 0%,55%{transform:translateX(-120%)} 85%,100%{transform:translateX(120%)} } @keyframes bee-panel-arrive { from{opacity:0;transform:translateY(-6px) scale(.992)} to{opacity:1;transform:none} } @keyframes bee-build-zone-pulse { 0%,100%{box-shadow:inset 0 0 38px rgba(16,185,129,.10),0 0 18px rgba(16,185,129,.10)} 50%{box-shadow:inset 0 0 48px rgba(16,185,129,.18),0 0 30px rgba(16,185,129,.22)} }' +
-      '@media (prefers-reduced-motion:reduce) { [data-beehive-cycle-fill],[data-beehive-rts-live-dot],[data-beehive-stage]::after { animation:none !important; transform:none !important; } }' +
+      '@media (prefers-reduced-motion:reduce) { [data-beehive-cycle-fill],[data-beehive-rts-live-dot],[data-beehive-stage]::after,[data-beehive-build-zone],[data-beehive-build-selection="true"],[data-beehive-focus-panel],[data-beehive-root="true"] [role="progressbar"] > *::after { animation:none !important; } [data-beehive-mode-tab],[data-structure-selected="true"],[data-beehive-root="true"] :is([data-command-ready="true"],[data-structure-ready="true"],[data-action-ready="true"]):hover,[data-mobile-rail="drone-difficulty"] button,[data-flight-control],[data-placement-zone],[data-beehive-start-strategy="true"],#beehive-next-day:hover,[data-management-action]:hover { transform:none !important; } }' +
       '@media (forced-colors:active) { [data-beehive-root="true"],[data-beehive-hero="true"],[data-beehive-mode-switcher="true"],[data-beehive-stage],[data-beehive-stage-chip],[data-beehive-build-zone],[data-beehive-rival-zone],[data-beehive-build-selection],[data-beehive-cycle-track],[data-beehive-beekeeper-paused-overlay],[data-beehive-flight-paused-overlay],[data-flight-envelope-item],[data-beehive-vital],[data-beehive-root="true"] :is([data-beehive-command],[data-beehive-learning-brief],[data-beehive-journey-disclosure],[data-beehive-focus-panel]) { background:Canvas !important; border-color:CanvasText !important; box-shadow:none !important; backdrop-filter:none !important; } [data-beehive-root="true"]::before,[data-beehive-hero="true"]::after,[data-beehive-stage]::after,[data-beehive-root="true"] [role="progressbar"] > *::after { display:none !important; } [data-beehive-cycle-fill] { background:Highlight !important; } [data-beehive-mode-tab][aria-checked="true"] { outline:2px solid Highlight !important; transform:none; } }' +
       '@media (max-width:639px) { [data-beehive-root="true"] { border-radius:1.25rem; padding:.5rem; } [data-beehive-hero="true"] { min-height:0; } [data-beehive-hero="true"]::after { width:10rem; right:-3rem; top:-7rem; } [data-beehive-mode-tab] { min-height:6.5rem; } [data-beehive-pulse="true"] { grid-template-columns:1fr; gap:.4rem; } [data-beehive-vital] { min-height:0; padding:.65rem .75rem .6rem .9rem; } [data-beehive-stage-chip] { min-height:1.65rem; padding:.25rem .5rem; font-size:.65rem; } [data-beehive-build-zone] > span,[data-beehive-rival-zone] > span { padding:.3rem .45rem; font-size:.6rem; } [data-beehive-stage] { border-radius:1rem !important; } }';
     document.head.appendChild(st);
@@ -2784,6 +2784,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     };
   }
 
+  function bhExperimentRunSerial(value) {
+    return Math.floor(bhBoundedNumber(value, 1, 1, 10000000));
+  }
+
   function bhExperimentProvenance(state) {
     var s = state || {};
     var seed = bhNormalizeSeed(s.simulationSeed == null ? BEEHIVE_DEFAULT_SEED : s.simulationSeed);
@@ -2793,6 +2797,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       modelVersion: BEEHIVE_COLONY_MODEL_VERSION,
       simulationSeed: seed,
       randomState: bhNormalizeSeed(s.randomState == null ? seed : s.randomState),
+      runSerial: bhExperimentRunSerial(s.experimentRunSerial),
       seededFromDay: adoptedDay,
       exactFromStart: adoptedDay === 0
     };
@@ -2800,12 +2805,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
   // Canonical per-colony reset. Cross-run learning artifacts (badges, notebook,
   // role career records, preferences) intentionally live outside this patch.
-  function bhCreateNewColonyState(seed) {
+  function bhCreateNewColonyState(seed, runSerial) {
     var normalizedSeed = bhNormalizeSeed(seed == null ? BEEHIVE_DEFAULT_SEED : seed);
     return {
       day: 0, workers: 10000, brood: 3000, drones: 500, queenHealth: 100,
       modelVersion: BEEHIVE_COLONY_MODEL_VERSION, simulationSeed: normalizedSeed,
-      randomState: normalizedSeed, seededFromDay: 0,
+      randomState: normalizedSeed, experimentRunSerial: bhExperimentRunSerial(runSerial), seededFromDay: 0,
       honey: 20, pollen: 15, wax: 5, varroaLevel: 5, diseaseRisk: 0,
       morale: 80, foragingEfficiency: 70, pesticideExposure: 0, habitat: 50,
       capacity: 80, winterized: false, score: 0, colonySurvived: true,
@@ -2828,6 +2833,515 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       reflectionThink: false, exportedReport: null,
       exportedReportTitle: null, bkAnim: null
     };
+  }
+  // Compact, versioned evidence saved between colony runs. Keeping this
+  // separate from the full simulation state makes comparisons durable without
+  // copying transient overlays, clocks, or large journal/history collections.
+  var BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION = 1;
+  var BEEHIVE_EXPERIMENT_COMPARE_METRICS = [
+    { id: 'workers', label: 'Workers', suffix: '', precision: 0 },
+    { id: 'brood', label: 'Brood', suffix: '', precision: 0 },
+    { id: 'honey', label: 'Honey', suffix: ' lb', precision: 1 },
+    { id: 'pollen', label: 'Pollen', suffix: ' lb', precision: 1 },
+    { id: 'varroaLevel', label: 'Varroa', suffix: ' pt', precision: 1 },
+    { id: 'diseaseRisk', label: 'Disease risk', suffix: ' pt', precision: 1 },
+    { id: 'morale', label: 'Morale', suffix: ' pt', precision: 1 },
+    { id: 'queenHealth', label: 'Queen health', suffix: ' pt', precision: 1 },
+    { id: 'habitat', label: 'Habitat', suffix: ' pt', precision: 1 },
+    { id: 'pesticideExposure', label: 'Pesticide exposure', suffix: ' pt', precision: 1 }
+  ];
+  // Structured predictions connect the learner's prose to one displayed metric
+  // and an explicit direction without treating a matching pattern as proof.
+  var BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS = [
+    { id: 'higher', label: 'Run B will be higher' },
+    { id: 'lower', label: 'Run B will be lower' },
+    { id: 'same', label: 'No displayed difference' }
+  ];
+
+  function bhExperimentPredictionMetric(value) {
+    var id = typeof value === 'string' ? value.trim() : '';
+    return BEEHIVE_EXPERIMENT_COMPARE_METRICS.filter(function(metric) { return metric.id === id; })[0] || null;
+  }
+
+  function bhExperimentPredictionDirection(value) {
+    var id = typeof value === 'string' ? value.trim().toLowerCase() : '';
+    return BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS.filter(function(direction) { return direction.id === id; })[0] || null;
+  }
+
+  // A structured management plan closes the gap between one recorded difference
+  // and the difference the learner intended to test. Stable IDs are written to
+  // new action records; label aliases keep older checkpoints comparable.
+  var BEEHIVE_EXPERIMENT_PLAN_ACTIONS = [
+    { id: 'smoke_hive', label: 'Smoke the hive' },
+    { id: 'varroa_treatment', label: 'Varroa treatment method or timing' },
+    { id: 'hive_hygiene', label: 'Hive hygiene' },
+    { id: 'add_super', label: 'Add a honey super' },
+    { id: 'harvest_honey', label: 'Harvest honey' },
+    { id: 'feed_bees', label: 'Feed the colony' },
+    { id: 'requeen', label: 'Requeen the colony' },
+    { id: 'split_colony', label: 'Split the colony' },
+    { id: 'winterize', label: 'Winterize the hive' },
+    { id: 'plant_wildflowers', label: 'Plant wildflowers' },
+    { id: 'reduce_mowing', label: 'Reduce lawn mowing' },
+    { id: 'water_station', label: 'Set up a bee waterer' },
+    { id: 'ban_pesticides', label: 'Advocate a no-spray zone' },
+    { id: 'build_hotel', label: 'Build a solitary bee hotel' },
+    { id: 'report_ccd', label: 'Report colony data' }
+  ];
+
+  function bhExperimentPlanAction(value) {
+    var id = typeof value === 'string' ? value.trim().toLowerCase() : '';
+    return BEEHIVE_EXPERIMENT_PLAN_ACTIONS.filter(function(action) { return action.id === id; })[0] || null;
+  }
+
+  function bhManagementActionPlanId(action) {
+    var item = action && typeof action === 'object' ? action : {};
+    var stable = bhExperimentPlanAction(item.choiceId);
+    if (stable) return stable.id;
+    var label = typeof item.label === 'string' ? item.label.trim().toLowerCase() : '';
+    if (!label) return '';
+    if (label.indexOf('harvest ') === 0) return 'harvest_honey';
+    if (['oxalic acid dribble', 'formic acid pads', 'thymol (apiguard)', 'powdered sugar dusting', 'drone brood removal'].indexOf(label) !== -1) return 'varroa_treatment';
+    var aliases = {
+      'smoke hive': 'smoke_hive',
+      'hive hygiene': 'hive_hygiene',
+      'add super': 'add_super',
+      'feed bees': 'feed_bees',
+      'feed syrup': 'feed_bees',
+      'requeen': 'requeen',
+      'split colony': 'split_colony',
+      'winterize': 'winterize',
+      'plant wildflowers': 'plant_wildflowers',
+      'reduce lawn mowing': 'reduce_mowing',
+      'set up bee waterer': 'water_station',
+      'advocate no-spray zone': 'ban_pesticides',
+      'build solitary bee hotel': 'build_hotel',
+      'report colony data': 'report_ccd'
+    };
+    return aliases[label] || '';
+  }
+
+  function bhComparePlannedManagementChoice(plannedActionValue, managementValue) {
+    var planned = bhExperimentPlanAction(plannedActionValue);
+    var management = managementValue && typeof managementValue === 'object' ? managementValue : {};
+    var difference = management.status === 'one-change' && Array.isArray(management.differences) ? management.differences[0] : null;
+    var observed = difference
+      ? difference.type === 'omitted' ? difference.baseline : difference.current
+      : null;
+    var observedId = bhManagementActionPlanId(observed);
+    var observedPlan = bhExperimentPlanAction(observedId);
+    return {
+      status: !planned ? 'unplanned' : !difference ? 'waiting' : observedId === planned.id ? 'matched' : 'mismatched',
+      plannedActionId: planned ? planned.id : '',
+      plannedActionLabel: planned ? planned.label : 'Not selected',
+      observedActionId: observedId,
+      observedActionLabel: observed ? observed.label : 'No single recorded change',
+      observedActionCategory: observedPlan ? observedPlan.label : 'Unrecognized action category'
+    };
+  }
+
+  function bhExperimentText(value, fallback, maxLength) {
+    var text = typeof value === 'string' ? value.trim() : '';
+    if (!text) text = fallback || '';
+    return text.slice(0, maxLength || 180);
+  }
+
+  function bhExperimentNumber(value, fallback, min, max, precision) {
+    var bounded = bhBoundedNumber(value, fallback, min, max);
+    var scale = Math.pow(10, precision || 0);
+    return Math.round(bounded * scale) / scale;
+  }
+
+  function bhCreateExperimentSnapshot(state) {
+    var s = state || {};
+    var provenance = bhExperimentProvenance(s);
+    var capturedDay = Math.floor(bhBoundedNumber(s.day, 0, 0, 10000000));
+    var trail = Array.isArray(s.managementTrail) ? s.managementTrail : [];
+    return {
+      schemaVersion: BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION,
+      modelVersion: bhExperimentText(s.modelVersion, provenance.modelVersion, 64),
+      simulationSeed: provenance.simulationSeed,
+      runSerial: provenance.runSerial,
+      seededFromDay: provenance.seededFromDay,
+      exactFromStart: provenance.exactFromStart,
+      capturedDay: capturedDay,
+      stockId: bhExperimentText(s.subspecies, 'italian', 40),
+      siteId: bhExperimentText(s.apiarySite, 'meadow', 40),
+      colonySurvived: s.colonySurvived !== false,
+      metrics: {
+        workers: bhExperimentNumber(s.workers, 10000, 0, 1000000, 0),
+        brood: bhExperimentNumber(s.brood, 3000, 0, 500000, 0),
+        honey: bhExperimentNumber(s.honey, 20, 0, 1000000, 1),
+        pollen: bhExperimentNumber(s.pollen, 15, 0, 1000000, 1),
+        varroaLevel: bhExperimentNumber(s.varroaLevel, 5, 0, 100, 1),
+        diseaseRisk: bhExperimentNumber(s.diseaseRisk, 0, 0, 100, 1),
+        morale: bhExperimentNumber(s.morale, 80, 0, 100, 1),
+        queenHealth: bhExperimentNumber(s.queenHealth, 100, 0, 100, 1),
+        habitat: bhExperimentNumber(s.habitat, 50, 0, 100, 1),
+        pesticideExposure: bhExperimentNumber(s.pesticideExposure, 0, 0, 100, 1)
+      },
+      totals: {
+        totalHoney: bhExperimentNumber(s.totalHoney, 0, 0, 100000000, 1),
+        totalHarvested: bhExperimentNumber(s.totalHarvested, 0, 0, 100000000, 1),
+        eventsHandled: Math.floor(bhBoundedNumber(s.eventsHandled, 0, 0, 10000000))
+      },
+      managementTrail: trail.slice(-24).map(function(entry) {
+        var item = entry && typeof entry === 'object' ? entry : {};
+        return {
+          day: Math.floor(bhBoundedNumber(item.day, 0, 0, capturedDay)),
+          label: bhExperimentText(item.label, 'Management action', 80),
+          cost: bhExperimentText(item.cost, '', 32),
+          choiceId: bhManagementActionPlanId(item),
+          summary: bhExperimentText(item.summary, '', 220)
+        };
+      })
+    };
+  }
+
+  function bhNormalizeExperimentSnapshot(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    if (Number(value.schemaVersion) !== BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION) return null;
+    if (!value.metrics || typeof value.metrics !== 'object' || Array.isArray(value.metrics)) return null;
+    var metrics = value.metrics;
+    var totals = value.totals && typeof value.totals === 'object' && !Array.isArray(value.totals) ? value.totals : {};
+    var normalized = bhCreateExperimentSnapshot({
+      modelVersion: value.modelVersion,
+      simulationSeed: value.simulationSeed,
+      experimentRunSerial: value.runSerial,
+      randomState: value.simulationSeed,
+      seededFromDay: value.seededFromDay,
+      day: value.capturedDay,
+      subspecies: value.stockId,
+      apiarySite: value.siteId,
+      colonySurvived: value.colonySurvived,
+      workers: metrics.workers,
+      brood: metrics.brood,
+      honey: metrics.honey,
+      pollen: metrics.pollen,
+      varroaLevel: metrics.varroaLevel,
+      diseaseRisk: metrics.diseaseRisk,
+      morale: metrics.morale,
+      queenHealth: metrics.queenHealth,
+      habitat: metrics.habitat,
+      pesticideExposure: metrics.pesticideExposure,
+      totalHoney: totals.totalHoney,
+      totalHarvested: totals.totalHarvested,
+      eventsHandled: totals.eventsHandled,
+      managementTrail: value.managementTrail
+    });
+    // Be conservative with imported or older checkpoints: only an explicit
+    // true may claim that repeatable tracking began at Day 0.
+    if (value.exactFromStart !== true) normalized.exactFromStart = false;
+    return normalized;
+  }
+
+  function bhNormalizeManagementTrail(value) {
+    var source = Array.isArray(value) ? value : [];
+    return source.slice(-24).map(function(entry) {
+      var item = entry && typeof entry === 'object' ? entry : {};
+      return {
+        day: Math.floor(bhBoundedNumber(item.day, 0, 0, 10000000)),
+        label: bhExperimentText(item.label, 'Management action', 80),
+        cost: bhExperimentText(item.cost, '', 32),
+        choiceId: bhManagementActionPlanId(item)
+      };
+    });
+  }
+
+  // Finds the smallest recorded action-sequence difference. One edit represents
+  // an added, omitted, retimed, or replaced management choice.
+  function bhCompareManagementTrails(baselineValue, currentValue) {
+    var baseline = bhNormalizeManagementTrail(baselineValue);
+    var current = bhNormalizeManagementTrail(currentValue);
+    function token(action) { return action.day + '|' + action.label.toLowerCase(); }
+    var rows = [];
+    var i;
+    var j;
+    for (i = 0; i <= baseline.length; i += 1) {
+      rows[i] = [];
+      rows[i][0] = i;
+    }
+    for (j = 0; j <= current.length; j += 1) rows[0][j] = j;
+    for (i = 1; i <= baseline.length; i += 1) {
+      for (j = 1; j <= current.length; j += 1) {
+        var substitution = rows[i - 1][j - 1] + (token(baseline[i - 1]) === token(current[j - 1]) ? 0 : 1);
+        rows[i][j] = Math.min(substitution, rows[i - 1][j] + 1, rows[i][j - 1] + 1);
+      }
+    }
+    var differences = [];
+    i = baseline.length;
+    j = current.length;
+    while (i > 0 || j > 0) {
+      if (i > 0 && j > 0 && token(baseline[i - 1]) === token(current[j - 1]) && rows[i][j] === rows[i - 1][j - 1]) {
+        i -= 1;
+        j -= 1;
+      } else if (i > 0 && j > 0 && rows[i][j] === rows[i - 1][j - 1] + 1) {
+        differences.push({ type: 'changed', baseline: baseline[i - 1], current: current[j - 1] });
+        i -= 1;
+        j -= 1;
+      } else if (j > 0 && rows[i][j] === rows[i][j - 1] + 1) {
+        differences.push({ type: 'added', baseline: null, current: current[j - 1] });
+        j -= 1;
+      } else {
+        differences.push({ type: 'omitted', baseline: baseline[i - 1], current: null });
+        i -= 1;
+      }
+    }
+    differences.reverse();
+    var differenceCount = differences.length;
+    return {
+      status: differenceCount === 0 ? 'identical' : differenceCount === 1 ? 'one-change' : 'multiple-changes',
+      differenceCount: differenceCount,
+      baselineCount: baseline.length,
+      currentCount: current.length,
+      differences: differences
+    };
+  }
+
+  function bhEvaluateExperimentPrediction(notebookValue, comparisonValue) {
+    var source = notebookValue && typeof notebookValue === 'object' && !Array.isArray(notebookValue) ? notebookValue : {};
+    var comparison = comparisonValue && typeof comparisonValue === 'object' ? comparisonValue : {};
+    var metric = bhExperimentPredictionMetric(source.predictedMetricId);
+    var direction = bhExperimentPredictionDirection(source.predictedDirection);
+    var rows = Array.isArray(comparison.metrics) ? comparison.metrics : [];
+    var row = metric ? rows.filter(function(item) { return item.id === metric.id; })[0] : null;
+    var structured = !!(metric && direction);
+    var final = !!(structured && comparison.matchedCheckpoint === true && row);
+    var observedDirectionId = final ? row.delta > 0 ? 'higher' : row.delta < 0 ? 'lower' : 'same' : '';
+    var observedDirection = bhExperimentPredictionDirection(observedDirectionId);
+    return {
+      status: !structured ? 'unplanned' : !final ? 'waiting' : observedDirectionId === direction.id ? 'aligned' : 'not-aligned',
+      metricId: metric ? metric.id : '',
+      metricLabel: metric ? metric.label : 'Not selected',
+      directionId: direction ? direction.id : '',
+      directionLabel: direction ? direction.label : 'Not selected',
+      observedDirectionId: observedDirectionId,
+      observedDirectionLabel: observedDirection ? observedDirection.label.replace('will be', 'was') : 'Waiting for a matched checkpoint',
+      baseline: row ? row.baseline : null,
+      current: row ? row.current : null,
+      delta: row ? row.delta : null,
+      suffix: row ? row.suffix : metric ? metric.suffix : '',
+      precision: row ? row.precision : metric ? metric.precision : 0
+    };
+  }
+
+  function bhCompareExperiments(baselineValue, currentState, plannedActionValue, notebookValue) {
+    var baseline = bhNormalizeExperimentSnapshot(baselineValue);
+    if (!baseline) return null;
+    var current = bhCreateExperimentSnapshot(currentState);
+    var notebookRoot = currentState && currentState.notebook && typeof currentState.notebook === 'object' && !Array.isArray(currentState.notebook) ? currentState.notebook : {};
+    var notebookExperiment = notebookRoot.experiment && typeof notebookRoot.experiment === 'object' && !Array.isArray(notebookRoot.experiment) ? notebookRoot.experiment : {};
+    var notebookSource = notebookValue && typeof notebookValue === 'object' && !Array.isArray(notebookValue) ? notebookValue : notebookExperiment;
+    var normalizedNotebook = bhNormalizeExperimentNotebook(notebookSource);
+    var requestedPlan = typeof plannedActionValue === 'undefined' ? normalizedNotebook.plannedActionId : plannedActionValue;
+    var setupChecks = [
+      { id: 'model', label: 'Daily model', matched: baseline.modelVersion === current.modelVersion, baseline: baseline.modelVersion, current: current.modelVersion },
+      { id: 'seed', label: 'Event recipe', matched: baseline.simulationSeed === current.simulationSeed, baseline: String(baseline.simulationSeed), current: String(current.simulationSeed) },
+      { id: 'stock', label: 'Bee stock', matched: baseline.stockId === current.stockId, baseline: baseline.stockId, current: current.stockId },
+      { id: 'site', label: 'Apiary site', matched: baseline.siteId === current.siteId, baseline: baseline.siteId, current: current.siteId },
+      { id: 'tracking', label: 'Full-run tracking', matched: baseline.exactFromStart && current.exactFromStart, baseline: baseline.exactFromStart ? 'From Day 0' : 'Partial', current: current.exactFromStart ? 'From Day 0' : 'Partial' }
+    ];
+    var runCheck = { id: 'run', label: 'Separate colony runs', matched: baseline.runSerial !== current.runSerial, baseline: 'Run ' + baseline.runSerial, current: 'Run ' + current.runSerial };
+    var dayCheck = { id: 'day', label: 'Checkpoint day', matched: baseline.capturedDay === current.capturedDay, baseline: 'Day ' + baseline.capturedDay, current: 'Day ' + current.capturedDay };
+    var checks = setupChecks.concat([runCheck, dayCheck]);
+    var controlledSetup = setupChecks.every(function(check) { return check.matched; });
+    var distinctRuns = runCheck.matched;
+    var matchedCheckpoint = controlledSetup && distinctRuns && dayCheck.matched;
+    var sharedManagementDay = Math.min(baseline.capturedDay, current.capturedDay);
+    var management = bhCompareManagementTrails(
+      baseline.managementTrail.filter(function(action) { return action.day <= sharedManagementDay; }),
+      current.managementTrail.filter(function(action) { return action.day <= sharedManagementDay; })
+    );
+    management.comparedThroughDay = sharedManagementDay;
+    management.checkpointAligned = dayCheck.matched;
+    var plannedChoice = bhComparePlannedManagementChoice(requestedPlan, management);
+    var interpretationReady = matchedCheckpoint && management.status === 'one-change' && plannedChoice.status === 'matched';
+    var status = !controlledSetup ? 'exploratory' : !distinctRuns ? 'same-run' : dayCheck.matched ? 'matched' : 'checkpoint';
+    var comparison = {
+      baseline: baseline,
+      current: current,
+      checks: checks,
+      controlledSetup: controlledSetup,
+      distinctRuns: distinctRuns,
+      matchedCheckpoint: matchedCheckpoint,
+      management: management,
+      plannedChoice: plannedChoice,
+      interpretationReady: interpretationReady,
+      status: status,
+      metrics: BEEHIVE_EXPERIMENT_COMPARE_METRICS.map(function(definition) {
+        var a = baseline.metrics[definition.id];
+        var b = current.metrics[definition.id];
+        return {
+          id: definition.id,
+          label: definition.label,
+          suffix: definition.suffix,
+          precision: definition.precision,
+          baseline: a,
+          current: b,
+          delta: bhExperimentNumber(b - a, 0, -100000000, 100000000, definition.precision)
+        };
+      })
+    };
+    comparison.prediction = bhEvaluateExperimentPrediction(normalizedNotebook, comparison);
+    return comparison;
+  }
+  var BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION = 3;
+  var BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS = [
+    { id: 'question', label: 'Research question', maxLength: 300 },
+    { id: 'hypothesis', label: 'Hypothesis', maxLength: 600 },
+    { id: 'changedVariable', label: 'One intended change', maxLength: 300 },
+    { id: 'prediction', label: 'Checkpoint prediction', maxLength: 600 },
+    { id: 'observations', label: 'Observations', maxLength: 1200 },
+    { id: 'alternativeExplanation', label: 'Alternative explanation', maxLength: 800 },
+    { id: 'conclusion', label: 'Conclusion', maxLength: 1200 }
+  ];
+
+  function bhExperimentNotebookValue(value, maxLength) {
+    return (typeof value === 'string' ? value : '').slice(0, maxLength);
+  }
+
+  function bhNormalizeExperimentNotebook(value) {
+    var source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    var review = source.review && typeof source.review === 'object' && !Array.isArray(source.review) ? source.review : {};
+    var plannedAction = bhExperimentPlanAction(source.plannedActionId);
+    var predictedMetric = bhExperimentPredictionMetric(source.predictedMetricId);
+    var predictedDirection = bhExperimentPredictionDirection(source.predictedDirection);
+    var normalized = {
+      schemaVersion: BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION,
+      plannedActionId: plannedAction ? plannedAction.id : '',
+      predictedMetricId: predictedMetric ? predictedMetric.id : '',
+      predictedDirection: predictedDirection ? predictedDirection.id : '',
+      review: {
+        singleVariable: review.singleVariable === true,
+        numericEvidence: review.numericEvidence === true,
+        uncertainty: review.uncertainty === true
+      }
+    };
+    BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.forEach(function(field) {
+      normalized[field.id] = bhExperimentNotebookValue(source[field.id], field.maxLength);
+    });
+    return normalized;
+  }
+
+  function bhBuildExperimentEvidenceRecord(notebookValue, baselineValue, currentState) {
+    var notebook = bhNormalizeExperimentNotebook(notebookValue);
+    var comparison = bhCompareExperiments(baselineValue, currentState, notebook.plannedActionId, notebook);
+    function recorded(value) { return String(value || '').trim() || 'Not recorded yet.'; }
+    function metricValue(row, key) {
+      var value = row[key];
+      var shown = row.precision === 0 ? Math.round(value).toLocaleString() : Number(value).toFixed(row.precision).replace(/\.0$/, '');
+      return shown + (row.suffix || '');
+    }
+    function metricDelta(row) {
+      var shown = row.precision === 0 ? Math.round(row.delta).toLocaleString() : Number(row.delta).toFixed(row.precision).replace(/\.0$/, '');
+      return (row.delta > 0 ? '+' : '') + shown + (row.suffix || '');
+    }
+    function managementChoice(action) {
+      return action ? 'Day ' + action.day + ': ' + action.label + (action.cost ? ' (' + action.cost + ')' : '') : 'None';
+    }
+    function managementChoices(snapshot) {
+      var actions = snapshot.managementTrail.slice(-6);
+      return actions.length ? actions.map(managementChoice).join('; ') : 'No action-point interventions recorded.';
+    }
+    var lines = [
+      '## Guided Experiment Notebook',
+      '',
+      '### Plan',
+      '- **Research question:** ' + recorded(notebook.question),
+      '- **Hypothesis:** ' + recorded(notebook.hypothesis),
+      '- **Planned management choice:** ' + (bhExperimentPlanAction(notebook.plannedActionId) || { label: 'Not selected yet.' }).label,
+      '- **Prediction metric:** ' + (bhExperimentPredictionMetric(notebook.predictedMetricId) || { label: 'Not selected yet.' }).label,
+      '- **Expected direction:** ' + (bhExperimentPredictionDirection(notebook.predictedDirection) || { label: 'Not selected yet.' }).label,
+      '- **One intended change:** ' + recorded(notebook.changedVariable),
+      '- **Checkpoint prediction:** ' + recorded(notebook.prediction),
+      '',
+      '### Observe and explain',
+      '- **Observations:** ' + recorded(notebook.observations),
+      '- **Alternative explanation:** ' + recorded(notebook.alternativeExplanation),
+      '- **Conclusion:** ' + recorded(notebook.conclusion),
+      '',
+      '### Evidence self-review',
+      '- **One intended change identified:** ' + (notebook.review.singleVariable && bhExperimentPlanAction(notebook.plannedActionId) ? 'Checked' : 'Not checked'),
+      '- **Same-checkpoint numeric evidence cited:** ' + (notebook.review.numericEvidence && comparison && comparison.matchedCheckpoint ? 'Checked' : 'Not checked'),
+      '- **Uncertainty or alternative explanation named:** ' + (notebook.review.uncertainty ? 'Checked' : 'Not checked'),
+      ''
+    ];
+    if (!comparison) {
+      lines.push('### Run A / Run B evidence');
+      lines.push('Run A has not been saved yet. Save a checkpoint before interpreting differences.');
+      return lines.join('\n');
+    }
+    var statusLabel = comparison.status === 'matched'
+      ? comparison.management.status === 'one-change'
+        ? comparison.plannedChoice.status === 'matched'
+          ? 'Planned comparison ready'
+          : comparison.plannedChoice.status === 'unplanned'
+            ? 'Matched checkpoint - planned choice not selected'
+            : 'Matched checkpoint - recorded change differs from plan'
+        : comparison.management.status === 'identical'
+          ? 'Matched checkpoint - no recorded choice change'
+          : 'Matched checkpoint - multiple recorded choice changes'
+      : comparison.status === 'same-run' ? 'Same colony run - restart required' : comparison.status === 'checkpoint' ? 'Checkpoint timing differs' : 'Exploratory comparison';
+    lines.push('### Run A / Run B evidence');
+    lines.push('- **Comparison status:** ' + statusLabel);
+    lines.push('- **Run identities:** Colony Run ' + comparison.baseline.runSerial + ' / Colony Run ' + comparison.current.runSerial);
+    lines.push('- **Run A checkpoint:** Day ' + comparison.baseline.capturedDay);
+    lines.push('- **Run B checkpoint:** Day ' + comparison.current.capturedDay);
+    lines.push('');
+    lines.push('| Fair-comparison check | Run A | Run B | Result |');
+    lines.push('|---|---:|---:|---|');
+    comparison.checks.forEach(function(check) {
+      lines.push('| ' + check.label + ' | ' + check.baseline + ' | ' + check.current + ' | ' + (check.matched ? 'Matched' : 'Different') + ' |');
+    });
+    lines.push('');
+    lines.push('### Management-choice audit');
+    lines.push('- **Recorded-choice result:** ' + (comparison.management.status === 'one-change' ? 'One difference' : comparison.management.status === 'identical' ? 'No differences' : comparison.management.differenceCount + ' differences'));
+    lines.push('- **Planned management choice:** ' + comparison.plannedChoice.plannedActionLabel);
+    lines.push('- **Plan alignment:** ' + (comparison.plannedChoice.status === 'matched' ? 'Recorded change matches the plan' : comparison.plannedChoice.status === 'mismatched' ? 'Recorded change does not match the plan (' + comparison.plannedChoice.observedActionLabel + ')' : comparison.plannedChoice.status === 'unplanned' ? 'No structured planned choice selected' : 'Waiting for exactly one recorded difference'));
+    lines.push('- **Audit scope:** ' + (comparison.matchedCheckpoint ? 'Final at the matched Day ' + comparison.management.comparedThroughDay + ' checkpoint' : 'Provisional through shared Day ' + comparison.management.comparedThroughDay));
+    if (!comparison.management.differences.length) {
+      lines.push('- Run A and Run B have the same recorded management-action sequence.');
+    } else {
+      comparison.management.differences.forEach(function(difference, index) {
+        var detail = difference.type === 'changed'
+          ? 'Run A ' + managementChoice(difference.baseline) + ' -> Run B ' + managementChoice(difference.current)
+          : difference.type === 'added'
+            ? 'Added in Run B: ' + managementChoice(difference.current)
+            : 'Omitted from Run B: ' + managementChoice(difference.baseline);
+        lines.push('- **Difference ' + (index + 1) + ' (' + difference.type + '):** ' + detail);
+      });
+    }
+    lines.push('');
+    lines.push('### Prediction audit');
+    lines.push('- **Structured prediction:** ' + (comparison.prediction.status === 'unplanned' ? 'Not selected' : comparison.prediction.metricLabel + ' - ' + comparison.prediction.directionLabel));
+    lines.push('- **Observed direction:** ' + (comparison.prediction.status === 'waiting' || comparison.prediction.status === 'unplanned' ? 'Waiting for a controlled, matched checkpoint' : comparison.prediction.observedDirectionLabel + ' (' + metricDelta(comparison.prediction) + ')'));
+    lines.push('- **Result:** ' + (comparison.prediction.status === 'aligned' ? 'Displayed numeric pattern aligns with the prediction' : comparison.prediction.status === 'not-aligned' ? 'Displayed numeric pattern does not align with the prediction' : comparison.prediction.status === 'waiting' ? 'Prediction saved; result is not ready to evaluate' : 'Choose a metric and expected direction before evaluating the result'));
+    lines.push('- **Caution:** A matching direction describes this comparison only; it does not prove the management choice caused the result.');
+    lines.push('');
+    lines.push('| Metric | Run A | Run B | Difference (B - A) |');
+    lines.push('|---|---:|---:|---:|');
+    comparison.metrics.forEach(function(row) {
+      lines.push('| ' + row.label + ' | ' + metricValue(row, 'baseline') + ' | ' + metricValue(row, 'current') + ' | ' + metricDelta(row) + ' |');
+    });
+    lines.push('');
+    lines.push('- **Outcome:** Run A ' + (comparison.baseline.colonySurvived ? 'survived' : 'collapsed') + '; Run B ' + (comparison.current.colonySurvived ? 'survived' : 'collapsed') + '.');
+    lines.push('- **Run A recent choices:** ' + managementChoices(comparison.baseline));
+    lines.push('- **Run B recent choices:** ' + managementChoices(comparison.current));
+    lines.push('');
+    lines.push(comparison.interpretationReady
+      ? '*Interpretation guard: controls, timing, one recorded choice difference, and the planned-choice audit align, but the simulation evidence does not prove causation by itself.*'
+      : comparison.matchedCheckpoint && comparison.management.status === 'one-change' && comparison.plannedChoice.status === 'unplanned'
+        ? '*Interpretation guard: controls, timing, and one recorded difference align, but a structured planned choice was not selected. Record the plan before interpreting the difference.*'
+        : comparison.matchedCheckpoint && comparison.management.status === 'one-change'
+          ? '*Interpretation guard: controls and timing match, but the recorded change does not match the planned management choice. Treat this as an unplanned result and repeat the trial.*'
+          : comparison.matchedCheckpoint && comparison.management.status === 'identical'
+            ? '*Interpretation guard: controls and timing match, but no recorded management choice differs yet. There is no changed variable to interpret.*'
+            : comparison.matchedCheckpoint
+              ? '*Interpretation guard: controls and timing match, but multiple recorded choices differ. The result cannot isolate one changed variable.*'
+              : comparison.status === 'same-run'
+                ? '*Interpretation guard: Run A and Run B currently refer to the same colony run. Restart before treating this as a repeat trial.*'
+                : '*Interpretation guard: controls or timing differ. Treat these differences as observations, not evidence that one management choice caused them.*');
+    return lines.join('\n');
   }
 
   // ── Canonical one-day colony simulation (pure, module scope) ──────────────
@@ -4671,7 +5185,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           announceBee('Opened ' + target.label + '. Exploration progress updated.', false);
         };
         var focusLayout = d.focusLayout === true;
-        var prefersReducedMotion = beePrefersReducedMotion();
+        var _beeReducedMotionState = React.useState(beePrefersReducedMotion);
+        var prefersReducedMotion = _beeReducedMotionState[0], setPrefersReducedMotion = _beeReducedMotionState[1];
+        React.useEffect(function() {
+          if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+          var motionQuery;
+          try { motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)'); }
+          catch (e) { return; }
+          function syncBeeMotionPreference(event) {
+            var next = event && typeof event.matches === 'boolean' ? event.matches : motionQuery.matches;
+            setPrefersReducedMotion(!!next);
+          }
+          syncBeeMotionPreference(motionQuery);
+          if (typeof motionQuery.addEventListener === 'function') motionQuery.addEventListener('change', syncBeeMotionPreference);
+          else if (typeof motionQuery.addListener === 'function') motionQuery.addListener(syncBeeMotionPreference);
+          return function() {
+            if (typeof motionQuery.removeEventListener === 'function') motionQuery.removeEventListener('change', syncBeeMotionPreference);
+            else if (typeof motionQuery.removeListener === 'function') motionQuery.removeListener(syncBeeMotionPreference);
+          };
+        }, []);
         var beekeeperMotionPaused = d.motionPaused === true || (d.motionPaused == null && prefersReducedMotion);
 
         // ── Sound toggle ──
@@ -4680,6 +5212,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Tutorial state ──
         var tutorialStep = typeof d.tutorialStep === 'number' ? d.tutorialStep : (d.tutorialDone ? -1 : 0);
         var tutorialDone = d.tutorialDone || false;
+        var _beeTutorialTitleRef = React.useRef(null);
+        var _beeTutorialFocusIntentRef = React.useRef(null);
+        React.useEffect(function() {
+          var intent = _beeTutorialFocusIntentRef.current;
+          if (!intent) return;
+          var target = null;
+          if (intent === 'title' && viewMode === 'beekeeper' && tutorialStep >= 0 && !tutorialDone) {
+            target = _beeTutorialTitleRef.current;
+          } else if (intent === 'next-day' && (tutorialStep < 0 || tutorialDone) && typeof document !== 'undefined') {
+            target = document.getElementById('beehive-next-day');
+          }
+          if (!target || typeof target.focus !== 'function') return;
+          _beeTutorialFocusIntentRef.current = null;
+          target.focus();
+        }, [tutorialStep, tutorialDone, viewMode]);
+        function moveBeeTutorial(nextStep) {
+          _beeTutorialFocusIntentRef.current = 'title';
+          upd('tutorialStep', nextStep);
+        }
+        function finishBeeTutorial(message) {
+          _beeTutorialFocusIntentRef.current = 'next-day';
+          updAll({ tutorialStep: -1, tutorialDone: true });
+          announceBee(message, false);
+        }
 
         // ── Quiz state ──
         var quizOpen = d.quizOpen || false;
@@ -4687,6 +5243,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var quizScore = d.quizScore || 0;
         var quizAnswered = d.quizAnswered || 0;
         var quizFeedback = d.quizFeedback || null; // {correct: bool, explanation: str}
+        var quizComplete = d.quizComplete || false;
 
         // ── Achievements / Badges ──
         var badges = d.badges || {};
@@ -4951,39 +5508,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
         function renderGuideObjectFields(obj, skipKey) {
           if (!obj || typeof obj !== 'object') return renderGuideValue(obj);
-          // skipKey accepts a string or a list, because a card now removes both
-          // its heading and every field it promoted to a chip.
           var skip = skipKey == null ? [] : (Array.isArray(skipKey) ? skipKey : [skipKey]);
-          // Short scalars pair up two-to-a-row on anything wider than a phone;
-          // long prose and nested blocks stay full width. Stacking every field
-          // in one column was what made a dense entry read as a wall.
-          var shortRows = [];
-          var wideRows = [];
+          var rows = [];
           for (var k in obj) {
-            if (!obj.hasOwnProperty(k)) continue;
-            if (skip.indexOf(k) !== -1) continue;
+            if (!obj.hasOwnProperty(k) || skip.indexOf(k) !== -1) continue;
             var v = obj[k];
             if (v == null || v === '') continue;
-            var isBlock = Array.isArray(v) || (typeof v === 'object');
-            var row = h('div', { key: k, className: 'py-0.5' },
-              h('span', { className: 'text-[10px] font-bold uppercase tracking-wide ' + (dk ? 'text-amber-400/80' : 'text-amber-700/80') }, guideHumanize(k) + (isBlock ? '' : ': ')),
-              isBlock ? renderGuideValue(v) : h('span', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(v)));
-            if (!isBlock && String(v).length <= 60) shortRows.push(row); else wideRows.push(row);
+            var isBlock = Array.isArray(v) || typeof v === 'object';
+            var isWide = isBlock || String(v).length > 60;
+            rows.push(h('div', { key: k, className: 'py-1 ' + (isWide ? 'sm:col-span-2' : '') },
+              h('dt', { className: 'text-[11px] font-bold uppercase tracking-wide ' + (dk ? 'text-amber-300' : 'text-amber-800') }, guideHumanize(k)),
+              h('dd', { className: 'mt-0.5 text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, isBlock ? renderGuideValue(v) : String(v))));
           }
-          var out = [];
-          if (shortRows.length) out.push(h('div', { key: '__short', className: 'grid grid-cols-1 sm:grid-cols-2 gap-x-4' }, shortRows));
-          for (var w = 0; w < wideRows.length; w++) out.push(wideRows[w]);
-          return out;
+          return h('dl', { className: 'grid grid-cols-1 gap-x-4 sm:grid-cols-2' }, rows);
         }
-        function renderGuideEntry(item, idx) {
+        function renderGuideEntry(item, idx, sectionId) {
           if (item == null) return null;
-          if (typeof item !== 'object') return h('div', { key: idx, className: 'text-[11px] py-1 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(item));
+          if (typeof item !== 'object') return h('p', { key: idx, className: 'text-[11px] py-1 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, String(item));
           var head = guidePickHeading(item);
           var chips = guideChipsFor(item, head ? head.key : null);
           var skipKeys = (head ? [head.key] : []).concat(chips.map(function(chip) { return chip.key; }));
-          return h('div', { key: idx, className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200') },
+          var entryHeadingId = 'beehive-guide-entry-' + (sectionId || 'topic') + '-' + idx;
+          return h('article', { key: idx, 'aria-labelledby': head ? entryHeadingId : undefined, className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800/60 border-slate-700' : 'bg-white border-slate-200') },
             (head || chips.length) && h('div', { className: 'mb-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1' },
-              head && h('span', { className: 'text-sm font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, head.val),
+              head && h('h4', { id: entryHeadingId, className: 'text-sm font-bold ' + (dk ? 'text-amber-200' : 'text-amber-900') }, head.val),
               chips.map(function(chip) {
                 return h('span', {
                   key: chip.key,
@@ -4994,6 +5542,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })),
             h('div', { className: 'space-y-0.5' }, renderGuideObjectFields(item, skipKeys)));
         }
+        var _beeGuideScrollRef = React.useRef(null);
         function renderFieldGuide() {
           if (!d.showGuide) return null;
           var secId = d.guideSection || GUIDE_SECTIONS[0].id;
@@ -5001,17 +5550,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           for (var i = 0; i < GUIDE_SECTIONS.length; i++) { if (GUIDE_SECTIONS[i].id === secId) { sec = GUIDE_SECTIONS[i]; break; } }
           if (!sec) sec = GUIDE_SECTIONS[0];
           var items = Array.isArray(sec.data) ? sec.data : [];
-          return h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), 'data-beehive-focus-panel': 'guide', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.bee_field_guide', 'Bee field guide') },
+          function selectGuideSection(nextId) {
+            var nextSection = GUIDE_SECTIONS.filter(function(item) { return item.id === nextId; })[0] || GUIDE_SECTIONS[0];
+            upd('guideSection', nextSection.id);
+            announceBee('Opened ' + nextSection.title + ', ' + nextSection.data.length + ' entries.', false);
+            setTimeout(function() { if (_beeGuideScrollRef.current) _beeGuideScrollRef.current.scrollTop = 0; }, 0);
+          }
+          return h('section', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), id: 'beehive-field-guide', 'data-beehive-focus-panel': 'guide', tabIndex: -1, role: 'region', 'aria-labelledby': 'beehive-guide-title' },
             h('div', { className: 'flex items-center justify-between' },
-              h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📖 Field Guide · ' + GUIDE_SECTIONS.length + ' topics'),
-              h('button', { onClick: function() { upd('showGuide', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_field_guide', 'Close field guide') }, '✕')),
-            h('div', { className: 'flex gap-1.5 flex-wrap', role: 'tablist', 'aria-label': __alloT('stem.beehive.field_guide_topics', 'Field guide topics') },
+              h('h2', { id: 'beehive-guide-title', className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '📖 Field Guide · ' + GUIDE_SECTIONS.length + ' topics'),
+              h('button', { type: 'button', onClick: function() { upd('showGuide', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[11px] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_field_guide', 'Close field guide') }, '✕')),
+            h('div', { className: 'grid gap-1 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center' },
+              h('label', { htmlFor: 'beehive-guide-topic-select', className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, 'Jump to a topic'),
+              h('select', { id: 'beehive-guide-topic-select', value: sec.id, onChange: function(event) { selectGuideSection(event.target.value); }, 'aria-controls': 'beehive-guide-panel', className: 'min-h-[44px] w-full rounded-lg border px-3 py-2 text-sm font-bold ' + (dk ? 'border-slate-600 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900') },
+                h('optgroup', { label: 'Learning topics' }, GUIDE_SECTIONS.filter(function(item) { return !item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title); })),
+                h('optgroup', { label: 'Teacher resources' }, GUIDE_SECTIONS.filter(function(item) { return item.teacher; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.title + ' (teacher resource)'); })))),
+            h('p', { id: 'beehive-guide-navigation-help', className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Choose a topic directly, or use the arrow keys in the scrollable topic tabs below.'),
+            h('div', { className: 'flex gap-1.5 overflow-x-auto overscroll-x-contain pb-2', role: 'tablist', 'aria-label': __alloT('stem.beehive.field_guide_topics', 'Field guide topics') },
               GUIDE_SECTIONS.map(function(s) {
                 var active = s.id === sec.id;
                 return h('button', { key: s.id, id: 'beehive-guide-tab-' + s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'aria-controls': 'beehive-guide-panel', 'data-beehive-guide-tab': s.id,
-                  onClick: function() { upd('guideSection', s.id); },
-                  onKeyDown: function(event) { handleBeeTabKey(event, GUIDE_SECTIONS.map(function(item) { return item.id; }), s.id, 'data-beehive-guide-tab', function(nextId) { upd('guideSection', nextId); }); },
-                  className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' +
+                  onClick: function() { selectGuideSection(s.id); },
+                  onKeyDown: function(event) { handleBeeTabKey(event, GUIDE_SECTIONS.map(function(item) { return item.id; }), s.id, 'data-beehive-guide-tab', function(nextId) { selectGuideSection(nextId); }); },
+                  className: 'min-h-[44px] shrink-0 px-2.5 py-2 rounded-lg text-[11px] font-bold transition-all ' +
                     (active ? (dk ? 'bg-amber-700 text-white' : 'bg-amber-700 text-white') : (dk ? 'bg-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-700' : 'bg-white text-slate-600 hover:text-slate-800 border border-slate-200')),
                   title: s.title + (s.teacher ? ' (teacher resource)' : '') },
                   h('span', { 'aria-hidden': 'true' }, s.icon), ' ', s.title);
@@ -5019,14 +5580,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('div', { id: 'beehive-guide-panel', role: 'tabpanel', 'aria-labelledby': 'beehive-guide-tab-' + sec.id, className: 'space-y-2' },
               h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
               h('span', { className: 'text-lg', 'aria-hidden': 'true' }, sec.icon),
-              h('span', { className: 'text-base font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, sec.title),
-              sec.teacher && h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, 'TEACHER'),
+              h('h3', { id: 'beehive-guide-section-title', className: 'text-base font-black ' + (dk ? 'text-amber-200' : 'text-amber-900') }, sec.title),
+              sec.teacher && h('span', { className: 'text-[10px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-indigo-900/50 text-indigo-300' : 'bg-indigo-100 text-indigo-700') }, 'Teacher resource'),
               h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, items.length + ' entries')),
               sec.blurb && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-600') }, sec.blurb),
-              h('div', { className: 'space-y-2 overflow-y-auto pr-1', style: { maxHeight: '520px' } },
+              h('div', { ref: _beeGuideScrollRef, 'data-beehive-guide-entries': sec.id, role: 'region', tabIndex: 0, 'aria-labelledby': 'beehive-guide-section-title', 'aria-describedby': 'beehive-guide-navigation-help', className: 'space-y-2 overflow-y-auto pr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500', style: { maxHeight: '520px' } },
                 items.length === 0
                   ? h('p', { className: 'text-xs ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'No entries.')
-                  : items.map(function(item, idx) { return renderGuideEntry(item, idx); }))));
+                  : items.map(function(item, idx) { return renderGuideEntry(item, idx, sec.id); }))));
         }
 
         // Commit collapse after render. This avoids scheduling timers during
@@ -5094,6 +5655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           lines.push('- **Status:** ' + (colonySurvived ? 'alive' : 'collapsed'));
           lines.push('');
           lines.push('## Repeatable Experiment Details');
+          lines.push('- **Colony run:** ' + experimentProvenance.runSerial);
           lines.push('- **Event recipe (seed):** ' + experimentProvenance.simulationSeed);
           lines.push('- **Daily colony model:** ' + experimentProvenance.modelVersion);
           lines.push('- **Resume code:** ' + experimentProvenance.randomState + ' (allows a saved run to continue at its next random draw)');
@@ -5101,6 +5663,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           lines.push('- **Exact replay:** Use the same model version, seed, starting colony, and management choices.');
           lines.push('- **Controlled comparison:** Keep the seed, stock, site, and timing the same; change one management choice. Because choices alter colony conditions, later eligible events may diverge.');
           lines.push('- **Scope:** Covers Beekeeper daily colony outcomes. The planning forecast is event-free; Queen and Drone real-time scenes use separate live simulations.');
+          lines.push('');
+          var experimentNotebookRoot = d.notebook && typeof d.notebook === 'object' && !Array.isArray(d.notebook) ? d.notebook : {};
+          lines.push(bhBuildExperimentEvidenceRecord(experimentNotebookRoot.experiment, d.experimentBaseline, d));
           lines.push('');
           lines.push('## Current State');
           lines.push('| Metric | Value |');
@@ -5212,7 +5777,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var live = _beeStateRef.current || d;
           if (live.colonySurvived === false) return;
           if (live.activeEvent) {
-            if (addToast) addToast('Resolve the active colony event before advancing time.', 'info');
+            var eventPauseMessage = 'Time is paused. Acknowledge ' + (live.activeEvent.label || 'the active colony event') + ' before advancing.';
+            if (addToast) addToast(eventPauseMessage, 'info');
+            announceBee(eventPauseMessage, false);
             return;
           }
           // The batch reducer reads React's live previous state. Routing a
@@ -5226,7 +5793,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         function advanceDays(n) {
           var live = _beeStateRef.current || d;
           if (live.colonySurvived === false) return;
-          if (live.activeEvent) { if (addToast) addToast('Resolve the active colony event before fast-forwarding.', 'info'); return; }
+          if (live.activeEvent) {
+            var fastForwardPauseMessage = 'Fast-forward is paused. Acknowledge ' + (live.activeEvent.label || 'the active colony event') + ' first.';
+            if (addToast) addToast(fastForwardPauseMessage, 'info');
+            announceBee(fastForwardPauseMessage, false);
+            return;
+          }
           setLabToolData(function(prev) {
             var b = Object.assign({}, prev.beehive || {});
             if (b.colonySurvived === false || b.activeEvent ||
@@ -5319,9 +5891,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // lesson stay in a labelled region for intentional reading instead of
         // being forced through an assertive live region.
         var _beeAlertedEventRef = React.useRef(null);
+        var _beeEventFocusReturnRef = React.useRef(null);
         React.useEffect(function() {
           if (!activeEvent) {
             _beeAlertedEventRef.current = null;
+            var resolvedEventLabel = _beeEventFocusReturnRef.current;
+            _beeEventFocusReturnRef.current = null;
+            if (resolvedEventLabel && viewMode === 'beekeeper') {
+              var nextDayControl = document.getElementById('beehive-next-day');
+              if (nextDayControl && nextDayControl.focus) nextDayControl.focus();
+              announceBee(resolvedEventLabel + ' acknowledged. Time controls are available again.', false);
+            }
             return;
           }
           var eventKey = activeEvent.id || activeEvent.label || 'colony-event';
@@ -5358,31 +5938,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             note: __alloT('stem.beehive.cultural_non_chemical_control_disrupts', 'Cultural (non-chemical) control. Disrupts varroa reproductive cycle. Labor-intensive (costs 2 action points). Summer-only — no drone brood in winter. Combine with acid treatments for full control.') }
         ];
 
+        function previewTreatmentOutcome(treatment, colonyBrood, colonySeason) {
+          var modeledBrood = Number(colonyBrood);
+          var modeledSeason = Number(colonySeason);
+          if (!isFinite(modeledBrood)) modeledBrood = brood;
+          if (!isFinite(modeledSeason)) modeledSeason = season;
+          var reduction = treatment.baseReduction;
+          var moraleHit = treatment.moraleCost;
+          var queenHit = 0;
+          var contextNote = '';
+          var fitLabel = 'Standard modeled effectiveness';
+          var fitTone = 'neutral';
+          if (treatment.id === 'oxalic') {
+            if (modeledBrood > 2000) { reduction = Math.round(reduction * 0.4); contextNote = ' (reduced - brood still sealed)'; fitLabel = 'Reduced fit: mites are protected in sealed brood'; fitTone = 'warning'; }
+            else if (modeledSeason === 3) { reduction = Math.round(reduction * 1.3); contextNote = ' (brood-less winter = ideal)'; fitLabel = 'Ideal fit: brood-less winter exposes mites'; fitTone = 'success'; }
+          } else if (treatment.id === 'formic') {
+            if (modeledSeason === 1) { reduction = Math.round(reduction * 0.85); queenHit = 8; moraleHit += 3; contextNote = ' (hot summer - some queen stress)'; fitLabel = 'Caution: summer heat adds queen and colony stress'; fitTone = 'warning'; }
+            else if (modeledSeason === 3) { reduction = Math.round(reduction * 0.5); contextNote = ' (too cold - acid evaporates poorly)'; fitLabel = 'Poor fit: winter cold reduces evaporation'; fitTone = 'warning'; }
+          } else if (treatment.id === 'thymol') {
+            if (modeledSeason === 3 || modeledSeason === 0) { reduction = Math.round(reduction * 0.4); contextNote = ' (too cold for thymol to sublime)'; fitLabel = 'Poor fit: cool weather reduces vaporization'; fitTone = 'warning'; }
+            else if (modeledSeason === 2) { contextNote = ' (autumn = textbook timing)'; fitLabel = 'Ideal fit: warm post-harvest autumn'; fitTone = 'success'; }
+          } else if (treatment.id === 'sugar_dust') {
+            if (modeledBrood > 3000) { contextNote = ' (most mites are in brood, not on bees)'; fitLabel = 'Limited reach: most mites are protected in brood'; fitTone = 'warning'; }
+          } else if (treatment.id === 'drone_trap') {
+            if (modeledSeason === 3 || modeledSeason === 0) { reduction = Math.round(reduction * 0.3); contextNote = ' (few drones being produced - weak effect)'; fitLabel = 'Poor fit: little drone brood is available'; fitTone = 'warning'; }
+            else if (modeledSeason === 1) { reduction = Math.round(reduction * 1.2); contextNote = ' (peak drone brood - very effective)'; fitLabel = 'Ideal fit: peak drone-brood production'; fitTone = 'success'; }
+          }
+          return { reduction: reduction, moraleHit: moraleHit, queenHit: queenHit, contextNote: contextNote, fitLabel: fitLabel, fitTone: fitTone };
+        }
+
         function applyTreatment(treatmentId) {
           var treatment = null;
           for (var i = 0; i < IPM_TREATMENTS.length; i++) { if (IPM_TREATMENTS[i].id === treatmentId) { treatment = IPM_TREATMENTS[i]; break; } }
           if (!treatment) return;
           if (actionPoints < treatment.ap) { if (addToast) addToast('Need ' + treatment.ap + ' action point' + (treatment.ap > 1 ? 's' : '') + ' for ' + treatment.label + '.', 'info'); return; }
-          // Context modifiers — season, brood, temperature penalties
-          var reduction = treatment.baseReduction;
-          var moraleHit = treatment.moraleCost;
-          var queenHit = 0;
-          var contextNote = '';
-          if (treatmentId === 'oxalic') {
-            if (brood > 2000) { reduction = Math.round(reduction * 0.4); contextNote = ' (reduced — brood still sealed)'; }
-            else if (season === 3) { reduction = Math.round(reduction * 1.3); contextNote = ' (brood-less winter = ideal)'; }
-          } else if (treatmentId === 'formic') {
-            if (season === 1) { reduction = Math.round(reduction * 0.85); queenHit = 8; moraleHit += 3; contextNote = ' (hot summer — some queen stress)'; }
-            else if (season === 3) { reduction = Math.round(reduction * 0.5); contextNote = ' (too cold — acid evaporates poorly)'; }
-          } else if (treatmentId === 'thymol') {
-            if (season === 3 || season === 0) { reduction = Math.round(reduction * 0.4); contextNote = ' (too cold for thymol to sublime)'; }
-            else if (season === 2) { contextNote = ' (autumn = textbook timing)'; }
-          } else if (treatmentId === 'sugar_dust') {
-            if (brood > 3000) contextNote = ' (most mites are in brood, not on bees)';
-          } else if (treatmentId === 'drone_trap') {
-            if (season === 3 || season === 0) { reduction = Math.round(reduction * 0.3); contextNote = ' (few drones being produced — weak effect)'; }
-            else if (season === 1) { reduction = Math.round(reduction * 1.2); contextNote = ' (peak drone brood — very effective)'; }
-          }
           // Treatment uses the same two-phase AP contract as every management
           // action. The preview closes the rapid-click admission gap; the live
           // updater remains authoritative; and the transaction record is what
@@ -5391,21 +5980,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           // functions while checking purity. The record also preserves the actual
           // contextual reduction, making the intervention evidence auditable.
           if (!apAction(treatment.ap, treatment.label, function(b, outcome) {
-            b.varroaLevel = Math.max(0, (typeof b.varroaLevel === 'number' ? b.varroaLevel : 5) - reduction);
-            b.morale = Math.max(0, (typeof b.morale === 'number' ? b.morale : 80) - moraleHit);
-            b.queenHealth = Math.max(0, (typeof b.queenHealth === 'number' ? b.queenHealth : 100) - queenHit);
+            var forecast = previewTreatmentOutcome(treatment, b.brood, b.season);
+            var beforeVarroa = typeof b.varroaLevel === 'number' ? b.varroaLevel : 5;
+            b.varroaLevel = Math.max(0, beforeVarroa - forecast.reduction);
+            b.morale = Math.max(0, (typeof b.morale === 'number' ? b.morale : 80) - forecast.moraleHit);
+            b.queenHealth = Math.max(0, (typeof b.queenHealth === 'number' ? b.queenHealth : 100) - forecast.queenHit);
             b.varroaTreats = (b.varroaTreats || 0) + 1;
             var tu = Object.assign({}, b.treatmentsUsed || {});
             tu[treatmentId] = ((b.treatmentsUsed || {})[treatmentId] || 0) + 1;
             b.treatmentsUsed = tu;
             b.showTreatModal = false;
-            outcome.reduction = reduction;
+            outcome.varroaBefore = beforeVarroa;
+            outcome.varroaAfter = b.varroaLevel;
+            outcome.reduction = beforeVarroa - b.varroaLevel;
+            outcome.treatmentStrength = forecast.reduction;
+            outcome.contextNote = forecast.contextNote;
           }, {
-            summary: function() { return treatment.label + ' applied' + contextNote + '. Compare mite reduction and colony stress with the forecast.'; },
-            onCommit: function() {
+            choiceId: 'varroa_treatment',
+            summary: function(outcome) { return treatment.label + ' applied' + (outcome.contextNote || '') + '. Varroa ' + outcome.varroaBefore + '% to ' + outcome.varroaAfter + '%. Compare colony stress with the forecast.'; },
+            onCommit: function(record) {
+              var committed = record && record.outcome ? record.outcome : {};
               playSfx(sfxTreat);
-              if (addToast) addToast(treatment.emoji + ' ' + treatment.label + ': −' + reduction + '% mites' + contextNote, 'success');
-              if (awardStemXP) awardStemXP('beehive', 5 + Math.round(reduction / 5), 'Treated varroa: ' + treatment.label);
+              if (addToast) addToast(treatment.emoji + ' ' + treatment.label + ': Varroa ' + committed.varroaBefore + '% to ' + committed.varroaAfter + '%' + (committed.contextNote || ''), 'success');
+              if (awardStemXP) awardStemXP('beehive', 5 + Math.round((committed.reduction || 0) / 5), 'Treated varroa: ' + treatment.label);
             }
           })) return;
         }
@@ -5486,6 +6083,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ? options.summary(previewOutcome, preview, snapshot)
             : options.summary;
           var previewRecord = managementEvidenceRecord(label, cost + ' AP', snapshot, preview, previewSummary);
+          previewRecord.choiceId = (bhExperimentPlanAction(options.choiceId) || { id: bhManagementActionPlanId(previewRecord) }).id;
           previewRecord.transactionId = txId;
           previewRecord.outcome = previewOutcome;
           preview.lastManagement = previewRecord;
@@ -5510,6 +6108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ? options.summary(outcome, next, before)
               : options.summary;
             var record = managementEvidenceRecord(label, cost + ' AP', before, next, summary);
+            record.choiceId = (bhExperimentPlanAction(options.choiceId) || { id: bhManagementActionPlanId(record) }).id;
             record.transactionId = txId;
             record.outcome = outcome;
             next.lastManagement = record;
@@ -5696,6 +6295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           } })) return;
         }
         function dismissEvent() {
+          _beeEventFocusReturnRef.current = (activeEvent && activeEvent.label) || 'Colony event';
           var patch = { activeEvent: null, autoAdvance: false, eventsHandled: (d.eventsHandled || 0) + 1 };
           if (activeEvent && activeEvent.weather) patch.weatherEventsHandled = (d.weatherEventsHandled || 0) + 1;
           updAll(patch);
@@ -5703,7 +6303,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         // ── Quiz Functions ──
+        var _beeQuizFocusIntentRef = React.useRef(null);
+        var _beeQuizQuestionRef = React.useRef(null);
+        var _beeQuizNextRef = React.useRef(null);
+        var _beeQuizResultRef = React.useRef(null);
+        var _beeQuizAnswerLockedRef = React.useRef(false);
+        var _beeQuizContinueLockedRef = React.useRef(false);
         function startQuiz() {
+          _beeQuizFocusIntentRef.current = 'question';
+          _beeQuizAnswerLockedRef.current = false;
+          _beeQuizContinueLockedRef.current = false;
           // Fisher-Yates shuffle, then pick 10
           var shuffled = QUIZ_QUESTIONS.slice();
           for (var i = shuffled.length - 1; i > 0; i--) {
@@ -5711,27 +6320,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
           }
           shuffled = shuffled.slice(0, 10);
-          updAll({ quizOpen: true, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizFeedback: null, quizQuestions: shuffled });
+          updAll({ quizOpen: true, quizComplete: false, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizFeedback: null, quizQuestions: shuffled });
         }
         function answerQuiz(optIdx) {
+          if (_beeQuizAnswerLockedRef.current || quizFeedback || quizComplete) return;
+          _beeQuizAnswerLockedRef.current = true;
+          _beeQuizContinueLockedRef.current = false;
           var qs = d.quizQuestions || QUIZ_QUESTIONS;
           var current = qs[quizIdx];
           if (!current) return;
           var correct = optIdx === current.ans;
           var newScore = quizScore + (correct ? 1 : 0);
           if (correct) playSfx(sfxBeeCollect); else playSfx(sfxAlert);
+          _beeQuizFocusIntentRef.current = 'feedback';
           updAll({ quizFeedback: { correct: correct, explanation: current.explain }, quizScore: newScore, quizAnswered: quizAnswered + 1 });
         }
         function nextQuizQuestion() {
+          if (_beeQuizContinueLockedRef.current || quizComplete) return;
+          _beeQuizContinueLockedRef.current = true;
           var qs = d.quizQuestions || QUIZ_QUESTIONS;
           if (quizIdx + 1 >= qs.length) {
             // Quiz complete
             var best = Math.max(d.bestQuizScore || 0, quizScore);
-            updAll({ quizOpen: false, quizFeedback: null, bestQuizScore: best });
+            _beeQuizFocusIntentRef.current = 'results';
+            updAll({ quizComplete: true, quizFeedback: null, bestQuizScore: best });
             playSfx(sfxSuccess);
             if (addToast) addToast('🎓 Quiz complete! Score: ' + quizScore + '/' + (d.quizQuestions || QUIZ_QUESTIONS).length + (quizScore >= 8 ? ' — Outstanding!' : quizScore >= 5 ? ' — Good job!' : ' — Keep studying!'), 'success');
             if (awardStemXP) awardStemXP('beehive', quizScore * 3, 'Quiz score');
           } else {
+            _beeQuizFocusIntentRef.current = 'question';
+            _beeQuizAnswerLockedRef.current = false;
             updAll({ quizIdx: quizIdx + 1, quizFeedback: null });
           }
         }
@@ -5739,7 +6357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // ── Tutorial Steps ──
         var TUTORIAL_STEPS = [
           { title: __alloT('stem.beehive.welcome_beekeeper', 'Welcome, Beekeeper!'), text: __alloT('stem.beehive.you_re_managing_a_honeybee_colony_a_su', 'You\'re managing a honeybee colony — a superorganism of 10,000 workers, a queen, and hundreds of drones. Your goal: keep the colony alive and thriving through all four seasons.'), icon: '🐝' },
-          { title: __alloT('stem.beehive.advance_days', 'Advance Days'), text: __alloT('stem.beehive.click_next_day_to_simulate_one_day_wat', 'Click "Next Day" to simulate one day. Watch the seasonal cycle — spring builds workers, summer brings nectar, autumn prepares for winter, and winter tests your reserves.'), icon: '⏩' },
+          { title: __alloT('stem.beehive.advance_days', 'Advance Days'), text: __alloT('stem.beehive.click_next_day_to_simulate_one_day_wat', 'Choose "Next Day" to simulate one day. Watch the seasonal cycle — spring builds workers, summer brings nectar, autumn prepares for winter, and winter tests your reserves.'), icon: '⏩' },
           { title: __alloT('stem.beehive.manage_your_hive', 'Manage Your Hive'), text: __alloT('stem.beehive.use_treat_super_harvest_feed_and_inspe', 'Use Treat, Super, Harvest, Feed, and Inspect to manage the colony. Treat varroa mites before they get above 20%. Harvest only the honey above the seasonal reserve shown in the dashboard.'), icon: '🔧' },
           { title: __alloT('stem.beehive.conservation_matters', 'Conservation Matters'), text: __alloT('stem.beehive.spend_action_points_on_conservation_ac', 'Spend action points on conservation actions — plant wildflowers, build bee hotels, and advocate for pesticide-free zones. These improve habitat and foraging for all pollinators.'), icon: '🌍' },
           { title: __alloT('stem.beehive.explore_learn', 'Explore & Learn'), text: 'Open the Hive Inspector to explore bee biology across 9 layers — roles, chemistry, lifecycle, waggle dance, thermoregulation, pheromones, anatomy, native bees, and the bloom calendar. Take the quiz to test your knowledge. Earn all ' + BADGE_DEFS.length + ' badges!', icon: '🎓' }
@@ -5761,6 +6379,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             { id: 'native', emoji: '🌺', label: __alloT('stem.beehive.native_bees', 'Native Bees') },
             { id: 'bloom', emoji: '📅', label: __alloT('stem.beehive.bloom_calendar', 'Bloom Calendar') }
           ];
+          function inspectionLayerPanel(layerId, className) {
+            return {
+              id: 'beehive-inspector-panel-' + layerId,
+              role: 'tabpanel',
+              tabIndex: 0,
+              'aria-labelledby': 'beehive-inspector-tab-' + layerId,
+              'data-inspection-panel': layerId,
+              className: className + ' rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2 focus-visible:ring-offset-amber-950'
+            };
+          }
 
           // Worker age distribution (simplified model)
           var nurseCount = Math.round(workers * 0.25);
@@ -5771,14 +6399,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var undertakerCount = Math.round(workers * 0.05);
           var fannerCount = Math.round(workers * 0.05);
 
-          return h('div', { 'data-beehive-inspector': 'true', className: 'bg-gradient-to-b from-amber-900 to-amber-950 rounded-xl border-2 border-amber-400 p-4 space-y-3 text-white' },
-            h('div', { className: 'flex items-center justify-between' },
+          return h('section', { id: 'beehive-hive-inspector', 'data-beehive-inspector': 'true', 'data-beehive-focus-panel': 'inspection', role: 'region', tabIndex: -1, 'aria-labelledby': 'beehive-inspector-title', className: 'space-y-3 rounded-xl border-2 border-amber-400 bg-gradient-to-b from-amber-900 to-amber-950 p-4 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 focus-visible:ring-offset-2' },
+            h('div', { className: 'flex items-center justify-between gap-3' },
               h('div', { className: 'flex items-center gap-2' },
-                h('span', { className: 'text-2xl' }, '🔍'),
+                h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, '🔍'),
                 h('div', null,
-                  h('div', { className: 'font-bold text-sm' }, __alloT('stem.beehive.hive_inspector_2', 'Hive Inspector')),
+                  h('h2', { id: 'beehive-inspector-title', className: 'text-sm font-bold' }, __alloT('stem.beehive.hive_inspector_2', 'Hive Inspector')),
                   h('div', { className: 'text-[11px] text-amber-300' }, __alloT('stem.beehive.inside_the_superorganism', 'Inside the superorganism')))),
-              h('button', { onClick: function() { upd('showInspect', false); }, className: 'transition-colors px-3 py-1.5 bg-amber-800 hover:bg-amber-700 rounded-lg text-xs font-bold' }, __alloT('stem.beehive.colony_view', '← Colony View'))),
+              h('button', { type: 'button', onClick: function() { closeAccessibleBeePanel('inspection'); }, 'aria-label': 'Return to Colony View and close Hive Inspector', className: 'min-h-[44px] rounded-lg bg-amber-800 px-3 py-1.5 text-xs font-bold transition-colors hover:bg-amber-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300' }, __alloT('stem.beehive.colony_view', '← Colony View'))),
             // Layer tabs — proper ARIA tablist with keyboard navigation
             h('div', { className: 'flex gap-1 flex-wrap', role: 'tablist', 'aria-label': __alloT('stem.beehive.hive_inspection_layers', 'Hive inspection layers') },
               (function() {
@@ -5789,20 +6417,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 }
                 return layers.map(function(l, li) {
                 var active = inspectLayer === l.id;
-                return h('button', { key: l.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
+                return h('button', { key: l.id, id: 'beehive-inspector-tab-' + l.id, type: 'button', role: 'tab', 'data-inspection-tab': l.id, 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'beehive-inspector-panel-' + l.id, tabIndex: active ? 0 : -1,
                   'aria-label': l.label + ' inspection layer',
                   onClick: function() { selectLayer(l.id); },
                   onKeyDown: function(ev) {
                     var nextIdx = li;
-                    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') { ev.preventDefault(); nextIdx = (li + 1) % layers.length; }
-                    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') { ev.preventDefault(); nextIdx = (li - 1 + layers.length) % layers.length; }
+                    if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') nextIdx = (li + 1) % layers.length;
+                    else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') nextIdx = (li - 1 + layers.length) % layers.length;
+                    else if (ev.key === 'Home') nextIdx = 0;
+                    else if (ev.key === 'End') nextIdx = layers.length - 1;
                     else return;
-                    selectLayer(layers[nextIdx].id);
+                    ev.preventDefault();
+                    var nextLayer = layers[nextIdx];
+                    selectLayer(nextLayer.id);
+                    var nextTab = document.getElementById('beehive-inspector-tab-' + nextLayer.id);
+                    if (nextTab && nextTab.focus) nextTab.focus();
                   },
-                  className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'bg-amber-700 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
+                  className: 'flex min-h-[44px] items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 ' + (active ? 'bg-amber-700 text-white' : 'bg-amber-800/50 text-amber-300 hover:bg-amber-700/50')
                 }, h('span', { 'aria-hidden': 'true' }, l.emoji), l.label);
               });
               })()),
+            // Keep every tab's aria-controls target present. Inactive panels are
+            // lightweight hidden placeholders; the selected layer replaces its
+            // placeholder with the full, focusable educational panel below.
+            layers.filter(function(layer) { return layer.id !== inspectLayer; }).map(function(layer) {
+              return h('div', { key: 'inspection-panel-placeholder-' + layer.id, id: 'beehive-inspector-panel-' + layer.id, role: 'tabpanel', hidden: true, 'aria-labelledby': 'beehive-inspector-tab-' + layer.id });
+            }),
 
             // ── v3.2: AI tutor for the current inspection layer ──
             (function () {
@@ -5872,7 +6512,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })(),
 
             // ── ROLES VIEW ──
-            inspectLayer === 'roles' && h('div', { className: 'space-y-2' },
+            inspectLayer === 'roles' && h('div', inspectionLayerPanel('roles', 'space-y-2'),
               h('p', { className: 'text-xs text-amber-200' }, __alloT('stem.beehive.a_worker_bee_changes_jobs_as_she_ages_', 'A worker bee changes jobs as she ages. This "temporal polyethism" means the colony always has the right workers for every task:')),
               [
                 { role: 'Nurse Bees', age: 'Days 1-12', emoji: '🍼', count: nurseCount, pct: 25, desc: __alloT('stem.beehive.feed_larvae_1_300_times_per_day_with_r', 'Feed larvae 1,300+ times per day with royal jelly (from hypopharyngeal glands) and bee bread (pollen + honey + enzymes). Future queens get royal jelly exclusively.'), color: 'bg-pink-500' },
@@ -5897,7 +6537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })),
 
             // ── HONEY CHEMISTRY VIEW ──
-            inspectLayer === 'honey_chem' && h('div', { className: 'space-y-3' },
+            inspectLayer === 'honey_chem' && h('div', inspectionLayerPanel('honey_chem', 'space-y-3'),
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, __alloT('stem.beehive.nectar_honey_the_chemistry', '🧪 Nectar → Honey: The Chemistry')),
                 h('div', { className: 'space-y-2 text-[11px] text-amber-100/80' },
@@ -5931,7 +6571,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'bg-amber-800/30 rounded p-2' }, h('div', { className: 'text-lg font-black text-orange-400' }, Math.round(workers * 0.4 * 0.0002 * [0.8,1.3,0.6,0][season] * 100) / 100), h('div', { className: 'text-[11px] text-amber-300' }, __alloT('stem.beehive.lbs_day_in', 'lbs/day in')))))),
 
             // ── LIFECYCLE VIEW ──
-            inspectLayer === 'lifecycle' && h('div', { className: 'space-y-2' },
+            inspectLayer === 'lifecycle' && h('div', inspectionLayerPanel('lifecycle', 'space-y-2'),
               h('p', { className: 'text-xs text-amber-200 mb-1' }, __alloT('stem.beehive.three_castes_three_lifecycles_all_from', 'Three castes, three lifecycles — all from the same egg. The only difference is diet:')),
               [
                 { caste: '👑 Queen', egg: '3 days', larva: '5.5 days', pupa: '7.5 days', total: '16 days', lifespan: '2-5 years', diet: 'Royal jelly only (entire life)', note: __alloT('stem.beehive.mates_once_on_nuptial_flight_with_10_2', 'Mates with multiple drones during one or more nuptial flights early in adult life. Observed mating heights vary with terrain and conditions. She stores sperm for years, then can lay up to 2,000 eggs/day without repeating that early-life mating period.') },
@@ -5950,7 +6590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               })),
 
             // ── WAGGLE DANCE VIEW ──
-            inspectLayer === 'waggle' && h('div', { className: 'space-y-3' },
+            inspectLayer === 'waggle' && h('div', inspectionLayerPanel('waggle', 'space-y-3'),
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30 text-center' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, __alloT('stem.beehive.decoding_the_waggle_dance', '💃 Decoding the Waggle Dance')),
                 h('div', { className: 'text-6xl mb-2' }, '∞'),
@@ -5967,7 +6607,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('p', { className: 'text-[11px] text-amber-400 italic' }, __alloT('stem.beehive.karl_von_frisch_decoded_this_in_the_19', 'Karl von Frisch decoded the waggle dance in the 1940s-60s and shared the 1973 Nobel Prize in Physiology or Medicine. It is a landmark example of symbolic referential communication in an invertebrate.')))),
 
             // ── THERMOREGULATION VIEW ──
-            inspectLayer === 'temperature' && h('div', { className: 'space-y-3' },
+            inspectLayer === 'temperature' && h('div', inspectionLayerPanel('temperature', 'space-y-3'),
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('div', { className: 'font-bold text-amber-200 text-xs mb-2' }, __alloT('stem.beehive.the_warm_blooded_superorganism', '🌡️ The Warm-Blooded Superorganism')),
                 h('p', { className: 'text-[11px] text-amber-100/80 mb-2' }, __alloT('stem.beehive.individual_bees_are_cold_blooded_but_t', 'Individual bees are ectothermic, but the colony usually keeps the brood area near 34–36°C (93–97°F). Temperature varies across the nest and by brood stage. How do workers regulate it?')),
@@ -5986,7 +6626,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'text-[11px] text-amber-100/60 mt-1' }, season === 3 ? (workers > 5000 ? 'Cluster is maintaining brood temperature despite ' + ['spring','summer','autumn','winter'][season] + ' conditions.' : 'Colony too small to maintain temperature! Brood at risk.') : 'Brood nest perfectly regulated. ' + fannerCount + ' fanner bees on duty.')))),
 
             // ── PHEROMONE LANGUAGE VIEW ──
-            inspectLayer === 'pheromones' && h('div', { className: 'space-y-3' },
+            inspectLayer === 'pheromones' && h('div', inspectionLayerPanel('pheromones', 'space-y-3'),
               h('p', { className: 'text-xs text-amber-200 mb-1' }, __alloT('stem.beehive.pheromones_are_the_chemical_language_o', 'Pheromones are the chemical language of the hive. Bees communicate danger, identity, location, reproduction, and social status through volatile molecules detected by 170+ odor receptors on their antennae.')),
 
               // QMP — Queen Mandibular Pheromone
@@ -6074,7 +6714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ),
 
             // ── BEE ANATOMY VIEW ──
-            inspectLayer === 'anatomy' && h('div', { className: 'space-y-2' },
+            inspectLayer === 'anatomy' && h('div', inspectionLayerPanel('anatomy', 'space-y-2'),
               h('p', { className: 'text-xs text-amber-200 mb-1' }, __alloT('stem.beehive.under_the_microscope_a_worker_bee_is_a', 'Under the microscope: a worker bee is a marvel of miniature engineering. Each structure evolved for a specific job — navigation, collection, defense, or construction.')),
               // Head structures
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
@@ -6134,7 +6774,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             ),
 
             // ── NATIVE BEES VIEW ──
-            inspectLayer === 'native' && h('div', { className: 'space-y-2' },
+            inspectLayer === 'native' && h('div', inspectionLayerPanel('native', 'space-y-2'),
               h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                 h('p', { className: 'text-xs text-amber-100/90 leading-relaxed' },
                   h('strong', { className: 'text-amber-300' }, __alloT('stem.beehive.there_are_over_20_000_bee_species_worl', 'There are over 20,000 bee species worldwide ')),
@@ -6205,7 +6845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { name: __alloT('stem.beehive.late_summer_jul_aug', '🌻 Late Summer (Jul–Aug)'), months: [6,7], color: 'bg-orange-600/30 border-orange-500/40' },
                 { name: __alloT('stem.beehive.autumn_aug_oct', '🍂 Autumn (Aug–Oct)'), months: [7,8,9], color: 'bg-red-700/30 border-red-500/40' }
               ];
-              return h('div', { className: 'space-y-3' },
+              return h('div', inspectionLayerPanel('bloom', 'space-y-3'),
                 h('div', { className: 'bg-amber-900/40 rounded-lg p-3 border border-amber-700/30' },
                   h('p', { className: 'text-xs text-amber-100/80 leading-relaxed' },
                     h('strong', { className: 'text-amber-300' }, __alloT('stem.beehive.a_bloom_gap_can_starve_a_colony', 'A bloom gap can starve a colony. ')),
@@ -6309,8 +6949,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         // Exactly one active inline surface owns the focus-return lifecycle.
         var activeFocusPanel = d.showTreatModal ? 'treatment' :
           quizOpen ? 'quiz' : d.exportedReport ? 'report' : d.showKeys ? 'shortcuts' :
-          d.showGuide ? 'guide' : showBadges ? 'badges' : null;
+          d.showGuide ? 'guide' : showBadges ? 'badges' : showInspect ? 'inspection' : null;
         var _beePanelFocus = React.useRef({ id: null, returnTo: null });
+        var _beeActiveFocusPanelRef = React.useRef(null);
+        _beeActiveFocusPanelRef.current = activeFocusPanel;
 
         function closeAccessibleBeePanel(panelId) {
           if (panelId === 'treatment') upd('showTreatModal', false);
@@ -6319,6 +6961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           else if (panelId === 'shortcuts') upd('showKeys', false);
           else if (panelId === 'guide') upd('showGuide', false);
           else if (panelId === 'badges') upd('showBadges', false);
+          else if (panelId === 'inspection') upd('showInspect', false);
         }
 
         React.useEffect(function() {
@@ -6341,6 +6984,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
           return function() { if (focusTimer) clearTimeout(focusTimer); };
         }, [activeFocusPanel]);
+
+        React.useEffect(function() {
+          if (!quizOpen) { _beeQuizFocusIntentRef.current = null; return; }
+          var quizFocusIntent = _beeQuizFocusIntentRef.current;
+          if (!quizFocusIntent) return;
+          var quizFocusTimer = setTimeout(function() {
+            var target = quizFocusIntent === 'feedback' ? _beeQuizNextRef.current : quizFocusIntent === 'results' ? _beeQuizResultRef.current : _beeQuizQuestionRef.current;
+            if (target && target.focus) target.focus();
+            _beeQuizFocusIntentRef.current = null;
+          }, 0);
+          return function() { clearTimeout(quizFocusTimer); };
+        }, [quizOpen, quizFeedback, quizIdx, quizComplete]);
 
         React.useEffect(function() {
           if (!activeFocusPanel) return;
@@ -18852,6 +19507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         ];
 
         var _droneRuntimeSession = React.useRef(false);
+        var _droneFocusOnStartRef = React.useRef(false);
         var droneData = d.drone || {};
         var droneHighScore = droneData.highScore || 0;
         // An active flag without this mount's runtime session is an interrupted
@@ -18925,6 +19581,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         _droneGraphicsMode.current = droneGraphicsMode;
         _droneSteeringSensitivity.current = droneSteeringSensitivity;
         _droneCameraStabilized.current = droneCameraStabilized;
+        var _droneReducedMotionRef = React.useRef(prefersReducedMotion);
+        React.useEffect(function() {
+          var changedToReduce = !_droneReducedMotionRef.current && prefersReducedMotion;
+          _droneReducedMotionRef.current = prefersReducedMotion;
+          if (!changedToReduce || !droneFlightActive || dronePaused || (_droneState.current && _droneState.current.phase === 'end')) return;
+          _droneKeys.current = {};
+          if (_droneState.current) _droneState.current.paused = true;
+          updAll({ drone: Object.assign({}, droneData, { paused: true }) });
+          announceBee('Drone flight paused because reduced motion was enabled. Resume when ready.', false);
+        }, [prefersReducedMotion, droneFlightActive, dronePaused]);
         function droneMaxEnergy(diff) {
           return diff === 'easy' ? 125 : diff === 'hard' ? 82 : 105;
         }
@@ -19311,7 +19977,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           var impact = state.paused ? 'Telemetry frozen while you plan.' : previous
             ? 'Altitude ' + signed(altitude - previous.altitude, ' ft') + ' | Distance ' + signed(distance - previous.distance, ' m') + ' | Energy ' + signed(Math.round((state.energy || 0) * 10) / 10 - previous.energy, '')
             : 'Sampling the first movement interval...';
-          var coach = state.paused ? 'Choose a maneuver, then resume with P or the Resume button.'
+          var coach = state.paused ? 'Plan your next maneuver, then resume before using the flight controls.'
             : nearestObstacle && nearestObstacle.clearance < 16 ? (nearestObstacle.clearance < 0 ? 'Obstacle impact risk: steer away or climb above the obstacle now.' : 'Obstacle nearby: make a small steering or altitude correction.')
             : nearestTraffic && nearestTraffic.distance < 28 ? 'Traffic conflict: make a small altitude or lateral correction before the drones converge.'
             : (state.energy || 0) < maxEnergy * 0.22 ? 'Energy is low: glide or use an updraft before a long climb; route markers do not refuel the drone.'
@@ -19358,6 +20024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
         function startDroneFlight(diff, coachedRoutePlan) {
           _droneRuntimeSession.current = true;
+          _droneFocusOnStartRef.current = true;
           var difficulty = diff || droneDifficulty;
           var startsPaused = prefersReducedMotion;
           var selectedRoutePlan = DRONE_ROUTE_PLANS[coachedRoutePlan] ? coachedRoutePlan : (DRONE_ROUTE_PLANS[droneRoutePlan] ? droneRoutePlan : 'balanced');
@@ -19462,6 +20129,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               return;
             }
             teardownFn = doSetup(cv, c);
+            if (_droneFocusOnStartRef.current) {
+              _droneFocusOnStartRef.current = false;
+              if (cv.focus) cv.focus();
+            }
           }
           function doSetup(cv, c) {
           var par = cv.parentElement;
@@ -21515,22 +22186,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function dkIsTyping(e) { var tg = e.target; return !!(tg && (tg.tagName === 'INPUT' || tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || tg.isContentEditable)); }
           function dkHasInteractiveFocus() {
             var active = document.activeElement;
-            if (!active || active === document.body || active === cv || active === par) return false;
-            return !!(active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
+            return !!(active && active !== cv && active !== par && active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
+          }
+          function dkOwnsFlightFocus() {
+            var active = document.activeElement;
+            return !!(active && (active === cv || active === par));
           }
           function dkDown(e) {
-            if (dkIsTyping(e) || dkHasInteractiveFocus()) return; // preserve focused UI controls while allowing body/canvas flight keys
+            // Flight keys belong to the focused playfield, never the whole page.
+            // Inline panels take priority even during the brief render before
+            // their focus lifecycle moves focus into the new region.
+            if (_beeActiveFocusPanelRef.current || dkIsTyping(e) || dkHasInteractiveFocus() || !dkOwnsFlightFocus()) return;
             var k = dkNorm(e);
             if (k === 'v' && !e.repeat) {
               toggleDroneCamera();
               e.preventDefault();
               return;
             }
-            if ((k === 'p' || k === 'Escape') && !e.repeat) {
+            if (k === 'p' && !e.repeat) {
               ds.paused = !ds.paused;
               _droneKeys.current = {};
               updAll({ drone: Object.assign({}, droneData, { paused: ds.paused }) });
               announceBee(ds.paused ? 'Drone flight paused.' : 'Drone flight resumed.', false);
+              e.preventDefault();
+              return;
+            }
+            if (k === 'Escape' && !e.repeat) {
+              var wasPaused = !!ds.paused;
+              ds.paused = true;
+              _droneKeys.current = {};
+              if (!wasPaused) updAll({ drone: Object.assign({}, droneData, { paused: true }) });
+              announceBee(wasPaused ? 'Drone flight remains paused.' : 'Drone flight paused.', false);
               e.preventDefault();
               return;
             }
@@ -21563,7 +22249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if (retryTimer) clearTimeout(retryTimer);
             if (teardownFn) teardownFn();
           };
-        }, [viewMode, droneFlightActive, dronePaused]);
+        }, [viewMode, droneFlightActive, dronePaused, prefersReducedMotion]);
 
         function setDroneControl(key, pressed) {
           if (!droneFlightActive || dronePaused || (_droneState.current && _droneState.current.phase === 'end')) return;
@@ -21582,6 +22268,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           droneRoutePlan = planId;
           updAll({ drone: Object.assign({}, droneData, { routePlan: planId }) });
           announceBee('Route plan selected: ' + DRONE_ROUTE_PLANS[planId].label + '. ' + DRONE_ROUTE_PLANS[planId].desc, false);
+        }
+        function chooseDroneScenario(scenarioId) {
+          if (droneFlightActive || !DRONE_SCENARIOS[scenarioId]) return;
+          updAll({ drone: Object.assign({}, droneData, { scenario: scenarioId }) });
+          announceBee('Drone scenario selected: ' + DRONE_SCENARIOS[scenarioId].label + '. ' + DRONE_SCENARIOS[scenarioId].desc, false);
         }
         function toggleDroneCamera() {
           if (!droneFlightActive || (_droneState.current && _droneState.current.phase === 'end')) return;
@@ -21614,6 +22305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }
         function leaveDroneFlight() {
           _droneRuntimeSession.current = false;
+          _droneFocusOnStartRef.current = false;
           _droneKeys.current = {};
           updAll({ drone: Object.assign({}, droneData, { active: false, paused: false }) });
           announceBee('Drone flight ended. Difficulty selection is available.', false);
@@ -21625,6 +22317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var _queenCvRef = React.useRef(null);
         var _queenAnimId = React.useRef(0);
         var _queenState = React.useRef({});
+        var _queenFocusOnStartRef = React.useRef(false);
 
         var queenData = d.queen || {};
         var queenGameActive = queenData.active || false;
@@ -21660,6 +22353,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         var queenDifficultyCfg = QUEEN_DIFFICULTIES[queenDifficulty];
         var queenOpening = QUEEN_OPENINGS[queenData.opening] ? queenData.opening : 'balanced';
         var queenOpeningCfg = QUEEN_OPENINGS[queenOpening];
+        function chooseQueenScenario(scenarioId) {
+          if (!QUEEN_SCENARIOS[scenarioId]) return;
+          updAll({ queen: Object.assign({}, queenData, { scenario: scenarioId }) });
+          announceBee('Queen scenario selected: ' + QUEEN_SCENARIOS[scenarioId].label + '. ' + QUEEN_SCENARIOS[scenarioId].desc, false);
+        }
+        function chooseQueenDifficulty(difficultyId) {
+          if (!QUEEN_DIFFICULTIES[difficultyId]) return;
+          updAll({ queen: Object.assign({}, queenData, { difficulty: difficultyId }) });
+          announceBee('Rival pressure selected: ' + QUEEN_DIFFICULTIES[difficultyId].label + '. ' + QUEEN_DIFFICULTIES[difficultyId].desc, false);
+        }
+        function chooseQueenOpening(openingId) {
+          if (!QUEEN_OPENINGS[openingId]) return;
+          updAll({ queen: Object.assign({}, queenData, { opening: openingId }) });
+          announceBee('Opening doctrine selected: ' + QUEEN_OPENINGS[openingId].label + '. ' + QUEEN_OPENINGS[openingId].effect, false);
+        }
         function queenOpeningDelta(value, unit) {
           var n = Number(value) || 0;
           return n === 0 ? 'Baseline' : (n > 0 ? '+' : '') + n + ' ' + unit;
@@ -21788,6 +22496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         function startQueenGame(diff) {
+          _queenFocusOnStartRef.current = true;
           var chosenDifficulty = QUEEN_DIFFICULTIES[diff] ? diff : queenDifficulty;
           var setup = QUEEN_DIFFICULTIES[chosenDifficulty];
           var chosenOpening = QUEEN_OPENINGS[queenOpening] ? queenOpening : 'balanced';
@@ -21818,6 +22527,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           }});
           announceBee(setup.label + ' Colony Network started against ' + setup.rivalName + ' in the ' + scenario.label + ' scenario. ' + fieldCarryover.label + ' applied.', false);
         }
+
+        React.useEffect(function() {
+          if (viewMode !== 'queen' || !queenGameActive || !_queenFocusOnStartRef.current) return;
+          _queenFocusOnStartRef.current = false;
+          var queenFocusTimer = setTimeout(function() {
+            var playfield = document.getElementById('beehive-queen-playfield');
+            if (playfield && playfield.focus) playfield.focus();
+          }, 0);
+          return function() { clearTimeout(queenFocusTimer); };
+        }, [viewMode, queenGameActive]);
 
         function queenAction(actionId) {
           if (queenResult) return;
@@ -22197,24 +22916,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         React.useEffect(function() {
           if (viewMode !== 'queen' || !queenGameActive || queenResult) return;
           function onQueenKey(event) {
+            if (_beeActiveFocusPanelRef.current) return;
             var target = event.target;
             if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT' || target.isContentEditable)) return;
+            var beeRoot = document.querySelector('[data-beehive-root="true"]');
+            var active = document.activeElement;
+            if (!beeRoot || !active || !beeRoot.contains(active)) return;
+            var queenPlayfield = document.getElementById('beehive-queen-playfield');
+            var activeInteractive = !!(active.matches && active.matches('button, a[href], input, select, textarea, [contenteditable="true"], [role="button"], [role="tab"]'));
             if ((event.key || '').toLowerCase() === 'p' && !event.repeat) {
+              if (!queenPlayfield || (active !== queenPlayfield && !queenPlayfield.contains(active)) || activeInteractive) return;
               event.preventDefault();
               toggleQueenPause();
               return;
             }
-            // Escape leaves placement mode. Without it the only way out of build mode was to spend
-            // the resources, which made selecting a structure feel like a commitment rather than a
-            // choice.
-            if (event.key === 'Escape' && !event.repeat) {
+            // Escape leaves placement mode only while focus remains in this Bee
+            // experience. An open inline panel owns Escape and closes first.
+            if (event.key === 'Escape' && !event.repeat && queenBuildMode) {
               event.preventDefault();
               cancelQueenBuild();
             }
           }
           document.addEventListener('keydown', onQueenKey);
           return function() { document.removeEventListener('keydown', onQueenKey); };
-        }, [viewMode, queenGameActive, queenPaused, queenResult]);
+        }, [viewMode, queenGameActive, queenResult, queenData, queenBuildMode]);
 
         function queenStrategicRead() {
           if (queenResult) return { tone: queenResult === 'victory' ? 'success' : 'danger', title: queenResult === 'victory' ? 'Map control secured' : 'Brood core lost', body: 'Use the debrief and event log to connect your structure, pheromone, and timing choices to the outcome.' };
@@ -22364,6 +23089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             selected: hive3dPart,
             dark: isDark,
             contrast: isContrast,
+            reduced: prefersReducedMotion,
             showAllLabels: hive3dExploded,
             sceneProps: {
               honeyFill: hive3dHoneyFill, broodFill: hive3dBroodFill,
@@ -22388,7 +23114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           });
         }, [hive3dPart, hive3dExploded, isDark, isContrast, hive3dHoneyFill, hive3dBroodFill,
           hive3dVarroa, hive3dTraffic, hive3dPollen, hive3dLaying, hive3dPulled, season,
-          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure, hive3dFrame]);
+          hive3dSuperCount, hive3dHoneyBoxes, hive3dSwarmPressure, hive3dFrame, prefersReducedMotion]);
 
         var queen3dShare = Math.max(0, Math.min(1, (queenTerritory || 50) / 100));
         var queen3dHome = Math.max(0, Math.min(1, (queenHiveHealth || 0) / 100));
@@ -22414,6 +23140,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             selected: queen3dPart,
             dark: isDark,
             contrast: isContrast,
+            reduced: prefersReducedMotion,
             sceneProps: {
               share: queen3dShare, homeHealth: queen3dHome,
               rivalHealth: queen3dRival, forageRate: queen3dForage,
@@ -22430,7 +23157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             onStatus: function(next) { setQueen3dStatus(next); }
           });
         }, [queen3dPart, isDark, isContrast, queen3dShare, queen3dHome, queen3dRival, queen3dForage,
-          queen3dStructureSig, queen3dQmp, queen3dAlarm, queen3dNasonov, queen3dRaid]);
+          queen3dStructureSig, queen3dQmp, queen3dAlarm, queen3dNasonov, queen3dRaid, prefersReducedMotion]);
 
         // One panel shell for both bays. The two scenes differ only in their
         // parts list, their caption and one extra control, so a second copy of
@@ -22468,10 +23195,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 type: 'button',
                 onClick: function() { upd(cfg.toggleKey, !cfg.open); announceBee(cfg.open ? cfg.title + ' hidden.' : cfg.title + ' shown.', false); },
                 'aria-expanded': cfg.open ? 'true' : 'false',
+                'aria-controls': 'beehive-3d-' + cfg.id + '-content',
                 'aria-label': (cfg.open ? 'Hide ' : 'Show ') + cfg.title,
                 className: 'inline-flex min-h-[44px] shrink-0 items-center gap-2 rounded-lg border px-3 text-[11px] font-black ' + accent.button
               }, h('span', { 'aria-hidden': 'true' }, cfg.open ? '▾' : '▸'), cfg.open ? __alloT('stem.beehive.bay3d_hide', 'Hide 3D') : __alloT('stem.beehive.bay3d_show', 'Show 3D'))),
-            cfg.open && h('div', { className: 'mt-2 space-y-2' },
+            cfg.open && h('div', { id: 'beehive-3d-' + cfg.id + '-content', className: 'mt-2 space-y-2' },
               h('div', {
                 className: 'relative overflow-hidden rounded-xl border ' + accent.frame,
                 style: { height: 'clamp(260px, 34vw, 340px)', background: dk ? '#0b1220' : '#dfe6ef' }
@@ -22504,7 +23232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('button', {
                     key: part.id, type: 'button',
                     'aria-pressed': on ? 'true' : 'false',
-                    'aria-label': (on ? __alloT('stem.beehive.bay3d_hide_details', 'Hide details for') : __alloT('stem.beehive.bay3d_show_details', 'Show details for')) + ' ' + bee3dPartText(part, 'label'),
+                    'aria-label': bee3dPartText(part, 'label') + ' details',
                     onClick: function() {
                       var next = on ? null : part.id;
                       upd(cfg.partKey, next);
@@ -22889,6 +23617,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (part === 'text') return (dk ? textDark : textLight)[col] || (dk ? 'text-slate-300' : 'text-slate-700');
           return (dk ? cardDark : cardLight)[col] || (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200');
         }
+        function explainBeeUnavailable(label, reason) {
+          var message = label + ' is unavailable. ' + (reason || 'Complete the current step first') + '.';
+          if (addToast) addToast(message, 'info');
+          announceBee(message, false);
+        }
         function manageBtnStyle(color) {
           var dark = {
             stone: 'bg-stone-900/30 text-stone-300 border-stone-700/40 hover:bg-stone-800/40',
@@ -23128,7 +23861,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   var ready = hasQueenResources(action.cost) && !queenResult;
                   var cost = queenCostText(action.cost);
                   var preview = queenActionPreview(action);
-                  return h('button', { key: action.id, type: 'button', onClick: function() { queenAction(action.id); }, disabled: !ready, 'data-quick-command': action.id, 'data-command-ready': ready ? 'true' : 'false', 'aria-label': action.label + '. ' + action.desc + '. Effect: ' + preview + '. Cost: ' + cost + '. ' + (ready ? 'Ready' : queenResourceGapText(action.cost)), className: 'min-h-[64px] rounded-lg border px-2 py-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (ready ? (dk ? 'border-purple-700 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-200 bg-white text-purple-900 hover:bg-purple-100') : (dk ? 'border-slate-700 bg-slate-900/50 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-50 text-slate-600 opacity-70')) },
+                  var unavailableReason = queenResult ? 'Scenario complete' : queenResourceGapText(action.cost);
+                  return h('button', { key: action.id, type: 'button', onClick: function() { if (!ready) { explainBeeUnavailable(action.label, unavailableReason); return; } queenAction(action.id); }, 'aria-disabled': ready ? undefined : 'true', 'data-unavailable-reason': ready ? undefined : unavailableReason, 'data-quick-command': action.id, 'data-command-ready': ready ? 'true' : 'false', 'aria-label': action.label + '. ' + action.desc + '. Effect: ' + preview + '. Cost: ' + cost + '. ' + (ready ? 'Ready' : 'Unavailable. ' + unavailableReason), className: 'min-h-[64px] rounded-lg border px-2 py-2 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (ready ? (dk ? 'border-purple-700 bg-slate-900 text-purple-100 hover:bg-slate-800' : 'border-purple-200 bg-white text-purple-900 hover:bg-purple-100') : (dk ? 'border-slate-700 bg-slate-900/50 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-50 text-slate-600 opacity-70')) },
                     h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, action.icon),
                     h('span', { className: 'mt-1 block text-[10px] font-black leading-tight' }, action.label),
                     h('span', { 'data-command-preview': action.id, className: 'mt-0.5 block text-[10px] leading-snug ' + (dk ? 'text-slate-400' : 'text-slate-600') }, preview),
@@ -23302,9 +24036,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', null,
                 h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Learning flow'),
                 h('div', { className: 'text-[10px] font-semibold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, focusLayout ? 'Live stage appears before supporting dashboards.' : 'Supporting dashboards appear before the live stage.')),
-              h('button', { type: 'button', 'data-beehive-focus-layout': 'true', 'aria-pressed': focusLayout, onClick: function() { var nextLayout = !focusLayout; upd('focusLayout', nextLayout); announceBee(nextLayout ? 'Stage-first layout enabled.' : 'Overview-first layout enabled.', false); }, className: 'inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-3 py-2 text-[10px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (focusLayout ? (dk ? 'border-emerald-700 bg-emerald-950/40 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800') : (dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-700 hover:border-amber-300')) },
+              h('button', { type: 'button', 'data-beehive-focus-layout': 'true', 'aria-label': 'Stage-first layout', 'aria-pressed': focusLayout, onClick: function() { var nextLayout = !focusLayout; upd('focusLayout', nextLayout); announceBee(nextLayout ? 'Stage-first layout enabled.' : 'Overview-first layout enabled.', false); }, className: 'inline-flex min-h-[44px] items-center gap-2 rounded-lg border px-3 py-2 text-[10px] font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (focusLayout ? (dk ? 'border-emerald-700 bg-emerald-950/40 text-emerald-200' : 'border-emerald-200 bg-emerald-50 text-emerald-800') : (dk ? 'border-slate-700 bg-slate-900 text-slate-200 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-700 hover:border-amber-300')) },
                 h('span', { 'aria-hidden': 'true' }, focusLayout ? '\u25A3' : '\u25A1'),
-                focusLayout ? 'Overview first' : 'Stage first')),
+                'Stage-first layout')),
             h('div', { 'data-mobile-rail': 'learning-flow', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[58%] gap-1.5 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pb-1 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-5 sm:overflow-visible sm:pb-0' },
               steps.map(function(step, idx) {
                 return h('a', { key: step.id, href: '#' + step.target, 'data-beehive-flow-step': step.id, 'aria-label': (idx + 1) + '. ' + step.label + ': ' + step.hint, className: 'flex min-h-[48px] snap-start items-center gap-2 rounded-lg border px-2.5 py-2 no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'border-slate-700 bg-slate-900/70 text-slate-100 hover:border-slate-500' : 'border-slate-200 bg-white text-slate-800 hover:border-amber-300') },
@@ -23396,7 +24130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               : ['Choose difficulty', 'Pass route markers', 'Find the queen'];
             title = droneFlightActive ? 'Flight objective' : 'Drone flight briefing';
             body = droneFlightActive
-              ? (dronePaused ? 'Flight is paused. Read the evidence panel, choose your next maneuver, then resume with P or the button.' : 'Pass optional glowing route markers for control evidence, use updrafts to reduce powered climbing, avoid birds, then climb toward the golden queen signal.')
+              ? (dronePaused ? 'Flight is paused. Read the evidence panel, plan your next maneuver, then resume before using the flight controls.' : 'Pass optional glowing route markers for control evidence, use updrafts to reduce powered climbing, avoid birds, then climb toward the golden queen signal.')
               : 'Start on Easy first. The game loop is: pass optional route markers low, conserve the preflight reserve, then steer toward the DCA. Biology boundary: real drones do not forage or refuel at flowers.';
             action = !droneFlightActive
               ? { id: 'start-easy-flight', icon: '\uD83D\uDE80', label: 'Start easy flight', hint: 'Launch the guided route', watch: 'Watch energy, altitude, distance, and route-marker count.', onClick: function() { startDroneFlight('easy'); } }
@@ -23603,6 +24337,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           });
           lines.push('## Cross-perspective synthesis');
           lines.push(String(notebook.synthesis || '').trim() || 'Not recorded yet.');
+          lines.push('');
+          lines.push(bhBuildExperimentEvidenceRecord(notebook.experiment, d.experimentBaseline, d));
           return lines.join('\n');
         }
         function copyBeeNotebookPortfolio() {
@@ -23863,7 +24599,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var active = viewMode === item.id;
               var tone = item.color === 'purple' ? 'bg-purple-500' : item.color === 'indigo' ? 'bg-indigo-500' : 'bg-amber-500';
               return h('button', { key: item.id, onClick: function() { upd('viewMode', item.id); }, 'aria-current': active ? 'step' : undefined, className: 'rounded-xl border p-3 text-left transition-all ' + (active ? (dk ? 'border-white/30 bg-white/10 ring-1 ring-white/20' : 'border-slate-400 bg-slate-50 ring-1 ring-slate-200') : (dk ? 'border-slate-700 bg-slate-950/35 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300')) },
-                h('div', { className: 'flex items-start gap-2' }, h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.title), h('span', { className: item.done ? 'text-emerald-500' : (dk ? 'text-slate-500' : 'text-slate-400'), role: 'img', 'aria-label': item.done ? 'milestone complete' : 'milestone in progress' }, item.done ? '\u2713' : '\u25CB')), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.criterion))),
+                h('div', { className: 'flex items-start gap-2' }, h('span', { className: 'text-xl', 'aria-hidden': 'true' }, item.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item.title), h('span', { className: item.done ? 'text-emerald-500' : (dk ? 'text-slate-500' : 'text-slate-600'), role: 'img', 'aria-label': item.done ? 'milestone complete' : 'milestone in progress' }, item.done ? '\u2713' : '\u25CB')), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item.criterion))),
                 h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': item.progress, 'aria-label': item.title + ' progress ' + item.progress + ' percent' }, h('div', { className: 'h-full rounded-full transition-all ' + tone, style: { width: item.progress + '%' } })),
                 h('div', { className: 'mt-1.5 text-[10px] font-bold uppercase tracking-wide ' + (item.done ? 'text-emerald-500' : (dk ? 'text-slate-400' : 'text-slate-600')) }, item.status));
             })),
@@ -24054,6 +24790,481 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           function signed(value, suffix) {
             return (value > 0 ? '+' : '') + value + (suffix || '');
           }
+          var experimentBaseline = bhNormalizeExperimentSnapshot(d.experimentBaseline);
+          var experimentNotebookRoot = d.notebook && typeof d.notebook === 'object' && !Array.isArray(d.notebook) ? d.notebook : {};
+          var experimentNotebook = bhNormalizeExperimentNotebook(experimentNotebookRoot.experiment);
+          var experimentComparison = experimentBaseline ? bhCompareExperiments(experimentBaseline, d, undefined, experimentNotebook) : null;
+          function experimentMetricValue(row, key) {
+            var value = row[key];
+            var shown = row.precision === 0
+              ? Math.round(value).toLocaleString()
+              : Number(value).toFixed(row.precision).replace(/\.0$/, '');
+            return shown + (row.suffix || '');
+          }
+          function experimentMetricDelta(row) {
+            var shown = row.precision === 0
+              ? Math.round(row.delta).toLocaleString()
+              : Number(row.delta).toFixed(row.precision).replace(/\.0$/, '');
+            return (row.delta > 0 ? '+' : '') + shown + (row.suffix || '');
+          }
+          function saveExperimentBaseline() {
+            if (day <= 0) return;
+            var snapshot = bhCreateExperimentSnapshot(d);
+            updAll({ experimentBaseline: snapshot });
+            announceBee('Run A saved from Colony Run ' + snapshot.runSerial + ' at Day ' + snapshot.capturedDay + '. Start a separate Run B, then compare at the same checkpoint.', false);
+            if (addToast) addToast('Run A saved at Day ' + snapshot.capturedDay + '.', 'success');
+          }
+          function startExperimentRunB() {
+            if (!experimentBaseline) {
+              announceBee('Save Run A before starting Run B.', false);
+              return;
+            }
+            var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
+            var reset = bhCreateNewColonyState(simulationSeed, nextRunSerial);
+            reset.experimentBaseline = experimentBaseline;
+            updAll(reset);
+            announceBee('Separate Colony Run ' + nextRunSerial + ' started with the same event recipe. Run A and notebook entries remain saved.', false);
+            if (addToast) addToast('Run B started with the same seed.', 'success');
+          }
+          function clearExperimentBaseline() {
+            updAll({ experimentBaseline: null });
+            announceBee('Run A comparison checkpoint cleared.', false);
+            if (addToast) addToast('Run A checkpoint cleared.', 'success');
+          }
+          function updateExperimentNotebookField(fieldId, value) {
+            var definition = BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.filter(function(field) { return field.id === fieldId; })[0];
+            if (!definition) return;
+            updFn(function(b) {
+              var notebookRoot = b.notebook && typeof b.notebook === 'object' && !Array.isArray(b.notebook) ? Object.assign({}, b.notebook) : {};
+              var entry = bhNormalizeExperimentNotebook(notebookRoot.experiment);
+              entry[fieldId] = bhExperimentNotebookValue(value, definition.maxLength);
+              var reviewId = fieldId === 'changedVariable' ? 'singleVariable' : fieldId === 'observations' ? 'numericEvidence' : fieldId === 'alternativeExplanation' ? 'uncertainty' : null;
+              if (reviewId && !String(entry[fieldId] || '').trim()) entry.review[reviewId] = false;
+              notebookRoot.experiment = entry;
+              b.notebook = notebookRoot;
+            });
+          }
+          function updateExperimentNotebookPlannedAction(actionId) {
+            updFn(function(b) {
+              var notebookRoot = b.notebook && typeof b.notebook === 'object' && !Array.isArray(b.notebook) ? Object.assign({}, b.notebook) : {};
+              var entry = bhNormalizeExperimentNotebook(notebookRoot.experiment);
+              var planned = bhExperimentPlanAction(actionId);
+              var previousPlanId = entry.plannedActionId;
+              entry.plannedActionId = planned ? planned.id : '';
+              if (!planned || previousPlanId !== entry.plannedActionId) entry.review.singleVariable = false;
+              notebookRoot.experiment = entry;
+              b.notebook = notebookRoot;
+            });
+            var selected = bhExperimentPlanAction(actionId);
+            announceBee(selected ? 'Planned management choice set to ' + selected.label + '.' : 'Planned management choice cleared.', false);
+          }
+          function updateExperimentNotebookPrediction(fieldId, value) {
+            if (fieldId !== 'predictedMetricId' && fieldId !== 'predictedDirection') return;
+            updFn(function(b) {
+              var notebookRoot = b.notebook && typeof b.notebook === 'object' && !Array.isArray(b.notebook) ? Object.assign({}, b.notebook) : {};
+              var entry = bhNormalizeExperimentNotebook(notebookRoot.experiment);
+              var previous = entry[fieldId];
+              var selected = fieldId === 'predictedMetricId' ? bhExperimentPredictionMetric(value) : bhExperimentPredictionDirection(value);
+              entry[fieldId] = selected ? selected.id : '';
+              if (!selected || previous !== entry[fieldId]) entry.review.numericEvidence = false;
+              notebookRoot.experiment = entry;
+              b.notebook = notebookRoot;
+            });
+            var selected = fieldId === 'predictedMetricId' ? bhExperimentPredictionMetric(value) : bhExperimentPredictionDirection(value);
+            var kind = fieldId === 'predictedMetricId' ? 'Prediction metric' : 'Expected direction';
+            announceBee(selected ? kind + ' set to ' + selected.label + '.' : kind + ' cleared.', false);
+          }
+          function updateExperimentNotebookReview(reviewId, checked) {
+            updFn(function(b) {
+              var notebookRoot = b.notebook && typeof b.notebook === 'object' && !Array.isArray(b.notebook) ? Object.assign({}, b.notebook) : {};
+              var entry = bhNormalizeExperimentNotebook(notebookRoot.experiment);
+              entry.review[reviewId] = !!checked;
+              notebookRoot.experiment = entry;
+              b.notebook = notebookRoot;
+            });
+            var reviewLabel = reviewId === 'singleVariable' ? 'One intended change' : reviewId === 'numericEvidence' ? 'Same-checkpoint numeric evidence' : 'Alternative explanation';
+            announceBee(reviewLabel + (checked ? ' marked ready.' : ' marked for revision.'), false);
+          }
+          function captureExperimentComparisonEvidence() {
+            if (!experimentComparison) {
+              announceBee('Save Run A before capturing comparison evidence.', false);
+              return;
+            }
+            var comparisonLabel = experimentComparison.status === 'matched' ? 'matched comparison' : experimentComparison.status === 'same-run' ? 'same colony run; restart required' : experimentComparison.status === 'checkpoint' ? 'checkpoint timing differs' : 'exploratory comparison';
+            var choiceAuditLabel = experimentComparison.management.status === 'one-change' ? 'one recorded difference' : experimentComparison.management.status === 'identical' ? 'no recorded differences' : experimentComparison.management.differenceCount + ' recorded differences';
+            var planAuditLabel = experimentComparison.plannedChoice.status === 'matched' ? 'recorded change matches ' + experimentComparison.plannedChoice.plannedActionLabel : experimentComparison.plannedChoice.status === 'mismatched' ? 'recorded change ' + experimentComparison.plannedChoice.observedActionLabel + ' does not match ' + experimentComparison.plannedChoice.plannedActionLabel : experimentComparison.plannedChoice.status === 'unplanned' ? 'no structured planned choice selected' : 'waiting for one recorded difference';
+            var predictionAuditLabel = experimentComparison.prediction.status === 'aligned' ? experimentComparison.prediction.metricLabel + ': ' + experimentComparison.prediction.observedDirectionLabel + '; displayed direction aligned with the prediction' : experimentComparison.prediction.status === 'not-aligned' ? experimentComparison.prediction.metricLabel + ': ' + experimentComparison.prediction.observedDirectionLabel + '; displayed direction did not align with the prediction' : experimentComparison.prediction.status === 'waiting' ? experimentComparison.prediction.metricLabel + ' prediction waiting for a matched checkpoint' : 'no structured metric-and-direction prediction selected';
+            var snapshot = 'Run A Day ' + experimentComparison.baseline.capturedDay + ' vs Run B Day ' + experimentComparison.current.capturedDay + ' (' + comparisonLabel + '). Management-choice audit: ' + choiceAuditLabel + (experimentComparison.matchedCheckpoint ? ' at the matched checkpoint. ' : ' provisionally through Day ' + experimentComparison.management.comparedThroughDay + '. ') + 'Planned-choice audit: ' + planAuditLabel + '. Prediction audit: ' + predictionAuditLabel + '. ' + experimentComparison.metrics.map(function(row) {
+              return row.label + ': ' + experimentMetricValue(row, 'baseline') + ' to ' + experimentMetricValue(row, 'current') + ' (' + experimentMetricDelta(row) + ')';
+            }).join('; ') + '.';
+            var current = String(experimentNotebook.observations || '').trim();
+            updateExperimentNotebookField('observations', current ? current + '\n' + snapshot : snapshot);
+            announceBee('Run A and Run B metrics inserted into experiment observations.', false);
+            if (addToast) addToast('Comparison metrics added to the experiment notebook.', 'success');
+          }
+          function copyExperimentEvidenceRecord() {
+            var report = bhBuildExperimentEvidenceRecord(experimentNotebook, d.experimentBaseline, d);
+            var showManualCopy = function() {
+              updFn(function(b) {
+                b.exportedReport = report;
+                b.exportedReportTitle = 'Experiment Evidence Record';
+              });
+              announceBee('Experiment evidence is ready in the manual copy panel.', false);
+            };
+            if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(report).then(function() {
+                if (addToast) addToast('Experiment evidence record copied to clipboard.', 'success');
+                announceBee('Experiment evidence record copied to clipboard.', false);
+              }, showManualCopy);
+            } else {
+              showManualCopy();
+            }
+          }
+          function renderExperimentNotebook() {
+            var promptConfig = {
+              question: { prompt: 'What management question are you testing?', placeholder: 'How does changing one management choice affect...?' },
+              hypothesis: { prompt: 'State what you expect and why. A useful frame is: If... then... because...', placeholder: 'If I change..., then... because...' },
+              changedVariable: { prompt: 'Explain how you will add, omit, retime, or alter the selected management choice while holding the seed, stock, site, and checkpoint steady.', placeholder: 'For this planned choice, I will change only...' },
+              prediction: { prompt: 'Name the checkpoint and at least one measurable outcome.', placeholder: 'At Day..., I predict Run B will...' },
+              observations: { prompt: experimentComparison && experimentComparison.interpretationReady ? 'Cite specific Run A and Run B values. Connect them cautiously to the recorded change that matches your plan.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned' ? 'The checkpoints and one recorded difference align. Select the planned management choice before interpreting it.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' ? 'The recorded difference does not match the planned choice. Describe it as an unplanned result and avoid attributing an effect.' : experimentComparison && experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical' ? 'The checkpoints match, but no recorded management choice differs. Record that there is no changed variable yet.' : experimentComparison && experimentComparison.matchedCheckpoint ? 'The checkpoints match, but multiple management choices differ. Describe values without attributing them to one choice.' : experimentComparison && experimentComparison.status === 'same-run' ? 'This is still the same colony run. Start a separate Run B before interpreting differences as repeat-trial evidence.' : experimentComparison ? 'Record what you notice, but identify the unmatched control or timing before interpreting it.' : 'List the metrics you plan to measure after saving Run A.', placeholder: 'I observed that Run A... while Run B...' },
+              alternativeExplanation: { prompt: 'What else, including an unmatched control or model limitation, could explain the result?', placeholder: 'Another possible explanation is...' },
+              conclusion: { prompt: 'Say whether the evidence supported the hypothesis, how confident you are, and what you would test next.', placeholder: 'The evidence supported / did not support... My confidence is... Next I would...' }
+            };
+            var plannedReady = !!bhExperimentPlanAction(experimentNotebook.plannedActionId);
+            var predictedMetricReady = !!bhExperimentPredictionMetric(experimentNotebook.predictedMetricId);
+            var predictedDirectionReady = !!bhExperimentPredictionDirection(experimentNotebook.predictedDirection);
+            var notebookItemTotal = BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.length + 3;
+            var completed = BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.filter(function(field) { return String(experimentNotebook[field.id] || '').trim(); }).length + (plannedReady ? 1 : 0) + (predictedMetricReady ? 1 : 0) + (predictedDirectionReady ? 1 : 0);
+            var reviewItems = [
+              { id: 'singleVariable', label: 'One intended change', cue: 'The plan selects one management choice and explains how it will vary.', available: plannedReady && String(experimentNotebook.changedVariable || '').trim().length > 0 },
+              { id: 'numericEvidence', label: 'Same-checkpoint numeric evidence', cue: experimentComparison && experimentComparison.matchedCheckpoint ? 'The observations cite values from matched Run A and Run B checkpoints.' : experimentComparison && experimentComparison.status === 'same-run' ? 'Available after starting a separate Run B and matching the Run A checkpoint.' : 'Available when Run A and Run B controls and checkpoint day match.', available: String(experimentNotebook.observations || '').trim().length > 0 && !!(experimentComparison && experimentComparison.matchedCheckpoint) },
+              { id: 'uncertainty', label: 'Uncertainty considered', cue: 'The record names an alternative explanation or limitation.', available: String(experimentNotebook.alternativeExplanation || '').trim().length > 0 }
+            ].map(function(item) {
+              item.checked = item.available && experimentNotebook.review[item.id] === true;
+              return item;
+            });
+            var reviewCompleted = reviewItems.filter(function(item) { return item.checked; }).length;
+            var notebookOpen = d.experimentNotebookOpen === true;
+            function renderField(field) {
+              var prompt = promptConfig[field.id];
+              var promptId = 'beehive-experiment-notebook-' + field.id + '-prompt';
+              return h('label', { key: field.id, className: 'block rounded-xl border p-3 ' + cardTone },
+                h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, field.label),
+                h('span', { id: promptId, className: 'mt-1 block text-[10px] leading-relaxed ' + bodyTone }, prompt.prompt),
+                h('textarea', { 'data-experiment-notebook-field': field.id, value: experimentNotebook[field.id] || '', onChange: function(event) { updateExperimentNotebookField(field.id, event.target.value); }, rows: field.maxLength > 800 ? 4 : 3, maxLength: field.maxLength, spellCheck: true, 'aria-describedby': promptId, placeholder: prompt.placeholder, className: 'mt-2 w-full resize-y rounded-lg border p-2.5 text-xs leading-relaxed outline-none focus:ring-2 focus:ring-sky-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100 placeholder:text-slate-400' : 'border-slate-300 bg-white text-slate-900 placeholder:text-slate-600') }));
+            }
+            return h('details', { 'data-beehive-experiment-notebook': 'true', 'data-experiment-notebook-complete': completed === notebookItemTotal && reviewCompleted === reviewItems.length ? 'true' : 'false', open: notebookOpen, onToggle: function(event) { var nextOpen = event.currentTarget.open; if (nextOpen !== (d.experimentNotebookOpen === true)) upd('experimentNotebookOpen', nextOpen); }, className: 'group mt-3 overflow-hidden rounded-xl border ' + (dk ? 'border-indigo-700/45 bg-slate-950/30' : 'border-indigo-200 bg-indigo-50/45') },
+              h('summary', { 'data-experiment-notebook-summary': 'true', className: 'flex min-h-[58px] cursor-pointer list-none items-center gap-3 px-3 py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-indigo-500', style: { listStyle: 'none' }, 'aria-label': (notebookOpen ? 'Collapse' : 'Expand') + ' guided experiment notebook. ' + completed + ' of ' + notebookItemTotal + ' planning and writing items complete.' },
+                h('span', { className: 'grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-indigo-700 text-white', 'aria-hidden': 'true' }, '\u270E'),
+                h('span', { className: 'min-w-0 flex-1' },
+                  h('span', { className: 'block text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Guided experiment notebook'),
+                  h('span', { className: 'mt-0.5 block text-[10px] font-semibold ' + bodyTone }, 'Plan, observe, explain, and export the evidence chain.'),
+                  h('span', { className: 'mt-1 block h-1.5 max-w-xs overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': completed + ' of ' + notebookItemTotal + ' experiment planning and writing items complete', 'aria-valuemin': 0, 'aria-valuemax': notebookItemTotal, 'aria-valuenow': completed }, h('span', { className: 'block h-full rounded-full bg-indigo-600', style: { width: (completed / notebookItemTotal * 100) + '%' } }))),
+                h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-indigo-700 text-indigo-200' : 'border-indigo-200 text-indigo-800') }, completed + '/' + notebookItemTotal),
+                h('span', { className: 'text-lg transition-transform group-open:rotate-180 motion-reduce:transition-none', 'aria-hidden': 'true' }, '\u2304')),
+              h('div', { className: 'border-t p-3 sm:p-4 ' + (dk ? 'border-indigo-800/60' : 'border-indigo-200') },
+                h('p', { className: 'text-[10px] leading-relaxed ' + bodyTone }, 'Write the plan before changing Run B when possible. Entries save automatically and remain available through colony restarts.'),
+                h('fieldset', { 'data-experiment-notebook-phase': 'plan', className: 'mt-3' },
+                  h('legend', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, '1. Plan the test'),
+                  h('label', { 'data-experiment-planned-action-control': 'true', className: 'mt-2 block rounded-xl border p-3 ' + cardTone },
+                    h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Planned management choice'),
+                    h('span', { id: 'beehive-experiment-planned-action-help', className: 'mt-1 block text-[10px] leading-relaxed ' + bodyTone }, 'Choose the action category you intend to add, omit, retime, or change in Run B. The audit will compare this plan with the committed action record.'),
+                    h('select', { id: 'beehive-experiment-planned-action', 'data-experiment-planned-action': 'true', value: experimentNotebook.plannedActionId || '', onChange: function(event) { updateExperimentNotebookPlannedAction(event.target.value); }, 'aria-describedby': 'beehive-experiment-planned-action-help', className: 'mt-2 min-h-[44px] w-full rounded-lg border px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-900') },
+                      h('option', { value: '' }, 'Choose one management choice'),
+                      BEEHIVE_EXPERIMENT_PLAN_ACTIONS.map(function(action) { return h('option', { key: action.id, value: action.id }, action.label); }))),
+                  h('div', { 'data-experiment-structured-prediction': 'true', className: 'mt-2 grid gap-2 sm:grid-cols-2' },
+                    h('label', { className: 'block rounded-xl border p-3 ' + cardTone },
+                      h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Prediction metric'),
+                      h('span', { id: 'beehive-experiment-prediction-metric-help', className: 'mt-1 block text-[10px] leading-relaxed ' + bodyTone }, 'Choose one displayed colony outcome to evaluate at the matched checkpoint.'),
+                      h('select', { id: 'beehive-experiment-prediction-metric', 'data-experiment-prediction-metric': 'true', value: experimentNotebook.predictedMetricId || '', onChange: function(event) { updateExperimentNotebookPrediction('predictedMetricId', event.target.value); }, 'aria-describedby': 'beehive-experiment-prediction-metric-help', className: 'mt-2 min-h-[44px] w-full rounded-lg border px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-900') },
+                        h('option', { value: '' }, 'Choose one outcome metric'),
+                        BEEHIVE_EXPERIMENT_COMPARE_METRICS.map(function(metric) { return h('option', { key: metric.id, value: metric.id }, metric.label); }))),
+                    h('label', { className: 'block rounded-xl border p-3 ' + cardTone },
+                      h('span', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Expected direction'),
+                      h('span', { id: 'beehive-experiment-prediction-direction-help', className: 'mt-1 block text-[10px] leading-relaxed ' + bodyTone }, 'Predict how Run B will compare with Run A at the displayed precision.'),
+                      h('select', { id: 'beehive-experiment-prediction-direction', 'data-experiment-prediction-direction': 'true', value: experimentNotebook.predictedDirection || '', onChange: function(event) { updateExperimentNotebookPrediction('predictedDirection', event.target.value); }, 'aria-describedby': 'beehive-experiment-prediction-direction-help', className: 'mt-2 min-h-[44px] w-full rounded-lg border px-3 py-2 text-xs font-semibold outline-none focus:ring-2 focus:ring-indigo-500 ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-100' : 'border-slate-300 bg-white text-slate-900') },
+                        h('option', { value: '' }, 'Choose the expected direction'),
+                        BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS.map(function(direction) { return h('option', { key: direction.id, value: direction.id }, direction.label); })))),
+                  h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' }, BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.slice(0, 4).map(renderField))),
+                h('fieldset', { 'data-experiment-notebook-phase': 'analyze', className: 'mt-4' },
+                  h('legend', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, '2. Observe and explain'),
+                  experimentComparison && h('div', { className: 'mt-2 flex justify-end' },
+                    h('button', { type: 'button', 'data-experiment-notebook-capture': 'true', onClick: captureExperimentComparisonEvidence, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-3 py-2 text-[10px] font-black text-white transition-colors hover:bg-indigo-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400', 'aria-label': 'Insert current Run A and Run B metrics into observations' }, 'Insert metric snapshot')),
+                  !experimentComparison && h('p', { className: 'mt-2 rounded-lg border p-2 text-[10px] font-bold ' + (dk ? 'border-amber-700/35 text-amber-200' : 'border-amber-200 text-amber-800') }, 'Save Run A to unlock one-click comparison evidence.'),
+                  h('div', { className: 'mt-2 grid gap-2' }, BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS.slice(4).map(renderField))),
+                h('fieldset', { 'data-experiment-notebook-review': 'true', 'data-review-complete': reviewCompleted === reviewItems.length ? 'true' : 'false', className: 'mt-4 rounded-xl border p-3 ' + cardTone },
+                  h('legend', { className: 'px-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, '3. Evidence self-review'),
+                  h('p', { className: 'text-[10px] leading-relaxed ' + bodyTone }, 'These checks unlock only when the related evidence is available.'),
+                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full ' + (dk ? 'bg-slate-800' : 'bg-slate-200'), role: 'progressbar', 'aria-label': reviewCompleted + ' of ' + reviewItems.length + ' experiment evidence checks ready', 'aria-valuemin': 0, 'aria-valuemax': reviewItems.length, 'aria-valuenow': reviewCompleted }, h('div', { className: 'h-full rounded-full bg-emerald-600', style: { width: (reviewCompleted / reviewItems.length * 100) + '%' } })),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' }, reviewItems.map(function(item) {
+                    var cueId = 'beehive-experiment-review-' + item.id + '-cue';
+                    return h('label', { key: item.id, className: 'flex min-h-[48px] items-start gap-2 rounded-lg border p-2.5 ' + (item.available ? cardTone : (dk ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-500')) },
+                      h('input', { type: 'checkbox', 'data-experiment-notebook-review-check': item.id, checked: item.checked, disabled: !item.available, onChange: function(event) { updateExperimentNotebookReview(item.id, event.target.checked); }, 'aria-describedby': cueId, className: 'mt-0.5 h-5 w-5 shrink-0 accent-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500' }),
+                      h('span', null, h('span', { className: 'block text-[10px] font-black' }, item.label), h('span', { id: cueId, className: 'mt-0.5 block text-[9px] leading-relaxed' }, item.cue)));
+                  }))),
+                h('div', { className: 'mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
+                  h('p', { className: 'text-[10px] font-semibold ' + bodyTone }, completed === notebookItemTotal ? 'All planning and writing items are filled. Revisit the self-review before sharing.' : 'You can return at any time; unfinished items stay saved.'),
+                  h('button', { type: 'button', 'data-beehive-copy-experiment': 'true', onClick: copyExperimentEvidenceRecord, className: 'inline-flex min-h-[44px] items-center justify-center rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400', 'aria-label': 'Copy guided experiment evidence record' }, 'Copy experiment record'))));
+          }
+
+          function renderExperimentProtocol() {
+            var planReady = !!bhExperimentPlanAction(experimentNotebook.plannedActionId) && !!bhExperimentPredictionMetric(experimentNotebook.predictedMetricId) && !!bhExperimentPredictionDirection(experimentNotebook.predictedDirection) && ['question', 'hypothesis', 'changedVariable', 'prediction'].every(function(fieldId) { return String(experimentNotebook[fieldId] || '').trim(); });
+            var explanationReady = ['observations', 'alternativeExplanation', 'conclusion'].every(function(fieldId) { return String(experimentNotebook[fieldId] || '').trim(); });
+            var protocolSteps = [
+              { id: 'plan', label: 'Plan the test', detail: 'Select the management choice, outcome metric, and expected direction; then explain the question, change, and prediction.', complete: planReady },
+              { id: 'baseline', label: 'Save Run A', detail: 'Capture the first colony checkpoint before starting the repeat.', complete: !!experimentBaseline },
+              { id: 'repeat', label: 'Start a separate Run B', detail: 'Restart with the same event recipe. Run A and notebook entries stay saved.', complete: !!(experimentComparison && experimentComparison.distinctRuns) },
+              { id: 'checkpoint', label: 'Match the checkpoint', detail: 'Hold seed, stock, site, and timing steady before interpreting differences.', complete: !!(experimentComparison && experimentComparison.matchedCheckpoint) },
+              { id: 'choice', label: 'Verify the planned change', detail: 'Confirm exactly one recorded difference and make sure it matches the selected management choice.', complete: !!(experimentComparison && experimentComparison.interpretationReady) },
+              { id: 'prediction', label: 'Check the prediction', detail: 'Compare the selected metric direction with the matched result. Alignment is not proof of cause.', complete: !!(experimentComparison && (experimentComparison.prediction.status === 'aligned' || experimentComparison.prediction.status === 'not-aligned')) },
+              { id: 'explain', label: 'Explain the evidence', detail: 'Record observations, an alternative explanation, and a conclusion.', complete: explanationReady }
+            ];
+            var currentIndex = protocolSteps.findIndex(function(step) { return !step.complete; });
+            return h('section', { 'data-experiment-protocol': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-800/55 bg-indigo-950/20' : 'border-indigo-200 bg-indigo-50/45'), 'aria-labelledby': 'beehive-experiment-protocol-title' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('h5', { id: 'beehive-experiment-protocol-title', className: 'text-[11px] font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Fair-test path'),
+                h('span', { className: 'text-[10px] font-bold ' + bodyTone }, protocolSteps.filter(function(step) { return step.complete; }).length + ' of ' + protocolSteps.length + ' steps ready')),
+              h('ol', { className: 'mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-7' }, protocolSteps.map(function(step, index) {
+                var state = step.complete ? 'complete' : index === currentIndex ? 'current' : 'upcoming';
+                var tone = state === 'complete'
+                  ? (dk ? 'border-emerald-700/40 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50')
+                  : state === 'current'
+                    ? (dk ? 'border-indigo-600 bg-indigo-950/35' : 'border-indigo-300 bg-white')
+                    : (dk ? 'border-slate-800 bg-slate-950/20' : 'border-slate-200 bg-white/60');
+                return h('li', { key: step.id, 'data-experiment-protocol-step': step.id, 'data-protocol-step-state': state, 'aria-current': state === 'current' ? 'step' : undefined, className: 'rounded-lg border p-2 ' + tone },
+                  h('div', { className: 'flex items-start justify-between gap-2' },
+                    h('span', { className: 'text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, (index + 1) + '. ' + step.label),
+                    h('span', { className: 'rounded-full px-1.5 py-0.5 text-[9px] font-black ' + (state === 'complete' ? (dk ? 'bg-emerald-900 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : state === 'current' ? (dk ? 'bg-indigo-900 text-indigo-200' : 'bg-indigo-100 text-indigo-800') : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, state === 'complete' ? 'Done' : state === 'current' ? 'Now' : 'Later')),
+                  h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + bodyTone }, step.detail));
+              })));
+          }
+
+          function renderManagementChoiceAudit() {
+            var audit = experimentComparison.management;
+            var plannedChoice = experimentComparison.plannedChoice;
+            var finalAudit = experimentComparison.matchedCheckpoint;
+            var waitingForRun = !experimentComparison.distinctRuns;
+            var badgeLabel;
+            var detail;
+            var tone;
+            if (waitingForRun) {
+              badgeLabel = 'Available in Run B';
+              detail = 'Start a separate Run B before comparing recorded management choices.';
+              tone = dk ? 'border-violet-800/50 bg-violet-950/20' : 'border-violet-200 bg-violet-50/60';
+            } else if (!finalAudit) {
+              badgeLabel = 'Provisional through Day ' + audit.comparedThroughDay;
+              detail = audit.status === 'identical'
+                ? 'Recorded choices match so far. Keep following the plan until Run B reaches the saved checkpoint.'
+                : audit.status === 'one-change'
+                  ? 'One difference is recorded so far. Keep every other choice aligned until the checkpoint.'
+                  : audit.differenceCount + ' differences are recorded so far. Later actions may change this audit before the checkpoint.';
+              tone = dk ? 'border-sky-800/50 bg-sky-950/20' : 'border-sky-200 bg-sky-50/60';
+            } else if (audit.status === 'one-change') {
+              badgeLabel = 'One recorded difference';
+              detail = plannedChoice.status === 'matched'
+                ? 'The action trails differ once, and the recorded Run B change matches the selected plan.'
+                : plannedChoice.status === 'unplanned'
+                  ? 'The action trails differ once. Select the planned management choice before interpreting metrics.'
+                  : 'The action trails differ once, but the recorded Run B change does not match the selected plan.';
+              tone = plannedChoice.status === 'matched'
+                ? (dk ? 'border-emerald-700/45 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60')
+                : plannedChoice.status === 'unplanned'
+                  ? (dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')
+                  : (dk ? 'border-rose-700/45 bg-rose-950/20' : 'border-rose-200 bg-rose-50/60');
+            } else if (audit.status === 'identical') {
+              badgeLabel = 'No recorded difference';
+              detail = 'The checkpoints match, but the recorded choices do not differ. There is no changed management variable to interpret yet.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            } else {
+              badgeLabel = audit.differenceCount + ' recorded differences';
+              detail = 'More than one choice differs, so these metrics cannot isolate which management change explains the result.';
+              tone = dk ? 'border-rose-700/45 bg-rose-950/20' : 'border-rose-200 bg-rose-50/60';
+            }
+            function actionLabel(action) {
+              return action ? 'Day ' + action.day + ': ' + action.label + (action.cost ? ' (' + action.cost + ')' : '') : 'None';
+            }
+            var planBadge = plannedChoice.status === 'matched' ? 'Matches plan' : plannedChoice.status === 'mismatched' ? 'Differs from plan' : plannedChoice.status === 'unplanned' ? 'Plan not selected' : 'Waiting for one difference';
+            var planDetail = plannedChoice.status === 'matched'
+              ? (finalAudit ? 'Recorded change: ' : 'Current difference: ') + plannedChoice.observedActionLabel + '. This matches ' + plannedChoice.plannedActionLabel + (finalAudit ? '.' : '; keep other choices aligned through the checkpoint.')
+              : plannedChoice.status === 'mismatched'
+                ? 'Recorded change: ' + plannedChoice.observedActionLabel + '. Planned choice: ' + plannedChoice.plannedActionLabel + '. Treat this as unplanned evidence.'
+                : plannedChoice.status === 'unplanned'
+                  ? 'Choose a planned management choice in the notebook so the audit can compare intention with the committed Run B action.'
+                  : 'Planned choice: ' + plannedChoice.plannedActionLabel + '. The audit will align it after exactly one recorded difference is available.';
+            var planTone = plannedChoice.status === 'matched'
+              ? (dk ? 'border-emerald-700/40 bg-emerald-950/25' : 'border-emerald-200 bg-white/70')
+              : plannedChoice.status === 'mismatched'
+                ? (dk ? 'border-rose-700/40 bg-rose-950/25' : 'border-rose-200 bg-white/70')
+                : (dk ? 'border-amber-700/40 bg-amber-950/20' : 'border-amber-200 bg-white/70');
+            return h('section', { 'data-experiment-management-audit': 'true', 'data-management-audit-status': audit.status, 'data-management-audit-final': finalAudit ? 'true' : 'false', className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-management-audit-title' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                h('div', null,
+                  h('h5', { id: 'beehive-management-audit-title', className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Management-choice audit'),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, detail)),
+                h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
+              !waitingForRun && audit.differences.length
+                ? h('ol', { className: 'mt-2 grid gap-2 sm:grid-cols-2', 'aria-label': 'Recorded management-choice differences' }, audit.differences.slice(0, 6).map(function(difference, index) {
+                    var label = difference.type === 'changed' ? 'Changed or retimed' : difference.type === 'added' ? 'Added in Run B' : 'Omitted from Run B';
+                    var description = difference.type === 'changed'
+                      ? 'Run A ' + actionLabel(difference.baseline) + ' to Run B ' + actionLabel(difference.current)
+                      : actionLabel(difference.type === 'added' ? difference.current : difference.baseline);
+                    return h('li', { key: difference.type + '-' + index, 'data-management-difference': difference.type, className: 'rounded-lg border p-2 ' + cardTone },
+                      h('span', { className: 'text-[10px] font-black ' + (dk ? 'text-slate-100' : 'text-slate-900') }, label),
+                      h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + bodyTone }, description));
+                  }))
+                : !waitingForRun && h('p', { className: 'mt-2 rounded-lg border p-2 text-[10px] font-semibold ' + cardTone }, 'Run A and Run B have the same recorded action sequence through Day ' + audit.comparedThroughDay + '.'),
+              !waitingForRun && audit.differences.length > 6 && h('p', { className: 'mt-2 text-[9px] font-bold ' + bodyTone }, (audit.differences.length - 6) + ' more differences are included in the exported evidence record.'),
+              h('div', { 'data-experiment-plan-alignment': plannedChoice.status, className: 'mt-3 rounded-lg border p-2.5 ' + planTone },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                  h('strong', { className: 'text-[10px] ' + (dk ? 'text-slate-100' : 'text-slate-900') }, 'Plan-versus-actual check'),
+                  h('span', { className: 'rounded-full border px-2 py-0.5 text-[9px] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, planBadge)),
+                h('p', { className: 'mt-1 text-[9px] leading-relaxed ' + bodyTone }, planDetail)));
+          }
+
+          function renderPredictionAudit() {
+            var audit = experimentComparison.prediction;
+            var badgeLabel;
+            var detail;
+            var tone;
+            if (audit.status === 'aligned') {
+              badgeLabel = 'Numeric direction aligned';
+              detail = audit.metricLabel + ' moved in the expected displayed direction.';
+              tone = dk ? 'border-emerald-700/45 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60';
+            } else if (audit.status === 'not-aligned') {
+              badgeLabel = 'Direction did not align';
+              detail = audit.metricLabel + ' did not move in the expected displayed direction. This is still useful evidence.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            } else if (audit.status === 'waiting') {
+              badgeLabel = 'Waiting for matched checkpoint';
+              detail = 'The prediction is saved. Match the controls, separate run, and checkpoint before evaluating it.';
+              tone = dk ? 'border-sky-700/45 bg-sky-950/20' : 'border-sky-200 bg-sky-50/60';
+            } else {
+              badgeLabel = 'Prediction not structured';
+              detail = 'Choose one outcome metric and expected direction in the notebook before evaluating the result.';
+              tone = dk ? 'border-amber-700/45 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60';
+            }
+            var observed = audit.status === 'aligned' || audit.status === 'not-aligned'
+              ? audit.observedDirectionLabel + ' (' + experimentMetricDelta(audit) + ')'
+              : 'Not evaluated yet';
+            return h('section', { 'data-experiment-prediction-audit': 'true', 'data-prediction-audit-status': audit.status, className: 'mt-3 rounded-xl border p-3 ' + tone, 'aria-labelledby': 'beehive-prediction-audit-title' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                h('div', null,
+                  h('h5', { id: 'beehive-prediction-audit-title', className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Structured prediction check'),
+                  h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, detail)),
+                h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black ' + (dk ? 'border-white/15 text-slate-100' : 'border-slate-300 text-slate-800') }, badgeLabel)),
+              h('dl', { className: 'mt-2 grid gap-2 sm:grid-cols-2' },
+                h('div', { className: 'rounded-lg border p-2 ' + cardTone },
+                  h('dt', { className: 'text-[9px] font-black uppercase tracking-wide ' + bodyTone }, 'Expected'),
+                  h('dd', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, audit.status === 'unplanned' ? 'Choose a metric and direction' : audit.metricLabel + ': ' + audit.directionLabel)),
+                h('div', { className: 'rounded-lg border p-2 ' + cardTone },
+                  h('dt', { className: 'text-[9px] font-black uppercase tracking-wide ' + bodyTone }, 'Observed'),
+                  h('dd', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-900') }, observed))),
+              h('p', { className: 'mt-2 text-[9px] leading-relaxed ' + bodyTone }, 'This check compares the displayed direction only. Alignment describes this trial; it does not prove causation or guarantee the same result in another run.'));
+          }
+
+          function renderExperimentActions(snapshot, title, kind) {
+            var actions = snapshot.managementTrail.slice(-6);
+            return h('div', { 'data-experiment-actions': kind, className: 'rounded-xl border p-3 ' + cardTone },
+              h('h5', { className: 'text-[11px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, title),
+              actions.length
+                ? h('ul', { className: 'mt-2 space-y-1.5', 'aria-label': title + ' recent management choices' }, actions.map(function(action, index) {
+                    return h('li', { key: action.day + '-' + action.label + '-' + index, className: 'text-[10px] leading-relaxed ' + bodyTone },
+                      h('strong', { className: dk ? 'text-slate-200' : 'text-slate-800' }, 'Day ' + action.day + ': '),
+                      action.label + (action.cost ? ' (' + action.cost + ')' : ''));
+                  }))
+                : h('p', { className: 'mt-2 text-[10px] leading-relaxed ' + bodyTone }, 'No action-point interventions were recorded in this checkpoint.'));
+          }
+          function renderExperimentComparison() {
+            if (!experimentComparison) {
+              return h('section', { 'data-beehive-experiment-compare': 'true', 'data-experiment-compare-state': 'empty', className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-labelledby': 'beehive-experiment-compare-title', 'aria-describedby': 'beehive-experiment-compare-description' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                  h('div', null,
+                    h('h4', { id: 'beehive-experiment-compare-title', className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Experiment compare'),
+                    h('p', { id: 'beehive-experiment-compare-description', className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, 'Save a compact Run A checkpoint, start a separate Run B, and compare both colonies at the same day. This is evidence for reasoning, not an undo point.')),
+                  day > 0 && h('button', { type: 'button', 'data-experiment-baseline-save': 'save', onClick: saveExperimentBaseline, className: 'min-h-[44px] rounded-lg bg-sky-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-sky-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, 'Save current as Run A')),
+                day === 0 && h('p', { className: 'mt-2 rounded-lg border p-2 text-[10px] font-bold ' + (dk ? 'border-sky-700/40 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, 'Advance at least one day before saving Run A so there is an outcome to compare.'),
+                renderExperimentProtocol(),
+                renderExperimentNotebook());
+            }
+            var comparisonStatus = experimentComparison.status === 'matched'
+              ? experimentComparison.management.status === 'one-change'
+                ? experimentComparison.plannedChoice.status === 'matched'
+                  ? { label: 'Planned comparison ready', detail: 'Setup, separate runs, checkpoint, one recorded difference, and the selected plan all align. Interpret patterns cautiously and name uncertainty.', tone: dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800' }
+                  : experimentComparison.plannedChoice.status === 'unplanned'
+                    ? { label: 'Choose the planned choice', detail: 'Setup, checkpoint, and one recorded difference align. Select the intended management choice before interpreting the metrics.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
+                    : { label: 'Recorded change differs from plan', detail: 'The sole recorded Run B change is ' + experimentComparison.plannedChoice.observedActionLabel + ', not the selected ' + experimentComparison.plannedChoice.plannedActionLabel + '. Treat this as an unplanned result.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' }
+                : experimentComparison.management.status === 'identical'
+                  ? { label: 'No changed choice yet', detail: 'Setup and checkpoint match, but the recorded management choices are identical. There is no changed variable to interpret.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
+                  : { label: 'Multiple choices changed', detail: experimentComparison.management.differenceCount + ' recorded choices differ, so the metrics cannot isolate one management change.', tone: dk ? 'bg-rose-900/60 text-rose-200' : 'bg-rose-100 text-rose-800' }
+              : experimentComparison.status === 'same-run'
+                ? { label: 'Restart to create Run B', detail: 'Run A is saved, but both checkpoints still refer to Colony Run ' + experimentComparison.current.runSerial + '. Start a separate Run B before interpreting differences.', tone: dk ? 'bg-violet-900/60 text-violet-200' : 'bg-violet-100 text-violet-800' }
+                : experimentComparison.status === 'checkpoint'
+                  ? { label: 'Match the checkpoint', detail: 'The setup and separate runs match, but the timing does not. Advance Run B to Day ' + experimentComparison.baseline.capturedDay + ' before interpreting differences.', tone: dk ? 'bg-amber-900/60 text-amber-200' : 'bg-amber-100 text-amber-800' }
+                  : { label: 'Exploratory comparison', detail: 'One or more controls differ. Notice patterns, but do not treat the differences as proof that a management choice caused them.', tone: dk ? 'bg-sky-900/60 text-sky-200' : 'bg-sky-100 text-sky-800' };
+            var evidencePrompt = experimentComparison.interpretationReady
+              ? experimentComparison.prediction.status === 'aligned'
+                ? 'Evidence prompt: The selected metric moved in the predicted direction. Which values support that description, and what alternative explanation remains?'
+                : experimentComparison.prediction.status === 'not-aligned'
+                  ? 'Evidence prompt: The selected metric did not move in the predicted direction. Which values show that, and how should the explanation change?'
+                  : 'Planning prompt: Choose one prediction metric and expected direction before evaluating the matched result.'
+              : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change' && experimentComparison.plannedChoice.status === 'unplanned'
+                ? 'Protocol prompt: Select the management choice you intended to test, then check whether it matches the recorded Run B change.'
+                : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'one-change'
+                  ? 'Protocol prompt: The recorded change does not match the plan. Describe it as unplanned evidence, then repeat the trial with the selected choice.'
+                  : experimentComparison.matchedCheckpoint && experimentComparison.management.status === 'identical'
+                    ? 'Protocol prompt: The checkpoints match, but no recorded choice differs. Make one planned management change in a new Run B before interpreting effects.'
+                    : experimentComparison.matchedCheckpoint
+                      ? 'Protocol prompt: Multiple recorded choices differ. Repeat the trial with exactly one changed choice before attributing metric differences.'
+                  : experimentComparison.status === 'same-run'
+                    ? 'Protocol prompt: Start a separate Run B with the same seed. Continuing the same colony is not a repeat trial.'
+                    : experimentComparison.controlledSetup
+                      ? 'Evidence prompt: First reach Day ' + experimentComparison.baseline.capturedDay + '. Why can timing alone change the colony metrics?'
+                      : 'Evidence prompt: Which unmatched control could explain each observed difference besides the management choice?';
+            return h('section', { 'data-beehive-experiment-compare': 'true', 'data-experiment-compare-state': experimentComparison.status, className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-labelledby': 'beehive-experiment-compare-title', 'aria-describedby': 'beehive-experiment-compare-description beehive-experiment-evidence-prompt' },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
+                h('div', null,
+                  h('h4', { id: 'beehive-experiment-compare-title', className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Experiment compare'),
+                  h('p', { id: 'beehive-experiment-compare-description', className: 'mt-1 text-[10px] leading-relaxed ' + bodyTone }, 'Run A is the saved checkpoint. Run B is the colony now. Differences are shown neutrally as B minus A.')),
+                h('span', { 'data-experiment-compare-status': experimentComparison.status, className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + comparisonStatus.tone }, comparisonStatus.label)),
+              h('p', { className: 'mt-2 text-[10px] font-semibold leading-relaxed ' + bodyTone }, comparisonStatus.detail),
+              renderExperimentProtocol(),
+              h('ul', { className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3', 'aria-label': 'Fair-comparison checks' }, experimentComparison.checks.map(function(check) {
+                return h('li', { key: check.id, 'data-experiment-check': check.id, 'data-experiment-check-result': check.matched ? 'matched' : 'different', className: 'rounded-lg border p-2 ' + (check.matched ? (dk ? 'border-emerald-700/35 bg-emerald-950/20' : 'border-emerald-200 bg-emerald-50/60') : (dk ? 'border-amber-700/35 bg-amber-950/20' : 'border-amber-200 bg-amber-50/60')) },
+                  h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black' },
+                    h('span', null, check.label),
+                    h('span', { className: check.matched ? (dk ? 'text-emerald-300' : 'text-emerald-700') : (dk ? 'text-amber-300' : 'text-amber-800') }, check.matched ? 'Matched' : 'Different')),
+                  h('p', { className: 'mt-1 break-words text-[9px] leading-relaxed ' + bodyTone }, 'Run A: ' + check.baseline + ' / Run B: ' + check.current));
+              })),
+              renderManagementChoiceAudit(),
+              renderPredictionAudit(),
+              h('div', { role: 'region', tabIndex: 0, 'aria-label': 'Scrollable Run A and Run B metric comparison', className: 'mt-3 overflow-x-auto rounded-xl border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-white/10' : 'border-slate-200') },
+                h('table', { 'data-experiment-compare-table': 'true', className: 'w-full min-w-[34rem] border-collapse text-left text-[10px]' },
+                  h('caption', { className: 'px-3 py-2 text-left font-bold ' + bodyTone }, 'Colony metrics: Run A at Day ' + experimentComparison.baseline.capturedDay + ' and Run B at Day ' + experimentComparison.current.capturedDay),
+                  h('thead', { className: dk ? 'bg-slate-900/70' : 'bg-slate-100' },
+                    h('tr', null,
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Metric'),
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Run A'),
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Run B'),
+                      h('th', { scope: 'col', className: 'px-3 py-2 font-black' }, 'Difference (B - A)'))),
+                  h('tbody', null, experimentComparison.metrics.map(function(row) {
+                    return h('tr', { key: row.id, 'data-experiment-metric': row.id, className: dk ? 'border-t border-white/10' : 'border-t border-slate-200' },
+                      h('th', { scope: 'row', className: 'px-3 py-2 font-bold' }, row.label),
+                      h('td', { className: 'px-3 py-2 tabular-nums' }, experimentMetricValue(row, 'baseline')),
+                      h('td', { className: 'px-3 py-2 tabular-nums' }, experimentMetricValue(row, 'current')),
+                      h('td', { className: 'px-3 py-2 font-black tabular-nums' }, experimentMetricDelta(row)));
+                  })))),
+              h('p', { className: 'mt-2 text-[10px] leading-relaxed ' + bodyTone },
+                'Outcome check: Run A ' + (experimentComparison.baseline.colonySurvived ? 'survived' : 'collapsed') + '; Run B ' + (experimentComparison.current.colonySurvived ? 'survived' : 'collapsed') + '.'),
+              h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
+                renderExperimentActions(experimentComparison.baseline, 'Run A recent choices', 'baseline'),
+                renderExperimentActions(experimentComparison.current, 'Run B recent choices', 'current')),
+              h('p', { id: 'beehive-experiment-evidence-prompt', 'data-experiment-evidence-prompt': 'true', className: 'mt-3 rounded-lg border p-2 text-[10px] font-bold leading-relaxed ' + (dk ? 'border-sky-700/35 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, evidencePrompt),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                experimentComparison.status === 'same-run' && h('button', { type: 'button', 'data-experiment-start-run-b': 'true', onClick: startExperimentRunB, className: 'min-h-[44px] rounded-lg bg-violet-700 px-3 py-2 text-xs font-black text-white transition-colors hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-400', 'aria-label': 'Reset the colony and start a separate Run B with the same seed' }, 'Start separate Run B'),
+                day > 0 && h('button', { type: 'button', 'data-experiment-baseline-save': 'replace', onClick: saveExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 text-sky-200 hover:bg-sky-950/40' : 'border-sky-300 text-sky-800 hover:bg-sky-50') }, 'Replace Run A with current'),
+                h('button', { type: 'button', 'data-experiment-baseline-clear': 'true', onClick: clearExperimentBaseline, className: 'min-h-[44px] rounded-lg border px-3 py-2 text-xs font-black transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-300 text-slate-700 hover:bg-slate-100') }, 'Clear Run A')),
+              renderExperimentNotebook());
+          }
           var metrics = [
             { label: 'Workers', value: fmtPop(forecast.end.workers), delta: signed(forecast.delta.workers), good: forecast.delta.workers >= 0 },
             { label: 'Honey', value: forecast.end.honey + ' lb', delta: signed(forecast.delta.honey, ' lb'), good: forecast.delta.honey >= 0 },
@@ -24089,7 +25300,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             h('fieldset', { 'data-beehive-experiment-provenance': 'true', className: 'mt-3 rounded-xl border p-3 ' + cardTone, 'aria-describedby': 'beehive-seed-intro beehive-seed-help beehive-fair-comparison' },
               h('legend', { className: 'px-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Repeatable experiment setup'),
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
-                h('span', { 'data-beehive-seed-status': day === 0 ? 'setup' : 'locked', className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (day === 0 ? (dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, day === 0 ? 'Setup open' : 'Run in progress'),
+                h('span', { 'data-beehive-seed-status': day === 0 ? 'setup' : 'locked', className: 'rounded-full px-2.5 py-1 text-[10px] font-black ' + (day === 0 ? (dk ? 'bg-emerald-900/60 text-emerald-200' : 'bg-emerald-100 text-emerald-800') : (dk ? 'bg-slate-800 text-slate-200' : 'bg-slate-100 text-slate-700')) }, 'Colony Run ' + experimentProvenance.runSerial + ' - ' + (day === 0 ? 'setup open' : 'in progress')),
                 h('details', { className: 'text-[10px] ' + bodyTone },
                   h('summary', { className: 'min-h-[44px] cursor-pointer py-3 font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500' }, 'Technical details'),
                   h('p', { className: 'pb-1 leading-relaxed' }, 'Daily model ' + experimentProvenance.modelVersion + '. The planning forecast is event-free; Queen and Drone real-time scenes use separate live simulations.'))),
@@ -24125,6 +25336,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 'This older run became repeatable on Day ' + experimentProvenance.seededFromDay + '; days before that point cannot be replayed exactly.'),
               h('p', { id: 'beehive-fair-comparison', 'data-beehive-fair-comparison': 'true', className: 'mt-2 text-[10px] leading-relaxed ' + bodyTone },
                 h('strong', null, 'Fair-comparison tip: '), 'Keep the seed, bee stock, site, and timing the same; change one management choice. Choices alter colony conditions, so later eligible events may still diverge.')),
+            renderExperimentComparison(),
             h('div', { className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4', role: 'list', 'aria-label': forecastDays + '-day projected colony metrics' },
               metrics.map(function(metric) {
                 return h('div', { key: metric.label, className: 'rounded-xl border p-3 ' + cardTone, role: 'listitem' },
@@ -24168,11 +25380,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           BEEHIVE_DEBUG && console.log('[Beehive DEBUG EL] h("canvas") result:',
             _testEl ? ('{$$typeof: ' + String(_testEl.$$typeof) + ', type: ' + _testEl.type + ', has props: ' + !!_testEl.props + '}') : String(_testEl));
         }
-        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '39', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
+        return h('div', { 'data-beehive-root': 'true', 'data-beehive-visual-version': '43', 'data-beehive-colony-model': experimentProvenance.modelVersion, 'data-beehive-seed': simulationSeed, 'data-beehive-run': experimentProvenance.runSerial, 'data-beehive-theme': dk ? 'dark' : 'light', 'data-beehive-layout': focusLayout ? 'stage-first' : 'overview-first', 'data-beehive-active-mode': viewMode, 'data-beehive-health': colonyHealth >= 80 ? 'thriving' : colonyHealth >= 55 ? 'stable' : colonyHealth >= 35 ? 'stressed' : 'critical', 'data-beehive-motion-state': viewMode === 'queen' ? (queenGameActive ? (queenPaused ? 'paused' : 'live') : 'briefing') : viewMode === 'drone' ? (droneFlightActive ? (dronePaused ? 'paused' : 'live') : 'briefing') : (beekeeperMotionPaused ? 'paused' : 'ambient'), 'data-reduced-motion': prefersReducedMotion ? 'true' : 'false', role: 'region', 'aria-label': 'Beehive simulations and learning environment', className: 'space-y-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200' },
           // Header
           h('div', { 'data-beehive-hero': 'true', className: 'relative overflow-hidden rounded-2xl border p-3 sm:p-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between ' + (dk ? 'border-amber-700/30 bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/35' : 'border-amber-200 bg-gradient-to-r from-white via-amber-50/70 to-emerald-50/55') },
             h('div', { className: 'flex items-center gap-3 min-w-0' },
-              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid h-10 w-10 shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
+              h('button', { type: 'button', onClick: function() { setStemLabTool(null); }, className: 'grid min-h-[44px] min-w-[44px] shrink-0 place-items-center rounded-xl border transition-colors ' + (dk ? 'border-slate-700 hover:bg-slate-700' : 'border-slate-200 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.back', 'Back') }, h(ArrowLeft, { size: 18, className: dk ? 'text-slate-200' : 'text-slate-600' })),
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'mb-1 flex flex-wrap items-center gap-1.5' },
                   h('span', { className: 'rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.15em] ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Interactive systems lab'),
@@ -24186,30 +25398,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Header action buttons
             h('div', { className: 'flex flex-wrap items-center gap-1 rounded-xl border p-1 ' + (dk ? 'border-white/10 bg-slate-950/35' : 'border-white/80 bg-white/70 shadow-sm') },
               // Sound toggle
-              h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute sound effects' : 'Enable sound effects', title: soundOn ? 'Sound on' : 'Sound off',
-                className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600') }, soundOn ? '🔊' : '🔇'),
+              h('button', { type: 'button', onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': 'Sound effects', 'aria-pressed': soundOn ? 'true' : 'false', title: soundOn ? 'Mute sound effects' : 'Enable sound effects',
+                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-600') }, soundOn ? '🔊' : '🔇'),
               // Quiz button
-              h('button', { onClick: startQuiz, 'aria-label': 'Open Bee Quiz', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
-                className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '🎓'),
+              h('button', { type: 'button', onClick: function() { if (quizOpen) closeAccessibleBeePanel('quiz'); else startQuiz(); }, 'aria-label': 'Bee knowledge quiz', 'aria-expanded': quizOpen ? 'true' : 'false', 'aria-controls': 'beehive-quiz-panel', title: 'Bee Quiz' + (d.bestQuizScore ? ' (Best: ' + d.bestQuizScore + ')' : ''),
+                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '🎓'),
               // Badges button
-              h('button', { onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'View badges (' + badgeCount + '/' + BADGE_DEFS.length + ' earned)', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
-                className: 'relative grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') },
+              h('button', { type: 'button', onClick: function() { upd('showBadges', !showBadges); }, 'aria-label': 'Achievement badges, ' + badgeCount + ' of ' + BADGE_DEFS.length + ' earned', 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'beehive-badges-panel', title: 'Badges: ' + badgeCount + '/' + BADGE_DEFS.length,
+                className: 'relative grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') },
                 '🏅',
                 badgeCount > 0 && h('span', { className: 'absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-[10px] font-bold flex items-center justify-center text-white bg-amber-700' }, badgeCount)),
               // Export colony report
               h('button', { onClick: exportColonyReport, 'aria-label': 'Export colony report', title: __alloT('stem.beehive.export_colony_report_to_clipboard', 'Export colony report to clipboard'),
-                className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📄'),
+                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📄'),
               // Keyboard help
-              h('button', { onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': __alloT('stem.beehive.keyboard_shortcuts', 'Keyboard shortcuts'), title: __alloT('stem.beehive.keyboard_shortcuts_2', 'Keyboard shortcuts'),
-                className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '⌨️'),
+              h('button', { type: 'button', onClick: function() { upd('showKeys', !d.showKeys); }, 'aria-label': __alloT('stem.beehive.keyboard_shortcuts', 'Keyboard shortcuts'), 'aria-expanded': d.showKeys ? 'true' : 'false', 'aria-controls': 'beehive-shortcuts-panel', title: __alloT('stem.beehive.keyboard_shortcuts_2', 'Keyboard shortcuts'),
+                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '⌨️'),
               // Field Guide — surfaces the encyclopedia data tables (species, anatomy, waggle dance, …)
-              h('button', { onClick: function() { upd('showGuide', !d.showGuide); }, 'aria-label': __alloT('stem.beehive.open_field_guide', 'Open bee field guide'), title: __alloT('stem.beehive.field_guide', 'Field Guide — species, anatomy, waggle dance, and more'),
-                className: 'grid h-10 w-10 place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📖'))),
+              h('button', { type: 'button', onClick: function() { upd('showGuide', !d.showGuide); }, 'aria-label': __alloT('stem.beehive.bee_field_guide', 'Bee field guide'), 'aria-expanded': d.showGuide ? 'true' : 'false', 'aria-controls': 'beehive-field-guide', title: __alloT('stem.beehive.field_guide', 'Field Guide — species, anatomy, waggle dance, and more'),
+                className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded-lg text-base transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (dk ? 'hover:bg-slate-700 text-slate-300' : 'hover:bg-slate-100 text-slate-700') }, '📖'))),
 
           // ═══ MODE SELECTOR TABS ═══
           prefersReducedMotion && h('div', { 'data-beehive-motion-notice': 'true', role: 'note', className: 'flex items-start gap-2 rounded-xl border px-3 py-2 text-xs leading-relaxed ' + (dk ? 'border-sky-700/50 bg-sky-950/30 text-sky-100' : 'border-sky-200 bg-sky-50 text-sky-900') },
             h('span', { 'aria-hidden': 'true' }, '\u23F8'),
-            h('span', null, h('strong', null, 'Reduced motion is on. '), 'Beekeeper visuals and new Drone flights start paused. Queen map motion is simplified while strategy timing remains real time. Use Resume whenever motion is helpful.')),
+            h('span', null, h('strong', null, 'Reduced motion is on. '), 'Interface animations and moving highlights are removed. Beekeeper visuals and new Drone flights start paused. Queen map motion is simplified while strategy timing remains real time. Use Resume in a simulation whenever motion is helpful.')),
 
           h('div', { 'data-beehive-mode-switcher': 'true', 'data-mobile-rail': 'perspectives', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-2 snap-x snap-mandatory touch-pan-x rounded-2xl border p-2 pb-3 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-2 ' + (dk ? 'border-slate-700/80 bg-slate-950/45' : 'border-slate-200 bg-slate-100/80'), role: 'radiogroup', 'aria-label': __alloT('stem.beehive.simulation_perspective', 'Simulation perspective') },
             [
@@ -24391,7 +25603,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('button', {
                 type: 'button',
                 onClick: function() { var nextPaused = !beekeeperMotionPaused; upd('motionPaused', nextPaused); announceBee(nextPaused ? 'Beekeeper canvas animation paused.' : 'Beekeeper canvas animation resumed.', false); },
-                'aria-pressed': beekeeperMotionPaused,
                 'aria-keyshortcuts': 'P',
                 'aria-label': beekeeperMotionPaused ? 'Resume Beekeeper canvas animation' : 'Pause Beekeeper canvas animation',
                 title: beekeeperMotionPaused ? 'Resume animation (P)' : 'Pause animation (P)',
@@ -24452,7 +25663,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 upd('hive3dExploded', next);
                 announceBee(next ? 'Hive opened. The boxes lift apart in inspection order: outer cover, inner cover, honey super, queen excluder, then the brood frames.' : 'Hive closed back into a single stack.', false);
               },
-              'aria-pressed': hive3dExploded ? 'true' : 'false',
               // Same Label-in-Name rule as the queen button: the accessible name
               // opens with the visible text so speech input can reach it.
               'aria-label': hive3dExploded
@@ -24478,7 +25688,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   ? 'Front frame drawn out. The queen is the long bee with the ' + BH_QUEEN_MARK_NAMES[bhQueenMarkIndex(2026)] + ' mark on her thorax, ringed by nurses facing inward.'
                   : 'Queen deselected. The frame slides back into the brood box.', false);
               },
-              'aria-pressed': hive3dPart === 'queen' ? 'true' : 'false',
+              'aria-pressed': season === 3 ? undefined : (hive3dPart === 'queen' ? 'true' : 'false'),
               // The accessible name has to CONTAIN the visible label (WCAG 2.5.3,
               // Label in Name) — otherwise a speech-input user says what the
               // button says and nothing happens. In winter the button reads
@@ -24487,9 +25697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // visible text had already changed.
               'aria-label': season === 3
                 ? __alloT('stem.beehive.hive3d_queen_cluster_aria', 'Queen in cluster: the colony is wintering, so she cannot be shown on a frame')
-                : hive3dPart === 'queen'
-                  ? __alloT('stem.beehive.hive3d_queen_pressed_aria', 'Find the queen: pressed. Stop highlighting her and slide the frame back')
-                  : __alloT('stem.beehive.hive3d_queen_find_aria', 'Find the queen: draw out the front frame and highlight her'),
+                : __alloT('stem.beehive.hive3d_queen_find_aria', 'Find the queen'),
               title: season === 3 ? __alloT('stem.beehive.hive3d_queen_cluster_title', 'Queen in cluster') : __alloT('stem.beehive.hive3d_queen_find_title', 'Find the queen'),
               disabled: hive3dStatus !== 'ready' || season === 3,
               className: 'min-h-[44px] rounded-lg border px-3 text-[11px] font-black ' + (hive3dPart === 'queen'
@@ -24636,10 +25844,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     droneData.bestDifficulty && h('span', { className: 'rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-black uppercase text-white' }, 'Best: ' + droneData.bestDifficulty)),
                   h('section', { 'data-drone-route-plans': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), 'aria-label': 'Choose a preflight route plan' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Route planning'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Choose your first priority')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_ROUTE_PLANS).map(function(planId) { var plan = DRONE_ROUTE_PLANS[planId]; var selected = droneRoutePlan === planId; return h('button', { key: planId, type: 'button', 'data-drone-route-plan': planId, 'aria-pressed': selected, 'aria-label': plan.label + ': ' + plan.desc, onClick: function() { chooseDroneRoutePlan(planId); }, className: 'min-w-0 min-h-[68px] rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (selected ? (dk ? 'border-sky-400 bg-sky-900/50 text-white' : 'border-sky-400 bg-white text-sky-950 shadow-sm') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-sky-700' : 'border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300')) }, h('div', { className: 'break-words text-[10px] font-black uppercase tracking-wide' }, plan.label), h('div', { className: 'mt-1 break-words text-[10px] leading-relaxed opacity-80' }, plan.desc)); }))),
+                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'Preflight route priority' }, Object.keys(DRONE_ROUTE_PLANS).map(function(planId) { var plan = DRONE_ROUTE_PLANS[planId]; var selected = droneRoutePlan === planId; return h('button', { key: planId, type: 'button', role: 'radio', 'data-drone-route-plan': planId, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': plan.label + ': ' + plan.desc, onClick: function() { chooseDroneRoutePlan(planId); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_ROUTE_PLANS), planId, 'data-drone-route-plan', chooseDroneRoutePlan); }, className: 'min-w-0 min-h-[68px] rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (selected ? (dk ? 'border-sky-400 bg-sky-900/50 text-white' : 'border-sky-400 bg-white text-sky-950 shadow-sm') : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-300 hover:border-sky-700' : 'border-slate-200 bg-white/80 text-slate-700 hover:border-sky-300')) }, h('div', { className: 'break-words text-[10px] font-black uppercase tracking-wide' }, plan.label), h('div', { className: 'mt-1 break-words text-[10px] leading-relaxed opacity-80' }, plan.desc)); }))),
                   h('section', { 'data-drone-scenarios': 'true', className: 'mt-3 rounded-xl border p-3 ' + (dk ? 'border-indigo-700/40 bg-indigo-950/25' : 'border-indigo-200 bg-indigo-50/70'), 'aria-label': 'Choose Drone Flight scenario' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Choose mission scenario'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Change one flight variable')),
-                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group' }, Object.keys(DRONE_SCENARIOS).map(function(id) { var option = DRONE_SCENARIOS[id]; var selected = droneScenario === id; return h('button', { key: id, type: 'button', 'data-drone-scenario': id, onClick: function() { updAll({ drone: Object.assign({}, droneData, { scenario: id }) }); announceBee('Drone scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'min-w-0 rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (selected ? 'ring-2 ring-indigo-500 ' + (dk ? 'border-indigo-400 bg-indigo-900/45' : 'border-indigo-400 bg-indigo-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-indigo-600' : 'border-slate-200 bg-white hover:border-indigo-300')) }, h('div', { className: 'text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 break-words text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
+                    h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'Drone mission scenario' }, Object.keys(DRONE_SCENARIOS).map(function(id) { var option = DRONE_SCENARIOS[id]; var selected = droneScenario === id; return h('button', { key: id, type: 'button', role: 'radio', 'data-drone-scenario': id, onClick: function() { chooseDroneScenario(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(DRONE_SCENARIOS), id, 'data-drone-scenario', chooseDroneScenario); }, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': option.label + ': ' + option.desc, className: 'min-w-0 rounded-xl border p-2.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (selected ? 'ring-2 ring-indigo-500 ' + (dk ? 'border-indigo-400 bg-indigo-900/45' : 'border-indigo-400 bg-indigo-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-indigo-600' : 'border-slate-200 bg-white hover:border-indigo-300')) }, h('div', { className: 'text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 break-words text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
                   // Difficulty selector
                   h('div', { 'data-mobile-rail': 'drone-difficulty', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'flex gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:overflow-visible sm:pb-0' },
                     [
@@ -24654,7 +25862,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', null, diff.label),
                         h('div', { className: 'text-[10px] mt-0.5 opacity-70' }, diff.desc));
                     })),
-                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Glowing route markers score control evidence but do not restore energy.')))
+                  h('p', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.arrow_keys_wasd_steer_space_climb_shif', 'Arrow keys / WASD = steer · Space = climb · Shift = descend · Glowing route markers score control evidence but do not restore energy.')))
               : h('div', { id: 'beehive-drone-playfield', tabIndex: -1, 'data-beehive-focus-panel': 'playfield', role: 'region', 'aria-label': 'Drone Flight playfield', 'data-beehive-stage': 'drone', 'data-flight-state': dronePaused ? 'paused' : 'live', className: 'relative rounded-xl overflow-hidden border-2 ' + (dk ? 'border-indigo-500/60' : 'border-indigo-400'), style: { height: 'clamp(420px, 54vw, 520px)', background: dk ? 'linear-gradient(180deg,#111827 0%,#312e81 52%,#1e1b4b 100%)' : 'linear-gradient(180deg,#dbeafe 0%,#c7d2fe 55%,#eef2ff 100%)', boxShadow: dk ? '0 18px 42px rgba(15,23,42,0.45), 0 0 0 1px rgba(129,140,248,0.25)' : '0 18px 38px rgba(99,102,241,0.20), 0 0 0 1px rgba(129,140,248,0.30)' } },
                   h('canvas', { tabIndex: 0, ref: _droneCvRef, 'data-beehive-drone-canvas': 'true', 'data-flight-layer': 'hud-overlay', role: 'img', 'aria-describedby': 'beehive-drone-canvas-description', 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D Space Shift P Escape', 'aria-label': __alloT('stem.beehive.drone_flight_simulation_use_arrow_keys', 'Drone flight simulation — use arrow keys to fly'), style: { position: 'relative', zIndex: 1, width: '100%', height: '100%', display: 'block', background: 'transparent' } }),
                   h('span', { 'data-flight-renderer-badge': 'true', 'data-renderer-state': 'loading', 'data-frame-health': 'warming', role: 'status', 'aria-live': 'polite', style: { position: 'absolute', top: '58px', right: '8px', zIndex: 20 }, className: 'rounded-full border border-white/20 bg-slate-950/82 px-2 py-1 text-[10px] font-black uppercase tracking-wide text-cyan-100 shadow-md backdrop-blur-md' }, 'Preparing 3D'),
@@ -24663,7 +25871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { 'data-flight-training-step': 'true', className: 'text-[10px] font-black uppercase tracking-[0.14em] text-cyan-200' }, cue.complete ? 'Complete' : 'Step ' + (cue.index + 1) + ' / ' + cue.total), h('span', { 'data-flight-training-label': 'true', className: 'truncate text-[10px] font-black text-amber-200' }, cue.label)),
                     h('p', { 'data-flight-training-instruction': 'true', className: 'mt-0.5 text-[10px] font-semibold leading-snug text-white' }, cue.instruction),
                     h('p', { 'data-flight-training-hint': 'true', className: 'mt-0.5 hidden text-[10px] leading-snug text-slate-300 sm:block' }, cue.hint)); })(),
-                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to pause, and V to switch between cockpit and chase camera. A renderer badge reports whether the true 3D scene is pixel-verified or the 2D safety view is active. A second badge reports adaptive graphics quality. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. Graphics, steering sensitivity, and camera stabilization controls follow the instruments. The radar uses distinct shapes for route targets, predator birds, thermals, and nearby nectar blooms, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
+                  h('p', { id: 'beehive-drone-canvas-description', className: 'sr-only' }, 'Use Arrow keys or WASD to steer, Space to climb, Shift to descend, P to toggle pause, Escape to pause without resuming, and V to switch between cockpit and chase camera. A renderer badge reports whether the true 3D scene is pixel-verified or the 2D safety view is active. A second badge reports adaptive graphics quality. Easy mode includes a five-step flight-school cue, and a cyan flight-path marker distinguishes momentum from heading. Graphics, steering sensitivity, and camera stabilization controls follow the instruments. The radar uses distinct shapes for route targets, predator birds, thermals, and nearby nectar blooms, plus an arrow for wind drift. Three depth-spaced WebGL route gates mark the DCA approach. Obstacle warnings appear in both camera modes. Equivalent labeled touch controls follow the canvas.'),
                   h('div', { 'data-beehive-stage-chip': 'drone', style: { position: 'absolute', left: '50%', bottom: '12px', zIndex: 20, maxWidth: 'calc(100% - 24px)', transform: 'translateX(-50%)' }, 'aria-hidden': 'true' },
                     h('span', { 'data-stage-dot': 'true' }),
                     h('span', { 'data-flight-scene-phase': 'true', className: 'shrink-0 text-[10px] font-black text-amber-200' }, droneFlightActive && _droneState.current && _droneState.current.phase !== 'launch' ? droneInstrumentPhase(_droneState.current).label : 'Flight objective'),
@@ -24675,7 +25883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'mt-2 text-lg font-black tracking-tight' }, 'FLIGHT PAUSED'),
                       h('p', { className: 'mt-1 text-[11px] font-semibold text-slate-300' }, 'The simulation clock is stopped. Press P or use Resume below.'))),
                   h('button', { onClick: toggleDronePause, 'data-beehive-flight-pause': 'true', style: { position: 'absolute', top: '8px', right: '8px', zIndex: 20 },
-                    className: 'min-h-[44px] min-w-[104px] rounded-lg border border-white/20 bg-slate-950/82 px-3 py-2 text-[11px] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-slate-900', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-pressed': dronePaused, 'aria-keyshortcuts': 'P' }, dronePaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                    className: 'min-h-[44px] min-w-[104px] rounded-lg border border-white/20 bg-slate-950/82 px-3 py-2 text-[11px] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-slate-900', 'aria-label': dronePaused ? 'Resume flight' : 'Pause flight', 'aria-keyshortcuts': 'P' }, dronePaused ? '\u25B6 Resume' : '\u23F8 Pause'),
                   // Stop button overlay
                   h('button', { type: 'button', onClick: leaveDroneFlight, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 20 },
                     className: 'min-h-[44px] rounded-lg bg-red-700/88 px-3 py-2 text-[11px] font-black text-white shadow-lg backdrop-blur-md transition-all hover:bg-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2', 'aria-label': __alloT('stem.beehive.end_flight', 'End flight') }, __alloT('stem.beehive.end_flight_2', '✕ End Flight'))),
@@ -24726,7 +25934,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     var checkpointStatus = instrumentCheckpointState[checkpoint.id] ? 'complete' : checkpoint.id === 'boosts' && instrumentCheckpointState.dca ? 'optional' : checkpoint.id === instrumentCurrentCheckpoint ? 'current' : 'upcoming';
                     return h('li', { key: checkpoint.id, 'data-flight-checkpoint': checkpoint.id, 'data-checkpoint-state': checkpointStatus, 'aria-current': checkpointStatus === 'current' ? 'step' : undefined, className: 'flex min-h-[64px] items-center gap-2.5 rounded-lg border p-2.5 ' + (checkpointStatus === 'complete' ? (dk ? 'border-emerald-700 bg-emerald-950/25' : 'border-emerald-200 bg-white') : checkpointStatus === 'current' ? (dk ? 'border-sky-600 bg-sky-950/35' : 'border-sky-300 bg-white ring-1 ring-sky-200') : (dk ? 'border-slate-800 bg-slate-950/25' : 'border-slate-200 bg-white/60')) },
                       h('span', { className: 'grid h-7 w-7 shrink-0 place-items-center rounded-full text-[10px] font-black ' + (checkpointStatus === 'complete' ? 'bg-emerald-700 text-white' : checkpointStatus === 'current' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600')), 'aria-hidden': 'true' }, checkpointStatus === 'complete' ? '\u2713' : index + 1),
-                      h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, checkpoint.label), h('span', { className: 'block text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, checkpoint.detail), h('span', { 'data-checkpoint-status': 'true', className: 'mt-0.5 block text-[10px] font-black uppercase tracking-wide ' + (checkpointStatus === 'complete' ? 'text-emerald-500' : checkpointStatus === 'current' ? 'text-sky-600' : (dk ? 'text-slate-500' : 'text-slate-400')) }, checkpointStatus === 'complete' ? 'Complete' : checkpointStatus === 'current' ? 'In progress' : checkpointStatus === 'optional' ? 'Optional / skipped' : 'Upcoming')));
+                      h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-[10px] font-black ' + (dk ? 'text-white' : 'text-slate-900') }, checkpoint.label), h('span', { className: 'block text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, checkpoint.detail), h('span', { 'data-checkpoint-status': 'true', className: 'mt-0.5 block text-[10px] font-black uppercase tracking-wide ' + (checkpointStatus === 'complete' ? 'text-emerald-500' : checkpointStatus === 'current' ? 'text-sky-600' : (dk ? 'text-slate-500' : 'text-slate-600')) }, checkpointStatus === 'complete' ? 'Complete' : checkpointStatus === 'current' ? 'In progress' : checkpointStatus === 'optional' ? 'Optional / skipped' : 'Upcoming')));
                   }))),
                 h('section', { 'data-beehive-flight-spatial': 'true', 'data-spatial-state': instrumentSpatial.state, className: 'mt-3 rounded-xl border p-3 ' + (instrumentSpatial.state === 'danger' ? (dk ? 'border-rose-700/45 bg-rose-950/25' : 'border-rose-200 bg-rose-50') : instrumentSpatial.state === 'warning' ? (dk ? 'border-amber-700/45 bg-amber-950/25' : 'border-amber-200 bg-amber-50') : (dk ? 'border-sky-700/35 bg-sky-950/20' : 'border-sky-200 bg-sky-50/65')), 'aria-labelledby': 'beehive-flight-spatial-title', 'aria-describedby': 'beehive-flight-spatial-summary beehive-flight-spatial-maneuver' },
                   h('div', { className: 'flex flex-wrap items-start justify-between gap-2' },
@@ -24771,7 +25979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.14em] ' + (dk ? 'text-violet-300' : 'text-violet-800') }, 'Maneuver impact'), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (dronePaused ? 'bg-amber-500 text-slate-950' : 'bg-violet-600 text-white'), 'data-flight-maneuver': 'action' }, dronePaused ? 'Paused' : 'Glide')),
                   h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2' },
                     h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'What changed'), h('p', { 'data-flight-maneuver': 'impact', className: 'mt-1 text-[10px] font-bold tabular-nums ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Telemetry frozen while you plan.' : 'Sampling the first movement interval...')),
-                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Choose a maneuver, then resume with P or the Resume button.' : 'Stay low briefly and pass optional glowing route markers before committing to the climb.')))),
+                    h('div', { className: 'rounded-lg border p-2.5 ' + (dk ? 'border-white/10 bg-slate-950/30' : 'border-white bg-white') }, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Try next'), h('p', { 'data-flight-maneuver': 'coach', className: 'mt-1 text-[10px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-800') }, dronePaused ? 'Plan your next maneuver, then resume before using the flight controls.' : 'Stay low briefly and pass optional glowing route markers before committing to the climb.')))),
                 h('div', { className: 'mt-3 flex items-start gap-2 rounded-lg border px-3 py-2 ' + (dk ? 'border-indigo-700/35 bg-indigo-950/30' : 'border-indigo-100 bg-indigo-50') },
                   h('span', { className: 'mt-0.5', 'aria-hidden': 'true' }, '\uD83C\uDFAF'),
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-indigo-300' : 'text-indigo-700') }, 'Current objective'), h('p', { 'data-flight-readout': 'objective', className: 'mt-0.5 text-[11px] font-semibold leading-relaxed ' + (dk ? 'text-slate-200' : 'text-slate-700') }, instrumentPhase.objective))));
@@ -24780,12 +25988,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between' },
                 h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Flight controls'), h('p', { className: 'text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Hold buttons to steer. Keyboard: arrows/WASD, Space climb, Shift descend, P pause, V camera.'))),
                 h('div', { className: 'flex items-center gap-2' },
-                  h('button', { type: 'button', onClick: toggleDronePause, 'aria-pressed': dronePaused, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
-                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera. Current view: ' + (droneCameraMode === 'chase' ? 'chase' : 'cockpit') + '. Key V.', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, droneCameraMode === 'chase' ? 'Cockpit view' : 'Chase view')),
+                  h('button', { type: 'button', onClick: toggleDronePause, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ' + (dronePaused ? 'bg-emerald-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, dronePaused ? 'Resume flight' : 'Pause flight'),
+                  h('button', { type: 'button', onClick: toggleDroneCamera, 'aria-pressed': droneCameraMode === 'chase', 'aria-keyshortcuts': 'V', 'data-flight-camera-toggle': 'true', 'aria-label': 'Chase camera', title: 'Switch to ' + (droneCameraMode === 'chase' ? 'cockpit' : 'chase') + ' camera (V)', className: 'rounded-lg px-3 py-2 text-[11px] font-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 ' + (droneCameraMode === 'chase' ? 'bg-sky-700 text-white' : (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-indigo-200')) }, 'Chase camera')),
               h('div', { 'data-flight-comfort-settings': 'true', className: 'mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3', role: 'group', 'aria-label': 'Flight comfort and graphics settings' },
                 h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Graphics'), h('select', { 'data-flight-graphics-mode': 'true', value: droneGraphicsMode, onChange: function(event) { setDroneGraphicsMode(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone graphics quality' }, h('option', { value: 'auto' }, 'Auto'), h('option', { value: 'high' }, 'High'), h('option', { value: 'eco' }, 'Eco'))),
                 h('label', { className: 'rounded-lg border p-2 ' + (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700') }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Steering'), h('select', { 'data-flight-steering-sensitivity': 'true', value: droneSteeringSensitivity, onChange: function(event) { setDroneSteeringSensitivity(event.target.value); }, className: 'mt-1 min-h-[44px] w-full rounded-md border border-current/20 bg-transparent px-2 text-[11px] font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500', 'aria-label': 'Drone steering sensitivity' }, h('option', { value: 'gentle' }, 'Gentle'), h('option', { value: 'standard' }, 'Standard'), h('option', { value: 'quick' }, 'Quick'))),
-                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Camera comfort'), h('span', { className: 'mt-1 block text-[11px] font-black' }, droneCameraStabilized ? 'Stabilized' : 'Full motion'), h('span', { className: 'mt-0.5 block text-[10px] opacity-80' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Shows full bank angle'))),
+                h('button', { type: 'button', 'data-flight-camera-stabilized': 'true', onClick: toggleDroneCameraStabilization, 'aria-label': 'Camera stabilization', 'aria-pressed': droneCameraStabilized, className: 'min-h-[64px] rounded-lg border p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ' + (droneCameraStabilized ? 'border-cyan-500 bg-cyan-700 text-white' : (dk ? 'border-slate-700 bg-slate-950/35 text-slate-200' : 'border-indigo-200 bg-white text-slate-700')) }, h('span', { className: 'block text-[10px] font-black uppercase tracking-wide' }, 'Camera stabilization'), h('span', { className: 'mt-1 block text-[11px] font-black', 'aria-hidden': 'true' }, droneCameraStabilized ? 'On' : 'Off'), h('span', { className: 'mt-0.5 block text-[10px] opacity-80', 'aria-hidden': 'true' }, droneCameraStabilized ? 'Reduced roll and bob' : 'Full bank angle'))),
               h('p', { 'data-flight-weather-summary': 'true', className: 'mt-2 rounded-lg border px-2.5 py-2 text-[10px] font-semibold ' + (dk ? 'border-sky-800 bg-sky-950/25 text-sky-200' : 'border-sky-200 bg-sky-50 text-sky-800') }, (DRONE_SCENARIOS[(_droneState.current && _droneState.current.scenario) || droneScenario] || DRONE_SCENARIOS.clear).weather),
               h('div', { className: 'mt-3 grid grid-cols-3 gap-2 select-none', style: { touchAction: 'none' } },
                 [{ key: 'ArrowLeft', label: 'Turn left', effect: 'Yaw left', icon: '←', keycap: 'A / ←' }, { key: ' ', label: 'Climb', effect: 'Gain altitude', icon: '↑', keycap: 'SPACE' }, { key: 'ArrowRight', label: 'Turn right', effect: 'Yaw right', icon: '→', keycap: 'D / →' }, { key: 'ArrowDown', label: 'Brake', effect: 'Reduce speed', icon: '▼', keycap: 'S / ↓' }, { key: 'ArrowUp', label: 'Thrust', effect: 'Gain speed', icon: '▲', keycap: 'W / ↑' }, { key: 'Shift', label: 'Descend', effect: 'Lose altitude', icon: '↓', keycap: 'SHIFT' }].map(function(control) {
@@ -24812,7 +26020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             droneFlightActive && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200') },
               h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, __alloT('stem.beehive.drone_science_facts_discovered', '📚 Drone Science Facts Discovered')),
               (_droneState.current.facts || []).length === 0
-                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-300' : 'text-slate-400') }, __alloT('stem.beehive.keep_flying_to_discover_facts', 'Keep flying to discover facts...'))
+                ? h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.keep_flying_to_discover_facts', 'Keep flying to discover facts...'))
                 : h('div', { className: 'space-y-1' },
                     (_droneState.current.facts || []).map(function(fact, fi) {
                       return h('div', { key: fi, className: 'text-[11px] p-2 rounded-lg border ' + (dk ? 'bg-slate-700 border-slate-600 text-slate-300' : 'bg-indigo-50 border-indigo-100 text-slate-600') }, fact);
@@ -24845,29 +26053,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
                         h('div', { className: 'text-lg' }, p[0]),
                         h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
+                        h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, p[2]));
                     })),
                   h('section', { 'data-queen-scenarios': 'true', className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-sky-700/40 bg-sky-950/20' : 'border-sky-200 bg-sky-50/70'), 'aria-label': 'Choose Colony Network scenario' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-sky-300' : 'text-sky-800') }, 'Choose mission scenario'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'What problem are you solving?')),
-                    h('div', { 'data-mobile-rail': 'queen-scenarios', className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_SCENARIOS).map(function(id) { var option = QUEEN_SCENARIOS[id]; var selected = queenScenario === id; return h('button', { key: id, type: 'button', 'data-queen-scenario': id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { scenario: id }) }); announceBee('Queen scenario selected: ' + option.label + '. ' + option.desc, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc, className: 'snap-center rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:snap-none ' + (selected ? 'ring-2 ring-sky-500 ' + (dk ? 'border-sky-400 bg-sky-900/45' : 'border-sky-400 bg-sky-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-sky-600' : 'border-slate-200 bg-white hover:border-sky-300')) }, h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-sky-700 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
+                    h('div', { 'data-mobile-rail': 'queen-scenarios', role: 'radiogroup', 'aria-label': 'Colony Network mission scenario', className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain snap-x snap-mandatory pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_SCENARIOS).map(function(id) { var option = QUEEN_SCENARIOS[id]; var selected = queenScenario === id; return h('button', { key: id, type: 'button', role: 'radio', 'data-queen-scenario': id, onClick: function() { chooseQueenScenario(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(QUEEN_SCENARIOS), id, 'data-queen-scenario', chooseQueenScenario); }, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': option.label + ': ' + option.desc, className: 'snap-center rounded-xl border p-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 sm:snap-none ' + (selected ? 'ring-2 ring-sky-500 ' + (dk ? 'border-sky-400 bg-sky-900/45' : 'border-sky-400 bg-sky-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-sky-600' : 'border-slate-200 bg-white hover:border-sky-300')) }, h('div', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc), selected && h('span', { className: 'mt-2 inline-flex rounded-full bg-sky-700 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')); })) ),
                   h('section', { className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-purple-700/40 bg-slate-900/55' : 'border-purple-200 bg-white/75'), 'aria-label': 'Choose Colony Network difficulty' },
                     h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-purple-300' : 'text-purple-800') }, 'Choose rival pressure'),
-                    h('div', { 'data-mobile-rail': 'queen-difficulty', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_DIFFICULTIES).map(function(id) {
+                    h('div', { 'data-mobile-rail': 'queen-difficulty', role: 'radiogroup', 'aria-label': 'Colony Network rival pressure', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_DIFFICULTIES).map(function(id) {
                       var option = QUEEN_DIFFICULTIES[id];
                       var selected = queenDifficulty === id;
-                      return h('button', { key: id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { difficulty: id }) }); }, 'aria-pressed': selected, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none ' + (selected ? 'ring-2 ring-purple-500 ' + (dk ? 'border-purple-400 bg-purple-900/45' : 'border-purple-400 bg-purple-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-purple-600' : 'border-slate-200 bg-white hover:border-purple-300')) },
+                      return h('button', { key: id, type: 'button', role: 'radio', 'data-queen-difficulty': id, onClick: function() { chooseQueenDifficulty(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(QUEEN_DIFFICULTIES), id, 'data-queen-difficulty', chooseQueenDifficulty); }, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': option.label + ': ' + option.desc + '. Rival: ' + option.rivalName, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none ' + (selected ? 'ring-2 ring-purple-500 ' + (dk ? 'border-purple-400 bg-purple-900/45' : 'border-purple-400 bg-purple-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-purple-600' : 'border-slate-200 bg-white hover:border-purple-300')) },
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-purple-600 px-2 py-0.5 text-[10px] font-black text-white' }, 'SELECTED')),
                         h('div', { className: 'mt-1 text-[10px] font-bold ' + (dk ? 'text-amber-300' : 'text-amber-700') }, 'vs ' + option.rivalName),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc));
                     }))),
                   h('section', { className: 'mx-auto max-w-2xl rounded-xl border p-3 ' + (dk ? 'border-amber-700/40 bg-amber-950/20' : 'border-amber-200 bg-amber-50/70'), 'aria-label': 'Choose Colony Network opening doctrine' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', { className: 'text-[10px] font-black uppercase tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Choose opening doctrine'), h('span', { className: 'text-[10px] font-bold ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Your first strategic commitment')),
-                    h('div', { 'data-mobile-rail': 'queen-opening', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_OPENINGS).map(function(id) {
+                    h('div', { 'data-mobile-rail': 'queen-opening', role: 'radiogroup', 'aria-label': 'Colony Network opening doctrine', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mt-2 grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' }, Object.keys(QUEEN_OPENINGS).map(function(id) {
                       var option = QUEEN_OPENINGS[id];
                       var selected = queenOpening === id;
                       var openingRecord = queenDoctrineRecord(id);
                       var openingRecordLabel = openingRecord.matches ? openingRecord.wins + '/' + openingRecord.matches + ' wins' : 'No matches yet';
-                      return h('button', { key: id, type: 'button', 'data-queen-opening': id, onClick: function() { updAll({ queen: Object.assign({}, queenData, { opening: id }) }); announceBee('Opening doctrine selected: ' + option.label + '. ' + option.effect, false); }, 'aria-pressed': selected, 'aria-label': option.label + ': ' + option.desc + '. ' + option.effect + '. Record: ' + openingRecordLabel, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selected ? 'ring-2 ring-amber-500 ' + (dk ? 'border-amber-400 bg-amber-900/45' : 'border-amber-400 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-amber-600' : 'border-slate-200 bg-white hover:border-amber-300')) },
+                      return h('button', { key: id, type: 'button', role: 'radio', 'data-queen-opening': id, onClick: function() { chooseQueenOpening(id); }, onKeyDown: function(event) { handleBeeTabKey(event, Object.keys(QUEEN_OPENINGS), id, 'data-queen-opening', chooseQueenOpening); }, 'aria-checked': selected ? 'true' : 'false', tabIndex: selected ? 0 : -1, 'aria-label': option.label + ': ' + option.desc + '. ' + option.effect + '. Record: ' + openingRecordLabel, className: 'snap-center rounded-xl border p-3 text-left transition-all sm:snap-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (selected ? 'ring-2 ring-amber-500 ' + (dk ? 'border-amber-400 bg-amber-900/45' : 'border-amber-400 bg-amber-50') : (dk ? 'border-slate-700 bg-slate-900 hover:border-amber-600' : 'border-slate-200 bg-white hover:border-amber-300')) },
                         h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, option.label), selected && h('span', { className: 'rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-black text-slate-950' }, 'SELECTED')),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, option.desc),
                         h('div', { className: 'mt-2 text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-amber-300' : 'text-amber-700') }, option.effect),
@@ -24898,8 +26106,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'flex items-center gap-1 mb-1' },
                           h('span', null, ph.icon),
                           h('span', { className: 'text-[11px] font-black ' + queenPhasePreviewStyle(ph.col, 'text') }, ph.phase)),
-                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.days),
-                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, ph.desc));
+                        h('div', { className: 'text-[10px] font-bold mb-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-600') }, ph.days),
+                        h('div', { className: 'text-[10px] leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-600') }, ph.desc));
                     })),
                   h('div', { role: 'group', 'data-mobile-rail': 'queen-objectives', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'mx-auto grid max-w-lg grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0', 'aria-label': 'Real-time strategy objectives' },
                     [['LIVE', 'Automatic cycles', 'Income, decay, and raids never wait for Next Day'], ['BUILD', 'Place structures', 'Choose a structure, then click your side of the comb'], ['RIVAL', 'Defeat ' + queenDifficultyCfg.rivalName, 'Scout, contest forage, and launch raids']].map(function(item) {
@@ -24907,7 +26115,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'text-[10px] font-black tracking-wider ' + (dk ? 'text-amber-300' : 'text-amber-700') }, item[0]),
                         h('div', { className: 'mt-1 text-xs font-black ' + (dk ? 'text-white' : 'text-slate-900') }, item[1]),
                         h('p', { className: 'mt-1 text-[10px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, item[2]));
-                    })),                  h('button', { onClick: startQueenGame,
+                    })),                  h('button', { onClick: startQueenGame, 'data-beehive-start-strategy': 'true',
                     className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600 hover:from-purple-500 hover:to-amber-500' : 'bg-gradient-to-r from-purple-500 to-amber-500 hover:from-purple-600 hover:to-amber-600'),
                     style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
                   }, __alloT('stem.beehive.begin_your_reign', '👑 Begin Strategy Model')))
@@ -24930,7 +26138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('span', { className: 'rounded-full border px-2 py-1 text-[10px] font-black uppercase ' + (dk ? 'border-purple-700 text-purple-300' : 'border-purple-200 text-purple-700') }, queenDifficultyCfg.label + ' / ' + queenOpeningCfg.label + ' vs ' + queenRival.name),
                       h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'Next cycle: ' + (queenSpeed === 2 ? '1.2s' : '2.4s')),
                       h('div', { className: 'ml-auto flex gap-1', role: 'group', 'aria-label': 'Colony Network time controls' },
-                        h('button', { onClick: toggleQueenPause, 'aria-pressed': queenPaused, 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-1.5 text-[11px] font-black ' + (queenPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, queenPaused ? 'Resume' : 'Pause'),
+                        h('button', { onClick: toggleQueenPause, 'aria-label': queenPaused ? 'Resume Colony Network simulation' : 'Pause Colony Network simulation', 'aria-keyshortcuts': 'P', className: 'rounded-lg px-3 py-1.5 text-[11px] font-black ' + (queenPaused ? 'bg-emerald-700 text-white' : 'bg-slate-700 text-white') }, queenPaused ? 'Resume' : 'Pause'),
                         [1, 2].map(function(speedOption) { return h('button', { key: speedOption, onClick: function() { updAll({ queen: Object.assign({}, queenData, { speed: speedOption }) }); }, 'aria-pressed': queenSpeed === speedOption, className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-black ' + (queenSpeed === speedOption ? 'bg-purple-600 text-white' : (dk ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')) }, speedOption + 'x'); }))
                     ),
                     h('div', { key: 'queen-cycle-clock-' + queenDay + '-' + queenSpeed, 'data-beehive-cycle-clock': 'true', 'data-cycle-state': queenPaused ? 'paused' : 'live', role: 'timer', 'aria-label': queenPaused ? 'Automatic cycle clock paused' : 'Automatic cycle ' + (queenDay + 1) + ' arrives every ' + (queenSpeed === 2 ? '1.2 seconds' : '2.4 seconds'), style: { '--bee-cycle-duration': queenSpeed === 2 ? '1.2s' : '2.4s' } },
@@ -25065,13 +26273,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     }))),
                   // Queen Actions bar
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
-                    h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Signals')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Modeled chemical signals that influence worker responses; effects are simplified')), h('span', { className: 'rounded-full bg-purple-600 px-2 py-1 text-[10px] font-black text-white' }, QUEEN_ACTIONS.filter(function(action) { return hasQueenResources(action.cost); }).length + '/' + QUEEN_ACTIONS.length + ' ready')),
+                    h('div', { className: 'mb-2 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-purple-300' : 'text-purple-800') }, __alloT('stem.beehive.pheromone_commands', '👑 Pheromone Signals')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Modeled chemical signals that influence worker responses; effects are simplified')), h('span', { className: 'rounded-full bg-purple-600 px-2 py-1 text-[10px] font-black text-white' }, (queenResult ? 0 : QUEEN_ACTIONS.filter(function(action) { return hasQueenResources(action.cost); }).length) + '/' + QUEEN_ACTIONS.length + ' ready')),
                     h('div', { 'data-mobile-rail': 'pheromone-commands', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       QUEEN_ACTIONS.map(function(qa) {
-                        var affordable = hasQueenResources(qa.cost);
+                        var affordable = !queenResult && hasQueenResources(qa.cost);
                         var costText = queenCostText(qa.cost);
-                        return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, disabled: !affordable, title: qa.desc + ' (Cost: ' + costText + ')' + (affordable ? '' : ' — ' + queenResourceGapText(qa.cost)),
-                          'aria-label': qa.label + ': ' + qa.desc + '. Cost: ' + costText + (affordable ? '. Ready.' : '. ' + queenResourceGapText(qa.cost) + '.'),
+                        var actionUnavailable = queenResult ? 'Scenario complete' : queenResourceGapText(qa.cost);
+                        return h('button', { key: qa.id, type: 'button', onClick: function() { if (!affordable) { explainBeeUnavailable(qa.label, actionUnavailable); return; } queenAction(qa.id); }, 'aria-disabled': affordable ? undefined : 'true', 'data-unavailable-reason': affordable ? undefined : actionUnavailable, title: qa.desc + ' (Cost: ' + costText + ')' + (affordable ? '' : ' — ' + actionUnavailable),
+                          'aria-label': qa.label + ': ' + qa.desc + '. Cost: ' + costText + (affordable ? '. Ready.' : '. Unavailable. ' + actionUnavailable + '.'),
                           'data-command-ready': affordable ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 ' + (affordable ? (dk ? 'bg-slate-800 border-purple-700/30 hover:border-purple-500/50 hover:bg-slate-700' : 'bg-white border-purple-100 hover:border-purple-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, qa.icon),
@@ -25081,15 +26290,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       }))),
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
-                    h('div', { className: 'flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Persistent economy, storage, and defense')), h('span', { className: 'rounded-full bg-amber-500 px-2 py-1 text-[10px] font-black text-slate-950' }, Object.keys(QUEEN_STRUCTURE_TYPES).filter(function(id) { return hasQueenResources(QUEEN_STRUCTURE_TYPES[id].cost); }).length + '/' + Object.keys(QUEEN_STRUCTURE_TYPES).length + ' ready')),
+                    h('div', { className: 'flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')), h('p', { className: 'mt-0.5 text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Persistent economy, storage, and defense')), h('span', { className: 'rounded-full bg-amber-500 px-2 py-1 text-[10px] font-black text-slate-950' }, (queenResult ? 0 : Object.keys(QUEEN_STRUCTURE_TYPES).filter(function(id) { return hasQueenResources(QUEEN_STRUCTURE_TYPES[id].cost); }).length) + '/' + Object.keys(QUEEN_STRUCTURE_TYPES).length + ' ready')),
                     h('p', { className: 'mb-2 mt-2 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenBuildMode ? 'Placement mode: pick a cell in the grid below the battlefield, or click your left side of it.' : 'Choose a structure, then place it from the grid or directly on your comb.'),
                     h('div', { 'data-mobile-rail': 'comb-structures', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
                         var st = QUEEN_STRUCTURE_TYPES[stId];
                         var costStr = queenCostText(st.cost);
-                        var canBuild = hasQueenResources(st.cost);
-                        return h('button', { key: stId, onClick: function() { selectQueenBuild(stId); }, disabled: !canBuild || !!queenResult, 'aria-pressed': queenBuildMode === stId, title: st.desc + ' (Cost: ' + costStr + ')' + (canBuild ? '' : ' — ' + queenResourceGapText(st.cost)),
-                          'aria-label': st.label + ': ' + st.desc + '. Effect: ' + queenStructurePreview(stId) + '. Cost: ' + costStr + (queenBuildMode === stId ? '. Selected for placement.' : canBuild ? '. Ready.' : '. ' + queenResourceGapText(st.cost) + '.'),
+                        var canBuild = !queenResult && hasQueenResources(st.cost);
+                        var structureUnavailable = queenResult ? 'Scenario complete' : queenResourceGapText(st.cost);
+                        return h('button', { key: stId, type: 'button', onClick: function() { if (!canBuild) { explainBeeUnavailable(st.label, structureUnavailable); return; } selectQueenBuild(stId); }, 'aria-disabled': canBuild ? undefined : 'true', 'data-unavailable-reason': canBuild ? undefined : structureUnavailable, 'aria-pressed': queenBuildMode === stId, title: st.desc + ' (Cost: ' + costStr + ')' + (canBuild ? '' : ' — ' + structureUnavailable),
+                          'aria-label': st.label + ': ' + st.desc + '. Effect: ' + queenStructurePreview(stId) + '. Cost: ' + costStr + (queenBuildMode === stId ? '. Selected for placement.' : canBuild ? '. Ready.' : '. Unavailable. ' + structureUnavailable + '.'),
                           'data-structure-ready': canBuild ? 'true' : 'false', 'data-structure-selected': queenBuildMode === stId ? 'true' : 'false', className: 'group min-h-[96px] snap-center text-left p-3 rounded-xl border sm:snap-none transition-all motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ' + (queenBuildMode === stId ? 'ring-2 ring-amber-500 bg-amber-100 text-slate-900 ' : '') + (canBuild ? (dk ? 'bg-slate-800 border-amber-700/30 hover:border-amber-500/50 hover:bg-slate-700' : 'bg-white border-amber-100 hover:border-amber-400 hover:shadow-sm') : (dk ? 'bg-slate-900/60 border-slate-700 text-slate-500 cursor-not-allowed opacity-65' : 'bg-slate-50 border-slate-400 text-slate-600 cursor-not-allowed opacity-70')) },
                           h('div', { className: 'flex items-center gap-1' },
                             h('span', null, st.icon),
@@ -25112,7 +26322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Keyboard and touch placement shortcuts' }, [{ label: 'Inner core', x: 0.18, y: 0.5 }, { label: 'Mid comb', x: 0.31, y: 0.38 }, { label: 'Outer edge', x: 0.44, y: 0.68 }].map(function(place) { return h('button', { key: place.label, type: 'button', 'data-placement-zone': place.label.toLowerCase().replace(/ /g, '-'), onClick: function() { buildQueenStructure(queenBuildMode, place.x, place.y); }, 'aria-label': 'Place ' + QUEEN_STRUCTURE_TYPES[queenBuildMode].label + ' in ' + place.label, className: 'min-h-[44px] rounded-lg border px-2 py-2 text-[10px] font-black transition-all active:scale-95 ' + (dk ? 'border-amber-700 bg-amber-950/35 text-amber-200 hover:bg-amber-900/40' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100') }, place.label); }))))),
                   // RTS controls replace the old turn-based Next Day button.
                   h('div', { className: 'flex flex-wrap gap-2' },
-                    h('button', { onClick: toggleQueenPause, 'aria-pressed': queenPaused, 'aria-keyshortcuts': 'P',
+                    h('button', { onClick: toggleQueenPause, 'aria-label': queenPaused ? 'Resume Colony Network simulation' : 'Pause Colony Network simulation', 'aria-keyshortcuts': 'P',
                       className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm ' + (queenPaused ? 'bg-emerald-600' : 'bg-purple-700') }, queenPaused ? 'Resume real-time simulation' : 'Pause simulation'),
                     h('button', { onClick: endQueenGame,
                       className: 'px-4 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.beehive.end_game', 'End Game'))),
@@ -25124,7 +26334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         var evColor = ev.type === 'threat' || ev.type === 'rebellion' || ev.type === 'swarm' || ev.type === 'starve' || ev.type === 'rival_raid' || ev.type === 'defeat' || ev.type === 'supersedure' ? (dk ? 'text-red-400' : 'text-red-600') :
                                      ev.type === 'victory' || ev.type === 'raid' || ev.type === 'build' ? (dk ? 'text-green-400' : 'text-green-600') :
                                      ev.type === 'phase' || ev.type === 'season' || ev.type === 'rival_build' || ev.type === 'rival_intent' || ev.type === 'intel' ? (dk ? 'text-amber-400' : 'text-amber-700') :
-                                     (dk ? 'text-slate-400' : 'text-slate-300');
+                                     (dk ? 'text-slate-400' : 'text-slate-600');
                         return h('div', { key: ei, className: 'text-[11px] py-1 border-b last:border-0 ' + (dk ? 'border-slate-700 ' : 'border-slate-100 ') + evColor }, ev.text);
                       }))))),
 
@@ -25140,30 +26350,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
 
           viewMode === 'beekeeper' && day === 0 && colonySurvived && (function () {
             var stockOpen2 = d.stockPickerOpen != null ? d.stockPickerOpen : !d.subspecies;
+            function setStockPickerOpen(open) {
+              upd('stockPickerOpen', open);
+              announceBee(open ? 'Bee stock choices expanded.' : 'Bee stock choices collapsed.', false);
+              setTimeout(function() {
+                var target = document.querySelector('[data-beehive-root="true"] ' + (open ? '[data-beehive-stock-option][aria-checked="true"]' : '[data-beehive-stock-change]'));
+                if (target && target.focus) target.focus();
+              }, 0);
+            }
             if (!stockOpen2) {
-              return h('div', { className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': __alloT('stem.beehive.bee_stock_collapsed', 'Bee stock (collapsed)') },
+              return h('section', { id: 'beehive-stock-picker', className: 'rounded-xl border-2 p-3 flex items-center gap-2 ' + (dk ? 'bg-amber-900/30 border-amber-500/50' : 'bg-amber-50 border-amber-300'), role: 'region', 'aria-label': __alloT('stem.beehive.bee_stock_collapsed', 'Bee stock (collapsed)') },
                 h('span', { className: 'text-xl' }, activeSubspecies.emoji),
                 h('div', { className: 'flex-1 min-w-0' },
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🧬 Bee Stock: ' + activeSubspecies.name),
                   h('p', { className: 'text-[11px] truncate ' + (dk ? 'text-slate-300' : 'text-slate-600') }, activeSubspecies.note)),
-                h('button', { onClick: function () { upd('stockPickerOpen', true); }, className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (dk ? 'transition-colors bg-amber-700 text-white hover:bg-amber-800' : 'transition-colors bg-amber-700 text-white hover:bg-amber-800') }, __alloT('stem.beehive.change', 'Change ▾')));
+                h('button', { type: 'button', 'data-beehive-stock-change': 'true', onClick: function () { setStockPickerOpen(true); }, 'aria-expanded': 'false', 'aria-controls': 'beehive-stock-picker', className: 'min-h-[44px] px-3 py-2 rounded-lg text-[11px] font-bold ' + (dk ? 'transition-colors bg-amber-700 text-white hover:bg-amber-800' : 'transition-colors bg-amber-700 text-white hover:bg-amber-800') }, __alloT('stem.beehive.change', 'Change ▾')));
             }
-            return h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-label': __alloT('stem.beehive.choose_honeybee_subspecies', 'Choose honeybee subspecies') },
+            return h('section', { id: 'beehive-stock-picker', className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-amber-900/40 to-yellow-900/30 border-amber-500/60' : 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-400'), role: 'region', 'aria-labelledby': 'beehive-stock-heading', 'aria-describedby': 'beehive-stock-description beehive-stock-current' },
               h('div', { className: 'flex items-start justify-between gap-2' },
                 h('div', null,
-                  h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, __alloT('stem.beehive.choose_your_bee_stock', '🧬 Choose Your Bee Stock')),
-                  h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_honeybees_come_in_distinct_geneti', 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.')),
-                  h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
-                d.subspecies && h('button', { onClick: function () { upd('stockPickerOpen', false); }, 'aria-label': __alloT('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), className: 'px-2 py-1 rounded text-[11px] font-bold ' + (dk ? 'transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, __alloT('stem.beehive.collapse', '▲ Collapse'))),
-            h('div', { className: 'grid grid-cols-1 gap-2' },
+                  h('h2', { id: 'beehive-stock-heading', className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-700') }, __alloT('stem.beehive.choose_your_bee_stock', '🧬 Choose Your Bee Stock')),
+                  h('p', { id: 'beehive-stock-description', className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_honeybees_come_in_distinct_geneti', 'Real honeybees come in distinct genetic lines, each adapted to different climates. Pick a subspecies — it will modify honey yield, winter survival, spring buildup, and varroa resistance throughout your colony\'s life.')),
+                  h('p', { id: 'beehive-stock-current', role: 'status', className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-amber-300' : 'text-amber-800') }, 'Current selection: ' + activeSubspecies.emoji + ' ' + activeSubspecies.name + (d.subspecies ? '' : ' (default)'))),
+                d.subspecies && h('button', { type: 'button', onClick: function () { setStockPickerOpen(false); }, 'aria-label': __alloT('stem.beehive.collapse_stock_picker', 'Collapse stock picker'), 'aria-expanded': 'true', 'aria-controls': 'beehive-stock-picker', className: 'min-h-[44px] px-3 py-2 rounded text-[11px] font-bold ' + (dk ? 'transition-colors bg-slate-800 text-slate-300 hover:bg-slate-700' : 'transition-colors bg-white text-slate-600 hover:bg-slate-100 border border-slate-400') }, __alloT('stem.beehive.collapse', '▲ Collapse'))),
+            h('div', { className: 'grid grid-cols-1 gap-2', role: 'radiogroup', 'aria-labelledby': 'beehive-stock-heading', 'aria-describedby': 'beehive-stock-description' },
               SUBSPECIES.map(function(s) {
                 var active = activeSubspecies.id === s.id;
-                return h('button', { key: s.id, onClick: function() {
-                    updAll({ subspecies: s.id, stockPickerOpen: false });
+                var stockDetailId = 'beehive-stock-detail-' + s.id;
+                var stockTraitsId = 'beehive-stock-traits-' + s.id;
+                return h('button', { key: s.id, id: 'beehive-stock-option-' + s.id, type: 'button', role: 'radio', 'aria-checked': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'data-beehive-stock-option': s.id, 'aria-label': s.name + ' bee stock from ' + s.origin, 'aria-describedby': stockDetailId + ' ' + stockTraitsId, onKeyDown: function(event) { handleBeeTabKey(event, SUBSPECIES.map(function(option) { return option.id; }), s.id, 'data-beehive-stock-option', function(nextId) { var nextStock = SUBSPECIES.filter(function(option) { return option.id === nextId; })[0]; updAll({ subspecies: nextId, stockPickerOpen: true }); if (nextStock) announceBee('Bee stock selected: ' + nextStock.name + '.', false); }); }, onClick: function() {
+                    updAll({ subspecies: s.id, stockPickerOpen: true });
+                    announceBee('Bee stock selected: ' + s.name + '.', false);
                     if (addToast) addToast(s.emoji + ' ' + s.name + ' bees established — ' + s.origin, 'success');
                     triggerBeekeeperAction('install', 'Installing ' + s.emoji + ' ' + s.name + ' bees into the hive.', s.emoji);
                   },
-                  'aria-label': 'Select ' + s.name + ' subspecies from ' + s.origin,
                   className: 'text-left p-3 rounded-xl border transition-all ' +
                     (active
                       ? (dk ? 'bg-amber-900/50 border-amber-400 shadow-lg' : 'bg-amber-100 border-amber-500 shadow-md')
@@ -25175,11 +26395,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
                         h('span', { className: 'text-[11px] italic ' + (dk ? 'text-amber-400' : 'text-amber-600') }, s.sci),
-                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '· ' + s.origin),
+                        h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, '· ' + s.origin),
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-amber-500 text-slate-900' : 'bg-amber-700 text-white') }, __alloT('stem.beehive.selected', '✓ Selected'))),
-                      h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
+                      h('p', { id: stockDetailId, className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
                       // Trait bars
-                      h('div', { className: 'grid grid-cols-4 gap-1.5 mt-2' },
+                      h('div', { id: stockTraitsId, className: 'grid grid-cols-2 gap-1.5 mt-2 sm:grid-cols-4' },
                         [
                           { k: 'Honey', v: s.mods.honey, c: 'amber' },
                           { k: 'Spring', v: s.mods.spring, c: 'green' },
@@ -25203,19 +26423,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           })(),
 
           // ═══ APIARY SITE PICKER (day 0 only) ═══
-          viewMode === 'beekeeper' && day === 0 && colonySurvived && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-400'), role: 'region', 'aria-label': __alloT('stem.beehive.choose_apiary_site', 'Choose apiary site') },
+          viewMode === 'beekeeper' && day === 0 && colonySurvived && h('section', { id: 'beehive-apiary-site-picker', className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-br from-green-900/40 to-emerald-900/30 border-green-500/50' : 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-400'), role: 'region', 'aria-labelledby': 'beehive-site-heading', 'aria-describedby': 'beehive-site-description beehive-site-current' },
             h('div', null,
-              h('div', { className: 'text-xs font-bold ' + (dk ? 'text-green-400' : 'text-green-700') }, __alloT('stem.beehive.choose_your_apiary_site', '📍 Choose Your Apiary Site')),
-              h('p', { className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_beekeepers_spend_weeks_choosing_a', 'Real beekeepers spend weeks choosing a site. Forage range, sun exposure, wind, water, and neighbors all matter. Your choice modifies nectar yield and disease pressure for this colony\'s life.')),
-              h('p', { className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-green-300' : 'text-green-800') }, 'Current: ' + activeSite.emoji + ' ' + activeSite.name + (d.apiarySite ? '' : ' (default)'))),
-            h('div', { className: 'grid grid-cols-1 gap-2' },
+              h('h2', { id: 'beehive-site-heading', className: 'text-xs font-bold ' + (dk ? 'text-green-400' : 'text-green-700') }, __alloT('stem.beehive.choose_your_apiary_site', '📍 Choose Your Apiary Site')),
+              h('p', { id: 'beehive-site-description', className: 'text-[11px] mt-0.5 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, __alloT('stem.beehive.real_beekeepers_spend_weeks_choosing_a', 'Real beekeepers spend weeks choosing a site. Forage range, sun exposure, wind, water, and neighbors all matter. Your choice modifies nectar yield and disease pressure for this colony\'s life.')),
+              h('p', { id: 'beehive-site-current', role: 'status', className: 'text-[11px] mt-0.5 italic ' + (dk ? 'text-green-300' : 'text-green-800') }, 'Current: ' + activeSite.emoji + ' ' + activeSite.name + (d.apiarySite ? '' : ' (default)'))),
+            h('div', { className: 'grid grid-cols-1 gap-2', role: 'radiogroup', 'aria-labelledby': 'beehive-site-heading', 'aria-describedby': 'beehive-site-description' },
               APIARY_SITES.map(function(s) {
                 var active = activeSite.id === s.id;
-                return h('button', { key: s.id, onClick: function() {
+                var siteDetailId = 'beehive-site-detail-' + s.id;
+                var siteMetricsId = 'beehive-site-metrics-' + s.id;
+                return h('button', { key: s.id, id: 'beehive-site-option-' + s.id, type: 'button', role: 'radio', 'aria-checked': active ? 'true' : 'false', tabIndex: active ? 0 : -1, 'data-beehive-site-option': s.id, 'aria-label': s.name + ' apiary site', 'aria-describedby': siteDetailId + ' ' + siteMetricsId, onKeyDown: function(event) { handleBeeTabKey(event, APIARY_SITES.map(function(option) { return option.id; }), s.id, 'data-beehive-site-option', function(nextId) { var nextSite = APIARY_SITES.filter(function(option) { return option.id === nextId; })[0]; upd('apiarySite', nextId); if (nextSite) announceBee('Apiary site selected: ' + nextSite.name + '.', false); }); }, onClick: function() {
                     updAll({ apiarySite: s.id });
+                    announceBee('Apiary site selected: ' + s.name + '.', false);
                     if (addToast) addToast(s.emoji + ' Apiary placed at ' + s.name, 'success');
                   },
-                  'aria-label': 'Select ' + s.name + ' as apiary site',
                   className: 'text-left p-3 rounded-xl border transition-all ' +
                     (active
                       ? (dk ? 'bg-green-900/40 border-green-400 shadow-lg' : 'bg-green-100 border-green-500 shadow-md')
@@ -25227,11 +26449,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, s.name),
                         active && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-500 text-slate-900' : 'bg-green-700 text-white') }, __alloT('stem.beehive.selected_2', '✓ Selected'))),
-                      h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
-                      h('div', { className: 'flex gap-3 mt-2 text-[11px]' },
-                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
+                      h('p', { id: siteDetailId, className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, s.note),
+                      h('div', { id: siteMetricsId, className: 'flex flex-wrap gap-3 mt-2 text-[11px]' },
+                        h('span', { className: s.mods.forage > 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.forage < 1.0 ? (dk ? 'text-amber-400' : 'text-amber-700') : (dk ? 'text-slate-400' : 'text-slate-600') },
                           '🌸 Forage ' + Math.round(s.mods.forage * 100) + '%'),
-                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-300') },
+                        h('span', { className: s.mods.disease < 1.0 ? (dk ? 'text-green-400' : 'text-green-700') : s.mods.disease > 1.0 ? (dk ? 'text-red-400' : 'text-red-700') : (dk ? 'text-slate-400' : 'text-slate-600') },
                           '🦠 Disease ' + Math.round(s.mods.disease * 100) + '%')))));
               }))),
 
@@ -25242,8 +26464,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, TUTORIAL_STEPS[tutorialStep].icon),
                 h('div', null,
                   h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, 'Getting Started · Step ' + (tutorialStep + 1) + '/' + TUTORIAL_STEPS.length),
-                  h('div', { id: 'beehive-tutorial-title', className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, TUTORIAL_STEPS[tutorialStep].title))),
-              h('button', { type: 'button', onClick: function() { updAll({ tutorialStep: -1, tutorialDone: true }); }, 'aria-label': __alloT('stem.beehive.skip_tutorial', 'Skip tutorial'), className: 'min-h-[44px] text-[11px] px-3 py-2 rounded-lg ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100') }, __alloT('stem.beehive.skip', 'Skip'))),
+                  h('h2', { id: 'beehive-tutorial-title', ref: _beeTutorialTitleRef, tabIndex: -1, className: 'rounded px-1 text-sm font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 ' + (dk ? 'text-slate-100' : 'text-slate-800') }, TUTORIAL_STEPS[tutorialStep].title))),
+              h('button', { type: 'button', onClick: function() { finishBeeTutorial('Tutorial skipped. Focus moved to Next Day.'); }, 'aria-label': __alloT('stem.beehive.skip_tutorial', 'Skip tutorial'), className: 'min-h-[44px] text-[11px] px-3 py-2 rounded-lg ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100') }, __alloT('stem.beehive.skip', 'Skip'))),
             h('p', { id: 'beehive-tutorial-description', className: 'text-xs leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-600') }, TUTORIAL_STEPS[tutorialStep].text),
             // Progress dots
             h('div', { className: 'flex items-center justify-between' },
@@ -25252,10 +26474,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   return h('div', { key: si, 'aria-hidden': 'true', className: 'w-2 h-2 rounded-full transition-all ' + (si === tutorialStep ? (dk ? 'bg-amber-400' : 'bg-amber-500') : si < tutorialStep ? (dk ? 'bg-amber-600' : 'bg-amber-300') : (dk ? 'bg-slate-600' : 'bg-slate-300')) });
                 })),
               h('div', { className: 'flex gap-2' },
-                tutorialStep > 0 && h('button', { type: 'button', onClick: function() { upd('tutorialStep', tutorialStep - 1); }, className: 'min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold ' + (dk ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.beehive.back_2', '← Back')),
+                tutorialStep > 0 && h('button', { type: 'button', onClick: function() { moveBeeTutorial(tutorialStep - 1); }, className: 'min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold ' + (dk ? 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200') }, __alloT('stem.beehive.back_2', '← Back')),
                 h('button', { type: 'button', onClick: function() {
-                  if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { updAll({ tutorialStep: -1, tutorialDone: true }); }
-                  else { upd('tutorialStep', tutorialStep + 1); }
+                  if (tutorialStep + 1 >= TUTORIAL_STEPS.length) { finishBeeTutorial('Tutorial complete. Focus moved to Next Day.'); }
+                  else { moveBeeTutorial(tutorialStep + 1); }
                 }, className: 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-amber-700 hover:bg-amber-600' : 'transition-colors bg-amber-700 hover:bg-amber-800') },
                   tutorialStep + 1 >= TUTORIAL_STEPS.length ? '✓ Start Beekeeping!' : 'Next →')))),
 
@@ -25308,7 +26530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('div', { className: 'flex items-center gap-1.5' },
                       h('span', { className: 'text-base' }, s.emoji),
                       h('span', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800'), style: { fontFamily: 'monospace' } }, s.val)),
-                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, s.label));
+                    h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, s.label));
                 })),
               // Highlight paragraph
               h('div', { className: 'rounded-lg p-3 border text-xs ' + (dk ? 'bg-slate-800 border-amber-700/30 text-slate-300' : 'bg-white border-amber-200 text-slate-700') },
@@ -25341,10 +26563,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               className: 'p-2 rounded border ' + (dk ? 'bg-slate-900 border-slate-600 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800') })),
 
           // ═══ KEYBOARD SHORTCUTS OVERLAY ═══
-          d.showKeys && h('div', { className: 'rounded-xl border p-4 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), 'data-beehive-focus-panel': 'shortcuts', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts') },
+          d.showKeys && h('div', { className: 'rounded-xl border p-4 space-y-2 ' + (dk ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'), id: 'beehive-shortcuts-panel', 'data-beehive-focus-panel': 'shortcuts', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.keyboard_shortcuts_3', 'Keyboard shortcuts') },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-xs font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, __alloT('stem.beehive.keyboard_shortcuts_4', '⌨️ Keyboard Shortcuts')),
-              h('button', { onClick: function() { upd('showKeys', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
+              h('button', { type: 'button', onClick: function() { upd('showKeys', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[11px] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_shortcuts', 'Close shortcuts') }, '✕')),
             h('label', { className: 'flex items-start gap-2 rounded-lg border px-3 py-2 text-[11px] ' + (dk ? 'border-slate-600 bg-slate-900/40 text-slate-200' : 'border-slate-300 bg-slate-50 text-slate-700') },
               h('input', { type: 'checkbox', checked: d.oneKeyShortcuts !== false, onChange: function(e) { upd('oneKeyShortcuts', e.target.checked); }, className: 'mt-0.5 h-4 w-4' }),
               h('span', null, h('strong', null, 'Enable one-key simulation shortcuts. '), 'Shortcuts work only while focus is inside Bee and never override focused buttons or form controls.')),
@@ -25375,10 +26597,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               }))),
 
           // ═══ BADGES PANEL ═══
-          showBadges && h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), 'data-beehive-focus-panel': 'badges', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.achievement_badges', 'Achievement badges') },
+          showBadges && h('div', { className: 'rounded-xl border p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-slate-800 to-slate-900 border-amber-700/40' : 'bg-gradient-to-b from-white to-amber-50 border-amber-200'), id: 'beehive-badges-panel', 'data-beehive-focus-panel': 'badges', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.achievement_badges', 'Achievement badges') },
             h('div', { className: 'flex items-center justify-between mb-1' },
               h('div', { className: 'text-sm font-bold ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🏅 Badges · ' + badgeCount + '/' + BADGE_DEFS.length),
-              h('button', { onClick: function() { upd('showBadges', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_badges', 'Close badges') }, '✕')),
+              h('button', { type: 'button', onClick: function() { upd('showBadges', false); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[11px] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_badges', 'Close badges') }, '✕')),
             // Progress bar
             h('div', { className: 'h-2.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-slate-200'), role: 'progressbar', 'aria-label': 'Badges earned', 'aria-valuemin': 0, 'aria-valuemax': BADGE_DEFS.length, 'aria-valuenow': badgeCount },
               h('div', { style: { width: Math.round(badgeCount / BADGE_DEFS.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-amber-500 to-yellow-400 rounded-full transition-all' })),
@@ -25400,69 +26622,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           quizOpen && (function() {
             var qs = d.quizQuestions || QUIZ_QUESTIONS;
             var current = qs[quizIdx];
+            if (quizComplete) {
+              var quizRatio = qs.length ? quizScore / qs.length : 0;
+              var resultMessage = quizRatio >= 0.8 ? 'Outstanding evidence of bee knowledge.' : quizRatio >= 0.5 ? 'Good work. Review any explanations that surprised you.' : 'Keep exploring the Inspector and Field Guide, then try again.';
+              return h('section', { id: 'beehive-quiz-panel', 'data-beehive-focus-panel': 'quiz', tabIndex: -1, role: 'region', 'aria-labelledby': 'beehive-quiz-title', className: 'rounded-2xl border-2 p-5 space-y-4 ' + (dk ? 'bg-indigo-950/40 border-indigo-500/50' : 'bg-indigo-50 border-indigo-300') },
+                h('div', { className: 'flex items-center justify-between gap-3' },
+                  h('h2', { id: 'beehive-quiz-title', className: 'text-sm font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Bee Knowledge Quiz'),
+                  h('button', { type: 'button', onClick: function() { closeAccessibleBeePanel('quiz'); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-xs', 'aria-label': 'Close quiz results' }, 'Close')),
+                h('div', { className: 'rounded-xl border p-4 text-center ' + (dk ? 'border-indigo-600 bg-slate-900/50' : 'border-indigo-200 bg-white') },
+                  h('h3', { id: 'beehive-quiz-results-title', ref: _beeQuizResultRef, tabIndex: -1, className: 'text-lg font-black ' + (dk ? 'text-white' : 'text-slate-900') }, 'Quiz complete'),
+                  h('p', { className: 'mt-2 text-3xl font-black text-indigo-700', 'data-beehive-quiz-score': 'true' }, quizScore + ' of ' + qs.length),
+                  h('p', { className: 'mt-2 text-sm ' + (dk ? 'text-slate-200' : 'text-slate-700') }, resultMessage)),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { type: 'button', onClick: startQuiz, className: 'min-h-[44px] rounded-lg bg-indigo-700 px-4 py-2 text-xs font-bold text-white' }, 'Try another set'),
+                  h('button', { type: 'button', onClick: function() { closeAccessibleBeePanel('quiz'); }, className: 'min-h-[44px] rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-bold text-slate-800' }, 'Close results')));
+            }
             if (!current) return null;
-            return h('div', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-500/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300'), 'data-beehive-focus-panel': 'quiz', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.bee_knowledge_quiz', 'Bee Knowledge Quiz') },
+            return h('section', { className: 'rounded-2xl border-2 p-5 space-y-3 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-500/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300'), id: 'beehive-quiz-panel', 'data-beehive-focus-panel': 'quiz', tabIndex: -1, role: 'region', 'aria-labelledby': 'beehive-quiz-title' },
               h('div', { className: 'flex items-center justify-between' },
-                h('div', { className: 'text-sm font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, __alloT('stem.beehive.bee_knowledge_quiz_2', '🎓 Bee Knowledge Quiz')),
+                h('h2', { id: 'beehive-quiz-title', className: 'text-sm font-bold ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, __alloT('stem.beehive.bee_knowledge_quiz_2', '🎓 Bee Knowledge Quiz')),
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-xs font-bold ' + (dk ? 'text-indigo-400' : 'text-indigo-600') }, 'Q' + (quizIdx + 1) + '/' + qs.length + ' · Score: ' + quizScore),
-                  h('button', { onClick: function() { upd('quizOpen', false); }, className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_quiz', 'Close quiz') }, '✕'))),
+                  h('button', { type: 'button', onClick: function() { closeAccessibleBeePanel('quiz'); }, className: 'grid min-h-[44px] min-w-[44px] place-items-center rounded text-[11px] ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100'), 'aria-label': __alloT('stem.beehive.close_quiz', 'Close quiz') }, '✕'))),
               // Progress bar
               h('div', { className: 'h-1.5 rounded-full overflow-hidden ' + (dk ? 'bg-slate-700' : 'bg-indigo-100'), role: 'progressbar', 'aria-label': 'Quiz progress', 'aria-valuemin': 1, 'aria-valuemax': qs.length, 'aria-valuenow': quizIdx + 1 },
                 h('div', { style: { width: Math.round((quizIdx + 1) / qs.length * 100) + '%' }, className: 'h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full transition-all' })),
               // Question
-              h('p', { id: 'beehive-quiz-question', className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, current.q),
+              h('h3', { id: 'beehive-quiz-question', ref: _beeQuizQuestionRef, tabIndex: -1, className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, current.q),
               // Options
               !quizFeedback && h('div', { className: 'grid grid-cols-1 gap-2 sm:grid-cols-2', role: 'group', 'aria-labelledby': 'beehive-quiz-question' },
                 current.opts.map(function(opt, oi) {
-                  return h('button', { key: oi, onClick: function() { answerQuiz(oi); },
-                    className: 'text-left p-3 rounded-xl border text-xs font-medium transition-all ' + (dk ? 'bg-slate-800 border-indigo-700/40 text-slate-200 hover:border-indigo-400 hover:bg-slate-700' : 'bg-white border-indigo-200 text-slate-700 hover:border-indigo-500 hover:shadow-md'),
+                  return h('button', { key: oi, type: 'button', onClick: function() { answerQuiz(oi); },
+                    className: 'min-h-[44px] text-left p-3 rounded-xl border text-xs font-medium transition-all ' + (dk ? 'bg-slate-800 border-indigo-700/40 text-slate-200 hover:border-indigo-400 hover:bg-slate-700' : 'bg-white border-indigo-200 text-slate-700 hover:border-indigo-500 hover:shadow-md'),
                     'aria-label': 'Answer: ' + opt
                   }, String.fromCharCode(65 + oi) + '. ' + opt);
                 })),
               // Feedback
-              quizFeedback && h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl p-4 border ' + (quizFeedback.correct ? (dk ? 'bg-green-900/30 border-green-600/50' : 'bg-green-50 border-green-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
+              quizFeedback && h(React.Fragment, null,
+                h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl p-4 border ' + (quizFeedback.correct ? (dk ? 'bg-green-900/30 border-green-600/50' : 'bg-green-50 border-green-300') : (dk ? 'bg-red-900/30 border-red-600/50' : 'bg-red-50 border-red-300')) },
                 h('div', { className: 'flex items-center gap-2 mb-2' },
-                  h('span', { className: 'text-xl' }, quizFeedback.correct ? '✅' : '❌'),
+                  h('span', { className: 'text-xl', 'aria-hidden': 'true' }, quizFeedback.correct ? '✅' : '❌'),
                   h('span', { className: 'text-sm font-bold ' + (quizFeedback.correct ? (dk ? 'text-green-300' : 'text-green-800') : (dk ? 'text-red-300' : 'text-red-800')) }, quizFeedback.correct ? 'Correct!' : 'Not quite.')),
-                h('p', { className: 'text-xs leading-relaxed mb-3 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, quizFeedback.explanation),
-                h('button', { onClick: nextQuizQuestion, className: 'px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-indigo-600 hover:bg-indigo-700' : 'transition-colors bg-indigo-500 hover:bg-indigo-600') },
+                h('p', { className: 'text-xs leading-relaxed mb-3 ' + (dk ? 'text-slate-300' : 'text-slate-600') }, quizFeedback.explanation)),
+                h('button', { type: 'button', ref: _beeQuizNextRef, 'data-beehive-quiz-next': 'true', onClick: nextQuizQuestion, className: 'min-h-[44px] px-4 py-2 rounded-lg text-xs font-bold text-white ' + (dk ? 'transition-colors bg-indigo-600 hover:bg-indigo-700' : 'transition-colors bg-indigo-500 hover:bg-indigo-600') },
                   quizIdx + 1 >= qs.length ? '🏁 See Results' : 'Next Question →')));
           })(),
 
           // ═══ IPM TREATMENT CHOICE MODAL ═══
-          viewMode === 'beekeeper' && d.showTreatModal && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-amber-900/20 border-red-500/50' : 'bg-gradient-to-b from-red-50 to-amber-50 border-red-300'), 'data-beehive-focus-panel': 'treatment', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.beehive.choose_a_varroa_treatment', 'Choose a varroa treatment') },
+          viewMode === 'beekeeper' && d.showTreatModal && h('div', { className: 'rounded-2xl border-2 p-4 space-y-3 ' + (dk ? 'bg-gradient-to-b from-red-900/30 to-amber-900/20 border-red-500/50' : 'bg-gradient-to-b from-red-50 to-amber-50 border-red-300'), 'data-beehive-focus-panel': 'treatment', tabIndex: -1, role: 'region', 'aria-labelledby': 'beehive-treatment-title', 'aria-describedby': 'beehive-treatment-intro' },
             h('div', { className: 'flex items-center justify-between' },
               h('div', null,
-                h('div', { className: 'text-sm font-bold ' + (dk ? 'text-red-300' : 'text-red-800') }, __alloT('stem.beehive.integrated_pest_management_varroa', '🧪 Integrated Pest Management — Varroa')),
+                h('h2', { id: 'beehive-treatment-title', className: 'text-sm font-bold ' + (dk ? 'text-red-300' : 'text-red-800') }, __alloT('stem.beehive.integrated_pest_management_varroa', '\uD83E\uDDEA Integrated Pest Management - Varroa')),
                 h('div', { className: 'text-[11px] ' + (dk ? 'text-red-400' : 'text-red-600') }, 'Current mite load: ' + varroaLevel + '% · Brood: ' + fmtPop(brood) + ' · Season: ' + seasonNames[season])),
-              h('button', { onClick: function() { upd('showTreatModal', false); }, 'aria-label': __alloT('stem.beehive.close_treatment_modal', 'Close treatment modal'), className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100') }, '✕')),
-            h('p', { className: 'text-[11px] italic ' + (dk ? 'text-amber-400' : 'text-amber-700') }, __alloT('stem.beehive.every_treatment_has_trade_offs_real_be', 'Every treatment has trade-offs. Real beekeepers rotate treatments seasonally to prevent mite resistance. Effectiveness depends on brood status and temperature.')),
+              h('button', { type: 'button', onClick: function() { upd('showTreatModal', false); }, 'aria-label': __alloT('stem.beehive.close_treatment_choices', 'Close treatment choices'), className: 'text-[11px] px-2 py-0.5 rounded ' + (dk ? 'transition-colors text-slate-300 hover:bg-slate-700' : 'transition-colors text-slate-600 hover:bg-slate-100') }, '\u2715')),
+            h('p', { id: 'beehive-treatment-intro', className: 'text-[11px] leading-relaxed ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.treatment_forecast_intro', 'Each card uses the current brood and season to forecast this model\'s result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.')),
             h('div', { className: 'grid grid-cols-1 gap-2' },
               IPM_TREATMENTS.map(function(t) {
-                var isIdealSeason = t.bestSeason === season;
+                var treatmentPreview = previewTreatmentOutcome(t, brood, season);
+                var currentVarroa = Math.round(varroaLevel * 10) / 10;
+                var projectedVarroa = Math.max(0, Math.round((currentVarroa - treatmentPreview.reduction) * 10) / 10);
                 var affordable = actionPoints >= t.ap;
+                var treatmentUnavailable = 'Need ' + t.ap + ' action point' + (t.ap === 1 ? '' : 's') + '; have ' + actionPoints;
                 var usedCount = (d.treatmentsUsed || {})[t.id] || 0;
-                return h('button', { key: t.id, onClick: function() { applyTreatment(t.id); },
-                  disabled: !affordable,
-                  'aria-label': t.label + '. ' + t.desc,
+                var treatmentDescriptionId = 'beehive-treatment-description-' + t.id;
+                var treatmentDescription = 'Forecast for current colony: Varroa ' + currentVarroa + ' to ' + projectedVarroa + ' percent. ' +
+                  'Modeled treatment strength: ' + treatmentPreview.reduction + ' percentage points before the zero floor. ' + treatmentPreview.fitLabel + '. ' +
+                  (treatmentPreview.moraleHit > 0 ? 'Modeled colony stress: minus ' + treatmentPreview.moraleHit + ' morale. ' : 'No modeled morale cost. ') +
+                  (treatmentPreview.queenHit > 0 ? 'Modeled queen health cost: minus ' + treatmentPreview.queenHit + '. ' : 'No modeled queen health cost. ') +
+                  'Cost: ' + t.ap + ' action point' + (t.ap === 1 ? '. ' : 's. ') +
+                  (usedCount > 0 ? 'Used ' + usedCount + ' time' + (usedCount === 1 ? '. ' : 's. ') : 'Not used yet. ') +
+                  (affordable ? 'Ready to apply. ' : 'Unavailable: ' + treatmentUnavailable + '. ') +
+                  t.desc + ' Safety and timing note: ' + t.note;
+                return h('button', { key: t.id, type: 'button', onClick: function() { if (!affordable) { explainBeeUnavailable(t.label, treatmentUnavailable); return; } applyTreatment(t.id); },
+                  'aria-disabled': affordable ? undefined : 'true',
+                  'data-treatment-id': t.id,
+                  'data-treatment-forecast': currentVarroa + '-to-' + projectedVarroa,
+                  'data-treatment-ready': affordable ? 'true' : 'false',
+                  'data-unavailable-reason': affordable ? undefined : treatmentUnavailable,
+                  'aria-label': 'Apply ' + t.label + ' treatment',
+                  'aria-describedby': treatmentDescriptionId,
                   className: 'text-left p-3 rounded-xl border transition-all ' +
                     (affordable
                       ? (dk ? 'bg-slate-800 border-red-700/40 hover:border-red-500 hover:bg-slate-700' : 'bg-white border-red-200 hover:border-red-400 hover:shadow-md')
                       : (dk ? 'bg-slate-800/30 border-slate-700 opacity-50 cursor-not-allowed' : 'bg-slate-50 border-slate-200 opacity-50 cursor-not-allowed'))
                 },
+                  h('span', { id: treatmentDescriptionId, className: 'sr-only' }, treatmentDescription),
                   h('div', { className: 'flex items-start gap-2' },
-                    h('span', { className: 'text-2xl' }, t.emoji),
+                    h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, t.emoji),
                     h('div', { className: 'flex-1' },
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('span', { className: 'text-sm font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, t.label),
-                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-700') }, '−' + t.baseReduction + '% mites'),
-                        t.moraleCost > 0 && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/50 text-amber-300' : 'bg-amber-100 text-amber-700') }, '−' + t.moraleCost + ' morale'),
-                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, t.ap + ' AP'),
-                        isIdealSeason && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800') }, __alloT('stem.beehive.ideal_season', '✨ ideal season')),
-                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-400') }, 'used ' + usedCount + '×')),
+                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (dk ? 'bg-red-900/50 text-red-200' : 'bg-red-100 text-red-800') }, currentVarroa + '% to ' + projectedVarroa + '% Varroa'),
+                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-sky-900/50 text-sky-200' : 'bg-sky-100 text-sky-800') }, 'Strength -' + treatmentPreview.reduction + ' points'),
+                        treatmentPreview.moraleHit > 0 && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-amber-900/50 text-amber-200' : 'bg-amber-100 text-amber-800') }, '-' + treatmentPreview.moraleHit + ' morale'),
+                        treatmentPreview.queenHit > 0 && h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-rose-900/50 text-rose-200' : 'bg-rose-100 text-rose-800') }, '-' + treatmentPreview.queenHit + ' queen health'),
+                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-700') }, affordable ? t.ap + ' AP' : 'Need ' + t.ap + ' AP · have ' + actionPoints),
+                        h('span', { className: 'text-[11px] px-1.5 py-0.5 rounded font-bold ' + (treatmentPreview.fitTone === 'success' ? (dk ? 'bg-green-900/50 text-green-200' : 'bg-green-100 text-green-800') : treatmentPreview.fitTone === 'warning' ? (dk ? 'bg-amber-900/50 text-amber-200' : 'bg-amber-100 text-amber-900') : (dk ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-700')) }, treatmentPreview.fitLabel),
+                        usedCount > 0 && h('span', { className: 'text-[11px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, 'used ' + usedCount + '\u00D7')),
                       h('p', { className: 'text-[11px] mt-1 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, t.desc),
-                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-400' : 'text-slate-300') }, '🔬 ' + t.note))));
+                      h('p', { className: 'text-[11px] mt-1 italic leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, '\uD83D\uDD2C ' + t.note))));
               })),
             // Legend
             h('div', { className: 'text-[11px] p-2 rounded ' + (dk ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-600') },
@@ -25479,7 +26737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             renderBeeEventForecast(activeEvent),
             h('div', { className: 'rounded-lg p-3 text-xs border ' + (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-white text-slate-700 border-slate-200') },
               h('strong', null, __alloT('stem.beehive.science', '🔬 Science: ')), activeEvent.lesson),
-            h('button', { onClick: dismissEvent, className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-sm font-bold hover:bg-amber-800 transition-all' }, __alloT('stem.beehive.acknowledge', '✓ Acknowledge'))),
+            h('button', { type: 'button', onClick: dismissEvent, 'aria-label': 'Acknowledge ' + (activeEvent.label || 'colony event') + ' and return to time controls', className: 'min-h-[44px] rounded-lg bg-amber-700 px-4 py-2 text-sm font-bold text-white transition-all hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 focus-visible:ring-offset-2' }, __alloT('stem.beehive.acknowledge', '✓ Acknowledge'))),
 
           // Status bar (beekeeper mode only)
           viewMode === 'beekeeper' && h('div', { className: 'flex flex-wrap gap-3 items-center text-xs font-bold', role: 'group', 'aria-label': 'Colony status: ' + seasonNames[season] + ', Day ' + ((day % 30) + 1) + ', ' + honey + ' lbs honey, ' + fmtPop(workers) + ' workers' },
@@ -26005,8 +27263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       h('div', { className: 'text-sm' }, seasonNamesShort[e.season] || '')),
                     h('div', { className: 'flex-1 leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, e.text || '—'));
                 })),
-              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-300' : 'text-slate-400') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
-              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-300') }, __alloT('stem.beehive.real_beekeepers_keep_hive_journals_for', 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.')));
+              !expanded && journalEntries.length > 3 && h('div', { className: 'text-[11px] mt-1 text-center ' + (dk ? 'text-slate-300' : 'text-slate-600') }, '(' + (journalEntries.length - 3) + ' more entries hidden)'),
+              h('p', { className: 'text-[11px] italic mt-2 ' + (dk ? 'text-slate-300' : 'text-slate-700') }, __alloT('stem.beehive.real_beekeepers_keep_hive_journals_for', 'Real beekeepers keep hive journals for every inspection. Patterns across weeks reveal colony trajectory that a single reading misses.')));
           })(),
 
           // Colony collapsed state (beekeeper only)
@@ -26061,9 +27319,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   type: 'button', 'data-beehive-restart': 'same-seed',
                   'aria-label': 'Replay colony with the same seed ' + simulationSeed,
                   onClick: function() {
-                    updAll(bhCreateNewColonyState(simulationSeed));
-                    announceBee('Colony reset with the same event recipe, seed ' + simulationSeed + '.', false);
-                    if (addToast) addToast('Same seed ready. Change one choice for a controlled comparison.', 'success');
+                    var baseline = bhNormalizeExperimentSnapshot(d.experimentBaseline) || bhCreateExperimentSnapshot(d);
+                    var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
+                    var reset = bhCreateNewColonyState(simulationSeed, nextRunSerial);
+                    reset.experimentBaseline = baseline;
+                    updAll(reset);
+                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with the same event recipe, seed ' + simulationSeed + '.', false);
+                    if (addToast) addToast('Run A saved. Same seed ready for a controlled comparison.', 'success');
                   },
                   className: 'min-h-[48px] rounded-xl bg-amber-700 px-4 py-3 text-sm font-bold text-white shadow-md transition-colors hover:bg-amber-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400'
                 }, 'Replay same seed', h('span', { className: 'mt-1 block text-[10px] font-semibold opacity-90' }, 'Seed ' + simulationSeed + ' · compare one changed choice')),
@@ -26071,10 +27333,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   type: 'button', 'data-beehive-restart': 'fresh-seed',
                   'aria-label': 'Start colony with a different seed',
                   onClick: function() {
+                    var baseline = bhNormalizeExperimentSnapshot(d.experimentBaseline) || bhCreateExperimentSnapshot(d);
                     var nextSeed = bhFreshExperimentSeed(simulationSeed);
-                    updAll(bhCreateNewColonyState(nextSeed));
-                    announceBee('New colony ready with a different event recipe, seed ' + nextSeed + '.', false);
-                    if (addToast) addToast('Different seed ready: ' + nextSeed + '.', 'success');
+                    var nextRunSerial = bhExperimentRunSerial(d.experimentRunSerial) + 1;
+                    var reset = bhCreateNewColonyState(nextSeed, nextRunSerial);
+                    reset.experimentBaseline = baseline;
+                    updAll(reset);
+                    announceBee('Run A is saved at Day ' + baseline.capturedDay + '. Separate Colony Run ' + nextRunSerial + ' started with a different event recipe, seed ' + nextSeed + '.', false);
+                    if (addToast) addToast('Run A saved. Different seed ready: ' + nextSeed + '.', 'success');
                   },
                   className: 'min-h-[48px] rounded-xl border px-4 py-3 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 ' + (dk ? 'border-sky-700 bg-slate-900 text-sky-200 hover:bg-slate-800' : 'border-sky-300 bg-white text-sky-900 hover:bg-sky-100')
                 }, 'Use a new seed', h('span', { className: 'mt-1 block text-[10px] font-semibold opacity-80' }, 'Begin a different event scenario')))
@@ -26279,9 +27545,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             })(),
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
-              h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, __alloT('stem.beehive.next_day_2', '\u23E9 Next Day')),
-              h('button', { onClick: function() { advanceDays(5); }, title: 'Advance up to 5 days; pauses if a colony event needs a decision', className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-800 hover:bg-amber-200') }, __alloT('stem.beehive.5', '\u23ED 5 days')),
-              h('button', { onClick: function() { advanceDays(30); }, title: 'Advance up to 30 days; pauses if a colony event needs a decision', 'aria-label': __alloT('stem.beehive.advance_30_days_1_month', 'Advance 30 days (1 month)'), className: 'px-3 py-2.5 rounded-xl text-sm font-bold transition-all ' + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-800 hover:bg-amber-100') }, __alloT('stem.beehive.30', '\u23ED 30 days'))
+              h('button', { id: 'beehive-next-day', type: 'button', onClick: advanceDay, 'aria-disabled': activeEvent ? 'true' : undefined, 'data-beehive-time-control': '1', 'data-unavailable-reason': activeEvent ? 'Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first' : undefined, 'aria-label': activeEvent ? 'Next day unavailable. Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first.' : 'Advance one day', className: 'flex min-h-[44px] flex-1 rounded-xl py-2.5 text-sm font-bold text-white shadow-sm transition-all ' + (activeEvent ? 'cursor-not-allowed opacity-60 ' : 'hover:scale-[1.01] hover:shadow-md ') + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, __alloT('stem.beehive.next_day_2', '\u23E9 Next Day')),
+              h('button', { type: 'button', onClick: function() { advanceDays(5); }, 'aria-disabled': activeEvent ? 'true' : undefined, 'data-beehive-time-control': '5', 'data-unavailable-reason': activeEvent ? 'Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first' : undefined, title: 'Advance up to 5 days; pauses if a colony event needs a decision', 'aria-label': activeEvent ? 'Advance 5 days unavailable. Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first.' : 'Advance up to 5 days; pauses if an event needs a decision', className: 'min-h-[44px] rounded-xl px-3 py-2.5 text-sm font-bold transition-all ' + (activeEvent ? 'cursor-not-allowed opacity-60 ' : '') + (dk ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-800/50' : 'bg-amber-100 text-amber-800 hover:bg-amber-200') }, __alloT('stem.beehive.5', '\u23ED 5 days')),
+              h('button', { type: 'button', onClick: function() { advanceDays(30); }, 'aria-disabled': activeEvent ? 'true' : undefined, 'data-beehive-time-control': '30', 'data-unavailable-reason': activeEvent ? 'Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first' : undefined, title: 'Advance up to 30 days; pauses if a colony event needs a decision', 'aria-label': activeEvent ? 'Advance 30 days unavailable. Acknowledge ' + (activeEvent.label || 'the active colony event') + ' first.' : __alloT('stem.beehive.advance_30_days_1_month', 'Advance 30 days (1 month)'), className: 'min-h-[44px] rounded-xl px-3 py-2.5 text-sm font-bold transition-all ' + (activeEvent ? 'cursor-not-allowed opacity-60 ' : '') + (dk ? 'bg-amber-900/30 text-amber-400 hover:bg-amber-800/40' : 'bg-amber-50 text-amber-800 hover:bg-amber-100') }, __alloT('stem.beehive.30', '\u23ED 30 days'))
             ),
             // Management actions
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-1.5' },
@@ -26302,7 +27568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                       if (awardStemXP) awardStemXP('beehive', 5, 'Hive hygiene');
                       triggerBeekeeperAction('hygiene', 'Cleaning frames and removing dead bees.', '🧽');
                     } })) return;
-                  }, icon: '\uD83E\uDDFD', label: __alloT('stem.beehive.hygiene', 'Hygiene'), tip: __alloT('stem.beehive.clean_comb_remove_dead_bees_improve_ve', 'Clean comb, remove dead bees, improve ventilation (−disease risk)'), disabled: diseaseRisk < 5, locked: 'Disease risk is low', effect: '-18 disease / +2 morale', costLabel: '1 AP', color: 'purple' },
+                  }, icon: '\uD83E\uDDFD', label: __alloT('stem.beehive.hygiene', 'Hygiene'), tip: __alloT('stem.beehive.clean_comb_remove_dead_bees_improve_ve', 'Clean comb, remove dead bees, improve ventilation (−disease risk)'), disabled: actionPoints < 1 || diseaseRisk < 5, locked: actionPoints < 1 ? 'Need 1 AP' : 'Disease risk is low', effect: '-18 disease / +2 morale', costLabel: '1 AP', color: 'purple' },
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: __alloT('stem.beehive.super', 'Super'), tip: __alloT('stem.beehive.add_honey_super_10_morale_2_wax', 'Add honey super (+capacity, +morale, lower swarm risk) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+40 capacity / +10 morale', costLabel: '1 AP', color: 'blue' },
                 { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: __alloT('stem.beehive.harvest', 'Harvest'), tip: 'Harvest only honey above the ' + currentReserve + ' lb reserve for ' + currentReserveWhy + ' — 1 AP', disabled: honey <= currentReserve || actionPoints < 1, locked: honey <= currentReserve ? 'Need more than ' + currentReserve + ' lb' : 'Need 1 AP', effect: 'Collect surplus / leave ' + currentReserve + ' lb', costLabel: '1 AP', color: 'amber' },
                 { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: __alloT('stem.beehive.feed_sugar_syrup_5_lbs_honey_5_morale', 'Feed sugar syrup (+5 lbs honey, +5 morale) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+5 honey / +5 morale', costLabel: '1 AP', color: 'slate' },
@@ -26326,8 +27592,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var bg = enabled
                   ? manageBtnStyle(btn.color)
                   : (dk ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-50 text-slate-700 border border-slate-400');
-                return h('button', { key: btn.label, onClick: btn.onClick, disabled: btn.disabled, title: btn.tip,
-                  'data-management-action': btn.label, 'data-action-ready': enabled ? 'true' : 'false', 'data-management-cost': costLabel,
+                return h('button', { key: btn.label, type: 'button', onClick: function() { if (!enabled) { explainBeeUnavailable(btn.label, btn.locked); return; } btn.onClick(); }, 'aria-disabled': enabled ? undefined : 'true', title: btn.tip,
+                  'data-management-action': btn.label, 'data-action-ready': enabled ? 'true' : 'false', 'data-unavailable-reason': enabled ? undefined : btn.locked, 'data-management-cost': costLabel,
                   'aria-label': btn.label + ': ' + btn.tip + '. Effect: ' + btn.effect + '. Cost: ' + costLabel + '. ' + (enabled ? 'Ready.' : btn.locked + '.'),
                   className: 'flex min-h-[108px] flex-col items-center gap-1 rounded-xl border p-2.5 text-center transition-all ' + bg + (enabled ? ' hover:shadow-md hover:-translate-y-0.5' : ' cursor-not-allowed'),
                   style: enabled ? { boxShadow: dk ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } : {}
@@ -26335,7 +27601,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('span', { className: 'text-xl leading-none' }, btn.icon),
                   h('span', { className: 'text-[11px] font-black' }, btn.label),
                   h('span', { className: 'text-[10px] leading-tight ' + (enabled ? (dk ? 'text-slate-300' : 'text-slate-600') : '') }, btn.effect),
-                  h('span', { 'data-management-cost-badge': btn.label, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'border-amber-600/40 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700') : (dk ? 'border-slate-700 bg-slate-900/60 text-slate-500' : 'border-slate-200 bg-white/70 text-slate-400')) }, costLabel),
+                  h('span', { 'data-management-cost-badge': btn.label, className: 'rounded-full border px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'border-amber-600/40 bg-amber-900/25 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700') : (dk ? 'border-slate-700 bg-slate-900/60 text-slate-500' : 'border-slate-300 bg-white text-slate-600')) }, costLabel),
                   h('span', { className: 'mt-auto rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ' + (enabled ? (dk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-emerald-500/15 text-emerald-800') : (dk ? 'bg-slate-900/60 text-slate-400' : 'bg-white/70 text-slate-600')) }, enabled ? costLabel + ' \u00B7 Ready' : btn.locked));
               })),
 
@@ -26346,9 +27612,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 CONSERVATION_ACTIONS.map(function(action) {
                   var effectText = conservationActionEffect(action);
                   var conservationReady = actionPoints >= action.cost;
-                  return h('button', { key: action.id, 'aria-label': action.label + ': ' + action.desc + '. Effect: ' + effectText + '. Cost: ' + action.cost + ' action points.' + (actionPoints < action.cost ? ' Not enough action points.' : ''), 'data-conservation-impact': action.id, 'data-conservation-ready': conservationReady ? 'true' : 'false',
+                  var conservationUnavailable = 'Need ' + action.cost + ' action points; have ' + actionPoints + '. Advance to the next day to refresh the budget';
+                  return h('button', { key: action.id, type: 'button', 'aria-disabled': conservationReady ? undefined : 'true', 'aria-label': action.label + ': ' + action.desc + '. Effect: ' + effectText + '. Cost: ' + action.cost + ' action points.' + (conservationReady ? ' Ready.' : ' Unavailable. ' + conservationUnavailable + '.'), 'data-conservation-impact': action.id, 'data-conservation-ready': conservationReady ? 'true' : 'false', 'data-unavailable-reason': conservationReady ? undefined : conservationUnavailable,
                     onClick: function() {
-                      if (actionPoints < action.cost) { if (addToast) addToast('Need ' + action.cost + ' action points (have ' + actionPoints + '). Advance to next day for more.', 'info'); return; }
+                      if (!conservationReady) { explainBeeUnavailable(action.label, conservationUnavailable); return; }
                       // Conservation moves share the committed AP path too.
                       // This is deliberately not a direct updater: every ecological
                       // benefit, evidence record, and reward now belongs to one
@@ -26365,6 +27632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                         if (e.pesticideExposure) b.pesticideExposure = Math.max(0, Math.min(100, (b.pesticideExposure || 0) + e.pesticideExposure));
                         if (e.score) b.score = (b.score || 0) + e.score;
                       }, {
+                        choiceId: action.id,
                         summary: action.label + ' applied. Compare the ecological benefit with the colony forecast.',
                         onCommit: function() {
                           if (addToast) addToast(action.emoji + ' ' + action.label + ': ' + action.lesson, 'success');
@@ -26454,7 +27722,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               ),
               aiError && h('p', { className: 'text-[11px] text-rose-500', role: 'alert' }, aiError),
               aiText && h('p', { className: 'text-xs leading-relaxed rounded-lg p-2 ' + (dk ? 'bg-slate-900 text-slate-200 border border-purple-500/30' : 'bg-white text-slate-700 border border-purple-100') }, aiText),
-              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-300') }, __alloT('stem.beehive.click_explain_for_the_ai_tutor_to_desc', 'Click \u201CExplain\u201D for the AI tutor to describe the current view.'))
+              !aiText && !aiLoading && !aiError && h('p', { className: 'text-[11px] italic ' + (dk ? 'text-slate-400' : 'text-slate-600') }, __alloT('stem.beehive.click_explain_for_the_ai_tutor_to_desc', 'Click \u201CExplain\u201D for the AI tutor to describe the current view.'))
             );
           })(),
 
@@ -26485,39 +27753,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var hiveTempC = iq.outsideC + heatGen - cooling;
             var deviation = Math.abs(hiveTempC - 35);
             var state;
-            if (deviation < 1) state = 'optimal';
+            if (hiveTempC >= 34 && hiveTempC <= 36) state = 'optimal';
             else if (hiveTempC > 36) state = 'overheating';
             else if (hiveTempC < 32) state = 'chilled';
             else state = 'compensating';
             var sm = {
-              optimal:      { label: __alloT('stem.beehive.optimal_35_c', '🟢 Typical brood range (34–36 °C)'),  color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.beehive.brood_healthy_colony_thermoregulating', 'Brood healthy. Colony thermoregulating.') },
-              overheating:  { label: __alloT('stem.beehive.overheating', '🔥 Overheating'),       color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.beehive.brood_at_risk_above_36_c', 'Brood at risk above 36°C.') },
-              chilled:      { label: __alloT('stem.beehive.chilled_brood', '🧊 Chilled brood'),     color: '#155e75', bg: '#ecfeff', border: '#67e8f9', desc: __alloT('stem.beehive.below_32_c_development_fails', 'Below 32°C development fails.') },
-              compensating: { label: __alloT('stem.beehive.within_tolerance', '🟡 Within tolerance'),  color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.beehive.maintains_range_but_costs_energy', 'Maintains range but costs energy.') }
+              optimal:      { label: __alloT('stem.beehive.optimal_35_c', 'Typical brood range (34\u201336 \u00b0C)'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: 'Estimated brood-area temperature is within the typical range.' },
+              overheating:  { label: __alloT('stem.beehive.overheating', 'Above typical brood range'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: 'Prolonged heat above the typical range can harm developing brood.' },
+              chilled:      { label: __alloT('stem.beehive.chilled_brood', 'Below 32 \u00b0C'), color: '#155e75', bg: '#ecfeff', border: '#67e8f9', desc: 'Prolonged chilling can disrupt brood development.' },
+              compensating: { label: __alloT('stem.beehive.within_tolerance', 'Near the typical brood range'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: 'The estimate is near the typical range; regulation still costs colony energy.' }
             }[state];
-            return h('div', { className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
-              h('h3', { className: 'text-sm font-black text-amber-700' }, __alloT('stem.beehive.hive_thermoregulation_discovery', '🐝 Hive thermoregulation discovery')),
-              h('p', { className: 'text-[12px] text-slate-700 leading-relaxed' }, __alloT('stem.beehive.sliders_for_outside_temp_fanning_bees_', 'Sliders for outside temp, fanning bees, brood count. Discrete 4-state thermal regime. No score, no reveal.')),
-              h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+            var thermoLog = Array.isArray(iq.log) ? iq.log : [];
+            function thermoStateLabel(stateId) {
+              return stateId === 'optimal' ? 'Typical brood range' : stateId === 'overheating' ? 'Above typical brood range' : stateId === 'chilled' ? 'Below 32 degrees Celsius' : 'Near the typical brood range';
+            }
+            function logThermoTrial() {
+              var entry = { o: iq.outsideC, f: iq.beesFanning, b: iq.broodCount, t: hiveTempC.toFixed(1), st: state };
+              var nextLog = thermoLog.concat([entry]).slice(-8);
+              var message = 'Trial logged: outside ' + entry.o + ' degrees Celsius, ' + entry.f + ' fanning bees, ' + entry.b + ' brood, estimated ' + entry.t + ' degrees Celsius, ' + thermoStateLabel(entry.st) + '.';
+              setIQ({ log: nextLog, notice: message });
+              announceBee(message, false);
+            }
+            function resetThermoConditions() {
+              var message = 'Conditions reset to 20 degrees Celsius, 30 fanning bees, and 5,000 brood. Your log and writing were kept.';
+              setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, notice: message });
+              announceBee(message, false);
+            }
+            return h('section', { 'data-beehive-thermoregulation': 'true', 'aria-labelledby': 'beehive-thermo-title', className: 'mt-3 p-4 rounded-xl bg-white border border-amber-300 shadow-sm space-y-3' },
+              h('h3', { id: 'beehive-thermo-title', className: 'text-sm font-black text-amber-700' }, __alloT('stem.beehive.hive_thermoregulation_discovery', '🐝 Hive thermoregulation discovery')),
+              h('p', { id: 'beehive-thermo-instructions', className: 'text-[12px] text-slate-700 leading-relaxed' }, 'Change one condition at a time, record several trials, and explain how the colony keeps the brood area near 34\u201336 \u00b0C.'),
+              h('output', { id: 'beehive-thermo-output', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-thermo-state': state, className: 'block p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
                 h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
                 h('div', { className: 'text-[11px] text-slate-700 mt-1' }, sm.desc),
                 h('div', { className: 'text-[10px] text-slate-600 mt-1 font-mono' }, 'Hive ≈ ' + hiveTempC.toFixed(1) + ' °C')
               ),
-              h('div', { className: 'grid grid-cols-3 gap-3' },
-                [{ k: 'outsideC', l: 'Outside °C', mn: -10, mx: 45, st: 1 },
-                 { k: 'beesFanning', l: 'Fanning bees', mn: 0, mx: 500, st: 10 },
-                 { k: 'broodCount', l: 'Brood count', mn: 0, mx: 20000, st: 500 }].map(function(s) {
-                  return h('div', { key: s.k },
-                    h('label', { htmlFor: 'th-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
-                    h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
-                      onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                      className: 'w-full', 'aria-label': s.l }));
-                })
-              ),
+              h('fieldset', { className: 'rounded-xl border border-slate-200 p-3', 'aria-describedby': 'beehive-thermo-instructions beehive-thermo-output' },
+                h('legend', { className: 'px-1 text-[11px] font-black text-slate-800' }, 'Trial conditions'),
+                h('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-3' },
+                  [{ k: 'outsideC', l: 'Outside temperature', mn: -10, mx: 45, st: 1 },
+                   { k: 'beesFanning', l: 'Fanning bees', mn: 0, mx: 500, st: 10 },
+                   { k: 'broodCount', l: 'Brood count', mn: 0, mx: 20000, st: 500 }].map(function(s) {
+                    var unitText = s.k === 'outsideC' ? iq[s.k] + ' degrees Celsius' : s.k === 'beesFanning' ? iq[s.k] + ' fanning bees' : iq[s.k].toLocaleString() + ' brood';
+                    return h('div', { key: s.k },
+                      h('label', { htmlFor: 'th-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-amber-700' }, iq[s.k])),
+                      h('input', { id: 'th-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
+                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
+                        className: 'min-h-[44px] w-full', 'aria-valuetext': unitText, 'aria-describedby': 'beehive-thermo-output' }));
+                  }))),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ o: iq.outsideC, f: iq.beesFanning, b: iq.broodCount, t: hiveTempC.toFixed(1), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.beehive.log', '📋 Log')),
-                h('button', { onClick: function() { setIQ({ outsideC: 20, beesFanning: 30, broodCount: 5000, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.beehive.reset', '↺ Reset'))
-              ),
+                h('button', { type: 'button', onClick: logThermoTrial, className: 'min-h-[44px] px-3 py-2 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, 'Log current trial'),
+                h('button', { type: 'button', onClick: resetThermoConditions, className: 'min-h-[44px] px-3 py-2 rounded bg-white text-[11px] font-semibold text-slate-700 border border-slate-300' }, 'Reset conditions')),
+              iq.notice && h('p', { role: 'note', className: 'rounded-lg border border-sky-200 bg-sky-50 p-2 text-[11px] font-bold text-sky-900' }, iq.notice),
+              h('section', { 'aria-labelledby': 'beehive-thermo-log-title', className: 'rounded-xl border border-slate-200 bg-slate-50 p-3' },
+                h('div', { className: 'flex items-center justify-between gap-2' },
+                  h('h4', { id: 'beehive-thermo-log-title', className: 'text-xs font-black text-slate-800' }, 'Experiment log'),
+                  h('span', { className: 'text-[11px] font-bold text-slate-600' }, thermoLog.length + '/8 trials')),
+                thermoLog.length
+                  ? h('ol', { className: 'mt-2 grid gap-2', 'aria-label': 'Logged thermoregulation trials' }, thermoLog.map(function(entry, index) {
+                      return h('li', { key: index, className: 'rounded-lg border border-slate-200 bg-white p-2 text-[11px] text-slate-700' },
+                        h('strong', { className: 'text-slate-900' }, 'Trial ' + (index + 1) + ': '),
+                        entry.o + ' \u00b0C outside; ' + entry.f + ' fanning bees; ' + Number(entry.b).toLocaleString() + ' brood; estimated ' + entry.t + ' \u00b0C; ' + thermoStateLabel(entry.st) + '.');
+                    }))
+                  : h('p', { className: 'mt-2 text-[11px] text-slate-600' }, 'No trials logged yet. Adjust the conditions, then log a result to compare it with later trials.')),
               h('label', { htmlFor: 'beehive-thermo-hypothesis', className: 'block text-[11px] font-bold text-slate-700' }, 'Your hypothesis'),
               h('textarea', { id: 'beehive-thermo-hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.beehive.hypothesis_at_40_c_outside_how_many_fa', 'Hypothesis: At 40°C outside, how many fanning bees keep the brood area near 34–36°C?'),
                 className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
@@ -26526,14 +27823,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('ul', { className: 'list-disc pl-5 space-y-1' },
                   h('li', null, __alloT('stem.beehive.brood_tolerance_is_35_0_5_c_investigat', 'Healthy brood generally develops near 34–36°C. Investigate how bees limit temperature swings.')),
                   h('li', null, __alloT('stem.beehive.what_is_the_cost_of_constant_fanning', 'What is the cost of constant fanning?')))),
-              h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
+              h('label', { className: 'flex min-h-[44px] items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 __alloT('stem.beehive.i_understand_explain_in_own_words', 'I understand — explain in own words')),
               iq.understood && h(React.Fragment, null,
                 h('label', { htmlFor: 'beehive-thermo-explanation', className: 'block text-[11px] font-bold text-emerald-800' }, 'Explain in your own words'),
                 h('textarea', { id: 'beehive-thermo-explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.beehive.explain_how_the_colony_as_a_superorgan', 'Explain how the colony as a superorganism thermoregulates.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
-              h('div', { className: 'text-[10px] italic text-slate-600' }, __alloT('stem.beehive.design_note_discrete_4_state_thermal_m', 'Design note: discrete 4-state thermal marker; no temperature score; no reveal — by design.'))
+              h('p', { className: 'text-[11px] italic text-slate-600' }, 'Model note: this simplified estimate groups results into four temperature bands. It is a learning aid, not a prediction for a real hive.')
             );
           })()
         ));
@@ -26559,6 +27856,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       bhFreshExperimentSeed: bhFreshExperimentSeed,
       bhCreateSeededRandom: bhCreateSeededRandom,
       bhExperimentProvenance: bhExperimentProvenance,
+      bhCreateExperimentSnapshot: bhCreateExperimentSnapshot,
+      bhNormalizeExperimentSnapshot: bhNormalizeExperimentSnapshot,
+      bhCompareManagementTrails: bhCompareManagementTrails,
+      bhComparePlannedManagementChoice: bhComparePlannedManagementChoice,
+      bhManagementActionPlanId: bhManagementActionPlanId,
+      bhCompareExperiments: bhCompareExperiments,
+      BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION: BEEHIVE_EXPERIMENT_SNAPSHOT_VERSION,
+      BEEHIVE_EXPERIMENT_COMPARE_METRICS: BEEHIVE_EXPERIMENT_COMPARE_METRICS,
+      BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS: BEEHIVE_EXPERIMENT_PREDICTION_DIRECTIONS,
+      bhExperimentPredictionMetric: bhExperimentPredictionMetric,
+      bhExperimentPredictionDirection: bhExperimentPredictionDirection,
+      bhEvaluateExperimentPrediction: bhEvaluateExperimentPrediction,
+      BEEHIVE_EXPERIMENT_PLAN_ACTIONS: BEEHIVE_EXPERIMENT_PLAN_ACTIONS,
+      bhNormalizeExperimentNotebook: bhNormalizeExperimentNotebook,
+      bhBuildExperimentEvidenceRecord: bhBuildExperimentEvidenceRecord,
+      BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION: BEEHIVE_EXPERIMENT_NOTEBOOK_VERSION,
+      BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS: BEEHIVE_EXPERIMENT_NOTEBOOK_FIELDS,
       BEEHIVE_COLONY_MODEL_VERSION: BEEHIVE_COLONY_MODEL_VERSION,
       BEEHIVE_DEFAULT_SEED: BEEHIVE_DEFAULT_SEED,
       // 3D scene builders. Exported so a browser harness can render and

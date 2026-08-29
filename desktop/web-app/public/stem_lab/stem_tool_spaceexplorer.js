@@ -58,6 +58,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
   // WCAG 2.1 AA: Accessibility CSS
   if (!document.getElementById('se-a11y-css')) { var _s = document.createElement('style'); _s.id = 'se-a11y-css'; _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }'; document.head.appendChild(_s); }
 
+  // Space Explorer usability layer. The tool intentionally uses a dark flight-
+  // deck palette, so these scoped rules keep small labels, boundaries, focus,
+  // and touch targets readable without changing the rest of STEAM Lab.
+  if (!document.getElementById('se-usability-css')) {
+    var _seUx = document.createElement('style');
+    _seUx.id = 'se-usability-css';
+    _seUx.textContent = [
+      '.se-shell{--se-surface:#0f172a;--se-surface-raised:#172033;--se-text:#f8fafc;--se-muted:#cbd5e1;--se-border:#64748b;--se-focus:#fde047;color:var(--se-text);background:var(--se-surface);color-scheme:dark}',
+      '.se-shell [class~="text-[10px]"],.se-shell [class~="text-[11px]"]{font-size:.75rem!important;line-height:1.05rem!important}',
+      '.se-shell [class~="text-xs"]{font-size:.8125rem!important;line-height:1.15rem!important}',
+      '.se-shell [class*="text-slate-400"],.se-shell [class*="text-slate-500"]{color:var(--se-muted)!important}',
+      '.se-shell [class*="border-white/10"]{border-color:rgba(203,213,225,.42)!important}',
+      '.se-shell [class*="bg-white/5"]{background-color:rgba(30,41,59,.78)!important}',
+      '.se-shell button,.se-shell summary,.se-shell a[data-se-action]{min-height:44px;touch-action:manipulation}',
+      '.se-shell button:disabled{opacity:.72!important}',
+      '.se-shell button:focus-visible,.se-shell summary:focus-visible,.se-shell textarea:focus-visible,.se-shell input:focus-visible,.se-shell a[data-se-action]:focus-visible{outline:3px solid var(--se-focus)!important;outline-offset:3px!important;box-shadow:0 0 0 2px var(--se-surface)!important}',
+      '.se-shell textarea::placeholder{color:#aebdd0!important;opacity:1}',
+      '.se-shell .se-choice-card{border-width:2px}',
+      '.se-shell [style*="background"]>.text-slate-400{color:#334155!important}',
+      '.se-shell .se-locked-badge{opacity:.65!important;filter:grayscale(1)}',
+      '.se-shell .se-sr-status{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}',
+      '@media (max-width:520px){.se-shell .se-destination-grid,.se-shell .se-two-column-grid{grid-template-columns:minmax(0,1fr)!important}.se-shell .se-resource-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.se-shell .se-toolbar{align-items:stretch;flex-direction:column}.se-shell .se-toolbar>*{width:100%}.se-shell .se-debrief-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}}',
+      '@media (prefers-contrast:more){.se-shell [class*="border-"]{border-color:#94a3b8!important}.se-shell [class*="bg-white/5"]{background-color:#1e293b!important}.se-shell button:disabled{opacity:1!important}.se-shell .se-locked-badge{opacity:1!important}}',
+      '@media (forced-colors:active){.se-shell button,.se-shell summary,.se-shell textarea,.se-shell input,.se-shell a[data-se-action]{border:1px solid ButtonText}.se-shell .se-choice-card{forced-color-adjust:auto}}'
+    ].join('');
+    document.head.appendChild(_seUx);
+  }
+
 
   // WCAG live region
   (function() {
@@ -336,6 +364,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       newRes[k] = Math.max(0, Math.min(RESOURCES[k].max, (newRes[k] || 0) + amount));
     });
     return newRes;
+  }
+
+  var INTERIOR_ZONES = [
+    {
+      id: 'flightdeck', name: 'Flight deck', short: 'Flight', icon: '\uD83E\uDDED',
+      activity: 'Confirm the attitude reference and secure the command tablet.',
+      challenge: 'Floating controls can drift into the crew path during a maneuver.'
+    },
+    {
+      id: 'lab', name: 'Science lab', short: 'Lab', icon: '\uD83E\uDDEA',
+      activity: 'Tether the specimen bag before opening the experiment rack.',
+      challenge: 'A loose sample keeps moving until a hand, rail, or wall stops it.'
+    },
+    {
+      id: 'medbay', name: 'Medical bay', short: 'Med', icon: '\uD83E\uDE7A',
+      activity: 'Stow the medical kit and brace the patient restraint.',
+      challenge: 'Crew and equipment both need restraint during treatment.'
+    },
+    {
+      id: 'engineering', name: 'Engineering', short: 'Engineering', icon: '\u2699\uFE0F',
+      activity: 'Inspect the oxygen scrubber and lock the tool pouch.',
+      challenge: 'Turning a tool can rotate an unbraced astronaut in the opposite direction.'
+    }
+  ];
+
+  var INTERIOR_CONDITIONS = [
+    {
+      id: 'stable', label: 'Stable cabin', short: 'Stable', icon: '\u2693',
+      description: 'No planned attitude change. Short gentle translations remain predictable.',
+      speedFactor: 1,
+      gentleSpanLimit: 2
+    },
+    {
+      id: 'maneuver', label: 'Station maneuver', short: 'Maneuver', icon: '\uD83D\uDEF0\uFE0F',
+      description: 'The station is changing attitude. Apparent drift changes while the crew member is in transit.',
+      speedFactor: 1.15,
+      gentleSpanLimit: 1
+    }
+  ];
+
+  function getInteriorCondition(conditionId) {
+    return INTERIOR_CONDITIONS.find(function(condition) { return condition.id === conditionId; }) || INTERIOR_CONDITIONS[0];
+  }
+
+  function evaluateInteriorTranslation(fromId, toId, strategy, conditionId) {
+    var fromIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === fromId; });
+    var toIndex = INTERIOR_ZONES.findIndex(function(zone) { return zone.id === toId; });
+    if (fromIndex < 0 || toIndex < 0 || fromIndex === toIndex) {
+      return {
+        valid: false,
+        controlled: false,
+        status: 'Choose a different compartment',
+        feedback: 'Select another compartment before practicing a translation.'
+      };
+    }
+    var condition = getInteriorCondition(conditionId);
+    var span = Math.abs(toIndex - fromIndex);
+    var distance = span * 3.2;
+    var method = strategy === 'rail' ? 'Handrail travel' : strategy === 'gentle' ? 'Gentle push + brake' : 'Hard push';
+    var baseSpeed = strategy === 'rail' ? 0.08 : strategy === 'gentle' ? 0.18 + Math.max(0, span - 1) * 0.03 : 0.75;
+    var speed = strategy === 'rail' ? baseSpeed : baseSpeed * condition.speedFactor;
+    var stoppingDistance = strategy === 'rail' ? 0 : (speed * speed) / 0.24;
+    var controlled = strategy === 'rail' || (strategy === 'gentle' && span <= condition.gentleSpanLimit);
+    var feedback = controlled
+      ? (strategy === 'rail'
+        ? (condition.id === 'maneuver'
+          ? 'Continuous hand contact preserves a braking point while the station changes attitude.'
+          : 'Continuous hand contact keeps the route slow and easy to stop.')
+        : (condition.id === 'maneuver'
+          ? 'On this short crossing, an early counter-push still produces a controlled arrival during the maneuver.'
+          : 'A light push followed by an early counter-push produces a controlled arrival.'))
+      : (strategy === 'gentle'
+        ? (condition.id === 'maneuver'
+          ? 'During an attitude maneuver, the changing cabin reference makes this crossing harder to predict. Use the handrail or break the route into one-compartment legs.'
+          : 'The longer crossing builds more drift than one gentle counter-push can safely remove. Break the route into shorter legs.')
+        : 'With no air drag to brake the crew member, the hard push carries too much momentum into the destination.');
+    return {
+      valid: true,
+      from: INTERIOR_ZONES[fromIndex],
+      to: INTERIOR_ZONES[toIndex],
+      strategy: strategy,
+      method: method,
+      condition: condition,
+      span: span,
+      distance: distance,
+      speed: speed,
+      stoppingDistance: stoppingDistance,
+      controlled: controlled,
+      status: controlled ? 'Controlled arrival' : 'Recovery needed',
+      feedback: feedback
+    };
+  }
+
+  function applyInteriorReadinessBonus(resources, orientation, alreadyApplied) {
+    var next = Object.assign({}, resources || {});
+    var state = orientation || {};
+    var tasks = state.tasks || {};
+    var completedTasks = Object.keys(tasks).filter(function(key) { return !!tasks[key]; }).length;
+    var eligible = !alreadyApplied && !!state.readinessComplete && completedTasks >= 2 && (state.controlledMoves || 0) >= 2;
+    if (!eligible) {
+      return { resources: next, applied: false, moraleBonus: 0, completedTasks: completedTasks };
+    }
+    var before = next.morale || 0;
+    var moraleMax = RESOURCES.morale ? RESOURCES.morale.max : 100;
+    next.morale = Math.min(moraleMax, before + 3);
+    return {
+      resources: next,
+      applied: true,
+      moraleBonus: next.morale - before,
+      completedTasks: completedTasks,
+      note: 'Rehearsed handrail routes and cabin tasks improve crew coordination before the first mission turn.'
+    };
   }
   function buildMissionDossier(dest, resources, crew, tech) {
     if (!dest) return null;
@@ -1089,12 +1229,371 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var reasoningScaffold = activeEvent ? buildReasoningScaffold(activeEvent, missionProtocol) : null;
       var viewportWidth = ctx.viewportWidth || (typeof window !== 'undefined' ? window.innerWidth : 1024);
       var isCompactViewport = viewportWidth < 640;
+      var confirmAbort = !!d.confirmAbort;
+      var interiorOrientation = d.interiorOrientation || { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false };
+
+      var MISSION_STEPS = [
+        { id: 'destination', label: t('stem.spaceexplorer.step_destination', 'Destination') },
+        { id: 'briefing', label: t('stem.spaceexplorer.step_briefing', 'Briefing') },
+        { id: 'power', label: t('stem.spaceexplorer.step_power', 'Power') },
+        { id: 'decision', label: t('stem.spaceexplorer.step_decision', 'Decision') },
+        { id: 'review', label: t('stem.spaceexplorer.step_review', 'Review') }
+      ];
+
+      function missionStepIndex(phase) {
+        if (phase === 'briefing') return 1;
+        if (phase === 'allocate') return 2;
+        if (phase === 'explore' || phase === 'event' || phase === 'outcome') return 3;
+        if (phase === 'debrief') return 4;
+        return 0;
+      }
+
+      function renderMissionProgress(phase) {
+        var activeStep = missionStepIndex(phase);
+        return h('nav', {
+          'data-spaceexplorer-progress': 'true',
+          'aria-label': t('stem.spaceexplorer.mission_progress', 'Mission progress'),
+          className: 'rounded-xl border border-slate-600 bg-slate-900/90 p-2.5'
+        },
+          h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
+            h('span', { className: 'text-xs font-bold text-white' }, t('stem.spaceexplorer.mission_progress', 'Mission progress')),
+            h('span', { className: 'text-xs text-slate-300', 'aria-live': 'polite' }, 'Step ' + (activeStep + 1) + ' of ' + MISSION_STEPS.length)
+          ),
+          h('ol', { className: 'grid grid-cols-5 gap-1' },
+            MISSION_STEPS.map(function(step, index) {
+              var state = index < activeStep ? 'complete' : index === activeStep ? 'current' : 'upcoming';
+              return h('li', {
+                key: step.id,
+                'aria-current': state === 'current' ? 'step' : undefined,
+                className: 'rounded-md border px-1 py-1.5 text-center text-[11px] font-bold ' +
+                  (state === 'complete' ? 'border-green-500 bg-green-950/70 text-green-100' :
+                   state === 'current' ? 'border-purple-300 bg-purple-700 text-white' :
+                   'border-slate-600 bg-slate-800 text-slate-300')
+              },
+                h('span', { 'aria-hidden': 'true', className: 'block' }, state === 'complete' ? '\u2713' : String(index + 1)),
+                h('span', { className: 'block' }, step.label)
+              );
+            })
+          )
+        );
+      }
+
+      function clearCurrentMission(message) {
+        updAll({
+          missionPhase: 'select', destination: null, resources: null, crew: [], turn: 0,
+          missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [],
+          missionResult: null, missionDossier: null, missionIntent: '', missionReflection: '',
+          missionEvidence: [], crewConsultLog: [], protocolRevisionDraft: '',
+          protocolRevisionApplied: false, missionProtocolOverride: null, protocolLog: [],
+          currentDecisionReason: '', minigamePending: null, minigameResult: null,
+          isGenerating: false, confirmAbort: false, specimenLog: [],
+          interiorOrientation: null,
+          interiorReadinessApplied: false, interiorReadinessBonus: 0,
+          objectiveReport: null, objectiveBonusScience: 0
+        });
+        announceToSR(message || 'Mission ended. Returned to destination selection.');
+      }
+
+      function renderMissionExit() {
+        if (isGenerating) {
+          return h('div', { 'data-spaceexplorer-exit': 'busy', className: 'rounded-xl border border-slate-600 bg-slate-900/80 p-3', role: 'status' },
+            h('p', { className: 'text-xs font-bold text-slate-100' }, t('stem.spaceexplorer.preparing_event', 'Preparing the next mission event...')),
+            h('p', { className: 'mt-1 text-xs text-slate-300' }, t('stem.spaceexplorer.end_after_event', 'Mission controls will return when the event is ready.'))
+          );
+        }
+        return h('div', { 'data-spaceexplorer-exit': 'true', className: 'rounded-xl border border-slate-600 bg-slate-900/80 p-2.5' },
+          !confirmAbort ? h('button', {
+            type: 'button',
+            onClick: function() { upd('confirmAbort', true); },
+            className: 'w-full rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-xs font-bold text-slate-100 hover:bg-slate-700'
+          }, t('stem.spaceexplorer.end_mission', 'End current mission')) :
+          h('div', { role: 'alert', className: 'space-y-2' },
+            h('p', { className: 'text-xs text-slate-100' }, t('stem.spaceexplorer.end_mission_warning', 'End this mission? Current mission progress will be cleared, but completed missions and upgrades stay saved.')),
+            h('div', { className: 'se-two-column-grid grid grid-cols-2 gap-2' },
+              h('button', { type: 'button', onClick: function() { upd('confirmAbort', false); }, className: 'rounded-lg border border-slate-500 bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:bg-slate-700' }, t('stem.spaceexplorer.keep_playing', 'Keep playing')),
+              h('button', { type: 'button', onClick: clearCurrentMission, className: 'rounded-lg border border-red-400 bg-red-900 px-3 py-2 text-xs font-bold text-white hover:bg-red-800' }, t('stem.spaceexplorer.confirm_end_mission', 'End mission'))
+            )
+          )
+        );
+      }
+
+      function renderInteriorOrientation() {
+        var positionId = interiorOrientation.position || 'flightdeck';
+        var targetId = interiorOrientation.target || 'lab';
+        var tasks = interiorOrientation.tasks || {};
+        var positionZone = INTERIOR_ZONES.find(function(zone) { return zone.id === positionId; }) || INTERIOR_ZONES[0];
+        var targetZone = INTERIOR_ZONES.find(function(zone) { return zone.id === targetId; }) || INTERIOR_ZONES[1];
+        var completedActivities = Object.keys(tasks).filter(function(key) { return !!tasks[key]; }).length;
+        var controlledMoves = interiorOrientation.controlledMoves || 0;
+        var maneuverControlledMoves = interiorOrientation.maneuverControlledMoves || 0;
+        var readinessComplete = !!interiorOrientation.readinessComplete;
+        var lastResult = interiorOrientation.lastResult || null;
+        var conditionId = interiorOrientation.condition || 'stable';
+        var condition = getInteriorCondition(conditionId);
+        var movementMethods = [
+          { id: 'rail', label: 'Handrail travel', hint: 'Slowest ? continuous contact', cls: 'border-green-500 bg-green-950/60' },
+          { id: 'gentle', label: 'Gentle push + brake', hint: 'Coast, then counter-push', cls: 'border-cyan-500 bg-cyan-950/60' },
+          { id: 'hard', label: 'Hard push', hint: 'Fast ? recovery likely', cls: 'border-amber-500 bg-amber-950/50' }
+        ];
+        var routePredictions = {};
+        movementMethods.forEach(function(method) { routePredictions[method.id] = evaluateInteriorTranslation(positionId, targetId, method.id, conditionId); });
+        var zoneLayout = {
+          flightdeck: { x: 28, y: 180, w: 154, h: 62 },
+          lab: { x: 190, y: 132, w: 126, h: 56 },
+          medbay: { x: 328, y: 94, w: 116, h: 52 },
+          engineering: { x: 456, y: 56, w: 158, h: 50 }
+        };
+
+        function setInteriorOrientation(patch) {
+          upd('interiorOrientation', Object.assign({}, interiorOrientation, patch));
+        }
+
+        function chooseInteriorTarget(id) {
+          setInteriorOrientation({ target: id, feedback: id === positionId ? 'You are already in this compartment. Choose another destination or complete its activity.' : '' });
+          var zone = INTERIOR_ZONES.find(function(item) { return item.id === id; });
+          if (zone) announceToSR(zone.name + ' selected as the interior destination.');
+        }
+
+        function chooseInteriorCondition(id) {
+          var nextCondition = getInteriorCondition(id);
+          setInteriorOrientation({ condition: nextCondition.id, feedback: nextCondition.description, lastResult: null });
+          announceToSR(nextCondition.label + ' selected. ' + nextCondition.description);
+        }
+
+        function tryInteriorTranslation(strategy) {
+          var result = evaluateInteriorTranslation(positionId, targetId, strategy, conditionId);
+          if (!result.valid) {
+            setInteriorOrientation({ feedback: result.feedback, lastResult: null });
+            announceToSR(result.feedback);
+            return;
+          }
+          var nextControlled = controlledMoves + (result.controlled ? 1 : 0);
+          var nextManeuverControlled = maneuverControlledMoves + (result.controlled && result.condition.id === 'maneuver' ? 1 : 0);
+          var nextRecoveries = (interiorOrientation.recoveryCount || 0) + (result.controlled ? 0 : 1);
+          var nextReady = completedActivities >= 2 && nextControlled >= 2;
+          setInteriorOrientation({
+            position: result.to.id,
+            attempts: (interiorOrientation.attempts || 0) + 1,
+            controlledMoves: nextControlled,
+            maneuverControlledMoves: nextManeuverControlled,
+            recoveryCount: nextRecoveries,
+            readinessComplete: nextReady,
+            lastResult: {
+              method: result.method,
+              conditionId: result.condition.id,
+              conditionLabel: result.condition.label,
+              controlled: result.controlled,
+              speed: result.speed,
+              distance: result.distance,
+              stoppingDistance: result.stoppingDistance,
+              status: result.status
+            },
+            feedback: result.feedback
+          });
+          announceToSR(result.status + '. Arrived at ' + result.to.name + '. ' + result.feedback);
+        }
+
+        function completeInteriorActivity() {
+          if (positionId !== targetId || tasks[positionId]) return;
+          var nextTasks = Object.assign({}, tasks);
+          nextTasks[positionId] = true;
+          var nextCount = Object.keys(nextTasks).filter(function(key) { return !!nextTasks[key]; }).length;
+          var nextReady = nextCount >= 2 && controlledMoves >= 2;
+          var message = positionZone.activity + ' Activity logged.';
+          if (nextReady) message += ' Cabin orientation complete.';
+          else if (nextCount >= 2) message += ' Practice one more controlled translation to finish orientation.';
+          else message += ' Select another compartment for the second activity.';
+          setInteriorOrientation({ tasks: nextTasks, readinessComplete: nextReady, feedback: message });
+          announceToSR(message);
+        }
+
+        function resetInteriorOrientation() {
+          upd('interiorOrientation', { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false });
+          announceToSR('Interior orientation reset. You are back on the flight deck.');
+        }
+
+        return h('section', {
+          'data-spaceexplorer-interior': 'true',
+          'aria-labelledby': 'se-interior-title',
+          className: 'rounded-xl border border-cyan-500 bg-slate-950/80 p-3'
+        },
+          h('div', { className: 'se-toolbar mb-3 flex items-start justify-between gap-3' },
+            h('div', null,
+              h('div', { className: 'text-xs font-bold uppercase tracking-wide text-cyan-200' }, 'Optional practice ? launch remains available'),
+              h('h2', { id: 'se-interior-title', className: 'mt-1 text-base font-black text-white' }, 'Float through the mission cabin'),
+              h('p', { id: 'se-interior-help', className: 'mt-1 text-xs leading-relaxed text-slate-200' }, 'Choose a compartment, test a movement method, then complete its activity. In microgravity, weightlessness removes foot friction ? not mass or inertia.')
+            ),
+            h('div', {
+              'data-spaceexplorer-interior-progress': 'true',
+              className: 'min-w-[132px] rounded-lg bg-slate-800 p-2 text-right',
+              role: 'status',
+              'aria-live': 'polite'
+            },
+              h('div', { className: 'text-xs font-bold ' + (readinessComplete ? 'text-green-200' : 'text-cyan-100') }, readinessComplete ? 'Cabin ready' : completedActivities + ' of 2 activities'),
+              h('div', { className: 'mt-1 text-[11px] text-slate-200' }, controlledMoves + ' controlled move' + (controlledMoves === 1 ? '' : 's')),
+              maneuverControlledMoves > 0 && h('div', { 'data-spaceexplorer-maneuver-safe': String(maneuverControlledMoves), className: 'mt-1 text-[11px] font-bold text-orange-200' }, maneuverControlledMoves + ' maneuver-safe')
+            )
+          ),
+          h('div', { className: 'se-two-column-grid grid grid-cols-2 items-start gap-3' },
+            h('div', { className: 'overflow-hidden rounded-xl border border-slate-600 bg-slate-950' },
+              h('svg', {
+                viewBox: '0 0 640 270',
+                className: 'block h-auto w-full',
+                role: 'img',
+                'aria-labelledby': 'se-interior-visual-title se-interior-visual-desc',
+                'data-spaceexplorer-interior-visual': 'perspective'
+              },
+                h('title', { id: 'se-interior-visual-title' }, 'Perspective view of the mission cabin'),
+                h('desc', { id: 'se-interior-visual-desc' }, 'A connected interior route from the flight deck through the science lab and medical bay to engineering. Current compartment: ' + positionZone.name + '. Selected destination: ' + targetZone.name + '. Cabin condition: ' + condition.label + '. ' + condition.description),
+                h('defs', null,
+                  h('linearGradient', { id: 'se-cabin-wall', x1: '0', y1: '0', x2: '0', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#172554' }),
+                    h('stop', { offset: '100%', stopColor: '#020617' })
+                  ),
+                  h('linearGradient', { id: 'se-cabin-floor', x1: '0', y1: '0', x2: '1', y2: '1' },
+                    h('stop', { offset: '0%', stopColor: '#0f172a' }),
+                    h('stop', { offset: '100%', stopColor: '#1e293b' })
+                  )
+                ),
+                h('rect', { width: 640, height: 270, fill: '#020617' }),
+                h('polygon', { points: '0,0 640,0 548,270 92,270', fill: 'url(#se-cabin-wall)' }),
+                h('polygon', { points: '226,52 414,52 548,270 92,270', fill: 'url(#se-cabin-floor)', stroke: '#475569', strokeWidth: 2 }),
+                h('line', { x1: 110, y1: 250, x2: 278, y2: 56, stroke: '#67e8f9', strokeWidth: 5 }),
+                h('line', { x1: 530, y1: 250, x2: 362, y2: 56, stroke: '#67e8f9', strokeWidth: 5 }),
+                h('line', { x1: 110, y1: 250, x2: 278, y2: 56, stroke: '#ecfeff', strokeWidth: 1 }),
+                h('line', { x1: 530, y1: 250, x2: 362, y2: 56, stroke: '#ecfeff', strokeWidth: 1 }),
+                h('polyline', { points: '105,211 253,160 386,120 535,81', fill: 'none', stroke: condition.id === 'maneuver' ? '#fb923c' : '#fde047', strokeWidth: 4, strokeDasharray: condition.id === 'maneuver' ? '5 5' : '9 8' }),
+                INTERIOR_ZONES.map(function(zone) {
+                  var box = zoneLayout[zone.id];
+                  var current = zone.id === positionId;
+                  var target = zone.id === targetId;
+                  var complete = !!tasks[zone.id];
+                  var fill = current ? '#166534' : target ? '#6d28d9' : complete ? '#0f766e' : '#1e293b';
+                  var stroke = current ? '#86efac' : target ? '#c4b5fd' : complete ? '#5eead4' : '#94a3b8';
+                  var stateLabel = current ? 'YOU ARE HERE' : target ? 'TARGET' : complete ? 'TASK DONE' : 'COMPARTMENT';
+                  return h('g', { key: zone.id },
+                    h('rect', { x: box.x, y: box.y, width: box.w, height: box.h, rx: 7, fill: fill, stroke: stroke, strokeWidth: 3 }),
+                    h('text', { x: box.x + box.w / 2, y: box.y + 26, textAnchor: 'middle', fill: '#f8fafc', fontSize: 22, fontWeight: 700 }, zone.short),
+                    h('text', { x: box.x + box.w / 2, y: box.y + box.h - 10, textAnchor: 'middle', fill: '#f8fafc', fontSize: 18, fontWeight: 700 }, stateLabel)
+                  );
+                }),
+                h('text', { x: 20, y: 28, fill: '#cffafe', fontSize: 20, fontWeight: 700 }, 'MISSION CABIN ? HANDRAILS + HATCH ROUTE'),
+                h('text', { x: 620, y: 28, textAnchor: 'end', fill: condition.id === 'maneuver' ? '#fed7aa' : '#bbf7d0', fontSize: 18, fontWeight: 700 }, condition.id === 'maneuver' ? 'ATTITUDE MANEUVER ACTIVE' : 'STABLE FLIGHT'),
+                h('text', { x: 320, y: 262, textAnchor: 'middle', fill: '#e2e8f0', fontSize: 18 }, (condition.id === 'maneuver' ? 'Orange dashed path = changing reference' : 'Yellow path = planned translation') + ' ? cyan rails = braking points')
+              ),
+              h('div', { className: 'grid grid-cols-2 gap-2 border-t border-slate-600 p-2 text-[11px]' },
+                h('div', null, h('span', { className: 'text-slate-300' }, 'Current: '), h('strong', { 'data-spaceexplorer-interior-position': positionId, className: 'text-green-200' }, positionZone.name)),
+                h('div', { className: 'text-right' }, h('span', { className: 'text-slate-300' }, 'Target: '), h('strong', { className: 'text-purple-200' }, targetZone.name)),
+                h('div', { className: 'col-span-2 border-t border-slate-700 pt-1' }, h('span', { className: 'text-slate-300' }, 'Condition: '), h('strong', { 'data-spaceexplorer-interior-condition-status': condition.id, className: condition.id === 'maneuver' ? 'text-orange-200' : 'text-green-200' }, condition.icon + ' ' + condition.label))
+              )
+            ),
+            h('div', { className: 'space-y-3' },
+              h('div', null,
+                h('h3', { className: 'text-xs font-black text-white' }, '1. Choose a compartment'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Interior destination' },
+                  INTERIOR_ZONES.map(function(zone) {
+                    var selected = zone.id === targetId;
+                    return h('button', {
+                      key: zone.id,
+                      type: 'button',
+                      'data-spaceexplorer-interior-target': zone.id,
+                      'aria-pressed': selected,
+                      onClick: function() { chooseInteriorTarget(zone.id); },
+                      className: 'rounded-lg border p-2 text-left ' + (selected ? 'border-purple-300 bg-purple-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                    },
+                      h('span', { className: 'block text-xs font-bold' }, zone.icon + ' ' + zone.name),
+                      h('span', { className: 'mt-1 block text-[11px] text-slate-200' }, tasks[zone.id] ? 'Activity complete' : zone.activity)
+                    );
+                  })
+                )
+              ),
+              h('div', null,
+                h('h3', { className: 'text-xs font-black text-white' }, '2. Set the cabin condition'),
+                h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Cabin condition' },
+                  INTERIOR_CONDITIONS.map(function(item) {
+                    var selected = item.id === condition.id;
+                    return h('button', {
+                      key: item.id,
+                      type: 'button',
+                      'data-spaceexplorer-interior-condition': item.id,
+                      'aria-pressed': selected,
+                      onClick: function() { chooseInteriorCondition(item.id); },
+                      className: 'rounded-lg border p-2 text-left ' + (selected ? 'border-cyan-200 bg-cyan-800 text-white' : 'border-slate-500 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                    },
+                      h('span', { className: 'block text-xs font-bold' }, item.icon + ' ' + item.label),
+                      h('span', { className: 'mt-1 block text-[11px] text-slate-200' }, item.id === 'stable' ? 'Predictable short crossings' : 'Changing reference + added drift')
+                    );
+                  })
+                )
+              ),
+              h('div', null,
+                h('h3', { className: 'text-xs font-black text-white' }, '3. Choose how to move'),
+                h('div', {
+                  'data-spaceexplorer-interior-route-preview': condition.id,
+                  className: 'mt-2 rounded-lg border border-slate-600 bg-slate-900 p-2 text-[11px] text-slate-100'
+                }, positionId === targetId
+                  ? 'Choose a different compartment to preview the route.'
+                  : positionZone.short + ' ? ' + targetZone.short + ' ? ' + routePredictions.rail.distance.toFixed(1) + ' m ? ' + condition.label),
+                h('div', { className: 'mt-2 space-y-2', role: 'group', 'aria-label': 'Microgravity movement method' },
+                  movementMethods.map(function(method) {
+                    var prediction = routePredictions[method.id];
+                    return h('button', {
+                      key: method.id,
+                      type: 'button',
+                      disabled: positionId === targetId,
+                      'data-spaceexplorer-interior-strategy': method.id,
+                      onClick: function() { tryInteriorTranslation(method.id); },
+                      className: 'w-full rounded-lg border p-2 text-left text-white ' + method.cls
+                    },
+                      h('span', { className: 'block text-xs font-bold' }, method.label),
+                      h('span', { className: 'mt-0.5 block text-[11px] text-slate-200' }, method.hint),
+                      h('span', {
+                        'data-spaceexplorer-interior-prediction': method.id,
+                        'data-predicted-control': prediction.valid ? (prediction.controlled ? 'controlled' : 'recovery') : 'unavailable',
+                        className: 'mt-1 block text-[11px] font-bold ' + (prediction.valid && prediction.controlled ? 'text-green-200' : 'text-amber-200')
+                      }, prediction.valid ? (prediction.controlled ? 'Controlled arrival predicted' : 'Recovery likely') + ' ? ' + prediction.speed.toFixed(2) + ' m/s' : 'Choose another compartment')
+                    );
+                  })
+                )
+              ),
+              h('div', { className: 'rounded-lg border border-slate-600 bg-slate-900 p-2.5' },
+                h('h3', { className: 'text-xs font-black text-white' }, '4. Work in the compartment'),
+                h('p', { className: 'mt-1 text-xs text-slate-200' }, positionZone.challenge),
+                h('button', {
+                  type: 'button',
+                  disabled: positionId !== targetId || !!tasks[positionId],
+                  'data-spaceexplorer-interior-activity': positionId,
+                  onClick: completeInteriorActivity,
+                  className: 'mt-2 w-full rounded-lg border border-cyan-300 bg-cyan-800 px-3 py-2 text-xs font-bold text-white hover:bg-cyan-700'
+                }, tasks[positionId] ? 'Activity complete' : positionId !== targetId ? 'Move to ' + targetZone.name + ' first' : 'Complete activity in ' + positionZone.name)
+              )
+            )
+          ),
+          h('div', {
+            id: 'se-interior-feedback',
+            'data-spaceexplorer-interior-result': lastResult ? (lastResult.controlled ? 'controlled' : 'recovery') : 'ready',
+            className: 'mt-3 rounded-lg border p-2.5 ' + (readinessComplete ? 'border-green-500 bg-green-950/60' : lastResult && !lastResult.controlled ? 'border-amber-500 bg-amber-950/50' : 'border-slate-600 bg-slate-900'),
+            role: 'status',
+            'aria-live': 'polite'
+          },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('strong', { className: 'text-xs ' + (readinessComplete ? 'text-green-200' : 'text-white') }, readinessComplete ? 'Cabin ready ? orientation complete' : lastResult ? lastResult.status : 'Ready for interior practice'),
+              h('button', { type: 'button', onClick: resetInteriorOrientation, className: 'rounded-md border border-slate-500 bg-slate-800 px-2 py-1 text-[11px] font-bold text-white' }, 'Reset practice')
+            ),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorOrientation.feedback || 'Start on the flight deck. Pick a different compartment, then compare how movement choices affect control.'),
+            lastResult && h('p', { className: 'mt-1 text-[11px] font-mono text-cyan-100' }, (lastResult.conditionLabel || 'Stable cabin') + ' ? ' + lastResult.method + ' ? ' + lastResult.speed.toFixed(2) + ' m/s ? ' + lastResult.distance.toFixed(1) + ' m route ? about ' + lastResult.stoppingDistance.toFixed(2) + ' m to stop')
+          )
+        );
+      }
 
       function log(msg) {
-        var nl = missionLog.slice();
-        nl.push({ text: msg, time: new Date().toLocaleTimeString() });
-        if (nl.length > 20) nl = nl.slice(-20);
-        upd('missionLog', nl);
+        setLabToolData(function(prev) {
+          var current = prev.spaceExplorer || {};
+          var nl = (current.missionLog || []).slice();
+          nl.push({ text: msg, time: new Date().toLocaleTimeString() });
+          if (nl.length > 20) nl = nl.slice(-20);
+          return Object.assign({}, prev, { spaceExplorer: Object.assign({}, current, { missionLog: nl }) });
+        });
       }
 
       function addXP(amount) {
@@ -1131,7 +1630,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           powerAllocation: normalizeAllocation(d.powerAllocation, unlockedTech),
           consultUsed: false,
           revealedHiddenOption: false,
-          specimenLog: []
+          specimenLog: [],
+          interiorOrientation: { position: 'flightdeck', target: 'lab', condition: 'stable', tasks: {}, controlledMoves: 0, maneuverControlledMoves: 0, recoveryCount: 0, attempts: 0, lastResult: null, feedback: '', readinessComplete: false },
+          interiorReadinessApplied: false, interiorReadinessBonus: 0,
+          objectiveReport: null,
+          objectiveBonusScience: 0
         });
         announceToSR('Mission to ' + dest.name + ' selected. Crew of ' + missionCrew.length + ' assembled. Review the briefing.');
       }
@@ -1157,8 +1660,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         upd('isGenerating', true);
 
         // Apply per-turn resource drain BEFORE generating the event
-        var drainedRes = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
-        upd('resources', drainedRes);
+        var readinessResult = applyInteriorReadinessBonus(resources, interiorOrientation, !!d.interiorReadinessApplied);
+        var drainedRes = applyTurnDrain(readinessResult.resources, destination, unlockedTech, powerAllocation);
+        var drainPatch = { resources: drainedRes };
+        if (readinessResult.applied) {
+          drainPatch.interiorReadinessApplied = true;
+          drainPatch.interiorReadinessBonus = readinessResult.moraleBonus;
+        }
+        updAll(drainPatch);
+        if (readinessResult.applied) {
+          log('Cabin readiness applied: +' + readinessResult.moraleBonus + ' morale before routine turn drain.');
+          if (addToast) addToast('Cabin practice applied: +' + readinessResult.moraleBonus + ' morale', 'success');
+        }
 
         // Check for critical resource warnings
         var warnings = [];
@@ -1172,6 +1685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           return RESOURCES[k].max !== 999 ? RESOURCES[k].label + ' ' + drainedRes[k] + '%' : '';
         }).filter(Boolean).join(', ') + '.';
         if (warnings.length > 0) srResMsg += ' Warning: ' + warnings.join('. ') + '.';
+        if (readinessResult.applied) srResMsg += ' Cabin practice added ' + readinessResult.moraleBonus + ' morale before routine turn drain.';
         announceToSR(srResMsg);
 
         if (!callGemini) {
@@ -1512,16 +2026,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       // ── Destination Select ──
       if (missionPhase === 'select') {
         var badgeCount = Object.keys(earnedBadges).length;
-        return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': t('stem.spaceexplorer.space_explorer_mission_select', 'Space Explorer mission select') },
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'mission-select', 'aria-label': t('stem.spaceexplorer.space_explorer_mission_select', 'Space Explorer mission select') },
+          h('div', { className: 'rounded-xl border border-purple-500 bg-gradient-to-r from-purple-900 to-indigo-900 p-4 text-center' },
+            h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, t('stem.spaceexplorer.space_explorer', '\uD83C\uDF0C Space Explorer')),
+            h('p', { className: 'text-xs text-purple-100 mt-1' }, t('stem.spaceexplorer.roguelike_missions_across_the_solar_sy', 'Choose a destination, manage your ship, and use real science to bring the crew home.')),
+            completedMissions > 0 && h('div', { className: 'flex flex-wrap justify-center gap-x-4 gap-y-1 mt-3 text-xs text-purple-100', role: 'list', 'aria-label': t('stem.spaceexplorer.mission_statistics', 'Mission statistics') },
+              h('span', { role: 'listitem' }, '\uD83D\uDE80 ' + completedMissions + ' missions'),
+              h('span', { role: 'listitem' }, '\uD83D\uDD2C ' + totalScience + ' science'),
+              h('span', { role: 'listitem' }, '\u26A1 ' + unlockedTech.length + ' tech'),
+              badgeCount > 0 && h('span', { role: 'listitem' }, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' badges')
+            ),
+            badgeCount > 0 && h('div', { className: 'flex justify-center gap-2 mt-3 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Achievement badges') },
+              BADGES.map(function(b) {
+                var earned = !!earnedBadges[b.id];
+                return h('span', {
+                  key: b.id, role: 'listitem',
+                  title: b.name + (earned ? ' (earned)' : ' (locked)') + ' \u2014 ' + b.desc,
+                  'aria-label': b.name + (earned ? ', earned. ' : ', locked. ') + b.desc,
+                  className: 'text-base ' + (earned ? '' : 'se-locked-badge')
+                }, b.icon);
+              })
+            )
+          ),
+          h('ol', { 'data-spaceexplorer-quickstart': 'true', className: 'grid grid-cols-1 gap-2 sm:grid-cols-3', 'aria-label': t('stem.spaceexplorer.quick_start', 'Quick start') },
+            [
+              ['1', t('stem.spaceexplorer.quick_pick', 'Pick a destination'), t('stem.spaceexplorer.quick_pick_detail', 'Mars and the Moon are beginner-friendly.')],
+              ['2', t('stem.spaceexplorer.quick_power', 'Allocate ship power'), t('stem.spaceexplorer.quick_power_detail', 'Use every pip to protect what matters next.')],
+              ['3', t('stem.spaceexplorer.quick_decide', 'Make evidence-based choices'), t('stem.spaceexplorer.quick_decide_detail', 'Survive every turn without losing oxygen or hull.')]
+            ].map(function(step) {
+              return h('li', { key: step[0], className: 'rounded-xl border border-slate-600 bg-slate-900 p-3' },
+                h('div', { className: 'flex items-center gap-2 text-xs font-bold text-white' },
+                  h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full bg-purple-700 text-white', 'aria-hidden': 'true' }, step[0]),
+                  h('span', null, step[1])
+                ),
+                h('p', { className: 'mt-1 text-xs text-slate-300' }, step[2])
+              );
+            })
+          ),
           // Header
           // \u2500\u2500 Pre-game brief: how a run works \u2500\u2500
           // Collapsible <details>. Auto-opens for first-timers on larger
           // screens, while phones keep mission choices in the first view.
           h('details', {
-            open: completedMissions === 0 && !isCompactViewport,
             className: 'rounded-xl border border-purple-700/50 bg-gradient-to-br from-slate-900 to-purple-950'
           },
-            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-200' }, t('stem.spaceexplorer.how_space_explorer_works_click_to_togg', '\uD83D\uDCDC How Space Explorer works (click to toggle)')),
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-100' }, t('stem.spaceexplorer.how_space_explorer_works_click_to_togg', '\uD83D\uDCDC Mission guide: rules, resources, crew, and upgrades')),
             h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] text-slate-300' },
               h('div', null,
                 h('div', { className: 'font-black mb-1 text-purple-200' }, t('stem.spaceexplorer.what_a_run_is', '\uD83C\uDFAF What a run is')),
@@ -1549,31 +2098,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('div', null,
                 h('div', { className: 'font-black mb-1 text-purple-200' }, t('stem.spaceexplorer.crew_tech', '\uD83E\uDDD1\u200D\uD83D\uDE80 Crew + Tech')),
                 h('ul', { className: 'list-disc list-inside space-y-1 leading-relaxed' },
-                  h('li', null, h('strong', null, t('stem.spaceexplorer.crew_specialties', 'Crew specialties')), t('stem.spaceexplorer.engineer_medic_scientist_etc_unlock_a_', ' (engineer, medic, scientist, etc.) unlock a hidden 4th choice when the event matches their skill. Tap a crew member during an event to consult.')),
+                  h('li', null, h('strong', null, t('stem.spaceexplorer.crew_specialties', 'Crew specialties')), t('stem.spaceexplorer.engineer_medic_scientist_etc_unlock_a_', ' (engineer, medic, scientist, etc.) unlock a hidden 4th choice when the event matches their skill. Choose a crew member during an event to consult.')),
                   h('li', null, h('strong', null, t('stem.spaceexplorer.tech_shop', 'Tech Shop')), t('stem.spaceexplorer.opens_once_you_have_50_science_permane', ' opens once you have 50+ science. Permanent upgrades that reduce resource drain or unlock new options.')),
                   h('li', null, h('strong', null, t('stem.spaceexplorer.power_allocation', 'Power allocation')), t('stem.spaceexplorer.life_science_shields_comms_lets_you_bi', ' (Life / Science / Shields / Comms) lets you bias resource drain each turn. Pre-launch decision.'))
                 )
               ),
               h('div', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-purple-800/30' },
                 t('stem.spaceexplorer.tip_harder_destinations_give_more_scie', 'Tip: harder destinations give more science. Mars + Moon are the safest starting points. Wins, best %, and total science track per destination below each tile.'))
-            )
-          ),
-          h('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 text-center' },
-            h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, t('stem.spaceexplorer.space_explorer', '\uD83C\uDF0C Space Explorer')),
-            h('p', { className: 'text-xs text-purple-200 mt-1' }, t('stem.spaceexplorer.roguelike_missions_across_the_solar_sy', 'Roguelike missions across the solar system. Each run teaches new science.')),
-            completedMissions > 0 && h('div', { className: 'flex justify-center gap-3 mt-2 text-[11px] text-purple-200', 'aria-label': t('stem.spaceexplorer.mission_statistics', 'Mission statistics') },
-              h('span', null, '\uD83D\uDE80 ' + completedMissions + ' missions'),
-              h('span', null, '\uD83D\uDD2C ' + totalScience + ' science'),
-              h('span', null, '\u26A1 ' + unlockedTech.length + ' tech'),
-              badgeCount > 0 && h('span', null, '\uD83C\uDFC5 ' + badgeCount + '/' + BADGES.length + ' badges')
-            ),
-            // Badge display
-            badgeCount > 0 && h('div', { className: 'flex justify-center gap-1 mt-2 flex-wrap', role: 'list', 'aria-label': t('stem.spaceexplorer.earned_badges', 'Earned badges') },
-              BADGES.map(function(b) {
-                var earned = !!earnedBadges[b.id];
-                return h('span', { key: b.id, role: 'listitem', title: b.name + (earned ? ' (earned)' : ' (locked)') + ' \u2014 ' + b.desc,
-                  className: 'text-sm ' + (earned ? '' : 'opacity-20 grayscale') }, b.icon);
-              })
             )
           ),
           // Tech shop button
@@ -1584,28 +2115,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             className: 'w-full py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-xs font-bold text-cyan-300 hover:bg-cyan-500/20 transition-all focus:ring-2 focus:ring-cyan-400 focus:outline-none'
           }, '\uD83D\uDD2C Tech Shop \u2014 Spend science points (' + totalScience + ' pts available)'),
           // Destination grid
-          h('div', { className: 'grid grid-cols-2 gap-2', role: 'list', 'aria-label': t('stem.spaceexplorer.available_mission_destinations', 'Available mission destinations') },
+          h('div', { className: 'flex flex-wrap items-end justify-between gap-2' },
+            h('div', null, h('h3', { className: 'text-sm font-black text-white' }, t('stem.spaceexplorer.choose_destination', 'Choose a destination')), h('p', { className: 'text-xs text-slate-300' }, t('stem.spaceexplorer.choose_destination_help', 'Begin with Mars or the Moon, then unlock harder expeditions.'))),
+            h('span', { className: 'text-xs font-bold text-purple-100' }, DESTINATIONS.filter(function(dest) { return dest.unlockAt <= completedMissions; }).length + ' of ' + DESTINATIONS.length + ' available')
+          ),
+          h('div', { className: 'se-destination-grid grid grid-cols-1 gap-2 sm:grid-cols-2', role: 'list', 'aria-label': t('stem.spaceexplorer.available_mission_destinations', 'Available mission destinations') },
             DESTINATIONS.map(function(dest) {
               var locked = dest.unlockAt > completedMissions;
+              var recommended = !locked && dest.difficulty === 1;
+              var difficultyLabel = dest.difficulty <= 1 ? 'Beginner' : dest.difficulty <= 2 ? 'Developing' : dest.difficulty <= 3 ? 'Advanced' : 'Expert';
+              var missionTurns = Math.max(8, 5 + dest.difficulty * 3);
               return h('div', { key: dest.id, role: 'listitem' }, h('button', {
                 type: 'button',
                 disabled: locked,
-                'aria-label': dest.name + '. Difficulty ' + dest.difficulty + ' of 5. ' + (locked ? 'Locked. Complete ' + dest.unlockAt + ' missions to unlock.' : dest.desc),
+                'aria-label': dest.name + '. ' + difficultyLabel + ' difficulty, ' + dest.difficulty + ' of 5. ' + missionTurns + ' turns. ' + (locked ? 'Locked. Complete ' + dest.unlockAt + ' missions to unlock.' : dest.desc + ' Start mission.'),
                 onClick: function() { startMission(dest); },
-                className: 'text-left p-3 rounded-xl border transition-all focus:ring-2 focus:ring-purple-400 focus:outline-none ' +
+                className: 'se-choice-card h-full w-full text-left p-3 rounded-xl border transition-all focus:ring-2 focus:ring-purple-400 focus:outline-none ' +
                   (locked ? 'bg-slate-800/50 border-slate-700 opacity-50 cursor-not-allowed' :
                    'bg-gradient-to-br from-slate-800 to-slate-900 border-slate-600 hover:border-purple-400 hover:scale-[1.02] active:scale-[0.98]')
               },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-xl', 'aria-hidden': 'true' }, locked ? '\uD83D\uDD12' : dest.emoji),
-                  h('span', { className: 'text-xs font-bold text-white' }, dest.name)
+                  h('span', { className: 'text-sm font-bold text-white' }, dest.name),
+                  recommended && h('span', { className: 'ml-auto rounded-md border border-green-400 bg-green-950 px-2 py-0.5 text-[11px] font-bold text-green-100' }, t('stem.spaceexplorer.recommended', 'Recommended'))
                 ),
                 h('div', { className: 'flex gap-1 mb-1', 'aria-label': 'Difficulty ' + dest.difficulty + ' of 5' },
                   Array.from({ length: 5 }, function(_, i) {
                     return h('span', { key: i, className: 'text-[11px]', 'aria-hidden': 'true' }, i < dest.difficulty ? '\u2B50' : '\u2606');
                   })
                 ),
-                h('p', { className: 'text-[11px] text-slate-300 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission(s) to unlock' : __alloT('stem.spaceexplorer.' + (dest.id) + '_desc', dest.desc)),
+                h('div', { className: 'mb-1 text-xs font-bold text-slate-200' }, difficultyLabel + ' \u00B7 ' + missionTurns + ' turns'),
+                h('div', { className: 'mb-2 text-xs text-slate-300' }, locked ? 'Unlocks after ' + dest.unlockAt + ' completed mission' + (dest.unlockAt === 1 ? '' : 's') : 'Primary hazards: ' + dest.hazards.slice(0, 2).join(', ')),
+                h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, locked ? 'Complete ' + dest.unlockAt + ' mission' + (dest.unlockAt === 1 ? '' : 's') + ' to unlock.' : __alloT('stem.spaceexplorer.' + (dest.id) + '_desc', dest.desc)),
+                h('div', { className: 'mt-3 border-t border-slate-600 pt-2 text-xs font-bold ' + (locked ? 'text-slate-300' : 'text-purple-100') }, locked ? '\uD83D\uDD12 Locked' : t('stem.spaceexplorer.start_mission', 'Start mission \u2192')),
                 !locked && (function() {
                   var stats = (d.destStats || {})[dest.id];
                   if (!stats) return null;
@@ -1623,23 +2165,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Tech Shop ──
       if (missionPhase === 'techshop') {
-        return h('div', { className: 'space-y-3 animate-in fade-in duration-300' },
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'tech-shop', 'aria-label': t('stem.spaceexplorer.tech_shop_2', 'Tech Shop') },
           h('div', { className: 'bg-gradient-to-r from-cyan-900 to-teal-900 rounded-xl p-4 flex justify-between items-center' },
             h('div', null,
               h('h3', { className: 'text-sm font-black text-white' }, t('stem.spaceexplorer.tech_shop_2', '\uD83D\uDD2C Tech Shop')),
               h('p', { className: 'text-[11px] text-cyan-300' }, totalScience + ' science points available')
             ),
-            h('button', { type: 'button', onClick: function() { upd('missionPhase', 'select'); }, 'aria-label': t('stem.spaceexplorer.back_to_mission_select', 'Back to mission select'), className: 'px-3 py-1.5 bg-white/10 rounded-lg text-xs font-bold text-white hover:bg-white/20' }, t('stem.spaceexplorer.back', '\u2190 Back'))
+            h('button', { type: 'button', onClick: function() { upd('missionPhase', 'select'); }, 'aria-label': t('stem.spaceexplorer.back_to_mission_select', 'Back to mission select'), className: 'px-3 py-2 bg-slate-800 border border-cyan-300 rounded-lg text-xs font-bold text-white hover:bg-slate-700 focus:ring-2 focus:ring-yellow-300 focus:outline-none' }, t('stem.spaceexplorer.back', '\u2190 Back'))
           ),
-          h('div', { className: 'space-y-2' },
+          h('div', { className: 'space-y-2', role: 'list', 'aria-label': t('stem.spaceexplorer.available_upgrades', 'Available ship upgrades') },
             TECH_TREE.map(function(tech) {
               var owned = unlockedTech.indexOf(tech.id) >= 0;
               var canBuy = totalScience >= tech.cost && !owned;
-              return h('div', { key: tech.id, className: 'flex items-center gap-3 p-3 rounded-xl border ' + (owned ? 'bg-green-500/10 border-green-500/20' : 'bg-white/5 border-white/10') },
+              return h('div', { key: tech.id, role: 'listitem', className: 'flex items-center gap-3 p-3 rounded-xl border ' + (owned ? 'bg-green-950/60 border-green-500' : 'bg-white/5 border-white/10') },
                 h('span', { className: 'text-xl' }, tech.emoji),
                 h('div', { className: 'flex-1' },
                   h('p', { className: 'text-xs font-bold ' + (owned ? 'text-green-300' : 'text-white') }, tech.name + (owned ? ' \u2705' : '')),
-                  h('p', { className: 'text-[11px] text-slate-400' }, __alloT('stem.spaceexplorer.' + (tech.id) + '_desc', tech.desc))
+                  h('p', { className: 'text-[11px] text-slate-400' }, __alloT('stem.spaceexplorer.' + (tech.id) + '_desc', tech.desc)),
+                  owned && h('p', { className: 'text-xs font-bold text-green-100' }, t('stem.spaceexplorer.owned_and_active', 'Owned and active'))
                 ),
                 !owned && h('button', {
                   type: 'button',
@@ -1652,7 +2195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     addXP(15);
                   },
                   className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-700 text-white hover:bg-cyan-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
-                }, tech.cost + ' \uD83D\uDD2C')
+                }, canBuy ? 'Unlock \u00B7 ' + tech.cost + ' science' : 'Need ' + (tech.cost - totalScience) + ' more')
               );
             })
           )
@@ -1661,7 +2204,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Mission Briefing ──
       if (missionPhase === 'briefing' && destination) {
-        return h('div', { className: 'space-y-3 animate-in fade-in duration-300' },
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'briefing', 'aria-label': 'Mission briefing for ' + destination.name },
+          renderMissionProgress('briefing'),
           h('div', { className: 'bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-600' },
             // Planet canvas
             h('div', { className: 'relative', style: { height: '200px' } },
@@ -1678,8 +2222,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   var tick = 0;
                   function draw() {
                     if (!cvEl.isConnected) { cancelAnimationFrame(cvEl._briefAnim); return; } // self-terminate if the canvas detached (fail-safe beyond the MutationObserver)
-                    cvEl._briefAnim = requestAnimationFrame(draw);
-                    tick++;
+                    if (!_prefersReducedMotion) cvEl._briefAnim = requestAnimationFrame(draw);
+                    if (!_prefersReducedMotion) tick++;
                     ctx2.fillStyle = '#020010'; ctx2.fillRect(0, 0, W, H);
                     drawStarfield(ctx2, W, H, tick, 100);
                     drawPlanet(ctx2, W * 0.6, H * 0.5, Math.min(W, H) * 0.35, destination, tick);
@@ -1745,6 +2289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   })
                 )
               ),
+              renderInteriorOrientation(),
               missionDossier && h('div', { 'data-spaceexplorer-intent': 'true', className: 'rounded-lg border border-purple-600/40 bg-purple-950/25 p-3' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
                   h('div', { className: 'text-[11px] font-black uppercase tracking-wider text-purple-200' }, '\uD83E\uDDED Commander\'s Hypothesis'),
@@ -1799,7 +2344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               // Crew roster
               crew.length > 0 && h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
                 h('p', { className: 'text-[11px] text-slate-400 font-bold mb-2' }, t('stem.spaceexplorer.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
-                h('div', { className: 'grid grid-cols-2 gap-1.5' },
+                h('div', { className: 'se-two-column-grid grid grid-cols-2 gap-2' },
                   crew.map(function(c) {
                     return h('div', { key: c.name, className: 'flex items-center gap-2 bg-white/5 rounded-lg p-2' },
                       h('span', { className: 'text-lg' }, c.emoji),
@@ -1812,10 +2357,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   })
                 )
               ),
-              h('button', {
-                onClick: function() { updAll({ missionPhase: 'allocate' }); },
-                className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg transition-all'
-              }, t('stem.spaceexplorer.launch_mission', '\uD83D\uDE80 Launch Mission'))
+              h('div', { className: 'se-toolbar flex gap-2' },
+                h('button', {
+                  type: 'button',
+                  onClick: function() { clearCurrentMission('Briefing closed. Returned to destination selection.'); },
+                  className: 'flex-1 rounded-xl border border-slate-500 bg-slate-800 px-3 py-3 text-sm font-bold text-white hover:bg-slate-700'
+                }, t('stem.spaceexplorer.back_to_destinations', '\u2190 Back to destinations')),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { updAll({ missionPhase: 'allocate', confirmAbort: false }); },
+                  className: 'flex-1 rounded-xl border border-purple-300 bg-purple-700 px-3 py-3 text-sm font-bold text-white hover:bg-purple-600'
+                }, t('stem.spaceexplorer.launch_mission', '\uD83D\uDE80 Continue to power setup'))
+              )
             )
           )
         );
@@ -1847,7 +2400,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         ];
         var projectedDrain = applyTurnDrain(resources, destination, unlockedTech, powerAllocation);
         var missionForecast = buildMissionForecast(destination, resources, turn, maxTurns, missionDossier, missionProtocol, decisionLog, powerAllocation);
-        return h('div', { className: 'space-y-3 animate-in fade-in duration-200', role: 'main', 'aria-label': t('stem.spaceexplorer.power_allocation_2', 'Power allocation') },
+        var applyAllocationPreset = function(focusKey) {
+          var next = normalizeAllocation(null, unlockedTech);
+          if (focusKey && next[focusKey] !== undefined) {
+            for (var move = 0; move < 2; move++) {
+              var donor = Object.keys(next).filter(function(key) { return key !== focusKey && next[key] > 1; })
+                .sort(function(a, b) { return next[b] - next[a]; })[0];
+              if (!donor) break;
+              next[donor] -= 1;
+              next[focusKey] += 1;
+            }
+          }
+          upd('powerAllocation', next);
+          announceToSR(focusKey ? 'Power preset applied. Prioritizing ' + focusKey + '.' : 'Balanced power preset applied.');
+        };
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'power-allocation', 'aria-label': t('stem.spaceexplorer.power_allocation_2', 'Power allocation') },
+          renderMissionProgress('allocate'),
+          h('div', { 'data-spaceexplorer-preflight': 'true', className: 'se-toolbar flex items-center justify-between gap-2 rounded-xl border border-slate-600 bg-slate-900/80 p-2.5' },
+            h('button', {
+              type: 'button',
+              onClick: function() { updAll({ missionPhase: 'briefing', confirmAbort: false }); },
+              className: 'rounded-lg border border-cyan-400 bg-cyan-950 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900'
+            }, '\u2190 Back to briefing'),
+            h('div', { className: 'text-right', role: 'status' },
+              h('div', { className: 'text-xs font-bold ' + (interiorOrientation.readinessComplete ? 'text-green-200' : 'text-slate-100') }, interiorOrientation.readinessComplete ? 'Cabin orientation complete' : 'Cabin orientation optional'),
+              h('div', { className: 'text-[11px] text-slate-300' }, interiorOrientation.readinessComplete ? 'First launch: up to +3 morale for rehearsed crew coordination' + ((interiorOrientation.maneuverControlledMoves || 0) > 0 ? '. Maneuver route practiced.' : '') : 'Return to the briefing any time before launch')
+            )
+          ),
+          renderMissionExit(),
           h('div', { className: 'bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl p-4 border border-indigo-700/50' },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('div', null,
@@ -1856,8 +2436,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               ),
               h('div', { className: 'text-right' },
                 h('div', { className: 'text-[10px] text-slate-300 uppercase tracking-wide' }, t('stem.spaceexplorer.remaining', 'Remaining')),
-                h('div', { className: 'text-lg font-black ' + (allocRemaining === 0 ? 'text-green-400' : allocRemaining > 0 ? 'text-amber-400' : 'text-red-400') }, allocRemaining)
+                h('div', { className: 'text-lg font-black ' + (allocRemaining === 0 ? 'text-green-300' : allocRemaining > 0 ? 'text-amber-300' : 'text-red-300'), 'aria-live': 'polite' }, allocRemaining)
               )
+            ),
+            h('div', { className: 'se-two-column-grid mb-3 grid grid-cols-2 gap-2', role: 'group', 'aria-label': t('stem.spaceexplorer.power_presets', 'Power allocation presets') },
+              h('button', {
+                type: 'button',
+                onClick: function() { applyAllocationPreset(null); },
+                className: 'rounded-lg border border-slate-400 bg-slate-800 px-3 py-2 text-xs font-bold text-white hover:bg-slate-700'
+              }, t('stem.spaceexplorer.balanced_preset', 'Use balanced preset')),
+              h('button', {
+                type: 'button',
+                onClick: function() { applyAllocationPreset(missionForecast && missionForecast.recommendedSystem); },
+                disabled: !missionForecast || !missionForecast.recommendedSystem,
+                className: 'rounded-lg border border-cyan-300 bg-cyan-950 px-3 py-2 text-xs font-bold text-cyan-100 hover:bg-cyan-900'
+              }, missionForecast && missionForecast.recommendedLabel ? 'Prioritize ' + missionForecast.recommendedLabel : 'Use forecast preset')
             ),
             h('div', { className: 'space-y-2', role: 'group', 'aria-label': t('stem.spaceexplorer.power_systems', 'Power systems') },
               allocSystems.map(function(sys) {
@@ -1873,20 +2466,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     ),
                     h('div', { className: 'flex items-center gap-1.5' },
                       h('button', {
+                        type: 'button',
                         onClick: function() { bumpAlloc(sys.key, -1); },
                         disabled: val <= 0,
-                        'aria-label': 'Decrease ' + sys.label,
+                        'aria-label': 'Decrease ' + sys.label + '. Currently ' + val + ' pips.',
                         className: 'w-7 h-7 rounded-md bg-slate-700 hover:bg-slate-600 disabled:opacity-30 text-white font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none'
                       }, '\u2212'),
                       h('div', {
                         'aria-label': sys.label + ': ' + val + ' of ' + allocPool + ' pips',
-                        className: 'w-10 text-center text-sm font-mono font-bold',
-                        style: { color: sys.color }
+                        className: 'w-10 text-center text-sm font-mono font-bold text-white'
                       }, val),
                       h('button', {
+                        type: 'button',
                         onClick: function() { bumpAlloc(sys.key, 1); },
                         disabled: allocRemaining <= 0,
-                        'aria-label': 'Increase ' + sys.label,
+                        'aria-label': 'Increase ' + sys.label + '. Currently ' + val + ' pips; ' + allocRemaining + ' unallocated.',
                         className: 'w-7 h-7 rounded-md bg-slate-700 hover:bg-slate-600 disabled:opacity-30 text-white font-bold focus:ring-2 focus:ring-indigo-400 focus:outline-none'
                       }, '+')
                     )
@@ -1975,12 +2569,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             )
           ),
           h('button', {
+            type: 'button',
             onClick: function() {
               updAll({ missionPhase: 'explore', consultUsed: false, revealedHiddenOption: false });
               generateEvent();
             },
             disabled: allocRemaining !== 0,
-            ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white ' +
               (allocRemaining === 0
                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg'
@@ -1992,11 +2586,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
       // ── Exploration (resource HUD + event/outcome cycle) ──
       if ((missionPhase === 'explore' || missionPhase === 'event' || missionPhase === 'outcome') && destination && resources) {
-        return h('div', { className: 'space-y-3 animate-in fade-in duration-200' },
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'mission', 'aria-label': 'Active mission to ' + destination.name },
+          renderMissionProgress(missionPhase),
+          renderMissionExit(),
           // Resource HUD
           h('div', { className: 'bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl p-3 border border-slate-600' },
             h('div', { className: 'flex justify-between items-center mb-2' },
-              h('div', { className: 'flex items-center gap-2' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
                 h('span', { className: 'text-sm' }, destination.emoji),
                 h('span', { className: 'text-xs font-bold text-white' }, destination.name),
                 // Mini crew indicators
@@ -2004,24 +2600,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   crew.map(function(c) {
                     return h('span', { key: c.name, title: c.name + ' (' + c.role + ')', className: 'text-[11px] cursor-default' }, c.emoji);
                   })
-                )
+                ),
+                d.interiorReadinessApplied && h('span', { 'data-spaceexplorer-readiness-applied': 'true', className: 'rounded-md border border-green-500 bg-green-950/70 px-2 py-1 text-[11px] font-bold text-green-100' }, 'Cabin practice applied')
               ),
               h('span', { className: 'text-[11px] font-mono text-slate-200' }, 'Turn ' + turn + '/' + maxTurns)
             ),
-            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.ship_resources', 'Ship resources') },
+            h('div', { className: 'se-resource-grid grid grid-cols-3 gap-2', role: 'group', 'aria-label': t('stem.spaceexplorer.ship_resources', 'Ship resources') },
               Object.keys(RESOURCES).map(function(k) {
                 var r = RESOURCES[k];
                 var val = resources[k] || 0;
                 var pct = r.max === 999 ? 100 : Math.round(val / r.max * 100);
                 var barColor = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
                 var statusText = r.max === 999 ? val + ' points' : val + '% ' + (val <= 15 ? '(critical)' : val <= 30 ? '(low)' : '');
-                return h('div', { key: k, className: 'bg-white/5 rounded-lg p-1.5' },
+                var statusLevel = r.max === 999 ? 'Collected' : val <= 15 ? 'Critical' : val <= 30 ? 'Low' : 'Stable';
+                var statusClass = statusLevel === 'Critical' ? 'text-red-200' : statusLevel === 'Low' ? 'text-amber-200' : statusLevel === 'Stable' ? 'text-green-200' : 'text-cyan-200';
+                return h('div', { key: k, 'data-resource-status': statusLevel.toLowerCase(), className: 'rounded-lg border border-slate-600 bg-white/5 p-2' },
                   h('div', { className: 'flex justify-between text-[11px] mb-0.5' },
                     h('span', { className: 'text-slate-300' }, r.emoji + ' ' + r.label),
-                    h('span', { className: 'font-bold', style: { color: barColor }, 'aria-label': r.label + ': ' + statusText }, r.max === 999 ? val : val + '%')
+                    h('span', { className: 'font-bold text-white', 'aria-label': r.label + ': ' + statusText }, r.max === 999 ? val : val + '%')
                   ),
+                  h('div', { className: 'mb-1 text-[11px] font-bold ' + statusClass }, statusLevel),
                   r.max !== 999 && h('div', {
-                    className: 'h-1.5 bg-slate-700 rounded-full overflow-hidden',
+                    className: 'h-2 bg-slate-600 rounded-full overflow-hidden',
                     role: 'progressbar', 'aria-valuenow': val, 'aria-valuemin': 0, 'aria-valuemax': r.max,
                     'aria-label': r.label + ' ' + statusText
                   },
@@ -2166,12 +2766,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Event card — WCAG: keyboard shortcuts (1/2/3), focus management, aria-describedby
           activeEvent && missionPhase === 'event' && h('div', {
             className: 'bg-gradient-to-br from-amber-950 to-slate-900 rounded-xl p-4 border border-amber-700/50 shadow-lg',
-            role: 'alertdialog', 'aria-modal': 'true', 'aria-label': 'Mission event: ' + activeEvent.title,
-            'aria-describedby': 'se-event-desc',
+            role: 'region', 'aria-labelledby': 'se-event-title',
+            'aria-describedby': 'se-event-desc se-event-shortcuts',
             tabIndex: -1,
             onKeyDown: function(e) {
               // Lock number-key choice selection while spectral analysis is open
               if (minigamePending && !minigameResult) return;
+              var targetTag = e.target && e.target.tagName ? e.target.tagName : '';
+              if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(targetTag) || (e.target && e.target.isContentEditable)) return;
+              if (!/^[1-9]$/.test(e.key)) return;
               var idx = parseInt(e.key) - 1;
               var pubLen = (activeEvent.choices || []).length;
               if (idx >= 0 && idx < pubLen) {
@@ -2183,12 +2786,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 resolveEvent(activeEvent, activeEvent.hiddenOption);
               }
             },
-            ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 100); }
+            ref: function(el) {
+              if (!el || el._seInitialFocusQueued) return;
+              el._seInitialFocusQueued = true;
+              setTimeout(function() {
+                if (!el.isConnected) return;
+                var active = document.activeElement;
+                var tag = active && active.tagName ? active.tagName : '';
+                if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (active && active.isContentEditable)) return;
+                el.focus();
+              }, 100);
+            }
           },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-2xl', 'aria-hidden': 'true' }, activeEvent.emoji || '\u2699\uFE0F'),
               h('div', null,
-                h('h3', { className: 'text-sm font-bold text-amber-300' }, activeEvent.title),
+                h('h3', { id: 'se-event-title', className: 'text-base font-bold text-amber-200' }, activeEvent.title),
                 activeEvent.stemConcepts && h('div', { className: 'flex gap-1 mt-0.5 flex-wrap', 'aria-label': 'Science concepts: ' + activeEvent.stemConcepts.join(', ') },
                   activeEvent.stemConcepts.map(function(c) {
                     return h('span', { key: c, className: 'px-1.5 py-0.5 rounded-full text-[11px] bg-sky-500/15 text-sky-200 border border-sky-500/20' }, c);
@@ -2240,7 +2853,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   }
                 })
               ),
-              !minigameResult && h('div', { className: 'grid grid-cols-2 gap-1.5 mt-2' },
+              !minigameResult && h('div', { className: 'se-two-column-grid grid grid-cols-2 gap-2 mt-2' },
                 (function() {
                   // Show the correct answer among 4 randomized candidates.
                   var pool = SPECTRA_TABLE.map(function(c) { return c.id; });
@@ -2400,10 +3013,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 return h('button', {
                   key: ci,
                   disabled: locked,
+                  type: 'button',
+                  'aria-keyshortcuts': String(ci + 1),
                   'aria-label': (isHidden ? 'Specialist option: ' : 'Option ' + (ci + 1) + ': ') + choice.label + (showHints && choice.effects ? '. ' + Object.keys(choice.effects).map(function(k) { var v = choice.effects[k]; return RESOURCES[k] ? RESOURCES[k].label + ' ' + (v > 0 ? '+' : '') + v : ''; }).join(', ') : '') + (locked ? '. Complete spectral analysis first.' : ''),
                   onClick: function() { if (!locked) resolveEvent(activeEvent, choice); },
-                  ref: ci === 0 ? function(el) { if (el && !locked) setTimeout(function() { el.focus(); }, 150); } : undefined,
-                  className: 'w-full text-left p-3 rounded-lg border transition-all ' +
+                  ref: ci === 0 ? function(el) {
+                    if (!el || locked || el._seInitialFocusQueued) return;
+                    el._seInitialFocusQueued = true;
+                    setTimeout(function() {
+                      if (!el.isConnected) return;
+                      var active = document.activeElement;
+                      var tag = active && active.tagName ? active.tagName : '';
+                      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (active && active.isContentEditable)) return;
+                      el.focus();
+                    }, 150);
+                  } : undefined,
+                  className: 'se-choice-card w-full text-left p-3 rounded-lg border transition-all ' +
                     (locked
                       ? 'opacity-50 cursor-not-allowed bg-white/5 border-white/10'
                       : (isHidden
@@ -2411,7 +3036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                         : 'hover:scale-[1.01] active:scale-[0.98] bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400'))
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
-                    h('span', { className: 'text-[11px] font-mono w-4 ' + (isHidden ? 'text-yellow-300' : 'text-amber-500/60'), 'aria-hidden': 'true' }, isHidden ? '\u2605' : '(' + (ci + 1) + ')'),
+                    h('span', { className: 'text-[11px] font-mono w-4 ' + (isHidden ? 'text-yellow-200' : 'text-amber-200'), 'aria-hidden': 'true' }, isHidden ? '\u2605' : '(' + (ci + 1) + ')'),
                     h('span', { 'aria-hidden': 'true' }, choice.icon || '\u2699\uFE0F'),
                     h('span', { className: 'text-xs font-bold text-white' }, choice.label),
                     isHidden && h('span', { className: 'ml-auto text-[10px] font-bold text-yellow-300' }, 'SPECIALIST')
@@ -2428,7 +3053,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 );
               })
             ),
-            h('p', { className: 'text-[11px] text-slate-400 mt-2 text-center', 'aria-hidden': 'true' },
+            h('p', { id: 'se-event-shortcuts', className: 'text-[11px] text-slate-300 mt-2 text-center' },
               (unlockedTech.indexOf('ai_copilot') >= 0
                 ? 'AI Co-Pilot active — outcomes shown. Press 1, 2, or 3 to choose.'
                 : 'Press 1, 2, or 3 to choose')
@@ -2491,8 +3116,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var success = d.missionResult === 'success';
         var optCount = decisionLog.filter(function(x) { return x.quality === 'optimal'; }).length;
         var pct = decisionLog.length > 0 ? Math.round(optCount / decisionLog.length * 100) : 0;
-        return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': 'Mission debrief for ' + destination.name },
-          h('div', { className: 'bg-gradient-to-br ' + (success ? 'from-green-950 to-slate-900 border-green-700' : 'from-red-950 to-slate-900 border-red-700') + ' rounded-xl p-5 border text-center' },
+        var interiorCompletedActivities = Object.keys(interiorOrientation.tasks || {}).filter(function(key) { return !!interiorOrientation.tasks[key]; }).length;
+        var interiorReady = !!interiorOrientation.readinessComplete;
+        return h('div', { className: 'se-shell space-y-3', role: 'main', 'data-spaceexplorer-ux': 'debrief', 'aria-label': 'Mission debrief for ' + destination.name },
+          renderMissionProgress('debrief'),
+          h('nav', { className: 'se-debrief-nav grid grid-cols-4 gap-2', 'aria-label': t('stem.spaceexplorer.debrief_sections', 'Debrief sections') },
+            [
+              { id: 'se-debrief-summary', label: 'Summary' },
+              missionIntentAssessment ? { id: 'se-debrief-reflection', label: 'Reflect' } : null,
+              decisionLog.length ? { id: 'se-debrief-decisions', label: 'Decisions' } : null,
+              { id: 'se-debrief-actions', label: 'Next mission' }
+            ].filter(Boolean).map(function(item) {
+              return h('a', { key: item.id, href: '#' + item.id, 'data-se-action': 'true', className: 'flex items-center justify-center rounded-lg border border-slate-500 bg-slate-800 px-2 py-2 text-center text-xs font-bold text-white hover:bg-slate-700' }, item.label);
+            })
+          ),
+          h('div', { id: 'se-debrief-summary', className: 'bg-gradient-to-br ' + (success ? 'from-green-950 to-slate-900 border-green-700' : 'from-red-950 to-slate-900 border-red-700') + ' rounded-xl p-5 border text-center' },
             h('div', { className: 'text-4xl mb-2', 'aria-hidden': 'true' }, success ? '\uD83C\uDF89' : '\uD83D\uDCA5'),
             h('h2', { className: 'text-xl font-black ' + (success ? 'text-green-300' : 'text-red-300') }, success ? 'MISSION SUCCESS!' : 'MISSION FAILED'),
             h('p', { className: 'text-xs text-slate-300 mt-1' }, destination.name + ' \u2022 Difficulty ' + destination.difficulty + '/5 \u2022 ' + turn + ' turns'),
@@ -2503,6 +3141,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 return h('span', { key: b.id, role: 'listitem', title: b.name + ' \u2014 ' + b.desc, className: 'text-lg' }, b.icon);
               })
             )
+          ),
+          h('section', { 'data-spaceexplorer-interior-review': 'true', className: 'rounded-xl border border-cyan-600 bg-cyan-950/25 p-3', 'aria-labelledby': 'se-interior-review-title' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('h3', { id: 'se-interior-review-title', className: 'text-xs font-black text-cyan-100' }, 'Cabin readiness review'),
+              h('span', { className: 'text-xs font-bold ' + (interiorReady ? 'text-green-200' : 'text-slate-200') }, interiorReady ? 'Completed before launch' : 'Optional practice not completed')
+            ),
+            h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-200' }, interiorReady ? 'The crew rehearsed controlled movement and real cabin tasks before committing mission resources.' : 'The mission remained playable without practice. Rehearsing first can make the first crew transition more coordinated.'),
+            h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'list', 'aria-label': 'Cabin practice results' },
+              [
+                ['Activities', interiorCompletedActivities + ' completed'],
+                ['Controlled moves', String(interiorOrientation.controlledMoves || 0)],
+                ['Recoveries', String(interiorOrientation.recoveryCount || 0)],
+                ['Maneuver-safe', String(interiorOrientation.maneuverControlledMoves || 0)]
+              ].map(function(metric) {
+                return h('div', { key: metric[0], role: 'listitem', className: 'rounded-lg border border-slate-600 bg-slate-900/70 p-2 text-center' },
+                  h('div', { className: 'text-[11px] text-slate-300' }, metric[0]),
+                  h('strong', { className: 'mt-1 block text-xs text-white' }, metric[1])
+                );
+              })
+            ),
+            h('p', { className: 'mt-2 text-xs font-bold ' + (d.interiorReadinessApplied ? 'text-green-200' : 'text-slate-300') }, d.interiorReadinessApplied ? 'First-launch effect: +' + (d.interiorReadinessBonus || 0) + ' morale applied before routine drain.' : 'No cabin-readiness resource effect was applied.')
           ),
           missionDossier && h('div', { 'data-spaceexplorer-dossier-review': 'true', className: 'bg-indigo-500/5 rounded-xl p-3 border border-indigo-500/20' },
             h('h3', { className: 'text-[11px] text-indigo-200 font-bold mb-2' }, '\uD83D\uDCC2 MISSION DOSSIER REVIEW'),
@@ -2548,7 +3207,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               })
             )
           ),
-          missionIntentAssessment && h('div', { 'data-spaceexplorer-intent-review': 'true', className: 'bg-purple-500/5 rounded-xl p-3 border border-purple-500/20' },
+          missionIntentAssessment && h('div', { id: 'se-debrief-reflection', 'data-spaceexplorer-intent-review': 'true', className: 'bg-purple-500/5 rounded-xl p-3 border border-purple-500/20' },
             h('h3', { className: 'text-[11px] text-purple-200 font-bold mb-2' }, '\uD83E\uDDED COMMANDER\'S HYPOTHESIS REVIEW'),
             h('div', { className: 'rounded-lg bg-slate-950/40 border border-slate-700 p-2 mb-2' },
               h('div', { className: 'text-[10px] uppercase tracking-wide font-bold text-slate-400 mb-1' }, 'Original claim'),
@@ -2626,7 +3285,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               h('h3', { className: 'text-[11px] text-sky-200 font-bold' }, '✍️ REASONING PRACTICE'),
               h('span', { className: 'text-[10px] font-bold text-cyan-200' }, missionReasoningProgress.written + '/' + missionReasoningProgress.total + ' explained')
             ),
-            h('div', { className: 'h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2', 'aria-label': missionReasoningProgress.percent + '% of decisions explained' },
+            h('div', { className: 'h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2', role: 'progressbar', 'aria-label': 'Decisions explained', 'aria-valuenow': missionReasoningProgress.percent, 'aria-valuemin': 0, 'aria-valuemax': 100 },
               h('div', { className: 'h-full bg-gradient-to-r from-sky-400 to-cyan-300', style: { width: missionReasoningProgress.percent + '%' } })
             ),
             h('p', { className: 'text-[11px] text-slate-300 leading-snug' }, missionReasoningProgress.status + '. ' + missionReasoningProgress.complete + ' decision' + (missionReasoningProgress.complete === 1 ? '' : 's') + ' named evidence, tradeoff, and prediction.'),
@@ -2664,7 +3323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
             )
           ),
           // Decision analysis
-          decisionLog.length > 0 && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
+          decisionLog.length > 0 && h('div', { id: 'se-debrief-decisions', className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
             h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, t('stem.spaceexplorer.decision_analysis', '\uD83D\uDCCA DECISION ANALYSIS')),
             decisionLog.map(function(dec, i) {
               return h('div', { key: i, className: 'bg-white/5 rounded-lg p-2.5 border border-white/10 mb-1.5' },
@@ -2732,26 +3391,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Resource survival chart
           resources && h('div', { className: 'bg-white/5 rounded-xl p-3 border border-white/10' },
             h('h3', { className: 'text-[11px] text-slate-300 font-bold mb-2' }, t('stem.spaceexplorer.final_resources', '\uD83D\uDCCA FINAL RESOURCES')),
-            h('div', { className: 'grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': t('stem.spaceexplorer.final_resource_levels', 'Final resource levels') },
+            h('div', { className: 'se-resource-grid grid grid-cols-3 gap-2', role: 'group', 'aria-label': t('stem.spaceexplorer.final_resource_levels', 'Final resource levels') },
               Object.keys(RESOURCES).map(function(k) {
                 var r = RESOURCES[k]; var val = resources[k] || 0;
                 var col = val <= r.max * 0.15 ? '#ef4444' : val <= r.max * 0.3 ? '#f59e0b' : r.color;
                 return h('div', { key: k, className: 'text-center', 'aria-label': r.label + ': ' + (r.max === 999 ? val + ' points' : val + '%') },
                   h('div', { className: 'text-lg', 'aria-hidden': 'true' }, r.emoji),
-                  h('div', { className: 'text-[11px] font-bold', style: { color: col } }, r.max === 999 ? val : val + '%'),
+                  h('div', { className: 'text-[11px] font-bold text-white' }, r.max === 999 ? val : val + '%'),
                   h('div', { className: 'text-[11px] text-slate-300' }, r.label)
                 );
               })
             )
           ),
           // Action buttons
-          h('div', { className: 'flex gap-2' },
+          h('div', { id: 'se-debrief-actions', className: 'se-toolbar flex gap-2' },
             h('button', {
-              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], crewConsultLog: [], protocolRevisionDraft: '', protocolRevisionApplied: false, missionProtocolOverride: null, protocolLog: [], currentDecisionReason: '' }); },
+              type: 'button',
+              onClick: function() { clearCurrentMission('Debrief complete. Choose your next destination.'); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),
             success && totalScience >= 50 && h('button', {
+              type: 'button',
               onClick: function() { updAll({ missionPhase: 'techshop', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null }); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-cyan-300 bg-cyan-500/10 border border-cyan-500/20 hover:bg-cyan-500/20 focus:ring-2 focus:ring-cyan-400 focus:outline-none'
             }, t('stem.spaceexplorer.tech_shop_3', '\uD83D\uDD2C Tech Shop'))
@@ -2776,7 +3437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           escape: { label: t('stem.spaceexplorer.escape_trajectory', '🚀 Escape trajectory'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9', desc: t('stem.spaceexplorer.eccentricity_too_high_leaves_system', 'Eccentricity too high — leaves system.') },
           crash:  { label: t('stem.spaceexplorer.crash_impact', '💥 Crash impact'),  color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.spaceexplorer.perihelion_inside_surface', 'Perihelion inside surface.') }
         }[ohState];
-        return h('div', { className: 'p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3' },
+        return h('div', { className: 'se-shell p-4 rounded-xl bg-slate-900 border border-purple-400 text-slate-100 space-y-3', role: 'main', 'data-spaceexplorer-ux': 'orbit-discovery' },
           h('button', { onClick: function() { updAll({ missionPhase: 'select' }); }, className: 'px-2 py-1 rounded bg-purple-700/30 text-[11px] font-bold text-purple-200 border border-purple-500' }, t('stem.spaceexplorer.back_to_missions', '← Back to missions')),
           h('h3', { className: 'text-sm font-black text-purple-300' }, t('stem.spaceexplorer.orbital_mechanics_discovery', '🛰️ Orbital mechanics discovery')),
           h('p', { className: 'text-[12px] text-slate-300 leading-relaxed' }, t('stem.spaceexplorer.adjust_sma_eccentricity_drag_widget_sh', 'Adjust SMA, eccentricity, drag. Widget shows 4 discrete orbital outcomes. No score, no reveal.')),
@@ -2817,7 +3478,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       }
 
       // Fallback
-      return h('div', { className: 'text-center p-6 text-slate-400 text-xs' }, t('stem.spaceexplorer.loading_space_explorer', 'Loading Space Explorer...'));
+      return h('div', { className: 'se-shell text-center p-6 text-slate-300 text-xs', role: 'status' }, t('stem.spaceexplorer.loading_space_explorer', 'Loading Space Explorer...'));
     }
   });
 

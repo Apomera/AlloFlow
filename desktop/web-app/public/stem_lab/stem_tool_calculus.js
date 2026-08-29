@@ -101,7 +101,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
     questHooks: [
       { id: 'explore_integral', label: 'Explore Riemann sum approximation', icon: '\u222B', check: function(d) { return (d.n || 20) !== 20 || d.mode !== 'left'; }, progress: function(d) { return d.mode && d.mode !== 'left' ? 'Exploring!' : 'Adjust rectangles'; } },
       { id: 'try_all_methods', label: 'Try left, right, midpoint, and trapezoid methods', icon: '\uD83D\uDCCA', check: function(d) { return Object.keys(d.methodsUsed || {}).length >= 4; }, progress: function(d) { return Object.keys(d.methodsUsed || {}).length + '/4 methods'; } },
-      { id: 'predict_correctly', label: 'Make a correct prediction in predict mode', icon: '\uD83E\uDDE0', check: function(d) { return d.predictCorrect || false; }, progress: function(d) { return d.predictCorrect ? 'Correct!' : 'Try predicting'; } }
+      { id: 'predict_correctly', label: 'Complete an integral estimate comparison', icon: '\uD83D\uDCCF', check: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)); }, progress: function(d) { return !!d.predictSubmitted && String(d.predictInput == null ? '' : d.predictInput).trim() !== '' && isFinite(parseFloat(d.predictInput)) ? 'Compared!' : 'Try estimating'; } } // Legacy id retained for saved quest compatibility.
     ],
     render: function(ctx) {
       var React = ctx.React;
@@ -2186,46 +2186,51 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               })()
             ),
 
-            // ── PREDICT FIRST mode ────────────────────────────────────────
+            // ── NUMERICAL ESTIMATE mode ───────────────────────────────────
             h('div', { className: 'mt-3 flex items-center gap-2 mb-1' },
-              h('button', { onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
+              h('button', { type:'button', 'aria-pressed':predictMode, onClick: function(){ upd('predictMode',!predictMode); upd('predictSubmitted',false); upd('predictInput',''); },
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (predictMode?'bg-violet-600 text-white':'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100')
-              }, predictMode ? '\uD83D\uDD2E Predict Mode ON' : '\uD83D\uDD2E Try Predict Mode'),
+              }, predictMode ? '\uD83D\uDCCF Estimate Mode ON' : '\uD83D\uDCCF Try Estimate Mode'),
               !predictMode && h('span', { className: 'text-[11px] text-slate-600' }, '\u2014 estimate the integral before it\u2019s revealed')
             ),
 
-            predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
-              h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDD2E What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
-              h('p', { className: 'text-xs text-violet-600 mb-3 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
+            predictMode && !predictSubmitted && h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', 'data-calculus-estimation-challenge': 'quantitative-calibration', style:{animation:'calcFade 0.3s ease'} },
+              h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDCCF What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
+              h('p', { className: 'text-xs text-violet-600 mb-1 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
+              h('p', { className: 'text-[11px] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
               h('div', { className: 'flex gap-2' },
                 h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
-                h('button', {"aria-label":"Reveal", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Reveal \u2192')
+                h('button', {"aria-label":"Compare estimate with exact integral", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
               )
             ),
 
             predictMode && predictSubmitted && (function(){
               var pred = parseFloat(predictInput);
-              var pctOff = exact !== 0 ? Math.abs(pred - exact) / Math.abs(exact) * 100 : Math.abs(pred - exact) * 100;
-              return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', style:{animation:'calcFade 0.3s ease'} },
+              var absDiff = Math.abs(pred - exact);
+              var pctOff = exact !== 0 ? absDiff / Math.abs(exact) * 100 : null;
+              return h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-xl p-4', 'data-calculus-estimate-comparison': 'descriptive-calibration-ungraded', style:{animation:'calcFade 0.3s ease'} },
                 h('div', { className: 'grid grid-cols-3 gap-2 text-center mb-3' },
                   h('div', { className: 'p-2 bg-white rounded-lg border border-violet-200' },
-                    h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase' }, 'Your Estimate'),
+                    h('p', { className: 'text-[11px] font-bold text-violet-400 uppercase' }, 'Committed Estimate'),
                     h('p', { className: 'text-lg font-black text-violet-700' }, pred.toFixed(3))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-emerald-200' },
-                    h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Value'),
+                    h('p', { className: 'text-[11px] font-bold text-emerald-400 uppercase' }, 'Exact Integral'),
                     h('p', { className: 'text-lg font-black text-emerald-700', style:{animation:'calcPop 0.4s ease'} }, exact.toFixed(4))
                   ),
                   h('div', { className: 'p-2 bg-white rounded-lg border border-slate-400' },
-                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, '% Off'),
-                    h('p', { className: 'text-sm font-black text-slate-600' }, pctOff.toFixed(1) + '%')
+                    h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, pctOff == null ? 'Absolute Difference' : 'Absolute % Difference'),
+                    h('p', { className: 'text-sm font-black text-slate-600' }, pctOff == null ? absDiff.toFixed(3) : pctOff.toFixed(1) + '%')
                   )
                 ),
-                h('p', { className: 'text-xs italic ' + (pctOff<5?'text-emerald-600':pctOff<20?'text-amber-600':'text-slate-600') },
-                  pctOff<5 ? '\uD83C\uDFAF Excellent! Within 5% \u2014 you have strong spatial intuition!' :
-                  pctOff<15 ? '\uD83D\uDC4D Good intuition! Within 15%. Tip: think about the average y-value \u00D7 width.' :
-                  '\uD83D\uDCA1 Keep at it! Estimation gets better with practice. Try: pick a "middle" y-value and multiply by the width.'
+                h('p', { className: 'text-xs italic text-slate-700', role:'status', 'aria-live':'polite' },
+                  pctOff == null ? 'The exact integral is zero, so percentage difference is undefined. Use the absolute difference shown for calibration.' :
+                  pctOff < 5 ? 'Estimate within 5%. Record which visual cue helped you calibrate it.' :
+                  pctOff < 15 ? 'Estimate within 15%. Compare your average-height \u00D7 width strategy with the graph.' :
+                  'Use the difference to recalibrate: choose a representative height, multiply by interval width, and try again.'
                 ),
+                h('label', { htmlFor:'calc-estimate-reflection', className: 'block mt-3 text-[11px] font-bold text-violet-800' }, 'Calibration note (optional): what cue will you use on the next estimate?'),
+                h('input', { id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':'Optional integral estimate calibration note', className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
                 h('button', {"aria-label":"Try another estimate", onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[11px] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
               );
             })(),
@@ -2541,17 +2546,17 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   )
                 ),
 
-                // Step 1: Double n, predict first
+                // Step 1: Double n, commit a qualitative hypothesis
                 step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
-                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Make a prediction before looking'),
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Commit a hypothesis before measuring'),
                   h('p',{className:'text-xs text-slate-600 mb-2'},'You recorded error \u2248 '+(parseFloat(data.err4)||0).toFixed(4)+' at n=4. Now you will double n to 8.'),
-                  h('p',{className:'text-xs font-bold text-slate-700 mb-3'},'Before changing the slider: predict the new error. Will it be:'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-3'},'Before changing the slider, hypothesize how the error will change:'),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
                     [['same','About the same'],['half','About half ('+((parseFloat(data.err4)||0)/2).toFixed(4)+')'],['quarter','About a quarter ('+((parseFloat(data.err4)||0)/4).toFixed(4)+')'],['smaller','Much smaller (near 0)']].map(function(item){
-                      return h('button',{ "aria-label": "Next Step",key:item[0],onClick:function(){saveData('prediction1',item[0]);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction1===item[0]?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},item[1]);
+                      return h('button',{ "aria-label": 'Hypothesize the error will be '+item[1].toLowerCase(), 'aria-pressed':data.prediction1===item[0],key:item[0],onClick:function(){saveData('prediction1',item[0]);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction1===item[0]?'bg-violet-600 text-white border-violet-600':'bg-white text-slate-600 border-slate-200 hover:border-violet-400')},item[1]);
                     })
                   ),
-                  data.prediction1 && h('button',{"aria-label":"Locked in  now measure",onClick:nextStep,className:'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700'},'Locked in \u2014 now measure \u2192')
+                  data.prediction1 && h('button',{"aria-label":"Hypothesis committed; now measure",onClick:nextStep,className:'transition-colors px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold hover:bg-red-700'},'Hypothesis committed \u2014 now measure \u2192')
                 ),
 
                 // Step 2: Measure n=8
@@ -2565,24 +2570,34 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   )
                 ),
 
-                // Step 3: Find the ratio + predict n=16
+                // Step 3: Compare the pattern claim, then estimate n=16
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2463 Find the pattern'),
                   (function(){
-                    var e4=parseFloat(data.err4)||1, e8=parseFloat(data.err8)||1;
-                    var ratio=(e4/e8).toFixed(2);
+                    var e4Raw=parseFloat(data.err4), e8Raw=parseFloat(data.err8);
+                    var e4=isFinite(e4Raw)?Math.abs(e4Raw):0, e8=isFinite(e8Raw)?Math.abs(e8Raw):0;
+                    var ratio=e8!==0?(e4/e8).toFixed(2):null;
+                    var hypothesisTargets={same:e4,half:e4/2,quarter:e4/4,smaller:0};
+                    var observedCategory=e4===0?'same':Object.keys(hypothesisTargets).reduce(function(best,key){return Math.abs(hypothesisTargets[key]-e8)<Math.abs(hypothesisTargets[best]-e8)?key:best;},'same');
+                    var hypothesisLabels={same:'about the same',half:'about half',quarter:'about a quarter',smaller:'much smaller (near 0)'};
+                    var patternAgrees=data.prediction1===observedCategory;
                     return h('div',null,
                       h('div',{ className:'bg-white rounded-lg border p-3 mb-3'},
                         h('p',{className:'text-xs text-slate-600'},'Error at n=4: '+e4.toFixed(4)),
                         h('p',{className:'text-xs text-slate-600'},'Error at n=8: '+e8.toFixed(4)),
-                        h('p',{className:'text-sm font-bold text-red-700 mt-1'},'Ratio: '+e4.toFixed(4)+' \u00F7 '+e8.toFixed(4)+' = '+ratio),
-                        h('p',{className:'text-xs text-slate-600 italic mt-1'},'When n doubled (4\u21928), error was divided by about '+ratio+'.')
+                        h('p',{className:'text-sm font-bold text-red-700 mt-1'},ratio==null?'The n=8 error is 0, so the division ratio is undefined.':'Ratio: '+e4.toFixed(4)+' \u00F7 '+e8.toFixed(4)+' = '+ratio),
+                        h('p',{className:'text-xs text-slate-600 italic mt-1'},ratio==null?'The recorded error reached 0 at n=8.':'When n doubled (4\u21928), error was divided by about '+ratio+'.'),
+                        h('div',{className:'mt-2 rounded-lg border border-violet-200 bg-violet-50 p-2','data-calculus-error-pattern-comparison':'descriptive-ungraded',role:'status','aria-live':'polite'},
+                          h('p',{className:'text-[11px] text-violet-900'},'Committed hypothesis: '+(hypothesisLabels[data.prediction1]||'not recorded')+'. Closest listed description of the measured n=8 error: '+hypothesisLabels[observedCategory]+'.'),
+                          h('p',{className:'text-[11px] font-bold text-violet-800'},patternAgrees?'Evidence agrees with your hypothesis.':'Evidence differs from your hypothesis.'),
+                          h('p',{className:'text-[10px] text-violet-700'},'Agreement is descriptive and ungraded; use the measured ratio to make the next estimate.')
+                        )
                       ),
-                      h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now predict: what will the error be at n=16? (Hint: apply the same ratio again)'),
+                      h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now estimate the error at n=16 by applying the measured ratio again.'),
                       h('div',{ className:'flex gap-2 items-center'},
-                        h('span',{ className:'text-xs font-bold text-slate-600'},'Predicted error at n=16:'),
-                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':'Predicted error at n equals 16',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                        h('button',{"aria-label":"Predict locked",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Predict locked \u2192')
+                        h('span',{ className:'text-xs font-bold text-slate-600'},'Estimated error at n=16:'),
+                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':'Estimated error at n equals 16',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('button',{"aria-label":"Estimate committed",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Estimate committed \u2192')
                       )
                     );
                   })()
@@ -2591,24 +2606,25 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 // Step 4: Verify + conclude
                 step === 4 && h('div',{style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2464 Verify and conclude'),
-                  h('p',{className:'text-xs text-slate-600 mb-2'},'Set n=16 on the Integral tab and record the actual error. Then compare to your prediction.'),
+                  h('p',{className:'text-xs text-slate-600 mb-2'},'Set n=16 on the Integral tab and record the measured error. Then compare it with your committed estimate.'),
                   h('div',{className:'flex gap-2 items-center mb-3'},
-                    h('span',{className:'text-xs font-bold text-slate-600'},'Actual error at n=16:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':'Error for n equals 16',onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                    h('span',{className:'text-xs font-bold text-slate-600'},'Measured error at n=16:'),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':'Measured error at n equals 16',onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
                   ),
                   data.err16 && (function(){
                     var pred=parseFloat(data.predictN16)||0, actual=parseFloat(data.err16)||0;
-                    var pctOff=pred!==0?Math.abs(pred-actual)/Math.abs(pred)*100:0;
+                    var absDiff=Math.abs(pred-actual);
+                    var pctOff=actual!==0?absDiff/Math.abs(actual)*100:null;
                     return h('div',{style:{animation:'calcFade 0.3s ease'}},
-                      h('div',{className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3 mb-3'},
-                        h('p',{className:'text-sm font-bold text-emerald-700 mb-1'},'\uD83C\uDF89 '+(pctOff<10?'Excellent prediction! You nailed it!':pctOff<25?'Good prediction!':'Not bad \u2014 the pattern is approximately correct.')),
-                        h('p',{className:'text-xs text-emerald-800'},'Your prediction: '+pred.toFixed(4)+' \u00B7\u00B7\u00B7 Actual: '+actual.toFixed(4)+' \u00B7\u00B7\u00B7 '+pctOff.toFixed(0)+'% off')
+                      h('div',{className:'bg-violet-50 rounded-xl border border-violet-200 p-3 mb-3',role:'status','aria-live':'polite','data-calculus-error-estimate-comparison':'descriptive-ungraded'},
+                        h('p',{className:'text-sm font-bold text-violet-800 mb-1'},'Estimate compared with measured error \u2014 ungraded'),
+                        h('p',{className:'text-xs text-violet-900'},'Committed estimate: '+pred.toFixed(4)+' \u00B7 Measured error: '+actual.toFixed(4)+' \u00B7 '+(pctOff==null?'Absolute difference: '+absDiff.toFixed(4):'Absolute % difference: '+pctOff.toFixed(0)+'%')),
+                        h('p',{className:'text-[11px] text-violet-700 mt-1'},'Closeness is calibration evidence. Mission completion comes from estimating, measuring, and explaining the pattern \u2014 not from matching.')
                       ),
                       h('div',{className:'bg-slate-50 rounded-xl border p-3'},
                         h('p',{className:'text-xs font-bold text-slate-700 uppercase tracking-wider mb-2'},'\uD83D\uDCCC The Big Idea'),
-                        h('p',{className:'text-xs text-slate-700 mb-1'},'For Left Riemann sums: when n doubles, the error is divided by approximately \u00B72 (halved).'),
-                        h('p',{className:'text-xs text-slate-700 mb-1'},'This means error \u221D 1/n \u2014 the error shrinks linearly with n.'),
-                        h('p',{className:'text-xs text-slate-700'},'Try the Trapezoid method: does it shrink faster? (Trapezoid error \u221D 1/n\u00B2 \u2014 it halves the error when n doubles, but halves \u2248 twice as fast overall!)'),
+                        h('p',{className:'text-xs text-slate-700 mb-1'},'In this smooth example, the leading Left Riemann-sum error behaves roughly like 1/n, so doubling n approximately halves it.'),
+                        h('p',{className:'text-xs text-slate-700'},'For smooth functions, the composite trapezoid rule often has leading error proportional to 1/n\u00B2; doubling n then reduces that error to roughly one quarter.'),
                         h('p',{className:'text-xs font-bold text-red-600 mt-2'},"And Simpson's? Test it on your own!"),
                         awardStemXP&&awardStemXP('calculus',15,'Mission 1 complete')
                       )
@@ -2631,35 +2647,36 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('div',{ className:'flex gap-1 mt-2'},[0,1,2,3].map(function(i){return h('div',{key:i,className:'flex-1 h-1.5 rounded-full '+(step>i?'bg-amber-500':step===i?'bg-amber-300':'bg-slate-200')});}))
                 ),
                 step === 0 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
-                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Predict before you test'),
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2460 Commit a hypothesis before you test'),
                   h('button',{"aria-label":"Load f(x) = x squared on 0 to 3 with 6 subdivisions",onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{a:1,b:0,c:0,xMin:0,xMax:3,n:6,mode:'left',tab:'discover'})});});addToast('Loaded for Method Showdown','success');},className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800 mb-3 block'},'\u25B6 Load f(x) = x\u00B2 [0,3], n=6'),
-                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you predict will be MOST accurate?'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you hypothesize will have the smallest absolute error?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
                     ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
-                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},m);
+                      return h('button',{ "aria-label": 'Hypothesize '+m+' has the smallest error', 'aria-pressed':data.prediction===m,key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},m);
                     })
                   ),
-                  data.prediction && h('button',{"aria-label":"Prediction locked",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Prediction locked \u2192')
+                  data.prediction && h('button',{"aria-label":"Hypothesis committed; collect evidence",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Hypothesis committed \u2014 collect evidence \u2192')
                 ),
                 step === 1 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2461 Measure errors for all 5 methods'),
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Switch to the Challenge tab, select "Best Method" mode, click Start. The error comparison table appears after you answer. OR: go to Integral tab, try each mode, record errors.'),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Which method had the SMALLEST error?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
-                    ['Left','Right','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
-                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-600')},m);
+                    ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
+                      return h('button',{ "aria-label": 'Record '+m+' as the method with the smallest error', 'aria-pressed':data.measured===m,key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-600')},m);
                     })
                   ),
                   data.measured && h('button',{"aria-label":"Next",onClick:nextStep,className:'transition-colors px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-800'},'Next \u2192')
                 ),
                 step === 2 && h('div',{ style:{animation:'calcFade 0.3s ease'}},
-                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Were you right?'),
-                  h('div',{ className:'bg-white rounded-lg border p-3 mb-3'},
-                    h('p',{className:'text-xs text-slate-600'},'You predicted: '+data.prediction),
-                    h('p',{className:'text-xs text-slate-600'},'Most accurate was: '+data.measured),
-                    h('p',{className:'text-sm font-bold '+(data.prediction===data.measured?'text-emerald-600':'text-slate-700')+' mt-1'},data.prediction===data.measured?'\u2705 You predicted correctly!':'\uD83D\uDCA1 The result might have surprised you.')
+                  h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2462 Compare hypothesis with recorded evidence'),
+                  h('div',{ className:'bg-white rounded-lg border p-3 mb-3',role:'status','aria-live':'polite','data-calculus-method-hypothesis-comparison':'descriptive-ungraded'},
+                    h('p',{className:'text-xs text-slate-600'},'Committed hypothesis: '+data.prediction),
+                    h('p',{className:'text-xs text-slate-600'},'Recorded smallest error: '+data.measured),
+                    h('p',{className:'text-sm font-bold text-violet-700 mt-1'},data.prediction===data.measured?'Evidence agrees with your hypothesis.':'Evidence differs from your hypothesis \u2014 use the concept check below to explain why.'),
+                    h('p',{className:'text-[11px] text-slate-600 mt-1'},'Agreement is descriptive and ungraded; completing the comparison is what counts.')
                   ),
-                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Why is Simpson's usually most accurate for polynomials?"),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Concept check: why does Simpson's rule give zero error for this quadratic?"),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
                     ['It uses parabolas — which fit polynomial curves better than flat-top rectangles','It uses the most rectangles','It averages left and right','It avoids the edges of the curve'].map(function(ans,i){
                       return h('button',{ "aria-label": "Next Step",key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},ans);
@@ -2670,7 +2687,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
                   h('p',{className:'text-sm font-bold text-slate-800 mb-2'},'\u2463 The Big Idea'),
                   h('div',{className:'bg-amber-50 rounded-xl border border-amber-200 p-3'},
-                    h('p',{className:'text-sm font-bold text-amber-800 mb-2'},(data.why===0?'\u2705 Exactly right!':'\uD83D\uDCA1 The real reason:')+' Simpson\u2019s fits parabolic arcs to the curve.'),
+                    h('p',{className:'text-sm font-bold text-amber-800 mb-2','data-calculus-method-concept-check':'graded-concept'},'Concept check: '+(data.why===0?'correct. ':'review the explanation. ')+'Simpson\u2019s fits parabolic arcs to the curve.'),
                     h('p',{className:'text-xs text-amber-800 mb-1'},"Since f(x) = x\u00B2 IS already a parabola, Simpson's rule fits it perfectly \u2014 giving zero error!"),
                     h('p',{className:'text-xs text-amber-800 mb-1'},"In fact: Simpson's rule is EXACT for any polynomial of degree \u2264 3."),
                     h('p',{className:'text-xs font-bold text-amber-900 mt-2'},"Test it: set Simpson's with n=2. Is the error 0? Now try n=4. What pattern do you see?"),
@@ -2793,17 +2810,18 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     h('p',{className:'text-xs font-bold text-emerald-900 mt-2'},(Math.abs(parseFloat(data.triangleArea||9)-9)<0.5?'\u2705 Both give 9 meters! The car traveled 9 meters in 3 seconds.':'\uD83D\uDCA1 Both should give 9 m. Triangle: \u00BD\u00D73\u00D76 = 9. Check your triangle calculation!'))
                   ),
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Why does this work? Each thin rectangle has width \u0394t (time) and height v(t) (velocity). Area = v(t)\u00D7\u0394t = distance. Add them all up \u2192 total distance. This is exactly what integration does!'),
-                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: change xMax to 5. How far does the car travel in 5 seconds? Predict first!'),
+                  h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: estimate how far the car travels in 5 seconds before changing the interval.'),
                   h('div',{ className:'flex gap-2 items-center'},
-                    h('span',{ className:'text-xs font-bold'},'Distance in 5s (predicted):'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':'Predicted distance in 5 seconds in meters',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
-                    h('button',{"aria-label":"Test it",disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Test it \u2192')
+                    h('span',{ className:'text-xs font-bold'},'Distance in 5s (estimate):'),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':'Estimated distance in 5 seconds in meters',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('button',{"aria-label":"Commit distance estimate and test it",disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Commit estimate and test \u2192')
                   )
                 ),
                 step === 3 && h('div',{style:{animation:'calcFade 0.3s ease'}},
                   h('div',{className:'bg-emerald-50 rounded-xl border border-emerald-200 p-3'},
                     h('p',{className:'text-sm font-bold text-emerald-700 mb-2'},'\uD83C\uDF89 Mission Complete!'),
-                    h('p',{className:'text-xs text-emerald-800 mb-1'},'Distance in 5s = \u00BD\u00D75\u00D710 = 25 m. Did your prediction match?'),
+                    h('p',{className:'text-xs text-emerald-800 mb-1',role:'status','aria-live':'polite','data-calculus-distance-estimate-comparison':'descriptive-ungraded'},'Committed estimate: '+(isFinite(parseFloat(data.predict5))?parseFloat(data.predict5).toFixed(1):'not recorded')+' m \u00B7 Model result: 25.0 m \u00B7 Absolute difference: '+(isFinite(parseFloat(data.predict5))?Math.abs(parseFloat(data.predict5)-25).toFixed(1):'n/a')+' m.'),
+                    h('p',{className:'text-[11px] text-emerald-800 mb-1'},'This numerical comparison is descriptive and ungraded; completion comes from making and checking the estimate.'),
                     h('p',{className:'text-xs text-emerald-800 mb-2'},'The Fundamental Theorem of Calculus says: \u222B\u2080\u1D57 v(t) dt = position at time t \u2212 position at t=0.'),
                     h('p',{className:'text-xs font-bold text-emerald-900'},"Real applications: physicists use this to calculate trajectories, economists to find accumulated profit, biologists to model population growth. The area under ANY rate curve gives the total accumulated quantity."),
                     awardStemXP&&awardStemXP('calculus',20,'Mission 4 complete')
@@ -3007,62 +3025,85 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             })()
           ),
 
-          // === H7b'' inquiry widget: derivative behavior ===
+          // === Live derivative evidence inquiry ===
           tab === 'derivHunt' && (function() {
             var iq = d.derivHunt || { a: 1, b: 0, c: 0, xPoint: 1, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
             function setIQ(patch) { upd('derivHunt', Object.assign({}, iq, patch)); }
+            function derivativeLogKey(entry) { return [entry.a, entry.b, entry.c, entry.x].join('|'); }
+            var inquiryLog = Array.isArray(iq.log) ? iq.log : [];
             var derivAtX = 2 * iq.a * iq.xPoint + iq.b;
             var state;
-            if (Math.abs(derivAtX) < 0.1) state = 'extremum';
+            if (Math.abs(iq.a) < 1e-9) state = Math.abs(derivAtX) < 0.1 ? 'constant' : (derivAtX > 0 ? 'linearIncreasing' : 'linearDecreasing');
+            else if (Math.abs(derivAtX) < 0.1) state = 'turning';
             else if (derivAtX > 0 && iq.a > 0) state = 'increasingUp';
             else if (derivAtX < 0 && iq.a > 0) state = 'decreasingUp';
             else if (derivAtX > 0) state = 'increasingDown';
             else state = 'decreasingDown';
-            var sm = {
-              extremum:        { label: '🎯 At extremum (slope ≈ 0)', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-              increasingUp:    { label: '↗️ Increasing on opens-up parabola', color: '#065f46', bg: '#ecfdf5', border: '#86efac' },
-              decreasingUp:    { label: '↘️ Decreasing on opens-up parabola', color: '#155e75', bg: '#ecfeff', border: '#67e8f9' },
-              increasingDown:  { label: '↗️ Increasing on opens-down', color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
-              decreasingDown:  { label: '↘️ Decreasing on opens-down', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
-            }[state];
-            return h('div', { key: 'derivHunt' },
+            var stateMeta = {
+              constant: { label: 'Constant function; slope about 0', color: '#475569', bg: '#f8fafc', border: '#94a3b8' },
+              linearIncreasing: { label: 'Increasing line; constant positive slope', color: '#065f46', bg: '#ecfdf5', border: '#86efac' },
+              linearDecreasing: { label: 'Decreasing line; constant negative slope', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' },
+              turning: { label: 'Quadratic turning point; slope about 0', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
+              extremum: { label: 'Quadratic turning point; slope about 0', color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' }, // Saved-log compatibility.
+              increasingUp: { label: 'Increasing; parabola opens up', color: '#065f46', bg: '#ecfdf5', border: '#86efac' },
+              decreasingUp: { label: 'Decreasing; parabola opens up', color: '#155e75', bg: '#ecfeff', border: '#67e8f9' },
+              increasingDown: { label: 'Increasing; parabola opens down', color: '#92400e', bg: '#fffbeb', border: '#fcd34d' },
+              decreasingDown: { label: 'Decreasing; parabola opens down', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
+            };
+            var sm = stateMeta[state];
+            var currentLogKey = [iq.a, iq.b, iq.c, iq.xPoint].join('|');
+            var currentAlreadyLogged = inquiryLog.some(function(entry) { return derivativeLogKey(entry) === currentLogKey; });
+            var evidenceReady = inquiryLog.length >= 2;
+            return h('div', { key: 'derivHunt', 'data-calculus-live-inquiry': 'observe-log-explain' },
               h('div', { className: 'p-4 rounded-xl bg-white border border-violet-300 space-y-3' },
-                h('h3', { className: 'text-sm font-black text-violet-700' }, '📈 Derivative behavior discovery'),
-                h('p', { className: 'text-[12px] text-slate-700' }, 'Sliders for ax² + bx + c parabola coefficients and x-point. Discrete 5-state derivative behavior. No score, no reveal.'),
-                h('div', { className: 'p-3 rounded-lg text-center', style: { background: sm.bg, border: '2px solid ' + sm.border } },
+                h('h3', { className: 'text-sm font-black text-violet-700' }, '\uD83D\uDCC8 Derivative behavior exploration'),
+                h('p', { className: 'text-[12px] text-slate-700' }, 'The derivative value and behavior update live as you move the sliders. Treat them as visible model evidence: log distinct settings, compare them, then explain the pattern you observe. This activity is ungraded.'),
+                h('div', { className: 'p-3 rounded-lg text-center', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-calculus-live-derivative-state': state, style: { background: sm.bg, border: '2px solid ' + sm.border } },
                   h('div', { className: 'text-base font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x² + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
+                  h('div', { className: 'text-[10px] text-slate-700 mt-1 font-mono' }, 'f(x)=' + iq.a + 'x\u00B2 + ' + iq.b + 'x + ' + iq.c + ',  f\'(' + iq.xPoint + ')=' + derivAtX.toFixed(2))
                 ),
                 h('div', { className: 'grid grid-cols-2 gap-3 sm:grid-cols-4' },
-                  [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(s) {
-                    return h('div', { key: s.k },
-                      h('label', { htmlFor: 'dh-' + s.k, className: 'block text-[11px] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
-                      h('input', { id: 'dh-' + s.k, type: 'range', min: s.mn, max: s.mx, step: 1, value: iq[s.k],
-                        onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
+                  [{ k: 'a', l: 'a', mn: -3, mx: 3 }, { k: 'b', l: 'b', mn: -10, mx: 10 }, { k: 'c', l: 'c', mn: -10, mx: 10 }, { k: 'xPoint', l: 'x', mn: -10, mx: 10 }].map(function(control) {
+                    return h('div', { key: control.k },
+                      h('label', { htmlFor: 'dh-' + control.k, className: 'block text-[11px] font-bold text-slate-700' }, control.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[control.k])),
+                      h('input', { id: 'dh-' + control.k, type: 'range', min: control.mn, max: control.mx, step: 1, value: iq[control.k],
+                        onChange: function(e) { var patch = {}; patch[control.k] = parseInt(e.target.value, 10); setIQ(patch); },
+                        className: 'w-full', 'aria-label': control.l }));
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, '📋 Log'),
-                  h('button', { onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '↺ Reset')
+                  h('button', { type: 'button', disabled: currentAlreadyLogged, 'aria-disabled': currentAlreadyLogged ? 'true' : 'false', onClick: function() { if (currentAlreadyLogged) return; setIQ({ log: inquiryLog.concat([{ key: currentLogKey, a: iq.a, b: iq.b, c: iq.c, x: iq.xPoint, d: derivAtX.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300 disabled:opacity-50' }, currentAlreadyLogged ? 'Current setting logged' : '\uD83D\uDCCB Log current evidence'),
+                  h('button', { type: 'button', onClick: function() { setIQ({ a: 1, b: 0, c: 0, xPoint: 1, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA Reset'),
+                  h('span', { className: 'text-[10px] text-slate-500', role: 'status', 'aria-live': 'polite' }, inquiryLog.length + '/2 evidence settings logged')
                 ),
-                h('textarea', { 'aria-label': 'Calculus hypothesis', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Hypothesis: At what x does f\'(x) = 0?',
+                inquiryLog.length > 0 && h('div', { role: 'region', 'aria-label': 'Logged derivative evidence', className: 'rounded-lg border border-slate-200 bg-slate-50 p-2' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-600 mb-1' }, 'Evidence log'),
+                  h('ol', { className: 'space-y-1 text-[11px] text-slate-700' }, inquiryLog.map(function(entry, index) {
+                    var loggedMeta = stateMeta[entry.st];
+                    return h('li', { key: derivativeLogKey(entry) + '-' + index, className: 'font-mono' }, (index + 1) + '. a=' + entry.a + ', b=' + entry.b + ', c=' + entry.c + ', x=' + entry.x + ' \u2192 f\'(x)=' + entry.d + '; ' + (loggedMeta ? loggedMeta.label : entry.st));
+                  }))
+                ),
+                h('textarea', { 'aria-label': 'Working explanation from live derivative evidence', 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
                   className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '🤔 Stuck — show open prompts'),
+                !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
-                    h('li', null, 'Vertex form: x = -b/(2a). Test at extremum.'),
-                    h('li', null, 'Why does a flip the increasing/decreasing pattern?'))),
-                h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
-                  'I understand — explain in own words'),
-                iq.understood && h('textarea', { 'aria-label': 'Calculus explanation', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Explain derivative behavior at extrema.',
+                    h('li', null, 'Hold a, b, and c steady. Move x through a point where the derivative is near zero. How does the derivative sign change?'),
+                    h('li', null, 'Keep b fixed and compare a positive a with a negative a. What changes about increasing and decreasing behavior?'),
+                    h('li', null, 'When a is nonzero, compare the x-value where the derivative is near zero with -b/(2a).')),
+                  h('p', { className: 'mt-2 text-[10px] italic text-amber-800' }, 'These are comparison scaffolds, not a hidden result; the live values remain visible.')
+                ),
+                h('p', { id: 'calc-deriv-evidence-ready', className: 'text-[10px] text-slate-600' }, evidenceReady ? 'Evidence ready: explain the pattern, including one logged comparison.' : 'Log at least two distinct settings before the final explanation.'),
+                h('div', { className: 'flex items-center gap-2' },
+                  h('input', { type: 'checkbox', id: 'calc-deriv-understood', checked: evidenceReady && !!iq.understood, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-describedby': 'calc-deriv-evidence-ready', onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
+                  h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[12px] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
+                ),
+                evidenceReady && iq.understood && h('textarea', { 'aria-label': 'Evidence-based derivative behavior explanation', 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
                   className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
-                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Design note: discrete 5-state derivative marker; no slope score; no reveal — by design.')
+                h('div', { className: 'text-[10px] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
               )
             );
           })(),
-
           // ── AI Calculus Tutor (reading-level aware) ──
           (function () {
             var aiLevel = d.aiLevel || 'grade5';

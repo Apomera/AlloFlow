@@ -16,6 +16,11 @@
     "allohaven_module.js": {
       "PORTAL-ESCAPE|document.body": 2
     },
+    "allobot_source.jsx": {
+      "CSS-LITERAL-VS-VAR|.allobot-satellite-control": 1,
+      "CSS-LITERAL-VS-VAR|.allobot-satellite-control[data-allobot-satellite-kind=\"hide": 1,
+      "CSS-LITERAL-VS-VAR|.allobot-satellite-control[data-allobot-satellite-state=\"lis": 1
+    },
     "app_styles_source.jsx": {
       "DARK-ONLY-DEF|.allo-docsuite": 1,
       "DARK-ONLY-DEF|.allo-docsuite .group:hover [class~=\"group-hover:bg-blue-300\"], .theme": 1,

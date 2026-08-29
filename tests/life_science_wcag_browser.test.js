@@ -3,9 +3,11 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
 import { React, ReactDOMServer, loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { extractReactSsrStyles, prepareStemBrowserRender } from './helpers/stem_widgets_smoke_harness.js';
+import { auditTextSpacingReflow } from './helpers/stem_wcag_browser_checks.js';
 
 const root = process.cwd();
-const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/axe-core/axe.min.js'), 'utf8');
+const axeSource = fs.readFileSync(path.join(root, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const cssDirectory = path.join(root, 'app/static/css');
 const cssFile = fs.readdirSync(cssDirectory).find((file) => /^main\.[a-z0-9]+\.css$/i.test(file));
 if (!cssFile) throw new Error('Compiled application stylesheet was not found.');
@@ -17,11 +19,7 @@ if (!(window.AlloModules && window.AlloModules.AppStyles)) {
 const appStylesMarkup = ReactDOMServer.renderToStaticMarkup(
   React.createElement(window.AlloModules.AppStyles.AppStyles, null),
 );
-const appStylesHost = document.createElement('div');
-appStylesHost.innerHTML = appStylesMarkup;
-const runtimeAppCss = [...appStylesHost.querySelectorAll('style')]
-  .map((style) => style.textContent || '')
-  .join('\n');
+const runtimeAppCssSheets = extractReactSsrStyles(appStylesMarkup).cssSheets;
 
 // These variables are normally injected by app_styles_module.js at runtime,
 // rather than emitted into the compiled Tailwind stylesheet used by this
@@ -97,7 +95,43 @@ const CASES = [
             'The founder sample begins with limited diversity.'
           ],
           reflections: ['', '', ''],
-          notebook: { baseline: '', settings: '', outcome: '', surprise: '' },
+          notebook: {
+            baseline: 'Generation 0: N = 10 and p(A) = 0.500 in five lineages.',
+            settings: 'Five independent lineages for 100 generations.',
+            outcome: 'Final p(A) ranged from 0.000 to 1.000 across the lineages.',
+            claim: 'Across repeated runs, mean final p(A) varied because genetic drift is stochastic.',
+            surprise: 'Identical starting conditions produced different endpoints.'
+          },
+          trialPlan: { version: 1, strategy: 'repeat', factor: '', factorLabel: '', levelA: '', levelB: '', targetRuns: 2 },
+          runs: [
+            {
+              id: 'run-1',
+              moduleId: 'geneticDrift',
+              moduleLabel: 'Genetic Drift Simulator',
+              baseline: 'Generation 0: N = 10 and p(A) = 0.500 in five lineages.',
+              settings: 'Five independent lineages for 100 generations.',
+              outcome: 'Final p(A): 0.000, 0.250, 0.500, 0.750, 1.000.',
+              comparison: { designKey: 'N=10|generations=100', designLabel: 'N = 10 for 100 generations', primaryLabel: 'mean absolute displacement from p(A) = 0.500', primaryValue: 0.2, precision: 3, unit: '', factors: [{ id: 'populationSize', label: 'Population size', value: 10 }, { id: 'generations', label: 'Generations', value: 100 }] },
+              metrics: [
+                { label: 'Population N', value: '10' },
+                { label: 'Mean final p(A)', value: '0.400' }
+              ]
+            },
+            {
+              id: 'run-2',
+              moduleId: 'geneticDrift',
+              moduleLabel: 'Genetic Drift Simulator',
+              baseline: 'Generation 0: N = 10 and p(A) = 0.500 in five lineages.',
+              settings: 'Five independent lineages for 100 generations.',
+              outcome: 'Final p(A): 0.100, 0.300, 0.500, 0.700, 0.900.',
+              comparison: { designKey: 'N=10|generations=100', designLabel: 'N = 10 for 100 generations', primaryLabel: 'mean absolute displacement from p(A) = 0.500', primaryValue: 0.4, precision: 3, unit: '', factors: [{ id: 'populationSize', label: 'Population size', value: 10 }, { id: 'generations', label: 'Generations', value: 100 }] },
+              metrics: [
+                { label: 'Population N', value: '10' },
+                { label: 'Mean final p(A)', value: '0.600' }
+              ]
+            }
+          ],
+          nextRunId: 3,
           evidenceVerdict: ''
         }
       }
@@ -171,9 +205,7 @@ function renderCase(testCase) {
   resetStemLab();
   document.head.querySelectorAll('style').forEach((style) => style.remove());
   loadTool(testCase.file, testCase.id);
-  const html = renderTool(testCase.id, testCase.state, normalizedOverrides(testCase));
-  const toolCss = [...document.head.querySelectorAll('style')].map((style) => style.textContent || '').join('\n');
-  return { html, toolCss };
+  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, normalizedOverrides(testCase)));
 }
 
 function compactViolations(violations) {
@@ -220,26 +252,39 @@ describe('Life-science tools WCAG regression in a real browser', () => {
   }, 30000);
 
   for (const testCase of CASES) {
-    it(testCase.name + ' passes WCAG A/AA and 320px reflow checks', async () => {
+    it(testCase.name + ' passes WCAG A/AA, 320px reflow, and text-spacing checks', async () => {
       const rendered = renderCase(testCase);
       expect(rendered.html.length, testCase.name + ' rendered an unexpectedly small surface').toBeGreaterThan(500);
 
       const page = await browser.newPage({ viewport: { width: 320, height: 760 } });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.setContent(
-        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>' +
-          appCss + '\n' + runtimeAppCss + '\n' + stemThemeCss +
-          '</style></head><body><main id="tool-root" class="' + themeClass(testCase) + '">' + rendered.html + '</main></body></html>',
+        '<!doctype html><html lang="en"><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+          '<body><main id="tool-root" class="' + themeClass(testCase) + '">' + rendered.html + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
-      if (rendered.toolCss) await page.addStyleTag({ content: rendered.toolCss });
+      await page.addStyleTag({ content: appCss });
+      for (const css of runtimeAppCssSheets) await page.addStyleTag({ content: css });
+      await page.addStyleTag({ content: stemThemeCss });
+      for (const css of rendered.cssSheets) await page.addStyleTag({ content: css });
       await page.addScriptTag({ content: axeSource });
       await page.evaluate(() => {
         for (const animation of document.getAnimations()) animation.cancel();
       });
 
+      const captureCase = process.env.ALLO_WCAG_CAPTURE_CASE;
+      if (captureCase && testCase.name.toLowerCase().includes(captureCase.toLowerCase())) {
+        const captureDirectory = path.resolve(root, process.env.ALLO_WCAG_CAPTURE_DIR || '.wcag-captures');
+        const captureName = testCase.name.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '').toLowerCase();
+        fs.mkdirSync(captureDirectory, { recursive: true });
+        await page.screenshot({
+          path: path.join(captureDirectory, captureName + '.png'),
+          fullPage: true,
+        });
+      }
+
       const audit = await page.evaluate(async () => axe.run('#tool-root', {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
       }));
       const reflow = await page.evaluate(() => {
         const clientWidth = document.documentElement.clientWidth;
@@ -277,8 +322,10 @@ describe('Life-science tools WCAG regression in a real browser', () => {
         return { scrollWidth, clientWidth, offenders, layoutEdges };
       });
 
+      const textSpacingReflow = await auditTextSpacingReflow(page);
       expect.soft(compactViolations(audit.violations)).toEqual([]);
       expect.soft(reflow.scrollWidth, JSON.stringify({ offenders: reflow.offenders, layoutEdges: reflow.layoutEdges }, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
+      expect.soft(textSpacingReflow.scrollWidth, JSON.stringify(textSpacingReflow.offenders, null, 2)).toBeLessThanOrEqual(textSpacingReflow.clientWidth);
       await page.close();
     }, 20000);
   }

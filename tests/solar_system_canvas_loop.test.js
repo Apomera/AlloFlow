@@ -446,6 +446,40 @@ describe('solar system main 3D canvas loop', () => {
     });
   });
 
+  it('turns phone surface exploration into a compact field visor', () => {
+    SOLAR_SYSTEM_PATHS.forEach((filePath) => {
+      const source = readFileSync(filePath, 'utf8');
+      const roverOverlayStart = source.indexOf("var hud = document.createElement('div');");
+      const roverHudStyleEnd = source.indexOf('var modeLabel =', roverOverlayStart);
+      const roverHudStyleSource = source.slice(roverOverlayStart, roverHudStyleEnd);
+
+      expect(source).toContain("hud.setAttribute('data-drone-hud', 'true');");
+      expect(source).toContain('The tall HUD sits directly over WebGL.');
+      expect(roverOverlayStart).toBeGreaterThan(-1);
+      expect(roverHudStyleEnd).toBeGreaterThan(roverOverlayStart);
+      expect(roverHudStyleSource).not.toContain('backdrop-filter:blur(');
+      expect(source).toContain('id="hud-world-context"');
+      expect(source).toContain('id="hud-notable"');
+      expect(source).toContain('id="hud-shortcuts"');
+      expect(source).toContain("compass.setAttribute('data-drone-compass', 'true');");
+      expect(source).toContain("depthGauge.setAttribute('data-drone-depth-gauge', 'true');");
+      expect(source).toContain("miniMap.setAttribute('data-drone-minimap', 'true');");
+      expect(source).toContain("hazardEl.setAttribute('data-drone-hazard', 'true');");
+      expect(source).toContain("ticker.setAttribute('data-drone-ticker', 'true');");
+      expect(source).toContain('[data-drone-hazard]{top:168px!important');
+      expect(source).toContain('[data-drone-ticker]{display:none!important}');
+      expect(source).toContain('@media(max-width:640px){.solar-cosmos .rover-hud');
+      expect(source).toContain('grid-template-columns:repeat(6,minmax(0,1fr))');
+      expect(source).toContain('#rover-traverse-panel[data-collapsed="true"]');
+      expect(source).toContain("window.matchMedia('(max-width: 640px)').matches");
+      expect(source).toContain("roverTraverseToggle.setAttribute('aria-expanded'");
+      expect(source).toContain('roverTraverseDetails.appendChild(roverTraverseButton);');
+      expect(source).toContain("var traverseCompactProgress = roverTraverse.status === 'ready' ? '0/5 optional'");
+      expect(source).toContain("roverSoundButton.setAttribute('aria-label', roverSoundLabel + ', keyboard shortcut B');");
+      expect(source).toContain("position:absolute;right:144px;bottom:12px");
+    });
+  });
+
   it('shows mode-specific live science relationships without covering the altitude gauge', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');

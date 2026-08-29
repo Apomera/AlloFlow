@@ -51,6 +51,34 @@ describe('EvoLab model boundaries', () => {
     expect(source).toContain('The "ideal" trait is set to 0.68 (later molt).');
     expect(source).not.toContain('0.32 (delayed molt)');
   });
+
+  it('captures realized baselines and reports model limits precisely', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_evolab.js', 'utf8');
+    expect(source).toContain('var selectionBaselineRef = useRef');
+    expect(source).toContain('var antibioticBaselineRef = useRef');
+    expect(source).toContain('var coevolutionBaselineRef = useRef');
+    expect(source).not.toContain("historyRef.current = [{ gen: 0, mean: 0.5, std: 0.29");
+    expect(source).toContain('offspring resistance variation σ');
+    expect(source).toContain('resistant fraction and mean resistance are not defined');
+    expect(source).toContain('model refills each population to 30 after each generation');
+    expect((source.match(/comparison: \{/g) || [])).toHaveLength(4);
+    expect(source).toContain("primaryLabel: 'mean absolute displacement from p(A) = 0.500'");
+    expect(source).not.toContain("primaryLabel: 'mean final p(A)'");
+    expect(source).toContain("primaryLabel: 'mean trait shift'");
+    expect(source).toContain("primaryLabel: 'resistant-share change'");
+    expect(source).toContain("primaryLabel: 'mean capture rate'");
+    expect((source.match(/factors: \[/g) || [])).toHaveLength(4);
+    expect(source).toContain("sourceRunKey: lastRunMeta.sourceRunKey");
+    expect(source).toContain("sourceRunKey: selectionSessionRef.current");
+    expect(source).toContain("sourceRunKey: antibioticSessionRef.current");
+    expect(source).toContain("sourceRunKey: coevolutionSessionRef.current");
+    const selectionSandbox = source.slice(source.indexOf('function SelectionSandbox()'), source.indexOf('function BeakLab()'));
+    expect(selectionSandbox).toContain('var next = [];');
+    expect(selectionSandbox).not.toContain('var next = survivors.slice();');
+    expect(selectionSandbox).toContain('var parent = survivors[Math.floor(Math.random() * survivors.length)]');
+    expect(source).toContain('primaryValue == null ? NaN');
+    expect(source).toContain('association, not a controlled causal test');
+  });
 });
 
 describe('EvoLab runtime and accessibility', () => {

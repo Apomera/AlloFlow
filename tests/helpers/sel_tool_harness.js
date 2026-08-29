@@ -57,18 +57,22 @@ export function loadSelTool(file) {
 export function makeCtx(opts = {}) {
   const themeSeed = opts.theme || {};
   const theme = new Proxy({ isDark: false, isContrast: false, reduceMotion: false, ...themeSeed, palette: themeSeed.palette || palProxy }, { get: (o, p) => (p in o ? o[p] : '#888888') });
+  const isDark = !!theme.isDark;
+  const isContrast = !!theme.isContrast;
   const base = {
     React, toolData: opts.toolData || {}, setToolData: noop, update: noop, updateMulti: noop,
     setSelHubTool: noop, setSelHubTab: noop, selHubTab: '', selHubTool: '',
     addToast: noop, awardXP: noop, getXP: () => 0, announceToSR: noop, celebrate: noop, beep: noop,
-    t: (k) => k, theme, isDark: false, isContrast: false,
+    getSavePolicy: () => ({ checkpointLabel: 'Private checkpoint', sharePacketLabel: 'Share Packet eligible' }),
+    t: opts.t || ((k, fallback) => fallback != null ? fallback : k),
+    theme, isDark, isContrast, themePalette: theme.palette,
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null,
     onSafetyFlag: noop, studentCodename: null, selectedVoice: null, activeSessionCode: null,
     icons: iconsProxy, gradeLevel: opts.gradeLevel || '5th Grade', gradeBand: opts.gradeBand || 'elementary',
     toolSnapshots: [], setToolSnapshots: noop, saveSnapshot: noop,
     srOnly: (t) => React.createElement('span', { className: 'sr-only' }, t),
     a11yClick: (h) => ({ onClick: h, onKeyDown: noop, role: 'button', tabIndex: 0 }),
-    props: {},
+    props: { onExportRequested: noop, ...(opts.props || {}) },
   };
   return new Proxy(base, { get: (o, p) => (p in o ? o[p] : noop) });
 }

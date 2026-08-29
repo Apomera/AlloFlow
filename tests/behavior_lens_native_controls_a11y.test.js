@@ -14,6 +14,7 @@ describe('BehaviorLens remaining native control accessibility', () => {
     expect(source).toContain('Decrease ');
     expect(source).toContain("'aria-pressed': isComplex ? 'true' : 'false'");
     expect(source).toContain("Use complex scenario complexity");
+    expect(source).toContain("'aria-label': 'Data collection type for ' + ((tgt.name || '').trim() || 'target behavior')");
   });
 
   it('keeps the drag target non-interactive and provides a keyboard file chooser', () => {

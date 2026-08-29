@@ -4,12 +4,14 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { chromium } from 'playwright';
 import {
   loadTool,
+  prepareStemBrowserRender,
   renderTool,
   resetStemLab,
 } from './helpers/stem_widgets_smoke_harness.js';
+import { auditTextSpacingReflow } from './helpers/stem_wcag_browser_checks.js';
 
 const root = process.cwd();
-const axeSource = fs.readFileSync(path.join(root, 'desktop/web-app/node_modules/axe-core/axe.min.js'), 'utf8');
+const axeSource = fs.readFileSync(path.join(root, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const cssDirectory = path.join(root, 'app/static/css');
 const cssFile = fs.readdirSync(cssDirectory).find((file) => /^main\.[a-z0-9]+\.css$/i.test(file));
 if (!cssFile) throw new Error('Compiled application stylesheet was not found.');
@@ -46,9 +48,7 @@ function renderCase(testCase) {
   resetStemLab();
   document.head.querySelectorAll('style').forEach((style) => style.remove());
   loadTool(testCase.file, testCase.id);
-  const html = renderTool(testCase.id, testCase.state, testCase.overrides);
-  const toolCss = [...document.head.querySelectorAll('style')].map((style) => style.textContent || '').join('\n');
-  return { html, toolCss };
+  return prepareStemBrowserRender(renderTool(testCase.id, testCase.state, testCase.overrides));
 }
 
 describe('Math fundamentals and advanced math WCAG regression in a real browser', () => {
@@ -63,7 +63,7 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
   }, 30000);
 
   for (const testCase of CASES) {
-    it(testCase.name + ' passes WCAG A/AA and 320px reflow checks', async () => {
+    it(testCase.name + ' passes WCAG A/AA, 320px reflow, and text-spacing checks', async () => {
       const rendered = renderCase(testCase);
       expect(rendered.html.length, testCase.name + ' rendered an unexpectedly small surface').toBeGreaterThan(500);
       const page = await browser.newPage({ viewport: { width: 320, height: 760 } });
@@ -74,14 +74,14 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
           '</style></head><body><main id="tool-root">' + rendered.html + '</main></body></html>',
         { waitUntil: 'domcontentloaded' },
       );
-      if (rendered.toolCss) await page.addStyleTag({ content: rendered.toolCss });
+      for (const css of rendered.cssSheets) await page.addStyleTag({ content: css });
       await page.addScriptTag({ content: axeSource });
       await page.evaluate(() => {
         for (const animation of document.getAnimations()) animation.cancel();
       });
 
       const audit = await page.evaluate(async () => axe.run('#tool-root', {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
       }));
       const reflow = await page.evaluate(() => {
         const clientWidth = document.documentElement.clientWidth;
@@ -106,6 +106,7 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
         return { scrollWidth, clientWidth, offenders };
       });
 
+      const textSpacingReflow = await auditTextSpacingReflow(page);
       expect(audit.violations.map((violation) => ({
         id: violation.id,
         impact: violation.impact,
@@ -123,6 +124,7 @@ describe('Math fundamentals and advanced math WCAG regression in a real browser'
         })),
       }))).toEqual([]);
       expect(reflow.scrollWidth, JSON.stringify(reflow.offenders, null, 2)).toBeLessThanOrEqual(reflow.clientWidth);
+      expect(textSpacingReflow.scrollWidth, JSON.stringify(textSpacingReflow.offenders, null, 2)).toBeLessThanOrEqual(textSpacingReflow.clientWidth);
 
       if (testCase.name === 'area tile explorer') {
         const targets = await page.locator('[data-ap-tile]').evaluateAll((tiles) => tiles.map((tile) => {

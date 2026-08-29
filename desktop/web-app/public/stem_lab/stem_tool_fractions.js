@@ -112,6 +112,95 @@ window.StemLab = window.StemLab || {
     return [(n / gcdValue) * sign, Math.abs(d) / gcdValue];
   }
 
+  function fractionAnswerGcd(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) { var temp = b; b = a % b; a = temp; }
+    return a || 1;
+  }
+
+  function parseRationalAnswer(rawValue) {
+    var rawText = rawValue === null || rawValue === undefined ? '' : String(rawValue);
+    var text = rawText.trim().replace(/\u2212/g, '-').replace(/\u2044/g, '/');
+    if (!text) return { valid: false, reason: 'empty', message: 'Enter a whole number, fraction, mixed number, or decimal.' };
+
+    function finish(numerator, denominator, kind, isSimplified) {
+      if (!Number.isSafeInteger(numerator) || !Number.isSafeInteger(denominator) || denominator === 0) {
+        return { valid: false, reason: denominator === 0 ? 'zero-denominator' : 'out-of-range', message: denominator === 0 ? 'A fraction denominator cannot be zero.' : 'That number is too large to evaluate safely.' };
+      }
+      var normalized = normalizeFractionPair(numerator, denominator);
+      return { valid: true, n: normalized[0], d: normalized[1], kind: kind, isSimplified: isSimplified, original: text };
+    }
+
+    var mixedMatch = text.match(/^([+-]?\d+)\s+(\d+)\s*\/\s*(\d+)$/);
+    if (mixedMatch) {
+      var wholeText = mixedMatch[1];
+      var wholeMagnitude = Math.abs(Number(wholeText));
+      var mixedNumerator = Number(mixedMatch[2]);
+      var mixedDenominator = Number(mixedMatch[3]);
+      if (mixedDenominator === 0) return finish(0, 0, 'mixed', false);
+      var mixedSign = wholeText.charAt(0) === '-' ? -1 : 1;
+      var improperNumerator = mixedSign * (wholeMagnitude * mixedDenominator + mixedNumerator);
+      var mixedIsSimplified = mixedNumerator < mixedDenominator && fractionAnswerGcd(mixedNumerator, mixedDenominator) === 1;
+      return finish(improperNumerator, mixedDenominator, 'mixed', mixedIsSimplified);
+    }
+
+    var fractionMatch = text.match(/^([+-]?\d+)\s*\/\s*([+-]?\d+)$/);
+    if (fractionMatch) {
+      var fractionNumerator = Number(fractionMatch[1]);
+      var fractionDenominator = Number(fractionMatch[2]);
+      var fractionIsSimplified = fractionDenominator > 0 && fractionAnswerGcd(fractionNumerator, fractionDenominator) === 1;
+      return finish(fractionNumerator, fractionDenominator, 'fraction', fractionIsSimplified);
+    }
+
+    if (/^[+-]?\d+$/.test(text)) return finish(Number(text), 1, 'integer', true);
+
+    var decimalMatch = text.match(/^([+-]?)(\d*)\.(\d+)$/);
+    if (decimalMatch) {
+      var decimalDigits = decimalMatch[3];
+      if (decimalDigits.length > 12) return { valid: false, reason: 'precision', message: 'Use no more than 12 decimal places.' };
+      var decimalScale = Math.pow(10, decimalDigits.length);
+      var decimalWhole = decimalMatch[2] ? Number(decimalMatch[2]) : 0;
+      var decimalNumerator = decimalWhole * decimalScale + Number(decimalDigits);
+      if (decimalMatch[1] === '-') decimalNumerator *= -1;
+      return finish(decimalNumerator, decimalScale, 'decimal', true);
+    }
+
+    return { valid: false, reason: 'format', message: 'Use a whole number, fraction like 3/4, mixed number like 1 1/2, or decimal.' };
+  }
+
+  function formatRationalAnswer(numerator, denominator) {
+    var normalized = normalizeFractionPair(numerator, denominator);
+    var n = normalized[0];
+    var d = normalized[1];
+    if (d === 1) return String(n);
+    var magnitude = Math.abs(n);
+    if (magnitude > d) {
+      var whole = Math.floor(magnitude / d);
+      var remainder = magnitude % d;
+      return (n < 0 ? '-' : '') + whole + (remainder ? ' ' + remainder + '/' + d : '');
+    }
+    return n + '/' + d;
+  }
+
+  function evaluateRationalAnswer(rawValue, expectedAnswer) {
+    var parsed = parseRationalAnswer(rawValue);
+    var expectedNumerator = expectedAnswer && Number(expectedAnswer.n);
+    var expectedDenominator = expectedAnswer && Number(expectedAnswer.d);
+    if (!Number.isSafeInteger(expectedNumerator) || !Number.isSafeInteger(expectedDenominator) || expectedDenominator === 0) {
+      return { valid: parsed.valid, correct: false, parsed: parsed, reason: 'invalid-expected-answer' };
+    }
+    var expected = normalizeFractionPair(expectedNumerator, expectedDenominator);
+    var correct = parsed.valid && parsed.n === expected[0] && parsed.d === expected[1];
+    return {
+      valid: parsed.valid,
+      correct: correct,
+      parsed: parsed,
+      expected: { n: expected[0], d: expected[1] },
+      simplification: correct && !parsed.isSimplified ? 'Equivalent value; it simplifies to ' + formatRationalAnswer(expected[0], expected[1]) + '.' : ''
+    };
+  }
+
   function classifyFractionResultSign(numerator, isUndefined) {
     if (isUndefined) return 'undefined';
     var value = Number(numerator);
@@ -198,6 +287,9 @@ window.StemLab = window.StemLab || {
 
   window.__FractionsCore = Object.assign({}, window.__FractionsCore || {}, {
     normalizeFractionPair: normalizeFractionPair,
+    parseRationalAnswer: parseRationalAnswer,
+    evaluateRationalAnswer: evaluateRationalAnswer,
+    formatRationalAnswer: formatRationalAnswer,
     classifyFractionResultSign: classifyFractionResultSign,
     buildSignedOperationReasoning: buildSignedOperationReasoning,
     signedOperationChallengeCount: SIGNED_OPERATION_CHALLENGES.length,
@@ -3953,7 +4045,7 @@ window.StemLab = window.StemLab || {
           )
         ),
         // Stage selector
-        h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': __alloT('stem.fractions.cra_stage', 'CRA stage') },
+        h('div', { className: 'flex flex-wrap gap-2', role: 'tablist', 'aria-label': __alloT('stem.fractions.cra_stage', 'CRA stage') },
           stages.map(function(s) {
             var active = craStage === s.id;
             return h('button', {
@@ -4139,30 +4231,13 @@ window.StemLab = window.StemLab || {
     var checkWordProblem = function(problem, response) {
       var trimmed = String(response || '').trim();
       if (!trimmed) return;
-      // Parse the response to compare against problem.answer
-      var ans = problem.answer;
-      var ok = false;
-      // Mixed number form like "1 1/2"
-      var mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-      var fracMatch = trimmed.match(/^(\d+)\/(\d+)$/);
-      var intMatch = trimmed.match(/^(\d+(?:\.\d+)?)$/);
-      if (mixedMatch && ans.mixed) {
-        ok = trimmed === ans.mixed;
-      } else if (fracMatch) {
-        var rn = parseInt(fracMatch[1]);
-        var rd = parseInt(fracMatch[2]);
-        // Compare via cross-mult
-        if (rd > 0 && ans.d > 0) {
-          ok = rn * ans.d === ans.n * rd;
-        }
-      } else if (intMatch && ans.d === 1) {
-        ok = parseFloat(intMatch[1]) === ans.n;
-      }
+      var evaluation = evaluateRationalAnswer(trimmed, problem.answer);
+      var ok = evaluation.correct;
       if (ok) {
         sfxCorrect();
-        announceToSR('Correct!');
+        announceToSR('Correct! ' + evaluation.simplification);
         upd({
-          wpFeedback: { correct: true, msg: '✅ Correct! ' + problem.worked },
+          wpFeedback: { correct: true, msg: '✅ Correct! ' + (evaluation.simplification ? evaluation.simplification + ' ' : '') + problem.worked },
           score: { correct: score.correct + 1, total: score.total + 1 }
         });
         awardXP('fractionWordProblem', 15, 'Word problem solved');
@@ -4170,7 +4245,7 @@ window.StemLab = window.StemLab || {
         sfxWrong();
         announceToSR('Incorrect');
         upd({
-          wpFeedback: { correct: false, msg: '❌ Not quite. Try again or use a hint.' },
+          wpFeedback: { correct: false, msg: evaluation.valid ? '❌ Not quite. Try again or use a hint.' : '❌ ' + evaluation.parsed.message },
           score: { correct: score.correct, total: score.total + 1 }
         });
       }
@@ -8756,24 +8831,15 @@ window.StemLab = window.StemLab || {
       var chapter = BAKERY_STORY.find(function(c) { return c.chapter === storyCh; }) || BAKERY_STORY[0];
       var checkStory = function() {
         if (!storyAnswer.trim()) return;
-        var trimmed = storyAnswer.trim();
-        var fracMatch = trimmed.match(/^(\d+)\/(\d+)$/);
-        var mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-        var intMatch = trimmed.match(/^(\d+)$/);
-        var a = chapter.answer;
-        var ok = false;
-        if (mixedMatch && a.mixed) ok = trimmed === a.mixed;
-        else if (fracMatch) {
-          var rn = parseInt(fracMatch[1]); var rd = parseInt(fracMatch[2]);
-          ok = rn * a.d === a.n * rd;
-        } else if (intMatch && a.d === 1) ok = parseInt(intMatch[1]) === a.n;
+        var evaluation = evaluateRationalAnswer(storyAnswer, chapter.answer);
+        var ok = evaluation.correct;
         if (ok) {
           sfxCorrect();
-          upd({ storyFeedback: { correct: true, msg: '✅ ' + chapter.followup } });
+          upd({ storyFeedback: { correct: true, msg: '✅ ' + (evaluation.simplification ? evaluation.simplification + ' ' : '') + chapter.followup } });
           awardXP('fractionStory', 25, 'Story chapter');
         } else {
           sfxWrong();
-          upd({ storyFeedback: { correct: false, msg: '❌ Try again. ' + chapter.hint } });
+          upd({ storyFeedback: { correct: false, msg: evaluation.valid ? '❌ Try again. ' + chapter.hint : '❌ ' + evaluation.parsed.message } });
         }
       };
       return h('div', { className: 'space-y-3' },
@@ -9799,7 +9865,7 @@ window.StemLab = window.StemLab || {
             __alloT('stem.fractions.a_single_triple_generates_four_related', 'A single triple generates four related equations.')
           )
         ),
-        h('div', { className: 'grid grid-cols-2 gap-3' },
+        h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
           h('div', { className: 'bg-white rounded-lg p-3 border border-indigo-200' },
             h('p', { className: 'text-xs font-bold text-indigo-700 mb-2' }, __alloT('stem.fractions.fraction_a_3', 'Fraction A')),
             h('div', { className: 'flex items-center gap-2 justify-center' },
@@ -10546,23 +10612,14 @@ window.StemLab = window.StemLab || {
 
       var checkMS = function() {
         if (!msAnswer.trim()) return;
-        var trimmed = msAnswer.trim();
-        var fracMatch = trimmed.match(/^(\d+)\/(\d+)$/);
-        var intMatch = trimmed.match(/^(\d+)$/);
-        var mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
-        var a = step.a;
-        var ok = false;
-        if (mixedMatch && a.mixed) ok = trimmed === a.mixed;
-        else if (fracMatch) {
-          var rn = parseInt(fracMatch[1]); var rd = parseInt(fracMatch[2]);
-          if (rd > 0 && a.d > 0) ok = rn * a.d === a.n * rd;
-        } else if (intMatch && a.d === 1) ok = parseInt(intMatch[1]) === a.n;
+        var evaluation = evaluateRationalAnswer(msAnswer, step.a);
+        var ok = evaluation.correct;
         if (ok) {
           sfxCorrect();
           upd({
             msAnswers: msAnswers.concat([{ correct: true, answer: msAnswer }]),
             msAnswer: '',
-            msFeedback: { correct: true, msg: '✅ Correct!' },
+            msFeedback: { correct: true, msg: '✅ Correct! ' + evaluation.simplification },
             msStep: msStep + 1 < problem.steps.length ? msStep + 1 : msStep
           });
           if (msStep + 1 >= problem.steps.length) {
@@ -10572,7 +10629,7 @@ window.StemLab = window.StemLab || {
           }
         } else {
           sfxWrong();
-          upd({ msFeedback: { correct: false, msg: '❌ Not quite. Try the hint.' } });
+          upd({ msFeedback: { correct: false, msg: evaluation.valid ? '❌ Not quite. Try the hint.' : '❌ ' + evaluation.parsed.message } });
         }
       };
       var nextProblem = function() {

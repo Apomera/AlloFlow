@@ -55,6 +55,16 @@ describe('Quick Start wizard accessibility', () => {
     expect(source).toContain('htmlFor="quickstart-output-format"');
   });
 
+  it('reflows dense customization controls at narrow widths and with enlarged text spacing', () => {
+    expect(source).toContain('className="p-4 sm:p-8 overflow-y-auto custom-scrollbar"');
+    expect(source.match(/className="grid grid-cols-1 gap-4 sm:grid-cols-2"/g)).toHaveLength(2);
+    expect(source).toContain('className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"');
+    expect(source).toContain('className="w-full text-xs border border-slate-400 rounded p-1.5');
+    expect(source.match(/className="min-w-0 w-full flex-grow/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(source.match(/min-h-11 min-w-11 self-end/g)?.length).toBeGreaterThanOrEqual(4);
+    expect(source.match(/mb-2 flex flex-col gap-2 sm:flex-row/g)?.length).toBeGreaterThanOrEqual(2);
+  });
+
   it('retains native focus and honors reduced-motion preferences', () => {
     expect(source).not.toMatch(/(?:focus(?:-visible)?:)?outline-none/);
     expect(source).not.toMatch(/<button\b(?![^>]*\btype=)/gs);

@@ -1844,7 +1844,7 @@ window.StemLab = window.StemLab || {
 
         return h('div', { id: 'coordinate-section-panel', role: 'tabpanel', 'aria-labelledby': 'coordinate-section-tab-maps', tabIndex: 0, className: 'space-y-4 allo-cg-bg-maps' },
           // Scenario selector
-          h('div', { className: 'flex gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-200', role: 'tablist', 'aria-label': t('stem.coordgrid.real_world_coordinate_scenarios', 'Real-world coordinate scenarios') },
+          h('div', { className: 'flex flex-wrap gap-1 bg-emerald-50 rounded-xl p-1 border border-emerald-200', role: 'tablist', 'aria-label': t('stem.coordgrid.real_world_coordinate_scenarios', 'Real-world coordinate scenarios') },
             scenarios.map(function(s, index) {
               return h('button', {
                 key: 'mscen-' + s.id,

@@ -1884,6 +1884,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   React.createElement('button', { onClick: function() { setIQ({ opacity: 80, zoomX: 100, zoomY: 100, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, t('stem.datastudio.reset', '\u21BA Reset'))
                 ),
                 React.createElement('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl', 'Hypothesis: When is a chart most legible?'),
+                  'aria-label': t('stem.datastudio.hypothesis_when_is_a_chart_most_legibl', 'Chart legibility hypothesis'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
                 !iq.stuckRevealed && React.createElement('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, t('stem.datastudio.stuck_show_open_prompts', '\uD83E\uDD14 Stuck \u2014 show open prompts')),
                 iq.stuckRevealed && React.createElement('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
@@ -1894,6 +1895,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
                   React.createElement('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                   t('stem.datastudio.i_understand_explain_in_own_words', 'I understand \u2014 explain in own words')),
                 iq.understood && React.createElement('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.datastudio.explain_chart_visualization_principles', 'Explain chart visualization principles.'),
+                  'aria-label': t('stem.datastudio.explain_chart_visualization_principles', 'Explain chart visualization principles'),
                   className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
                 React.createElement('div', { className: 'text-[9px] italic text-slate-500' }, t('stem.datastudio.design_note_discrete_4_state_visual_ma', 'Design note: discrete 4-state visual marker; no aesthetic score; no reveal \u2014 by design.'))
               );

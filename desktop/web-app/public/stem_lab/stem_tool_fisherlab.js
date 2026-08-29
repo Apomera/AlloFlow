@@ -55,6 +55,205 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     if (lr) { lr.textContent = ''; setTimeout(function() { lr.textContent = msg; }, 30); }
   }
 
+  var FL_DIALOG_FOCUSABLE = [
+    'a[href]',
+    'area[href]',
+    'button:not(:disabled)',
+    'input:not(:disabled):not([type="hidden"])',
+    'select:not(:disabled)',
+    'textarea:not(:disabled)',
+    '[contenteditable="true"]',
+    '[tabindex]:not([tabindex="-1"])'
+  ].join(',');
+
+  function getCoreDialogFocusables(container) {
+    if (!container || !container.querySelectorAll) return [];
+    return Array.prototype.slice.call(container.querySelectorAll(FL_DIALOG_FOCUSABLE)).filter(function(node) {
+      if (!node || node.disabled || node.hidden || node.tabIndex < 0) return false;
+      if (node.matches && node.matches(':disabled')) return false;
+      if (node.closest && node.closest('[hidden],[aria-hidden="true"]')) return false;
+      return true;
+    });
+  }
+
+  function focusCoreElement(target) {
+    var node = target && target.current ? target.current : target;
+    if (!node || typeof node.focus !== 'function') return false;
+    try {
+      node.focus({ preventScroll: true });
+    } catch (_) {
+      try { node.focus(); } catch (__) { return false; }
+    }
+    return true;
+  }
+
+  function containCoreDialogFocus(event) {
+    if (!event || event.key !== 'Tab' || !event.currentTarget) return false;
+    var container = event.currentTarget;
+    var focusable = getCoreDialogFocusables(container);
+    var doc = container.ownerDocument || document;
+    var active = doc.activeElement;
+    var target = null;
+    if (!focusable.length) target = container;
+    else if (!container.contains(active)) target = event.shiftKey ? focusable[focusable.length - 1] : focusable[0];
+    else if (event.shiftKey && active === focusable[0]) target = focusable[focusable.length - 1];
+    else if (!event.shiftKey && active === focusable[focusable.length - 1]) target = focusable[0];
+    if (!target) return false;
+    if (event.preventDefault) event.preventDefault();
+    focusCoreElement(target);
+    return true;
+  }
+
+  function publishCoreToolbarHeight(bar, stage) {
+    if (!bar || !stage || !stage.style || !bar.getBoundingClientRect) return 0;
+    var rect = bar.getBoundingClientRect();
+    var height = Math.max(0, Math.round(Number(rect && rect.height) || 0));
+    stage.style.setProperty('--fl-bar-h', height + 'px');
+    return height;
+  }
+
+  // THREE does not own application-created geometries, materials, or textures.
+  // Walk every reachable scene resource and every detached extra once so a
+  // graphics restart cannot steadily grow GPU memory.
+  function disposeCoreThreeResources(root, extras) {
+    var stats = { geometries: 0, materials: 0, textures: 0, extras: 0, errors: 0 };
+    var seen = [];
+
+    function claim(resource) {
+      if (!resource || (typeof resource !== 'object' && typeof resource !== 'function')) return false;
+      if (seen.indexOf(resource) >= 0) return false;
+      seen.push(resource);
+      return true;
+    }
+
+    function disposeOnce(resource, statKey) {
+      if (!resource || typeof resource.dispose !== 'function' || !claim(resource)) return;
+      try {
+        resource.dispose();
+        stats[statKey]++;
+      } catch (_) {
+        stats.errors++;
+      }
+    }
+
+    function inspectTextureValue(value) {
+      if (!value) return;
+      if (Array.isArray(value)) {
+        value.forEach(inspectTextureValue);
+      } else if (value.isTexture === true) {
+        disposeOnce(value, 'textures');
+      }
+    }
+
+    function inspectUniforms(uniforms) {
+      if (!uniforms || typeof uniforms !== 'object') return;
+      Object.keys(uniforms).forEach(function (key) {
+        try {
+          var uniform = uniforms[key];
+          var value = uniform && Object.prototype.hasOwnProperty.call(uniform, 'value') ? uniform.value : uniform;
+          inspectTextureValue(value);
+        } catch (_) {
+          stats.errors++;
+        }
+      });
+    }
+
+    function disposeMaterial(material) {
+      if (Array.isArray(material)) {
+        material.forEach(disposeMaterial);
+        return;
+      }
+      if (!material || typeof material !== 'object' || seen.indexOf(material) >= 0) return;
+      Object.keys(material).forEach(function (key) {
+        try { inspectTextureValue(material[key]); } catch (_) { stats.errors++; }
+      });
+      inspectUniforms(material.uniforms);
+      disposeOnce(material, 'materials');
+    }
+
+    function visitObject(object) {
+      if (!object || typeof object !== 'object') return;
+      if (object.geometry) disposeOnce(object.geometry, 'geometries');
+      if (object.material) disposeMaterial(object.material);
+    }
+
+    function walk(value) {
+      if (!value) return;
+      if (Array.isArray(value)) {
+        value.forEach(walk);
+        return;
+      }
+      visitObject(value);
+      try { inspectTextureValue(value.background); } catch (_) { stats.errors++; }
+      try { inspectTextureValue(value.environment); } catch (_) { stats.errors++; }
+      if (typeof value.traverse === 'function') {
+        try {
+          value.traverse(function (child) {
+            if (child !== value) visitObject(child);
+          });
+        } catch (_) {
+          stats.errors++;
+        }
+      }
+    }
+
+    function disposeExtra(resource) {
+      if (!resource) return;
+      if (Array.isArray(resource)) {
+        resource.forEach(disposeExtra);
+      } else if (resource.isTexture === true) {
+        disposeOnce(resource, 'textures');
+      } else if (resource.isMaterial === true) {
+        disposeMaterial(resource);
+      } else if (resource.isBufferGeometry === true || resource.isGeometry === true) {
+        disposeOnce(resource, 'geometries');
+      } else {
+        disposeOnce(resource, 'extras');
+      }
+    }
+
+    walk(root);
+    disposeExtra(extras);
+    return stats;
+  }
+
+  function disposeCoreComposerResources(composer) {
+    var stats = { passes: 0, targets: 0, composer: 0, errors: 0 };
+    if (!composer) return stats;
+    var seen = [];
+
+    function disposeOnce(resource, statKey) {
+      if (!resource || typeof resource.dispose !== 'function' || seen.indexOf(resource) >= 0) return;
+      seen.push(resource);
+      try {
+        resource.dispose();
+        stats[statKey]++;
+      } catch (_) {
+        stats.errors++;
+      }
+    }
+
+    (composer.passes || []).forEach(function (pass) { disposeOnce(pass, 'passes'); });
+
+    var composerDisposed = false;
+    if (typeof composer.dispose === 'function') {
+      try {
+        composer.dispose();
+        stats.composer++;
+        composerDisposed = true;
+      } catch (_) {
+        stats.errors++;
+      }
+    }
+    if (!composerDisposed) {
+      disposeOnce(composer.copyPass, 'passes');
+      disposeOnce(composer.renderTarget, 'targets');
+      disposeOnce(composer.renderTarget1, 'targets');
+      disposeOnce(composer.renderTarget2, 'targets');
+    }
+    return stats;
+  }
+
   // ─── Tool-scoped CSS (focus rings, reduced motion overrides) ───
   (function() {
     if (document.getElementById('fisherlab-css')) return;
@@ -64,6 +263,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '.fl-btn:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }',
       '.fl-card { background: linear-gradient(135deg, rgba(14,30,48,0.92), rgba(8,18,32,0.92)); border: 1px solid rgba(56,189,248,0.22); border-radius: 12px; padding: 14px 16px; color: #e2e8f0; }',
       '.fl-pill { display:inline-block; padding: 2px 8px; border-radius: 999px; background: rgba(56,189,248,0.12); color:#bae6fd; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; }',
+      '.fl-fisherlab-root.fl-large-text p, .fl-fisherlab-root.fl-large-text li, .fl-fisherlab-root.fl-large-text label, .fl-fisherlab-root.fl-large-text button, .fl-fisherlab-root.fl-large-text input, .fl-fisherlab-root.fl-large-text select, .fl-fisherlab-root.fl-large-text textarea, .fl-fisherlab-root.fl-large-text td, .fl-fisherlab-root.fl-large-text th, .fl-fisherlab-root.fl-large-text figcaption { font-size: 15px !important; line-height: 1.5 !important; }',
+      '.fl-fisherlab-root.fl-large-text .fl-pill { font-size: 13px !important; }',
       '@media (prefers-reduced-motion: reduce) { .fl-bob { animation: none !important; } .fl-pulse { animation: none !important; } }',
       '@keyframes fl-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }',
       '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }',
@@ -513,19 +714,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     master: { id: 'master', label: 'Master', tagline: 'Rain at sunset, lean reserves, expert accuracy', startFuel: 72, fuelBurn: 0.7, scoreMultiplier: 1.5, requiredFuel: 30, requiredAccuracy: 90, safeSpeed: 3.5, weather: 'rainy', timeOfDay: 'sunset' }
   };
   function getCoreSimProfile(region) {
-    return CORE_SIM_PROFILES[region] || CORE_SIM_PROFILES.maine;
+    return Object.prototype.hasOwnProperty.call(CORE_SIM_PROFILES, region) ? CORE_SIM_PROFILES[region] : CORE_SIM_PROFILES.maine;
+  }
+  function getCoreVoyageBuoyageCheck(region) {
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, region) ? region : DEFAULT_REGION;
+    if (activeRegion === 'greatlakes') {
+      return {
+        region: activeRegion,
+        direction: 'conventional',
+        markType: 'red-nun',
+        color: 'red',
+        expectedSide: 'starboard',
+        objectiveLabel: 'Keep red nun to starboard on the westbound Point Iroquois leg',
+        ruleLabel: 'Red to starboard in the charted conventional direction',
+        explanation: 'On this westbound Point Iroquois leg, follow the charted conventional direction and keep red marks to starboard. Verify the current chart and notices.',
+        successText: 'Correct buoyage pass: red nun to starboard in the charted conventional direction.',
+        reviewText: 'Buoyage review: keep the red nun to starboard on this charted conventional-direction leg.'
+      };
+    }
+    return {
+      region: activeRegion,
+      direction: 'outbound',
+      markType: 'green-can',
+      color: 'green',
+      expectedSide: 'starboard',
+      objectiveLabel: 'Keep green can to starboard outbound',
+      ruleLabel: 'Green to starboard when heading seaward',
+      explanation: 'When leaving ' + REGIONS[activeRegion].portName + ', keep green marks to starboard and red marks to port. Red right returning applies on the inbound leg.',
+      successText: 'Correct buoyage pass: green can to starboard while outbound.',
+      reviewText: 'Buoyage review: keep the green can to starboard while heading seaward.'
+    };
+  }
+
+  function getCoreVoyageBuoyageLayout(region) {
+    var check = getCoreVoyageBuoyageCheck(region);
+    var starboardMarkType = check.markType;
+    return {
+      region: check.region,
+      direction: check.direction,
+      starboardMarkType: starboardMarkType,
+      portMarkType: starboardMarkType === 'red-nun' ? 'green-can' : 'red-nun'
+    };
+  }
+
+  function getCoreTrainingChartBrief(region) {
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, region) ? region : DEFAULT_REGION;
+    var regional = REGIONS[activeRegion];
+    var mission = getCoreSimProfile(activeRegion);
+    var encounter = CORE_COLREGS_ENCOUNTERS[activeRegion] || CORE_COLREGS_ENCOUNTERS.maine;
+    var buoyageCheck = getCoreVoyageBuoyageCheck(activeRegion);
+    return {
+      region: activeRegion,
+      label: regional.label,
+      portName: regional.portName,
+      portCoords: regional.portCoords,
+      buoyage: regional.buoyage,
+      buoyageObjective: buoyageCheck.objectiveLabel,
+      buoyageRule: buoyageCheck.ruleLabel,
+      buoyageExplanation: buoyageCheck.explanation,
+      destination: mission.destination,
+      targetFish: mission.targetFish,
+      trapCatch: mission.trapCatch,
+      trafficVessel: encounter.vessel,
+      trafficRule: encounter.rule,
+      trafficSituation: encounter.situation,
+      landmarks: (regional.landmarks || []).slice(),
+      authority: regional.dmrAuthority,
+      waterContext: activeRegion === 'greatlakes' ? 'non-tidal freshwater channel' : 'tidal coastal water',
+      detailMode: activeRegion === 'maine' ? 'portland-detail' : 'regional-schematic'
+    };
+  }
+  var CORE_REGION_AWARE_SECTIONS = { home: true, journal: true, sim: true, chart: true, species: true, regs: true };
+  var CORE_SHARED_SECTIONS = { buoyage: true, colregs: true, vhf: true, knots: true };
+  function getCoreSectionScope(tabId, region) {
+    var sectionId = String(tabId || '');
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, region) ? region : DEFAULT_REGION;
+    var profile = REGIONS[activeRegion];
+    var scope = CORE_REGION_AWARE_SECTIONS[sectionId] === true ? 'regional' : CORE_SHARED_SECTIONS[sectionId] === true ? 'shared' : 'maine-curriculum';
+    var title = scope === 'regional' ? profile.label + ' profile active' : scope === 'shared' ? 'Shared seamanship lesson' : 'Maine curriculum section';
+    var message = scope === 'regional' ? 'This section adapts its scenario, records, species, or rule guidance to ' + profile.label + '.' : scope === 'shared' ? profile.label + ' remains selected. This section teaches shared seamanship concepts; verify local requirements and conditions with ' + profile.dmrAuthority + '.' : profile.label + ' remains selected for region-aware routes. This section uses Maine curriculum examples and does not adapt its content or progress to ' + profile.label + '.';
+    return { tabId: sectionId, region: activeRegion, regionLabel: profile.label, authority: profile.dmrAuthority, scope: scope, visible: activeRegion !== DEFAULT_REGION, title: title, message: message };
+  }
+  function getCoreTrapActionLabel(region) {
+    var trapCatch = getCoreSimProfile(region).trapCatch;
+    if (/crayfish/i.test(trapCatch)) return 'Inspect crayfish gear';
+    if (/crab/i.test(trapCatch)) return 'Haul ' + trapCatch + ' pot';
+    return 'Haul ' + trapCatch + ' trap';
+  }
+  function getCoreTrapSceneProfile(region) {
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, region) ? region : DEFAULT_REGION;
+    var profiles = {
+      maine: { specimenType: 'lobster', gearLabel: 'lobster trap', markerLabel: 'Lobster Trap', showLobsterModel: true },
+      chesapeake: { specimenType: 'crab', gearLabel: 'blue crab pot', markerLabel: 'Blue Crab Pot', showLobsterModel: false },
+      pnw: { specimenType: 'crab', gearLabel: 'Dungeness crab pot', markerLabel: 'Dungeness Crab Pot', showLobsterModel: false },
+      greatlakes: { specimenType: 'crayfish', gearLabel: 'crayfish gear', markerLabel: 'Crayfish Gear', showLobsterModel: false }
+    };
+    return Object.assign({
+      region: activeRegion,
+      actionLabel: getCoreTrapActionLabel(activeRegion)
+    }, profiles[activeRegion]);
+  }
+  function shouldIgnoreCoreRepeatedKey(key, repeat) {
+    if (repeat !== true) return false;
+    return ['p', 'escape', 'h', 'b', 'f', 'v', 'm', '1', '2', '3'].indexOf(String(key || '').toLowerCase()) !== -1;
+  }
+  function isCoreSimulatorLaunchCurrent(activeGeneration, callbackGeneration, mounted) {
+    return mounted === true && activeGeneration === callbackGeneration;
   }
   function getCoreVoyageMode(mode) {
-    return CORE_VOYAGE_MODES[mode] || CORE_VOYAGE_MODES.guided;
+    return Object.prototype.hasOwnProperty.call(CORE_VOYAGE_MODES, mode) ? CORE_VOYAGE_MODES[mode] : CORE_VOYAGE_MODES.guided;
   }
   function evaluateCoreBuoyPass(direction, buoyColor, side) {
-    var travel = direction === 'returning' ? 'returning' : 'outbound';
+    var travel = direction === 'returning' ? 'returning' : direction === 'conventional' ? 'conventional' : 'outbound';
     var color = buoyColor === 'green' || buoyColor === 'green-can' ? 'green' : 'red';
-    var expectedSide = travel === 'returning' ? (color === 'red' ? 'starboard' : 'port') : (color === 'green' ? 'starboard' : 'port');
+    var expectedSide = travel === 'outbound' ? (color === 'green' ? 'starboard' : 'port') : (color === 'red' ? 'starboard' : 'port');
     return {
       correct: side === expectedSide,
       expectedSide: expectedSide,
-      ruleLabel: travel === 'returning' ? 'Red right returning' : 'Green to starboard when heading seaward'
+      ruleLabel: travel === 'returning' ? 'Red right returning' : travel === 'conventional' ? 'Red to starboard in the charted conventional direction' : 'Green to starboard when heading seaward'
     };
   }
   function evaluateCoreChallengeStandard(mode, accuracy, fuel) {
@@ -535,6 +841,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var accuracyMet = measuredAccuracy >= profile.requiredAccuracy;
     var fuelMet = measuredFuel >= profile.requiredFuel;
     return { met: accuracyMet && fuelMet, accuracyMet: accuracyMet, fuelMet: fuelMet, requiredAccuracy: profile.requiredAccuracy, requiredFuel: profile.requiredFuel };
+  }
+  function evaluateCoreVoyageStandard(mode, accuracy, fuel, trafficDecisionCorrect, trafficManeuverReviewed) {
+    var challenge = evaluateCoreChallengeStandard(mode, accuracy, fuel);
+    var trafficDecisionMet = trafficDecisionCorrect === true;
+    var maneuverMet = trafficManeuverReviewed !== true;
+    return Object.assign({}, challenge, {
+      met: challenge.met && trafficDecisionMet && maneuverMet,
+      trafficDecisionMet: trafficDecisionMet,
+      maneuverMet: maneuverMet
+    });
   }
   function getCoreMissionCompletionKeys(region, mode, passed) {
     if (passed === false) return [];
@@ -567,12 +883,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       action: action,
       disposition: action === 'retain' ? 'retained' : 'released',
       identified: entry.identified !== false,
-      identificationCorrect: entry.identificationCorrect !== false,
+      identificationCorrect: typeof entry.identificationCorrect === 'boolean' ? entry.identificationCorrect : null,
       ruleCorrect: typeof entry.ruleCorrect === 'boolean' ? entry.ruleCorrect : null,
       correct: entry.correct !== false,
       evidence: String(entry.evidence || '').slice(0, 600),
       region: entry.region || 'maine',
       mission: entry.mission || 'core-voyage',
+      practiceTargetSpeciesId: String(entry.practiceTargetSpeciesId || ''),
+      practiceFocusSkill: String(entry.practiceFocusSkill || ''),
+      correctionReviewedAt: Math.max(0, Number(entry.correctionReviewedAt) || 0),
       ts: Number(entry.ts) || Date.now()
     });
     return prior.slice(-250);
@@ -665,6 +984,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         reviewedTs: reviewedTimestamp,
         reviewedAt: reviewedAt,
         mission: mission,
+        practiceTargetSpeciesId: String(entry.practiceTargetSpeciesId || ''),
+        practiceFocusSkill: String(entry.practiceFocusSkill || ''),
+        correctionReviewedAt: Math.max(0, Number(entry.correctionReviewedAt) || 0),
         ts: isFinite(timestamp) && timestamp > 0 ? timestamp : 0,
         recordedAt: recordedAt,
         sourceIndex: sourceIndex
@@ -955,7 +1277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     if (journal.some(function(item) { return item && (item.action === 'retain' || item.action === 'keep' || item.disposition === 'retained') && item.identificationCorrect !== false && item.ruleCorrect !== false && item.correct !== false; })) unlocked['first-keeper'] = true;
     var unique = {};
-    journal.forEach(function(item) { if (item && item.speciesId && item.identified !== false && item.identificationCorrect !== false) unique[item.speciesId] = true; });
+    journal.forEach(function(item) { if (item && item.speciesId && item.identified !== false && item.identificationCorrect === true) unique[item.speciesId] = true; });
     if (Object.keys(unique).length >= 5) unlocked['species-id-bronze'] = true;
     if ((Number(input.cleanCoreTrips) || 0) > 0 || ((Number(input.coreTrips) || 0) > 0 && (Number(input.regsViolations) || 0) === 0)) unlocked['sustainable-fisher'] = true;
     return unlocked;
@@ -1231,41 +1553,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var encounter = getCoreEncounter(region, mode);
     return { correct: action === encounter.correctAction, encounter: encounter };
   }
+  function normalizeCoreFiniteNumber(value, fallback) {
+    var measured = Number(value);
+    return isFinite(measured) ? measured : fallback;
+  }
+  function normalizeCoreHeadingRadians(value, fallback) {
+    var fullTurn = Math.PI * 2;
+    var measured = normalizeCoreFiniteNumber(value, fallback);
+    var normalized = ((measured % fullTurn) + fullTurn) % fullTurn;
+    return normalized === 0 ? 0 : normalized;
+  }
+  function getCoreHeadingDeltaRadians(startHeading, currentHeading) {
+    var start = normalizeCoreHeadingRadians(startHeading, 0);
+    var current = normalizeCoreHeadingRadians(currentHeading, 0);
+    var delta = current - start;
+    return Math.atan2(Math.sin(delta), Math.cos(delta));
+  }
+  function normalizeCoreRadarBearing(value) {
+    var measured = normalizeCoreFiniteNumber(value, 0);
+    var normalized = ((measured + 180) % 360 + 360) % 360 - 180;
+    return normalized === 0 ? 0 : normalized;
+  }
+  function normalizeCoreRadarRange(value) {
+    return Math.max(0, Math.min(1000, normalizeCoreFiniteNumber(value, 0)));
+  }
   function evaluateCoreManeuver(type, startHeading, currentHeading, startSpeed, currentSpeed, elapsed, fogSignalMade) {
-    var headingDelta = currentHeading - startHeading;
-    while (headingDelta > Math.PI) headingDelta -= Math.PI * 2;
-    while (headingDelta < -Math.PI) headingDelta += Math.PI * 2;
+    var headingDelta = getCoreHeadingDeltaRadians(startHeading, currentHeading);
+    var safeStartSpeed = normalizeCoreFiniteNumber(startSpeed, 0);
+    var safeCurrentSpeed = normalizeCoreFiniteNumber(currentSpeed, 0);
+    var safeElapsed = Math.max(0, normalizeCoreFiniteNumber(elapsed, 0));
     var headingDeviation = Math.abs(headingDelta * 180 / Math.PI);
-    var speedDeviation = Math.abs(Math.abs(currentSpeed) - Math.abs(startSpeed));
+    var speedDeviation = Math.abs(Math.abs(safeCurrentSpeed) - Math.abs(safeStartSpeed));
     if (type === 'restricted') {
-      var restrictedSpeed = Math.abs(currentSpeed) <= 2;
+      var restrictedSpeed = Math.abs(safeCurrentSpeed) <= 2;
       var portTurnDegrees = Math.max(0, headingDelta * 180 / Math.PI);
       var avoidedPortAlteration = portTurnDegrees <= 8;
-      var cautiousObservation = elapsed >= 5;
+      var cautiousObservation = safeElapsed >= 5;
       var properFogSignal = !!fogSignalMade;
       return { criterionOne: restrictedSpeed, criterionTwo: avoidedPortAlteration, criterionThree: properFogSignal, observedEnough: cautiousObservation, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, portTurnDegrees: portTurnDegrees, complete: restrictedSpeed && avoidedPortAlteration && properFogSignal && cautiousObservation };
     }
     if (type === 'stand-on') {
       var courseSteady = headingDeviation <= 8;
       var speedSteady = speedDeviation <= 1.5;
-      var observedEnough = elapsed >= 5;
+      var observedEnough = safeElapsed >= 5;
       return { criterionOne: courseSteady, criterionTwo: speedSteady, observedEnough: observedEnough, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: 0, complete: courseSteady && speedSteady && observedEnough };
     }
     var starboardTurn = -headingDelta;
     var turnDegrees = Math.max(0, starboardTurn * 180 / Math.PI);
-    var slowEnough = Math.abs(currentSpeed) <= 2.5;
+    var slowEnough = Math.abs(safeCurrentSpeed) <= 2.5;
     var turnedEnough = turnDegrees >= 15;
     return { criterionOne: slowEnough, criterionTwo: turnedEnough, observedEnough: true, headingDeviation: headingDeviation, speedDeviation: speedDeviation, turnDegrees: turnDegrees, complete: slowEnough && turnedEnough };
   }
   function evaluateCoreCollisionRisk(startRange, currentRange, closestRange, startBearing, currentBearing) {
-    var bearingDelta = currentBearing - startBearing;
-    while (bearingDelta > 180) bearingDelta -= 360;
-    while (bearingDelta < -180) bearingDelta += 360;
+    var safeStartRange = normalizeCoreRadarRange(startRange);
+    var safeCurrentRange = normalizeCoreRadarRange(currentRange);
+    var safeClosestRange = normalizeCoreRadarRange(closestRange);
+    var bearingDelta = normalizeCoreRadarBearing(normalizeCoreRadarBearing(currentBearing) - normalizeCoreRadarBearing(startBearing));
     var bearingChange = Math.abs(bearingDelta);
-    var rangeChange = currentRange - startRange;
+    var rangeChange = safeCurrentRange - safeStartRange;
     var constantBearing = bearingChange <= 5;
-    var closing = currentRange < startRange - 0.5 && currentRange <= closestRange + 0.75;
-    var opening = currentRange > closestRange + 1.5;
+    var closing = safeCurrentRange < safeStartRange - 0.5 && safeCurrentRange <= safeClosestRange + 0.75;
+    var opening = safeCurrentRange > safeClosestRange + 1.5;
     var id = opening ? 'opening' : closing && constantBearing ? 'collision-risk' : closing ? 'bearing-changing' : 'monitoring';
     var labels = {
       'collision-risk': 'Collision risk: steady bearing, closing range',
@@ -1276,21 +1624,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { id: id, label: labels[id], bearingChange: bearingChange, rangeChange: rangeChange, constantBearing: constantBearing, closing: closing, opening: opening };
   }
   function appendCoreRadarPlot(history, bearing, range, maxPoints) {
-    var limit = Math.max(2, maxPoints || 6);
-    var next = Array.isArray(history) ? history.slice() : [];
-    next.push({ bearing: Number(bearing) || 0, range: Math.max(0, Number(range) || 0) });
-    return next.slice(-limit);
+    var requestedLimit = normalizeCoreFiniteNumber(maxPoints, 6);
+    if (!requestedLimit) requestedLimit = 6;
+    var limit = Math.max(2, Math.min(64, Math.floor(requestedLimit)));
+    var prior = Array.isArray(history) ? history : [];
+    var next = prior.slice(-(limit - 1)).map(function(plot) {
+      return { bearing: normalizeCoreRadarBearing(plot && plot.bearing), range: normalizeCoreRadarRange(plot && plot.range) };
+    });
+    next.push({ bearing: normalizeCoreRadarBearing(bearing), range: normalizeCoreRadarRange(range) });
+    return next;
   }
   function summarizeCoreRadarTrail(history) {
     var plots = Array.isArray(history) ? history : [];
     if (plots.length < 2) return { plotCount: plots.length, bearingChange: 0, rangeChange: 0, constantBearing: false, trend: 'insufficient', label: 'More timed plots needed for a trend' };
-    var first = plots[0];
-    var last = plots[plots.length - 1];
-    var bearingDelta = (Number(last.bearing) || 0) - (Number(first.bearing) || 0);
-    while (bearingDelta > 180) bearingDelta -= 360;
-    while (bearingDelta < -180) bearingDelta += 360;
+    var first = plots[0] || {};
+    var last = plots[plots.length - 1] || {};
+    var bearingDelta = normalizeCoreRadarBearing(normalizeCoreRadarBearing(last.bearing) - normalizeCoreRadarBearing(first.bearing));
     var bearingChange = Math.abs(bearingDelta);
-    var rangeChange = (Number(last.range) || 0) - (Number(first.range) || 0);
+    var rangeChange = normalizeCoreRadarRange(last.range) - normalizeCoreRadarRange(first.range);
     var constantBearing = bearingChange <= 5;
     var trend = rangeChange < -0.5 ? 'closing' : rangeChange > 0.5 ? 'opening' : 'steady-range';
     var label = trend === 'closing' && constantBearing ? 'Steady bearing and closing range show collision risk' : trend === 'closing' ? 'Range is closing while bearing changes' : trend === 'opening' ? 'Range is opening after the maneuver' : 'Range is nearly steady; continue monitoring';
@@ -1303,8 +1654,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { correct: call === expected, expected: expected, expectedLabel: labels[expected], evidence: evidence };
   }
   function getCoreManeuverWindow(elapsed, limit) {
-    var duration = Math.max(1, Number(limit) || 20);
-    var used = Math.max(0, Number(elapsed) || 0);
+    var requestedDuration = normalizeCoreFiniteNumber(limit, 20);
+    if (!requestedDuration) requestedDuration = 20;
+    var duration = Math.max(1, requestedDuration);
+    var used = Math.max(0, normalizeCoreFiniteNumber(elapsed, 0));
     var remaining = Math.max(0, duration - used);
     var remainingPct = Math.max(0, Math.min(100, remaining / duration * 100));
     var urgency = remaining <= 5 ? 'critical' : remaining <= 10 ? 'warning' : 'normal';
@@ -1447,21 +1800,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { id: 'retain', label: 'Retained catch care', text: 'Record species and length, dispatch humanely, chill the fish promptly, and count it toward the active bag limit.' };
   }
 
+  var CORE_EVIDENCE_TIMESTAMP_MAX = 8640000000000000;
+  function normalizeCoreEvidenceTimestamp(value) {
+    var measured = normalizeCoreFiniteNumber(value, 0);
+    return measured > 0 ? Math.min(CORE_EVIDENCE_TIMESTAMP_MAX, measured) : 0;
+  }
   function appendCoreCatchDecision(history, entry) {
     var prior = Array.isArray(history) ? history : [];
     if (!entry) return prior.slice(-4);
-    var measured = Number(entry.length);
+    var rawLength = entry.length;
+    var hasMeasuredLength = typeof rawLength === 'number' || (typeof rawLength === 'string' && rawLength.trim() !== '');
+    var measured = hasMeasuredLength ? Number(rawLength) : NaN;
     var note = {
       kind: entry.kind === 'shellfish' ? 'shellfish' : 'finfish',
+      speciesId: String(entry.speciesId || ''),
       label: String(entry.label || entry.speciesId || 'Catch'),
       length: isFinite(measured) ? measured : null,
       action: entry.action === 'keep' ? 'keep' : 'release',
       correct: !!entry.correct,
       identificationCorrect: typeof entry.identificationCorrect === 'boolean' ? entry.identificationCorrect : null,
       ruleCorrect: typeof entry.ruleCorrect === 'boolean' ? entry.ruleCorrect : null,
-      evidence: String(entry.evidence || 'Evidence not recorded')
+      evidence: String(entry.evidence || 'Evidence not recorded'),
+      ts: normalizeCoreEvidenceTimestamp(entry.ts),
+      practiceTargetSpeciesId: String(entry.practiceTargetSpeciesId || ''),
+      practiceFocusSkill: String(entry.practiceFocusSkill || ''),
+      correctionReviewedAt: normalizeCoreEvidenceTimestamp(entry.correctionReviewedAt)
     };
     return prior.concat([note]).slice(-4);
+  }
+
+  function getCoreEmptyPracticeTransferResult() {
+    return { active: false, statusId: 'not-applicable', verified: false, targetSpeciesId: '', focusSkill: '', correctionReviewedAt: 0, targetAttempts: 0, bycatchAttempts: 0, latestAttemptTs: 0, latestTargetAttemptTs: 0, label: 'No transfer check active', guidance: 'Prepare transfer practice from a saved correction to collect newer evidence.' };
+  }
+
+  function buildCorePracticeTransferResult(plan, statusId, targetAttempts, bycatchAttempts, latestAttemptTs, latestTargetAttemptTs) {
+    var targetLabel = plan.targetSpeciesId.replace(/-/g, ' ');
+    var copy = {
+      verified: { label: 'Transfer verified', guidance: 'Saved correction verified on the latest newer ' + targetLabel + ' decision.' },
+      review: { label: 'Target decision needs review', guidance: 'The latest newer ' + targetLabel + ' decision needs review, so the saved correction is not verified yet.' },
+      bycatch: { label: 'Bycatch evidence only', guidance: 'Newer bycatch evidence was recorded, but ' + targetLabel + ' was not encountered, so transfer is not verified.' },
+      pending: { label: 'Awaiting newer target evidence', guidance: 'No auditable decision newer than the saved correction has been recorded for ' + targetLabel + '.' }
+    }[statusId];
+    return {
+      active: true,
+      statusId: statusId,
+      verified: statusId === 'verified',
+      targetSpeciesId: plan.targetSpeciesId,
+      focusSkill: plan.focusSkill,
+      correctionReviewedAt: plan.correctionReviewedAt,
+      targetAttempts: targetAttempts,
+      bycatchAttempts: bycatchAttempts,
+      latestAttemptTs: latestAttemptTs,
+      latestTargetAttemptTs: latestTargetAttemptTs,
+      label: copy.label,
+      guidance: copy.guidance
+    };
+  }
+
+  function reduceCorePracticeTransferEvidence(previous, entry) {
+    var prior = previous && previous.active ? previous : getCoreEmptyPracticeTransferResult();
+    var note = entry || {};
+    var targetSpeciesId = String(note.practiceTargetSpeciesId || '');
+    var focusSkill = String(note.practiceFocusSkill || '');
+    var correctionReviewedAt = Math.max(0, Number(note.correctionReviewedAt) || 0);
+    if (!targetSpeciesId || focusSkill !== 'transfer' || correctionReviewedAt <= 0) return previous && typeof previous === 'object' ? previous : prior;
+    var attemptTs = Math.max(0, Number(note.ts) || 0);
+    var samePlan = prior.active && prior.targetSpeciesId === targetSpeciesId && prior.focusSkill === focusSkill && prior.correctionReviewedAt === correctionReviewedAt;
+    var priorLatestAttemptTs = Math.max(0, Number(prior.latestAttemptTs) || 0);
+    if (prior.active && !samePlan && attemptTs <= priorLatestAttemptTs) return prior;
+    if (samePlan && attemptTs <= priorLatestAttemptTs) return prior;
+    var plan = { targetSpeciesId: targetSpeciesId, focusSkill: focusSkill, correctionReviewedAt: correctionReviewedAt };
+    var targetAttempts = samePlan ? Math.max(0, Number(prior.targetAttempts) || 0) : 0;
+    var bycatchAttempts = samePlan ? Math.max(0, Number(prior.bycatchAttempts) || 0) : 0;
+    var latestTargetAttemptTs = samePlan ? Math.max(0, Number(prior.latestTargetAttemptTs) || 0) : 0;
+    var statusId = samePlan && prior.statusId !== 'not-applicable' ? prior.statusId : 'pending';
+    if (attemptTs <= correctionReviewedAt) return buildCorePracticeTransferResult(plan, 'pending', 0, 0, attemptTs, 0);
+    if (String(note.speciesId || '') === targetSpeciesId) {
+      targetAttempts += 1;
+      latestTargetAttemptTs = attemptTs;
+      statusId = note.correct === true ? 'verified' : 'review';
+    } else {
+      bycatchAttempts += 1;
+      if (!targetAttempts) statusId = 'bycatch';
+    }
+    return buildCorePracticeTransferResult(plan, statusId, targetAttempts, bycatchAttempts, attemptTs, latestTargetAttemptTs);
+  }
+
+  function getCorePracticeTransferResult(catchDecisionHistory) {
+    var notes = Array.isArray(catchDecisionHistory) ? catchDecisionHistory : [];
+    return notes.reduce(function(result, note) {
+      return reduceCorePracticeTransferEvidence(result, note);
+    }, getCoreEmptyPracticeTransferResult());
   }
 
   function getCoreCatchSkillSummary(identificationCorrect, identificationTotal, ruleCorrect, ruleTotal) {
@@ -1511,8 +1940,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   function isCoreMissionReady(state) {
     return !!(state && state.passedRedNun && state.trafficDecisionMade && state.trafficManeuverComplete && state.reachedHalfwayRock && state.targetFishDecision && state.trapDecisionMade);
   }
-  function getCoreObjective(state, profile, encounter) {
-    if (!state || !state.passedRedNun) return { id: 'buoy', label: 'Keep green can to starboard outbound' };
+  function getCoreObjective(state, profile, encounter, buoyageCheck) {
+    var activeBuoyageCheck = buoyageCheck || getCoreVoyageBuoyageCheck(DEFAULT_REGION);
+    if (!state || !state.passedRedNun) return { id: 'buoy', label: activeBuoyageCheck.objectiveLabel };
     if (!state.trafficDecisionMade) return { id: 'traffic', label: 'Resolve crossing with ' + encounter.vessel };
     if (!state.trafficManeuverComplete) return { id: 'maneuver', label: encounter.maneuverLabel };
     if (!state.reachedHalfwayRock) return { id: 'grounds', label: 'Reach ' + profile.destination };
@@ -4889,8 +5319,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   var RADAR_FULL_SCALE = 36;          // sim units at the outer ring
   var RADAR_PLOT_UNITS = 22;          // scope radius in plot units
   function getCoreRadarPlotPoint(bearingDeg, range) {
-    var angle = (Number(bearingDeg) || 0) * Math.PI / 180;
-    var r = (Number(range) || 0) / RADAR_FULL_SCALE * RADAR_PLOT_UNITS;
+    var angle = normalizeCoreRadarBearing(bearingDeg) * Math.PI / 180;
+    var r = normalizeCoreRadarRange(range) / RADAR_FULL_SCALE * RADAR_PLOT_UNITS;
     r = Math.min(RADAR_PLOT_UNITS, Math.max(1.6, r));
     return { x: Math.sin(angle) * r, y: -Math.cos(angle) * r, units: r };
   }
@@ -5286,9 +5716,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreCameraRig: getCoreCameraRig,
     getCoreNavLightLocalX: getCoreNavLightLocalX,
     getCoreSimProfile: getCoreSimProfile,
+    getCoreTrainingChartBrief: getCoreTrainingChartBrief,
+    getCoreSectionScope: getCoreSectionScope,
+    getCoreTrapActionLabel: getCoreTrapActionLabel,
+    getCoreTrapSceneProfile: getCoreTrapSceneProfile,
+    shouldIgnoreCoreRepeatedKey: shouldIgnoreCoreRepeatedKey,
+    isCoreSimulatorLaunchCurrent: isCoreSimulatorLaunchCurrent,
+    getCoreVoyageBuoyageCheck: getCoreVoyageBuoyageCheck,
+    getCoreVoyageBuoyageLayout: getCoreVoyageBuoyageLayout,
     getCoreVoyageMode: getCoreVoyageMode,
     evaluateCoreBuoyPass: evaluateCoreBuoyPass,
     evaluateCoreChallengeStandard: evaluateCoreChallengeStandard,
+    evaluateCoreVoyageStandard: evaluateCoreVoyageStandard,
     getCoreMissionCompletionKeys: getCoreMissionCompletionKeys,
     getCoreMissionProgress: getCoreMissionProgress,
     appendCoreJournalObservation: appendCoreJournalObservation,
@@ -5299,6 +5738,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSpeciesMastery: getCoreSpeciesMastery,
     serializeCoreJournalCsv: serializeCoreJournalCsv,
     deriveCoreAchievements: deriveCoreAchievements,
+    normalizeFisherLabState: normalizeFisherLabState,
+    writeFisherLabState: writeFisherLabState,
+    normalizeCoreVoyageCheckpoint: normalizeCoreVoyageCheckpoint,
+    createCoreVoyageCheckpoint: createCoreVoyageCheckpoint,
+    getCoreVoyageCheckpointSummary: getCoreVoyageCheckpointSummary,
+    getCoreAccessibilityPreferences: getCoreAccessibilityPreferences,
+    setCoreAccessibilityPreference: setCoreAccessibilityPreference,
+    getCoreDialogFocusables: getCoreDialogFocusables,
+    focusCoreElement: focusCoreElement,
+    containCoreDialogFocus: containCoreDialogFocus,
+    publishCoreToolbarHeight: publishCoreToolbarHeight,
+    disposeCoreThreeResources: disposeCoreThreeResources,
+    disposeCoreComposerResources: disposeCoreComposerResources,
     getFishingSpot: getFishingSpot,
     getFishingTackle: getFishingTackle,
     getFishingScenarioConditions: getFishingScenarioConditions,
@@ -5328,6 +5780,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreShellfishHandlingGuidance: getCoreShellfishHandlingGuidance,
     getCoreFishHandlingGuidance: getCoreFishHandlingGuidance,
     appendCoreCatchDecision: appendCoreCatchDecision,
+    reduceCorePracticeTransferEvidence: reduceCorePracticeTransferEvidence,
+    getCorePracticeTransferResult: getCorePracticeTransferResult,
     getCoreCatchSkillSummary: getCoreCatchSkillSummary,
     getCoreTripLedger: getCoreTripLedger,
     scoreCoreDecision: scoreCoreDecision,
@@ -12580,25 +13034,329 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
   var CAMERA_VIEW_IDS = CAMERA_VIEWS.map(function(v) { return v.id; });
 
   var FL_KEY = 'fisherLab.state.v1';
+  var CORE_VOYAGE_CHECKPOINT_VERSION = 1;
+  function isFisherLabRecord(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+  function isSafeFisherLabKey(key) {
+    return key !== '__proto__' && key !== 'prototype' && key !== 'constructor';
+  }
+  function cloneFisherLabRecord(value) {
+    var copy = {};
+    if (!isFisherLabRecord(value)) return copy;
+    Object.keys(value).forEach(function(key) {
+      if (isSafeFisherLabKey(key)) copy[key] = value[key];
+    });
+    return copy;
+  }
+  function normalizeFisherLabCounter(value) {
+    var measured = Number(value);
+    return isFinite(measured) && measured > 0 ? Math.floor(measured) : 0;
+  }
+  function normalizeFisherLabBooleanMap(value) {
+    var source = cloneFisherLabRecord(value);
+    var normalized = {};
+    Object.keys(source).forEach(function(key) {
+      if (source[key] === true) normalized[key] = true;
+    });
+    return normalized;
+  }
+  function normalizeFisherLabCountMap(value) {
+    var source = cloneFisherLabRecord(value);
+    var normalized = {};
+    Object.keys(source).forEach(function(key) {
+      var count = normalizeFisherLabCounter(source[key]);
+      if (count > 0) normalized[key] = count;
+    });
+    return normalized;
+  }
+  function normalizeFisherLabScoreMap(value) {
+    var source = cloneFisherLabRecord(value);
+    var normalized = {};
+    Object.keys(source).forEach(function(key) {
+      var score = Number(source[key]);
+      if (isFinite(score) && score >= 0) normalized[key] = score;
+    });
+    return normalized;
+  }
+  function normalizeFisherLabRankMap(value) {
+    var source = cloneFisherLabRecord(value);
+    var normalized = {};
+    Object.keys(source).forEach(function(key) {
+      if (source[key] === 'bronze' || source[key] === 'silver' || source[key] === 'gold') normalized[key] = source[key];
+    });
+    return normalized;
+  }
+  function clampCoreVoyageCheckpointNumber(value, min, max, fallback) {
+    var measured = Number(value);
+    if (!isFinite(measured)) measured = fallback;
+    return Math.max(min, Math.min(max, measured));
+  }
+  function normalizeCoreVoyageCheckpointHeading(value) {
+    return normalizeCoreHeadingRadians(value, Math.PI);
+  }
+  // Stable checkpoint fields must also describe one possible voyage. Rejecting
+  // contradictions here prevents a resume from fabricating progress or evidence.
+  function getCoreVoyageCheckpointConsistencyIssues(checkpoint) {
+    var progress = isFisherLabRecord(checkpoint && checkpoint.progress) ? checkpoint.progress : {};
+    var scoring = isFisherLabRecord(checkpoint && checkpoint.scoring) ? checkpoint.scoring : {};
+    var evidence = isFisherLabRecord(checkpoint && checkpoint.evidence) ? checkpoint.evidence : {};
+    var issues = [];
+    var fishLanded = Number(progress.fishLanded) || 0;
+    var fishingAttempts = Number(progress.fishingAttempts) || 0;
+    var lobstersHauled = Number(progress.lobstersHauled) || 0;
+    var keeperLobsters = Number(progress.keeperLobsters) || 0;
+    var totalDecisions = Number(scoring.totalDecisions) || 0;
+    var correctDecisions = Number(scoring.correctDecisions) || 0;
+    var hauledTrapIds = Array.isArray(evidence.hauledTrapIds) ? evidence.hauledTrapIds : [];
+    var trafficTrackHistory = Array.isArray(evidence.trafficTrackHistory) ? evidence.trafficTrackHistory : [];
+    var retainedBySpecies = isFisherLabRecord(evidence.retainedBySpecies) ? evidence.retainedBySpecies : {};
+    var retainedFish = Object.keys(retainedBySpecies).reduce(function(total, speciesId) {
+      return total + (Number(retainedBySpecies[speciesId]) || 0);
+    }, 0);
+    var minimumDecisionCount = fishLanded + lobstersHauled + (progress.trafficDecisionMade ? 1 : 0);
+    var missionProfile = getCoreSimProfile(checkpoint && checkpoint.region);
+    var retainedTargetFish = missionProfile && (Number(retainedBySpecies[missionProfile.targetFishId]) || 0) > 0;
+    var minimumCorrectCount = retainedFish + keeperLobsters +
+      (progress.targetFishDecision && !retainedTargetFish ? 1 : 0) +
+      (progress.trapDecisionMade && keeperLobsters < 1 ? 1 : 0) +
+      (progress.trafficDecisionCorrect ? 1 : 0);
+    var gradeId = progress.trafficGradeId;
+
+    if (progress.trafficManeuverComplete && !progress.passedRedNun) issues.push('traffic-before-buoyage');
+    if (progress.targetFishDecision && !progress.reachedHalfwayRock) issues.push('target-before-fishing-grounds');
+    if (progress.targetFishDecision && fishLanded < 1) issues.push('target-without-landed-fish');
+    if (fishLanded > fishingAttempts) issues.push('landed-fish-exceed-attempts');
+    if (hauledTrapIds.length !== lobstersHauled) issues.push('trap-evidence-count-mismatch');
+    if (keeperLobsters > lobstersHauled) issues.push('keepers-exceed-shellfish-catches');
+    if (progress.trapDecisionMade && lobstersHauled < 1) issues.push('trap-decision-without-catch');
+    if (keeperLobsters > 0 && !progress.trapDecisionMade) issues.push('keeper-without-correct-trap-decision');
+    if (totalDecisions < minimumDecisionCount) issues.push('decision-total-below-resolved-events');
+    if (correctDecisions < minimumCorrectCount) issues.push('correct-total-below-completed-objectives');
+    if ((Number(scoring.fishIdentificationTotal) || 0) > fishLanded) issues.push('identification-total-exceeds-fish');
+    if ((Number(scoring.fishRuleTotal) || 0) > fishLanded) issues.push('rule-total-exceeds-fish');
+    if ((Number(scoring.regsViolations) || 0) > totalDecisions) issues.push('violations-exceed-decisions');
+    if ((Number(scoring.decisionStreak) || 0) > correctDecisions) issues.push('streak-exceeds-correct-decisions');
+    if (retainedFish > fishLanded) issues.push('retained-fish-exceed-landed-fish');
+    if (gradeId && !progress.trafficManeuverComplete) issues.push('grade-without-completed-maneuver');
+    if (gradeId === 'review' && progress.trafficDecisionCorrect && !progress.trafficManeuverReviewed) issues.push('review-grade-without-review-condition');
+    if (gradeId && gradeId !== 'review' && (!progress.trafficDecisionCorrect || progress.trafficManeuverReviewed)) issues.push('passing-grade-with-review-condition');
+    if ((gradeId === 'complete' || gradeId === 'review' || !gradeId) && (Number(progress.trafficGradeBonus) || 0) > 0) issues.push('bonus-without-bonus-grade');
+    if (progress.radarCallCorrect && !progress.radarCallMade) issues.push('correct-radar-call-without-call');
+    if (progress.radarCallLabel && !progress.radarCallMade) issues.push('radar-label-without-call');
+    if ((Number(progress.radarCallBonus) || 0) > 0 && (!progress.radarCallMade || !progress.radarCallCorrect)) issues.push('radar-bonus-without-correct-call');
+    if (trafficTrackHistory.length && !progress.trafficDecisionMade) issues.push('radar-trail-without-encounter');
+    return issues;
+  }
+  function normalizeCoreVoyageCheckpoint(value) {
+    if (!isFisherLabRecord(value) || value.version !== CORE_VOYAGE_CHECKPOINT_VERSION) return null;
+    if (!Object.prototype.hasOwnProperty.call(REGIONS, value.region)) return null;
+    if (!Object.prototype.hasOwnProperty.call(CORE_VOYAGE_MODES, value.mode)) return null;
+    var savedAt = value.savedAt;
+    if (typeof savedAt !== 'number' || !isFinite(savedAt) || savedAt <= 0) return null;
+
+    var pose = isFisherLabRecord(value.pose) ? value.pose : {};
+    var vessel = isFisherLabRecord(value.vessel) ? value.vessel : {};
+    var environment = isFisherLabRecord(value.environment) ? value.environment : {};
+    var progress = isFisherLabRecord(value.progress) ? value.progress : {};
+    var scoring = isFisherLabRecord(value.scoring) ? value.scoring : {};
+    var evidence = isFisherLabRecord(value.evidence) ? value.evidence : {};
+    if (progress.missionComplete === true || progress.missionAttemptComplete === true || progress.returnedHome === true) return null;
+
+    var trafficEncounterTriggered = progress.trafficEncounterTriggered === true;
+    var trafficDecisionMade = progress.trafficDecisionMade === true;
+    var trafficManeuverComplete = progress.trafficManeuverComplete === true;
+    var trafficManeuverReviewed = progress.trafficManeuverReviewed === true;
+    if (trafficEncounterTriggered !== trafficDecisionMade) return null;
+    if (trafficDecisionMade !== trafficManeuverComplete) return null;
+    if (trafficManeuverReviewed && !trafficManeuverComplete) return null;
+
+    var catchDecisionHistory = [];
+    if (Array.isArray(evidence.catchDecisionHistory)) {
+      evidence.catchDecisionHistory.slice(-4).forEach(function(entry) {
+        catchDecisionHistory = appendCoreCatchDecision(catchDecisionHistory, entry);
+      });
+    }
+    var radarHistory = [];
+    if (Array.isArray(evidence.trafficTrackHistory)) {
+      evidence.trafficTrackHistory.slice(-6).forEach(function(plot) {
+        radarHistory = appendCoreRadarPlot(radarHistory, plot && plot.bearing, plot && plot.range, 6);
+      });
+    }
+    var hauledTrapIds = [];
+    if (Array.isArray(evidence.hauledTrapIds)) {
+      evidence.hauledTrapIds.forEach(function(id) {
+        if (['buoy-1', 'buoy-2', 'buoy-3'].indexOf(id) !== -1 && hauledTrapIds.indexOf(id) === -1) hauledTrapIds.push(id);
+      });
+    }
+
+    var modeProfile = getCoreVoyageMode(value.mode);
+    var totalDecisions = Math.floor(clampCoreVoyageCheckpointNumber(scoring.totalDecisions, 0, 999, 0));
+    var fishIdentificationTotal = Math.floor(clampCoreVoyageCheckpointNumber(scoring.fishIdentificationTotal, 0, 999, 0));
+    var fishRuleTotal = Math.floor(clampCoreVoyageCheckpointNumber(scoring.fishRuleTotal, 0, 999, 0));
+    var cameraView = CAMERA_VIEW_IDS.indexOf(environment.cameraView) !== -1 ? environment.cameraView : 'chase';
+    var timeOfDay = ['day', 'sunset', 'night'].indexOf(environment.timeOfDay) !== -1 ? environment.timeOfDay : modeProfile.timeOfDay;
+    var weather = ['clear', 'foggy', 'rainy'].indexOf(environment.weather) !== -1 ? environment.weather : modeProfile.weather;
+    var gradeId = ['excellent', 'safe', 'complete', 'review'].indexOf(progress.trafficGradeId) !== -1 ? progress.trafficGradeId : null;
+
+    var normalizedCheckpoint = {
+      version: CORE_VOYAGE_CHECKPOINT_VERSION,
+      savedAt: Math.floor(savedAt),
+      region: value.region,
+      mode: value.mode,
+      resumePolicy: 'paused-neutral',
+      elapsed: clampCoreVoyageCheckpointNumber(value.elapsed, 0, 21600, 0),
+      pose: {
+        x: clampCoreVoyageCheckpointNumber(pose.x, -500, 500, 0),
+        z: clampCoreVoyageCheckpointNumber(pose.z, -500, 500, 5.5),
+        heading: normalizeCoreVoyageCheckpointHeading(pose.heading)
+      },
+      vessel: {
+        fuel: clampCoreVoyageCheckpointNumber(vessel.fuel, 0, modeProfile.startFuel, modeProfile.startFuel),
+        voyageAttempt: Math.max(1, Math.floor(clampCoreVoyageCheckpointNumber(vessel.voyageAttempt, 1, 9999, 1)))
+      },
+      environment: {
+        timeOfDay: timeOfDay,
+        weather: weather,
+        cameraView: cameraView
+      },
+      progress: {
+        passedRedNun: progress.passedRedNun === true,
+        reachedHalfwayRock: progress.reachedHalfwayRock === true,
+        fishLanded: Math.floor(clampCoreVoyageCheckpointNumber(progress.fishLanded, 0, 999, 0)),
+        fishingAttempts: Math.floor(clampCoreVoyageCheckpointNumber(progress.fishingAttempts, 0, 999, 0)),
+        keptKeeperCod: progress.keptKeeperCod === true,
+        lobstersHauled: Math.floor(clampCoreVoyageCheckpointNumber(progress.lobstersHauled, 0, 999, 0)),
+        keeperLobsters: Math.floor(clampCoreVoyageCheckpointNumber(progress.keeperLobsters, 0, 999, 0)),
+        targetFishDecision: progress.targetFishDecision === true,
+        trapDecisionMade: progress.trapDecisionMade === true,
+        trafficEncounterTriggered: trafficEncounterTriggered,
+        trafficDecisionMade: trafficDecisionMade,
+        trafficDecisionCorrect: trafficDecisionMade && progress.trafficDecisionCorrect === true,
+        trafficManeuverComplete: trafficManeuverComplete,
+        trafficManeuverReviewed: trafficManeuverReviewed,
+        trafficManeuverSeconds: clampCoreVoyageCheckpointNumber(progress.trafficManeuverSeconds, 0, 120, 0),
+        trafficStartHeading: normalizeCoreVoyageCheckpointHeading(progress.trafficStartHeading),
+        trafficStartSpeed: clampCoreVoyageCheckpointNumber(progress.trafficStartSpeed, -3, 8, 0),
+        trafficStartRange: clampCoreVoyageCheckpointNumber(progress.trafficStartRange, 0, 1000, 0),
+        trafficStartBearing: clampCoreVoyageCheckpointNumber(progress.trafficStartBearing, -180, 180, 0),
+        trafficClosestRange: clampCoreVoyageCheckpointNumber(progress.trafficClosestRange, 0, 1000, 0),
+        radarCallMade: trafficDecisionMade && progress.radarCallMade === true,
+        radarCallCorrect: trafficDecisionMade && progress.radarCallCorrect === true,
+        radarCallLabel: progress.radarCallLabel == null ? null : String(progress.radarCallLabel).slice(0, 120),
+        radarCallBonus: Math.floor(clampCoreVoyageCheckpointNumber(progress.radarCallBonus, 0, 1000, 0)),
+        trafficGradeId: gradeId,
+        trafficGradeLabel: gradeId && progress.trafficGradeLabel != null ? String(progress.trafficGradeLabel).slice(0, 120) : null,
+        trafficGradeBonus: Math.floor(clampCoreVoyageCheckpointNumber(progress.trafficGradeBonus, 0, 1000, 0)),
+        fogSignalMade: trafficDecisionMade && progress.fogSignalMade === true,
+        buoyViolationLogged: progress.buoyViolationLogged === true,
+        unsafeSpeedWarned: progress.unsafeSpeedWarned === true,
+        fuelDepletedWarned: progress.fuelDepletedWarned === true,
+        earlyDockWarned: progress.earlyDockWarned === true
+      },
+      scoring: {
+        stewardshipScore: Math.floor(clampCoreVoyageCheckpointNumber(scoring.stewardshipScore, 0, 1000000, 0)),
+        decisionStreak: Math.floor(clampCoreVoyageCheckpointNumber(scoring.decisionStreak, 0, totalDecisions, 0)),
+        correctDecisions: Math.floor(clampCoreVoyageCheckpointNumber(scoring.correctDecisions, 0, totalDecisions, 0)),
+        totalDecisions: totalDecisions,
+        fishIdentificationCorrect: Math.floor(clampCoreVoyageCheckpointNumber(scoring.fishIdentificationCorrect, 0, fishIdentificationTotal, 0)),
+        fishIdentificationTotal: fishIdentificationTotal,
+        fishRuleCorrect: Math.floor(clampCoreVoyageCheckpointNumber(scoring.fishRuleCorrect, 0, fishRuleTotal, 0)),
+        fishRuleTotal: fishRuleTotal,
+        regsViolations: Math.floor(clampCoreVoyageCheckpointNumber(scoring.regsViolations, 0, 999, 0))
+      },
+      evidence: {
+        catchDecisionHistory: catchDecisionHistory,
+        retainedBySpecies: normalizeFisherLabCountMap(evidence.retainedBySpecies),
+        trafficTrackHistory: radarHistory,
+        hauledTrapIds: hauledTrapIds
+      }
+    };
+    return getCoreVoyageCheckpointConsistencyIssues(normalizedCheckpoint).length ? null : normalizedCheckpoint;
+  }
+  function createCoreVoyageCheckpoint(value) {
+    var input = isFisherLabRecord(value) ? cloneFisherLabRecord(value) : {};
+    input.version = CORE_VOYAGE_CHECKPOINT_VERSION;
+    if (!isFinite(Number(input.savedAt)) || Number(input.savedAt) <= 0) input.savedAt = Date.now();
+    return normalizeCoreVoyageCheckpoint(input);
+  }
+  function getCoreVoyageCheckpointSummary(value) {
+    var checkpoint = normalizeCoreVoyageCheckpoint(value);
+    if (!checkpoint) return null;
+    var progress = checkpoint.progress;
+    var completedObjectives = (progress.passedRedNun ? 1 : 0) + (progress.trafficManeuverComplete ? 1 : 0) + (progress.reachedHalfwayRock ? 1 : 0) + (progress.targetFishDecision ? 1 : 0) + (progress.trapDecisionMade ? 1 : 0);
+    return {
+      version: checkpoint.version,
+      savedAt: checkpoint.savedAt,
+      region: checkpoint.region,
+      regionLabel: REGIONS[checkpoint.region].label,
+      mode: checkpoint.mode,
+      modeLabel: getCoreVoyageMode(checkpoint.mode).label,
+      completedObjectives: completedObjectives,
+      totalObjectives: 5,
+      fuel: Math.round(checkpoint.vessel.fuel),
+      elapsed: checkpoint.elapsed
+    };
+  }
+  function getCoreAccessibilityPreferences(value) {
+    var input = isFisherLabRecord(value) ? value : {};
+    return {
+      staticCamera: input.staticCamera === true,
+      captionMode: input.captionMode === true,
+      largeText: input.largeText === true
+    };
+  }
+  function setCoreAccessibilityPreference(current, key, enabled) {
+    var next = getCoreAccessibilityPreferences(current);
+    if (['staticCamera', 'captionMode', 'largeText'].indexOf(key) === -1) return next;
+    next[key] = enabled === true;
+    return next;
+  }
+  function normalizeFisherLabState(value) {
+    var input = isFisherLabRecord(value) ? value : {};
+    var missionIsKnown = typeof input.currentMission === 'string' && MISSIONS.some(function(mission) { return mission.id === input.currentMission; });
+    return {
+      region: Object.prototype.hasOwnProperty.call(REGIONS, input.region) ? input.region : DEFAULT_REGION,
+      currentMission: missionIsKnown ? input.currentMission : null,
+      completedMissions: normalizeFisherLabBooleanMap(input.completedMissions),
+      speciesCaught: normalizeFisherLabCountMap(input.speciesCaught),
+      lifeLog: Array.isArray(input.lifeLog) ? input.lifeLog.filter(function(entry) { return isFisherLabRecord(entry) && entry.speciesId; }).map(cloneFisherLabRecord).slice(-250) : [],
+      regsViolations: normalizeFisherLabCounter(input.regsViolations),
+      coreVoyageMode: Object.prototype.hasOwnProperty.call(CORE_VOYAGE_MODES, input.coreVoyageMode) ? input.coreVoyageMode : 'guided',
+      coreAttempts: normalizeFisherLabCounter(input.coreAttempts),
+      coreTrips: normalizeFisherLabCounter(input.coreTrips),
+      cleanCoreTrips: normalizeFisherLabCounter(input.cleanCoreTrips),
+      achievements: normalizeFisherLabBooleanMap(input.achievements),
+      bestCoreScores: normalizeFisherLabScoreMap(input.bestCoreScores),
+      bestCoreRanks: normalizeFisherLabRankMap(input.bestCoreRanks),
+      coreVoyageCheckpoint: normalizeCoreVoyageCheckpoint(input.coreVoyageCheckpoint),
+      a11y: getCoreAccessibilityPreferences(input.a11y)
+    };
+  }
+  function writeFisherLabState(storage, value) {
+    var normalized = normalizeFisherLabState(value);
+    if (!storage || typeof storage.setItem !== 'function') {
+      return { ok: false, state: normalized, bytes: 0, error: 'storage-unavailable' };
+    }
+    try {
+      var serialized = JSON.stringify(normalized);
+      storage.setItem(FL_KEY, serialized);
+      return { ok: true, state: normalized, bytes: serialized.length, error: null };
+    } catch (_) {
+      return { ok: false, state: normalized, bytes: 0, error: 'storage-unavailable' };
+    }
+  }
   function loadState() {
     try {
       var raw = window.localStorage.getItem(FL_KEY);
-      var s = raw ? JSON.parse(raw) : {};
-      return Object.assign({
-        region: DEFAULT_REGION,
-        currentMission: null, // mission id or null
-        completedMissions: {},
-        speciesCaught: {}, // {speciesId: count}
-        lifeLog: [], // [{speciesId, length, date, mission}]
-        regsViolations: 0,
-        a11y: { staticCamera: false, captionMode: false, largeText: false }
-      }, s);
+      return normalizeFisherLabState(raw ? JSON.parse(raw) : {});
     } catch (_) {
-      return { region: DEFAULT_REGION, completedMissions: {}, speciesCaught: {}, lifeLog: [], regsViolations: 0, a11y: {} };
+      return normalizeFisherLabState({});
     }
   }
   function saveState(s) {
-    try { window.localStorage.setItem(FL_KEY, JSON.stringify(s)); } catch (_) {}
+    try { return writeFisherLabState(window.localStorage, s); }
+    catch (_) { return writeFisherLabState(null, s); }
   }
 
   // ───────────────────────────────────────────────────────────
@@ -12627,7 +13385,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var W = canvas.clientWidth || 720;
     var H = canvas.clientHeight || 420;
 
-    var activeRegion = (opts && opts.region) || 'maine';
+    var requestedRegion = (opts && opts.region) || DEFAULT_REGION;
+    var activeRegion = Object.prototype.hasOwnProperty.call(REGIONS, requestedRegion) ? requestedRegion : DEFAULT_REGION;
+    var trapSceneProfile = getCoreTrapSceneProfile(activeRegion);
+    var buoyageCheck = getCoreVoyageBuoyageCheck(activeRegion);
+    var buoyageLayout = getCoreVoyageBuoyageLayout(activeRegion);
 
     var skyColorHex = 0x9bc4d8;
     var fogColorHex = 0xa8c8d8;
@@ -13183,8 +13945,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var lowPower = LOW_POWER;   // see the single definition above
         var disp = [];   // textures / geometries / materials to free
         var objs = [];   // scene objects to remove on dispose
+        var effectsDisposed = false;
+        var ambientDisposeStats = null;
+        var ambientScripts = [];
+
+        var wake = [], spray = [], gulls = [];
         function keep(o) { if (o) disp.push(o); return o; }
         function add(o) { if (o) { scene.add(o); objs.push(o); } return o; }
+
+        // Register teardown before constructing the first effect. If any later
+        // texture, geometry, or CDN setup throws, the outer catch can still
+        // reclaim everything that was successfully created up to that point.
+        AF.dispose = function () {
+          if (effectsDisposed) return ambientDisposeStats;
+          effectsDisposed = true;
+          AF.update = function () {};
+          AF.applyEnv = function () {};
+          ambientScripts.forEach(function (script) {
+            try {
+              script.onload = null;
+              script.onerror = null;
+              if (script.parentNode) script.parentNode.removeChild(script);
+            } catch (_) {}
+          });
+          ambientScripts.length = 0;
+
+          var ambientExtras = disp.slice();
+          wake.forEach(function (item) { if (item && item.material) ambientExtras.push(item.material); });
+          spray.forEach(function (item) { if (item && item.material) ambientExtras.push(item.material); });
+          gulls.forEach(function (item) { if (item && item.material) ambientExtras.push(item.material); });
+          objs.forEach(function (object) { try { scene.remove(object); } catch (_) {} });
+
+          var activeComposer = renderer._alloComposer;
+          renderer._alloComposer = null;
+          ambientDisposeStats = {
+            resources: disposeCoreThreeResources(objs, ambientExtras),
+            composer: disposeCoreComposerResources(activeComposer)
+          };
+          objs.length = 0;
+          disp.length = 0;
+          wake.length = 0;
+          spray.length = 0;
+          gulls.length = 0;
+          return ambientDisposeStats;
+        };
 
         // ── procedural textures ──
         function radialTex(inner, outer) {
@@ -13216,23 +14020,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         (function () {
           if (typeof window !== 'undefined' && window.AlloPostFXEnabled === false) return;
           var ensure = function (cb) {
+            if (effectsDisposed) return;
             if (window.THREE && window.THREE.EffectComposer && window.THREE.UnrealBloomPass) { cb(); return; }
             var u = ['https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js', 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'];
-            var i = 0; (function n() { if (i >= u.length) { cb(); return; } var s = document.createElement('script'); s.src = u[i]; s.onload = function () { i++; n(); }; s.onerror = function () { i++; n(); }; document.head.appendChild(s); })();
+            var i = 0;
+            (function nextScript() {
+              if (effectsDisposed) return;
+              if (i >= u.length) { cb(); return; }
+              var script = document.createElement('script');
+              script.src = u[i];
+              ambientScripts.push(script);
+              function settled() {
+                var scriptIndex = ambientScripts.indexOf(script);
+                if (scriptIndex >= 0) ambientScripts.splice(scriptIndex, 1);
+                script.onload = null;
+                script.onerror = null;
+                try { if (script.parentNode) script.parentNode.removeChild(script); } catch (_) {}
+                if (effectsDisposed) return;
+                i++;
+                nextScript();
+              }
+              script.onload = settled;
+              script.onerror = settled;
+              document.head.appendChild(script);
+            })();
           };
           ensure(function () {
+            if (effectsDisposed) return;
+            var cc = null;
             try {
               var T = window.THREE; if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
               var rs = lowPower ? 0.5 : 1;
-              var cc = new T.EffectComposer(renderer);
+              cc = new T.EffectComposer(renderer);
               cc.addPass(new T.RenderPass(scene, camera));
-              // Threshold 0.93: only genuinely emissive things — the sun/moon disc,
+              // Threshold 0.93: only genuinely emissive things -- the sun/moon disc,
               // the nav lights, the sun-glint core. It was 0.86, which a lit white
               // hull can reach on its own, so the pass kept finding the boat
               // instead of the lights. Whitewater foam stays crisp either way.
               cc.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round((canvas.clientWidth || W) * rs)), Math.max(1, Math.round((canvas.clientHeight || H) * rs))), lowPower ? 0.45 : 0.64, 0.42, 0.93));
+              if (effectsDisposed) {
+                disposeCoreComposerResources(cc);
+                return;
+              }
               renderer._alloComposer = cc;
-            } catch (e) { try { renderer._alloComposer = null; } catch (_) {} }
+            } catch (e) {
+              if (cc) disposeCoreComposerResources(cc);
+              try { renderer._alloComposer = null; } catch (_) {}
+            }
           });
         })();
 
@@ -13274,7 +14108,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var glOffZ = (sun.position.z / glSunLen) * 46;
 
         // ── 5. Boat wake foam (visualizes speed = the physics you're driving) ──
-        var wake = [], wcur = 0, WAKE_N = lowPower ? 0 : 26;
+        var wcur = 0, WAKE_N = lowPower ? 0 : 26;
         var foamTex = WAKE_N ? radialTex('rgba(232,242,248,0.95)', 'rgba(232,242,248,0)') : null;
         for (var fi = 0; fi < WAKE_N; fi++) {
           var fm = new THREE.SpriteMaterial({ map: foamTex, color: 0xe4eef4, transparent: true, opacity: 0, depthWrite: false, fog: true });
@@ -13282,7 +14116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           fs.userData = { life: 0, max: 1 }; wake.push(fs);
         }
         // ── bow spray (brief additive burst at higher speed) ──
-        var spray = [], scur = 0, SPRAY_N = lowPower ? 0 : 12;
+        var scur = 0, SPRAY_N = lowPower ? 0 : 12;
         var sprayTex = SPRAY_N ? radialTex('rgba(255,255,255,0.95)', 'rgba(255,255,255,0)') : null;
         for (var pi = 0; pi < SPRAY_N; pi++) {
           var pm = new THREE.SpriteMaterial({ map: sprayTex, color: 0xf0f8ff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: true });
@@ -13318,7 +14152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         stars = add(new THREE.Points(starGeo, starMat)); stars.visible = false; stars.renderOrder = -7;
 
         // ── 8. Seabirds (a little life; hidden under reduced motion) ──
-        var gulls = [], GULL_N = (reducedMotion || lowPower) ? 0 : 4;
+        var GULL_N = (reducedMotion || lowPower) ? 0 : 4;
         var gTex = GULL_N ? gullTex() : null;
         for (var gi = 0; gi < GULL_N; gi++) {
           var gm = new THREE.SpriteMaterial({ map: gTex, transparent: true, opacity: 0.85, depthWrite: false, fog: true });
@@ -13449,17 +14283,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           } catch (_) {}
         };
 
-        AF.dispose = function () {
-          try {
-            objs.forEach(function (o) { try { scene.remove(o); } catch (_) {} });
-            wake.forEach(function (w) { try { if (w.material) w.material.dispose(); } catch (_) {} });
-            spray.forEach(function (s) { try { if (s.material) s.material.dispose(); } catch (_) {} });
-            gulls.forEach(function (g) { try { if (g.material) g.material.dispose(); } catch (_) {} });
-            disp.forEach(function (d) { try { if (d && d.dispose) d.dispose(); } catch (_) {} });
-            try { var ac = renderer._alloComposer; if (ac) { (ac.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); renderer._alloComposer = null; } } catch (_) {}
-          } catch (_) {}
-        };
-      } catch (e) { try { console.warn('[FisherLab] ambient FX unavailable:', e); } catch (_) {} }
+      } catch (e) {
+        try { AF.dispose(); } catch (_) {}
+        try { console.warn('[FisherLab] ambient FX unavailable:', e); } catch (_) {}
+      }
     })();
 
     // ─── Buoyage — populated based on region.
@@ -13583,12 +14410,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return g;
     }
 
-    addBuoy(6, -10, 'red-nun');
-    addBuoy(-6, -10, 'green-can');
-    addBuoy(7, -30, 'red-nun');
-    addBuoy(-7, -30, 'green-can');
-    addBuoy(9, -55, 'red-nun');
-    addBuoy(-9, -55, 'green-can');
+    // The boat begins southbound: negative x is starboard, positive x is port.
+    addBuoy(6, -10, buoyageLayout.portMarkType);
+    addBuoy(-6, -10, buoyageLayout.starboardMarkType);
+    addBuoy(7, -30, buoyageLayout.portMarkType);
+    addBuoy(-7, -30, buoyageLayout.starboardMarkType);
+    addBuoy(9, -55, buoyageLayout.portMarkType);
+    addBuoy(-9, -55, buoyageLayout.starboardMarkType);
     addBuoy(0, -85, 'safe-water');
     addBuoy(-15, -120, 'cardinal-N'); // marker for the ledge area
 
@@ -13630,9 +14458,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return g;
     }
 
-    addLobsterBuoy(-15, -25, 'buoy-1', 'Lobster Trap #1', 0xfacc15, 0x1d4ed8); // Yellow/Blue
-    addLobsterBuoy(18, -70, 'buoy-2', 'Lobster Trap #2', 0xdc2626, 0xffffff); // Red/White
-    addLobsterBuoy(-8, -110, 'buoy-3', 'Lobster Trap #3', 0xea580c, 0x16a34a); // Orange/Green
+    addLobsterBuoy(-15, -25, 'buoy-1', trapSceneProfile.markerLabel + ' #1', 0xfacc15, 0x1d4ed8); // Yellow/Blue
+    addLobsterBuoy(18, -70, 'buoy-2', trapSceneProfile.markerLabel + ' #2', 0xdc2626, 0xffffff); // Red/White
+    addLobsterBuoy(-8, -110, 'buoy-3', trapSceneProfile.markerLabel + ' #3', 0xea580c, 0x16a34a); // Orange/Green
 
     // ─── Halfway Rock waypoint marker (mission destination)
     var rock = new THREE.Group();
@@ -13983,9 +14811,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var filterNode = null;
     var waveNoise = null;
     var waveGain = null;
+    var waveFilterNode = null;
+    var thunderFilterNode = null;
     var soundEnabled = false;
     var thunderOsc = null;
     var thunderGain = null;
+
+    function disposeAudioSynth() {
+      var context = audioCtx;
+      var nodes = [engineOsc, rumbleOsc, waveNoise, thunderOsc, filterNode, engineGain, waveFilterNode, waveGain, thunderFilterNode, thunderGain];
+      var sources = [engineOsc, rumbleOsc, waveNoise, thunderOsc];
+      var hadAudio = !!context || nodes.some(function (node) { return !!node; });
+      soundEnabled = false;
+
+      sources.forEach(function (sourceNode) {
+        try { if (sourceNode && sourceNode.stop) sourceNode.stop(0); } catch (_) {}
+      });
+      nodes.forEach(function (node) {
+        try { if (node && node.disconnect) node.disconnect(); } catch (_) {}
+      });
+
+      audioCtx = null;
+      engineOsc = null;
+      rumbleOsc = null;
+      engineGain = null;
+      filterNode = null;
+      waveNoise = null;
+      waveGain = null;
+      waveFilterNode = null;
+      thunderOsc = null;
+      thunderFilterNode = null;
+      thunderGain = null;
+
+      if (context && context.state !== 'closed') {
+        try {
+          var closeResult = context.close();
+          if (closeResult && typeof closeResult.catch === 'function') closeResult.catch(function () {});
+        } catch (_) {}
+      }
+      return hadAudio;
+    }
 
     function initAudio() {
       if (audioCtx) return;
@@ -14025,29 +14890,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         waveNoise.buffer = noiseBuffer;
         waveNoise.loop = true;
 
-        var waveFilter = audioCtx.createBiquadFilter();
-        waveFilter.type = 'bandpass';
-        waveFilter.frequency.value = 250;
-        waveFilter.Q.value = 1.0;
+        waveFilterNode = audioCtx.createBiquadFilter();
+        waveFilterNode.type = 'bandpass';
+        waveFilterNode.frequency.value = 250;
+        waveFilterNode.Q.value = 1.0;
 
         waveGain = audioCtx.createGain();
         waveGain.gain.value = 0.0;
 
-        waveNoise.connect(waveFilter);
-        waveFilter.connect(waveGain);
+        waveNoise.connect(waveFilterNode);
+        waveFilterNode.connect(waveGain);
         waveGain.connect(audioCtx.destination);
 
         // Thunder oscillator
         thunderOsc = audioCtx.createOscillator();
         thunderOsc.type = 'sawtooth';
         thunderOsc.frequency.value = 10;
-        var thunderFilter = audioCtx.createBiquadFilter();
-        thunderFilter.type = 'lowpass';
-        thunderFilter.frequency.value = 40;
+        thunderFilterNode = audioCtx.createBiquadFilter();
+        thunderFilterNode.type = 'lowpass';
+        thunderFilterNode.frequency.value = 40;
         thunderGain = audioCtx.createGain();
         thunderGain.gain.value = 0.0;
-        thunderOsc.connect(thunderFilter);
-        thunderFilter.connect(thunderGain);
+        thunderOsc.connect(thunderFilterNode);
+        thunderFilterNode.connect(thunderGain);
         thunderGain.connect(audioCtx.destination);
 
         engineOsc.start(0);
@@ -14057,6 +14922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         console.log('[FisherLab] Audio context initialized');
       } catch (e) {
         console.warn('[FisherLab] Audio init failed:', e);
+        disposeAudioSynth();
       }
     }
 
@@ -14126,6 +14992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var haulDuration = 2.0;
     var haulTrapMesh = null;
     var haulTrapId = null;
+    var pendingInteraction = null;
 
     var trapGeo = new THREE.BoxGeometry(1.5, 0.8, 1.0);
     var trapMat = new THREE.MeshLambertMaterial({ color: 0x1e3a8a, wireframe: true });
@@ -14148,6 +15015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     tail.position.set(0, -0.05, -0.45);
     lobsterGroup.add(tail);
     lobsterGroup.position.set(0, -0.2, 0); // bottom of trap
+    lobsterGroup.visible = trapSceneProfile.showLobsterModel;
     haulTrapMesh.add(lobsterGroup);
 
     function startHauling() {
@@ -14182,13 +15050,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           creak.stop(audioCtx.currentTime + 2.0);
         } catch (_) {}
       }
-      flAnnounce('Hauling lobster trap...');
-      statusCb({ type: 'haul-start', text: 'Hauling trap at ' + buoy.userData.label + '…' });
+      flAnnounce(trapSceneProfile.actionLabel + '...');
+      statusCb({ type: 'haul-start', text: trapSceneProfile.actionLabel + ': ' + buoy.userData.label + '…' });
     }
 
     // ─── Boat state
     var missionProfile = getCoreSimProfile(activeRegion);
     var voyageMode = getCoreVoyageMode((opts && opts.mode) || 'guided');
+    var initialCheckpoint = normalizeCoreVoyageCheckpoint(opts && opts.initialCheckpoint);
+    if (initialCheckpoint && (initialCheckpoint.region !== activeRegion || initialCheckpoint.mode !== voyageMode.id)) initialCheckpoint = null;
+    var restoredFromCheckpoint = false;
     var encounterProfile = getCoreEncounter(activeRegion, voyageMode.id);
     var trafficTravelDirection = encounterProfile.approachSide === 'port' ? 1 : -1;
     var boatState = {
@@ -14225,6 +15096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       fishRuleTotal: 0,
       regsViolations: 0,
       catchDecisionHistory: [],
+      practiceTransferEvidence: getCorePracticeTransferResult([]),
       retainedBySpecies: {},
       targetFishDecision: false,
       trapDecisionMade: false,
@@ -14388,10 +15260,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── Keyboard state
-    var keys = {};
+    var keys = Object.create(null);
+    function releaseHeldControls() {
+      keys = Object.create(null);
+    }
+    function onWindowBlur() {
+      // A keyup can be lost when focus moves to browser chrome or another app.
+      // Release only held commands here so the vessel can coast exactly as it
+      // would after an ordinary keyup; pause/page-exit paths neutralize throttle.
+      releaseHeldControls();
+    }
     function onKeyDown(e) {
       if (document.activeElement !== canvas) return;
-      keys[e.key.toLowerCase()] = true;
+      var pressedKey = String(e.key || '').toLowerCase();
+      if (shouldIgnoreCoreRepeatedKey(pressedKey, e.repeat)) {
+        e.preventDefault();
+        return;
+      }
+      keys[pressedKey] = true;
       if (e.key === ' ' || e.key.indexOf('Arrow') === 0) e.preventDefault();
       if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') {
         setPaused(!boatState.paused, true);
@@ -14422,29 +15308,281 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (opts.onSoundToggle) opts.onSoundToggle(nextSound);
       }
     }
-    function onKeyUp(e) { keys[e.key.toLowerCase()] = false; }
+    function onKeyUp(e) { keys[String(e.key || '').toLowerCase()] = false; }
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', onWindowBlur);
 
     var cameraTarget = new THREE.Vector3();
     var camRigEye = new THREE.Vector3();   // scratch for the eased follow rigs
     var hudCb = (opts && opts.onHudUpdate) || function() {};
     var statusCb = (opts && opts.onStatus) || function() {};
     var lastHud = {};
+    function createCurrentVoyageCheckpoint() {
+      if (pendingInteraction || haulActive || boatState.missionComplete || boatState.missionAttemptComplete) return null;
+      if (boatState.trafficDecisionMade && !boatState.trafficManeuverComplete) return null;
+      var hauledTrapIds = buoys.filter(function(buoy) {
+        return buoy.userData.type === 'lobster-buoy' && buoy.userData.hauled;
+      }).map(function(buoy) { return buoy.userData.id; });
+      return createCoreVoyageCheckpoint({
+        savedAt: Date.now(),
+        region: activeRegion,
+        mode: voyageMode.id,
+        elapsed: elapsed,
+        pose: { x: boatState.pos.x, z: boatState.pos.z, heading: boatState.heading },
+        vessel: { fuel: boatState.fuel, voyageAttempt: boatState.voyageAttempt },
+        environment: { timeOfDay: boatState.timeOfDay, weather: boatState.weather, cameraView: boatState.cameraView },
+        progress: {
+          passedRedNun: boatState.passedRedNun,
+          reachedHalfwayRock: boatState.reachedHalfwayRock,
+          fishLanded: boatState.fishLanded,
+          fishingAttempts: boatState.fishingAttempts,
+          keptKeeperCod: boatState.keptKeeperCod,
+          lobstersHauled: boatState.lobstersHauled,
+          keeperLobsters: boatState.keeperLobsters,
+          targetFishDecision: boatState.targetFishDecision,
+          trapDecisionMade: boatState.trapDecisionMade,
+          trafficEncounterTriggered: boatState.trafficEncounterTriggered,
+          trafficDecisionMade: boatState.trafficDecisionMade,
+          trafficDecisionCorrect: boatState.trafficDecisionCorrect,
+          trafficManeuverComplete: boatState.trafficManeuverComplete,
+          trafficManeuverReviewed: boatState.trafficManeuverReviewed,
+          trafficManeuverSeconds: boatState.trafficManeuverSeconds,
+          trafficStartHeading: boatState.trafficStartHeading,
+          trafficStartSpeed: boatState.trafficStartSpeed,
+          trafficStartRange: boatState.trafficStartRange,
+          trafficStartBearing: boatState.trafficStartBearing,
+          trafficClosestRange: boatState.trafficClosestRange,
+          radarCallMade: boatState.radarCallMade,
+          radarCallCorrect: boatState.radarCallCorrect,
+          radarCallLabel: boatState.radarCallLabel,
+          radarCallBonus: boatState.radarCallBonus,
+          trafficGradeId: boatState.trafficGradeId,
+          trafficGradeLabel: boatState.trafficGradeLabel,
+          trafficGradeBonus: boatState.trafficGradeBonus,
+          fogSignalMade: boatState.fogSignalMade,
+          buoyViolationLogged: boatState.buoyViolationLogged,
+          unsafeSpeedWarned: boatState.unsafeSpeedWarned,
+          fuelDepletedWarned: boatState.fuelDepletedWarned,
+          earlyDockWarned: boatState.earlyDockWarned
+        },
+        scoring: {
+          stewardshipScore: boatState.stewardshipScore,
+          decisionStreak: boatState.decisionStreak,
+          correctDecisions: boatState.correctDecisions,
+          totalDecisions: boatState.totalDecisions,
+          fishIdentificationCorrect: boatState.fishIdentificationCorrect,
+          fishIdentificationTotal: boatState.fishIdentificationTotal,
+          fishRuleCorrect: boatState.fishRuleCorrect,
+          fishRuleTotal: boatState.fishRuleTotal,
+          regsViolations: boatState.regsViolations
+        },
+        evidence: {
+          catchDecisionHistory: boatState.catchDecisionHistory,
+          retainedBySpecies: boatState.retainedBySpecies,
+          trafficTrackHistory: boatState.trafficTrackHistory,
+          hauledTrapIds: hauledTrapIds
+        }
+      });
+    }
+    function emitVoyageCheckpoint(reason, force) {
+      var checkpoint = createCurrentVoyageCheckpoint();
+      if (!checkpoint) return null;
+      if (!force && elapsed - lastCheckpointElapsed < 10) return null;
+      lastCheckpointElapsed = elapsed;
+      if (opts && opts.onCheckpoint) {
+        try { opts.onCheckpoint(checkpoint, reason || 'progress'); } catch (_) {}
+      }
+      return checkpoint;
+    }
+    function clearVoyageCheckpoint(reason) {
+      if (opts && opts.onCheckpoint) {
+        try { opts.onCheckpoint(null, reason || 'complete'); } catch (_) {}
+      }
+    }
+    function applyInitialVoyageCheckpoint() {
+      var checkpoint = initialCheckpoint;
+      if (!checkpoint) return false;
+      var progress = checkpoint.progress;
+      var scoring = checkpoint.scoring;
+      var evidence = checkpoint.evidence;
+      boatState.pos.set(checkpoint.pose.x, 0, checkpoint.pose.z);
+      boat.position.copy(boatState.pos);
+      boatState.heading = checkpoint.pose.heading;
+      boatState.speed = 0;
+      boatState.throttle = 0;
+      boatState.roll = 0;
+      boatState.pitch = 0;
+      boat.rotation.set(0, checkpoint.pose.heading, 0);
+      boatState.fuel = checkpoint.vessel.fuel;
+      boatState.voyageAttempt = checkpoint.vessel.voyageAttempt;
+      boatState.timeOfDay = checkpoint.environment.timeOfDay;
+      boatState.weather = checkpoint.environment.weather;
+      boatState.cameraView = checkpoint.environment.cameraView;
+      boatState.passedRedNun = progress.passedRedNun;
+      boatState.reachedHalfwayRock = progress.reachedHalfwayRock;
+      boatState.returnedHome = false;
+      boatState.fishLanded = progress.fishLanded;
+      boatState.fishingAttempts = progress.fishingAttempts;
+      boatState.lastFishingSummary = null;
+      boatState.keptKeeperCod = progress.keptKeeperCod;
+      boatState.lobstersHauled = progress.lobstersHauled;
+      boatState.keeperLobsters = progress.keeperLobsters;
+      boatState.targetFishDecision = progress.targetFishDecision;
+      boatState.trapDecisionMade = progress.trapDecisionMade;
+      boatState.trafficEncounterTriggered = progress.trafficEncounterTriggered;
+      boatState.trafficDecisionMade = progress.trafficDecisionMade;
+      boatState.trafficDecisionCorrect = progress.trafficDecisionCorrect;
+      boatState.trafficManeuverComplete = progress.trafficManeuverComplete;
+      boatState.trafficManeuverReviewed = progress.trafficManeuverReviewed;
+      boatState.trafficManeuverSeconds = progress.trafficManeuverSeconds;
+      boatState.trafficStartHeading = progress.trafficStartHeading;
+      boatState.trafficStartSpeed = progress.trafficStartSpeed;
+      boatState.trafficStartRange = progress.trafficStartRange;
+      boatState.trafficStartBearing = progress.trafficStartBearing;
+      boatState.trafficClosestRange = progress.trafficClosestRange;
+      boatState.trafficTrackHistory = evidence.trafficTrackHistory.slice();
+      boatState.trafficTrackSampleSeconds = 0;
+      boatState.radarCallMade = progress.radarCallMade;
+      boatState.radarCallCorrect = progress.radarCallCorrect;
+      boatState.radarCallLabel = progress.radarCallLabel;
+      boatState.radarCallBonus = progress.radarCallBonus;
+      boatState.trafficWindowTenWarned = progress.trafficManeuverComplete;
+      boatState.trafficWindowFiveWarned = progress.trafficManeuverComplete;
+      boatState.trafficGradeId = progress.trafficGradeId;
+      boatState.trafficGradeLabel = progress.trafficGradeLabel;
+      boatState.trafficGradeBonus = progress.trafficGradeBonus;
+      boatState.fogSignalMade = progress.fogSignalMade;
+      boatState.stewardshipScore = scoring.stewardshipScore;
+      boatState.decisionStreak = scoring.decisionStreak;
+      boatState.correctDecisions = scoring.correctDecisions;
+      boatState.totalDecisions = scoring.totalDecisions;
+      boatState.fishIdentificationCorrect = scoring.fishIdentificationCorrect;
+      boatState.fishIdentificationTotal = scoring.fishIdentificationTotal;
+      boatState.fishRuleCorrect = scoring.fishRuleCorrect;
+      boatState.fishRuleTotal = scoring.fishRuleTotal;
+      boatState.regsViolations = scoring.regsViolations;
+      boatState.catchDecisionHistory = evidence.catchDecisionHistory.slice();
+      boatState.practiceTransferEvidence = getCorePracticeTransferResult(boatState.catchDecisionHistory);
+      boatState.retainedBySpecies = Object.assign({}, evidence.retainedBySpecies);
+      boatState.fuelDepletedWarned = progress.fuelDepletedWarned;
+      boatState.earlyDockWarned = progress.earlyDockWarned;
+      boatState.unsafeSpeedWarned = progress.unsafeSpeedWarned;
+      boatState.unsafeSpeedSeconds = 0;
+      boatState.buoyViolationLogged = progress.buoyViolationLogged;
+      boatState.missionComplete = false;
+      boatState.missionAttemptComplete = false;
+      boatState.closestTrapId = null;
+      boatState.closestTrapHauled = false;
+      boatState.paused = true;
+      pendingInteraction = null;
+      haulActive = false;
+      haulTrapId = null;
+      haulTrapMesh.visible = false;
+      buoys.forEach(function(buoy) {
+        if (buoy.userData.type === 'lobster-buoy') buoy.userData.hauled = evidence.hauledTrapIds.indexOf(buoy.userData.id) !== -1;
+      });
+      trafficVessel.visible = false;
+      trafficVessel.position.set(trafficTravelDirection < 0 ? -35 : 35, 0, boatState.pos.z - 18);
+      elapsed = checkpoint.elapsed;
+      lastCheckpointElapsed = elapsed;
+      lastT = performance.now();
+      updateEnvironment(boatState.timeOfDay, boatState.weather);
+      var resumeRig = getCoreCameraRig(boatState.cameraView, { x: boatState.pos.x, y: 0, z: boatState.pos.z, heading: boatState.heading, speed: 0, shoreZ: 8.5 });
+      camera.up.set(resumeRig.up[0], resumeRig.up[1], resumeRig.up[2]);
+      camera.fov = resumeRig.fov;
+      camera.updateProjectionMatrix();
+      camera.position.set(resumeRig.eye[0], resumeRig.eye[1], resumeRig.eye[2]);
+      camera.lookAt(resumeRig.target[0], resumeRig.target[1], resumeRig.target[2]);
+      lastHud = {
+        speed: 0,
+        heading: boatState.heading,
+        fuel: boatState.fuel,
+        fishLanded: boatState.fishLanded,
+        fishingAttempts: boatState.fishingAttempts,
+        passedRedNun: boatState.passedRedNun,
+        reachedHalfwayRock: boatState.reachedHalfwayRock,
+        returnedHome: false,
+        lobstersHauled: boatState.lobstersHauled,
+        keeperLobsters: boatState.keeperLobsters,
+        elapsed: elapsed,
+        cameraView: boatState.cameraView,
+        timeOfDay: boatState.timeOfDay,
+        weather: boatState.weather,
+        paused: true,
+        stewardshipScore: boatState.stewardshipScore,
+        decisionStreak: boatState.decisionStreak,
+        correctDecisions: boatState.correctDecisions,
+        totalDecisions: boatState.totalDecisions,
+        fishIdentificationCorrect: boatState.fishIdentificationCorrect,
+        fishIdentificationTotal: boatState.fishIdentificationTotal,
+        fishRuleCorrect: boatState.fishRuleCorrect,
+        fishRuleTotal: boatState.fishRuleTotal,
+        regsViolations: boatState.regsViolations,
+        catchDecisionHistory: boatState.catchDecisionHistory.slice(),
+        practiceTransferEvidence: Object.assign({}, boatState.practiceTransferEvidence),
+        retainedBySpecies: Object.assign({}, boatState.retainedBySpecies),
+        targetFishDecision: boatState.targetFishDecision,
+        trapDecisionMade: boatState.trapDecisionMade,
+        trafficDecisionMade: boatState.trafficDecisionMade,
+        trafficDecisionCorrect: boatState.trafficDecisionCorrect,
+        trafficManeuverComplete: boatState.trafficManeuverComplete,
+        trafficManeuverReviewed: boatState.trafficManeuverReviewed,
+        trafficManeuverType: encounterProfile.maneuverType,
+        trafficManeuverLabel: encounterProfile.maneuverLabel,
+        trafficFogSignalMade: boatState.fogSignalMade,
+        trafficTrackHistory: boatState.trafficTrackHistory.slice(),
+        radarCallMade: boatState.radarCallMade,
+        radarCallCorrect: boatState.radarCallCorrect,
+        radarCallLabel: boatState.radarCallLabel,
+        radarCallBonus: boatState.radarCallBonus,
+        trafficClosestRange: boatState.trafficClosestRange,
+        trafficManeuverSeconds: boatState.trafficManeuverSeconds,
+        trafficGradeId: boatState.trafficGradeId,
+        trafficGradeLabel: boatState.trafficGradeLabel,
+        trafficGradeBonus: boatState.trafficGradeBonus,
+        missionComplete: false,
+        missionAttemptComplete: false,
+        mode: voyageMode.id,
+        modeLabel: voyageMode.label,
+        requiredFuel: voyageMode.requiredFuel,
+        requiredAccuracy: voyageMode.requiredAccuracy,
+        objectiveId: 'resume',
+        objectiveLabel: 'Review the restored helm, then resume',
+        objectiveDistance: null,
+        objectiveBearing: 0,
+        boatX: boatState.pos.x,
+        boatZ: boatState.pos.z
+      };
+      hudCb(lastHud);
+      statusCb({ type: 'system', text: 'Saved voyage restored at a safe paused helm state. Resume when ready.' });
+      return true;
+    }
     function setPaused(paused, announce) {
+      if (contextLost && !paused) {
+        if (announce) {
+          statusCb({ type: 'system', text: 'Graphics are still recovering - simulation remains paused' });
+          flAnnounce('Graphics are still recovering. The harbor simulation remains paused.');
+        }
+        return false;
+      }
       boatState.paused = !!paused;
-      keys = {};
+      releaseHeldControls();
       boatState.throttle = 0;
       if (announce) {
         flAnnounce(boatState.paused ? 'Simulation paused.' : 'Simulation resumed. Focus the harbor scene to steer.');
         statusCb({ type: 'system', text: boatState.paused ? 'Simulation paused' : 'Simulation resumed' });
       }
       hudCb(Object.assign({}, lastHud, { paused: boatState.paused }));
+      if (boatState.paused && announce) emitVoyageCheckpoint('manual-pause', true);
+      return true;
     }
     var pausedForVisibility = false;
     function onVisibilityChange() {
       if (document.hidden) {
+        releaseHeldControls();
         if (!boatState.paused) {
+          emitVoyageCheckpoint('visibility', true);
           pausedForVisibility = true;
           setPaused(true, false);
           statusCb({ type: 'system', text: 'Simulation paused because the tab became inactive' });
@@ -14456,6 +15594,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
     }
     document.addEventListener('visibilitychange', onVisibilityChange);
+    function onPageHide() {
+      emitVoyageCheckpoint('pagehide', true);
+      setPaused(true, false);
+    }
+    window.addEventListener('pagehide', onPageHide);
     function soundFogSignal() {
       if (encounterProfile.maneuverType !== 'restricted' || !boatState.trafficDecisionMade || boatState.trafficManeuverComplete) {
         statusCb({ type: 'guidance', text: 'The prolonged fog signal is required during the active restricted-visibility encounter.' });
@@ -14526,6 +15669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (result.correct) boatState.correctDecisions += 1;
       boatState.trafficDecisionMade = true;
       boatState.trafficDecisionCorrect = result.correct;
+      pendingInteraction = null;
       boatState.trafficStartHeading = boatState.heading;
       boatState.trafficStartSpeed = boatState.speed;
       boatState.trafficManeuverSeconds = 0;
@@ -14541,6 +15685,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     function resolveCatch(kind, action, correct, speciesId, holdPaused, fieldNote) {
+      pendingInteraction = null;
       var scored = scoreCoreDecision(boatState.stewardshipScore, boatState.decisionStreak, correct, voyageMode.scoreMultiplier);
       boatState.stewardshipScore = scored.score;
       boatState.decisionStreak = scored.streak;
@@ -14549,6 +15694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var conservationViolation = isCoreConservationViolation(action, fieldNote && fieldNote.legalToRetain);
       if (conservationViolation) boatState.regsViolations += 1;
       boatState.catchDecisionHistory = appendCoreCatchDecision(boatState.catchDecisionHistory, Object.assign({}, fieldNote || {}, { kind: kind, action: action, correct: correct, speciesId: speciesId }));
+      boatState.practiceTransferEvidence = reduceCorePracticeTransferEvidence(boatState.practiceTransferEvidence, boatState.catchDecisionHistory[boatState.catchDecisionHistory.length - 1]);
       if (kind === 'shellfish') {
         boatState.lobstersHauled += 1;
         boatState.trapDecisionMade = correct || boatState.trapDecisionMade;
@@ -14567,6 +15713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       if (!holdPaused) setPaused(false, false);
       statusCb({ type: correct ? 'score' : conservationViolation ? 'violation' : 'guidance', text: (correct ? '+' : '') + scored.delta + ' stewardship points' + (correct && scored.streak > 1 ? ' · ' + scored.streak + ' decision streak' : '') });
+      emitVoyageCheckpoint('catch-decision', true);
     }
     function landFishingEncounter(encounter) {
       if (!encounter || !encounter.speciesId) return;
@@ -14582,6 +15729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var bagLimit = typeof species.dailyBag === 'number' ? species.dailyBag : null;
       var retainedCount = boatState.retainedBySpecies[species.id] || 0;
       var isKeeper = getCoreFishRuleEvidence(length, species, { bagLimit: bagLimit, retainedCount: retainedCount }).legalToRetain;
+      pendingInteraction = 'catch';
       setPaused(true, false);
       statusCb({
         type: 'fish-haul',
@@ -14599,20 +15747,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var t0 = performance.now();
     var raf = null;
     var alive = true;
+    var contextLost = false;
+    var graphicsFailureReason = null;
+    var disposalStats = null;
     var lastT = t0;
     var elapsed = 0;
+    var lastCheckpointElapsed = -Infinity;
+
+    function notifyGraphicsContextChange(lost, reason) {
+      if (!opts || !opts.onGraphicsContextChange) return;
+      try { opts.onGraphicsContextChange(lost === true, lost === true ? (reason || 'context-lost') : null); } catch (_) {}
+    }
+    function pauseForGraphicsRecovery(reason, error) {
+      if (!alive || contextLost) return false;
+      graphicsFailureReason = reason === 'render-error' ? 'render-error' : 'context-lost';
+      contextLost = true;
+      var checkpointReason = graphicsFailureReason === 'render-error' ? 'graphics-render-error' : 'webgl-context-lost';
+      var recoveryCheckpoint = emitVoyageCheckpoint(checkpointReason, true);
+      setPaused(true, false);
+      if (raf !== null) cancelAnimationFrame(raf);
+      raf = null;
+      if (error) {
+        try { console.error('[FisherLab] Graphics render loop failed:', error); } catch (_) {}
+      }
+      var lossText;
+      if (graphicsFailureReason === 'render-error') {
+        lossText = recoveryCheckpoint ?
+          'Graphics rendering stopped unexpectedly. Voyage paused at a safe recovery point.' :
+          'Graphics rendering stopped unexpectedly. Voyage paused; the prior safe checkpoint remains unchanged.';
+      } else {
+        lossText = recoveryCheckpoint ?
+          'Graphics connection interrupted. Voyage paused at a safe recovery point.' :
+          'Graphics connection interrupted. Voyage paused; the prior safe checkpoint remains unchanged.';
+      }
+      statusCb({ type: 'system', text: lossText });
+      flAnnounce(lossText);
+      notifyGraphicsContextChange(true, graphicsFailureReason);
+      return true;
+    }
+    function renderFrame() {
+      try {
+        var activeComposer = renderer._alloBloomDark ? renderer._alloComposer : null;
+        if (activeComposer) {
+          try {
+            activeComposer.render();
+            return true;
+          } catch (_) {
+            renderer._alloComposer = null;
+            disposeCoreComposerResources(activeComposer);
+          }
+        }
+        renderer.render(scene, camera);
+        return true;
+      } catch (error) {
+        pauseForGraphicsRecovery('render-error', error);
+        return false;
+      }
+    }
+    function onWebGLContextLost(event) {
+      if (event && event.preventDefault) event.preventDefault();
+      pauseForGraphicsRecovery('context-lost', null);
+    }
+    function onWebGLContextRestored() {
+      if (!alive || !contextLost) return;
+      contextLost = false;
+      graphicsFailureReason = null;
+      lastT = performance.now();
+      setPaused(true, false);
+      if (onResize() === false || contextLost) return;
+      var restoredText = 'Graphics restored. Simulation remains paused until you choose Resume.';
+      statusCb({ type: 'system', text: restoredText });
+      flAnnounce(restoredText);
+      notifyGraphicsContextChange(false, null);
+      scheduleNextFrame();
+    }
+    function scheduleNextFrame() {
+      if (alive && !contextLost && raf === null) raf = requestAnimationFrame(tick);
+    }
+    canvas.addEventListener('webglcontextlost', onWebGLContextLost, false);
+    canvas.addEventListener('webglcontextrestored', onWebGLContextRestored, false);
 
     function tick() {
-      if (!alive) return;
+      raf = null;
+      if (!alive || contextLost) return;
       var now = performance.now();
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
       if (boatState.paused) {
         // Same daylight gate as the live path below, or pausing in daylight brings the
         // white blob straight back on every held frame.
-        var pausedComposer = renderer._alloBloomDark ? renderer._alloComposer : null;
-        if (pausedComposer) pausedComposer.render(); else renderer.render(scene, camera);
-        raf = requestAnimationFrame(tick);
+        if (!renderFrame()) return;
+        scheduleNextFrame();
         return;
       }
       elapsed += dt;
@@ -14852,11 +16077,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             keeper = (length >= 3.25) && (length <= 5.0) && !isVNotched && !hasSponge;
           }
 
+          pendingInteraction = 'catch';
           setPaused(true, false);
           statusCb({
             type: 'lobster-haul',
             observationId: ['shellfish', activeRegion, haulTrapId || (buoy && buoy.userData.id) || 'trap', Math.round(elapsed * 1000)].join('-'),
-            specimenType: (activeRegion === 'chesapeake' || activeRegion === 'pnw') ? 'crab' : activeRegion === 'greatlakes' ? 'crayfish' : 'lobster',
+            specimenType: trapSceneProfile.specimenType,
             speciesId: missionProfile.trapSpeciesId,
             region: activeRegion,
             length: length,
@@ -14870,26 +16096,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
 
-      // Check the first outbound lateral mark. In IALA-B, green stays to
-      // starboard when heading seaward; red-right-returning applies inbound.
+      // Check the voyage's first scored lateral mark. Coastal profiles use
+      // the outbound IALA-B relationship; the Great Lakes leg follows its
+      // charted conventional direction. Real navigation still requires the
+      // current chart and notices identified in the briefing.
       if (!boatState.passedRedNun) {
         for (var ib = 0; ib < buoys.length; ib++) {
           var bb = buoys[ib];
-          if (bb.userData.type !== 'green-can') continue;
+          if (bb.userData.type !== buoyageCheck.markType) continue;
           var d = boat.position.distanceTo(bb.position);
           if (d < 7) {
             var toBuoy = new THREE.Vector3().subVectors(bb.position, boat.position);
             var localX = Math.cos(boatState.heading) * toBuoy.x + Math.sin(boatState.heading) * toBuoy.z;
-            var buoyPass = evaluateCoreBuoyPass('outbound', 'green', localX > 0.5 ? 'starboard' : 'port');
+            var observedSide = localX > 0.5 ? 'starboard' : 'port';
+            var buoyPass = evaluateCoreBuoyPass(buoyageCheck.direction, buoyageCheck.color, observedSide);
             if (buoyPass.correct) {
               boatState.passedRedNun = true;
-              boatState.stewardshipScore += Math.round(20 * voyageMode.scoreMultiplier);
-              flAnnounce('Kept the green can to starboard while outbound. Twenty navigation points earned.');
-              statusCb({ type: 'milestone', text: 'Outbound channel mark correct: green to starboard ✓' });
-            } else if (localX < -0.5 && !boatState.buoyViolationLogged) {
+              var buoyageBonus = Math.round(20 * voyageMode.scoreMultiplier);
+              boatState.stewardshipScore += buoyageBonus;
+              flAnnounce(buoyageCheck.successText + ' ' + buoyageBonus + ' navigation points earned.');
+              statusCb({ type: 'milestone', text: buoyageCheck.successText + ' ✓' });
+              emitVoyageCheckpoint('buoyage-pass', true);
+            } else if (observedSide !== buoyageCheck.expectedSide && !boatState.buoyViolationLogged) {
               boatState.buoyViolationLogged = true;
-              flAnnounce('Outbound buoyage review: keep the green can to starboard.');
-              statusCb({ type: 'violation', text: 'Buoyage review: green belongs on starboard while heading seaward' });
+              flAnnounce(buoyageCheck.reviewText);
+              statusCb({ type: 'violation', text: buoyageCheck.reviewText });
+              emitVoyageCheckpoint('buoyage-review', true);
             }
           }
         }
@@ -14898,6 +16130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // Trigger one visible regional traffic encounter after clearing the harbor entrance.
       if (boatState.passedRedNun && !boatState.trafficEncounterTriggered && boat.position.distanceTo(dock.position) > 22) {
         boatState.trafficEncounterTriggered = true;
+        pendingInteraction = 'traffic';
         trafficVessel.visible = !encounterProfile.radarOnly;
         trafficVessel.position.set(trafficTravelDirection > 0 ? -26 : 26, 0, boat.position.z - 18);
         trafficVessel.rotation.y = trafficTravelDirection > 0 ? Math.PI / 2 : -Math.PI / 2;
@@ -14938,6 +16171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.stewardshipScore += maneuverBonus + performanceBonus;
           statusCb({ type: encounterGrade.id === 'review' ? 'guidance' : 'milestone', text: encounterGrade.label + ' · CPA ' + boatState.trafficClosestRange.toFixed(1) + ' · ' + boatState.trafficManeuverSeconds.toFixed(1) + ' s · +' + (maneuverBonus + performanceBonus) + ' points' });
           flAnnounce(encounterProfile.maneuverLabel + ' complete. ' + encounterGrade.label + '.');
+          emitVoyageCheckpoint('traffic-maneuver', true);
         } else if (maneuverWindowState.expired) {
           boatState.trafficManeuverComplete = true;
           boatState.trafficManeuverReviewed = true;
@@ -14947,6 +16181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.trafficGradeBonus = 0;
           statusCb({ type: 'guidance', text: 'Maneuver window ended · CPA ' + boatState.trafficClosestRange.toFixed(1) + '. Review: ' + encounterProfile.maneuverInstruction });
           flAnnounce('Maneuver reviewed. Continue the voyage.');
+          emitVoyageCheckpoint('traffic-review', true);
         }
       }
       var trafficRisk = boatState.trafficDecisionMade ? evaluateCoreCollisionRisk(boatState.trafficStartRange, trafficRange, boatState.trafficClosestRange, boatState.trafficStartBearing, trafficRelativeBearing) : { id: 'monitoring', label: 'Monitoring bearing and range', bearingChange: 0, rangeChange: 0, constantBearing: false, closing: false, opening: false };
@@ -14964,6 +16199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.stewardshipScore += Math.round(30 * voyageMode.scoreMultiplier);
           flAnnounce('Reached the fishing grounds. Drop a jig with F.');
           statusCb({ type: 'milestone', text: 'Reached ' + missionProfile.destination + ' — press F to fish' });
+          emitVoyageCheckpoint('fishing-grounds', true);
         }
       }
 
@@ -14974,8 +16210,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           if (isCoreMissionReady(boatState)) {
             boatState.returnedHome = true;
             var finalAccuracy = boatState.totalDecisions ? Math.round(boatState.correctDecisions / boatState.totalDecisions * 100) : 0;
-            var challengeStandard = evaluateCoreChallengeStandard(voyageMode.id, finalAccuracy, boatState.fuel);
-            var standardMet = challengeStandard.met && !boatState.trafficManeuverReviewed;
+            var challengeStandard = evaluateCoreVoyageStandard(voyageMode.id, finalAccuracy, boatState.fuel, boatState.trafficDecisionCorrect, boatState.trafficManeuverReviewed);
+            var standardMet = challengeStandard.met;
             var returnBonus = 0;
             boatState.missionAttemptComplete = true;
             if (standardMet) {
@@ -14985,8 +16221,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             }
             var finalRank = getCoreVoyageRank(boatState.stewardshipScore, finalAccuracy, boatState.fuel);
             setPaused(true, false);
+            clearVoyageCheckpoint('mission-complete');
             flAnnounce(standardMet ? 'Docked safely. Mission standard met. ' + finalRank.label + ' earned.' : 'Docked safely. Practice run complete, but the safe-maneuver, accuracy, or fuel standard was not met.');
-            statusCb({ type: 'mission-complete', passed: standardMet, standard: Object.assign({}, challengeStandard, { maneuverMet: !boatState.trafficManeuverReviewed }), score: boatState.stewardshipScore, accuracy: finalAccuracy, fuel: boatState.fuel, regsViolations: boatState.regsViolations, elapsed: elapsed, mode: voyageMode.id, rank: finalRank, text: standardMet ? 'Mission standard met — safe return bonus +' + returnBonus : 'Safe return logged — retry the maneuver and meet ' + challengeStandard.requiredAccuracy + '% accuracy with ' + challengeStandard.requiredFuel + '% fuel' });
+            statusCb({ type: 'mission-complete', passed: standardMet, standard: challengeStandard, score: boatState.stewardshipScore, accuracy: finalAccuracy, fuel: boatState.fuel, regsViolations: boatState.regsViolations, elapsed: elapsed, mode: voyageMode.id, rank: finalRank, text: standardMet ? 'Mission standard met — safe return bonus +' + returnBonus : 'Safe return logged — make the correct COLREGS decision, complete the maneuver, and meet ' + challengeStandard.requiredAccuracy + '% accuracy with ' + challengeStandard.requiredFuel + '% fuel' });
           } else if (!boatState.earlyDockWarned) {
             boatState.earlyDockWarned = true;
             statusCb({ type: 'guidance', text: 'Not ready to dock: finish the traffic, fish, and trap decisions before returning.' });
@@ -15002,6 +16239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           flAnnounce('Slow below one knot before fishing.');
         } else {
           boatState.fishingAttempts += 1;
+          pendingInteraction = 'fishing';
           setPaused(true, false);
           statusCb({
             type: 'fishing-start',
@@ -15065,11 +16303,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         camera.updateProjectionMatrix();
       }
 
-      var objective = getCoreObjective(boatState, missionProfile, encounterProfile);
+      var objective = getCoreObjective(boatState, missionProfile, encounterProfile, buoyageCheck);
       var objectiveTarget = rock;
       if (objective.id === 'buoy') {
         for (var ob = 0; ob < buoys.length; ob++) {
-          if (buoys[ob].userData.type === 'green-can') { objectiveTarget = buoys[ob]; break; }
+          if (buoys[ob].userData.type === buoyageCheck.markType) { objectiveTarget = buoys[ob]; break; }
         }
       } else if (objective.id === 'traffic' || objective.id === 'maneuver') {
         objectiveTarget = trafficVessel;
@@ -15121,6 +16359,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         fishRuleTotal: boatState.fishRuleTotal,
         regsViolations: boatState.regsViolations,
         catchDecisionHistory: boatState.catchDecisionHistory.slice(),
+        practiceTransferEvidence: Object.assign({}, boatState.practiceTransferEvidence),
         retainedBySpecies: Object.assign({}, boatState.retainedBySpecies),
         targetFishDecision: boatState.targetFishDecision,
         trapDecisionMade: boatState.trapDecisionMade,
@@ -15178,6 +16417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       };
       lastHud = hudPayload;
       hudCb(hudPayload);
+      emitVoyageCheckpoint('cruise', false);
 
       AF.update(dt, elapsed);
       // Bloom only in the dark/low-visibility conditions it was tuned for (flag set in
@@ -15186,41 +16426,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       // foreground trees and a wide patch of water into a single white blob. Verified
       // by screenshot at both settings. Defaults to plain render until the first
       // updateEnvironment call, which is the safe direction.
-      var _ac = renderer._alloBloomDark ? renderer._alloComposer : null;
-      if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } }
-      else { renderer.render(scene, camera); }
-      raf = requestAnimationFrame(tick);
+      if (!renderFrame()) return;
+      scheduleNextFrame();
     }
-    raf = requestAnimationFrame(tick);
+    restoredFromCheckpoint = applyInitialVoyageCheckpoint();
+    if (!restoredFromCheckpoint) emitVoyageCheckpoint('launch', true);
+    scheduleNextFrame();
 
     function onResize() {
+      if (!alive || contextLost) return;
       var nw = canvas.clientWidth || 720;
       var nh = canvas.clientHeight || 420;
-      renderer.setSize(nw, nh, false);
-      camera.aspect = nw / nh;
-      camera.updateProjectionMatrix();
-      try { if (renderer._alloComposer) renderer._alloComposer.setSize(nw, nh); } catch (_) {}
+      try {
+        renderer.setSize(nw, nh, false);
+        camera.aspect = nw / nh;
+        camera.updateProjectionMatrix();
+      } catch (error) {
+        pauseForGraphicsRecovery('render-error', error);
+        return false;
+      }
+      try {
+        if (renderer._alloComposer) renderer._alloComposer.setSize(nw, nh);
+      } catch (_) {
+        var failedComposer = renderer._alloComposer;
+        renderer._alloComposer = null;
+        disposeCoreComposerResources(failedComposer);
+      }
+      return true;
     }
     window.addEventListener('resize', onResize);
 
     return {
       dispose: function() {
+        if (!alive) return disposalStats;
         alive = false;
-        if (raf) cancelAnimationFrame(raf);
+        contextLost = false;
+        graphicsFailureReason = null;
+        releaseHeldControls();
+        if (raf !== null) cancelAnimationFrame(raf);
+        raf = null;
+        canvas.removeEventListener('webglcontextlost', onWebGLContextLost, false);
+        canvas.removeEventListener('webglcontextrestored', onWebGLContextRestored, false);
         window.removeEventListener('keydown', onKeyDown);
         window.removeEventListener('keyup', onKeyUp);
+        window.removeEventListener('blur', onWindowBlur);
         window.removeEventListener('resize', onResize);
         document.removeEventListener('visibilitychange', onVisibilityChange);
-        try { AF.dispose(); } catch (_) {}
-        // Buoy geometries and the stripe texture are built outside the AF
-        // layer, so AF.dispose() never saw them.
-        try { buoyDisposables.forEach(function(d) { if (d && d.dispose) d.dispose(); }); } catch (_) {}
-        try { renderer.dispose(); } catch (_) {}
-        if (audioCtx) {
-          try { audioCtx.close(); } catch (_) {}
-        }
+        window.removeEventListener('pagehide', onPageHide);
+
+        var ambientStats = null;
+        try { ambientStats = AF.dispose(); } catch (_) {}
+        var remainingComposer = renderer._alloComposer;
+        renderer._alloComposer = null;
+        var composerStats = disposeCoreComposerResources(remainingComposer);
+        disposalStats = disposeCoreThreeResources(scene, buoyDisposables);
+        disposalStats.ambient = ambientStats;
+        disposalStats.composer = composerStats;
+        disposalStats.renderer = { renderLists: false, renderer: false, context: false };
+        try { if (scene && scene.clear) scene.clear(); } catch (_) { disposalStats.errors++; }
+        try { if (renderer.setAnimationLoop) renderer.setAnimationLoop(null); } catch (_) { disposalStats.errors++; }
+        try {
+          if (renderer.renderLists && renderer.renderLists.dispose) {
+            renderer.renderLists.dispose();
+            disposalStats.renderer.renderLists = true;
+          }
+        } catch (_) { disposalStats.errors++; }
+        try {
+          renderer.dispose();
+          disposalStats.renderer.renderer = true;
+        } catch (_) { disposalStats.errors++; }
+        try {
+          if (renderer.forceContextLoss) {
+            renderer.forceContextLoss();
+            disposalStats.renderer.context = true;
+          }
+        } catch (_) { disposalStats.errors++; }
+        disposalStats.audio = disposeAudioSynth();
+        return disposalStats;
       },
+      getDisposalStats: function() { return disposalStats; },
       getBoatState: function() { return boatState; },
+      restoredFromCheckpoint: restoredFromCheckpoint,
+      getCheckpoint: function() { return createCurrentVoyageCheckpoint(); },
+      checkpoint: function(reason) { return emitVoyageCheckpoint(reason || 'host-request', true); },
+      cancelPendingInteraction: function() {
+        pendingInteraction = null;
+        return emitVoyageCheckpoint('interaction-cancelled', true);
+      },
       // Entering or leaving the expanded stage changes the canvas box without a
       // window resize in every browser, so the host calls this directly rather
       // than trusting the resize event to arrive.
@@ -15249,7 +16541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (!boatState.paused) keys[key] = !!pressed;
       },
       setPaused: function(paused) {
-        setPaused(paused, true);
+        return setPaused(paused, true);
       },
       resolveCatch: function(kind, action, correct, speciesId, holdPaused, fieldNote) {
         resolveCatch(kind, action, correct, speciesId, holdPaused, fieldNote);
@@ -15276,6 +16568,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.heading = Math.PI;
         boatState.speed = 0;
         boatState.throttle = 0;
+        boatState.roll = 0;
+        boatState.pitch = 0;
+        boat.rotation.set(0, boatState.heading, 0);
+        boat.position.y = 0;
         boatState.passedRedNun = false;
         boatState.reachedHalfwayRock = false;
         boatState.returnedHome = false;
@@ -15283,8 +16579,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.fishLanded = 0;
         boatState.fishingAttempts = 0;
         boatState.lastFishingSummary = null;
+        boatState.keptKeeperCod = false;
         boatState.lobstersHauled = 0;
         boatState.keeperLobsters = 0;
+        boatState.closestTrapId = null;
+        boatState.closestTrapHauled = false;
         boatState.targetFishDecision = false;
         boatState.trapDecisionMade = false;
         boatState.trafficEncounterTriggered = false;
@@ -15322,17 +16621,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         boatState.fishRuleTotal = 0;
         boatState.regsViolations = 0;
         boatState.catchDecisionHistory = [];
+        boatState.practiceTransferEvidence = getCorePracticeTransferResult([]);
         boatState.retainedBySpecies = {};
         boatState.fuelDepletedWarned = false;
         boatState.earlyDockWarned = false;
         boatState.unsafeSpeedWarned = false;
         boatState.unsafeSpeedSeconds = 0;
         boatState.buoyViolationLogged = false;
+        haulActive = false;
+        haulTimer = 0;
         haulTrapId = null;
+        pendingInteraction = null;
+        haulTrapMesh.visible = false;
         buoys.forEach(function(b) { if (b.userData.type === 'lobster-buoy') b.userData.hauled = false; });
         trafficVessel.position.set(30, 0, -42);
         trafficVessel.visible = false;
         setPaused(false, false);
+        emitVoyageCheckpoint('restart', true);
         statusCb({ type: 'system', text: missionProfile.title + ' restarted' });
       }
     };
@@ -15363,6 +16668,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var useState = React.useState, useEffect = React.useEffect, useRef = React.useRef;
 
     var stateInit = loadState();
+    var accessibilityHook = useState(getCoreAccessibilityPreferences(stateInit.a11y));
+    var accessibilityPreferences = accessibilityHook[0], setAccessibilityPreferences = accessibilityHook[1];
     var tabHook = useState('home');
     var tab = tabHook[0], setTab = tabHook[1];
     var tabSearchHook = useState('');
@@ -15377,8 +16684,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var practiceFocusSkill = practiceFocusHook[0], setPracticeFocusSkill = practiceFocusHook[1];
     var practiceTargetRef = useRef(practiceTargetSpeciesId);
     var practiceFocusRef = useRef(practiceFocusSkill);
+    var practiceCorrectionRef = useRef(0);
     var simHook = useState({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
     var sim = simHook[0], setSim = simHook[1];
+    var graphicsRecoveryHook = useState({ active: false, reason: null });
+    var graphicsRecovery = graphicsRecoveryHook[0], setGraphicsRecovery = graphicsRecoveryHook[1];
+    var graphicsContextLost = graphicsRecovery.active === true;
+    var graphicsFailureReason = graphicsRecovery.reason;
+    function updateGraphicsRecovery(lost, reason) {
+      var active = lost === true;
+      var nextReason = active && reason === 'render-error' ? 'render-error' : active ? 'context-lost' : null;
+      setGraphicsRecovery(function(current) {
+        return current && current.active === active && current.reason === nextReason ? current : { active: active, reason: nextReason };
+      });
+    }
+    var savedVoyageHook = useState(stateInit.coreVoyageCheckpoint);
+    var savedVoyageCheckpoint = savedVoyageHook[0], setSavedVoyageCheckpoint = savedVoyageHook[1];
+    var confirmedVoyageCheckpointRef = useRef(stateInit.coreVoyageCheckpoint);
+    var pendingVoyageWriteRef = useRef(null);
+    var storageFailureActiveRef = useRef(false);
+    var voyageSaveStatusHook = useState({ id: stateInit.coreVoyageCheckpoint ? 'saved' : 'idle', savedAt: stateInit.coreVoyageCheckpoint ? stateInit.coreVoyageCheckpoint.savedAt : 0 });
+    var voyageSaveStatus = voyageSaveStatusHook[0], setVoyageSaveStatus = voyageSaveStatusHook[1];
     var hudHook = useState({});
     var hud = hudHook[0], setHud = hudHook[1];
     var statusHook = useState([]);
@@ -15403,7 +16729,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var harborRef = useRef(null);
     var stageRef = useRef(null);
     var simBarRef = useRef(null);
+    var simLaunchRef = useRef(null);
     var decisionFocusRef = useRef(null);
+    var heldControlKeyboardRef = useRef({});
+    var heldControlPulseTimersRef = useRef({});
+    var pendingCheckpointRef = useRef(null);
+    var simLifecycleMountedRef = useRef(true);
+    var simLoadGenerationRef = useRef(0);
+    var simRetryTimerRef = useRef(null);
     var expandHook = useState(false);
     var stageExpanded = expandHook[0], setStageExpanded = expandHook[1];
 
@@ -15518,7 +16851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     useEffect(function() {
       if (!activeFish && !activeFishing && !activeLobster && !activeTraffic && !hud.missionAttemptComplete && !hud.missionComplete) return;
       var focusTimer = setTimeout(function() {
-        if (decisionFocusRef.current && decisionFocusRef.current.focus) decisionFocusRef.current.focus();
+        focusCoreElement(decisionFocusRef);
       }, 80);
       return function() { clearTimeout(focusTimer); };
     }, [!!activeFish, activeFishing ? activeFishing.phase : null, !!activeLobster, !!activeTraffic, !!fishDecisionResult, !!shellfishDecisionResult, !!hud.missionAttemptComplete, !!hud.missionComplete]);
@@ -15551,16 +16884,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // as --fl-bar-h rather than assuming one row.
     useEffect(function() {
       var bar = simBarRef.current, stage = stageRef.current;
-      if (!bar || !stage || typeof ResizeObserver === 'undefined') return;
+      if (!bar || !stage) return;
       function push() {
-        // setSize(w, h, false) means three never touches the canvas CSS box, so
-        // writing a custom property here cannot feed back into a resize loop.
-        stage.style.setProperty('--fl-bar-h', Math.round(bar.getBoundingClientRect().height) + 'px');
+        publishCoreToolbarHeight(bar, stage);
       }
+      // Always publish once: browsers without ResizeObserver still need the
+      // initial HUD offset before the simulator paints.
       push();
-      var ro = new ResizeObserver(push);
-      ro.observe(bar);
-      return function() { try { ro.disconnect(); } catch (_) {} };
+      if (typeof ResizeObserver !== 'undefined') {
+        var ro = new ResizeObserver(push);
+        ro.observe(bar);
+        return function() { try { ro.disconnect(); } catch (_) {} };
+      }
+      window.addEventListener('resize', push);
+      return function() { window.removeEventListener('resize', push); };
     }, [sim.active, stageExpanded]);
 
     // ─── Expanded stage (real fullscreen, with an in-page fallback).
@@ -15659,6 +16996,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }, [voyageMode]);
 
     useEffect(function() {
+      var s = loadState();
+      s.a11y = getCoreAccessibilityPreferences(accessibilityPreferences);
+      saveState(s);
+    }, [accessibilityPreferences.staticCamera, accessibilityPreferences.captionMode, accessibilityPreferences.largeText]);
+
+    useEffect(function() {
       practiceTargetRef.current = practiceTargetSpeciesId;
       practiceFocusRef.current = practiceFocusSkill;
     }, [practiceTargetSpeciesId, practiceFocusSkill]);
@@ -15668,6 +17011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (getCoreFishingPracticePlan(region, practiceTargetSpeciesId)) return;
       practiceTargetRef.current = '';
       practiceFocusRef.current = '';
+      practiceCorrectionRef.current = 0;
       setPracticeTargetSpeciesId('');
       setPracticeFocusSkill('');
     }, [region, practiceTargetSpeciesId]);
@@ -15691,13 +17035,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var fallbackPlan = Object.assign({ speciesId: defaultTargetSpeciesId }, getDefaultFishingPlan(activeRegion));
       var startingPlan = selectedPlan || fallbackPlan;
       var focusedPractice = !!(practicePlan && requestedTargetSpeciesId);
+      var focusedSkill = focusedPractice ? ((ev && ev.focusSkill) || practiceFocusRef.current || 'workflow') : '';
+      var correctionReviewedAt = focusedPractice && focusedSkill === 'transfer' ? Math.max(0, Number((ev && ev.correctionReviewedAt) || practiceCorrectionRef.current) || 0) : 0;
       return Object.assign({
         phase: 'setup',
         seed: ev && ev.seed ? ev.seed : activeRegion + '-practice',
         region: activeRegion,
         targetSpeciesId: startingPlan.speciesId || defaultTargetSpeciesId,
         practiceTargeted: focusedPractice,
-        practiceFocusSkill: focusedPractice ? ((ev && ev.focusSkill) || practiceFocusRef.current || 'workflow') : '',
+        practiceFocusSkill: focusedSkill,
+        practiceCorrectionReviewedAt: correctionReviewedAt,
         assistMode: !(ev && ev.mode && ev.mode !== 'guided'),
         retry: 0,
         castMeter: 50,
@@ -15849,6 +17196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             targetSpeciesId: activeFishing.targetSpeciesId,
             focusedPractice: !!activeFishing.practiceTargeted,
             focusSkill: activeFishing.practiceFocusSkill || '',
+            correctionReviewedAt: Math.max(0, Number(activeFishing.practiceCorrectionReviewedAt) || 0),
             setupScore: activeFishing.encounter.encounterScore.total,
             setupEvidence: activeFishing.encounter.encounterScore.evidence.join(' '),
             spotLabel: getFishingSpot(activeFishing.region, activeFishing.spotId).label,
@@ -15874,28 +17222,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       updateFishingSession({ phase: 'setup', retry: (activeFishing.retry || 0) + 1, encounter: null, castResult: null, hookset: null, lossReason: null, message: 'Adapt at least one choice, or repeat the setup to test whether conditions vary.' });
     }
     function leaveFishing() {
+      if (harborRef.current && harborRef.current.cancelPendingInteraction) harborRef.current.cancelPendingInteraction();
       if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(false);
       setActiveFishing(null);
       setTimeout(function() { if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus(); }, 0);
     }
-    function handleFishingDialogKeyDown(e) {
+    function handleSimulatorDialogKeyDown(e) {
       if (e.key === 'Escape' && activeFishing && activeFishing.phase !== 'landed') {
         e.preventDefault();
         leaveFishing();
         return;
       }
-      if (e.key !== 'Tab') return;
-      var focusable = e.currentTarget.querySelectorAll('button:not([disabled]), select:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])');
-      if (!focusable.length) return;
-      var first = focusable[0];
-      var last = focusable[focusable.length - 1];
-      if (e.shiftKey && (document.activeElement === first || !e.currentTarget.contains(document.activeElement))) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      containCoreDialogFocus(e);
     }
 
     function recordObservation(entry) {
@@ -15953,14 +17291,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         saved.regsViolations = (Number(saved.regsViolations) || 0) + (Number(ev.regsViolations) || 0);
         if (ev.passed && (Number(ev.regsViolations) || 0) === 0) saved.cleanCoreTrips = (saved.cleanCoreTrips || 0) + 1;
         saved.achievements = deriveCoreAchievements(Object.assign({}, saved, { journal: saved.lifeLog || [] }));
-        saveState(saved);
+        saved.coreVoyageCheckpoint = null;
+        commitVoyageState(saved, true);
       }
     }
 
-    function startSim() {
-      var selectedMode = getCoreVoyageMode(voyageMode);
-      setTimeOfDayState(selectedMode.timeOfDay);
-      setWeatherState(selectedMode.weather);
+    function commitVoyageState(nextState, updateUi) {
+      var result = saveState(nextState);
+      var persistedCheckpoint = normalizeCoreVoyageCheckpoint(result && result.state && result.state.coreVoyageCheckpoint);
+      if (!result || !result.ok) {
+        pendingVoyageWriteRef.current = { state: result && result.state ? result.state : normalizeFisherLabState(nextState) };
+        storageFailureActiveRef.current = true;
+        if (updateUi !== false) {
+          var confirmed = confirmedVoyageCheckpointRef.current;
+          var confirmedAt = confirmed ? confirmed.savedAt : 0;
+          setVoyageSaveStatus(function(current) {
+            return current.id === 'error' && current.savedAt === confirmedAt ? current : { id: 'error', savedAt: confirmedAt };
+          });
+        }
+        return false;
+      }
+      pendingVoyageWriteRef.current = null;
+      confirmedVoyageCheckpointRef.current = persistedCheckpoint;
+      if (!persistedCheckpoint) pendingCheckpointRef.current = null;
+      if (updateUi !== false) {
+        setSavedVoyageCheckpoint(persistedCheckpoint);
+        setVoyageSaveStatus({ id: persistedCheckpoint ? 'saved' : 'idle', savedAt: persistedCheckpoint ? persistedCheckpoint.savedAt : 0 });
+        if (storageFailureActiveRef.current) flAnnounce('Voyage autosave restored.');
+      }
+      storageFailureActiveRef.current = false;
+      return true;
+    }
+    function persistVoyageCheckpoint(value, reasonOrUpdateUi) {
+      var checkpoint = normalizeCoreVoyageCheckpoint(value);
+      var saved = loadState();
+      saved.coreVoyageCheckpoint = checkpoint;
+      return commitVoyageState(saved, reasonOrUpdateUi !== false);
+    }
+    function clearSavedVoyageCheckpoint(reason) {
+      return persistVoyageCheckpoint(null, reason || 'clear');
+    }
+    function retryVoyagePersistence() {
+      var pending = pendingVoyageWriteRef.current;
+      if (!pending || !pending.state) {
+        flAnnounce('No pending voyage save needs retrying.');
+        return;
+      }
+      if (!commitVoyageState(pending.state, true)) {
+        flAnnounce('Autosave retry failed. Keep this tab open and check browser storage settings.');
+      }
+    }
+    function clearSimulatorRetryTimer() {
+      if (simRetryTimerRef.current == null) return;
+      clearTimeout(simRetryTimerRef.current);
+      simRetryTimerRef.current = null;
+    }
+    function invalidateSimulatorLaunch() {
+      simLoadGenerationRef.current += 1;
+      clearSimulatorRetryTimer();
+      return simLoadGenerationRef.current;
+    }
+    function isCurrentSimulatorLaunch(generation) {
+      return isCoreSimulatorLaunchCurrent(simLoadGenerationRef.current, generation, simLifecycleMountedRef.current);
+    }
+    function launchSim(checkpoint) {
+      if (!simLifecycleMountedRef.current) return;
+      updateGraphicsRecovery(false);
+      clearSimulatorRetryTimer();
+      var launchGeneration = simLoadGenerationRef.current + 1;
+      simLoadGenerationRef.current = launchGeneration;
+      var recovery = normalizeCoreVoyageCheckpoint(checkpoint);
+      var selectedMode = getCoreVoyageMode(recovery ? recovery.mode : voyageMode);
+      pendingCheckpointRef.current = recovery;
+      if (recovery) {
+        setRegion(recovery.region);
+        setVoyageMode(recovery.mode);
+        setTimeOfDayState(recovery.environment.timeOfDay);
+        setWeatherState(recovery.environment.weather);
+        setCameraViewState(recovery.environment.cameraView);
+        setTab('sim');
+      } else {
+        setTimeOfDayState(selectedMode.timeOfDay);
+        setWeatherState(selectedMode.weather);
+      }
       setStatus([]);
       setHud({});
       setActiveFishing(null);
@@ -15970,17 +17383,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (window.THREE) {
         setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
       } else {
-        setSim(function(s) { return Object.assign({}, s, { loading: true }); });
+        setSim(function(s) { return Object.assign({}, s, { loading: true, threeError: false }); });
         ensureThreeJS(function() {
+          if (!isCurrentSimulatorLaunch(launchGeneration)) return;
           setSim({ active: true, threeLoaded: true, threeError: false, loading: false });
         }, function() {
+          if (!isCurrentSimulatorLaunch(launchGeneration)) return;
           setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          flAnnounce('3D engine could not load. Use Chart Mode (2D fallback) instead.');
+          flAnnounce('3D engine could not load. Your saved voyage remains available. Use Chart Mode as a fallback.');
         });
       }
     }
+    function startSim() {
+      if (savedVoyageCheckpoint && !clearSavedVoyageCheckpoint('start-new')) {
+        flAnnounce('A new voyage was not started because the saved voyage could not be cleared. Retry autosave or resume the saved voyage.');
+        return;
+      }
+      pendingCheckpointRef.current = null;
+      launchSim(null);
+    }
+    function resumeSavedVoyage() {
+      var checkpoint = normalizeCoreVoyageCheckpoint(savedVoyageCheckpoint);
+      if (!checkpoint) {
+        if (clearSavedVoyageCheckpoint('invalid-checkpoint')) flAnnounce('The invalid saved voyage was discarded.');
+        else flAnnounce('The invalid saved voyage could not be cleared because browser storage is unavailable.');
+        return;
+      }
+      launchSim(checkpoint);
+    }
+    function discardSavedVoyage() {
+      if (!clearSavedVoyageCheckpoint('discard')) {
+        flAnnounce('Saved voyage could not be discarded because browser storage is unavailable. Retry autosave and try again.');
+        return;
+      }
+      flAnnounce('Saved voyage discarded. Start a new voyage when ready.');
+      setTimeout(function() {
+        var activePanel = document.getElementById('fl-active-panel');
+        focusCoreElement(activePanel);
+      }, 0);
+    }
+
+    function restartSimulatorGraphics() {
+      if (!graphicsContextLost) return;
+      var liveCheckpoint = null;
+      if (harborRef.current && harborRef.current.checkpoint) {
+        try { liveCheckpoint = harborRef.current.checkpoint('graphics-restart'); } catch (_) {}
+      }
+      var recovery = normalizeCoreVoyageCheckpoint(liveCheckpoint) ||
+        normalizeCoreVoyageCheckpoint(confirmedVoyageCheckpointRef.current) ||
+        normalizeCoreVoyageCheckpoint(savedVoyageCheckpoint);
+      if (!recovery) {
+        flAnnounce('No safe graphics recovery checkpoint is available. Leave the simulator and start a new voyage.');
+        return;
+      }
+      var retryGeneration = invalidateSimulatorLaunch();
+      if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
+      harborRef.current = null;
+      pendingCheckpointRef.current = recovery;
+      updateGraphicsRecovery(false);
+      setActiveFishing(null);
+      setActiveFish(null);
+      setActiveLobster(null);
+      setActiveTraffic(null);
+      setSim({ active: false, threeLoaded: false, threeError: false, loading: true, restarting: true });
+      flAnnounce('Restarting graphics from the latest safe voyage checkpoint.');
+      simRetryTimerRef.current = setTimeout(function() {
+        simRetryTimerRef.current = null;
+        if (!isCurrentSimulatorLaunch(retryGeneration)) return;
+        launchSim(recovery);
+      }, 50);
+    }
 
     function stopSim() {
+      var stopGeneration = invalidateSimulatorLaunch();
+      updateGraphicsRecovery(false);
+      if (harborRef.current && harborRef.current.checkpoint) harborRef.current.checkpoint('leave-simulator');
       if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
       harborRef.current = null;
       setActiveFishing(null);
@@ -15988,21 +17465,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setActiveLobster(null);
       setActiveTraffic(null);
       setSim({ active: false, threeLoaded: !!window.THREE, threeError: false, loading: false });
+      setTimeout(function() {
+        if (!isCurrentSimulatorLaunch(stopGeneration)) return;
+        focusCoreElement(simLaunchRef);
+        flAnnounce('Simulator closed. Voyage briefing focused.');
+      }, 0);
     }
 
     var activeSimRegionRef = useRef(region);
     useEffect(function() {
       if (sim.active && canvasRef.current) {
         if (harborRef.current && activeSimRegionRef.current !== region) {
+          updateGraphicsRecovery(false);
           if (harborRef.current.dispose) harborRef.current.dispose();
           harborRef.current = null;
         }
         if (!harborRef.current) {
           try {
             activeSimRegionRef.current = region;
+            var checkpointToRestore = pendingCheckpointRef.current;
             harborRef.current = initHarborSim(canvasRef.current, {
               region: region,
               mode: voyageMode,
+              initialCheckpoint: checkpointToRestore,
+              onCheckpoint: persistVoyageCheckpoint,
+              onGraphicsContextChange: updateGraphicsRecovery,
+              staticCamera: accessibilityPreferences.staticCamera,
               onHudUpdate: setHud,
               onStatus: pushStatus,
               onSoundToggle: setSoundOn,
@@ -16011,28 +17499,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             if (!harborRef.current) {
               throw new Error('WebGLRenderer could not be initialized.');
             }
+            if (checkpointToRestore && !harborRef.current.restoredFromCheckpoint) {
+              if (harborRef.current.dispose) harborRef.current.dispose();
+              harborRef.current = null;
+              clearSavedVoyageCheckpoint();
+              throw new Error('Saved voyage did not pass the simulator restore boundary.');
+            }
+            pendingCheckpointRef.current = null;
             harborRef.current.toggleSound(soundOn);
-            harborRef.current.setTimeOfDay(timeOfDay);
-            harborRef.current.setCameraView(cameraView);
-            harborRef.current.setWeather(weather);
-            setTimeout(function() { if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus(); }, 0);
-            flAnnounce('FisherLab 3D sim launched for ' + REGIONS[region].label + '. Harbor scene focused. Use WASD or arrows to steer, F to fish, H to haul, and P to pause.');
+            harborRef.current.setTimeOfDay(checkpointToRestore ? checkpointToRestore.environment.timeOfDay : timeOfDay);
+            harborRef.current.setCameraView(checkpointToRestore ? checkpointToRestore.environment.cameraView : cameraView);
+            harborRef.current.setWeather(checkpointToRestore ? checkpointToRestore.environment.weather : weather);
+            var focusGeneration = simLoadGenerationRef.current;
+            setTimeout(function() {
+              if (!isCurrentSimulatorLaunch(focusGeneration)) return;
+              if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus();
+            }, 0);
+            flAnnounce(checkpointToRestore ? 'Saved voyage restored and paused. Review the helm, then press P or Resume when ready.' : 'FisherLab 3D sim launched for ' + REGIONS[region].label + '. Harbor scene focused. Use WASD or arrows to steer, F to fish, H to haul, and P to pause.');
           } catch (err) {
             console.error('[FisherLab] Error starting 3D simulation:', err);
-            setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
+            updateGraphicsRecovery(false);
+            setSim({ active: false, threeLoaded: !!window.THREE, threeError: true, loading: false });
             flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
           }
         }
       }
-    }, [sim.active, region]);
+    }, [sim.active, region, accessibilityPreferences.staticCamera]);
 
     useEffect(function() {
-      return function() { if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose(); };
+      simLifecycleMountedRef.current = true;
+      return function() {
+        simLifecycleMountedRef.current = false;
+        invalidateSimulatorLaunch();
+        if (harborRef.current && harborRef.current.getCheckpoint) {
+          var finalCheckpoint = harborRef.current.getCheckpoint();
+          if (finalCheckpoint) persistVoyageCheckpoint(finalCheckpoint, false);
+        }
+        if (harborRef.current && harborRef.current.dispose) harborRef.current.dispose();
+        Object.keys(heldControlPulseTimersRef.current).forEach(function(key) {
+          clearTimeout(heldControlPulseTimersRef.current[key]);
+        });
+      };
     }, []);
 
     // ─── Shared style helpers
     var cardStyle = { background: 'linear-gradient(135deg, rgba(14,30,48,0.92), rgba(8,18,32,0.92))', border: '1px solid rgba(56,189,248,0.22)', borderRadius: 12, padding: 14, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 12 };
     var headerStyle = { fontSize: 13, fontWeight: 900, color: '#bae6fd', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 };
+
+    function updateAccessibilityPreference(key, label) {
+      var enabled = !accessibilityPreferences[key];
+      setAccessibilityPreferences(setCoreAccessibilityPreference(accessibilityPreferences, key, enabled));
+      flAnnounce(label + (enabled ? ' enabled.' : ' disabled.'));
+    }
+
+    function voyageSaveIndicator() {
+      var statusId = voyageSaveStatus.id || 'idle';
+      var label = 'Autosave ready';
+      var background = 'rgba(51,65,85,0.82)';
+      var border = 'rgba(148,163,184,0.45)';
+      var color = '#e2e8f0';
+      if (statusId === 'error') {
+        label = 'Autosave needs attention';
+        background = 'rgba(127,29,29,0.88)';
+        border = '#f87171';
+        color = '#fee2e2';
+      } else if (statusId === 'saved' && voyageSaveStatus.savedAt) {
+        var savedTime = '';
+        try { savedTime = new Date(voyageSaveStatus.savedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); } catch (_) {}
+        label = 'Saved' + (savedTime ? ' ' + savedTime : '');
+        background = 'rgba(6,78,59,0.88)';
+        border = '#34d399';
+        color = '#d1fae5';
+      }
+      return h('span', {
+        'data-fisherlab-voyage-save-status': statusId,
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        title: statusId === 'error' ? 'Recent voyage progress is not confirmed in browser storage' : label,
+        style: { padding: '6px 10px', borderRadius: 999, border: '1px solid ' + border, background: background, color: color, fontSize: 10, fontWeight: 900, whiteSpace: 'nowrap' }
+      }, label);
+    }
+
+    function voyageStorageWarning() {
+      if (voyageSaveStatus.id !== 'error') return null;
+      var hasConfirmedCheckpoint = voyageSaveStatus.savedAt > 0;
+      return h('aside', {
+        'data-fisherlab-voyage-storage': 'error',
+        role: 'alert',
+        'aria-labelledby': 'fl-voyage-storage-title',
+        style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, marginBottom: 12, padding: 12, borderRadius: 10, border: '2px solid #f87171', background: 'rgba(69,10,10,0.94)', color: '#fee2e2' }
+      },
+        h('div', { style: { minWidth: 0, flex: '1 1 260px' } },
+          h('strong', { id: 'fl-voyage-storage-title', style: { display: 'block', color: '#fecaca', fontSize: 13 } }, 'Voyage autosave unavailable'),
+          h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, lineHeight: 1.45 } },
+            hasConfirmedCheckpoint ? 'Your last confirmed checkpoint remains available, but newer progress is not saved. Keep this tab open and retry before leaving.' : 'No recovery checkpoint is confirmed. Keep this tab open and retry before refreshing or leaving.')),
+        h('button', {
+          type: 'button',
+          className: 'fl-btn',
+          onClick: retryVoyagePersistence,
+          style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fee2e2', color: '#450a0a', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
+        }, 'Retry autosave')
+      );
+    }
+
+    function voyageRecoveryBanner() {
+      var summary = getCoreVoyageCheckpointSummary(savedVoyageCheckpoint);
+      if (!summary || sim.active) return null;
+      var savedLabel = '';
+      try { savedLabel = new Date(summary.savedAt).toLocaleString(); } catch (_) {}
+      return h('aside', {
+        'data-fisherlab-voyage-recovery': 'true',
+        'aria-labelledby': 'fl-voyage-recovery-title',
+        style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12, alignItems: 'center', marginBottom: 12, padding: 12, borderRadius: 10, border: '1px solid rgba(52,211,153,0.5)', background: 'linear-gradient(135deg,rgba(6,78,59,0.72),rgba(8,47,73,0.82))', color: '#ecfdf5' }
+      },
+        h('div', { style: { minWidth: 0, flex: '1 1 240px' } },
+          h('strong', { id: 'fl-voyage-recovery-title', style: { display: 'block', color: '#a7f3d0', fontSize: 13 } }, 'Saved voyage ready'),
+          h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } },
+            summary.regionLabel + ' · ' + summary.modeLabel + ' · ' + summary.completedObjectives + '/' + summary.totalObjectives + ' outbound objectives · ' + summary.fuel + '% fuel'),
+          savedLabel ? h('span', { style: { display: 'block', marginTop: 2, color: '#94a3b8', fontSize: 9.5 } }, 'Saved ' + savedLabel + ' · restores paused with throttle neutral') : null),
+        h('div', { role: 'group', 'aria-label': 'Saved voyage actions', style: { display: 'flex', flex: '1 1 220px', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+          h('button', { type: 'button', ref: simLaunchRef, className: 'fl-btn', onClick: resumeSavedVoyage,
+            style: { minHeight: 40, padding: '8px 12px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, '▶ Resume saved voyage'),
+          h('button', { type: 'button', className: 'fl-btn', onClick: discardSavedVoyage,
+            style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.34)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, 'Discard checkpoint'))
+      );
+    }
+
+    function accessibilityBar() {
+      var options = [
+        { key: 'staticCamera', label: 'Reduced scene motion', icon: '◫' },
+        { key: 'captionMode', label: 'Expanded captions', icon: 'CC' },
+        { key: 'largeText', label: 'Large text', icon: 'A+' }
+      ];
+      return h('aside', {
+        className: 'fl-accessibility-controls',
+        'aria-label': 'Accessibility preferences',
+        style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 12, padding: '8px 10px', borderRadius: 9, border: '1px solid rgba(148,163,184,0.28)', background: 'rgba(2,6,23,0.56)', color: '#cbd5e1' }
+      },
+        h('div', { style: { display: 'grid', gap: 2 } },
+          h('strong', { style: { color: '#e0f2fe', fontSize: 11 } }, 'Display & motion'),
+          h('span', { style: { color: '#94a3b8', fontSize: 9.5 } }, sim.active ? 'Scene-motion preference locks during an active voyage.' : 'Preferences are saved on this device.')),
+        h('div', { role: 'group', 'aria-label': 'Display and motion options', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+          options.map(function(option) {
+            var selected = accessibilityPreferences[option.key] === true;
+            var locked = option.key === 'staticCamera' && sim.active;
+            return h('button', {
+              key: option.key,
+              type: 'button',
+              className: 'fl-btn',
+              'aria-pressed': selected,
+              disabled: locked,
+              title: locked ? 'Leave the simulator to change scene motion for the next launch' : option.label,
+              onClick: function() { updateAccessibilityPreference(option.key, option.label); },
+              style: { minHeight: 36, padding: '6px 10px', borderRadius: 7, border: '1px solid ' + (selected ? '#7dd3fc' : 'rgba(148,163,184,0.34)'), background: selected ? '#075985' : '#1e293b', color: selected ? '#f0f9ff' : '#cbd5e1', fontSize: 10.5, fontWeight: 900, cursor: locked ? 'not-allowed' : 'pointer', opacity: locked ? 0.62 : 1 }
+            }, h('span', { 'aria-hidden': 'true' }, option.icon + ' '), option.label);
+          }))
+      );
+    }
 
     // ─── Tab bar
     var TABS = [
@@ -16052,7 +17676,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       { id: 'boats', label: '🚤 Boat Types' },
       { id: 'ports', label: '⚓ Maine Ports' },
       { id: 'zones', label: '🗺 Lobster Zones' },
-      { id: 'regs', label: '📜 DMR Regs' },
+      { id: 'regs', label: '📜 Regional Regs' },
       { id: 'license', label: '🦞 Lobster License' },
       { id: 'wabanaki', label: '🪶 Wabanaki Heritage' },
       { id: 'climate', label: '🌡 Climate Impacts' },
@@ -16470,11 +18094,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var regionJournalSummary = getCoreJournalSummary(lifeLog, { region: region });
       var caughtCount = regionJournalSummary.observations ? regionJournalSummary.uniqueSpecies : legacyCaughtCount;
       var activeRegion = REGIONS[region] || REGIONS.maine;
+      var activeMission = getCoreSimProfile(region);
+      var activeEncounter = getCoreEncounter(region);
+      var buoyageCheck = getCoreVoyageBuoyageCheck(region);
+      var isMaineCurriculum = region === 'maine';
+      var regionalCoreComplete = !!completedState['core-' + region];
       var nextMission = MISSIONS.filter(function(m) { return !completedState[m.id]; })[0] || MISSIONS[0];
       var missionProgress = missionProgressState.percent;
+      var displayedMissionCount = isMaineCurriculum ? completedCount : (regionalCoreComplete ? 1 : 0);
+      var displayedMissionTotal = isMaineCurriculum ? MISSIONS.length : 1;
+      var displayedMissionProgress = isMaineCurriculum ? missionProgress : (regionalCoreComplete ? 100 : 0);
       var routeCards = [
         { tab: 'sim', step: 'Cast off', title: 'Launch the skiff', detail: 'Load the harbor sim, follow the channel, and fish the waypoint.', metric: sim.threeLoaded ? '3D ready' : 'Loads on demand', color: '#38bdf8' },
-        { tab: 'chart', step: 'Plot', title: 'Read the chart', detail: 'Check landmarks, hazards, and the route to the grounds before throttle.', metric: activeRegion.portName || 'Portland Harbor', color: '#fbbf24' },
+        { tab: 'chart', step: 'Plot', title: 'Read the chart', detail: isMaineCurriculum ? 'Check Portland landmarks, depth contours, buoyage, and the route to the grounds before throttle.' : 'Rehearse departure, traffic, landmarks, and destination order; verify an official chart before navigation.', metric: activeRegion.portName || 'Portland Harbor', color: '#fbbf24' },
         { tab: 'colregs', step: 'Yield', title: 'Practice rules', detail: 'Use right-of-way decisions before crossing traffic in the sim.', metric: 'COLREGS warmup', color: '#c4b5fd' },
         { tab: 'species', step: 'Identify', title: 'Know the catch', detail: 'Compare marks, habitat, and season clues before classifying or releasing a fish.', metric: caughtCount + ' species observed', color: '#86efac' },
         { tab: 'regs', step: 'Measure', title: 'Check keeper rules', detail: 'Review size, slot, bag, and release rules for the active region.', metric: activeRegion.dmrAuthority || 'Regulations', color: '#fb923c' },
@@ -16497,12 +18129,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: Object.assign({}, headerStyle, { color: '#a7f3d0', marginBottom: 6 }) }, 'FisherLab Harbor Briefing'),
               h('h2', { id: 'fl-command-title', style: { margin: '0 0 8px', fontSize: 24, lineHeight: 1.1, color: '#f8fafc', fontWeight: 900 } }, 'Choose a route, then cast off'),
               h('p', { style: { margin: '0 0 12px', fontSize: 13, lineHeight: 1.55, color: '#dbeafe', maxWidth: 660 } },
-                'Start with the sim when you want motion and decisions, or warm up with chart, rules, species, and regulations before leaving the harbor. The full curriculum stays below when you need it.'),
+                isMaineCurriculum ? 'Start with the sim when you want motion and decisions, or warm up with chart, rules, species, and regulations before leaving the harbor. The full curriculum stays below when you need it.' :
+                  'Start with the regional core voyage, or warm up with its chart-planning schematic, traffic rule, species guide, and instructional regulation profile.'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
                 [
                   'Region: ' + (activeRegion.label || region),
-                  'Next roadmap item: ' + (nextMission ? nextMission.title : 'Open water practice'),
-                  'Roadmap evidence: ' + missionProgress + '%'
+                  isMaineCurriculum ? 'Next roadmap item: ' + (nextMission ? nextMission.title : 'Open water practice') : 'Regional voyage: ' + activeMission.title,
+                  isMaineCurriculum ? 'Roadmap evidence: ' + missionProgress + '%' : 'Core voyage: ' + (regionalCoreComplete ? 'complete' : 'ready')
                 ].map(function(label, idx) {
                   var colors = ['#bae6fd', '#fde68a', '#bbf7d0'];
                   return h('span', {
@@ -16524,7 +18157,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               )
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(160px, 1fr) minmax(110px, 0.55fr)', gap: 10, minWidth: 0 } },
-              h('svg', { viewBox: '0 0 340 184', role: 'img', 'aria-label': 'Route from harbor to fishing grounds', style: { width: '100%', height: '100%', minHeight: 160, borderRadius: 8, background: '#082f49', border: '1px solid rgba(186,230,253,0.24)', display: 'block' } },
+              h('svg', { viewBox: '0 0 340 184', role: 'img', 'aria-label': 'Schematic training sequence from ' + activeRegion.portName + ' to ' + activeMission.destination + '; not a nautical chart', style: { width: '100%', height: '100%', minHeight: 160, borderRadius: 8, background: '#082f49', border: '1px solid rgba(186,230,253,0.24)', display: 'block' } },
                 h('rect', { x: 0, y: 0, width: 340, height: 184, fill: '#082f49' }),
                 h('path', { d: 'M0 135 C52 116 76 132 118 106 C160 80 192 92 224 62 C252 36 294 35 340 20 L340 184 L0 184 Z', fill: '#064e3b', opacity: 0.78 }),
                 h('path', { d: 'M42 142 C88 118 126 108 166 92 C204 76 236 58 292 42', fill: 'none', stroke: '#fde68a', strokeWidth: 4, strokeLinecap: 'round', strokeDasharray: '8 8' }),
@@ -16536,13 +18169,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('text', { x: 20, y: 166, fill: '#e0f2fe', fontSize: 12, fontWeight: 800 }, 'Harbor'),
                 h('text', { x: 132, y: 82, fill: '#ffedd5', fontSize: 12, fontWeight: 800 }, 'Buoys'),
                 h('text', { x: 244, y: 30, fill: '#dcfce7', fontSize: 12, fontWeight: 800 }, 'Grounds'),
-                h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, 'Red right returning')
+                h('text', { x: 18, y: 22, fill: '#bae6fd', fontSize: 11 }, buoyageCheck.ruleLabel),
+                h('text', { x: 322, y: 174, fill: '#bae6fd', fontSize: 9, fontWeight: 900, textAnchor: 'end' }, 'SCHEMATIC ONLY')
               ),
               h('div', { style: { display: 'grid', gap: 8 } },
                 [
                   { label: 'Region records', value: regionJournalSummary.observations, color: '#c4b5fd' },
                   { label: 'Species', value: caughtCount + '/' + getSpeciesForRegion(region).length, color: '#86efac' },
-                  { label: 'Missions', value: completedCount + '/' + MISSIONS.length, color: '#fde68a' }
+                  { label: isMaineCurriculum ? 'Missions' : 'Regional voyage', value: displayedMissionCount + '/' + displayedMissionTotal, color: '#fde68a' }
                 ].map(function(stat) {
                   return h('div', { key: stat.label, style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.46)', border: '1px solid rgba(226,232,240,0.14)' } },
                     h('div', { style: { fontSize: 20, lineHeight: 1, fontWeight: 900, color: stat.color, marginBottom: 4 } }, stat.value),
@@ -16587,13 +18221,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, '🎣 FisherLab — Boating & Fishing Sim'),
           h('p', { style: { fontSize: 13, lineHeight: 1.6, margin: '0 0 10px' } },
-            'Pilot a Maine skiff from Custom House Wharf out to the fishing grounds. Learn buoyage (red-right-returning), COLREGS rules of the road, chart reading, tides, and weather while fishing for cod, haddock, pollock, striper, and mackerel — and pulling lobster traps once you\'ve earned your apprenticeship.'),
+            'Work the ' + activeRegion.label + ' practice profile from ' + activeRegion.portName + ' toward ' + activeMission.destination + '. Rehearse ' + activeRegion.buoyage + ' buoyage, make a ' + activeEncounter.rule + ' decision around ' + activeEncounter.vessel + ', classify ' + activeMission.targetFish + ', inspect ' + activeMission.trapCatch + ', and return safely.'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 10px', fontStyle: 'italic' } },
-            'Built for King Middle School EL Education place-based learning expeditions. The regulation activities use instructional practice profiles rather than live legal advice; always verify current rules with the named authority. Use the region selector to preview other waters.'),
+            isMaineCurriculum ? 'Built for King Middle School EL Education place-based learning expeditions. The regulation activities use instructional practice profiles rather than live legal advice; always verify current rules with the named authority.' :
+              'This regional simulator, species guide, and regulation profile are instructional. The deeper expedition curriculum remains Maine-centered; always verify current navigation and harvest rules with ' + activeRegion.dmrAuthority + '.'),
           h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(56,189,248,0.18)' } },
             h('div', null,
-              h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, completedCount),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Missions complete')),
+              h('div', { style: { fontSize: 22, fontWeight: 900, color: '#86efac' } }, displayedMissionCount),
+              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, isMaineCurriculum ? 'Missions complete' : 'Regional voyage complete')),
             h('div', null,
               h('div', { style: { fontSize: 22, fontWeight: 900, color: '#fbbf24' } }, caughtCount + '/' + getSpeciesForRegion(region).length),
               h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 800 } }, 'Species in Field Journal')),
@@ -16623,7 +18258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             )
           );
         })(),
-        h('div', { style: cardStyle },
+        isMaineCurriculum ? h('div', { style: cardStyle },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
             h('div', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Mission Log'),
             h('button', {
@@ -16656,13 +18291,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('ul', { style: { margin: '4px 0 0 18px', padding: 0, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
                 m.objectives.map(function(o, oi) { return h('li', { key: oi }, o); })));
           }) : h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.36)', color: '#94a3b8', fontSize: 11, lineHeight: 1.45 } },
-            'Mission objectives are tucked away until needed. Use Show details for the full expedition list.')),
+            'Mission objectives are tucked away until needed. Use Show details for the full expedition list.')) :
+          h('div', { 'data-fisherlab-regional-mission': region, style: cardStyle },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+              h('div', { style: Object.assign({}, headerStyle, { marginBottom: 0 }) }, 'Regional Voyage Log'),
+              h('button', {
+                type: 'button',
+                className: 'fl-btn',
+                onClick: function() {
+                  setTab('sim');
+                  flAnnounce('Opening ' + activeMission.title + '.');
+                },
+                style: { padding: '7px 10px', borderRadius: 8, border: '1px solid rgba(56,189,248,0.35)', background: '#0ea5e9', color: '#04141f', fontSize: 11, fontWeight: 900, cursor: 'pointer' }
+              }, regionalCoreComplete ? 'Revisit voyage' : 'Launch voyage')
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(56,189,248,0.16)', marginBottom: 10 } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+                h('div', { style: { fontSize: 13, fontWeight: 900, color: '#f8fafc' } }, activeMission.title),
+                h('div', { style: { fontSize: 11, fontWeight: 900, color: regionalCoreComplete ? '#86efac' : '#fde68a' } }, regionalCoreComplete ? 'Core voyage complete' : 'Core voyage ready')
+              ),
+              h('div', { style: { height: 10, borderRadius: 8, background: 'rgba(2,6,23,0.65)', overflow: 'hidden', marginBottom: 8 } },
+                h('div', { style: { width: displayedMissionProgress + '%', height: '100%', borderRadius: 8, background: 'linear-gradient(90deg,#22c55e,#38bdf8)' } })),
+              h('div', { style: { marginBottom: 6, color: '#86efac', fontSize: 10, fontWeight: 900, textTransform: 'uppercase' } }, 'Playable regional core voyage'),
+              h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } }, 'Practice the selected water from departure through traffic, catch decisions, gear inspection, and a safe return.')
+            ),
+            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(2,6,23,0.36)', color: '#cbd5e1', fontSize: 11, lineHeight: 1.5 } },
+              h('div', { style: { marginBottom: 5, color: '#bae6fd', fontWeight: 900, textTransform: 'uppercase' } }, 'Core evidence sequence'),
+              h('ol', { style: { margin: '4px 0 10px 18px', padding: 0 } },
+                [
+                  'Depart ' + activeRegion.portName + ' under ' + activeRegion.buoyage + ' conventions.',
+                  'Assess ' + activeEncounter.vessel + ' using ' + activeEncounter.rule + '.',
+                  'Reach ' + activeMission.destination + ' and classify ' + activeMission.targetFish + '.',
+                  'Inspect ' + activeMission.trapCatch + ' and return safely.'
+                ].map(function(objective, index) { return h('li', { key: index }, objective); })),
+              h('p', { style: { margin: 0, color: '#fde68a' } }, 'The full expedition roadmap is Maine-specific. This regional profile records one core voyage and does not mark the Maine curriculum complete.'))
+          ),
         h('div', { style: cardStyle },
           h('div', { style: headerStyle }, 'How to play'),
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
             h('p', null, h('b', null, 'Steering: '), 'WASD or arrow keys. W/Up = throttle forward. S/Down = reverse. A/Left + D/Right = turn. Space = throttle boost.'),
             h('p', null, h('b', null, 'Fishing: '), 'At the grounds, slow below 1 knot and press F. Read the water, select spot, depth, tackle, and presentation; place the cast, react to the bite, manage line tension, then identify, measure, and classify the landed fish.'),
-            h('p', null, h('b', null, 'Buoyage: '), 'Red right returning applies heading INTO harbor. On this outbound run, keep green cans to starboard and red nuns to port; the live check follows the direction of travel.'),
+            h('p', null, h('b', null, 'Buoyage: '), buoyageCheck.explanation),
             h('p', null, h('b', null, 'Accessibility: '), 'Reduced-motion mode removes wave bobbing and animated water. Fishing offers guided timing, labeled gauges, and button-based input; the 3D scene also has a 2D Chart fallback if WebGL is unavailable.'),
             h('p', { style: { color: '#fbbf24' } }, h('b', null, 'No mouse needed. '), 'Everything works from keyboard. Buoy shape (nun = cone, can = cylinder) doubles for color when colorblind.'))));
     }
@@ -16735,6 +18404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         setSpeciesFocusId(masteryRow.speciesId);
         practiceTargetRef.current = masteryRow.speciesId;
         practiceFocusRef.current = masteryRow.focusSkill;
+        practiceCorrectionRef.current = masteryRow.focusSkill === 'transfer' ? Math.max(0, Number(masteryRow.latestCorrectionTs) || 0) : 0;
         setPracticeTargetSpeciesId(masteryRow.speciesId);
         setPracticeFocusSkill(masteryRow.focusSkill);
         setTab('sim');
@@ -17067,6 +18737,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── SIM tab
     function simTab() {
       var mission = getCoreSimProfile(region);
+      var trapActionLabel = getCoreTrapActionLabel(region);
+      var buoyageCheck = getCoreVoyageBuoyageCheck(region);
       var practiceTargetSpecies = practiceTargetSpeciesId ? getSpeciesForRegion(region).find(function(item) { return item.id === practiceTargetSpeciesId; }) : null;
       var practicePlan = practiceTargetSpecies ? getCoreFishingPracticePlan(region, practiceTargetSpecies.id, getFishingScenarioConditions(region, weather, timeOfDay)) : null;
       var practiceFocusLabel = ({
@@ -17082,14 +18754,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var fuelValue = hud.fuel == null ? 100 : Math.max(0, hud.fuel);
       var decisionAccuracy = hud.totalDecisions ? Math.round((hud.correctDecisions || 0) / hud.totalDecisions * 100) : 0;
       var catchDecisionHistory = Array.isArray(hud.catchDecisionHistory) ? hud.catchDecisionHistory : [];
+      var practiceTransferResult = hud.practiceTransferEvidence && typeof hud.practiceTransferEvidence === 'object' ? hud.practiceTransferEvidence : getCorePracticeTransferResult(catchDecisionHistory);
+      var practiceTransferTarget = practiceTransferResult.active ? getSpeciesForRegion(region).find(function(item) { return item.id === practiceTransferResult.targetSpeciesId; }) : null;
       var catchSkillSummary = getCoreCatchSkillSummary(hud.fishIdentificationCorrect, hud.fishIdentificationTotal, hud.fishRuleCorrect, hud.fishRuleTotal);
       var tripLedger = getCoreTripLedger(hud.retainedBySpecies, getSpeciesForRegion(region), mission.targetFishId);
       var tripLedgerLabel = 'Scenario trip catch ledger. ' + tripLedger.map(function(row) { return row.name + ': ' + row.statusLabel + '.'; }).join(' ');
-      var modeProfile = getCoreVoyageMode(voyageMode);
+      var debriefStandard = evaluateCoreVoyageStandard(voyageMode, decisionAccuracy, fuelValue, hud.trafficDecisionCorrect, hud.trafficManeuverReviewed);
       var unmetStandards = [];
-      if (decisionAccuracy < modeProfile.requiredAccuracy) unmetStandards.push(modeProfile.requiredAccuracy + '% classification accuracy');
-      if (fuelValue < modeProfile.requiredFuel) unmetStandards.push(modeProfile.requiredFuel + '% fuel reserve');
-      if (hud.trafficManeuverReviewed) unmetStandards.push('the required traffic maneuver within its window');
+      if (!debriefStandard.accuracyMet) unmetStandards.push(debriefStandard.requiredAccuracy + '% classification accuracy');
+      if (!debriefStandard.fuelMet) unmetStandards.push(debriefStandard.requiredFuel + '% fuel reserve');
+      if (!debriefStandard.trafficDecisionMet) unmetStandards.push('a correct COLREGS decision');
+      if (!debriefStandard.maneuverMet) unmetStandards.push('the required traffic maneuver within its window');
       var voyageRank = getCoreVoyageRank(hud.stewardshipScore || 0, decisionAccuracy, fuelValue);
       var trafficPlotPoint = getCoreRadarPlotPoint(hud.trafficRelativeBearing, hud.trafficRange);
       var trafficPlotX = trafficPlotPoint.x;
@@ -17110,13 +18785,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       function setHeldControl(key, pressed) {
         if (harborRef.current && harborRef.current.setControl) harborRef.current.setControl(key, pressed);
       }
+      function releaseHeldControl(key) {
+        setHeldControl(key, false);
+      }
+      function cancelHeldControlPulse(key) {
+        if (!heldControlPulseTimersRef.current[key]) return;
+        clearTimeout(heldControlPulseTimersRef.current[key]);
+        delete heldControlPulseTimersRef.current[key];
+      }
+      function handleHeldControlPointerDown(key, event) {
+        if (event && event.preventDefault) event.preventDefault();
+        cancelHeldControlPulse(key);
+        var target = event && event.currentTarget;
+        if (target && target.setPointerCapture && event.pointerId != null) {
+          try { target.setPointerCapture(event.pointerId); } catch (_) {}
+        }
+        setHeldControl(key, true);
+      }
+      function handleHeldControlPointerUp(key, event) {
+        releaseHeldControl(key);
+        var target = event && event.currentTarget;
+        if (target && target.releasePointerCapture && event.pointerId != null) {
+          try {
+            if (!target.hasPointerCapture || target.hasPointerCapture(event.pointerId)) target.releasePointerCapture(event.pointerId);
+          } catch (_) {}
+        }
+      }
+      function handleHeldControlKeyDown(key, event) {
+        if (!event || (event.key !== ' ' && event.key !== 'Enter')) return;
+        event.preventDefault();
+        if (event.repeat) return;
+        cancelHeldControlPulse(key);
+        heldControlKeyboardRef.current[key] = true;
+        setHeldControl(key, true);
+      }
+      function handleHeldControlKeyUp(key, event) {
+        if (!event || (event.key !== ' ' && event.key !== 'Enter')) return;
+        event.preventDefault();
+        releaseHeldControl(key);
+        setTimeout(function() { delete heldControlKeyboardRef.current[key]; }, 0);
+      }
+      function handleHeldControlClick(key, event) {
+        if (!event || event.detail !== 0) return;
+        if (heldControlKeyboardRef.current[key]) {
+          delete heldControlKeyboardRef.current[key];
+          return;
+        }
+        setHeldControl(key, true);
+        cancelHeldControlPulse(key);
+        heldControlPulseTimersRef.current[key] = setTimeout(function() {
+          releaseHeldControl(key);
+          delete heldControlPulseTimersRef.current[key];
+        }, 160);
+      }
+      function toggleSimulatorPause() {
+        if (graphicsContextLost) {
+          flAnnounce('Graphics are still recovering. Resume is unavailable until restoration completes.');
+          return;
+        }
+        var nextPaused = !hud.paused;
+        if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(nextPaused);
+        if (!nextPaused) setTimeout(function() { focusCoreElement(canvasRef); }, 0);
+      }
       function restartCoreMission() {
         setStatus([]);
+        setActiveFishing(null);
         setActiveFish(null);
+        setFishIdentification(null);
+        setFishEvidence(null);
+        setFishDecisionResult(null);
         setActiveLobster(null);
+        setCaliperCheck(null);
+        setShellfishDecisionResult(null);
         setActiveTraffic(null);
         if (harborRef.current && harborRef.current.restartMission) harborRef.current.restartMission();
-        if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus();
+        focusCoreElement(canvasRef);
+      }
+      function resolveSimulatorTrafficChoice(action) {
+        if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter(action);
+        setActiveTraffic(null);
+        setTimeout(function() { focusCoreElement(canvasRef); }, 0);
       }
       return h('div', null,
         regionBar(),
@@ -17144,7 +18892,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 'This optional catch target adds journal evidence. The core mission still requires ' + mission.targetFish + ' and remains unchanged.'),
               h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 10.5, lineHeight: 1.5 } },
                 'Suggested starting setup: ' + practicePlan.spotLabel + ', ' + practicePlan.tackleLabel + ', ' + practicePlan.targetDepth + ' water, ' + practicePlan.technique.replace(/-/g, ' ') + '. Encounters remain probability-weighted, so bycatch is possible.')),
-            h('button', { type: 'button', className: 'fl-btn', onClick: function() { practiceTargetRef.current = ''; practiceFocusRef.current = ''; setPracticeTargetSpeciesId(''); setPracticeFocusSkill(''); flAnnounce('Focused practice target cleared.'); },
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { practiceTargetRef.current = ''; practiceFocusRef.current = ''; practiceCorrectionRef.current = 0; setPracticeTargetSpeciesId(''); setPracticeFocusSkill(''); flAnnounce('Focused practice target cleared.'); },
               style: { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.34)', background: '#334155', color: '#f8fafc', fontSize: 10.5, fontWeight: 900, cursor: 'pointer' } }, 'Clear target')
           ) : null,
           h('fieldset', { disabled: sim.active, style: { margin: '0 0 12px', padding: 0, border: 0 } },
@@ -17164,30 +18912,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           ),
           !sim.threeLoaded && !sim.threeError && !sim.loading ? h('div', { style: { textAlign: 'center', padding: 20 } },
             h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 14 } }, 'The 3D engine (three.js r128, ~600 KB) loads on demand from cdnjs.'),
-            h('button', { className: 'fl-btn',
+            h('button', { type: 'button', ref: savedVoyageCheckpoint ? null : simLaunchRef, className: 'fl-btn',
               onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Load 3D engine + launch sim')) : null,
-          sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, '⏳ Loading three.js…') : null,
+              '▶ Load 3D engine + start new voyage')) : null,
+          sim.loading ? h('div', { style: { textAlign: 'center', padding: 20, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 12 } }, sim.restarting ? '⏳ Restarting graphics…' : '⏳ Loading three.js…') : null,
           sim.threeError ? h('div', { style: { padding: 14, background: 'rgba(220,38,38,0.15)', borderRadius: 8, border: '1px solid rgba(220,38,38,0.4)' } },
             h('div', { style: { color: '#fca5a5', fontWeight: 800, marginBottom: 6 } }, '⚠ 3D engine failed to load or initialize'),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 10 } }, 'You can still use Chart Mode (2D fallback) — switch to the "Chart Room" tab. The full curriculum (Buoyage, COLREGS, Species ID, Regs, Glossary, Quiz) is unaffected.'),
             h('button', {
               className: 'fl-btn',
               onClick: function() {
+                var retryCheckpoint = pendingCheckpointRef.current || savedVoyageCheckpoint;
+                var retryGeneration = invalidateSimulatorLaunch();
                 setSim({ active: false, threeLoaded: false, threeError: false, loading: false });
-                setTimeout(startSim, 50);
+                simRetryTimerRef.current = setTimeout(function() {
+                  simRetryTimerRef.current = null;
+                  if (!isCurrentSimulatorLaunch(retryGeneration)) return;
+                  launchSim(retryCheckpoint);
+                }, 50);
               },
               style: { padding: '8px 16px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: 'pointer' }
             }, 'Retry 3D Mode')) : null,
           sim.threeLoaded && !sim.active ? h('div', { style: { textAlign: 'center', padding: 14 } },
-            h('button', { className: 'fl-btn', onClick: startSim,
+            h('button', { type: 'button', ref: savedVoyageCheckpoint ? null : simLaunchRef, className: 'fl-btn', onClick: startSim,
               style: { padding: '12px 24px', background: '#0ea5e9', color: '#04141f', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer' } },
-              '▶ Cast off — ' + modeProfile.label + ' voyage')) : null,
+              '▶ Start new ' + modeProfile.label + ' voyage')) : null,
           sim.active ? h('div', { ref: stageRef, className: 'fl-sim-stage' + (stageExpanded ? ' fl-theater' : '') },
             // Sound, View and Weather Controls bar
             h('div', { ref: simBarRef, className: 'fl-sim-bar', style: { display: 'flex', gap: 10, padding: 10, background: 'rgba(15,23,42,0.85)', borderRadius: '8px 8px 0 0', border: '1px solid rgba(56,189,248,0.22)', borderBottom: 'none', flexWrap: 'wrap', alignItems: 'center' } },
               h('span', { className: 'fl-pill', style: { background: 'rgba(251,191,36,0.16)', color: '#fde68a' } }, modeProfile.label + ' · ' + modeProfile.scoreMultiplier + 'x'),
+              voyageSaveIndicator(),
               h('button', {
                 className: 'fl-btn',
                 onClick: function() { setSoundOn(!soundOn); },
@@ -17237,7 +18992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   }, labels[w]);
                 })
               ),
-              h('button', { className: 'fl-btn', 'aria-pressed': !!hud.paused, onClick: function() { if (harborRef.current && harborRef.current.setPaused) harborRef.current.setPaused(!hud.paused); }, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
+              h('button', { type: 'button', className: 'fl-btn', 'aria-pressed': !!hud.paused, disabled: graphicsContextLost, title: graphicsContextLost ? 'Resume is unavailable while graphics recover' : (hud.paused ? 'Resume the voyage' : 'Pause the voyage'), onClick: toggleSimulatorPause, style: { padding: '6px 10px', background: hud.paused ? '#fbbf24' : 'rgba(15,23,42,0.5)', color: hud.paused ? '#04141f' : '#cbd5e1', border: '1px solid rgba(251,191,36,0.45)', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: graphicsContextLost ? 'not-allowed' : 'pointer', opacity: graphicsContextLost ? 0.62 : 1 } }, hud.paused ? '▶ Resume (P)' : '⏸ Pause (P)'),
               h('button', {
                 className: 'fl-btn',
                 'aria-pressed': !!stageExpanded,
@@ -17250,16 +19005,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 className: 'fl-btn',
                 onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); },
                 style: { marginLeft: 'auto', padding: '6px 12px', background: '#fbbf24', color: '#04141f', border: 'none', borderRadius: 6, fontSize: 11, fontWeight: 800, cursor: 'pointer' }
-              }, '🦞 Haul Trap (H)') : null
+              }, trapActionLabel + ' (H)') : null
             ),
+            graphicsContextLost ? h('aside', {
+              'data-fisherlab-graphics-recovery': 'lost',
+              'data-fisherlab-graphics-reason': graphicsFailureReason || 'context-lost',
+              role: 'region',
+              'aria-labelledby': 'fl-graphics-recovery-title',
+              'aria-describedby': 'fl-graphics-recovery-detail',
+              style: { position: 'absolute', zIndex: 32, top: 'calc(var(--fl-bar-h, 48px) + 12px)', left: '50%', transform: 'translateX(-50%)', width: 'min(640px, calc(100% - 24px))', boxSizing: 'border-box', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: 12, borderRadius: 10, border: '2px solid #fbbf24', background: 'rgba(69,26,3,0.96)', color: '#fef3c7', boxShadow: '0 12px 34px rgba(0,0,0,0.55)' }
+            },
+              h('div', { style: { minWidth: 0, flex: '1 1 300px' } },
+                h('strong', { id: 'fl-graphics-recovery-title', style: { display: 'block', color: '#fde68a', fontSize: 13 } }, graphicsFailureReason === 'render-error' ? 'Graphics rendering stopped - voyage paused' : 'Graphics interrupted - voyage paused'),
+                h('span', { id: 'fl-graphics-recovery-detail', style: { display: 'block', marginTop: 3, fontSize: 10.5, lineHeight: 1.45 } }, voyageSaveStatus.id === 'error' ? 'Browser storage also needs attention. Keep this tab open; Restart graphics will use the safest in-memory or confirmed checkpoint available.' : graphicsFailureReason === 'render-error' ? 'The render loop stopped unexpectedly. Restart graphics to reopen the voyage at its latest safe checkpoint.' : 'Wait for automatic graphics recovery, or restart graphics now from the latest safe checkpoint.')
+              ),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                h('button', { type: 'button', className: 'fl-btn', onClick: restartSimulatorGraphics, style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fde68a', background: '#fbbf24', color: '#422006', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Restart graphics'),
+                h('button', { type: 'button', className: 'fl-btn', onClick: stopSim, style: { minHeight: 40, padding: '8px 12px', borderRadius: 7, border: '1px solid #fecaca', background: '#fee2e2', color: '#450a0a', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Leave simulator')
+              )
+            ) : null,
+
             // Height and background now live in .fl-sim-canvas so the expanded
             // stage can hand the scene the whole window; an inline height would
             // beat every rule that tries to.
             h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0,
               'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, use 1 through 3 for a radar evidence call when prompted, F at the fishing grounds, H near a trap, and P to pause.',
               'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M 1 2 3 Escape',
-              onClick: function(e) { if (e.currentTarget && e.currentTarget.focus) e.currentTarget.focus(); },
-              onFocus: function() { flAnnounce('Harbor controls active. Steer with WASD or arrows. Press P to pause.'); } }),
+              onClick: function(e) { focusCoreElement(e.currentTarget); } }),
 
             // Names the rig on the scene itself. Without it, switching views
             // from the toolbar gave no confirmation on the canvas at all.
@@ -17378,7 +19150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 'calc(var(--fl-bar-h, 48px) + 10px)', right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
-              h('div', { style: { fontSize: 10 } }, hud.passedRedNun ? '✓ Outbound green mark to starboard' : '○ Keep green can to starboard outbound'),
+              h('div', { style: { fontSize: 10 } }, (hud.passedRedNun ? '✓ ' : '○ ') + buoyageCheck.objectiveLabel),
               h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + horn + avoid port' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
               hud.trafficManeuverComplete ? h('div', { 'aria-label': 'Traffic encounter debrief. ' + (hud.trafficGradeLabel || 'Maneuver complete') + '. Closest approach ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : 'not available') + ' simulation units. Response time ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' seconds. Radar evidence: ' + trafficEvidence.plotCount + ' plots, bearing change ' + trafficEvidence.bearingChange.toFixed(1) + ' degrees, range change ' + trafficEvidence.rangeChange.toFixed(1) + ' simulation units. ' + trafficEvidence.label + (trafficIsRestricted ? '. Rule 35 fog signal ' + (hud.trafficFogSignalMade ? 'logged' : 'not logged') : '') + (hud.radarCallMade ? '. Radar evidence call ' + (hud.radarCallCorrect ? 'correct' : 'needs review') + ': ' + hud.radarCallLabel : '') + '.', style: { margin: '5px 0 6px', padding: '5px 0', borderTop: '1px solid rgba(125,211,252,0.22)', borderBottom: '1px solid rgba(125,211,252,0.22)' } },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: trafficGradeColor, fontSize: 9, fontWeight: 900, textTransform: 'uppercase' } },
@@ -17409,8 +19181,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { marginTop: 5, fontSize: 9, color: hud.unsafeSpeed ? '#fb923c' : '#a7f3d0', fontWeight: hud.unsafeSpeed ? 900 : 600 } }, hud.unsafeSpeed ? 'Reduce speed for current conditions' : (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
             
             // Status log
-            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
-              (status || []).slice(-4).map(function(ev, ei) {
+            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', 'data-expanded-captions': accessibilityPreferences.captionMode ? 'true' : 'false', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: accessibilityPreferences.captionMode ? 180 : 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
+              (status || []).slice(accessibilityPreferences.captionMode ? -8 : -4).map(function(ev, ei) {
                 var color = ev.type === 'fish' || ev.type === 'lobster' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
@@ -17419,15 +19191,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               [
                 { key: 'arrowleft', label: 'Turn port', icon: '←' },
                 { key: 'arrowup', label: 'Throttle forward', icon: '↑' },
+                { key: ' ', label: 'Throttle boost', icon: '⚡' },
                 { key: 'arrowdown', label: 'Reduce speed or reverse', icon: '↓' },
                 { key: 'arrowright', label: 'Turn starboard', icon: '→' }
               ].map(function(control) {
                 return h('button', { key: control.key, type: 'button', className: 'fl-btn', 'aria-label': control.label,
-                  onPointerDown: function(e) { e.preventDefault(); setHeldControl(control.key, true); },
-                  onPointerUp: function() { setHeldControl(control.key, false); },
-                  onPointerCancel: function() { setHeldControl(control.key, false); },
-                  onPointerLeave: function() { setHeldControl(control.key, false); },
-                  style: { width: 38, height: 34, borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
+                  onPointerDown: function(e) { handleHeldControlPointerDown(control.key, e); },
+                  onPointerUp: function(e) { handleHeldControlPointerUp(control.key, e); },
+                  onPointerCancel: function(e) { handleHeldControlPointerUp(control.key, e); },
+                  onLostPointerCapture: function() { releaseHeldControl(control.key); },
+                  onKeyDown: function(e) { handleHeldControlKeyDown(control.key, e); },
+                  onKeyUp: function(e) { handleHeldControlKeyUp(control.key, e); },
+                  onClick: function(e) { handleHeldControlClick(control.key, e); },
+                  onBlur: function() { releaseHeldControl(control.key); delete heldControlKeyboardRef.current[control.key]; },
+                  style: { width: 38, height: 34, touchAction: 'none', userSelect: 'none', borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
                 }, control.icon);
               }),
               trafficIsRestricted && hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': 'Sound one prolonged fog-horn blast', disabled: !!hud.trafficFogSignalMade, onClick: function() { if (harborRef.current && harborRef.current.soundFogSignal) harborRef.current.soundFogSignal(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(253,230,138,0.6)', background: hud.trafficFogSignalMade ? '#365314' : '#854d0e', color: '#fef9c3', fontWeight: 900, cursor: hud.trafficFogSignalMade ? 'default' : 'pointer' } }, hud.trafficFogSignalMade ? 'Horn logged' : 'Horn (B)') : null,
@@ -17448,7 +19225,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               var tensionPct = Math.round((Number(activeFishing.tension) || 0) * 100);
               var tensionProfile = getFishingTensionProfile(activeFishing.assistMode, activeFishing.tension);
               var tensionBand = tensionProfile.band;
-              return h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fishing-title', 'aria-describedby': 'fl-fishing-prompt', onKeyDown: handleFishingDialogKeyDown, style: { position: 'absolute', inset: 0, zIndex: 91, display: 'grid', placeItems: 'center', padding: 14, background: 'rgba(2,8,23,0.93)', overflowY: 'auto' } },
+              return h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fishing-title', 'aria-describedby': 'fl-fishing-prompt', tabIndex: -1, onKeyDown: handleSimulatorDialogKeyDown, style: { position: 'absolute', inset: 0, zIndex: 91, display: 'grid', placeItems: 'center', padding: 14, background: 'rgba(2,8,23,0.93)', overflowY: 'auto' } },
                 h('div', { style: { width: 'min(720px,100%)', maxHeight: 'calc(100% - 12px)', overflowY: 'auto', padding: 16, borderRadius: 9, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#052e2b,#082f49 54%,#0f172a)', boxShadow: '0 22px 65px rgba(0,0,0,0.68)' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', flexWrap: 'wrap' } },
                     h('div', null,
@@ -17570,8 +19347,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 )
               );
             })() : null,
-            activeTraffic ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-traffic-title', style: { position: 'absolute', inset: 0, zIndex: 92, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)' } },
-              h('div', { style: { width: 'min(590px,100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'linear-gradient(145deg,#422006,#082f49 58%,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.65)' } },
+            activeTraffic ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-traffic-title', tabIndex: -1, onKeyDown: handleSimulatorDialogKeyDown, style: { position: 'absolute', inset: 0, zIndex: 92, display: 'grid', placeItems: 'center', padding: 16, overflowY: 'auto', background: 'rgba(2,8,23,0.94)' } },
+              h('div', { style: { width: 'min(590px,100%)', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', padding: 18, borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'linear-gradient(145deg,#422006,#082f49 58%,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.65)' } },
                 h('div', { style: { color: '#fde68a', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Traffic encounter · simulation paused'),
                 h('h3', { id: 'fl-traffic-title', style: { margin: '5px 0 4px', color: '#f8fafc', fontSize: 22 } }, activeTraffic.vessel + (activeTraffic.radarOnly ? ' forward of beam' : ' on crossing course')),
                 h('div', { className: 'fl-pill', style: { marginBottom: 10, background: 'rgba(251,191,36,0.18)', color: '#fde68a' } }, activeTraffic.rule),
@@ -17582,15 +19359,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 ),
                 h('p', { style: { color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'What is your safest COLREGS action?'),
                 h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
-                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter(activeTraffic.choiceOneAction || 'give-way'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(125,211,252,0.55)', borderRadius: 7, background: '#164e63', color: '#f0f9ff', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceOneLabel || (activeTraffic.correctAction === 'give-way' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel)),
-                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.resolveTrafficEncounter) harborRef.current.resolveTrafficEncounter(activeTraffic.choiceTwoAction || 'stand-on'); setActiveTraffic(null); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(148,163,184,0.65)', borderRadius: 7, background: '#334155', color: '#f8fafc', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceTwoLabel || (activeTraffic.correctAction === 'stand-on' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel))
+                  h('button', { type: 'button', ref: decisionFocusRef, className: 'fl-btn', onClick: function() { resolveSimulatorTrafficChoice(activeTraffic.choiceOneAction || 'give-way'); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(125,211,252,0.55)', borderRadius: 7, background: '#164e63', color: '#f0f9ff', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceOneLabel || (activeTraffic.correctAction === 'give-way' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel)),
+                  h('button', { type: 'button', className: 'fl-btn', onClick: function() { resolveSimulatorTrafficChoice(activeTraffic.choiceTwoAction || 'stand-on'); }, style: { flex: '1 1 220px', padding: 11, border: '1px solid rgba(148,163,184,0.65)', borderRadius: 7, background: '#334155', color: '#f8fafc', fontWeight: 900, cursor: 'pointer' } }, activeTraffic.choiceTwoLabel || (activeTraffic.correctAction === 'stand-on' ? activeTraffic.correctLabel : activeTraffic.incorrectLabel))
                 )
               )
             ) : null,
 
             activeFish ? (function() {
               var regionalSpecies = getSpeciesForRegion(region);
-              var practiceTargetProfile = activeFish.fishingSummary && activeFish.fishingSummary.focusedPractice ? regionalSpecies.find(function(candidate) { return candidate.id === activeFish.fishingSummary.targetSpeciesId; }) : null;
+              var focusedPracticeSummary = activeFish.fishingSummary && activeFish.fishingSummary.focusedPractice ? activeFish.fishingSummary : null;
+              var practiceTargetProfile = focusedPracticeSummary ? regionalSpecies.find(function(candidate) { return candidate.id === focusedPracticeSummary.targetSpeciesId; }) : null;
               var regionalFishOptions = [activeFish.species].concat(regionalSpecies.filter(function(candidate) { return candidate.id !== activeFish.species.id; })).slice(0, 3);
               var optionOffset = hashCoreFishingSeed(activeFish.observationId || [activeFish.species.id, activeFish.length].join('-')) % regionalFishOptions.length;
               regionalFishOptions = regionalFishOptions.slice(optionOffset).concat(regionalFishOptions.slice(0, optionOffset));
@@ -17611,6 +19389,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               }
               function submitFishDecision(action) {
                 if (fishDecisionResult || !fishIdentification || !fishEvidence) return;
+                var observedAt = Date.now();
+                var practiceTargetId = focusedPracticeSummary ? String(focusedPracticeSummary.targetSpeciesId || '') : '';
+                var practiceFocus = focusedPracticeSummary ? String(focusedPracticeSummary.focusSkill || '') : '';
+                var correctionReviewedAt = focusedPracticeSummary ? Math.max(0, Number(focusedPracticeSummary.correctionReviewedAt) || 0) : 0;
                 var identification = evaluateCoreFishIdentification(activeFish.species, fishIdentification);
                 var ruleResult = evaluateCoreFishDecision(activeFish.length, activeFish.species, action, fishEvidence, fishRuleContext);
                 var result = Object.assign({}, ruleResult, { correct: identification.correct && ruleResult.correct, identificationCorrect: identification.correct });
@@ -17618,7 +19400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 var msg = result.correct ? 'Correct. ' + identification.explanation + ' ' + result.explanation : 'Review needed. ' + (!identification.correct ? identification.explanation + ' ' : '') + result.explanation;
                 pushStatus({ type: result.correct && action === 'retain' ? 'fish' : result.correct ? 'complete' : 'guidance', species: activeFish.species, length: activeFish.length, isKeeper: result.correct && action === 'retain', text: msg });
                 recordObservation({
-                  observationId: activeFish.observationId || ['finfish', region, activeFish.species.id, activeFish.length, Date.now()].join('-'),
+                  observationId: activeFish.observationId || ['finfish', region, activeFish.species.id, activeFish.length, observedAt].join('-'),
                   speciesId: activeFish.species.id,
                   label: activeFish.species.name,
                   length: activeFish.length,
@@ -17628,9 +19410,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   correct: result.correct,
                   evidence: (practiceTargetProfile ? 'Focused target: ' + practiceTargetProfile.name + ' | ' : '') + 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' | ' + result.expectedLabel,
                   region: region,
-                  mission: practiceTargetProfile ? 'focused-practice' : 'core-voyage'
+                  mission: focusedPracticeSummary ? 'focused-practice' : 'core-voyage',
+                  ts: observedAt,
+                  practiceTargetSpeciesId: practiceTargetId,
+                  practiceFocusSkill: practiceFocus,
+                  correctionReviewedAt: correctionReviewedAt
                 });
-                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, identificationCorrect: identification.correct, ruleCorrect: ruleResult.correct, legalToRetain: ruleResult.legalToRetain, evidence: 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' · ' + result.expectedLabel });
+                if (harborRef.current && harborRef.current.resolveCatch) harborRef.current.resolveCatch('finfish', action === 'retain' ? 'keep' : 'release', result.correct, activeFish.species.id, true, { label: activeFish.species.name, length: activeFish.length, identificationCorrect: identification.correct, ruleCorrect: ruleResult.correct, legalToRetain: ruleResult.legalToRetain, evidence: 'Identification: ' + identifiedSpecies.name + (identification.correct ? ' confirmed' : '; actual ' + identification.expectedLabel) + ' · ' + result.expectedLabel, ts: observedAt, practiceTargetSpeciesId: practiceTargetId, practiceFocusSkill: practiceFocus, correctionReviewedAt: correctionReviewedAt });
                 setFishDecisionResult({ result: result, identification: identification, handling: handling, message: msg });
                 flAnnounce(msg + ' ' + handling.label + '. ' + handling.text);
               }
@@ -17642,7 +19428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 setFishDecisionResult(null);
                 setTimeout(function() { if (canvasRef.current && canvasRef.current.focus) canvasRef.current.focus(); }, 0);
               }
-              return h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', 'aria-describedby': 'fl-fish-inspection-help', style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)', overflowY: 'auto' } },
+              return h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-fish-inspection-title', 'aria-describedby': 'fl-fish-inspection-help', tabIndex: -1, onKeyDown: handleSimulatorDialogKeyDown, style: { position: 'absolute', inset: 0, zIndex: 90, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.94)', overflowY: 'auto' } },
                 h('div', { style: { width: 'min(600px, 100%)', padding: 18, borderRadius: 8, border: '1px solid rgba(125,211,252,0.5)', background: 'linear-gradient(145deg,#082f49,#0f172a)', boxShadow: '0 22px 60px rgba(0,0,0,0.6)' } },
                   h('div', { style: { color: '#7dd3fc', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch inspection · simulation paused'),
                   h('h3', { id: 'fl-fish-inspection-title', style: { margin: '5px 0 8px', color: '#f8fafc', fontSize: 22 } }, activeFish.species.emoji + ' ' + (fishDecisionResult ? activeFish.species.name : 'Unidentified catch') + ' · ' + activeFish.length + ' in'),
@@ -17708,7 +19494,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               );
             })() : null,
 
-            hud.missionAttemptComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
+            hud.missionAttemptComplete ? h('section', { role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fl-debrief-title', tabIndex: -1, onKeyDown: handleSimulatorDialogKeyDown, style: { position: 'absolute', inset: 0, zIndex: 85, display: 'grid', placeItems: 'center', padding: 16, background: 'rgba(2,8,23,0.88)' } },
               h('div', { style: { width: 'min(540px,100%)', maxHeight: 'calc(100% - 24px)', overflowY: 'auto', padding: 20, borderRadius: 8, border: '1px solid rgba(52,211,153,0.55)', background: 'linear-gradient(145deg,#064e3b,#082f49 58%,#0f172a)', textAlign: 'center', boxShadow: '0 24px 70px rgba(0,0,0,0.65)' } },
                 h('div', { style: { color: hud.missionComplete ? '#6ee7b7' : '#fde68a', fontSize: 12, fontWeight: 900, textTransform: 'uppercase' } }, modeProfile.label + ' voyage · ' + (hud.missionComplete ? 'standard met' : 'practice return')),
                 h('h3', { id: 'fl-debrief-title', style: { margin: '6px 0 2px', color: '#fff', fontSize: 24 } }, mission.title),
@@ -17737,6 +19523,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('p', { style: { color: '#dbeafe', fontSize: 12 } }, (hud.correctDecisions || 0) + ' of ' + (hud.totalDecisions || 0) + ' decisions correct · ' + fuelValue.toFixed(0) + '% fuel remaining · ' + Math.max(0, Math.round((hud.elapsed || 0) / 60)) + ' min'),
                 h('p', { style: { color: trafficGradeColor, fontSize: 11, fontWeight: 800 } }, 'Traffic watch: ' + (hud.trafficGradeLabel || 'complete') + ' · CPA ' + (isFinite(hud.trafficClosestRange) ? hud.trafficClosestRange.toFixed(1) : '—') + ' · ' + (hud.trafficManeuverSeconds || 0).toFixed(1) + ' s'),
                 h('p', { style: { color: hud.missionComplete ? '#a7f3d0' : '#fdba74', fontSize: 11, lineHeight: 1.5 } }, hud.missionComplete ? 'Challenge standard met: accurate decisions, a prudent reserve, and the required safe maneuver.' : 'Next target: meet ' + (unmetStandards.length ? unmetStandards.join(', ') : 'every voyage criterion') + '.'),
+                practiceTransferResult.active ? h('div', { 'data-fisherlab-transfer-result': practiceTransferResult.statusId, style: { margin: '12px 0', padding: 11, borderRadius: 8, border: '1px solid ' + (practiceTransferResult.verified ? 'rgba(134,239,172,0.5)' : 'rgba(253,186,116,0.5)'), background: practiceTransferResult.verified ? 'rgba(20,83,45,0.38)' : 'rgba(120,53,15,0.28)', textAlign: 'left' } },
+                  h('div', { style: { color: practiceTransferResult.verified ? '#86efac' : '#fdba74', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, practiceTransferResult.label),
+                  h('div', { style: { marginTop: 4, color: '#f8fafc', fontSize: 12, fontWeight: 900 } }, 'Saved-correction target: ' + (practiceTransferTarget ? practiceTransferTarget.name : practiceTransferResult.targetSpeciesId.replace(/-/g, ' '))),
+                  h('p', { style: { margin: '5px 0 0', color: '#dbeafe', fontSize: 10.5, lineHeight: 1.5 } }, practiceTransferResult.guidance)
+                ) : null,
                 catchSkillSummary.hasData ? h('div', { 'aria-label': 'Catch skill breakdown. Species identification ' + catchSkillSummary.identificationCorrect + ' of ' + catchSkillSummary.identificationTotal + ', ' + catchSkillSummary.identificationPct + ' percent. Regulation evidence ' + catchSkillSummary.ruleCorrect + ' of ' + catchSkillSummary.ruleTotal + ', ' + catchSkillSummary.rulePct + ' percent. ' + catchSkillSummary.focusLabel, style: { margin: '12px 0', padding: '10px 0', borderTop: '1px solid rgba(186,230,253,0.28)', borderBottom: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 8 } },
                     h('strong', { style: { color: '#bae6fd', fontSize: 11, textTransform: 'uppercase' } }, 'Catch skill breakdown'),
@@ -17842,7 +19633,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   label: typeLabel.charAt(0).toUpperCase() + typeLabel.slice(1),
                   length: activeLobster.length,
                   action: action === 'keep' ? 'retain' : 'release',
-                  identificationCorrect: true,
+                  identificationCorrect: null,
                   ruleCorrect: correct,
                   correct: correct,
                   evidence: caliperVal.toFixed(2) + ' in gauge | ' + (activeLobster.isKeeper ? 'training profile permits retention' : reason),
@@ -17866,6 +19657,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 role: 'dialog',
                 'aria-modal': 'true',
                 'aria-labelledby': 'fl-shellfish-inspection-title',
+                tabIndex: -1,
+                onKeyDown: handleSimulatorDialogKeyDown,
                 style: {
                   position: 'absolute',
                   top: 0,
@@ -18167,7 +19960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               { k: 'D / →', d: 'Turn right (starboard)', c: '#bae6fd' },
               { k: 'Space', d: 'Throttle boost', c: '#fbbf24' },
               { k: 'F', d: 'Fish (at fishing waypoint)', c: '#a78bfa' },
-              { k: 'H', d: 'Haul lobster trap (near buoy)', c: '#fbbf24' },
+              { k: 'H', d: trapActionLabel + ' (near buoy)', c: '#fbbf24' },
               { k: 'B', d: 'Sound prolonged fog-horn blast', c: '#fde68a' },
               { k: '1 / 2 / 3', d: 'Make prompted radar evidence call', c: '#7dd3fc' },
               { k: 'V', d: 'Cycle camera: Chase → Helm → Drone → Chart N↑', c: '#38bdf8' },
@@ -18192,14 +19985,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
 
     // ─── CHART tab (2D fallback chart)
+    function flRegionalTrainingChartSvg(h, brief) {
+      if (!brief) return null;
+      var landmarks = (brief.landmarks || []).join(' | ');
+      var portDetail = String(brief.portCoords || '').split('·')[0].trim() || brief.portName;
+      var ariaLabel = 'Regional training sequence for ' + brief.label + ', from ' + brief.portName + ' to ' + brief.destination + '. Review ' + brief.buoyage + ' buoyage (' + brief.buoyageRule + ') and a ' + brief.trafficRule + ' encounter with ' + brief.trafficVessel + ', then classify ' + brief.targetFish + ' and inspect ' + brief.trapCatch + '. This is a schematic, not a nautical chart. It shows no real positions, depths, hazards, coastline, or aid-to-navigation locations. Verify an official chart and current notices before navigation.';
+      function stage(x, step, title, lineOne, lineTwo, ink) {
+        return h('g', { key: step },
+          h('rect', { x: x, y: 60, width: 180, height: 116, rx: 10, fill: '#f8fafc', stroke: ink, strokeWidth: 2 }),
+          h('text', { x: x + 14, y: 83, fill: ink, fontSize: 10, fontWeight: 900, letterSpacing: 1 }, step),
+          h('text', { x: x + 14, y: 108, fill: '#0f2940', fontSize: 14, fontWeight: 900 }, title),
+          h('text', { x: x + 14, y: 134, fill: '#334155', fontSize: 10.5, fontWeight: 700 }, lineOne),
+          h('text', { x: x + 14, y: 154, fill: '#475569', fontSize: 9.5 }, lineTwo));
+      }
+      return h('svg', {
+        viewBox: '0 0 640 360',
+        role: 'img',
+        'aria-label': ariaLabel,
+        'data-fisherlab-regional-chart': brief.region,
+        style: { width: '100%', maxWidth: 760, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)' }
+      },
+        h('title', null, brief.label + ' regional planning schematic'),
+        h('desc', null, 'Schematic training sequence only. No geographic positions or navigation data are plotted.'),
+        h('rect', { x: 0, y: 0, width: 640, height: 360, fill: '#dbe7ef' }),
+        h('rect', { x: 0, y: 0, width: 640, height: 46, fill: '#0c4a6e' }),
+        h('text', { x: 18, y: 29, fill: '#f8fafc', fontSize: 14, fontWeight: 900 }, 'TRAINING SEQUENCE - NOT A NAUTICAL CHART'),
+        h('text', { x: 622, y: 29, fill: '#bae6fd', fontSize: 10, fontWeight: 800, textAnchor: 'end' }, brief.label),
+        stage(18, '1 - DEPART', brief.portName, portDetail, brief.waterContext, '#0284c7'),
+        stage(230, '2 - ASSESS', 'Traffic decision', brief.trafficVessel, brief.trafficRule, '#ea580c'),
+        stage(442, '3 - WORK', brief.destination, brief.targetFish + ' / ' + brief.trapCatch, 'Identify, inspect, return', '#15803d'),
+        h('line', { x1: 200, y1: 118, x2: 224, y2: 118, stroke: '#475569', strokeWidth: 3 }),
+        h('polygon', { points: '224,118 214,111 214,125', fill: '#475569' }),
+        h('line', { x1: 412, y1: 118, x2: 436, y2: 118, stroke: '#475569', strokeWidth: 3 }),
+        h('polygon', { points: '436,118 426,111 426,125', fill: '#475569' }),
+        h('rect', { x: 18, y: 198, width: 604, height: 116, rx: 10, fill: '#eff6ff', stroke: '#7aa9c4', strokeWidth: 1.5 }),
+        h('text', { x: 34, y: 221, fill: '#0f2940', fontSize: 11, fontWeight: 900 }, brief.buoyage + ' BUOYAGE REHEARSAL'),
+        h('rect', { x: 38, y: 236, width: 15, height: 25, rx: 2, fill: '#2a7c44' }),
+        h('text', { x: 45.5, y: 276, fill: '#155b2f', fontSize: 9, fontWeight: 800, textAnchor: 'middle' }, 'GREEN'),
+        h('polygon', { points: '86,236 97,261 75,261', fill: '#c8302a' }),
+        h('text', { x: 86, y: 276, fill: '#9b1c17', fontSize: 9, fontWeight: 800, textAnchor: 'middle' }, 'RED'),
+        h('text', { x: 118, y: 245, fill: '#1e3a5f', fontSize: 11, fontWeight: 800 }, brief.buoyageRule),
+        h('text', { x: 118, y: 263, fill: '#475569', fontSize: 10 }, 'Concept only - no aids, depths, hazards, or positions are plotted.'),
+        h('text', { x: 34, y: 294, fill: '#0f2940', fontSize: 10, fontWeight: 900 }, 'Reference names only (not plotted):'),
+        h('text', { x: 202, y: 294, fill: '#334155', fontSize: 10 }, landmarks || 'No landmark names supplied'),
+        h('text', { x: 320, y: 340, fill: '#7f1d1d', fontSize: 11, fontWeight: 900, textAnchor: 'middle' }, 'Use an official chart, current notices, weather, and local guidance for real navigation.')
+      );
+    }
+
+    // --- CHART tab
     function chartTab() {
+      var chartBrief = getCoreTrainingChartBrief(region);
+      var detailedMaine = chartBrief.detailMode === 'portland-detail';
       return h('div', null,
         regionBar(),
         h('div', { style: cardStyle },
-          h('div', { style: headerStyle }, '🗺 Chart Room (' + (REGIONS[region].portName || 'Portland Harbor') + ')'),
+          h('div', { style: headerStyle }, '🗺 Chart Room — ' + chartBrief.label + ' (' + chartBrief.portName + ')'),
           h('p', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 12 } },
-            'Stylized chart approximating Casco Bay. In a real sim you\'d use NOAA Chart 13290 (Casco Bay). Buoy symbols mirror IALA-B convention. Useful as a 2D fallback if WebGL is unavailable, or as a study aid while playing.'),
-          h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)' },
+            detailedMaine ? 'Stylized chart approximating Casco Bay. In a real sim you\'d use NOAA Chart 13290 (Casco Bay). Buoy symbols mirror IALA-B convention. Useful as a 2D fallback if WebGL is unavailable, or as a study aid while playing.' :
+              'Regional planning sequence for ' + chartBrief.label + '. It uses the selected training port, simulator destination, traffic encounter, and catch targets. It does not contain surveyed positions, depths, hazards, coastline, or aid-to-navigation locations.'),
+          detailedMaine ? h('svg', { viewBox: '0 0 600 400', style: { width: '100%', maxWidth: 720, background: '#dbe7ef', borderRadius: 8, border: '1px solid rgba(56,189,248,0.3)' },
             // ★ role="img" is not optional here. An aria-label on a bare <svg>
             // is exposed inconsistently across screen readers, and THIS chart is
             // the tool's stated fallback for when WebGL is unavailable — so the
@@ -18287,10 +20131,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('text', { x: -15, y: 5, fill: '#3b4d2b', fontSize: 9, textAnchor: 'middle' }, 'W'),
               h('text', { x: 15, y: 5, fill: '#3b4d2b', fontSize: 9, textAnchor: 'middle' }, 'E'),
               h('line', { x1: 0, y1: 14, x2: 0, y2: -14, stroke: '#3b4d2b', strokeWidth: 1 }))
-          ),
-          h('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
+          ) : flRegionalTrainingChartSvg(h, chartBrief),
+          detailedMaine ? h('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 } },
             h('p', null, h('b', null, 'Plot a fix: '), 'Take bearings off two known landmarks (Portland Head Light + Custom House Wharf). Where the bearing lines cross is your fix.'),
-            h('p', null, h('b', null, 'Buoyage check: '), 'Red marks (nuns, even-numbered) line the east side of the channel as drawn — keep them on your starboard when heading INTO the harbor (red right returning). Green cans (odd-numbered) on your port.'))));
+            h('p', null, h('b', null, 'Buoyage check: '), 'Red marks (nuns, even-numbered) line the east side of the channel as drawn — keep them on your starboard when heading INTO the harbor (red right returning). Green cans (odd-numbered) on your port.')) :
+            h('div', { style: { marginTop: 10, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55 } },
+              h('p', null, h('b', null, 'Planning order: '), 'Depart ' + chartBrief.portCoords + ', rehearse ' + chartBrief.buoyage + ' in a ' + chartBrief.waterContext + ', assess ' + chartBrief.trafficVessel + ' under ' + chartBrief.trafficRule + ', then continue to ' + chartBrief.destination + '.'),
+              h('p', null, h('b', null, 'Verification boundary: '), 'Reference landmark names are orientation prompts only. Before real navigation, use the official chart, current Notices to Mariners, weather, and local guidance.'),
+              h('p', null, h('b', null, 'Catch focus: '), 'Classify ' + chartBrief.targetFish + ' and inspect ' + chartBrief.trapCatch + ' in the simulator; verify current harvest rules with ' + chartBrief.authority + '.'))));
     }
 
     // ─── BUOYAGE tab
@@ -20371,7 +22219,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     // ─── Main render
     var activeTabEntry = TABS.find(function(tabEntry) { return tabEntry.id === tab; }) || TABS[0];
-    return h('div', { style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
+    var activeSectionScope = getCoreSectionScope(tab, region);
+    return h('div', { className: 'fl-fisherlab-root' + (accessibilityPreferences.largeText ? ' fl-large-text' : ''), 'data-caption-mode': accessibilityPreferences.captionMode ? 'true' : 'false', 'data-static-camera': accessibilityPreferences.staticCamera ? 'true' : 'false', style: { padding: 16, background: 'linear-gradient(180deg, #031523 0%, #06313a 52%, #071827 100%)', minHeight: 400 } },
+      voyageRecoveryBanner(),
+      voyageStorageWarning(),
+      accessibilityBar(),
       tabBar(),
       h('section', {
         id: 'fl-active-panel',
@@ -20381,6 +22233,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         tabIndex: 0,
         style: { minWidth: 0 }
       },
+      activeSectionScope.visible ? h('aside', {
+        role: 'note',
+        'data-fisherlab-section-scope': activeSectionScope.scope,
+        'data-fisherlab-selected-region': activeSectionScope.region,
+        'aria-labelledby': 'fl-section-scope-title',
+        style: { display: 'grid', gap: 3, marginBottom: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid rgba(125,211,252,0.38)', background: activeSectionScope.scope === 'maine-curriculum' ? 'rgba(120,53,15,0.32)' : 'rgba(7,89,133,0.3)', color: '#e0f2fe' }
+      },
+        h('strong', { id: 'fl-section-scope-title', style: { color: activeSectionScope.scope === 'maine-curriculum' ? '#fde68a' : '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, activeSectionScope.title),
+        h('span', { style: { fontSize: 11, lineHeight: 1.45 } }, activeSectionScope.message)
+      ) : null,
       tab === 'home' ? homeTab() :
       tab === 'journal' ? journalTab() :
       tab === 'aqcond' ? aqCondTab() :

@@ -11,8 +11,8 @@ describe('Geology Explorer reduced-motion accessibility', () => {
   it('disables every utility pulse when reduced motion is requested', () => {
     const pulseLines = source.split('\n').filter((line) => line.includes('animate-pulse'));
 
-    expect(pulseLines).toHaveLength(1);
-    expect(pulseLines[0]).toContain('motion-reduce:animate-none');
+    expect(pulseLines.length).toBeGreaterThanOrEqual(1);
+    pulseLines.forEach((line) => expect(line).toContain('motion-reduce:animate-none'));
   });
 
   it('retains the existing reduced-motion gate for first-person movement', () => {

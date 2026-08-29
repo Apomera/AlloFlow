@@ -47,7 +47,8 @@ describe('End Session and VideoRef safe view extraction', () => {
     expect(host).toContain("loadModule('VideoRefPlayer', 'https://alloflow-cdn.pages.dev/view_video_ref_player_module.js");
     expect(host).toContain("loadModule('EndSessionPreview', 'https://alloflow-cdn.pages.dev/view_end_session_preview_module.js");
     expect(host).toContain('try { window.__alloLazyEndSessionPreview(); } catch (_) {}');
-    expect(host).toContain('if (window.__alloLazyVideoRefPlayer) window.__alloLazyVideoRefPlayer()');
+    expect(host).toContain('loaderName="__alloLazyVideoRefPlayer"');
+    expect(host).toContain('const loader = window[props.loaderName]');
     expect(host).toContain('The review tools could not load. Your live session is still open.');
     expect(host).toContain('Your saved video reference is unchanged.');
     expect(host).toContain('Retry loading');

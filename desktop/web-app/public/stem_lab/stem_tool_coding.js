@@ -24,7 +24,20 @@
       '[data-coding-tool="true"] { grid-template-columns: minmax(0, 1fr) !important; }' +
       '[data-coding-tool="true"] > .col-span-2 { grid-column: 1 !important; }' +
       '[data-coding-tool="true"] .coding-robot-layout { grid-template-columns: minmax(0, 1fr) !important; }' +
-      '}';
+      '}' +
+      '@media (max-width: 960px) {' +
+      '[data-coding-tool="true"] .coding-header { flex-wrap: wrap; }' +
+      '[data-coding-tool="true"] .coding-playground-mode-toggle,' +
+      '[data-coding-tool="true"] .coding-mode-toggle { flex: 1 1 100%; min-width: 0; width: 100%; }' +
+      '[data-coding-tool="true"] .coding-playground-mode-toggle > button,' +
+      '[data-coding-tool="true"] .coding-mode-toggle > button { flex: 1 1 0; min-width: 0; white-space: normal; }' +
+      '}' +
+      '[data-coding-tool="true"] .coding-playground-mode-toggle > button:first-child,' +
+      '[data-coding-tool="true"] .coding-mode-toggle > button:first-child { border-radius: 0.5rem 0 0 0.5rem; }' +
+      '[data-coding-tool="true"] .coding-playground-mode-toggle > button:last-child,' +
+      '[data-coding-tool="true"] .coding-mode-toggle > button:last-child { border-radius: 0 0.5rem 0.5rem 0; }' +
+      '[data-coding-tool="true"] .coding-playground-mode-toggle > button:focus-visible,' +
+      '[data-coding-tool="true"] .coding-mode-toggle > button:focus-visible { position: relative; z-index: 1; }';
     if (document.head) document.head.appendChild(style);
   })();
 
@@ -2492,9 +2505,9 @@
             !tutorialDismissed && blocks.length === 0 && !running && React.createElement("div", {
               className: "col-span-2 bg-gradient-to-r from-indigo-900/90 to-purple-900/90 backdrop-blur-sm rounded-xl p-4 border border-indigo-400/40 shadow-2xl z-10"
             },
-              React.createElement("div", { className: "flex items-start gap-3" },
+              React.createElement("div", { className: "flex flex-wrap items-start gap-3" },
                 React.createElement("span", { className: "text-3xl" }, "🎓"),
-                React.createElement("div", { className: "flex-1" },
+                React.createElement("div", { className: "flex-1", style: { minWidth: '180px' } },
                   React.createElement("h3", { className: "text-sm font-bold text-white mb-2" }, t('stem.coding.welcome_to_the_coding_playground', "Welcome to the Coding Playground!")),
                   React.createElement("div", { className: "grid gap-2", style: { gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' } },
                     TUTORIAL_STEPS.map(function (step, si) {
@@ -2657,7 +2670,7 @@
 
             // ── Header bar ──
             React.createElement("div", {
-              className: "col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
+              className: "coding-header col-span-2 flex items-center gap-3 p-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg"
             },
               React.createElement("button", { onClick: function () { setStemLabTool(null); }, className: "p-1.5 hover:bg-white/20 rounded-lg transition-all", 'aria-label': t('stem.coding.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 20, className: "text-white" })),
               React.createElement("span", { className: "text-2xl" }, playgroundMode === 'robot' ? "\uD83E\uDD16" : "\uD83D\uDDA5\uFE0F"),
@@ -2670,7 +2683,7 @@
                 )
               ),
               // Playground Mode Tabs (Turtle / Robot)
-              React.createElement("div", { className: "flex rounded-lg overflow-hidden border border-white/20 mr-2" },
+              React.createElement("div", { className: "coding-playground-mode-toggle flex rounded-lg border border-white/20 mr-2" },
                 [{ key: 'turtle', icon: '\uD83D\uDC22', label: t('stem.coding.turtle_2', 'Turtle') }, { key: 'robot', icon: '\uD83E\uDD16', label: t('stem.coding.robot', 'Robot') }].map(function(tab) {
                   return React.createElement("button", { "aria-label": "Switch to " + tab.label + " playground mode",
                     key: tab.key,
@@ -2681,7 +2694,7 @@
                 })
               ),
               // Editor view selector
-              React.createElement("div", { role: "group", "aria-label": "Editor view", className: "coding-mode-toggle flex overflow-hidden rounded-lg border border-white/20" },
+              React.createElement("div", { role: "group", "aria-label": "Editor view", className: "coding-mode-toggle flex rounded-lg border border-white/20" },
                 [
                   { key: 'visual', icon: '🧩', label: 'Visual Blocks' },
                   { key: 'outline', icon: '☷', label: 'Accessible Outline' },

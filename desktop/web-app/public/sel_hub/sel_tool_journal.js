@@ -784,21 +784,24 @@ window.SelHub = window.SelHub || {
           { id: 'badges',   icon: '\uD83C\uDFC5', label: 'Badges' }
         ];
 
-        var tabBar = h('div', { role: 'tablist', style: { display: 'flex', borderBottom: '1px solid #1e293b', padding: '0 8px', alignItems: 'center', flexShrink: 0 } },
-          TABS.map(function(t) {
+        var tabBar = h('div', { style: { display: 'flex', borderBottom: '1px solid #1e293b', padding: '0 8px', alignItems: 'center', flexShrink: 0, overflowX: 'auto', WebkitOverflowScrolling: 'touch' } },
+          h('div', { role: 'tablist', 'aria-label': 'Feelings Journal tabs', style: { display: 'flex' } },
+            TABS.map(function(t) {
             var isActive = activeTab === t.id;
             return h('button', { 'aria-label': t.icon + ' ' + t.label,
               key: t.id,
               role: 'tab', 'aria-selected': isActive,
               onClick: function() { upd('activeTab', t.id); if (soundEnabled) sfxClick(); },
+              onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: {
                 padding: '10px 14px', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: isActive ? 700 : 500,
                 background: isActive ? ACCENT_DIM : 'transparent', color: isActive ? _jouFg(ACCENT) : _jouFg('#94a3b8'), transition: 'all 0.15s',
                 borderBottom: isActive ? '2px solid ' + ACCENT : '2px solid transparent', borderRadius: 0
               }
             }, t.icon + ' ' + t.label);
-          }),
-          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _jouFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
+            })
+          ),
+          h('button', { 'aria-label': soundEnabled ? 'Mute' : 'Unmute', onClick: function() { upd('soundEnabled', !soundEnabled); }, onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }, style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14, padding: '4px 6px', color: _jouFg('#94a3b8') }, title: soundEnabled ? 'Mute' : 'Unmute' }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
         // ══════════════════════════════════════════════════════

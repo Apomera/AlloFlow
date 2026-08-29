@@ -96,12 +96,26 @@ describe('AlloBot generation animation signatures', () => {
     }
   });
 
+  it('renders a legible staged HUD in animated and reduced-motion modes', () => {
+    expect(botSource).toContain(": '100 100';");
+    expect(botSource).toContain('data-allo-generation-ring="track"');
+    expect(botSource).toContain('data-allo-generation-ring="progress"');
+    expect(botSource).toContain('const renderGenerationStageRail = () =>');
+    expect(botSource).toContain('data-allo-generation-stage-node={stageName}');
+    expect(botSource).toContain("data-allo-generation-motion={motionDisabled ? 'static' : 'animated'}");
+    expect(botSource).toContain("{effectiveMood === 'thinking' && !isSleeping && (");
+    expect(botModule).toContain('allobot-generation-stage-node');
+  });
+
   it('shows family-specific milestones during Full Pack runs', () => {
     expect(botSource).toContain("const isFullPackGeneration = String(generationBatchType || '').trim().toLowerCase() === 'full-pack';");
     expect(botSource).toContain('const generationMilestoneActiveRef = useRef(false);');
     expect(botSource).toContain('const latestResource = Array.isArray(history) ? history[history.length - 1] : null;');
     expect(botSource).toContain("setCompletedGenerationOutcome('success');");
     expect(botSource).toContain('generationMilestoneTimerRef.current = setTimeout');
+    expect(botSource).toContain('const generationPackSlotCount = isFullPackGeneration');
+    expect(botSource).toContain('data-allo-generation-pack-orbit="true"');
+    expect(botSource).toContain('data-allo-generation-pack-state={slotState}');
     expect(botModule).toContain('generationMilestoneActiveRef');
   });
 

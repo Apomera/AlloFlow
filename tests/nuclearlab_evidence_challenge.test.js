@@ -42,9 +42,10 @@ afterEach(() => {
   window.HTMLCanvasElement.prototype.getContext = originalGetContext;
 });
 
-function mount(state, overrides = {}) {
+function mount(state, overrides = {}, onRender) {
   const Comp = () => {
     const [toolData, setToolData] = React.useState({ _nuclearLab: state || {} });
+    if (typeof onRender === 'function') onRender(toolData);
     return cfg.render(makeCtx({ ...overrides, toolData, setToolData }));
   };
   act(() => {
@@ -55,6 +56,25 @@ function mount(state, overrides = {}) {
 
 function buttonNamed(text) {
   return [...host.querySelectorAll('button')].find((button) => button.textContent.trim() === text);
+}
+
+const COMPLETE_EVIDENCE = [
+  'reactor-bomb',
+  'inverse-square',
+  'low-dose-zero',
+  'neutron-layers',
+  'short-count',
+];
+
+function enterText(node, value) {
+  const setter = Object.getOwnPropertyDescriptor(
+    window.HTMLTextAreaElement.prototype,
+    'value',
+  ).set;
+  act(() => {
+    setter.call(node, value);
+    node.dispatchEvent(new Event('input', { bubbles: true }));
+  });
 }
 
 describe('evidence challenge semantics', () => {
@@ -89,6 +109,7 @@ describe('evidence challenge semantics', () => {
     expect(buttonNamed('Skip topic controls and start reading')).toBeTruthy();
     expect(host.querySelector('#nksec-halflife').getAttribute('tabindex')).toBe('-1');
     expect(host.querySelector('style').textContent).toContain('[data-nk-sec]:focus');
+    expect(host.querySelector('style').textContent).toContain('.nk-readable textarea:focus-visible');
   });
 
   it('makes the challenge the final step of every question-led route', () => {
@@ -96,8 +117,86 @@ describe('evidence challenge semantics', () => {
       host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkPath: route } });
       expect(host.querySelector('#nksec-evidence'), route + ' route omits the challenge').toBeTruthy();
       expect(host.querySelector('#nksec-evidence nav[aria-label*="route progress"]'), route + ' route has no final progress footer').toBeTruthy();
-      expect(host.querySelector('#nksec-evidence').textContent).toContain('End of this route');
+      expect(host.querySelector('#nksec-evidence').textContent).toContain('finish the evidence challenge');
     }
+  });
+
+  it('offers a named, optional route reflection only after evidence mastery', () => {
+    host.innerHTML = renderTool('nuclearLab', { _nuclearLab: { nkPath: 'know' } });
+    expect(host.querySelector('[data-nk-reflection=know]')).toBeNull();
+
+    host.innerHTML = renderTool('nuclearLab', {
+      _nuclearLab: {
+        nkPath: 'know',
+        evidenceMastered: COMPLETE_EVIDENCE,
+        nkReflections: {
+          know: {
+            confidence: 'explain',
+            idea: 'A measurement needs uncertainty before it can prove a claim.',
+            question: 'How long should a weak source be counted?',
+          },
+        },
+      },
+    });
+
+    const reflection = host.querySelector('[data-nk-reflection=know]');
+    expect(reflection).toBeTruthy();
+    expect(reflection.querySelector('h5').textContent).toBe('Finish your route');
+    expect(reflection.textContent).toContain('How do we know all this?');
+    expect(reflection.textContent).toContain('There is no right answer and no score.');
+    expect(reflection.querySelectorAll('input[type=radio][name=nk-reflection-confidence-know]')).toHaveLength(3);
+    expect(reflection.querySelector('input[value=explain]').checked).toBe(true);
+    const textareas = [...reflection.querySelectorAll('textarea')];
+    expect(textareas).toHaveLength(2);
+    expect(textareas.every((node) => node.maxLength === 280)).toBe(true);
+    expect(reflection.querySelector('label[for=nk-reflection-idea-know]')).toBeTruthy();
+    expect(reflection.querySelector('label[for=nk-reflection-question-know]')).toBeTruthy();
+    expect(reflection.querySelector('#nk-reflection-idea-know').value).toContain('measurement needs uncertainty');
+    expect(reflection.querySelector('[role=status]').textContent).toBe('Reflection saved for this route.');
+    expect(reflection.previousElementSibling.getAttribute('aria-label')).toBe('Evidence challenge complete');
+    expect(reflection.previousElementSibling.previousElementSibling.tagName).toBe('FIELDSET');
+  });
+
+  it('recovers safely from malformed saved reflection progress', () => {
+    expect(() => {
+      host.innerHTML = renderTool('nuclearLab', {
+        _nuclearLab: {
+          nkPath: 'know',
+          evidenceMastered: COMPLETE_EVIDENCE,
+          nkReflections: {
+            know: {
+              confidence: 'not-a-choice',
+              idea: { stale: true },
+              question: 42,
+            },
+          },
+        },
+      });
+    }).not.toThrow();
+
+    const reflection = host.querySelector('[data-nk-reflection=know]');
+    expect(reflection.querySelector('input:checked')).toBeNull();
+    expect([...reflection.querySelectorAll('textarea')].every((node) => node.value === '')).toBe(true);
+    expect(reflection.querySelector('[role=status]').textContent).toBe('Nothing saved yet.');
+  });
+});
+
+describe('reading adaptation interaction', () => {
+  it('shows and hides chart tables without changing the default reading view', () => {
+    const announceToSR = vi.fn();
+    mount({}, { announceToSR });
+
+    expect(host.querySelectorAll('[data-nk-chart-table]')).toHaveLength(0);
+    act(() => buttonNamed('Chart data').click());
+    expect(host.querySelector('[data-nuclear-lab]').getAttribute('data-nk-chart-data')).toBe('true');
+    expect(host.querySelectorAll('[data-nk-chart-table]')).toHaveLength(6);
+    expect(buttonNamed('Chart data').getAttribute('aria-pressed')).toBe('true');
+    expect(announceToSR).toHaveBeenLastCalledWith('Chart data tables shown.');
+
+    act(() => buttonNamed('Chart data').click());
+    expect(host.querySelectorAll('[data-nk-chart-table]')).toHaveLength(0);
+    expect(buttonNamed('Chart data').getAttribute('aria-pressed')).toBe('false');
+    expect(announceToSR).toHaveBeenLastCalledWith('Chart data tables hidden.');
   });
 });
 
@@ -144,5 +243,52 @@ describe('evidence challenge interaction', () => {
     expect(hook).toBeTruthy();
     expect(hook.check({ evidenceMastered: ['reactor-bomb', 'inverse-square', 'low-dose-zero', 'neutron-layers'] })).toBe(false);
     expect(hook.check({ evidenceMastered: ['reactor-bomb', 'inverse-square', 'low-dose-zero', 'neutron-layers', 'short-count'] })).toBe(true);
+  });
+
+  it('saves and clears a route-specific reflection without re-rendering the lab while typing', () => {
+    let latestToolData;
+    let labRenders = 0;
+    mount({
+      nkPath: 'know',
+      evidenceMastered: COMPLETE_EVIDENCE,
+    }, {}, (toolData) => {
+      latestToolData = toolData;
+      labRenders += 1;
+    });
+
+    const reflection = host.querySelector('[data-nk-reflection=know]');
+    const rendersBeforeDraft = labRenders;
+    act(() => reflection.querySelector('input[value=growing]').click());
+    enterText(
+      reflection.querySelector('#nk-reflection-idea-know'),
+      'A short count can be ordinary statistical noise.',
+    );
+    enterText(
+      reflection.querySelector('#nk-reflection-question-know'),
+      'How does detector efficiency change the conclusion?',
+    );
+
+    expect(labRenders).toBe(rendersBeforeDraft);
+    expect(reflection.querySelector('[role=status]').textContent).toBe('Unsaved changes.');
+    expect(buttonNamed('Save reflection').disabled).toBe(false);
+
+    act(() => buttonNamed('Save reflection').click());
+
+    expect(labRenders).toBe(rendersBeforeDraft + 1);
+    expect(latestToolData._nuclearLab.nkReflections.know).toEqual({
+      confidence: 'growing',
+      idea: 'A short count can be ordinary statistical noise.',
+      question: 'How does detector efficiency change the conclusion?',
+    });
+    expect(host.querySelector('[data-nk-reflection-status=know]').textContent)
+      .toBe('Reflection saved with your lab progress.');
+    expect(buttonNamed('Save changes').disabled).toBe(true);
+
+    act(() => buttonNamed('Clear saved reflection').click());
+
+    expect(latestToolData._nuclearLab.nkReflections).toEqual({});
+    expect(host.querySelector('[data-nk-reflection-status=know]').textContent)
+      .toBe('Saved reflection cleared.');
+    expect(buttonNamed('Save reflection').disabled).toBe(true);
   });
 });

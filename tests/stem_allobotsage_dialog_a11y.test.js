@@ -14,6 +14,10 @@ describe('AlloBot Sage dialog accessibility', () => {
     const mirror = readFileSync(mirrorPath, 'utf8');
     expect(mirror).toBe(source);
     expect(source).not.toContain("typeof prompt === 'function'");
+    expect(source).not.toContain('AlloBot is watching your progress everywhere.');
+    expect(source).toContain('Your practice across AlloFlow counts here.');
+    expect(source).not.toContain('allobot_is_watching_your_progress_ever');
+    expect(source).toContain('practice_across_alloflow_counts_here');
     expect(source).not.toContain("typeof confirm === 'function'");
     expect(source).not.toContain('window.prompt(');
     expect(source).not.toContain('window.confirm(');

@@ -3,9 +3,9 @@
 //
 // Design a coaster in full 3-D (drag nodes, bank turns, heartline rolls,
 // chain lift or LSM launch), then test it in an educational simulation:
-//   • Certify (Engineer): predict speeds/g/bank from energy conservation and
+//   • Certify (Engineer): calculate known-answer concept checks from energy conservation and
 //     circular motion; an ideal-conditions inspection run must match your math
-//   • Explore (MS band): qualitative predictions graded against measured data
+//   • Explore (MS band): ungraded pre-ride hypotheses compared with measured data
 //   • Ride & Solve: onboard fluency mode — the train freezes at checkpoints
 //     with quick questions generated from the live ride state; pick physics,
 //     grade-tuned arithmetic grounded in the real element, both alternating,
@@ -170,10 +170,17 @@
   /* @clab-inquiry-visuals-end */
   `;
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
+  CLAB_HTML = CLAB_HTML
+    .replace('<button id="clab-btnCheck">Check predictions</button>', '<button id="clab-btnCheck">Check calculations</button>')
+    .replace('Explore = quick predictions, Engineer = real numbers. File predictions', 'Explore = ungraded pre-ride hypotheses, Engineer = calculation concept checks. Complete the calculations')
+    .replace('<span class="eyebrow" id="clab-rqTag" style="margin:0">Checkpoint</span>', '<span class="eyebrow" id="clab-rqTag" style="margin:0">Concept check</span>');
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
   var packetShare = '<button id="clab-btnPacketExport" class="ghost" type="button">⬆ Lab packet</button><button id="clab-btnPacketImport" class="ghost" type="button">⬇ Open packet</button>';
   CLAB_HTML = CLAB_HTML.replace('<button id="clab-btnImport">⬇ Import</button>', '<button id="clab-btnImport">⬇ Import</button>' + packetShare);
   var guidedWelcome = '<div class="card" id="clab-guidedWelcome" hidden style="border-color:rgba(89,201,141,.55);background:linear-gradient(145deg,rgba(89,201,141,.11),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--good)"><p class="eyebrow">Guided first coaster</p><h3>Build, test, explain, and revise</h3><p class="hint" id="clab-guidedText" style="margin:0">Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.</p><ol style="display:grid;gap:6px;margin:10px 0 12px;padding:0;list-style:none"><li>1. Choose a glowing node and shape a hill.</li><li>2. Predict what will happen, then test the ride.</li><li>3. Read the evidence and revise one node.</li></ol><div id="clab-guidedStep" role="status" aria-live="polite" style="margin:8px 0;color:var(--ink2);font:600 11px var(--mono)"><b style="color:var(--good)">Step 1 of 4</b> - Shape the track</div><div id="clab-guidedRecord" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin-top:5px">Attempts: 0 - revisions: 0</div><p id="clab-guidedConditions" role="status" aria-live="polite" style="color:var(--ink3);font:600 10px var(--mono);margin:4px 0 0">Controlled experiment starts with the current settings.</p><div id="clab-guidedPrediction" hidden style="border-top:1px solid var(--line);margin-top:10px;padding-top:10px"><p class="eyebrow">Before the test</p><p class="hint" style="margin-bottom:8px">Make a prediction first. Then we will compare it with measured telemetry.</p><label class="hint" for="clab-guidedSpeed" style="display:block;margin:7px 0 4px">After the first drop, the train will</label><select id="clab-guidedSpeed" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="speedUp">speed up</option><option value="slowDown">slow down</option></select><label class="hint" for="clab-guidedForce" style="display:block;margin:9px 0 4px">The strongest vertical force will appear near the</label><select id="clab-guidedForce" class="clab-sel" style="width:100%"><option value="">Choose one...</option><option value="valley">valley</option><option value="hill">hill</option><option value="turn">turn</option></select><p id="clab-guidedFeedback" role="status" aria-live="polite" hidden style="margin:9px 0 0;color:var(--ink2);font-size:12px"></p><p id="clab-guidedCompare" role="status" aria-live="polite" hidden style="margin:7px 0 0;color:var(--ink3);font:600 10px var(--mono)"></p></div><div class="btnrow"><button id="clab-guidedAction" class="primary" type="button">Begin guided build</button><button id="clab-guidedRevise" class="ghost" type="button" hidden>Revise one node</button><button id="clab-guidedExport" class="ghost" type="button" disabled>Copy experiment log</button><button id="clab-guidedClear" class="ghost" type="button" disabled>Clear notebook</button><button id="clab-guidedSkip" class="ghost" type="button">Use full lab</button></div></div>'
+  guidedWelcome = guidedWelcome
+    .replace('id="clab-guidedPrediction"', 'id="clab-guidedPrediction" data-clab-hypothesis-credit="commit-test-explain-revise"')
+    .replace('Make a prediction first. Then we will compare it with measured telemetry.', 'Commit an ungraded hypothesis first. Match or difference is evidence, not a score.');
   CLAB_HTML = CLAB_HTML.replace('<div class="card clab-build-start" id="clab-buildStart">', guidedWelcome + '\n\n        <div class="card clab-build-start" id="clab-buildStart">');
   var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
   CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><div id="clab-adaptiveCoach" style="margin-top:10px;padding:9px 10px;border:1px solid var(--line2);border-radius:7px;background:var(--panel2)"><p class="eyebrow" style="margin:0 0 3px">Adaptive next challenge</p><b id="clab-adaptiveTitle" style="display:block;color:var(--accent)">Start with the foundation</b><div id="clab-inquiryLoop" class="clab-inquiry-loop" role="list" aria-label="Engineering learning cycle"><span class="clab-inquiry-step is-current" data-clab-inquiry-phase="predict" role="listitem"><span aria-hidden="true">1</span><b>Predict</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="test" role="listitem"><span aria-hidden="true">2</span><b>Test</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="explain" role="listitem"><span aria-hidden="true">3</span><b>Explain</b></span><span class="clab-inquiry-step" data-clab-inquiry-phase="revise" role="listitem"><span aria-hidden="true">4</span><b>Revise</b></span></div><p id="clab-inquiryPrompt" class="clab-inquiry-prompt" role="status" aria-live="polite">Predict what speed and force will do before the ride.</p><div id="clab-adaptivePlan" style="margin:4px 0 7px;padding:8px 9px;border:1px solid var(--line);border-radius:6px;background:var(--card2)"><p class="eyebrow" style="margin:0 0 4px">Action plan</p><p id="clab-adaptiveAction" class="hint" style="margin:0 0 4px;color:var(--ink2)"><b>1. Change:</b> Raise one highlighted node into a smooth hill and leave the ride settings unchanged.</p><p id="clab-adaptiveReason" class="hint" style="margin:0 0 4px"><b>2. Why:</b> Start with one measurable hill so height, energy, and safety have a clear baseline.</p><p id="clab-adaptiveFocus" class="hint" style="margin:0 0 4px;color:var(--ink3)"><b>3. Test:</b> Capture a baseline that shows how the first drop changes speed.</p><p id="clab-adaptiveSuccess" class="hint" style="margin:0;color:var(--ink3)"><b>Done when:</b> The measured hill reaches at least 20 m with safe vertical-force limits.</p></div><div class="btnrow" style="margin-top:0"><button id="clab-btnAdaptiveInspect" type="button" class="ghost" disabled>Inspect evidence</button><button id="clab-btnAdaptiveAccept" type="button" class="ghost">Use recommendation</button></div><div id="clab-adaptiveProgress" role="group" aria-label="Adaptive challenge progress" style="margin-top:9px;padding-top:9px;border-top:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap"><span class="eyebrow" style="margin:0">Progress path</span><span id="clab-adaptiveProgressCount" class="chnote">0 of 3 goals met</span></div><div id="clab-adaptiveProgressTrack" role="list" aria-label="Three challenge milestones" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:7px"></div><p id="clab-adaptiveProgressHint" class="hint" style="margin:7px 0 0">Your first validated comparison unlocks the next engineering target.</p></div><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
@@ -2596,7 +2603,7 @@ function analyze(){
 const fmt = (x, d = 1) => (x == null || !isFinite(x)) ? '—' : x.toFixed(d);
 const problemsEl = __clabGet('clab-problems');
 const certResultEl = __clabGet('clab-certResult');
-let preds = {};   // student's checked predictions
+let preds = {};   // student's checked concept-check calculations
 let level = (() => {
   try{
     const saved = localStorage.getItem('coaster_lab_level');
@@ -2611,11 +2618,11 @@ function renderProblems(){
   const legend = __clabGet('clab-markerLegend');
   __clabGet('clab-engineerBtns').hidden = level !== 'engineer';
   __clabGet('clab-certIntro').innerHTML = level === 'engineer'
-    ? 'To pass this educational simulation, file predictions for the flagged checkpoints — ' +
-      'then run the inspection and see if the track agrees with your math. Inspection runs ' +
+    ? 'Complete the checkpoint concept checks by calculating the flagged values — ' +
+      'then run the inspection and compare your calculations with the model. Inspection runs ' +
       'are made under <b>ideal conditions</b> (friction off), so conservation of energy holds exactly.'
-    : 'Look at your track, make your predictions — then run the ride and see if the ' +
-      'measurements agree with you!';
+    : 'Commit an ungraded hypothesis for each ride outcome, run the ride, then explain what the ' +
+      'measured evidence strengthened or changed. A match is not a score.';
   if(!analysis){
     legend.innerHTML = '';
     problemsEl.innerHTML = '<div class="card"><h3>No lift crest found</h3>' +
@@ -2637,7 +2644,7 @@ function renderProblems(){
   if(a.L){
     html += `
     <div class="card prob" data-p="p0">
-      <p class="eyebrow">Problem 0 · Launch (work–energy)</p>
+      <p class="eyebrow">Concept check 0 · Launch (work–energy)</p>
       <div class="given">LSM thrust a = ${fmt(a.L.a)} m/s² over ${fmt(a.L.len)} m of track<br>launch start: h = ${fmt(a.L.h0)} m → end (L): h = ${fmt(a.L.h)} m</div>
       <p class="ask">From a standing start, how fast is the train at <b>L</b>, the end of the launch?</p>
       <div class="ansrow"><input type="number" step="0.1" id="inP0" inputmode="decimal" aria-label="speed at launch end"><span class="unit">m/s</span><span class="verdict" id="vP0"></span></div>
@@ -2655,7 +2662,7 @@ function renderProblems(){
   }
   html += `
     <div class="card prob" data-p="p1">
-      <p class="eyebrow">Problem 1 · Conservation of energy</p>
+      <p class="eyebrow">Concept check 1 · Conservation of energy</p>
       <div class="given">crest A: h = ${fmt(a.A.h)} m, ${a.L ? 'crossed' : 'released'} at v = ${fmt(a.A.v)} m/s<br>valley B: h = ${fmt(a.B.h)} m</div>
       <p class="ask">How fast is the train moving at <b>B</b>, the lowest point of your ride?</p>
       <div class="ansrow"><input type="number" step="0.1" id="inP1" inputmode="decimal" aria-label="speed at B"><span class="unit">m/s</span><span class="verdict" id="vP1"></span></div>
@@ -2667,24 +2674,24 @@ function renderProblems(){
   if(a.C){
     html += `
     <div class="card prob" data-p="p2">
-      <p class="eyebrow">Problem 2 · Loop safety</p>
+      <p class="eyebrow">Concept check 2 · Loop safety</p>
       <div class="given">loop apex C: h = ${fmt(a.C.h)} m, radius of curvature r = ${fmt(a.C.r)} m</div>
       <p class="ask">(a) Slowest speed at <b>C</b> that still presses riders into their seats?
          (b) How fast will your train actually be going there?</p>
       <div class="ansrow"><input type="number" step="0.1" id="inP2a" inputmode="decimal" aria-label="minimum speed at loop apex"><span class="unit">m/s</span><span class="verdict" id="vP2a"></span></div>
-      <div class="ansrow"><input type="number" step="0.1" id="inP2b" inputmode="decimal" aria-label="predicted speed at loop apex"><span class="unit">m/s</span><span class="verdict" id="vP2b"></span></div>
+      <div class="ansrow"><input type="number" step="0.1" id="inP2b" inputmode="decimal" aria-label="calculated speed at loop apex"><span class="unit">m/s</span><span class="verdict" id="vP2b"></span></div>
       <details class="work"><summary>Show the physics</summary><div>
         weightless limit: gravity alone supplies v²/r → v_min = √(g·r)<br>
         actual: v_C = √(v_A² + 2g·(h_A − h_C)) — design is safe if v_C ≥ v_min
       </div></details>
     </div>`;
   } else {
-    html += `<div class="card"><p class="eyebrow">Problem 2 · Loop safety</p>
+    html += `<div class="card"><p class="eyebrow">Concept check 2 · Loop safety</p>
       <p class="hint" style="margin:0">No inversion detected — add a vertical loop to unlock this problem.</p></div>`;
   }
   html += `
     <div class="card prob" data-p="p3">
-      <p class="eyebrow">Problem 3 · Circular motion</p>
+      <p class="eyebrow">Concept check 3 · Circular motion</p>
       <div class="given">valley B: radius of curvature r = ${fmt(a.B.r)} m</div>
       <p class="ask">How many g's does a rider feel pressed into the seat at <b>B</b>?</p>
       <div class="ansrow"><input type="number" step="0.01" id="inP3" inputmode="decimal" aria-label="seat g at valley"><span class="unit">g</span><span class="verdict" id="vP3"></span></div>
@@ -2695,7 +2702,7 @@ function renderProblems(){
   if(a.D){
     html += `
     <div class="card prob" data-p="p4">
-      <p class="eyebrow">Problem 4 · Banked turn ⚑</p>
+      <p class="eyebrow">Concept check 4 · Banked turn ⚑</p>
       <div class="given">flagged turn D: h = ${fmt(a.D.h)} m, turn radius r = ${fmt(a.D.r)} m</div>
       <p class="ask">What bank angle makes the turn feel like <b>zero</b> sideways force?
         (Then set node ${design.certTurnIdx}'s bank to your answer in Build.)</p>
@@ -2711,7 +2718,7 @@ function renderProblems(){
   preds = {};
 }
 
-/* ---------------- Explore level: qualitative predictions ---------------- */
+/* ---------------- Explore level: ungraded pre-ride hypotheses ------------ */
 function renderExplore(){
   const a = analysis;
   exploreAns = {};
@@ -2724,33 +2731,33 @@ function renderExplore(){
   let html = '';
   const q1opts = [['A', 'At the top of the first big hill (A)'], ['B', 'At the bottom of the valley (B)']];
   if(a.D) q1opts.push(['D', 'In the banked turn (D)']);
-  html += card('q1', 'Prediction 1 · Speed', 'Where will the train be moving <b>fastest</b>?', q1opts);
-  html += card('q2', 'Prediction 2 · Energy',
+  html += card('q1', 'Hypothesis 1 · Speed', 'Where will the train be moving <b>fastest</b>?', q1opts);
+  html += card('q2', 'Hypothesis 2 · Energy',
     'Watch the energy bar: as the train <b>climbs</b> a hill, the blue <b>kinetic</b> part…',
     [['grows', 'Grows — climbing speeds you up'], ['shrinks', 'Shrinks — speed trades for height'],
      ['same', 'Stays the same']]);
   const q3opts = [['A', 'Cresting the first hill (A)'], ['B', 'At the bottom of the valley (B)']];
   if(a.C) q3opts.push(['C', 'Upside-down at the loop top (C)']);
-  html += card('q3', 'Prediction 3 · Feeling heavy',
+  html += card('q3', 'Hypothesis 3 · Feeling heavy',
     'Where will riders feel <b>heaviest</b> — squashed into the seat?', q3opts);
   if(a.C){
-    html += card('q4', 'Prediction 4 · The loop',
+    html += card('q4', 'Hypothesis 4 · The loop',
       'At the very top of the loop, riders briefly feel…',
       [['heavier', 'Heavier than normal'], ['lighter', 'Light — almost floating'], ['same', 'The same as sitting still']]);
   }
   /* The safety pair. These are the ones that transfer off the screen: the next
      time a student stands in front of a real ride's height sign, this is the
      reasoning behind it. */
-  html += card('q5', 'Prediction 5 · What holds you in',
+  html += card('q5', 'Hypothesis 5 · What holds you in',
     'Look at the track you built. What will riders need to keep them in their seats?',
     [['simple', 'Just a lap bar across the legs'],
      ['ratchet', 'A lap bar that locks shut, plus a seat belt'],
      ['harness', 'A harness over the shoulders']]);
-  html += card('q6', 'Prediction 6 · Where you sit',
+  html += card('q6', 'Hypothesis 6 · Where you sit',
     'Your train is five rows long. Which row gets pulled <b>hardest out of its seat</b>?',
     [['front', 'The front row'], ['mid', 'Somewhere in the middle'],
      ['back', 'The back row'], ['same', 'About the same in every row']]);
-  html += '<div class="btnrow"><button id="btnExploreRun" class="primary">🎢 Run &amp; check</button></div>';
+  html += '<div class="btnrow"><button id="btnExploreRun" class="primary">🎢 Run &amp; compare evidence</button></div>';
   problemsEl.innerHTML = html;
   certResultEl.innerHTML = '';
   for(const grp of problemsEl.querySelectorAll('.choice')){
@@ -2765,7 +2772,7 @@ function renderExplore(){
     if(sim.running) return;
     const need = ['q1', 'q2', 'q3', 'q5', 'q6'].concat(analysis && analysis.C ? ['q4'] : []);
     if(need.some(q => !exploreAns[q])){
-      banner('Answer every prediction first!', 'fail', 2500);
+      banner('Choose every hypothesis before testing!', 'fail', 2500);
       return;
     }
     startRun(false);
@@ -2778,8 +2785,8 @@ function gradeExplore(tele){
   const rows = [];
   const judge = (q, truth, explain) => {
     if(truth == null || !exploreAns[q]) return;
-    const ok = exploreAns[q] === truth;
-    rows.push({ ok, explain });
+    const matched = exploreAns[q] === truth;
+    rows.push({ matched, explain });
   };
   const speedKeys = ['A', 'B', 'D'].filter(k => m[k]);
   if(speedKeys.length > 1){
@@ -2815,18 +2822,39 @@ function gradeExplore(tele){
       ? `Every row measured within ${fmt(seats.gSpread, 2)} g of the others — your hills are close to symmetrical, so the ride is the same wherever you sit.`
       : `The ${seatLabel(seats.worstIdx, seats.n).toLowerCase()} measured ${fmt(seats.worstMin, 2)} g against ${fmt(rows[0].minGV, 2)} g in the front. Lopsided hills pull the rows apart.`);
   }
-  const good = rows.filter(r => r.ok).length;
-  const all = good === rows.length && rows.length > 0;
-  let html = '<div class="card"><p class="eyebrow">How did your predictions do?</p>';
+  const matched = rows.filter(r => r.matched).length;
+  let html = '<div class="card" data-clab-explore-inquiry="commit-test-explain-revise"><p class="eyebrow">Hypothesis → measured evidence</p>';
+  html += '<p class="hint"><b>Ungraded comparison:</b> matched and differed are both useful evidence. Credit comes from committing, testing, explaining, and revising—not agreement.</p>';
   for(const r of rows){
-    html += `<p class="exline"><b class="${r.ok ? 'ok' : 'no'}">${r.ok ? '✓' : '✗'}</b> ${r.explain}</p>`;
+    html += '<p class="exline"><b style="color:var(--accent)">' + (r.matched ? 'Evidence matched' : 'Evidence differed') + '</b> · ' + r.explain + '</p>';
   }
-  html += `<div class="certbanner ${all ? 'pass' : 'fail'}">${
-    all ? '🎖 Junior Ride Engineer — every prediction correct!'
-        : `${good}/${rows.length} correct — rethink the misses and run it again!`}</div></div>`;
+  html += '<p class="chnote">' + matched + '/' + rows.length + ' hypotheses matched this run. This count is descriptive, not a score.</p>';
+  html += '<label class="hint" for="clab-exploreReflection" style="display:block;margin-top:10px"><b>Explain:</b> What did one match or difference strengthen or change in your model?</label>';
+  html += '<textarea id="clab-exploreReflection" rows="3" maxlength="600" aria-describedby="clab-exploreReflectionHelp" style="box-sizing:border-box;width:100%;resize:vertical;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);border-radius:6px;padding:7px 8px"></textarea>';
+  html += '<p id="clab-exploreReflectionHelp" class="chnote">Write at least 20 characters. Then save the explanation; revise and retest if the evidence changed your idea.</p>';
+  html += '<div class="btnrow"><button id="clab-exploreComplete" class="primary" type="button" disabled>Save explanation &amp; complete cycle</button><button id="clab-exploreRevise" type="button">Revise hypotheses</button></div>';
+  html += '<p id="clab-exploreCycleStatus" class="chnote" role="status" aria-live="polite"></p></div>';
   certResultEl.innerHTML = html;
-  banner(all ? '🎖 All predictions correct!' : `${good}/${rows.length} predictions correct`, all ? 'pass' : '', 3500);
-  if(all){ jingle(true); spawnFireworks(); missionEvent('explore', {}); bridgeReport({ event: 'explore' }); }
+  const reflection = __clabGet('clab-exploreReflection');
+  const complete = __clabGet('clab-exploreComplete');
+  const revise = __clabGet('clab-exploreRevise');
+  const cycleStatus = __clabGet('clab-exploreCycleStatus');
+  const syncCompletion = () => { if(complete) complete.disabled = !reflection || reflection.value.trim().length < 20; };
+  if(reflection) reflection.addEventListener('input', syncCompletion);
+  if(revise) revise.addEventListener('click', () => { renderExplore(); banner('Hypotheses reopened. Revise a claim, then run the same test.', '', 3000); });
+  if(complete) complete.addEventListener('click', () => {
+    if(!reflection || reflection.value.trim().length < 20) return;
+    reflection.disabled = true;
+    complete.disabled = true;
+    if(cycleStatus) cycleStatus.textContent = 'Inquiry cycle complete. Your explanation—not whether the hypotheses matched—earned completion. Revise and retest to keep learning.';
+    banner('🎖 Inquiry cycle complete!', 'pass', 3500);
+    jingle(true);
+    spawnFireworks();
+    missionEvent('explore', {});
+    bridgeReport({ event: 'explore' });
+  });
+  syncCompletion();
+  banner('Evidence ready — explain one match or difference.', '', 3000);
 }
 
 function checkPredictions(){
@@ -2884,13 +2912,13 @@ function gradeCertRun(tele){
   const pass = completed && comfy && geometryClear && allOk && loopSafe && !anyMissing;
 
   let html = '<div class="card"><p class="eyebrow">Inspection report</p>';
-  html += '<table class="cert"><tr><th>checkpoint</th><th>your prediction</th><th>measured</th><th></th></tr>';
+  html += '<table class="cert"><tr><th>concept check</th><th>your calculation</th><th>modeled value</th><th></th></tr>';
   for(const r of rows){
     html += `<tr><td>${r.name}</td><td>${fmt(r.pred, 2)} ${r.unit}</td><td>${fmt(r.meas, 2)} ${r.unit}</td>
              <td style="color:var(--${r.ok ? 'good' : 'bad'})">${r.ok ? '✓' : '✗'}</td></tr>`;
   }
   html += '</table>';
-  if(anyMissing) html += '<p class="hint" style="margin-top:8px">Some predictions were never checked — fill them in and press “Check predictions”.</p>';
+  if(anyMissing) html += '<p class="hint" style="margin-top:8px">Some calculations were never checked — fill them in and press “Check calculations”.</p>';
   if(!completed) html += `<p class="hint" style="margin-top:8px">The train never made it home (${tele.status}).</p>`;
   if(!loopSafe)  html += '<p class="hint" style="margin-top:8px">The train crossed the loop apex below the weightless limit. Its upstop wheels grip the underside of the rail, so the train stays on — but riders hang in their restraints over the top. Raise the crest or shrink the loop.</p>';
   if(!comfy)     html += `<p class="hint" style="margin-top:8px">Comfort limits exceeded: ${tele.violations.join('; ')}.</p>`;
@@ -3526,14 +3554,15 @@ function predictionEvidence(tele){
 function renderPredictionEvidence(tele){
   const e = predictionEvidence(tele);
   if(!e) return '';
-  const speedState = e.speedCorrect ? 'matched' : 'did not match';
-  const forceState = e.forceCorrect ? 'matched' : 'did not match';
+  const speedState = e.speedCorrect ? 'evidence matched' : 'evidence differed';
+  const forceState = e.forceCorrect ? 'evidence matched' : 'evidence differed';
   const reflection = e.speedCorrect && e.forceCorrect
-    ? 'Both predictions matched the measured ride. Explain how height and curvature caused those changes.'
-    : 'Use the mismatch as a design clue: change one node, then predict again so the evidence can test the revision.';
-  const coaching = guidedRecord.prediction && guidedRecord.prediction.coach ? guidedHtmlEscape(guidedRecord.prediction.coach) : 'Use the mismatch as a clue about energy and curvature.';
+    ? 'Both hypotheses matched the measured ride. Explain how height and curvature caused those changes, then test a revision.'
+    : 'At least one result differed from your hypothesis. Use that evidence to revise one node and test the updated model.';
+  const coaching = guidedRecord.prediction && guidedRecord.prediction.coach ? guidedHtmlEscape(guidedRecord.prediction.coach) : 'Use any difference as a clue about energy and curvature.';
   return `<div class="card" data-clab-prediction-evidence="true">
-    <p class="eyebrow">Prediction -&gt; evidence</p>
+    <p class="eyebrow">Hypothesis -&gt; evidence</p>
+    <p class="hint" style="margin:0 0 6px"><b>Ungraded:</b> match or difference is descriptive evidence. Inquiry credit comes from the full commit, test, explain, and revise cycle.</p>
     <p class="hint" style="margin:0 0 6px"><b>Claim:</b> after the first drop, the train would <b>${e.speedClaim}</b>; the strongest vertical force would appear near the <b>${e.forceClaim}</b>.</p>
     <p class="hint" style="margin:0 0 6px"><b>Evidence:</b> the measured train did <b>${e.speedActual}</b> after the drop (${speedState}); peak vertical force was <b>${fmt(e.maxGV, 1)} g</b> near the <b>${e.forceActual}</b> (${forceState}).</p>
     <p class="chnote" style="margin:0 0 5px"><b>Physics clue:</b> ${coaching}</p>
@@ -3603,14 +3632,14 @@ function renderExperimentTimeline(tele){
     const goalValue = fmt(Number(entry.goalValue) || 0, 1) + ' ' + goalUnit(entry.goal);
     const conditionText = (entry.friction === 'ideal' ? 'ideal' : 'realistic') + ' friction · ' + (Number(entry.cars) || '?') + ' cars · ' + (entry.propulsion === 'launch' ? 'LSM launch' : 'chain lift');
     const outcomeColor = entry.goalPassed ? 'var(--good)' : 'var(--warn)';
-    const predictionText = 'Speed ' + (entry.speedCorrect ? '✓' : '—') + ' · force location ' + (entry.forceCorrect ? '✓' : '—');
+    const predictionText = 'speed ' + (entry.speedCorrect ? 'evidence matched' : 'evidence differed') + ' · force location ' + (entry.forceCorrect ? 'evidence matched' : 'evidence differed');
     return '<li style="list-style:none;border-left:2px solid ' + (entry.goalPassed ? 'var(--good)' : 'var(--line2)') + ';padding:0 0 10px 12px;margin:0 0 10px">' +
       '<div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap">' +
         '<b>Attempt ' + (Number(entry.attempt) || index + 1) + ' · revision ' + (Number(entry.revision) || 0) + '</b>' +
         '<span style="color:' + outcomeColor + ';font:600 10px var(--mono)">' + (entry.goalPassed ? 'GOAL MET' : 'IN PROGRESS') + '</span>' +
       '</div>' +
       '<div class="chnote" style="margin-top:3px">' + goal + ' · measured <b>' + goalValue + '</b> · top speed <b>' + fmt((Number(entry.maxSpeed) || 0) * 3.6, 0) + ' km/h</b> · peak <b>' + fmt(Number(entry.maxGV) || 0, 1) + ' g</b></div>' +
-      '<div class="chnote" style="margin-top:3px">' + conditionText + ' · prediction: ' + predictionText + '</div>' +
+      '<div class="chnote" style="margin-top:3px">' + conditionText + ' · ungraded hypothesis: ' + predictionText + '</div>' +
       '<div class="chnote" style="margin-top:3px;color:' + (sameConditions ? 'var(--ink2)' : 'var(--warn)') + '">' + delta + '</div>' +
     '</li>';
   }).join('');
@@ -3619,7 +3648,7 @@ function renderExperimentTimeline(tele){
   return '<div class="card" data-clab-experiment-timeline="true">' +
     '<p class="eyebrow">Experiment timeline</p>' +
     '<p class="hint" style="margin:0 0 10px">A revision is evidence only when the controlled conditions stay the same. Changed-condition runs remain visible, but they start a new comparison set.</p>' +
-    '<div class="chnote" style="margin:0 0 10px">' + history.length + ' recorded attempt' + (history.length === 1 ? '' : 's') + ' · ' + matched + ' prediction match' + (matched === 1 ? '' : 'es') + ' · ' + goalsMet + ' goal' + (goalsMet === 1 ? '' : 's') + ' met</div>' +
+    '<div class="chnote" style="margin:0 0 10px">' + history.length + ' recorded attempt' + (history.length === 1 ? '' : 's') + ' · ' + matched + ' evidence match' + (matched === 1 ? '' : 'es') + ' (descriptive, ungraded) · ' + goalsMet + ' goal' + (goalsMet === 1 ? '' : 's') + ' met</div>' +
     renderGuidedHistoryTrend(history) +
     '<ol aria-label="Guided experiment timeline" style="margin:0;padding:0">' + rows + '</ol>' +
     '<div class="btnrow" style="margin-top:8px"><button type="button" data-clab-history-csv>Download history CSV</button><button type="button" data-clab-teacher-report>Download teacher report</button><span class="chnote" style="align-self:center">Graph all saved attempts outside the simulator.</span></div>' +
@@ -3645,7 +3674,7 @@ function guidedDesignNodeCount(entry){
 }
 function buildGuidedHistoryCsv(){
   const history = guidedHistoryEntries();
-  const columns = ['attempt', 'revision', 'goal', 'goal_value', 'goal_unit', 'goal_passed', 'top_speed_kmh', 'peak_vertical_g', 'minimum_vertical_g', 'speed_prediction', 'force_prediction', 'speed_prediction_correct', 'force_prediction_correct', 'friction', 'cars', 'propulsion', 'acceleration_mps2', 'track_nodes', 'comparison_quality', 'conditions_match', 'goal_match', 'track_changed', 'safety_ok', 'prediction_coach'];
+  const columns = ['attempt', 'revision', 'goal', 'goal_value', 'goal_unit', 'goal_passed', 'top_speed_kmh', 'peak_vertical_g', 'minimum_vertical_g', 'speed_hypothesis', 'force_hypothesis', 'speed_hypothesis_matched', 'force_hypothesis_matched', 'friction', 'cars', 'propulsion', 'acceleration_mps2', 'track_nodes', 'comparison_quality', 'conditions_match', 'goal_match', 'track_changed', 'safety_ok', 'hypothesis_coach'];
   const label = value => value === 'speedUp' ? 'speed up' : value === 'slowDown' ? 'slow down' : value || '';
   const rows = history.map((entry, index) => {
     const comparison = index > 0 ? guidedExperimentQuality(history, index - 1, index) : null;
@@ -3718,7 +3747,7 @@ function buildGuidedTeacherReport(history, fromIndex, toIndex, conclusionText){
     '<section class="panel" data-clab-adaptive-plan="true"><h2>Adaptive pathway</h2><p><b>Milestones met:</b> ' + adaptiveProgress.goalsMet + '/3</p><p><b>Validated comparisons:</b> ' + adaptiveProgress.evidenceReady + '/3</p><p><b>Current recommendation:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.title) + '</p><p class="meta">' + adaptivePath + '</p><p class="meta">' + guidedHtmlEscape(adaptiveProgress.recommendation.reason) + '</p><p class="meta"><b>Action plan - Change:</b> ' + guidedHtmlEscape(adaptivePlan.change) + '</p><p class="meta"><b>Action plan - Why:</b> ' + guidedHtmlEscape(adaptivePlan.why) + '</p><p class="meta"><b>Action plan - Test:</b> ' + guidedHtmlEscape(adaptivePlan.test) + '</p><p class="meta"><b>Done when:</b> ' + guidedHtmlEscape(adaptivePlan.success) + '</p><p class="meta"><b>Next move:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.action) + '</p><p class="meta"><b>Evidence focus:</b> ' + guidedHtmlEscape(adaptiveProgress.recommendation.focus) + '</p></section>' +
     '<section><h2>Goal trend</h2>' + trend + '</section>' +
     '<section><h2>Experiment quality</h2>' + renderGuidedEvidenceQuality(quality) + '</section>' +
-    '<section><h2>Prediction coaching</h2><p>' + guidedHtmlEscape(latestCoach || 'Complete a guided prediction to receive a physics clue.') + '</p></section>' +
+    '<section><h2>Hypothesis coaching</h2><p class="meta">Match or difference is ungraded; use the comparison to explain or revise.</p><p>' + guidedHtmlEscape(latestCoach || 'Complete a guided hypothesis to receive a physics clue.') + '</p></section>' +
     '<section><h2>Selected comparison</h2>' + selectedSummary + selectedOverlay + '</section>' +
     '<section><h2>Run evidence</h2><div class="table-wrap"><table><thead><tr><th>Run</th><th>Goal</th><th>Measured goal</th><th>Top speed</th><th>Peak vertical force</th><th>Outcome</th></tr></thead><tbody>' + (rows || '<tr><td colspan="6">No completed guided runs.</td></tr>') + '</tbody></table></div></section>' +
     '<section><h2>Classroom rubric</h2><p><b>Score:</b> ' + rubric.earned + '/' + rubric.max + ' (' + rubric.percent + '%)</p><p><b>Review status:</b> ' + guidedHtmlEscape(reviewStatus) + '</p><p><b>Suggested reflection prompt:</b> ' + guidedHtmlEscape(reflectionPrompt) + '</p><p><b>Student reflection:</b> ' + guidedHtmlEscape(guidedRecord.studentReflection || 'None recorded.') + '</p><p><b>Teacher/mentor notes:</b> ' + guidedHtmlEscape(guidedRecord.teacherNotes || 'None recorded.') + '</p></section>' +
@@ -4409,11 +4438,20 @@ function renderExperimentComparisonBoard(){
     if(pasted !== null) done('Conclusion ready to paste.');
   });
   update();
-}function computeGuidedRubricSummary(){
+}/* @clab-inquiry-rubric-start */
+function guidedInquiryCycleEvidence(history, revisions, reflection){
+  const entries = Array.isArray(history) ? history.filter(entry => entry && typeof entry === 'object') : [];
+  const compared = entries.filter(entry => entry.speed && entry.force && typeof entry.speedCorrect === 'boolean' && typeof entry.forceCorrect === 'boolean').length;
+  const revisionCount = Math.max(0, Number(revisions) || 0);
+  const explained = String(reflection || '').trim().length >= 60;
+  return { compared, revisions: revisionCount, explained, score: compared ? (revisionCount > 0 || explained ? 2 : 1) : 0 };
+}
+/* @clab-inquiry-rubric-end */
+function computeGuidedRubricSummary(){
   const history = guidedHistoryEntries();
   const attempts = history.length;
   const predictionMatches = history.filter(entry => entry.speedCorrect && entry.forceCorrect).length;
-  const predictionRate = attempts ? predictionMatches / attempts : 0;
+  const inquiryCycle = guidedInquiryCycleEvidence(history, guidedRecord.revisions, guidedRecord.studentReflection);
   const qualityPairs = history.slice(1).map((entry, index) => guidedExperimentQuality(history, index, index + 1));
   const validEvidencePairs = qualityPairs.filter(quality => quality.level === 'valid').length;
   const partialEvidencePairs = qualityPairs.filter(quality => quality.level === 'partial').length;
@@ -4423,7 +4461,7 @@ function renderExperimentComparisonBoard(){
   const goalsMet = history.filter(entry => entry.goalPassed).length;
   const noteLength = String(guidedRecord.studentReflection || '').trim().length;
   const criteria = [
-    { key: 'prediction', label: 'Prediction + check', score: attempts && predictionRate >= 0.75 ? 2 : attempts && predictionRate > 0 ? 1 : 0, note: attempts ? predictionMatches + ' of ' + attempts + ' runs matched both predictions.' : 'Complete a guided run and check the measured evidence.' },
+    { key: 'prediction', label: 'Hypothesis inquiry cycle', score: inquiryCycle.score, note: inquiryCycle.score === 2 ? inquiryCycle.compared + ' hypothesis comparison' + (inquiryCycle.compared === 1 ? '' : 's') + ' completed with an explanation or revision. Agreement is ungraded.' : inquiryCycle.score === 1 ? inquiryCycle.compared + ' hypothesis comparison completed. Add an evidence explanation or revise one node for full cycle credit; agreement is ungraded.' : 'Commit a hypothesis, test it, and compare it with measured evidence. Agreement is ungraded.' },
     { key: 'evidence', label: 'Controlled evidence', score: validEvidencePairs > 0 ? 2 : partialEvidencePairs > 0 ? 1 : 0, note: validEvidencePairs ? validEvidencePairs + ' valid controlled comparison' + (validEvidencePairs === 1 ? '' : 's') + ' recorded.' : partialEvidencePairs ? 'A partial comparison exists; complete the telemetry record and keep the controls fixed.' : 'Complete a second run with one measurable track-node change and the same conditions.' },
     { key: 'reasoning', label: 'Student reasoning', score: noteLength >= 160 ? 2 : noteLength >= 60 ? 1 : 0, note: noteLength >= 160 ? 'The student explanation has enough detail to review.' : noteLength >= 60 ? 'Add more detail about why the evidence supports the claim.' : 'Add a short explanation connecting the track change to the measured result.' },
     { key: 'safety', label: 'Safety + goal', score: safeRuns === attempts && goalsMet > 0 ? 2 : safeRuns === attempts && attempts > 0 ? 1 : 0, note: attempts ? safeRuns + ' of ' + attempts + ' runs stayed inside the simplified force limits; ' + goalsMet + ' goal' + (goalsMet === 1 ? '' : 's') + ' met.' : 'Run the coaster to measure safety and goal progress.' }
@@ -4471,7 +4509,7 @@ function guidedRubricSummaryText(summary){
   const progress = guidedAdaptiveProgress();
   const plan = guidedAdaptivePlan(progress.recommendation);
   const prompt = guidedReflectionPrompt(guidedHistoryEntries(), guidedLatestEvidenceQuality(), progress.recommendation);
-  const lines = ['COASTER LAB - classroom progress', 'Rubric score: ' + summary.earned + '/' + summary.max + ' (' + summary.percent + '%)', 'Attempts: ' + summary.attempts + ' | goals met: ' + summary.goalsMet + ' | prediction matches: ' + summary.predictionMatches + ' | usable comparisons: ' + summary.comparablePairs + ' (valid ' + summary.validEvidencePairs + '; partial ' + summary.partialEvidencePairs + '; needs revision ' + summary.needsRevisionPairs + ')', '', 'Adaptive recommendation: ' + progress.recommendation.title, 'Action plan - change: ' + plan.change, 'Action plan - why: ' + plan.why, 'Action plan - test: ' + plan.test, 'Done when: ' + plan.success, 'Next move: ' + progress.recommendation.action, 'Evidence focus: ' + progress.recommendation.focus, 'Suggested reflection prompt: ' + prompt, ''];
+  const lines = ['COASTER LAB - classroom progress', 'Rubric score: ' + summary.earned + '/' + summary.max + ' (' + summary.percent + '%)', 'Attempts: ' + summary.attempts + ' | goals met: ' + summary.goalsMet + ' | evidence matches (descriptive, ungraded): ' + summary.predictionMatches + ' | usable comparisons: ' + summary.comparablePairs + ' (valid ' + summary.validEvidencePairs + '; partial ' + summary.partialEvidencePairs + '; needs revision ' + summary.needsRevisionPairs + ')', '', 'Adaptive recommendation: ' + progress.recommendation.title, 'Action plan - change: ' + plan.change, 'Action plan - why: ' + plan.why, 'Action plan - test: ' + plan.test, 'Done when: ' + plan.success, 'Next move: ' + progress.recommendation.action, 'Evidence focus: ' + progress.recommendation.focus, 'Suggested reflection prompt: ' + prompt, ''];
   summary.criteria.forEach(criterion => lines.push(criterion.label + ': ' + criterion.score + '/2 - ' + criterion.note));
   if(String(guidedRecord.studentReflection || '').trim()) lines.push('', 'Student reflection:', String(guidedRecord.studentReflection).trim());
   return lines.join('\n');
@@ -4739,11 +4777,11 @@ const MISSIONS = [
     ev: 'run', check: x => x.tele.status === 'complete' && design.propulsion.mode === 'launch' && x.tele.violations.length === 0 },
   { id: 'tycoon', icon: '💰', name: 'Tycoon', desc: 'A ride that breaks even in 21 days or less.',
     ev: 'run', check: x => x.tele.status === 'complete' && x.sc.payback <= 21 },
-  { id: 'certified', icon: '★', name: 'Certified engineer', desc: 'Pass a full inspection — every prediction matches.',
+  { id: 'certified', icon: '★', name: 'Certified engineer', desc: 'Pass the checkpoint concept checks and the full inspection.',
     ev: 'cert' },
   { id: 'lean', icon: '📉', name: 'Lean lift', desc: 'Certify a looping ride whose crest is under 28 m.',
     ev: 'cert', check: () => !!(analysis && analysis.C && analysis.A.h < 28) },
-  { id: 'junior', icon: '🎖', name: 'Junior engineer', desc: 'Earn the Explore badge — every prediction correct.',
+  { id: 'junior', icon: '🎖', name: 'Junior engineer', desc: 'Complete the Explore cycle: commit, test, explain, and revise.',
     ev: 'explore' },
   { id: 'fluent', icon: '🧠', name: 'Quick thinker', desc: 'Answer 4 ride questions correctly in one Ride & Solve.',
     ev: 'ride', check: x => x.correct >= 4 },
@@ -5471,11 +5509,11 @@ function syncGuidedWelcome(){
   guidedWelcomeEl.hidden = !active;
   if(!active) return;
   const copy = {
-    ready: ['Start with a small editable track. We will shape one hill, make a prediction, and run it before the advanced lab opens up.', 'Step 1 of 4 - Shape the track', 'Begin guided build'],
-    building: ['Choose the highest glowing node, raise it into a smooth hill, then make a prediction before the test.', 'Step 1 of 4 - Shape the track', 'Make prediction'],
-    predicting: ['Use the energy story to predict first: height becomes speed, and tight curves create stronger vertical force.', 'Step 2 of 4 - Predict the ride', 'Run and check'],
+    ready: ['Start with a small editable track. We will shape one hill, commit an ungraded hypothesis, and run it before the advanced lab opens up.', 'Step 1 of 4 - Shape the track', 'Begin guided build'],
+    building: ['Choose the highest glowing node, raise it into a smooth hill, then commit a hypothesis before the test.', 'Step 1 of 4 - Shape the track', 'Commit hypothesis'],
+    predicting: ['Use the energy story to form a hypothesis first: height becomes speed, and tight curves create stronger vertical force.', 'Step 2 of 4 - Predict the ride', 'Run and compare'],
     testing: ['The train is running. Watch the HUD as height trades for speed, then read the evidence when it finishes.', 'Step 3 of 4 - Observe the ride', 'Running...'],
-    tested: ['Your prediction is compared with the measured report. Revise one node and run the loop again.', 'Step 4 of 4 - Revise the design', 'Open report']
+    tested: ['Your hypothesis is compared with measured evidence. Match or difference is ungraded; explain it, revise one node, and run again.', 'Step 4 of 4 - Revise the design', 'Open report']
   }[guidedState];
   if(guidedTextEl) guidedTextEl.textContent = copy[0];
   if(guidedRecordEl) guidedRecordEl.textContent = 'Attempts: ' + guidedRecord.attempts + ' - revisions: ' + guidedRecord.revisions + ' - saved runs: ' + (Array.isArray(guidedRecord.history) ? guidedRecord.history.length : 0);
@@ -5517,10 +5555,10 @@ function guidedNotebookText(){
     const goalValue = entry.goal === 'hill20' ? fmt(entry.goalValue, 1) + ' m' : entry.goal === 'airtime3' ? fmt(entry.goalValue, 1) + ' s' : fmt(entry.goalValue, 1) + ' g';
     lines.push('Run ' + entry.attempt + ' (revision ' + entry.revision + ')');
     lines.push('Goal: ' + goal + ' | measured ' + goalValue + ' | ' + (entry.goalPassed ? 'met' : 'not met'));
-    lines.push('Prediction: speed ' + speed + '; strongest force near the ' + force + '.');
+    lines.push('Hypothesis: speed ' + speed + '; strongest force near the ' + force + '.');
     lines.push('Evidence: max speed ' + fmt((Number(entry.maxSpeed) || 0) * 3.6, 0) + ' km/h; peak vertical force ' + fmt(Number(entry.maxGV) || 0, 1) + ' g.');
     lines.push('Conditions: ' + (entry.friction || 'unknown') + ' friction; ' + (entry.cars || '?') + ' cars; ' + (entry.propulsion || 'unknown') + ' propulsion.');
-    lines.push('Prediction check: ' + (entry.speedCorrect ? 'speed matched' : 'speed differed') + '; ' + (entry.forceCorrect ? 'force location matched' : 'force location differed') + '.');
+    lines.push('Evidence comparison: ' + (entry.speedCorrect ? 'speed matched' : 'speed differed') + '; ' + (entry.forceCorrect ? 'force location matched' : 'force location differed') + '. Match status is descriptive, not graded.');
     lines.push('Physics coaching: ' + (entry.predictionCoach || 'Review how height, speed, and curvature shaped the ride.'));
     lines.push('');
   }
@@ -5587,9 +5625,9 @@ function guidedTraceSnapshot(tele){
 }
 function guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorrect){
   const clues = [];
-  if(speedCorrect) clues.push('Energy clue: your prediction matches the height-to-speed trade after the drop.');
+  if(speedCorrect) clues.push('Energy clue: your hypothesis matched the height-to-speed trade after the drop.');
   else clues.push(actualSpeed === 'speedUp' ? 'Energy clue: height became kinetic energy, so the train sped up after the drop.' : 'Energy clue: the measured train did not gain much speed; inspect the drop, crest, and friction before revising.');
-  if(forceCorrect) clues.push('Force clue: your prediction matched where speed and track curvature produced the strongest vertical force.');
+  if(forceCorrect) clues.push('Force clue: your hypothesis matched where speed and track curvature produced the strongest vertical force.');
   else if(actualForce === 'valley') clues.push('Force clue: the valley combined high speed with curvature, increasing vertical force.');
   else if(actualForce === 'hill') clues.push('Force clue: the hill region changed the vertical force as the track curvature redirected the train.');
   else if(actualForce === 'turn') clues.push('Force clue: the turn region changed the force as speed and curvature worked together.');
@@ -5601,10 +5639,10 @@ function guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorr
   const actualForce = guidedPeakZone(tele);
   const speedCorrect = guidedPrediction.speed === actualSpeed;
   const forceCorrect = guidedPrediction.force === actualForce;
-  const speedText = speedCorrect ? 'Speed prediction: correct - the train sped up after the drop.' : 'Speed prediction: the measured ride ' + (actualSpeed === 'speedUp' ? 'sped up' : 'slowed down') + ' after the drop.';
-  const forceText = forceCorrect ? 'Force prediction: correct - the peak appeared near the ' + actualForce + '.' : 'Force prediction: the peak appeared near the ' + actualForce + '.';
+  const speedText = 'Speed hypothesis: evidence ' + (speedCorrect ? 'matched' : 'differed') + ' — the measured ride ' + (actualSpeed === 'speedUp' ? 'sped up' : 'slowed down') + ' after the drop.';
+  const forceText = 'Force hypothesis: evidence ' + (forceCorrect ? 'matched' : 'differed') + ' — the measured peak appeared near the ' + actualForce + '.';
   const coach = guidedPredictionCoach(actualSpeed, actualForce, speedCorrect, forceCorrect);
-  guidedPrediction = { ...guidedPrediction, feedback: speedText + ' ' + forceText, coach, speedCorrect, forceCorrect, actualForce };  guidedRecord.prediction = guidedPrediction;
+  guidedPrediction = { ...guidedPrediction, feedback: speedText + ' ' + forceText + ' This comparison is ungraded; explain or revise from the evidence.', coach, speedCorrect, forceCorrect, actualForce };  guidedRecord.prediction = guidedPrediction;
   const goalSnapshot = guidedGoalSnapshot(tele);
   const historyEntry = {
     attempt: guidedRecord.attempts,
@@ -5665,7 +5703,7 @@ function beginGuidedAction(){
   if(guidedState === 'building'){
     setGuidedState('predicting');
     try{ guidedSpeedEl && guidedSpeedEl.focus({ preventScroll: true }); }catch(_e){}
-    banner('Prediction checkpoint - choose what height and curvature will do to the train.', 'pass', 3600);
+    banner('Hypothesis checkpoint - choose what height and curvature will do to the train.', 'pass', 3600);
     return;
   }
   if(guidedState === 'predicting'){
@@ -7903,7 +7941,8 @@ function pauseForQuestion(){
   if(ride.current.key) ride.usedKeys.push(ride.current.key);
   ride.total++;
   ride.qStart = performance.now();
-  rq.tag.textContent = (ride.current && ride.current.tag) || stop.tag;
+  const conceptTag = (ride.current && ride.current.tag) || stop.tag || '';
+  rq.tag.textContent = 'Concept check · ' + conceptTag.replace('🔢 ', '').replace('Checkpoint · ', '').replace('Checkpoint', '').trim();
   rq.text.innerHTML = ride.current.text;
   // bar / area model of the problem — only the math topics carry one
   if(rq.viz){
@@ -9114,7 +9153,7 @@ return { destroy: __clabDestroy };
     questHooks: [
       { id: 'clab_run', label: 'Complete a full coaster circuit', icon: '🎢', check: function (d) { var s = (d && d.coasterLab) || {}; return (s.runs || 0) >= 1; } },
       { id: 'clab_cert', label: 'Pass a simulation inspection', icon: '★', check: function (d) { var s = (d && d.coasterLab) || {}; return !!s.certified; } },
-      { id: 'clab_explore', label: 'Earn the Explore prediction badge', icon: '🎖', check: function (d) { var s = (d && d.coasterLab) || {}; return !!s.explored; } },
+      { id: 'clab_explore', label: 'Complete the Explore hypothesis cycle', icon: '🎖', check: function (d) { var s = (d && d.coasterLab) || {}; return !!s.explored; } },
       { id: 'clab_ride', label: 'Answer 4 Ride & Solve questions in one ride', icon: '🧠', check: function (d) { var s = (d && d.coasterLab) || {}; return (s.rideBestCorrect || 0) >= 4; } },
       { id: 'clab_missions', label: 'Complete 6 engineering missions', icon: '🏆', check: function (d) { var s = (d && d.coasterLab) || {}; return (s.missionCount || 0) >= 6; } }
     ],
@@ -9151,7 +9190,7 @@ return { destroy: __clabDestroy };
         if (ev.event === 'cert') {
           if (!_clabMs.certified) { _clabMs.certified = true; _awards.push([25, 'Coaster certified', '★ Coaster certified!']); }
         } else if (ev.event === 'explore') {
-          if (!_clabMs.explored) { _clabMs.explored = true; _awards.push([15, 'Coaster predictions badge', null]); }
+          if (!_clabMs.explored) { _clabMs.explored = true; _awards.push([15, 'Coaster inquiry cycle', null]); }
         } else if (ev.event === 'ride') {
           var _c = ev.correct || 0;
           if (_c >= 4 && _clabMs.rideBestCorrect < 4) _awards.push([10, 'Ride & Solve streak', null]);

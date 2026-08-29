@@ -44,7 +44,7 @@ class FakeAudio {
 beforeAll(() => {
   React = require(resolve(MODULES_DIR, 'react'));
   ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
-  ({ act } = require(resolve(MODULES_DIR, 'react-dom/test-utils')));
+  act = React.act;
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
   window.AlloLanguageContext = React.createContext({ t: (key) => key });
@@ -89,8 +89,16 @@ const splitSentences = (text) =>
 
 function simplifiedProps(resource, callTTS) {
   const noop = () => {};
+  const labels = {
+    'common.edit': 'Edit audio',
+    'common.success': 'Sentences saved',
+  };
   return {
-    t: (key) => key,
+    // This integration test is about persistence, so provide the two labels
+    // used by its stable, user-facing audio counter just as the language
+    // provider does in the app. Returning raw keys here made the selector
+    // fail before any persistence behavior could run.
+    t: (key) => labels[key] || key,
     generatedContent: resource,
     inputText: '',
     gradeLevel: '5',
@@ -258,7 +266,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
 
     const counterBefore = host.querySelector('button[aria-label^="Edit audio."]');
     expect(counterBefore).toBeTruthy();
-    expect(counterBefore.getAttribute('aria-label')).toContain('0 of 1 sentences saved');
+    expect(counterBefore.getAttribute('aria-label')).toContain('0/1 sentences saved');
 
     const play = host.querySelector('button[aria-label="Play"]');
     expect(play).toBeTruthy();
@@ -278,8 +286,8 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
         spokenText: 'Persist this played sentence.',
       },
     });
-    expect(counterBefore.getAttribute('aria-label')).toContain('1 of 1 sentences saved');
-    expect(counterBefore.textContent).toContain('1/1 saved');
+    expect(counterBefore.getAttribute('aria-label')).toContain('1/1 sentences saved');
+    expect(counterBefore.textContent).toContain('1/1 sentences saved');
 
     // Simulate reopening the saved resource in a fresh runtime. This removes
     // the overlay's warm-promise cache, so only durable v4 hydration can avoid
@@ -303,7 +311,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
     expect(audioInstances).toHaveLength(2);
     expect(audioInstances[1].src).toMatch(/^blob:persisted-/);
     expect(host.querySelector('button[aria-label^="Edit audio."]').getAttribute('aria-label'))
-      .toContain('1 of 1 sentences saved');
+      .toContain('1/1 sentences saved');
   });
 
   it('captures duplicated sentences into distinct segments and completes the visible counter', async () => {
@@ -377,12 +385,12 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
 
     const counter = host.querySelector('button[aria-label^="Edit audio."]');
     expect(counter).toBeTruthy();
-    expect(counter.getAttribute('aria-label')).toContain('0 of 2 sentences saved');
+    expect(counter.getAttribute('aria-label')).toContain('0/2 sentences saved');
 
     const play = host.querySelector('button[aria-label="Play"]');
     act(() => { play.click(); });
     await flushPlaybackWork();
-    expect(counter.getAttribute('aria-label')).toContain('1 of 2 sentences saved');
+    expect(counter.getAttribute('aria-label')).toContain('1/2 sentences saved');
 
     // Finish the first clip; auto-advance plays the identical twin, which must
     // capture into ITS OWN segment instead of no-oping on its sibling's.
@@ -398,7 +406,7 @@ describe('Leveled Text Karaoke played-audio persistence', () => {
       'body/0/sentence/0',
       'body/0/sentence/1',
     ]);
-    expect(counter.getAttribute('aria-label')).toContain('2 of 2 sentences saved');
+    expect(counter.getAttribute('aria-label')).toContain('2/2 sentences saved');
   });
 
   it('drives the production overlay wiring through window.__alloResolveReadAloudAudio and pins the resolution voice', async () => {

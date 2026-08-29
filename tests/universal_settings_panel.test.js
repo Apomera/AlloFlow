@@ -171,10 +171,12 @@ describe('universal settings panel — wiring', () => {
     expect(dispatcherSrc).toContain('!configOverride.grade');
     // The escape hatch stays available for future batch callers...
     expect(dispatcherSrc).toContain('!configOverride.skipDifferentiation');
-    // ...but Full Pack deliberately does NOT use it (2026-07-29): the per-type
-    // opt-in already scopes the multiplication to resources the teacher chose,
-    // and a teacher who opted the quiz in wants the pack's quiz differentiated.
-    expect(readFileSync('generation_helpers_source.jsx', 'utf8')).not.toContain('skipDifferentiation: true');
+    // The current Full Pack matrix expands differentiated grades itself. Each
+    // exact matrix cell therefore supplies both its explicit grade and the
+    // escape hatch, preventing the dispatcher from multiplying that cell again.
+    const helpersSrc = readFileSync('generation_helpers_source.jsx', 'utf8');
+    expect(helpersSrc).toMatch(/grade:\s*cellGrade,\s*skipDifferentiation:\s*true,/);
+    expect(helpersSrc).toContain('generationMatrixManaged: true');
   });
 
   it('guided step 0 carries a settings checkpoint into the banner', () => {

@@ -10,9 +10,10 @@ describe('Pets Simulator inline quiz accessibility', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
 
-  it('exposes the inline Toxic Foods Sleuth as a labeled focusable region', () => {
+  it('exposes the inline Household Hazard Sleuth as a labeled focusable region', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("tfsOpen && h('div', { role: 'region', 'aria-label': 'Toxic Foods Sleuth quiz game', tabIndex: 0");
-    expect(source).not.toContain("tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Toxic Foods Sleuth quiz game'");
+    expect(source).toContain("tfsOpen && h('div', { role: 'region', 'aria-label': 'Household Hazard Sleuth quiz game', tabIndex: 0");
+    expect(source).not.toContain("tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Household Hazard Sleuth quiz game'");
+    expect(source).toContain("'data-pets-hazard-boundary': 'classification-only'");
   });
 });

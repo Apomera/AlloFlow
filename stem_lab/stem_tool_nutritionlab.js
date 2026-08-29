@@ -82,7 +82,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       '.nutritionlab-leaf-sway { animation: nutritionlab-leaf-sway 3.2s ease-in-out infinite; transform-origin: bottom center; display: inline-block; }',
       '.nutritionlab-card-lift { transition: transform 200ms ease, box-shadow 200ms ease; }',
       '.nutritionlab-card-lift:hover { transform: translateY(-3px); }',
-      '.nutritionlab-card-lift:focus-visible { transform: translateY(-3px); }'
+      '.nutritionlab-card-lift:focus-visible { transform: translateY(-3px); }',
+      '@keyframes nutritionlab-fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }',
+      '.nutritionlab-fade-in { animation: nutritionlab-fade-in 240ms ease-out; }',
+      '@keyframes nutritionlab-bm-glow { 0%, 100% { box-shadow: 0 0 0 0 rgba(217,70,239,0), 0 10px 30px rgba(15,23,42,0.28); } 50% { box-shadow: 0 0 0 4px rgba(217,70,239,0.22), 0 10px 30px rgba(15,23,42,0.28); } }',
+      '.nutritionlab-bm-frame { animation: nutritionlab-bm-glow 3.6s ease-in-out infinite; }',
+      '.nutritionlab-bolus { transition: transform 420ms cubic-bezier(.2,.8,.2,1); }',
+      '.nutritionlab-journey-fill { transition: width 420ms ease; }',
+      // The STEM host wraps every tool in a WHITE card even in dark theme, but
+      // --allo-stem-* keep resolving dark, so themed ink lands light-on-light.
+      // This tool is authored for a light substrate throughout (it paints its own
+      // white cards and pale tints), so its root pins the palette light for its
+      // whole subtree. .theme-contrast is excluded: high-contrast mode still wins.
+      'html:not(.theme-contrast) [data-nutritionlab-root] {',
+      '  --allo-stem-text: #0f172a;',
+      '  --allo-stem-text-soft: #475569;',
+      '  --allo-stem-border: #cbd5e1;',
+      '  --allo-stem-panel: #ffffff;',
+      '  --allo-stem-canvas: #ffffff;',
+      '  --allo-stem-deeper: #f1f5f9;',
+      '}'
     ].join('\n');
     document.head.appendChild(st);
   })();
@@ -118,6 +137,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
 
   function clamp(v, lo, hi) { return v < lo ? lo : v > hi ? hi : v; }
+
+  // A category accent is a good BAR and a bad INK. Darken the same hue until it
+  // clears AA rather than hand-picking ~30 replacements: the hue story survives
+  // and a colour added to the kit later is readable without anyone remembering.
+  // Target 5.4:1 on WHITE. Measured, not reasoned: at 4.7 the darkened accents
+  // still failed on their own tints, because those grounds sit near 0.86-0.90
+  // luminance rather than 1.0 and that costs roughly 10% of the ratio.
+  var _nlInkCache = {};
+  function nlInk(hex) {
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length !== 7) return hex;
+    if (_nlInkCache[hex]) return _nlInkCache[hex];
+    var r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return hex;
+    var chan = function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    var lum = function (rr, gg, bb) { return 0.2126 * chan(rr) + 0.7152 * chan(gg) + 0.0722 * chan(bb); };
+    var hx = function (v) { var s = Math.round(v).toString(16); return s.length === 1 ? '0' + s : s; };
+    var out = hex;
+    for (var k = 100; k >= 0; k--) {
+      var f = k / 100;
+      if (1.05 / (lum(r * f, g * f, b * f) + 0.05) >= 5.4) {
+        out = '#' + hx(r * f) + hx(g * f) + hx(b * f);
+        break;
+      }
+    }
+    _nlInkCache[hex] = out;
+    return out;
+  }
 
   // ─────────────────────────────────────────────────────
   // DATA — USDA FoodData Central typical-serving values + NIH ODS sources
@@ -1181,7 +1227,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         width: 4, height: 28, borderRadius: 4, background: c
       } }),
       nlH('div', { style: { flex: 1 } },
-        nlH('div', { style: { fontSize: 15, fontWeight: 900, color: c } }, title),
+        nlH('div', { style: { fontSize: 15, fontWeight: 900, color: nlInk(c) } }, title),
         subtitle ? nlH('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2 } }, subtitle) : null
       )
     );
@@ -3228,7 +3274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
           sliders.map(function(s) {
             return nlH('div', { key: s.key },
-              nlH('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: s.color, fontWeight: 700, marginBottom: 2 } },
+              nlH('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: nlInk(s.color), fontWeight: 700, marginBottom: 2 } },
                 nlH('span', null, s.label),
                 nlH('span', null, form[s.key] + '/10')
               ),
@@ -12930,7 +12976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ].map(function(action) {
           return nlH('div', { key: action.label, style: { padding: 12, borderRadius: 10, background: action.color + '15', border: '1px solid ' + action.color + '50', borderLeft: '4px solid ' + action.color } },
             nlH('div', { style: { fontSize: 24, marginBottom: 4 } }, action.icon),
-            nlH('strong', { style: { fontSize: 13, color: action.color } }, action.label),
+            nlH('strong', { style: { fontSize: 13, color: nlInk(action.color) } }, action.label),
             nlH('div', { style: { fontSize: 11, color: '#0f172a', marginTop: 4, lineHeight: 1.5 } }, action.text)
           );
         })
@@ -15439,7 +15485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     });
     return nlH('div', { style: { padding: 14 } },
       nlH('div', { style: { padding: '20px', borderRadius: 14, marginBottom: 16, background: 'linear-gradient(135deg, #047857, #0f766e)', color: '#fff', boxShadow: '0 4px 14px rgba(13,148,136,0.25)' } },
-        nlH('div', { style: { fontSize: 11, color: '#a7f3d0', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🥗 My Nutrition Kit'),
+        nlH('div', { style: { fontSize: 11, color: '#ecfdf5', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 4 } }, '🥗 My Nutrition Kit'),
         nlH('div', { style: { fontSize: 22, fontWeight: 900, marginBottom: 6 } }, 'Personal evidence-based nutrition tools'),
         nlH('div', { style: { fontSize: 13, lineHeight: 1.55, opacity: 0.95 } },
           allTools.length + ' tools to build YOUR personal nutrition practice. Physiology-first, NEDA-aligned, Maine-relevant. All data stays in your browser.'
@@ -15449,7 +15495,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         nlInput({ value: search, onChange: function(e) { setSearch(e.target.value); }, placeholder: '🔍 Search tools...' }),
         nlH('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
           categories.map(function(c) {
-            return nlH('button', { key: c.id, onClick: function() { setCategory(c.id); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + c.color, background: category === c.id ? c.color : '#fff', color: category === c.id ? '#fff' : c.color, fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, c.label);
+            return nlH('button', { key: c.id, onClick: function() { setCategory(c.id); }, style: { padding: '5px 10px', borderRadius: 6, border: '1px solid ' + nlInk(c.color), background: category === c.id ? nlInk(c.color) : '#fff', color: category === c.id ? '#fff' : nlInk(c.color), fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, c.label);
           })
         )
       ),
@@ -15465,7 +15511,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             nlH('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8 } },
               nlH('div', { style: { fontSize: 22 } }, t.icon),
               nlH('div', { style: { flex: 1 } },
-                nlH('div', { style: { fontSize: 12, fontWeight: 800, color: cobj.color, marginBottom: 2 } }, t.label),
+                nlH('div', { style: { fontSize: 12, fontWeight: 800, color: nlInk(cobj.color), marginBottom: 2 } }, t.label),
                 nlH('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #475569)', lineHeight: 1.4 } }, t.desc)
               )
             )
@@ -15753,6 +15799,673 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     return nlH('div', null, backBar, nlH(Comp, p));
   }
 
+  // ─────────────────────────────────────────────────────
+  // NUTRIENT BODY MAP (3D) — data + scene
+  // ─────────────────────────────────────────────────────
+  // "Every nutrient has an address." The Micronutrient Atlas says WHAT a
+  // nutrient does; this map shows WHERE, on a glass figure whose organs light
+  // up for the nutrient a student picks. Physiology-first like the rest of the
+  // tool: regions are body systems that USE a nutrient, never body parts to
+  // change. Mappings follow the NIH ODS Fact Sheets already cited in VITAMINS /
+  // MINERALS / EFAS; the macro rows follow the Macronutrient Lab benefit text.
+  //
+  // The WebGL lifecycle (attach, orbit, picking, label chips, context loss,
+  // theme rebuild) belongs to the host — window.StemLab.makeBayViewer — so this
+  // file only builds geometry and reads picks. Same pattern as heatLab's
+  // convection tank and firstResponse's body.
+  var BODY_REGIONS = [
+    { id: 'brain',   label: 'Brain & nerves',          color: '#a78bfa', icon: '🧠',
+      uses: 'Runs almost entirely on glucose, builds membranes and myelin from fats, and needs B vitamins, iron and iodine to make neurotransmitters and thyroid-driven growth.',
+      short: 'Fog, low mood and poor concentration; tingling nerves (B12); slowed development in early life (iodine).' },
+    { id: 'eyes',    label: 'Eyes',                    color: '#38bdf8', icon: '👁️',
+      uses: 'Vitamin A becomes the light-sensing pigment in the retina; DHA (omega-3) is a structural fat in retinal cells.',
+      short: 'Night vision fades first. Vitamin A shortage is the leading cause of preventable childhood blindness worldwide.' },
+    { id: 'thyroid', label: 'Thyroid',                 color: '#f472b6', icon: '🦋',
+      uses: 'Builds thyroid hormone from iodine (selenium helps activate it). That hormone sets metabolic rate and drives growth and brain development.',
+      short: 'Goiter (a swollen thyroid), a sluggish metabolism, and in early life, impaired brain development.' },
+    { id: 'heart',   label: 'Heart & vessels',         color: '#ef4444', icon: '❤️',
+      uses: 'Potassium, calcium and magnesium set the heartbeat rhythm; omega-3s and fiber support vessel health; B1 keeps heart muscle fueled.',
+      short: 'Irregular rhythm or cramps (electrolytes); higher long-term cardiovascular risk (low fiber and omega-3).' },
+    { id: 'liver',   label: 'Liver',                   color: '#b45309', icon: '🔋',
+      uses: 'Stores glucose as glycogen, packages fats, makes blood proteins and clears wastes. Choline and B vitamins keep that chemistry running.',
+      short: 'Fat building up in the liver (choline); disrupted blood-sugar handling.' },
+    { id: 'gut',     label: 'Stomach & intestines',    color: '#fb923c', icon: '🌀',
+      uses: 'Chloride makes stomach acid; fiber feeds gut microbes that make short-chain fatty acids; dietary fat carries vitamins A, D, E and K across the intestinal wall.',
+      short: 'Constipation and a starved microbiome (fiber); poor absorption of fat-soluble vitamins (very low fat).' },
+    { id: 'kidneys', label: 'Kidneys & fluid balance', color: '#fbbf24', icon: '🫘',
+      uses: 'Balance sodium, potassium, chloride and water to hold blood pressure and volume steady, filtering your whole blood volume about 60 times a day.',
+      short: 'Dehydration headaches and dizziness (water); blood-pressure drift (the sodium-to-potassium ratio).' },
+    { id: 'bones',   label: 'Bones & teeth',           color: '#e2e8f0', icon: '🦴',
+      uses: 'Calcium and phosphorus are the mineral itself; vitamin D lets you absorb the calcium; vitamin K and magnesium help lay it down; fluoride hardens enamel.',
+      short: 'Lower peak bone density (teens build most of theirs before about 20) and higher fracture risk later in life.' },
+    { id: 'muscles', label: 'Muscles',                 color: '#dc2626', icon: '💪',
+      uses: 'Built from amino acids (protein), fueled by glycogen (carbs), contract on calcium and relax on magnesium; iron-rich myoglobin stores their oxygen.',
+      short: 'Cramps and weakness (magnesium, potassium); slow recovery (protein); early fatigue (iron, carbs).' },
+    { id: 'blood',   label: 'Blood (red cells)',       color: '#be123c', icon: '🩸',
+      uses: 'Iron sits inside hemoglobin, the protein that carries oxygen; B12, folate and copper are needed to make new red cells; vitamin K lets blood clot.',
+      short: 'Anemia: tiredness, pale skin, breathlessness on stairs (iron, B12, folate).' },
+    { id: 'skin',    label: 'Skin & healing',          color: '#f4b183', icon: '🩹',
+      uses: 'Vitamin C builds collagen; zinc and protein close wounds; vitamin A and biotin renew the surface; essential fats keep the barrier flexible.',
+      short: 'Slow-healing cuts, dry cracked skin, hair and nail changes (vitamin C, zinc, biotin).' },
+    { id: 'immune',  label: 'Immune system',           color: '#22c55e', icon: '🛡️',
+      uses: 'Lymph nodes and white cells turn over fast, so they need protein, zinc, vitamins A, C, D and E, iron and selenium to keep building defenders.',
+      short: 'More frequent or longer-lasting infections (zinc, vitamin D, vitamin A).' }
+  ];
+  var BODY_REGION_BY_ID = {};
+  BODY_REGIONS.forEach(function (r) { BODY_REGION_BY_ID[r.id] = r; });
+
+  // Macronutrients and water are not in the Atlas tables, so the map carries
+  // its own short entries for them. Emoji match the Macronutrient Lab.
+  var BODY_MAP_MACROS = [
+    { id: 'carbs',   name: 'Carbohydrates', emoji: '🌾' },
+    { id: 'protein', name: 'Protein',       emoji: '💪' },
+    { id: 'fat',     name: 'Fat',           emoji: '🥑' },
+    { id: 'fiber',   name: 'Fiber',         emoji: '🌿' },
+    { id: 'water',   name: 'Water',         emoji: '💧' }
+  ];
+
+  // nutrient id → the body regions that use it, plus one plain-language line.
+  // Every id here is a VITAMINS / MINERALS / EFAS id or a BODY_MAP_MACROS id;
+  // every region id is a BODY_REGIONS id. tests/stem_nutritionlab_integrity
+  // pins both directions so a typo cannot silently drop a region from the map.
+  var BODY_NUTRIENT_MAP = {
+    carbs:      { regions: ['brain', 'muscles', 'liver'],
+                  note: 'Glucose is the brain\'s main fuel; muscles and the liver store the surplus as glycogen for later.' },
+    protein:    { regions: ['muscles', 'immune', 'skin', 'blood', 'liver'],
+                  note: 'Amino acids become muscle, enzymes, antibodies, hemoglobin and the collagen that closes a cut.' },
+    fat:        { regions: ['brain', 'skin', 'gut', 'immune'],
+                  note: 'Builds cell membranes and nerve insulation, carries vitamins A, D, E and K through the gut wall, and is the raw material for hormones.' },
+    fiber:      { regions: ['gut', 'heart', 'liver'],
+                  note: 'Feeds gut microbes (which make short-chain fatty acids), slows sugar spikes, and helps the liver clear cholesterol.' },
+    water:      { regions: ['kidneys', 'blood', 'brain', 'muscles', 'skin'],
+                  note: 'Blood is about 90% water. Kidney filtering, temperature control, joint cushioning and concentration all ride on it.' },
+    vitA:       { regions: ['eyes', 'immune', 'skin'],
+                  note: 'Becomes the retina\'s light-sensing pigment and keeps the linings of the eyes, gut and airways intact.' },
+    vitC:       { regions: ['skin', 'immune', 'blood', 'bones'],
+                  note: 'Builds collagen for skin, vessels and the bone matrix; boosts iron absorption from plant foods; antioxidant.' },
+    vitD:       { regions: ['bones', 'immune', 'muscles'],
+                  note: 'Opens the door for calcium absorption and signals to immune and muscle cells. Maine winters cut skin production.' },
+    vitE:       { regions: ['immune', 'skin'],
+                  note: 'Protects cell membranes from oxidative damage and supports immune signaling.' },
+    vitK:       { regions: ['blood', 'bones'],
+                  note: 'Activates the clotting proteins and the proteins that bind calcium into bone.' },
+    b1:         { regions: ['brain', 'heart', 'muscles'],
+                  note: 'Helps cells burn carbohydrate for energy; nerves and heart muscle feel a shortfall first.' },
+    b2:         { regions: ['eyes', 'skin'],
+                  note: 'A cofactor in energy metabolism; eyes and skin show a shortage first.' },
+    b3:         { regions: ['skin', 'gut', 'brain'],
+                  note: 'Energy metabolism and DNA repair. Severe shortage (pellagra) hits skin, digestion and cognition.' },
+    b6:         { regions: ['brain', 'immune', 'blood'],
+                  note: 'Makes neurotransmitters, supports immune cells and helps build hemoglobin.' },
+    b9:         { regions: ['blood', 'brain'],
+                  note: 'DNA synthesis for fast-dividing cells: new red blood cells and, in pregnancy, the neural tube.' },
+    b12:        { regions: ['brain', 'blood'],
+                  note: 'Keeps nerve insulation healthy and lets bone marrow make normal red blood cells.' },
+    b7:         { regions: ['skin'],
+                  note: 'Fatty-acid metabolism that keeps hair, skin and nails renewing.' },
+    choline:    { regions: ['brain', 'liver'],
+                  note: 'Builds cell membranes and the neurotransmitter acetylcholine; moves fat out of the liver.' },
+    calcium:    { regions: ['bones', 'muscles', 'brain', 'heart'],
+                  note: 'The mineral of bone, and the signal that makes muscles contract, nerves fire and the heart beat.' },
+    iron:       { regions: ['blood', 'brain', 'immune', 'muscles'],
+                  note: 'Sits inside hemoglobin and myoglobin to carry oxygen; the brain and immune cells run on that oxygen.' },
+    magnesium:  { regions: ['muscles', 'brain', 'bones', 'heart'],
+                  note: 'Relaxes muscle after calcium contracts it, steadies nerves and heart rhythm, and about 60% is stored in bone.' },
+    phosphorus: { regions: ['bones', 'muscles'],
+                  note: 'Half of bone mineral, and the "P" in ATP that every muscle contraction spends.' },
+    potassium:  { regions: ['heart', 'muscles', 'kidneys'],
+                  note: 'Sets the electrical rhythm of heart and muscle; the kidneys use it to balance sodium and blood pressure.' },
+    sodium:     { regions: ['brain', 'kidneys', 'muscles'],
+                  note: 'Carries nerve signals and holds fluid in the blood. Most people get too much, not too little.' },
+    chloride:   { regions: ['gut', 'kidneys'],
+                  note: 'Makes stomach acid (hydrochloric acid) and travels with sodium for fluid balance.' },
+    zinc:       { regions: ['immune', 'skin'],
+                  note: 'Immune cells and wound repair depend on it; also taste and smell.' },
+    iodine:     { regions: ['thyroid', 'brain'],
+                  note: 'The thyroid turns it into the hormone that sets metabolic rate and drives brain development.' },
+    selenium:   { regions: ['thyroid', 'immune'],
+                  note: 'Activates thyroid hormone and powers antioxidant enzymes in immune cells.' },
+    copper:     { regions: ['blood', 'brain', 'immune', 'bones'],
+                  note: 'Lets the body move iron into new red cells and builds connective tissue and nerve coverings.' },
+    manganese:  { regions: ['bones', 'liver'],
+                  note: 'A cofactor for bone formation and for the liver\'s carbohydrate and cholesterol handling.' },
+    chromium:   { regions: ['liver', 'muscles'],
+                  note: 'Helps insulin move glucose into muscle and liver cells.' },
+    molybdenum: { regions: ['liver'],
+                  note: 'A cofactor for liver enzymes that break down sulfur compounds and other metabolic byproducts.' },
+    fluoride:   { regions: ['bones'],
+                  note: 'Hardens tooth enamel and is incorporated into bone mineral.' },
+    omega3:     { regions: ['brain', 'heart', 'eyes', 'immune'],
+                  note: 'DHA is structural fat in brain and retina; EPA/DHA steady heart rhythm and calm inflammation.' },
+    omega6:     { regions: ['skin', 'immune'],
+                  note: 'Cell-membrane structure, the skin barrier and immune signaling molecules.' }
+  };
+
+  // Predict-then-check bank. Every entry is a map key; order is fixed and the
+  // "answer" is a SET of regions, so there is no answer-position to game.
+  var BODY_MAP_CHALLENGES = ['iron', 'calcium', 'iodine', 'vitA', 'omega3', 'vitK', 'potassium', 'vitC'];
+
+  // Resting energy share by body region. The Energy & Metabolism module already
+  // teaches these numbers as bars; the map shows the same fact on the body, which
+  // is where "your brain is 2% of you and eats 20% of your fuel" actually lands.
+  // Healthy-adult averages: Wang et al. (2010), Brody, Nutritional Biochemistry.
+  // The five named organs plus "everything else" sum to 100.
+  var BODY_ENERGY_SHARE = {
+    muscles: { pct: 22, note: 'Even at rest, muscle holds tone and runs its own baseline metabolism. It is a big share because there is a lot of it.' },
+    liver:   { pct: 21, note: 'Never idle: processing nutrients, storing and releasing glucose, building blood proteins, clearing waste.' },
+    brain:   { pct: 20, note: 'About 2% of body weight, about 20% of resting energy — and higher in children and adolescents, whose brains are still building.' },
+    heart:   { pct: 9,  note: 'Roughly 100,000 beats a day, with no rest periods. Small organ, relentless demand.' },
+    kidneys: { pct: 8,  note: 'Filter your entire blood volume around 60 times a day to hold salts and water steady.' }
+  };
+  var BODY_ENERGY_OTHER_PCT = 20;   // skin, gut, immune cells, bone, blood, fat
+  var BODY_ENERGY_MAX_PCT = 22;
+
+  // Graded levels for the 3D figure. The shell reads levels as 0..1 per mesh and
+  // drives scale + emissive from it, so a share becomes a visible size.
+  function bodyMapEnergyLevels() {
+    var out = {};
+    for (var id in BODY_ENERGY_SHARE) {
+      if (!BODY_ENERGY_SHARE.hasOwnProperty(id)) continue;
+      out[id] = BODY_ENERGY_SHARE[id].pct / BODY_ENERGY_MAX_PCT;
+    }
+    return out;
+  }
+
+  // Two nutrients at once: shared regions burn bright, single-nutrient regions
+  // sit dim. The 3D layer answers "do these overlap?"; the lists below it say
+  // which is which, because one brightness channel cannot encode two identities.
+  var BODY_COMPARE_SHARED = 1;
+  var BODY_COMPARE_SINGLE = 0.42;
+  function bodyMapCompareLevels(idA, idB) {
+    var a = (BODY_NUTRIENT_MAP[idA] || { regions: [] }).regions;
+    var b = (BODY_NUTRIENT_MAP[idB] || { regions: [] }).regions;
+    var out = {};
+    a.forEach(function (r) { out[r] = BODY_COMPARE_SINGLE; });
+    b.forEach(function (r) { out[r] = (out[r] === BODY_COMPARE_SINGLE) ? BODY_COMPARE_SHARED : BODY_COMPARE_SINGLE; });
+    return out;
+  }
+  function bodyMapCompareSets(idA, idB) {
+    var a = (BODY_NUTRIENT_MAP[idA] || { regions: [] }).regions;
+    var b = (BODY_NUTRIENT_MAP[idB] || { regions: [] }).regions;
+    return {
+      shared: a.filter(function (r) { return b.indexOf(r) !== -1; }),
+      onlyA: a.filter(function (r) { return b.indexOf(r) === -1; }),
+      onlyB: b.filter(function (r) { return a.indexOf(r) === -1; })
+    };
+  }
+  // Pairs worth a sentence of their own. Everything else gets the generic line,
+  // so the panel never invents a relationship that the science does not support.
+  var BODY_COMPARE_NOTES = {
+    'iron|vitC':      'Vitamin C makes plant iron far easier to absorb, so these two are a genuine team at the gut — then they part ways and serve different systems.',
+    'calcium|vitD':   'Vitamin D is what lets calcium cross the intestinal wall at all. Calcium without vitamin D is a delivery with no key to the door.',
+    'iodine|selenium':'Iodine becomes thyroid hormone; selenium activates it. Both are needed for the same finished product.',
+    'b12|b9':         'Folate and B12 work in the same reaction to build DNA, which is why a shortage of either produces the same oversized red blood cells.',
+    'calcium|magnesium': 'Calcium makes a muscle contract and magnesium helps it let go. They share the address and split the job.',
+    'potassium|sodium':  'The pair that runs every nerve impulse. Most people get plenty of sodium and too little potassium, and it is the RATIO that moves blood pressure.',
+    'b12|iron':       'Both build red blood cells by different routes, so both shortfalls look like the same tiredness — which is exactly why a blood test beats guessing.',
+    'omega3|vitD':    'Oily fish is a leading source of both, so a Maine plate that fixes one often fixes the other.'
+  };
+  function bodyMapCompareNote(idA, idB) {
+    var key = [idA, idB].sort().join('|');
+    return BODY_COMPARE_NOTES[key] || null;
+  }
+
+  function bodyMapNutrient(id) {
+    var lists = [BODY_MAP_MACROS, VITAMINS, MINERALS, EFAS];
+    for (var li = 0; li < lists.length; li++) {
+      for (var i = 0; i < lists[li].length; i++) if (lists[li][i].id === id) return lists[li][i];
+    }
+    return null;
+  }
+  function bodyMapShortName(n) {
+    if (!n) return '';
+    var s = String(n.name || '');
+    var cut = s.indexOf(' — ');
+    if (cut > 0) s = s.slice(0, cut);
+    cut = s.indexOf(' (');
+    if (cut > 0) s = s.slice(0, cut);
+    return s;
+  }
+  // Regions that use a set of nutrients → {regionId: 1}. Used for the plate
+  // hand-off from the Macronutrient Lab as well as single-nutrient mode.
+  function bodyMapActiveRegions(nutrientIds) {
+    var out = {};
+    (nutrientIds || []).forEach(function (id) {
+      var m = BODY_NUTRIENT_MAP[id];
+      if (!m) return;
+      m.regions.forEach(function (r) { out[r] = 1; });
+    });
+    return out;
+  }
+  // Nutrients that feed one region, in picker order (macros, vitamins,
+  // minerals, fats) so the list reads the same way the chips do.
+  function bodyMapNutrientsFor(regionId) {
+    var order = BODY_MAP_MACROS.concat(VITAMINS, MINERALS, EFAS);
+    return order.filter(function (n) {
+      var m = BODY_NUTRIENT_MAP[n.id];
+      return !!(m && m.regions.indexOf(regionId) !== -1);
+    });
+  }
+  // Macronutrient Lab food tags → map ids. Tags were authored for the benefit
+  // readout and use a few synonyms the map spells differently.
+  var BODY_MAP_TAG_ALIAS = { folate: 'b9', niacin: 'b3', 'b-complex': 'b1', betaGlucan: 'fiber' };
+  function bodyMapNutrientsFromPlate(plate) {
+    var seen = {};
+    var ids = [];
+    var totals = { c: 0, p: 0, f: 0, fib: 0 };
+    (plate || []).forEach(function (foodId) {
+      var f = FOOD_BY_ID[foodId];
+      if (!f) return;
+      totals.c += f.c; totals.p += f.p; totals.f += f.f; totals.fib += f.fib;
+      (f.tags || []).forEach(function (tag) {
+        var id = BODY_MAP_TAG_ALIAS[tag] || tag;
+        if (BODY_NUTRIENT_MAP[id] && !seen[id]) { seen[id] = true; ids.push(id); }
+      });
+    });
+    // Macro thresholds are deliberately modest: a meal with 15 g of carbohydrate
+    // genuinely fuels the brain; this is "present in a meaningful amount", not a target.
+    var macros = [];
+    if (totals.c >= 15) macros.push('carbs');
+    if (totals.p >= 10) macros.push('protein');
+    if (totals.f >= 8) macros.push('fat');
+    if (totals.fib >= 5) macros.push('fiber');
+    macros.forEach(function (id) { if (!seen[id]) { seen[id] = true; ids.unshift(id); } });
+    return ids;
+  }
+
+  // ── The figure ──────────────────────────────────────────────────────
+  // A glass body with opaque organs inside. The shell camera looks at
+  // (0, 0.30, 0), so the figure is modelled from the feet at y = -0.88 to the
+  // crown at y = 1.46 and its middle lands where the camera is pointing.
+  // Compact organs are GROUPS positioned at their own centre with children at
+  // local coordinates, because the shell scales a selected/level-driven group
+  // about its origin; distributed systems (bones, blood, muscles, lymph) opt
+  // out of that scaling with userData.noSelectionScale and rely on emissive.
+  function nutriBuildBodyScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var contrast = !!api.contrast;
+    var figure = new THREE.Group();
+    api.scene.add(figure);
+
+    function organic(hex, opts) {
+      var o = opts || {};
+      // Organic surfaces: dark, weak specular. The shell's trim() is tuned for
+      // painted metal and its pale specular swamps deep reds and browns.
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(contrast ? '#ffffff' : hex),
+        shininess: contrast ? 0 : (o.shininess == null ? 6 : o.shininess),
+        specular: contrast ? 0x000000 : 0x140f0a,
+        emissive: new THREE.Color(contrast ? '#000000' : (o.emissive || '#000000')),
+        transparent: !!o.opacity && o.opacity < 1,
+        opacity: o.opacity == null ? 1 : o.opacity,
+        depthWrite: o.depthWrite == null ? true : o.depthWrite,
+        side: o.side || THREE.FrontSide
+      });
+    }
+    function regionColor(id) {
+      var r = BODY_REGION_BY_ID[id];
+      return r ? r.color : '#94a3b8';
+    }
+    function reg(id, group, anchor, noScale) {
+      group.userData.partId = id;
+      if (anchor) group.userData.labelAnchor = anchor.clone();
+      if (noScale) group.userData.noSelectionScale = true;
+      group.traverse(function (o) {
+        if (o.isMesh) { o.userData.partId = id; if (!group.userData.noPick) picks.push(o); }
+      });
+      figure.add(group);
+      meshes[id] = group;
+      return group;
+    }
+    function ball(parent, r, sx, sy, sz, mat, x, y, z) {
+      var m = new THREE.Mesh(new THREE.SphereGeometry(r, 22, 16), mat);
+      m.scale.set(sx, sy, sz);
+      m.position.set(x || 0, y || 0, z || 0);
+      parent.add(m);
+      return m;
+    }
+    function rod(parent, a, b, radius, mat) {
+      var delta = new THREE.Vector3().subVectors(b, a);
+      var len = delta.length();
+      var m = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius * 0.9, len, 14), mat);
+      m.position.copy(a).add(b).multiplyScalar(0.5);
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), delta.normalize());
+      parent.add(m);
+      return m;
+    }
+    function tube(parent, pts, radius, mat, segs) {
+      var curve = new THREE.CatmullRomCurve3(pts.map(function (p) { return new THREE.Vector3(p[0], p[1], p[2]); }));
+      var m = new THREE.Mesh(new THREE.TubeGeometry(curve, segs || 40, radius, 8, false), mat);
+      parent.add(m);
+      return m;
+    }
+    var V = function (x, y, z) { return new THREE.Vector3(x, y, z); };
+
+    // Soft floor disc so the figure stands on something (opaque — a translucent
+    // ground would blend over everything beneath it).
+    var floor = new THREE.Mesh(new THREE.CircleGeometry(0.78, 40), organic(contrast ? '#111111' : '#16213a', { shininess: 2 }));
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = -0.895;
+    figure.add(floor);
+
+    // ── Opaque organs first (transparent glass draws after them) ──
+    // Brain
+    var brain = new THREE.Group();
+    brain.position.set(0, 1.22, 0);
+    ball(brain, 0.155, 1, 0.86, 1.1, organic(regionColor('brain'), { emissive: '#1e1038' }));
+    ball(brain, 0.09, 1, 0.7, 0.9, organic('#8b5cf6', { emissive: '#1e1038' }), 0, -0.11, -0.05);   // cerebellum
+    rod(brain, V(0, -0.14, -0.02), V(0, -0.34, -0.03), 0.028, organic('#c4b5fd'));               // brainstem
+    reg('brain', brain, V(0, 0.24, 0));
+
+    // Eyes
+    var eyes = new THREE.Group();
+    eyes.position.set(0, 1.19, 0.19);
+    ball(eyes, 0.036, 1, 1, 1, organic('#e0f2fe', { shininess: 40 }), -0.085, 0, 0);
+    ball(eyes, 0.036, 1, 1, 1, organic('#e0f2fe', { shininess: 40 }), 0.085, 0, 0);
+    ball(eyes, 0.018, 1, 1, 0.6, organic(regionColor('eyes'), { emissive: '#082f49' }), -0.085, 0, 0.03);
+    ball(eyes, 0.018, 1, 1, 0.6, organic(regionColor('eyes'), { emissive: '#082f49' }), 0.085, 0, 0.03);
+    reg('eyes', eyes, V(0, 0.12, 0.12));
+
+    // Thyroid — butterfly at the base of the neck
+    var thyroid = new THREE.Group();
+    thyroid.position.set(0, 0.93, 0.115);
+    ball(thyroid, 0.045, 1, 1.25, 0.7, organic(regionColor('thyroid'), { emissive: '#500724' }), -0.05, 0, 0);
+    ball(thyroid, 0.045, 1, 1.25, 0.7, organic(regionColor('thyroid'), { emissive: '#500724' }), 0.05, 0, 0);
+    ball(thyroid, 0.025, 1.4, 0.7, 0.6, organic(regionColor('thyroid')), 0, -0.02, 0.01);
+    reg('thyroid', thyroid, V(0, 0.09, 0.05));
+
+    // Heart — slightly to the subject's left (viewer's right), tipped
+    var heart = new THREE.Group();
+    heart.position.set(0.06, 0.73, 0.11);
+    var heartMain = ball(heart, 0.105, 0.95, 1.05, 0.8, organic(regionColor('heart'), { emissive: '#3b0a0a', shininess: 18 }));
+    heartMain.rotation.z = 0.35;
+    ball(heart, 0.055, 1, 1, 1, organic('#f87171', { emissive: '#3b0a0a' }), -0.06, 0.07, -0.01);  // atria
+    ball(heart, 0.05, 1, 1, 1, organic('#f87171', { emissive: '#3b0a0a' }), 0.05, 0.08, -0.02);
+    reg('heart', heart, V(0.0, 0.17, 0.05));
+
+    // Liver — a wedge under the ribs on the subject's right (viewer's left)
+    var liver = new THREE.Group();
+    liver.position.set(-0.13, 0.52, 0.08);
+    // Two overlapping lobes, not a box: the shell scales a lit region up to ~1.3x
+    // and in resting-energy mode the liver sits at 95%, where a rotated cuboid
+    // stopped reading as an organ and started reading as a slab across the ribs.
+    var liverMat = organic(regionColor('liver'), { emissive: '#2a1005', shininess: 10 });
+    var liverLobe = ball(liver, 1, 0.155, 0.075, 0.105, liverMat, -0.02, 0.005, 0);
+    liverLobe.rotation.z = -0.2;
+    var liverLobeR = ball(liver, 1, 0.085, 0.06, 0.085, liverMat, 0.13, -0.025, 0.015);
+    liverLobeR.rotation.z = -0.3;
+    ball(liver, 1, 0.045, 0.035, 0.045, organic('#78350f', { emissive: '#2a1005' }), 0.08, -0.055, 0.05);
+    reg('liver', liver, V(-0.02, 0.14, 0.06));
+
+    // Stomach + intestines
+    var gut = new THREE.Group();
+    gut.position.set(0, 0.26, 0.09);
+    var stomach = ball(gut, 0.09, 1.25, 0.8, 0.7, organic(regionColor('gut'), { emissive: '#3a1a05', shininess: 12 }), 0.12, 0.2, 0);
+    stomach.rotation.z = -0.5;
+    tube(gut, [[-0.06, 0.1, 0.02], [0.12, 0.02, 0.03], [-0.13, -0.05, 0.02], [0.13, -0.11, 0.03], [-0.12, -0.17, 0.02], [0.1, -0.22, 0.02], [-0.06, -0.26, 0.01]],
+      0.034, organic('#fdba74', { emissive: '#3a1a05' }), 70);                                        // small intestine
+    tube(gut, [[-0.24, -0.26, -0.02], [-0.25, 0.08, -0.02], [-0.12, 0.15, -0.03], [0.12, 0.15, -0.03], [0.25, 0.08, -0.02], [0.24, -0.26, -0.02]],
+      0.05, organic('#f97316', { emissive: '#3a1a05' }), 48);                                         // large intestine frame
+    reg('gut', gut, V(0, 0.36, 0.06));
+
+    // Kidneys — paired beans at the back
+    var kidneys = new THREE.Group();
+    kidneys.position.set(0, 0.31, -0.13);
+    ball(kidneys, 0.065, 0.9, 1.5, 0.7, organic(regionColor('kidneys'), { emissive: '#3b2a05', shininess: 14 }), -0.17, 0, 0);
+    ball(kidneys, 0.065, 0.9, 1.5, 0.7, organic(regionColor('kidneys'), { emissive: '#3b2a05', shininess: 14 }), 0.17, 0, 0);
+    reg('kidneys', kidneys, V(0, 0.18, -0.02));
+
+    // Skeleton — spine, ribs, pelvis and the long bones (distributed: no group scaling)
+    var bones = new THREE.Group();
+    // A touch below the chip colour: a bright skeleton would out-shout the glow that carries the lesson.
+    var boneMat = organic(contrast ? '#ffffff' : '#c7ced9', { emissive: '#111827', shininess: 8 });
+    var yb;
+    for (yb = 0; yb < 12; yb++) {
+      var vert = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.05, 10), boneMat);
+      vert.position.set(0, 0.02 + yb * 0.078, -0.11);
+      bones.add(vert);
+    }
+    var rib;
+    for (rib = 0; rib < 5; rib++) {
+      var ribMesh = new THREE.Mesh(new THREE.TorusGeometry(0.30 - rib * 0.015, 0.014, 6, 30, Math.PI * 1.15), boneMat);
+      ribMesh.rotation.x = Math.PI / 2;
+      ribMesh.rotation.z = -Math.PI * 0.575;
+      ribMesh.position.set(0, 0.86 - rib * 0.085, -0.02);
+      bones.add(ribMesh);
+    }
+    var pelvis = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.03, 8, 30), boneMat);
+    pelvis.rotation.x = Math.PI / 2;
+    pelvis.position.set(0, -0.02, -0.04);
+    bones.add(pelvis);
+    var skullCap = new THREE.Mesh(new THREE.SphereGeometry(0.2, 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.5), boneMat);
+    skullCap.position.set(0, 1.22, 0);
+    bones.add(skullCap);
+    rod(bones, V(-0.46, 0.94, 0), V(-0.56, 0.47, 0.02), 0.028, boneMat);   // humerus L
+    rod(bones, V(0.46, 0.94, 0), V(0.56, 0.47, 0.02), 0.028, boneMat);     // humerus R
+    rod(bones, V(-0.56, 0.47, 0.02), V(-0.62, 0.0, 0.06), 0.024, boneMat); // forearm L
+    rod(bones, V(0.56, 0.47, 0.02), V(0.62, 0.0, 0.06), 0.024, boneMat);   // forearm R
+    rod(bones, V(-0.16, -0.06, 0), V(-0.18, -0.5, 0.01), 0.034, boneMat);  // femur L
+    rod(bones, V(0.16, -0.06, 0), V(0.18, -0.5, 0.01), 0.034, boneMat);    // femur R
+    rod(bones, V(-0.18, -0.5, 0.01), V(-0.19, -0.86, 0.02), 0.028, boneMat); // tibia L
+    rod(bones, V(0.18, -0.5, 0.01), V(0.19, -0.86, 0.02), 0.028, boneMat);   // tibia R
+    reg('bones', bones, V(0, 0.55, -0.3), true);
+
+    // Muscles — the big movers, as ellipsoids over the long bones
+    var muscles = new THREE.Group();
+    var muscleMat = organic(regionColor('muscles'), { emissive: '#3b0a0a', shininess: 14 });
+    ball(muscles, 1, 0.075, 0.2, 0.075, muscleMat, -0.5, 0.72, 0.02);     // biceps L
+    ball(muscles, 1, 0.075, 0.2, 0.075, muscleMat, 0.5, 0.72, 0.02);      // biceps R
+    ball(muscles, 1, 0.105, 0.24, 0.1, muscleMat, -0.17, -0.27, 0.03);    // quad L
+    ball(muscles, 1, 0.105, 0.24, 0.1, muscleMat, 0.17, -0.27, 0.03);     // quad R
+    ball(muscles, 1, 0.07, 0.17, 0.07, muscleMat, -0.19, -0.66, -0.03);   // calf L
+    ball(muscles, 1, 0.07, 0.17, 0.07, muscleMat, 0.19, -0.66, -0.03);    // calf R
+    ball(muscles, 1, 0.15, 0.09, 0.05, muscleMat, -0.17, 0.8, 0.2);       // pec L
+    ball(muscles, 1, 0.15, 0.09, 0.05, muscleMat, 0.17, 0.8, 0.2);        // pec R
+    reg('muscles', muscles, V(-0.5, 0.98, 0.05), true);
+
+    // Blood — main vessels leaving the heart
+    var blood = new THREE.Group();
+    var vesselMat = organic(regionColor('blood'), { emissive: '#3f0d1d', shininess: 22 });
+    tube(blood, [[0.05, 0.8, 0.09], [0.03, 0.98, 0.06], [0.02, 1.08, 0.05], [0.0, 1.16, 0.04]], 0.02, vesselMat, 20);            // carotid
+    tube(blood, [[0.05, 0.78, 0.06], [0.02, 0.55, -0.02], [0.0, 0.3, -0.04], [0.0, 0.05, -0.03]], 0.026, vesselMat, 24);         // aorta
+    tube(blood, [[0.0, 0.05, -0.03], [-0.15, -0.1, 0.01], [-0.18, -0.5, 0.03], [-0.19, -0.84, 0.05]], 0.018, vesselMat, 24);     // leg L
+    tube(blood, [[0.0, 0.05, -0.03], [0.15, -0.1, 0.01], [0.18, -0.5, 0.03], [0.19, -0.84, 0.05]], 0.018, vesselMat, 24);        // leg R
+    tube(blood, [[0.05, 0.8, 0.06], [-0.3, 0.9, 0.04], [-0.55, 0.5, 0.05], [-0.62, 0.02, 0.08]], 0.016, vesselMat, 24);          // arm L
+    tube(blood, [[0.05, 0.8, 0.06], [0.3, 0.9, 0.04], [0.55, 0.5, 0.05], [0.62, 0.02, 0.08]], 0.016, vesselMat, 24);             // arm R
+    reg('blood', blood, V(0.3, 1.02, 0.08), true);
+
+    // Immune — lymph nodes, thymus, spleen
+    var immune = new THREE.Group();
+    var lymphMat = organic(regionColor('immune'), { emissive: '#052e16', shininess: 18 });
+    [[-0.12, 0.99, 0.1], [0.12, 0.99, 0.1], [-0.4, 0.86, 0.02], [0.4, 0.86, 0.02], [-0.18, -0.03, 0.16], [0.18, -0.03, 0.16]].forEach(function (p) {
+      ball(immune, 0.032, 1, 1.3, 1, lymphMat, p[0], p[1], p[2]);
+    });
+    ball(immune, 0.045, 1.2, 0.9, 0.6, lymphMat, 0, 0.87, 0.16);               // thymus
+    ball(immune, 0.06, 0.9, 1.5, 0.6, lymphMat, 0.24, 0.45, -0.08);            // spleen
+    reg('immune', immune, V(-0.4, 1.0, 0.05), true);
+
+    // ── Glass body last. Transparent, no depth write, so organs show through. ──
+    // It is the "skin" region for the map (selectable from the list, not by
+    // raycast — a pickable shell in front of every organ would swallow every
+    // click), and it opts out of the shell's selection scaling.
+    var skin = new THREE.Group();
+    skin.userData.noPick = true;
+    var glassMat = organic(contrast ? '#ffffff' : '#bfdbfe', { opacity: contrast ? 0.18 : 0.24, depthWrite: false, shininess: 90, emissive: '#16305c' });
+    ball(skin, 1, 0.235, 0.26, 0.245, glassMat, 0, 1.2, 0);                    // head
+    rod(skin, V(0, 0.98, 0), V(0, 1.06, 0), 0.075, glassMat);                   // neck
+    ball(skin, 1, 0.44, 0.6, 0.27, glassMat, 0, 0.52, 0);                       // torso
+    ball(skin, 1, 0.36, 0.3, 0.24, glassMat, 0, 0.0, 0);                        // hips
+    rod(skin, V(-0.45, 0.96, 0), V(-0.57, 0.47, 0.02), 0.085, glassMat);        // upper arm L
+    rod(skin, V(0.45, 0.96, 0), V(0.57, 0.47, 0.02), 0.085, glassMat);          // upper arm R
+    rod(skin, V(-0.57, 0.47, 0.02), V(-0.63, -0.03, 0.06), 0.07, glassMat);     // forearm L
+    rod(skin, V(0.57, 0.47, 0.02), V(0.63, -0.03, 0.06), 0.07, glassMat);       // forearm R
+    ball(skin, 1, 0.07, 0.09, 0.05, glassMat, -0.64, -0.1, 0.07);               // hand L
+    ball(skin, 1, 0.07, 0.09, 0.05, glassMat, 0.64, -0.1, 0.07);                // hand R
+    rod(skin, V(-0.17, -0.02, 0), V(-0.18, -0.5, 0.01), 0.13, glassMat);        // thigh L
+    rod(skin, V(0.17, -0.02, 0), V(0.18, -0.5, 0.01), 0.13, glassMat);          // thigh R
+    rod(skin, V(-0.18, -0.5, 0.01), V(-0.19, -0.86, 0.02), 0.095, glassMat);    // shin L
+    rod(skin, V(0.18, -0.5, 0.01), V(0.19, -0.86, 0.02), 0.095, glassMat);      // shin R
+    ball(skin, 1, 0.1, 0.045, 0.17, glassMat, -0.19, -0.87, 0.08);              // foot L
+    ball(skin, 1, 0.1, 0.045, 0.17, glassMat, 0.19, -0.87, 0.08);               // foot R
+    skin.traverse(function (o) { if (o.isMesh) { o.renderOrder = 5; o.material.userData._keepOpaqueOnRecede = false; } });
+    reg('skin', skin, V(0.0, 1.5, 0.2), true);
+
+    // ── Nutrient streams ──
+    // Small bright particles travel from the gut to every active region so the
+    // scene answers "where does it GO", not just "what lights up". Driven from
+    // frame() so a nutrient change never rebuilds the WebGL scene; sceneProps
+    // is null on the very first build, which is why nothing here reads it now.
+    var GUT_POINT = V(0, 0.32, 0.16);
+    var anchors = {};
+    BODY_REGIONS.forEach(function (r) {
+      var g = meshes[r.id];
+      if (!g) return;
+      var a = g.userData.labelAnchor ? g.userData.labelAnchor.clone() : V(0, 0, 0);
+      g.localToWorld(a);
+      figure.worldToLocal(a);
+      anchors[r.id] = a;
+    });
+    var PER_REGION = 5;
+    var streams = {};
+    var particleGeo = new THREE.SphereGeometry(0.02, 8, 6);
+    var streamMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(contrast ? '#ffffff' : '#fde68a'), transparent: true, opacity: 0.95 });
+    var streamGroup = new THREE.Group();
+    figure.add(streamGroup);
+    BODY_REGIONS.forEach(function (r) {
+      var end = anchors[r.id];
+      if (!end) return;
+      // Bow the path toward the viewer so it reads in front of the body.
+      var mid = V((GUT_POINT.x + end.x) * 0.5 + (end.x >= 0 ? 0.25 : -0.25), (GUT_POINT.y + end.y) * 0.5 + 0.1, 0.42);
+      var list = [];
+      for (var i = 0; i < PER_REGION; i++) {
+        var p = new THREE.Mesh(particleGeo, streamMat);
+        p.visible = false;
+        streamGroup.add(p);
+        list.push(p);
+      }
+      streams[r.id] = { parts: list, a: GUT_POINT.clone(), b: mid, c: end.clone() };
+    });
+
+    // ── Arrival pins ──
+    // A stream that ends inside an organ is easy to lose against the organ, and
+    // four of the twelve regions are distributed systems whose "glow" is spread
+    // across the whole body. A flat-shaded pin with a soft back-faced halo at
+    // each region's anchor gives every region the SAME unambiguous "this address
+    // is lit" cue. A sphere needs no billboarding: it reads the same from every
+    // angle, which a ring or a sprite would not.
+    // They are deliberately NOT in `meshes` or `picks`: the shell owns scale and
+    // emissive for everything in `meshes`, and a pin in front of an organ would
+    // swallow that organ's click.
+    // Centre of the first mesh in the group, in figure space. NOT the label
+    // anchor (offset above the part, so a pin there floats in mid-air) and NOT
+    // getWorldPosition (tube meshes bake their vertices and sit at the origin).
+    var pinBox = new THREE.Box3();
+    var pinMid = new THREE.Vector3();
+    function pinAnchorFor(group) {
+      var first = null;
+      group.traverse(function (o) { if (!first && o.isMesh) first = o; });
+      if (!first) return null;
+      pinBox.setFromObject(first);
+      if (pinBox.isEmpty()) return null;
+      pinBox.getCenter(pinMid);
+      return figure.worldToLocal(pinMid.clone());
+    }
+    var pinGeo = new THREE.SphereGeometry(0.05, 14, 12);
+    var pins = {};
+    BODY_REGIONS.forEach(function (r, ri) {
+      var g = meshes[r.id];
+      var at = g ? pinAnchorFor(g) : null;
+      if (!at) return;
+      var col = new THREE.Color(contrast ? '#ffffff' : r.color);
+      // Unlit and depth-tested off: the cue has to survive being behind the
+      // ribs or inside the glass, which is where half of these organs live.
+      var pin = new THREE.Mesh(pinGeo, new THREE.MeshBasicMaterial({
+        color: col, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false
+      }));
+      pin.position.copy(at);
+      pin.visible = false;
+      pin.renderOrder = 12;
+      figure.add(pin);
+      // Staggered phase: twelve pins beating in lockstep read as a strobe, and
+      // 0.35 Hz stays far below the 3-per-second photosensitivity guideline.
+      pins[r.id] = { pin: pin, phase: ri * 0.7 };
+    });
+    var tmp = new THREE.Vector3();
+    var lastColor = '';
+    function frame(now, sp, reduced) {
+      var active = (sp && sp.active) || null;
+      var color = (sp && sp.flowColor) || '#fde68a';
+      if (!contrast && color !== lastColor) { lastColor = color; try { streamMat.color.set(color); } catch (e) {} }
+      var t0 = (now || 0) / 1000;
+      // Behaviour probe (dev-tools/check_stem_behavior pattern): which regions
+      // are streaming this frame, and the magnitude each one was drawn at. Filled
+      // during the loop below so it reports what the SCENE used, not what the view
+      // computed. The pulse is deliberately excluded: a beating value would make a
+      // 22%-vs-8% comparison flake on which frame the test happened to read.
+      var hooks = (typeof window !== 'undefined') && window.__testHooks;
+      var lit = hooks ? [] : null;
+      var mags = hooks ? {} : null;
+      for (var id in streams) {
+        if (!streams.hasOwnProperty(id)) continue;
+        var s = streams[id];
+        var lvl = (active && active[id]) || 0;
+        var on = lvl > 0.05;
+        var pr = pins[id];
+        if (pr) {
+          pr.pin.visible = on;
+          if (on) {
+            // ~0.35 Hz, staggered per region. Level drives SIZE, so a 22% organ
+            // and an 8% one are told apart at a glance in resting-energy mode.
+            var beat = reduced ? 1 : (0.92 + 0.16 * Math.sin(t0 * 2.2 + pr.phase));
+            var mag = Math.max(0.25, Math.min(1, lvl));
+            pr.pin.scale.setScalar((0.62 + 0.66 * mag) * beat);
+          }
+        }
+        if (lit && on) { lit.push(id); mags[id] = Math.max(0.25, Math.min(1, lvl)); }
+        for (var i = 0; i < s.parts.length; i++) {
+          var p = s.parts[i];
+          if (!on) { if (p.visible) p.visible = false; continue; }
+          p.visible = true;
+          // Reduced motion: a static dotted trail still shows the route.
+          var t = reduced ? ((i + 0.5) / s.parts.length) : ((t0 * 0.28 + i / s.parts.length) % 1);
+          var u = 1 - t;
+          tmp.set(
+            u * u * s.a.x + 2 * u * t * s.b.x + t * t * s.c.x,
+            u * u * s.a.y + 2 * u * t * s.b.y + t * t * s.c.y,
+            u * u * s.a.z + 2 * u * t * s.b.z + t * t * s.c.z);
+          p.position.copy(tmp);
+          var sc = 0.7 + 0.6 * Math.sin(Math.PI * t);
+          p.scale.setScalar(sc);
+        }
+      }
+      if (hooks) hooks.nutritionBodyMap = { lit: lit, mag: mags, flowColor: color, contrast: contrast };
+    }
+
+    return { meshes: meshes, picks: picks, anchor: figure, frame: frame };
+  }
+
+  // Viewer singleton: a fresh viewer per render would rebuild the WebGL scene
+  // on every state change. The null fallback keeps the 2D region list (which
+  // carries the whole lesson) working when the host predates makeBayViewer.
+  var NUTRI_BODY3D_NULL = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  var NUTRI_BODY3D_MISSING = null;
+  var NUTRI_BODY3D = (function () {
+    var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) { NUTRI_BODY3D_MISSING = 'host'; return NUTRI_BODY3D_NULL; }
+    return mk({
+      parts: BODY_REGIONS.map(function (r) { return { id: r.id, label: r.label, color: r.color }; }),
+      buildScene: nutriBuildBodyScene,
+      home: { yaw: 0.42, pitch: 0.2, dist: 4.05 },
+      failMessage: 'The 3D body could not load. The region list below carries the same map.'
+    });
+  })();
+  // Stable ref identity — an inline arrow would detach and rebuild the scene each render.
+  function nutriBody3dAttach(node) { NUTRI_BODY3D.attach(node || null); }
+
   // ── Stable view identities (module scope) ──
   // Components defined inside render() get a new function identity every host
   // re-render, so React unmounts/remounts them on ANY toolData write — wiping
@@ -15808,6 +16521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       DeficiencyDetective = stableType('DeficiencyDetective', DeficiencyDetective);
       MacroInquiryWidget = stableType('MacroInquiryWidget', MacroInquiryWidget);
       HydrationLab = stableType('HydrationLab', HydrationLab);
+      NutrientBodyMap = stableType('NutrientBodyMap', NutrientBodyMap);
       var upd = function(key, val) { ctx.update('nutritionLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[NutritionLab]', msg); };
 
@@ -15839,7 +16553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['myNutritionKit','macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab','macroInquiry'];
+      var BADGE_IDS = ['myNutritionKit','macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab','macroInquiry','bodyMap'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -15864,7 +16578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': __alloT('stem.nutritionlab.back_to_nutritionlab_menu', 'Back to NutritionLab menu'),
-            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
+            className: 'px-3 py-1.5 rounded-lg bg-black/25 hover:bg-black/40 font-bold text-sm transition-colors focus:outline-none focus:ring-2 ring-white/70'
           }, __alloT('stem.nutritionlab.menu', '← Menu')),
           h('span', { className: 'text-3xl' }, props.icon),
           h('h1', { className: 'text-xl font-black flex-1' }, props.title)
@@ -15875,7 +16589,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
           h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-700' }, props.label),
           h('div', { className: 'text-2xl font-black ' + (props.color || 'text-emerald-700') }, props.value),
-          props.unit && h('div', { className: 'text-[10px] text-slate-700' }, props.unit)
+          props.unit && h('div', { className: 'text-[10px] text-slate-700' }, props.unit),
+          props.hint && h('div', { className: 'text-[10px] text-slate-700 mt-1 leading-snug' }, props.hint)
         );
       }
 
@@ -15943,7 +16658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             subtitle: __alloT('stem.nutritionlab.127_personal_evidence_based_tools', '127 personal, evidence-based tools'),
             desc: __alloT('stem.nutritionlab.build_your_own_nutrition_practice_meal', 'Build your own nutrition practice: meal logs, hydration, goals, body-listening, cooking, cultural foods, sports fuel, mental-health x food, NEDA-aligned recovery support, Maine seasonal eating, and more. Physiology-first, never restriction. All data stays in your browser.'),
             bullets: ['127 personal tools across 13 categories', 'NEDA-aligned content + safety contacts', 'Maine-specific (fisheries, farmers markets, seasons)', 'Privacy-first — no server sync'],
-            color: 'from-emerald-600 to-teal-700',
+            color: 'from-emerald-700 to-teal-800',
             ring: 'ring-emerald-500/40',
             ready: true
           },
@@ -15952,16 +16667,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             subtitle: __alloT('stem.nutritionlab.build_a_plate_see_what_your_body_uses_', 'Build a plate, see what your body uses it for'),
             desc: __alloT('stem.nutritionlab.click_foods_to_add_them_to_a_plate_wat', 'Click foods to add them to a plate. Watch the carbs, protein, fat, and fiber totals update from real USDA values. Get a physiology readout: which body systems each meal supports — muscle repair, brain fuel, oxygen delivery, gut health. No calorie targets, no good/bad food labels.'),
             bullets: ['15 real foods with USDA values', 'Live macro totals + fiber', 'Physiology benefit readout', 'Keyboard accessible — no drag-drop required'],
-            color: 'from-emerald-500 to-teal-700',
+            color: 'from-emerald-700 to-teal-800',
             ring: 'ring-emerald-500/40',
             ready: true
+          },
+          {
+            id: 'bodyMap', title: __alloT('stem.nutritionlab.bm_card_title', 'Nutrient Body Map'), icon: '🫀',
+            subtitle: __alloT('stem.nutritionlab.bm_card_subtitle', '3D — where each nutrient goes to work'),
+            desc: __alloT('stem.nutritionlab.bm_card_desc', 'Pick any nutrient and watch the organs that use it glow on a glass 3D figure, with a stream tracing the route from your gut. Click an organ to see everything it depends on. Then predict before you look: which region is iron\'s main address?'),
+            bullets: ['12 body regions × 35 nutrients, NIH ODS sourced', 'Turn, tilt and zoom the figure — keyboard too', 'Predict-then-check challenges', 'Hands off from the Macro Lab plate and the Atlas'],
+            color: 'from-fuchsia-700 to-violet-800',
+            ring: 'ring-fuchsia-500/40',
+            ready: true,
+            is3d: true
           },
           {
             id: 'microAtlas', title: __alloT('stem.nutritionlab.micronutrient_atlas', 'Micronutrient Atlas'), icon: '🌈',
             subtitle: __alloT('stem.nutritionlab.13_vitamins_15_minerals_omega_3', '13 vitamins, 15 minerals, omega-3'),
             desc: __alloT('stem.nutritionlab.click_any_nutrient_to_see_what_it_does', 'Click any nutrient to see what it does, where to find it, and what happens when you don\'t get enough. Maine-relevant: vitamin D (winter sun problem), omega-3 (Maine fisheries), iron (high-need group is teens). Every entry sourced from NIH ODS Fact Sheets.'),
             bullets: ['13 essential vitamins', '15 essential minerals', 'Omega-3 EFA breakdown', 'NIH ODS sourced inline'],
-            color: 'from-lime-500 to-emerald-600',
+            color: 'from-lime-700 to-emerald-800',
             ring: 'ring-lime-500/40',
             ready: true
           },
@@ -15970,7 +16695,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             subtitle: __alloT('stem.nutritionlab.decode_a_nutrition_facts_panel_like_a_', 'Decode a Nutrition Facts panel like a pro'),
             desc: __alloT('stem.nutritionlab.real_style_nutrition_facts_panels_from', 'Real-style Nutrition Facts panels from common foods. Decode serving-size traps, % Daily Value, added sugars, sodium. Progressive challenges from a simple granola bar up to a multi-serving frozen meal that lies about its real serving count.'),
             bullets: ['4–5 progressive challenges', 'Serving-size deception drills', '% DV, added sugars, sodium', 'FDA label spec aligned'],
-            color: 'from-cyan-500 to-blue-600',
+            color: 'from-cyan-700 to-blue-800',
             ring: 'ring-cyan-500/40',
             ready: true
           }
@@ -15980,7 +16705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'energyBalance', title: __alloT('stem.nutritionlab.energy_metabolism', 'Energy & Metabolism'), icon: '⚡',
             subtitle: __alloT('stem.nutritionlab.atp_mitochondria_and_your_brain', 'ATP, mitochondria, and your brain'),
             desc: __alloT('stem.nutritionlab.where_your_body_s_energy_actually_come', 'Where your body\'s energy actually comes from. ATP cycle, why brains use ~20% of daily energy, what BMR / TDEE actually mean. Framed as physiology, not weight management.'),
-            color: 'from-amber-500 to-orange-600',
+            color: 'from-amber-800 to-orange-800',
             ring: 'ring-amber-500/40',
             ready: true
           },
@@ -15988,7 +16713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'digestion', title: __alloT('stem.nutritionlab.digestion_walkthrough', 'Digestion Walkthrough'), icon: '🍽️',
             subtitle: __alloT('stem.nutritionlab.mouth_stomach_intestines', 'Mouth → stomach → intestines'),
             desc: __alloT('stem.nutritionlab.where_each_macronutrient_is_broken_dow', 'Where each macronutrient is broken down. Hormones (insulin, glucagon, leptin, ghrelin) and what they actually do.'),
-            color: 'from-rose-500 to-pink-600',
+            color: 'from-rose-700 to-pink-800',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -15996,7 +16721,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'myths', title: __alloT('stem.nutritionlab.common_nutrition_myths', 'Common Nutrition Myths'), icon: '🔍',
             subtitle: __alloT('stem.nutritionlab.8_10_myths_debunked_with_citations', '8–10 myths debunked with citations'),
             desc: __alloT('stem.nutritionlab.detoxes_superfoods_gluten_free_for_non', 'Detoxes, "superfoods," gluten-free for non-celiac, vitamin megadosing, fat-free craze, organic = healthier. NIH and Harvard sourced.'),
-            color: 'from-violet-500 to-purple-700',
+            color: 'from-violet-700 to-purple-800',
             ring: 'ring-violet-500/40',
             ready: true
           },
@@ -16004,7 +16729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'foodMood', title: __alloT('stem.nutritionlab.food_mental_health', 'Food & Mental Health'), icon: '🧠',
             subtitle: __alloT('stem.nutritionlab.real_research_careful_framing', 'Real research, careful framing'),
             desc: __alloT('stem.nutritionlab.omega_3_depression_iron_adhd_style_fat', 'Omega-3 + depression, iron + ADHD-style fatigue, sugar crashes, caffeine + adolescent anxiety, gut-brain axis. Contributing factors, not cures.'),
-            color: 'from-indigo-500 to-blue-700',
+            color: 'from-indigo-700 to-blue-800',
             ring: 'ring-indigo-500/40',
             ready: true
           },
@@ -16012,7 +16737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'edAwareness', title: __alloT('stem.nutritionlab.eating_disorder_awareness', 'Eating Disorder Awareness'), icon: '💚',
             subtitle: __alloT('stem.nutritionlab.neda_aligned_opt_in_content_warning', 'NEDA-aligned · opt-in content warning'),
             desc: __alloT('stem.nutritionlab.spectrum_of_disordered_eating_signs_to', 'Spectrum of disordered eating, signs to watch for, online content red flags + algorithm-awareness, how to support a friend, what to do if it\'s you, recovery paths. NEDA + Surgeon General sourced. Gated by content warning.'),
-            color: 'from-teal-500 to-emerald-700',
+            color: 'from-teal-700 to-emerald-800',
             ring: 'ring-teal-500/40',
             ready: true
           },
@@ -16020,7 +16745,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'maineReality', title: __alloT('stem.nutritionlab.maine_food_reality', 'Maine Food Reality'), icon: '🌲',
             subtitle: __alloT('stem.nutritionlab.winter_fisheries_food_deserts', 'Winter, fisheries, food deserts'),
             desc: __alloT('stem.nutritionlab.maine_winters_and_vitamin_d_maine_fish', 'Maine winters and vitamin D, Maine fisheries (omega-3 powerhouse), Aroostook + Washington food deserts, school meals + SNAP basics, Good Shepherd Food Bank.'),
-            color: 'from-stone-500 to-stone-700',
+            color: 'from-stone-700 to-stone-800',
             ring: 'ring-stone-500/40',
             ready: true
           },
@@ -16028,7 +16753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'careerPaths', title: __alloT('stem.nutritionlab.career_pathways', 'Career Pathways'), icon: '🎓',
             subtitle: __alloT('stem.nutritionlab.rdn_public_health_food_science', 'RDN, public health, food science'),
             desc: __alloT('stem.nutritionlab.registered_dietitian_master_s_1200hr_i', 'Registered Dietitian (Master\'s + 1200hr internship), public health nutritionist, food scientist, sports nutritionist, school nutrition director. UMaine + Husson programs.'),
-            color: 'from-blue-600 to-indigo-700',
+            color: 'from-blue-700 to-indigo-800',
             ring: 'ring-blue-600/40',
             ready: true
           },
@@ -16036,7 +16761,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'maineDay', title: __alloT('stem.nutritionlab.build_a_maine_day', 'Build a Maine Day'), icon: '🌲',
             subtitle: __alloT('stem.nutritionlab.pick_4_meals_see_what_your_day_adds_up', 'Pick 4 meals → see what your day adds up to'),
             desc: __alloT('stem.nutritionlab.pick_one_food_for_breakfast_lunch_dinn', 'Pick one food for breakfast, lunch, dinner, and snack from a Maine-realistic short list (Maine wild blueberries, Atlantic salmon, lobster roll, fortified cereal, etc.). Watch six nutrient bars (protein, fiber, vitamin D, omega-3, iron, calcium) update against approximate adolescent DRIs. Final summary names deficits + strengths and ties them to Maine context (winter vit D, fisheries omega-3, adolescent iron).'),
-            color: 'from-stone-500 to-emerald-700',
+            color: 'from-stone-700 to-emerald-800',
             ring: 'ring-stone-500/40',
             ready: true
           },
@@ -16044,7 +16769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'deficiencyDetective', title: __alloT('stem.nutritionlab.deficiency_detective', 'Deficiency Detective'), icon: '🕵️',
             subtitle: __alloT('stem.nutritionlab.10_vignettes_name_the_missing_nutrient', '10 vignettes — name the missing nutrient'),
             desc: __alloT('stem.nutritionlab.10_clinical_vignettes_identify_which_o', '10 clinical vignettes; identify which of 6 nutrients (vitamin D, iron, B12, folate, calcium, iodine) is most likely missing. Vignettes target the canonical real-world deficiency cases: Maine winter runner with stress fractures, menstruating teen with ADHD-like inattention, strict vegan with neuropathy, preconception folate, lactose-intolerant teen with low bone density, PPI-induced B12 deficiency.'),
-            color: 'from-rose-500 to-pink-700',
+            color: 'from-rose-700 to-pink-800',
             ring: 'ring-rose-500/40',
             ready: true
           },
@@ -16052,7 +16777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'hydrationLab', title: __alloT('stem.nutritionlab.hydration_lab', 'Hydration Lab'), icon: '💧',
             subtitle: __alloT('stem.nutritionlab.water_your_body_and_the_science_of_sta', 'Water, your body, and the science of staying hydrated'),
             desc: __alloT('stem.nutritionlab.daily_needs_calculator_nam_adequate_in', 'Daily-needs calculator (NAM Adequate Intake by age/sex), self-check quiz with the 8-point urine-color scale (ACSM/Armstrong), beverage comparison (water vs sports drink vs soda — sodium, sugar, hydration efficacy), and a sweat-rate calculator for student athletes (NATA standard). Physiology-first framing: hydration as body function, never appetite suppression.'),
-            color: 'from-sky-500 to-cyan-700',
+            color: 'from-sky-700 to-cyan-800',
             ring: 'ring-sky-500/40',
             ready: true
           },
@@ -16060,7 +16785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             id: 'macroInquiry', title: __alloT('stem.nutritionlab.macro_inquiry', 'Macro Inquiry'), icon: '🔬',
             subtitle: __alloT('stem.nutritionlab.predict_energy_state_from_macro_ratios', 'Explore energy state from macro ratios'),
             desc: __alloT('stem.nutritionlab.move_four_sliders_carb_protein_fat_fib', 'Move the carbohydrate, protein, fat, and fiber controls and observe how the modeled energy state changes. The live model also shows a satiety estimate and fiber-adjusted glycemic-index proxy; record a hypothesis or pattern you notice.'),
-            color: 'from-teal-500 to-emerald-700',
+            color: 'from-teal-700 to-emerald-800',
             ring: 'ring-teal-500/40',
             ready: true
           }
@@ -16104,7 +16829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
-                h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Lab')
+                h('span', { className: 'bg-black/25 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, c.is3d ? '3D' : (isBig ? 'Core' : 'Lab'))
               ),
               h('h2', { className: isBig ? 'text-2xl font-black' : 'text-xl font-black' }, c.title),
               h('p', { className: 'text-sm opacity-90 font-medium' }, c.subtitle)
@@ -16114,7 +16839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               isBig && c.bullets && h('ul', { className: 'space-y-1' },
                 c.bullets.map(function(b, i) {
                   return h('li', { key: i, className: 'text-xs text-slate-700 flex items-start gap-1.5' },
-                    h('span', { className: 'text-emerald-600 font-bold' }, '✓'),
+                    h('span', { className: 'text-emerald-700 font-bold' }, '✓'),
                     h('span', null, b)
                   );
                 })
@@ -16127,7 +16852,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           h('div', { className: 'text-center mb-6' },
             h('div', { className: 'text-6xl mb-3' },
               h('span', { className: 'nutritionlab-leaf-sway inline-block', 'aria-hidden': true }, '🥗')),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
+            h('h1', { className: 'text-3xl sm:text-4xl font-black text-slate-800 mb-2' }, 'NutritionLab'),
             h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto' },
               __alloT('stem.nutritionlab.nutrition_science_from_a_physiology_fi', 'Nutrition science from a physiology-first lens. What your body uses food for, why micronutrients matter, how to read a label, and the careers built on this knowledge. No calorie targets, no good/bad food binaries — just real biology.'))
           ),
@@ -16144,11 +16869,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             )
           ),
+          // Start-here path: three concrete moves in order. Dismissible and
+          // remembered, so returning students are not nagged.
+          !d.nlStartDismissed && h('div', { className: 'mb-6 p-4 rounded-2xl border-2 border-fuchsia-300 bg-gradient-to-r from-fuchsia-50 via-white to-emerald-50', 'data-nutrition-start-here': 'true' },
+            h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('span', { className: 'text-2xl', 'aria-hidden': true }, '🧭'),
+                h('div', null,
+                  h('div', { className: 'font-bold text-fuchsia-900 mb-1' }, __alloT('stem.nutritionlab.start_here_title', 'Start here — a three-step first lap')),
+                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                    __alloT('stem.nutritionlab.start_here_copy', 'New to the lab? Build a plate, follow it into the body in 3D, then decode a real label. Each step takes about five minutes and none of them keeps score.'))
+                )
+              ),
+              h('button', {
+                type: 'button',
+                onClick: function() { upd('nlStartDismissed', true); announce('Start-here guide hidden.'); },
+                'aria-label': __alloT('stem.nutritionlab.start_here_dismiss_aria', 'Hide the start-here guide'),
+                className: 'text-xs font-bold px-2.5 py-1 rounded-lg bg-white border border-fuchsia-300 text-fuchsia-900 hover:bg-fuchsia-100 focus:outline-none focus:ring-2 ring-fuchsia-500/40'
+              }, __alloT('stem.nutritionlab.start_here_dismiss', 'Got it'))
+            ),
+            h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-3' },
+              [
+                { id: 'macroLab',    n: '1', icon: '🍽️', label: __alloT('stem.nutritionlab.start_step_1', 'Build a plate'),           hint: __alloT('stem.nutritionlab.start_step_1_hint', 'Add foods; watch carbs, protein, fat and fiber add up') },
+                { id: 'bodyMap',     n: '2', icon: '🫀', label: __alloT('stem.nutritionlab.start_step_2', 'Follow it into the body'), hint: __alloT('stem.nutritionlab.start_step_2_hint', 'See which organs use each nutrient, in 3D') },
+                { id: 'labelReader', n: '3', icon: '🏷️', label: __alloT('stem.nutritionlab.start_step_3', 'Decode a label'),          hint: __alloT('stem.nutritionlab.start_step_3_hint', 'Serving-size tricks, % Daily Value, added sugars') }
+              ].map(function(step) {
+                return h('button', {
+                  key: step.id, type: 'button',
+                  onClick: function() { goto(step.id); },
+                  className: 'text-left rounded-xl border-2 border-slate-200 bg-white p-3 hover:border-fuchsia-500 hover:shadow transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 nutritionlab-card-lift'
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'w-6 h-6 rounded-full bg-fuchsia-700 text-white text-xs font-black flex items-center justify-center', 'aria-hidden': true }, step.n),
+                    h('span', { className: 'text-xl', 'aria-hidden': true }, step.icon),
+                    h('span', { className: 'text-sm font-black text-slate-800' }, step.label)
+                  ),
+                  h('div', { className: 'text-[11px] text-slate-700 leading-snug' }, step.hint)
+                );
+              })
+            )
+          ),
           h('div', {
             'aria-live': 'polite',
-            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
+            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex flex-wrap items-center justify-between gap-4'
           },
-            h('div', { className: 'flex items-center gap-3' },
+            h('div', { className: 'flex min-w-0 flex-1 items-center gap-3' },
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🌱'),
               h('div', null,
                 h('div', { className: 'font-bold text-slate-800' },
@@ -16206,6 +16971,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, __alloT('stem.nutritionlab.quick_labs', 'Quick Labs')),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
+          ),
+          // Glossary: the dozen words that stop a first-time reader. Everyday
+          // analogies, not definitions copied from a textbook.
+          h('details', { className: 'mt-8 bg-white rounded-2xl border border-slate-300 shadow p-4', 'data-nutrition-glossary': 'true' },
+            h('summary', { className: 'cursor-pointer text-sm font-bold text-slate-800 select-none' }, __alloT('stem.nutritionlab.glossary_title', '📖 Words you will meet in this lab')),
+            h('dl', { className: 'mt-3 grid gap-x-4 gap-y-2 sm:grid-cols-2' },
+              [
+                ['Macronutrient', 'A nutrient your body needs in gram amounts: carbohydrate, protein, fat (and water). They supply energy and building material.'],
+                ['Micronutrient', 'A vitamin or mineral needed in milligram or microgram amounts. No calories; they let enzymes do their jobs.'],
+                ['kcal (Calorie)', 'A unit of energy. One food Calorie = 1 kcal. Here it is information about a food, never a target.'],
+                ['Atwater factors', 'The rule of thumb behind every label: about 4 kcal per gram of carbohydrate or protein, 9 per gram of fat.'],
+                ['% Daily Value', 'How much of a typical day\'s reference amount one serving supplies. 5% or less is "a little", 20% or more is "a lot".'],
+                ['Added sugars', 'Sugar the manufacturer mixed in, listed separately from the sugar naturally in milk or fruit since 2016.'],
+                ['Fiber', 'Plant carbohydrate you cannot digest. Gut microbes can, and it slows how fast sugar reaches your blood.'],
+                ['Glycogen', 'Stored carbohydrate in muscle and liver. The tank that endurance athletes "hit the wall" on.'],
+                ['ATP', 'The tiny rechargeable battery every cell spends. Mitochondria recharge it from food and oxygen.'],
+                ['BMR', 'Basal metabolic rate: the energy your body uses just to stay alive at rest. Most of your day\'s energy, even on active days.'],
+                ['Hemoglobin', 'The iron-holding protein in red blood cells that carries oxygen. Low iron means less of it, which is why anemia feels like tiredness.'],
+                ['Fat-soluble vs water-soluble', 'A, D, E and K dissolve in fat and are stored in the body; B vitamins and C dissolve in water and extra is mostly excreted.'],
+                ['RDA / AI', 'Recommended Dietary Allowance or Adequate Intake: reference amounts that cover most healthy people, set by the National Academies.'],
+                ['Electrolyte', 'A mineral that carries an electrical charge in body fluids: sodium, potassium, chloride, calcium, magnesium. They run nerves and muscles.']
+              ].map(function(term) {
+                return h('div', { key: term[0], className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('dt', { className: 'text-xs font-black text-slate-800' }, term[0]),
+                  h('dd', { className: 'text-[11px] text-slate-700 leading-snug mt-0.5' }, term[1])
+                );
+              })
+            )
           ),
           h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' },
             __alloT('stem.nutritionlab.all_10_modules_live_physiology_first_n', 'All 10 modules live — physiology-first nutrition science from a school-psych lens. Explore in any order.'))
@@ -16305,10 +17098,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { label: __alloT('stem.nutritionlab.fiber', 'Fiber'),   value: t.fib || 0, target: 28,  unit: 'g', note: __alloT('stem.nutritionlab.most_us_teens_get_only_half_this_fiber', 'Most US teens get only ~half this. Fiber feeds gut microbes.') }
         ];
         if ((t.c || 0) + (t.p || 0) + (t.f || 0) + (t.fib || 0) <= 0) return null;
-        var W = 480, H = 200;
+        var W = 480, H = 236;
         var pad = { l: 80, r: 12, t: 14, b: 28 };
         var maxLabelTarget = REFS.reduce(function(m, r) { return Math.max(m, r.target * 1.4); }, 0);
         var barH = (H - pad.t - pad.b) / REFS.length - 4;
+        // Each row keeps a label lane ABOVE its bar. The target label used to sit on
+        // the previous row's bar (pixel probe: 2.06:1) — a halo could not fix a
+        // label whose whole box was painted over amber.
+        var lane = 13;
         return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
           h('div', { className: 'flex items-baseline justify-between mb-2 gap-2 flex-wrap' },
             h('div', { className: 'text-sm font-black text-slate-800' }, __alloT('stem.nutritionlab.how_this_plate_stacks_against_a_typica', 'How this plate stacks against a typical day')),
@@ -16323,19 +17120,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               var pctOfDay = r.target > 0 ? (r.value / r.target * 100) : 0;
               return h('g', { key: i },
                 // Label
-                h('text', { x: pad.l - 8, y: y + 4, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: '#1e293b' }, r.label),
+                h('text', { x: pad.l - 8, y: y + lane / 2 + 4, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: '#1e293b' }, r.label),
                 // Daily target band (faded, behind the value bar)
-                h('rect', { x: pad.l, y: y - barH / 2, width: targetX - pad.l, height: barH, fill: '#cbd5e1', opacity: 0.45, rx: 4 }),
+                h('rect', { x: pad.l, y: y - barH / 2 + lane, width: targetX - pad.l, height: barH - lane, fill: '#cbd5e1', opacity: 0.45, rx: 4 }),
                 // Tick at exactly the target
-                h('line', { x1: targetX, y1: y - barH / 2 - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '3 3' }),
-                h('text', { x: targetX, y: y - barH / 2 - 4, textAnchor: 'middle', fontSize: 9, fill: '#334155', fontWeight: 700 }, '~' + r.target + r.unit + ' / day'),
+                h('line', { x1: targetX, y1: y - barH / 2 + lane - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                h('text', { x: targetX, y: y - barH / 2 + lane - 4, textAnchor: 'middle', fontSize: 9, fill: '#334155', fontWeight: 700 }, '~' + r.target + r.unit + ' / day'),
                 // Actual value bar
-                h('rect', { x: pad.l, y: y - barH / 2 + 2, width: Math.max(2, valueX - pad.l), height: barH - 4, fill: r.label === 'Fiber' ? '#15803d' : (r.label === 'Protein' ? '#9f1239' : (r.label === 'Fat' ? '#a16207' : '#b45309')), rx: 3 }),
+                h('rect', { x: pad.l, y: y - barH / 2 + lane + 2, width: Math.max(2, valueX - pad.l), height: barH - lane - 4, fill: r.label === 'Fiber' ? '#15803d' : (r.label === 'Protein' ? '#9f1239' : (r.label === 'Fat' ? '#a16207' : '#b45309')), rx: 3 }),
                 // Value annotation
-                h('text', { x: Math.max(valueX, pad.l + 30), y: y + 4, fontSize: 11, fontWeight: 700, fill: '#fff', textAnchor: 'end', dx: -4 },
+                h('text', { x: Math.max(valueX, pad.l + 30), y: y + lane / 2 + 4, fontSize: 11, fontWeight: 700, fill: '#fff', textAnchor: 'end', dx: -4 },
                   r.value.toFixed(0) + r.unit
                 ),
-                h('text', { x: W - pad.r, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#64748b', fontFamily: 'monospace' },
+                h('text', { x: W - pad.r, y: y + lane / 2 + 4, textAnchor: 'end', fontSize: 10, fill: '#475569', fontFamily: 'monospace' },
                   pctOfDay.toFixed(0) + '% of typical daily reference'
                 )
               );
@@ -16380,7 +17177,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           ),
           h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
             h('label', { className: 'text-xs font-bold text-slate-700' },
-              h('span', { style: { color: '#0d9488' } }, __alloT('stem.nutritionlab.food_a', '◆ Food A')),
+              h('span', { style: { color: '#115e59' } }, __alloT('stem.nutritionlab.food_a', '◆ Food A')),
               h('select', {
                 value: fA_id, onChange: function(e) { setA(e.target.value); },
                 className: 'mt-1 block w-full rounded-lg border-2 border-slate-300 p-2 text-sm font-semibold focus:outline-none focus:ring-2 ring-emerald-500',
@@ -16417,7 +17214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('text', { x: midX, y: yMid + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#334155' }, r.label),
                 // Food A bar (left, growing toward left)
                 h('rect', { x: midX - 36 - aW, y: yMid - barH / 2 + 4, width: Math.max(2, aW), height: barH - 8, fill: '#0d9488', rx: 3 }),
-                h('text', { x: midX - 38 - aW - 4, y: yMid + 4, textAnchor: 'end', fontSize: 11, fill: '#0d9488', fontWeight: 700, fontFamily: 'monospace' }, aVal + r.unit),
+                h('text', { x: midX - 38 - aW - 4, y: yMid + 4, textAnchor: 'end', fontSize: 11, fill: '#115e59', fontWeight: 700, fontFamily: 'monospace' }, aVal + r.unit),
                 // Food B bar (right, growing toward right)
                 h('rect', { x: midX + 36, y: yMid - barH / 2 + 4, width: Math.max(2, bW), height: barH - 8, fill: '#9f1239', rx: 3 }),
                 h('text', { x: midX + 38 + bW + 4, y: yMid + 4, fontSize: 11, fill: '#9f1239', fontWeight: 700, fontFamily: 'monospace' }, bVal + r.unit)
@@ -16580,11 +17377,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             // Totals
             h('div', { className: 'grid grid-cols-2 md:grid-cols-5 gap-3' },
-              h(StatCard, { label: __alloT('stem.nutritionlab.carbs_4', 'Carbs'),   value: totals.c.toFixed(0)   + 'g', color: 'text-amber-700' }),
-              h(StatCard, { label: __alloT('stem.nutritionlab.protein_5', 'Protein'), value: totals.p.toFixed(0)   + 'g', color: 'text-rose-700' }),
-              h(StatCard, { label: 'Fat',     value: totals.f.toFixed(0)   + 'g', color: 'text-yellow-700' }),
-              h(StatCard, { label: __alloT('stem.nutritionlab.fiber_3', 'Fiber'),   value: totals.fib.toFixed(0) + 'g', color: 'text-emerald-700' }),
-              h(StatCard, { label: __alloT('stem.nutritionlab.energy_2', 'Energy'),  value: totals.kcal.toFixed(0), unit: 'kcal (informational)', color: 'text-slate-700' })
+              h(StatCard, { label: __alloT('stem.nutritionlab.carbs_4', 'Carbs'),   value: totals.c.toFixed(0)   + 'g', color: 'text-amber-700', hint: __alloT('stem.nutritionlab.hint_carbs', 'Main fuel for brain and muscles') }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.protein_5', 'Protein'), value: totals.p.toFixed(0)   + 'g', color: 'text-rose-700', hint: __alloT('stem.nutritionlab.hint_protein', 'Building blocks: muscle, enzymes, immune cells') }),
+              h(StatCard, { label: 'Fat',     value: totals.f.toFixed(0)   + 'g', color: 'text-yellow-700', hint: __alloT('stem.nutritionlab.hint_fat', 'Cell membranes, hormones, carries vitamins A, D, E, K') }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.fiber_3', 'Fiber'),   value: totals.fib.toFixed(0) + 'g', color: 'text-emerald-700', hint: __alloT('stem.nutritionlab.hint_fiber', 'Feeds gut microbes, steadies blood sugar') }),
+              h(StatCard, { label: __alloT('stem.nutritionlab.energy_2', 'Energy'),  value: totals.kcal.toFixed(0), unit: 'kcal (informational)', color: 'text-slate-700', hint: __alloT('stem.nutritionlab.hint_energy', 'How much fuel the plate holds, not a target') })
             ),
             // Visual: macro donut showing carbs/protein/fat split by energy
             h(MacroDonut, { c: totals.c, p: totals.p, f: totals.f }),
@@ -16609,6 +17406,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                     })
                   )
             ),
+            // Hand-off to the 3D body map: the plate's nutrients become the lit
+            // regions there, so "what your body uses this meal for" gets a
+            // picture as well as a list.
+            plate.length > 0 && (function() {
+              var ids = bodyMapNutrientsFromPlate(plate);
+              var nRegions = Object.keys(bodyMapActiveRegions(ids)).length;
+              return h('div', { className: 'rounded-2xl border-2 border-fuchsia-300 bg-gradient-to-r from-fuchsia-50 to-violet-50 p-4 flex items-center justify-between gap-3 flex-wrap', 'data-nutrition-plate-to-body': 'true' },
+                h('div', null,
+                  h('div', { className: 'font-bold text-fuchsia-900' }, __alloT('stem.nutritionlab.plate_to_body_title', '🫀 See where this plate goes')),
+                  h('p', { className: 'text-sm text-slate-800' },
+                    ids.length + ' ' + (ids.length === 1 ? __alloT('stem.nutritionlab.plate_to_body_one', 'nutrient on this plate reaches') : __alloT('stem.nutritionlab.plate_to_body_many', 'nutrients on this plate reach')) + ' ' +
+                    nRegions + ' ' + __alloT('stem.nutritionlab.plate_to_body_regions', 'body regions. Watch them light up on the 3D figure.'))
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { upd('bm_plate', ids); upd('bm_nutrient', 'plate'); upd('bm_region', null); goto('bodyMap'); },
+                  className: 'px-4 py-2 rounded-xl bg-fuchsia-700 text-white font-bold text-sm hover:bg-fuchsia-800 focus:outline-none focus:ring-4 ring-fuchsia-500/40'
+                }, __alloT('stem.nutritionlab.plate_to_body_button', 'Open the body map →'))
+              );
+            })(),
             h(TeacherNotes, {
               standards: ['HS-LS1-7 (Energy in life processes)', 'HS-LS1-3 (Homeostasis)', 'CTE Family & Consumer Sciences', 'USDA MyPlate'],
               questions: [
@@ -16702,6 +17519,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, __alloT('stem.nutritionlab.recommended_intake', 'Recommended intake')),
               h('div', { className: 'text-sm font-mono text-slate-800' }, item.rda)
             ),
+            // Cross-link to the 3D map: the same nutrient, shown WHERE it works.
+            (function() {
+              var m = BODY_NUTRIENT_MAP[item.id];
+              if (!m) return null;
+              return h('div', { className: 'p-3 bg-fuchsia-50 rounded-lg border border-fuchsia-200' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-900 mb-1' }, __alloT('stem.nutritionlab.where_it_works', 'Where it works in the body')),
+                h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
+                  m.regions.map(function(rid) {
+                    var r = BODY_REGION_BY_ID[rid];
+                    return h('span', { key: rid, className: 'text-xs font-semibold px-2 py-0.5 rounded-full bg-white border border-fuchsia-200 text-slate-800' }, r.icon + ' ' + r.label);
+                  })
+                ),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { upd('bm_nutrient', item.id); upd('bm_region', null); goto('bodyMap'); },
+                  className: 'px-3 py-1.5 rounded-lg bg-fuchsia-700 text-white text-xs font-bold hover:bg-fuchsia-800 focus:outline-none focus:ring-2 ring-fuchsia-500/40'
+                }, __alloT('stem.nutritionlab.show_on_3d_body', '🫀 Show on the 3D body'))
+              );
+            })(),
             h('div', { className: 'text-[11px] text-slate-700 italic font-mono' },
               'Source: ' + item.cite)
           );
@@ -16721,11 +17557,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             // Lifts the BirdLab Climate Pressure 4-card grid pattern.
             (function() {
               var PRIORITIES = [
-                { id: 'vitD',     emoji: '☀️', name: __alloT('stem.nutritionlab.vitamin_d', 'Vitamin D'),  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b' },
-                { id: 'iron',     emoji: '🩸', name: __alloT('stem.nutritionlab.iron', 'Iron'),       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626' },
-                { id: 'mag',      emoji: '🌿', name: __alloT('stem.nutritionlab.magnesium', 'Magnesium'),  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a' },
-                { id: 'b12',      emoji: '🥛', name: __alloT('stem.nutritionlab.vitamin_b12', 'Vitamin B12'), why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed' },
-                { id: 'calcium',  emoji: '🦴', name: __alloT('stem.nutritionlab.calcium', 'Calcium'),    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9' }
+                { id: 'vitD',     emoji: '☀️', name: __alloT('stem.nutritionlab.vitamin_d', 'Vitamin D'),  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b', ink: '#92400e' },
+                { id: 'iron',     emoji: '🩸', name: __alloT('stem.nutritionlab.iron', 'Iron'),       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626', ink: '#991b1b' },
+                { id: 'mag',      emoji: '🌿', name: __alloT('stem.nutritionlab.magnesium', 'Magnesium'),  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a', ink: '#166534' },
+                { id: 'b12',      emoji: '🥛', name: __alloT('stem.nutritionlab.vitamin_b12', 'Vitamin B12'), why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed', ink: '#5b21b6' },
+                { id: 'calcium',  emoji: '🦴', name: __alloT('stem.nutritionlab.calcium', 'Calcium'),    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9', ink: '#075985' }
               ];
               return h('div', { className: 'rounded-2xl overflow-hidden border-2 border-rose-300 shadow bg-gradient-to-br from-rose-50 via-amber-50 to-emerald-50' },
                 h('div', { className: 'px-5 py-3 border-b-2 border-rose-200', style: { background: 'rgba(254, 226, 226, 0.5)' } },
@@ -16758,19 +17594,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                       h('div', { className: 'flex items-baseline gap-2 mb-2 flex-wrap' },
                         h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, n.emoji),
                         h('div', { className: 'flex-1 min-w-0' },
-                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: n.stripe } }, n.why),
+                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: n.ink || n.stripe } }, n.why),
                           h('div', { className: 'text-base font-black text-slate-800', style: { lineHeight: 1.15 } }, n.name)
                         )
                       ),
                       // Cascade: Function → Symptom
                       h('div', { className: 'flex items-stretch gap-1.5' },
                         h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#ecfdf5', color: '#064e3b', border: '1px solid #a7f3d0' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, __alloT('stem.nutritionlab.function', 'Function')),
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.function', 'Function')),
                           n.function_
                         ),
-                        h('span', { 'aria-hidden': 'true', className: 'self-center text-slate-400 font-bold' }, '→'),
+                        h('span', { 'aria-hidden': 'true', className: 'self-center text-slate-600 font-bold' }, '→'),
                         h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#fef2f2', color: '#7f1d1d', border: '1px solid #fecaca' } },
-                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, __alloT('stem.nutritionlab.without_it', 'Without it')),
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider mb-0.5' }, __alloT('stem.nutritionlab.without_it', 'Without it')),
                           n.symptom
                         )
                       )
@@ -17524,7 +18360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -17658,7 +18494,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   })
                 ),
                 h('div', { className: 'mt-3 p-2 bg-amber-50 border border-amber-200 rounded text-xs text-slate-800 italic' },
-                  __alloT('stem.nutritionlab.these_percentages_describe_a_healthy_a', 'These percentages describe a healthy adult at rest. Children and adolescents typically have a brain that uses an even larger share (up to 50% in young kids) because of growth and learning.'))
+                  __alloT('stem.nutritionlab.these_percentages_describe_a_healthy_a', 'These percentages describe a healthy adult at rest. Children and adolescents typically have a brain that uses an even larger share (up to 50% in young kids) because of growth and learning.')),
+                // The same five organs, on the body they belong to. A bar chart
+                // says how much; the figure says where, and the second half is what
+                // makes the two-percent-of-you brain fact land.
+                h('div', { 'data-nutrition-energy-to-body': 'true', className: 'mt-3 rounded-xl border-2 border-fuchsia-300 bg-fuchsia-50 p-3 flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', null,
+                    h('div', { className: 'font-bold text-fuchsia-900' }, __alloT('stem.nutritionlab.energy_to_body_title', '🫀 See these shares on the body')),
+                    h('p', { className: 'text-sm text-slate-800' },
+                      __alloT('stem.nutritionlab.energy_to_body_copy', 'The 3D body map can light each organ by how much resting energy it spends.'))
+                  ),
+                  h('button', {
+                    type: 'button',
+                    onClick: function() { upd('bm_mode', 'energy'); upd('bm_region', null); goto('bodyMap'); },
+                    className: 'px-4 py-2 rounded-xl bg-fuchsia-700 text-white font-bold text-sm hover:bg-fuchsia-800 focus:outline-none focus:ring-4 ring-fuchsia-500/40'
+                  }, __alloT('stem.nutritionlab.energy_to_body_button', 'Open the body map →'))
+                )
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
                 h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, __alloT('stem.nutritionlab.activity_adds_energy_use_on_top_of_bmr', 'Activity adds energy use on top of BMR')),
@@ -17737,7 +18588,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           hormones: [
             { name: __alloT('stem.nutritionlab.ghrelin', 'Ghrelin'), role: 'The "hunger hormone." Levels typically peak BEFORE you eat (telling you to eat) and drop after.' }
           ],
-          color: 'from-rose-400 to-pink-500'
+          color: 'from-rose-700 to-pink-800'
         },
         {
           id: 'stomach',
@@ -17757,7 +18608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             { name: __alloT('stem.nutritionlab.gastrin', 'Gastrin'), role: 'Triggers HCl release. Stomach distension and dietary protein both stimulate gastrin.' },
             { name: __alloT('stem.nutritionlab.ghrelin_2', 'Ghrelin'), role: 'Drops as food fills the stomach.' }
           ],
-          color: 'from-amber-400 to-orange-500'
+          color: 'from-amber-800 to-orange-800'
         },
         {
           id: 'smallIntestine',
@@ -17779,7 +18630,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             { name: 'GLP-1', role: 'Stimulates insulin release from the pancreas, which helps cells absorb the glucose now arriving in blood.' },
             { name: __alloT('stem.nutritionlab.insulin', 'Insulin'), role: 'Released by pancreas in response to rising blood glucose. Tells cells to absorb glucose and tells liver to store excess as glycogen.' }
           ],
-          color: 'from-emerald-500 to-teal-600'
+          color: 'from-emerald-700 to-teal-800'
         },
         {
           id: 'largeIntestine',
@@ -17799,7 +18650,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             { name: __alloT('stem.nutritionlab.pyy_peptide_yy', 'PYY (Peptide YY)'), role: 'Released by intestinal cells in response to food. Signals fullness to the brain — a key reason high-fiber, high-protein meals feel filling longer.' },
             { name: __alloT('stem.nutritionlab.leptin', 'Leptin'), role: 'Released by fat tissue (not gut), but interacts with the gut-brain axis. Signals long-term energy stores to the brain.' }
           ],
-          color: 'from-indigo-500 to-violet-700'
+          color: 'from-indigo-700 to-violet-800'
         },
         {
           id: 'end',
@@ -17819,7 +18670,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             { name: __alloT('stem.nutritionlab.insulin_glucagon_balance', 'Insulin / Glucagon balance'), role: 'Long after the meal, insulin (storage signal) and glucagon (release signal) coordinate stable blood sugar between meals.' },
             { name: __alloT('stem.nutritionlab.leptin_2', 'Leptin'), role: 'Continues to communicate energy stores to the brain over hours and days.' }
           ],
-          color: 'from-slate-500 to-slate-700'
+          color: 'from-slate-700 to-slate-800'
         }
       ];
 
@@ -17888,6 +18739,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 })
               )
             ),
+            // Journey strip: the five stops as ONE path, with a food marker
+            // sliding to the current stage. A row of tabs never showed that the
+            // stages are a sequence in space, or how long the food is in each.
+            (function() {
+              var N = DIGESTION_STAGES.length;
+              var W = 560, H = 100, padX = 48;
+              var step = (W - padX * 2) / (N - 1);
+              var accent = '#be123c';
+              var markerX = padX + step * stageIdx;
+              return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4', 'data-nutrition-journey': 'true' },
+                h('svg', {
+                  viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img',
+                  'aria-label': 'Digestion journey: ' + DIGESTION_STAGES.map(function(s, i) { return (i + 1) + '. ' + s.name; }).join(', ') + '. Now at stage ' + (stageIdx + 1) + ', ' + stage.name + '.'
+                },
+                  h('rect', { x: padX, y: 43, width: W - padX * 2, height: 6, rx: 3, fill: '#cbd5e1' }),
+                  h('rect', { x: padX, y: 43, width: step * stageIdx, height: 6, rx: 3, fill: accent, className: 'nutritionlab-journey-fill' }),
+                  DIGESTION_STAGES.map(function(s, i) {
+                    var x = padX + step * i;
+                    var done = i <= stageIdx;
+                    var cur = i === stageIdx;
+                    var label = String(s.name);
+                    if (label.length > 18) label = label.slice(0, 17) + '…';
+                    return h('g', { key: s.id },
+                      h('circle', { cx: x, cy: 46, r: cur ? 15 : 11, fill: done ? accent : '#ffffff', stroke: done ? accent : '#94a3b8', strokeWidth: 3 }),
+                      h('text', { x: x, y: 51, textAnchor: 'middle', fontSize: cur ? 15 : 12, fontWeight: 800, fill: done ? '#ffffff' : '#334155' }, String(i + 1)),
+                      h('text', { x: x, y: 86, textAnchor: 'middle', fontSize: 10, fontWeight: cur ? 800 : 600, fill: cur ? '#9f1239' : '#334155' }, label)
+                    );
+                  }),
+                  h('g', { className: 'nutritionlab-bolus', style: { transform: 'translateX(' + markerX + 'px)' } },
+                    h('text', { x: 0, y: 12, textAnchor: 'middle', fontSize: 9, fontWeight: 800, fill: '#92400e' }, 'food'),
+                    h('circle', { cx: 0, cy: 23, r: 7, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 2 })
+                  )
+                ),
+                h('p', { className: 'text-[11px] text-slate-700 mt-1 text-center' },
+                  __alloT('stem.nutritionlab.journey_now', 'Now:') + ' ' + stage.name + ' · ' + stage.time)
+              );
+            })(),
             h('div', {
               role: 'tabpanel',
               id: 'nutrition-digestion-panel-' + stage.id,
@@ -17899,17 +18787,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('div', { className: 'flex items-center gap-4 mb-2' },
                 h('span', { className: 'text-6xl' }, stage.icon),
                 h('div', null,
-                  h('div', { className: 'text-xs uppercase tracking-widest opacity-80 font-bold' }, 'Stage ' + (stageIdx + 1) + ' of ' + DIGESTION_STAGES.length),
+                  h('div', { className: 'text-xs uppercase tracking-widest font-bold' }, 'Stage ' + (stageIdx + 1) + ' of ' + DIGESTION_STAGES.length),
                   h('h2', { className: 'text-3xl font-black' }, stage.name)
                 )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-sm' },
                 h('div', null,
-                  h('span', { className: 'opacity-80 text-xs uppercase tracking-wider font-bold' }, __alloT('stem.nutritionlab.time_spent', 'Time spent: ')),
+                  h('span', { className: 'text-xs uppercase tracking-wider font-bold' }, __alloT('stem.nutritionlab.time_spent', 'Time spent: ')),
                   h('span', null, stage.time)
                 ),
                 h('div', null,
-                  h('span', { className: 'opacity-80 text-xs uppercase tracking-wider font-bold' }, 'pH: '),
+                  h('span', { className: 'text-xs uppercase tracking-wider font-bold' }, 'pH: '),
                   h('span', { className: 'font-mono' }, stage.pH)
                 )
               )
@@ -18953,7 +19841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
                 h('div', { style: { flex: 1, minWidth: 220 } },
                   h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-                  h('p', { style: { margin: '4px 0 0', color: 'var(--allo-stem-text-soft, #475569)', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
                 )
               );
             })(),
@@ -20404,8 +21292,655 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
+      // MODULE 15: NUTRIENT BODY MAP (3D)
+      // ─────────────────────────────────────────────────────
+      // Pick a nutrient → the regions that use it glow on a glass figure and a
+      // particle stream shows the route from the gut. Click an organ (in the
+      // scene or in the list) → everything it depends on. The region list and
+      // detail panels are the 2D floor: the lesson survives a device with no
+      // WebGL. Scene + data live at module scope (nutriBuildBodyScene,
+      // BODY_REGIONS, BODY_NUTRIENT_MAP).
+      function NutrientBodyMap() {
+        var nutrient_state = usePersistedState('bm_nutrient', 'iron');
+        var nutrient = nutrient_state[0], setNutrient = nutrient_state[1];
+        var region_state = usePersistedState('bm_region', null);
+        var region = region_state[0], setRegion = region_state[1];
+        var labels_state = usePersistedState('bm_labels', false);
+        var showLabels = labels_state[0], setShowLabels = labels_state[1];
+        var seen_state = usePersistedState('bm_seen', []);
+        var seen = seen_state[0], setSeen = seen_state[1];
+        var quiz_state = usePersistedState('bm_quiz', { i: 0, pick: null, done: 0 });
+        var quiz = quiz_state[0], setQuiz = quiz_state[1];
+        var mode_state = usePersistedState('bm_mode', 'nutrient');
+        var modeRaw = mode_state[0], setModeRaw = mode_state[1];
+        var compare_state = usePersistedState('bm_compare', 'vitC');
+        var compareId = compare_state[0], setCompareId = compare_state[1];
+        // Hand-off from the Macronutrient Lab: an array of map ids. 'plate' as
+        // the nutrient id means "show the plate", because null would fall
+        // through to the default of usePersistedState.
+        var plate = Array.isArray(d.bm_plate) ? d.bm_plate : null;
+        var plateMode = nutrient === 'plate';
+
+        // A null viewer never reports status, so read it directly as well.
+        var st3dState = useState(NUTRI_BODY3D.status());
+        var st3d = NUTRI_BODY3D.status() === 'failed' ? 'failed' : st3dState[0];
+
+        // A plate is not a single nutrient, so it can only be read in nutrient
+        // mode; deriving that here means a stale stored mode cannot strand the view.
+        var mode = plateMode ? 'nutrient' : modeRaw;
+        var energyMode = mode === 'energy';
+        var compareMode = mode === 'compare';
+        var activeIds = plateMode ? (plate || []) : (nutrient ? [nutrient] : []);
+        var active = energyMode ? bodyMapEnergyLevels()
+          : (compareMode ? bodyMapCompareLevels(nutrient, compareId)
+            : bodyMapActiveRegions(activeIds));
+        var activeCount = Object.keys(active).length;
+        var hasActive = activeCount > 0;
+        var meta = (!plateMode && nutrient) ? bodyMapNutrient(nutrient) : null;
+        var map = (!plateMode && nutrient) ? BODY_NUTRIENT_MAP[nutrient] : null;
+        var groupOf = function (id) {
+          if (BODY_MAP_MACROS.some(function (n) { return n.id === id; })) return 'macro';
+          if (VITAMINS.some(function (n) { return n.id === id; })) return 'vitamin';
+          if (MINERALS.some(function (n) { return n.id === id; })) return 'mineral';
+          return 'fat';
+        };
+        var FLOW_COLORS = { macro: '#fde68a', vitamin: '#fbbf24', mineral: '#7dd3fc', fat: '#f9a8d4', plate: '#86efac', energy: '#fdba74', compare: '#c4b5fd' };
+        var flowColor = energyMode ? FLOW_COLORS.energy
+          : (compareMode ? FLOW_COLORS.compare
+            : (plateMode ? FLOW_COLORS.plate : (nutrient ? FLOW_COLORS[groupOf(nutrient)] : FLOW_COLORS.macro)));
+        var regionMeta = region ? BODY_REGION_BY_ID[region] : null;
+        var regionNutrients = region ? bodyMapNutrientsFor(region) : [];
+
+        function pickRegion(id) {
+          var r = BODY_REGION_BY_ID[id];
+          if (!r) return;
+          var next = (region === id) ? null : id;
+          setRegion(next);
+          if (next) announce(r.label + '. ' + r.uses);
+          else announce('Cleared region selection.');
+        }
+        function pickNutrient(id) {
+          setNutrient(id);
+          if (id === 'plate') { setModeRaw('nutrient'); announce('Showing the nutrients from your plate.'); return; }
+          var n = bodyMapNutrient(id), m = BODY_NUTRIENT_MAP[id];
+          if (seen.indexOf(id) === -1) setSeen(seen.concat([id]));
+          if (n && m) {
+            announce(bodyMapShortName(n) + ' works in ' + m.regions.length + ' region' + (m.regions.length === 1 ? '' : 's') + ': ' +
+              m.regions.map(function (rid) { return BODY_REGION_BY_ID[rid].label; }).join(', ') + '.');
+          }
+        }
+        function toggleLabels() {
+          setShowLabels(!showLabels);
+          announce(!showLabels ? 'All region labels shown on the figure.' : 'Region labels hidden except the selected one.');
+        }
+        // ── Mode switch ────────────────────────────────────────────────
+        // The figure answers three different questions and it would be a waste
+        // to build three of it. `nutrient` is the default lesson; `energy` puts
+        // the Energy & Metabolism numbers on the body they describe; `compare`
+        // asks whether two nutrients share an address.
+        var MODES = [
+          { id: 'nutrient', icon: '🎯', label: __alloT('stem.nutritionlab.bm_mode_nutrient', 'One nutrient'), hint: __alloT('stem.nutritionlab.bm_mode_nutrient_hint', 'Where does this nutrient go?') },
+          { id: 'energy',   icon: '⚡', label: __alloT('stem.nutritionlab.bm_mode_energy', 'Resting energy'), hint: __alloT('stem.nutritionlab.bm_mode_energy_hint', 'Which organs spend your fuel?') },
+          { id: 'compare',  icon: '⚖️', label: __alloT('stem.nutritionlab.bm_mode_compare', 'Compare two'), hint: __alloT('stem.nutritionlab.bm_mode_compare_hint', 'Do these two overlap?') }
+        ];
+        function setMode(next) {
+          setModeRaw(next);
+          var m = MODES.filter(function (x) { return x.id === next; })[0];
+          announce(m ? m.label + '. ' + m.hint : next);
+        }
+        function pickCompare(id) {
+          setCompareId(id);
+          var n = bodyMapNutrient(id);
+          var sets = bodyMapCompareSets(nutrient, id);
+          announce('Comparing with ' + bodyMapShortName(n) + '. ' + sets.shared.length + ' shared region' +
+            (sets.shared.length === 1 ? '' : 's') + '.');
+        }
+        function bmKeys(e) {
+          var k = e.key;
+          if (k === 'ArrowLeft') NUTRI_BODY3D.nudge(-0.16, 0);
+          else if (k === 'ArrowRight') NUTRI_BODY3D.nudge(0.16, 0);
+          else if (k === 'ArrowUp') NUTRI_BODY3D.nudge(0, 0.1);
+          else if (k === 'ArrowDown') NUTRI_BODY3D.nudge(0, -0.1);
+          else if (k === '+' || k === '=') NUTRI_BODY3D.zoom(-0.4);
+          else if (k === '-' || k === '_') NUTRI_BODY3D.zoom(0.4);
+          else if (k === '0') NUTRI_BODY3D.reset();
+          else return;
+          e.preventDefault();
+        }
+
+        // Predict-then-check. The bank is a fixed list; the "answer" is the
+        // whole set of regions, so there is no answer slot to game.
+        var qId = BODY_MAP_CHALLENGES[quiz.i % BODY_MAP_CHALLENGES.length];
+        var qMeta = bodyMapNutrient(qId);
+        var qMap = BODY_NUTRIENT_MAP[qId];
+        var qRevealed = quiz.pick != null;
+        var qHit = qRevealed && qMap.regions.indexOf(quiz.pick) !== -1;
+        function quizPick(rid) {
+          if (qRevealed) return;
+          var hit = qMap.regions.indexOf(rid) !== -1;
+          setQuiz({ i: quiz.i, pick: rid, done: (quiz.done || 0) + 1 });
+          // The reveal is only convincing if the figure actually re-lights, so a
+          // prediction always lands the viewer back in single-nutrient mode.
+          setModeRaw('nutrient');
+          setNutrient(qId);
+          setRegion(rid);
+          if (seen.indexOf(qId) === -1) setSeen(seen.concat([qId]));
+          announce(hit
+            ? 'Yes. ' + BODY_REGION_BY_ID[rid].label + ' is one of the regions ' + bodyMapShortName(qMeta) + ' serves.'
+            : BODY_REGION_BY_ID[rid].label + ' is not a main address for ' + bodyMapShortName(qMeta) + '. The figure now shows where it does go.');
+        }
+        function quizNext() {
+          setQuiz({ i: quiz.i + 1, pick: null, done: quiz.done || 0 });
+          setRegion(null);
+          announce('Next prediction: ' + bodyMapShortName(bodyMapNutrient(BODY_MAP_CHALLENGES[(quiz.i + 1) % BODY_MAP_CHALLENGES.length])));
+        }
+
+        // Keep the viewer in step with React. Runs every render on purpose:
+        // sync() is a plain assignment and the shell reads props per frame.
+        useEffect(function () {
+          NUTRI_BODY3D.sync({
+            selected: region,
+            dark: true,
+            contrast: ctx.theme === 'contrast',
+            levels: hasActive ? active : null,
+            showAllLabels: !!showLabels,
+            sceneProps: { active: hasActive ? active : null, flowColor: flowColor },
+            onPick: function (id) { pickRegion(id); },
+            onStatus: function (next) { st3dState[1](next); }
+          });
+          // The ref attaches (and, with three already loaded, reaches 'ready')
+          // during commit, BEFORE this effect registers onStatus. Reconcile the
+          // live status here or the loading overlay never clears.
+          var live = NUTRI_BODY3D.status();
+          if (live !== st3dState[0]) st3dState[1](live);
+        });
+
+        var pickerGroups = [
+          { id: 'macro',   label: __alloT('stem.nutritionlab.bm_group_macros', 'Macronutrients + water'), items: BODY_MAP_MACROS },
+          { id: 'vitamin', label: __alloT('stem.nutritionlab.bm_group_vitamins', 'Vitamins'), items: VITAMINS },
+          { id: 'mineral', label: __alloT('stem.nutritionlab.bm_group_minerals', 'Minerals'), items: MINERALS },
+          { id: 'fat',     label: __alloT('stem.nutritionlab.bm_group_fats', 'Essential fats'), items: EFAS }
+        ];
+        var totalNutrients = pickerGroups.reduce(function (n, g) { return n + g.items.length; }, 0);
+        var seenCount = seen.filter(function (id) { return !!BODY_NUTRIENT_MAP[id]; }).length;
+
+        function regionChip(r, opts) {
+          var o = opts || {};
+          var lit = !!active[r.id];
+          var sel = region === r.id;
+          return h('button', {
+            key: r.id, type: 'button',
+            onClick: function () { pickRegion(r.id); },
+            'aria-pressed': sel ? 'true' : 'false',
+            'aria-label': r.label + (lit ? ' (uses the selected nutrient)' : '') + (sel ? ', selected' : ''),
+            className: 'px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold text-slate-900 transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 ' +
+              (sel ? 'shadow-md ring-2 ring-fuchsia-500/60' : ''),
+            style: {
+              background: lit ? (r.color + '33') : '#ffffff',
+              borderColor: lit || sel ? r.color : '#cbd5e1'
+            }
+          },
+            h('span', { 'aria-hidden': true, className: 'mr-1' }, r.icon),
+            r.label,
+            lit && h('span', { 'aria-hidden': true, className: 'ml-1' }, '●'),
+            o.count != null && h('span', { className: 'ml-1 text-[10px] font-mono text-slate-700' }, '(' + o.count + ')')
+          );
+        }
+
+        function nutrientChip(n, groupId) {
+          var sel = !plateMode && nutrient === n.id;
+          var explored = seen.indexOf(n.id) !== -1;
+          return h('button', {
+            key: n.id, type: 'button', role: 'radio',
+            'aria-checked': sel ? 'true' : 'false',
+            onClick: function () { pickNutrient(n.id); },
+            'aria-label': bodyMapShortName(n) + (explored ? ' (explored)' : ''),
+            className: 'px-2.5 py-1.5 rounded-xl border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 ' +
+              (sel ? 'bg-fuchsia-700 text-white border-fuchsia-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-fuchsia-500')
+          },
+            h('span', { 'aria-hidden': true, className: 'mr-1' }, n.emoji),
+            bodyMapShortName(n),
+            explored && !sel && h('span', { 'aria-hidden': true, className: 'ml-1 text-emerald-700' }, '✓')
+          );
+        }
+
+        var compareMeta = compareMode ? bodyMapNutrient(compareId) : null;
+        var viewerTitle = energyMode
+          ? __alloT('stem.nutritionlab.bm_viewer_energy', 'Glass figure — resting energy')
+          : (compareMode
+            ? ((meta ? bodyMapShortName(meta) : '') + ' + ' + bodyMapShortName(compareMeta))
+            : (plateMode
+              ? __alloT('stem.nutritionlab.bm_viewer_plate', 'Glass figure — your plate')
+              : (meta ? bodyMapShortName(meta) : __alloT('stem.nutritionlab.bm_viewer_none', 'Glass figure'))));
+        var legendText = energyMode
+          ? ('⚡ ' + __alloT('stem.nutritionlab.bm_legend_energy', 'Resting energy') + ' → ' + activeCount + ' ' + __alloT('stem.nutritionlab.bm_legend_organs', 'organs'))
+          : (compareMode
+            ? ((meta ? meta.emoji : '') + ' + ' + (compareMeta ? compareMeta.emoji : '') + ' → ' +
+               bodyMapCompareSets(nutrient, compareId).shared.length + ' ' + __alloT('stem.nutritionlab.bm_legend_shared', 'shared'))
+            : ((plateMode ? '🍽️ ' + activeIds.length + ' ' + __alloT('stem.nutritionlab.bm_legend_nutrients', 'nutrients')
+                : (meta ? meta.emoji + ' ' + bodyMapShortName(meta) : '')) +
+               ' → ' + activeCount + ' ' + (activeCount === 1 ? __alloT('stem.nutritionlab.bm_region_one', 'region') : __alloT('stem.nutritionlab.bm_region_many', 'regions'))));
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🫀', title: __alloT('stem.nutritionlab.bm_title_2', 'Nutrient Body Map') }),
+          h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
+            h('div', { className: 'bg-fuchsia-50 border-2 border-fuchsia-300 rounded-2xl p-5' },
+              h('h2', { className: 'text-lg font-black text-fuchsia-900 mb-2' }, __alloT('stem.nutritionlab.bm_intro_title', 'Every nutrient has an address')),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                __alloT('stem.nutritionlab.bm_intro_copy', 'Pick a nutrient and the body regions that use it glow, while a stream traces the route from your gut. Click an organ in the figure (or in the list) to see everything it depends on. Drag to turn the figure, or use the buttons and arrow keys. Nothing here is a target or a score: this is a map of what your body does with food.')),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                [
+                  ['1', __alloT('stem.nutritionlab.bm_step_1', 'Pick a nutrient')],
+                  ['2', __alloT('stem.nutritionlab.bm_step_2', 'Watch where it goes')],
+                  ['3', __alloT('stem.nutritionlab.bm_step_3', 'Click an organ to ask what it needs')]
+                ].map(function (s) {
+                  return h('span', { key: s[0], className: 'inline-flex items-center gap-1.5 text-[11px] font-bold text-fuchsia-900 bg-white border border-fuchsia-200 rounded-full px-2.5 py-1' },
+                    h('span', { className: 'w-4 h-4 rounded-full bg-fuchsia-700 text-white text-[10px] flex items-center justify-center', 'aria-hidden': true }, s[0]),
+                    s[1]);
+                })
+              )
+            ),
+
+            // Mode strip. A radiogroup rather than a tablist: it re-aims the same
+            // figure instead of swapping panels, and the tool already uses this
+            // pattern for the Macronutrient Lab category filter.
+            h('div', { 'data-nutrition-bm-modes': 'true', role: 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.bm_mode_group', 'What the figure shows'), className: 'grid gap-2 sm:grid-cols-3' },
+              MODES.map(function (m) {
+                var on = mode === m.id;
+                return h('button', {
+                  key: m.id, type: 'button', role: 'radio',
+                  'aria-checked': on ? 'true' : 'false',
+                  onClick: function () { setMode(m.id); },
+                  className: 'text-left rounded-xl border-2 px-3 py-2 transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 ' +
+                    (on ? 'bg-fuchsia-700 text-white border-fuchsia-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-fuchsia-500')
+                },
+                  h('div', { className: 'text-sm font-black' },
+                    h('span', { 'aria-hidden': true, className: 'mr-1.5' }, m.icon), m.label),
+                  h('div', { className: 'text-[11px] leading-snug ' + (on ? 'text-fuchsia-50' : 'text-slate-700') }, m.hint)
+                );
+              })
+            ),
+
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr] gap-4' },
+              // ── Viewer column ──
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4 space-y-3' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, viewerTitle),
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { className: 'text-[11px] font-mono text-slate-700' }, seenCount + '/' + totalNutrients + ' ' + __alloT('stem.nutritionlab.bm_explored', 'explored')),
+                    h('button', {
+                      type: 'button', onClick: toggleLabels, 'aria-pressed': showLabels ? 'true' : 'false',
+                      className: 'px-2.5 py-1 rounded-lg border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 ' +
+                        (showLabels ? 'bg-slate-800 text-white border-slate-900' : 'bg-white text-slate-800 border-slate-300 hover:border-slate-500')
+                    }, showLabels ? __alloT('stem.nutritionlab.bm_labels_on', '🏷️ Labels on') : __alloT('stem.nutritionlab.bm_label_all', '🏷️ Label all'))
+                  )
+                ),
+                h('div', {
+                  role: 'group', tabIndex: 0,
+                  'data-nutrition-bodymap': 'true',
+                  'aria-label': __alloT('stem.nutritionlab.bm_viewer_aria', 'Interactive 3D body map. Arrow keys rotate and tilt, plus and minus zoom, 0 resets the view.'),
+                  'aria-describedby': 'nutrition-bm-desc',
+                  onKeyDown: bmKeys,
+                  className: 'relative rounded-2xl overflow-hidden border-2 border-slate-800 nutritionlab-bm-frame focus:outline-none focus:ring-4 ring-fuchsia-500/50',
+                  style: { height: 430, background: '#0b1220' }
+                },
+                  h('div', { ref: nutriBody3dAttach, style: { position: 'absolute', inset: 0 } }),
+                  st3d !== 'ready' && h('div', {
+                    role: 'status',
+                    className: 'absolute inset-0 flex items-center justify-center text-center p-6',
+                    style: { background: 'rgba(11,18,32,0.92)', color: '#e2e8f0' }
+                  },
+                    h('p', { className: 'text-sm font-bold' },
+                      st3d === 'loading' || st3d === 'idle'
+                        ? __alloT('stem.nutritionlab.bm_loading', 'Loading the 3D figure…')
+                        : (NUTRI_BODY3D_MISSING === 'host'
+                          ? __alloT('stem.nutritionlab.bm_host_old', 'The 3D figure needs a newer host module than this build has. The region list below carries the same map.')
+                          : __alloT('stem.nutritionlab.bm_no_webgl', 'The 3D figure could not start on this device, usually because WebGL is unavailable or blocked. The region list below carries the same map.')))
+                  ),
+                  st3d === 'ready' && hasActive && h('div', {
+                    'aria-hidden': true,
+                    className: 'absolute left-3 bottom-3 rounded-full px-3 py-1 text-xs font-bold',
+                    style: { background: 'rgba(15,23,42,0.85)', color: '#fde68a', border: '1px solid ' + flowColor }
+                  }, legendText)
+                ),
+                h('p', { id: 'nutrition-bm-desc', className: 'text-[11px] text-slate-700' },
+                  __alloT('stem.nutritionlab.bm_desc_line', 'Glowing organs use the selected nutrient; dots trace the route from the gut. Drag or use the buttons to turn the figure. Click an organ to select it.')),
+                h('div', { role: 'group', 'aria-label': __alloT('stem.nutritionlab.bm_controls', '3D view controls'), className: 'flex flex-wrap gap-1.5' },
+                  [['◀', __alloT('stem.nutritionlab.bm_rotate_left', 'Rotate left'), function () { NUTRI_BODY3D.nudge(-0.3, 0); }],
+                   ['▶', __alloT('stem.nutritionlab.bm_rotate_right', 'Rotate right'), function () { NUTRI_BODY3D.nudge(0.3, 0); }],
+                   ['▲', __alloT('stem.nutritionlab.bm_tilt_up', 'Tilt up'), function () { NUTRI_BODY3D.nudge(0, 0.16); }],
+                   ['▼', __alloT('stem.nutritionlab.bm_tilt_down', 'Tilt down'), function () { NUTRI_BODY3D.nudge(0, -0.16); }],
+                   ['＋', __alloT('stem.nutritionlab.bm_zoom_in', 'Zoom in'), function () { NUTRI_BODY3D.zoom(-0.5); }],
+                   ['－', __alloT('stem.nutritionlab.bm_zoom_out', 'Zoom out'), function () { NUTRI_BODY3D.zoom(0.5); }],
+                   ['↺', __alloT('stem.nutritionlab.bm_reset_view', 'Reset view'), function () { NUTRI_BODY3D.reset(); }]
+                  ].map(function (b) {
+                    return h('button', {
+                      key: b[1], type: 'button', 'aria-label': b[1], title: b[1],
+                      disabled: st3d !== 'ready',
+                      onClick: b[2],
+                      className: 'min-h-10 px-3 py-1.5 rounded-lg text-sm font-bold border-2 border-slate-300 bg-white text-slate-800 hover:border-fuchsia-500 transition focus:outline-none focus:ring-2 ring-fuchsia-500/40 disabled:opacity-40'
+                    }, b[0]);
+                  })
+                ),
+                h('div', null,
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.nutritionlab.bm_regions_heading', 'Body regions — click one to ask what it needs')),
+                  h('div', { className: 'flex flex-wrap gap-1.5' }, BODY_REGIONS.map(function (r) { return regionChip(r); }))
+                )
+              ),
+
+              // ── Picker + detail column ──
+              h('div', { className: 'space-y-4' },
+                !energyMode && h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' },
+                    compareMode ? __alloT('stem.nutritionlab.bm_pick_heading_first', 'Pick the first nutrient') : __alloT('stem.nutritionlab.bm_pick_heading', 'Pick a nutrient')),
+                  plate && h('div', { className: 'mb-2' },
+                    h('button', {
+                      type: 'button', onClick: function () { pickNutrient('plate'); },
+                      'aria-pressed': plateMode ? 'true' : 'false',
+                      className: 'px-3 py-1.5 rounded-xl border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                        (plateMode ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-emerald-50 text-emerald-900 border-emerald-300 hover:border-emerald-600')
+                    }, '🍽️ ' + __alloT('stem.nutritionlab.bm_my_plate', 'My plate') + ' (' + plate.length + ')')
+                  ),
+                  h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.nutritionlab.bm_pick_heading', 'Pick a nutrient'), className: 'space-y-2.5' },
+                    pickerGroups.map(function (g) {
+                      return h('div', { key: g.id },
+                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, g.label),
+                        h('div', { className: 'flex flex-wrap gap-1.5' }, g.items.map(function (n) { return nutrientChip(n, g.id); }))
+                      );
+                    })
+                  )
+                ),
+
+                // Region detail — shown whenever a region is selected.
+                regionMeta && h('div', {
+                  key: 'region-' + region,
+                  className: 'bg-white rounded-2xl shadow border-2 p-5 space-y-3 nutritionlab-fade-in',
+                  style: { borderColor: regionMeta.color },
+                  'aria-live': 'polite'
+                },
+                  h('div', { className: 'flex items-start justify-between gap-3' },
+                    h('div', { className: 'flex items-start gap-3' },
+                      h('span', { className: 'text-4xl', 'aria-hidden': true }, regionMeta.icon),
+                      h('div', null,
+                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, __alloT('stem.nutritionlab.bm_region', 'Body region')),
+                        h('h3', { className: 'text-xl font-black text-slate-800' }, regionMeta.label)
+                      )
+                    ),
+                    h('button', {
+                      type: 'button', onClick: function () { pickRegion(region); },
+                      'aria-label': __alloT('stem.nutritionlab.bm_clear_region', 'Clear region selection'),
+                      className: 'px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-800 hover:bg-slate-200 focus:outline-none focus:ring-2 ring-slate-400'
+                    }, '✕')
+                  ),
+                  h('div', { className: 'p-3 bg-emerald-50 rounded-lg border border-emerald-200' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.bm_region_uses', 'What it does with nutrients')),
+                    h('div', { className: 'text-sm text-slate-800' }, regionMeta.uses)
+                  ),
+                  h('div', { className: 'p-3 bg-rose-50 rounded-lg border border-rose-200' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, __alloT('stem.nutritionlab.bm_region_short', 'When supply runs short')),
+                    h('div', { className: 'text-sm text-slate-800' }, regionMeta.short),
+                    h('div', { className: 'text-[11px] text-slate-700 italic mt-1' }, __alloT('stem.nutritionlab.bm_candidate_note', 'These are candidates, not a diagnosis. Symptoms have many causes; a doctor can test for a nutrient shortfall.'))
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.nutritionlab.bm_region_needs', 'Nutrients it depends on') + ' (' + regionNutrients.length + ')'),
+                    h('div', { className: 'flex flex-wrap gap-1.5' }, regionNutrients.map(function (n) { return nutrientChip(n, groupOf(n.id)); }))
+                  )
+                ),
+
+                // ── Resting-energy panel ──
+                energyMode && h('div', { key: 'energy', 'data-nutrition-bm-energy': 'true', className: 'bg-white rounded-2xl shadow border-2 border-amber-400 p-5 space-y-3 nutritionlab-fade-in', 'aria-live': 'polite' },
+                  h('h3', { className: 'text-xl font-black text-slate-800' }, '⚡ ' + __alloT('stem.nutritionlab.bm_energy_title', 'Where your resting energy goes')),
+                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                    __alloT('stem.nutritionlab.bm_energy_copy', 'This is your body doing nothing at all: lying still, awake, not digesting a meal. Most of the fuel you eat is spent here, not on exercise. The bigger an organ glows on the figure, the larger its share.')),
+                  h('div', { className: 'space-y-2' },
+                    BODY_REGIONS.filter(function (r) { return !!BODY_ENERGY_SHARE[r.id]; })
+                      .sort(function (a, b) { return BODY_ENERGY_SHARE[b.id].pct - BODY_ENERGY_SHARE[a.id].pct; })
+                      .map(function (r) {
+                        var e = BODY_ENERGY_SHARE[r.id];
+                        return h('button', {
+                          key: r.id, type: 'button',
+                          onClick: function () { pickRegion(r.id); },
+                          'aria-pressed': region === r.id ? 'true' : 'false',
+                          'aria-label': r.label + ', ' + e.pct + ' percent of resting energy. ' + e.note,
+                          className: 'w-full text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 ring-amber-500/40 ' +
+                            (region === r.id ? 'bg-amber-50 border-amber-500' : 'bg-white border-slate-200 hover:border-amber-400')
+                        },
+                          h('div', { className: 'flex items-center justify-between text-sm mb-1' },
+                            h('span', { className: 'font-bold text-slate-800' },
+                              h('span', { 'aria-hidden': true, className: 'mr-1' }, r.icon), r.label),
+                            h('span', { className: 'font-mono text-slate-800' }, e.pct + '%')
+                          ),
+                          h('div', { className: 'h-3 rounded-full overflow-hidden bg-slate-200', 'aria-hidden': true },
+                            h('div', { className: 'h-full transition-all', style: { width: e.pct + '%', background: r.color } })
+                          ),
+                          h('div', { className: 'text-xs text-slate-700 mt-1 leading-snug' }, e.note)
+                        );
+                      })
+                  ),
+                  h('div', { className: 'p-2 rounded-lg bg-slate-50 border border-slate-200' },
+                    h('div', { className: 'flex items-center justify-between text-sm mb-1' },
+                      h('span', { className: 'font-bold text-slate-800' }, __alloT('stem.nutritionlab.bm_energy_other', '🫧 Everything else')),
+                      h('span', { className: 'font-mono text-slate-800' }, BODY_ENERGY_OTHER_PCT + '%')
+                    ),
+                    h('div', { className: 'text-xs text-slate-700 leading-snug' },
+                      __alloT('stem.nutritionlab.bm_energy_other_note', 'Skin, gut, immune cells, bone, blood and fat tissue. Individually small, together a fifth of the bill.'))
+                  ),
+                  h('div', { className: 'p-3 rounded-lg bg-violet-50 border border-violet-200' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, __alloT('stem.nutritionlab.bm_energy_headline', 'The number worth remembering')),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                      __alloT('stem.nutritionlab.bm_energy_headline_copy', 'Your brain is about 2% of your body weight and spends about 20% of your resting energy — and a teenage brain, still building connections, spends a larger share than an adult one. Thinking is expensive, and it is paid for out of what you eat.'))
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-700 italic' },
+                    __alloT('stem.nutritionlab.bm_energy_source', 'Healthy-adult averages from Wang et al. (2010) and Brody, Nutritional Biochemistry. Real shares vary with body composition, age and health — these describe the pattern, not a person.')),
+                  h('button', {
+                    type: 'button', onClick: function () { goto('energyBalance'); },
+                    className: 'px-3 py-1.5 rounded-lg bg-amber-800 text-white text-xs font-bold hover:bg-amber-900 focus:outline-none focus:ring-2 ring-amber-500/40'
+                  }, '⚡ ' + __alloT('stem.nutritionlab.bm_energy_open_module', 'Open Energy & Metabolism'))
+                ),
+
+                // ── Compare panel ──
+                compareMode && (function () {
+                  var sets = bodyMapCompareSets(nutrient, compareId);
+                  var nA = bodyMapNutrient(nutrient), nB = bodyMapNutrient(compareId);
+                  var pairNote = bodyMapCompareNote(nutrient, compareId);
+                  var rowList = function (ids, tone) {
+                    if (!ids.length) return h('div', { className: 'text-xs text-slate-700 italic' }, __alloT('stem.nutritionlab.bm_compare_none', 'None'));
+                    return h('div', { className: 'flex flex-wrap gap-1.5' }, ids.map(function (rid) {
+                      var r = BODY_REGION_BY_ID[rid];
+                      return h('button', {
+                        key: rid, type: 'button', onClick: function () { pickRegion(rid); },
+                        'aria-pressed': region === rid ? 'true' : 'false',
+                        'aria-label': r.label + ' — ' + tone,
+                        className: 'px-2.5 py-1 rounded-lg border-2 text-xs font-bold text-slate-900 bg-white transition focus:outline-none focus:ring-2 ring-fuchsia-500/40',
+                        style: { borderColor: r.color }
+                      }, h('span', { 'aria-hidden': true, className: 'mr-1' }, r.icon), r.label);
+                    }));
+                  };
+                  return h('div', { key: 'compare', 'data-nutrition-bm-compare': 'true', className: 'bg-white rounded-2xl shadow border-2 border-violet-400 p-5 space-y-3 nutritionlab-fade-in', 'aria-live': 'polite' },
+                    h('h3', { className: 'text-xl font-black text-slate-800' }, '⚖️ ' + __alloT('stem.nutritionlab.bm_compare_title', 'Two nutrients, one body')),
+                    h('div', null,
+                      h('label', { htmlFor: 'nutrition-bm-compare-b', className: 'block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+                        __alloT('stem.nutritionlab.bm_compare_second', 'Compare') + ' ' + bodyMapShortName(nA) + ' ' + __alloT('stem.nutritionlab.bm_compare_with', 'with')),
+                      h('select', {
+                        id: 'nutrition-bm-compare-b',
+                        value: compareId,
+                        onChange: function (e) { pickCompare(e.target.value); },
+                        className: 'w-full p-2 rounded-lg border-2 border-slate-300 bg-white text-sm font-bold text-slate-800 focus:outline-none focus:ring-2 ring-violet-500/40'
+                      },
+                        pickerGroups.map(function (g) {
+                          return h('optgroup', { key: g.id, label: g.label },
+                            g.items.map(function (n) {
+                              return h('option', { key: n.id, value: n.id }, bodyMapShortName(n));
+                            })
+                          );
+                        })
+                      )
+                    ),
+                    h('div', { className: 'p-3 rounded-lg bg-violet-50 border border-violet-200' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' },
+                        __alloT('stem.nutritionlab.bm_compare_shared', 'Shared addresses') + ' (' + sets.shared.length + ')'),
+                      rowList(sets.shared, 'used by both'),
+                      h('p', { className: 'text-[11px] text-slate-700 mt-2 leading-snug' },
+                        __alloT('stem.nutritionlab.bm_compare_legend', 'On the figure these burn brightest; a region only one of them serves sits dim.'))
+                    ),
+                    pairNote && h('div', { className: 'p-3 rounded-lg bg-emerald-50 border border-emerald-200' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, __alloT('stem.nutritionlab.bm_compare_why', 'Why this pair is worth knowing')),
+                      h('div', { className: 'text-sm text-slate-800' }, pairNote)
+                    ),
+                    h('div', { className: 'grid gap-3 sm:grid-cols-2' },
+                      h('div', null,
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+                          (nA ? nA.emoji + ' ' + bodyMapShortName(nA) : '') + ' ' + __alloT('stem.nutritionlab.bm_compare_only', 'only')),
+                        rowList(sets.onlyA, 'only this one')
+                      ),
+                      h('div', null,
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+                          (nB ? nB.emoji + ' ' + bodyMapShortName(nB) : '') + ' ' + __alloT('stem.nutritionlab.bm_compare_only_2', 'only')),
+                        rowList(sets.onlyB, 'only this one')
+                      )
+                    ),
+                    h('p', { className: 'text-[11px] text-slate-700 italic' },
+                      __alloT('stem.nutritionlab.bm_compare_footnote', 'Sharing an address does not make two nutrients interchangeable — they do different jobs once they arrive. Overlap tells you where a shortfall of either would be felt.'))
+                  );
+                })(),
+
+                // Nutrient detail. Hidden in resting-energy mode, where no single
+                // nutrient is being traced and the card would describe nothing on screen.
+                !energyMode && !plateMode && meta && map && h('div', {
+                  key: 'nutrient-' + nutrient,
+                  className: 'bg-white rounded-2xl shadow border-2 border-fuchsia-400 p-5 space-y-3 nutritionlab-fade-in',
+                  'aria-live': 'polite'
+                },
+                  h('div', { className: 'flex items-start gap-3 pb-2 border-b border-slate-200' },
+                    h('span', { className: 'text-4xl', 'aria-hidden': true }, meta.emoji),
+                    h('div', null,
+                      h('h3', { className: 'text-xl font-black text-slate-800' }, meta.name),
+                      h('div', { className: 'text-xs text-slate-700' }, __alloT('stem.nutritionlab.bm_works_in', 'Works in') + ' ' + map.regions.length + ' ' + (map.regions.length === 1 ? __alloT('stem.nutritionlab.bm_region_one', 'region') : __alloT('stem.nutritionlab.bm_region_many', 'regions')))
+                    )
+                  ),
+                  h('div', { className: 'p-3 bg-fuchsia-50 rounded-lg border border-fuchsia-200' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-900 mb-1' }, __alloT('stem.nutritionlab.bm_in_plain_words', 'In plain words')),
+                    h('div', { className: 'text-sm text-slate-800' }, map.note)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.nutritionlab.bm_where_it_works', 'Where it works — click a region')),
+                    h('div', { className: 'flex flex-wrap gap-1.5' }, map.regions.map(function (rid) { return regionChip(BODY_REGION_BY_ID[rid]); }))
+                  ),
+                  meta.function && h('div', { className: 'p-3 bg-slate-50 rounded-lg border border-slate-200' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.nutritionlab.bm_from_atlas', 'From the Micronutrient Atlas')),
+                    h('div', { className: 'text-sm text-slate-800' }, meta.function),
+                    meta.cite && h('div', { className: 'text-[11px] text-slate-700 italic font-mono mt-1' }, 'Source: ' + meta.cite),
+                    h('button', {
+                      type: 'button',
+                      onClick: function () {
+                        var t = MINERALS.indexOf(meta) >= 0 ? 'minerals' : (EFAS.indexOf(meta) >= 0 ? 'efas' : 'vitamins');
+                        upd('ma_tab', t); upd('ma_picked', meta); goto('microAtlas');
+                      },
+                      className: 'mt-2 px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800 focus:outline-none focus:ring-2 ring-emerald-500/40'
+                    }, '🌈 ' + __alloT('stem.nutritionlab.bm_open_atlas', 'Open the full Atlas card'))
+                  )
+                ),
+
+                // Plate detail
+                plateMode && h('div', { key: 'plate', className: 'bg-white rounded-2xl shadow border-2 border-emerald-400 p-5 space-y-3 nutritionlab-fade-in', 'aria-live': 'polite' },
+                  h('h3', { className: 'text-xl font-black text-slate-800' }, '🍽️ ' + __alloT('stem.nutritionlab.bm_plate_title', 'Where your plate goes')),
+                  (plate && plate.length > 0)
+                    ? h('div', { className: 'space-y-3' },
+                        h('p', { className: 'text-sm text-slate-800' },
+                          plate.length + ' ' + __alloT('stem.nutritionlab.bm_plate_copy_a', 'nutrients from your plate reach') + ' ' + activeCount + ' ' + __alloT('stem.nutritionlab.bm_plate_copy_b', 'body regions. Click any nutrient to trace it on its own.')),
+                        h('div', { className: 'flex flex-wrap gap-1.5' }, plate.map(function (id) { var n = bodyMapNutrient(id); return n ? nutrientChip(n, groupOf(id)) : null; })),
+                        h('div', { className: 'flex flex-wrap gap-1.5' }, BODY_REGIONS.filter(function (r) { return !!active[r.id]; }).map(function (r) { return regionChip(r); }))
+                      )
+                    : h('p', { className: 'text-sm text-slate-700 italic' }, __alloT('stem.nutritionlab.bm_plate_empty', 'Your plate is empty. Build one in the Macronutrient Lab, then come back.')),
+                  h('button', {
+                    type: 'button', onClick: function () { goto('macroLab'); },
+                    className: 'px-3 py-1.5 rounded-lg bg-emerald-700 text-white text-xs font-bold hover:bg-emerald-800 focus:outline-none focus:ring-2 ring-emerald-500/40'
+                  }, '🍽️ ' + __alloT('stem.nutritionlab.bm_back_to_plate', 'Back to the Macronutrient Lab'))
+                ),
+
+                !energyMode && !compareMode && !plateMode && !meta && !regionMeta && h('div', { className: 'bg-slate-100 rounded-2xl border border-slate-300 p-5 text-center' },
+                  h('div', { className: 'text-3xl mb-2', 'aria-hidden': true }, '👆'),
+                  h('p', { className: 'text-sm text-slate-700' }, __alloT('stem.nutritionlab.bm_pick_prompt', 'Pick a nutrient above, or click a region of the figure, to see what your body does with it.'))
+                )
+              )
+            ),
+
+            // ── Predict, then look ──
+            h('div', { className: 'bg-gradient-to-br from-violet-50 to-fuchsia-50 border-2 border-violet-300 rounded-2xl p-5', 'data-nutrition-bm-predict': 'true' },
+              h('div', { className: 'flex items-baseline justify-between gap-3 flex-wrap mb-2' },
+                h('h2', { className: 'text-base font-black text-violet-900' }, '🔮 ' + __alloT('stem.nutritionlab.bm_predict_title', 'Where does it go? Predict, then look')),
+                h('span', { className: 'text-[11px] font-mono text-slate-700' }, (quiz.done || 0) + ' ' + __alloT('stem.nutritionlab.bm_predict_done', 'predictions made'))
+              ),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
+                __alloT('stem.nutritionlab.bm_predict_copy_a', 'Before looking at the figure:') + ' ',
+                h('strong', null, qMeta.emoji + ' ' + bodyMapShortName(qMeta)),
+                ' ' + __alloT('stem.nutritionlab.bm_predict_copy_b', 'is delivered to several body regions. Pick ONE region you think is a main address, then check the map.')),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.nutritionlab.bm_predict_group', 'Prediction choices'), className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2' },
+                BODY_REGIONS.map(function (r) {
+                  var isAnswer = qMap.regions.indexOf(r.id) !== -1;
+                  var isPick = quiz.pick === r.id;
+                  var cls = 'text-left px-3 py-2 rounded-xl border-2 text-xs font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ';
+                  if (!qRevealed) cls += 'bg-white text-slate-800 border-slate-300 hover:border-violet-500';
+                  else if (isAnswer) cls += 'bg-emerald-100 text-emerald-900 border-emerald-600';
+                  else if (isPick) cls += 'bg-rose-100 text-rose-900 border-rose-500';
+                  else cls += 'bg-white text-slate-700 border-slate-200 opacity-70';
+                  return h('button', {
+                    key: r.id, type: 'button',
+                    onClick: function () { quizPick(r.id); },
+                    'aria-disabled': qRevealed ? 'true' : 'false',
+                    'aria-label': r.label + (qRevealed ? (isAnswer ? ' — yes, a main address' : (isPick ? ' — your pick, not a main address' : '')) : ''),
+                    className: cls
+                  },
+                    h('span', { 'aria-hidden': true, className: 'mr-1' }, r.icon),
+                    r.label,
+                    qRevealed && isAnswer && h('span', { 'aria-hidden': true, className: 'ml-1' }, '✓'),
+                    qRevealed && isPick && !isAnswer && h('span', { 'aria-hidden': true, className: 'ml-1' }, '✗')
+                  );
+                })
+              ),
+              qRevealed && h('div', { className: 'mt-3 p-3 rounded-xl border-2 ' + (qHit ? 'bg-emerald-50 border-emerald-300' : 'bg-amber-50 border-amber-300'), 'aria-live': 'polite' },
+                h('div', { className: 'font-bold text-sm ' + (qHit ? 'text-emerald-900' : 'text-amber-900') },
+                  qHit
+                    ? __alloT('stem.nutritionlab.bm_predict_hit', 'Yes — that is one of its addresses.')
+                    : __alloT('stem.nutritionlab.bm_predict_miss', 'Not a main address for this one — look at what lit up instead.')),
+                h('p', { className: 'text-sm text-slate-800 mt-1' }, qMap.note),
+                h('p', { className: 'text-xs text-slate-800 mt-1' },
+                  __alloT('stem.nutritionlab.bm_predict_all', 'All of its addresses:') + ' ' + qMap.regions.map(function (rid) { return BODY_REGION_BY_ID[rid].label; }).join(', ') + '.'),
+                h('button', {
+                  type: 'button', onClick: quizNext,
+                  className: 'mt-2 px-3 py-1.5 rounded-lg bg-violet-700 text-white text-xs font-bold hover:bg-violet-800 focus:outline-none focus:ring-2 ring-violet-500/40'
+                }, __alloT('stem.nutritionlab.bm_predict_next', 'Next nutrient →'))
+              )
+            ),
+
+            h(TeacherNotes, {
+              standards: ['HS-LS1-2 (Hierarchical organization of interacting body systems)', 'HS-LS1-3 (Homeostasis)', 'HS-LS1-7 (Energy in life processes)', 'CTE Family & Consumer Sciences'],
+              questions: [
+                'Iron lights up blood, brain, immune cells and muscle. What single job connects all four? (Hint: what does hemoglobin carry?)',
+                'Calcium reaches bones AND the heart, muscles and nerves. Predict what would happen to the heartbeat if blood calcium dropped sharply, then explain why the body pulls calcium out of bone before letting that happen.',
+                'Vitamin D and calcium both light up bone. Why does the map show vitamin D at the GUT too, and what does that say about Maine winters?',
+                'Pick any region and list its nutrients. Which two foods from the Macronutrient Lab would cover the most of them?'
+              ],
+              misconceptions: [
+                '"Vitamins give you energy" — vitamins contain no calories. They are cofactors that help enzymes release energy from carbohydrate, fat and protein. Only the macronutrients supply energy.',
+                '"A nutrient goes to one place" — most nutrients serve several systems at once, which is why a shortfall shows up in more than one way (iron: tired AND foggy AND more colds).',
+                '"You would notice a deficiency right away" — most build slowly over months; the body buffers with stores (bone calcium, liver B12) until they run low. Blood tests catch it earlier than symptoms do.',
+                '"Bones are finished growing by high school" — peak bone mass is reached in the mid-to-late twenties, so calcium, vitamin D and weight-bearing activity in the teen years set the lifetime baseline.'
+              ],
+              extension: 'Choose one region and one nutrient it depends on. Use the NIH Office of Dietary Supplements Fact Sheet for that nutrient (ods.od.nih.gov) to find the specific enzyme, protein or hormone that uses it there, then add ONE sentence to the region\'s description that a 7th grader could understand.',
+              sources: 'Nutrient functions and deficiency consequences from NIH Office of Dietary Supplements Fact Sheets (ods.od.nih.gov). Organ energy use from Wang et al. (2010). Vitamin A and childhood blindness from the World Health Organization. Peak bone mass timing from NIH Osteoporosis and Related Bone Diseases resources. The figure is a schematic teaching model, not an anatomical atlas.'
+            })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
+      // Every view returns through one root so the palette pin above covers the
+      // whole tool. Sixteen separate returns are why this is an IIFE rather than
+      // a wrapper added at each site.
+      var __nlBody = (function () {
       if (view === 'macroLab') return h(MacronutrientLab);
       if (view === 'microAtlas') return h(MicronutrientAtlas);
       if (view === 'labelReader') return h(FoodLabelReader);
@@ -20420,6 +21955,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'deficiencyDetective') return h(DeficiencyDetective);
       if (view === 'hydrationLab') return h(HydrationLab);
       if (view === 'macroInquiry') return h(MacroInquiryWidget);
+      if (view === 'bodyMap') return h(NutrientBodyMap);
       if (view === 'myNutritionKit') {
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🥗', title: __alloT('stem.nutritionlab.my_nutrition_kit_2', 'My Nutrition Kit') }),
@@ -20429,6 +21965,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         );
       }
       return h(MainMenu);
+      })();
+      return h('div', { 'data-nutritionlab-root': 'true' }, __nlBody);
     }
   });
 

@@ -789,3 +789,445 @@ describe('Case to bench cross-links', () => {
     expect(html).not.toContain('See the mechanism on the bench');
   });
 });
+
+// 2026-08-25 pedagogy pass. The Portfolio used to require evidenceAnswersByProfile,
+// compareReflections and caseAudits, none of which any view wrote, so three of its
+// nine artifacts could never complete and it asked for an "observation-
+// interpretation-limit note" that did not exist anywhere in the tool. There is
+// now ONE derivation (learningArtifactsFor) read by the path strip under the
+// tabs, the suggested-next-step card, and the Portfolio grid.
+describe('Learning path and portfolio share one derivation', () => {
+  const artifacts = (grade, data) => config.testHooks.learningArtifactsFor(grade, data);
+  const byId = (list) => Object.fromEntries(list.map((a) => [a.id, a]));
+  const completeNote = { theoryId: 'rpt', observation: 'O'.repeat(20), interpretation: 'I'.repeat(20), limit: 'L'.repeat(20), minimum: 20, complete: true };
+
+  it('lists the suggested sequence once, in order', () => {
+    expect(config.testHooks.pathStepIds).toEqual(['explore', 'compare', 'evidence', 'bench', 'case', 'debate', 'map', 'experiment', 'check', 'synthesis']);
+  });
+
+  it('starts every step unfinished on an empty save', () => {
+    const list = artifacts('8th Grade', {});
+    expect(list.length).toBe(10);
+    expect(list.filter((a) => a.done)).toEqual([]);
+  });
+
+  it('marks every artifact reachable from state the views actually write', () => {
+    const data = {
+      selectedTheory: 'gnw',
+      compareReflections: { middle: 'GNWT focuses on access; RPT on local recurrence.' },
+      // flat keys: exactly what renderEvidence / renderEvidenceLadder store
+      evidenceAnswers: { 'mask-result': 'evidence', 'broadcast-proof': 'claim', 'other-minds': 'question', 'pci-result': 'evidence' },
+      evidenceLadderAnswers: { 'brain-dependence': 'Established', 'complexity-mechanism': 'Suggestive', 'frontal-necessity': 'Disputed', 'current-ai-feeling': 'Unknown' },
+      simFlags: { human: true, model: true, noReport: true },
+      caseAudits: { 'middle:masking': completeNote },
+      caseDebates: { 'middle:masking': { theoryA: 'gnw', theoryB: 'rpt', positionA: 'A'.repeat(28), positionB: 'B'.repeat(28), evidence: 'E'.repeat(28), uncertainty: 'U'.repeat(28), minimum: 28, complete: true } },
+      mapSessions: { middle: { interactions: 2, reflection: 'R'.repeat(24) } },
+      experimentRuns: { middle: { revealed: true, theoryId: 'gnw', settings: { maskDelay: 80 }, preregistered: 'P'.repeat(24) } },
+      quizAnswers: { middle: { 0: 2, 1: 0, 2: 3, 3: 1, 4: 0 } },
+      checkComplete: { middle: true },
+      portfolioSynthesis: { middle: { claim: 'C'.repeat(28), evidence: 'E'.repeat(28), uncertainty: 'U'.repeat(28) } },
+    };
+    expect(artifacts('8th Grade', data).filter((a) => !a.done).map((a) => a.id)).toEqual([]);
+    // The quest tracker must agree, because both read the same key tables.
+    const hook = (id) => config.questHooks.find((q) => q.id === id);
+    expect(hook('evidence_sort').check(data)).toBe(true);
+    expect(hook('evidence_ladder').check(data)).toBe(true);
+    expect(hook('workspace_bench').check(data)).toBe(true);
+    expect(hook('knowledge_check').check(data)).toBe(true);
+    // Answered but miscalibrated is not "done": the bar is correctness, like the hooks.
+    const miscalibrated = { ...data, evidenceAnswers: { 'mask-result': 'claim', 'broadcast-proof': 'claim', 'other-minds': 'claim', 'pci-result': 'claim' } };
+    expect(byId(artifacts('8th Grade', miscalibrated)).evidence.done).toBe(false);
+  });
+
+  it('keeps written artifacts isolated per reading path', () => {
+    const data = { compareReflections: { middle: 'X'.repeat(30) }, caseAudits: { 'middle:masking': completeNote } };
+    const middle = byId(artifacts('8th Grade', data));
+    const high = byId(artifacts('11th Grade', data));
+    expect(middle.compare.done).toBe(true);
+    expect(high.compare.done).toBe(false);
+    expect(middle.case.done).toBe(true);
+    expect(high.case.done).toBe(false);
+  });
+
+  it('renders the strip on every view except the Portfolio, pointing at the first unfinished step', () => {
+    const learn = renderView('8th Grade', 'learn');
+    expect(learn).toContain('Learning path');
+    expect(learn).toContain('SUGGESTED NEXT STEP');
+    expect(learn).toContain('aria-current="step"');
+    // Explore is both the first step and the current section: a note, not a dead button.
+    expect(learn).toContain('It is in this section.');
+    const bench = renderView('8th Grade', 'bench', { selectedTheory: 'gnw' });
+    expect(bench).toContain('Go to Compare');
+    expect(renderView('8th Grade', 'portfolio')).not.toContain('SUGGESTED NEXT STEP');
+  });
+
+  it('speaks plainly on the youngest path, including the tab names', () => {
+    const html = renderView('Kindergarten', 'learn');
+    expect(html).toContain('My path');
+    expect(html).toContain('TRY THIS NEXT');
+    expect(html).toContain('Picked a big idea');
+    ['Big ideas', 'Clue sorter', 'Toy machine', 'My folder'].forEach((label) => expect(html).toContain(label));
+    expect(html).not.toContain('Prediction Simulator');
+    expect(renderView('8th Grade', 'learn')).toContain('Prediction Simulator');
+  });
+
+  it('logs the comparison reflection per reading path and still shows a legacy flat save', () => {
+    expect(renderView('8th Grade', 'compare', { compareReflections: { middle: 'GNWT focuses on access while RPT focuses on local loops.' } })).toContain('Comparison logged');
+    expect(renderView('11th Grade', 'compare', { compareReflections: { middle: 'X'.repeat(40) } })).not.toContain('Comparison logged');
+    expect(renderView('8th Grade', 'compare', { compareReflection: 'Legacy text that was saved before per-path storage.' })).toContain('Legacy text that was saved');
+  });
+});
+
+describe('Case evidence note', () => {
+  it('scales the minimum with the reading path and needs a theory plus three parts', () => {
+    expect(config.testHooks.caseAuditMinimumFor('Kindergarten')).toBe(8);
+    expect(config.testHooks.caseAuditMinimumFor('8th Grade')).toBe(20);
+    expect(config.testHooks.caseAuditMinimumFor('Graduate Level')).toBe(32);
+    const note = { theoryId: 'rpt', observation: 'O'.repeat(20), interpretation: 'I'.repeat(20), limit: 'L'.repeat(20) };
+    expect(config.testHooks.caseAuditReadyFor('8th Grade', note)).toBe(true);
+    expect(config.testHooks.caseAuditReadyFor('Graduate Level', note)).toBe(false);
+    expect(config.testHooks.caseAuditReadyFor('8th Grade', { ...note, theoryId: '' })).toBe(false);
+    expect(config.testHooks.caseAuditReadyFor('8th Grade', { ...note, limit: '' })).toBe(false);
+  });
+
+  it('renders observation, interpretation, and limit ahead of the debate, and reads a saved note back', () => {
+    const html = renderView('8th Grade', 'cases', { selectedCase: 'masking' });
+    expect(html).toContain('Evidence note');
+    expect(html).toContain('OBSERVATION · INTERPRETATION · LIMIT');
+    expect(html).toContain('Theory doing the interpreting');
+    expect(html.indexOf('Evidence note')).toBeLessThan(html.indexOf('Guided two-position debate'));
+    const saved = renderView('8th Grade', 'cases', {
+      selectedCase: 'masking',
+      caseAudits: { 'middle:masking': { theoryId: 'rpt', observation: 'Early activity survived the mask.', interpretation: 'RPT reads the loss of later activity as lost recurrence.', limit: 'The report task adds decision processes.', minimum: 20, complete: true } },
+    });
+    expect(saved).toContain('Note saved');
+    expect(saved).toContain('RPT adds: ');
+    expect(saved).toContain('Cannot show: ');
+    const early = renderView('Kindergarten', 'cases');
+    expect(early).toContain('My clue note');
+    expect(early).toContain('What we still cannot tell');
+  });
+});
+
+describe('Debate self-check', () => {
+  it('is a rubric the learner applies, not a gate on finishing', () => {
+    const debate = { theoryA: 'gnw', theoryB: 'rpt', positionA: 'A'.repeat(28), positionB: 'B'.repeat(28), evidence: 'E'.repeat(28), uncertainty: 'U'.repeat(28) };
+    expect(config.testHooks.debateReadyFor('11th Grade', debate)).toBe(true);
+    const partial = renderView('11th Grade', 'cases', { selectedCase: 'masking', caseDebates: { 'high:masking': { ...debate, complete: true, checks: { steelman: true } } } });
+    expect(partial).toContain('Self-check before finishing');
+    expect(partial).toContain('type="checkbox"');
+    expect(partial).toContain('2 self-check items are still unticked');
+    const all = renderView('11th Grade', 'cases', { selectedCase: 'masking', caseDebates: { 'high:masking': { ...debate, complete: true, checks: { steelman: true, evidenceLimit: true, uncertainty: true } } } });
+    expect(all).toContain('Structure and self-check complete');
+  });
+});
+
+describe('Bench readouts', () => {
+  it('numbers the ignition step the way the scrubber does (1-indexed)', () => {
+    // "Ignition at step 3" beside a scrubber reading "Step 4 of 14" for the same
+    // tick was two numbers for one event.
+    const preset = config.testHooks.simPresetById('clear');
+    const run = config.testHooks.runWorkspaceSim(preset.config);
+    const html = renderView('11th Grade', 'bench', { sim: preset.config });
+    expect(run.markers.ignitionTick).not.toBe(null);
+    expect(html).toContain('at step ' + (run.markers.ignitionTick + 1) + '.');
+    expect(html).not.toContain('at step ' + run.markers.ignitionTick + '.');
+    expect(html).toContain('Step ' + (config.testHooks.peakTickIndexFor(preset.config) + 1) + ' of ' + run.ticks.length);
+  });
+
+  it('explains what each slider does before the learner reads the number', () => {
+    expect(renderView('11th Grade', 'bench')).toContain('It changes whether ignition happens, not what arrived.');
+    expect(renderView('1st Grade', 'bench')).toContain('Slide right to make the picture clearer.');
+  });
+});
+
+describe('Knowledge check banks are not guessable by slot or length', () => {
+  // Both tree scanners (scan_answer_position_bias, scan_tool_answer_length_clue)
+  // are blind to this tool's [question, options, index] tuple schema, so the
+  // bar lives here. Before this pass: 27/30 keys at slot A, key usually longest.
+  const GRADES = ['Kindergarten', '5th Grade', '8th Grade', '12th Grade', 'College', 'Graduate Level'];
+  const quizFor = (grade) => config.testHooks.quizFor(grade);
+
+  it('spreads the key across slots within every level and leaves no dead slot', () => {
+    GRADES.forEach((grade) => {
+      const quiz = quizFor(grade);
+      const arity = quiz[0].options.length;
+      const counts = {};
+      quiz.forEach((q) => { counts[q.correct] = (counts[q.correct] || 0) + 1; });
+      // Best achievable balance: no slot holds more than ceil(n / arity) keys.
+      const maxCount = Math.max(...Object.values(counts));
+      expect(maxCount, grade + ' ' + JSON.stringify(counts)).toBeLessThanOrEqual(Math.ceil(quiz.length / arity));
+      expect(Object.keys(counts).length, grade + ' dead slots ' + JSON.stringify(counts)).toBe(arity);
+    });
+  });
+
+  it('keeps the key from being the uniquely longest or shortest option beyond chance', () => {
+    GRADES.forEach((grade) => {
+      const quiz = quizFor(grade);
+      const arity = quiz[0].options.length;
+      const uniquelyLongest = quiz.filter((q) => q.options.every((o, i) => i === q.correct || o.length < q.options[q.correct].length)).length;
+      const uniquelyShortest = quiz.filter((q) => q.options.every((o, i) => i === q.correct || o.length > q.options[q.correct].length)).length;
+      const bar = arity === 2 ? 0.67 : 1 / arity + 0.01;
+      expect(uniquelyLongest / quiz.length, grade + ' longest').toBeLessThanOrEqual(bar);
+      expect(uniquelyShortest / quiz.length, grade + ' shortest').toBeLessThanOrEqual(bar);
+    });
+  });
+});
+
+describe('Reasoning-pattern feedback', () => {
+  it('names the pattern behind a wrong answer and clears when the answer is fixed', () => {
+    const quiz = config.testHooks.quizFor('8th Grade');
+    const wrong = (quiz[0].correct + 1) % quiz[0].options.length;
+    const flagged = config.testHooks.misconceptionsFor('8th Grade', { quizAnswers: { middle: { 0: wrong } }, evidenceAnswers: { 'pci-result': 'claim' } });
+    expect(flagged.map((p) => p.id)).toEqual(['proxy_to_construct']);
+    expect(flagged[0].count).toBe(2);
+    expect(flagged[0].where).toEqual(['evidence', 'check']);
+    expect(config.testHooks.misconceptionsFor('8th Grade', { quizAnswers: { middle: { 0: quiz[0].correct } } })).toEqual([]);
+  });
+
+  it('shows the pattern on the feedback line and summarises it once the check is complete', () => {
+    const quiz = config.testHooks.quizFor('8th Grade');
+    const wrong = {};
+    quiz.forEach((q, i) => { wrong[i] = (q.correct + 1) % q.options.length; });
+    const html = renderView('8th Grade', 'check', { quizAnswers: { middle: wrong } });
+    expect(html).toContain('Pattern: ');
+    expect(html).toContain('Patterns to watch');
+    expect(html).toContain('A proxy is not the construct');
+    const clean = {};
+    quiz.forEach((q, i) => { clean[i] = q.correct; });
+    expect(renderView('8th Grade', 'check', { quizAnswers: { middle: clean } })).toContain('No patterns flagged');
+  });
+});
+
+describe('Clarity of sequence and plain copy', () => {
+  it('sorts statement kinds before placing claims on the ladder', () => {
+    const html = renderView('8th Grade', 'evidence');
+    expect(html.indexOf('What kind of statement is this?')).toBeLessThan(html.indexOf('How settled is the claim?'));
+    expect(html.indexOf('Reset classifications')).toBeLessThan(html.indexOf('EVIDENCE LADDER'));
+  });
+
+  it('captions the signal journey, map lanes, and simulator controls plainly for K-2 only', () => {
+    const early = renderView('Kindergarten', 'learn');
+    expect(early).toContain('Shared everywhere');
+    expect(early).not.toContain('irreducible cause-effect whole');
+    expect(renderView('8th Grade', 'learn')).toContain('irreducible cause-effect whole');
+    expect(renderView('Kindergarten', 'map')).toContain('Ideas here ask how a clue gets shared with many brain helpers.');
+    const experiment = renderView('Kindergarten', 'experiment');
+    expect(experiment).toContain('Do we ask what they saw?');
+    expect(experiment).toContain('Looking right at it');
+    expect(renderView('8th Grade', 'experiment')).toContain('Response condition');
+  });
+
+  it('ships styles for every surface it renders and none for surfaces it does not', () => {
+    renderView('8th Grade', 'cases');
+    const css = document.getElementById('consciousness-lab-styles').textContent;
+    ['.cns-progress', '.cns-next-step', '.cns-case-audit', '.cns-debate-selfcheck', '.cns-misconception-summary', '.cns-note-example', '.cns-facilitator', '.cns-portfolio-share'].forEach((selector) => expect(css).toContain(selector));
+    expect(css).not.toContain('.cns-migration-note');
+  });
+});
+
+describe('Wave 2: nicknames, worked examples, the explain step, limits, hand-in', () => {
+  it('gives K-2 a nickname wherever an acronym used to appear, keeping the formal name as a subtitle', () => {
+    const learn = renderView('Kindergarten', 'learn');
+    expect(learn).toContain('The sharing idea');
+    expect(learn).toContain('Global Neuronal Workspace Theory');
+    const cases = renderView('Kindergarten', 'cases');
+    expect(cases).toContain('Fair account of the sharing idea');
+    expect(cases).not.toContain('Fair account of GNWT');
+    expect(renderView('8th Grade', 'cases')).toContain('Fair account of GNWT');
+    // The quiz used to offer "GNWT" / "RPT" to a path that had never seen the acronyms.
+    const quiz = config.testHooks.quizFor('Kindergarten');
+    expect(quiz.some((q) => q.options.includes('GNWT') || q.options.includes('RPT'))).toBe(false);
+    expect(config.testHooks.quizFor('5th Grade').some((q) => q.question.includes('GNWT'))).toBe(true);
+  });
+
+  it('gives each young-path theory card its own ask instead of one case-level sentence', () => {
+    const html = renderView('Kindergarten', 'cases', { selectedCase: 'green-light' });
+    const asks = [...html.matchAll(/Here, it looks for ([^<]+)</g)].map((m) => m[1]);
+    expect(asks.length).toBe(4);
+    expect(new Set(asks).size).toBe(4);
+    expect(html).not.toContain('In this case, it asks');
+    // Every theory a K-5 path can see carries a plain ask, so no card falls back.
+    ['Kindergarten', '5th Grade'].forEach((grade) => {
+      expect(renderView(grade, 'cases', { selectedCase: 'masking' }), grade).not.toContain('In this case, it asks');
+    });
+    // The K-2 Portfolio speaks the same register in its placeholders.
+    expect(renderView('Kindergarten', 'portfolio')).toContain('I still wonder...');
+    expect(renderView('Kindergarten', 'portfolio')).not.toContain('My current, provisional claim is...');
+  });
+
+  it('glosses the ladder rungs for the two youngest paths only', () => {
+    expect(renderView('Kindergarten', 'evidence')).toContain('scientists argue about it');
+    expect(renderView('5th Grade', 'evidence')).toContain('experts disagree');
+    expect(renderView('8th Grade', 'evidence')).not.toContain('experts disagree');
+  });
+
+  it('offers a worked example note that names its theory and stays a shape, not an answer', () => {
+    const html = renderView('8th Grade', 'cases', { selectedCase: 'masking' });
+    expect(html).toContain('<details class="cns-note-example">');
+    expect(html).toContain('See an example note, then write your own');
+    expect(html).toContain('Early feedforward activity survived the mask');
+    expect(html).toContain('RPT adds: ');
+    expect(html).toContain('a shape to copy, not an answer to copy');
+    const early = renderView('Kindergarten', 'cases', { selectedCase: 'masking' });
+    expect(early).toContain('The loop-back idea says: ');
+    expect(early).toContain('Your note should use your own words');
+    // Every case a path can open has an example whose theory that path can pick.
+    ['Kindergarten', '5th Grade', '8th Grade', '12th Grade', 'Graduate Level'].forEach((grade) => {
+      config.testHooks.caseIdsFor(grade).forEach((caseId) => {
+        expect(renderView(grade, 'cases', { selectedCase: caseId }), grade + ' ' + caseId).toContain('cns-note-example');
+      });
+    });
+  });
+
+  it('adds the explain step only after the reveal', () => {
+    const run = { theoryId: 'gnw', settings: { maskDelay: 80 }, preregistered: 'P'.repeat(30) };
+    expect(renderView('8th Grade', 'experiment', { experimentRuns: { middle: run } })).not.toContain('Compare your prediction with the forecasts');
+    const revealed = renderView('8th Grade', 'experiment', { experimentRuns: { middle: { ...run, revealed: true } } });
+    expect(revealed).toContain('THEORY-DERIVED PREDICTIONS');
+    expect(revealed).toContain('Compare your prediction with the forecasts');
+    expect(renderView('Kindergarten', 'experiment', { experimentRuns: { early: { ...run, preregistered: 'P'.repeat(12), revealed: true } } })).toContain('Did your guess match?');
+  });
+
+  it('tells grades 3-8 what the bench cannot show, in plain words', () => {
+    const middle = renderView('7th Grade', 'bench');
+    expect(middle).toContain('What this bench cannot show');
+    expect(middle).toContain('matching results are a fact about the code, not a discovery');
+    expect(renderView('11th Grade', 'bench')).toContain('not fitted to neural data');
+    expect(renderView('1st Grade', 'bench')).not.toContain('What this bench cannot show');
+  });
+
+  it('estimates time on the next step and lists the facilitator sequence in Sources', () => {
+    expect(renderView('8th Grade', 'learn')).toContain('About 6 min');
+    const sources = renderView('8th Grade', 'sources');
+    expect(sources).toContain('For facilitators: the suggested sequence');
+    expect(sources).toContain('about 71 minutes in total');
+    expect(sources).toContain('Could a supporter of each position accept your account of it?');
+    expect(sources).toContain('Nothing it shows is evidence about brains, models, or experience.');
+  });
+
+  it('never renders an empty epistemic panel for any theory on any path', () => {
+    // mergeLevelCopy accumulates from the theory's first level upward, so a
+    // theory introduced without a summary, claim, or challenge would render a
+    // titled box with nothing in it. Cheap guard for whoever adds the next one.
+    const grades = ['Kindergarten', '5th Grade', '8th Grade', '12th Grade', 'College', 'Graduate Level'];
+    const empties = [];
+    grades.forEach((grade) => {
+      config.testHooks.availableTheoryIds(grade).forEach((id) => {
+        const copy = config.testHooks.copyFor(id, grade);
+        const boxes = { summary: copy.summary, proposes: copy.claim || copy.mechanism || copy.summary, unresolved: copy.challenge };
+        Object.keys(boxes).forEach((key) => {
+          if (!String(boxes[key] || '').trim()) empties.push(grade + '/' + id + '/' + key);
+        });
+      });
+    });
+    expect(empties).toEqual([]);
+  });
+
+  it('states the analysis move once for the grid instead of on every card', () => {
+    // It used to be appended to each interpretation, so a graduate reader met
+    // the identical sentence under all thirteen theories.
+    const high = renderView('12th Grade', 'cases', { selectedCase: 'green-light' });
+    expect((high.match(/Comparison move/g) || []).length).toBe(1);
+    expect(high).toContain('For two of the cards above');
+    expect(high).not.toMatch(/access, phenomenal character, or report[^<]*<\/p>\s*<\/article>/);
+    expect(config.testHooks.analysisMoveFor('College').label).toBe('Operational move');
+    expect(config.testHooks.analysisMoveFor('Graduate Level').label).toBe('Research audit');
+    expect((renderView('Graduate Level', 'cases').match(/Research audit/g) || []).length).toBe(1);
+    // The youngest paths never had a move to repeat, and still do not get one.
+    expect(config.testHooks.analysisMoveFor('Kindergarten')).toBe(null);
+    expect(renderView('Kindergarten', 'cases')).not.toContain('Comparison move');
+  });
+
+  it('gives every philosophical view its own standing question instead of one shared tail', () => {
+    // Philosophical views have no per-case mechanism entry, so all of them used
+    // to render the identical case-level question plus the identical epistemic
+    // sentence: four cards, two sentences, verbatim.
+    const philosophy = ['functionalism', 'physicalism', 'dualism', 'panpsychism', 'illusionism', 'biological', 'neutral'];
+    const asks = philosophy.map((id) => config.testHooks.caseAskFor(id));
+    expect(asks.filter(Boolean).length).toBe(philosophy.length);
+    expect(new Set(asks).size).toBe(philosophy.length);
+
+    const html = renderView('12th Grade', 'cases', { selectedCase: 'masking' });
+    // The epistemic framing is stated once, for the grid, not per card.
+    expect((html.match(/This is the theory’s interpretation, not an extra observation\./g) || []).length).toBe(1);
+    const tails = [...html.matchAll(/Applied here, it asks ([^<]+)</g)].map((m) => m[1]);
+    expect(tails.length).toBeGreaterThanOrEqual(5);
+    expect(new Set(tails).size).toBe(tails.length);
+  });
+
+  it('separates the two theory families the scope note says are separated', () => {
+    const middle = renderView('8th Grade', 'learn');
+    expect(middle).toContain('They are separated below because they are not one-for-one rivals.');
+    expect(middle).toContain('Scientific models (6)');
+    expect(middle).toContain('Philosophical views (4)');
+    expect(middle.indexOf('Scientific models (6)')).toBeLessThan(middle.indexOf('Philosophical views (4)'));
+    // K-2 has no philosophical views, so it gets no heading to explain.
+    const early = renderView('Kindergarten', 'learn');
+    expect(early).not.toContain('Science ideas (4)');
+    expect(early).toContain('aria-label="Science ideas"');
+  });
+
+  it('says whether two compared lenses are even rivals, using the map placements', () => {
+    const rivals = config.testHooks.comparisonRelationFor('8th Grade', 'hot', 'ast');
+    expect(rivals.same).toBe(true);
+    expect(rivals.aLane).toBe('Higher-order or self-model');
+    expect(rivals.text).toContain('not discriminating');
+    const apart = config.testHooks.comparisonRelationFor('8th Grade', 'gnw', 'rpt');
+    expect(apart.same).toBe(false);
+    expect(apart.aLane).toBe('Access and global availability');
+    expect(apart.bLane).toBe('Sensory phenomenal content');
+    expect(apart.text).toContain('may not be direct rivals');
+    // A lens compared with itself has no relation to report.
+    expect(config.testHooks.comparisonRelationFor('8th Grade', 'gnw', 'gnw')).toBe(null);
+
+    expect(renderView('8th Grade', 'compare')).toContain('Different explanatory targets');
+    expect(renderView('8th Grade', 'compare', { compareA: 'hot', compareB: 'ast' })).toContain('Same explanatory target');
+    // K-2 gets the same distinction in its own words.
+    const early = renderView('Kindergarten', 'compare');
+    expect(early).toContain('These are looking for different things');
+    expect(early).toContain('sharing and using');
+  });
+
+  it('colours a case pill by what kind of case it is', () => {
+    expect(config.testHooks.caseKindFor('zombie')).toBe('thought');
+    expect(config.testHooks.caseKindFor('ai-emotion')).toBe('thought');
+    expect(config.testHooks.caseKindFor('masking')).toBe('empirical');
+    // The philosophical zombie used to carry the scientific-case colour.
+    expect(renderView('12th Grade', 'cases', { selectedCase: 'zombie' })).toMatch(/style="[^"]*#9d174d[^"]*">Thought experiment</);
+    expect(renderView('12th Grade', 'cases', { selectedCase: 'masking' })).toMatch(/style="[^"]*#0369a1[^"]*">Perception</);
+  });
+
+  it('tracks the three newer artifacts as quests, so the host sees what the path sees', () => {
+    const hook = (id) => config.questHooks.find((q) => q.id === id);
+    expect(config.questHooks.length).toBe(10);
+    expect(config.testHooks.pathStepIds.length).toBe(10);
+
+    const note = hook('case_note');
+    expect(note.check({})).toBe(false);
+    expect(note.check({ caseAudits: { 'middle:masking': { theoryId: 'rpt', observation: 'O'.repeat(20), interpretation: 'I'.repeat(20), limit: 'L'.repeat(20), minimum: 20, complete: true } } })).toBe(true);
+
+    const prereg = hook('preregistration');
+    expect(prereg.check({ experimentRuns: { middle: { revealed: false, theoryId: 'gnw', settings: {}, preregistered: 'P'.repeat(30) } } })).toBe(false);
+    expect(prereg.check({ experimentRuns: { middle: { revealed: true, theoryId: 'gnw', settings: {}, preregistered: 'P'.repeat(30) } } })).toBe(true);
+
+    const portfolio = hook('portfolio_synthesis');
+    expect(portfolio.check({ portfolioSynthesis: { middle: { claim: 'C'.repeat(10), evidence: 'E'.repeat(10), uncertainty: 'U'.repeat(10) } } })).toBe(false);
+    expect(portfolio.check({ portfolioSynthesis: { middle: { claim: 'C'.repeat(28), evidence: 'E'.repeat(28), uncertainty: 'U'.repeat(28) } } })).toBe(true);
+    // An unknown profile key must not crash or count.
+    expect(portfolio.check({ portfolioSynthesis: { nonsense: { claim: 'C'.repeat(80), evidence: 'E'.repeat(80), uncertainty: 'U'.repeat(80) } } })).toBe(false);
+  });
+
+  it('renders a hand-in summary that carries the epistemic line and the same artifact verdicts', () => {
+    const data = { selectedTheory: 'gnw', portfolioSynthesis: { middle: { claim: 'Access and experience may come apart.' } }, evidenceAnswers: { 'pci-result': 'claim' } };
+    const html = renderView('8th Grade', 'portfolio', data);
+    expect(html).toContain('Summary to share');
+    expect(html).toContain('readonly=""');
+    expect(html).toContain('Steps done: 1/10');
+    expect(html).toContain('[x] Theory explored: Global Neuronal Workspace Theory');
+    expect(html).toContain('Claim: Access and experience may come apart.');
+    expect(html).toContain('Uncertainty: (not written yet)');
+    expect(html).toContain('Patterns to watch: A proxy is not the construct (1)');
+    expect(html).toContain('It is not scientific consensus, and no theory is declared the winner.');
+  });
+});

@@ -19784,7 +19784,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   placeholder: "Claim: ... Evidence: ... Reasoning: ...",
                   className: "w-full resize-y rounded-lg border border-slate-300 p-2 text-[10px] leading-relaxed text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                 }),
-                React.createElement("p", { className: "text-right text-[9px] text-slate-400" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
+                React.createElement("p", { className: "text-right text-[9px] text-slate-600" }, (currentTutorialNote.prediction.length + currentTutorialNote.observation.length + currentTutorialNote.explanation.length) + " characters saved for this lesson")
               ),
               React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" },
                 React.createElement("button", {
@@ -25047,7 +25047,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 ),
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
                   // Sidebar \u2014 article list
-                  React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1 lg-scroll' },
+                  React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1 lg-scroll', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.aquarium.article_index', 'Article index') },
                     filtered.map(function (a) {
                       var sel = a.id === active.id;
                       return React.createElement('button', {
@@ -25055,7 +25055,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         onClick: function () { upd('libArticle', a.id); },
                         className: 'w-full text-left rounded-xl border p-2.5 transition-all ' + (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-emerald-300')
                       },
-                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide opacity-70' }, a.category + ' \u00b7 ' + a.level + ' \u00b7 ' + a.readMinutes + ' min'),
+                        React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wide' }, a.category + ' \u00b7 ' + a.level + ' \u00b7 ' + a.readMinutes + ' min'),
                         React.createElement('div', { className: 'text-sm font-extrabold mt-0.5 leading-tight' }, a.title),
                         React.createElement('div', { className: 'text-[11px] mt-1 leading-snug ' + (sel ? 'opacity-90' : 'opacity-75') }, a.summary.slice(0, 110) + (a.summary.length > 110 ? '\u2026' : ''))
                       );
@@ -25078,7 +25078,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       React.createElement('div', { className: 'space-y-2.5' },
                         (active.sections || []).map(function (sec, i) {
                           return React.createElement('section', { key: i, className: 'rounded-lg bg-slate-50 border border-slate-200 p-3' },
-                            React.createElement('h4', { className: 'text-[13px] font-extrabold text-slate-800 mb-1' }, '\u2014 ' + sec.heading),
+                            React.createElement('h3', { className: 'text-[13px] font-extrabold text-slate-800 mb-1' }, '\u2014 ' + sec.heading),
                             React.createElement('p', { className: 'text-[11.5px] text-slate-700 leading-relaxed whitespace-pre-line' }, sec.body)
                           );
                         })
@@ -25168,7 +25168,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                       var node = refValue(entry[k]);
                       if (!node) return null;
                       return React.createElement('div', { key: k },
-                        React.createElement('span', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-600' }, refLabel(k)),
+                        React.createElement('span', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-700' }, refLabel(k)),
                         node);
                     })
                   )
@@ -25218,7 +25218,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 ),
 
                 React.createElement('div', { className: 'grid grid-cols-1 lg:grid-cols-12 gap-3' },
-                  React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1' },
+                  React.createElement('aside', { className: 'lg:col-span-4 space-y-1.5 max-h-[640px] overflow-y-auto pr-1', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.aquarium.article_index_2', 'Article index') },
                     refVisible.length === 0
                       ? React.createElement('p', { className: 'text-[11px] text-slate-600 italic' },
                           __alloT('stem.aquarium.no_table_matches', 'No table matches that search.'))
@@ -25238,6 +25238,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ),
                   React.createElement('section', {
                     className: 'lg:col-span-8 rounded-2xl border-2 border-sky-200 bg-sky-50/40 p-3 max-h-[640px] overflow-y-auto',
+                    tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.aquarium.reference_articles', 'Reference articles'),
                     'aria-label': refActive.title
                   },
                     React.createElement('h4', { className: 'text-sm font-black text-sky-900 mb-2' },
@@ -25529,7 +25530,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                           STAGES.map(function (s, i) {
                             return React.createElement(React.Fragment, { key: s.k },
                               i > 0 && React.createElement('span', { className: 'text-slate-300 text-[10px]' }, '→'),
-                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: s.color } : {} }, s.k));
+                              React.createElement('span', { className: 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (i === stageIdx ? 'text-white shadow' : 'text-slate-600 bg-slate-100'), style: i === stageIdx ? { background: ({ '#16a34a': '#166534', '#22c55e': '#15803d', '#0ea5e9': '#0369a1', '#f59e0b': '#b45309', '#ef4444': '#b91c1c', '#a855f7': '#7e22ce', '#3b82f6': '#1d4ed8', '#06b6d4': '#0e7490' })[s.color] || s.color } : {} }, s.k));
                           })
                         ),
                         React.createElement('p', { className: 'text-[11px] text-slate-700 leading-snug' }, STAGES[stageIdx].desc)
@@ -25900,7 +25901,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               else state = 'critical';
               var sm = {
                 healthy:  { label: __alloT('stem.aquarium.healthy', '🟢 Healthy'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.aquarium.all_parameters_within_tolerance_fish_t', 'All parameters within tolerance. Fish thriving.') },
-                warning:  { label: __alloT('stem.aquarium.warning', '🟡 Warning'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.aquarium.elevated_toxins_or_temp_drift_investig', 'Elevated toxins or temp drift. Investigate cause.') },
+                warning:  { label: __alloT('stem.aquarium.warning', '🟡 Warning'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.aquarium.elevated_toxins_or_temp_drift_investig', 'Elevated toxins or temp drift. Investigate cause.') },
                 critical: { label: __alloT('stem.aquarium.critical', '🔴 Critical'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.aquarium.acute_toxicity_thermal_stress_imminent', 'Acute toxicity / thermal stress. Imminent harm.') }
               }[state];
               return h('div', { className: 'p-4 rounded-xl bg-white border border-cyan-300 shadow-sm space-y-3' },

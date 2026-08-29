@@ -28,6 +28,18 @@ describe('ArchStudio accessibility parity', () => {
     }
   });
 
+  it('provides named keyboard-accessible controls for the three-dimensional camera', () => {
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8');
+      expect(source).toContain("'aria-label': 'Three-dimensional camera controls'");
+      for (const label of ['Rotate view left', 'Rotate view right', 'Tilt view up', 'Tilt view down', 'Zoom in', 'Zoom out', 'Reset three-dimensional view']) {
+        expect(source).toContain(`cameraBtn('${label}'`);
+      }
+      expect(source).toContain("ArrowLeft: 'left'");
+      expect(source).toContain("Home: 'reset'");
+    }
+  });
+
   it('keeps the source and public bundles byte-identical', () => {
     const hashes = files.map((file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
     expect(hashes[0]).toBe(hashes[1]);

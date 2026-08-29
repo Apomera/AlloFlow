@@ -105,4 +105,9 @@ describe('STEM i18n namespace borrowing', () => {
     const src = readFileSync(join(TOOL_DIR, 'stem_tool_solarsystem.js'), 'utf8');
     expect(src, 'the Mercury borrow is back').not.toContain("'stem.periodic.");
   });
+  it('keeps Rocks mineral labels inside the Rocks namespace', () => {
+    const src = readFileSync(join(TOOL_DIR, 'stem_tool_rocks.js'), 'utf8');
+    expect(src, 'Rocks is borrowing Periodic labels again').not.toMatch(/stem\.periodic\./);
+  });
+
 });

@@ -66,7 +66,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-hero="true"');
       expect(html).toContain('data-beehive-mode-switcher="true"');
       expect(html).toContain('data-beehive-mode-tab=');
-      expect(html).toContain('data-beehive-visual-version="39"');
+      expect(html).toContain('data-beehive-visual-version="43"');
       expect(html).toContain('data-beehive-theme=');
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
@@ -75,7 +75,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-layout-state="overview-first"');
       expect(html).toContain('data-beehive-focus-layout="true"');
       expect(html).toContain('aria-pressed="false"');
-      expect(html).toContain('Stage first');
+      expect(html).toContain('Stage-first layout');
       expect(html).toContain('data-beehive-flow-nav="true"');
       expect(html).toContain('data-mobile-rail="learning-flow"');
       expect(html).toContain('data-beehive-flow-step="focus"');
@@ -128,7 +128,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(exploredKeeper).toContain('aria-valuenow="3"');
     expect(exploredKeeper).toContain('data-topic-continue="thermo"');
     expect(exploredKeeper).toContain('3/5');
-    expect(keeper).toContain('aria-label="Open Bee Quiz"');
+    expect(keeper).toContain('aria-label="Bee knowledge quiz"');
     expect(keeper).toContain('aria-label="Export colony report"');
     expect(keeper).toContain('Hive');
     expect(keeper).toContain('data-beehive-coach-action="next-day"');
@@ -208,7 +208,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-layout="stage-first"');
       expect(html).toContain('data-layout-state="stage-first"');
       expect(html).toContain('aria-pressed="true"');
-      expect(html).toContain('Overview first');
+      expect(html).toContain('Stage-first layout');
       expect(html).toContain('Live stage appears before supporting dashboards.');
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-pulse="true"'));
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-learning-brief="true"'));
@@ -503,10 +503,10 @@ describe('beehive — Field Guide renders every curriculum section (recursive re
   // every failure mode was titled by its season, every policy action by
   // "Individual" — so six cards in a row shared one meaningless title.
   describe('entry cards are titled by content, not by classifier', () => {
-    // The title is the only text rendered at text-sm font-bold in a card.
+    // Entry titles are semantic h4 headings, not presentation-only spans.
     const titles = (html) => {
       const out = [];
-      const re = /<span class="text-sm font-bold [^"]*">([^<]*)<\/span>/g;
+      const re = /<h4[^>]*class="[^"]*text-sm font-bold[^"]*"[^>]*>([^<]*)<\/h4>/g;
       let m;
       while ((m = re.exec(html)) !== null) out.push(m[1]);
       return out;

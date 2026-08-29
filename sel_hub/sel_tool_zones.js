@@ -35859,7 +35859,7 @@ window.SelHub = window.SelHub || {
           ),
 
           // Zone cards
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 } },
             ZONES.map(function(zone) {
               var isSelected = selectedZone === zone.id;
               var descriptors = zone.descriptors[band] || zone.descriptors.elementary;
@@ -35878,7 +35878,7 @@ window.SelHub = window.SelHub || {
                   background: isSelected ? zone.color + '18' : _zoBg('#1e293b'),
                   cursor: 'pointer', textAlign: 'left',
                   transform: isSelected ? 'scale(1.03)' : 'none',
-                  transition: 'all 0.2s', position: 'relative'
+                  transition: 'all 0.2s', position: 'relative', minWidth: 0
                 }
               },
                 isSelected && h('div', { style: { position: 'absolute', top: 8, right: 8, fontSize: 16 } }, '\u2705'),

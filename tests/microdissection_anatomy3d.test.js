@@ -92,7 +92,8 @@ describe('Cell microdissection experience', () => {
     expect(source).toContain('data-cell-zoom-control');
     expect(source).toContain('DETAIL ZOOM');
     expect(source).toContain('data-cell-specialization-control');
-    expect(source).toContain('data-cell-prediction-check');
+    expect(source).toContain('data-cell-concept-check');
+    expect(source).toContain('data-cell-concept-feedback');
     expect(source).toContain('data-cell-label-toggle');
     expect(source).toContain('data-cell-structure-directory');
     expect(source).toContain('data-cell-reset-view');
@@ -132,7 +133,8 @@ describe('Cell microdissection experience', () => {
     expect(source).toContain('resetInteriorView');
     expect(source).toContain('Mechanism:');
     expect(source).toContain('STUDY LABELS');
-    expect(source).toContain('Predict before reveal');
+    expect(source).toContain('Check your reasoning before reveal');
+    expect(source).toContain('This is a concept check, not an experiment prediction.');
     expect(source).toContain('SPECIALIZATION');
     expect(source).toContain('Compare cell architectures');
     expect(source).toContain('function traceInteriorBoundary');

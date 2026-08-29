@@ -27,8 +27,9 @@ describe('galaxy visual layout', () => {
   it.each(GALAXY_PATHS)('%s keeps navigation and Star Life responsive', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
 
-    expect(source).toContain('flex flex-nowrap gap-1 ml-auto');
-    expect(source).toContain('overflow-x-auto');
+    expect(source).toContain('ml-auto grid w-full grid-cols-2');
+    expect(source).toContain('sm:grid-cols-3 xl:flex xl:w-auto');
+    expect(source).toContain('data-galaxy-real-sky-launcher');
     expect(source).toContain('min-h-[44px]');
     expect(source).toContain('grid grid-cols-1 lg:grid-cols-[minmax(280px,38%)_minmax(0,1fr)]');
     expect(source).toContain('order-1 lg:order-2 lg:sticky');

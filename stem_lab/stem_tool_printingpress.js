@@ -418,7 +418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // emoji, and a thin gold rule + fleuron after the title. Visually
         // signals "this is a section break" with period-appropriate weight,
         // and unifies the look across all 8 modules.
-        return h('h3', { style: { margin: '20px 0 10px', fontSize: 15, color: T.accentHi, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Georgia, serif' } },
+        return h('h2', { style: { margin: '20px 0 10px', fontSize: 15, color: T.accentHi, display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Georgia, serif' } },
           fleuron(11),
           h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, emoji),
           h('span', null, title),
@@ -614,7 +614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, color: T.muted, lineHeight: 1.6 } },
             sources.map(function(src, i) {
               return h('li', { key: i },
-                src.url ? h('a', { href: src.url, target: '_blank', rel: 'noopener', style: { color: T.link } }, src.label) : src.label,
+                src.url ? h('a', { href: src.url, target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, src.label) : src.label,
                 src.note ? ' — ' + src.note : ''
               );
             })
@@ -691,7 +691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           // Original disclaimer text
           h('div', null,
             __alloT('stem.printingpress.this_tool_models_the_press_historicall', 'This tool models the press historically and pedagogically. For hands-on letterpress, visit the '),
-            h('a', { href: 'https://www.printingmuseum.org/', target: '_blank', rel: 'noopener', style: { color: T.link } }, __alloT('stem.printingpress.international_printing_museum', 'International Printing Museum')),
+            h('a', { href: 'https://www.printingmuseum.org/', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, __alloT('stem.printingpress.international_printing_museum', 'International Printing Museum')),
             __alloT('stem.printingpress.or_a_local_letterpress_studio_letterpr', ' or a local letterpress studio. Letterpress is alive in 2026.')
           )
         );
@@ -1598,7 +1598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                 h('div', { 'aria-hidden': 'true', style: { width: 3, alignSelf: 'stretch', background: sec.stripe || sec.accent, borderRadius: 2, flexShrink: 0 } }),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
-                    h('h3', { style: { margin: 0, fontSize: 15, color: sec.emphasized ? sec.accent : T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, fontFamily: 'Georgia, serif' } },
+                    h('h2', { style: { margin: 0, fontSize: 15, color: sec.emphasized ? sec.accent : T.accentHi, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, fontFamily: 'Georgia, serif' } },
                       h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, sec.emoji),
                       sec.label)
                   ),
@@ -2461,10 +2461,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('pressMechanism', 0, {
             prompt: __alloT('stem.printingpress.a_1450_print_shop_has_a_screw_press_wi', 'A 1450 print shop has a screw press with a 60 cm bar and 5 mm screw pitch. The journeyman pulls with about 15 kg of force. Approximately how much force lands on the platen?'),
             choices: [
-              'About 15 kg (no multiplication)',
+              'About 15 kg — a screw press transmits force without multiplying it',
               'About 1,100 kg (~1.1 tonnes — after friction the EFFECTIVE advantage is roughly 75:1 here)',
-              'About 60 kg',
-              'About 300 kg'
+              'About 60 kg — the bar length alone sets the advantage, 60 cm to 1 cm',
+              'About 300 kg — the 5 mm screw pitch multiplies the bar force about twenty-fold, before friction is taken off'
             ],
             correct: 1,
             explain: 'MA = (2 × π × 60 cm) ÷ 0.5 cm ≈ 754. That is the IDEAL advantage — frictionless, 15 kg of pull would give ~110,000 N (~11 tonnes). But a hand-cut wooden screw loses most of that to thread friction, so the realistic EFFECTIVE platen force is on the order of ~1 tonne — still a roughly 75x multiplier on the printer\'s pull.)'
@@ -2472,10 +2472,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('pressMechanism', 1, {
             prompt: __alloT('stem.printingpress.a_printer_pulls_the_bar_but_the_print_', 'A printer pulls the bar but the print comes out faint and patchy on the right side. What is the most likely cause?'),
             choices: [
-              'Bad paper.',
+              'The sheet was dampened unevenly along one edge, so that side of the paper swelled and took up far more ink than the other.',
               'Platen is not perfectly flat or the bed is tilted — uneven pressure distributes ink unevenly across the type forme.',
-              'The screw is broken.',
-              'Wrong ink color.'
+              'The screw threads are worn, so the bar turns further before the platen bites.',
+              'The ink was ground too thin and ran off the type during the pull.'
             ],
             correct: 1,
             explain: 'Patchy impression almost always means uneven platen pressure. Master printers obsessed over platen flatness. A modern letterpress shop uses "makeready" — small paper shims under the type to bring the impression even.'
@@ -2585,10 +2585,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('pressMechanism', [
-            { q: 'The screw press is which type of simple machine?', opts: ['Lever', 'Pulley', 'Inclined plane (the screw is a wrapped inclined plane)', 'Wheel and axle'], ans: 2, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. The pitch of the thread is the rise of the inclined plane.' },
+            { q: 'The screw press is which type of simple machine?', opts: ['Lever (the bar pivots on the screw to raise the platen)', 'Pulley (the rope over the frame lifts the heavy platen)', 'Inclined plane (the screw is a wrapped inclined plane)', 'Wheel and axle (the round bar turns a central shaft)'], ans: 2, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. The pitch of the thread is the rise of the inclined plane.' },
             { q: 'A press has a screw with 6 mm pitch and a bar that is 50 cm from the screw center. Roughly what is the mechanical advantage?', opts: ['About 50:1', 'About 500:1', 'About 10:1', 'About 100:1'], ans: 1, explain: 'MA = (2π × 500 mm) ÷ 6 mm ≈ 523. So roughly 500:1. The screw is the largest force-multiplier in classical mechanics.' },
-            { q: 'Why was the platen made heavy and flat?', opts: ['To look impressive', 'To distribute pressure evenly across the type forme (uneven pressure = uneven inking = unreadable print)', 'To resist heat', 'It was decorative'], ans: 1, explain: 'A flat heavy platen distributes pressure evenly, so every letter prints with the same impression. Master printers machined platens flat to fractions of a millimeter.' },
-            { q: 'In 1450, roughly how many impressions per day could a two-person crew make on a screw press?', opts: ['About 50', 'About 250 (one impression every 2 minutes for an 8-hour day, with breaks)', 'About 1000', 'About 5000'], ans: 1, explain: '~250 impressions per day was typical for a Gutenberg-era press with a two-person crew. Modern letterpress hobbyists working slowly might do 50-100; mechanical 19th-century presses jumped this to thousands per hour.' }
+            { q: 'Why was the platen made heavy and flat?', opts: ['To add mass so the frame stayed steady while the bar was pulled hard', 'To distribute pressure evenly across the type forme (uneven pressure = uneven inking = unreadable print)', 'To resist the heat still held in freshly cast type, which would warp a lighter plate over time and ruin the bed', 'To press the paper thin enough that ink soaked through to the other side'], ans: 1, explain: 'A flat heavy platen distributes pressure evenly, so every letter prints with the same impression. Master printers machined platens flat to fractions of a millimeter.' },
+            { q: 'In 1450, roughly how many impressions per day could a two-person crew make on a screw press?', opts: ['About 50 (one impression every 10 minutes across an 8-hour day)', 'About 250 (one impression every 2 minutes for an 8-hour day, with breaks)', 'About 1000 (one impression every 30 seconds, sustained across a full 8-hour day)', 'About 5000 (one impression every 6 seconds across an 8-hour day)'], ans: 1, explain: '~250 impressions per day was typical for a Gutenberg-era press with a two-person crew. Modern letterpress hobbyists working slowly might do 50-100; mechanical 19th-century presses jumped this to thousands per hour.' }
           ]),
 
           sourcesBlock([
@@ -3719,10 +3719,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('setType', 0, {
             prompt: __alloT('stem.printingpress.a_compositor_in_1450_reads_from_a_lati', 'A compositor in 1450 reads from a Latin manuscript and sets type. The text reads "Confitemini Domino" (Give thanks to the Lord). Which way through the composing stick does she set the letters?'),
             choices: [
-              'Left-to-right, the same as we read.',
+              'Left-to-right, the same as we read, since the press flips the image at the moment of impression.',
               'Right-to-left, mirror-reversed, so when printed it reads left-to-right normally.',
-              'Top-to-bottom.',
-              'Randomly, then sorted later.'
+              'Top-to-bottom in columns, following the ruled layout of the manuscript she is copying.',
+              'In any order, because the galley tray is squared up and reordered before the forme is locked.'
             ],
             correct: 1,
             explain: 'Type is mirror-reversed AND set right-to-left in the stick, so when the forme is pressed against paper, the impression flips both ways and reads correctly. Compositors had to read text fluently in mirror-image. (And yes — a significant number of compositors in 1450-1500 Europe were women, often printers\' daughters or widows running family shops.)'
@@ -3730,10 +3730,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('setType', [
-            { q: 'Why is metal type mirror-reversed?', opts: ['For aesthetic reasons', 'Because the type presses INTO the paper and the image flips — mirror type prints as normal letters', 'It is not — that is a myth', 'To save space'], ans: 1, explain: 'When type presses against paper, left and right swap. So the type face itself is a mirror image of the printed letter.' },
-            { q: 'The terms "uppercase" and "lowercase" come from:', opts: ['Software naming', 'The physical wooden type cases — lowercase letters were in the lower, more accessible case; capitals in the upper', 'Greek tradition', 'The names of the printers'], ans: 1, explain: 'Literally the physical position of the type cases in a print shop. The compositor stood in front of two cases, lower and upper.' },
+            { q: 'Why is metal type mirror-reversed?', opts: ['Because compositors held a mirror over the locked forme to check spelling and spacing before printing', 'Because the type presses INTO the paper and the image flips — mirror type prints as normal letters', 'It is not — the paper is laid face down, which is what reverses the image', 'Because mirrored sorts nest more tightly in the case, saving space'], ans: 1, explain: 'When type presses against paper, left and right swap. So the type face itself is a mirror image of the printed letter.' },
+            { q: 'The terms "uppercase" and "lowercase" come from:', opts: ['Early typewriter manuals, which named the two shift positions upper and lower', 'The physical wooden type cases — lowercase letters were in the lower, more accessible case; capitals in the upper', 'Greek scribal tradition, which reserved the larger letter forms for the opening word of a text or a chapter heading', 'The two grades of type metal, the harder upper alloy being used for capitals'], ans: 1, explain: 'Literally the physical position of the type cases in a print shop. The compositor stood in front of two cases, lower and upper.' },
             { q: 'A skilled compositor in 1450 could set roughly how many characters per hour?', opts: ['About 100', 'About 1,000', 'About 10,000', 'About 50,000'], ans: 1, explain: 'About 1,000 characters per hour, mirror-reversed, right-to-left, by memory of the case. Compare to ~12,000 chars/hour for a fast modern keyboard typist.' },
-            { q: 'A "galley proof" today refers to a publishing-industry preview copy. The term comes from:', opts: ['Ship galleys (kitchens)', 'The metal tray ("galley") that held set type before final pagination, used to take preview impressions', 'The Latin word for proof', 'A 19th-century US printer named Galley'], ans: 1, explain: 'The galley was the metal tray where set type rested before being arranged into pages. Proofs pulled from the galley were "galley proofs." The term stuck even after the physical galley disappeared.' }
+            { q: 'A "galley proof" today refers to a publishing-industry preview copy. The term comes from:', opts: ['Ship galleys, where cheap proof sheets were pasted up as waterproof lining', 'The metal tray ("galley") that held set type before final pagination, used to take preview impressions', 'The Latin galla, meaning proof, from the oak-gall ink used to mark corrections', 'Edward Galley, the 19th-century American printer who first sent pre-publication copies out to reviewers and booksellers'], ans: 1, explain: 'The galley was the metal tray where set type rested before being arranged into pages. Proofs pulled from the galley were "galley proofs." The term stuck even after the physical galley disappeared.' }
           ]),
 
           sourcesBlock([
@@ -4457,10 +4457,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('castingType', 0, {
             prompt: __alloT('stem.printingpress.a_16th_century_type_caster_pours_an_al', 'A 16th-century type-caster pours an alloy of pure lead and tin (no antimony). The cast sorts come out smaller than the matrix and with rounded letter edges. What is the materials-science explanation?'),
             choices: [
-              'The matrix was wrong.',
+              'The matrix was struck too shallow, so there was too little depth for the metal to fill.',
               'Without antimony to counter shrinkage during cooling, the lead-tin alloy contracts as it solidifies, producing undersized sorts with poor edge detail.',
-              'The temperature was too high.',
-              'The mold was dirty.'
+              'The melt was far too hot, so the alloy oxidised in the ladle and scorched away the fine edge detail as it entered the mold, leaving every sort undersized.',
+              'Soot in the mold cavity blocked the corners and rounded off the letter edges.'
             ],
             correct: 1,
             explain: 'Antimony is one of very few metals that expands slightly on solidification. Without it, the natural shrinkage of cooling lead and tin pulls the cast away from the matrix walls, losing detail and dimension. This is a real and elegant materials-science principle that made movable type practical.'
@@ -4468,10 +4468,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('castingType', 1, {
             prompt: __alloT('stem.printingpress.why_do_you_need_250_punches_to_make_a_', 'Why do you need ~250 punches to make a single typeface, even though the alphabet has only 26 letters?'),
             choices: [
-              'Because punches break easily.',
+              'Because punches break easily under the hammer, and a shop had to keep several hardened spares of each individual letter cut and ready before a job of any size could safely begin at the press each morning.',
               'Because you need uppercase, lowercase, numerals, punctuation, ligatures (like "fi" and "fl"), accented characters, and small caps. The full glyph set for a Western typeface is ~250 distinct shapes.',
-              'For aesthetic variety.',
-              'Because of mistakes.'
+              'For aesthetic variety: a printer wanted several cuts of each letter so the page would not look mechanically repetitive to the reader.',
+              'Because of mistakes: roughly nine punches in ten were spoiled during cutting or hardening, so many more had to be made than were ever used.'
             ],
             correct: 1,
             explain: '~250 distinct glyphs per typeface. Modern OpenType fonts often have 600+ glyphs to cover full Unicode language coverage, but the Renaissance-era count was already substantial. Each one was hand-cut by a punch-cutter — months of skilled work per typeface.'
@@ -4479,9 +4479,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('castingType', [
-            { q: 'The three-step process for making movable type is:', opts: ['Carve, paint, fire', 'Punch (steel), matrix (copper), cast (alloy poured into matrix)', 'Mold, fire, sand', 'Print, copy, distribute'], ans: 1, explain: 'Punch → matrix → cast. The hardened steel punch is hammered into copper to make a matrix; molten type metal is then cast in the matrix to produce identical sorts.' },
-            { q: 'What does antimony contribute to type metal?', opts: ['Color', 'Antimony expands slightly as it solidifies, counteracting the shrinkage of lead and tin so the cast type comes out the right size with crisp detail', 'It lowers the melting point', 'It is decorative'], ans: 1, explain: 'Antimony is one of very few metals that expands on solidification. This is what makes a lead-tin-antimony alloy uniquely suited to casting type with sharp dimensional accuracy.' },
-            { q: 'Why was metal movable type a Western breakthrough but not a Korean / Chinese one?', opts: ['Asians could not work metal', 'Chinese and Korean writing has thousands of characters, not ~250 — the Western alphabet made the punch-matrix-cast economics work', 'It was illegal in Asia', 'No reason'], ans: 1, explain: 'Korean movable type DID exist in metal (the Jikji, 1377, predates Gutenberg by 78 years). But scaling it to a writing system with thousands of characters was uneconomic. The Western alphabet\'s small character count made movable-type mass production financially viable.' }
+            { q: 'The three-step process for making movable type is:', opts: ['Carve the letter in wood, paint it, then fire the block', 'Punch (steel), matrix (copper), cast (alloy poured into matrix)', 'Mold the shape in clay, fire it, then sand it smooth', 'Print a proof, copy the best letters, then distribute the sorts back'], ans: 1, explain: 'Punch → matrix → cast. The hardened steel punch is hammered into copper to make a matrix; molten type metal is then cast in the matrix to produce identical sorts.' },
+            { q: 'What does antimony contribute to type metal?', opts: ['It tints the alloy a pale silver, which made finished sorts easier for a compositor to tell apart from worn ones when distributing type back into the case', 'Antimony expands slightly as it solidifies, counteracting the shrinkage of lead and tin so the cast type comes out the right size with crisp detail', 'It lowers the melting point of the alloy so the metal can be ladled at a heat the wooden hand mould will survive', 'It keeps the molten alloy from oxidising in the ladle, so the metal stays clean between one pour and the next'], ans: 1, explain: 'Antimony is one of very few metals that expands on solidification. This is what makes a lead-tin-antimony alloy uniquely suited to casting type with sharp dimensional accuracy.' },
+            { q: 'Why was metal movable type a Western breakthrough but not a Korean / Chinese one?', opts: ['Metalworking skill was unavailable in East Asia, so cast type could not be produced there at all', 'Chinese and Korean writing has thousands of characters, not ~250 — the Western alphabet made the punch-matrix-cast economics work', 'Printing with cast metal type was prohibited by imperial decree throughout both China and Korea for almost the whole of the period', 'There is no real reason; it is an accident of which region happened to try the idea first'], ans: 1, explain: 'Korean movable type DID exist in metal (the Jikji, 1377, predates Gutenberg by 78 years). But scaling it to a writing system with thousands of characters was uneconomic. The Western alphabet\'s small character count made movable-type mass production financially viable.' }
           ]),
 
           sourcesBlock([
@@ -4808,10 +4808,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('economics', 0, {
             prompt: __alloT('stem.printingpress.a_1455_monastery_wants_50_copies_of_a_', 'A 1455 monastery wants 50 copies of a particular Latin commentary. Hand-copying (5 scribes, 10 years) vs printing (rent a press for 6 months). Which approach makes economic sense?'),
             choices: [
-              'Hand-copying — printing was an unproven novelty.',
+              'Hand-copying: printing was still an unproven novelty in 1455, and a monastery with scribes already on the payroll takes on no new risk at all by using them.',
               'Printing — even with the press setup costs, it produces 50 copies in months instead of decades. The break-even for a printed run was around 50-100 copies.',
-              'Neither — buy them ready-made.',
-              'Split the work.'
+              'Neither: by 1455 a commentary of this kind could simply be bought ready-made from a bookseller in Mainz or Frankfurt.',
+              'Split the work: set the opening quires in type and have the scribes copy the rest by hand.'
             ],
             correct: 1,
             explain: 'The break-even for printing vs hand-copying was around 50-100 copies in the Gutenberg era, depending on book size. Above that threshold, printing was cheaper per copy AND faster in calendar time. Below it, hand-copying was still competitive. This economics drove early printers to focus on bestsellers (Bibles, breviaries, classical texts).'
@@ -4820,8 +4820,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('economics', [
             { q: 'Approximately how long did a single scribe take to hand-copy a complete Bible?', opts: ['One month', 'About one year', 'About ten years', 'A few weeks'], ans: 1, explain: '~1 year of full-time work for a skilled scribe. The Bible is ~750,000 words, and a scribe could produce ~3,000 high-quality words per day with illumination and proofing.' },
-            { q: 'About what was the break-even point (copies) for printing vs hand-copying in the early Gutenberg era?', opts: ['10 copies', '50 to 100 copies', '1,000 copies', '10,000 copies'], ans: 1, explain: 'Around 50-100 copies. Below that, hand-copying was competitive on per-copy cost. This is why early printers concentrated on titles with predictable demand of hundreds of copies.' },
-            { q: 'Roughly how much did the cost of a book fall between 1450 and 1600?', opts: ['Halved', 'Roughly 100-fold', 'Roughly 1,000-fold or more', 'No change'], ans: 2, explain: 'Roughly 1,000-fold or more in real terms. A late-medieval hand-copied Bible cost a craftsman ~3 years\' wages. By 1600, a printed book was within range of a working week\'s wages. This collapse is the economic prerequisite for the Reformation and the scientific revolution.' }
+            { q: 'About what was the break-even point (copies) for printing vs hand-copying in the early Gutenberg era?', opts: ['About 5 to 10 copies', '50 to 100 copies', 'About 1,000 to 2,000 copies', 'About 10,000 to 20,000 copies'], ans: 1, explain: 'Around 50-100 copies. Below that, hand-copying was competitive on per-copy cost. This is why early printers concentrated on titles with predictable demand of hundreds of copies.' },
+            { q: 'Roughly how much did the cost of a book fall between 1450 and 1600?', opts: ['Roughly halved, or a little less', 'Roughly 100-fold, and no further', 'Roughly 1,000-fold or more', 'No real change once wages are allowed for'], ans: 2, explain: 'Roughly 1,000-fold or more in real terms. A late-medieval hand-copied Bible cost a craftsman ~3 years\' wages. By 1600, a printed book was within range of a working week\'s wages. This collapse is the economic prerequisite for the Reformation and the scientific revolution.' }
           ]),
 
           sourcesBlock([
@@ -5408,10 +5408,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('beforeAfter', 0, {
             prompt: 'You are a historian arguing that without the printing press, the Reformation would have remained a local German academic dispute. What is your strongest piece of evidence?',
             choices: [
-              'There were no other religious reformers.',
+              'There were no other religious reformers of comparable stature anywhere before Luther, so the question of whether print mattered cannot really be tested against any earlier case at all.',
               'Earlier reformers like Wycliffe (1380s) and Hus (1415) had the same theological arguments but, lacking print, never reached mass audiences. Both movements were locally suppressed.',
-              'Luther was uniquely persuasive.',
-              'The Catholic Church was weak.'
+              'Luther was uniquely persuasive as a writer, and his gift for vernacular German would have carried the movement with or without a printing press behind it.',
+              'The Catholic Church was politically weak in 1517 and would have fractured under any sustained challenge, printed or not.'
             ],
             correct: 1,
             explain: 'Wycliffe and Hus made very similar theological arguments to Luther, a century earlier, in manuscript culture. Both were locally suppressed — Hus was burned at the stake in 1415. The print difference is what allowed Luther\'s ideas to spread faster than they could be suppressed.'
@@ -5890,9 +5890,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('beforeAfter', [
-            { q: 'Approximately how many books were printed in Europe in the 16th century (1500s)?', opts: ['About 1 million', 'About 10 million', 'About 120 million', 'About 1 billion'], ans: 2, explain: '~120 million books in the 1500s, roughly 25× the cumulative European production of the entire previous century. The 1600s nearly tripled this again.' },
-            { q: 'Why did the Reformation succeed where earlier reform movements (Wycliffe, Hus) failed?', opts: ['Luther was more persuasive', 'Print spread the message faster than it could be suppressed', 'The Catholic Church was weaker', 'Random chance'], ans: 1, explain: 'Wycliffe and Hus made very similar arguments a century earlier in manuscript culture and were locally suppressed. Print made suppression impossible — by the time authorities reacted, the message was already in dozens of cities.' },
-            { q: 'What was the biggest scientific impact of the printing press?', opts: ['Faster reading speed', 'Standardization (every copy of an anatomical figure was identical), priority-via-publication, and cumulative knowledge across cities', 'It made scientists rich', 'It is unrelated to science'], ans: 1, explain: 'Standardized figures, publication as proof of priority, and cumulative cross-city knowledge are the three structural changes print made to science. The modern scientific publication system is a direct descendant of these print-era practices.' }
+            { q: 'Approximately how many books were printed in Europe in the 16th century (1500s)?', opts: ['About 1.2 million', 'About 12 million', 'About 120 million', 'About 1.2 billion'], ans: 2, explain: '~120 million books in the 1500s, roughly 25× the cumulative European production of the entire previous century. The 1600s nearly tripled this again.' },
+            { q: 'Why did the Reformation succeed where earlier reform movements (Wycliffe, Hus) failed?', opts: ['Luther was simply a more persuasive writer than Wycliffe or Hus had been', 'Print spread the message faster than it could be suppressed', 'The Catholic Church was politically weaker in 1517 than it had been in 1400', 'Chance: the timing happened to favour Luther'], ans: 1, explain: 'Wycliffe and Hus made very similar arguments a century earlier in manuscript culture and were locally suppressed. Print made suppression impossible — by the time authorities reacted, the message was already in dozens of cities.' },
+            { q: 'What was the biggest scientific impact of the printing press?', opts: ['Readers simply got through material faster once printed type replaced the many varied hands of the scribes they had been reading before', 'Standardization (every copy of an anatomical figure was identical), priority-via-publication, and cumulative knowledge across cities', 'It made natural philosophers wealthy, and wealth bought the instruments that made the discoveries possible', 'It is unrelated to science: the scientific revolution was driven by instruments and patronage, not by printing'], ans: 1, explain: 'Standardized figures, publication as proof of priority, and cumulative cross-city knowledge are the three structural changes print made to science. The modern scientific publication system is a direct descendant of these print-era practices.' }
           ]),
 
           sourcesBlock([
@@ -6276,10 +6276,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('typographyToday', 0, {
             prompt: __alloT('stem.printingpress.a_student_asks_why_the_abbreviation_lb', 'A student asks why the abbreviation "lb" is used for "pound." What does typography history have to do with the answer?'),
             choices: [
-              'Nothing.',
+              'Nothing at all: the abbreviation is purely a matter of Latin vocabulary and has no connection whatever to how metal type was cut, set, or redistributed inside a working printing house anywhere in the period.',
               'It does not — "lb" comes from Latin "libra," not from typography.',
               'Latin "libra pondo" (pound by weight) gave us "lb." Typography preserved Latin abbreviations because compositors could re-use the same sorts. Many Latin abbreviations survived into print and into us.',
-              'It comes from English.'
+              'It comes from English: the letters stand for an old English weight term that printers happened to preserve when they set commercial documents.'
             ],
             correct: 2,
             explain: 'Latin "libra pondo" gave us both "lb" and the British pound sign £. Many Latin abbreviations (lb, oz from "uncia," etc., am/pm from "ante/post meridiem") survived into print because compositors had Latin-trained eyes and reusable sorts for these forms. Typography preserved a lot of medieval and Roman vocabulary that would otherwise have died.'
@@ -6503,9 +6503,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('typographyToday', [
-            { q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor in a play', 'Strips of lead inserted between lines of metal type to add vertical space', 'Leading the eye', 'A printer named Leading'], ans: 1, explain: 'Lead strips of varying thickness were placed between rows of type to space lines vertically. CSS line-height is the digital descendant.' },
-            { q: 'Italic type was invented (or popularized) by:', opts: ['Gutenberg', 'Aldus Manutius in Venice ~1500', 'A medieval monk', 'Modern designers'], ans: 1, explain: 'Aldus Manutius commissioned a slanted typeface from Francesco Griffo in Venice ~1500, modeled on humanist handwriting. He used it to fit more text per page in his portable octavo-format books — the original pocket paperbacks.' },
-            { q: 'Why are capital letters called "uppercase"?', opts: ['They are taller', 'In a print shop, capitals lived in the upper of two wooden type cases', 'Tradition with no specific origin', 'Computer convention'], ans: 1, explain: 'Literal physical position. The compositor stood in front of two cases. Capitals (less frequently used) were in the upper case (farther reach); minuscules in the lower case (closer reach).' }
+            { q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor in a play, whose name was routinely given more space on the playbill', 'Strips of lead inserted between lines of metal type to add vertical space', 'Leading the eye down the page, a term borrowed from 19th-century design', 'A London printer named Leading who standardised line spacing'], ans: 1, explain: 'Lead strips of varying thickness were placed between rows of type to space lines vertically. CSS line-height is the digital descendant.' },
+            { q: 'Italic type was invented (or popularized) by:', opts: ['Johannes Gutenberg in Mainz ~1450', 'Aldus Manutius in Venice ~1500', 'An anonymous monk copying in Bologna', '20th-century type designers'], ans: 1, explain: 'Aldus Manutius commissioned a slanted typeface from Francesco Griffo in Venice ~1500, modeled on humanist handwriting. He used it to fit more text per page in his portable octavo-format books — the original pocket paperbacks.' },
+            { q: 'Why are capital letters called "uppercase"?', opts: ['Because capital letters are physically taller than the others', 'In a print shop, capitals lived in the upper of two wooden type cases', 'Tradition with no specific origin anyone has been able to trace', 'A computer convention carried over from the earliest keyboard drivers'], ans: 1, explain: 'Literal physical position. The compositor stood in front of two cases. Capitals (less frequently used) were in the upper case (farther reach); minuscules in the lower case (closer reach).' }
           ]),
 
           sourcesBlock([
@@ -7074,10 +7074,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           scenarioCard('people', 0, {
             prompt: __alloT('stem.printingpress.a_student_says_gutenberg_invented_the_', 'A student says "Gutenberg invented the printing press all by himself." What is a more historically accurate framing?'),
             choices: [
-              'They are right.',
+              'They are right: Gutenberg worked without collaborators, and each element of the system — the punch, the matrix, the alloy, the oil-based ink, the paper handling and the screw press itself — was his own invention, arrived at from first principles without help from any other workshop in Mainz.',
               'Gutenberg PERFECTED a system (punch-matrix-cast + alloy + oil ink + screw press + paper handling). Each piece existed in some form. His genius was integration. He also could not have built it without Fust\'s capital, Schöffer\'s skill, and the broader Mainz craft community.',
-              'Schöffer invented it.',
-              'It was invented in Korea.'
+              'Schöffer invented it: Gutenberg only put up the money, and Peter Schöffer devised the punch-matrix-cast method itself.',
+              'It was invented in Korea: the Mainz shop copied a Korean method that reached Europe through trade.'
             ],
             correct: 1,
             explain: 'The historically accurate framing emphasizes Gutenberg as the integrator of an existing toolkit, dependent on capital, skilled labor, and a craft community. Korean metal movable type predates him by 78 years (the Jikji, 1377), but used a different process and faced different economics. The "lone genius" frame is comforting but inaccurate.'
@@ -7281,8 +7281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('people', [
-            { q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Schöffer', 'Fust (his financier)', 'The Catholic Church', 'A rival printer'], ans: 1, explain: 'Johann Fust lent Gutenberg the capital to set up the press; when Gutenberg could not repay on schedule, Fust sued and took possession. The early printed books bear Fust and Schöffer\'s names, not Gutenberg\'s.' },
-            { q: 'Who pioneered the small portable "pocket book" format?', opts: ['Gutenberg', 'Aldus Manutius in Venice ~1500', 'Charlotte Guillard', 'Benjamin Franklin'], ans: 1, explain: 'Aldus Manutius founded the Aldine Press in 1494 and pioneered the octavo (pocket) format with italic type, making scholarly Greek and Latin classics portable for the first time.' },
+            { q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Peter Schöffer (his foreman)', 'Fust (his financier)', 'The Archbishop of Mainz', 'A rival printer in Strasbourg'], ans: 1, explain: 'Johann Fust lent Gutenberg the capital to set up the press; when Gutenberg could not repay on schedule, Fust sued and took possession. The early printed books bear Fust and Schöffer\'s names, not Gutenberg\'s.' },
+            { q: 'Who pioneered the small portable "pocket book" format?', opts: ['Johannes Gutenberg in Mainz ~1450', 'Aldus Manutius in Venice ~1500', 'Charlotte Guillard in Paris ~1540', 'Benjamin Franklin in Philadelphia'], ans: 1, explain: 'Aldus Manutius founded the Aldine Press in 1494 and pioneered the octavo (pocket) format with italic type, making scholarly Greek and Latin classics portable for the first time.' },
             { q: 'What share of European print shops in the 16th-17th centuries are estimated to have been run by women?', opts: ['Essentially none', 'About 5-10%', 'About 50%', 'A majority'], ans: 1, explain: 'Approximately 5-10% per recent scholarship. Often printer widows continued the family business; some ran shops for decades and produced significant scholarly output. Standard 19th-century histories largely left them out; recent scholarship is recovering this.' }
           ]),
 
@@ -7998,7 +7998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('broadside', [
             { q: 'Approximately how many copies of Thomas Paine\'s "Common Sense" sold in the colonies in 1776?', opts: ['About 1,000', 'About 10,000', 'About 150,000', 'About 1 million'], ans: 2, explain: '~150,000 copies in a colonial population of ~2.5 million. Per-capita, this is one of the best-selling political pamphlets in American history. The American Revolution was a print event as much as a military one.' },
-            { q: 'A "broadside" is:', opts: ['A side of a ship', 'A single-sheet printed work, often political or commercial', 'A type of woodcut', 'A printer\'s tool'], ans: 1, explain: 'A broadside is a single-sheet print, traditionally one-sided. Used for announcements, ballads, political tracts, and advertising.' }
+            { q: 'A "broadside" is:', opts: ['A side of a ship, from which the printed sheets took their name', 'A single-sheet printed work, often political or commercial', 'A type of woodcut printed across a full sheet', 'A printer\'s tool'], ans: 1, explain: 'A broadside is a single-sheet print, traditionally one-sided. Used for announcements, ballads, political tracts, and advertising.' }
           ]),
 
           sourcesBlock([
@@ -8158,10 +8158,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
 
           sectionHeader('🧠', 'Mini-quiz'),
           miniQuizBlock('sameFears', [
-            { q: 'The Catholic Church\'s "Index Librorum Prohibitorum" (1559) was:', opts: ['A library catalog', 'A list of forbidden books that the Church prohibited the faithful from reading', 'A pricing index for books', 'A printer\'s union directory'], ans: 1, explain: 'A standing list of books the Catholic Church forbade. It existed in various forms from 1559 until 1966. It is the most direct historical analogue to modern content-moderation lists.' },
+            { q: 'The Catholic Church\'s "Index Librorum Prohibitorum" (1559) was:', opts: ['A library catalogue listing the volumes held in the Vatican collections at the time', 'A list of forbidden books that the Church prohibited the faithful from reading', 'A pricing index that fixed what booksellers were allowed to charge', 'A printer\'s union directory'], ans: 1, explain: 'A standing list of books the Catholic Church forbade. It existed in various forms from 1559 until 1966. It is the most direct historical analogue to modern content-moderation lists.' },
             { q: 'Conrad Gessner used the phrase "confusing and harmful abundance of books" in 1545. What modern phrase echoes this concern most directly?', opts: ['"Spam folder"', '"Information overload"', '"Library science"', '"Algorithmic curation"'], ans: 1, explain: 'Gessner literally articulated information overload in 1545 — within a century of Gutenberg. The condition is not new; it is intrinsic to mass information production.' },
-            { q: 'Approximately how many Europeans died in the religious wars (1517-1648) that print partly enabled?', opts: ['About 100,000', 'About 1 million', 'About 5-10 million', 'About 100 million'], ans: 2, explain: '5-10 million by most historical estimates. Print critics who warned that mass-distributed religious dissent would cause violence were not wrong about that. They were wrong about whether the violence would be the end of the story — Europe eventually restructured into religious pluralism.' },
-            { q: 'Which of these is the most honest reading of "1450 critics vs print"?', opts: ['Critics were silly and obviously wrong', 'Critics were prophets and obviously right', 'Critics were partly right and partly wrong, and the response to genuine concerns was institutional development (editorial standards, copyright, libraries), not banning print', 'Critics did not exist'], ans: 2, explain: 'The honest reading is partial validity. The grown-up response was institutional, not prohibitionist. This is also probably the right frame for current internet and AI debates.' }
+            { q: 'Approximately how many Europeans died in the religious wars (1517-1648) that print partly enabled?', opts: ['About 100,000 to 200,000', 'About 1-2 million', 'About 5-10 million', 'About 100-200 million'], ans: 2, explain: '5-10 million by most historical estimates. Print critics who warned that mass-distributed religious dissent would cause violence were not wrong about that. They were wrong about whether the violence would be the end of the story — Europe eventually restructured into religious pluralism.' },
+            { q: 'Which of these is the most honest reading of "1450 critics vs print"?', opts: ['Critics were silly and obviously wrong: none of what they warned about ever came to pass, and the printed book improved every single part of the intellectual life that it touched', 'Critics were prophets and obviously right: every harm they named arrived on schedule, and Europe would have been better off without the press', 'Critics were partly right and partly wrong, and the response to genuine concerns was institutional development (editorial standards, copyright, libraries), not banning print', 'Critics did not really exist; opposition to print is a modern invention read backwards into the period'], ans: 2, explain: 'The honest reading is partial validity. The grown-up response was institutional, not prohibitionist. This is also probably the right frame for current internet and AI debates.' }
           ]),
 
           sourcesBlock([
@@ -8871,21 +8871,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
       // CUMULATIVE QUIZ — 15 questions across all 10 modules
       // ═════════════════════════════════════════════════════════════════════
       var CUMULATIVE_QUESTIONS = [
-        { module: 'pressMechanism', q: 'The screw press achieves its mechanical advantage through:', opts: ['A complicated system of gears', 'A wrapped inclined plane (the screw thread); MA = 2π × bar length ÷ thread pitch, often 100:1 or more', 'Pure muscle power', 'Hydraulic pressure'], ans: 1, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. Mechanical advantage scales with bar length and inversely with thread pitch — a Gutenberg-era press could turn 30 lb of arm pull into hundreds of pounds of platen force.' },
+        { module: 'pressMechanism', q: 'The screw press achieves its mechanical advantage through:', opts: ['A complicated train of gears inside the frame that multiplies the turn of the bar', 'A wrapped inclined plane (the screw thread); MA = 2π × bar length ÷ thread pitch, often 100:1 or more', 'Pure muscle power: the pressman simply pulls hard on the bar and nothing about the press multiplies it', 'Hydraulic pressure from a water column feeding the cylinder beneath the platen'], ans: 1, explain: 'A screw is mathematically an inclined plane wrapped around a cylinder. Mechanical advantage scales with bar length and inversely with thread pitch — a Gutenberg-era press could turn 30 lb of arm pull into hundreds of pounds of platen force.' },
         { module: 'pressMechanism', q: 'About how many impressions per day did a two-person crew on a Gutenberg-era press produce?', opts: ['About 50', 'About 250', 'About 5,000', 'About 50,000'], ans: 1, explain: 'About 250 impressions per day. The 19th-century mechanical press jumped this to thousands per hour, and the 20th-century web press to hundreds of thousands per hour.' },
-        { module: 'setType', q: 'Why is metal type mirror-reversed?', opts: ['Aesthetic tradition', 'When type presses against paper, left and right swap; mirror type prints as readable letters', 'It is not — that is a myth', 'To save space'], ans: 1, explain: 'When type presses against paper, the impression flips. So the type itself has to be a mirror image of the printed letter.' },
-        { module: 'setType', q: 'The terms "uppercase" and "lowercase" come from:', opts: ['Software conventions', 'Physical wooden type cases — capitals lived in the upper case, minuscules in the lower (more accessible) case', 'Latin tradition', 'A typesetter named Uppercase'], ans: 1, explain: 'Literal physical position. Compositors stood in front of two cases, lower (more frequent letters in easier reach) and upper (capitals).' },
-        { module: 'castingType', q: 'What does antimony contribute to type metal?', opts: ['Color', 'Antimony expands slightly as it solidifies, counteracting the shrinkage of lead and tin so cast type comes out the right size with crisp detail', 'Lower melting point', 'Magnetism'], ans: 1, explain: 'Antimony is one of very few metals that expands on solidification. Without it, the lead-tin alloy would shrink as it cooled, producing undersized type with poor edge detail.' },
-        { module: 'castingType', q: 'Why was metal movable type a Western breakthrough rather than a Korean one (despite Korea casting metal type 78 years before Gutenberg)?', opts: ['Korea did not work metal', 'The economics — the Western alphabet has ~250 distinct glyphs, while Chinese characters used in Korea number in the thousands; punch-matrix-cast was uneconomic at that scale', 'Religion', 'Random chance'], ans: 1, explain: 'Korean movable metal type existed (the Jikji, 1377). But scaling it to a writing system with thousands of characters was uneconomic, so it never displaced wood-block printing the way Gutenberg displaced manuscripts.' },
-        { module: 'economics', q: 'About what was the break-even point (in copies) for printing vs hand-copying in the early Gutenberg era?', opts: ['10 copies', '50 to 100 copies', '1,000 copies', '10,000 copies'], ans: 1, explain: 'Around 50-100 copies. Below that, hand-copying was still competitive. This drove early printers to focus on bestsellers — Bibles, breviaries, classical texts.' },
-        { module: 'economics', q: 'Roughly how much did the cost of a book fall in real terms between 1450 and 1600?', opts: ['Halved', 'Roughly 100-fold', 'Roughly 1,000-fold or more', 'No change'], ans: 2, explain: 'Roughly 1,000-fold or more in real terms. From years\' wages for a hand-copied Bible to a working week\'s wages for a printed book. This collapse is the economic prerequisite for the Reformation and the scientific revolution.' },
-        { module: 'beforeAfter', q: 'Why did the Reformation succeed where earlier reform movements (Wycliffe, Hus) failed?', opts: ['Luther was more persuasive', 'Print spread the message faster than authorities could suppress it', 'The Catholic Church was weaker', 'Random chance'], ans: 1, explain: 'Wycliffe and Hus made very similar theological arguments a century earlier in manuscript culture and were locally suppressed. Print made suppression impossible — by the time authorities reacted, the message was already in dozens of cities.' },
-        { module: 'typographyToday', q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor', 'Strips of LEAD inserted between lines of metal type to add vertical spacing', 'Leading the eye', 'Lead-in copy'], ans: 1, explain: 'Lead strips of varying thickness physically inserted between rows of type. CSS line-height is the digital descendant.' },
-        { module: 'people', q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Schöffer', 'Johann Fust (his financier)', 'The Catholic Church', 'A rival printer'], ans: 1, explain: 'Fust lent Gutenberg the capital and sued when Gutenberg could not repay on schedule. Subsequent books bore Fust and Schöffer\'s names, not Gutenberg\'s.' },
+        { module: 'setType', q: 'Why is metal type mirror-reversed?', opts: ['An aesthetic tradition inherited from the manuscript hands that the early printers were copying', 'When type presses against paper, left and right swap; mirror type prints as readable letters', 'It is not: the paper is laid face down, and that is what reverses the image', 'Because mirrored sorts nest more tightly in the case and save space'], ans: 1, explain: 'When type presses against paper, the impression flips. So the type itself has to be a mirror image of the printed letter.' },
+        { module: 'setType', q: 'The terms "uppercase" and "lowercase" come from:', opts: ['Software conventions carried over from the earliest word-processing keyboards', 'Physical wooden type cases — capitals lived in the upper case, minuscules in the lower (more accessible) case', 'Latin scribal tradition, which reserved the larger letter forms for the first word of a text or a chapter heading', 'A London typesetter named Uppercase who standardised the two alphabets'], ans: 1, explain: 'Literal physical position. Compositors stood in front of two cases, lower (more frequent letters in easier reach) and upper (capitals).' },
+        { module: 'castingType', q: 'What does antimony contribute to type metal?', opts: ['It tints the alloy a pale silver, which made finished sorts easier for a compositor to tell apart from worn ones when distributing type back into the case', 'Antimony expands slightly as it solidifies, counteracting the shrinkage of lead and tin so cast type comes out the right size with crisp detail', 'It lowers the melting point of the alloy so the metal can be ladled at a heat the wooden hand mould will survive', 'It makes the sorts faintly magnetic, so spilled type could be swept up quickly from the shop floor'], ans: 1, explain: 'Antimony is one of very few metals that expands on solidification. Without it, the lead-tin alloy would shrink as it cooled, producing undersized type with poor edge detail.' },
+        { module: 'castingType', q: 'Why was metal movable type a Western breakthrough rather than a Korean one (despite Korea casting metal type 78 years before Gutenberg)?', opts: ['Korea did not work metal to the necessary standard, so the type it cast was rarely durable enough to survive the long production runs that would make printing pay for itself at all', 'The economics — the Western alphabet has ~250 distinct glyphs, while Chinese characters used in Korea number in the thousands; punch-matrix-cast was uneconomic at that scale', 'Religion: the Confucian authorities of the period discouraged the mechanical reproduction of classical texts', 'Random chance: the idea simply happened to take hold in Mainz first and could as easily have taken hold in Seoul'], ans: 1, explain: 'Korean movable metal type existed (the Jikji, 1377). But scaling it to a writing system with thousands of characters was uneconomic, so it never displaced wood-block printing the way Gutenberg displaced manuscripts.' },
+        { module: 'economics', q: 'About what was the break-even point (in copies) for printing vs hand-copying in the early Gutenberg era?', opts: ['About 5 to 10 copies', '50 to 100 copies', 'About 1,000 to 2,000 copies', 'About 10,000 to 20,000 copies'], ans: 1, explain: 'Around 50-100 copies. Below that, hand-copying was still competitive. This drove early printers to focus on bestsellers — Bibles, breviaries, classical texts.' },
+        { module: 'economics', q: 'Roughly how much did the cost of a book fall in real terms between 1450 and 1600?', opts: ['Roughly halved, or a little less', 'Roughly 100-fold, and no further', 'Roughly 1,000-fold or more', 'No real change once wages are allowed for'], ans: 2, explain: 'Roughly 1,000-fold or more in real terms. From years\' wages for a hand-copied Bible to a working week\'s wages for a printed book. This collapse is the economic prerequisite for the Reformation and the scientific revolution.' },
+        { module: 'beforeAfter', q: 'Why did the Reformation succeed where earlier reform movements (Wycliffe, Hus) failed?', opts: ['Luther was simply a more persuasive writer than Wycliffe or Hus were', 'Print spread the message faster than authorities could suppress it', 'The Catholic Church was politically weaker in 1517 than it was in 1400', 'Chance: the timing happened to favour his message'], ans: 1, explain: 'Wycliffe and Hus made very similar theological arguments a century earlier in manuscript culture and were locally suppressed. Print made suppression impossible — by the time authorities reacted, the message was already in dozens of cities.' },
+        { module: 'typographyToday', q: 'The term "leading" (line spacing) comes from:', opts: ['The lead actor in a play, whose name was routinely given more space on the bill', 'Strips of LEAD inserted between lines of metal type to add vertical spacing', 'Leading the eye down the page, a term borrowed from 19th-century design', 'Lead-in copy, the introductory lines set above an article'], ans: 1, explain: 'Lead strips of varying thickness physically inserted between rows of type. CSS line-height is the digital descendant.' },
+        { module: 'people', q: 'Who sued Gutenberg, won, and ended up with most of the printing equipment?', opts: ['Peter Schöffer (his own foreman)', 'Johann Fust (his financier)', 'The Archbishop of Mainz', 'A rival printer in Strasbourg'], ans: 1, explain: 'Fust lent Gutenberg the capital and sued when Gutenberg could not repay on schedule. Subsequent books bore Fust and Schöffer\'s names, not Gutenberg\'s.' },
         { module: 'broadside', q: 'About how many copies of Thomas Paine\'s "Common Sense" sold in the American colonies in 1776?', opts: ['About 1,000', 'About 10,000', 'About 150,000', 'About 1 million'], ans: 2, explain: '~150,000 copies in a colonial population of ~2.5 million. Per capita, one of the best-selling political pamphlets in American history. The Revolution was a print event as much as a military one.' },
-        { module: 'sameFears', q: 'The honest reading of 1450 critics worried about the printing press is:', opts: ['They were silly and obviously wrong about everything', 'They were prophets and obviously right about everything', 'They were partly right (print did cause religious violence, mass propaganda, information overload) and partly wrong (memory did not collapse, the social order did not end); the response was institutional development, not banning print', 'They did not really exist'], ans: 2, explain: 'Partial validity is the honest historical reading. The grown-up response was institutional (editorial standards, copyright, peer review, libraries) rather than prohibitionist. This is probably also the right frame for evaluating modern critics of the internet and AI — some concerns are real, some are panic, and institutional development is usually the productive path forward.' },
-        { module: 'dayInShop', q: 'In a 1455 Mainz print shop, what was a master printer\'s primary concern that the apprentice, compositor, and pressman did NOT directly bear?', opts: ['The strength to pull the bar', 'The skill to read mirror-reversed type', 'The financial and reputational risk: which jobs to accept, when to invest, when to refuse risky work (heretical pamphlets, etc.)', 'The ability to mix ink'], ans: 2, explain: 'The master made the business and risk decisions: which commissions to accept (Bible vs almanac vs heretical pamphlet), when to invest in new type, when to merge or stay independent. The technical roles handled craft execution; the master handled the strategic uncertainty.' },
-        { module: 'beforeAfter', q: 'Approximately how many European cities had printed editions of Luther\'s 95 Theses within the first three months after October 1517?', opts: ['Two or three', 'About a dozen, all in Saxony', 'Dozens, across Germany and into Switzerland and France', 'Only Wittenberg'], ans: 2, explain: 'Within 3 months the Theses had been reprinted in dozens of cities across Germany, then quickly into Basel, Strasbourg, Paris, and beyond. This is the geographic spread the Reformation-spread map visualizes. Compare to Wycliffe (1380s), whose manuscript-era writings took decades to reach a fraction of these cities — and were locally suppressed before reaching mass audiences.' },
+        { module: 'sameFears', q: 'The honest reading of 1450 critics worried about the printing press is:', opts: ['They were silly and obviously wrong about everything: not one of the harms they predicted ever materialised, memory and scholarship both improved measurably, and the printed book turned out to carry no serious social cost at all that is worth naming today', 'They were prophets and obviously right about everything: every harm they named arrived exactly as described, and Europe would have been measurably better off had the press never been built at all', 'They were partly right (print did cause religious violence, mass propaganda, information overload) and partly wrong (memory did not collapse, the social order did not end); the response was institutional development, not banning print', 'They did not really exist: opposition to printing is a modern invention, read backwards into a period that in fact welcomed the press without reservation'], ans: 2, explain: 'Partial validity is the honest historical reading. The grown-up response was institutional (editorial standards, copyright, peer review, libraries) rather than prohibitionist. This is probably also the right frame for evaluating modern critics of the internet and AI — some concerns are real, some are panic, and institutional development is usually the productive path forward.' },
+        { module: 'dayInShop', q: 'In a 1455 Mainz print shop, what was a master printer\'s primary concern that the apprentice, compositor, and pressman did NOT directly bear?', opts: ['The sheer physical strength to pull the bar several hundred times across a working day without letting the impression weaken at all', 'The skill to read mirror-reversed type quickly enough to keep the press supplied', 'The financial and reputational risk: which jobs to accept, when to invest, when to refuse risky work (heretical pamphlets, etc.)', 'The ability to mix ink to a consistent body from lampblack and boiled oil'], ans: 2, explain: 'The master made the business and risk decisions: which commissions to accept (Bible vs almanac vs heretical pamphlet), when to invest in new type, when to merge or stay independent. The technical roles handled craft execution; the master handled the strategic uncertainty.' },
+        { module: 'beforeAfter', q: 'Approximately how many European cities had printed editions of Luther\'s 95 Theses within the first three months after October 1517?', opts: ['Two or three, both of them within Saxony', 'About a dozen, all of them within Saxony and none further afield', 'Dozens, across Germany and into Switzerland and France', 'Only Wittenberg, where he had posted them'], ans: 2, explain: 'Within 3 months the Theses had been reprinted in dozens of cities across Germany, then quickly into Basel, Strasbourg, Paris, and beyond. This is the geographic spread the Reformation-spread map visualizes. Compare to Wycliffe (1380s), whose manuscript-era writings took decades to reach a fraction of these cities — and were locally suppressed before reaching mass audiences.' },
         { module: 'people', q: 'The first newspaper printed in what would become Maine was:', opts: ['The Portland Press Herald (1862)', 'The Falmouth Gazette (1785)', 'The Cumberland Gazette (1786)', 'The Bangor Daily News (1889)'], ans: 1, explain: 'The Falmouth Gazette and Weekly Advertiser, first issued January 1, 1785 from a Fore Street shop in Falmouth (now Portland), by printers Thomas B. Wait and Benjamin Titcomb. It predates Maine statehood (1820) by 35 years and started a 240-year chain of Portland newspapers that continues with the modern Portland Press Herald.' }
       ];
 
@@ -9413,7 +9413,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
                   return h('li', { key: ii, style: { display: 'flex', alignItems: 'flex-start', fontSize: 13, lineHeight: 1.55 } },
                     rIcon(it.kind || 'website'),
                     h('span', null,
-                      it.url ? h('a', { href: it.url, target: '_blank', rel: 'noopener', style: { color: T.link } }, it.label) : it.label
+                      it.url ? h('a', { href: it.url, target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, it.label) : it.label
                     )
                   );
                 })
@@ -10033,13 +10033,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['Johannes Gutenberg', 'Wang Zhen', 'Bi Sheng', 'Aldus Manutius'],
               ans: 2, explain: 'Bi Sheng (China, Song dynasty) developed movable clay type around 1040 CE, documented by Shen Kuo in the Dream Pool Essays (1088). Wang Zhen later improved on this with wooden type and the rotating composing table.' },
             { q: 'Why did Ottoman sultans restrict Arabic-script printing for almost 300 years?',
-              opts: ['They had no paper supply', 'Movable type for Arabic was technically very difficult, calligraphy held high prestige, scribes had economic and political weight, and Quran printing raised religious concerns', 'They lacked access to printing presses', 'European powers prevented them from printing'],
+              opts: ['They had no reliable paper supply at all, since the mills that served Europe did not establish themselves in Ottoman territory and imported stock was far too costly to use in quantity', 'Movable type for Arabic was technically very difficult, calligraphy held high prestige, scribes had economic and political weight, and Quran printing raised religious concerns', 'They lacked access to printing presses, which European states refused to export to the Ottoman world', 'European powers prevented them from printing, treating the technology as a strategic advantage to be withheld'],
               ans: 1, explain: 'All of those factors contributed. The technical, economic, prestige, and religious considerations all played roles in the delay. The presses were available; the social fuel for adoption took time.' },
             { q: 'What event destroyed the largest documented collection of Maya codices?',
-              opts: ['A natural disaster', 'Bishop Diego de Landa\'s 1562 Auto da Fé at Maní', 'Trade route disruption', 'A civil war'],
+              opts: ['A hurricane that destroyed the Yucatán archives in 1561', 'Bishop Diego de Landa\'s 1562 Auto da Fé at Maní', 'The collapse of Maya trade routes after the conquest', 'A civil war between rival Maya city-states'],
               ans: 1, explain: 'Bishop Diego de Landa ordered the burning of Maya codices at Maní, Yucatán in 1562. Perhaps thousands of books destroyed. Only four pre-conquest Maya codices survive today globally.' },
             { q: 'What was the format of pre-Columbian Maya books?',
-              opts: ['Bound western-style with sewn signatures', 'Long strip of amate (fig-bark paper) folded accordion-style between wood boards', 'Stone tablets', 'Knotted-cord quipu'],
+              opts: ['Bound western-style, with sewn signatures gathered between tooled leather covers', 'Long strip of amate (fig-bark paper) folded accordion-style between wood boards', 'Carved stone tablets stacked in temple archives', 'Knotted-cord quipu, as used in the Andes'],
               ans: 1, explain: 'Maya codices were "screenfold" books: a long strip of amate paper folded accordion-style, bound between wooden boards. Quipu were the Inca knotted-cord recording system — a different technology.' }
           ]),
 
@@ -10408,16 +10408,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['Johannes Gutenberg', 'Cai Lun (China, 105 CE)', 'Bi Sheng', 'The Roman emperor Augustus'],
               ans: 1, explain: 'Cai Lun, eunuch official of the Han imperial court, documented papermaking in 105 CE. Recent archaeology shows paper-like material in China earlier — Cai Lun likely systematized an existing craft.' },
             { q: 'What was the principal raw material for European paper from 1276-1880?',
-              opts: ['Wood pulp', 'Linen, cotton, and hemp rags', 'Papyrus', 'Mulberry bark'],
+              opts: ['Ground wood pulp from spruce and fir', 'Linen, cotton, and hemp rags', 'Papyrus imported from Egypt', 'Mulberry bark, as in East Asia'],
               ans: 1, explain: 'Rag paper was the European standard for ~600 years. Wood pulp did not displace it for newspapers and books until the 1860s-1880s.' },
             { q: 'Why did Italian Fabriano paper (1276 onward) become world-standard?',
-              opts: ['It was the only paper available', 'Three innovations: water-powered stamper mills, animal-glue sizing, and watermarks', 'It was made from special Italian rags', 'It was personally endorsed by the Pope'],
+              opts: ['It was the only paper available anywhere in Europe at the time', 'Three innovations: water-powered stamper mills, animal-glue sizing, and watermarks', 'It was made from a special grade of Italian linen rag that was unavailable elsewhere', 'It was personally endorsed by the Pope, which guaranteed its sale across Europe'],
               ans: 1, explain: 'The Fabriano paper-makers introduced three innovations that made Italian paper higher quality + lower cost than competitors: water-powered stampers replaced hand-beating, animal-glue sizing made paper non-absorbent enough for ink, and watermarks served as quality marks + provenance.' },
             { q: 'About what fraction of equivalent parchment did paper cost in 1450 (when Gutenberg printed)?',
               opts: ['Same price as parchment', 'About 1/2 the price', 'About 1/10 the price', 'More expensive than parchment'],
               ans: 2, explain: 'By 1450 paper cost roughly 1/10 of equivalent parchment. This price collapse over 150 years (1300-1450) was the economic prerequisite for the print revolution. Without it, the Gutenberg Bible would have been impossibly expensive.' },
             { q: 'Why was wool useless for papermaking?',
-              opts: ['Wool was too valuable to recycle', 'Wool fibers felt (mat into a clot) when beaten, instead of separating into a smooth slurry', 'Wool is too expensive', 'Wool burned during the beating process'],
+              opts: ['Wool was far too valuable to recycle into paper while the cloth markets kept paying more for it', 'Wool fibers felt (mat into a clot) when beaten, instead of separating into a smooth slurry', 'Wool was simply too expensive to buy in the quantities a mill needed', 'Wool scorched during the beating process, ruining the fibre before it could be pulped'],
               ans: 1, explain: 'Wool fibers have natural scales that interlock when beaten — they felt into a mat rather than separating into the smooth slurry needed for paper. Linen, hemp, and cotton fibers separate properly. This is why rag paper used plant-fiber textiles, not wool.' }
           ]),
           sourcesBlock([
@@ -10828,13 +10828,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['Johannes Gutenberg', 'William Caxton', 'Aldus Manutius', 'Christopher Plantin'],
               ans: 2, explain: 'Aldus Manutius of Venice started printing classical Latin + Greek texts in compact octavo editions ~1501. The Aldine octavo is the direct ancestor of the modern paperback — affordable, portable, scholarly.' },
             { q: 'What is a "signature" in bookbinding?',
-              opts: ['The author\'s autograph', 'One folded sheet that becomes part of the book', 'The bookbinder\'s personal mark', 'A legal certification'],
+              opts: ['The author\'s handwritten autograph on the flyleaf', 'One folded sheet that becomes part of the book', 'The bookbinder\'s personal mark stamped on the spine', 'A legal certification of the size of the print run'],
               ans: 1, explain: 'A signature (also called a section or gathering) is one folded sheet. A 320-page octavo book uses 40 signatures. Each gets a letter mark (A, B, C...) on its first page so the binder can keep them in order.' },
             { q: 'What does "perfect binding" actually mean?',
-              opts: ['A binding that lasts forever', 'A flawless, error-free binding', 'Adhesive-only spine binding with no sewing', 'A binding signed by the author'],
+              opts: ['A binding guaranteed to last a century or more', 'A binding produced with no visible flaws at all', 'Adhesive-only spine binding with no sewing', 'A binding signed and numbered by the author'],
               ans: 2, explain: 'Perfect binding = the spine is glued (perfecto adhesive) with no sewing. Used for modern paperbacks + magazines. Cheap, fast (industrial lines do 10,000/hr) — but much less durable than sewn bindings. The "perfect" is a marketing claim, not a quality claim.' },
             { q: 'About when did publisher\'s cloth case binding become standard?',
-              opts: ['1450 (with Gutenberg)', '1820s (Pickering + Leighton)', '1900', '1950'],
+              opts: ['1450s (with Gutenberg in Mainz)', '1820s (Pickering + Leighton)', '1900s (with mass-market paperbacks)', '1950s (with industrial adhesives)'],
               ans: 1, explain: 'William Pickering + Archibald Leighton introduced machine-made cloth case binding in the 1820s. Before this, books shipped from printers unbound — buyers commissioned binding separately. After 1820s, hardcover books shipped pre-bound. This is the origin of the modern publisher\'s hardcover.' }
           ]),
           sourcesBlock([
@@ -11277,16 +11277,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['1450', '1517', '1559', '1633'],
               ans: 2, explain: 'Pope Paul IV published the first edition of the Index in 1559 — about a century after Gutenberg. The Index was revised + expanded for 407 years before being formally abolished by Pope Paul VI in 1966.' },
             { q: 'What was the British Crown\'s charge against Thomas Paine for Common Sense (1776)?',
-              opts: ['Obscenity', 'Sedition + treason', 'Heresy', 'Libel'],
+              opts: ['Obscenity and blasphemy', 'Sedition + treason', 'Heresy against the Crown', 'Criminal libel and fraud'],
               ans: 1, explain: 'Common Sense (1776) was a treasonable text by British law. Possessing or selling it in British territories could mean imprisonment + hanging. In the Thirteen Colonies it sold ~500,000 copies in a population of 2.5 million.' },
             { q: 'What is samizdat?',
-              opts: ['A Catholic Church publishing imprint', 'Self-published forbidden literature, especially in Soviet bloc 1956-1989', 'A type of 17th-century French novel', 'A Latin term for "ban list"'],
+              opts: ['A Catholic Church publishing imprint founded during the Counter-Reformation', 'Self-published forbidden literature, especially in Soviet bloc 1956-1989', 'A type of 17th-century French novel circulated in manuscript', 'A Latin term for "ban list"'],
               ans: 1, explain: 'Samizdat ("self-publishing" in Russian) refers to literature that was banned by the Soviet government + reproduced + circulated clandestinely. Often typed on typewriters with carbon copies. Solzhenitsyn, Brodsky, and many others reached readers this way.' },
             { q: 'Galileo\'s Dialogue (1632) was on the Catholic Index until what year?',
               opts: ['1700', '1750', '1835', '1992'],
               ans: 2, explain: 'Galileo\'s Dialogue was removed from the Index in 1835 — 200+ years after publication. The Catholic Church formally apologized for the Galileo affair under Pope John Paul II in 1992.' },
             { q: 'According to the American Library Association, what was the most-challenged book in US libraries 2021-2023?',
-              opts: ['1984', 'Gender Queer (Maia Kobabe)', 'The Catcher in the Rye', 'Animal Farm'],
+              opts: ['1984 (George Orwell)', 'Gender Queer (Maia Kobabe)', 'The Catcher in the Rye (J.D. Salinger)', 'Animal Farm (George Orwell)'],
               ans: 1, explain: 'Gender Queer (2019) was the most-challenged book in US libraries for three consecutive years per ALA tracking. The current wave of book challenges concentrates on LGBTQ+ memoirs + antiracism texts + classic Holocaust works like Maus.' }
           ]),
           sourcesBlock([
@@ -11657,16 +11657,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['1455 (Gutenberg Bible era)', '1605 (Strasbourg Relation)', '1704 (Boston News-Letter)', '1830s (penny press)'],
               ans: 1, explain: 'The Relation was first published in Strasbourg in 1605 by Johann Carolus. Almost 160 years AFTER Gutenberg printed his Bible. The newspaper as a continuous-publication form required infrastructure (postal networks, correspondents, literate urban readers) that took 150 years to develop.' },
             { q: 'Why couldn\'t the first newspapers exist immediately after Gutenberg?',
-              opts: ['Paper was too expensive', 'Postal networks + correspondent supply + literate urban readers + political tolerance + faster presses all had to develop first', 'The technology hadn\'t been invented yet', 'No one wanted to read news'],
+              opts: ['Paper was still far too expensive for anything printed on it to be read once and then thrown away, which is what a newspaper requires', 'Postal networks + correspondent supply + literate urban readers + political tolerance + faster presses all had to develop first', 'The technology hadn\'t been invented yet', 'No one wanted to read news: readers of the period cared only for scripture and scholarship'],
               ans: 1, explain: 'Six prerequisites had to come together: cheap paper, faster press technology, postal networks, regular news supply (correspondents), literate audiences, political tolerance. Each took decades. The Reformation + Counter-Reformation drove literacy up; postal networks emerged ~1500-1600; political tolerance emerged in scattered cities like Strasbourg + Amsterdam.' },
             { q: 'The first newspaper in British North America was:',
               opts: ['Boston News-Letter (1704)', 'New York Daily News (1801)', 'Pennsylvania Gazette (1728)', 'Boston Tea-Party Times (1773)'],
               ans: 0, explain: 'The Boston News-Letter (1704), edited by Boston postmaster John Campbell, was the first continuously-published newspaper in British North America. It ran for 72 years (until the American Revolution killed it in 1776).' },
             { q: 'What was unique about pre-1830 newspaper format?',
-              opts: ['Pages were folded into a triangle', 'No headlines existed — text ran continuously with only datelines marking section breaks', 'Pages were always pink', 'They were illustrated more than modern newspapers'],
+              opts: ['Pages were folded into a triangle so they could be posted on a wall', 'No headlines existed — text ran continuously with only datelines marking section breaks', 'Pages were routinely tinted pink to mark them as news', 'They carried far more illustration than modern newspapers do, each plate engraved by hand'],
               ans: 1, explain: 'Pre-1830 papers ran continuous prose with no headlines, no story breaks, no visual hierarchy. The dateline ("From Vienna, the 25th of October") was the only signpost. The modern banner-headline-driven format emerged in the penny-press era (1830s) when papers needed to compete on newsstands.' },
             { q: 'About how many US daily + weekly newspapers were lost between 2005-2024?',
-              opts: ['~50', '~250', '~1,000', 'More than 2,500'],
+              opts: ['Fewer than 50 in total', 'About 250', 'About 1,000', 'More than 2,500'],
               ans: 3, explain: 'Per Northwestern Local News Initiative + UNC Hussman School research, the US lost more than 2,500 newspapers in 2005-2024 — roughly one-third of all local newsrooms. About 70 million Americans now live in "news deserts" or limited-news areas.' }
           ]),
           sourcesBlock([
@@ -12292,7 +12292,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         // Name-that-typeface game
         var gameTypefaces = [
           { name: __alloT('stem.printingpress.helvetica_5', 'Helvetica'), clue: 'Designed in Switzerland 1957. Neo-grotesque sans-serif. NYC Subway signs. Generic + neutral feel.',
-            options: ['Helvetica', 'Arial', 'Univers', 'Frutiger'], correct: 0,
+            options: ['Helvetica', 'Akzidenz-Grotesk', 'Univers', 'Frutiger'], correct: 0,
             explain: 'Helvetica (Miedinger + Hoffmann, 1957). Arial (1982) is Microsoft\'s clone — visually nearly identical but technically a different typeface. The differences are subtle: Arial\'s tail on R curves outward more; Helvetica\'s G has a spur.' },
           { name: __alloT('stem.printingpress.garamond_3', 'Garamond'), clue: 'Cut in Paris 1530s. Garalde / French Old Style. Has been the dominant European book typeface for almost 300 years.',
             options: ['Times New Roman', 'Bodoni', 'Garamond', 'Baskerville'], correct: 2,
@@ -12307,7 +12307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             options: ['Comic Sans', 'Chalkboard', 'Marker Felt', 'Bradley Hand'], correct: 0,
             explain: 'Comic Sans (Vincent Connare, 1994). Microsoft\'s typeface — shipped with Windows 95. The other three are macOS counterparts; some look similar but Comic Sans is distinctive in its proportions.' },
           { name: __alloT('stem.printingpress.times_new_roman_2', 'Times New Roman'), clue: 'Commissioned for The Times of London 1932. Default Microsoft Word font from 1992 to 2007.',
-            options: ['Times New Roman', 'Garamond', 'Baskerville', 'Caslon'], correct: 0,
+            options: ['Times New Roman', 'Garamond', 'Baskerville', 'Bookman Old Style'], correct: 0,
             explain: 'Times New Roman (Stanley Morison + Victor Lardent, 1932). Probably the most-used typeface in document history because of Microsoft. Garamond predates it by 400 years.' },
           { name: __alloT('stem.printingpress.caslon_5', 'Caslon'), clue: 'England 1722. The US Declaration of Independence was printed in this typeface.',
             options: ['Caslon', 'Baskerville', 'Garamond', 'Bembo'], correct: 0,
@@ -12683,16 +12683,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('typeFoundry', [
             { q: 'What does "x-height" measure?',
-              opts: ['The total height of the typeface', 'The height of lowercase letters without ascenders or descenders', 'The height of the letter "x" specifically (only "x" matters)', 'The space between lines of text'],
+              opts: ['The total height of the typeface from the cap line to the descender', 'The height of lowercase letters without ascenders or descenders', 'The height of the letter "x" specifically (only "x" matters)', 'The vertical space between one line of text and the next'],
               ans: 1, explain: 'x-height = height of lowercase letters without ascenders/descenders, measured against the baseline. Called x-height because the letter "x" has no ascender or descender, making it the easy reference. Higher x-height = more readable at small sizes; lower = more elegant at large sizes.' },
             { q: 'Which typeface classification has hairline serifs + maximum contrast?',
-              opts: ['Old Style', 'Transitional', 'Modern (Didone)', 'Slab Serif'],
+              opts: ['Old Style (Garamond)', 'Transitional (Baskerville)', 'Modern (Didone)', 'Slab Serif (Clarendon)'],
               ans: 2, explain: 'Modern (also called Didone, after Didot + Bodoni) typefaces have hairline serifs, vertical stress, + maximum contrast (very thick verticals, very thin horizontals). Bodoni (1798) is the genre-defining face. Old Style is the opposite — moderate contrast, oblique axis.' },
             { q: 'Why is Helvetica considered "neutral"?',
-              opts: ['It is invisible', 'It has uniform stroke weight + minimal expressive character; reads as professional without making a strong statement', 'It is the most ancient typeface', 'It is the only sans-serif'],
+              opts: ['It is genuinely invisible: readers do not register the letterforms at all', 'It has uniform stroke weight + minimal expressive character; reads as professional without making a strong statement', 'It is the most ancient typeface still in general use, and long familiarity has worn away whatever character it once had', 'It is the only sans-serif in wide use, so it carries no comparison'],
               ans: 1, explain: 'Helvetica\'s tight curves + uniform stroke weight + lack of expressive flourishes make it read as professional without making a strong statement. The "neutral corporate" quality made it the dominant 20th-century corporate-identity face. Critics argue this "neutrality" is itself an aesthetic stance.' },
             { q: 'What is a variable font?',
-              opts: ['A font that changes color', 'A single font file that contains a continuous spectrum of weights, widths, or other axes — letting one file produce infinite variations', 'A font for which the license is variable', 'A font that displays differently on each computer'],
+              opts: ['A font whose glyphs change colour according to the background they are set on', 'A single font file that contains a continuous spectrum of weights, widths, or other axes — letting one file produce infinite variations', 'A font whose licence terms vary depending on how many machines it is installed on', 'A font that displays differently from one computer to the next, because it is rendered from whatever the local system provides rather than embedded in the page'],
               ans: 1, explain: 'Variable fonts (OpenType FVAR, 2016) let one font file contain a continuous range of weights, widths, slants, or custom axes. Instead of needing separate "Regular," "Bold," "Black" files, you have one file that can produce any weight along the spectrum. Significant size + performance improvement.' },
             { q: 'Which typeface was the US Declaration of Independence printed in?',
               opts: ['Times New Roman', 'Garamond', 'Caslon', 'Helvetica'],
@@ -12927,16 +12927,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('mainePrinters', [
             { q: 'When was the first newspaper in what would become Maine published?',
-              opts: ['1620 (Pilgrim era)', '1785 (Falmouth Gazette)', '1820 (Maine statehood)', '1862 (Civil War)'],
+              opts: ['1620 (the Pilgrim era)', '1785 (Falmouth Gazette)', '1820 (the year of Maine statehood)', '1862 (the Civil War years)'],
               ans: 1, explain: 'The Falmouth Gazette & Weekly Advertiser, founded 1785 in what is now Portland. Maine was still part of Massachusetts then; statehood came in 1820.' },
             { q: 'Which Maine newspaper has remained in family ownership since 1889?',
               opts: ['Portland Press Herald', 'Bangor Daily News', 'Lewiston Sun Journal', 'Kennebec Journal'],
               ans: 1, explain: 'The Bangor Daily News has been family-owned (Bass family) since 1889 — one of the few US daily newspapers still in original-family ownership. Studied as a model for medium-market newspaper sustainability.' },
             { q: 'In 2023, the Portland Press Herald transitioned to what ownership structure?',
-              opts: ['Public stock', 'Nonprofit (Maine Trust for Local News)', 'Owned by a tech billionaire', 'Owned by the State of Maine'],
+              opts: ['Publicly traded stock on the NYSE', 'Nonprofit (Maine Trust for Local News)', 'Bought outright by a technology billionaire', 'Taken into ownership by the State of Maine'],
               ans: 1, explain: 'In 2023, the Portland Press Herald + several other Maine papers were acquired by the Maine Trust for Local News, a nonprofit foundation. Part of a national experiment in saving local journalism through nonprofit ownership.' },
             { q: 'Where can you see thousands of Maine broadsides today?',
-              opts: ['Library of Congress only', 'Maine Historical Society + Maine Memory Network', 'No surviving copies exist', 'Only at Bowdoin College'],
+              opts: ['Only at the Library of Congress collection in Washington', 'Maine Historical Society + Maine Memory Network', 'Nowhere: no broadsides printed in Maine survive', 'Only in the Bowdoin College archives'],
               ans: 1, explain: 'Maine Historical Society in Portland holds thousands of Maine broadsides with a searchable digital collection. Maine Memory Network (mainememory.net) pools digitized collections from 280+ Maine institutions.' }
           ]),
           sourcesBlock([
@@ -13064,13 +13064,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('musicPrinting', [
             { q: 'Who invented the first commercially-printed polyphonic music?',
-              opts: ['Johannes Gutenberg', 'Ottaviano Petrucci (Venice, 1501)', 'Johann Sebastian Bach', 'William Caxton'],
+              opts: ['Johannes Gutenberg (Mainz, 1455)', 'Ottaviano Petrucci (Venice, 1501)', 'Johann Sebastian Bach (Leipzig, 1730)', 'William Caxton (Westminster, 1477)'],
               ans: 1, explain: 'Ottaviano Petrucci printed Harmonice Musices Odhecaton in Venice in 1501 — the first commercially-printed polyphonic music. His triple-impression method (staff lines + text + notes as separate impressions) was beautiful + expensive.' },
             { q: 'How many separate impressions did Petrucci use per page?',
-              opts: ['One', 'Two', 'Three', 'Five'],
+              opts: ['One only', 'Two', 'Three', 'Five or more'],
               ans: 2, explain: 'Three impressions per page: staff lines first, lyrics second, notes + symbols third. Each had to register perfectly with the previous. Hugely labor-intensive but produced beautiful results.' },
             { q: 'What is IMSLP?',
-              opts: ['A music school in Italy', 'A free online library of public-domain music scores, named in honor of Petrucci', 'A copyright enforcement agency', 'A modern publishing company'],
+              opts: ['A music conservatory in Italy named after Ottaviano Petrucci', 'A free online library of public-domain music scores, named in honor of Petrucci', 'A copyright enforcement agency acting for printed and recorded music publishers', 'A modern publishing company specialising in reprints of early music'],
               ans: 1, explain: 'IMSLP (International Music Score Library Project) is a free online archive of public-domain music scores at imslp.org. As of 2026 it holds over 700,000 scores. Named the "Petrucci Music Library" in honor of Ottaviano Petrucci, the first music printer.' }
           ]),
           sourcesBlock([
@@ -13189,13 +13189,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('mapsAtlases', [
             { q: 'Who published the first modern atlas?',
-              opts: ['Gerardus Mercator (1569)', 'Abraham Ortelius (1570 Theatrum Orbis Terrarum)', 'Ptolemy (150 CE)', 'Captain Cook (1770s)'],
+              opts: ['Gerardus Mercator (1569, his world map projection)', 'Abraham Ortelius (1570 Theatrum Orbis Terrarum)', 'Ptolemy (150 CE, the Geographia)', 'Captain Cook (1770s Pacific charts)'],
               ans: 1, explain: 'Abraham Ortelius\'s Theatrum Orbis Terrarum (Antwerp, 1570) is considered the first modern atlas — a unified bound book of standardized maps. Mercator published his world map in 1569 (a single map, not an atlas).' },
             { q: 'Why does Greenland look so large on most world maps?',
-              opts: ['It really is that large', 'The Mercator projection (still standard) exaggerates areas near the poles', 'Greenland is closer to the sky', 'Cartographers historically inflated it'],
+              opts: ['Greenland really is about that large in area', 'The Mercator projection (still standard) exaggerates areas near the poles', 'Greenland sits closer to the map\'s viewing point', 'Cartographers historically inflated it to flatter northern European powers'],
               ans: 1, explain: 'The Mercator projection (1569) preserves angles + compass courses but dramatically exaggerates areas near the poles. Greenland appears ~14× larger than reality relative to Africa. The projection persists because of its mathematical properties suiting modern web mapping (Google Maps, etc.).' },
             { q: 'What is OpenStreetMap?',
-              opts: ['A proprietary commercial map service', 'Apple\'s map service', 'A community-built open-source map of the world edited by millions of contributors', 'A NASA project'],
+              opts: ['A proprietary commercial map service licensed to businesses on a yearly subscription', 'Apple\'s map service', 'A community-built open-source map of the world edited by millions of contributors', 'A NASA project mapping the Earth from orbit'],
               ans: 2, explain: 'OpenStreetMap (OSM) is a community-built, open-source map edited by over 3 million contributors globally. Many commercial maps license OSM data (or use OSM directly). The Wikipedia equivalent for geographic data.' }
           ]),
           sourcesBlock([
@@ -13334,13 +13334,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('childrensBooks', [
             { q: 'What was a hornbook?',
-              opts: ['A book bound with cow horn covers', 'A 1500s-1700s wooden paddle with a printed primer (ABC + Lord\'s Prayer) protected by a sheet of translucent horn', 'A book about hunting', 'A modern children\'s app'],
+              opts: ['A book bound between covers cut from polished cow horn, used for teaching young children their letters and prayers', 'A 1500s-1700s wooden paddle with a printed primer (ABC + Lord\'s Prayer) protected by a sheet of translucent horn', 'A book about hunting with horns, produced for the gentry', 'A modern children\'s app'],
               ans: 1, explain: 'Hornbooks were the dominant primer of English-language childhood education for ~250 years (1500s-1700s). A wooden paddle with the alphabet + basic phonics + Lord\'s Prayer printed on paper, protected by a thin sheet of translucent cow horn.' },
             { q: 'Who is considered the founder of children\'s publishing as a distinct industry?',
-              opts: ['Maurice Sendak', 'John Newbery (1713-1767)', 'Lewis Carroll', 'Beatrix Potter'],
+              opts: ['Maurice Sendak (1928-2012)', 'John Newbery (1713-1767)', 'Lewis Carroll (1832-1898)', 'Beatrix Potter (1866-1943)'],
               ans: 1, explain: 'John Newbery, British publisher 1713-1767, established children\'s books as a commercial category. The American Library Association\'s Newbery Medal (1922) honors his role.' },
             { q: 'The first mainstream American picture book to feature a Black child as protagonist was:',
-              opts: ['The Cat in the Hat (1957)', 'Where the Wild Things Are (1963)', 'The Snowy Day (Ezra Jack Keats, 1962)', 'Millions of Cats (1928)'],
+              opts: ['The Cat in the Hat (Dr. Seuss, 1957)', 'Where the Wild Things Are (Maurice Sendak, 1963)', 'The Snowy Day (Ezra Jack Keats, 1962)', 'Millions of Cats (Wanda Gág, 1928)'],
               ans: 2, explain: 'Ezra Jack Keats\'s The Snowy Day (1962, Caldecott 1963) was the first mainstream American picture book with a Black child as protagonist. Major milestone in representation.' }
           ]),
           sourcesBlock([
@@ -13469,13 +13469,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('sciPublishing', [
             { q: 'When was the first scientific journal founded?',
-              opts: ['1450 (Gutenberg era)', '1665 (Royal Society Philosophical Transactions)', '1700s (Enlightenment)', '1900 (industrial era)'],
+              opts: ['1450 (the Gutenberg era in Mainz)', '1665 (Royal Society Philosophical Transactions)', '1700s (the height of the European Enlightenment)', '1900 (the industrial research era)'],
               ans: 1, explain: 'The Royal Society of London\'s Philosophical Transactions, founded 1665 by Henry Oldenburg, was the first scientific journal. Still publishing in 2026 — one of the longest continuously-published periodicals of any kind.' },
             { q: 'When did peer review become routine practice across scientific journals?',
               opts: ['1665 (founding of Phil Trans)', '1700s', '1900s', '1960s-70s'],
               ans: 3, explain: 'Routine peer review across all major journals developed in the 1960s-70s, accelerated by growing scientific output that editors could not evaluate alone. Before this, editors made publication decisions largely by themselves with informal consultation.' },
             { q: 'What is arXiv?',
-              opts: ['A commercial scientific publisher', 'A free physics + math + CS preprint server, founded 1991', 'A peer-review journal', 'An AI tool for writing papers'],
+              opts: ['A commercial scientific publisher of physics journals, founded 1991', 'A free physics + math + CS preprint server, founded 1991', 'A peer-reviewed physics journal, founded 1991', 'An AI tool for drafting research papers, launched 2021'],
               ans: 1, explain: 'arXiv (pronounced "archive") is a free preprint server founded 1991 by Paul Ginsparg at Los Alamos. It hosts physics, math, computer science + related fields. ~2.3 million papers as of 2026. The original open-access precedent.' }
           ]),
           sourcesBlock([
@@ -13603,13 +13603,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('letterpressToday', [
             { q: 'America\'s longest continuously-operating letterpress shop is:',
-              opts: ['Studio On Fire (Minneapolis)', 'Hatch Show Print (Nashville, since 1879)', 'Centro Stampa (NYC)', 'Saltbox Press (Brunswick, ME)'],
+              opts: ['Studio On Fire (Minneapolis, since 1998)', 'Hatch Show Print (Nashville, since 1879)', 'Centro Stampa (New York, since 1965)', 'Saltbox Press (Brunswick, Maine, since 1971)'],
               ans: 1, explain: 'Hatch Show Print in Nashville has been continuously operating since 1879 — 145+ years. Now owned by the Country Music Hall of Fame. Famous for country music posters with bold wood-type design.' },
             { q: 'Why has letterpress survived after offset printing replaced it commercially?',
-              opts: ['It is now cheaper than offset', 'Its physical impression (raised letter pressed into thick paper) has become a distinct aesthetic prized for wedding invitations, art prints, + craft branding', 'The federal government mandates it', 'Only one type of paper works'],
+              opts: ['It is now cheaper than offset for short runs, since there are no plates to make, no minimum order, and no setup charge to spread across the whole print run at all', 'Its physical impression (raised letter pressed into thick paper) has become a distinct aesthetic prized for wedding invitations, art prints, + craft branding', 'The federal government mandates it for certain official documents, which keeps a small trade alive', 'Only one type of paper takes ink properly, and offset presses cannot handle that stock at all'],
               ans: 1, explain: 'Letterpress nearly died in the 1950s-60s when offset printing replaced it commercially. By the 1990s it had revived as an art + craft form. The tactile impression in thick cotton paper has become a distinct aesthetic prized for premium printed work — wedding invitations, broadsides, art prints, craft beer labels.' },
             { q: 'Where can a beginner learn letterpress?',
-              opts: ['Only at a few specialized US institutions', 'Workshops at book-arts centers, academic programs, working-shop apprenticeships, online tutorials, + craft schools', 'It cannot be learned outside Germany', 'Through video games only'],
+              opts: ['Only at a small handful of specialised American institutions that still keep a working press in regular daily operation', 'Workshops at book-arts centers, academic programs, working-shop apprenticeships, online tutorials, + craft schools', 'It cannot be learned outside Germany, where the surviving trade schools are', 'Only through simulation software and video games that model the process'],
               ans: 1, explain: 'Letterpress can be learned through many paths: weekend workshops at book-arts centers (Center for Book Arts NYC, Penland NC, Haystack ME, etc.), semester programs at art schools, working-shop apprenticeships, YouTube tutorials, the Briar Press online community.' }
           ]),
           sourcesBlock([
@@ -13772,13 +13772,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('pressVariants', [
             { q: 'What was the principal innovation of the Stanhope iron press (~1800)?',
-              opts: ['First steam-powered press', 'First all-iron construction with compound lever — replaced wood + multiplied force', 'First color printing', 'First digital press'],
+              opts: ['First steam-powered press, driven from a mill engine through a long leather belt drive', 'First all-iron construction with compound lever — replaced wood + multiplied force', 'First colour printing, using a separate forme for each ink', 'First press with a mechanical inking system rather than hand balls'],
               ans: 1, explain: 'Charles Stanhope (3rd Earl Stanhope) designed the first all-iron press around 1800. Cast iron frame replaced wood + compound lever multiplied pressman force to ~4 tons. Allowed bigger sheets + heavier papers.' },
             { q: 'Who invented the first steam-powered printing press?',
-              opts: ['Gutenberg', 'Friedrich Koenig + Andreas Bauer (1814)', 'Stanhope', 'Edison'],
+              opts: ['Johannes Gutenberg (Mainz, 1450)', 'Friedrich Koenig + Andreas Bauer (1814)', 'Charles Stanhope (1800, the iron hand press)', 'Thomas Edison (1870s)'],
               ans: 1, explain: 'Friedrich Koenig + Andreas Bauer demonstrated their steam press to The Times of London in 1814. Output jumped from ~250 sheets/hour (hand press) to ~1,100. Made the penny-press era possible.' },
             { q: 'What is special about the Heidelberg Windmill press (1923+)?',
-              opts: ['It runs on wind', 'Automated paper feed via swinging gripper arms — combined letterpress quality with industrial throughput. Many still operating today.', 'It was the first color press', 'It uses no ink'],
+              opts: ['It runs on wind, taking its drive from a mill sail rather than from a steam or electric motor', 'Automated paper feed via swinging gripper arms — combined letterpress quality with industrial throughput. Many still operating today.', 'It was the first press able to lay down more than one colour in a single pass, which removed the need to run every sheet through the machine twice', 'It uses no ink at all, transferring the image by heat and pressure alone onto coated stock'],
               ans: 1, explain: 'The Heidelberg Original Platen ("Windmill") press has swinging gripper arms that automatically feed + remove paper. Standard global letterpress for industrial work since 1923. Many still operating in letterpress studios + small printers in 2026.' }
           ]),
           sourcesBlock([
@@ -13915,7 +13915,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('reformation', [
             { q: 'When did Luther post the 95 Theses?',
-              opts: ['October 31, 1517', '1450', '1599', '1640'],
+              opts: ['October 31, 1517', 'October 31, 1450', 'October 31, 1599', 'October 31, 1640'],
               ans: 0, explain: 'Luther posted his 95 Theses (in Latin) on the door of Castle Church at Wittenberg on October 31, 1517. Within weeks German + Latin pamphlet editions printed. The print war was underway.' },
             { q: 'In what language did Luther primarily write his pamphlets after 1518?',
               opts: ['Latin', 'German', 'Greek', 'French'],
@@ -14049,13 +14049,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('colorPrinting', [
             { q: 'What does CMYK stand for in color printing?',
-              opts: ['Color Mode + Key', 'Cyan, Magenta, Yellow, Key (black) — the 4 process colors used in commercial offset printing', 'Camera Mounted Yellow Key', 'A US Postal Service code'],
+              opts: ['Colour Mode plus Key, the four settings on a commercial press', 'Cyan, Magenta, Yellow, Key (black) — the 4 process colors used in commercial offset printing', 'Camera Mounted Yellow Key, a term carried over from the early photographic platemaking process', 'A US Postal Service code for bulk-rate printed matter'],
               ans: 1, explain: 'CMYK = Cyan, Magenta, Yellow, Key (black). The 4 process colors used in standard commercial color printing. Each gets a separate printing plate; halftone screens at different angles combine in the eye into full-color images. K = "key" plate (provides image alignment + black + crispness).' },
             { q: 'When was halftone printing — making continuous-tone photo reproduction possible — invented?',
-              opts: ['1839 with photography', '1881 (Frederic Eugene Ives)', '1900', '1950'],
+              opts: ['1839 (with the first photographs)', '1881 (Frederic Eugene Ives)', '1900 (with rotogravure)', '1950 (with offset lithography)'],
               ans: 1, explain: 'Frederic Eugene Ives developed the halftone screen process in 1881. Photographs could now be reproduced in print using standard ink-on-paper methods. Newspapers had high-quality halftone photo reproduction by 1900; magazines were full-color halftone by the 1920s.' },
             { q: 'Why do screen RGB and print CMYK look different for the same image?',
-              opts: ['They don\'t — they look identical', 'Screens use additive color (emitting light) + print uses subtractive color (absorbing light). RGB has a wider color gamut than CMYK; many screen colors cannot be reproduced in print.', 'Screens are always brighter', 'It\'s a manufacturing defect'],
+              opts: ['They don\'t — they look identical', 'Screens use additive color (emitting light) + print uses subtractive color (absorbing light). RGB has a wider color gamut than CMYK; many screen colors cannot be reproduced in print.', 'Screens are simply brighter than paper, and that extra brightness makes the same ink values look far more saturated on a monitor than they ever appear once they have been printed onto a sheet', 'It\'s a manufacturing defect'],
               ans: 1, explain: 'Screens emit colored light (additive) + can reproduce a wide color range. Print uses inks that absorb specific wavelengths of light (subtractive) + can reproduce a smaller range. Many vivid screen colors literally cannot be matched by CMYK inks. Color management (ICC profiles) handles the translation.' }
           ]),
           sourcesBlock([
@@ -14154,13 +14154,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('booksChanged', [
             { q: 'Which Maine resident wrote a book that helped shape American attitudes toward slavery?',
-              opts: ['Henry Wadsworth Longfellow', 'Harriet Beecher Stowe (Brunswick, 1852)', 'Edna St. Vincent Millay', 'Stephen King'],
+              opts: ['Henry Wadsworth Longfellow (Portland, 1855)', 'Harriet Beecher Stowe (Brunswick, 1852)', 'Edna St. Vincent Millay (Rockland, 1923)', 'Stephen King (Bangor, 1974)'],
               ans: 1, explain: 'Harriet Beecher Stowe wrote Uncle Tom\'s Cabin while living in Brunswick, Maine (her husband Calvin taught at Bowdoin College). Published 1852 — sold 300,000 in the US first year, 1 million in Britain. Hugely influential on anti-slavery opinion.' },
             { q: 'Which book\'s first edition sold out in one day?',
-              opts: ['Origin of Species (Darwin, 1859)', 'Gutenberg Bible (1455)', 'King James Bible (1611)', 'Don Quixote (1605)'],
+              opts: ['Origin of Species (Darwin, 1859)', 'Gutenberg Bible (Gutenberg, 1455)', 'King James Bible (the translators, 1611)', 'Don Quixote (Cervantes, 1605)'],
               ans: 0, explain: 'The first edition of Darwin\'s On the Origin of Species sold out the day it was published in 1859. Reshaped biology, theology, social thought. Continues to be one of the most influential single science books ever written.' },
             { q: 'Approximately how many copies did Thomas Paine\'s Common Sense (1776) sell?',
-              opts: ['500', '5,000', '50,000', '~500,000 (in colonies of 2.5 million)'],
+              opts: ['~500 (in colonies of 2.5 million)', '~5,000 (in colonies of 2.5 million)', '~50,000 (in colonies of some 2.5 million)', '~500,000 (in colonies of 2.5 million)'],
               ans: 3, explain: 'Common Sense sold approximately 500,000 copies in colonies of 2.5 million people — a per-capita reach that no political pamphlet has matched since. Demonstrated the political power of cheap mass-market vernacular pamphlets.' }
           ]),
           sourcesBlock([
@@ -14449,7 +14449,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('bookObject', [
             { q: 'What are incunabula?',
-              opts: ['Books with illustrations', 'Books printed in Europe before January 1, 1501 — the first 50 years of European printing', 'Books printed on parchment instead of paper', 'Modern reprints of medieval books'],
+              opts: ['Books with hand-coloured illustrations added after printing', 'Books printed in Europe before January 1, 1501 — the first 50 years of European printing', 'Books printed on parchment rather than paper, from before rag paper reached Europe in quantity', 'Modern reprints of medieval books produced for collectors'],
               ans: 1, explain: 'Incunabula (Latin "in the cradle") are books printed in Europe before 1501. ~30,000 distinct editions documented; ~500,000+ surviving copies in libraries globally. The Incunabula Short Title Catalogue (ISTC) is the standard reference.' },
             { q: 'For a 20th-century first edition, what dramatically affects collector value?',
               opts: ['The original dust jacket', 'Whether the book is hardcover', 'The author\'s nationality', 'The publisher\'s logo size'],
@@ -14583,13 +14583,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('inkMaterials', [
             { q: 'What was unusual about Gutenberg\'s ink?',
-              opts: ['It was water-based', 'It had high lead + copper content compared to other period inks', 'It was bright red', 'It dried slowly'],
+              opts: ['It was water-based, exactly like the inks the scribes had long been using', 'It had high lead + copper content compared to other period inks', 'It was bright red, made with cinnabar brought through Mediterranean trade', 'It dried slowly, so sheets had to be hung for a full day'],
               ans: 1, explain: 'Modern XRF analysis of Gutenberg Bible pages shows unusually high lead + copper content. Possibly improved drying + tack + bonding to paper. The exact reason is not certain but the ink quality is visible 575+ years later — still intensely black.' },
             { q: 'Before chemical pigments, what was the most expensive blue pigment?',
-              opts: ['Prussian blue', 'Cobalt blue', 'Ultramarine (from lapis lazuli, Afghanistan)', 'Sky blue'],
+              opts: ['Prussian blue (from iron, Berlin 1706)', 'Cobalt blue (from cobalt ore, Saxony)', 'Ultramarine (from lapis lazuli, Afghanistan)', 'Sky blue (from azurite, mined widely in Europe)'],
               ans: 2, explain: 'Ultramarine, made from lapis lazuli mined in Afghanistan, was the most expensive pigment in the pre-modern world. Synthetic blues (Prussian blue 1704, cobalt blue 1802) dropped the price dramatically.' },
             { q: 'What replaced ink balls for inking most commercial presses in the 1800s?',
-              opts: ['The composing brayer (roller)', 'Spray inking', 'Quill brushes', 'No tool — done by hand'],
+              opts: ['The composing brayer (roller)', 'Spray inking from a pressurised jet', 'Stiff quill brushes worked by hand', 'No tool — done by hand'],
               ans: 0, explain: 'The composing brayer (a rubber roller) replaced ink balls for most commercial inking by mid-1800s. Faster + more uniform than the two-ball method that had been standard since Gutenberg.' }
           ]),
           sourcesBlock([
@@ -14722,13 +14722,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('translation', [
             { q: 'What happened to William Tyndale after he translated the New Testament into English?',
-              opts: ['He was knighted', 'He was strangled + burned at the stake in Antwerp (1536) for heresy', 'He retired to Italy', 'He was made Archbishop of Canterbury'],
+              opts: ['He was knighted and given a pension by Henry VIII', 'He was strangled + burned at the stake in Antwerp (1536) for heresy', 'He retired quietly to Italy and lived out his life', 'He was made Archbishop of Canterbury under Henry VIII and died in office'],
               ans: 1, explain: 'Tyndale was arrested in Antwerp 1535 + executed 1536 for heresy (unauthorized Bible translation). Within 3 years Henry VIII authorized an English Bible based largely on Tyndale\'s work. His dying prayer — "Lord, open the king of England\'s eyes" — was effectively answered posthumously.' },
             { q: 'Approximately what fraction of the King James Bible\'s NT is essentially Tyndale\'s words?',
-              opts: ['~10%', '~30%', '~50%', '~80%+'],
+              opts: ['~10% or less', '~30%', '~50%', '~80%+'],
               ans: 3, explain: 'Per scholarly analysis (David Daniell + others), about 84% of the KJV New Testament is essentially Tyndale\'s words. The KJV translators built heavily on his work — though they were not always allowed to publicly acknowledge it.' },
             { q: 'Approximately how many of the world\'s living languages have at least part of the Bible translated into them?',
-              opts: ['~100', '~500', '~1,500', '~3,500+'],
+              opts: ['~100 or fewer', '~500', '~1,500', '~3,500+'],
               ans: 3, explain: 'The Bible (whole or parts) has been translated into approximately 3,500 of the world\'s 7,000 living languages. The most-translated text in history by orders of magnitude. United Bible Societies + Wycliffe Bible Translators are major modern translation organizations.' }
           ]),
           sourcesBlock([
@@ -14859,10 +14859,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('propaganda', [
             { q: 'Who designed the famous WWI "I Want You" Uncle Sam US Army recruitment poster?',
-              opts: ['Norman Rockwell', 'James Montgomery Flagg (1917)', 'Howard Chandler Christy', 'Andy Warhol'],
+              opts: ['Norman Rockwell (1917)', 'James Montgomery Flagg (1917)', 'Howard Chandler Christy (1917)', 'Andy Warhol (1962)'],
               ans: 1, explain: 'James Montgomery Flagg designed the "I Want You for U.S. Army" poster in 1917. ~4 million printed. The Uncle Sam image became permanent US iconography.' },
             { q: 'What movement produced the W.E.B. Du Bois-founded magazine The Crisis (1910-present)?',
-              opts: ['Suffragette movement', 'NAACP (National Association for the Advancement of Colored People)', 'Labor movement', 'Temperance movement'],
+              opts: ['The suffrage movement, which founded a number of magazines of its own', 'NAACP (National Association for the Advancement of Colored People)', 'The labor movement, through its network of union newspapers', 'The temperance movement, which ran a large publishing operation'],
               ans: 1, explain: 'The Crisis is the NAACP\'s magazine, founded 1910 by W.E.B. Du Bois. Still publishing in 2026. Documents + advocates against racism + injustice for over 110 years. Major print presence in the Black civil rights movement.' },
             { q: 'When did AI-generated political imagery become a major emerging challenge for democratic information?',
               opts: ['1960s', '1990s', '~2023+', 'Not yet a real problem'],
@@ -14998,13 +14998,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('comics', [
             { q: 'Which Sunday newspaper strip is widely cited as the first true American comic strip?',
-              opts: ['Yellow Kid / Hogan\'s Alley (Outcault, 1895)', 'Peanuts (Schulz, 1950)', 'Doonesbury (Trudeau, 1970)', 'Garfield (Davis, 1978)'],
+              opts: ['Yellow Kid / Hogan\'s Alley (Outcault, 1895)', 'Peanuts (Charles Schulz, 1950)', 'Doonesbury (Garry Trudeau, 1970, in the Yale Daily News)', 'Garfield (Jim Davis, 1978)'],
               ans: 0, explain: 'Richard F. Outcault\'s Yellow Kid (in Hogan\'s Alley) starting 1895 in New York World is widely cited as the first true comic strip. Triggered a newspaper-comics circulation war between the World + Hearst\'s Journal.' },
             { q: 'When was Superman first published in Action Comics #1?',
               opts: ['1928', '1938', '1948', '1958'],
               ans: 1, explain: 'Action Comics #1, with Superman\'s debut by Jerry Siegel + Joe Shuster, was published in 1938. Triggered the superhero genre that has defined comic books since. Original copies of Action Comics #1 sell for $3M+ today.' },
             { q: 'Which graphic novel won the Pulitzer Prize?',
-              opts: ['Watchmen (Moore + Gibbons)', 'Maus (Spiegelman, won Pulitzer 1992)', 'The Dark Knight Returns', 'Persepolis'],
+              opts: ['Watchmen (Moore + Gibbons, won Hugo 1988)', 'Maus (Spiegelman, won Pulitzer 1992)', 'The Dark Knight Returns (Miller, won Kirby Award 1987)', 'Persepolis (Satrapi, won Angouleme prize 2001)'],
               ans: 1, explain: 'Art Spiegelman\'s Maus won the Pulitzer Prize in 1992 — the only graphic novel to do so. Established graphic novels as serious literary form. Maus also got banned from a Tennessee school district in 2022, returning it to bestseller lists.' }
           ]),
           sourcesBlock([
@@ -15137,13 +15137,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('futurePrint', [
             { q: 'How does e-ink technology work?',
-              opts: ['Backlit LCD pixels', 'Microscopic capsules contain charged black + white particles; voltage moves them to change appearance; image holds without continuous power', 'Photographic projection', 'Mechanical flipping cards'],
+              opts: ['Backlit LCD pixels behind a colour filter, refreshed sixty times a second so that the image stays visible on the screen while the power is on', 'Microscopic capsules contain charged black + white particles; voltage moves them to change appearance; image holds without continuous power', 'Photographic projection from a lamp behind the panel, exposing a light-sensitive layer on the front surface', 'Mechanical flipping cards, each one turned by a tiny motor so the page appears to change as you read'],
               ans: 1, explain: 'E-ink uses microscopic capsules containing charged black + white particles. Voltage moves the particles up or down, changing each pixel\'s appearance. Critically, the display holds its image without continuous power — that\'s why Kindles get weeks of battery life.' },
             { q: 'About when did 3D printing technology begin commercially?',
-              opts: ['1950s', '1986 (Chuck Hull stereolithography) → 1988 (Scott Crump FDM)', '2010s', 'Not yet practical'],
+              opts: ['1950s (alongside the first numerically controlled machine tools)', '1986 (Chuck Hull stereolithography) → 1988 (Scott Crump FDM)', '2010s (with the first consumer desktop machines)', 'Not yet practical outside research laboratories'],
               ans: 1, explain: '3D printing began commercially in the mid-1980s. Chuck Hull invented stereolithography in 1986 + founded 3D Systems. Scott Crump invented FDM in 1988 + founded Stratasys. Both founders\' companies remain industry leaders.' },
             { q: 'What is print-on-demand?',
-              opts: ['A request system at libraries', 'A model where a book is printed individually as ordered — no inventory, no remainder risk', 'A government printing program', 'A 1970s photocopying business'],
+              opts: ['A request system at libraries for fetching books from closed stacks', 'A model where a book is printed individually as ordered — no inventory, no remainder risk', 'A government printing programme for official forms and notices', 'A 1970s photocopying business that reprinted out-of-print titles to order for its customers'],
               ans: 1, explain: 'Print-on-demand prints each book individually as ordered. Amazon KDP Print, IngramSpark, Lulu + others have made it the dominant form of independent publishing. Has enabled millions of self-published authors + kept many academic + niche books in print indefinitely.' }
           ]),
           sourcesBlock([
@@ -15303,13 +15303,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('famousShops', [
             { q: 'Which press is recognized as a UNESCO World Heritage Site — the only museum to receive that designation?',
-              opts: ['Gutenberg Workshop (Mainz)', 'Plantin-Moretus Museum (Antwerp)', 'Aldine Press (Venice)', 'Officina Bodoni (Verona)'],
+              opts: ['Gutenberg Workshop (Mainz, Germany)', 'Plantin-Moretus Museum (Antwerp)', 'Aldine Press (Venice, Italy)', 'Officina Bodoni (Verona, Italy)'],
               ans: 1, explain: 'The Plantin-Moretus Museum in Antwerp was recognized by UNESCO as a World Heritage Site in 2005 — the only museum to receive that designation. The Plantin print shop building has survived essentially intact since the 1500s with original presses, type, + printer\'s marks in place.' },
             { q: 'Who is credited with introducing chapter + verse numbering of the Bible?',
-              opts: ['Aldus Manutius (1502)', 'Robert Estienne (1551 Greek NT)', 'Christophe Plantin (1568)', 'William Caslon (1722)'],
+              opts: ['Aldus Manutius (1502 Aldine octavo)', 'Robert Estienne (1551 Greek NT)', 'Christophe Plantin (1568 Polyglot)', 'William Caslon (1722 type specimen)'],
               ans: 1, explain: 'Robert Estienne (Stephanus) introduced verse numbering in his 1551 Greek New Testament edition. This numbering system is still used in every modern Bible — chapter + verse references work because of Estienne\'s system.' },
             { q: 'Who founded the Kelmscott Press + the modern fine-press movement?',
-              opts: ['Bruce Rogers', 'William Morris (1891)', 'Eric Gill', 'Cobden-Sanderson'],
+              opts: ['Bruce Rogers (1900)', 'William Morris (1891)', 'Eric Gill (1928)', 'Cobden-Sanderson (1900)'],
               ans: 1, explain: 'William Morris founded the Kelmscott Press in 1891 at age 57. His Kelmscott Chaucer (1896) is one of the most-admired books ever produced. The press inspired dozens of subsequent private presses + established quality fine-press production as artistic + cultural statement.' }
           ]),
           sourcesBlock([
@@ -15453,10 +15453,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printReligion', [
             { q: 'After the Bible, what is often called the most-translated + most-widely-read Christian devotional work?',
-              opts: ['Pilgrim\'s Progress', 'The Imitation of Christ (Thomas à Kempis, ~1418)', 'My Utmost for His Highest', 'The Confessions of St. Augustine'],
+              opts: ['Pilgrim\'s Progress', 'The Imitation of Christ (Thomas à Kempis, ~1418)', 'My Utmost for His Highest (Oswald Chambers, 1927)', 'The Confessions of St. Augustine (~400 CE)'],
               ans: 1, explain: 'The Imitation of Christ, attributed to Thomas à Kempis (~1418), is often called the most-translated + most-widely-read Christian devotional work after the Bible. Has been in continuous print since 1471.' },
             { q: 'What is the Sacred Harp?',
-              opts: ['A musical instrument used at Catholic mass', 'A Southern shape-note hymnal (1844) still actively used in singing communities including in Maine', 'A medieval prayer book', 'A modern evangelical worship band'],
+              opts: ['A stringed instrument once used at Catholic mass, plucked to give the choir its opening pitch each time', 'A Southern shape-note hymnal (1844) still actively used in singing communities including in Maine', 'A medieval prayer book of psalms set for unaccompanied singing', 'A modern evangelical worship band touring the American South'],
               ans: 1, explain: 'The Sacred Harp is a Southern shape-note hymnal first published 1844. Uses shape-note notation (each scale degree has a distinctive shape) to help untrained singers find pitches. Still actively used in singing communities across the US, including Maine.' },
             { q: 'About how large is the US Christian publishing industry annually?',
               opts: ['~$100M', '~$1.2B', '~$10B', '~$50B'],
@@ -15586,10 +15586,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printEducation', [
             { q: 'How many copies of the McGuffey Readers were sold by 1920?',
-              opts: ['~1 million', '~10 million', '~50 million', '~122 million'],
+              opts: ['~1 million or so', '~10 million', '~50 million', '~122 million'],
               ans: 3, explain: 'McGuffey Readers sold approximately 122 million copies by 1920 across multiple editions + grade levels. Comparable per-capita reach to the King James Bible in the US. Shaped American literacy + cultural values for generations.' },
             { q: 'What is the world\'s oldest continuously operating publisher?',
-              opts: ['Oxford University Press', 'Cambridge University Press (founded 1534 by royal charter)', 'Penguin Books', 'Random House'],
+              opts: ['Oxford University Press (founded 1586 under a royal charter)', 'Cambridge University Press (founded 1534 by royal charter)', 'Penguin Books (founded 1935 in London)', 'Random House (founded 1927 in New York)'],
               ans: 1, explain: 'Cambridge University Press was founded in 1534 by royal charter from Henry VIII — the world\'s oldest continuously operating publisher. Oxford University Press was founded later (1586). Both major academic publishers nearly 500 years later.' },
             { q: 'Approximately how much have OpenStax\'s free textbooks saved US college students?',
               opts: ['~$10 million', '~$100 million', '~$1.2 billion', '~$10 billion'],
@@ -15711,13 +15711,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printMoney', [
             { q: 'What was the first adhesive postage stamp?',
-              opts: ['1840 Penny Black (Britain)', '1847 US 5-cent Franklin', '1900 Christmas stamp', '1840 Inverted Jenny'],
+              opts: ['1840 Penny Black (Britain)', '1847 US 5-cent Franklin (America)', '1900 Christmas stamp', '1840 Inverted Jenny'],
               ans: 0, explain: 'The Penny Black (Britain, 1840) was the first adhesive postage stamp. Designed by Henry Cole, featuring Queen Victoria\'s profile, sold at 1 penny for prepaid postage. Revolutionary because before this, postage was paid by recipient + cost varied by distance.' },
             { q: 'What is intaglio printing?',
-              opts: ['Printing with multiple colors', 'Printing from an engraved plate with ink in recessed lines, producing raised ink on paper', 'Italian Renaissance printing', 'A modern digital method'],
+              opts: ['Printing with multiple colours, one plate laid down for each ink in turn', 'Printing from an engraved plate with ink in recessed lines, producing raised ink on paper', 'Italian Renaissance printing, named after the workshops of Florence and Venice that used it', 'A modern digital method that sprays ink directly onto the sheet'],
               ans: 1, explain: 'Intaglio printing uses an engraved plate where ink sits in recessed lines (the opposite of relief printing). When pressed against paper, the ink transfers + sits raised on the paper surface — you can feel the relief. Standard for currency since the 1700s because it requires specialized equipment counterfeiters typically lack.' },
             { q: 'When was the first polymer (plastic) banknote issued?',
-              opts: ['1900', '1950', '1988 (Australia)', '2020'],
+              opts: ['1900 (Britain)', '1950 (United States)', '1988 (Australia)', '2020 (Japan)'],
               ans: 2, explain: 'Australia issued the first polymer banknote in 1988. Polymer is more durable than paper + has better security feature options. About 40 countries now use polymer. UK switched to polymer in 2016.' }
           ]),
           sourcesBlock([
@@ -15863,7 +15863,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['~10', '~100', '~1,700', '~10,000'],
               ans: 2, explain: 'Andrew Carnegie funded the construction of 1,689 US public library buildings between 1883 and 1929. Approximately half of US public libraries today operate in buildings descended from Carnegie\'s gift.' },
             { q: 'Who founded the first "public" library in colonial America (subscription model)?',
-              opts: ['George Washington', 'Benjamin Franklin (Library Company of Philadelphia, 1731)', 'Thomas Jefferson', 'Andrew Carnegie'],
+              opts: ['George Washington (Mount Vernon subscription library, 1774)', 'Benjamin Franklin (Library Company of Philadelphia, 1731)', 'Thomas Jefferson (Monticello, 1780)', 'Andrew Carnegie (Pittsburgh, 1889)'],
               ans: 1, explain: 'Benjamin Franklin + members of his Junto club founded the Library Company of Philadelphia in 1731 as a subscription library (members paid annual fee). First "public" library in colonial America. Still operating in 2026.' },
             { q: 'How many books did Project Gutenberg (founded 1971) host as of 2024?',
               opts: ['~100', '~5,000', '~75,000+', '~10 million'],
@@ -16020,7 +16020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['Andy Warhol', 'Norman Rockwell', 'Jackson Pollock', 'Edward Hopper'],
               ans: 1, explain: 'Norman Rockwell painted ~321 covers for the Saturday Evening Post between 1916 + 1963. These became the iconic visual record of 20th-c. American middle-class life.' },
             { q: 'Where does the word "magazine" come from?',
-              opts: ['French magazin (store)', 'Arabic makhazin (storehouse)', 'Latin magnus (great)', 'Old English maga (stomach)'],
+              opts: ['French magasin (a shop or store)', 'Arabic makhazin (storehouse)', 'Latin magnus (great or large)', 'Old English maga (the stomach)'],
               ans: 1, explain: '"Magazine" comes from Arabic makhazin (storehouse) — the same root as the French/English "magazine" meaning storehouse (e.g., powder magazine for gunpowder). The Gentleman\'s Magazine (1731) first used it for a periodical, suggesting it was a "storehouse" of various writings.' }
           ]),
           sourcesBlock([
@@ -16147,13 +16147,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('encyclopedias', [
             { q: 'Who edited the Enlightenment Encyclopédie (1751-1772)?',
-              opts: ['Voltaire', 'Denis Diderot + Jean le Rond d\'Alembert', 'Adam Smith', 'Rousseau'],
+              opts: ['Voltaire and the Paris philosophes', 'Denis Diderot + Jean le Rond d\'Alembert', 'Adam Smith and the Scottish Enlightenment', 'Jean-Jacques Rousseau alone'],
               ans: 1, explain: 'Diderot + d\'Alembert edited the Encyclopédie, with 140+ contributors including Voltaire, Rousseau, Montesquieu. 28 volumes, 71,818 articles. The most politically influential Enlightenment publication.' },
             { q: 'When did Britannica end its print edition?',
               opts: ['1995', '2005', '2012', 'Still printing in 2026'],
               ans: 2, explain: 'Britannica announced the end of its print edition in March 2012, after 244 years. Continues as digital-only subscription. Killed by Wikipedia\'s combination of broader scope + zero cost.' },
             { q: 'Approximately how many articles are in English Wikipedia (2026)?',
-              opts: ['~50,000', '~500,000', '~6.8 million', '~50 million'],
+              opts: ['~50,000 articles', '~500,000', '~6.8 million', '~50 million'],
               ans: 2, explain: 'English Wikipedia has approximately 6.8 million articles. Total across all language editions: 62+ million articles. The largest reference work ever compiled.' }
           ]),
           sourcesBlock([
@@ -16273,7 +16273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['color (vs colour)', 'theater (vs theatre)', 'tung (for tongue)', 'jail (vs gaol)'],
               ans: 2, explain: 'Webster\'s "tung" for "tongue" did not catch on. Others (color, theater, plow, defense, jail, music) did survive + became standard American spellings.' },
             { q: 'Who was the OED\'s most prolific volunteer contributor (subject of The Professor and the Madman)?',
-              opts: ['James Murray', 'Dr. William Chester Minor (contributed from inside Broadmoor Hospital)', 'Samuel Johnson', 'Noah Webster'],
+              opts: ['James Murray, who edited the whole dictionary from his garden Scriptorium', 'Dr. William Chester Minor (contributed from inside Broadmoor Hospital)', 'Samuel Johnson, working alone in Gough Square over nine years', 'Noah Webster, compiling his American dictionary in New Haven'],
               ans: 1, explain: 'Dr. William Chester Minor was the OED\'s most prolific volunteer contributor, sending tens of thousands of quotations to editor James Murray. Minor contributed from inside Broadmoor Hospital for the Criminally Insane (he had killed a man in a paranoid episode). Story told in Simon Winchester\'s The Professor and the Madman (1998).' }
           ]),
           sourcesBlock([
@@ -16402,13 +16402,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('cookbooks', [
             { q: 'What was the major innovation of Fannie Farmer\'s 1896 cookbook?',
-              opts: ['First color photographs', 'Precise standardized measurements (level measuring cups + spoons)', 'First vegetarian cookbook', 'First ethnic cookbook'],
+              opts: ['The first colour photographs of finished dishes', 'Precise standardized measurements (level measuring cups + spoons)', 'The first vegetarian cookbook published in America', 'The first cookbook to collect recipes from immigrant communities in America'],
               ans: 1, explain: 'Fannie Farmer pioneered standardized measurements in The Boston Cooking-School Cook Book (1896). Before Farmer, recipes used approximate volumes ("a teacup of sugar"). Farmer insisted on level measuring cups + spoons — replicable recipes. She is known as "the Mother of Level Measurements."' },
             { q: 'When was Julia Child\'s Mastering the Art of French Cooking first published?',
               opts: ['1931', '1961', '1981', '2001'],
               ans: 1, explain: 'Mastering the Art of French Cooking, by Julia Child with Simone Beck + Louisette Bertholle, was published in 1961. ~700 pages. Established the careful exhaustive technique-explaining approach to cookbook writing. Coupled with the WGBH TV show (1963-1973), made Child a household name.' },
             { q: 'How many copies of Joy of Cooking (Rombauer + Becker, 1931+) have been sold?',
-              opts: ['~2,000', '~200,000', '~2 million', '~20 million'],
+              opts: ['~2,000 copies', '~200,000', '~2 million', '~20 million'],
               ans: 3, explain: 'Joy of Cooking has sold approximately 20 million copies across its multiple editions since 1931. The American cookbook bible. Multiple revised editions across nearly a century.' }
           ]),
           sourcesBlock([
@@ -16519,13 +16519,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('selfhelp', [
             { q: 'Who is the author of Poor Richard\'s Almanack (1732-1758)?',
-              opts: ['George Washington', 'Benjamin Franklin (writing as "Poor Richard")', 'Thomas Jefferson', 'John Adams'],
+              opts: ['George Washington, writing under his own name', 'Benjamin Franklin (writing as "Poor Richard")', 'Thomas Jefferson, writing under a pen name', 'John Adams, writing as Novanglus in the Boston press'],
               ans: 1, explain: 'Benjamin Franklin published Poor Richard\'s Almanack annually 1732-1758. Mixed weather predictions + tides + jokes + proverbs. Many of Franklin\'s pithy proverbs ("A penny saved is a penny earned") entered the English language.' },
             { q: 'About how many copies has Dale Carnegie\'s How to Win Friends and Influence People (1936) sold?',
-              opts: ['~30,000', '~300,000', '~3 million', '~30 million'],
+              opts: ['~30,000 copies', '~300,000', '~3 million', '~30 million'],
               ans: 3, explain: 'How to Win Friends and Influence People has sold approximately 30 million copies since 1936. Most-influential self-help book ever. Defined modern American self-help genre + continues to sell in 2026.' },
             { q: 'How long has the Old Farmer\'s Almanac been published?',
-              opts: ['~50 years', '~100 years', '~230 years (since 1792)', '~500 years'],
+              opts: ['~50 years (since 1975)', '~100 years (since 1925)', '~230 years (since 1792)', '~500 years (since 1520)'],
               ans: 2, explain: 'The Old Farmer\'s Almanac has published continuously since 1792 — 230+ years. Founded by Robert B. Thomas. Still sells ~3 million copies annually. Weather predictions + tide tables + folksy advice format unchanged in essence.' }
           ]),
           sourcesBlock([
@@ -16634,13 +16634,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('paperSustain', [
             { q: 'What percentage of paper does the US recycle (2024 EPA data)?',
-              opts: ['~20%', '~40%', '~68% (highest of any commodity)', '~95%'],
+              opts: ['~20% (below most other commodities)', '~40% (about average)', '~68% (highest of any commodity)', '~95% (near-total recovery)'],
               ans: 2, explain: 'US recycles ~68% of paper as of 2024 EPA data — the highest recycling rate of any commodity. Cardboard 91%; newspaper ~70%. Some grades cannot be recycled (wax-coated, plastic-coated, contaminated).' },
             { q: 'Why can\'t recycled paper indefinitely substitute for virgin paper?',
-              opts: ['Recycled paper is illegal in some places', 'Each recycling cycle shortens cellulose fibers; after 5-7 cycles fibers are too short. Constant injection of virgin fiber needed.', 'Recycled paper is too expensive', 'Recycled paper doesn\'t print well'],
+              opts: ['Recycled paper is prohibited outright for a number of uses, so a supply of virgin stock has to be kept in production regardless of demand', 'Each recycling cycle shortens cellulose fibers; after 5-7 cycles fibers are too short. Constant injection of virgin fiber needed.', 'Recycled paper costs more to produce than virgin stock once collection is counted', 'Recycled paper doesn\'t print well'],
               ans: 1, explain: 'Each paper-recycling cycle shortens cellulose fibers a little. After 5-7 cycles, fibers become too short to bond into paper. So recycled-paper supply requires constant injection of new virgin fiber from forests. Closed-loop paper without virgin input is impossible.' },
             { q: 'About how many Maine paper-mill jobs exist today vs the 1980s peak?',
-              opts: ['About the same', '~3,000-4,000 today vs ~15,000+ in 1980s — major contraction', '~50,000 today (industry has grown)', '~500 today (industry has nearly disappeared)'],
+              opts: ['About the same as the 1980s, roughly 15,000 jobs', '~3,000-4,000 today vs ~15,000+ in 1980s — major contraction', '~50,000 today, meaning the industry has grown since the 1980s', '~500 today, meaning the industry has nearly disappeared'],
               ans: 1, explain: 'Maine paper-mill employment is ~3,000-4,000 today, down from ~15,000+ in 1980s. Multiple mill closures across decades. Remaining mills (Sappi, ND Paper, Pixelle) are still major employers for their host communities but the industry overall has substantially contracted.' }
           ]),
           sourcesBlock([
@@ -16781,10 +16781,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('comicStrips', [
             { q: 'How many Peanuts strips did Charles Schulz draw solo?',
-              opts: ['~500', '~5,000', '~17,897 (every one solo over 50 years)', '~50,000'],
+              opts: ['~500 strips over his career', '~5,000 strips, with assistants doing the inking', '~17,897 (every one solo over 50 years)', '~50,000'],
               ans: 2, explain: 'Charles Schulz drew every Peanuts strip himself — 17,897 over ~50 years (1950-2000). Reached ~2,600 newspapers + 350 million readers at peak. Schulz drew the last new Peanuts strip the day before he died (February 13, 2000).' },
             { q: 'Which strip notably refused all merchandising (no plush toys, no lunchboxes)?',
-              opts: ['Garfield', 'Calvin and Hobbes (Watterson refused all licensing)', 'Peanuts', 'The Far Side'],
+              opts: ['Garfield (Jim Davis licensed it widely)', 'Calvin and Hobbes (Watterson refused all licensing)', 'Peanuts (Schulz never refused a licensing deal)', 'The Far Side (Gary Larson allowed only limited licensing)'],
               ans: 1, explain: 'Bill Watterson famously refused all merchandising for Calvin and Hobbes during its 10-year run (1985-1995). No Calvin t-shirts, lunchboxes, plush tigers (the bootleg "Calvin peeing on logo" stickers were entirely unauthorized). Watterson ended the strip on his own terms + has stayed out of public life since.' }
           ]),
           sourcesBlock([
@@ -16896,10 +16896,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printWar', [
             { q: 'Who is widely considered the first major modern war correspondent?',
-              opts: ['Ernie Pyle (WWII)', 'William Howard Russell (Times of London, Crimean War 1853-56)', 'Edward R. Murrow', 'Martha Gellhorn'],
+              opts: ['Ernie Pyle (Scripps-Howard newspapers, Second World War 1941-45)', 'William Howard Russell (Times of London, Crimean War 1853-56)', 'Edward R. Murrow (CBS, London Blitz 1940-41)', 'Martha Gellhorn (Spanish Civil War, 1937-38)'],
               ans: 1, explain: 'William Howard Russell of the Times of London during the Crimean War (1853-1856) is widely cited as the first major modern war correspondent. His reports on British military + medical incompetence helped trigger reforms.' },
             { q: 'Who took the "Napalm Girl" photograph during the Vietnam War (1972)?',
-              opts: ['Robert Capa', 'Nick Ut (Pulitzer Prize)', 'Eddie Adams', 'Margaret Bourke-White'],
+              opts: ['Robert Capa', 'Nick Ut (Pulitzer Prize)', 'Eddie Adams', 'Margaret Bourke-White (Life)'],
               ans: 1, explain: 'Nick Ut took the photograph of Kim Phuc fleeing a napalm attack in June 1972. Won the Pulitzer Prize. Among the most-recognized photographs ever taken.' }
           ]),
           sourcesBlock([
@@ -16999,7 +16999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
               opts: ['It was lost in WWII', 'It went down with the Titanic (1912)', 'It was stolen', 'It\'s on display at the British Library'],
               ans: 1, explain: 'The Sangorski + Sutcliffe "Great Omar" — an extravagant jewel-encrusted binding of Edward FitzGerald\'s Rubaiyat of Omar Khayyam — went down with the Titanic in 1912. The firm later attempted to recreate it; that copy was destroyed in the WWII London Blitz.' },
             { q: 'What did Cobden-Sanderson notoriously do with the Doves Press type?',
-              opts: ['Sold it to a museum', 'Dumped it into the Thames (1916-17) to prevent further use', 'Buried it in a garden', 'Donated it to the British Library'],
+              opts: ['Sold it to a museum, where the matrices are still held', 'Dumped it into the Thames (1916-17) to prevent further use', 'Buried it in a garden in Hammersmith, where it was later dug up', 'Donated it to the British Library on his death'],
               ans: 1, explain: 'After his partnership with Emery Walker dissolved, Thomas James Cobden-Sanderson dumped the Doves Press type into the Thames in 1916-1917 to prevent its further use. Robert Green recovered some pieces from the river bed in 2014 + recreated the typeface digitally as Doves Type.' }
           ]),
           sourcesBlock([
@@ -17081,13 +17081,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('maineAuthors', [
             { q: 'Where did Harriet Beecher Stowe live when she wrote Uncle Tom\'s Cabin?',
-              opts: ['Connecticut', 'Brunswick, Maine (her husband Calvin taught at Bowdoin)', 'Boston', 'Cincinnati'],
+              opts: ['Hartford, Connecticut (where she later settled for good)', 'Brunswick, Maine (her husband Calvin taught at Bowdoin)', 'Boston, Massachusetts (in the abolitionist circles)', 'Cincinnati, Ohio (where she had lived earlier)'],
               ans: 1, explain: 'Stowe lived in Brunswick, Maine 1850-1852 while her husband Calvin Stowe taught at Bowdoin College. Wrote Uncle Tom\'s Cabin there. The Stowe House is now a Bowdoin College administrative building + bookstore.' },
             { q: 'Where does Stephen King live + base much of his fiction?',
-              opts: ['Boston', 'Bangor, Maine (since 1979)', 'New York City', 'Massachusetts'],
+              opts: ['Boston (since 1979)', 'Bangor, Maine (since 1979)', 'New York City (since the 1980s)', 'Massachusetts (since 1979)'],
               ans: 1, explain: 'Stephen King has lived in Bangor, Maine since 1979. Many of his novels are set in fictional Maine towns (Castle Rock, Derry, Jerusalem\'s Lot). His sense of place is deeply Maine.' },
             { q: 'Who is the only Maine-born author to win the Pulitzer Prize for poetry as the first woman?',
-              opts: ['Sarah Orne Jewett', 'Edna St. Vincent Millay (Pulitzer 1923)', 'Elizabeth Strout', 'Marsden Hartley'],
+              opts: ['Sarah Orne Jewett (South Berwick, 1849-1909)', 'Edna St. Vincent Millay (Pulitzer 1923)', 'Elizabeth Strout (Pulitzer 2009, fiction)', 'Marsden Hartley (Lewiston, 1877-1943)'],
               ans: 1, explain: 'Edna St. Vincent Millay (born Rockland, raised Camden) won the Pulitzer Prize for Poetry in 1923 — the first woman to win the poetry Pulitzer. Major 20th-c. lyric poet ("My candle burns at both ends").' }
           ]),
           sourcesBlock([
@@ -17185,10 +17185,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printTourism', [
             { q: 'Which budget-travel guidebook revolutionized backpacker travel beginning in the 1970s?',
-              opts: ['Frommer\'s', 'Lonely Planet (1972+)', 'Fodor\'s', 'Baedeker'],
+              opts: ['Frommer\'s Europe on $5 a Day (1957+)', 'Lonely Planet (1972+)', 'Fodor\'s Modern Guides (1936+)', 'Baedeker'],
               ans: 1, explain: 'Tony + Maureen Wheeler founded Lonely Planet in 1972 with Across Asia on the Cheap (1973). Backpacker-focused. Became the global budget-travel bible. Now part of NC2 Media.' },
             { q: 'What launched the US postcard craze?',
-              opts: ['World War I', 'The 1893 World\'s Columbian Exposition in Chicago', 'The Pony Express', 'The first US Post Office'],
+              opts: ['The First World War (1914-18)', 'The 1893 World\'s Columbian Exposition in Chicago', 'The Pony Express (1860-61)', 'The founding of the very first US Post Office (1775)'],
               ans: 1, explain: 'First US postcards sold at the 1893 World\'s Columbian Exposition in Chicago. Sparked the postcard craze. By 1900-1920 (Golden Age), postcards were exchanged routinely as personal correspondence.' }
           ]),
           sourcesBlock([
@@ -17298,13 +17298,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printHealthcare', [
             { q: 'How long has the Merck Manual been published?',
-              opts: ['Since 1950', 'Since 1900 (first published 1899)', 'Since 2000', 'Only published online'],
+              opts: ['Since 1950 (first published 1949)', 'Since 1900 (first published 1899)', 'Since 2000 (first published 1999)', 'Only published online since 2005'],
               ans: 1, explain: 'The Merck Manual was first published in 1899 (the year before 1900). Now in 20th edition + has Consumer Version (general public) + Professional Version (clinicians). Long-running standard medical reference.' },
             { q: 'How long has the New England Journal of Medicine published?',
-              opts: ['Since 1950', 'Since 1900', 'Since 1812 (continuously)', 'Since 2000'],
+              opts: ['Since 1950 (continuously)', 'Since 1900 (continuously)', 'Since 1812 (continuously)', 'Since 2000 (continuously)'],
               ans: 2, explain: 'The NEJM has published continuously since 1812 — 210+ years. Premier medical journal. Foundational publication of US medical practice + research.' },
             { q: 'In which countries is direct-to-consumer (DTC) pharmaceutical advertising essentially the only allowed?',
-              opts: ['US + UK', 'US + New Zealand', 'US + Germany', 'US + Japan'],
+              opts: ['US + United Kingdom', 'US + New Zealand', 'US + Germany', 'US + Japan'],
               ans: 1, explain: 'US + New Zealand are essentially the only countries that allow direct-to-consumer pharmaceutical advertising. Most other countries prohibit it. US DTC pharma ads became standard after 1997 FDA rule clarification — major source of magazine + TV revenue since.' }
           ]),
           sourcesBlock([
@@ -17338,16 +17338,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
         var fiScore = fiScoreRaw[0], setFiScore = fiScoreRaw[1];
         var rounds = [
           { display: 'The quick brown fox jumps over the lazy dog', font: '"Times New Roman", Times, serif',
-            options: ['Helvetica', 'Times New Roman', 'Arial', 'Garamond'], correct: 1,
+            options: ['Helvetica', 'Times New Roman', 'Akzidenz-Grotesk', 'Garamond'], correct: 1,
             explain: 'Times New Roman — designed by Stanley Morison + Victor Lardent for The Times of London (1932). Bracketed serifs, moderate contrast, slightly condensed proportions. The default Word font for ~30 years.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: 'Arial, Helvetica, sans-serif',
-            options: ['Times New Roman', 'Garamond', 'Arial / Helvetica', 'Bodoni'], correct: 2,
+            options: ['Times New Roman', 'Adobe Garamond Pro', 'Arial / Helvetica', 'Bodoni'], correct: 2,
             explain: 'Arial (or Helvetica — visually nearly identical). Neo-grotesque sans-serif. Uniform stroke weight, tight curves, generous x-height. The dominant 20th-c. neutral sans-serif.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: 'Georgia, "Times New Roman", serif',
             options: ['Georgia', 'Times New Roman', 'Caslon', 'Baskerville'], correct: 0,
             explain: 'Georgia — designed by Matthew Carter (1996) for Microsoft, optimized for screen reading. Generous x-height, sturdy serifs, slightly heavier than Times. Distinguishable from Times by its larger x-height + softer serifs.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: '"Courier New", Courier, monospace',
-            options: ['Verdana', 'Courier New', 'Helvetica', 'Garamond'], correct: 1,
+            options: ['Lucida Console', 'Courier New', 'Helvetica', 'Garamond'], correct: 1,
             explain: 'Courier New — monospaced (every letter the same width). Originally designed for typewriters; standardized as Courier for IBM (1955). Now associated with code + screenplays.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: '"Comic Sans MS", "Comic Sans", cursive',
             options: ['Comic Sans', 'Marker Felt', 'Bradley Hand', 'Papyrus'], correct: 0,
@@ -17356,7 +17356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             options: ['Helvetica', 'Verdana', 'Arial', 'Tahoma'], correct: 1,
             explain: 'Verdana — designed by Matthew Carter (Microsoft, 1996) for screen readability at small sizes. Generous spacing + large x-height + distinguishable letterforms. Designed specifically to be readable at 8-10pt on screen.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: '"Trebuchet MS", "Lucida Grande", Tahoma, sans-serif',
-            options: ['Verdana', 'Arial', 'Trebuchet MS', 'Helvetica'], correct: 2,
+            options: ['Lucida Grande', 'Arial', 'Trebuchet MS', 'Helvetica'], correct: 2,
             explain: 'Trebuchet MS — designed by Vincent Connare (Microsoft, 1996). Humanist sans-serif. Curvier than Helvetica/Arial. Distinctive lowercase letterforms. Sometimes mistaken for Verdana but more characterful.' },
           { display: 'The quick brown fox jumps over the lazy dog', font: 'Impact, "Arial Narrow Bold", sans-serif',
             options: ['Impact', 'Helvetica Bold', 'Arial Black', 'Bebas Neue'], correct: 0,
@@ -17371,7 +17371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             options: ['Brush Script', 'Lucida Handwriting', 'Comic Sans', 'Monotype Corsiva'], correct: 0,
             explain: 'Brush Script — designed by Robert E. Smith (1942). Casual script imitating brush lettering. Often paired with serif body text for invitations + casual headers.' },
           { display: 'fi fl ffi ffl', font: 'Georgia, serif',
-            options: ['ligatures (fi fl ffi ffl combine into single glyphs in many fonts)', 'misprints', 'foreign characters', 'fractions'], correct: 0,
+            options: ['ligatures (fi fl ffi ffl combine into single glyphs in many fonts)', 'misprints, where two adjacent letters were accidentally cast together as one sort', 'foreign characters imported from other alphabets for loanwords', 'fractions, which are cast as single sorts in most text fonts'], correct: 0,
             explain: 'Ligatures — combined letterform glyphs where 2+ letters render as a single shape. fi + fl + ffi + ffl are the most common Latin ligatures. Many fonts include them automatically. Original purpose: avoid the f\'s overhang colliding with the i\'s dot + the l\'s ascender.' }
         ];
         var r = rounds[fiRound] || rounds[0];
@@ -17522,7 +17522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           ),
           miniQuizBlock('printPostage', [
             { q: 'Where was L.L. Bean founded?',
-              opts: ['Portland', 'Freeport, Maine (1912)', 'Bangor', 'Boston'],
+              opts: ['Portland, Maine (1912)', 'Freeport, Maine (1912)', 'Bangor, Maine (1912)', 'Boston, Massachusetts (1912)'],
               ans: 1, explain: 'Leon Leonwood Bean founded L.L. Bean in Freeport, Maine in 1912. Catalog distribution started 1912. Still headquartered in Freeport. Maine\'s most famous retailer.' },
             { q: 'About how much has US First-Class Mail volume declined since its 2001 peak?',
               opts: ['~10%', '~25%', '~50%', 'Has actually increased'],
@@ -17608,7 +17608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (spSect === s.id); return h('button', { key: s.id, onClick: function() { setSpSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printSports', [
-            { q: 'High-grade Honus Wagner T206 baseball card sold for?', opts: ['$10K', '$100K', '$1M', '$7M+ (2022)'], ans: 3, explain: 'Sold $7.25M in 2022.' }
+            { q: 'High-grade Honus Wagner T206 baseball card sold for?', opts: ['$10K (2022)', '$100K (2022)', '$1M (2022)', '$7M+ (2022)'], ans: 3, explain: 'Sold $7.25M in 2022.' }
           ]),
           crossLinkFooter('printSports'),
           disclaimerFooter()
@@ -17659,7 +17659,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (paSect === s.id); return h('button', { key: s.id, onClick: function() { setPaSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printArch', [
-            { q: 'Why are architectural drawings called "blueprints"?', opts: ['Always blue ink', 'Herschel\'s 1842 cyanotype process — white lines on blue background', 'Architects preferred blue', 'A trademark'], ans: 1, explain: 'John Herschel\'s 1842 cyanotype process produced white lines on blue. Adopted for architectural reproduction late 19th c. Process largely obsolete but name persists.' }
+            { q: 'Why are architectural drawings called "blueprints"?', opts: ['The drawings were routinely inked in blue, the one pigment that survived copying', 'Herschel\'s 1842 cyanotype process — white lines on blue background', 'Architects simply preferred blue paper, and the habit hardened into a trade convention', 'A trademark of the first firm to sell reproduction equipment to architects'], ans: 1, explain: 'John Herschel\'s 1842 cyanotype process produced white lines on blue. Adopted for architectural reproduction late 19th c. Process largely obsolete but name persists.' }
           ]),
           crossLinkFooter('printArch'),
           disclaimerFooter()
@@ -17719,7 +17719,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (plSect === s.id); return h('button', { key: s.id, onClick: function() { setPlSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printLaw', [
-            { q: 'What is the standard US legal dictionary?', opts: ['Webster\'s Legal', "Black's Law Dictionary (1891+)", 'Oxford Legal', 'No standard'], ans: 1, explain: "Black's Law Dictionary (1891+), now 12th edition. Premier US legal dictionary." }
+            { q: 'What is the standard US legal dictionary?', opts: ['Webster\'s Legal Dictionary (1898+)', "Black's Law Dictionary (1891+)", 'Oxford Legal Dictionary (1980+)', 'There is no single standard'], ans: 1, explain: "Black's Law Dictionary (1891+), now 12th edition. Premier US legal dictionary." }
           ]),
           crossLinkFooter('printLaw'),
           disclaimerFooter()
@@ -17783,7 +17783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (rSect === s.id); return h('button', { key: s.id, onClick: function() { setRSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreRomance', [
-            { q: 'Approximately what fraction of US fiction sales is romance?', opts: ['~5%', '~15%', '~25-30%', '~50%'], ans: 2, explain: 'Romance is ~25-30% of all US fiction sales — largest fiction category by units.' }
+            { q: 'Approximately what fraction of US fiction sales is romance?', opts: ['~5-10%', '~15-20%', '~25-30%', '~50-55%'], ans: 2, explain: 'Romance is ~25-30% of all US fiction sales — largest fiction category by units.' }
           ]),
           crossLinkFooter('genreRomance'),
           disclaimerFooter()
@@ -17851,7 +17851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (sfSect === s.id); return h('button', { key: s.id, onClick: function() { setSfSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreSciFi', [
-            { q: 'First author to win Hugo Best Novel 3 years in a row?', opts: ['Asimov', 'N.K. Jemisin (2016-18 Broken Earth)', 'Heinlein', 'Le Guin'], ans: 1, explain: 'N.K. Jemisin won the Hugo Award for Best Novel in 2016, 2017, + 2018 for the Broken Earth trilogy. First author ever to achieve this.' }
+            { q: 'First author to win Hugo Best Novel 3 years in a row?', opts: ['Isaac Asimov (1963-65 Foundation)', 'N.K. Jemisin (2016-18 Broken Earth)', 'Robert Heinlein (1960-62 Stranger)', 'Ursula K. Le Guin (1970-72 Earthsea)'], ans: 1, explain: 'N.K. Jemisin won the Hugo Award for Best Novel in 2016, 2017, + 2018 for the Broken Earth trilogy. First author ever to achieve this.' }
           ]),
           crossLinkFooter('genreSciFi'),
           disclaimerFooter()
@@ -17909,7 +17909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (mySect === s.id); return h('button', { key: s.id, onClick: function() { setMySect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('genreMystery', [
-            { q: 'Best-selling fiction author of all time?', opts: ['Shakespeare', 'Agatha Christie (~2 billion copies)', 'King', 'Rowling'], ans: 1, explain: 'Agatha Christie has sold approximately 2 billion copies. And Then There Were None (1939) is best-selling mystery novel ever.' }
+            { q: 'Best-selling fiction author of all time?', opts: ['William Shakespeare (~4 billion copies)', 'Agatha Christie (~2 billion copies)', 'Stephen King (~400 million copies)', 'J.K. Rowling (~600 million copies)'], ans: 1, explain: 'Agatha Christie has sold approximately 2 billion copies. And Then There Were None (1939) is best-selling mystery novel ever.' }
           ]),
           crossLinkFooter('genreMystery'),
           disclaimerFooter()
@@ -17972,7 +17972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (mdSect === s.id); return h('button', { key: s.id, onClick: function() { setMdSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('mangaDeep', [
-            { q: 'Best-selling comic series in any country/genre?', opts: ['Dragon Ball', 'One Piece (~525M)', 'Naruto', 'Akira'], ans: 1, explain: 'One Piece by Eiichiro Oda has sold ~525M copies since 1997.' }
+            { q: 'Best-selling comic series in any country/genre?', opts: ['Dragon Ball (~260M)', 'One Piece (~525M)', 'Naruto (~250M)', 'Akira (~35M)'], ans: 1, explain: 'One Piece by Eiichiro Oda has sold ~525M copies since 1997.' }
           ]),
           crossLinkFooter('mangaDeep'),
           disclaimerFooter()
@@ -18026,7 +18026,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (pbSect === s.id); return h('button', { key: s.id, onClick: function() { setPbSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('photoBooks', [
-            { q: 'Most important post-WWII photo book?', opts: ['Family of Man (1955)', 'The Americans (Frank, 1958)', 'Arbus Monograph (1972)', 'Decisive Moment (1952)'], ans: 1, explain: 'Robert Frank\'s The Americans (1958) is widely cited as the most important post-WWII photo book.' }
+            { q: 'Most important post-WWII photo book?', opts: ['The Family of Man (Steichen, 1955)', 'The Americans (Frank, 1958)', 'Diane Arbus: A Monograph (1972)', 'The Decisive Moment (Cartier-Bresson, 1952)'], ans: 1, explain: 'Robert Frank\'s The Americans (1958) is widely cited as the most important post-WWII photo book.' }
           ]),
           crossLinkFooter('photoBooks'),
           disclaimerFooter()
@@ -18085,7 +18085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
             sections.map(function(s) { var sel = (fzSect === s.id); return h('button', { key: s.id, onClick: function() { setFzSect(s.id); announce(s.label); }, style: btn({ padding: '8px 13px', fontSize: 12, background: sel ? T.accent : T.cardAlt, color: sel ? T.ink : T.text, borderColor: sel ? T.accent : T.border }) }, s.icon + ' ' + s.label); })),
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('fanzines', [
-            { q: 'When did first sci-fi fanzines appear?', opts: ['1900s', '1930 (The Comet)', '1950s', '1970s'], ans: 1, explain: 'The Comet (1930) is often cited as the first sci-fi fanzine. Chicago.' }
+            { q: 'When did first sci-fi fanzines appear?', opts: ['1900s (The Scientist)', '1930 (The Comet)', '1950s (Science Fantasy)', '1970s (Locus)'], ans: 1, explain: 'The Comet (1930) is often cited as the first sci-fi fanzine. Chicago.' }
           ]),
           crossLinkFooter('fanzines'),
           disclaimerFooter()
@@ -18139,7 +18139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('forgeries', [
             { q: 'How was the Vinland Map finally proven fake (2021)?',
-              opts: ['Carbon dating', 'Modern ink containing anatase TiO2 (invented 1923)', 'Eyewitness confession', 'Scribe handwriting analysis'],
+              opts: ['Carbon dating of the parchment placed it in the 20th century', 'Modern ink containing anatase TiO2 (invented 1923)', 'Eyewitness confession', 'Scribe handwriting analysis'],
               ans: 1, explain: 'Yale conservators in 2021 found the Vinland Map ink contained anatase titanium dioxide — a pigment not used commercially until 1923. The supposedly 15th-c. map was a 20th-c. forgery.' }
           ]),
           crossLinkFooter('forgeries'),
@@ -18253,7 +18253,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('bookplates', [
             { q: 'What does "ex libris" mean?',
-              opts: ['Extra library', 'From the books of (Latin) — used on ownership labels', 'Excellent library', 'Library bookmark'],
+              opts: ['Extra library: a duplicate copy held in reserve', 'From the books of (Latin) — used on ownership labels', 'Excellent library, a mark awarded to notable collections', 'Library bookmark, from the Latin for a place-marker'],
               ans: 1, explain: 'Ex libris is Latin for "from the books of." Used on bookplates indicating ownership ("Ex libris John Doe"). Adhesive ownership labels in this format have been used since ~1480.' }
           ]),
           crossLinkFooter('bookplates'),
@@ -18423,7 +18423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('diaryTradition', [
             { q: 'How was Samuel Pepys\'s diary (1660-1669) originally written?',
-              opts: ['Standard English', 'In a personal shorthand (decoded + published 19th c.)', 'In Latin', 'In code'],
+              opts: ['In standard English, in a plain secretary hand', 'In a personal shorthand (decoded + published 19th c.)', 'In Latin, as was usual for private papers of the period', 'In a numeric cipher of his own devising'],
               ans: 1, explain: 'Pepys kept his diary in a personal shorthand (Thomas Shelton\'s system). Decoded + published in 19th c. Records Great Fire of London 1666, Plague 1665, Restoration politics, personal life.' }
           ]),
           crossLinkFooter('diaryTradition'),
@@ -18536,7 +18536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pulpFiction', [
             { q: 'Which pulp magazine was premier for hardboiled detective fiction?',
-              opts: ['Astounding Stories', 'Black Mask (1920-1951)', 'Weird Tales', 'Argosy'],
+              opts: ['Astounding Stories (1930-1960)', 'Black Mask (1920-1951)', 'Weird Tales (1923-1954)', 'Argosy (1882-1978)'],
               ans: 1, explain: 'Black Mask (1920-1951) was the premier hardboiled detective magazine. Hammett, Chandler, Erle Stanley Gardner all published here. Defined American crime-fiction style.' }
           ]),
           crossLinkFooter('pulpFiction'),
@@ -18598,7 +18598,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pamphlets', [
             { q: 'Approximately how many copies did Thomas Paine\'s Common Sense sell?',
-              opts: ['~5,000', '~50,000', '~500,000 (in colonies of 2.5M)', '~5 million'],
+              opts: ['~5,000 (in colonies of 2.5M)', '~50,000 (in colonies of 2.5M)', '~500,000 (in colonies of 2.5M)', '~5 million (in colonies of 2.5M)'],
               ans: 2, explain: 'Common Sense (Jan 1776) sold approximately 500,000 copies in colonies of 2.5 million. Most influential American political pamphlet.' }
           ]),
           crossLinkFooter('pamphlets'),
@@ -18655,7 +18655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('greetingCards', [
             { q: 'Who commissioned + sold the first commercial Christmas card?',
-              opts: ['Charles Dickens', 'Henry Cole (London, 1843, 1,000 cards)', 'Queen Victoria', 'Hallmark'],
+              opts: ['Charles Dickens (London, 1843, 500 cards)', 'Henry Cole (London, 1843, 1,000 cards)', 'Queen Victoria (Windsor, 1840, 200 cards)', 'Hallmark (Kansas City, 1915)'],
               ans: 1, explain: 'Henry Cole commissioned + sold the first commercial Christmas card in London in 1843. 1,000 cards printed.' }
           ]),
           crossLinkFooter('greetingCards'),
@@ -18713,7 +18713,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('theMemoir', [
             { q: 'Which work is often cited as the first major Western autobiography?',
-              opts: ['Caesar\'s Commentaries', 'Augustine of Hippo, Confessions (~400 CE)', 'Marco Polo\'s Travels', 'Pepys\'s Diary'],
+              opts: ['Caesar\'s Commentaries (~50 BCE)', 'Augustine of Hippo, Confessions (~400 CE)', 'Marco Polo\'s Travels (~1300 CE, dictated)', 'Pepys\'s Diary (1660-1669 CE)'],
               ans: 1, explain: 'St. Augustine of Hippo\'s Confessions (~400 CE) is often cited as the first major Western autobiography. Religious confession + intellectual self-examination.' }
           ]),
           crossLinkFooter('theMemoir'),
@@ -18769,7 +18769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printSound', [
             { q: 'About how large is the US audiobook industry?',
-              opts: ['~$10M', '~$100M', '~$1.8B (2023)', '~$50B'],
+              opts: ['~$10M (2023)', '~$100M (2023)', '~$1.8B (2023)', '~$50B (2023)'],
               ans: 2, explain: 'US audiobook revenue was approximately $1.8B in 2023 (Audio Publishers Association). Has been growing ~20%/year for several years. Amazon\'s Audible dominates.' }
           ]),
           crossLinkFooter('printSound'),
@@ -18823,7 +18823,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('sermonsPrinted', [
             { q: 'How many sermons did Charles Spurgeon publish?',
-              opts: ['~10', '~100', '~1,000', '~3,500+'],
+              opts: ['~10 or so', '~100', '~1,000', '~3,500+'],
               ans: 3, explain: 'Charles Spurgeon (1834-1892) — "Prince of Preachers" — published over 3,500 sermons. His weekly printed sermons distributed globally during his lifetime, selling millions.' }
           ]),
           crossLinkFooter('sermonsPrinted'),
@@ -18878,7 +18878,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('spellingPuzzles', [
             { q: 'Who created the first modern crossword (Dec 21, 1913)?',
-              opts: ['New York Times', 'Arthur Wynne (NY World)', 'Will Shortz', 'Simon & Schuster'],
+              opts: ['The New York Times (1942)', 'Arthur Wynne (NY World)', 'Will Shortz (NYT, 1993)', 'Simon & Schuster (1924)'],
               ans: 1, explain: 'Arthur Wynne created "Word-Cross" (later crossword) for the NY World newspaper on December 21, 1913. Diamond-shaped, 32 clues. Considered first modern crossword.' }
           ]),
           crossLinkFooter('spellingPuzzles'),
@@ -18943,7 +18943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printCinema', [
             { q: 'Who ghostwrote the Star Wars (1976) novelization?',
-              opts: ['George Lucas himself', 'Alan Dean Foster (credited as Lucas)', 'Isaac Asimov', 'Frank Herbert'],
+              opts: ['George Lucas himself (credited as Lucas)', 'Alan Dean Foster (credited as Lucas)', 'Isaac Asimov (credited as Lucas)', 'Frank Herbert'],
               ans: 1, explain: 'Alan Dean Foster ghostwrote the Star Wars novelization in 1976 (months before the film), credited as Lucas. Foster became the master novelizer of the 1970s-90s era. Star Wars novelization established the movie-novelization tradition.' }
           ]),
           crossLinkFooter('printCinema'),
@@ -19000,7 +19000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printAstronomy', [
             { q: 'Whose star catalog was standard for 1,400 years?',
-              opts: ['Hipparchus', 'Ptolemy\'s Almagest (~150 CE, 1,022 stars)', 'Bayer\'s Uranometria', 'Messier\'s Catalogue'],
+              opts: ['Hipparchus (~130 BCE, ~850 stars)', 'Ptolemy\'s Almagest (~150 CE, 1,022 stars)', 'Bayer\'s Uranometria (1603, about 1,200 stars)', 'Messier\'s Catalogue (1774, 110 objects)'],
               ans: 1, explain: 'Ptolemy\'s Almagest (~150 CE) catalogued 1,022 stars. Standard for 1,400 years. Preserved + extended by Persian + Arabic scholars (Al-Sufi\'s Book of Fixed Stars 964 CE).' }
           ]),
           crossLinkFooter('printAstronomy'),
@@ -19114,7 +19114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('travelLit', [
             { q: 'Who is the most-traveled person of the medieval era?',
-              opts: ['Marco Polo', 'Ibn Battuta (~75,000 miles over 30 years)', 'Vasco da Gama', 'Magellan'],
+              opts: ['Marco Polo (~15,000 miles over 24 years)', 'Ibn Battuta (~75,000 miles over 30 years)', 'Vasco da Gama (~24,000 miles over 2 years)', 'Magellan (~37,000 miles over 3 years)'],
               ans: 1, explain: 'Ibn Battuta (1304-1369) traveled ~75,000 miles over 30 years across the Islamic world + China + Africa. His Rihla (1355) documents the journey. Most-traveled person of medieval era.' }
           ]),
           crossLinkFooter('travelLit'),
@@ -19170,7 +19170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printMath', [
             { q: 'What is the second most-printed book in Western history (after the Bible)?',
-              opts: ['Newton\'s Principia', 'Euclid\'s Elements (~300 BCE)', 'Plato\'s Republic', 'Hamlet'],
+              opts: ['Newton\'s Principia (1687 CE)', 'Euclid\'s Elements (~300 BCE)', 'Plato\'s Republic (~375 BCE)', 'Hamlet (~1600 CE)'],
               ans: 1, explain: 'Euclid\'s Elements (~300 BCE) is the second most-printed + most-translated work in Western history after the Bible. Standard geometry text for 2,000+ years.' }
           ]),
           crossLinkFooter('printMath'),
@@ -19286,7 +19286,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('webcomics', [
             { q: 'Who created xkcd webcomic (2005+)?',
-              opts: ['Mike Krahulik', 'Randall Munroe', 'Jeph Jacques', 'Allie Brosh'],
+              opts: ['Mike Krahulik (Penny Arcade)', 'Randall Munroe', 'Jeph Jacques (Questionable Content)', 'Allie Brosh (Hyperbole and a Half)'],
               ans: 1, explain: 'Randall Munroe created xkcd in 2005. Stick-figure math + science + relationship + xkcd-style humor. Massive readership. Also written several popular books (What If?, Thing Explainer).' }
           ]),
           crossLinkFooter('webcomics'),
@@ -19343,7 +19343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pictureBookDeep', [
             { q: 'Why are most picture books 32 pages?',
-              opts: ['Industry tradition only', 'A standard signature folds to 32 pages (8 sheets × 4 panels per sheet)', 'Children\'s attention span', 'Federal regulations'],
+              opts: ['Industry tradition only, with no manufacturing reason behind the number at all', 'A standard signature folds to 32 pages (8 sheets × 4 panels per sheet)', 'Children\'s attention span, which research put at about 32 pages', 'Federal regulations governing books sold to schools and libraries'],
               ans: 1, explain: 'A standard print signature folds to 32 pages (8 sheets × 4 panels per sheet = 32 pages). Picture-book printers price by signature. Two signatures = 64 pages. Format is essentially fixed by binding economics.' }
           ]),
           crossLinkFooter('pictureBookDeep'),
@@ -19391,7 +19391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('poetryMags', [
             { q: 'Which magazine first published T.S. Eliot\'s "The Love Song of J. Alfred Prufrock" (1915)?',
-              opts: ['The New Yorker', 'Poetry magazine (Chicago, 1912+)', 'Atlantic Monthly', 'The Dial'],
+              opts: ['The New Yorker magazine (New York, 1925+)', 'Poetry magazine (Chicago, 1912+)', 'Atlantic Monthly magazine (Boston, 1857+)', 'The Dial (Chicago, 1880+)'],
               ans: 1, explain: 'Poetry magazine (Chicago) published "The Love Song of J. Alfred Prufrock" in 1915. Major Modernist poetry venue. Founded 1912 by Harriet Monroe. Still publishing today.' }
           ]),
           crossLinkFooter('poetryMags'),
@@ -19448,7 +19448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('pulpCovers', [
             { q: 'Who painted iconic 1960s-70s Conan paperback covers + influenced subsequent fantasy art?',
-              opts: ['Frank R. Paul', 'Frank Frazetta (1928-2010)', 'Virgil Finlay', 'Norman Rockwell'],
+              opts: ['Frank R. Paul (1884-1963)', 'Frank Frazetta (1928-2010)', 'Virgil Finlay (1914-1971)', 'Norman Rockwell (1894-1978)'],
               ans: 1, explain: 'Frank Frazetta painted iconic Conan paperback covers in the 1960s-70s. Defined visual vocabulary of modern fantasy + sci-fi art. Direct heir of pulp-magazine cover tradition. Massive influence on D&D + fantasy gaming illustration + modern fantasy book covers.' }
           ]),
           crossLinkFooter('pulpCovers'),
@@ -19500,7 +19500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printRadio', [
             { q: 'What was peak circulation of TV Guide (1970s)?',
-              opts: ['~1 million', '~17 million weekly', '~50 million', '~100 million'],
+              opts: ['~1 million weekly', '~17 million weekly', '~50 million weekly', '~100 million weekly'],
               ans: 1, explain: 'TV Guide had approximately 17 million weekly circulation at its 1970s peak — one of the largest weekly magazines in US history. Continues today in monthly print form + digital.' }
           ]),
           crossLinkFooter('printRadio'),
@@ -19557,7 +19557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printGarden', [
             { q: 'Which major US organic seed company is based in Maine?',
-              opts: ['Burpee', 'Johnny\'s Selected Seeds (Winslow ME) + Fedco Seeds (Clinton ME)', 'Park Seed', 'Baker Creek'],
+              opts: ['Burpee Seeds (Warminster, Pennsylvania)', 'Johnny\'s Selected Seeds (Winslow ME) + Fedco Seeds (Clinton ME)', 'Park Seed Company (Greenwood, South Carolina)', 'Baker Creek Heirloom Seeds (Mansfield, Missouri, founded in 1998)'],
               ans: 1, explain: 'Maine has two major US seed companies: Johnny\'s Selected Seeds (Winslow, 1973+) + Fedco Seeds (Clinton cooperative, 1978+). Both major organic + heirloom seed sources nationally. Their annual catalogs are eagerly anticipated by gardeners.' }
           ]),
           crossLinkFooter('printGarden'),
@@ -19613,7 +19613,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('forensicDocs', [
             { q: 'How did Yale conservators prove the Vinland Map a forgery in 2021?',
-              opts: ['Carbon dating', 'Spectroscopy identified modern titanium dioxide (anatase) in ink (invented 1923)', 'Eyewitness confession', 'Watermark analysis'],
+              opts: ['Carbon dating of the parchment placed the sheet firmly in the 20th century', 'Spectroscopy identified modern titanium dioxide (anatase) in ink (invented 1923)', 'An eyewitness confession from the dealer who had originally sold the map to the university', 'Watermark analysis matched the sheet to a 20th-century European paper mill'],
               ans: 1, explain: 'Yale conservators in 2021 used spectroscopy to identify anatase titanium dioxide in the Vinland Map\'s ink. Anatase TiO2 was not used commercially as a pigment until 1923 — proving the supposedly 15th-c. map was a 20th-c. forgery.' }
           ]),
           crossLinkFooter('forensicDocs'),
@@ -19666,7 +19666,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('libraryBindery', [
             { q: 'What organization sets US library binding standards (1932-)?',
-              opts: ['American Library Association', 'Library Binding Institute (LBI)', 'Library of Congress', 'No standards exist'],
+              opts: ['The American Library Association (ALA)', 'Library Binding Institute (LBI)', 'The Library of Congress (LoC)', 'No formal standards exist'],
               ans: 1, explain: 'Library Binding Institute (LBI, 1932-) sets US library binding standards. LBI standard binding designed for hundreds of circulations over 20+ years — substantially more durable than publisher\'s bindings.' }
           ]),
           crossLinkFooter('libraryBindery'),
@@ -19839,7 +19839,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('printingPress'
           h('div', { style: { background: T.card, border: '1px solid ' + T.border, borderRadius: 12, padding: 20, marginBottom: 14 } }, content),
           miniQuizBlock('printZoology', [
             { q: 'Who invented the modern field guide (1934)?',
-              opts: ['John James Audubon', 'Roger Tory Peterson (A Field Guide to the Birds)', 'David Sibley', 'Maria Sibylla Merian'],
+              opts: ['John James Audubon (Birds of America, 1827)', 'Roger Tory Peterson (A Field Guide to the Birds)', 'David Sibley (The Sibley Guide to Birds, 2000 edition)', 'Maria Sibylla Merian (Metamorphosis, 1705)'],
               ans: 1, explain: 'Roger Tory Peterson published A Field Guide to the Birds in 1934. Revolutionary format: standardized illustrations with arrows pointing to identifying features. Compact size. Defined the field guide genre. Peterson Field Guides series expanded to dozens of titles + remains in print.' }
           ]),
           crossLinkFooter('printZoology'),

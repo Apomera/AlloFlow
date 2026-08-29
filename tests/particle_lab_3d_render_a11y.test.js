@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, ReactDOMClient, loadTool, makeCtx, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -41,15 +41,38 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
     if (host) host.remove();
   });
 
-  it('renders the actual canvas as the single focusable interactive chamber', () => {
-    const canvas = host.querySelector('canvas[role="application"]');
-    expect(canvas).not.toBeNull();
-    expect(canvas.tabIndex).toBe(0);
-    expect(canvas.getAttribute('aria-roledescription')).toBe('Interactive 3D particle chamber');
-    expect(canvas.getAttribute('aria-describedby')).toBe('particle-chamber-help');
-    expect(host.querySelector('#particle-chamber-help')?.textContent).toContain('keyboard alternatives');
-    expect(canvas.parentElement.getAttribute('role')).toBeNull();
-    expect(canvas.className).toContain('focus-visible:outline-cyan-200');
+  it('keeps the loading canvas non-tabbable and restores its interactive ready state', () => {
+    const loadingStage = host.querySelector('#particle-stage');
+    const loadingCanvas = host.querySelector('canvas[role="application"]');
+    expect(loadingCanvas).not.toBeNull();
+    expect(loadingStage.getAttribute('aria-busy')).toBe('true');
+    expect(loadingCanvas.tabIndex).toBe(-1);
+    expect(loadingCanvas.getAttribute('aria-hidden')).toBe('true');
+
+    const previousThree = window.THREE;
+    try {
+      window.THREE = { OrbitControls: function OrbitControls() {} };
+      resetStemLab();
+      loadTool('stem_lab/stem_tool_particlelab3d.js', 'particleLab3d');
+      const readyMarkup = renderTool('particleLab3d', { particleLab3d: {} });
+      const readyHost = document.createElement('div');
+      readyHost.innerHTML = readyMarkup;
+      const readyStage = readyHost.querySelector('#particle-stage');
+      const readyCanvas = readyHost.querySelector('canvas[role="application"]');
+      expect(readyCanvas).not.toBeNull();
+      expect(readyHost.querySelectorAll('canvas[role="application"]')).toHaveLength(1);
+      expect(readyStage.getAttribute('aria-busy')).toBe('false');
+      expect(readyCanvas.tabIndex).toBe(0);
+      expect(readyCanvas.hasAttribute('aria-hidden')).toBe(false);
+      expect(readyCanvas.getAttribute('aria-roledescription')).toBe('Interactive 3D particle chamber');
+      expect(readyCanvas.getAttribute('aria-describedby')).toBe('particle-chamber-help');
+      expect(readyHost.querySelector('#particle-chamber-help')?.textContent).toContain('keyboard alternatives');
+      expect(readyCanvas.parentElement.getAttribute('role')).toBeNull();
+      expect(readyCanvas.className).toContain('focus-visible:outline-cyan-200');
+    } finally {
+      if (previousThree === undefined) delete window.THREE;
+      else window.THREE = previousThree;
+    }
   });
 
   it('does not activate a character shortcut outside the focused canvas', async () => {

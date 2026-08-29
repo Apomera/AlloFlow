@@ -531,7 +531,7 @@
         'aria-label': __alloT('stem.organismid.aria_details_for', 'Details for') + ' ' + node.name,
         style: { background: C.panel, borderColor: C.border, color: C.text }
       },
-        h('h3', { className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
+        h('h2', { className: 'oid-detail-name' + (node.rank === 'genus' ? ' is-latin' : '') }, node.name),
         h('p', { className: 'oid-detail-rank', style: { color: C.muted } },
           (RANK_LABEL[node.rank] || node.rank) + (node.common ? ' · ' + node.common : '')),
 
@@ -546,7 +546,7 @@
         node.note ? h('p', { className: 'oid-note', style: { background: C.raised, borderColor: C.border } }, node.note) : null,
 
         node.ex && node.ex.length ? h('div', { className: 'oid-detail-block' },
-          h('h4', null, __alloT('stem.organismid.species_in_genus', 'Species in this genus')),
+          h('h3', null, __alloT('stem.organismid.species_in_genus', 'Species in this genus')),
           h('ul', { className: 'oid-species-list' }, node.ex.map(function (pair) {
             return h('li', { key: pair[0] },
               h('span', { className: 'is-latin' }, pair[0]),
@@ -555,7 +555,7 @@
         ) : null,
 
         siblings.length ? h('div', { className: 'oid-detail-block' },
-          h('h4', null, __alloT('stem.organismid.confused_with', 'Confused with')),
+          h('h3', null, __alloT('stem.organismid.confused_with', 'Confused with')),
           h('ul', { className: 'oid-species-list' }, siblings.map(function (sib) {
             return h('li', { key: sib.name },
               h('button', {
@@ -568,7 +568,7 @@
         ) : null,
 
         h('div', { className: 'oid-detail-block' },
-          h('h4', null, __alloT('stem.organismid.where_it_sits', 'Where it sits')),
+          h('h3', null, __alloT('stem.organismid.where_it_sits', 'Where it sits')),
           h('ol', { className: 'oid-lineage' }, chain.map(function (step, i) {
             var isLast = i === chain.length - 1;
             return h('li', { key: step.name, style: { color: isLast ? C.text : C.muted } },
@@ -621,7 +621,7 @@
             key: tier, className: 'oid-catblock',
             style: { background: C.panel, borderColor: C.border, borderLeftColor: color, color: C.text }
           },
-            h('h3', null,
+            h('h2', null,
               h('span', { className: 'oid-badge', style: { color: color, borderColor: color } }, tier),
               h('span', null, TIER_LABEL[tier])),
             h('p', { className: 'oid-cat-desc', style: { color: C.muted } }, TIER_BLURB[tier]),
@@ -680,7 +680,7 @@
             key: section.title, className: 'oid-expcard',
             style: { background: C.panel, borderColor: C.border, color: C.text }
           },
-            h('h3', { className: 'oid-exp-heading' },
+            h('h2', { className: 'oid-exp-heading' },
               h('button', {
                 type: 'button', className: 'oid-exp-head',
                 'aria-expanded': isOpen,
@@ -703,7 +703,7 @@
           );
         })),
         h('div', { className: 'oid-ladder-card', style: { background: C.panel, borderColor: C.border, color: C.text } },
-          h('h3', null, __alloT('stem.organismid.ladder_title', 'The seven ranks, narrowing')),
+          h('h2', null, __alloT('stem.organismid.ladder_title', 'The seven ranks, narrowing')),
           h('ol', { className: 'oid-ladder' }, RANK_LADDER.map(function (rank, i) {
             var width = 100 - (i * 12);
             return h('li', { key: rank },
@@ -732,7 +732,7 @@
           className: 'oid-pending',
           style: { background: C.panel, borderColor: C.border, borderLeftColor: C.CONTACT, color: C.text }
         },
-          h('h3', null, __alloT('stem.organismid.photo_pending_title', 'Photo identification is not switched on yet')),
+          h('h2', null, __alloT('stem.organismid.photo_pending_title', 'Photo identification is not switched on yet')),
           h('p', { style: { color: C.muted } },
             __alloT('stem.organismid.photo_pending_body', 'The identification engine is built and tested: a photograph goes in, and a ranked list of candidates comes back with a confidence ladder, verified GBIF and Wikipedia links, and warnings that fire on how bad a mistake would be rather than on how sure the model feels.')),
           h('p', { style: { color: C.muted } },

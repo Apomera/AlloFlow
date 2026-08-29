@@ -60,7 +60,7 @@ describe('world-space simulation consistency', () => {
     expect(RR.canShiftDriveGear(Infinity)).toBe(false);
   });
 
-  it('starts formal evaluation time at the belt checkpoint and clamps invalid input', () => {
+  it('starts formal evaluation time at its armed checkpoint and clamps invalid input', () => {
     expect(RR.evaluationElapsedSeconds(null, 10)).toBe(0);
     expect(RR.evaluationElapsedSeconds({ startedAtSim: null }, 10)).toBe(0);
     expect(RR.evaluationElapsedSeconds({ startedAtSim: 5 }, 5)).toBe(0);
@@ -70,11 +70,235 @@ describe('world-space simulation consistency', () => {
   });
 
   it('holds a parked startup world until belt and mirror setup are complete', () => {
+    expect(RR.startupSequenceActive(false, 20, 4)).toBe(true);
+    expect(RR.startupSequenceActive(true, 3.9, 4)).toBe(true);
+    expect(RR.startupSequenceActive(true, 4, 4)).toBe(false);
     expect(RR.shouldHoldStartupWorld(false, 20, 4, 'P')).toBe(true);
     expect(RR.shouldHoldStartupWorld(true, 3.9, 4, 'P')).toBe(true);
     expect(RR.shouldHoldStartupWorld(true, 4, 4, 'P')).toBe(false);
+    expect(RR.shouldHoldStartupWorld(true, 4, 4, 'P', true)).toBe(true);
     expect(RR.shouldHoldStartupWorld(true, 3, 4, 'D')).toBe(false);
     expect(RR.shouldHoldStartupWorld(true, Infinity, 4, 'P')).toBe(false);
+  });
+
+  it('requires neutral after a held startup input and preserves gamepad edge latches on pause', () => {
+    expect(RR.startupMovementInputActive(0, 0, 0, 0, 0)).toBe(false);
+    expect(RR.startupMovementInputActive(1, 0, 0, 0, 0)).toBe(true);
+    expect(RR.startupMovementInputActive(0, 1, 0, 0, 0)).toBe(true);
+    expect(RR.startupMovementInputActive(0, 0, 1, 0, 0)).toBe(true);
+    expect(RR.startupMovementInputActive(0, 0, 0, 1, 0)).toBe(true);
+    expect(RR.startupMovementInputActive(0, 0, 0, 0, -0.11)).toBe(true);
+    expect(RR.startupMovementInputActive(0.05, 0.05, 0.05, 0.05, 0.1)).toBe(false);
+
+    const cleared = RR.clearDrivingMovementInputs({
+      w: true, arrowleft: true, _gpSteer: -0.8, _gpThrottle: 1, _gpBrake: 0.4,
+      _gpStart: true, _gpA: true, _gpRight: false,
+    });
+    expect(cleared.w).toBeUndefined();
+    expect(cleared.arrowleft).toBeUndefined();
+    expect(cleared).toMatchObject({
+      _gpSteer: 0, _gpThrottle: 0, _gpBrake: 0,
+      _gpStart: true, _gpA: true, _gpRight: false,
+    });
+  });
+
+  it('does not blame the learner when a moving rider contacts a stationary vehicle', () => {
+    expect(RR.vulnerableRoadUserImpactAttribution(0, 4)).toBe('road_user');
+    expect(RR.vulnerableRoadUserImpactAttribution(0.5, -4)).toBe('road_user');
+    expect(RR.vulnerableRoadUserImpactAttribution(0.51, 4)).toBe('learner');
+    expect(RR.vulnerableRoadUserImpactAttribution(-2, 0)).toBe('learner');
+    expect(RR.vulnerableRoadUserImpactAttribution(0, 0.5)).toBe('none');
+  });
+
+  it('attributes rider impacts by who is moving toward the contact point', () => {
+    const player = { x: 0, y: 0, heading: 0, speed: 0 };
+    const trailingRider = { x: -4, y: 0, heading: 0, speed: 4 };
+    expect(RR.roadUserImpactClosingState(player, trailingRider))
+      .toMatchObject({ attribution: 'road_user', closingSpeed: 4 });
+
+    player.speed = 1;
+    expect(RR.roadUserImpactClosingState(player, trailingRider))
+      .toMatchObject({ attribution: 'road_user', closingSpeed: 3 });
+
+    const riderAhead = { x: 4, y: 0, heading: 0, speed: 1 };
+    player.speed = 4;
+    expect(RR.roadUserImpactClosingState(player, riderAhead))
+      .toMatchObject({ attribution: 'learner', closingSpeed: 3 });
+
+    player.speed = -2;
+    trailingRider.speed = 0;
+    expect(RR.roadUserImpactClosingState(player, trailingRider))
+      .toMatchObject({ attribution: 'learner', closingSpeed: 2 });
+
+    player.speed = 4;
+    const oncoming = { x: 4, y: 0, heading: Math.PI, speed: 4 };
+    expect(RR.roadUserImpactClosingState(player, oncoming))
+      .toMatchObject({ attribution: 'learner', closingSpeed: 8 });
+
+    player.speed = -2;
+    riderAhead.speed = 2;
+    expect(RR.roadUserImpactClosingState(player, riderAhead).attribution)
+      .toBe('none');
+  });
+
+  it('treats a stopped learner vehicle as a solid non-fault obstacle', () => {
+    expect(RR.movingRoadUserBlockedByStoppedVehicle(0, 0.6, true, 1)).toBe(true);
+    expect(RR.movingRoadUserBlockedByStoppedVehicle(1, 1.6, true, 1)).toBe(true);
+    expect(RR.movingRoadUserBlockedByStoppedVehicle(1.01, 1.6, true, 1)).toBe(false);
+    expect(RR.movingRoadUserBlockedByStoppedVehicle(0, 0, true, 1)).toBe(false);
+    expect(RR.movingRoadUserBlockedByStoppedVehicle(0, 1.6, false, 1)).toBe(false);
+  });
+
+  it('gives motorcycles a larger safe-start reaction buffer than bicycles', () => {
+    expect(RR.vulnerableRoadUserStartupClearance('cyclist', true))
+      .toEqual({ radius: 30, push: 35 });
+    expect(RR.vulnerableRoadUserStartupClearance('motorcycle', true))
+      .toEqual({ radius: 50, push: 52 });
+    expect(RR.vulnerableRoadUserStartupClearance('motorcycle', false))
+      .toEqual({ radius: 8, push: 12 });
+  });
+
+  it('keeps closing road-user respawns reaction-safe inside the streamed world', () => {
+    const motorcycle = { type: 'motorcycle', speed: 65 * RR.MPH_TO_MS };
+    const respawnMin = RR.vulnerableRoadUserClosingRespawnMin(
+      motorcycle, 'school_bus', 51.6);
+    const bodyClearance = (
+      RR.vehicleFootprint('school_bus').length +
+      RR.vulnerableRoadUserFootprint(motorcycle).length
+    ) * 0.5;
+
+    expect(respawnMin).toBeLessThanOrEqual(51.6);
+    expect((respawnMin - bodyClearance) / motorcycle.speed)
+      .toBeGreaterThanOrEqual(1.5);
+    expect(RR.vulnerableRoadUserClosingRespawnMin(
+      { type: 'cyclist', speed: 16 * RR.MPH_TO_MS }, 'sedan', 51.6))
+      .toBe(18);
+  });
+
+  it('makes riders brake behind stopped and same-flow learner vehicles', () => {
+    const stoppedLead = RR.vulnerableRoadUserFollowingControl(
+      15, 0, 0, -1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle');
+    expect(stoppedLead).toMatchObject({
+      holdGap: 4.825, corridorClearance: 1.46,
+      following: true, braking: true,
+    });
+    expect(stoppedLead.targetSpeed)
+      .toBeCloseTo(Math.sqrt(2 * 5.5 * (15 - 4.825)), 8);
+
+    const atHoldGap = RR.vulnerableRoadUserFollowingControl(
+      4.825, 0, 0, -1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle');
+    expect(atHoldGap.targetSpeed).toBe(0);
+
+    const sameFlow = RR.vulnerableRoadUserFollowingControl(
+      4.825, 0, 8, 1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle');
+    expect(sameFlow).toMatchObject({ following: true, braking: true });
+    expect(sameFlow.targetSpeed).toBe(8);
+
+    const separateLane = RR.vulnerableRoadUserFollowingControl(
+      4.825, 1.46, 0, -1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle');
+    expect(separateLane).toMatchObject({
+      targetSpeed: 12, following: false, braking: false,
+    });
+    const movingConflict = RR.vulnerableRoadUserFollowingControl(
+      4.825, 0, 2, -1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle');
+    expect(movingConflict.following).toBe(false);
+
+    const stepBuffered = RR.vulnerableRoadUserFollowingControl(
+      15, 0, 0, -1, 12, 4.5, 2.15, 1.8, 0.82, 'motorcycle', 0.1);
+    expect(stepBuffered.holdGap).toBeCloseTo(6.025, 8);
+    expect(stepBuffered.targetSpeed).toBeLessThan(stoppedLead.targetSpeed);
+  });
+
+  it('gives ordinary traffic an early, body-safe following envelope', () => {
+    const stoppedLead = RR.trafficFollowingControl(
+      20, 0, 0, 12, 4.5, 4.5, 1.8, 1.8);
+    expect(stoppedLead).toMatchObject({
+      holdGap: 6, corridorClearance: 2.05,
+      following: true, braking: true,
+    });
+    expect(stoppedLead.targetSpeed).toBeCloseTo((20 - 6) / 1.5, 8);
+
+    const atHoldGap = RR.trafficFollowingControl(
+      6, 0, 0, 12, 4.5, 4.5, 1.8, 1.8);
+    expect(atHoldGap.targetSpeed).toBe(0);
+    expect(RR.trafficFollowingControl(
+      6, 0, 8, 12, 4.5, 4.5, 1.8, 1.8).targetSpeed).toBe(8);
+    expect(RR.trafficFollowingControl(
+      6, 2.05, 0, 12, 4.5, 4.5, 1.8, 1.8))
+      .toMatchObject({ targetSpeed: 12, following: false, braking: false });
+    expect(RR.trafficFollowingControl(
+      0, 0, 0, 12, 4.5, 4.5, 1.8, 1.8).following).toBe(false);
+    expect(RR.trafficFollowingControl(
+      20, 0, 0, 12, 10, 4.5, 2.5, 1.8).holdGap).toBe(8.75);
+
+    const stepBuffered = RR.trafficFollowingControl(
+      20, 0, 0, 12, 4.5, 4.5, 1.8, 1.8, 0.1);
+    expect(stepBuffered.holdGap).toBeCloseTo(7.2, 8);
+    expect(stepBuffered.targetSpeed).toBeLessThan(stoppedLead.targetSpeed);
+
+    let gap = 50;
+    let speed = 12;
+    for (let frame = 0; frame < 600; frame++) {
+      const control = RR.trafficFollowingControl(
+        gap, 0, 0, 12, 4.5, 4.5, 1.8, 1.8, 1 / 60);
+      speed = Math.min(speed, control.targetSpeed);
+      gap -= speed / 60;
+    }
+    expect(speed).toBeLessThan(0.1);
+    expect(gap).toBeGreaterThanOrEqual(6);
+  });
+
+  it('keeps emergency responders at a body-safe following gap until passing is clear', () => {
+    const stoppedLead = RR.emergencyFollowingControl(
+      -20, 0, 0, 30, 4.5, 5.5, 1.8, 2);
+    expect(stoppedLead).toMatchObject({
+      holdGap: 5.75, passClearance: 2.1, following: true, braking: true,
+    });
+    expect(stoppedLead.targetSpeed)
+      .toBeCloseTo(Math.sqrt(2 * 6.5 * (20 - 5.75)), 8);
+
+    const atHoldGap = RR.emergencyFollowingControl(
+      -5.75, 0, 0, 30, 4.5, 5.5, 1.8, 2);
+    expect(atHoldGap.targetSpeed).toBe(0);
+    expect(RR.emergencyFollowingControl(
+      -5.75, 0, 10, 30, 4.5, 5.5, 1.8, 2).targetSpeed).toBe(10);
+    expect(RR.emergencyFollowingControl(
+      -5.75, 0, -3, 30, 4.5, 5.5, 1.8, 2).targetSpeed).toBe(0);
+
+    const safePass = RR.emergencyFollowingControl(
+      -5.75, 2.1, 0, 30, 4.5, 5.5, 1.8, 2);
+    expect(safePass).toMatchObject({
+      targetSpeed: 30, passClearance: 2.1, following: false, braking: false,
+    });
+    expect(RR.emergencyFollowingControl(
+      0, 0, 0, 30, 4.5, 5.5, 1.8, 2).following).toBe(false);
+    expect(RR.emergencyFollowingControl(
+      -20, 0, 0, 30, 10, 5.5, 2.5, 2).holdGap).toBe(8.5);
+
+    const stepBuffered = RR.emergencyFollowingControl(
+      -20, 0, 0, 30, 4.5, 5.5, 1.8, 2, 0.1);
+    expect(stepBuffered.holdGap).toBeCloseTo(8.75, 8);
+    expect(stepBuffered.targetSpeed).toBeLessThan(stoppedLead.targetSpeed);
+  });
+
+  it('credits an actual right-shoulder stop, not a travel-lane stop', () => {
+    const profile = { roadHalfWidth: 3.5, shoulderWidth: 0.6 };
+    const laneCenter = RR.nearestAuthoredTrafficLaneOffset(profile, -1, 2);
+    const laneStop = RR.emergencyPullOverAssessment(
+      profile, -1, laneCenter, laneCenter, 0);
+    expect(laneStop).toMatchObject({ pulledRight: false, stopped: true, safe: false });
+
+    const shoulderStop = RR.emergencyPullOverAssessment(
+      profile, -1, laneCenter, 3.2, 0.2);
+    expect(shoulderStop).toMatchObject({ pulledRight: true, stopped: true, safe: true });
+    expect(shoulderStop.rightwardProgress)
+      .toBeGreaterThanOrEqual(shoulderStop.requiredProgress);
+
+    const rollingShoulder = RR.emergencyPullOverAssessment(
+      profile, -1, laneCenter, 3.2, 0.5);
+    expect(rollingShoulder).toMatchObject({ pulledRight: true, stopped: false, safe: false });
+    expect(RR.vehicleFootprint('firetruck')).toEqual({ length: 7.5, width: 2.4 });
+    expect(RR.emergencyVehicleFootprintType('firetruck')).toBe('firetruck');
   });
 
   it('computes a true time gap and weather-aware following target', () => {
@@ -128,7 +352,7 @@ describe('world-space simulation consistency', () => {
     expect(RR.pointOverlapsVehicle(vehicle, size, { x: 0, y: 2.6 }, 0.25)).toBe(false);
     expect(RR.pointOverlapsVehicle(vehicle, size, { x: 1.1, y: 0 }, 0.25)).toBe(true);
     expect(RR.pointOverlapsVehicle(vehicle, size, { x: 1.2, y: 0 }, 0.25)).toBe(false);
-    expect(RR.emergencyVehicleFootprintType('firetruck')).toBe('truck');
+    expect(RR.emergencyVehicleFootprintType('firetruck')).toBe('firetruck');
     expect(RR.emergencyVehicleFootprintType('ambulance')).toBe('van');
     expect(RR.emergencyVehicleFootprintType('police')).toBe('car');
   });
@@ -191,6 +415,10 @@ describe('world-space simulation consistency', () => {
       { msg: 'Landmark ahead.', until: 6, priority: 0 }, 1)).toBe(critical);
     expect(RR.driveAlertAppearance('Collision ahead.').tone).toBe('critical');
     expect(RR.driveAlertAppearance('✓ Good full stop.').tone).toBe('success');
+    expect(RR.driveAlertBaseY(720, 101, false)).toBe(173);
+    expect(RR.driveAlertBaseY(720, 101, true)).toBe(317);
+    expect(RR.driveAlertBaseY(720, 101, true, true)).toBe(202);
+    expect(RR.driveAlertBaseY(360, 72, true)).toBe(159);
     const context = { measureText: text => ({ width: text.length * 8 }) };
     const lines = RR.canvasMessageLines(context,
       'This long safety instruction needs to remain readable on a narrow driving canvas.', 150, 2);
@@ -652,6 +880,16 @@ describe('physical road layouts', () => {
     RR.alignCyclistsToStreamedWorld(world, cyclists);
     expect(cyclists[0]._roadStation).toBe(12);
     expect(cyclists[0].y).toBeCloseTo(12 - cyclists[0]._bikeLane * Math.sin(heading), 8);
+
+    const motorcycleStart = RR.mainRoadWorldPoint(world, 14, 4.4);
+    const motorcycles = [{
+      x: motorcycleStart.x, y: motorcycleStart.y,
+      heading: -Math.PI / 2 - heading, type: 'motorcycle',
+    }];
+    RR.alignCyclistsToStreamedWorld(world, motorcycles);
+    expect(motorcycles[0]._bikeLane).toBeCloseTo(4.65, 8);
+    expect(motorcycles[0]._bikeLane)
+      .not.toBeCloseTo(RR.bicycleLaneOffsetFor(chunk, -1), 4);
   });
 
   it('changes Free Explore traffic density without resetting nearby or cross-street actors', () => {
@@ -1298,6 +1536,18 @@ describe('surface-dependent road physics', () => {
     expect(sidewalk.gripMultiplier).toBeLessThan(pavement.gripMultiplier);
     expect(grass.gripMultiplier).toBeLessThan(sidewalk.gripMultiplier);
     expect(grass.rollingMultiplier).toBeGreaterThan(sidewalk.rollingMultiplier);
+  });
+});
+
+describe('longitudinal force direction', () => {
+  it('keeps grade force world-correct in forward and reverse motion', () => {
+    expect(RR.longitudinalNetForce(0, 20, 0, 0)).toBe(0);
+    expect(RR.longitudinalNetForce(100, 20, 5, 0)).toBe(80);
+    expect(RR.longitudinalNetForce(100, 20, -5, 0)).toBe(120);
+    expect(RR.longitudinalNetForce(100, 20, 5, 10)).toBe(70);
+    expect(RR.longitudinalNetForce(100, 20, -5, 10)).toBe(110);
+    expect(RR.longitudinalNetForce(100, 20, 5, -10)).toBe(90);
+    expect(RR.longitudinalNetForce(100, 20, -5, -10)).toBe(130);
   });
 });
 

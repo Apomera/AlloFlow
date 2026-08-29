@@ -22065,6 +22065,7 @@ window.SelHub = window.SelHub || {
       // Navigation
       var activeTab     = d.activeTab || 'breathe';
       var soundEnabled  = d.soundEnabled != null ? d.soundEnabled : true;
+      var arrivalNeed   = ['overwhelmed', 'restless', 'foggy', 'disconnected', 'steady'].indexOf(d.arrivalNeed) >= 0 ? d.arrivalNeed : null;
 
       // ── Fixed hook block ──
       // render() runs inline inside the host's SelPluginBridge, so every hook
@@ -22285,10 +22286,11 @@ window.SelHub = window.SelHub || {
         { id: 'log',        label: '\uD83D\uDCCA Log' }
       ];
 
-      var tabBar = h('div', {         role: 'tablist', 'aria-label': 'Mindfulness tabs',
+      var tabBar = h('div', {
         style: { display: 'flex', gap: 2, padding: '10px 12px', borderBottom: '1px solid #334155', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }
       },
-        tabs.map(function(tab) {
+        h('div', { role: 'tablist', 'aria-label': 'Mindfulness tabs', style: { display: 'flex', gap: 2 } },
+          tabs.map(function(tab) {
           var isActive = activeTab === tab.id;
           return h('button', { 'aria-label': tab.label,
             key: tab.id,
@@ -22305,7 +22307,8 @@ window.SelHub = window.SelHub || {
               fontWeight: isActive ? 700 : 500, fontSize: 12, whiteSpace: 'nowrap', flexShrink: 0
             }
           }, tab.label);
-        }),
+          })
+        ),
         h('button', { 'aria-label': 'Sound effects', 'aria-pressed': !!soundEnabled,
           onClick: function() { upd('soundEnabled', !soundEnabled); },
           title: soundEnabled ? 'Mute sounds' : 'Enable sounds',
@@ -22424,6 +22427,46 @@ window.SelHub = window.SelHub || {
         );
       }
 
+      var mindfulnessArrivalOptions = [
+        {
+          id: 'overwhelmed', label: 'Overwhelmed', cue: 'Too much at once', icon: '\uD83C\uDF0A',
+          target: 'ground5421', practice: '5-4-3-2-1 grounding', duration: '2-4 min', color: '#22c55e',
+          reason: 'Use your senses to make the present moment more concrete.'
+        },
+        {
+          id: 'restless', label: 'Restless', cue: 'I need to move', icon: '\uD83C\uDFC3',
+          target: 'movement', practice: 'Mindful movement', duration: '2-5 min', color: '#f59e0b',
+          reason: 'Let attention travel with your body instead of asking it to become still.'
+        },
+        {
+          id: 'foggy', label: 'Foggy', cue: 'I need a reset', icon: '\uD83C\uDF2B\uFE0F',
+          target: 'breath_studio', practice: 'Breath Studio', duration: '1-3 min', color: '#3b82f6',
+          reason: 'A visible rhythm can add just enough structure to help you re-engage.'
+        },
+        {
+          id: 'disconnected', label: 'Disconnected', cue: 'I want to feel present', icon: '\uD83E\uDEC0',
+          target: 'body_scan_studio', practice: 'Body Scan Studio', duration: '3-6 min', color: '#ec4899',
+          reason: 'Reconnect through neutral body sensations, skipping any area that does not feel safe.'
+        },
+        {
+          id: 'steady', label: 'Steady', cue: 'I can practice quietly', icon: '\uD83C\uDF24\uFE0F',
+          target: 'bell_timer', practice: 'Bell Timer', duration: '5+ min', color: '#f97316',
+          reason: 'Use a simple container for a quieter, self-directed practice.'
+        }
+      ];
+      var selectedArrival = mindfulnessArrivalOptions.find(function(option) { return option.id === arrivalNeed; }) || null;
+
+      function chooseMindfulnessArrival(option) {
+        upd('arrivalNeed', option.id);
+        if (announceToSR) announceToSR(option.label + ' selected. Suggested practice: ' + option.practice + '.');
+      }
+
+      function openMindfulnessSuggestion(option) {
+        stopBreathTimer(); stopScanTimer();
+        upd({ activeTab: option.target, breathActive: false, breathPhase: null, scanActive: false });
+        if (soundEnabled) sfxClick();
+      }
+
       var mindfulnessLaunchPanel = h('section', {
         role: 'region',
         'aria-label': 'Mindfulness launch panel',
@@ -22432,10 +22475,14 @@ window.SelHub = window.SelHub || {
           padding: 16,
           borderRadius: 14,
           background: 'linear-gradient(135deg, rgba(139,92,246,0.14), rgba(14,165,233,0.08)), ' + _minBg('#1e293b'),
-          border: '1px solid ' + _minBg('#334155')
+          border: '1px solid ' + _minBg('#334155'),
+          position: 'relative', overflow: 'hidden',
+          boxShadow: '0 18px 44px rgba(2,6,23,0.2)'
         }
       },
-        h('div', { style: { display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
+        h('div', { 'aria-hidden': 'true', style: { position: 'absolute', width: 190, height: 190, borderRadius: '50%', top: -105, right: -42, background: 'radial-gradient(circle, rgba(167,139,250,0.24), rgba(167,139,250,0) 70%)', pointerEvents: 'none' } }),
+        h('div', { 'aria-hidden': 'true', style: { position: 'absolute', width: 150, height: 150, borderRadius: '50%', bottom: -96, left: -54, background: 'radial-gradient(circle, rgba(14,165,233,0.18), rgba(14,165,233,0) 70%)', pointerEvents: 'none' } }),
+        h('div', { style: { position: 'relative', zIndex: 1, display: 'flex', gap: 12, alignItems: 'flex-start', flexWrap: 'wrap', marginBottom: 12 } },
           h('div', { style: { flex: '1 1 260px' } },
             h('div', { style: { fontSize: 11, color: _minFg('#a78bfa'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: 4 } }, 'Mindfulness launch mat'),
             h('h3', { style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 20, fontWeight: 900, lineHeight: 1.2 } }, 'Pick a practice that matches your body right now.'),
@@ -22450,7 +22497,77 @@ window.SelHub = window.SelHub || {
             mindfulnessStat('practice log', practiceLog.length, '#a855f7')
           )
         ),
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
+        h('div', {
+          role: 'group',
+          'aria-labelledby': 'mindfulness-arrival-heading',
+          style: { position: 'relative', zIndex: 1, marginBottom: 12, padding: 12, borderRadius: 12, background: 'linear-gradient(145deg, rgba(15,23,42,0.9), rgba(30,41,59,0.82))', border: '1px solid ' + _minBg('#334155'), boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+            h('div', null,
+              h('h4', { id: 'mindfulness-arrival-heading', style: { margin: 0, color: _minFg('#f1f5f9'), fontSize: 14, fontWeight: 900 } }, 'How are you arriving?'),
+              h('p', { style: { margin: '3px 0 0', color: _minFg('#94a3b8'), fontSize: 11, lineHeight: 1.45 } }, 'Choose the closest fit. This is a suggestion, not a diagnosis.')
+            ),
+            arrivalNeed ? h('button', {
+              type: 'button',
+              onClick: function() { upd('arrivalNeed', null); },
+              style: { minHeight: 44, padding: '8px 12px', borderRadius: 9, border: '1px solid ' + _minBg('#334155'), background: 'transparent', color: _minFg('#cbd5e1'), fontSize: 11, fontWeight: 800, cursor: 'pointer' }
+            }, 'Clear check-in') : null
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(126px, 1fr))', gap: 8 } },
+            mindfulnessArrivalOptions.map(function(option) {
+              var isSelected = arrivalNeed === option.id;
+              return h('button', {
+                key: option.id,
+                type: 'button',
+                'aria-pressed': isSelected,
+                onClick: function() { chooseMindfulnessArrival(option); },
+                style: {
+                  minHeight: 72, padding: '9px 10px', borderRadius: 10,
+                  border: '1px solid ' + (isSelected ? option.color : _minBg('#334155')),
+                  background: isSelected ? option.color + '1f' : _minBg('#1e293b'),
+                  color: _minFg('#e2e8f0'), textAlign: 'left', cursor: 'pointer',
+                  display: 'flex', alignItems: 'stretch', gap: 7, position: 'relative', overflow: 'hidden',
+                  boxShadow: isSelected ? '0 8px 22px ' + option.color + '22' : 'none',
+                  transition: 'border-color 160ms ease, background 160ms ease, box-shadow 160ms ease'
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: { width: 3, minHeight: 42, alignSelf: 'stretch', borderRadius: 99, background: isSelected ? option.color : _minBg('#334155'), flexShrink: 0 } }),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 19, lineHeight: 1.2 } }, option.icon),
+                h('span', null,
+                  h('span', { style: { display: 'block', color: isSelected ? _minFg(option.color) : _minFg('#e2e8f0'), fontSize: 12, fontWeight: 900 } }, option.label),
+                  h('span', { style: { display: 'block', marginTop: 2, color: _minFg('#94a3b8'), fontSize: 10.5, lineHeight: 1.35 } }, option.cue)
+                ),
+                isSelected ? h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: 7, right: 8, width: 18, height: 18, borderRadius: '50%', display: 'grid', placeItems: 'center', background: option.color, color: '#ffffff', fontSize: 11, fontWeight: 900 } }, '\u2713') : null
+              );
+            })
+          ),
+          selectedArrival ? h('div', {
+            role: 'status', 'aria-live': 'polite',
+            style: { marginTop: 10, padding: 12, borderRadius: 12, border: '1px solid ' + selectedArrival.color + '66', background: 'linear-gradient(110deg, ' + selectedArrival.color + '1f, rgba(15,23,42,0.58))', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', boxShadow: '0 10px 26px rgba(2,6,23,0.16)' }
+          },
+            h('div', { style: { minWidth: 112, padding: '8px 10px', borderRadius: 10, background: 'rgba(15,23,42,0.58)', border: '1px solid ' + selectedArrival.color + '44' } },
+              h('div', { style: { color: _minFg('#94a3b8'), fontSize: 9.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'You noticed'),
+              h('div', { style: { marginTop: 4, color: _minFg(selectedArrival.color), fontSize: 12, fontWeight: 900 } },
+                h('span', { 'aria-hidden': 'true', style: { marginRight: 5 } }, selectedArrival.icon), selectedArrival.label
+              )
+            ),
+            h('span', { 'aria-hidden': 'true', style: { color: _minFg(selectedArrival.color), fontSize: 20, fontWeight: 300 } }, '\u2192'),
+            h('div', { style: { flex: '1 1 260px' } },
+              h('div', { style: { color: _minFg(selectedArrival.color), fontSize: 10.5, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Suggested practice'),
+              h('div', { style: { marginTop: 3, color: _minFg('#f1f5f9'), fontSize: 14, fontWeight: 900 } }, selectedArrival.practice),
+              h('p', { style: { margin: '3px 0 0', color: _minFg('#cbd5e1'), fontSize: 11, lineHeight: 1.45 } }, selectedArrival.reason)
+            ),
+            h('span', { style: { padding: '6px 9px', borderRadius: 999, background: selectedArrival.color + '22', border: '1px solid ' + selectedArrival.color + '55', color: _minFg(selectedArrival.color), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, selectedArrival.duration),
+            h('button', {
+              id: 'mindfulness-open-suggestion', type: 'button',
+              onClick: function() { openMindfulnessSuggestion(selectedArrival); },
+              'aria-label': 'Open suggested practice: ' + selectedArrival.practice,
+              style: { minHeight: 44, padding: '9px 14px', borderRadius: 10, border: '1px solid ' + selectedArrival.color, background: selectedArrival.color, color: '#ffffff', fontSize: 12, fontWeight: 900, cursor: 'pointer' }
+            }, 'Open ' + selectedArrival.practice)
+          ) : null
+        ),
+        h('div', { style: { position: 'relative', zIndex: 1, margin: '0 0 8px', color: _minFg('#cbd5e1'), fontSize: 11, fontWeight: 900 } }, 'Or choose any practice'),
+        h('div', { style: { position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 8 } },
           mindfulnessRouteCard('Breathe', 'Use the simplest pacer when you need quick regulation.', 'breathe', '#0ea5e9'),
           mindfulnessRouteCard('Body scan', 'Sweep attention through the body with a timer.', 'scan', '#ec4899'),
           mindfulnessRouteCard('Ground senses', 'Use 5-4-3-2-1 to return to the room.', 'ground', '#22c55e'),

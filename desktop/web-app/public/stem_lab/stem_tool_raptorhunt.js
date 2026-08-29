@@ -90,6 +90,72 @@
     '.rh-molt-timeline,.rh-molt-concepts,.rh-molt-directory{padding:14px;}.rh-molt-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:10px;}.rh-molt-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:15px;font-weight:900;}.rh-molt-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-molt-month-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:5px;}.rh-molt-month{position:relative;min-height:72px;padding:7px 4px;border:1px solid rgba(100,116,139,.5);border-radius:9px;background:rgba(2,6,23,.34);color:#94a3b8;text-align:center;overflow:hidden;}.rh-molt-month[data-active="true"]{border-color:rgba(125,211,252,.54);background:rgba(8,47,73,.28);color:#dbeafe;}.rh-molt-month[data-peak="true"]{box-shadow:inset 0 3px var(--rh-molt-accent);}.rh-molt-month[aria-pressed="true"]{border-color:#fff;background:rgba(30,64,175,.34);outline:2px solid var(--rh-molt-accent);outline-offset:2px;color:#fff;}.rh-molt-month-name{display:block;font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-molt-month-activity{display:block;margin-top:8px;color:inherit;font:800 7px/1.25 ui-monospace,Menlo,monospace;white-space:normal;}.rh-molt-month-dot{display:block;width:7px;height:7px;margin:7px auto 0;border-radius:50%;background:#475569;}.rh-molt-month[data-active="true"] .rh-molt-month-dot{background:var(--rh-molt-accent);}.rh-molt-month[data-peak="true"] .rh-molt-month-dot{box-shadow:0 0 0 3px rgba(125,211,252,.15);}.rh-molt-concept-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-molt-concept{min-width:0;padding:11px;border:1px solid rgba(100,116,139,.46);border-radius:10px;background:rgba(2,6,23,.34);}.rh-molt-concept-index{display:grid;place-items:center;width:25px;height:25px;border:1px solid var(--rh-molt-accent);border-radius:8px;color:var(--rh-molt-accent);font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-molt-concept strong{display:block;margin-top:8px;color:#f8fafc;font-size:10px;line-height:1.2;}.rh-molt-concept p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.48;}',
     '.rh-molt-directory-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}.rh-molt-card{display:grid;grid-template-columns:minmax(130px,.55fr) minmax(0,1fr);gap:10px;align-items:center;min-height:88px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.34);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-molt-card:hover{transform:translateY(-2px);border-color:var(--rh-molt-accent);background:rgba(30,41,59,.84);}.rh-molt-card[data-active="true"]{border-color:var(--rh-molt-accent);background:rgba(8,47,73,.3);box-shadow:inset 3px 0 var(--rh-molt-accent);}.rh-molt-card strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25;}.rh-molt-card-timing{display:block;margin-top:4px;color:var(--rh-molt-accent);font:900 8px/1.15 ui-monospace,Menlo,monospace;}.rh-molt-card-copy{display:block;color:#94a3b8;font-size:9px;line-height:1.42;}.rh-molt-card-months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:2px;margin-top:9px;}.rh-molt-card-month{height:7px;border-radius:2px;background:#334155;}.rh-molt-card-month[data-active="true"]{background:var(--rh-molt-accent);}.rh-molt-card-month[data-peak="true"]{outline:1px solid #fff;outline-offset:1px;}',
     '@media(max-width:980px){.rh-molt-workbench{grid-template-columns:1fr;}.rh-molt-detail-nav{margin-top:14px;}.rh-molt-month-grid{grid-template-columns:repeat(6,minmax(0,1fr));}.rh-molt-directory-grid{grid-template-columns:1fr;}}@media(max-width:720px){.rh-molt-hero{grid-template-columns:1fr;padding:16px;}.rh-molt-summary{max-width:245px;}.rh-molt-stage{min-height:240px;}.rh-molt-primary-controls{grid-template-columns:repeat(5,minmax(0,1fr));}.rh-molt-meters{grid-template-columns:1fr;}.rh-molt-concept-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-molt-plate-head{align-items:flex-start;}.rh-molt-phase-badge{max-width:46%;white-space:normal;line-height:1.25;text-align:center;}}@media(max-width:460px){.rh-molt-month-grid{grid-template-columns:repeat(4,minmax(0,1fr));}.rh-molt-concept-grid{grid-template-columns:1fr;}.rh-molt-card{grid-template-columns:1fr;}.rh-molt-stage{min-height:210px;}.rh-molt-stage-legend{right:8px;left:8px;justify-content:center;}.rh-molt-phase-controls{grid-template-columns:1fr 1fr;}.rh-molt-scrubber{grid-column:1/-1;grid-row:1;}.rh-molt-phase-controls button{grid-row:2;}}@media(prefers-reduced-motion:reduce){.rh-molt-species-tab,.rh-molt-primary,.rh-molt-card{transition:none!important;}.rh-molt-species-tab:hover,.rh-molt-card:hover{transform:none!important;}.rh-molt-primary-feather[data-status="growing"] .rh-molt-primary{animation:none!important;}}@media(forced-colors:active){.rh-molt-hero,.rh-molt-stat,.rh-molt-species-tab,.rh-molt-plate,.rh-molt-detail,.rh-molt-timeline,.rh-molt-concepts,.rh-molt-concept,.rh-molt-directory,.rh-molt-card,.rh-molt-month,.rh-molt-status-card,.rh-molt-month-read,.rh-molt-question,.rh-molt-stage-legend{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-molt-kicker,.rh-molt-title,.rh-molt-copy,.rh-molt-stat strong,.rh-molt-stat span,.rh-molt-species-tab,.rh-molt-species-code,.rh-molt-plate-kicker,.rh-molt-plate-title,.rh-molt-phase-badge,.rh-molt-detail-kicker,.rh-molt-detail-index,.rh-molt-detail-index strong,.rh-molt-detail h3,.rh-molt-role,.rh-molt-status-card span,.rh-molt-status-card strong,.rh-molt-status-card p,.rh-molt-month-read span,.rh-molt-month-read strong,.rh-molt-month-read p,.rh-molt-question span,.rh-molt-question p,.rh-molt-section-kicker,.rh-molt-section-head h3,.rh-molt-section-head>span,.rh-molt-concept-index,.rh-molt-concept strong,.rh-molt-concept p,.rh-molt-card strong,.rh-molt-card-timing,.rh-molt-card-copy{color:CanvasText}.rh-molt-species-tab[aria-selected="true"],.rh-molt-primary-control[aria-pressed="true"],.rh-molt-month[aria-pressed="true"],.rh-molt-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-molt-stage{border:1px solid CanvasText;background:Canvas}.rh-molt-body,.rh-molt-wing-base,.rh-molt-secondary,.rh-molt-primary,.rh-molt-line,.rh-molt-line-thin,.rh-molt-accent-stroke{fill:none;stroke:CanvasText}.rh-molt-meter-track{border:1px solid CanvasText;background:Canvas}.rh-molt-meter-track span,.rh-molt-card-month[data-active="true"]{background:Highlight}.rh-molt-phase-controls button,.rh-molt-primary-control{border-color:ButtonText;background:ButtonFace;color:ButtonText;}}',
+
+
+    '.rh-expert-lineage-lab{--rh-expert-accent:#c4b5fd;--rh-expert-ink:#ede9fe;display:grid;gap:14px;}.rh-expert-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:21px;border:1px solid rgba(196,181,253,.55);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(46,16,101,.82) 58%,rgba(8,47,73,.65));box-shadow:0 22px 56px rgba(2,6,23,.4),inset 0 1px rgba(255,255,255,.07);}.rh-expert-hero::before{content:"";position:absolute;z-index:-2;right:-76px;top:-132px;width:320px;height:320px;border:1px solid rgba(196,181,253,.24);border-radius:50%;box-shadow:0 0 0 36px rgba(139,92,246,.045),0 0 0 76px rgba(34,211,238,.025);}.rh-expert-hero::after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(196,181,253,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(196,181,253,.035) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 6%,#000 82%);}.rh-expert-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0;}.rh-expert-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(216,180,254,.7);border-radius:18px;background:rgba(2,6,23,.62);color:#f5f3ff;font:950 9px/1.15 ui-monospace,Menlo,monospace;letter-spacing:.09em;text-align:center;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3);}.rh-expert-kicker,.rh-expert-section-kicker,.rh-expert-detail-kicker{color:var(--rh-expert-accent);font:900 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-expert-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em;}.rh-expert-copy{max-width:790px;margin:8px 0 0;color:#ede9fe;font-size:12px;line-height:1.58;}.rh-expert-summary{display:grid;grid-template-columns:repeat(3,minmax(80px,1fr));gap:7px;}.rh-expert-stat{min-width:86px;padding:10px;border:1px solid rgba(216,180,254,.34);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-expert-stat strong{display:block;color:#f5f3ff;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-expert-stat span{display:block;margin-top:5px;color:#ddd6fe;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-expert-controls,.rh-expert-timeline,.rh-expert-blueprint,.rh-expert-dossier,.rh-expert-comparison,.rh-expert-challenge,.rh-expert-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.76);box-shadow:0 15px 38px rgba(2,6,23,.23),inset 0 1px rgba(255,255,255,.04);}.rh-expert-controls{display:grid;gap:10px;padding:13px;}.rh-expert-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start;}.rh-expert-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-expert-chip-row{display:flex;flex-wrap:wrap;gap:7px;}.rh-expert-chip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:7px 10px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-expert-chip:hover{transform:translateY(-1px);border-color:var(--rh-expert-accent);color:#fff;}.rh-expert-chip[aria-pressed="true"]{border-color:var(--rh-expert-accent);background:rgba(91,33,182,.58);color:#fff;box-shadow:0 0 0 2px rgba(196,181,253,.1);}.rh-expert-chip-code{display:grid;place-items:center;min-width:23px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.52);color:#ddd6fe;font:950 7px/1 ui-monospace,Menlo,monospace;}.rh-expert-result-count{align-self:center;color:#ddd6fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;}.rh-expert-timeline{padding:14px;}.rh-expert-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-expert-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-expert-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-expert-timeline-track{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;}.rh-expert-timeline-track::before{content:"";position:absolute;left:4%;right:4%;top:18px;height:1px;background:linear-gradient(90deg,transparent,var(--rh-expert-accent),transparent);opacity:.38;}.rh-expert-timeline-node{position:relative;z-index:1;min-height:75px;padding:8px 7px;border:1px solid #64748b;border-radius:10px;background:rgba(2,6,23,.86);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-expert-timeline-node:hover{transform:translateY(-2px);border-color:var(--rh-expert-accent);}.rh-expert-timeline-node[aria-pressed="true"]{border-color:var(--rh-expert-accent);background:rgba(76,29,149,.52);box-shadow:inset 3px 0 var(--rh-expert-accent);}.rh-expert-timeline-year{display:block;color:var(--rh-expert-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-expert-timeline-name{display:block;margin-top:7px;color:#f8fafc;font-size:9px;font-weight:900;line-height:1.24;}.rh-expert-timeline-label{display:block;margin-top:4px;color:#94a3b8;font-size:7px;line-height:1.25;}',
+    '.rh-expert-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.5fr);gap:12px;align-items:stretch;}.rh-expert-blueprint{overflow:hidden;}.rh-expert-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76));}.rh-expert-panel-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-expert-artifact-chip{flex:0 0 auto;max-width:45%;padding:7px 9px;border:1px solid rgba(196,181,253,.48);border-radius:999px;background:rgba(76,29,149,.35);color:#ede9fe;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:center;}.rh-expert-stage{position:relative;aspect-ratio:9/5;min-height:360px;overflow:hidden;background:radial-gradient(circle at 78% 18%,rgba(34,211,238,.12),transparent 28%),linear-gradient(155deg,#111827,#020617 66%,#1e103c);}.rh-expert-stage svg{display:block;width:100%;height:100%;min-height:360px;}.rh-expert-stage:focus-visible{outline:3px solid var(--rh-expert-accent);outline-offset:-3px;}.rh-expert-svg-bg{fill:#020617;}.rh-expert-svg-grid{fill:url(#rh-expert-grid);opacity:.6;}.rh-expert-svg-panel{fill:rgba(15,23,42,.9);stroke:#64748b;stroke-width:2;}.rh-expert-svg-ink{fill:none;stroke:#e2e8f0;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}.rh-expert-svg-thin{fill:none;stroke:#94a3b8;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}.rh-expert-svg-accent{fill:none;stroke:var(--rh-expert-accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;}.rh-expert-svg-soft{fill:var(--rh-expert-accent);fill-opacity:.15;stroke:var(--rh-expert-accent);stroke-width:1.5;}.rh-expert-svg-mark{fill:var(--rh-expert-accent);stroke:#f5f3ff;stroke-width:1.4;}.rh-expert-svg-path{fill:none;stroke:#67e8f9;stroke-width:3;stroke-dasharray:9 7;stroke-linecap:round;marker-end:url(#rh-expert-arrow);animation:rhExpertTrace 6s linear infinite;}.rh-expert-svg-bird{fill:none;stroke:#f8fafc;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 2px #020617);}.rh-expert-svg-label{fill:#f8fafc;font:950 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}.rh-expert-svg-small{fill:#cbd5e1;font:850 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.05em;}.rh-expert-svg-accent-label{fill:var(--rh-expert-accent);font:950 12px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;}.rh-expert-plate-key{position:absolute;right:11px;top:10px;padding:6px 8px;border:1px solid rgba(196,181,253,.38);border-radius:8px;background:rgba(2,6,23,.82);color:#ddd6fe;font:900 8px/1.2 ui-monospace,Menlo,monospace;}.rh-expert-method-steps{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:11px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.36);}.rh-expert-method-step{min-width:0;padding:9px;border:1px solid rgba(100,116,139,.45);border-radius:9px;background:rgba(15,23,42,.55);}.rh-expert-method-step[data-active="true"]{border-color:var(--rh-expert-accent);background:rgba(76,29,149,.25);}.rh-expert-method-step span{display:block;color:var(--rh-expert-accent);font:900 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-expert-method-step p{margin:5px 0 0;color:#cbd5e1;font-size:8px;line-height:1.42;}@keyframes rhExpertTrace{to{stroke-dashoffset:-64}}',
+    '.rh-expert-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-expert-accent);background:linear-gradient(155deg,rgba(30,41,59,.96),rgba(15,23,42,.98));}.rh-expert-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-expert-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em;}.rh-expert-code{display:grid;place-items:center;flex:0 0 auto;min-width:48px;height:38px;padding:0 7px;border:1px solid var(--rh-expert-accent);border-radius:10px;background:rgba(2,6,23,.52);color:var(--rh-expert-accent);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-expert-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}.rh-expert-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.48);border-radius:999px;background:rgba(2,6,23,.35);color:#cbd5e1;font:800 8px/1.2 ui-monospace,Menlo,monospace;}.rh-expert-reading{margin-top:11px;padding:10px;border:1px solid rgba(196,181,253,.38);border-radius:10px;background:rgba(76,29,149,.18);}.rh-expert-reading[data-lens="method"]{border-color:rgba(103,232,249,.4);background:rgba(8,47,73,.2);}.rh-expert-reading[data-lens="legacy"]{border-color:rgba(110,231,183,.38);background:rgba(6,78,59,.16);}.rh-expert-reading span{display:block;color:var(--rh-expert-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-expert-reading strong{display:block;margin-top:6px;color:#f8fafc;font-size:11px;line-height:1.38;}.rh-expert-reading p{margin:6px 0 0;color:#cbd5e1;font-size:9px;line-height:1.5;}.rh-expert-callouts{display:grid;gap:7px;margin-top:9px;}.rh-expert-callout{padding:9px;border-left:3px solid var(--rh-expert-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.34);}.rh-expert-callout span{display:block;color:#ddd6fe;font-size:8px;font-weight:900;}.rh-expert-callout p{margin:4px 0 0;color:#94a3b8;font-size:8px;line-height:1.4;}.rh-expert-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#a5f3fc;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(165,243,252,.42);text-underline-offset:3px;}.rh-expert-source:hover{color:#fff;}',
+    '.rh-expert-comparison,.rh-expert-challenge,.rh-expert-directory{padding:14px;}.rh-expert-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;}.rh-expert-compare-select label{color:#cbd5e1;font-size:9px;font-weight:850;}.rh-expert-compare-select select{width:100%;min-height:41px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850;}.rh-expert-compare-badge{padding:8px 10px;border:1px solid rgba(196,181,253,.42);border-radius:9px;background:rgba(76,29,149,.2);color:#ddd6fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-expert-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;}.rh-expert-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.42);border-radius:10px;background:rgba(2,6,23,.32);}.rh-expert-compare-cell span{display:block;color:#94a3b8;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-expert-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35;}.rh-expert-compare-cell strong+strong{margin-top:6px;color:#c4b5fd;}.rh-expert-compare-note{margin:10px 0 0;color:#94a3b8;font-size:9px;line-height:1.45;}.rh-expert-challenge-clue{padding:11px;border:1px solid rgba(103,232,249,.38);border-radius:10px;background:rgba(8,47,73,.2);color:#cffafe;font-size:10px;line-height:1.5;}.rh-expert-challenge-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:9px;}.rh-expert-guess{min-height:48px;padding:9px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25;text-align:left;}.rh-expert-guess:hover{border-color:#67e8f9;color:#fff;}.rh-expert-guess[aria-pressed="true"]{border-color:#67e8f9;background:rgba(14,116,144,.35);box-shadow:inset 3px 0 #67e8f9;}.rh-expert-challenge-result{min-height:35px;margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:9px;background:rgba(2,6,23,.32);color:#cbd5e1;font-size:9px;line-height:1.4;}.rh-expert-challenge-result[data-result="correct"]{border-color:#6ee7b7;background:rgba(6,78,59,.22);color:#d1fae5;}.rh-expert-challenge-result[data-result="incorrect"]{border-color:#fbbf24;background:rgba(120,53,15,.2);color:#fef3c7;}.rh-expert-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-expert-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-expert-card:hover{transform:translateY(-2px);border-color:var(--rh-expert-accent);background:rgba(30,41,59,.72);}.rh-expert-card[data-active="true"]{border-color:var(--rh-expert-accent);box-shadow:inset 3px 0 var(--rh-expert-accent);}.rh-expert-card-code{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--rh-expert-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-expert-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-expert-card-copy{min-width:0;}.rh-expert-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.22;}.rh-expert-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:8px;line-height:1.3;}.rh-expert-card-year{max-width:68px;color:#ddd6fe;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right;}',
+    '@media(max-width:1020px){.rh-expert-workbench{grid-template-columns:1fr;}.rh-expert-timeline-track{grid-template-columns:repeat(4,minmax(0,1fr));}.rh-expert-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:720px){.rh-expert-hero{grid-template-columns:1fr;padding:16px;}.rh-expert-summary{max-width:310px;}.rh-expert-control-row{grid-template-columns:1fr;gap:4px;}.rh-expert-control-label{padding-top:0;}.rh-expert-timeline-track{grid-template-columns:repeat(3,minmax(0,1fr));}.rh-expert-stage{min-height:300px;}.rh-expert-stage svg{min-height:300px;}.rh-expert-method-steps,.rh-expert-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-expert-challenge-options{grid-template-columns:1fr;}.rh-expert-compare-select{grid-template-columns:1fr;}.rh-expert-compare-badge{white-space:normal;}.rh-expert-directory-grid{grid-template-columns:1fr 1fr;}}@media(max-width:460px){.rh-expert-hero-main{display:block;}.rh-expert-hero-mark{margin-bottom:11px;}.rh-expert-summary{max-width:none;grid-template-columns:repeat(3,minmax(0,1fr));}.rh-expert-timeline-track{grid-template-columns:repeat(2,minmax(0,1fr));}.rh-expert-panel-head{display:block;}.rh-expert-artifact-chip{max-width:none;margin-top:8px;text-align:left;}.rh-expert-stage{min-height:250px;}.rh-expert-stage svg{min-height:250px;}.rh-expert-method-steps,.rh-expert-compare-grid,.rh-expert-directory-grid{grid-template-columns:1fr;}.rh-expert-card{grid-template-columns:auto minmax(0,1fr);}.rh-expert-card-year{grid-column:2;max-width:none;text-align:left;}}@media(prefers-reduced-motion:reduce){.rh-expert-chip,.rh-expert-timeline-node,.rh-expert-card{transition:none!important;}.rh-expert-chip:hover,.rh-expert-timeline-node:hover,.rh-expert-card:hover{transform:none!important;}.rh-expert-svg-path{animation:none!important;stroke-dasharray:none;}}@media(forced-colors:active){.rh-expert-hero,.rh-expert-stat,.rh-expert-controls,.rh-expert-timeline,.rh-expert-timeline-node,.rh-expert-blueprint,.rh-expert-dossier,.rh-expert-reading,.rh-expert-callout,.rh-expert-comparison,.rh-expert-compare-cell,.rh-expert-challenge,.rh-expert-challenge-clue,.rh-expert-challenge-result,.rh-expert-directory,.rh-expert-card,.rh-expert-meta,.rh-expert-plate-key{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-expert-kicker,.rh-expert-title,.rh-expert-copy,.rh-expert-stat strong,.rh-expert-stat span,.rh-expert-control-label,.rh-expert-section-kicker,.rh-expert-section-head h3,.rh-expert-section-head>span,.rh-expert-timeline-year,.rh-expert-timeline-name,.rh-expert-timeline-label,.rh-expert-detail-kicker,.rh-expert-dossier h3,.rh-expert-code,.rh-expert-reading span,.rh-expert-reading strong,.rh-expert-reading p,.rh-expert-callout span,.rh-expert-callout p,.rh-expert-compare-cell span,.rh-expert-compare-cell strong,.rh-expert-compare-note,.rh-expert-card-code,.rh-expert-card-copy strong,.rh-expert-card-copy span,.rh-expert-card-year{color:CanvasText}.rh-expert-chip,.rh-expert-timeline-node,.rh-expert-compare-select select,.rh-expert-guess,.rh-expert-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-expert-chip[aria-pressed="true"],.rh-expert-timeline-node[aria-pressed="true"],.rh-expert-guess[aria-pressed="true"],.rh-expert-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-expert-stage{border:1px solid CanvasText;background:Canvas}.rh-expert-svg-bg,.rh-expert-svg-panel,.rh-expert-svg-soft,.rh-expert-svg-mark{fill:Canvas;stroke:CanvasText}.rh-expert-svg-grid,.rh-expert-svg-ink,.rh-expert-svg-thin,.rh-expert-svg-accent,.rh-expert-svg-path,.rh-expert-svg-bird{fill:none;stroke:CanvasText;filter:none}.rh-expert-svg-label,.rh-expert-svg-small,.rh-expert-svg-accent-label{fill:CanvasText}}',
+
+    '.rh-research-atlas{--rh-research-accent:#67e8f9;--rh-research-violet:#c4b5fd;display:grid;gap:14px}.rh-research-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:21px;border:1px solid rgba(103,232,249,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(8,47,73,.84) 56%,rgba(49,46,129,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-research-hero:before{content:"";position:absolute;z-index:-2;right:-84px;top:-138px;width:332px;height:332px;border:1px solid rgba(103,232,249,.24);border-radius:50%;box-shadow:0 0 0 38px rgba(34,211,238,.04),0 0 0 78px rgba(139,92,246,.025)}.rh-research-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(103,232,249,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.035) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 82%)}.rh-research-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-research-hero-mark{display:grid;place-items:center;flex:0 0 66px;width:66px;height:66px;border:1px solid rgba(103,232,249,.7);border-radius:18px;background:rgba(2,6,23,.62);color:#cffafe;font:950 9px/1.2 ui-monospace,Menlo,monospace;letter-spacing:.07em;text-align:center;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3)}.rh-research-kicker,.rh-research-section-kicker,.rh-research-detail-kicker{color:var(--rh-research-accent);font:900 9px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-research-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-research-copy{max-width:790px;margin:8px 0 0;color:#e0f2fe;font-size:12px;line-height:1.58}.rh-research-summary{display:grid;grid-template-columns:repeat(3,minmax(82px,1fr));gap:7px}.rh-research-stat{min-width:86px;padding:10px;border:1px solid rgba(103,232,249,.32);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-research-stat strong{display:block;color:#ecfeff;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-research-stat span{display:block;margin-top:5px;color:#bae6fd;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-research-controls,.rh-research-board,.rh-research-dossier,.rh-research-comparison,.rh-research-planner,.rh-research-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.77);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-research-controls{display:grid;gap:10px;padding:13px}.rh-research-control-row{display:grid;grid-template-columns:118px minmax(0,1fr) auto;gap:11px;align-items:start}.rh-research-control-label{padding-top:9px;color:#cbd5e1;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-research-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-research-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:40px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-research-chip:hover{transform:translateY(-1px);border-color:var(--rh-research-accent);color:#fff}.rh-research-chip[aria-pressed="true"]{border-color:var(--rh-research-accent);background:rgba(14,116,144,.48);color:#fff;box-shadow:0 0 0 2px rgba(103,232,249,.1)}.rh-research-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.54);color:#a5f3fc;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-research-result-count{align-self:center;padding-top:9px;color:#bae6fd;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}',
+    '.rh-research-workbench{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.45fr);gap:12px;align-items:stretch}.rh-research-board{overflow:hidden}.rh-research-panel-head,.rh-research-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}.rh-research-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-research-panel-head h3,.rh-research-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-research-panel-head>span,.rh-research-section-head>span{color:#cbd5e1;font:800 8px/1.3 ui-monospace,Menlo,monospace;text-align:right}.rh-research-board-scroll{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-research-board-stage{position:relative;min-width:720px;min-height:360px;aspect-ratio:2/1;overflow:hidden;background:radial-gradient(circle at 78% 12%,rgba(139,92,246,.13),transparent 28%),linear-gradient(155deg,#111827,#020617 67%,#082f49)}.rh-research-board-stage svg{display:block;width:100%;height:100%}.rh-research-board-bg{fill:#020617}.rh-research-region-band{fill:#0f172a;fill-opacity:.5}.rh-research-region-band[data-band-tone="alt"]{fill:#172554;fill-opacity:.32}.rh-research-grid-line{stroke:#64748b;stroke-width:.35;opacity:.58;vector-effect:non-scaling-stroke}.rh-research-region-label{fill:#e0f2fe;font:900 3.8px/1 ui-sans-serif,system-ui;letter-spacing:.04em;text-anchor:middle}.rh-research-role-label{fill:#cbd5e1;font:850 3.4px/1 ui-sans-serif,system-ui;text-anchor:end}.rh-research-compare-line{stroke:var(--rh-research-violet);stroke-width:1.1;stroke-dasharray:3 2.4;opacity:.8;vector-effect:non-scaling-stroke;animation:rhResearchTrace 7s linear infinite}.rh-research-marker{position:absolute;z-index:2;display:grid;place-items:center;width:46px;height:46px;padding:0;border:1px solid #a5f3fc;border-radius:50%;background:#083344;color:#ecfeff;font:950 7px/1 ui-monospace,Menlo,monospace;letter-spacing:.02em;text-align:center;transform:translate(-50%,-50%);box-shadow:0 8px 18px rgba(2,6,23,.5),inset 0 1px rgba(255,255,255,.12);transition:transform .16s,opacity .16s,background-color .16s,border-color .16s}.rh-research-marker:hover{z-index:4;transform:translate(-50%,-55%) scale(1.08);border-color:#fff}.rh-research-marker[data-in-filter="false"]{opacity:.28}.rh-research-marker[data-selected="true"]{z-index:5;border-color:#fff;background:#0e7490;outline:3px solid var(--rh-research-accent);outline-offset:2px}.rh-research-marker[data-compared="true"]{z-index:4;border-color:#fff;background:#5b21b6;outline:2px dashed var(--rh-research-violet);outline-offset:3px}.rh-research-marker:focus-visible{z-index:6;outline:3px solid #fef08a;outline-offset:3px}.rh-research-board-caption{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:9px 12px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.44);color:#cbd5e1;font-size:9px;line-height:1.4}.rh-research-board-caption strong{color:#e9d5ff}@keyframes rhResearchTrace{to{stroke-dashoffset:-36}}',
+    '.rh-research-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-research-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-research-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-research-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-research-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-research-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#a5f3fc;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-research-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-research-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-research-reading{margin-top:11px;padding:11px;border:1px solid rgba(103,232,249,.4);border-radius:10px;background:rgba(8,47,73,.24)}.rh-research-reading[data-lens="methods"]{border-color:rgba(196,181,253,.44);background:rgba(76,29,149,.2)}.rh-research-reading[data-lens="careers"]{border-color:rgba(110,231,183,.42);background:rgba(6,78,59,.18)}.rh-research-reading span{display:block;color:#a5f3fc;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-research-reading strong{display:block;margin-top:6px;color:#f8fafc;font-size:12px;line-height:1.38}.rh-research-reading p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.5}.rh-research-callouts{display:grid;gap:7px;margin-top:9px}.rh-research-callout{padding:9px;border-left:3px solid var(--rh-research-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-research-callout span{display:block;color:#bae6fd;font-size:8px;font-weight:900}.rh-research-callout p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-research-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#a5f3fc;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(165,243,252,.55);text-underline-offset:3px}.rh-research-source:hover{color:#fff}.rh-research-reviewed{margin:8px 0 0;color:#cbd5e1;font-size:8px;line-height:1.4}',
+    '.rh-research-comparison,.rh-research-planner,.rh-research-directory{padding:14px}.rh-research-section-head{margin-bottom:11px}.rh-research-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-research-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-research-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-research-compare-badge{padding:9px 10px;border:1px solid rgba(196,181,253,.5);border-radius:9px;background:rgba(76,29,149,.24);color:#ede9fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-research-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-research-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-research-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-research-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-research-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#ddd6fe}.rh-research-compare-note,.rh-research-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-research-mission-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-research-mission{min-height:45px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-research-mission:hover{border-color:var(--rh-research-accent);color:#fff}.rh-research-mission[aria-pressed="true"]{border-color:#fff;background:#0e7490;color:#fff;outline:2px solid var(--rh-research-accent);outline-offset:2px}.rh-research-mission-question{margin:10px 0 0;color:#e0f2fe;font-size:10px;line-height:1.48}.rh-research-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-research-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(103,232,249,.38);border-radius:10px;background:rgba(8,47,73,.2)}.rh-research-plan-step:not(:last-child):after{content:"→";position:absolute;right:-17px;top:50%;color:#a5f3fc;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-research-plan-step span{display:block;color:#a5f3fc;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-research-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-research-plan-step p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}',
+    '.rh-research-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-research-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-research-card:hover{transform:translateY(-2px);border-color:var(--rh-research-accent);background:rgba(30,41,59,.78)}.rh-research-card[data-active="true"]{border-color:var(--rh-research-accent);box-shadow:inset 3px 0 var(--rh-research-accent)}.rh-research-card-code{display:grid;place-items:center;width:42px;height:40px;border:1px solid var(--rh-research-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#a5f3fc;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-research-card-copy{min-width:0}.rh-research-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-research-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-research-card-role{max-width:80px;color:#ddd6fe;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-research-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-research-workbench{grid-template-columns:1fr}.rh-research-dossier{min-height:0}.rh-research-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-research-hero{grid-template-columns:1fr;padding:16px}.rh-research-summary{max-width:320px}.rh-research-control-row{grid-template-columns:1fr;gap:4px}.rh-research-control-label,.rh-research-result-count{padding-top:0}.rh-research-panel-head,.rh-research-section-head{align-items:flex-start}.rh-research-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-research-mission-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-research-plan{grid-template-columns:1fr;gap:7px}.rh-research-plan-step:not(:last-child):after{content:"↓";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-research-compare-select{grid-template-columns:1fr}.rh-research-compare-badge{white-space:normal}.rh-research-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-research-hero-main{display:block}.rh-research-hero-mark{margin-bottom:11px}.rh-research-summary{max-width:none;grid-template-columns:repeat(3,minmax(0,1fr))}.rh-research-summary .rh-research-stat{min-width:0}.rh-research-panel-head,.rh-research-section-head{display:block}.rh-research-panel-head>span,.rh-research-section-head>span{display:block;margin-top:6px;text-align:left}.rh-research-compare-grid,.rh-research-directory-grid{grid-template-columns:1fr}.rh-research-card{grid-template-columns:auto minmax(0,1fr)}.rh-research-card-role{grid-column:2;max-width:none;text-align:left}}@media(prefers-reduced-motion:reduce){.rh-research-chip,.rh-research-marker,.rh-research-card{transition:none!important}.rh-research-chip:hover,.rh-research-marker:hover,.rh-research-card:hover{transform:none!important}.rh-research-compare-line{animation:none!important;stroke-dasharray:none}}@media(forced-colors:active){.rh-research-hero,.rh-research-stat,.rh-research-controls,.rh-research-board,.rh-research-dossier,.rh-research-reading,.rh-research-callout,.rh-research-comparison,.rh-research-compare-cell,.rh-research-planner,.rh-research-plan-step,.rh-research-directory,.rh-research-card,.rh-research-meta,.rh-research-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-research-kicker,.rh-research-title,.rh-research-copy,.rh-research-stat strong,.rh-research-stat span,.rh-research-control-label,.rh-research-result-count,.rh-research-section-kicker,.rh-research-panel-head h3,.rh-research-section-head h3,.rh-research-panel-head>span,.rh-research-section-head>span,.rh-research-detail-kicker,.rh-research-dossier h3,.rh-research-code,.rh-research-reading span,.rh-research-reading strong,.rh-research-reading p,.rh-research-callout span,.rh-research-callout p,.rh-research-compare-cell span,.rh-research-compare-cell strong,.rh-research-compare-note,.rh-research-mission-question,.rh-research-plan-step span,.rh-research-plan-step strong,.rh-research-plan-step p,.rh-research-plan-note,.rh-research-card-code,.rh-research-card-copy strong,.rh-research-card-copy span,.rh-research-card-role,.rh-research-reviewed{color:CanvasText}.rh-research-chip,.rh-research-marker,.rh-research-compare-select select,.rh-research-mission,.rh-research-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-research-chip[aria-pressed="true"],.rh-research-marker[data-selected="true"],.rh-research-mission[aria-pressed="true"],.rh-research-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-research-board-stage{border:1px solid CanvasText;background:Canvas}.rh-research-board-bg,.rh-research-region-band{fill:Canvas}.rh-research-grid-line,.rh-research-compare-line{stroke:CanvasText}.rh-research-region-label,.rh-research-role-label{fill:CanvasText}}',
+    '.rh-org-network{--rh-org-accent:#5eead4;--rh-org-violet:#c4b5fd;display:grid;gap:14px}.rh-org-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(94,234,212,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(19,78,74,.72) 57%,rgba(49,46,129,.58));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-org-hero:before{content:"";position:absolute;z-index:-2;right:-90px;top:-130px;width:330px;height:330px;border:1px solid rgba(94,234,212,.24);border-radius:50%;box-shadow:0 0 0 38px rgba(45,212,191,.045),0 0 0 78px rgba(167,139,250,.026)}.rh-org-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(94,234,212,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(94,234,212,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 80%)}.rh-org-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-org-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(153,246,228,.7);border-radius:18px;background:rgba(2,6,23,.62);color:#ccfbf1;font:950 10px/1.08 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3)}.rh-org-kicker,.rh-org-section-kicker,.rh-org-detail-kicker{color:var(--rh-org-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-org-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-org-copy{max-width:790px;margin:8px 0 0;color:#ccfbf1;font-size:12px;line-height:1.58}.rh-org-summary{display:grid;grid-template-columns:repeat(2,minmax(94px,1fr));gap:7px}.rh-org-stat{min-width:98px;padding:10px;border:1px solid rgba(153,246,228,.36);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-org-stat strong{display:block;color:#f0fdfa;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-org-stat span{display:block;margin-top:5px;color:#99f6e4;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-org-controls,.rh-org-board,.rh-org-dossier,.rh-org-comparison,.rh-org-planner,.rh-org-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.77);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-org-controls{display:grid;gap:10px;padding:13px}.rh-org-control-row{display:grid;grid-template-columns:108px minmax(0,1fr);gap:11px;align-items:start}.rh-org-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-org-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-org-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-org-chip:hover{transform:translateY(-1px);border-color:var(--rh-org-accent);color:#fff}.rh-org-chip[aria-pressed="true"]{border-color:var(--rh-org-accent);background:rgba(15,118,110,.5);color:#fff;box-shadow:0 0 0 2px rgba(94,234,212,.12)}.rh-org-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#99f6e4;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-org-result-count{align-self:center;color:#99f6e4;font:900 9px/1.2 ui-monospace,Menlo,monospace}.rh-org-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,.5fr);gap:12px;align-items:stretch}.rh-org-board{overflow:hidden}.rh-org-panel-head,.rh-org-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.rh-org-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-org-section-head{margin-bottom:11px}.rh-org-panel-head h3,.rh-org-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-org-panel-head>span,.rh-org-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right}.rh-org-board-stage{position:relative;aspect-ratio:5/3;min-height:390px;overflow:hidden;background:radial-gradient(circle at 50% 50%,rgba(20,184,166,.17),transparent 28%),radial-gradient(circle at 83% 18%,rgba(167,139,250,.13),transparent 25%),linear-gradient(155deg,#111827,#020617 65%,#0f172a)}.rh-org-board-stage svg{display:block;width:100%;height:100%;min-height:390px}.rh-org-board-stage:focus-visible{outline:3px solid var(--rh-org-accent);outline-offset:-3px}.rh-org-orbit{fill:none;stroke:#5eead4;stroke-width:1.2;stroke-dasharray:2 5;opacity:.34;vector-effect:non-scaling-stroke}.rh-org-link{fill:none;stroke:#64748b;stroke-width:1.4;opacity:.62;vector-effect:non-scaling-stroke}.rh-org-center{fill:#0f172a;stroke:#5eead4;stroke-width:2}.rh-org-center-title{fill:#f0fdfa;font:950 9px/1 ui-sans-serif,system-ui;text-anchor:middle}.rh-org-center-copy{fill:#99f6e4;font:800 5px/1 ui-monospace,Menlo,monospace;text-anchor:middle}.rh-org-hubs{position:absolute;inset:0}.rh-org-hub{position:absolute;width:126px;min-height:66px;padding:8px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.94);color:#e2e8f0;text-align:left;transform:translate(-50%,-50%);transition:transform .17s,border-color .17s,background-color .17s,box-shadow .17s}.rh-org-hub:hover{border-color:var(--hub-accent);transform:translate(-50%,calc(-50% - 2px))}.rh-org-hub[aria-pressed="true"]{border-color:var(--hub-accent);background:rgba(30,41,59,.98);box-shadow:0 0 0 2px color-mix(in srgb,var(--hub-accent) 25%,transparent),inset 3px 0 var(--hub-accent)}.rh-org-hub:focus-visible{outline:3px solid #fff;outline-offset:2px}.rh-org-hub-code{display:block;color:var(--hub-accent);font:950 8px/1 ui-monospace,Menlo,monospace}.rh-org-hub strong{display:block;margin-top:5px;color:#f8fafc;font-size:10px;line-height:1.15}.rh-org-hub span:last-child{display:block;margin-top:3px;color:#94a3b8;font-size:7px;line-height:1.2}.rh-org-board-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34);color:#94a3b8;font-size:9px;line-height:1.45}',
+    '.rh-org-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-org-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-org-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-org-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-org-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-org-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#99f6e4;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-org-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-org-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-org-reading{margin-top:11px;padding:11px;border:1px solid rgba(94,234,212,.4);border-radius:10px;background:rgba(19,78,74,.22)}.rh-org-reading[data-lens="participation"]{border-color:rgba(196,181,253,.44);background:rgba(76,29,149,.2)}.rh-org-reading[data-lens="safeguards"]{border-color:rgba(110,231,183,.42);background:rgba(6,78,59,.18)}.rh-org-reading span{display:block;color:#99f6e4;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-org-reading strong{display:block;margin-top:6px;color:#f8fafc;font-size:12px;line-height:1.38}.rh-org-reading p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.5}.rh-org-callouts{display:grid;gap:7px;margin-top:9px}.rh-org-callout{padding:9px;border-left:3px solid var(--rh-org-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-org-callout span{display:block;color:#99f6e4;font-size:8px;font-weight:900}.rh-org-callout p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-org-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#99f6e4;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(153,246,228,.55);text-underline-offset:3px}.rh-org-source:hover{color:#fff}.rh-org-reviewed{margin:8px 0 0;color:#cbd5e1;font-size:8px;line-height:1.4}',
+    '.rh-org-comparison,.rh-org-planner,.rh-org-directory{padding:14px}.rh-org-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-org-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-org-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-org-compare-badge{padding:9px 10px;border:1px solid rgba(196,181,253,.5);border-radius:9px;background:rgba(76,29,149,.24);color:#ede9fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-org-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-org-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-org-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-org-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-org-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#ddd6fe}.rh-org-compare-note,.rh-org-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-org-mission-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-org-mission{min-height:45px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-org-mission:hover{border-color:var(--rh-org-accent);color:#fff}.rh-org-mission[aria-pressed="true"]{border-color:#fff;background:#0f766e;color:#fff;outline:2px solid var(--rh-org-accent);outline-offset:2px}.rh-org-mission-question{margin:10px 0 0;color:#ccfbf1;font-size:10px;line-height:1.48}.rh-org-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-org-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(94,234,212,.38);border-radius:10px;background:rgba(19,78,74,.2)}.rh-org-plan-step:not(:last-child):after{content:"→";position:absolute;right:-17px;top:50%;color:#99f6e4;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-org-plan-step span{display:block;color:#99f6e4;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-org-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-org-plan-step p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-org-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-org-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-org-card:hover{transform:translateY(-2px);border-color:var(--rh-org-accent);background:rgba(30,41,59,.78)}.rh-org-card[data-active="true"]{border-color:var(--rh-org-accent);box-shadow:inset 3px 0 var(--rh-org-accent)}.rh-org-card-code{display:grid;place-items:center;width:42px;height:40px;border:1px solid var(--rh-org-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#99f6e4;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-org-card-copy{min-width:0}.rh-org-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-org-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-org-card-role{max-width:82px;color:#ddd6fe;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-org-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-org-workbench{grid-template-columns:1fr}.rh-org-dossier{min-height:0}.rh-org-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-org-hero{grid-template-columns:1fr;padding:16px}.rh-org-summary{max-width:320px}.rh-org-control-row{grid-template-columns:1fr;gap:4px}.rh-org-control-label,.rh-org-result-count{padding-top:0}.rh-org-panel-head,.rh-org-section-head{align-items:flex-start}.rh-org-board-stage{min-height:430px}.rh-org-board-stage svg{min-height:430px}.rh-org-hub{width:108px;min-height:62px}.rh-org-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-org-mission-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-org-plan{grid-template-columns:1fr;gap:7px}.rh-org-plan-step:not(:last-child):after{content:"↓";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-org-compare-select{grid-template-columns:1fr}.rh-org-compare-badge{white-space:normal}.rh-org-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-org-hero-main{display:block}.rh-org-hero-mark{margin-bottom:11px}.rh-org-summary{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}.rh-org-summary .rh-org-stat{min-width:0}.rh-org-panel-head,.rh-org-section-head{display:block}.rh-org-panel-head>span,.rh-org-section-head>span{display:block;margin-top:6px;text-align:left}.rh-org-board-stage{min-height:520px}.rh-org-board-stage svg{min-height:520px}.rh-org-hub{width:96px;min-height:62px;padding:6px}.rh-org-hub strong{font-size:9px}.rh-org-compare-grid,.rh-org-directory-grid{grid-template-columns:1fr}.rh-org-card{grid-template-columns:auto minmax(0,1fr)}.rh-org-card-role{grid-column:2;max-width:none;text-align:left}}',
+    '@media(prefers-reduced-motion:reduce){.rh-org-chip,.rh-org-hub,.rh-org-card{transition:none!important}.rh-org-chip:hover,.rh-org-card:hover{transform:none!important}.rh-org-hub:hover{transform:translate(-50%,-50%)!important}}@media(forced-colors:active){.rh-org-hero,.rh-org-stat,.rh-org-controls,.rh-org-board,.rh-org-dossier,.rh-org-reading,.rh-org-callout,.rh-org-comparison,.rh-org-compare-cell,.rh-org-planner,.rh-org-plan-step,.rh-org-directory,.rh-org-card,.rh-org-meta,.rh-org-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-org-kicker,.rh-org-title,.rh-org-copy,.rh-org-stat strong,.rh-org-stat span,.rh-org-control-label,.rh-org-result-count,.rh-org-section-kicker,.rh-org-panel-head h3,.rh-org-section-head h3,.rh-org-panel-head>span,.rh-org-section-head>span,.rh-org-detail-kicker,.rh-org-dossier h3,.rh-org-code,.rh-org-reading span,.rh-org-reading strong,.rh-org-reading p,.rh-org-callout span,.rh-org-callout p,.rh-org-compare-cell span,.rh-org-compare-cell strong,.rh-org-compare-note,.rh-org-mission-question,.rh-org-plan-step span,.rh-org-plan-step strong,.rh-org-plan-step p,.rh-org-plan-note,.rh-org-card-code,.rh-org-card-copy strong,.rh-org-card-copy span,.rh-org-card-role,.rh-org-reviewed{color:CanvasText}.rh-org-chip,.rh-org-hub,.rh-org-compare-select select,.rh-org-mission,.rh-org-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-org-chip[aria-pressed="true"],.rh-org-hub[aria-pressed="true"],.rh-org-mission[aria-pressed="true"],.rh-org-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-org-board-stage{border:1px solid CanvasText;background:Canvas}.rh-org-orbit,.rh-org-link{stroke:CanvasText}.rh-org-center{fill:Canvas;stroke:CanvasText}.rh-org-center-title,.rh-org-center-copy{fill:CanvasText}}',
+    '.rh-museum-lab{--rh-museum-accent:#fbbf24;--rh-museum-sky:#7dd3fc;display:grid;gap:14px}.rh-museum-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,191,36,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(120,53,15,.7) 56%,rgba(12,74,110,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-museum-hero:before{content:"";position:absolute;z-index:-2;right:-90px;top:-132px;width:332px;height:332px;border:1px solid rgba(251,191,36,.24);border-radius:50%;box-shadow:0 0 0 38px rgba(245,158,11,.045),0 0 0 78px rgba(56,189,248,.026)}.rh-museum-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(251,191,36,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(251,191,36,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 80%)}.rh-museum-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-museum-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(253,230,138,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#fef3c7;font:950 10px/1.08 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3)}.rh-museum-kicker,.rh-museum-section-kicker,.rh-museum-detail-kicker{color:var(--rh-museum-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-museum-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-museum-copy{max-width:790px;margin:8px 0 0;color:#fef3c7;font-size:12px;line-height:1.58}.rh-museum-summary{display:grid;grid-template-columns:repeat(2,minmax(94px,1fr));gap:7px}.rh-museum-stat{min-width:98px;padding:10px;border:1px solid rgba(253,230,138,.36);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-museum-stat strong{display:block;color:#fffbeb;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-museum-stat span{display:block;margin-top:5px;color:#fde68a;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-museum-controls,.rh-museum-gallery,.rh-museum-dossier,.rh-museum-comparison,.rh-museum-planner,.rh-museum-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.77);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-museum-controls{display:grid;gap:10px;padding:13px}.rh-museum-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start}.rh-museum-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-museum-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-museum-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-museum-chip:hover{transform:translateY(-1px);border-color:var(--rh-museum-accent);color:#fff}.rh-museum-chip[aria-pressed="true"]{border-color:var(--rh-museum-accent);background:rgba(146,64,14,.52);color:#fff;box-shadow:0 0 0 2px rgba(251,191,36,.12)}.rh-museum-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#fde68a;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-museum-result-count{align-self:center;color:#fde68a;font:900 9px/1.2 ui-monospace,Menlo,monospace}.rh-museum-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,.5fr);gap:12px;align-items:stretch}.rh-museum-gallery{overflow:hidden}.rh-museum-panel-head,.rh-museum-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.rh-museum-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-museum-section-head{margin-bottom:11px}.rh-museum-panel-head h3,.rh-museum-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-museum-panel-head>span,.rh-museum-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right}.rh-museum-gallery-stage{position:relative;aspect-ratio:5/3;min-height:410px;overflow:hidden;background:radial-gradient(circle at 50% 34%,rgba(245,158,11,.16),transparent 27%),radial-gradient(circle at 82% 18%,rgba(56,189,248,.13),transparent 24%),linear-gradient(155deg,#111827,#020617 66%,#0c4a6e)}.rh-museum-gallery-stage svg{display:block;width:100%;height:100%;min-height:410px}.rh-museum-floor{fill:#111827;stroke:#64748b;stroke-width:1.2}.rh-museum-floor-grid{fill:none;stroke:#64748b;stroke-width:.55;opacity:.5;vector-effect:non-scaling-stroke}.rh-museum-wall{fill:#1e293b;stroke:#94a3b8;stroke-width:1}.rh-museum-case{fill:#082f49;fill-opacity:.62;stroke:#7dd3fc;stroke-width:1}.rh-museum-light{fill:#fbbf24;opacity:.08}.rh-museum-path{fill:none;stroke:#fbbf24;stroke-width:2.2;stroke-dasharray:4 4;vector-effect:non-scaling-stroke}.rh-museum-bird{fill:none;stroke:#f8fafc;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.rh-museum-stations{position:absolute;inset:0}.rh-museum-station{position:absolute;width:126px;min-height:64px;padding:8px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.95);color:#e2e8f0;text-align:left;transform:translate(-50%,-50%);transition:transform .17s,border-color .17s,background-color .17s,box-shadow .17s}.rh-museum-station:hover{border-color:var(--rh-museum-accent);transform:translate(-50%,calc(-50% - 2px))}.rh-museum-station[aria-pressed="true"]{border-color:var(--rh-museum-accent);background:rgba(30,41,59,.98);box-shadow:0 0 0 2px rgba(251,191,36,.18),inset 3px 0 var(--rh-museum-accent)}.rh-museum-station:focus-visible{outline:3px solid #fff;outline-offset:2px}.rh-museum-station-code{display:block;color:#fde68a;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-museum-station strong{display:block;margin-top:5px;color:#f8fafc;font-size:10px;line-height:1.15}.rh-museum-station span:last-child{display:block;margin-top:3px;color:#94a3b8;font-size:7px;line-height:1.2}.rh-museum-gallery-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34);color:#94a3b8;font-size:9px;line-height:1.45}',
+    '.rh-museum-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-museum-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-museum-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-museum-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-museum-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-museum-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fde68a;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-museum-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-museum-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-museum-status{margin-top:9px;padding:8px 9px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(8,47,73,.23);color:#bae6fd;font-size:8px;line-height:1.42}.rh-museum-status[data-alert="true"]{border-color:rgba(251,191,36,.5);background:rgba(120,53,15,.25);color:#fef3c7}.rh-museum-reading{margin-top:11px;padding:11px;border:1px solid rgba(251,191,36,.4);border-radius:10px;background:rgba(120,53,15,.2)}.rh-museum-reading[data-lens="educator"]{border-color:rgba(125,211,252,.44);background:rgba(8,47,73,.22)}.rh-museum-reading[data-lens="access"]{border-color:rgba(196,181,253,.44);background:rgba(76,29,149,.2)}.rh-museum-reading span{display:block;color:#fde68a;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-museum-reading strong{display:block;margin-top:6px;color:#f8fafc;font-size:12px;line-height:1.38}.rh-museum-reading p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.5}.rh-museum-callouts{display:grid;gap:7px;margin-top:9px}.rh-museum-callout{padding:9px;border-left:3px solid var(--rh-museum-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-museum-callout span{display:block;color:#fde68a;font-size:8px;font-weight:900}.rh-museum-callout p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-museum-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#fde68a;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(253,230,138,.55);text-underline-offset:3px}.rh-museum-source:hover{color:#fff}.rh-museum-reviewed{margin:8px 0 0;color:#cbd5e1;font-size:8px;line-height:1.4}',
+    '.rh-museum-comparison,.rh-museum-planner,.rh-museum-directory{padding:14px}.rh-museum-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-museum-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-museum-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-museum-compare-badge{padding:9px 10px;border:1px solid rgba(125,211,252,.48);border-radius:9px;background:rgba(8,47,73,.24);color:#e0f2fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-museum-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-museum-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-museum-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-museum-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-museum-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#bae6fd}.rh-museum-compare-note,.rh-museum-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-museum-inquiry-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-museum-inquiry{min-height:45px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-museum-inquiry:hover{border-color:var(--rh-museum-accent);color:#fff}.rh-museum-inquiry[aria-pressed="true"]{border-color:#fff;background:#92400e;color:#fff;outline:2px solid var(--rh-museum-accent);outline-offset:2px}.rh-museum-inquiry-question{margin:10px 0 0;color:#fef3c7;font-size:10px;line-height:1.48}.rh-museum-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-museum-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(251,191,36,.38);border-radius:10px;background:rgba(120,53,15,.18)}.rh-museum-plan-step:not(:last-child):after{content:"→";position:absolute;right:-17px;top:50%;color:#fde68a;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-museum-plan-step span{display:block;color:#fde68a;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-museum-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-museum-plan-step p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-museum-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-museum-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-museum-card:hover{transform:translateY(-2px);border-color:var(--rh-museum-accent);background:rgba(30,41,59,.78)}.rh-museum-card[data-active="true"]{border-color:var(--rh-museum-accent);box-shadow:inset 3px 0 var(--rh-museum-accent)}.rh-museum-card-code{display:grid;place-items:center;width:42px;height:40px;border:1px solid var(--rh-museum-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fde68a;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-museum-card-copy{min-width:0}.rh-museum-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-museum-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-museum-card-role{max-width:82px;color:#bae6fd;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-museum-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-museum-workbench{grid-template-columns:1fr}.rh-museum-dossier{min-height:0}.rh-museum-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-museum-hero{grid-template-columns:1fr;padding:16px}.rh-museum-summary{max-width:320px}.rh-museum-control-row{grid-template-columns:1fr;gap:4px}.rh-museum-control-label,.rh-museum-result-count{padding-top:0}.rh-museum-panel-head,.rh-museum-section-head{align-items:flex-start}.rh-museum-gallery-stage{min-height:470px}.rh-museum-gallery-stage svg{min-height:470px}.rh-museum-station{width:108px;min-height:62px}.rh-museum-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-museum-inquiry-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-museum-plan{grid-template-columns:1fr;gap:7px}.rh-museum-plan-step:not(:last-child):after{content:"↓";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-museum-compare-select{grid-template-columns:1fr}.rh-museum-compare-badge{white-space:normal}.rh-museum-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-museum-hero-main{display:block}.rh-museum-hero-mark{margin-bottom:11px}.rh-museum-summary{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}.rh-museum-summary .rh-museum-stat{min-width:0}.rh-museum-panel-head,.rh-museum-section-head{display:block}.rh-museum-panel-head>span,.rh-museum-section-head>span{display:block;margin-top:6px;text-align:left}.rh-museum-gallery-stage{min-height:560px}.rh-museum-gallery-stage svg{min-height:560px}.rh-museum-station{width:96px;min-height:62px;padding:6px}.rh-museum-station strong{font-size:9px}.rh-museum-compare-grid,.rh-museum-directory-grid{grid-template-columns:1fr}.rh-museum-card{grid-template-columns:auto minmax(0,1fr)}.rh-museum-card-role{grid-column:2;max-width:none;text-align:left}}',
+    '@media(prefers-reduced-motion:reduce){.rh-museum-chip,.rh-museum-station,.rh-museum-card{transition:none!important}.rh-museum-chip:hover,.rh-museum-card:hover{transform:none!important}.rh-museum-station:hover{transform:translate(-50%,-50%)!important}}@media(forced-colors:active){.rh-museum-hero,.rh-museum-stat,.rh-museum-controls,.rh-museum-gallery,.rh-museum-dossier,.rh-museum-status,.rh-museum-reading,.rh-museum-callout,.rh-museum-comparison,.rh-museum-compare-cell,.rh-museum-planner,.rh-museum-plan-step,.rh-museum-directory,.rh-museum-card,.rh-museum-meta,.rh-museum-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-museum-kicker,.rh-museum-title,.rh-museum-copy,.rh-museum-stat strong,.rh-museum-stat span,.rh-museum-control-label,.rh-museum-result-count,.rh-museum-section-kicker,.rh-museum-panel-head h3,.rh-museum-section-head h3,.rh-museum-panel-head>span,.rh-museum-section-head>span,.rh-museum-detail-kicker,.rh-museum-dossier h3,.rh-museum-code,.rh-museum-reading span,.rh-museum-reading strong,.rh-museum-reading p,.rh-museum-callout span,.rh-museum-callout p,.rh-museum-compare-cell span,.rh-museum-compare-cell strong,.rh-museum-compare-note,.rh-museum-inquiry-question,.rh-museum-plan-step span,.rh-museum-plan-step strong,.rh-museum-plan-step p,.rh-museum-plan-note,.rh-museum-card-code,.rh-museum-card-copy strong,.rh-museum-card-copy span,.rh-museum-card-role,.rh-museum-reviewed{color:CanvasText}.rh-museum-chip,.rh-museum-station,.rh-museum-compare-select select,.rh-museum-inquiry,.rh-museum-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-museum-chip[aria-pressed="true"],.rh-museum-station[aria-pressed="true"],.rh-museum-inquiry[aria-pressed="true"],.rh-museum-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-museum-gallery-stage{border:1px solid CanvasText;background:Canvas}.rh-museum-floor,.rh-museum-wall,.rh-museum-case{fill:Canvas;stroke:CanvasText}.rh-museum-floor-grid,.rh-museum-path,.rh-museum-bird{stroke:CanvasText}}',
+    '.rh-reading-deck{--rh-reading-accent:#bef264;--rh-reading-sky:#67e8f9;display:grid;gap:14px}.rh-reading-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(190,242,100,.48);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(8,47,73,.78) 54%,rgba(54,83,20,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-reading-hero:before{content:"";position:absolute;z-index:-2;right:-92px;top:-136px;width:338px;height:338px;border:1px solid rgba(190,242,100,.24);border-radius:50%;box-shadow:0 0 0 39px rgba(103,232,249,.04),0 0 0 80px rgba(190,242,100,.025)}.rh-reading-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(190,242,100,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(103,232,249,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 80%)}.rh-reading-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-reading-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(217,249,157,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#ecfccb;font:950 10px/1.08 ui-monospace,Menlo,monospace;letter-spacing:.07em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3)}.rh-reading-kicker,.rh-reading-section-kicker,.rh-reading-detail-kicker{color:var(--rh-reading-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-reading-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-reading-copy{max-width:790px;margin:8px 0 0;color:#ecfeff;font-size:12px;line-height:1.58}.rh-reading-summary{display:grid;grid-template-columns:repeat(2,minmax(94px,1fr));gap:7px}.rh-reading-stat{min-width:98px;padding:10px;border:1px solid rgba(217,249,157,.34);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-reading-stat strong{display:block;color:#f7fee7;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-reading-stat span{display:block;margin-top:5px;color:#d9f99d;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-reading-controls,.rh-reading-flight,.rh-reading-dossier,.rh-reading-comparison,.rh-reading-planner,.rh-reading-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.78);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-reading-controls{display:grid;gap:10px;padding:13px}.rh-reading-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start}.rh-reading-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-reading-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-reading-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-reading-chip:hover{transform:translateY(-1px);border-color:var(--rh-reading-accent);color:#fff}.rh-reading-chip[aria-pressed="true"]{border-color:var(--rh-reading-accent);background:rgba(54,83,20,.72);color:#fff;box-shadow:0 0 0 2px rgba(190,242,100,.12)}.rh-reading-chip-code{display:grid;place-items:center;min-width:25px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#d9f99d;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-reading-result-count{align-self:center;color:#d9f99d;font:900 9px/1.2 ui-monospace,Menlo,monospace}.rh-reading-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(310px,.5fr);gap:12px;align-items:stretch}.rh-reading-flight{overflow:hidden}.rh-reading-panel-head,.rh-reading-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.rh-reading-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-reading-section-head{margin-bottom:11px}.rh-reading-panel-head h3,.rh-reading-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-reading-panel-head>span,.rh-reading-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right}.rh-reading-flight-stage{position:relative;aspect-ratio:5/3;min-height:410px;overflow:hidden;background:radial-gradient(circle at 50% 28%,rgba(103,232,249,.13),transparent 25%),radial-gradient(circle at 80% 18%,rgba(190,242,100,.12),transparent 24%),linear-gradient(155deg,#082f49,#020617 67%,#1a2e05)}.rh-reading-flight-stage svg{display:block;width:100%;height:100%;min-height:410px}.rh-reading-sky{fill:url(#rh-reading-sky);stroke:#64748b;stroke-width:1}.rh-reading-horizon{fill:none;stroke:#67e8f9;stroke-width:.75;stroke-opacity:.38;vector-effect:non-scaling-stroke}.rh-reading-route{fill:none;stroke:#bef264;stroke-width:2.1;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}.rh-reading-arrow{fill:#bef264}.rh-reading-wing{fill:none;stroke:#f8fafc;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.rh-reading-node{fill:#0f172a;stroke:#bef264;stroke-width:1.2;transition:r .16s,fill .16s}.rh-reading-node[data-active="true"]{fill:#bef264;stroke:#fff}.rh-reading-stages{position:absolute;inset:0}.rh-reading-stage{position:absolute;width:126px;min-height:72px;padding:8px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.95);color:#e2e8f0;text-align:left;transform:translate(-50%,-50%);transition:transform .17s,border-color .17s,background-color .17s,box-shadow .17s}.rh-reading-stage:hover{border-color:var(--rh-reading-accent);transform:translate(-50%,calc(-50% - 2px))}.rh-reading-stage[aria-pressed="true"]{border-color:var(--rh-reading-accent);background:rgba(30,41,59,.98);box-shadow:0 0 0 2px rgba(190,242,100,.16),inset 3px 0 var(--rh-reading-accent)}.rh-reading-stage:focus-visible{outline:3px solid #fff;outline-offset:2px}.rh-reading-stage-code{display:block;color:#d9f99d;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-reading-stage strong{display:block;margin-top:5px;color:#f8fafc;font-size:10px;line-height:1.15}.rh-reading-stage span:last-child{display:block;margin-top:3px;color:#94a3b8;font-size:7px;line-height:1.22}.rh-reading-flight-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34);color:#94a3b8;font-size:9px;line-height:1.45}',
+    '.rh-reading-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-reading-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-reading-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-reading-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-reading-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-reading-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#d9f99d;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-reading-byline{margin:8px 0 0;color:#a5f3fc;font-size:9px;font-weight:850;line-height:1.4}.rh-reading-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-reading-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-reading-move{margin-top:11px;padding:10px;border:1px solid rgba(190,242,100,.4);border-radius:10px;background:rgba(54,83,20,.18)}.rh-reading-move span,.rh-reading-lens-card span{display:block;color:#d9f99d;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-reading-move strong,.rh-reading-lens-card strong{display:block;margin-top:6px;color:#f8fafc;font-size:11px;line-height:1.38}.rh-reading-move p,.rh-reading-lens-card p{margin:5px 0 0;color:#cbd5e1;font-size:9px;line-height:1.48}.rh-reading-lens-card{margin-top:8px;padding:10px;border:1px solid rgba(103,232,249,.4);border-radius:10px;background:rgba(8,47,73,.22)}.rh-reading-lens-card[data-lens="classroom"]{border-color:rgba(196,181,253,.44);background:rgba(76,29,149,.2)}.rh-reading-lens-card[data-lens="family"]{border-color:rgba(251,191,36,.44);background:rgba(120,53,15,.2)}.rh-reading-callouts{display:grid;gap:7px;margin-top:9px}.rh-reading-callout{padding:9px;border-left:3px solid var(--rh-reading-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-reading-callout span{display:block;color:#d9f99d;font-size:8px;font-weight:900}.rh-reading-callout p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.44}.rh-reading-critical{border-left-color:#fbbf24}.rh-reading-critical span{color:#fde68a}.rh-reading-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#d9f99d;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(217,249,157,.55);text-underline-offset:3px}.rh-reading-source:hover{color:#fff}.rh-reading-reviewed{margin:8px 0 0;color:#cbd5e1;font-size:8px;line-height:1.4}',
+    '.rh-reading-comparison,.rh-reading-planner,.rh-reading-directory{padding:14px}.rh-reading-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-reading-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-reading-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-reading-compare-badge{padding:9px 10px;border:1px solid rgba(103,232,249,.48);border-radius:9px;background:rgba(8,47,73,.24);color:#cffafe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-reading-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-reading-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-reading-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-reading-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-reading-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#a5f3fc}.rh-reading-compare-note,.rh-reading-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-reading-mission-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-reading-mission{display:flex;align-items:center;justify-content:center;gap:6px;min-height:45px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-reading-mission span{color:#d9f99d;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-reading-mission:hover{border-color:var(--rh-reading-accent);color:#fff}.rh-reading-mission[aria-pressed="true"]{border-color:#fff;background:#3f6212;color:#fff;outline:2px solid var(--rh-reading-accent);outline-offset:2px}.rh-reading-mission-question{margin:10px 0 0;color:#ecfccb;font-size:10px;line-height:1.48}.rh-reading-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-reading-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(190,242,100,.38);border-radius:10px;background:rgba(54,83,20,.17)}.rh-reading-plan-step:not(:last-child):after{content:"→";position:absolute;right:-17px;top:50%;color:#d9f99d;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-reading-plan-step span{display:block;color:#d9f99d;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-reading-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-reading-plan-step p{margin:5px 0 0;color:#a5f3fc;font-size:9px;font-weight:850;line-height:1.35}.rh-reading-plan-step small{display:block;margin-top:5px;color:#cbd5e1;font-size:8px;line-height:1.42}.rh-reading-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-reading-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:82px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-reading-card:hover{transform:translateY(-2px);border-color:var(--rh-reading-accent);background:rgba(30,41,59,.78)}.rh-reading-card[data-active="true"]{border-color:var(--rh-reading-accent);box-shadow:inset 3px 0 var(--rh-reading-accent)}.rh-reading-card-code{display:grid;place-items:center;width:42px;height:44px;border:1px solid var(--rh-reading-accent);border-radius:8px 11px 11px 8px;background:linear-gradient(90deg,rgba(190,242,100,.22) 0 4px,rgba(2,6,23,.62) 4px);color:#d9f99d;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-reading-card-code[data-purpose="understand"]{border-color:#67e8f9;background:linear-gradient(90deg,rgba(103,232,249,.3) 0 4px,rgba(2,6,23,.62) 4px);color:#a5f3fc}.rh-reading-card-code[data-purpose="conserve"]{border-color:#fbbf24;background:linear-gradient(90deg,rgba(251,191,36,.3) 0 4px,rgba(2,6,23,.62) 4px);color:#fde68a}.rh-reading-card-code[data-purpose="stories"]{border-color:#c4b5fd;background:linear-gradient(90deg,rgba(196,181,253,.3) 0 4px,rgba(2,6,23,.62) 4px);color:#ddd6fe}.rh-reading-card-code[data-purpose="culture"]{border-color:#fb7185;background:linear-gradient(90deg,rgba(251,113,133,.3) 0 4px,rgba(2,6,23,.62) 4px);color:#fecdd3}.rh-reading-card-copy{min-width:0}.rh-reading-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-reading-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-reading-card-role{max-width:72px;color:#a5f3fc;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-reading-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-reading-workbench{grid-template-columns:1fr}.rh-reading-dossier{min-height:0}.rh-reading-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-reading-hero{grid-template-columns:1fr;padding:16px}.rh-reading-summary{max-width:320px}.rh-reading-control-row{grid-template-columns:1fr;gap:4px}.rh-reading-control-label,.rh-reading-result-count{padding-top:0}.rh-reading-panel-head,.rh-reading-section-head{align-items:flex-start}.rh-reading-flight-stage{min-height:0;padding:9px}.rh-reading-flight-stage svg{height:auto;min-height:0}.rh-reading-stages{position:static;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:8px}.rh-reading-stage{position:static;width:auto;min-height:96px;padding:7px;transform:none}.rh-reading-stage:hover{transform:translateY(-1px)}.rh-reading-stage span:last-child{display:none}.rh-reading-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-reading-mission-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-reading-plan{grid-template-columns:1fr;gap:7px}.rh-reading-plan-step:not(:last-child):after{content:"↓";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-reading-compare-select{grid-template-columns:1fr}.rh-reading-compare-badge{white-space:normal}.rh-reading-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-reading-hero-main{display:block}.rh-reading-hero-mark{margin-bottom:11px}.rh-reading-summary{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}.rh-reading-summary .rh-reading-stat{min-width:0}.rh-reading-panel-head,.rh-reading-section-head{display:block}.rh-reading-panel-head>span,.rh-reading-section-head>span{display:block;margin-top:6px;text-align:left}.rh-reading-stages{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-reading-stage:last-child{grid-column:1/-1;min-height:68px}.rh-reading-stage strong{font-size:9px}.rh-reading-compare-grid,.rh-reading-directory-grid{grid-template-columns:1fr}.rh-reading-card{grid-template-columns:auto minmax(0,1fr)}.rh-reading-card-role{grid-column:2;max-width:none;text-align:left}}',
+    '@media(prefers-reduced-motion:reduce){.rh-reading-chip,.rh-reading-stage,.rh-reading-card,.rh-reading-node{transition:none!important}.rh-reading-chip:hover,.rh-reading-card:hover,.rh-reading-stage:hover{transform:none!important}}@media(forced-colors:active){.rh-reading-hero,.rh-reading-stat,.rh-reading-controls,.rh-reading-flight,.rh-reading-dossier,.rh-reading-move,.rh-reading-lens-card,.rh-reading-callout,.rh-reading-comparison,.rh-reading-compare-cell,.rh-reading-planner,.rh-reading-plan-step,.rh-reading-directory,.rh-reading-card,.rh-reading-meta,.rh-reading-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-reading-kicker,.rh-reading-title,.rh-reading-copy,.rh-reading-stat strong,.rh-reading-stat span,.rh-reading-control-label,.rh-reading-result-count,.rh-reading-section-kicker,.rh-reading-panel-head h3,.rh-reading-section-head h3,.rh-reading-panel-head>span,.rh-reading-section-head>span,.rh-reading-detail-kicker,.rh-reading-dossier h3,.rh-reading-code,.rh-reading-byline,.rh-reading-move span,.rh-reading-move strong,.rh-reading-move p,.rh-reading-lens-card span,.rh-reading-lens-card strong,.rh-reading-lens-card p,.rh-reading-callout span,.rh-reading-callout p,.rh-reading-compare-cell span,.rh-reading-compare-cell strong,.rh-reading-compare-note,.rh-reading-mission-question,.rh-reading-plan-step span,.rh-reading-plan-step strong,.rh-reading-plan-step p,.rh-reading-plan-step small,.rh-reading-plan-note,.rh-reading-card-code,.rh-reading-card-copy strong,.rh-reading-card-copy span,.rh-reading-card-role,.rh-reading-reviewed{color:CanvasText}.rh-reading-chip,.rh-reading-stage,.rh-reading-compare-select select,.rh-reading-mission,.rh-reading-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-reading-chip[aria-pressed="true"],.rh-reading-stage[aria-pressed="true"],.rh-reading-mission[aria-pressed="true"],.rh-reading-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-reading-flight-stage{border:1px solid CanvasText;background:Canvas}.rh-reading-sky{fill:Canvas;stroke:CanvasText}.rh-reading-horizon,.rh-reading-route,.rh-reading-wing,.rh-reading-node{stroke:CanvasText}.rh-reading-node[data-active="true"],.rh-reading-arrow{fill:CanvasText}}',
+    '.rh-film-room{--rh-film-accent:#fb7185;--rh-film-gold:#fbbf24;display:grid;gap:14px}.rh-film-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,113,133,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(76,5,25,.78) 54%,rgba(120,53,15,.6));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-film-hero:before{content:"";position:absolute;z-index:-2;right:-92px;top:-136px;width:338px;height:338px;border:1px solid rgba(251,113,133,.24);border-radius:50%;box-shadow:0 0 0 39px rgba(251,191,36,.04),0 0 0 80px rgba(251,113,133,.025)}.rh-film-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(251,113,133,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(251,191,36,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 80%)}.rh-film-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-film-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(253,164,175,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#ffe4e6;font:950 10px/1.08 ui-monospace,Menlo,monospace;letter-spacing:.07em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3)}.rh-film-kicker,.rh-film-section-kicker,.rh-film-detail-kicker{color:var(--rh-film-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-film-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-film-copy{max-width:790px;margin:8px 0 0;color:#ffe4e6;font-size:12px;line-height:1.58}.rh-film-summary{display:grid;grid-template-columns:repeat(2,minmax(94px,1fr));gap:7px}.rh-film-stat{min-width:98px;padding:10px;border:1px solid rgba(253,164,175,.34);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-film-stat strong{display:block;color:#fff1f2;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-film-stat span{display:block;margin-top:5px;color:#fecdd3;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-film-controls,.rh-film-storyboard,.rh-film-dossier,.rh-film-comparison,.rh-film-planner,.rh-film-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.78);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-film-controls{display:grid;gap:10px;padding:13px}.rh-film-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start}.rh-film-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-film-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-film-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-film-chip:hover{transform:translateY(-1px);border-color:var(--rh-film-accent);color:#fff}.rh-film-chip[aria-pressed="true"]{border-color:var(--rh-film-accent);background:rgba(136,19,55,.58);color:#fff;box-shadow:0 0 0 2px rgba(251,113,133,.12)}.rh-film-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#fecdd3;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-film-result-count{align-self:center;color:#fecdd3;font:900 9px/1.2 ui-monospace,Menlo,monospace}.rh-film-workbench{display:grid;grid-template-columns:minmax(0,1.52fr) minmax(310px,.48fr);gap:12px;align-items:stretch}.rh-film-storyboard{overflow:hidden}.rh-film-panel-head,.rh-film-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.rh-film-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-film-section-head{margin-bottom:11px}.rh-film-panel-head h3,.rh-film-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-film-panel-head>span,.rh-film-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right}.rh-film-story-stage{position:relative;aspect-ratio:5/3;min-height:410px;overflow:hidden;background:radial-gradient(circle at 50% 32%,rgba(251,113,133,.16),transparent 28%),radial-gradient(circle at 84% 16%,rgba(251,191,36,.12),transparent 24%),linear-gradient(155deg,#111827,#020617 65%,#4c0519)}.rh-film-story-stage svg{display:block;width:100%;height:100%;min-height:410px}.rh-film-frame{fill:#111827;stroke:#64748b;stroke-width:1.1}.rh-film-screen{fill:#0f172a;stroke:#fb7185;stroke-width:1.1}.rh-film-screen-glow{fill:#fb7185;opacity:.08}.rh-film-sprocket{fill:#020617;stroke:#64748b;stroke-width:.55}.rh-film-horizon{fill:none;stroke:#64748b;stroke-width:.7}.rh-film-route-shadow,.rh-film-route{fill:none;vector-effect:non-scaling-stroke}.rh-film-route-shadow{stroke:#020617;stroke-width:8}.rh-film-route{stroke:#fda4af;stroke-width:2.4;stroke-dasharray:7 6;animation:rhFilmRoute 7s linear infinite}.rh-film-arrow{fill:#fda4af}.rh-film-node{fill:#0f172a;stroke:#fda4af;stroke-width:1.5;transition:r .18s,fill .18s,stroke .18s}.rh-film-node[data-active="true"]{fill:#fbbf24;stroke:#fff7ed;filter:drop-shadow(0 0 6px rgba(251,191,36,.7))}.rh-film-bird{fill:none;stroke:#f8fafc;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}.rh-film-stages{position:absolute;inset:0}.rh-film-stage-button{position:absolute;width:122px;min-height:66px;padding:8px;border:1px solid #64748b;border-radius:12px;background:rgba(15,23,42,.96);color:#e2e8f0;text-align:left;transform:translate(-50%,-50%);transition:transform .17s,border-color .17s,background-color .17s,box-shadow .17s}.rh-film-stage-button:hover{border-color:var(--rh-film-accent);transform:translate(-50%,calc(-50% - 2px))}.rh-film-stage-button[aria-pressed="true"]{border-color:var(--rh-film-gold);background:rgba(30,41,59,.98);box-shadow:0 0 0 2px rgba(251,191,36,.16),inset 3px 0 var(--rh-film-gold)}.rh-film-stage-button:focus-visible{outline:3px solid #fff;outline-offset:2px}.rh-film-stage-code{display:block;color:#fbbf24;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-film-stage-button strong{display:block;margin-top:5px;color:#f8fafc;font-size:10px;line-height:1.15}.rh-film-stage-button span:last-child{display:block;margin-top:3px;color:#94a3b8;font-size:7px;line-height:1.2}.rh-film-story-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34);color:#94a3b8;font-size:9px;line-height:1.45}@keyframes rhFilmRoute{to{stroke-dashoffset:-78}}',
+    '.rh-film-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-film-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-film-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-film-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-film-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-film-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fecdd3;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-film-byline{margin:8px 0 0;color:#fda4af;font:850 9px/1.3 ui-monospace,Menlo,monospace}.rh-film-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-film-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-film-move{margin-top:10px;padding:10px;border:1px solid rgba(251,191,36,.42);border-radius:10px;background:rgba(120,53,15,.18)}.rh-film-move span{display:block;color:#fbbf24;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-film-move strong{display:block;margin-top:6px;color:#fff7ed;font-size:11px;line-height:1.35}.rh-film-move p{margin:5px 0 0;color:#e2e8f0;font-size:9px;line-height:1.45}.rh-film-lens-card{margin-top:9px;padding:10px;border:1px solid rgba(251,113,133,.4);border-radius:10px;background:rgba(76,5,25,.22)}.rh-film-lens-card[data-lens="story"]{border-color:rgba(251,191,36,.44);background:rgba(120,53,15,.2)}.rh-film-lens-card[data-lens="ethics"]{border-color:rgba(196,181,253,.44);background:rgba(76,29,149,.2)}.rh-film-lens-card span{display:block;color:#fda4af;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-film-lens-card strong{display:block;margin-top:6px;color:#f8fafc;font-size:12px;line-height:1.38}.rh-film-lens-card p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.5}.rh-film-callouts{display:grid;gap:7px;margin-top:9px}.rh-film-callout{padding:9px;border-left:3px solid var(--rh-film-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-film-callout[data-tone="critical"]{border-color:#fbbf24}.rh-film-callout[data-tone="content"]{border-color:#c4b5fd}.rh-film-callout span{display:block;color:#fda4af;font-size:8px;font-weight:900}.rh-film-callout[data-tone="critical"] span{color:#fbbf24}.rh-film-callout[data-tone="content"] span{color:#c4b5fd}.rh-film-callout p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-film-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#fda4af;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(253,164,175,.55);text-underline-offset:3px}.rh-film-source:hover{color:#fff}.rh-film-reviewed{margin:8px 0 0;color:#cbd5e1;font-size:8px;line-height:1.4}',
+    '.rh-film-comparison,.rh-film-planner,.rh-film-directory{padding:14px}.rh-film-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-film-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-film-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-film-compare-badge{padding:9px 10px;border:1px solid rgba(251,191,36,.48);border-radius:9px;background:rgba(120,53,15,.2);color:#fef3c7;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-film-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-film-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-film-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-film-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-film-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#fecdd3}.rh-film-compare-note,.rh-film-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-film-mission-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-film-mission{min-height:45px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-film-mission:hover{border-color:var(--rh-film-accent);color:#fff}.rh-film-mission[aria-pressed="true"]{border-color:#fff;background:#9f1239;color:#fff;outline:2px solid var(--rh-film-accent);outline-offset:2px}.rh-film-mission span{display:block;margin-bottom:3px;color:#fbbf24;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-film-mission-question{margin:10px 0 0;color:#ffe4e6;font-size:10px;line-height:1.48}.rh-film-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-film-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(251,113,133,.4);border-radius:10px;background:rgba(76,5,25,.18)}.rh-film-plan-step:not(:last-child):after{content:"→";position:absolute;right:-17px;top:50%;color:#fda4af;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-film-plan-step span{display:block;color:#fda4af;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-film-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-film-plan-step p{margin:5px 0 0;color:#fecdd3;font-size:9px;line-height:1.35}.rh-film-plan-step small{display:block;margin-top:5px;color:#cbd5e1;font-size:8px;line-height:1.4}.rh-film-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-film-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:84px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-film-card:hover{transform:translateY(-2px);border-color:var(--rh-film-accent);background:rgba(30,41,59,.78)}.rh-film-card[data-active="true"]{border-color:var(--rh-film-accent);box-shadow:inset 3px 0 var(--rh-film-accent)}.rh-film-card-code{display:grid;place-items:center;width:42px;height:40px;border:1px solid var(--rh-film-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fecdd3;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-film-card-copy{min-width:0}.rh-film-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-film-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-film-card-role{max-width:76px;color:#fda4af;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-film-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-film-workbench{grid-template-columns:1fr}.rh-film-dossier{min-height:0}.rh-film-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-film-hero{grid-template-columns:1fr;padding:16px}.rh-film-summary{max-width:320px}.rh-film-control-row{grid-template-columns:1fr;gap:4px}.rh-film-control-label,.rh-film-result-count{padding-top:0}.rh-film-panel-head,.rh-film-section-head{align-items:flex-start}.rh-film-story-stage{min-height:470px;aspect-ratio:auto}.rh-film-story-stage svg{min-height:470px}.rh-film-stage-button{width:108px;min-height:62px}.rh-film-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-film-mission-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-film-plan{grid-template-columns:1fr;gap:7px}.rh-film-plan-step:not(:last-child):after{content:"↓";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-film-compare-select{grid-template-columns:1fr}.rh-film-compare-badge{white-space:normal}.rh-film-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-film-hero-main{display:block}.rh-film-hero-mark{margin-bottom:11px}.rh-film-summary{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}.rh-film-summary .rh-film-stat{min-width:0}.rh-film-panel-head,.rh-film-section-head{display:block}.rh-film-panel-head>span,.rh-film-section-head>span{display:block;margin-top:6px;text-align:left}.rh-film-story-stage{min-height:560px}.rh-film-story-stage svg{min-height:560px}.rh-film-stage-button{width:96px;min-height:62px;padding:6px}.rh-film-stage-button:first-child{left:48px!important}.rh-film-stage-button:last-child{left:calc(100% - 48px)!important}.rh-film-stage-button strong{font-size:9px}.rh-film-compare-grid,.rh-film-directory-grid{grid-template-columns:1fr}.rh-film-card{grid-template-columns:auto minmax(0,1fr)}.rh-film-card-role{grid-column:2;max-width:none;text-align:left}}',
+    '@media(prefers-reduced-motion:reduce){.rh-film-chip,.rh-film-node,.rh-film-stage-button,.rh-film-card{transition:none!important}.rh-film-chip:hover,.rh-film-card:hover{transform:none!important}.rh-film-stage-button:hover{transform:translate(-50%,-50%)!important}.rh-film-route{animation:none!important;stroke-dasharray:none}}@media(forced-colors:active){.rh-film-hero,.rh-film-stat,.rh-film-controls,.rh-film-storyboard,.rh-film-dossier,.rh-film-move,.rh-film-lens-card,.rh-film-callout,.rh-film-comparison,.rh-film-compare-cell,.rh-film-planner,.rh-film-plan-step,.rh-film-directory,.rh-film-card,.rh-film-meta,.rh-film-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-film-kicker,.rh-film-title,.rh-film-copy,.rh-film-stat strong,.rh-film-stat span,.rh-film-control-label,.rh-film-result-count,.rh-film-section-kicker,.rh-film-panel-head h3,.rh-film-section-head h3,.rh-film-panel-head>span,.rh-film-section-head>span,.rh-film-detail-kicker,.rh-film-dossier h3,.rh-film-code,.rh-film-byline,.rh-film-move span,.rh-film-move strong,.rh-film-move p,.rh-film-lens-card span,.rh-film-lens-card strong,.rh-film-lens-card p,.rh-film-callout span,.rh-film-callout p,.rh-film-compare-cell span,.rh-film-compare-cell strong,.rh-film-compare-note,.rh-film-mission-question,.rh-film-plan-step span,.rh-film-plan-step strong,.rh-film-plan-step p,.rh-film-plan-step small,.rh-film-plan-note,.rh-film-card-code,.rh-film-card-copy strong,.rh-film-card-copy span,.rh-film-card-role,.rh-film-reviewed{color:CanvasText}.rh-film-chip,.rh-film-stage-button,.rh-film-compare-select select,.rh-film-mission,.rh-film-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-film-chip[aria-pressed="true"],.rh-film-stage-button[aria-pressed="true"],.rh-film-mission[aria-pressed="true"],.rh-film-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-film-story-stage{border:1px solid CanvasText;background:Canvas}.rh-film-frame,.rh-film-screen,.rh-film-screen-glow,.rh-film-sprocket,.rh-film-horizon,.rh-film-route-shadow,.rh-film-route,.rh-film-node,.rh-film-bird{fill:none;stroke:CanvasText;filter:none}.rh-film-node[data-active="true"]{fill:Highlight;stroke:Highlight}}',
+
+    '.rh-nest-studio{--rh-nest-accent:#f59e0b;--rh-nest-green:#86efac;display:grid;gap:14px}.rh-nest-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(245,158,11,.55);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(69,26,3,.82) 54%,rgba(20,83,45,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07)}.rh-nest-hero:before{content:"";position:absolute;z-index:-2;right:-88px;top:-136px;width:338px;height:338px;border:1px solid rgba(245,158,11,.25);border-radius:50%;box-shadow:0 0 0 39px rgba(134,239,172,.04),0 0 0 80px rgba(245,158,11,.025)}.rh-nest-hero:after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(245,158,11,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(134,239,172,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 7%,#000 80%)}.rh-nest-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0}.rh-nest-hero-mark{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(252,211,77,.7);border-radius:18px;background:rgba(2,6,23,.62);color:#fef3c7;font:950 10px/1.08 ui-monospace,Menlo,monospace;letter-spacing:.07em;text-align:center;white-space:pre-line}.rh-nest-kicker,.rh-nest-section-kicker,.rh-nest-detail-kicker{color:var(--rh-nest-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase}.rh-nest-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em}.rh-nest-copy{max-width:800px;margin:8px 0 0;color:#fef3c7;font-size:12px;line-height:1.58}.rh-nest-summary{display:grid;grid-template-columns:repeat(2,minmax(94px,1fr));gap:7px}.rh-nest-stat{min-width:98px;padding:10px;border:1px solid rgba(252,211,77,.34);border-radius:11px;background:rgba(2,6,23,.54);text-align:center}.rh-nest-stat strong{display:block;color:#fffbeb;font:900 18px/1 ui-monospace,Menlo,monospace}.rh-nest-stat span{display:block;margin-top:5px;color:#fde68a;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}',
+    '.rh-nest-controls,.rh-nest-blueprint,.rh-nest-dossier,.rh-nest-comparison,.rh-nest-planner,.rh-nest-directory,.rh-nest-safety{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.78);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04)}.rh-nest-controls{display:grid;gap:10px;padding:13px}.rh-nest-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start}.rh-nest-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase}.rh-nest-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin}.rh-nest-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s}.rh-nest-chip:hover{transform:translateY(-1px);border-color:var(--rh-nest-accent);color:#fff}.rh-nest-chip[aria-pressed="true"]{border-color:var(--rh-nest-accent);background:rgba(120,53,15,.6);color:#fff;box-shadow:0 0 0 2px rgba(245,158,11,.14)}.rh-nest-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#fde68a;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-nest-result-count{align-self:center;color:#fde68a;font:900 9px/1.2 ui-monospace,Menlo,monospace}.rh-nest-workbench{display:grid;grid-template-columns:minmax(0,1.52fr) minmax(310px,.48fr);gap:12px;align-items:stretch}.rh-nest-blueprint{overflow:hidden}.rh-nest-panel-head,.rh-nest-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.rh-nest-panel-head{padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76))}.rh-nest-section-head{margin-bottom:11px}.rh-nest-panel-head h3,.rh-nest-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12}.rh-nest-panel-head>span,.rh-nest-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;text-align:right}',
+    '.rh-nest-scene{position:relative;aspect-ratio:19/11;min-height:410px;overflow:hidden;background:radial-gradient(circle at 72% 18%,rgba(134,239,172,.13),transparent 28%),radial-gradient(circle at 24% 20%,rgba(245,158,11,.13),transparent 25%),linear-gradient(155deg,#111827,#020617 66%,#1c1917)}.rh-nest-scene:focus-visible{outline:3px solid var(--rh-nest-accent);outline-offset:-3px}.rh-nest-scene svg{display:block;width:100%;height:100%;min-height:410px}.rh-nest-grid{fill:none;stroke:#fbbf24;stroke-width:.8;stroke-dasharray:2 10;opacity:.1;vector-effect:non-scaling-stroke}.rh-nest-ground{fill:#292524;stroke:#a8a29e;stroke-width:1.2}.rh-nest-soil{fill:#422006;stroke:#a16207;stroke-width:1.2}.rh-nest-wood{fill:#78350f;stroke:#fbbf24;stroke-width:1.4}.rh-nest-wood-top{fill:#a16207;stroke:#fde68a;stroke-width:1.2}.rh-nest-stone{fill:#334155;stroke:#cbd5e1;stroke-width:1.3}.rh-nest-foliage{fill:#14532d;stroke:#86efac;stroke-width:1;opacity:.88}.rh-nest-twig{fill:none;stroke:#f59e0b;stroke-width:5;stroke-linecap:round}.rh-nest-twig-fine{fill:none;stroke:#fde68a;stroke-width:2.2;stroke-linecap:round}.rh-nest-cup{fill:#451a03;stroke:#fcd34d;stroke-width:2}.rh-nest-lining{fill:none;stroke:#bef264;stroke-width:3;stroke-dasharray:5 3}.rh-nest-chamber{fill:#020617;stroke:#fde68a;stroke-width:1.6}.rh-nest-tunnel{fill:none;stroke:#020617;stroke-width:25;stroke-linecap:round;stroke-linejoin:round}.rh-nest-tunnel-edge{fill:none;stroke:#f59e0b;stroke-width:29;stroke-linecap:round;stroke-linejoin:round;opacity:.5}.rh-nest-egg{fill:#f8fafc;stroke:#fbbf24;stroke-width:1}.rh-nest-bird{fill:none;stroke:#f8fafc;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 2px 2px #020617)}.rh-nest-layer{opacity:.16;transform-box:fill-box;transform-origin:center;transition:opacity .22s,filter .22s,transform .22s}.rh-nest-layer[data-built="true"]{opacity:1;filter:drop-shadow(0 4px 5px rgba(2,6,23,.45))}.rh-nest-layer[data-current="true"]{opacity:1;filter:drop-shadow(0 0 8px rgba(245,158,11,.58));animation:rhNestPulse 2.8s ease-in-out infinite}.rh-nest-dimension{fill:#fde68a;font:900 9px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em}.rh-nest-callout-line{fill:none;stroke:#fbbf24;stroke-width:1.2;stroke-dasharray:3 3}.rh-nest-stage-controls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;padding:10px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34)}.rh-nest-stage{min-height:58px;padding:8px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-nest-stage:hover{transform:translateY(-1px);border-color:var(--rh-nest-accent)}.rh-nest-stage[aria-pressed="true"]{border-color:var(--rh-nest-accent);background:rgba(120,53,15,.65);box-shadow:inset 3px 0 var(--rh-nest-accent)}.rh-nest-stage:focus-visible{outline:3px solid #fff;outline-offset:2px}.rh-nest-stage span{display:block;color:#fbbf24;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-nest-stage strong{display:block;margin-top:5px;color:#f8fafc;font-size:9px;line-height:1.18}.rh-nest-stage-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.5);color:#cbd5e1;font-size:9px;line-height:1.45}.rh-nest-stage-note strong{color:#fcd34d}@keyframes rhNestPulse{50%{opacity:.72}}',
+    '.rh-nest-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-nest-accent);background:linear-gradient(155deg,rgba(30,41,59,.97),rgba(15,23,42,.98))}.rh-nest-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.rh-nest-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em}.rh-nest-code{display:grid;place-items:center;flex:0 0 auto;min-width:50px;height:39px;padding:0 7px;border:1px solid var(--rh-nest-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fde68a;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-nest-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.rh-nest-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.58);border-radius:999px;background:rgba(2,6,23,.38);color:#e2e8f0;font:800 8px/1.2 ui-monospace,Menlo,monospace}.rh-nest-focus{margin-top:10px;padding:11px;border:1px solid rgba(245,158,11,.44);border-radius:10px;background:rgba(120,53,15,.18)}.rh-nest-focus[data-lens="materials"]{border-color:rgba(134,239,172,.45);background:rgba(20,83,45,.2)}.rh-nest-focus[data-lens="stewardship"]{border-color:rgba(125,211,252,.45);background:rgba(12,74,110,.2)}.rh-nest-focus span{display:block;color:#fbbf24;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase}.rh-nest-focus[data-lens="materials"] span{color:#86efac}.rh-nest-focus[data-lens="stewardship"] span{color:#7dd3fc}.rh-nest-focus strong{display:block;margin-top:6px;color:#f8fafc;font-size:12px;line-height:1.38}.rh-nest-focus p{margin:6px 0 0;color:#e2e8f0;font-size:9px;line-height:1.5}.rh-nest-facts{display:grid;gap:7px;margin-top:9px}.rh-nest-fact{padding:9px;border-left:3px solid var(--rh-nest-accent);border-radius:0 8px 8px 0;background:rgba(2,6,23,.38)}.rh-nest-fact[data-tone="green"]{border-color:#86efac}.rh-nest-fact[data-tone="blue"]{border-color:#7dd3fc}.rh-nest-fact span{display:block;color:#fbbf24;font-size:8px;font-weight:900}.rh-nest-fact[data-tone="green"] span{color:#86efac}.rh-nest-fact[data-tone="blue"] span{color:#7dd3fc}.rh-nest-fact p{margin:4px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42}.rh-nest-source{display:inline-flex;align-items:center;gap:6px;align-self:flex-start;margin-top:auto;padding-top:14px;color:#fcd34d;font-size:9px;font-weight:900;text-decoration:underline;text-decoration-color:rgba(252,211,77,.55);text-underline-offset:3px}.rh-nest-source:hover{color:#fff}.rh-nest-reviewed{margin:8px 0 0;color:#94a3b8;font-size:8px;line-height:1.4}',
+    '.rh-nest-comparison,.rh-nest-planner,.rh-nest-directory,.rh-nest-safety{padding:14px}.rh-nest-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:end}.rh-nest-compare-select label{color:#e2e8f0;font-size:9px;font-weight:850}.rh-nest-compare-select select{display:block;width:100%;min-height:42px;margin-top:6px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850}.rh-nest-compare-badge{padding:9px 10px;border:1px solid rgba(134,239,172,.46);border-radius:9px;background:rgba(20,83,45,.2);color:#dcfce7;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap}.rh-nest-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px}.rh-nest-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.48);border-radius:10px;background:rgba(2,6,23,.34)}.rh-nest-compare-cell span{display:block;color:#cbd5e1;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase}.rh-nest-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.35}.rh-nest-compare-cell strong+strong{margin-top:7px;padding-top:7px;border-top:1px solid rgba(100,116,139,.38);color:#fde68a}.rh-nest-compare-note,.rh-nest-plan-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45}.rh-nest-mission-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:11px}.rh-nest-mission{min-height:47px;padding:7px 8px;border:1px solid #64748b;border-radius:9px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;line-height:1.25}.rh-nest-mission:hover{border-color:var(--rh-nest-accent);color:#fff}.rh-nest-mission[aria-pressed="true"]{border-color:#fff;background:#92400e;color:#fff;outline:2px solid var(--rh-nest-accent);outline-offset:2px}.rh-nest-mission span{display:block;margin-bottom:3px;color:#bef264;font:950 7px/1 ui-monospace,Menlo,monospace}.rh-nest-mission-question{margin:10px 0 0;color:#fef3c7;font-size:10px;line-height:1.48}.rh-nest-plan{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-top:11px}.rh-nest-plan-step{position:relative;min-width:0;padding:11px;border:1px solid rgba(245,158,11,.4);border-radius:10px;background:rgba(120,53,15,.18)}.rh-nest-plan-step:not(:last-child):after{content:"\2192";position:absolute;right:-17px;top:50%;color:#fbbf24;font-size:17px;font-weight:900;transform:translateY(-50%)}.rh-nest-plan-step span{display:block;color:#fbbf24;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-transform:uppercase}.rh-nest-plan-step strong{display:block;margin-top:5px;color:#f8fafc;font-size:11px}.rh-nest-plan-step p{margin:5px 0 0;color:#fde68a;font-size:9px;line-height:1.35}.rh-nest-plan-step small{display:block;margin-top:5px;color:#cbd5e1;font-size:8px;line-height:1.4}.rh-nest-safety{display:grid;grid-template-columns:auto minmax(0,1fr);gap:11px;align-items:start;border-color:rgba(125,211,252,.45);background:linear-gradient(110deg,rgba(12,74,110,.24),rgba(15,23,42,.82))}.rh-nest-safety-mark{display:grid;place-items:center;width:38px;height:38px;border:1px solid #7dd3fc;border-radius:11px;color:#bae6fd;font:950 9px/1 ui-monospace,Menlo,monospace}.rh-nest-safety strong{display:block;color:#e0f2fe;font-size:10px}.rh-nest-safety p{margin:5px 0 0;color:#bae6fd;font-size:9px;line-height:1.48}',
+    '.rh-nest-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rh-nest-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:84px;padding:10px;border:1px solid rgba(100,116,139,.52);border-radius:11px;background:rgba(2,6,23,.34);color:#e2e8f0;text-align:left;transition:transform .16s,border-color .16s,background-color .16s}.rh-nest-card:hover{transform:translateY(-2px);border-color:var(--rh-nest-accent);background:rgba(30,41,59,.78)}.rh-nest-card[data-active="true"]{border-color:var(--rh-nest-accent);box-shadow:inset 3px 0 var(--rh-nest-accent)}.rh-nest-card-code{display:grid;place-items:center;width:42px;height:40px;border:1px solid var(--rh-nest-accent);border-radius:10px;background:rgba(2,6,23,.52);color:#fde68a;font:950 8px/1 ui-monospace,Menlo,monospace}.rh-nest-card-copy{min-width:0}.rh-nest-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.25}.rh-nest-card-copy span{display:block;margin-top:4px;color:#cbd5e1;font-size:8px;line-height:1.32}.rh-nest-card-role{max-width:78px;color:#86efac;font:900 8px/1.25 ui-monospace,Menlo,monospace;text-align:right}.rh-nest-empty{padding:20px;border:1px dashed #64748b;border-radius:11px;color:#e2e8f0;font-size:10px;line-height:1.5;text-align:center}',
+    '@media(max-width:1020px){.rh-nest-workbench{grid-template-columns:1fr}.rh-nest-dossier{min-height:0}.rh-nest-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:720px){.rh-nest-hero{grid-template-columns:1fr;padding:16px}.rh-nest-summary{max-width:320px}.rh-nest-control-row{grid-template-columns:1fr;gap:4px}.rh-nest-control-label,.rh-nest-result-count{padding-top:0}.rh-nest-panel-head,.rh-nest-section-head{align-items:flex-start}.rh-nest-scene{min-height:390px;aspect-ratio:auto}.rh-nest-scene svg{min-height:390px}.rh-nest-stage-controls{grid-template-columns:repeat(5,minmax(92px,1fr));overflow-x:auto;scroll-snap-type:x mandatory}.rh-nest-stage{scroll-snap-align:start}.rh-nest-compare-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-nest-mission-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.rh-nest-plan{grid-template-columns:1fr;gap:7px}.rh-nest-plan-step:not(:last-child):after{content:"\2193";right:auto;left:18px;top:auto;bottom:-15px;transform:none}.rh-nest-compare-select{grid-template-columns:1fr}.rh-nest-compare-badge{white-space:normal}.rh-nest-directory-grid{grid-template-columns:1fr 1fr}}@media(max-width:460px){.rh-nest-hero-main{display:block}.rh-nest-hero-mark{margin-bottom:11px}.rh-nest-summary{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr))}.rh-nest-summary .rh-nest-stat{min-width:0}.rh-nest-panel-head,.rh-nest-section-head{display:block}.rh-nest-panel-head>span,.rh-nest-section-head>span{display:block;margin-top:6px;text-align:left}.rh-nest-scene{min-height:330px}.rh-nest-scene svg{min-height:330px}.rh-nest-compare-grid,.rh-nest-directory-grid{grid-template-columns:1fr}.rh-nest-card{grid-template-columns:auto minmax(0,1fr)}.rh-nest-card-role{grid-column:2;max-width:none;text-align:left}.rh-nest-safety{grid-template-columns:1fr}.rh-nest-safety-mark{width:auto;height:30px}}',
+    '@media(prefers-reduced-motion:reduce){.rh-nest-chip,.rh-nest-layer,.rh-nest-stage,.rh-nest-card{transition:none!important}.rh-nest-chip:hover,.rh-nest-stage:hover,.rh-nest-card:hover{transform:none!important}.rh-nest-layer[data-current="true"]{animation:none!important}}@media(forced-colors:active){.rh-nest-hero,.rh-nest-stat,.rh-nest-controls,.rh-nest-blueprint,.rh-nest-dossier,.rh-nest-focus,.rh-nest-fact,.rh-nest-comparison,.rh-nest-compare-cell,.rh-nest-planner,.rh-nest-plan-step,.rh-nest-directory,.rh-nest-card,.rh-nest-meta,.rh-nest-safety,.rh-nest-empty{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-nest-kicker,.rh-nest-title,.rh-nest-copy,.rh-nest-stat strong,.rh-nest-stat span,.rh-nest-control-label,.rh-nest-result-count,.rh-nest-section-kicker,.rh-nest-panel-head h3,.rh-nest-section-head h3,.rh-nest-panel-head>span,.rh-nest-section-head>span,.rh-nest-detail-kicker,.rh-nest-dossier h3,.rh-nest-code,.rh-nest-focus span,.rh-nest-focus strong,.rh-nest-focus p,.rh-nest-fact span,.rh-nest-fact p,.rh-nest-compare-cell span,.rh-nest-compare-cell strong,.rh-nest-compare-note,.rh-nest-mission-question,.rh-nest-plan-step span,.rh-nest-plan-step strong,.rh-nest-plan-step p,.rh-nest-plan-step small,.rh-nest-plan-note,.rh-nest-card-code,.rh-nest-card-copy strong,.rh-nest-card-copy span,.rh-nest-card-role,.rh-nest-reviewed,.rh-nest-safety strong,.rh-nest-safety p{color:CanvasText}.rh-nest-chip,.rh-nest-stage,.rh-nest-compare-select select,.rh-nest-mission,.rh-nest-card{border-color:ButtonText;background:ButtonFace;color:ButtonText}.rh-nest-chip[aria-pressed="true"],.rh-nest-stage[aria-pressed="true"],.rh-nest-mission[aria-pressed="true"],.rh-nest-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-nest-scene{border:1px solid CanvasText;background:Canvas}.rh-nest-grid,.rh-nest-ground,.rh-nest-soil,.rh-nest-wood,.rh-nest-wood-top,.rh-nest-stone,.rh-nest-foliage,.rh-nest-twig,.rh-nest-twig-fine,.rh-nest-cup,.rh-nest-lining,.rh-nest-chamber,.rh-nest-tunnel,.rh-nest-tunnel-edge,.rh-nest-egg,.rh-nest-bird,.rh-nest-callout-line{fill:none;stroke:CanvasText;filter:none}.rh-nest-layer{opacity:1}}',
+
+    '.rh-threat-lab{--rh-threat-accent:#fb7185;display:grid;gap:14px;}.rh-threat-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(251,113,133,.52);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(76,5,25,.82) 56%,rgba(49,46,129,.58));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07);}.rh-threat-hero::before{content:"";position:absolute;z-index:-2;right:-88px;top:-136px;width:338px;height:338px;border:1px solid rgba(251,113,133,.24);border-radius:50%;box-shadow:0 0 0 39px rgba(244,63,94,.045),0 0 0 80px rgba(129,140,248,.025);}.rh-threat-hero::after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(251,113,133,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(251,113,133,.04) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 8%,#000 78%);}.rh-threat-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0;}.rh-threat-hero-icon{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(253,164,175,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#ffe4e6;font:950 10px/1.05 ui-monospace,Menlo,monospace;letter-spacing:.07em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.3);}.rh-threat-kicker,.rh-threat-section-kicker,.rh-threat-detail-kicker{color:var(--rh-threat-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-threat-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em;}.rh-threat-copy{max-width:790px;margin:8px 0 0;color:#ffe4e6;font-size:12px;line-height:1.58;}.rh-threat-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-threat-stat{min-width:96px;padding:10px;border:1px solid rgba(253,164,175,.36);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-threat-stat strong{display:block;color:#fff1f2;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-threat-stat span{display:block;margin-top:5px;color:#fecdd3;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-threat-controls,.rh-threat-blueprint,.rh-threat-dossier,.rh-threat-comparison,.rh-threat-directory{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.77);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-threat-controls{display:grid;gap:11px;padding:13px;}.rh-threat-control-row{display:grid;grid-template-columns:116px minmax(0,1fr);gap:11px;align-items:start;}.rh-threat-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-threat-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-threat-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-threat-chip:hover{transform:translateY(-1px);border-color:var(--rh-threat-accent);color:#fff;}.rh-threat-chip[aria-pressed="true"]{border-color:var(--rh-threat-accent);background:rgba(159,18,57,.5);color:#fff;box-shadow:0 0 0 2px rgba(251,113,133,.12);}.rh-threat-chip-code{display:grid;place-items:center;min-width:24px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#fda4af;font:950 7px/1 ui-monospace,Menlo,monospace;}.rh-threat-search{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;}.rh-threat-search input{width:100%;min-height:40px;padding:8px 11px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;}.rh-threat-search input::placeholder{color:#94a3b8;}.rh-threat-search button{min-height:40px;padding:8px 11px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:9px;font-weight:850;}.rh-threat-search button:hover{border-color:var(--rh-threat-accent);color:#fff;}.rh-threat-result-count{align-self:center;color:#fecdd3;font:900 9px/1.2 ui-monospace,Menlo,monospace;}',
+    '.rh-threat-workbench{display:grid;grid-template-columns:minmax(0,1.52fr) minmax(310px,.48fr);gap:12px;align-items:stretch;}.rh-threat-blueprint{overflow:hidden;}.rh-threat-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.95),rgba(15,23,42,.76));}.rh-threat-panel-head h3,.rh-threat-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-threat-lens-chip{flex:0 0 auto;max-width:43%;padding:7px 9px;border:1px solid rgba(253,164,175,.48);border-radius:999px;background:rgba(76,5,25,.48);color:#ffe4e6;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:center;}.rh-threat-stage{position:relative;aspect-ratio:21/11;min-height:410px;overflow:hidden;background:radial-gradient(circle at 78% 18%,rgba(129,140,248,.15),transparent 28%),linear-gradient(155deg,#111827,#020617 62%,#190b18);}.rh-threat-stage svg{display:block;width:100%;height:100%;min-height:410px;}.rh-threat-stage:focus-visible{outline:3px solid var(--rh-threat-accent);outline-offset:-3px;}.rh-threat-grid{fill:none;stroke:#fda4af;stroke-width:1;stroke-dasharray:3 9;opacity:.1;vector-effect:non-scaling-stroke;}.rh-threat-horizon{fill:#0f172a;stroke:#64748b;stroke-width:1;}.rh-threat-scene-land{fill:#3f3f46;stroke:#a1a1aa;stroke-width:1.2;}.rh-threat-scene-water{fill:#075985;stroke:#67e8f9;stroke-width:1;}.rh-threat-scene-structure{fill:#1e293b;stroke:#cbd5e1;stroke-width:1.5;}.rh-threat-scene-accent{fill:none;stroke:var(--rh-threat-accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;}.rh-threat-scene-soft{fill:var(--rh-threat-accent);opacity:.16;stroke:var(--rh-threat-accent);stroke-width:1.2;}.rh-threat-scene-bird{fill:none;stroke:#f8fafc;stroke-width:2.4;stroke-linecap:round;filter:drop-shadow(0 2px 2px #020617);}.rh-threat-flow-shadow,.rh-threat-flow{fill:none;vector-effect:non-scaling-stroke;}.rh-threat-flow-shadow{stroke:#020617;stroke-width:10;}.rh-threat-flow{stroke:#fda4af;stroke-width:3;stroke-dasharray:11 9;animation:rhThreatFlow 7s linear infinite;}.rh-threat-arrow{fill:#fda4af;}.rh-threat-node{transform-box:fill-box;transform-origin:center;transition:opacity .18s,filter .18s,transform .18s;}.rh-threat-node-bg{fill:rgba(15,23,42,.94);stroke:#64748b;stroke-width:2;}.rh-threat-node[data-active="true"] .rh-threat-node-bg{stroke:var(--rh-threat-accent);stroke-width:3;filter:drop-shadow(0 0 8px rgba(251,113,133,.48));}.rh-threat-node-code-bg{fill:#020617;stroke:var(--rh-threat-accent);stroke-width:1.5;}.rh-threat-node-code{fill:var(--rh-threat-accent);font:950 9px/1 ui-monospace,Menlo,monospace;text-anchor:middle;}.rh-threat-node-title{fill:#f8fafc;font:950 12px/1 ui-sans-serif,system-ui;letter-spacing:.04em;text-anchor:middle;}.rh-threat-node-copy{fill:#cbd5e1;font:800 10px/1.2 ui-sans-serif,system-ui;text-anchor:middle;}.rh-threat-gate{opacity:.16;transition:opacity .18s,filter .18s;}.rh-threat-gate[data-selected="true"]{opacity:1;filter:drop-shadow(0 0 8px #4ade80);animation:rhThreatGate 2.5s ease-in-out infinite;}.rh-threat-gate-line{stroke:#4ade80;stroke-width:2;stroke-dasharray:3 4;stroke-linecap:round;}.rh-threat-gate-bar{fill:#052e16;stroke:#86efac;stroke-width:2;}.rh-threat-gate-text{fill:#dcfce7;font:950 7px/1 ui-monospace,Menlo,monospace;text-anchor:middle;}.rh-threat-stage-key{position:absolute;z-index:2;right:12px;top:11px;display:flex;flex-wrap:wrap;gap:7px;padding:7px 9px;border:1px solid rgba(253,164,175,.38);border-radius:9px;background:rgba(2,6,23,.84);color:#cbd5e1;font-size:8px;font-weight:800;}.rh-threat-stage-key span{display:inline-flex;align-items:center;gap:5px;}.rh-threat-stage-key i{display:block;width:18px;height:0;border-top:3px dashed #fda4af;}.rh-threat-stage-key i[data-key="gate"]{border-top-style:solid;border-color:#4ade80;}.rh-threat-stage-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.34);color:#94a3b8;font-size:9px;line-height:1.45;}@keyframes rhThreatFlow{to{stroke-dashoffset:-80}}@keyframes rhThreatGate{50%{opacity:.72}}',
+    '.rh-threat-dossier{display:flex;flex-direction:column;padding:16px;border-color:var(--rh-threat-accent);background:linear-gradient(155deg,rgba(30,41,59,.96),rgba(15,23,42,.98));}.rh-threat-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-threat-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em;}.rh-threat-code{display:grid;place-items:center;flex:0 0 auto;min-width:48px;height:38px;padding:0 7px;border:1px solid var(--rh-threat-accent);border-radius:10px;background:rgba(2,6,23,.52);color:var(--rh-threat-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-threat-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}.rh-threat-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.48);border-radius:999px;background:rgba(2,6,23,.35);color:#cbd5e1;font:800 8px/1.2 ui-monospace,Menlo,monospace;}.rh-threat-reading{margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.3);}.rh-threat-reading[data-tone="impact"]{border-color:rgba(251,113,133,.42);background:rgba(76,5,25,.2);}.rh-threat-reading[data-tone="response"]{border-color:rgba(74,222,128,.38);background:rgba(6,78,59,.15);}.rh-threat-reading span{display:block;color:var(--rh-threat-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-threat-reading[data-tone="response"] span{color:#86efac;}.rh-threat-reading p{margin:5px 0 0;color:#e2e8f0;font-size:9px;line-height:1.48;}.rh-threat-plan{margin-top:11px;padding-top:11px;border-top:1px solid rgba(100,116,139,.42);}.rh-threat-plan-head{display:flex;align-items:center;justify-content:space-between;gap:8px;}.rh-threat-plan-head span{color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-threat-plan-head strong{color:#dcfce7;font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-threat-plan-track{height:7px;margin-top:7px;overflow:hidden;border-radius:999px;background:#020617;box-shadow:inset 0 0 0 1px rgba(100,116,139,.5);}.rh-threat-plan-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#2dd4bf);transition:width .2s;}.rh-threat-plan-note{margin:7px 0 0;color:#a7f3d0;font-size:8px;line-height:1.4;}.rh-threat-interventions{display:grid;gap:7px;margin-top:9px;}.rh-threat-intervention{display:grid;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;min-height:54px;padding:9px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#cbd5e1;text-align:left;}.rh-threat-intervention:hover{border-color:#86efac;color:#fff;}.rh-threat-intervention[aria-pressed="true"]{border-color:#86efac;background:rgba(6,95,70,.48);color:#fff;box-shadow:inset 3px 0 #4ade80;}.rh-threat-intervention-code{display:grid;place-items:center;width:31px;height:31px;border:1px solid currentColor;border-radius:9px;font:950 7px/1 ui-monospace,Menlo,monospace;}.rh-threat-intervention-copy strong{display:block;color:inherit;font-size:9px;line-height:1.25;}.rh-threat-intervention-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:8px;line-height:1.28;}.rh-threat-intervention[aria-pressed="true"] .rh-threat-intervention-copy span{color:#bbf7d0;}',
+    '.rh-threat-comparison,.rh-threat-directory{padding:14px;}.rh-threat-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-threat-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-threat-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;}.rh-threat-compare-select select{width:100%;min-height:41px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850;}.rh-threat-compare-badge{padding:8px 10px;border:1px solid rgba(196,181,253,.42);border-radius:9px;background:rgba(76,29,149,.2);color:#ddd6fe;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-threat-compare-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:10px;}.rh-threat-compare-cell{min-width:0;padding:10px 8px;border:1px solid rgba(100,116,139,.42);border-radius:10px;background:rgba(2,6,23,.32);}.rh-threat-compare-cell span{display:block;color:#94a3b8;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-threat-compare-cell strong{display:block;margin-top:6px;color:#f8fafc;font-size:9px;line-height:1.3;}.rh-threat-compare-cell strong+strong{margin-top:5px;color:#c4b5fd;}.rh-threat-compare-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-threat-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-threat-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:86px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-threat-card:hover{transform:translateY(-2px);border-color:var(--rh-threat-accent);background:rgba(30,41,59,.72);}.rh-threat-card[data-active="true"]{border-color:var(--rh-threat-accent);box-shadow:inset 3px 0 var(--rh-threat-accent);}.rh-threat-card-code{display:grid;place-items:center;width:39px;height:39px;border:1px solid var(--rh-threat-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-threat-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-threat-card-copy{min-width:0;}.rh-threat-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.22;}.rh-threat-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:8px;line-height:1.3;}.rh-threat-card-tag{max-width:72px;color:#fecdd3;font:900 7px/1.25 ui-monospace,Menlo,monospace;text-align:right;text-transform:uppercase;}.rh-threat-empty{padding:28px;border:1px dashed #64748b;border-radius:12px;color:#cbd5e1;text-align:center;}.rh-threat-empty strong{display:block;color:#f8fafc;font-size:13px;}.rh-threat-empty p{margin:6px 0 0;font-size:10px;}.rh-threat-empty button{min-height:38px;margin-top:12px;padding:7px 11px;border:1px solid var(--rh-threat-accent);border-radius:9px;background:#881337;color:#fff1f2;font-size:10px;font-weight:900;}.rh-threat-note{padding:10px 12px;border:1px solid rgba(251,113,133,.3);border-radius:11px;background:rgba(76,5,25,.15);color:#fecdd3;font-size:9px;line-height:1.5;}.rh-threat-note strong{color:#fff1f2;}',
+    '@media(max-width:1020px){.rh-threat-workbench{grid-template-columns:1fr;}.rh-threat-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:720px){.rh-threat-hero{grid-template-columns:1fr;padding:16px;}.rh-threat-summary{max-width:270px;}.rh-threat-control-row{grid-template-columns:1fr;gap:4px;}.rh-threat-control-label{padding-top:0;}.rh-threat-workbench{grid-template-columns:1fr;}.rh-threat-stage{min-height:440px;overflow-x:auto;}.rh-threat-stage svg{width:840px;min-width:840px;height:440px;min-height:440px;}.rh-threat-stage-key{right:9px;left:auto;top:9px;bottom:auto;max-width:300px;justify-content:center;}.rh-threat-dossier{display:flex;}.rh-threat-plan{margin-top:11px;padding-top:11px;padding-left:0;border-top:1px solid rgba(100,116,139,.42);border-left:0;}.rh-threat-compare-select{grid-template-columns:1fr;}.rh-threat-compare-badge{white-space:normal;}.rh-threat-compare-grid,.rh-threat-directory-grid{grid-template-columns:1fr 1fr;}.rh-threat-lens-chip{max-width:50%;white-space:normal;}}@media(max-width:460px){.rh-threat-hero-main{display:block;}.rh-threat-hero-icon{margin-bottom:11px;}.rh-threat-summary{max-width:none;}.rh-threat-search{grid-template-columns:1fr;}.rh-threat-panel-head{display:block;}.rh-threat-lens-chip{max-width:none;margin-top:8px;text-align:left;}.rh-threat-compare-grid,.rh-threat-directory-grid{grid-template-columns:1fr;}.rh-threat-card{grid-template-columns:auto minmax(0,1fr);}.rh-threat-card-tag{grid-column:2;max-width:none;text-align:left;}}@media(prefers-reduced-motion:reduce){.rh-threat-chip,.rh-threat-node,.rh-threat-gate,.rh-threat-plan-track span,.rh-threat-card{transition:none!important;animation:none!important;}.rh-threat-chip:hover,.rh-threat-card:hover{transform:none!important;}.rh-threat-flow{animation:none;stroke-dasharray:none;}}@media(forced-colors:active){.rh-threat-hero,.rh-threat-stat,.rh-threat-controls,.rh-threat-blueprint,.rh-threat-dossier,.rh-threat-reading,.rh-threat-comparison,.rh-threat-directory,.rh-threat-compare-cell,.rh-threat-card,.rh-threat-empty,.rh-threat-note,.rh-threat-stage-key,.rh-threat-meta{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-threat-kicker,.rh-threat-title,.rh-threat-copy,.rh-threat-stat strong,.rh-threat-stat span,.rh-threat-section-kicker,.rh-threat-panel-head h3,.rh-threat-lens-chip,.rh-threat-detail-kicker,.rh-threat-dossier h3,.rh-threat-code,.rh-threat-reading span,.rh-threat-reading p,.rh-threat-plan-head span,.rh-threat-plan-head strong,.rh-threat-section-head h3,.rh-threat-section-head>span,.rh-threat-compare-cell span,.rh-threat-compare-cell strong,.rh-threat-compare-note,.rh-threat-card-code,.rh-threat-card-copy strong,.rh-threat-card-copy span,.rh-threat-card-tag,.rh-threat-empty,.rh-threat-note{color:CanvasText}.rh-threat-chip,.rh-threat-search input,.rh-threat-search button,.rh-threat-intervention,.rh-threat-compare-select select,.rh-threat-card,.rh-threat-empty button{border-color:ButtonText;background:ButtonFace;color:ButtonText;}.rh-threat-chip[aria-pressed="true"],.rh-threat-intervention[aria-pressed="true"],.rh-threat-card[data-active="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-threat-stage{border:1px solid CanvasText;background:Canvas}.rh-threat-grid,.rh-threat-scene-land,.rh-threat-scene-water,.rh-threat-scene-structure,.rh-threat-scene-accent,.rh-threat-scene-soft,.rh-threat-scene-bird,.rh-threat-flow-shadow,.rh-threat-flow,.rh-threat-node-bg,.rh-threat-node-code-bg,.rh-threat-gate-line,.rh-threat-gate-bar{fill:none;stroke:CanvasText;filter:none}.rh-threat-node-code,.rh-threat-node-title,.rh-threat-node-copy,.rh-threat-gate-text{fill:CanvasText}.rh-threat-gate[data-selected="true"]{filter:none}.rh-threat-plan-track{border:1px solid CanvasText;background:Canvas}.rh-threat-plan-track span{background:Highlight}.rh-threat-node[data-active="true"] .rh-threat-node-bg{fill:none;stroke:Highlight;filter:none}.rh-threat-intervention[aria-pressed="true"] .rh-threat-intervention-copy span{color:HighlightText}.rh-threat-arrow{fill:CanvasText}.rh-threat-stage-key i{border-color:CanvasText}.rh-threat-stage-key i[data-key="gate"]{border-color:Highlight}.rh-threat-gate[data-selected="true"] .rh-threat-gate-line,.rh-threat-gate[data-selected="true"] .rh-threat-gate-bar{stroke:Highlight}}',
+
+    '.rh-world-atlas{--rh-world-accent:#38bdf8;display:grid;gap:14px;}.rh-world-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(56,189,248,.5);border-radius:20px;background:linear-gradient(118deg,rgba(2,6,23,.98),rgba(12,74,110,.78) 55%,rgba(21,94,117,.62));box-shadow:0 22px 56px rgba(2,6,23,.42),inset 0 1px rgba(255,255,255,.07);}.rh-world-hero::before{content:"";position:absolute;z-index:-2;right:-82px;top:-132px;width:330px;height:330px;border:1px solid rgba(125,211,252,.25);border-radius:50%;box-shadow:0 0 0 38px rgba(34,211,238,.045),0 0 0 79px rgba(14,165,233,.025);}.rh-world-hero::after{content:"";position:absolute;z-index:-1;inset:0;background-image:linear-gradient(rgba(125,211,252,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(125,211,252,.045) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(90deg,transparent 6%,#000 76%);}.rh-world-hero-main{display:flex;align-items:flex-start;gap:14px;min-width:0;}.rh-world-hero-icon{display:grid;place-items:center;flex:0 0 64px;width:64px;height:64px;border:1px solid rgba(125,211,252,.72);border-radius:18px;background:rgba(2,6,23,.62);color:#e0f2fe;font:950 10px/1.05 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08),0 12px 30px rgba(2,6,23,.28);}.rh-world-kicker,.rh-world-section-kicker,.rh-world-detail-kicker{color:var(--rh-world-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.14em;text-transform:uppercase;}.rh-world-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(24px,2.9vw,36px);font-weight:950;line-height:1.02;letter-spacing:-.037em;}.rh-world-copy{max-width:780px;margin:8px 0 0;color:#dbeafe;font-size:12px;line-height:1.58;}.rh-world-summary{display:grid;grid-template-columns:repeat(2,minmax(92px,1fr));gap:7px;}.rh-world-stat{min-width:96px;padding:10px;border:1px solid rgba(125,211,252,.38);border-radius:11px;background:rgba(2,6,23,.54);text-align:center;}.rh-world-stat strong{display:block;color:#ecfeff;font:900 18px/1 ui-monospace,Menlo,monospace;}.rh-world-stat span{display:block;margin-top:5px;color:#bae6fd;font:800 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}',
+    '.rh-world-controls,.rh-world-map-card,.rh-world-dossier,.rh-world-compare,.rh-world-passport,.rh-world-directory,.rh-world-dispatch{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.76);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-world-controls{display:grid;gap:11px;padding:13px;}.rh-world-control-row{display:grid;grid-template-columns:112px minmax(0,1fr);gap:11px;align-items:start;}.rh-world-control-label{padding-top:9px;color:#94a3b8;font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-world-chip-row{display:flex;gap:7px;overflow-x:auto;padding:2px 2px 6px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-world-chip{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:38px;padding:7px 11px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font-size:9px;font-weight:850;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s,color .16s;}.rh-world-chip:hover{transform:translateY(-1px);border-color:var(--rh-world-accent);color:#fff;}.rh-world-chip[aria-pressed="true"]{border-color:var(--rh-world-accent);background:rgba(3,105,161,.5);color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.12);}.rh-world-chip-code{display:grid;place-items:center;min-width:23px;height:19px;padding:0 4px;border-radius:99px;background:rgba(2,6,23,.5);color:#7dd3fc;font:950 7px/1 ui-monospace,Menlo,monospace;}.rh-world-months{display:grid;grid-template-columns:repeat(12,minmax(34px,1fr));gap:5px;}.rh-world-month{min-height:39px;padding:5px 2px;border:1px solid #475569;border-radius:9px;background:rgba(2,6,23,.42);color:#94a3b8;font:900 8px/1 ui-monospace,Menlo,monospace;}.rh-world-month:hover{border-color:#7dd3fc;color:#e0f2fe;}.rh-world-month[aria-pressed="true"]{border-color:#fff;background:#0369a1;color:#fff;box-shadow:0 0 0 2px rgba(56,189,248,.2);}.rh-world-month span{display:block;margin-top:4px;color:inherit;font-size:7px;opacity:.8;}',
+    '.rh-world-workbench{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(300px,.5fr);gap:12px;align-items:stretch;}.rh-world-map-card{overflow:hidden;}.rh-world-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.94),rgba(15,23,42,.76));}.rh-world-panel-head h3,.rh-world-section-head h3{margin:4px 0 0;color:#f8fafc;font-size:16px;font-weight:950;line-height:1.12;}.rh-world-route-chip{flex:0 0 auto;max-width:44%;padding:7px 9px;border:1px solid rgba(125,211,252,.52);border-radius:999px;background:rgba(8,47,73,.55);color:#cffafe;font:900 8px/1.2 ui-monospace,Menlo,monospace;text-align:center;}.rh-world-map-stage{position:relative;aspect-ratio:2/1;min-height:360px;overflow:hidden;background:radial-gradient(circle at 68% 26%,rgba(14,116,144,.36),transparent 32%),linear-gradient(165deg,#082f49,#061a2b 57%,#020617);}.rh-world-map-stage>svg{position:absolute;inset:0;display:block;width:100%;height:100%;}.rh-world-graticule{fill:none;stroke:#38bdf8;stroke-width:1;stroke-dasharray:3 8;opacity:.14;vector-effect:non-scaling-stroke;}.rh-world-continent{fill:#164e63;stroke:#67e8f9;stroke-width:1.4;opacity:.8;vector-effect:non-scaling-stroke;}.rh-world-continent-shade{fill:#0f766e;opacity:.22;}.rh-world-continent-label{fill:#a5f3fc;font:850 11px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-anchor:middle;opacity:.62;}.rh-world-route-shadow,.rh-world-route{fill:none;vector-effect:non-scaling-stroke;}.rh-world-route-shadow{stroke:#020617;stroke-width:8;opacity:.58;}.rh-world-route{stroke:#fbbf24;stroke-width:3;stroke-dasharray:9 7;filter:drop-shadow(0 0 5px rgba(251,191,36,.8));}.rh-world-route-arrow{fill:#fbbf24;}.rh-world-marker{--rh-world-pin:#38bdf8;position:absolute;z-index:4;display:grid;place-items:center;width:35px;height:35px;padding:0;border:2px solid #e0f2fe;border-radius:50%;background:#082f49;color:#fff;font:950 7px/1 ui-monospace,Menlo,monospace;transform:translate(-50%,-50%);box-shadow:0 0 0 3px rgba(2,6,23,.78),0 6px 16px rgba(2,6,23,.62);transition:transform .16s,opacity .16s,filter .16s,background-color .16s;}.rh-world-marker:hover{z-index:8;transform:translate(-50%,-50%) scale(1.16);background:#0e7490;}.rh-world-marker[aria-pressed="true"]{z-index:9;border-color:#fff;background:var(--rh-world-pin);color:#020617;box-shadow:0 0 0 4px rgba(255,255,255,.18),0 0 22px var(--rh-world-pin);}.rh-world-marker[data-world-compare="true"]{z-index:7;border-color:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.24),0 7px 18px rgba(2,6,23,.7);}.rh-world-marker[data-world-filtered="true"]{opacity:.22;filter:saturate(.25);}.rh-world-marker[data-world-season="off"]{border-style:dashed;color:#94a3b8;}.rh-world-marker-label{position:absolute;left:50%;top:calc(100% + 7px);display:none;min-width:max-content;max-width:150px;padding:5px 7px;border:1px solid rgba(125,211,252,.48);border-radius:7px;background:rgba(2,6,23,.92);color:#e0f2fe;font:850 8px/1.2 ui-sans-serif,system-ui;transform:translateX(-50%);white-space:nowrap;box-shadow:0 8px 18px rgba(2,6,23,.48);}.rh-world-marker:hover .rh-world-marker-label,.rh-world-marker:focus-visible .rh-world-marker-label,.rh-world-marker[aria-pressed="true"] .rh-world-marker-label{display:block;}.rh-world-map-key{position:absolute;z-index:3;left:12px;bottom:11px;display:flex;flex-wrap:wrap;gap:7px;padding:7px 9px;border:1px solid rgba(125,211,252,.4);border-radius:9px;background:rgba(2,6,23,.84);color:#cbd5e1;font-size:8px;font-weight:800;}.rh-world-map-key span{display:inline-flex;align-items:center;gap:5px;}.rh-world-map-key i{display:block;width:9px;height:9px;border:2px solid #e0f2fe;border-radius:50%;background:#0e7490;}.rh-world-map-key i[data-key="compare"]{border-color:#fbbf24;background:#082f49;}.rh-world-map-key i[data-key="off"]{border-style:dashed;background:#0f172a;}.rh-world-map-note{padding:9px 12px;border-top:1px solid rgba(100,116,139,.35);background:rgba(2,6,23,.32);color:#94a3b8;font-size:9px;line-height:1.45;}',
+    '.rh-world-dossier{display:flex;flex-direction:column;overflow:hidden;border-color:var(--rh-world-accent);background:linear-gradient(155deg,rgba(30,41,59,.96),rgba(15,23,42,.98));}.rh-world-scene{position:relative;min-height:190px;overflow:hidden;border-bottom:1px solid rgba(100,116,139,.42);background:#082f49;}.rh-world-scene svg{display:block;width:100%;height:100%;min-height:190px;}.rh-world-scene-sky{fill:#0c4a6e;}.rh-world-scene-sun{fill:#fde68a;opacity:.82;}.rh-world-scene-haze{fill:#67e8f9;opacity:.08;}.rh-world-scene-far{fill:#155e75;stroke:#67e8f9;stroke-width:1;opacity:.78;}.rh-world-scene-near{fill:#0f3f46;stroke:#2dd4bf;stroke-width:1.4;}.rh-world-scene-water{fill:#0369a1;opacity:.8;}.rh-world-scene-ice{fill:#dbeafe;stroke:#bae6fd;stroke-width:1;opacity:.9;}.rh-world-scene-tree{fill:#064e3b;stroke:#6ee7b7;stroke-width:1;}.rh-world-scene-trunk{fill:#78350f;}.rh-world-scene-bird{fill:none;stroke:#f8fafc;stroke-width:2.4;stroke-linecap:round;filter:drop-shadow(0 2px 2px #020617);}.rh-world-scene-route{fill:none;stroke:#fbbf24;stroke-width:2;stroke-dasharray:8 6;opacity:.82;}.rh-world-scene-label{fill:#f8fafc;font:950 14px/1 ui-sans-serif,system-ui;paint-order:stroke;stroke:#020617;stroke-width:5;}.rh-world-scene-code{fill:var(--rh-world-accent);font:950 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.12em;paint-order:stroke;stroke:#020617;stroke-width:4;}.rh-world-dossier-body{display:flex;flex:1;flex-direction:column;padding:15px;}.rh-world-dossier-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}.rh-world-dossier h3{margin:5px 0 0;color:#f8fafc;font-size:21px;font-weight:950;line-height:1.06;letter-spacing:-.03em;}.rh-world-dossier-code{display:grid;place-items:center;flex:0 0 auto;min-width:47px;height:38px;padding:0 7px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(2,6,23,.52);color:var(--rh-world-accent);font:950 10px/1 ui-monospace,Menlo,monospace;}.rh-world-meta-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}.rh-world-meta{padding:5px 7px;border:1px solid rgba(100,116,139,.48);border-radius:999px;background:rgba(2,6,23,.35);color:#cbd5e1;font:800 8px/1.2 ui-monospace,Menlo,monospace;}.rh-world-reading{margin-top:9px;padding:9px 10px;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.3);}.rh-world-reading[data-tone="species"]{border-color:rgba(251,191,36,.4);background:rgba(120,53,15,.16);}.rh-world-reading[data-tone="why"]{border-color:rgba(52,211,153,.38);background:rgba(6,78,59,.15);}.rh-world-reading span{display:block;color:var(--rh-world-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.09em;text-transform:uppercase;}.rh-world-reading[data-tone="species"] span{color:#fcd34d;}.rh-world-reading[data-tone="why"] span{color:#6ee7b7;}.rh-world-reading p{margin:5px 0 0;color:#e2e8f0;font-size:9px;line-height:1.48;}.rh-world-passport-button{min-height:41px;margin-top:auto;padding:8px 10px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(3,105,161,.28);color:#e0f2fe;font-size:10px;font-weight:900;}.rh-world-passport-button[aria-pressed="true"]{border-color:#86efac;background:rgba(6,95,70,.52);color:#dcfce7;}',
+    '.rh-world-planning-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:12px;}.rh-world-compare,.rh-world-passport{padding:14px;}.rh-world-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}.rh-world-section-head>span{color:#94a3b8;font:800 9px/1.2 ui-monospace,Menlo,monospace;}.rh-world-compare-select{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:center;}.rh-world-compare-select select{width:100%;min-height:41px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#0f172a;color:#f8fafc;font-size:10px;font-weight:850;}.rh-world-compare-route{padding:8px 10px;border:1px solid rgba(251,191,36,.42);border-radius:9px;background:rgba(120,53,15,.18);color:#fde68a;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-world-compare-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px;}.rh-world-compare-metric{min-width:0;padding:10px 7px;border:1px solid rgba(100,116,139,.42);border-radius:10px;background:rgba(2,6,23,.32);text-align:center;}.rh-world-compare-metric span{display:block;color:#94a3b8;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.07em;text-transform:uppercase;}.rh-world-compare-metric strong{display:block;margin-top:6px;color:#f8fafc;font:950 11px/1.2 ui-monospace,Menlo,monospace;}.rh-world-compare-note{margin:10px 0 0;color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-world-passport-track{height:9px;overflow:hidden;border-radius:999px;background:#020617;box-shadow:inset 0 0 0 1px rgba(100,116,139,.5);}.rh-world-passport-track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#22d3ee);transition:width .22s;}.rh-world-stamps{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin-top:11px;}.rh-world-stamp{display:grid;place-items:center;aspect-ratio:1;border:1px dashed #64748b;border-radius:50%;background:rgba(2,6,23,.3);color:#64748b;font:900 6px/1 ui-monospace,Menlo,monospace;}.rh-world-stamp[data-stamped="true"]{border-style:solid;border-color:#86efac;background:rgba(6,95,70,.45);color:#dcfce7;box-shadow:0 0 10px rgba(74,222,128,.16);}.rh-world-passport-copy{margin:9px 0 0;color:#cbd5e1;font-size:9px;line-height:1.42;}',
+    '.rh-world-directory{padding:14px;}.rh-world-directory-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}.rh-world-card{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;min-height:84px;padding:10px;border:1px solid rgba(100,116,139,.5);border-radius:11px;background:rgba(2,6,23,.32);color:#cbd5e1;text-align:left;transition:transform .16s,border-color .16s,background-color .16s;}.rh-world-card:hover{transform:translateY(-2px);border-color:var(--rh-world-accent);background:rgba(30,41,59,.72);}.rh-world-card[data-active="true"]{border-color:var(--rh-world-accent);box-shadow:inset 3px 0 var(--rh-world-accent);}.rh-world-card-code{display:grid;place-items:center;width:38px;height:38px;border:1px solid var(--rh-world-accent);border-radius:10px;background:rgba(2,6,23,.5);color:var(--rh-world-accent);font:950 8px/1 ui-monospace,Menlo,monospace;}.rh-world-card-copy{min-width:0;}.rh-world-card-copy strong{display:block;color:#f8fafc;font-size:10px;line-height:1.22;}.rh-world-card-copy span{display:block;margin-top:4px;color:#94a3b8;font-size:8px;line-height:1.25;}.rh-world-card-season{color:#fde68a;font:900 7px/1.3 ui-monospace,Menlo,monospace;text-align:right;white-space:pre-line;}.rh-world-empty{padding:25px;border:1px dashed #64748b;border-radius:11px;color:#cbd5e1;text-align:center;font-size:10px;}',
+    '.rh-world-dispatch{padding:14px;border-color:rgba(196,181,253,.45);background:linear-gradient(145deg,rgba(49,46,129,.28),rgba(15,23,42,.85));}.rh-world-dispatch-tabs{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 7px;scroll-snap-type:x proximity;}.rh-world-dispatch-tab{flex:0 0 auto;min-height:36px;padding:6px 10px;border:1px solid #64748b;border-radius:999px;background:#1e293b;color:#cbd5e1;font:900 8px/1 ui-monospace,Menlo,monospace;scroll-snap-align:start;}.rh-world-dispatch-tab[aria-selected="true"]{border-color:#c4b5fd;background:#5b21b6;color:#fff;}.rh-world-dispatch-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:12px;margin-top:8px;}.rh-world-dispatch-brief{padding:13px;border:1px solid rgba(196,181,254,.4);border-radius:12px;background:rgba(2,6,23,.36);}.rh-world-dispatch-brief h4{margin:5px 0 0;color:#f8fafc;font-size:16px;font-weight:950;}.rh-world-dispatch-brief p{margin:8px 0 0;color:#ddd6fe;font-size:10px;line-height:1.5;}.rh-world-clues{display:grid;gap:6px;margin-top:10px;}.rh-world-clue{display:flex;gap:8px;align-items:flex-start;padding:8px;border:1px solid rgba(100,116,139,.38);border-radius:9px;background:rgba(15,23,42,.5);color:#e2e8f0;font-size:9px;line-height:1.4;}.rh-world-clue strong{color:#c4b5fd;font:950 8px/1.2 ui-monospace,Menlo,monospace;}.rh-world-dispatch-answers{display:grid;gap:7px;align-content:start;}.rh-world-dispatch-answer{min-height:43px;padding:8px 10px;border:1px solid #64748b;border-radius:10px;background:#1e293b;color:#e2e8f0;font-size:10px;font-weight:850;text-align:left;}.rh-world-dispatch-answer:hover{border-color:#c4b5fd;color:#fff;}.rh-world-dispatch-answer[aria-pressed="true"]{border-color:#fff;background:#5b21b6;color:#fff;}.rh-world-dispatch-result{padding:10px;border:1px solid #64748b;border-radius:10px;background:rgba(2,6,23,.4);color:#cbd5e1;font-size:9px;line-height:1.45;}.rh-world-dispatch-result[data-result="correct"]{border-color:#4ade80;background:rgba(6,78,59,.28);color:#dcfce7;}.rh-world-dispatch-result[data-result="incorrect"]{border-color:#fb7185;background:rgba(127,29,29,.25);color:#ffe4e6;}.rh-world-dispatch-result strong{display:block;margin-bottom:4px;color:inherit;font-size:10px;}.rh-world-note{padding:10px 12px;border:1px solid rgba(125,211,252,.3);border-radius:11px;background:rgba(8,47,73,.18);color:#bae6fd;font-size:9px;line-height:1.48;}.rh-world-note strong{color:#e0f2fe;}',
+    '@media(max-width:1020px){.rh-world-workbench,.rh-world-planning-grid{grid-template-columns:1fr;}.rh-world-dossier{display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);}.rh-world-scene{border-right:1px solid rgba(100,116,139,.42);border-bottom:0;}.rh-world-directory-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}@media(max-width:720px){.rh-world-hero{grid-template-columns:1fr;padding:16px;}.rh-world-summary{max-width:270px;}.rh-world-control-row{grid-template-columns:1fr;gap:4px;}.rh-world-control-label{padding-top:0;}.rh-world-months{display:flex;overflow-x:auto;padding:2px 2px 7px;scroll-snap-type:x proximity;}.rh-world-month{flex:0 0 44px;scroll-snap-align:start;}.rh-world-map-stage{min-height:270px;}.rh-world-dossier{display:flex;}.rh-world-scene{border-right:0;border-bottom:1px solid rgba(100,116,139,.42);}.rh-world-directory-grid,.rh-world-dispatch-grid{grid-template-columns:1fr;}.rh-world-marker{width:31px;height:31px;font-size:6px;}.rh-world-marker-label{max-width:110px;overflow:hidden;text-overflow:ellipsis;}.rh-world-map-key{right:9px;left:9px;justify-content:center;}.rh-world-route-chip{max-width:50%;white-space:normal;}.rh-world-compare-select{grid-template-columns:1fr;}.rh-world-compare-route{white-space:normal;}.rh-world-stamps{grid-template-columns:repeat(8,minmax(0,1fr));}}@media(max-width:460px){.rh-world-hero-main{display:block;}.rh-world-hero-icon{margin-bottom:11px;}.rh-world-summary{grid-template-columns:repeat(2,minmax(0,1fr));max-width:none;}.rh-world-map-stage{min-height:230px;}.rh-world-marker{width:28px;height:28px;border-width:1px;}.rh-world-marker-label{display:none!important;}.rh-world-panel-head{display:block;}.rh-world-route-chip{max-width:none;margin-top:8px;text-align:left;}.rh-world-compare-metrics{grid-template-columns:1fr;}.rh-world-card{grid-template-columns:auto minmax(0,1fr);}.rh-world-card-season{grid-column:2;text-align:left;}.rh-world-stamps{grid-template-columns:repeat(5,minmax(0,1fr));}}@media(prefers-reduced-motion:reduce){.rh-world-chip,.rh-world-marker,.rh-world-card,.rh-world-passport-track span{transition:none!important;}.rh-world-chip:hover,.rh-world-card:hover{transform:none!important;}.rh-world-route{stroke-dasharray:none;filter:none;}}@media(forced-colors:active){.rh-world-hero,.rh-world-stat,.rh-world-controls,.rh-world-map-card,.rh-world-dossier,.rh-world-compare,.rh-world-passport,.rh-world-directory,.rh-world-dispatch,.rh-world-reading,.rh-world-dispatch-brief,.rh-world-clue,.rh-world-dispatch-result,.rh-world-note,.rh-world-map-key,.rh-world-meta{border-color:CanvasText;background:Canvas;color:CanvasText;box-shadow:none}.rh-world-kicker,.rh-world-title,.rh-world-copy,.rh-world-stat strong,.rh-world-stat span,.rh-world-section-kicker,.rh-world-panel-head h3,.rh-world-route-chip,.rh-world-detail-kicker,.rh-world-dossier h3,.rh-world-dossier-code,.rh-world-reading span,.rh-world-reading p,.rh-world-section-head h3,.rh-world-section-head>span,.rh-world-compare-metric span,.rh-world-compare-metric strong,.rh-world-compare-note,.rh-world-passport-copy,.rh-world-card-code,.rh-world-card-copy strong,.rh-world-card-copy span,.rh-world-card-season,.rh-world-dispatch-brief h4,.rh-world-dispatch-brief p,.rh-world-clue,.rh-world-dispatch-result,.rh-world-note{color:CanvasText}.rh-world-chip,.rh-world-month,.rh-world-passport-button,.rh-world-compare-select select,.rh-world-card,.rh-world-dispatch-tab,.rh-world-dispatch-answer{border-color:ButtonText;background:ButtonFace;color:ButtonText;}.rh-world-chip[aria-pressed="true"],.rh-world-month[aria-pressed="true"],.rh-world-marker[aria-pressed="true"],.rh-world-card[data-active="true"],.rh-world-dispatch-tab[aria-selected="true"],.rh-world-dispatch-answer[aria-pressed="true"]{border-color:Highlight;background:Highlight;color:HighlightText}.rh-world-map-stage,.rh-world-scene{border:1px solid CanvasText;background:Canvas}.rh-world-continent,.rh-world-route-shadow,.rh-world-route,.rh-world-scene-far,.rh-world-scene-near,.rh-world-scene-bird,.rh-world-scene-route{fill:none;stroke:CanvasText;filter:none}.rh-world-marker{border-color:ButtonText;background:ButtonFace;color:ButtonText;box-shadow:none}.rh-world-passport-track{border:1px solid CanvasText;background:Canvas}.rh-world-passport-track span,.rh-world-stamp[data-stamped="true"]{background:Highlight;color:HighlightText;}.rh-world-stamp{border-color:CanvasText;color:CanvasText;}}',
+
     '.rh-mystery-lab{--rh-mystery-accent:#c084fc;display:grid;gap:14px;}.rh-mystery-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;overflow:hidden;padding:20px;border:1px solid rgba(192,132,252,.48);border-radius:19px;background:linear-gradient(118deg,rgba(15,23,42,.98),rgba(49,46,129,.78) 54%,rgba(88,28,135,.58));box-shadow:0 20px 52px rgba(2,6,23,.4),inset 0 1px rgba(255,255,255,.06);}.rh-mystery-hero::after{content:"";position:absolute;z-index:-1;right:-74px;top:-118px;width:310px;height:310px;border:1px solid rgba(216,180,254,.22);border-radius:50%;box-shadow:0 0 0 35px rgba(168,85,247,.045),0 0 0 72px rgba(129,140,248,.025);}.rh-mystery-hero-main{display:flex;align-items:flex-start;gap:13px;min-width:0;}.rh-mystery-hero-icon{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;border:1px solid rgba(216,180,254,.68);border-radius:17px;background:rgba(2,6,23,.58);color:#f3e8ff;font:950 10px/1.15 ui-monospace,Menlo,monospace;text-align:center;white-space:pre-line;box-shadow:inset 0 1px rgba(255,255,255,.08);}.rh-mystery-kicker,.rh-mystery-section-kicker,.rh-mystery-dossier-kicker{color:var(--rh-mystery-accent);font:900 10px/1.2 ui-sans-serif,system-ui;letter-spacing:.13em;text-transform:uppercase;}.rh-mystery-title{margin:5px 0 0;color:#f8fafc;font-size:clamp(23px,2.8vw,35px);font-weight:950;line-height:1.03;letter-spacing:-.035em;}.rh-mystery-copy{max-width:770px;margin:7px 0 0;color:#ede9fe;font-size:12px;line-height:1.55;}',
     '.rh-mystery-summary{display:grid;grid-template-columns:repeat(3,minmax(78px,1fr));gap:7px;}.rh-mystery-stat{min-width:82px;padding:10px;border:1px solid rgba(216,180,254,.34);border-radius:11px;background:rgba(2,6,23,.5);text-align:center;}.rh-mystery-stat strong{display:block;color:#faf5ff;font:900 17px/1 ui-monospace,Menlo,monospace;}.rh-mystery-stat span{display:block;margin-top:5px;color:#ddd6fe;font:800 7px/1.2 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-mystery-case-rail{display:flex;gap:7px;overflow-x:auto;padding:3px 2px 8px;scroll-snap-type:x proximity;overscroll-behavior-x:contain;scrollbar-width:thin;}.rh-mystery-case-tab{position:relative;display:grid;grid-template-columns:auto 1fr;grid-template-areas:"number level" "number name";column-gap:8px;align-items:center;flex:0 0 154px;min-height:55px;padding:8px 10px;border:1px solid #64748b;border-radius:11px;background:rgba(30,41,59,.86);color:#cbd5e1;text-align:left;scroll-snap-align:start;transition:transform .16s,border-color .16s,background-color .16s;}.rh-mystery-case-tab:hover{transform:translateY(-2px);border-color:var(--tab-accent,#c084fc);}.rh-mystery-case-tab[aria-pressed="true"]{border-color:var(--tab-accent,#c084fc);background:rgba(76,29,149,.62);box-shadow:inset 3px 0 var(--tab-accent,#c084fc);}.rh-mystery-case-tab[data-status="correct"]{border-color:#34d399;background:rgba(6,78,59,.42);}.rh-mystery-case-tab[data-status="incorrect"]{border-color:#fb7185;background:rgba(136,19,55,.32);}.rh-mystery-case-number{grid-area:number;display:grid;place-items:center;width:31px;height:31px;border:1px solid var(--tab-accent,#c084fc);border-radius:9px;color:var(--tab-accent,#c084fc);font:950 9px/1 ui-monospace,Menlo,monospace;}.rh-mystery-case-level{grid-area:level;color:#a78bfa;font:900 7px/1 ui-monospace,Menlo,monospace;text-transform:uppercase;}.rh-mystery-case-name{grid-area:name;margin-top:4px;color:#f8fafc;font-size:9px;font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}',
     '.rh-mystery-workbench{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(320px,.55fr);gap:12px;align-items:stretch;}.rh-mystery-scene-panel,.rh-mystery-dossier{border:1px solid rgba(100,116,139,.56);border-radius:16px;background:rgba(15,23,42,.76);box-shadow:0 15px 38px rgba(2,6,23,.24),inset 0 1px rgba(255,255,255,.04);}.rh-mystery-scene-panel{overflow:hidden;}.rh-mystery-scene-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border-bottom:1px solid rgba(100,116,139,.42);background:linear-gradient(100deg,rgba(30,41,59,.94),rgba(49,46,129,.72));}.rh-mystery-scene-title{display:block;margin-top:4px;color:#f8fafc;font:900 14px/1.2 ui-sans-serif,system-ui;}.rh-mystery-difficulty{padding:6px 9px;border:1px solid var(--rh-mystery-accent);border-radius:999px;background:rgba(46,16,101,.48);color:#f3e8ff;font:900 9px/1.2 ui-monospace,Menlo,monospace;white-space:nowrap;}.rh-mystery-scene-stage{position:relative;aspect-ratio:9/5;min-height:330px;overflow:hidden;background:#0f172a;}.rh-mystery-scene-stage svg{display:block;width:100%;height:100%;}.rh-mystery-hud{position:absolute;left:12px;right:12px;bottom:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;}.rh-mystery-hud span{padding:6px 8px;border:1px solid rgba(226,232,240,.38);border-radius:8px;background:rgba(2,6,23,.78);color:#e2e8f0;font:850 8px/1.15 ui-monospace,Menlo,monospace;}.rh-mystery-observation{padding:12px 13px;border-top:1px solid rgba(100,116,139,.4);background:rgba(2,6,23,.42);}.rh-mystery-observation span{display:block;color:var(--rh-mystery-accent);font:900 8px/1.2 ui-sans-serif,system-ui;letter-spacing:.1em;text-transform:uppercase;}.rh-mystery-observation p{margin:6px 0 0;color:#f1f5f9;font-size:11px;line-height:1.52;}',
@@ -4780,7 +4846,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.42: WORLD TOUR — 15 international raptor destinations
   // ───────────────────────────────────────────────────────────
   var WORLD_TOUR = {
-    intro: 'Beyond N. America, the world is rich with raptor diversity. This tour covers 15 international destinations where serious birders go to see species unavailable anywhere in N. America.',
+    intro: 'Compare 15 benchmark raptor field stations across six continents. Read migration, habitat, culture, conservation, season, and access together to plan an evidence-led global expedition.',
     destinations: [
       {
         name: 'Veracruz, Mexico',
@@ -4873,7 +4939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         nearestAirport: 'Delhi (3-hour drive)'
       },
       {
-        name: 'Iceland (year-round)',
+        name: 'Iceland',
         flag: '🇮🇸',
         season: 'May-September',
         species: 'White-tailed eagle, gyrfalcon, merlin, rough-legged hawk',
@@ -4906,7 +4972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         name: 'New Zealand (S. Island)',
         flag: '🇳🇿',
         season: 'November-April',
-        species: 'New Zealand falcon (Karearea), swamp harrier, weka',
+        species: 'New Zealand falcon (karearea), swamp harrier',
         attraction: 'Endemic NZ falcon. Recovery from near-extinction.',
         whyVisit: 'See uniquely New Zealand raptor + visit Maori cultural sites associated with Haast\'s eagle.',
         cost: 'High. $150-400/night.',
@@ -4938,6 +5004,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
   // NEW v0.42: RECORDS & SUPERLATIVES
   // ───────────────────────────────────────────────────────────
+
+
+  // Visual metadata for the Global Raptor Expedition Atlas. Months are zero-based
+  // to match JavaScript dates; map positions and route lines are schematic.
+  var WORLD_TOUR_VISUALS = [
+    { kind: 'veracruz', code: 'VER', continent: 'North America', focus: 'migration', months: [8, 9, 10], mapX: 23.3, mapY: 39.4, lat: 19.2, lon: -96.1, scene: 'migration', accent: '#fb923c', signature: 'River of Raptors', habitat: 'Coastal migration bottleneck', costTier: 2, fieldNote: 'Scan the cloud base for kettles, then follow streaming lines toward the coastal plain.' },
+    { kind: 'eilat', code: 'EIL', continent: 'Asia', focus: 'migration', months: [2, 3, 4, 8, 9, 10], mapX: 59.7, mapY: 33.7, lat: 29.6, lon: 34.9, scene: 'desert', accent: '#f59e0b', signature: 'Red Sea flyway', habitat: 'Desert migration corridor', costTier: 2, fieldNote: 'Morning thermals lift broad-winged migrants before they cross exposed desert terrain.' },
+    { kind: 'bayan-olgii', code: 'BAY', continent: 'Asia', focus: 'culture', months: [9], mapX: 75, mapY: 22.8, lat: 48.9, lon: 89.9, scene: 'steppe', accent: '#fbbf24', signature: 'Golden Eagle Festival', habitat: 'High steppe and mountain', costTier: 3, fieldNote: 'Observe at respectful distance and place living cultural knowledge ahead of photography.' },
+    { kind: 'hawk-mountain', code: 'HMK', continent: 'North America', focus: 'migration', months: [7, 8, 9, 10, 11], mapX: 28.9, mapY: 27.4, lat: 40.6, lon: -75.9, scene: 'ridge', accent: '#a3e635', signature: 'Conservation birthplace', habitat: 'Appalachian ridgeline', costTier: 1, fieldNote: 'Use ridge lift, wind direction, and silhouette shape together before calling a bird.' },
+    { kind: 'tarifa', code: 'TAR', continent: 'Europe', focus: 'migration', months: [7, 8, 9], mapX: 48.4, mapY: 30, lat: 36, lon: -5.6, scene: 'strait', accent: '#22d3ee', signature: 'Gibraltar crossing', habitat: 'Coastal strait', costTier: 2, fieldNote: 'Watch wind shifts: soaring birds wait for favorable conditions before committing to open water.' },
+    { kind: 'tikal', code: 'TIK', continent: 'North America', focus: 'rainforest', months: [0, 1, 2, 3, 10, 11], mapX: 25.1, mapY: 40.4, lat: 17.2, lon: -89.6, scene: 'rainforest', accent: '#34d399', signature: 'Canopy hawk-eagles', habitat: 'Lowland tropical forest', costTier: 2, fieldNote: 'Listen for alarm calls and use high temple viewpoints without approaching nests.' },
+    { kind: 'manu', code: 'MAN', continent: 'South America', focus: 'rainforest', months: [4, 5, 6, 7, 8, 9], mapX: 30.1, mapY: 56.8, lat: -12.2, lon: -71.7, scene: 'rainforest', accent: '#10b981', signature: 'Harpy eagle canopy', habitat: 'Amazon rainforest', costTier: 3, fieldNote: 'Canopy towers improve sight lines, but patient listening often detects large forest eagles first.' },
+    { kind: 'cape-may', code: 'CMY', continent: 'North America', focus: 'migration', months: [8, 9, 10], mapX: 29.2, mapY: 28.4, lat: 38.9, lon: -74.9, scene: 'coast', accent: '#60a5fa', signature: 'Atlantic flyway lab', habitat: 'Coastal migration funnel', costTier: 2, fieldNote: 'Combine tail shape, wingbeat cadence, and wind position while birds move past the point.' },
+    { kind: 'bharatpur', code: 'BHR', continent: 'Asia', focus: 'conservation', months: [0, 1, 10, 11], mapX: 71.5, mapY: 34.9, lat: 27.2, lon: 77.5, scene: 'wetland', accent: '#2dd4bf', signature: 'Vulture recovery watch', habitat: 'Managed wetland mosaic', costTier: 1, fieldNote: 'Survey exposed snags and wetland edges while noting the wider scavenger community.' },
+    { kind: 'iceland', code: 'ICE', continent: 'Europe', focus: 'winter', months: [4, 5, 6, 7, 8], mapX: 44.7, mapY: 14, lat: 64.9, lon: -19, scene: 'ice', accent: '#bae6fd', signature: 'North Atlantic raptors', habitat: 'Subarctic coast and upland', costTier: 3, fieldNote: 'Long daylight helps summer surveys; weather and protected-site guidance set the field plan.' },
+    { kind: 'hokkaido', code: 'HOK', continent: 'Asia', focus: 'winter', months: [1, 2], mapX: 89.7, mapY: 26, lat: 43.2, lon: 142.8, scene: 'ice', accent: '#c4b5fd', signature: 'Drift-ice sea eagles', habitat: 'Winter sea-ice coast', costTier: 3, fieldNote: 'Read tide, ice edge, and fishing activity to anticipate eagle gathering points.' },
+    { kind: 'maasai-mara', code: 'MAR', continent: 'Africa', focus: 'savanna', months: [6, 7, 8, 9], mapX: 59.8, mapY: 50.8, lat: -1.5, lon: 35.1, scene: 'savanna', accent: '#f97316', signature: 'Savanna predator guild', habitat: 'Open grassland and woodland', costTier: 3, fieldNote: 'Use prey gatherings and thermals to locate eagles, vultures, and secretary birds across the plain.' },
+    { kind: 'new-zealand', code: 'NZL', continent: 'Oceania', focus: 'conservation', months: [0, 1, 2, 3, 10, 11], mapX: 95, mapY: 74.4, lat: -44, lon: 170, scene: 'alpine', accent: '#818cf8', signature: 'Karearea recovery', habitat: 'Alpine and open country', costTier: 3, fieldNote: 'Look along forest margins and high-country faces while respecting active recovery sites.' },
+    { kind: 'skagit', code: 'SKG', continent: 'North America', focus: 'winter', months: [0, 1, 11], mapX: 16.2, mapY: 23.1, lat: 48.5, lon: -121.8, scene: 'river', accent: '#38bdf8', signature: 'Salmon-run eagles', habitat: 'Temperate river corridor', costTier: 1, fieldNote: 'Map salmon activity first, then scan riverside trees and gravel bars from public viewpoints.' },
+    { kind: 'falsterbo', code: 'FAL', continent: 'Europe', focus: 'migration', months: [7, 8, 9], mapX: 53.6, mapY: 19.2, lat: 55.4, lon: 12.8, scene: 'coast', accent: '#a78bfa', signature: 'Baltic departure point', habitat: 'Coastal heath and strait', costTier: 3, fieldNote: 'Track weather fronts and count movement direction to understand the Scandinavian flyway.' }
+  ];
+
+  var WORLD_TOUR_DISPATCHES = [
+    { title: 'The million-bird sky', prompt: 'Your field team reports immense autumn kettles funneling along a coastal plain. Where should the expedition deploy?', clues: ['Peak window: September through November', 'Broad-winged hawks and Swainson\'s hawks dominate', 'The count can exceed five million migrants in a season'], options: [0, 1, 3], answer: 0, lesson: 'Veracruz is the River of Raptors, a globally important migration bottleneck.' },
+    { title: 'Giants on drift ice', prompt: 'A winter survey needs the largest sea eagles feeding along a frozen coast. Choose the field station.', clues: ['Peak window: February through March', 'Drift ice shapes feeding access', 'Steller\'s sea eagles gather with white-tailed eagles'], options: [9, 10, 13], answer: 1, lesson: 'Hokkaido pairs Sea of Okhotsk drift ice with exceptional Steller\'s sea eagle viewing.' },
+    { title: 'A living eagle tradition', prompt: 'The brief prioritizes a respectful study of the long relationship between people and golden eagles.', clues: ['High mountain steppe', 'Kazakh berkutchi knowledge', 'An October cultural festival'], options: [11, 2, 4], answer: 1, lesson: 'Bayan-Olgii is known for Kazakh eagle-hunting heritage and the Golden Eagle Festival.' },
+    { title: 'Canopy apex search', prompt: 'A research team seeks a remote dry-season base for possible harpy eagle observations.', clues: ['Amazon canopy towers', 'May through October access window', 'Mandatory local guiding protects a complex field site'], options: [5, 8, 6], answer: 2, lesson: 'Manu National Park protects vast Amazon habitat where patient canopy work can reveal harpy eagles.' },
+    { title: 'Crossing the Red Sea corridor', prompt: 'Choose the station where Old World raptors use spring thermals between Africa and Eurasia.', clues: ['Desert migration bottleneck', 'Two major seasonal windows', 'Honey buzzards, steppe eagles, and black kites'], options: [14, 1, 0], answer: 1, lesson: 'Eilat concentrates migration along the Red Sea corridor in both spring and autumn.' }
+  ];
+
+
   var RAPTOR_RECORDS = {
     intro: 'Raptor superlatives — the fastest, biggest, smallest, longest-lived, most-traveled. Some of these records are well-known; others are surprising.',
     records: [
@@ -4971,7 +5068,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.42: THREATS DATABASE — 15+ specific threats
   // ───────────────────────────────────────────────────────────
   var THREATS_DB = {
-    intro: 'A comprehensive database of threats facing modern raptors. Each entry explains the threat, who is affected, mitigation efforts, + how individuals can help.',
+    intro: 'Trace 17 pressures through source, exposure, affected guild, and biological outcome. Compare pathways, examine evidence context, and build layered responses without reducing complex conservation decisions to a single score.',
     threats: [
       {
         threat: 'Lead poisoning (ammunition + fishing tackle)',
@@ -5032,15 +5129,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       {
         threat: 'Wind energy',
         affects: 'Golden eagle, raptors in migration corridors',
-        scale: 'Growing. ~600,000 raptor deaths/year estimated from wind turbines.',
-        mechanism: 'Birds hit moving blades. Some species avoid; others (eagles, vultures) don\'t.',
+        scale: 'Growing development; effects vary by site, species, and monitoring method.',
+        mechanism: 'Birds can enter blade-swept zones; avoidance responses vary by species and site.',
         mitigation: 'Improved siting (avoid migration corridors). Curtailment of blade speed during peak migration. Compensation programs.',
         howHelp: 'Support strategic energy planning. Push for renewable energy siting that avoids critical habitats.'
       },
       {
         threat: 'Power line electrocution',
         affects: 'Eagles, large raptors',
-        scale: 'Significant. APLIC estimates ~100K-1M raptor mortalities/year.',
+        scale: 'Significant where pole design creates contact hazards; scope varies by network and region.',
         mechanism: 'Raptor lands on pole + contacts two energized wires simultaneously, completing circuit.',
         mitigation: 'APLIC (Avian Power Line Interaction Committee) standards. Bird-safe pole designs.',
         howHelp: 'Encourage your utility to retrofit poles. Report electrocuted birds.'
@@ -5072,7 +5169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       {
         threat: 'Disease (West Nile, Avian Flu, etc.)',
         affects: 'All raptors',
-        scale: 'Significant. Avian flu H5N1 highly fatal to raptors 2022-present.',
+        scale: 'Significant during active outbreaks; conditions and wildlife guidance change over time.',
         mechanism: 'Mosquito-borne (WN) or fecal-contact (AF). Often presents as neurological symptoms.',
         mitigation: 'Vaccination of captive birds. Wild-bird surveillance.',
         howHelp: 'Report sick birds to wildlife agency. Don\'t handle.'
@@ -5095,19 +5192,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       },
       {
         threat: 'Light pollution',
-        affects: 'Migrating raptors at night',
+        affects: 'Night-migrating birds; raptor relevance varies by species + behavior',
         scale: 'Growing.',
-        mechanism: 'Disorientation during night-migration. Birds attracted to illuminated buildings.',
+        mechanism: 'Artificial light can attract or disorient susceptible night-moving birds near structures.',
         mitigation: 'Dark-sky friendly lighting. Light reduction during migration.',
         howHelp: 'Use shielded outdoor lights. Turn off unnecessary lights at night.'
       },
       {
-        threat: 'Invasive species (avian)',
-        affects: 'Native raptors competing with invasive species',
-        scale: 'Localized.',
-        mechanism: 'Some invasive birds compete for nest sites or prey.',
-        mitigation: 'Active management of invasives (e.g., barred owl culling for spotted owl recovery).',
-        howHelp: 'Support conservation efforts in your area.'
+        threat: 'Range expansion + interspecific competition',
+        affects: 'Native raptors where ranges, nest sites, or prey use overlap',
+        scale: 'Localized + species-specific.',
+        mechanism: 'Range expansion can increase competition for nest sites or prey; management context matters.',
+        mitigation: 'Habitat protection, monitoring, and formally reviewed agency management where adopted.',
+        howHelp: 'Support local conservation programs; leave wildlife management to authorized agencies.'
       }
     ]
   };
@@ -5115,107 +5212,428 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // ───────────────────────────────────────────────────────────
   // NEW v0.42: EXPERT SPOTLIGHTS — legendary raptor scientists
   // ───────────────────────────────────────────────────────────
+
+
+  // Structured pathway metadata for the Threat Systems Lab. These qualitative
+  // profiles support comparison and response planning; they are not severity scores.
+  var THREAT_CATEGORIES = [
+    { id: 'all', label: 'All threats', code: '17' },
+    { id: 'contaminants', label: 'Contaminants', code: '05' },
+    { id: 'infrastructure', label: 'Collision + infrastructure', code: '05' },
+    { id: 'habitat', label: 'Habitat + climate', code: '03' },
+    { id: 'human', label: 'Human pressure', code: '02' },
+    { id: 'biological', label: 'Biological pressure', code: '02' }
+  ];
+
+  var THREAT_VISUALS = [
+    {
+      id: 'lead', code: 'PB', category: 'contaminants', scene: 'carrion-foodweb', accent: '#fb7185',
+      sourceLabel: 'Lead fragments from ammunition or tackle', pathwayLabel: 'Contaminated carrion or gut-pile ingestion', outcomeLabel: 'Toxic exposure, injury, or mortality',
+      directness: 'Indirect ingestion', horizon: 'Acute + repeated exposure', affectedGuild: 'Scavengers + large raptors',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Choose non-lead ammunition and tackle', owner: 'Hunters + anglers' },
+        { id: 'interrupt', code: '02', label: 'Keep contaminated remains out of food webs', owner: 'Field teams + land managers' },
+        { id: 'recover', code: '03', label: 'Screen, treat, and monitor exposed birds', owner: 'Rehab + wildlife agencies' }
+      ]
+    },
+    {
+      id: 'rodenticide', code: 'AR', category: 'contaminants', scene: 'urban-foodweb', accent: '#f472b6',
+      sourceLabel: 'Anticoagulant poison used against rodents', pathwayLabel: 'Secondary dose through poisoned prey', outcomeLabel: 'Delayed internal hemorrhage',
+      directness: 'Indirect prey exposure', horizon: 'Delayed acute exposure', affectedGuild: 'Rodent-eating hawks + owls',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Avoid anticoagulant rodenticides', owner: 'Households + property managers' },
+        { id: 'interrupt', code: '02', label: 'Use exclusion, snap traps, and integrated control', owner: 'Pest managers + communities' },
+        { id: 'recover', code: '03', label: 'Treat and monitor exposed raptors', owner: 'Rehab + wildlife agencies' }
+      ]
+    },
+    {
+      id: 'window', code: 'GLS', category: 'infrastructure', scene: 'reflective-glass', accent: '#38bdf8',
+      sourceLabel: 'Reflective or transparent glass', pathwayLabel: 'Sky or vegetation appears to be open habitat', outcomeLabel: 'Collision trauma or mortality',
+      directness: 'Direct collision', horizon: 'Immediate', affectedGuild: 'Flying raptors + prey birds',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Specify bird-safe glazing in design', owner: 'Designers + building owners' },
+        { id: 'interrupt', code: '02', label: 'Add dense exterior markings or screens', owner: 'Residents + facilities teams' },
+        { id: 'recover', code: '03', label: 'Document strikes and route injured birds to care', owner: 'Monitors + rehabilitators' }
+      ]
+    },
+    {
+      id: 'vehicle', code: 'RD', category: 'infrastructure', scene: 'roadside-corridor', accent: '#fb923c',
+      sourceLabel: 'Traffic beside hunting and scavenging habitat', pathwayLabel: 'Low flight across a vehicle path', outcomeLabel: 'Vehicle-strike trauma or mortality',
+      directness: 'Direct collision', horizon: 'Immediate', affectedGuild: 'Roadside hunters + scavengers',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Plan safer roadside habitat and crossings', owner: 'Transportation planners' },
+        { id: 'interrupt', code: '02', label: 'Reduce speed and attractants at hotspots', owner: 'Road agencies + drivers' },
+        { id: 'recover', code: '03', label: 'Report strikes and safely connect rescue teams', owner: 'Drivers + rehabilitators' }
+      ]
+    },
+    {
+      id: 'pesticide', code: 'CHEM', category: 'contaminants', scene: 'agricultural-foodweb', accent: '#fbbf24',
+      sourceLabel: 'Pesticide use across managed landscapes', pathwayLabel: 'Chemical exposure or reduced prey availability', outcomeLabel: 'Reproductive or prey-base effects',
+      directness: 'Mixed food-web effect', horizon: 'Legacy + chemical-specific', affectedGuild: 'Raptors broadly + their prey',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Use integrated pest management first', owner: 'Growers + land managers' },
+        { id: 'interrupt', code: '02', label: 'Protect buffers, prey habitat, and sensitive timing', owner: 'Farms + local programs' },
+        { id: 'recover', code: '03', label: 'Monitor prey and raptor response by chemical', owner: 'Researchers + regulators' }
+      ]
+    },
+    {
+      id: 'fragmentation', code: 'FRAG', category: 'habitat', scene: 'fragmented-forest', accent: '#4ade80',
+      sourceLabel: 'Roads and development divide habitat', pathwayLabel: 'Patches and nesting areas become isolated', outcomeLabel: 'Reduced or disconnected habitat',
+      directness: 'Indirect landscape change', horizon: 'Chronic + ongoing', affectedGuild: 'Forest + habitat-dependent raptors',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Protect large intact habitat blocks', owner: 'Communities + land trusts' },
+        { id: 'interrupt', code: '02', label: 'Reconnect patches with corridors and easements', owner: 'Planners + landowners' },
+        { id: 'recover', code: '03', label: 'Restore habitat and monitor occupancy', owner: 'Restoration + science teams' }
+      ]
+    },
+    {
+      id: 'conversion', code: 'LAND', category: 'habitat', scene: 'converted-grassland', accent: '#a3e635',
+      sourceLabel: 'Native habitat replaced by other land uses', pathwayLabel: 'Nesting, cover, and prey habitat are removed', outcomeLabel: 'Lower habitat capacity for raptors',
+      directness: 'Indirect habitat removal', horizon: 'Chronic + ongoing', affectedGuild: 'Grassland + wetland raptors',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Retain native grassland and wetlands', owner: 'Landowners + planners' },
+        { id: 'interrupt', code: '02', label: 'Use conservation set-asides and reserve programs', owner: 'Farms + agencies' },
+        { id: 'recover', code: '03', label: 'Restore habitat structure and prey communities', owner: 'Restoration partnerships' }
+      ]
+    },
+    {
+      id: 'wind', code: 'WND', category: 'infrastructure', scene: 'wind-corridor', accent: '#22d3ee',
+      sourceLabel: 'Turbines overlap movement or hunting corridors', pathwayLabel: 'A flight route enters the blade-swept zone', outcomeLabel: 'Blade-strike mortality; avoidance varies',
+      directness: 'Direct collision + variable avoidance', horizon: 'Immediate + seasonal', affectedGuild: 'Eagles, vultures + migrants',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Site projects away from critical movement corridors', owner: 'Developers + planners' },
+        { id: 'interrupt', code: '02', label: 'Use detection-informed seasonal curtailment', owner: 'Operators + field teams' },
+        { id: 'recover', code: '03', label: 'Monitor outcomes and adapt operations', owner: 'Operators + wildlife agencies' }
+      ]
+    },
+    {
+      id: 'powerline', code: 'PWR', category: 'infrastructure', scene: 'power-pole', accent: '#a78bfa',
+      sourceLabel: 'Energized components within a bird\'s reach', pathwayLabel: 'A perched bird bridges electrical contacts', outcomeLabel: 'Electrocution injury or mortality',
+      directness: 'Direct electrical contact', horizon: 'Immediate', affectedGuild: 'Eagles + large perching raptors',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Use bird-safe spacing in new pole designs', owner: 'Utilities + engineers' },
+        { id: 'interrupt', code: '02', label: 'Retrofit hazardous poles and insulate contacts', owner: 'Utility field teams' },
+        { id: 'recover', code: '03', label: 'Report casualties and map recurring hotspots', owner: 'Public + monitoring teams' }
+      ]
+    },
+    {
+      id: 'climate', code: 'CLM', category: 'habitat', scene: 'warming-range', accent: '#818cf8',
+      sourceLabel: 'Changing climate and extreme weather', pathwayLabel: 'Ranges, prey timing, and exposure shift', outcomeLabel: 'Mismatch, range change, or prey disruption',
+      directness: 'Indirect ecosystem change', horizon: 'Long-term + episodic', affectedGuild: 'All, especially Arctic + boreal',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Reduce heat-trapping emissions', owner: 'Communities + governments' },
+        { id: 'interrupt', code: '02', label: 'Protect connected, climate-resilient habitat', owner: 'Land managers + planners' },
+        { id: 'recover', code: '03', label: 'Track range, timing, and prey changes', owner: 'Researchers + community science' }
+      ]
+    },
+    {
+      id: 'persecution', code: 'HARM', category: 'human', scene: 'agricultural-conflict', accent: '#f87171',
+      sourceLabel: 'Conflict beliefs lead to intentional shooting', pathwayLabel: 'A raptor is targeted in a managed landscape', outcomeLabel: 'Deliberate injury or mortality',
+      directness: 'Direct intentional harm', horizon: 'Immediate + underreported', affectedGuild: 'Raptors near farms + game areas',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Build coexistence knowledge before conflict', owner: 'Educators + landowners' },
+        { id: 'interrupt', code: '02', label: 'Use nonlethal livestock and game protections', owner: 'Farmers + managers' },
+        { id: 'recover', code: '03', label: 'Report suspected harm through proper channels', owner: 'Public + enforcement agencies' }
+      ]
+    },
+    {
+      id: 'collection', code: 'NEST', category: 'human', scene: 'nest-collection', accent: '#c084fc',
+      sourceLabel: 'Illegal demand for wild eggs or chicks', pathwayLabel: 'Young are removed from an active nest', outcomeLabel: 'Breeding loss and illegal trade',
+      directness: 'Direct removal', horizon: 'Breeding-season + persistent', affectedGuild: 'Falcons, especially peregrine + gyrfalcon',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Use only documented legal captive sources', owner: 'Falconers + buyers' },
+        { id: 'interrupt', code: '02', label: 'Verify identification and paperwork', owner: 'Breeders + regulators' },
+        { id: 'recover', code: '03', label: 'Do not disturb nests or evidence; report concerns', owner: 'Public + enforcement agencies' }
+      ]
+    },
+    {
+      id: 'disease', code: 'BIO', category: 'biological', scene: 'disease-transmission', accent: '#2dd4bf',
+      sourceLabel: 'Infectious agents in wildlife systems', pathwayLabel: 'Vector-borne or contact transmission', outcomeLabel: 'Illness, neurologic effects, or mortality',
+      directness: 'Direct infectious exposure', horizon: 'Acute outbreaks + recurring', affectedGuild: 'Raptors broadly',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Use professional biosecurity for captive birds', owner: 'Facilities + veterinarians' },
+        { id: 'interrupt', code: '02', label: 'Avoid handling and report sick wildlife', owner: 'Public + field teams' },
+        { id: 'recover', code: '03', label: 'Maintain surveillance and clinical response', owner: 'Wildlife health networks' }
+      ]
+    },
+    {
+      id: 'plastic', code: 'PLS', category: 'contaminants', scene: 'coastal-nest', accent: '#60a5fa',
+      sourceLabel: 'Discarded plastic and fishing line', pathwayLabel: 'Adults carry debris into nest structures', outcomeLabel: 'Entanglement of chicks or adults',
+      directness: 'Direct entanglement', horizon: 'Immediate + persistent debris', affectedGuild: 'Coastal nesters, osprey + eagles',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Dispose of line and plastic correctly', owner: 'Anglers + visitors' },
+        { id: 'interrupt', code: '02', label: 'Install line bins and remove loose debris', owner: 'Site managers + volunteers' },
+        { id: 'recover', code: '03', label: 'Report entangled wildlife to trained responders', owner: 'Public + rescue teams' }
+      ]
+    },
+    {
+      id: 'mercury', code: 'HG', category: 'contaminants', scene: 'watershed-foodweb', accent: '#67e8f9',
+      sourceLabel: 'Mercury emissions deposited into waterways', pathwayLabel: 'Aquatic food-web accumulation through fish', outcomeLabel: 'Chronic mercury exposure',
+      directness: 'Indirect food-web ingestion', horizon: 'Chronic accumulation', affectedGuild: 'Fish-eating raptors',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Reduce mercury releases at their source', owner: 'Industry + regulators' },
+        { id: 'interrupt', code: '02', label: 'Protect and monitor affected watersheds', owner: 'Watershed partnerships' },
+        { id: 'recover', code: '03', label: 'Track fish and raptor tissue exposure', owner: 'Researchers + agencies' }
+      ]
+    },
+    {
+      id: 'light', code: 'LUX', category: 'infrastructure', scene: 'night-skyline', accent: '#facc15',
+      sourceLabel: 'Artificial light near night-migration routes', pathwayLabel: 'Susceptible night-moving birds may be disoriented', outcomeLabel: 'Species-specific navigation disruption',
+      directness: 'Species-specific behavioral effect', horizon: 'Immediate + seasonal', affectedGuild: 'Night migrants; raptor relevance varies',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Design with shielded, warm, minimal lighting', owner: 'Designers + property owners' },
+        { id: 'interrupt', code: '02', label: 'Turn off unnecessary lights during migration', owner: 'Facilities + households' },
+        { id: 'recover', code: '03', label: 'Monitor collision and movement patterns', owner: 'Lights-out + science teams' }
+      ]
+    },
+    {
+      id: 'invasive', code: 'RNG', category: 'biological', scene: 'range-competition', accent: '#34d399',
+      sourceLabel: 'Bird populations overlap in nest or prey use', pathwayLabel: 'Competition changes access to key resources', outcomeLabel: 'Localized pressure on native raptors',
+      directness: 'Indirect ecological interaction', horizon: 'Chronic + localized', affectedGuild: 'Native raptors in overlapping ranges',
+      responseLayers: [
+        { id: 'prevent', code: '01', label: 'Protect habitat conditions that support native species', owner: 'Land managers + communities' },
+        { id: 'interrupt', code: '02', label: 'Monitor competition at affected sites', owner: 'Researchers + wildlife agencies' },
+        { id: 'recover', code: '03', label: 'Use only formally reviewed management plans', owner: 'Authorized conservation programs' }
+      ]
+    }
+  ];
+
+
   var EXPERT_SPOTLIGHTS = {
-    intro: 'Modern raptor science exists because of the dedication of these individuals + institutions. Below are 12 legendary scientists, naturalists, + conservationists who shaped our understanding + protection of raptors.',
+    intro: 'A curated starter set of 12 people whose questions, methods, and public work changed how raptors are identified, studied, and protected. Explore the evidence trail rather than treating any list as a complete canon.',
     experts: [
       {
         name: 'Roger Tory Peterson',
         years: '1908-1996',
         country: 'USA',
-        contribution: 'Wrote A Field Guide to the Birds (1934) — first practical popular field guide. Made bird-watching accessible to millions. His "field marks" approach to ID became standard. Authored ~50 books.',
-        legacy: 'Father of modern field birding. Peterson Field Guides series still standard.',
-        howRemember: 'Read Peterson Field Guide to Hawks. Visit Peterson Institute in Jamestown NY.'
+        contribution: 'Published A Field Guide to the Birds in 1934 and used arrows, comparative plates, and concise field marks to support identification outdoors.',
+        legacy: 'Helped make visual comparison a practical field skill; the Peterson guide series continues across birds and other taxa.',
+        howRemember: 'Compare one raptor plate with a modern guide and note which diagnostic marks each emphasizes.'
       },
       {
         name: 'Rachel Carson',
         years: '1907-1964',
         country: 'USA',
-        contribution: 'Wrote Silent Spring (1962). Documented DDT damage to ecosystem + raptor populations. Triggered environmental movement + DDT ban.',
-        legacy: 'Single most influential conservation book of 20th century. Saved bald eagle + peregrine + others.',
-        howRemember: 'Read Silent Spring. Recognize ESA + EPA as her legacy.'
+        contribution: 'Synthesized evidence about persistent pesticides in Silent Spring (1962), bringing ecological effects and risks to birds into public debate.',
+        legacy: 'Her work helped stimulate widespread concern, scientific scrutiny, and regulatory review of DDT and other pesticides.',
+        howRemember: 'Trace one contaminant from application through a food web, then separate evidence, inference, and policy response.'
       },
       {
         name: 'Rosalie Edge',
         years: '1877-1962',
         country: 'USA',
-        contribution: 'Purchased land that became Hawk Mountain Sanctuary 1934. First wildlife refuge specifically for migrating raptors. Stopped shooters at Hawk Mountain.',
-        legacy: 'Birth of modern raptor conservation. Hawk Mountain remains world\'s longest-monitored migration site.',
-        howRemember: 'Visit Hawk Mountain Sanctuary. Donate to their research mission.'
+        contribution: 'Leased the Hawk Mountain shooting grounds in 1934, installed a warden, protected migrating raptors, and directed systematic daily tallies.',
+        legacy: 'Joined direct protection with long-term migration records at what became Hawk Mountain Sanctuary.',
+        howRemember: 'Explore how a protected ridge and a repeatable count protocol can reinforce one another.'
       },
       {
         name: 'Tom Cade',
         years: '1928-2019',
         country: 'USA',
-        contribution: 'Founded Peregrine Fund (1970). Designed + implemented peregrine captive breeding + hacking. Saved species from extinction east of Rockies.',
-        legacy: 'Recovery of peregrine falcon — one of greatest conservation successes ever.',
-        howRemember: 'Visit World Center for Birds of Prey, Boise ID. Support Peregrine Fund.'
+        contribution: 'Helped found The Peregrine Fund and developed captive-breeding, release, and monitoring work for peregrine restoration.',
+        legacy: 'Connected falconry knowledge, experimental husbandry, field releases, and multi-partner recovery programs.',
+        howRemember: 'Follow the feedback loop from breeding to hacking, monitoring, and program adjustment.'
       },
       {
         name: 'Carl Jones',
-        years: '1954-present',
-        country: 'UK/Mauritius',
-        contribution: 'Recovered Mauritius kestrel from 4 individuals (1974) to 800 (2005). 40-year personal project. Indianapolis Prize 2016 (conservation\'s Nobel).',
-        legacy: 'Demonstrated that even smallest population can recover with intensive intervention.',
-        howRemember: 'Read Behind Closed Doors (his memoir).'
+        years: 'Mauritius work: 1979-',
+        country: 'UK / Mauritius',
+        contribution: 'Developed and led intensive recovery programs in Mauritius, including work with the Mauritius kestrel, echo parakeet, and pink pigeon.',
+        legacy: 'Showed how adaptive, hands-on management can give severely depleted island species a route toward recovery.',
+        howRemember: 'Compare the risks and benefits of nest management, captive breeding, releases, and habitat work.'
       },
       {
         name: 'Roger Payne',
         years: '1935-2023',
         country: 'USA',
-        contribution: 'Discovered owl 3D acoustic localization (1962). Proved barn owls can capture prey in pitch dark using only sound. Foundational work for understanding owl ear asymmetry.',
-        legacy: 'One of greatest single experiments in raptor science.',
-        howRemember: 'Read his papers. Visit Cornell Lab\'s Macaulay Library.'
+        contribution: 'Published controlled work in 1971 showing that barn owls could locate and capture prey in complete darkness using acoustic information.',
+        legacy: 'Established an experimental foundation for studying owl sound localization and ear specialization.',
+        howRemember: 'Ask which sensory cue is available, then design a control that removes competing cues.'
       },
       {
         name: 'Stephen Bodio',
-        years: '1949-present',
-        country: 'USA',
-        contribution: 'Falconer + writer. Documented Mongolian Berkutchi tradition. Linked anthropology + raptor science.',
-        legacy: 'Brought Berkutchi tradition to Western awareness.',
-        howRemember: 'Read Eagle Dreams.'
+        years: '1950-present',
+        country: 'USA / Mongolia',
+        contribution: 'Writer, naturalist, and falconer whose Eagle Dreams documents travel with Kazakh eagle hunters in Mongolia.',
+        legacy: 'Adds a cultural and historical lens to relationships among people, landscapes, knowledge, and raptors.',
+        howRemember: 'Read field observation beside cultural context and notice what each perspective can and cannot establish.'
       },
       {
-        name: 'Vaclav Tucker',
-        years: '1934-present',
+        name: 'Vance A. Tucker',
+        years: 'Curved-flight paper: 2000',
         country: 'USA',
-        contribution: 'Studied peregrine stoop trajectory + sideways vision (1998). Explained why peregrines stoop in log spirals.',
-        legacy: 'Foundational paper for understanding peregrine hunting physics.',
-        howRemember: 'His paper "Curved flight paths and sideways vision in peregrine falcons."'
+        contribution: 'Tracked curved attack paths and modeled how peregrine sideways vision can shape pursuit geometry.',
+        legacy: 'Connected measured flight paths, visual fields, and mathematical models of a peregrine attack.',
+        howRemember: 'Sketch the prey image on the retina while comparing a straight approach with a curved one.'
       },
       {
         name: 'Bill Burnham',
-        years: '1934-2006',
+        years: '1947-2006',
         country: 'USA',
-        contribution: 'Led Peregrine Fund\'s release programs across western US. Hands-on practitioner of falconry-based conservation.',
-        legacy: 'Operational backbone of peregrine recovery in West.',
-        howRemember: 'World Center for Birds of Prey documentation.'
+        contribution: 'Joined The Peregrine Fund in 1974 and helped lead breeding, release, and field operations across western North America and beyond.',
+        legacy: 'Turned restoration science into repeatable logistics that many field teams could carry out and evaluate.',
+        howRemember: 'Map the people, permits, sites, birds, and monitoring records required for one release season.'
       },
       {
         name: 'Mike Kochert',
-        years: '1947-present',
+        years: 'Golden-eagle research: 1970s-',
         country: 'USA',
-        contribution: 'BLM raptor biologist. Founded Snake River Birds of Prey NCA. World\'s largest golden eagle research program.',
-        legacy: 'Long-term golden eagle dataset (40+ years).',
-        howRemember: 'Visit Snake River Birds of Prey NCA, ID.'
+        contribution: 'Designed and directed long-term raptor research whose findings helped provide the biological basis for the Snake River conservation area and its boundary.',
+        legacy: 'Demonstrated the value of repeated surveys, telemetry, nesting records, and collaboration across decades.',
+        howRemember: 'Compare the question a single field season can answer with one that needs a long-term dataset.'
       },
       {
-        name: 'Ernesto Enkerlin',
-        years: '1960-present',
+        name: 'Ernesto Ruelas Inzunza',
+        years: 'Veracruz counts: 1991-',
         country: 'Mexico',
-        contribution: 'Director of Veracruz River of Raptors count for 30 years. Made it world\'s largest migration count.',
-        legacy: 'Built scientific infrastructure for largest raptor concentration anywhere.',
-        howRemember: 'Visit Veracruz during fall migration.'
+        contribution: 'Began Veracruz observations in 1987, completed the first scientific daily count in spring 1991, and helped establish the first autumn count in 1992.',
+        legacy: 'Helped build standardized migration monitoring, local training, and conservation capacity along the Veracruz flyway.',
+        howRemember: 'Examine how fixed sites, observer training, weather notes, and consistent effort make counts comparable.'
       },
       {
         name: 'David Allen Sibley',
-        years: '1962-present',
+        years: 'Sibley Guide: 2000',
         country: 'USA',
-        contribution: 'Wrote Sibley Birds (2000) — current standard US field guide. Illustrated thousands of species.',
-        legacy: 'Modern American field-guide standard.',
-        howRemember: 'Buy Sibley Birds. Compare with Peterson + Crossley styles.'
+        contribution: 'Authored and illustrated The Sibley Guide to Birds (2000), arranging original paintings to compare plumage, age, posture, and flight views.',
+        legacy: 'Expanded the comparative visual vocabulary available to North American birders.',
+        howRemember: 'Compare several views of one raptor and decide which variation is useful for identification.'
       }
     ]
   };
+
+  var EXPERT_FIELDS = [
+    { id: 'all', label: 'All profiles', code: '12', count: 12 },
+    { id: 'field-guides', label: 'Field guides', code: 'FG', count: 2 },
+    { id: 'advocacy', label: 'Evidence + advocacy', code: 'EA', count: 2 },
+    { id: 'restoration', label: 'Restoration', code: 'RX', count: 3 },
+    { id: 'sensory-flight', label: 'Senses + flight', code: 'SF', count: 2 },
+    { id: 'monitoring', label: 'Long-term monitoring', code: 'LM', count: 2 },
+    { id: 'culture', label: 'Culture + history', code: 'CH', count: 1 }
+  ];
+
+  var EXPERT_VISUALS = [
+    {
+      id: 'peterson', code: 'RTP', expertIndex: 0, discipline: 'field-guides', disciplineLabel: 'Field guides', scene: 'field-guide', artifact: 'Comparative field plate', milestoneYear: '1934', milestoneLabel: 'Practical field guide',
+      question: 'Which few visible marks let an observer identify a bird quickly outdoors?',
+      method: 'Reduce plumage and shape to comparative plates, arrows, and concise field marks.',
+      finding: 'A small set of diagnostic marks can support fast, repeatable field identification.',
+      impact: 'The visual field-guide format opened structured bird identification to a broad audience.',
+      callouts: [{ title: 'Representation', body: 'A plate is a selective model, not a replacement for observing variation.' }, { title: 'Transfer', body: 'The method works when the chosen marks remain visible under real field conditions.' }],
+      challengeClue: 'Comparative plates, arrows, and a few diagnostic marks turn observation into an identification key.',
+      sourceLabel: 'Roger Tory Peterson Institute biography', sourceUrl: 'https://rtpi.org/about/about-roger-tory-peterson/'
+    },
+    {
+      id: 'carson', code: 'RC', expertIndex: 1, discipline: 'advocacy', disciplineLabel: 'Evidence + advocacy', scene: 'contaminant-food-web', artifact: 'Contaminant food-web trace', milestoneYear: '1962', milestoneLabel: 'Silent Spring',
+      question: 'How can a chemical applied in one place create effects across an ecosystem?',
+      method: 'Synthesize toxicology, field observations, case reports, and food-web evidence for a public audience.',
+      finding: 'Persistent chemicals can move through ecological relationships and produce effects beyond their target pest.',
+      impact: 'The synthesis intensified public concern, scientific scrutiny, and policy review of pesticide use.',
+      callouts: [{ title: 'Synthesis', body: 'No single observation carries the argument; independent evidence converges.' }, { title: 'Causality', body: 'Separate a plausible pathway from the strength of evidence at each link.' }],
+      challengeClue: 'Trace a persistent chemical through a food web, then connect laboratory and field evidence for public review.',
+      sourceLabel: 'U.S. EPA DDT history', sourceUrl: 'https://www.epa.gov/ingredients-used-pesticide-products/ddt-brief-history-and-status'
+    },
+    {
+      id: 'edge', code: 'RE', expertIndex: 2, discipline: 'advocacy', disciplineLabel: 'Evidence + advocacy', scene: 'ridge-sanctuary', artifact: 'Protected migration ridge', milestoneYear: '1934', milestoneLabel: 'Hawk Mountain lease',
+      question: 'Can direct protection also create the evidence needed for long-term conservation?',
+      method: 'Lease a migration ridge, install a warden, stop shooting, and record consistent daily tallies.',
+      finding: 'A protected observation point can generate both immediate refuge and a repeatable migration record.',
+      impact: 'Hawk Mountain became a durable sanctuary and a foundation for systematic raptor migration counts.',
+      callouts: [{ title: 'Intervention', body: 'Changing access to a place can change both survival and what observers can measure.' }, { title: 'Protocol', body: 'Daily tallies gain meaning when effort and location remain consistent.' }],
+      challengeClue: 'Protect a migration ridge, appoint a warden, and convert daily passage into a systematic count.',
+      sourceLabel: 'Hawk Mountain historical marker', sourceUrl: 'https://www.hawkmountain.org/news/visitors/state-historical-marker-dedicated-at-hawk-mountain'
+    },
+    {
+      id: 'cade', code: 'TC', expertIndex: 3, discipline: 'restoration', disciplineLabel: 'Restoration', scene: 'hack-box-release', artifact: 'Hack-box release loop', milestoneYear: '1970', milestoneLabel: 'The Peregrine Fund',
+      question: 'How can a depleted peregrine population be rebuilt without losing the skills needed for life in the wild?',
+      method: 'Combine captive breeding, hacking, site selection, banding, and post-release monitoring.',
+      finding: 'Release programs improve through an iterative loop between husbandry and field evidence.',
+      impact: 'The approach became central to a major North American peregrine recovery effort.',
+      callouts: [{ title: 'Hacking', body: 'Young birds acclimate at a release site before free flight and continued support.' }, { title: 'Feedback', body: 'Survival and breeding records change the next release plan.' }],
+      challengeClue: 'Move young falcons from captive breeding through a hack box, supported release, and post-release monitoring.',
+      sourceLabel: 'The Peregrine Fund memorial', sourceUrl: 'https://peregrinefund.org/news-release/memoriam-tom-j-cade-phd-1928-2019-founding-chairman'
+    },
+    {
+      id: 'jones', code: 'CJ', expertIndex: 4, discipline: 'restoration', disciplineLabel: 'Restoration', scene: 'recovery-field-program', artifact: 'Adaptive recovery loop', milestoneYear: '1979', milestoneLabel: 'Mauritius field work',
+      question: 'What can a recovery team do when an island species has almost no margin for error?',
+      method: 'Use nest management, captive breeding, releases, habitat work, and rapid adjustment from field results.',
+      finding: 'Intensive adaptive management can reverse decline even when a population is severely depleted.',
+      impact: 'Programs he led produced major recoveries for the Mauritius kestrel and other island birds.',
+      callouts: [{ title: 'Adaptive management', body: 'Treat each action as a test whose result informs the next intervention.' }, { title: 'Whole system', body: 'Nest, predator, habitat, genetics, and people are managed together.' }],
+      challengeClue: 'Coordinate nest care, captive breeding, release, habitat, and rapid feedback for a tiny island population.',
+      sourceLabel: 'Indianapolis Zoo conservation profile', sourceUrl: 'https://www.indianapoliszoo.com/prize/conservation-heroes/carl-jones-ph-d/'
+    },
+    {
+      id: 'payne', code: 'RP', expertIndex: 5, discipline: 'sensory-flight', disciplineLabel: 'Senses + flight', scene: 'acoustic-localization', artifact: 'Dark-room acoustic trial', milestoneYear: '1971', milestoneLabel: 'Acoustic location paper',
+      question: 'Can a barn owl locate and capture prey when vision is unavailable?',
+      method: 'Run controlled, dark-room capture trials while manipulating the sensory information available.',
+      finding: 'Barn owls can use acoustic cues to locate prey in complete darkness.',
+      impact: 'The experiment established a foundation for research on owl hearing and ear specialization.',
+      callouts: [{ title: 'Control', body: 'Removing light isolates whether sound alone carries enough location information.' }, { title: 'Mechanism', body: 'Timing and intensity differences between ears help encode direction.' }],
+      challengeClue: 'Remove visual cues in a controlled room and test whether sound alone supports a successful prey strike.',
+      sourceLabel: 'PubMed acoustic-location paper', sourceUrl: 'https://pubmed.ncbi.nlm.nih.gov/5090092/'
+    },
+    {
+      id: 'bodio', code: 'SB', expertIndex: 6, discipline: 'culture', disciplineLabel: 'Culture + history', scene: 'ethnographic-notebook', artifact: 'Field narrative notebook', milestoneYear: '2003', milestoneLabel: 'Eagle Dreams',
+      question: 'How do landscape, livelihood, knowledge, and raptors become part of one living tradition?',
+      method: 'Combine travel, close observation, conversation, falconry experience, and narrative writing.',
+      finding: 'A hunting practice carries ecological knowledge and cultural meaning that a biological account alone cannot capture.',
+      impact: 'The work documents Kazakh eagle hunting for readers outside the communities described.',
+      callouts: [{ title: 'Perspective', body: 'A cultural narrative answers different questions than a controlled experiment.' }, { title: 'Reflexivity', body: 'The observer should make their own role and limits visible.' }],
+      challengeClue: 'Use travel observation, conversation, and falconry experience to document a living eagle-hunting tradition.',
+      sourceLabel: 'Eagle Dreams author page', sourceUrl: 'https://stephenbodio.com/books/eagle-dreams/'
+    },
+    {
+      id: 'tucker', code: 'VAT', expertIndex: 7, discipline: 'sensory-flight', disciplineLabel: 'Senses + flight', scene: 'spiral-pursuit', artifact: 'Pursuit-geometry trace', milestoneYear: '2000', milestoneLabel: 'Curved flight paths',
+      question: 'Why might a peregrine approach prey along a curve instead of flying straight at it?',
+      method: 'Track attack paths and compare their geometry with a model of the falcon visual field.',
+      finding: 'Curved routes can help a falcon keep prey visible through a sideways-looking region of its visual field.',
+      impact: 'The work connected measured flight, sensory anatomy, and mathematical pursuit models.',
+      callouts: [{ title: 'Geometry', body: 'A logarithmic spiral preserves an angle between the path and a line to the target.' }, { title: 'Trade-off', body: 'A longer path may support better target tracking than the shortest path.' }],
+      challengeClue: 'Track a curved attack and model how sideways vision changes the geometry of pursuit.',
+      sourceLabel: 'PubMed curved-flight paper', sourceUrl: 'https://pubmed.ncbi.nlm.nih.gov/11076739/'
+    },
+    {
+      id: 'burnham', code: 'WB', expertIndex: 8, discipline: 'restoration', disciplineLabel: 'Restoration', scene: 'release-operations', artifact: 'Release-operations network', milestoneYear: '1974', milestoneLabel: 'Joined Peregrine Fund',
+      question: 'How can a restoration method move from one successful site to a coordinated regional program?',
+      method: 'Standardize breeding, hack-site logistics, field teams, records, and post-release monitoring.',
+      finding: 'Reliable operations let many local teams apply and refine a shared restoration protocol.',
+      impact: 'He helped lead peregrine release work across western North America and international programs.',
+      callouts: [{ title: 'Operations', body: 'Permits, food, timing, staffing, transport, and records are part of the science.' }, { title: 'Scale', body: 'A common protocol makes results comparable across release sites.' }],
+      challengeClue: 'Standardize hack sites, staffing, transport, permits, and records so releases can scale across a region.',
+      sourceLabel: 'The Peregrine Fund newsletter', sourceUrl: 'https://assets.peregrinefund.org/docs/newsletters/newsletter-37-2006.pdf'
+    },
+    {
+      id: 'kochert', code: 'MNK', expertIndex: 9, discipline: 'monitoring', disciplineLabel: 'Long-term monitoring', scene: 'telemetry-study-area', artifact: 'Telemetry study-area map', milestoneYear: '1970s', milestoneLabel: 'Snake River research',
+      question: 'What patterns only become visible when raptor research continues across places and decades?',
+      method: 'Combine repeated surveys, telemetry, nesting records, habitat measures, and long-term collaboration.',
+      finding: 'Multi-decade data reveal relationships and change that a single field season cannot resolve.',
+      impact: 'The research helped supply the biological basis for the Snake River conservation area and its boundary.',
+      callouts: [{ title: 'Continuity', body: 'Long records depend on stable protocols, metadata, and institutional memory.' }, { title: 'Landscape scale', body: 'Telemetry connects nest observations with movements and habitat use.' }],
+      challengeClue: 'Combine telemetry, nesting records, habitat surveys, and repeated sampling across a landscape for decades.',
+      sourceLabel: 'U.S. Geological Survey profile', sourceUrl: 'https://www.usgs.gov/news/get-know-a-scientist-emeritus-mike-kochert'
+    },
+    {
+      id: 'ruelas', code: 'ERI', expertIndex: 10, discipline: 'monitoring', disciplineLabel: 'Long-term monitoring', scene: 'migration-count', artifact: 'Migration count station', milestoneYear: '1991', milestoneLabel: 'First scientific daily count',
+      question: 'How can observers quantify a vast migration that unfolds across weather, time, and multiple watch sites?',
+      method: 'Use fixed stations, standardized daily counts, trained observers, weather notes, and shared protocols.',
+      finding: 'Consistent effort reveals the magnitude, timing, and variability of the Veracruz migration corridor.',
+      impact: 'The work helped build durable monitoring and local conservation capacity along the flyway.',
+      callouts: [{ title: 'Effort', body: 'A count is interpretable only with time, weather, location, and observer effort.' }, { title: 'Capacity', body: 'Training local observers makes a long-term record possible.' }],
+      challengeClue: 'Train observers at fixed stations and pair every daily migration tally with weather and effort records.',
+      sourceLabel: 'Hawk Mountain Veracruz history', sourceUrl: 'https://www.hawkmountain.org/news/special-projects/the-veracruz-river-of-raptors-success-story'
+    },
+    {
+      id: 'sibley', code: 'DAS', expertIndex: 11, discipline: 'field-guides', disciplineLabel: 'Field guides', scene: 'comparative-plate', artifact: 'Multi-view comparison plate', milestoneYear: '2000', milestoneLabel: 'The Sibley Guide to Birds',
+      question: 'How can one guide show the variation observers meet across age, season, posture, and flight?',
+      method: 'Arrange original paintings in systematic, repeated views designed for direct comparison.',
+      finding: 'Multiple standardized views help observers distinguish stable structure from variable appearance.',
+      impact: 'The guide expanded the comparative visual vocabulary available to North American birders.',
+      callouts: [{ title: 'Variation', body: 'A useful plate shows the range a birder is likely to encounter.' }, { title: 'Comparison', body: 'Repeated pose and scale reduce the mental work of switching between species.' }],
+      challengeClue: 'Arrange original paintings in repeated views so age, season, posture, and flight can be compared directly.',
+      sourceLabel: 'Sibley Guides: guide background', sourceUrl: 'https://sibleyguides.com/about/the-sibley-guide-to-birds/'
+    }
+  ];
+
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.43: FIELD SCENARIOS — 14 immersive scenarios
@@ -5508,206 +5926,413 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   };
 
   // ───────────────────────────────────────────────────────────
-  // NEW v0.44: RESEARCH STATIONS — 20 active research sites
-  // ───────────────────────────────────────────────────────────
+  // RAPTOR RESEARCH NETWORK ATLAS — verified directory and teaching model
   var RESEARCH_STATIONS = {
-    intro: 'Active research stations advance raptor science globally. These 20 sites are where careers happen + new discoveries emerge.',
+    intro: 'A curated directory of research centers, monitoring sites, archives, agencies, and conservation networks. Programs and participation change; verify current details through each official source.',
+    reviewedAt: '2026-08-26',
     stations: [
-      { name: 'Cornell Lab of Ornithology', state: 'NY', established: '1915', focus: 'Bird research + eBird + Macaulay Library', notable: 'World\'s leading bird research institution. Founded by Arthur Allen.', url: 'birds.cornell.edu' },
-      { name: 'Peregrine Fund World Center for Birds of Prey', state: 'ID', established: '1984', focus: 'Captive breeding + conservation + research', notable: 'Site of peregrine recovery captive breeding program.', url: 'peregrinefund.org' },
-      { name: 'Hawk Mountain Sanctuary', state: 'PA', established: '1934', focus: 'Migration monitoring + 80-year dataset', notable: 'World\'s first raptor refuge. Longest continuous raptor migration data.', url: 'hawkmountain.org' },
-      { name: 'Cape May Bird Observatory', state: 'NJ', established: '1976', focus: 'Migration banding + research', notable: 'Largest US east coast banding station.', url: 'birds.cornell.edu' },
-      { name: 'Snake River Birds of Prey NCA', state: 'ID', established: '1980 (BLM)', focus: 'Golden eagle research + monitoring', notable: 'World\'s largest golden eagle research site.', url: 'blm.gov/idaho/snake-river-birds-of-prey' },
-      { name: 'HawkWatch International', state: 'UT (HQ)', established: '1986', focus: 'Western US migration + research', notable: 'Operates 17+ migration sites across western US.', url: 'hawkwatch.org' },
-      { name: 'BC Wildlife Research Centre', state: 'BC, Canada', established: '1980', focus: 'PNW raptor research', notable: 'Goshawk + spotted owl studies.', url: 'bcwildliferesearch.com' },
-      { name: 'Cornell Univ. Genetic Diversity Research', state: 'NY', established: '2000', focus: 'Conservation genetics', notable: 'Phylogenetic studies of all major raptor groups.', url: 'cornell.edu' },
-      { name: 'Univ. of Minnesota Raptor Center', state: 'MN', established: '1972', focus: 'Veterinary medicine + rehab', notable: 'World\'s leading raptor vet teaching facility.', url: 'raptor.umn.edu' },
-      { name: 'BNHS (Bombay Natural History Soc.)', state: 'India', established: '1883', focus: 'Vulture conservation', notable: 'Center of Indian vulture crisis research.', url: 'bnhs.org' },
-      { name: 'Lammergeier Foundation', state: 'Spain', established: '1995', focus: 'Bearded vulture recovery', notable: 'Successful reintroduction of bearded vulture in Pyrenees.', url: 'gypaetus.org' },
-      { name: 'Mauritius Wildlife Foundation', state: 'Mauritius', established: '1984', focus: 'Mauritius kestrel + endemic species', notable: 'Carl Jones\' kestrel recovery base.', url: 'mauritian-wildlife.org' },
-      { name: 'Russian Raptor Research + Conservation Network', state: 'Russia', established: '2002', focus: 'Saker falcon + steppe eagle', notable: 'Critical Eurasian raptor research.', url: 'rrrcn.ru' },
-      { name: 'Raptor Conservation Group South Africa', state: 'S. Africa', established: '1992', focus: 'African vulture + raptor', notable: 'Continent-leading African raptor research.', url: 'wildlifesa.com' },
-      { name: 'Royal Society for Protection of Birds (RSPB)', state: 'UK', established: '1889', focus: 'European raptor monitoring + recovery', notable: 'World\'s largest bird conservation NGO.', url: 'rspb.org.uk' },
-      { name: 'Birdlife International', state: 'UK (HQ)', established: '1922', focus: 'Global bird conservation + IUCN status', notable: 'Worldwide partnership network.', url: 'birdlife.org' },
-      { name: 'Cornell Lab Multimedia Library', state: 'NY', established: '1923', focus: 'Sound + video archives', notable: 'World\'s largest natural sound + video archive.', url: 'macaulaylibrary.org' },
-      { name: 'San Diego Zoo Institute for Conservation Research', state: 'CA', established: '1980s', focus: 'California condor + frozen zoo', notable: 'Pioneering captive breeding + cryopreservation.', url: 'sandiegozoo.org' },
-      { name: 'Whitley Wildlife Foundation', state: 'UK', established: '1983', focus: 'Global wildlife awards', notable: 'Awards conservation pioneers worldwide.', url: 'whitleyaward.org' },
-      { name: 'Iowa State Univ. Raptor Research', state: 'IA', established: '1990s', focus: 'Bald eagle + Midwestern raptors', notable: 'Strong demographic + tracking research.', url: 'iastate.edu' }
+      { id:'cornell-lab',code:'CLO',name:'Cornell Lab of Ornithology',type:'Research institute',location:'Ithaca, New York',country:'United States',foundedYear:1915,dateLabel:'Founded 1915',region:'north-america',role:'data',x:22,y:49,focus:'Bird and biodiversity research, technology, conservation, education, and participatory science',evidence:'eBird observations and Macaulay Library media provide reusable records of bird occurrence, images, and sounds.',impact:'Turns public observations and archived media into resources for research, education, and conservation.',method:'Participatory-science data systems and multimedia archiving',career:'Ornithologist / biodiversity data scientist',sourceLabel:'Official history',url:'https://www.birds.cornell.edu/home/our-story/' },
+      { id:'peregrine-fund',code:'WCBP',name:'The Peregrine Fund\'s World Center for Birds of Prey',type:'Conservation center',location:'Boise, Idaho',country:'United States',foundedYear:1984,dateLabel:'Center opened 1984',region:'north-america',role:'recovery',x:22,y:34,focus:'Raptor conservation, endangered-species recovery, research, breeding, archives, and public education',evidence:'Conservation-breeding records and field research document work with threatened raptor species.',impact:'Connects endangered-raptor recovery work with research, archives, and public learning.',method:'Conservation breeding and field research',career:'Conservation biologist / aviculturist',sourceLabel:'Official visitor information',url:'https://peregrinefund.org/plan-your-visit' },
+      { id:'hawk-mountain',code:'HMS',name:'Hawk Mountain Sanctuary',type:'Sanctuary and watch site',location:'Kempton, Pennsylvania',country:'United States',foundedYear:1934,dateLabel:'Founded 1934',region:'north-america',role:'monitoring',x:22,y:20,focus:'Raptor migration monitoring, conservation research, professional training, and education',evidence:'Standardized migration counts have been collected at the sanctuary since 1934.',impact:'Established the first refuge for birds of prey and a long-running record of raptor migration.',method:'Standardized watch-site counts and movement research',career:'Migration ecologist / field counter',sourceLabel:'Official history',url:'https://www.hawkmountain.org/about-hawk-mountain-sanctuary' },
+      { id:'cape-may',code:'CMBO',name:'Cape May Bird Observatory',type:'Observatory and field program',location:'Cape May Point, New Jersey',country:'United States',foundedYear:1976,dateLabel:'Founded 1976',region:'north-america',role:'monitoring',x:29,y:23,focus:'Migration monitoring, research, conservation, education, and field training',evidence:'Seasonal watch projects produce recurring counts of raptors and other migrating wildlife.',impact:'Documents migration timing and abundance at a major coastal concentration point.',method:'Fixed-site migration counts and seasonal field monitoring',career:'Migration counter / field educator',sourceLabel:'Official center page',url:'https://njaudubon.org/centers/cape-may-bird-observatory/' },
+      { id:'snake-river',code:'MNSR',name:'Morley Nelson Snake River Birds of Prey National Conservation Area',type:'Protected landscape',location:'Southwestern Idaho',country:'United States',foundedYear:1993,dateLabel:'Designated 1993; renamed 2009',region:'north-america',role:'landscape',x:28,y:77,focus:'Raptor habitat protection, long-term monitoring, and compatible public-land uses',evidence:'BLM reports document nesting raptors, habitat conditions, and management across the conservation area.',impact:'Protects habitat that BLM identifies as supporting North America\'s greatest concentration of nesting birds of prey.',method:'Landscape-scale habitat management and population monitoring',career:'Wildlife biologist / public-lands manager',sourceLabel:'Official BLM page',url:'https://www.blm.gov/programs/national-conservation-lands/idaho/morley-nelson-snake-river-birds-of-prey' },
+      { id:'hawkwatch-international',code:'HWI',name:'HawkWatch International',type:'Monitoring network',location:'Salt Lake City, Utah (HQ; field network)',country:'United States',foundedYear:1986,dateLabel:'Founded 1986; renamed 1990',region:'north-america',role:'monitoring',x:38,y:20,focus:'Long-term raptor migration monitoring, life-cycle research, conservation, and education',evidence:'Standardized migration counts track long-term population trends across a network of watch sites.',impact:'Long-term monitoring data help inform wildlife managers, researchers, and conservation planning.',method:'Watch-site counts, banding, and nesting and winter ecology studies',career:'Raptor migration biologist / community-science coordinator',sourceLabel:'Official history',url:'https://hawkwatch.org/our-story/' },
+      { id:'pacific-wildlife-research',code:'PWRC',name:'Pacific Wildlife Research Centre',type:'Government research centre',location:'Delta, British Columbia',country:'Canada',foundedYear:null,dateLabel:'Launch date not stated on source',region:'north-america',role:'health',x:23,y:63,focus:'Federal wildlife and landscape science in the Fraser River estuary',evidence:'Federal science teams conduct migratory-bird monitoring and wildlife, habitat, and contaminant research.',impact:'Supports Canadian Wildlife Service conservation and management in the Pacific region.',method:'Field monitoring, laboratory analysis, and landscape science',career:'Wildlife ecotoxicologist / federal research scientist',sourceLabel:'Official federal science page',url:'https://www.canada.ca/en/environment-climate-change/services/science-technology/centres/british-columbia.html' },
+      { id:'cornell-raptor-program',code:'CRP',name:'Cornell Raptor Program',type:'Education and animal-care program',location:'Ithaca, New York',country:'United States',foundedYear:1993,dateLabel:'Established 1993',region:'north-america',role:'recovery',x:30,y:38,focus:'Raptor education, captive-animal care, and participation in research',evidence:'Program training and animal-care practice support education and approved research participation.',impact:'Introduces students to responsible raptor care, communication, and research support.',method:'Animal care, structured training, and research support',career:'Animal-care educator / research assistant',sourceLabel:'Official program site',url:'https://blogs.cornell.edu/raptors/' },
+      { id:'minnesota-raptor-center',code:'TRC',name:'The Raptor Center, University of Minnesota',type:'Veterinary teaching center',location:'St. Paul, Minnesota',country:'United States',foundedYear:1974,dateLabel:'Founded 1974',region:'north-america',role:'health',x:35,y:66,focus:'Veterinary care, rehabilitation, education, and professional training',evidence:'Clinical cases and rehabilitation practice support veterinary learning and raptor-health knowledge.',impact:'Connects wildlife medicine, rehabilitation, education, and professional development.',method:'Clinical assessment, treatment, rehabilitation, and teaching',career:'Wildlife veterinarian / rehabilitation specialist',sourceLabel:'Official history',url:'https://raptor.umn.edu/about-us/our-history' },
+      { id:'bnhs',code:'BNHS',name:'Bombay Natural History Society',type:'Conservation organization',location:'Mumbai, India (multi-site programs)',country:'India',foundedYear:1883,dateLabel:'Founded 1883',region:'south-asia',role:'recovery',x:74,y:35,focus:'Vulture breeding, release, drug-safety research, and population monitoring',evidence:'Breeding records, population surveys, and veterinary-drug research contribute to vulture-recovery decisions.',impact:'Works with government and conservation partners on India\'s vulture-recovery programs.',method:'Conservation breeding, monitoring, release, and drug-safety research',career:'Vulture conservation biologist / field veterinarian',sourceLabel:'Official vulture program',url:'https://www.bnhs.org/Vulture-Conservation' },
+      { id:'fcq',code:'FCQ',name:'Foundation for the Conservation of the Bearded Vulture (FCQ)',type:'Conservation foundation',location:'Spanish Pyrenees and Cantabrian Mountains',country:'Spain',foundedYear:1995,dateLabel:'Founded 1995',region:'europe-central-asia',role:'recovery',x:52,y:34,focus:'Bearded-vulture monitoring, breeding, release, research, education, and rural-development collaboration',evidence:'Monitoring and release records track bearded-vulture conservation and reintroduction work.',impact:'Links Pyrenean conservation with reintroduction work including Picos de Europa.',method:'Population monitoring, conservation breeding, release, and collaboration',career:'Species-recovery biologist / conservation educator',sourceLabel:'Official foundation site',url:'https://quebrantahuesos.org/?lang=en' },
+      { id:'mauritius-wildlife',code:'MWF',name:'Mauritian Wildlife Foundation',type:'Conservation organization',location:'Mauritius and Rodrigues',country:'Mauritius',foundedYear:1984,dateLabel:'Established 1984; renamed 1995',region:'africa-indian-ocean',role:'recovery',x:86,y:34,focus:'Recovery of endemic birds, reptiles, plants, and island ecosystems',evidence:'Population monitoring, releases, and habitat work document recovery progress for threatened island species.',impact:'Government agencies and conservation partners support the long-running Mauritius kestrel recovery program.',method:'Intensive species recovery, release, monitoring, and habitat restoration',career:'Island restoration ecologist / species-recovery officer',sourceLabel:'Official kestrel project',url:'https://www.mauritian-wildlife.org/mauritiuskestrelnouzwazonasional' },
+      { id:'rrrcn',code:'RRRCN',name:'Russian Raptor Research and Conservation Network',type:'Research network',location:'Russia and northern Eurasia',country:'Russia',foundedYear:2010,dateLabel:'Established 2010',region:'europe-central-asia',role:'network',x:55,y:91,focus:'Research and conservation coordination for birds of prey and owls',evidence:'Collaborative monitoring and the Raptors Conservation journal share regional research and conservation evidence.',impact:'Connects specialists and field projects across a large northern Eurasian range.',method:'Research coordination, shared monitoring, and scientific publishing',career:'Network coordinator / field ornithologist',sourceLabel:'Contemporary founding notice (PDF)',url:'https://docs.sibecocenter.ru/programs/raptors/RC19/RC19.pdf' },
+      { id:'birdlife-sa-raptors',code:'BLSA',name:'BirdLife South Africa — Raptor and Large Terrestrial Birds Project',type:'Species-conservation program',location:'South Africa (national program)',country:'South Africa',foundedYear:null,dateLabel:'Program date not stated on source',region:'africa-indian-ocean',role:'recovery',x:94,y:38,focus:'Research, monitoring, and mitigation for threatened South African raptors and large terrestrial birds',evidence:'Field monitoring and threat research support mitigation priorities for focal species.',impact:'Places raptor evidence inside a national species-conservation program.',method:'Species monitoring, applied research, and threat mitigation',career:'Species conservation manager / field researcher',sourceLabel:'Official project page',url:'https://www.birdlife.org.za/what-we-do/species-conservation/what-we-do/raptors/' },
+      { id:'rspb',code:'RSPB',name:'Royal Society for the Protection of Birds (RSPB)',type:'Conservation organization',location:'United Kingdom (national organization)',country:'United Kingdom',foundedYear:1889,dateLabel:'Founded 1889',region:'europe-central-asia',role:'recovery',x:60,y:38,focus:'Science-led species, habitat, reserve, and policy conservation',evidence:'Species surveys, reserve monitoring, and conservation science inform management and policy work.',impact:'Raptor work forms one part of a broader bird and habitat conservation portfolio.',method:'Conservation science, reserve management, advocacy, and species recovery',career:'Conservation scientist / reserve ecologist',sourceLabel:'Official history',url:'https://www.rspb.org.uk/about-us/our-history' },
+      { id:'birdlife-international',code:'BLI',name:'BirdLife International',type:'Global conservation partnership',location:'Cambridge, England (global secretariat)',country:'United Kingdom',foundedYear:1922,dateLabel:'Network origins 1922',region:'europe-central-asia',role:'data',x:52,y:50,focus:'Global bird and site data, conservation science, and partnership coordination',evidence:'Species assessments and site data support conservation status, priority setting, and the IUCN Red List for birds.',impact:'Connects country partners through shared science and global conservation frameworks.',method:'Status assessment, spatial data, partnership science, and policy support',career:'Conservation data analyst / partnership scientist',sourceLabel:'Official science page',url:'https://datazone.birdlife.org/about-our-science/the-iucn-red-list' },
+      { id:'macaulay-library',code:'ML',name:'Macaulay Library, Cornell Lab of Ornithology',type:'Digital scientific archive',location:'Ithaca, New York (global digital archive)',country:'United States',foundedYear:1929,dateLabel:'Recording archive roots 1929',region:'north-america',role:'data',x:30,y:52,focus:'Scientific archive of natural-history audio, video, and photographs',evidence:'Curated media records preserve animal sounds, behavior, appearance, place, time, and contributor context.',impact:'Makes natural-history media reusable for research, education, and conservation.',method:'Digital archiving, metadata stewardship, and media-based research',career:'Bioacoustics researcher / digital collections specialist',sourceLabel:'Official archive',url:'https://www.macaulaylibrary.org/' },
+      { id:'sdzwa-beckman',code:'BCRC',name:'San Diego Zoo Wildlife Alliance — Beckman Center for Conservation Research',type:'Conservation research center',location:'Escondido, California',country:'United States',foundedYear:2004,dateLabel:'Center opened 2004',region:'north-america',role:'recovery',x:39,y:34,focus:'Conservation genetics, reproductive science, biodiversity banking, and recovery ecology',evidence:'Genetic, reproductive, and biodiversity-bank records support research on threatened-species recovery.',impact:'Provides research infrastructure for work including the Frozen Zoo and California condor recovery.',method:'Genomics, reproductive science, biodiversity banking, and recovery ecology',career:'Conservation geneticist / reproductive physiologist',sourceLabel:'Official research center page',url:'https://science.sandiegozoo.org/who-we-are/beckman-center' },
+      { id:'whitley-fund',code:'WFN',name:'Whitley Fund for Nature',type:'Grantmaking charity',location:'London, England',country:'United Kingdom',foundedYear:1993,dateLabel:'Founded 1993; first awards 1994',region:'europe-central-asia',role:'network',x:61,y:88,focus:'Grants, recognition, and training for locally led conservation in the Global South',evidence:'Award and grant records document support for locally led conservation initiatives.',impact:'Adds funding, visibility, training, and peer connections to conservation capacity.',method:'Competitive grants, leadership recognition, training, and networking',career:'Conservation program leader / grant manager',sourceLabel:'Official organization history',url:'https://whitleyaward.org/about/' },
+      { id:'iowa-coop-unit',code:'IACU',name:'Iowa Cooperative Fish and Wildlife Research Unit',type:'Cooperative research unit',location:'Ames, Iowa',country:'United States',foundedYear:1932,dateLabel:'Unit origins 1932',region:'north-america',role:'data',x:39,y:49,focus:'Cooperative fish and wildlife research, graduate education, and technical assistance',evidence:'Peer-reviewed research, graduate training, and technical assistance address broader fish and wildlife questions.',impact:'Links university, federal, state, and partner expertise through cooperative research.',method:'Field studies, quantitative ecology, graduate research, and technical assistance',career:'Wildlife quantitative ecologist / cooperative-unit scientist',sourceLabel:'Official unit history',url:'https://www.cfwru.iastate.edu/history' }
     ]
   };
+  var RESEARCH_REGIONS = [
+    {id:'all',code:'ALL',label:'All regions'},
+    {id:'north-america',code:'NA',label:'North America',x0:16,x1:48,x:32},
+    {id:'europe-central-asia',code:'ECA',label:'Europe + Central Asia',x0:48,x1:67,x:57.5},
+    {id:'south-asia',code:'SA',label:'South Asia',x0:67,x1:81,x:74},
+    {id:'africa-indian-ocean',code:'AIO',label:'Africa + Indian Ocean',x0:81,x1:100,x:90.5}
+  ];
+  var RESEARCH_ROLES = [
+    {id:'all',code:'ALL',label:'All roles'},
+    {id:'monitoring',code:'MON',label:'Monitoring',y:21},
+    {id:'recovery',code:'REC',label:'Recovery',y:35},
+    {id:'data',code:'DAT',label:'Data + archives',y:49},
+    {id:'health',code:'HLT',label:'Health + training',y:63},
+    {id:'landscape',code:'LAND',label:'Landscape',y:77},
+    {id:'network',code:'NET',label:'Networks + capacity',y:91}
+  ];
+  var RESEARCH_LENSES = [
+    {id:'network',code:'PATH',label:'Network role'},
+    {id:'methods',code:'HOW',label:'Methods'},
+    {id:'careers',code:'WHO',label:'Career lens'}
+  ];
+  var RESEARCH_MISSIONS = [
+    {id:'migration',code:'MIG',label:'Track migration',question:'How could a seasonal count become evidence for habitat decisions?',steps:[{role:'monitoring',verb:'Observe',note:'Collect standardized counts at repeatable places and times.'},{role:'data',verb:'Interpret',note:'Archive, quality-check, and compare the observations.'},{role:'landscape',verb:'Apply',note:'Use patterns to frame habitat and land-management questions.'}]},
+    {id:'recovery',code:'REC',label:'Plan recovery',question:'How could population evidence inform a threatened-species recovery cycle?',steps:[{role:'monitoring',verb:'Observe',note:'Estimate status, movement, survival, and threats.'},{role:'recovery',verb:'Interpret',note:'Test which interventions match the evidence and context.'},{role:'network',verb:'Apply',note:'Coordinate capacity, partners, and long-term learning.'}]},
+    {id:'health',code:'HLT',label:'Study health',question:'How could a clinical observation contribute to conservation knowledge?',steps:[{role:'health',verb:'Observe',note:'Document clinical signs, contaminants, or rehabilitation outcomes.'},{role:'data',verb:'Interpret',note:'Structure records and look for responsible, testable patterns.'},{role:'recovery',verb:'Apply',note:'Translate supported findings into care or recovery questions.'}]},
+    {id:'archive',code:'ARC',label:'Build an archive',question:'How could field evidence remain useful beyond one season or project?',steps:[{role:'monitoring',verb:'Observe',note:'Capture repeatable observations with time and place context.'},{role:'data',verb:'Interpret',note:'Preserve media, measurements, methods, and metadata.'},{role:'network',verb:'Apply',note:'Share reusable evidence through appropriate research communities.'}]}
+  ];
 
   // ───────────────────────────────────────────────────────────
-  // NEW v0.44: CONSERVATION ORGANIZATIONS — 25+ NGOs
+  // CONSERVATION ACTION NETWORK — verified organizations
   // ───────────────────────────────────────────────────────────
+  var ORG_ACTIONS = [
+    {id:'science',code:'SCI',label:'Science + monitoring',color:'#67e8f9',summary:'Build evidence through observation, tracking, and repeatable research.'},
+    {id:'recovery',code:'REC',label:'Species recovery',color:'#86efac',summary:'Restore vulnerable populations through rescue, breeding, release, and follow-up.'},
+    {id:'habitat',code:'HAB',label:'Habitat stewardship',color:'#facc15',summary:'Protect and restore the places raptors and their prey need.'},
+    {id:'policy',code:'POL',label:'Policy + safeguards',color:'#fda4af',summary:'Change rules, practices, and markets that shape risk.'},
+    {id:'education',code:'EDU',label:'Learning + connection',color:'#c4b5fd',summary:'Grow understanding through interpretation, cameras, and community learning.'},
+    {id:'capacity',code:'CAP',label:'Networks + capacity',color:'#fdba74',summary:'Equip conservation leaders and expert networks to act at scale.'}
+  ];
+  var ORG_REACHES = [
+    {id:'place',code:'PLC',label:'Place-based'},
+    {id:'regional',code:'REG',label:'National / regional'},
+    {id:'global',code:'GLB',label:'Global network'}
+  ];
+  var ORG_LENSES = [
+    {id:'impact',code:'WHY',label:'Conservation impact'},
+    {id:'participation',code:'HOW',label:'Ways to engage'},
+    {id:'safeguards',code:'CHK',label:'Trust + safeguards'}
+  ];
+  var ORG_MISSIONS = [
+    {id:'collision',code:'SAFE',label:'Reduce collision risk',question:'How can evidence move from a dangerous structure to a safer landscape?',steps:[{action:'science',verb:'Detect',note:'Document where, when, and which species encounter risk.'},{action:'policy',verb:'Change',note:'Translate evidence into safer siting, design, and operating practice.'},{action:'habitat',verb:'Sustain',note:'Protect lower-risk movement routes and feeding landscapes.'}]},
+    {id:'recovery',code:'BACK',label:'Recover a population',question:'What coordinated roles can help a threatened population return?',steps:[{action:'science',verb:'Diagnose',note:'Measure population status, causes of decline, and recovery signals.'},{action:'recovery',verb:'Restore',note:'Apply species-specific rescue, breeding, release, or threat response.'},{action:'capacity',verb:'Scale',note:'Share expertise, standards, and learning across recovery partners.'}]},
+    {id:'learning',code:'LEARN',label:'Build public learning',question:'How can careful observation become durable public understanding?',steps:[{action:'education',verb:'Connect',note:'Create accessible encounters with raptor behavior and ecology.'},{action:'science',verb:'Ground',note:'Link stories to observable evidence, methods, and uncertainty.'},{action:'habitat',verb:'Steward',note:'Turn understanding toward responsible care for real places.'}]},
+    {id:'trade',code:'TRACE',label:'Address illegal trade',question:'How can a hidden wildlife-trade pathway be understood and disrupted?',steps:[{action:'science',verb:'Trace',note:'Assemble credible evidence about species, routes, and pressures.'},{action:'policy',verb:'Disrupt',note:'Strengthen rules, enforcement practice, and demand reduction.'},{action:'capacity',verb:'Coordinate',note:'Connect specialist knowledge across jurisdictions and institutions.'}]}
+  ];
   var CONSERVATION_ORGS = {
-    intro: 'Conservation NGOs do the heavy lifting of raptor protection. These 25 organizations are where you should donate, volunteer, + follow.',
-    orgs: [
-      { name: 'Cornell Lab of Ornithology', founded: '1915', focus: 'Bird research, citizen science (eBird)', size: 'Large (~700 staff)', donate: 'birds.cornell.edu', volunteer: 'eBird participation' },
-      { name: 'Peregrine Fund', founded: '1970', focus: 'Captive breeding, research, conservation', size: 'Medium (~50 staff)', donate: 'peregrinefund.org', volunteer: 'Various programs' },
-      { name: 'Hawk Mountain Sanctuary', founded: '1934', focus: 'Migration count, education, research', size: 'Medium (~30 staff)', donate: 'hawkmountain.org', volunteer: 'Count team' },
-      { name: 'Audubon Society', founded: '1905', focus: 'Education, advocacy, sanctuaries', size: 'Very large (~1M members)', donate: 'audubon.org', volunteer: 'Local chapters' },
-      { name: 'HawkWatch International', founded: '1986', focus: 'Western US migration + research', size: 'Medium (~30 staff)', donate: 'hawkwatch.org', volunteer: 'Migration counts' },
-      { name: 'American Bird Conservancy', founded: '1994', focus: 'Policy + habitat conservation', size: 'Medium (~50 staff)', donate: 'abcbirds.org', volunteer: 'Various' },
-      { name: 'Raptor Resource Project', founded: '1988', focus: 'Decorah Eagles + other nest cams', size: 'Small (~10 staff)', donate: 'raptorresource.org', volunteer: 'Cam viewing' },
-      { name: 'BirdLife International', founded: '1922', focus: 'Global bird conservation', size: 'Very large (~120 partners)', donate: 'birdlife.org', volunteer: 'Various' },
-      { name: 'Wildlife Conservation Society', founded: '1895', focus: 'Global wildlife (incl. raptors)', size: 'Very large', donate: 'wcs.org', volunteer: 'Various' },
-      { name: 'World Wildlife Fund', founded: '1961', focus: 'Global conservation incl. raptors', size: 'Very large', donate: 'worldwildlife.org', volunteer: 'Various' },
-      { name: 'Defenders of Wildlife', founded: '1947', focus: 'US wildlife + policy', size: 'Large', donate: 'defenders.org', volunteer: 'Various' },
-      { name: 'The Nature Conservancy', founded: '1951', focus: 'Land protection', size: 'Very large', donate: 'nature.org', volunteer: 'Land management' },
-      { name: 'Royal Society for Protection of Birds (RSPB)', founded: '1889', focus: 'UK birds + reserves', size: 'Very large (~1.2M members)', donate: 'rspb.org.uk', volunteer: 'UK reserves' },
-      { name: 'Mauritius Wildlife Foundation', founded: '1984', focus: 'Mauritius endemics', size: 'Small', donate: 'mauritian-wildlife.org', volunteer: 'Field work' },
-      { name: 'Carbon Roots / Vulture conservation', founded: '2000s', focus: 'African + Asian vulture crisis', size: 'Various', donate: 'vulpro.com', volunteer: 'Africa fieldwork' },
-      { name: 'World Center for Birds of Prey (Peregrine Fund)', founded: '1984', focus: 'Captive breeding center', size: 'Medium', donate: 'peregrinefund.org', volunteer: 'Boise ID' },
-      { name: 'Ventana Wildlife Society', founded: '1977', focus: 'California condor reintroduction', size: 'Small', donate: 'ventanaws.org', volunteer: 'CA condor work' },
-      { name: 'San Diego Zoo Wildlife Alliance', founded: '1916', focus: 'California condor + frozen zoo', size: 'Large', donate: 'sdzwa.org', volunteer: 'San Diego' },
-      { name: 'Lammergeier Foundation', founded: '1995', focus: 'Bearded vulture recovery', size: 'Small', donate: 'gypaetus.org', volunteer: 'Europe fieldwork' },
-      { name: 'EAGLES (Eastern Africa)', founded: '2000', focus: 'African raptors', size: 'Small', donate: 'Various sites', volunteer: 'African fieldwork' },
-      { name: 'Whitley Fund for Nature', founded: '1983', focus: 'Wildlife conservation awards', size: 'Small', donate: 'whitleyaward.org', volunteer: 'Awards judging' },
-      { name: 'American Eagle Foundation', founded: '1985', focus: 'Bald + golden eagle', size: 'Medium', donate: 'eagles.org', volunteer: 'Various' },
-      { name: 'National Eagle Center', founded: '1989', focus: 'Eagle education + ambassadors', size: 'Small', donate: 'nationaleaglecenter.org', volunteer: 'MN' },
-      { name: 'International Owl Center', founded: '2015', focus: 'Owl education + research', size: 'Small', donate: 'internationalowlcenter.org', volunteer: 'MN' },
-      { name: 'TRAFFIC (Wildlife Trade Monitoring)', founded: '1976', focus: 'Illegal wildlife trade', size: 'Medium', donate: 'traffic.org', volunteer: 'Various' },
-      { name: 'IUCN Species Survival Commission', founded: '1948', focus: 'Red List status assessments', size: 'Network', donate: 'iucn.org', volunteer: 'Specialists' }
+    intro:'Explore 26 verified organizations by the conservation role they emphasize. This is a learning directory, not a ranking or claim of formal partnership.',
+    reviewed:'August 2026',
+    orgs:[
+      {id:'cornell-lab-org',code:'CLO',name:'Cornell Lab of Ornithology',founded:'1915',action:'science',reach:'global',place:'Ithaca, New York / global',focus:'Bird science, monitoring, and public participation',approach:'Research programs and tools such as eBird turn observations into reusable evidence.',url:'https://www.birds.cornell.edu/home/'},
+      {id:'peregrine-fund-org',code:'TPF',name:'The Peregrine Fund',founded:'1970',action:'recovery',reach:'global',place:'Boise, Idaho / global',focus:'Raptor conservation and species recovery',approach:'Research, recovery programs, professional training, and public learning support threatened raptors.',url:'https://peregrinefund.org/'},
+      {id:'hawk-mountain-org',code:'HMS',name:'Hawk Mountain Sanctuary',founded:'1934',action:'science',reach:'place',place:'Pennsylvania flyway',focus:'Migration monitoring, research, and education',approach:'Long-running counts connect a protected migration site with training and raptor science.',url:'https://www.hawkmountain.org/'},
+      {id:'audubon-org',code:'AUD',name:'National Audubon Society',founded:'1905',action:'education',reach:'regional',place:'United States network',focus:'Bird conservation, community learning, and advocacy',approach:'Centers, chapters, science, and policy connect people with birds and the places they need.',url:'https://www.audubon.org/'},
+      {id:'hawkwatch-org',code:'HWI',name:'HawkWatch International',founded:'1986',action:'science',reach:'regional',place:'Western North America and beyond',focus:'Raptor migration and ecological monitoring',approach:'Standardized field counts and research reveal population trends and conservation needs.',url:'https://hawkwatch.org/'},
+      {id:'abc-org',code:'ABC',name:'American Bird Conservancy',founded:'1994',action:'policy',reach:'regional',place:'Americas',focus:'Threat reduction, policy, and habitat for birds',approach:'Programs address hazards, priority species, working lands, and conservation policy.',url:'https://abcbirds.org/'},
+      {id:'raptor-resource-org',code:'RRP',name:'Raptor Resource Project',founded:'1988',action:'education',reach:'place',place:'Upper Midwest / online',focus:'Nest habitat, live cameras, and public learning',approach:'Nest-site work and live views connect close observation with raptor biology.',url:'https://www.raptorresource.org/'},
+      {id:'birdlife-org',code:'BLI',name:'BirdLife International',founded:'1922',action:'capacity',reach:'global',place:'Worldwide partnership',focus:'Global bird and biodiversity conservation',approach:'A partnership model connects local organizations, science, sites, species, and policy.',url:'https://www.birdlife.org/'},
+      {id:'wcs-org',code:'WCS',name:'Wildlife Conservation Society',founded:'1895',action:'habitat',reach:'global',place:'Global landscapes and seascapes',focus:'Wildlife, intact ecosystems, and field conservation',approach:'Science and long-term field programs connect species outcomes with large landscapes.',url:'https://www.wcs.org/'},
+      {id:'wwf-org',code:'WWF',name:'World Wildlife Fund',founded:'1961',action:'habitat',reach:'global',place:'Worldwide network',focus:'Nature, climate, species, and places',approach:'Landscape programs, partnerships, markets, and policy address broad ecological pressures.',url:'https://www.worldwildlife.org/'},
+      {id:'defenders-org',code:'DOW',name:'Defenders of Wildlife',founded:'1947',action:'policy',reach:'regional',place:'United States',focus:'Wildlife protection, coexistence, and policy',approach:'Legal, policy, field, and public programs address threats to native wildlife and habitat.',url:'https://defenders.org/'},
+      {id:'tnc-org',code:'TNC',name:'The Nature Conservancy',founded:'1951',action:'habitat',reach:'global',place:'Global lands and waters',focus:'Land, water, climate, and biodiversity',approach:'Science, stewardship, policy, and partnerships support durable conservation of places.',url:'https://www.nature.org/'},
+      {id:'rspb-org',code:'RSPB',name:'Royal Society for the Protection of Birds',founded:'1889',action:'habitat',reach:'regional',place:'United Kingdom and partner landscapes',focus:'Birds, reserves, habitat, and public action',approach:'Reserve stewardship, science, policy, and learning connect people with bird conservation.',url:'https://www.rspb.org.uk/'},
+      {id:'mauritius-wildlife-org',code:'MWF',name:'Mauritian Wildlife Foundation',founded:'1984',action:'recovery',reach:'place',place:'Mauritius and offshore islands',focus:'Recovery of threatened island species',approach:'Field conservation, restoration, reintroduction, and monitoring support endemic wildlife.',url:'https://www.mauritian-wildlife.org/'},
+      {id:'vulpro-org',code:'VUL',name:'VulPro',founded:'2007',action:'recovery',reach:'place',place:'Southern Africa',focus:'African vulture rescue and recovery',approach:'Rescue, rehabilitation, release, research, breeding, and education address vulture declines.',url:'https://www.vulpro.com/'},
+      {id:'vcf-org',code:'VCF',name:'Vulture Conservation Foundation',founded:'2009',action:'recovery',reach:'global',place:'Europe and international partnerships',focus:'Vulture recovery and threat reduction',approach:'Breeding, reintroduction, tracking, monitoring, and threat mitigation support vulture populations.',url:'https://4vultures.org/'},
+      {id:'ventana-org',code:'VWS',name:'Ventana Wildlife Society',founded:'1977',action:'recovery',reach:'place',place:'Central California',focus:'California condor recovery and outdoor education',approach:'Field-based release and monitoring connect species recovery with youth experiences outdoors.',url:'https://www.ventanaws.org/'},
+      {id:'sdzwa-org',code:'SDZ',name:'San Diego Zoo Wildlife Alliance',founded:'1916',action:'recovery',reach:'place',place:'Southern California / conservation programs',focus:'Wildlife health, managed care, and species recovery',approach:'Conservation breeding, veterinary science, field research, and reintroduction support recovery.',url:'https://science.sandiegozoo.org/species/california-condor'},
+      {id:'fcq-org',code:'FCQ',name:'Foundation for the Conservation of the Bearded Vulture',founded:'1995',action:'recovery',reach:'regional',place:'Spanish Pyrenees and mountain regions',focus:'Bearded vulture conservation',approach:'Monitoring, applied research, habitat work, and public programs support mountain populations.',url:'https://quebrantahuesos.org/'},
+      {id:'birdlife-sa-org',code:'BSA',name:'BirdLife South Africa',founded:'1930',action:'science',reach:'regional',place:'South Africa and regional flyways',focus:'Raptors and large terrestrial birds',approach:'Research and conservation programs address threats, priority species, and landscapes.',url:'https://www.birdlife.org.za/what-we-do/species-conservation/what-we-do/raptors/'},
+      {id:'whitley-org',code:'WFN',name:'Whitley Fund for Nature',founded:'1993',action:'capacity',reach:'global',place:'Conservation leaders worldwide',focus:'Locally led conservation leadership',approach:'Awards, funding, profile, and a long-term alumni network help proven leaders expand impact.',url:'https://whitleyaward.org/'},
+      {id:'american-eagle-org',code:'AEF',name:'American Eagle Foundation',founded:'1985',action:'recovery',reach:'regional',place:'United States',focus:'Bald and golden eagle conservation',approach:'Care, recovery support, education, and advocacy center the needs of eagles.',url:'https://eagles.org/'},
+      {id:'national-eagle-center-org',code:'NEC',name:'National Eagle Center',founded:'1989',action:'education',reach:'place',place:'Wabasha, Minnesota',focus:'Eagle interpretation and public learning',approach:'Ambassador eagles, exhibits, and field experiences connect visitors with eagle ecology.',url:'https://www.nationaleaglecenter.org/'},
+      {id:'international-owl-center-org',code:'IOC',name:'International Owl Center',founded:'2015',action:'education',reach:'place',place:'Houston, Minnesota / international learning',focus:'Owl education, research, and human-owl coexistence',approach:'Ambassador encounters and evidence-based programs build understanding across cultures.',url:'https://www.internationalowlcenter.org/'},
+      {id:'traffic-org',code:'TRF',name:'TRAFFIC',founded:'1976',action:'policy',reach:'global',place:'Global wildlife-trade network',focus:'Wildlife trade research and action',approach:'Evidence, policy support, and cross-sector work address unsustainable and illegal trade.',url:'https://www.traffic.org/'},
+      {id:'iucn-ssc-org',code:'SSC',name:'IUCN Species Survival Commission',founded:'1949',action:'capacity',reach:'global',place:'Worldwide expert network',focus:'Species knowledge, assessment, planning, and action',approach:'Volunteer expert groups develop science-based assessments, guidance, and conservation priorities.',url:'https://iucn.org/our-union/commissions/species-survival-commission'}
     ]
   };
 
   // ───────────────────────────────────────────────────────────
-  // NEW v0.44: RAPTOR MUSEUMS — 15 places to visit
+  // RAPTOR MUSEUM FIELD LAB — verified visitor learning sites
   // ───────────────────────────────────────────────────────────
+  var MUSEUM_MODES = [
+    {id:'specimens',code:'COL',label:'Collections + specimens',summary:'Learn from preserved specimens, dioramas, galleries, and collection stories.'},
+    {id:'ambassadors',code:'AMB',label:'Living ambassadors',summary:'Observe non-releasable raptors through trained interpretation and welfare safeguards.'},
+    {id:'field',code:'FLD',label:'Field observation',summary:'Connect visitor-center interpretation with habitats, migration, and wild birds.'},
+    {id:'fossils',code:'FOS',label:'Deep-time evidence',summary:'Use fossil birds to investigate extinction, adaptation, and changing ecosystems.'}
+  ];
+  var MUSEUM_REGIONS = [
+    {id:'east',code:'EAS',label:'Eastern US'},
+    {id:'southeast',code:'SEA',label:'Southeastern US'},
+    {id:'central',code:'CTR',label:'Central US'},
+    {id:'west',code:'WST',label:'Western US'},
+    {id:'international',code:'INT',label:'International'}
+  ];
+  var MUSEUM_LENSES = [
+    {id:'learner',code:'ASK',label:'Independent learner'},
+    {id:'educator',code:'TEA',label:'Educator planning'},
+    {id:'access',code:'ACC',label:'Access + care'}
+  ];
+  var MUSEUM_STATIONS = [
+    {id:'notice',code:'01',label:'Notice',prompt:'Describe what is visible before interpreting it.'},
+    {id:'compare',code:'02',label:'Compare',prompt:'Look for meaningful similarities and differences.'},
+    {id:'context',code:'03',label:'Add context',prompt:'Connect the object or animal with habitat, time, and evidence.'},
+    {id:'question',code:'04',label:'Question',prompt:'Ask what is known, uncertain, missing, or shaped by display choices.'},
+    {id:'steward',code:'05',label:'Steward',prompt:'Identify a responsible action grounded in what you learned.'}
+  ];
+  var MUSEUM_INQUIRIES = [
+    {id:'adaptation',code:'FORM',label:'Read an adaptation',question:'How can visible form support a careful claim about raptor function?',steps:[{station:'notice',verb:'Describe',note:'Record shape, scale, texture, and position without guessing purpose.'},{station:'compare',verb:'Contrast',note:'Compare the feature with another species or structure.'},{station:'context',verb:'Explain',note:'Use labels and evidence to connect form with ecology and behavior.'}]},
+    {id:'conservation',code:'CARE',label:'Trace conservation',question:'How does a museum encounter become a conservation story rather than a spectacle?',steps:[{station:'context',verb:'Locate',note:'Identify the habitat, threat, recovery context, and source of evidence.'},{station:'question',verb:'Interrogate',note:'Ask whose work, knowledge, and uncertainty are represented.'},{station:'steward',verb:'Respond',note:'Choose a specific, realistic action consistent with site guidance.'}]},
+    {id:'evolution',code:'TIME',label:'Connect deep time',question:'What evidence links living raptors with evolutionary change?',steps:[{station:'compare',verb:'Align',note:'Compare bones, feathers, body plans, or ecological roles.'},{station:'context',verb:'Sequence',note:'Place evidence in time and distinguish ancestry from superficial similarity.'},{station:'question',verb:'Test',note:'Ask what additional fossil or living evidence would strengthen the claim.'}]},
+    {id:'ethics',code:'VIEW',label:'Read the display',question:'How do care, collection history, and exhibit design shape what visitors see?',steps:[{station:'notice',verb:'Observe',note:'Separate the displayed evidence from lighting, framing, and interpretation.'},{station:'question',verb:'Examine',note:'Ask how specimens or ambassadors came to be present and cared for.'},{station:'steward',verb:'Respect',note:'Follow welfare, photography, access, and wildlife-safety guidance.'}]}
+  ];
   var RAPTOR_MUSEUMS = {
-    intro: 'Museums + nature centers with significant raptor exhibits + ambassador birds. Plan a visit.',
-    museums: [
-      { name: 'Smithsonian National Museum of Natural History', state: 'DC', highlights: 'Comprehensive bird halls, dinosaur+bird evolution exhibit, condor specimens', cost: 'Free', url: 'nmnh.si.edu' },
-      { name: 'American Museum of Natural History', state: 'NY', highlights: 'Hall of Birds of the World, dinosaur evolution, raptor specimens', cost: '$28 adult', url: 'amnh.org' },
-      { name: 'World Center for Birds of Prey', state: 'ID', highlights: 'Live raptor exhibits, captive breeding tours, education', cost: '$10 adult', url: 'peregrinefund.org' },
-      { name: 'Carolina Raptor Center', state: 'NC', highlights: '150+ live raptors, education programs', cost: '$15 adult', url: 'carolinaraptorcenter.org' },
-      { name: 'National Eagle Center', state: 'MN', highlights: 'Live bald + golden eagle ambassadors', cost: '$10 adult', url: 'nationaleaglecenter.org' },
-      { name: 'Hawk Mountain Sanctuary Visitor Center', state: 'PA', highlights: 'Migration education, raptor displays, hawk count platform', cost: '$10 (count days)', url: 'hawkmountain.org' },
-      { name: 'International Owl Center', state: 'MN', highlights: 'Live owl ambassadors, owl-themed exhibits', cost: '$10', url: 'internationalowlcenter.org' },
-      { name: 'Audubon Center for Birds of Prey', state: 'FL', highlights: 'Florida\'s primary raptor center, 700 raptors/year', cost: 'Donations', url: 'audubon.org/cbop' },
-      { name: 'Cornell Lab Visitor Center', state: 'NY', highlights: 'Sapsucker Woods, exhibits, library', cost: 'Free', url: 'birds.cornell.edu' },
-      { name: 'Field Museum Chicago', state: 'IL', highlights: 'Bird hall, dinosaur evolution, scientific collections', cost: '$26 adult', url: 'fieldmuseum.org' },
-      { name: 'California Academy of Sciences', state: 'CA', highlights: 'Bird hall + planetarium + aquarium', cost: '$40 adult', url: 'calacademy.org' },
-      { name: 'Denver Museum of Nature + Science', state: 'CO', highlights: 'Bird dioramas, dinosaur + bird evolution', cost: '$25 adult', url: 'dmns.org' },
-      { name: 'Royal Ontario Museum', state: 'Canada', highlights: 'Comprehensive Canadian raptor exhibits', cost: '$23 adult', url: 'rom.on.ca' },
-      { name: 'Natural History Museum London', state: 'UK', highlights: 'World-class bird collection + dinosaur evolution', cost: 'Free', url: 'nhm.ac.uk' },
-      { name: 'La Brea Tar Pits + Museum', state: 'CA', highlights: 'Teratornis fossils, ice-age raptor extinction', cost: '$15 adult', url: 'tarpits.org' }
+    intro:'Explore 15 verified museums, centers, and field sites by the kind of evidence they make visible. This learning guide does not guarantee current hours, prices, programs, or animal availability.',
+    reviewed:'August 2026',
+    museums:[
+      {id:'smithsonian-museum',code:'SI',name:'Smithsonian National Museum of Natural History',locale:'Washington, DC',mode:'specimens',region:'east',focus:'National bird collections and natural-history interpretation',evidence:'Specimens and collection records can support questions about anatomy, diversity, taxonomy, and conservation history.',question:'Which parts of a specimen are direct evidence, and which conclusions require collection data or comparison?',url:'https://naturalhistory.si.edu/visit',status:'Check the official visit page for current galleries, hours, admission, accessibility, and closures.'},
+      {id:'amnh-museum',code:'AMNH',name:'American Museum of Natural History',locale:'New York, New York',mode:'specimens',region:'east',focus:'Bird halls, habitat dioramas, and comparative displays',evidence:'North American bird dioramas and specimen groupings connect anatomy with habitat and geographic variation.',question:'How does a diorama combine scientific evidence with artistic reconstruction?',url:'https://www.amnh.org/exhibitions/permanent/north-american-birds',status:'Bird halls are included in the permanent exhibition system; confirm current access and visitor requirements.'},
+      {id:'world-center-museum',code:'WCBP',name:'World Center for Birds of Prey',locale:'Boise, Idaho',mode:'ambassadors',region:'west',focus:'Raptor conservation, interpretation, and living ambassadors',evidence:'Interpretive programs connect raptor adaptations with recovery work and conservation practice.',question:'What can an ambassador bird help visitors understand that a specimen or photograph cannot?',url:'https://peregrinefund.org/visit',status:'Programs and ambassador availability can change; verify schedules, tickets, and visitor policies directly.'},
+      {id:'carolina-raptor-museum',code:'CRC',name:'Carolina Raptor Center',locale:'Huntersville, North Carolina',mode:'ambassadors',region:'southeast',focus:'Raptor Trail, rehabilitation context, and education',evidence:'Ambassador encounters and staff programs connect individual birds with anatomy, behavior, care, and rehabilitation.',question:'How does interpretation distinguish an ambassador animal from a wild-animal encounter?',url:'https://carolinaraptorcenter.org/',status:'Daily programs change seasonally and with weather or keeper schedules; check the official plan-your-visit information.'},
+      {id:'national-eagle-museum',code:'NEC',name:'National Eagle Center',locale:'Wabasha, Minnesota',mode:'ambassadors',region:'central',focus:'Eagle ambassadors, river ecology, history, and culture',evidence:'Living eagles, exhibits, and observation areas connect biology with Mississippi River habitat and human relationships.',question:'How do biological and cultural interpretations change the questions a visitor asks about eagles?',url:'https://www.nationaleaglecenter.org/visit/',status:'Program seats and schedules can vary; verify reservations, accessibility, and animal-area policies.'},
+      {id:'hawk-mountain-museum',code:'HMS',name:'Hawk Mountain Sanctuary Visitor Center',locale:'Kempton, Pennsylvania',mode:'field',region:'east',focus:'Migration interpretation, visitor exhibits, and wild-routine observation',evidence:'Indoor interpretation and outdoor lookouts connect migration counts with weather, topography, and conservation history.',question:'What conditions would you record to make a migration observation reusable?',url:'https://www.hawkmountain.org/about/locations/visitor-center',status:'Trail conditions, fees, weather, and seasonal observation vary; review current official guidance before visiting.'},
+      {id:'owl-center-museum',code:'IOC',name:'International Owl Center',locale:'Houston, Minnesota',mode:'ambassadors',region:'central',focus:'Owl ambassadors, anatomy, behavior, and cross-cultural learning',evidence:'Live programs and hands-on displays support comparisons among owl adaptations and human-owl relationships.',question:'Which owl adaptation can you support with more than one type of evidence?',url:'https://www.internationalowlcenter.org/',status:'Hours, programs, and animal-related access policies can change; verify them on the official site.'},
+      {id:'audubon-cbop-museum',code:'ACB',name:'Audubon Center for Birds of Prey',locale:'Maitland, Florida',mode:'ambassadors',region:'southeast',focus:'Florida raptors, rehabilitation, habitats, and public education',evidence:'Ambassador birds, exhibits, and rehabilitation interpretation connect local species with threats and care.',question:'How can visitors learn from rehabilitation without assuming every patient becomes an ambassador?',url:'https://www.audubon.org/cbop/visit',status:'Most visitor areas are outdoors and programs may change; confirm tickets, weather preparation, and accessibility.'},
+      {id:'cornell-visitor-museum',code:'CLO',name:'Cornell Lab Visitor Center',locale:'Ithaca, New York',mode:'field',region:'east',focus:'Bird science, exhibits, sound, and Sapsucker Woods',evidence:'Exhibits and trails connect observation with research tools, habitat, sound, and public bird data.',question:'What metadata would turn a trail observation into useful scientific evidence?',url:'https://www.birds.cornell.edu/home/visit/',status:'Confirm visitor-center hours, trail conditions, group arrangements, and current accessibility information.'},
+      {id:'field-museum-birds',code:'FM',name:'Field Museum — Gidwitz Hall of Birds',locale:'Chicago, Illinois',mode:'specimens',region:'central',focus:'Specimens, digital interpretation, bird diversity, and evolutionary relationships',evidence:'Mounted specimens, interactive media, maps, and an avian tree of life support multiple ways to compare birds.',question:'How do digital interpretation and physical specimens contribute different evidence?',url:'https://www.fieldmuseum.org/exhibition/halls-and-galleries/ronald-and-christina-gidwitz-hall-birds',status:'Confirm current museum admission, gallery access, accommodations, and any temporary exhibit changes.'},
+      {id:'cal-academy-museum',code:'CAS',name:'California Academy of Sciences',locale:'San Francisco, California',mode:'specimens',region:'west',focus:'Biodiversity interpretation and ornithology collection context',evidence:'Public museum experiences and scientific bird collections reveal different roles for exhibition, research, and stewardship.',question:'Why might a research collection contain evidence that is not placed on public display?',url:'https://www.calacademy.org/plan-your-visit',status:'The scientific ornithology collection is not generally a walk-in public gallery; verify public exhibits and access separately.',alert:true},
+      {id:'denver-museum-birds',code:'DMNS',name:'Denver Museum of Nature & Science',locale:'Denver, Colorado',mode:'specimens',region:'central',focus:'Wildlife dioramas, multisensory interpretation, and regional ecology',evidence:'Habitat scenes, bird-related activities, and accessible interpretation support observation across multiple senses.',question:'Which details in a habitat scene are evidence, and which are reconstructed context?',url:'https://www.dmns.org/exhibitions/permanent-exhibitions/',status:'Confirm current galleries, accessibility resources, tickets, and any renovation-related changes.'},
+      {id:'rom-birds-museum',code:'ROM',name:'Royal Ontario Museum — Gallery of Birds',locale:'Toronto, Ontario, Canada',mode:'specimens',region:'international',focus:'Global bird diversity and comparative anatomy',evidence:'More than one hundred displayed birds represent all living avian orders and invite comparison from multiple angles.',question:'What classification pattern becomes visible when many orders are shown together?',url:'https://www.rom.on.ca/whats-on/galleries/gallery-birds',status:'The gallery is listed as included with admission; confirm current hours, tickets, and access before travel.'},
+      {id:'nhm-birds-museum',code:'NHM',name:'Natural History Museum London — Birds Gallery',locale:'London, United Kingdom',mode:'specimens',region:'international',focus:'Bird specimens, extinction, anatomy, eggs, art, and conservation',evidence:'Historic and modern displays connect avian diversity with extinction, collection history, and conservation.',question:'How should collection age and historical display choices affect the way evidence is interpreted?',url:'https://www.nhm.ac.uk/visit/galleries-and-museum-map/birds.html',status:'Confirm gallery opening, timed-entry guidance, access services, and temporary changes on the official site.'},
+      {id:'la-brea-birds-museum',code:'LBT',name:'La Brea Tar Pits — Bird Collections',locale:'Los Angeles, California',mode:'fossils',region:'west',focus:'Ice Age fossil birds, extinction, and predator-rich ecosystems',evidence:'Asphalt deposits preserve a major fossil-bird record, including Merriam’s teratorn and many diurnal raptors.',question:'What does the abundance of predatory birds suggest about the ecology and sampling process of the tar pits?',url:'https://tarpits.org/',status:'Indoor museum exhibitions were temporarily closed for renovation at the August 2026 review; verify current outdoor and tour access.',alert:true}
     ]
   };
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.44: BOOK LIBRARY — 30 recommended books
   // ───────────────────────────────────────────────────────────
+  // ───────────────────────────────────────────────────────────
+  // RAPTOR READING FLIGHT DECK — verified 30-title pathway
+  // ───────────────────────────────────────────────────────────
+  var READING_PURPOSES = [
+    { id: 'identify', code: 'ID', label: 'Identify', short: 'Field marks, shape, and flight' },
+    { id: 'understand', code: 'SCI', label: 'Understand', short: 'Biology, ecology, and methods' },
+    { id: 'conserve', code: 'ACT', label: 'Conserve', short: 'Threats, recovery, and action' },
+    { id: 'stories', code: 'STO', label: 'Stories', short: 'Memoir, fiction, and observation' },
+    { id: 'culture', code: 'HIS', label: 'History + culture', short: 'Human relationships across time' }
+  ];
+  var RAPTOR_BOOK_LEVELS = [
+    { id: 'beginner', code: '01', label: 'First lift' },
+    { id: 'intermediate', code: '02', label: 'Build range' },
+    { id: 'advanced', code: '03', label: 'Deep study' }
+  ];
+  var READING_LENSES = [
+    { id: 'field', code: 'FLD', label: 'Field notebook', title: 'Carry one observable question', copy: 'Sketch, annotate, or log one claim you can check against a bird, plate, photograph, or second source.' },
+    { id: 'classroom', code: 'CLS', label: 'Classroom inquiry', title: 'Make evidence visible', copy: 'Name the claim, point to the supporting passage or image, then record what the source cannot establish.' },
+    { id: 'family', code: 'FAM', label: 'Read together', title: 'Pause, notice, wonder', copy: 'Take turns choosing a detail, asking a question, and connecting the reading to a safe local observation.' }
+  ];
+  var READING_STAGES = [
+    { id: 'observe', code: '01', label: 'Observe', x: 12, y: 69, prompt: 'Slow down and name exactly what the author, plate, or photograph shows.', question: 'What evidence can you name before you interpret it?' },
+    { id: 'identify', code: '02', label: 'Identify', x: 31, y: 38, prompt: 'Compare field marks, behaviors, setting, and uncertainty before naming a bird.', question: 'Which two details support the identification, and what could still change it?' },
+    { id: 'explain', code: '03', label: 'Explain', x: 50, y: 69, prompt: 'Trace a mechanism or cause instead of stopping at a memorable fact.', question: 'How does the source connect evidence to its explanation?' },
+    { id: 'act', code: '04', label: 'Act', x: 69, y: 38, prompt: 'Connect a threat or recovery claim to a specific, safe, evidence-based response.', question: 'Who can act, at what scale, and how would success be measured?' },
+    { id: 'reflect', code: '05', label: 'Reflect', x: 88, y: 69, prompt: 'Separate bird biology from human symbolism, memory, and point of view.', question: 'Whose perspective shapes this account, and which voices should be added?' }
+  ];
+  var READING_MISSIONS = [
+    { id: 'first-lift', code: 'START', label: 'First lift', question: 'How can story, identification, and recovery build curiosity without overwhelming a new reader?', steps: [
+      { bookId: 'my-side-mountain', verb: 'Enter through story', note: 'Notice how Frightful shapes the choices in a work of fiction.' },
+      { bookId: 'sibley-guide', verb: 'Learn to compare', note: 'Use whole-bird illustrations to practice evidence-based noticing.' },
+      { bookId: 'beauty-beak', verb: 'Meet applied STEM', note: 'Connect observation to rehabilitation and 3D prosthetic design.' }
+    ] },
+    { id: 'id-sprint', code: 'FIELD', label: 'Field-ID sprint', question: 'How does a confident identification grow from broad pattern to closer comparison?', steps: [
+      { bookId: 'sibley-guide', verb: 'Build a baseline', note: 'Start with family shape, proportion, and range.' },
+      { bookId: 'hawks-flight', verb: 'Read flight style', note: 'Compare silhouette, cadence, and behavior in the air.' },
+      { bookId: 'hawks-distance', verb: 'Test uncertainty', note: 'Practice forming and revising a distant-view hypothesis.' }
+    ] },
+    { id: 'recovery-arc', code: 'RECOVER', label: 'Recovery arc', question: 'How do evidence, institutions, and disagreement shape a conservation recovery?', steps: [
+      { bookId: 'silent-spring', verb: 'Find the warning', note: 'Trace how pesticide evidence challenged accepted practice.' },
+      { bookId: 'return-peregrine', verb: 'Follow teamwork', note: 'Map the roles behind a continental recovery program.' },
+      { bookId: 'condor-brink', verb: 'Compare tradeoffs', note: 'Examine a second recovery story with different risks and debates.' }
+    ] },
+    { id: 'culture-time', code: 'CULTURE', label: 'Culture through time', question: 'How have people used raptors to describe power, place, knowledge, and responsibility?', steps: [
+      { bookId: 'art-falconry', verb: 'Read a historic system', note: 'Treat the medieval text as evidence of its time, not current welfare guidance.' },
+      { bookId: 'falcon-macdonald', verb: 'Trace changing symbols', note: 'Compare natural history with cultural meanings across places.' },
+      { bookId: 'eagle-drums', verb: 'Center a living voice', note: 'Meet an Iñupiaq-authored story grounded in a specific community and tradition.' }
+    ] }
+  ];
   var BOOK_LIBRARY = {
-    intro: '30 essential books on raptors — from field guides to memoirs to scientific treatises.',
-    categories: [
-      {
-        category: 'Field guides',
-        books: [
-          { title: 'Sibley Birds (4th ed.)', author: 'David Allen Sibley', year: '2014', focus: 'US field guide', why: 'Modern US standard. Best illustrations.' },
-          { title: 'Peterson Field Guide to Hawks', author: 'William Clark + Brian Wheeler', year: '2017', focus: 'US raptors', why: 'Modern raptor field guide.' },
-          { title: 'Hawks in Flight (3rd ed.)', author: 'Pete Dunne + David Sibley', year: '2017', focus: 'In-flight ID', why: 'Best flight-ID resource for US raptors.' },
-          { title: 'Hawks at a Distance', author: 'Jerry Liguori', year: '2011', focus: 'Distant ID', why: 'Excellent for hawkwatch ID.' },
-          { title: 'Crossley ID Guide: Raptors', author: 'Richard Crossley', year: '2013', focus: 'Photo-quiz format', why: 'Photo-quiz tests + builds skills.' },
-          { title: 'Petersen Field Guide to Birds Of N. America', author: 'Roger Tory Peterson', year: '2008', focus: 'Historic field guide', why: 'The original — still excellent.' }
-        ]
-      },
-      {
-        category: 'Memoirs + biographies',
-        books: [
-          { title: 'Behind Closed Doors', author: 'Carl Jones', year: '2018', focus: 'Mauritius kestrel recovery memoir', why: 'First-hand account of 40-year recovery project.' },
-          { title: 'H Is for Hawk', author: 'Helen Macdonald', year: '2014', focus: 'Falconry + grief memoir', why: 'Pulitzer-winning meditation on training a goshawk.' },
-          { title: 'The Goshawk', author: 'T.H. White', year: '1951', focus: 'Falconry memoir', why: 'Classic. White (author of Once + Future King) trains a goshawk.' },
-          { title: 'My Side of the Mountain', author: 'Jean Craighead George', year: '1959', focus: 'Boy + falcon', why: 'Children\'s classic that inspired generations.' },
-          { title: 'Falcon Fever', author: 'Tim Gallagher', year: '2008', focus: 'Falconry experience', why: 'Modern memoir of obsession with falconry.' },
-          { title: 'Vacaville: A Stop on Raptor Highway', author: 'Various', year: '2010s', focus: 'Hawk Mountain history', why: 'History of Hawk Mountain.' },
-          { title: 'Eagle Dreams', author: 'Stephen Bodio', year: '2003', focus: 'Mongolia Berkutchi', why: 'Bodio\'s journey through Mongolian eagle-hunting tradition.' }
-        ]
-      },
-      {
-        category: 'Science + conservation',
-        books: [
-          { title: 'Silent Spring', author: 'Rachel Carson', year: '1962', focus: 'DDT + ecology', why: 'Most influential conservation book ever.' },
-          { title: 'The Peregrine', author: 'J.A. Baker', year: '1967', focus: 'Peregrine observation', why: 'Cult classic. Spare + intense observational nature writing.' },
-          { title: 'Hawks From Every Angle', author: 'Jerry Liguori', year: '2005', focus: 'Photo-ID', why: 'Pre-Crossley photo-based ID.' },
-          { title: 'Raptors of the World', author: 'Hawksbill Ventures', year: '2020', focus: 'All world raptors', why: 'Comprehensive species reference.' },
-          { title: 'Birds of Prey of the World', author: 'James Ferguson-Lees + David Christie', year: '2001', focus: 'All world raptors', why: 'Foundational world-raptor reference.' },
-          { title: 'Hawks, Eagles, and Falcons of N. America', author: 'Paul Johnsgard', year: '1990', focus: 'N. America raptors', why: 'Detailed biology of US raptors.' },
-          { title: 'The Birds of N. America', author: 'Various', year: 'Updated continuously', focus: 'Species accounts', why: 'Most complete US species reference.' },
-          { title: 'Raptors of California', author: 'Hans Peeters + Pam Peeters', year: '2005', focus: 'California raptors', why: 'Best regional raptor book in the world.' }
-        ]
-      },
-      {
-        category: 'Falconry',
-        books: [
-          { title: 'The Art of Falconry by Frederick II', author: 'Frederick II (translated)', year: '1240 / mod. transl.', focus: 'First scientific raptor treatise', why: 'Foundational + still relevant after 800 years.' },
-          { title: 'The Boke of Saint Albans', author: 'Juliana Berners', year: '1486', focus: 'English falconry history', why: 'Ranks species by social class. Historic interest.' },
-          { title: 'Practical Falconry to Make a Falconer', author: 'Tom J. Cade', year: '1968', focus: 'Modern falconry manual', why: 'Tom Cade — peregrine recovery hero — wrote this.' },
-          { title: 'Falconry for Beginners', author: 'Lee Harris', year: '1996', focus: 'Beginner falconry', why: 'Practical apprentice guide.' },
-          { title: 'A Falconer\'s Bible', author: 'Steve Layman', year: '2008', focus: 'Comprehensive falconry', why: 'Practical encyclopedia.' }
-        ]
-      },
-      {
-        category: 'History + culture',
-        books: [
-          { title: 'Mrs. Whitney\'s Hawk Mountain', author: 'Maurice Broun', year: '1947', focus: 'Hawk Mountain founding', why: 'First-hand account of Rosalie Edge\'s sanctuary.' },
-          { title: 'A Falconer in Mongolia', author: 'Stephen Bodio', year: '2003', focus: 'Berkutchi tradition', why: 'Best Western book on Berkutchi.' },
-          { title: 'When Eagles Roared', author: 'Various', year: '2010s', focus: 'WWII eagle symbolism', why: 'Historical raptor symbolism in 20th century.' },
-          { title: 'Eagles + Indians', author: 'Various', year: '2010s', focus: 'Indigenous raptor traditions', why: 'Eagle in Indigenous N. American culture.' }
-        ]
-      }
+    reviewed: '2026-08-27',
+    intro: 'A source-checked, non-ranked pathway through 30 books. Choose why you are reading, compare perspectives, and build a three-book flight plan.',
+    books: [
+      { id: 'sibley-guide', code: 'B01', title: 'The Sibley Guide to Birds', author: 'David Allen Sibley', year: '2014', purpose: 'identify', level: 'beginner', form: 'Illustrated field guide', focus: 'Whole-bird comparison across North America', why: 'A strong visual baseline for shape, plumage, range, and side-by-side comparison.', critical: 'This is a broad bird guide. Pair difficult raptor ages, morphs, and regional variation with a raptor-specific source.', source: 'https://sibleyguides.com/about/the-sibley-guide-to-birds/', sourceLabel: 'Sibley Guides' },
+      { id: 'field-guide-hawks', code: 'B02', title: 'A Field Guide to Hawks of North America', author: 'William S. Clark + Brian K. Wheeler', year: '2001', purpose: 'identify', level: 'intermediate', form: 'Raptor field guide', focus: 'North American diurnal raptors', why: 'Detailed plates and photographs support age, plumage, and species comparisons.', critical: 'The second edition is information-dense. Treat range and taxonomy as edition-specific and check current records.', source: 'https://books.google.com/books/about/A_Field_Guide_to_Hawks_of_North_America.html?id=beUPAQAAMAAJ', sourceLabel: 'Google Books record' },
+      { id: 'hawks-flight', code: 'B03', title: 'Hawks in Flight', author: 'Pete Dunne + David Sibley + Clay Sutton', year: '2012', purpose: 'identify', level: 'intermediate', form: 'Flight-identification guide', focus: 'Silhouette, cadence, and behavior aloft', why: 'Teaches the whole-bird flight patterns used at hawkwatches and in open sky.', critical: 'Flight style is powerful but variable. Confirm perched birds and unusual sightings with another source.', source: 'https://books.google.com/books/about/Hawks_In_Flight.html?id=OVQPAAAAQBAJ', sourceLabel: 'Google Books record' },
+      { id: 'hawks-distance', code: 'B04', title: 'Hawks at a Distance', author: 'Jerry Liguori', year: '2011', purpose: 'identify', level: 'intermediate', form: 'Photo identification guide', focus: 'Distant silhouettes and flight cues', why: 'Builds comfort with imperfect views and the clues that remain when detail disappears.', critical: 'A brief or distant view supports a hypothesis, not certainty. Keep an unknown category in your field notes.', source: 'https://www.degruyterbrill.com/document/doi/10.1515/9781400838264/html', sourceLabel: 'Princeton University Press record' },
+      { id: 'birds-prey-east', code: 'B05', title: 'Birds of Prey of the East', author: 'Brian K. Wheeler', year: '2018', purpose: 'identify', level: 'advanced', form: 'Regional field guide', focus: 'Eastern North American variation', why: 'Large range maps and consistent painted views make fine plumage comparison easier.', critical: 'Use the eastern volume only within its intended geography and check current range information for edge cases.', source: 'https://press.princeton.edu/books/paperback/9780691117065/birds-of-prey-of-the-east', sourceLabel: 'Princeton University Press' },
+      { id: 'birds-prey-west', code: 'B06', title: 'Birds of Prey of the West', author: 'Brian K. Wheeler', year: '2018', purpose: 'identify', level: 'advanced', form: 'Regional field guide', focus: 'Western North American variation', why: 'Extensive plumage plates support comparison across age, sex, color, and region.', critical: 'Use the western volume only within its intended geography and pair visual evidence with location and behavior.', source: 'https://press.princeton.edu/books/paperback/9780691117188/birds-of-prey-of-the-west', sourceLabel: 'Princeton University Press' },
+
+      { id: 'birds-prey-dunne', code: 'B07', title: 'Birds of Prey', author: 'Pete Dunne', year: '2017', purpose: 'understand', level: 'beginner', form: 'Photographic natural history', focus: 'North American ecology and behavior', why: 'Combines accessible explanation, photographs, and natural history beyond identification.', critical: 'This is a narrative overview, not a regional field key or a source for current local status.', source: 'https://www.harperacademic.com/book/9780544018440/birds-of-prey/', sourceLabel: 'HarperAcademic' },
+      { id: 'raptors-world', code: 'B08', title: 'Raptors of the World', author: 'James Ferguson-Lees + David A. Christie', year: '2001', purpose: 'understand', level: 'advanced', form: 'Global reference', focus: 'World raptor identification and biology', why: 'A foundational, broad reference for comparing raptor diversity around the world.', critical: 'Taxonomy and status change. Use the monograph for depth, then verify names, ranges, and conservation status today.', source: 'https://www.bloomsbury.com/us/raptors-of-the-world-9781408135501/', sourceLabel: 'Bloomsbury' },
+      { id: 'birds-prey-xxi', code: 'B09', title: 'Birds of Prey: Biology and Conservation in the XXI Century', author: 'José H. Sarasola + Juan M. Grande + Juan J. Negro, editors', year: '2018', purpose: 'understand', level: 'advanced', form: 'Edited scientific volume', focus: 'Contemporary raptor science and conservation', why: 'Connects research methods, ecology, human pressures, and conservation across regions.', critical: 'Chapters vary in scope and method. Read the cited evidence and avoid treating one case study as universal.', source: 'https://link.springer.com/book/10.1007/978-3-319-73745-4', sourceLabel: 'Springer Nature' },
+      { id: 'raptor-techniques', code: 'B10', title: 'Raptor Research and Management Techniques', author: 'David M. Bird + Keith L. Bildstein, editors', year: '2007', purpose: 'understand', level: 'advanced', form: 'Professional methods manual', focus: 'Research design, field methods, and management', why: 'A landmark reference for how raptor evidence is collected, analyzed, and applied.', critical: 'Professional fieldwork may require permits, training, animal-care review, and expert supervision. It is not a DIY handling guide.', source: 'https://raptorresearchfoundation.org/publications/techniques-manual/', sourceLabel: 'Raptor Research Foundation' },
+      { id: 'urban-raptors', code: 'B11', title: 'Urban Raptors', author: 'Clint W. Boal + Cheryl R. Dykstra, editors', year: '2018', purpose: 'understand', level: 'advanced', form: 'Edited case-study volume', focus: 'Raptor ecology and conservation in cities', why: 'Shows how built environments create both opportunities and hazards for birds of prey.', critical: 'City case studies are place-specific. Compare habitat, policy, prey, and monitoring before transferring a conclusion.', source: 'https://islandpress.org/books/urban-raptors', sourceLabel: 'Island Press' },
+      { id: 'human-landscapes', code: 'B12', title: 'Raptors in Human Landscapes', author: 'David M. Bird + Daniel E. Varland + Juan J. Negro, editors', year: '1996', purpose: 'understand', level: 'advanced', form: 'Edited scientific volume', focus: 'Adaptation and conservation in altered habitats', why: 'Frames enduring questions about agriculture, cities, infrastructure, and human-wildlife coexistence.', critical: 'This 1996 synthesis is historically useful; update statistics, policy, and technology with current research.', source: 'https://shop.elsevier.com/books/raptors-in-human-landscapes/bird/978-0-12-100130-8', sourceLabel: 'Elsevier' },
+
+      { id: 'silent-spring', code: 'B13', title: 'Silent Spring', author: 'Rachel Carson', year: '1962', purpose: 'conserve', level: 'intermediate', form: 'Environmental science writing', focus: 'Pesticides, evidence, and public action', why: 'A landmark account of how chemical use can cascade through ecosystems and public policy.', critical: 'Read it as a historic scientific intervention, then use current toxicology and regulation for present-day claims.', source: 'https://www.penguinrandomhouse.com/authors/242863/rachel-l-carson/', sourceLabel: 'Penguin Random House' },
+      { id: 'return-peregrine', code: 'B14', title: 'Return of the Peregrine', author: 'Tom J. Cade + William A. Burnham + Pat Burnham, editors', year: '2003', purpose: 'conserve', level: 'advanced', form: 'Multi-author recovery history', focus: 'North American peregrine restoration', why: 'Documents the teamwork, experimentation, policy, and persistence behind a major recovery effort.', critical: 'This is an institutional retrospective with many contributors. Compare recollections with primary data and current status.', source: 'https://books.google.com/books/about/Return_of_the_Peregrine.html?id=K3BFAQAAIAAJ', sourceLabel: 'Google Books record' },
+      { id: 'peregrine-falcon', code: 'B15', title: 'The Peregrine Falcon', author: 'Derek Ratcliffe', year: '1993', purpose: 'conserve', level: 'advanced', form: 'Species monograph', focus: 'Biology, pesticide decline, and recovery', why: 'A detailed synthesis of peregrine natural history and population change in Britain and Ireland.', critical: 'The revised second edition reflects its time and region. Verify population figures and pesticide context before reuse.', source: 'https://books.google.com/books/about/The_Peregrine_Falcon.html?id=8aOoAQAACAAJ', sourceLabel: 'Google Books record' },
+      { id: 'condor-brink', code: 'B16', title: 'Condor: To the Brink and Back', author: 'John Nielsen', year: '2006', purpose: 'conserve', level: 'intermediate', form: 'Conservation narrative', focus: 'California condor recovery debates', why: 'Makes the conflict, uncertainty, and human choices inside a high-stakes recovery program visible.', critical: 'The narrative captures a period and its debates. Check current condor population, lead exposure, and management data.', source: 'https://books.google.com/books/about/Condor.html?id=nGnK1KanpAsC', sourceLabel: 'Google Books record' },
+      { id: 'beauty-beak', code: 'B17', title: 'Beauty and the Beak', author: 'Deborah Lee Rose + Jane Veltkamp', year: '2017', purpose: 'conserve', level: 'beginner', form: 'Illustrated true STEM story', focus: 'Rehabilitation and a 3D-printed prosthetic beak', why: 'An accessible case of observation, engineering design, iteration, and animal care working together.', critical: 'Discuss rehabilitation ethics and expert care without implying a treated ambassador bird is a pet or a wild-release model.', source: 'https://www.deborahleerose.com/beauty-and-the-beak', sourceLabel: 'Author resource' },
+      { id: 'saving-peregrine', code: 'B18', title: 'Saving the Peregrine Falcon', author: 'Caroline Arnold', year: '1985', purpose: 'conserve', level: 'beginner', form: 'Youth photo essay', focus: 'Captive breeding and peregrine restoration', why: 'Explains recovery work in a concise, visual form suitable for younger readers.', critical: 'It is a 1985 snapshot. Population numbers, legal status, and recovery practice have changed since publication.', source: 'https://carolinearnoldart.blogspot.com/2018/08/saving-peregrine-falcon-is-now.html', sourceLabel: 'Author resource' },
+
+      { id: 'h-is-for-hawk', code: 'B19', title: 'H Is for Hawk', author: 'Helen Macdonald', year: '2014', purpose: 'stories', level: 'intermediate', form: 'Memoir', focus: 'Grief, goshawk training, and human wildness', why: 'Interweaves personal loss, falconry, literary history, and a searching relationship with a goshawk.', critical: 'This is memoir, not a species or training manual. It won the Samuel Johnson Prize and Costa Book of the Year, not the Pulitzer.', source: 'https://groveatlantic.com/book/h-is-for-hawk/', sourceLabel: 'Grove Atlantic' },
+      { id: 'the-peregrine', code: 'B20', title: 'The Peregrine', author: 'J. A. Baker', year: '1967', purpose: 'stories', level: 'intermediate', form: 'Literary nature observation', focus: 'A season of following wild peregrines', why: 'Pairs intense field attention with distinctive, influential prose about predator and landscape.', critical: 'Literary transformation and compressed chronology are part of the work. Do not treat every passage as a literal field record.', source: 'https://www.nyrb.com/products/the-peregrine', sourceLabel: 'New York Review Books' },
+      { id: 'the-goshawk', code: 'B21', title: 'The Goshawk', author: 'T. H. White', year: '1951', purpose: 'stories', level: 'intermediate', form: 'Falconry memoir', focus: 'A difficult attempt to train a goshawk', why: 'A revealing predecessor to later hawk memoirs and a vivid study of obsession and error.', critical: 'White used obsolete, harmful training methods. Read this as historical warning and memoir, never as instruction.', source: 'https://www.nyrb.com/products/the-goshawk/', sourceLabel: 'New York Review Books' },
+      { id: 'my-side-mountain', code: 'B22', title: 'My Side of the Mountain', author: 'Jean Craighead George', year: '1959', purpose: 'stories', level: 'beginner', form: 'Middle-grade novel', focus: 'Wilderness survival and a peregrine companion', why: 'A durable entry point for discussing observation, independence, responsibility, and imagined life with a raptor.', critical: 'This is fiction. Survival choices and raptor acquisition or handling should not be copied in real life.', source: 'https://www.penguinrandomhouse.com/books/293329/my-side-of-the-mountain-puffin-modern-classics-by-jean-craighead-george/', sourceLabel: 'Penguin Random House' },
+      { id: 'kestrel-knave', code: 'B23', title: 'A Kestrel for a Knave', author: 'Barry Hines', year: '1968', purpose: 'stories', level: 'intermediate', form: 'Coming-of-age novel', focus: 'Class, school, care, and a kestrel', why: 'Uses one young person\'s bond with a kestrel to explore dignity, constraint, and attention.', critical: 'The novel includes violence, neglect, harsh language, and animal death. Prepare and support younger readers.', source: 'https://www.penguin.co.uk/books/57240/a-kestrel-for-a-knave-by-barry-hines/9780141184982', sourceLabel: 'Penguin Books' },
+      { id: 'falcon-fever', code: 'B24', title: 'Falcon Fever', author: 'Tim Gallagher', year: '2008', purpose: 'stories', level: 'intermediate', form: 'Memoir and travelogue', focus: 'Falconry history and modern community', why: 'Connects personal experience with travel, history, and the continuing culture of falconry.', critical: 'Falconry law and welfare practice vary by place and change over time. This is narrative, not licensing guidance.', source: 'https://openroadmedia.com/ebook/falcon-fever/9780547526119', sourceLabel: 'Open Road Media' },
+
+      { id: 'art-falconry', code: 'B25', title: 'The Art of Falconry', author: 'Frederick II; translated by Casey A. Wood + F. Marjorie Fyfe', year: '1943 translation', purpose: 'culture', level: 'advanced', form: 'Medieval treatise in translation', focus: 'Early systematic observation and falconry', why: 'A major source for studying medieval bird knowledge, experiment, court culture, and animal practice.', critical: 'Historical handling and hierarchy are not modern welfare guidance. Read the translation as a source from its time.', source: 'https://books.google.com/books/about/The_Art_of_Falconry.html?hl=en&id=Aa8YAQAAMAAJ&output=html_text', sourceLabel: 'Google Books record' },
+      { id: 'falcon-macdonald', code: 'B26', title: 'Falcon', author: 'Helen Macdonald', year: '2006', purpose: 'culture', level: 'intermediate', form: 'Natural and cultural history', focus: 'Falcons in science, myth, art, and power', why: 'Moves between biology and symbolism to show how human meanings gather around falcons.', critical: 'Keep symbolic uses separate from biological claims, and ask whose culture and historical position each example represents.', source: 'https://reaktionbooks.co.uk/work/falcon', sourceLabel: 'Reaktion Books' },
+      { id: 'eagle-dreams', code: 'B27', title: 'Eagle Dreams', author: 'Stephen J. Bodio', year: '2003', purpose: 'culture', level: 'intermediate', form: 'Travel memoir', focus: 'Kazakh eagle hunters in Mongolia', why: 'Offers a personal encounter with a living eagle-hunting tradition and its landscape.', critical: 'This is a Western visitor\'s memoir. Add Mongolian and Kazakh voices rather than treating one visitor as the whole tradition.', source: 'https://www.oupress.com/author/stephen-j-bodio/', sourceLabel: 'University of Oklahoma Press' },
+      { id: 'hawks-aloft', code: 'B28', title: 'Hawks Aloft', author: 'Maurice Broun', year: '1949', purpose: 'culture', level: 'intermediate', form: 'Sanctuary history and natural history', focus: 'The early story of Hawk Mountain', why: 'A first-person account of a shooting site becoming a protected migration watch.', critical: 'Read Broun alongside work on Rosalie Edge, Irma Broun, and later sanctuary science so one narrator does not stand for every contributor.', source: 'https://exhibits.lib.lehigh.edu/exhibits/show/htr/ro/ha', sourceLabel: 'Lehigh University Libraries' },
+      { id: 'falconry-hawking', code: 'B29', title: 'Falconry and Hawking', author: 'Phillip Glasier', year: '1978', purpose: 'culture', level: 'advanced', form: 'Historic practice reference', focus: 'Twentieth-century falconry equipment and practice', why: 'Documents a highly influential period in modern English-language falconry.', critical: 'Laws and welfare standards supersede older instructions. Do not use this as an unsupervised training guide.', source: 'https://books.google.com/books/about/Falconry_and_Hawking.html?id=upM5AQAAIAAJ', sourceLabel: 'Google Books record' },
+      { id: 'eagle-drums', code: 'B30', title: 'Eagle Drums', author: 'Nasu\u0121raq Rainey Hopson', year: '2023', purpose: 'culture', level: 'beginner', form: 'Iñupiaq middle-grade story', focus: 'Eagle gods, community, and the Messenger Feast', why: 'Centers an Iñupiaq-authored origin story about responsibility, tradition, nature, and community.', critical: 'Engage the author\'s specific Iñupiaq context and avoid generalizing one living tradition to all Indigenous peoples.', source: 'https://us.macmillan.com/books/9781250750662/eagledrums/', sourceLabel: 'Macmillan' }
     ]
   };
 
   // ───────────────────────────────────────────────────────────
-  // NEW v0.44: DOCUMENTARIES + FILMS — 20 recommended
+  // RAPTOR SCREENING ROOM — verified 20-title media-literacy pathway
   // ───────────────────────────────────────────────────────────
+  var FILM_PURPOSES = [
+    { id: 'behavior', code: 'BEH', label: 'Behavior', short: 'Flight, senses, hunting, and family life' },
+    { id: 'habitat', code: 'HAB', label: 'Habitat', short: 'Raptors shaped by place and climate' },
+    { id: 'recovery', code: 'ACT', label: 'Recovery', short: 'Threats, rescue, and conservation systems' },
+    { id: 'culture', code: 'CUL', label: 'People + culture', short: 'Falconry, learning, and community' },
+    { id: 'stories', code: 'STO', label: 'Stories', short: 'Character, place, and cinematic point of view' }
+  ];
+  var FILM_AUDIENCES = [
+    { id: 'family', code: 'FAM', label: 'Youth + family' },
+    { id: 'general', code: 'GEN', label: 'General' },
+    { id: 'advanced', code: 'ADV', label: 'Advanced themes' }
+  ];
+  var FILM_LENSES = [
+    { id: 'evidence', code: 'EVD', label: 'Evidence lens', title: 'Separate the shot from the claim', copy: 'Name what the camera records, what the narration interprets, and which claim needs a second source.' },
+    { id: 'story', code: 'STY', label: 'Story lens', title: 'Notice how the film guides attention', copy: 'Track voice, music, editing, character, and missing viewpoints before deciding what the story means.' },
+    { id: 'ethics', code: 'ETH', label: 'Ethics lens', title: 'Ask what filming changes', copy: 'Consider animal disturbance, handling, consent, cultural authority, and the responsibilities of the production.' }
+  ];
+  var FILM_STAGES = [
+    { id: 'watch', code: '01', label: 'Watch', x: 12, y: 69, prompt: 'Pause on one scene and describe only what is visible or audible.', question: 'What can you document from the scene before interpreting it?' },
+    { id: 'notice', code: '02', label: 'Notice', x: 31, y: 38, prompt: 'Track framing, sequence, sound, and the point of view the film gives you.', question: 'Which production choice most strongly directs your attention?' },
+    { id: 'verify', code: '03', label: 'Verify', x: 50, y: 69, prompt: 'Choose one biological or historical claim and check a current authoritative source.', question: 'Which claim can be checked, and what source would be strong enough?' },
+    { id: 'discuss', code: '04', label: 'Discuss', x: 69, y: 38, prompt: 'Compare interpretations and identify a person, community, or species perspective that is missing.', question: 'Whose knowledge is centered, and whose perspective should be added?' },
+    { id: 'act', code: '05', label: 'Act', x: 88, y: 69, prompt: 'Turn one verified insight into a safe observation, question, or conservation response.', question: 'What proportionate action follows from the evidence rather than the emotion alone?' }
+  ];
+  var FILM_MISSIONS = [
+    { id: 'first-cut', code: 'START', label: 'First screening', question: 'How can close observation lead from wonder to a verified conservation idea?', steps: [
+      { filmId: 'meet-raptors', verb: 'Meet the family', note: 'Build a broad visual vocabulary for raptor diversity and adaptation.' },
+      { filmId: 'owl-power', verb: 'Study one system', note: 'Notice how experiments and high-speed images support claims about nocturnal hunting.' },
+      { filmId: 'return-flight', verb: 'Follow a response', note: 'Connect a documented threat with a long-term recovery effort.' }
+    ] },
+    { id: 'recovery-room', code: 'RECOVER', label: 'Recovery room', question: 'What makes a recovery story scientifically credible, socially durable, and still incomplete?', steps: [
+      { filmId: 'american-eagle', verb: 'Trace a rebound', note: 'Identify the pressures, protections, and evidence behind a national recovery story.' },
+      { filmId: 'bird-of-prey', verb: 'Change scale', note: 'Compare a rare-eagle recovery rooted in rainforest habitat and local expertise.' },
+      { filmId: 'condors-shadow', verb: 'Find the hard edge', note: 'Examine why one persistent threat can keep a major recovery dependent on intervention.' }
+    ] },
+    { id: 'people-place', code: 'VOICES', label: 'People + place', question: 'How do identity, tradition, justice, and place shape human relationships with raptors?', steps: [
+      { filmId: 'eagle-huntress', verb: 'Read a hero story', note: 'Notice how an individual journey is framed inside a living Kazakh tradition.' },
+      { filmId: 'falconer', verb: 'Connect community', note: 'Consider how raptor care, youth mentorship, and environmental justice intersect.' },
+      { filmId: 'all-that-breathes', verb: 'Widen the frame', note: 'Explore urban rescue inside environmental toxicity and social tension.' }
+    ] },
+    { id: 'field-camera', code: 'CRAFT', label: 'Field camera', question: 'How do access, patience, and editing affect what a wildlife film can honestly show?', steps: [
+      { filmId: 'season-osprey', verb: 'Stay with a nest', note: 'Track behavior across a breeding season and ask what continuous access reveals.' },
+      { filmId: 'jungle-eagle', verb: 'Enter the canopy', note: 'Study the limits and possibilities of filming a remote, rarely seen predator.' },
+      { filmId: 'pale-male', verb: 'Follow one bird', note: 'Compare intimate individual storytelling with broader urban-ecology evidence.' }
+    ] }
+  ];
   var DOCUMENTARIES = {
-    intro: '20 must-watch raptor documentaries + films, from classic 1950s nature shows to modern Netflix specials.',
+    reviewed: '2026-08-27',
+    intro: 'A source-checked, non-ranked screening room for 20 raptor films and episodes. Choose a viewing purpose, inspect how a story is built, verify a claim, and plan a three-title screening.',
     films: [
-      { title: 'Eye of the Wild: Falcon', year: '2010s', platform: 'BBC', focus: 'Peregrine recovery', notes: 'Classic BBC nature documentary on peregrine.' },
-      { title: 'The Eagle Huntress', year: '2016', platform: 'Theaters + streaming', focus: 'Mongolian Berkutchi', notes: 'Award-winning film on 13-year-old Aisholpan Nurgaiv learning Berkutchi.' },
-      { title: 'Birders: The Central Park Effect', year: '2012', platform: 'HBO', focus: 'NYC birders', notes: 'Features Pale Male + Central Park bird-watching.' },
-      { title: 'The Falconer\'s Apprentice', year: '2015', platform: 'Documentary', focus: 'Apprentice falconry', notes: 'Modern falconry through one apprentice\'s eyes.' },
-      { title: 'Watership Down', year: '1978', platform: 'Various', focus: 'Animal fable (raptor as predator)', notes: 'Influential animation on rabbit-eye view of raptors.' },
-      { title: 'Winged Migration', year: '2001', platform: 'Theatrical + streaming', focus: 'Bird migration globally', notes: 'Spectacular aerial footage. Some raptor segments.' },
-      { title: 'Audubon\'s Animals', year: '1980s+', platform: 'PBS', focus: 'US wildlife', notes: 'Long-running PBS series with raptor episodes.' },
-      { title: 'Nature: My Life as a Turkey', year: '2011', platform: 'PBS', focus: 'Person raises wild turkeys', notes: 'Shows wild turkey-raptor interaction.' },
-      { title: 'Earthflight', year: '2011', platform: 'BBC', focus: 'Bird POV migration', notes: 'First-person flight perspective. Some raptor footage.' },
-      { title: 'Planet Earth + Planet Earth II', year: '2006 + 2016', platform: 'BBC', focus: 'Global ecology', notes: 'Multiple raptor sequences including peregrine stoop.' },
-      { title: 'Springwatch + Autumnwatch', year: 'Annual', platform: 'BBC', focus: 'UK wildlife', notes: 'British wildlife focus often includes raptors.' },
-      { title: 'Nature: An Original Duckling', year: '2010s', platform: 'PBS', focus: 'Duck ecology + raptor predation', notes: 'Documents predation pressure.' },
-      { title: 'David Attenborough\'s 70 Years Living the Wild Years', year: '2024', platform: 'Streaming', focus: 'Attenborough overview', notes: 'Lifetime of wildlife documentary featuring raptors.' },
-      { title: 'The Falcon\'s Eye', year: '2010s', platform: 'Various', focus: 'Falconry in Middle East', notes: 'Cultural focus on Arab falconry.' },
-      { title: 'Wild Animal Babies', year: '2010s', platform: 'PBS', focus: 'Young wildlife', notes: 'Raptor chick + fledging segments.' },
-      { title: 'Hostile Planet', year: '2019', platform: 'National Geographic', focus: 'Extreme environments', notes: 'Arctic + tropical raptor segments.' },
-      { title: 'Africa', year: '2013', platform: 'BBC', focus: 'African wildlife', notes: 'African raptor + vulture segments.' },
-      { title: 'Frozen Planet + Frozen Planet II', year: '2011 + 2022', platform: 'BBC', focus: 'Polar regions', notes: 'Snowy owl + gyrfalcon segments.' },
-      { title: 'The Hawk', year: '2010s short film', platform: 'Various', focus: 'Modern falconer story', notes: 'Personal falconry documentary.' },
-      { title: 'PBS Nature: Owls + Eagles', year: '2015', platform: 'PBS', focus: 'Owl + eagle biology', notes: 'Survey of N. American raptors.' }
+      { id: 'meet-raptors', code: 'F01', title: 'Meet the Raptors | Raptors: A Fistful of Daggers', year: '2024', purpose: 'behavior', audience: 'family', format: 'Nature episode', focus: 'Global raptor diversity, adaptations, and life cycles', why: 'A broad visual introduction to familiar and lesser-known raptor groups, with behavior and adaptation at the center.', critical: 'A global survey must compress species and places. Choose one sequence to verify rather than treating the episode as a complete field guide.', content: 'Predation and prey remains; preview for sensitive younger viewers.', source: 'https://www.pbs.org/wnet/nature/about-raptors-fistful-of-daggers-meet-the-family/29891/', sourceLabel: 'PBS Nature' },
+      { id: 'raptor-force', code: 'F02', title: 'Raptor Force', year: '2007', purpose: 'behavior', audience: 'general', format: 'Nature episode', focus: 'Flight mechanics, onboard cameras, and biomimicry', why: 'Connects raptor flight strategies with engineering questions and makes its camera technology part of the story.', critical: 'Some technology and scientific framing are dated. Recheck aerodynamic claims and distinguish military metaphors from animal behavior.', content: 'Hunting footage and repeated predator language.', source: 'https://www.pbs.org/wnet/nature/raptor-force-introduction/1109/', sourceLabel: 'PBS Nature' },
+      { id: 'owl-power', code: 'F03', title: 'Owl Power', year: '2015', purpose: 'behavior', audience: 'family', format: 'Nature episode', focus: 'Nocturnal senses, silent flight, and hunting', why: 'Uses experiments and specialized photography to make owl hearing, vision, and flight easier to investigate.', critical: 'Ask which conclusions come from controlled demonstrations and which come from narrated wild footage. Avoid generalizing one owl species to all owls.', content: 'Predation sequences; otherwise suitable for shared viewing.', source: 'https://www.pbs.org/wnet/nature/owl-power/11628/', sourceLabel: 'PBS Nature' },
+      { id: 'season-osprey', code: 'F04', title: 'Season of the Osprey', year: '2021', purpose: 'behavior', audience: 'family', format: 'Nature episode', focus: 'Breeding season, migration, fishing, and fledging', why: 'Sustained access to one Connecticut saltmarsh family supports close observation across a full nesting season.', critical: 'One pair is a case study, not an average osprey family. Note where narration infers intention from behavior.', content: 'Nest loss, predation risk, and hunting; preview for very young viewers.', source: 'https://www.pbs.org/wnet/nature/season-osprey-about/26299/', sourceLabel: 'PBS Nature' },
+      { id: 'extreme-lives', code: 'F05', title: 'Extreme Lives | Raptors: A Fistful of Daggers', year: '2024', purpose: 'habitat', audience: 'family', format: 'Nature episode', focus: 'Adaptation across Arctic, wetland, forest, and urban habitats', why: 'Pairs striking behavior with environmental constraints and includes contemporary conservation pressures.', critical: 'Fast movement between species can hide uncertainty. Pause on one adaptation and verify the mechanism and current conservation context.', content: 'Hunting, insects, and prey remains.', source: 'https://www.pbs.org/wnet/nature/about-raptors-fistful-of-daggers-extreme-lives/29897/', sourceLabel: 'PBS Nature' },
+      { id: 'white-falcon', code: 'F06', title: 'White Falcon, White Wolf', year: '2008', purpose: 'habitat', audience: 'general', format: 'Nature episode', focus: 'Gyrfalcon and Arctic wolf parenthood on Ellesmere Island', why: 'An intimate Arctic field production makes timing, food supply, breeding, and climate constraints visible.', critical: 'The paired-species structure is narrative design. Keep observed gyrfalcon evidence distinct from parallels drawn with wolves.', content: 'Starvation risk, predation, and young animals in danger.', source: 'https://www.pbs.org/wnet/nature/white-falcon-white-wolf-introduction/3323/', sourceLabel: 'PBS Nature' },
+      { id: 'jungle-eagle', code: 'F07', title: 'Jungle Eagle', year: '2011', purpose: 'habitat', audience: 'family', format: 'Nature episode', focus: 'Harpy eagle nesting and rainforest canopy life', why: 'Shows the fieldcraft and technical challenge of studying a powerful but hard-to-observe canopy predator.', critical: 'Filming one nest gives depth without representing the species everywhere. Discuss how camera placement and access shape the record.', content: 'Graphic predation is identified on the source page; adult preview recommended.', source: 'https://www.pbs.org/wnet/nature/jungle-eagle-introduction/7189/', sourceLabel: 'PBS Nature' },
+      { id: 'magic-snowy-owl', code: 'F08', title: 'Magic of the Snowy Owl', year: '2012', purpose: 'habitat', audience: 'family', format: 'Nature episode', focus: 'Snowy owl breeding during the short Arctic summer', why: 'Follows the compressed seasonal challenge of nesting, feeding, and fledging in a tundra environment.', critical: 'A breeding pair in one season cannot establish a universal pattern. Verify population and climate claims with newer research.', content: 'Prey capture and vulnerable owlets.', source: 'https://www.pbs.org/wnet/nature/magic-of-the-snowy-owl-introduction/7833/', sourceLabel: 'PBS Nature' },
+      { id: 'american-eagle', code: 'F09', title: 'American Eagle', year: '2008', purpose: 'recovery', audience: 'family', format: 'Nature episode', focus: 'Bald eagle ecology and recovery after DDT-era decline', why: 'Connects intimate nest life with a major conservation rebound and the pressures that preceded it.', critical: 'Recovery conditions and population status have changed since 2008. Pair the story with a current agency status source.', content: 'Predation, nest danger, and discussion of past decline.', source: 'https://www.pbs.org/wnet/nature/american-eagle-introduction/4201/', sourceLabel: 'PBS Nature' },
+      { id: 'bird-of-prey', code: 'F10', title: 'Bird of Prey', year: '2018', purpose: 'recovery', audience: 'general', format: 'Feature documentary', focus: 'Philippine eagle fieldwork and conservation', why: 'Centers the difficulty of filming and protecting an exceptionally rare forest eagle alongside the people doing the work.', critical: 'Treat conservationists as specific participants, not a single voice for the Philippines. Add current Philippine Eagle Foundation information.', content: 'Wild prey and discussion of extinction risk.', source: 'https://birdofpreymovie.com/', sourceLabel: 'Official film site' },
+      { id: 'condors-shadow', code: 'F11', title: 'The Condor\'s Shadow', year: '2013', purpose: 'recovery', audience: 'advanced', format: 'Feature documentary', focus: 'California condor recovery and persistent lead exposure', why: 'Makes the labor, science, disagreement, and continuing dependency of endangered-species recovery concrete.', critical: 'The film presents an advocacy case. Separate documented toxicology from political framing and update policy and population information.', content: 'Poisoning, animal treatment, and policy conflict.', source: 'https://www.thecondorsshadow.com/', sourceLabel: 'Official film site' },
+      { id: 'return-flight', code: 'F12', title: 'Return Flight: Restoring the Bald Eagle to the Channel Islands', year: '2011', purpose: 'recovery', audience: 'family', format: 'Short documentary', focus: 'Bald eagle restoration after DDT contamination', why: 'A concise, agency-hosted case study links contamination, restoration methods, monitoring, and renewed breeding.', critical: 'The short film is an overview of a long program. Check current Channel Islands data before using its population figures.', content: 'Historical decline, handling, and restoration work.', source: 'https://www.nps.gov/media/video/view.htm?id=00BCB691-A2C3-6953-A33A1330984AA240', sourceLabel: 'National Park Service' },
+      { id: 'eagle-huntress', code: 'F13', title: 'The Eagle Huntress', year: '2016', purpose: 'culture', audience: 'family', format: 'Feature documentary', focus: 'Aisholpan and Kazakh eagle-hunting tradition in Mongolia', why: 'A visually accessible individual journey opens questions about skill, family support, gender, landscape, and tradition.', critical: 'The film builds a strong hero narrative. Add Kazakh and Mongolian voices and do not treat one family story as a complete account of a living tradition.', content: 'Hunting, animal capture and handling, and cold-weather peril.', source: 'https://www.sonyclassics.com/theeaglehuntress/', sourceLabel: 'Sony Pictures Classics' },
+      { id: 'overland', code: 'F14', title: 'Overland', year: '2020', purpose: 'culture', audience: 'general', format: 'Feature documentary', focus: 'Falconers across several cultural and geographic settings', why: 'The interwoven portraits invite comparison of place, identity, wilderness, and relationships with trained raptors.', critical: 'Three selected lives cannot represent global falconry. Compare law, welfare, subsistence, sport, and cultural authority across each setting.', content: 'Hunting and animal training.', source: 'https://www.sparkproductions.media/project/overland/', sourceLabel: 'Spark Productions' },
+      { id: 'falconer', code: 'F15', title: 'The Falconer', year: '2020', purpose: 'culture', audience: 'general', format: 'Feature documentary', focus: 'Rodney Stotts, raptor care, youth mentorship, and environmental justice', why: 'Connects birds of prey with community access to nature and a personal account of change and responsibility.', critical: 'Distinguish a hopeful portrait from evidence about program outcomes. Discuss consent, power, and privacy when young people appear in documentary stories.', content: 'References to incarceration, drugs, community stress, and injured wildlife.', source: 'https://www.thefalconerfilm.com/synopsis', sourceLabel: 'Official film site' },
+      { id: 'h-is-for-hawk-film', code: 'F16', title: 'H Is for Hawk: A New Chapter', year: '2017', purpose: 'culture', audience: 'advanced', format: 'Nature episode', focus: 'Helen Macdonald, goshawk training, wild nesting, and grief', why: 'Places a first-person falconry account beside observation of wild goshawks and questions of human attachment.', critical: 'Keep memoir, trained-bird behavior, and wild goshawk evidence separate. Current welfare and legal guidance should come from current authorities.', content: 'Grief, death, hunting behavior, and animal training.', source: 'https://www.pbs.org/wnet/nature/h-is-for-hawk-about/15500/', sourceLabel: 'PBS Nature' },
+      { id: 'kes', code: 'F17', title: 'Kes', year: '1969', purpose: 'stories', audience: 'advanced', format: 'Narrative feature', focus: 'A Yorkshire teenager, a kestrel, school, class, and constraint', why: 'A fictional relationship with a kestrel becomes a powerful lens on attention, learning, freedom, and social systems.', critical: 'This is a scripted historical drama, not a care guide or wildlife documentary. Discuss period animal handling and how realism was constructed.', content: 'Bullying, violence, strong language, poverty, and animal death; adult preview recommended.', source: 'https://www.bfi.org.uk/inside-the-archive/features/kestrel-notes-making-kes', sourceLabel: 'BFI National Archive' },
+      { id: 'all-that-breathes', code: 'F18', title: 'All That Breathes', year: '2022', purpose: 'stories', audience: 'advanced', format: 'Feature documentary', focus: 'Black kite rescue amid pollution and social tension in Delhi', why: 'A patient, visually layered portrait connects urban raptors, care work, air, family, and political environment.', critical: 'Its poetic form is not a complete environmental dataset. Keep the brothers\' experience specific and add local scientific and community sources.', content: 'Injured birds, environmental distress, and communal violence discussed or shown.', source: 'https://www.tangledbankstudios.org/our-films/all-breathes', sourceLabel: 'Tangled Bank Studios' },
+      { id: 'pale-male', code: 'F19', title: 'Pale Male', year: '2004', purpose: 'stories', audience: 'family', format: 'Nature episode', focus: 'A red-tailed hawk family in New York City', why: 'Close observation of a charismatic individual makes urban nesting, public attention, and coexistence easy to discuss.', critical: 'A famous bird can stand in for a larger urban population too easily. Verify later events and compare the portrait with broader urban-raptor research.', content: 'Predation, nest failure, and loss.', source: 'https://www.pbs.org/wnet/nature/pale-male-introduction/2422/', sourceLabel: 'PBS Nature' },
+      { id: 'eagles-mull', code: 'F20', title: 'Eagles of Mull', year: '2009', purpose: 'stories', audience: 'family', format: 'Nature episode', focus: 'Wildlife, filmmaking, and reintroduced sea eagles on the Isle of Mull', why: 'Links a returning filmmaker, island identity, varied wildlife, and the visibility of reintroduced white-tailed eagles.', critical: 'This is a regional wildlife portrait rather than an eagle-only study. Update reintroduction numbers and seek present-day local perspectives.', content: 'Predation and discussion of historical persecution.', source: 'https://www.pbs.org/wnet/nature/eagles-of-mull-introduction/4957/', sourceLabel: 'PBS Nature' }
     ]
   };
 
   // ───────────────────────────────────────────────────────────
   // NEW v0.45: NEST-BUILD COOKBOOK — 14 raptor nests with how-to
   // ───────────────────────────────────────────────────────────
+  var NEST_SETTINGS = [
+    { id: 'all', code: 'ALL', label: 'All architectures', note: 'See every nest strategy' },
+    { id: 'platform', code: 'PLT', label: 'Supported platform', note: 'Sticks or a reused structure' },
+    { id: 'cavity', code: 'CAV', label: 'Existing cavity', note: 'A chamber does most of the sheltering' },
+    { id: 'scrape', code: 'SCR', label: 'Ledge scrape', note: 'A shallow depression, not a built bowl' },
+    { id: 'ground', code: 'GRD', label: 'Ground + burrow', note: 'Concealment or soil provides structure' }
+  ];
+
+  var NEST_LENSES = [
+    { id: 'structure', code: 'FORM', label: 'Structure', prompt: 'How do support, shape, and site work together?', signal: 'Trace the load path from nest cup to branch, ledge, cavity wall, vegetation, or soil.' },
+    { id: 'materials', code: 'MAT', label: 'Materials', prompt: 'What jobs do coarse and soft materials perform?', signal: 'Separate frame, fill, and lining. A material list alone does not explain the architecture.' },
+    { id: 'stewardship', code: 'CARE', label: 'Stewardship', prompt: 'Where can human activity help or harm?', signal: 'Look for entanglement, disturbance, unstable supports, habitat loss, and safe distance.' }
+  ];
+
+  var NEST_STAGES = [
+    { id: 'site', code: '01', label: 'Read the site', short: 'Site', cue: 'What does this location provide before any material arrives?' },
+    { id: 'support', code: '02', label: 'Find support', short: 'Support', cue: 'What carries, encloses, or conceals the nest?' },
+    { id: 'form', code: '03', label: 'Shape the form', short: 'Form', cue: 'Is the bird building, scraping, occupying, or enlarging?' },
+    { id: 'line', code: '04', label: 'Finish the cup', short: 'Finish', cue: 'What touches the eggs, and what may be absent?' },
+    { id: 'maintain', code: '05', label: 'Maintain + reuse', short: 'Reuse', cue: 'How might the site change within or between seasons?' }
+  ];
+
+  var NEST_MISSIONS = [
+    { id: 'load-path', code: 'M1', label: 'Load-path lab', question: 'How can a model carry a growing load without pretending it is a real nest?', steps: [
+      { label: 'Map', action: 'Mark support points', detail: 'Sketch where gravity moves through the model into its base.' },
+      { label: 'Build', action: 'Use craft materials', detail: 'Use paper strips, clean twine, card, and reusable weights only.' },
+      { label: 'Test', action: 'Add mass gradually', detail: 'Record deformation; do not convert results into wildlife construction advice.' }
+    ] },
+    { id: 'layer-logic', code: 'M2', label: 'Layer logic', question: 'How do frame, fill, and lining solve different problems?', steps: [
+      { label: 'Sort', action: 'Assign material jobs', detail: 'Classify clean classroom materials as frame, fill, or lining.' },
+      { label: 'Model', action: 'Build three layers', detail: 'Keep each layer visible so its role can be explained.' },
+      { label: 'Reflect', action: 'Name the limits', detail: 'List what the model cannot show: weather, behavior, scale, and experience.' }
+    ] },
+    { id: 'site-tradeoffs', code: 'M3', label: 'Site tradeoffs', question: 'How does the same design behave when exposure and support change?', steps: [
+      { label: 'Compare', action: 'Choose two settings', detail: 'Contrast a platform, cavity, scrape, or ground strategy.' },
+      { label: 'Simulate', action: 'Change one condition', detail: 'Use a fan at low speed or a paper rain shield; keep other variables fixed.' },
+      { label: 'Explain', action: 'Cite the evidence', detail: 'Connect observations to the selected species notes, not to assumptions.' }
+    ] },
+    { id: 'safer-neighbors', code: 'M4', label: 'Safer neighbors', question: 'What can people change without approaching an active nest?', steps: [
+      { label: 'Notice', action: 'Map hazards remotely', detail: 'Use a provided photo or map; never seek an occupied nest for the activity.' },
+      { label: 'Prioritize', action: 'Choose one preventable risk', detail: 'Focus on litter, entangling line, disturbance, or unsafe structures.' },
+      { label: 'Communicate', action: 'Draft a distance-first action', detail: 'Name the appropriate wildlife authority or site manager for next steps.' }
+    ] }
+  ];
+
   var NEST_COOKBOOK = {
-    intro: 'How do raptors build their nests? Each species has unique architecture, materials, location preferences. This cookbook details 14 nest types — perfect for biology classes building nest models or understanding raptor real estate.',
+    reviewed: '2026-08-27',
+    intro: 'Explore 14 raptor nest strategies as architecture: site, support, form, finish, and reuse. The cutaway is a teaching schematic, not a construction plan or exact scale model.',
+    safety: 'Observe active nests from a lawful distance. Never collect material from a nest, trim around it, enter a cavity or burrow, place a platform, or handle wildlife without the required landowner and wildlife-agency guidance.',
     nests: [
-      { species: 'Bald eagle', location: 'Tall live or dead tree, often near water', size: 'Up to 4 m diameter, 6 m deep, 2 tons (largest US bird nest)', materials: 'Large sticks (>5 cm), sod, moss, conifer boughs, grasses; cup lined with finer material', construction: 'Both parents build over 1-3 months. Pairs add to nest each year — old nests can be massive. Record nest in St. Petersburg FL (1963) was 2 tons.', stages: 'Frame (sticks) → walls → cup → lining', timing: 'Sep-Feb, peaking Jan' },
-      { species: 'Golden eagle', location: 'Cliff ledge or large tree', size: '1-2 m diameter', materials: 'Sticks, sod, grasses, dead vegetation', construction: 'Pair maintains 2+ alternate nests. Builds 1-2 weeks; uses for years.', stages: 'Frame → cup → lining', timing: 'Late winter' },
-      { species: 'Red-tailed hawk', location: 'Tall tree, top of broken trunk, sometimes cliff', size: '70 cm × 50 cm cup', materials: 'Twigs, sticks, lined with fresh greenery (oak, pine needles)', construction: 'Built in 1-2 weeks. Lining of fresh greenery added daily during incubation.', stages: 'Frame → cup → fresh greenery', timing: 'Feb-March' },
-      { species: 'Cooper\'s hawk', location: 'Forest tree, often near edge', size: '40-50 cm diameter', materials: 'Sticks + bark, twigs', construction: 'Female builds while male brings materials. Usually new nest each year.', stages: 'Frame → walls → cup', timing: 'April-May' },
-      { species: 'Osprey', location: 'Top of dead tree or human-made platform', size: '1-1.5 m diameter; pairs add material annually', materials: 'Large sticks, sod, plastic, fishing line + nets (modern problem)', construction: 'Both parents. Often messy with plastic + fishing line. Pairs build huge structures over decades.', stages: 'Foundation → walls → cup', timing: 'March-May' },
-      { species: 'Great horned owl', location: 'Reuses old hawk or crow nest', size: 'Variable (depending on reused nest)', materials: 'Doesn\'t build — uses existing structure', construction: 'NO building. Takes over old nest. Adds soft material for chicks.', stages: 'Takeover existing', timing: 'Dec-Feb' },
-      { species: 'Barred owl', location: 'Tree cavity in mature forest', size: 'Natural cavity (variable)', materials: 'Wood debris from cavity', construction: 'Uses existing cavity. May add minimal material.', stages: 'Cavity prep', timing: 'Feb-April' },
-      { species: 'Eastern screech owl', location: 'Tree cavity, often natural', size: 'Cavity volume', materials: 'No construction', construction: 'No building. Lines with fur + debris already in cavity.', stages: 'Cavity occupation', timing: 'March-April' },
-      { species: 'American kestrel', location: 'Cavity in dead tree, old woodpecker hole, nest box', size: 'Cavity volume', materials: 'No construction; nest cup lined with debris', construction: 'Cavity nester. No external construction. Loves nest boxes.', stages: 'Cavity occupation', timing: 'March-May' },
-      { species: 'Northern goshawk', location: 'Forest interior, deciduous + conifer', size: '50-70 cm diameter', materials: 'Sticks, vegetation', construction: 'Both parents. Usually new nest each year (though may reuse).', stages: 'Frame → walls → cup', timing: 'March-May' },
-      { species: 'Peregrine falcon', location: 'Cliff ledge, urban skyscraper ledge, bridge support', size: 'Minimal — just a "scrape"', materials: 'Scrape only; some gravel; no built structure', construction: 'NO construction. Female creates depression ("scrape") in gravel/debris. Urban: nest box.', stages: 'Scrape creation', timing: 'Feb-April' },
-      { species: 'Mississippi kite', location: 'Tall tree (often residential)', size: '30-40 cm diameter', materials: 'Twigs, leaves', construction: 'Both parents build small platform. Often in urban trees.', stages: 'Frame → cup', timing: 'May-June' },
-      { species: 'Northern harrier', location: 'Ground in tall grass', size: '50 cm diameter cup on ground', materials: 'Grass + sticks gathered nearby', construction: 'Both parents build ground nest. Concealed in tall vegetation.', stages: 'Cup on ground', timing: 'April-May' },
-      { species: 'Burrowing owl', location: 'Underground burrow (prairie dog or ground squirrel)', size: 'Burrow length 1-3 m', materials: 'Reuses existing burrow; lines with cattle dung (!), feathers', construction: 'Reuses prairie dog burrows. Adds dung to chamber (likely to attract dung beetles for chicks). May extend burrow.', stages: 'Burrow occupation + extension', timing: 'March-May' }
+      { id: 'bald-eagle', code: 'N01', species: 'Bald eagle', setting: 'platform', location: 'Usually a tall, sturdy tree near water with an open flight path; cliffs or ground sites occur where trees are unavailable.', scale: 'Typical nests are about 5-6 ft wide and 2-4 ft tall; shape depends on the supporting tree.', materials: 'Large sticks form the frame; grass, moss, fine woody material, feathers, and greenery fill and line it.', method: 'Both adults bring material; the female does most placement. A nest may take months and can be enlarged when reused.', support: 'Tree trunk and major branches carry a broad woven platform.', geometry: 'Large, deep platform with a softer central cup.', reuse: 'Often reused and added to across years, but not every pair uses one site forever.', risk: 'Shoreline development, disturbance, and unstable or damaged nest trees can remove safe support.', timing: 'Work may begin months before laying; local season varies by latitude.', stageNotes: ['Scan for a sturdy tree, visibility, and access to water.', 'Major branches and the trunk define the load path.', 'Interwoven sticks build a broad platform.', 'Fine plant matter and feathers soften the central cup.', 'Repairs and added sticks can change the structure over years.'], source: 'https://www.allaboutbirds.org/guide/Bald_Eagle/lifehistory', sourceLabel: 'Cornell Lab - Bald Eagle life history' },
+      { id: 'golden-eagle', code: 'N02', species: 'Golden eagle', setting: 'platform', location: 'Cliff ledges are common; large trees, human structures, and ground sites are also used in some regions.', scale: 'A large stick platform whose dimensions vary with site, age, and reuse.', materials: 'Sticks and woody stems with grasses, bark, leaves, or fresh greenery in the cup.', method: 'A pair may maintain several alternate sites and add material before and during breeding.', support: 'A wide ledge, tree fork, or structure supports the platform.', geometry: 'Broad platform with a shallow central bowl.', reuse: 'Alternate nests may be revisited over multiple seasons.', risk: 'Cliff recreation and work near nest sites can cause disturbance; follow seasonal closures.', timing: 'Courtship and nest repair often begin well before egg laying.', stageNotes: ['A broad ledge or strong fork provides approach space.', 'The support must carry a wide, heavy platform.', 'Coarse sticks establish the rim and floor.', 'Finer vegetation finishes the cup.', 'Alternate sites spread risk, and reused nests receive repairs.'], source: 'https://www.allaboutbirds.org/guide/Golden_Eagle/lifehistory', sourceLabel: 'Cornell Lab - Golden Eagle life history' },
+      { id: 'red-tailed-hawk', code: 'N03', species: 'Red-tailed hawk', setting: 'platform', location: 'A tall tree, cliff ledge, cactus, or human structure with commanding views and open access.', scale: 'A substantial stick platform, often roughly 2-3 ft across, with broad individual variation.', materials: 'Sticks and twigs, bark strips, and a lining that may include fresh leafy sprigs.', method: 'Both adults build; one brings material while the other arranges much of it.', support: 'A main crotch, sturdy branch, ledge, or structural shelf carries the nest.', geometry: 'Compact platform with a defined inner cup.', reuse: 'Pairs may build new, refurbish an old nest, or use an alternate site.', risk: 'Tree work, construction, and close observation during breeding can disturb the pair.', timing: 'Building and repair precede laying; dates shift across the range.', stageNotes: ['Choose an elevated site with a clear approach.', 'A crotch or ledge anchors the first coarse sticks.', 'Twigs interlock into a compact platform.', 'Bark and greenery finish the inner cup.', 'Fresh material and repairs may continue during the season.'], source: 'https://www.allaboutbirds.org/guide/Red-tailed_Hawk/lifehistory', sourceLabel: 'Cornell Lab - Red-tailed Hawk life history' },
+      { id: 'coopers-hawk', code: 'N04', species: 'Cooper\'s hawk', setting: 'platform', location: 'A horizontal limb near the trunk in woodland, including wooded neighborhoods and forest edges.', scale: 'A medium stick platform sized to the branch system; dimensions vary.', materials: 'Sticks and twigs, often with bark flakes or greener sprigs in the cup.', method: 'The male gathers much of the material while the female performs much of the building.', support: 'Branches close to the trunk brace a relatively flat platform.', geometry: 'Shallow stick platform with a central depression.', reuse: 'Often a new nest, sometimes near or on an older structure.', risk: 'Pruning and repeated close approaches can disrupt breeding in urban woods.', timing: 'Construction is concentrated before laying and varies regionally.', stageNotes: ['Dense cover and a usable flight lane frame the site choice.', 'A limb near the trunk braces the platform.', 'Small sticks create a shallow, level form.', 'Bark flakes and fine material define the cup.', 'Nearby old nests may influence where a new platform appears.'], source: 'https://www.allaboutbirds.org/guide/Coopers_Hawk/lifehistory', sourceLabel: 'Cornell Lab - Cooper\'s Hawk life history' },
+      { id: 'osprey', code: 'N05', species: 'Osprey', setting: 'platform', location: 'An open, elevated site near fish-rich water: snag, treetop, pole, channel marker, or designed platform.', scale: 'A first-season platform can be under 2.5 ft wide; repeated additions can make old nests much larger.', materials: 'Sticks lined with bark, sod, grasses, vines, algae, or other available matter.', method: 'The male usually brings most material and the female arranges it into the platform and cup.', support: 'A wide, sturdy, predator-resistant top must allow an unobstructed approach.', geometry: 'Open, bulky stick platform with a lined center.', reuse: 'Annual additions can produce a deep structure over many seasons.', risk: 'Fishing line, rope, and plastic can entangle adults and young; do not add material to occupied nests.', timing: 'Arrival, repair, and laying dates vary strongly with region and migration.', stageNotes: ['Open airspace, water access, and a broad base define the site.', 'The snag, pole, or platform carries the entire nest.', 'Large sticks accumulate into an open platform.', 'Bark, grasses, and sod shape the cup; litter is a hazard, not a feature.', 'Old nests can grow as material is added across seasons.'], source: 'https://www.allaboutbirds.org/guide/Osprey/lifehistory', sourceLabel: 'Cornell Lab - Osprey life history' },
+      { id: 'great-horned-owl', code: 'N06', species: 'Great horned owl', setting: 'platform', location: 'Often an existing hawk, crow, heron, or squirrel structure; cavities, cliffs, buildings, and ground sites also occur.', scale: 'Inherited dimensions vary with the original structure or site.', materials: 'Usually little or no new construction material; feathers may accumulate during use.', method: 'The pair typically occupies a pre-existing structure rather than building a stick nest.', support: 'Another species\' platform, a cavity floor, or a ledge supplies the structure.', geometry: 'Existing bowl or surface adapted through occupation.', reuse: 'Availability and condition of inherited sites drive reuse.', risk: 'An apparently empty nest can still be active habitat; avoid removal or close inspection.', timing: 'Among the earliest-breeding North American raptors; local dates vary.', stageNotes: ['The key decision is finding a suitable existing structure.', 'The inherited nest, ledge, or cavity supplies support.', 'Occupation replaces major construction.', 'Little deliberate lining may be added.', 'The structure is used as found and may deteriorate through the season.'], source: 'https://www.allaboutbirds.org/guide/Great_Horned_Owl/lifehistory', sourceLabel: 'Cornell Lab - Great Horned Owl life history' },
+      { id: 'barred-owl', code: 'N07', species: 'Barred owl', setting: 'cavity', location: 'A large natural tree cavity in mature forest; an old stick nest or nest box is sometimes used.', scale: 'The chamber follows the tree cavity or substitute structure.', materials: 'Little added material; existing wood chips and debris can form the floor.', method: 'The owl occupies an existing chamber rather than excavating a full cavity.', support: 'The trunk encloses and supports the nesting chamber.', geometry: 'Vertical chamber with a protected floor and entrance.', reuse: 'Suitable cavities are limited and may be reused.', risk: 'Removal of large cavity trees reduces nesting options; never probe or enter a cavity.', timing: 'Pair activity and laying vary geographically, often beginning before spring leaf-out.', stageNotes: ['A large, dry cavity in mature forest is the core resource.', 'Sound trunk walls enclose the chamber.', 'Occupation replaces external nest building.', 'Wood debris on the cavity floor may serve as the nest surface.', 'Cavity condition and long-term tree retention shape future use.'], source: 'https://www.allaboutbirds.org/guide/Barred_Owl/lifehistory', sourceLabel: 'Cornell Lab - Barred Owl life history' },
+      { id: 'eastern-screech-owl', code: 'N08', species: 'Eastern screech-owl', setting: 'cavity', location: 'A natural cavity, old woodpecker hole, or appropriately designed nest box in wooded habitat.', scale: 'A small chamber whose dimensions are set by the cavity or box.', materials: 'No built nest; eggs rest on wood chips or debris already on the floor.', method: 'The pair selects an existing cavity and may clear or press down loose material.', support: 'Tree walls or a properly installed box enclose the nest.', geometry: 'Small protected chamber with an entrance opening.', reuse: 'Good cavities may be used in later years, though occupancy changes.', risk: 'Do not open an occupied box or cavity; box placement and maintenance require species-specific guidance.', timing: 'Courtship begins before laying; schedules differ across the broad range.', stageNotes: ['Entrance size, chamber condition, and nearby habitat matter.', 'The cavity walls provide nearly all structural shelter.', 'Selection and occupation replace construction.', 'Existing wood chips can cushion the floor.', 'A safe cavity persists only if the tree or box is maintained appropriately.'], source: 'https://www.allaboutbirds.org/guide/Eastern_Screech-Owl/lifehistory', sourceLabel: 'Cornell Lab - Eastern Screech-Owl life history' },
+      { id: 'american-kestrel', code: 'N09', species: 'American kestrel', setting: 'cavity', location: 'An old woodpecker hole, natural tree cavity, cliff crevice, building opening, or suitable nest box near open habitat.', scale: 'A compact chamber determined by the existing cavity.', materials: 'No constructed nest; loose wood chips, debris, or gravel may remain beneath the eggs.', method: 'The pair chooses a chamber but does not build a stick nest.', support: 'Cavity walls and floor provide enclosure and support.', geometry: 'Enclosed chamber with a single access opening.', reuse: 'Boxes or cavities can be occupied again when they remain safe.', risk: 'Poorly placed boxes can overheat or expose birds; use expert plans and monitoring protocols.', timing: 'Nest-site selection starts before laying and varies by region.', stageNotes: ['Open hunting habitat must connect to a suitable chamber.', 'The cavity shell is the complete support system.', 'Occupation replaces added structure.', 'Eggs rest on the existing cavity floor material.', 'Safe reuse depends on sound habitat, placement, and off-season maintenance.'], source: 'https://www.allaboutbirds.org/guide/American_Kestrel/lifehistory', sourceLabel: 'Cornell Lab - American Kestrel life history' },
+      { id: 'northern-goshawk', code: 'N10', species: 'Northern goshawk', setting: 'platform', location: 'A large tree in mature forest, often below the canopy with space to approach through the stand.', scale: 'A large stick platform, commonly several feet across after construction or reuse.', materials: 'Sticks, bark, and fresh evergreen sprigs or other greenery.', method: 'Both adults contribute; pairs may repair an existing nest or work among alternate sites.', support: 'A strong branch junction close to the trunk carries the platform.', geometry: 'Deep, sturdy platform with a lined cup.', reuse: 'Several alternate nests may occur within a nesting area.', risk: 'Forestry activity and close human approach can disturb a defensive nesting pair.', timing: 'Repair and display begin before laying; local calendars vary.', stageNotes: ['Mature forest structure and approach space shape the site.', 'A heavy limb junction anchors the platform.', 'Sticks build a sturdy bowl and rim.', 'Bark and fresh greenery finish the cup.', 'Alternate nests and repairs distribute use through the territory.'], source: 'https://www.allaboutbirds.org/guide/Northern_Goshawk/lifehistory', sourceLabel: 'Cornell Lab - Northern Goshawk life history' },
+      { id: 'peregrine-falcon', code: 'N11', species: 'Peregrine falcon', setting: 'scrape', location: 'A high cliff ledge or analogous structure such as a bridge, tower, silo, or tall building.', scale: 'A typical scrape is only about 9 in wide and 2 in deep.', materials: 'Sand, gravel, soil, or loose ledge debris; no stick platform is built.', method: 'The female uses her body and feet to make a shallow depression in the substrate.', support: 'The ledge itself carries the eggs; the scrape helps keep them together.', geometry: 'Very shallow bowl on a broad, exposed shelf.', reuse: 'A ledge or managed nest tray may be used repeatedly.', risk: 'Climbing, drones, bridge work, and rooftop access can disturb nesting birds; respect closures.', timing: 'Scraping and courtship precede laying; dates change with latitude.', stageNotes: ['Height, ledge width, shelter, and flight access define the site.', 'The rock or structure is the support; there is no stick frame.', 'A shallow depression is pressed into loose substrate.', 'Gravel or debris remains beneath the eggs without a soft lining.', 'The same ledge may be prepared again in a later season.'], source: 'https://www.allaboutbirds.org/guide/Peregrine_Falcon/lifehistory', sourceLabel: 'Cornell Lab - Peregrine Falcon life history' },
+      { id: 'mississippi-kite', code: 'N12', species: 'Mississippi kite', setting: 'platform', location: 'A tree fork or horizontal branch, often high in a mature tree in open woodland or a neighborhood.', scale: 'A relatively small, shallow stick platform.', materials: 'Twigs and small branches, often with leaves or green sprigs.', method: 'Both adults build a loose platform and may refurbish an old kite or crow nest.', support: 'A branch fork or limb carries the light platform.', geometry: 'Thin, shallow platform with a modest cup.', reuse: 'Existing structures can be repaired; other pairs build anew.', risk: 'Tree work and close approaches can disturb nesting birds that may defend the area.', timing: 'Building follows spring arrival in much of the United States.', stageNotes: ['A high fork with open airspace provides the site.', 'Branch geometry supports a light platform.', 'Small sticks form a shallow framework.', 'Leaves and finer pieces finish the cup.', 'Repair or reuse can shorten the next construction cycle.'], source: 'https://www.allaboutbirds.org/guide/Mississippi_Kite/lifehistory', sourceLabel: 'Cornell Lab - Mississippi Kite life history' },
+      { id: 'northern-harrier', code: 'N13', species: 'Northern harrier', setting: 'ground', location: 'On or just above wet or dry ground within dense grasses, reeds, shrubs, or marsh vegetation.', scale: 'A shallow platform and cup hidden within surrounding vegetation.', materials: 'Sticks, grasses, reeds, sedges, and other nearby plant material.', method: 'The female does most construction while the male supplies some material.', support: 'The ground and interwoven stems support a low platform.', geometry: 'Concealed, low bowl rather than an elevated nest.', reuse: 'Usually tied to the season\'s vegetation and water conditions.', risk: 'Mowing, burning, trampling, and pets can affect ground nests before they are visible.', timing: 'Construction follows territory establishment; local vegetation and latitude shift dates.', stageNotes: ['Dense cover and local moisture create concealment.', 'Ground and standing stems support the low platform.', 'Grasses and sticks raise and shape the bowl.', 'Finer grasses finish the cup.', 'Seasonal vegetation change makes the site less permanent than a tree platform.'], source: 'https://www.allaboutbirds.org/guide/Northern_Harrier/lifehistory', sourceLabel: 'Cornell Lab - Northern Harrier life history' },
+      { id: 'burrowing-owl', code: 'N14', species: 'Burrowing owl', setting: 'ground', location: 'An underground burrow in open grassland or desert, commonly made first by a burrowing mammal.', scale: 'The tunnel can extend several yards and is usually under 3 ft deep, depending on its original excavator.', materials: 'Soil forms the chamber; manure, feathers, grass, or other items may be brought to the entrance or burrow.', method: 'Most pairs enlarge and maintain an existing burrow; some populations excavate their own.', support: 'Compacted soil surrounds a tunnel and nesting chamber.', geometry: 'Horizontal or sloping tunnel leading to an underground chamber.', reuse: 'Nonmigrating birds may use burrows year-round; several nearby burrows can offer escape options.', risk: 'Burrow collapse, vehicles, poison, pets, and development threaten sites; never enter or block a burrow.', timing: 'Preparation and laying vary across resident and migratory populations.', stageNotes: ['Open visibility, drainage, and nearby burrows shape site choice.', 'Soil walls are the support and enclosure.', 'Adults enlarge and maintain the tunnel and chamber.', 'Collected material may line parts of the burrow or entrance.', 'Maintenance keeps access open; alternate burrows can provide refuge.'], source: 'https://www.allaboutbirds.org/guide/Burrowing_Owl/lifehistory', sourceLabel: 'Cornell Lab - Burrowing Owl life history' }
     ]
   };
 
@@ -13537,7 +14162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         flightAltitudeTrack.appendChild(flightAltitudeMarker);
         var flightAltitudeValue = document.createElement('span');
         flightAltitudeValue.className = 'rh-flight-altitude-value';
-        flightAltitudeValue.textContent = 'â€”';
+        flightAltitudeValue.textContent = '—';
         flightAltitudeGauge.appendChild(flightAltitudeLabel);
         flightAltitudeGauge.appendChild(flightAltitudeTrack);
         flightAltitudeGauge.appendChild(flightAltitudeValue);
@@ -22933,62 +23558,476 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: WORLD TOUR (v0.42)
       // ────────────────────────────────────────────────────────
-      function renderWorldTour() {
-        var wtIdx = rh.worldTourIdx == null ? 0 : rh.worldTourIdx;
-        function setWtIdx(i) { setRH({ worldTourIdx: i }); }
-        var d = WORLD_TOUR.destinations[wtIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border border-blue-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🌍'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-blue-200 tracking-tight' }, __alloT('stem.raptorhunt.world_tour_2', 'World Tour')),
-                h('div', { className: 'text-sm text-blue-100/85 mt-1' }, WORLD_TOUR.intro)
-              )
-            )
-          ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            WORLD_TOUR.destinations.map(function(dest, i) {
-              var sel = wtIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setWtIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-blue-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-blue-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, dest.flag + ' ' + dest.name.split(',')[0]);
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-blue-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'flex items-baseline gap-2' },
-              h('div', { className: 'text-2xl' }, d.flag),
-              h('div', { className: 'text-lg font-bold text-blue-300 tracking-tight' }, d.name)
+      function renderWorldTourScene(visual, destination) {
+        var scene = visual.scene;
+        var palettes = {
+          migration: { sky: '#075985', far: '#0e7490', near: '#164e63', glow: '#fdba74' },
+          desert: { sky: '#7c2d12', far: '#b45309', near: '#78350f', glow: '#fde68a' },
+          steppe: { sky: '#334155', far: '#78716c', near: '#44403c', glow: '#fcd34d' },
+          ridge: { sky: '#0c4a6e', far: '#166534', near: '#14532d', glow: '#bef264' },
+          strait: { sky: '#075985', far: '#0e7490', near: '#164e63', glow: '#67e8f9' },
+          rainforest: { sky: '#064e3b', far: '#047857', near: '#052e16', glow: '#6ee7b7' },
+          coast: { sky: '#1e3a8a', far: '#0369a1', near: '#164e63', glow: '#93c5fd' },
+          wetland: { sky: '#155e75', far: '#0f766e', near: '#134e4a', glow: '#5eead4' },
+          ice: { sky: '#1e3a8a', far: '#60a5fa', near: '#334155', glow: '#e0f2fe' },
+          savanna: { sky: '#9a3412', far: '#a16207', near: '#713f12', glow: '#fed7aa' },
+          alpine: { sky: '#312e81', far: '#6366f1', near: '#334155', glow: '#c7d2fe' },
+          river: { sky: '#075985', far: '#166534', near: '#14532d', glow: '#7dd3fc' }
+        };
+        var palette = palettes[scene] || palettes.migration;
+        var hasWater = ['strait', 'coast', 'wetland', 'ice', 'river'].indexOf(scene) >= 0;
+        var hasMountains = ['steppe', 'ridge', 'ice', 'alpine'].indexOf(scene) >= 0;
+        var hasForest = ['rainforest', 'ridge', 'river'].indexOf(scene) >= 0;
+        var isDry = ['desert', 'steppe', 'savanna'].indexOf(scene) >= 0;
+        var titleId = 'rh-world-scene-title-' + visual.kind;
+        var descId = 'rh-world-scene-desc-' + visual.kind;
+        var birdXs = scene === 'migration' ? [238, 270, 304, 338, 370] : [285, 333, 381];
+        return h('div', { className: 'rh-world-scene', 'data-world-destination-scene': visual.kind },
+          h('svg', { viewBox: '0 0 520 220', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid slice' },
+            h('title', { id: titleId }, destination.name + ' expedition landscape'),
+            h('desc', { id: descId }, 'Schematic field scene showing ' + visual.habitat + ' and raptors moving through the landscape.'),
+            h('rect', { x: 0, y: 0, width: 520, height: 220, className: 'rh-world-scene-sky', style: { fill: palette.sky } }),
+            h('circle', { cx: isDry ? 415 : 92, cy: isDry ? 54 : 48, r: isDry ? 27 : 19, className: 'rh-world-scene-sun', style: { fill: palette.glow } }),
+            h('path', { d: 'M0 115 C70 82 116 102 175 72 C239 39 297 112 360 77 C425 41 465 91 520 62 L520 220 L0 220 Z', className: 'rh-world-scene-far', style: { fill: palette.far } }),
+            hasMountains && h('path', { d: scene === 'ice' ? 'M0 139 L74 62 L112 101 L172 33 L236 112 L309 44 L371 116 L433 60 L520 134 L520 220 L0 220 Z' : 'M0 151 L82 87 L126 125 L205 53 L274 135 L353 71 L431 128 L482 88 L520 120 L520 220 L0 220 Z', className: 'rh-world-scene-near', style: { fill: palette.near } }),
+            !hasMountains && h('path', { d: isDry ? 'M0 148 C88 120 170 165 257 129 C341 94 421 145 520 112 L520 220 L0 220 Z' : 'M0 150 C85 116 160 153 247 124 C335 95 422 142 520 105 L520 220 L0 220 Z', className: 'rh-world-scene-near', style: { fill: palette.near } }),
+            hasWater && h('path', { d: scene === 'river' ? 'M211 124 C252 144 241 169 290 220 L410 220 C355 168 354 140 323 116 Z' : 'M0 156 C114 140 214 168 324 148 C408 132 470 142 520 132 L520 220 L0 220 Z', className: 'rh-world-scene-water' }),
+            scene === 'ice' && h('g', null,
+              h('path', { d: 'M0 172 L82 159 L137 177 L207 155 L284 180 L349 158 L430 176 L520 151 L520 220 L0 220 Z', className: 'rh-world-scene-ice' }),
+              h('path', { d: 'M56 162 L89 119 L120 165 M276 169 L318 106 L361 164 M400 165 L434 128 L469 163', fill: 'none', stroke: '#eff6ff', strokeWidth: 3, opacity: .8 })
             ),
-            h('div', { className: 'text-xs italic text-amber-200/80' }, '📅 ' + d.season),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.species_9', '🦅 Species')),
-              h('div', { className: 'text-amber-100/90' }, d.species)
+            hasForest && h('g', null, [34, 72, 111, 151, 404, 445, 481].map(function(x, i) {
+              var y = 132 + (i % 3) * 7;
+              return h('g', { key: x },
+                h('rect', { x: x - 3, y: y, width: 6, height: 54, className: 'rh-world-scene-trunk' }),
+                h('path', { d: 'M' + (x - 21) + ' ' + (y + 12) + ' L' + x + ' ' + (y - 38) + ' L' + (x + 21) + ' ' + (y + 12) + ' Z', className: 'rh-world-scene-tree' })
+              );
+            })),
+            scene === 'rainforest' && h('g', null, [18, 55, 92, 129, 166, 389, 426, 463, 500].map(function(x, i) {
+              return h('circle', { key: x, cx: x, cy: 129 - (i % 2) * 11, r: 24 + (i % 3) * 4, className: 'rh-world-scene-tree' });
+            })),
+            scene === 'wetland' && h('g', { stroke: '#99f6e4', strokeWidth: 2, opacity: .72 }, [38, 61, 91, 421, 451, 480].map(function(x, i) {
+              return h('path', { key: x, d: 'M' + x + ' 197 Q' + (x - 5) + ' ' + (160 - (i % 2) * 12) + ' ' + (x + 2) + ' ' + (139 - (i % 3) * 8), fill: 'none' });
+            })),
+            scene === 'savanna' && h('g', null,
+              h('rect', { x: 87, y: 116, width: 8, height: 59, className: 'rh-world-scene-trunk' }),
+              h('path', { d: 'M42 122 Q89 83 142 120 Q116 142 55 136 Z', className: 'rh-world-scene-tree' })
             ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.attraction', '⭐ Attraction')),
-              h('div', { className: 'text-emerald-100/90' }, d.attraction)
+            scene === 'desert' && h('g', { fill: 'none', stroke: '#fcd34d', strokeWidth: 2, opacity: .72 },
+              h('path', { d: 'M77 162 L77 121 Q77 110 87 110 M77 141 Q61 141 61 129 M77 149 Q96 149 96 134' }),
+              h('path', { d: 'M448 170 L448 137 Q448 126 457 126 M448 151 Q434 151 434 140' })
             ),
-            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.why_visit', '🎯 Why Visit')),
-              h('div', { className: 'text-cyan-100/90' }, d.whyVisit)
-            ),
-            h('div', { className: 'grid md:grid-cols-2 gap-2' },
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.cost_2', '💰 Cost')),
-                h('div', { className: 'text-yellow-100/90' }, d.cost)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.airport', '✈ Airport')),
-                h('div', { className: 'text-purple-100/90' }, d.nearestAirport)
-              )
-            )
+            h('path', { d: 'M172 98 Q260 47 356 82', className: 'rh-world-scene-route' }),
+            h('g', null, birdXs.map(function(x, i) {
+              var y = 75 + (i % 3) * 13;
+              return h('path', { key: x, d: 'M' + (x - 15) + ' ' + y + ' Q' + (x - 5) + ' ' + (y - 9) + ' ' + x + ' ' + y + ' Q' + (x + 7) + ' ' + (y - 10) + ' ' + (x + 17) + ' ' + (y - 1), className: 'rh-world-scene-bird' });
+            })),
+            h('rect', { x: 15, y: 15, width: 68, height: 27, rx: 8, fill: '#020617', opacity: .72 }),
+            h('text', { x: 49, y: 33, textAnchor: 'middle', className: 'rh-world-scene-code' }, visual.code + ' / ' + visual.scene.toUpperCase()),
+            h('text', { x: 18, y: 205, className: 'rh-world-scene-label' }, visual.signature)
           )
         );
       }
+
+      function renderWorldTour() {
+        var count = WORLD_TOUR.destinations.length;
+        function safeIndex(value, length, fallback) {
+          var n = Number(value);
+          return isFinite(n) && Math.floor(n) === n && n >= 0 && n < length ? n : fallback;
+        }
+        var wtIdx = safeIndex(rh.worldTourIdx, count, 0);
+        var focusOptions = [
+          { id: 'all', label: 'All stations', code: '15' },
+          { id: 'migration', label: 'Migration', code: '06' },
+          { id: 'culture', label: 'Living culture', code: '01' },
+          { id: 'rainforest', label: 'Rainforest', code: '02' },
+          { id: 'conservation', label: 'Conservation', code: '02' },
+          { id: 'winter', label: 'Winter fieldwork', code: '03' },
+          { id: 'savanna', label: 'Savanna', code: '01' }
+        ];
+        var lensOptions = [
+          { id: 'routes', label: 'Route', code: 'ARC', copy: 'Compare the selected expedition with a second station across the schematic globe.' },
+          { id: 'season', label: 'Season', code: 'CAL', copy: 'Markers report whether the chosen month falls inside each station\'s primary field window.' },
+          { id: 'species', label: 'Field focus', code: 'BIO', copy: 'Read each station through its migration, habitat, culture, or conservation specialty.' },
+          { id: 'logistics', label: 'Logistics', code: 'OPS', copy: 'Cost tiers offer a quick planning comparison; exact travel conditions still require current research.' }
+        ];
+        var focusIds = focusOptions.map(function(item) { return item.id; });
+        var lensIds = lensOptions.map(function(item) { return item.id; });
+        var focus = focusIds.indexOf(rh.worldTourFocus) >= 0 ? rh.worldTourFocus : 'all';
+        var lens = lensIds.indexOf(rh.worldTourLens) >= 0 ? rh.worldTourLens : 'routes';
+        var monthIdx = safeIndex(rh.worldTourMonth, 12, 8);
+        var compareFallback = (wtIdx + 1) % count;
+        var compareIdx = safeIndex(rh.worldTourCompareIdx, count, compareFallback);
+        if (compareIdx === wtIdx) compareIdx = compareFallback;
+        var dispatchIdx = safeIndex(rh.worldTourDispatchIdx, WORLD_TOUR_DISPATCHES.length, 0);
+        var d = WORLD_TOUR.destinations[wtIdx];
+        var visual = WORLD_TOUR_VISUALS[wtIdx];
+        var compareDestination = WORLD_TOUR.destinations[compareIdx];
+        var compareVisual = WORLD_TOUR_VISUALS[compareIdx];
+        var visited = rh.worldTourVisited && typeof rh.worldTourVisited === 'object' ? rh.worldTourVisited : {};
+        var visitedCount = WORLD_TOUR_VISUALS.filter(function(item) { return !!visited[item.kind]; }).length;
+        var dispatchAnswers = rh.worldTourDispatchAnswers && typeof rh.worldTourDispatchAnswers === 'object' ? rh.worldTourDispatchAnswers : {};
+        var dispatch = WORLD_TOUR_DISPATCHES[dispatchIdx];
+        var dispatchGuess = dispatchAnswers[dispatchIdx];
+        var dispatchAnswered = dispatchGuess != null;
+        var dispatchCorrect = dispatchAnswered && Number(dispatchGuess) === dispatch.answer;
+        var dispatchState = dispatchAnswered ? (dispatchCorrect ? 'correct' : 'incorrect') : 'open';
+        var monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        var activeSeasonCount = WORLD_TOUR_VISUALS.filter(function(item) { return item.months.indexOf(monthIdx) >= 0; }).length;
+        var visibleEntries = WORLD_TOUR_VISUALS.map(function(item, i) {
+          return { visual: item, destination: WORLD_TOUR.destinations[i], index: i };
+        }).filter(function(item) { return focus === 'all' || item.visual.focus === focus; });
+
+        function chooseDestination(i) {
+          setRH({ worldTourIdx: i });
+          rhAnnounce(WORLD_TOUR.destinations[i].name + ' expedition selected');
+        }
+        function chooseFocus(id) {
+          var match = WORLD_TOUR_VISUALS.findIndex(function(item) { return item.focus === id; });
+          var patch = { worldTourFocus: id };
+          if (id !== 'all' && visual.focus !== id && match >= 0) patch.worldTourIdx = match;
+          setRH(patch);
+          rhAnnounce((id === 'all' ? 'All' : focusOptions.filter(function(item) { return item.id === id; })[0].label) + ' expedition stations shown');
+        }
+        function chooseLens(id) {
+          setRH({ worldTourLens: id });
+          rhAnnounce(lensOptions.filter(function(item) { return item.id === id; })[0].label + ' evidence lens selected');
+        }
+        function chooseMonth(i) {
+          setRH({ worldTourMonth: i });
+          rhAnnounce(monthNames[i] + ' field season selected');
+        }
+        function toggleStamp() {
+          setRH(function(cur) {
+            var nextVisited = Object.assign({}, cur.worldTourVisited || {});
+            if (nextVisited[visual.kind]) delete nextVisited[visual.kind];
+            else nextVisited[visual.kind] = true;
+            return { worldTourVisited: nextVisited };
+          });
+          rhAnnounce((visited[visual.kind] ? 'Removed ' : 'Stamped ') + d.name + (visited[visual.kind] ? ' from' : ' in') + ' the expedition passport');
+        }
+        function answerDispatch(answerIndex) {
+          setRH(function(cur) {
+            var nextAnswers = Object.assign({}, cur.worldTourDispatchAnswers || {});
+            nextAnswers[dispatchIdx] = answerIndex;
+            return { worldTourDispatchAnswers: nextAnswers };
+          });
+          rhAnnounce(answerIndex === dispatch.answer ? 'Dispatch solved' : 'Dispatch needs another evidence check');
+        }
+        function distanceKm(a, b) {
+          var rad = Math.PI / 180;
+          var dLat = (b.lat - a.lat) * rad;
+          var dLon = (b.lon - a.lon) * rad;
+          var lat1 = a.lat * rad;
+          var lat2 = b.lat * rad;
+          var hav = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+          return Math.round((6371 * 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1 - hav))) / 10) * 10;
+        }
+        function routePath(a, b) {
+          var x1 = a.mapX * 10;
+          var y1 = a.mapY * 5;
+          var x2 = b.mapX * 10;
+          var y2 = b.mapY * 5;
+          var controlX = (x1 + x2) / 2;
+          var controlY = Math.max(22, Math.min(y1, y2) - Math.max(35, Math.abs(x2 - x1) * .12));
+          return 'M ' + x1.toFixed(1) + ' ' + y1.toFixed(1) + ' Q ' + controlX.toFixed(1) + ' ' + controlY.toFixed(1) + ' ' + x2.toFixed(1) + ' ' + y2.toFixed(1);
+        }
+        var tripKm = distanceKm(visual, compareVisual);
+        var sharedMonths = visual.months.filter(function(month) { return compareVisual.months.indexOf(month) >= 0; });
+        var costGap = Math.abs(visual.costTier - compareVisual.costTier);
+        var route = routePath(visual, compareVisual);
+        var lensInfo = lensOptions.filter(function(item) { return item.id === lens; })[0];
+        var continents = [
+          { id: 'north-america', label: 'N. AMERICA', d: 'M72 76 L125 48 L204 55 L262 91 L318 96 L346 134 L316 173 L277 168 L250 208 L210 217 L183 181 L139 174 L105 139 L73 126 Z', tx: 198, ty: 121 },
+          { id: 'south-america', label: 'S. AMERICA', d: 'M271 218 L324 208 L369 239 L384 285 L361 334 L347 394 L318 452 L294 424 L286 368 L267 324 L247 271 Z', tx: 319, ty: 310 },
+          { id: 'europe', label: 'EUROPE', d: 'M435 85 L481 67 L537 78 L568 112 L548 145 L511 151 L488 136 L454 143 L427 119 Z', tx: 501, ty: 111 },
+          { id: 'africa', label: 'AFRICA', d: 'M466 167 L535 148 L607 177 L636 230 L613 297 L572 369 L528 348 L499 295 L473 237 L440 201 Z', tx: 545, ty: 243 },
+          { id: 'asia', label: 'ASIA', d: 'M557 72 L638 45 L738 55 L823 73 L913 112 L930 161 L881 196 L826 184 L774 216 L713 192 L667 157 L602 151 L558 121 Z', tx: 741, ty: 120 },
+          { id: 'oceania', label: 'OCEANIA', d: 'M807 304 L873 287 L933 317 L944 369 L910 401 L846 391 L807 354 Z M946 402 L971 389 L990 421 L970 450 L947 438 Z', tx: 882, ty: 346 },
+          { id: 'greenland', label: '', d: 'M358 42 L407 25 L449 49 L430 97 L390 108 L356 79 Z', tx: 0, ty: 0 }
+        ];
+        var graticuleX = [125, 250, 375, 500, 625, 750, 875];
+        var graticuleY = [83, 166, 249, 332, 415];
+
+        return h('div', {
+          className: 'rh-world-atlas',
+          'data-raptor-world-atlas': 'true',
+          'data-world-destination': visual.kind,
+          'data-world-focus': focus,
+          'data-world-lens': lens,
+          'data-world-month': monthIdx + 1,
+          style: { '--rh-world-accent': visual.accent }
+        },
+          h('section', { className: 'rh-world-hero', 'aria-labelledby': 'rh-world-title' },
+            h('div', { className: 'rh-world-hero-main' },
+              h('div', { className: 'rh-world-hero-icon', 'aria-hidden': 'true' }, 'GLOBAL\n15'),
+              h('div', null,
+                h('div', { className: 'rh-world-kicker' }, 'Field station / expedition planner'),
+                h('h2', { className: 'rh-world-title', id: 'rh-world-title' }, 'Global Raptor Expedition Atlas'),
+                h('p', { className: 'rh-world-copy' }, WORLD_TOUR.intro)
+              )
+            ),
+            h('div', { className: 'rh-world-summary', 'aria-label': 'Atlas summary' },
+              h('div', { className: 'rh-world-stat' }, h('strong', null, '15'), h('span', null, 'field stations')),
+              h('div', { className: 'rh-world-stat' }, h('strong', null, '6'), h('span', null, 'continents')),
+              h('div', { className: 'rh-world-stat' }, h('strong', null, activeSeasonCount), h('span', null, 'in season · ' + monthNames[monthIdx])),
+              h('div', { className: 'rh-world-stat' }, h('strong', null, visitedCount + '/15'), h('span', null, 'passport stamps'))
+            )
+          ),
+          h('section', { className: 'rh-world-controls', 'aria-label': 'Expedition atlas controls' },
+            h('div', { className: 'rh-world-control-row' },
+              h('div', { className: 'rh-world-control-label' }, 'Expedition focus'),
+              h('div', { className: 'rh-world-chip-row' }, focusOptions.map(function(item) {
+                return h('button', {
+                  key: item.id,
+                  type: 'button',
+                  className: 'rh-world-chip',
+                  onClick: function() { chooseFocus(item.id); },
+                  'aria-pressed': focus === item.id,
+                  'data-world-focus-control': item.id
+                }, h('span', { className: 'rh-world-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-world-control-row' },
+              h('div', { className: 'rh-world-control-label' }, 'Evidence lens'),
+              h('div', { className: 'rh-world-chip-row' }, lensOptions.map(function(item) {
+                return h('button', {
+                  key: item.id,
+                  type: 'button',
+                  className: 'rh-world-chip',
+                  onClick: function() { chooseLens(item.id); },
+                  'aria-pressed': lens === item.id,
+                  'data-world-lens-control': item.id
+                }, h('span', { className: 'rh-world-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-world-control-row' },
+              h('div', { className: 'rh-world-control-label' }, 'Field month'),
+              h('div', { className: 'rh-world-months' }, monthNames.map(function(month, i) {
+                var monthSites = WORLD_TOUR_VISUALS.filter(function(item) { return item.months.indexOf(i) >= 0; }).length;
+                return h('button', {
+                  key: month,
+                  type: 'button',
+                  className: 'rh-world-month',
+                  onClick: function() { chooseMonth(i); },
+                  'aria-pressed': monthIdx === i,
+                  'aria-label': month + ', ' + monthSites + ' stations in primary season',
+                  'data-world-month-control': i + 1
+                }, month, h('span', null, monthSites + ' sites'));
+              }))
+            )
+          ),
+          h('div', { className: 'rh-world-workbench' },
+            h('section', { className: 'rh-world-map-card', 'aria-labelledby': 'rh-world-map-heading' },
+              h('div', { className: 'rh-world-panel-head' },
+                h('div', null,
+                  h('div', { className: 'rh-world-section-kicker' }, lensInfo.code + ' / ' + lensInfo.label + ' lens'),
+                  h('h3', { id: 'rh-world-map-heading' }, d.name + ' ↔ ' + compareDestination.name)
+                ),
+                h('div', { className: 'rh-world-route-chip' }, tripKm.toLocaleString() + ' km schematic route')
+              ),
+              h('div', { className: 'rh-world-map-stage', 'data-raptor-world-map': 'true' },
+                h('svg', { viewBox: '0 0 1000 500', role: 'img', 'aria-labelledby': 'rh-world-map-title rh-world-map-desc', preserveAspectRatio: 'xMidYMid meet' },
+                  h('title', { id: 'rh-world-map-title' }, 'Global raptor expedition map'),
+                  h('desc', { id: 'rh-world-map-desc' }, 'A schematic world map with fifteen expedition stations. The selected station is connected to the comparison station.'),
+                  h('g', null, graticuleX.map(function(x) { return h('path', { key: 'x' + x, d: 'M' + x + ' 0 V500', className: 'rh-world-graticule' }); }), graticuleY.map(function(y) { return h('path', { key: 'y' + y, d: 'M0 ' + y + ' H1000', className: 'rh-world-graticule' }); })),
+                  h('g', null, continents.map(function(continent) {
+                    return h('g', { key: continent.id, 'data-world-continent': continent.id },
+                      h('path', { d: continent.d, className: 'rh-world-continent' }),
+                      continent.label && h('text', { x: continent.tx, y: continent.ty, className: 'rh-world-continent-label' }, continent.label)
+                    );
+                  })),
+                  h('g', { 'data-world-map-route': 'true' },
+                    h('path', { d: route, className: 'rh-world-route-shadow' }),
+                    h('path', { d: route, className: 'rh-world-route' }),
+                    h('circle', { cx: compareVisual.mapX * 10, cy: compareVisual.mapY * 5, r: 5, className: 'rh-world-route-arrow' })
+                  )
+                ),
+                WORLD_TOUR_VISUALS.map(function(item, i) {
+                  var destination = WORLD_TOUR.destinations[i];
+                  var inSeason = item.months.indexOf(monthIdx) >= 0;
+                  var filtered = focus !== 'all' && item.focus !== focus;
+                  var markerValue = lens === 'logistics' ? new Array(item.costTier + 1).join('$') : (lens === 'season' ? (inSeason ? 'ON' : 'OFF') : item.code);
+                  return h('button', {
+                    key: item.kind,
+                    type: 'button',
+                    className: 'rh-world-marker',
+                    style: { left: item.mapX + '%', top: item.mapY + '%', '--rh-world-pin': item.accent },
+                    onClick: function() { chooseDestination(i); },
+                    'aria-pressed': wtIdx === i,
+                    'aria-label': destination.name + ', ' + (inSeason ? 'in primary season' : 'outside primary season') + ', ' + item.focus + ' focus',
+                    'data-world-destination-marker': item.kind,
+                    'data-world-season': inSeason ? 'active' : 'off',
+                    'data-world-filtered': filtered ? 'true' : 'false',
+                    'data-world-compare': compareIdx === i ? 'true' : 'false'
+                  }, markerValue, h('span', { className: 'rh-world-marker-label' }, destination.name));
+                }),
+                h('div', { className: 'rh-world-map-key', 'aria-hidden': 'true' },
+                  h('span', null, h('i', null), 'selected'),
+                  h('span', null, h('i', { 'data-key': 'compare' }), 'comparison'),
+                  h('span', null, h('i', { 'data-key': 'off' }), 'outside ' + monthNames[monthIdx])
+                )
+              ),
+              h('div', { className: 'rh-world-map-note' }, lensInfo.copy + ' Map positions, routes, and seasonal windows are schematic learning aids, not navigation guidance.')
+            ),
+            h('aside', { className: 'rh-world-dossier', 'aria-labelledby': 'rh-world-dossier-title' },
+              renderWorldTourScene(visual, d),
+              h('div', { className: 'rh-world-dossier-body' },
+                h('div', { className: 'rh-world-dossier-head' },
+                  h('div', null,
+                    h('div', { className: 'rh-world-detail-kicker' }, visual.continent + ' / ' + visual.focus),
+                    h('h3', { id: 'rh-world-dossier-title' }, d.flag + ' ' + d.name)
+                  ),
+                  h('div', { className: 'rh-world-dossier-code' }, visual.code)
+                ),
+                h('div', { className: 'rh-world-meta-row' },
+                  h('span', { className: 'rh-world-meta' }, monthNames[monthIdx] + (visual.months.indexOf(monthIdx) >= 0 ? ' · peak window' : ' · off-window')),
+                  h('span', { className: 'rh-world-meta' }, 'Cost tier ' + visual.costTier + '/3'),
+                  h('span', { className: 'rh-world-meta' }, visual.habitat)
+                ),
+                h('div', { className: 'rh-world-reading', 'data-tone': 'species' },
+                  h('span', null, 'Target raptors'),
+                  h('p', null, d.species)
+                ),
+                h('div', { className: 'rh-world-reading' },
+                  h('span', null, 'Field signal'),
+                  h('p', null, d.attraction)
+                ),
+                h('div', { className: 'rh-world-reading', 'data-tone': 'why' },
+                  h('span', null, 'Observer brief'),
+                  h('p', null, visual.fieldNote)
+                ),
+                h('div', { className: 'rh-world-reading' },
+                  h('span', null, 'Season / access'),
+                  h('p', null, d.season + ' · ' + d.cost + ' · Gateway: ' + d.nearestAirport)
+                ),
+                h('button', { type: 'button', className: 'rh-world-passport-button', onClick: toggleStamp, 'aria-pressed': !!visited[visual.kind] }, visited[visual.kind] ? '✓ Passport stamped · remove' : 'Stamp this field station')
+              )
+            )
+          ),
+          h('div', { className: 'rh-world-planning-grid' },
+            h('section', { className: 'rh-world-compare', 'data-world-comparison': 'true', 'aria-labelledby': 'rh-world-compare-title' },
+              h('div', { className: 'rh-world-section-head' },
+                h('div', null, h('div', { className: 'rh-world-section-kicker' }, 'Two-stop planner'), h('h3', { id: 'rh-world-compare-title' }, 'Compare expedition windows')),
+                h('span', null, visual.code + ' ↔ ' + compareVisual.code)
+              ),
+              h('div', { className: 'rh-world-compare-select' },
+                h('select', {
+                  value: compareIdx,
+                  onChange: function(event) { setRH({ worldTourCompareIdx: Number(event.target.value) }); rhAnnounce('Comparison station changed to ' + WORLD_TOUR.destinations[Number(event.target.value)].name); },
+                  'aria-label': 'Comparison expedition station'
+                }, WORLD_TOUR.destinations.map(function(destination, i) {
+                  return i === wtIdx ? null : h('option', { key: WORLD_TOUR_VISUALS[i].kind, value: i }, destination.name);
+                })),
+                h('div', { className: 'rh-world-compare-route' }, tripKm.toLocaleString() + ' km apart')
+              ),
+              h('div', { className: 'rh-world-compare-metrics' },
+                h('div', { className: 'rh-world-compare-metric' }, h('span', null, 'Season overlap'), h('strong', null, sharedMonths.length + ' months')),
+                h('div', { className: 'rh-world-compare-metric' }, h('span', null, 'Cost contrast'), h('strong', null, costGap === 0 ? 'Same tier' : costGap + '-tier gap')),
+                h('div', { className: 'rh-world-compare-metric' }, h('span', null, 'Field relationship'), h('strong', null, visual.focus === compareVisual.focus ? 'Shared focus' : 'Contrast pair'))
+              ),
+              h('p', { className: 'rh-world-compare-note' }, sharedMonths.length ? 'Shared primary months: ' + sharedMonths.map(function(month) { return monthNames[month]; }).join(', ') + '.' : 'These stations have no shared primary month, making them a natural multi-season comparison.')
+            ),
+            h('section', {
+              className: 'rh-world-passport',
+              'data-world-passport': 'true',
+              role: 'progressbar',
+              'aria-label': 'Expedition passport progress',
+              'aria-valuemin': 0,
+              'aria-valuemax': count,
+              'aria-valuenow': visitedCount
+            },
+              h('div', { className: 'rh-world-section-head' },
+                h('div', null, h('div', { className: 'rh-world-section-kicker' }, 'Field passport'), h('h3', null, visitedCount + ' of ' + count + ' stations logged')),
+                h('span', null, Math.round(visitedCount / count * 100) + '%')
+              ),
+              h('div', { className: 'rh-world-passport-track', 'aria-hidden': 'true' }, h('span', { style: { width: (visitedCount / count * 100) + '%' } })),
+              h('div', { className: 'rh-world-stamps', 'aria-hidden': 'true' }, WORLD_TOUR_VISUALS.map(function(item) {
+                return h('span', { key: item.kind, className: 'rh-world-stamp', 'data-stamped': visited[item.kind] ? 'true' : 'false' }, item.code);
+              })),
+              h('p', { className: 'rh-world-passport-copy' }, 'Stamp a dossier after studying it. Progress stays with this lab session and never implies a real-world visit.')
+            )
+          ),
+          h('section', { className: 'rh-world-directory', 'aria-labelledby': 'rh-world-directory-title' },
+            h('div', { className: 'rh-world-section-head' },
+              h('div', null, h('div', { className: 'rh-world-section-kicker' }, 'Expedition directory'), h('h3', { id: 'rh-world-directory-title' }, focus === 'all' ? 'All 15 field stations' : visibleEntries.length + ' ' + focus + ' stations')),
+              h('span', null, visibleEntries.length + ' showing')
+            ),
+            visibleEntries.length ? h('div', { className: 'rh-world-directory-grid' }, visibleEntries.map(function(entry) {
+              var inSeason = entry.visual.months.indexOf(monthIdx) >= 0;
+              return h('button', {
+                key: entry.visual.kind,
+                type: 'button',
+                className: 'rh-world-card',
+                style: { '--rh-world-accent': entry.visual.accent },
+                onClick: function() { chooseDestination(entry.index); },
+                'data-world-destination-card': entry.visual.kind,
+                'data-active': entry.index === wtIdx ? 'true' : 'false',
+                'aria-pressed': entry.index === wtIdx
+              },
+                h('span', { className: 'rh-world-card-code' }, entry.visual.code),
+                h('span', { className: 'rh-world-card-copy' }, h('strong', null, entry.destination.name), h('span', null, entry.visual.continent + ' · ' + entry.visual.signature)),
+                h('span', { className: 'rh-world-card-season' }, inSeason ? 'IN SEASON\n' + monthNames[monthIdx] : 'NEXT\n' + monthNames[entry.visual.months[0]])
+              );
+            })) : h('div', { className: 'rh-world-empty' }, 'No stations match this expedition focus.')
+          ),
+          h('section', { className: 'rh-world-dispatch', 'data-world-dispatch': dispatchState, 'aria-labelledby': 'rh-world-dispatch-title' },
+            h('div', { className: 'rh-world-section-head' },
+              h('div', null, h('div', { className: 'rh-world-section-kicker' }, 'Evidence challenge'), h('h3', { id: 'rh-world-dispatch-title' }, 'Expedition Dispatch')),
+              h('span', null, 'Case ' + (dispatchIdx + 1) + '/' + WORLD_TOUR_DISPATCHES.length)
+            ),
+            h('div', { className: 'rh-world-dispatch-tabs', role: 'tablist', 'aria-label': 'Expedition dispatch cases' }, WORLD_TOUR_DISPATCHES.map(function(item, i) {
+              var stored = dispatchAnswers[i];
+              var status = stored == null ? 'open' : (Number(stored) === item.answer ? 'solved' : 'review');
+              return h('button', {
+                key: i,
+                type: 'button',
+                className: 'rh-world-dispatch-tab',
+                onClick: function() { setRH({ worldTourDispatchIdx: i }); rhAnnounce('Dispatch case ' + (i + 1) + ' opened'); },
+                role: 'tab',
+                'aria-selected': dispatchIdx === i,
+                'data-world-dispatch-case': i
+              }, '0' + (i + 1) + ' · ' + status.toUpperCase());
+            })),
+            h('div', { className: 'rh-world-dispatch-grid' },
+              h('div', { className: 'rh-world-dispatch-brief' },
+                h('div', { className: 'rh-world-detail-kicker' }, 'Incoming field brief'),
+                h('h4', null, dispatch.title),
+                h('p', null, dispatch.prompt),
+                h('div', { className: 'rh-world-clues' }, dispatch.clues.map(function(clue, i) {
+                  return h('div', { key: i, className: 'rh-world-clue' }, h('strong', null, '0' + (i + 1)), h('span', null, clue));
+                }))
+              ),
+              h('div', { className: 'rh-world-dispatch-answers' },
+                dispatch.options.map(function(destinationIndex, answerIndex) {
+                  var optionVisual = WORLD_TOUR_VISUALS[destinationIndex];
+                  var optionDestination = WORLD_TOUR.destinations[destinationIndex];
+                  return h('button', {
+                    key: destinationIndex,
+                    type: 'button',
+                    className: 'rh-world-dispatch-answer',
+                    onClick: function() { answerDispatch(answerIndex); },
+                    'aria-pressed': dispatchAnswered && Number(dispatchGuess) === answerIndex,
+                    'data-world-dispatch-answer': answerIndex
+                  }, optionVisual.code + ' · ' + optionDestination.name);
+                }),
+                dispatchAnswered ? h('div', { className: 'rh-world-dispatch-result', 'data-result': dispatchCorrect ? 'correct' : 'incorrect', 'aria-live': 'polite' },
+                  h('strong', null, dispatchCorrect ? 'Dispatch confirmed' : 'Recheck the evidence'),
+                  dispatch.lesson
+                ) : h('div', { className: 'rh-world-dispatch-result', 'aria-live': 'polite' },
+                  h('strong', null, 'Awaiting destination call'),
+                  'Match all three clues before choosing a field station.'
+                )
+              )
+            )
+          ),
+          h('div', { className: 'rh-world-note' },
+            h('strong', null, 'Expedition ethics: '),
+            'Use this atlas to compare ecological patterns, then verify current access, local regulations, weather, costs, and community guidance before any real trip. Never approach nests or sensitive roosts for a closer view.'
+          )
+        );
+      }
+
 
       // ────────────────────────────────────────────────────────
       // RENDER: RECORDS (v0.42)
@@ -23021,101 +24060,767 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       // ────────────────────────────────────────────────────────
       // RENDER: THREATS DATABASE (v0.42)
       // ────────────────────────────────────────────────────────
-      function renderThreats() {
-        var threatIdx = rh.threatIdx == null ? 0 : rh.threatIdx;
-        function setThreatIdx(i) { setRH({ threatIdx: i }); }
-        var t = THREATS_DB.threats[threatIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-rose-900/40 to-red-900/40 border border-rose-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '⚠️'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-rose-200 tracking-tight' }, __alloT('stem.raptorhunt.threats_database_2', 'Threats Database')),
-                h('div', { className: 'text-sm text-rose-100/85 mt-1' }, THREATS_DB.intro)
-              )
-            )
+      function renderThreatPathway(profile, threat, plan, lens) {
+        function wrapLabel(text, limit) {
+          var words = String(text || '').split(/\s+/);
+          var lines = [];
+          var current = '';
+          words.forEach(function(word) {
+            if (!current) current = word;
+            else if ((current + ' ' + word).length <= limit) current += ' ' + word;
+            else { lines.push(current); current = word; }
+          });
+          if (current) lines.push(current);
+          if (lines.length > 3) lines = [lines[0], lines[1], lines.slice(2).join(' ')];
+          return lines;
+        }
+        var titleId = 'rh-threat-path-title-' + profile.id;
+        var descId = 'rh-threat-path-desc-' + profile.id;
+        var foodScene = ['carrion-foodweb', 'urban-foodweb', 'agricultural-foodweb', 'watershed-foodweb', 'coastal-nest'].indexOf(profile.scene) >= 0;
+        var structureScene = ['reflective-glass', 'night-skyline'].indexOf(profile.scene) >= 0;
+        var habitatScene = ['fragmented-forest', 'converted-grassland', 'warming-range', 'range-competition'].indexOf(profile.scene) >= 0;
+        var nestScene = ['nest-collection', 'coastal-nest'].indexOf(profile.scene) >= 0;
+        var steps = [
+          { id: 'source', code: '01', title: 'Source', copy: profile.sourceLabel },
+          { id: 'exposure', code: '02', title: 'Exposure route', copy: profile.pathwayLabel },
+          { id: 'guild', code: '03', title: 'Raptor / prey web', copy: profile.affectedGuild },
+          { id: 'outcome', code: '04', title: 'Outcome', copy: profile.outcomeLabel }
+        ];
+        var nodeXs = [25, 229, 433, 637];
+        var gateXs = [214, 418, 622];
+        return h('div', { className: 'rh-threat-stage', tabIndex: 0, role: 'region', 'aria-label': threat.threat + ' conceptual threat pathway. Scroll horizontally to inspect all four steps.', 'data-threat-scene': profile.scene },
+          h('svg', { viewBox: '0 0 840 440', role: 'img', 'aria-labelledby': titleId + ' ' + descId, preserveAspectRatio: 'xMidYMid meet', 'data-raptor-threat-pathway': 'true' },
+            h('title', { id: titleId }, threat.threat + ' conceptual threat pathway'),
+            h('desc', { id: descId }, 'An evidence-informed four-step teaching model from ' + profile.sourceLabel + ' through ' + profile.pathwayLabel + ' to ' + profile.outcomeLabel + '. Selected action markers show plan composition and do not estimate effectiveness.'),
+            h('g', null, [70, 140, 210, 280, 350, 420].map(function(y) { return h('path', { key: 'h' + y, d: 'M0 ' + y + ' H840', className: 'rh-threat-grid' }); }), [105, 210, 315, 420, 525, 630, 735].map(function(x) { return h('path', { key: 'v' + x, d: 'M' + x + ' 0 V440', className: 'rh-threat-grid' }); })),
+            h('rect', { x: 0, y: 0, width: 840, height: 164, className: 'rh-threat-horizon' }),
+            h('path', { d: 'M0 128 C95 88 167 130 250 99 C341 64 421 128 510 91 C614 47 706 121 840 76 L840 164 L0 164 Z', className: 'rh-threat-scene-land' }),
+            foodScene && h('g', null,
+              (profile.scene === 'watershed-foodweb' || profile.scene === 'coastal-nest') && h('path', { d: 'M0 118 C130 104 232 137 356 112 C495 84 625 133 840 101 L840 164 L0 164 Z', className: 'rh-threat-scene-water' }),
+              h('circle', { cx: 185, cy: 104, r: 18, className: 'rh-threat-scene-soft' }),
+              h('circle', { cx: 257, cy: 82, r: 13, className: 'rh-threat-scene-soft' }),
+              h('path', { d: 'M205 102 Q285 43 391 76 Q469 99 544 60', className: 'rh-threat-scene-accent', strokeDasharray: '8 7' }),
+              h('path', { d: 'M513 57 Q531 42 544 58 Q560 39 580 55', className: 'rh-threat-scene-bird' })
+            ),
+            structureScene && h('g', null,
+              h('rect', { x: 300, y: 32, width: 126, height: 116, rx: 4, className: 'rh-threat-scene-structure' }),
+              h('path', { d: 'M320 46 V135 M343 46 V135 M366 46 V135 M389 46 V135 M310 68 H414 M310 96 H414 M310 122 H414', className: 'rh-threat-scene-accent', opacity: .55 }),
+              profile.scene === 'night-skyline' && h('g', null, [318, 351, 384].map(function(x) { return h('circle', { key: x, cx: x, cy: 58, r: 4, fill: '#fef08a' }); })),
+              h('path', { d: 'M112 77 Q213 38 309 83', className: 'rh-threat-scene-accent', strokeDasharray: '8 7' }),
+              h('path', { d: 'M112 77 Q127 63 141 78 Q156 61 174 74', className: 'rh-threat-scene-bird' })
+            ),
+            profile.scene === 'roadside-corridor' && h('g', null,
+              h('path', { d: 'M250 164 L373 73 L515 73 L645 164 Z', fill: '#27272a', stroke: '#a1a1aa', strokeWidth: 2 }),
+              h('path', { d: 'M425 156 L433 120 M441 102 L449 77', stroke: '#fef08a', strokeWidth: 4, strokeDasharray: '12 10' }),
+              h('path', { d: 'M158 63 Q277 27 401 88', className: 'rh-threat-scene-accent', strokeDasharray: '8 7' }),
+              h('path', { d: 'M155 64 Q171 48 187 66 Q205 45 225 61', className: 'rh-threat-scene-bird' })
+            ),
+            profile.scene === 'wind-corridor' && h('g', null,
+              h('path', { d: 'M427 43 V155', className: 'rh-threat-scene-accent' }),
+              h('circle', { cx: 427, cy: 59, r: 7, fill: '#e2e8f0' }),
+              h('path', { d: 'M427 59 L427 14 M427 59 L470 82 M427 59 L389 88', className: 'rh-threat-scene-accent' }),
+              h('path', { d: 'M119 73 Q260 27 393 68', className: 'rh-threat-scene-accent', strokeDasharray: '8 7' }),
+              h('path', { d: 'M121 73 Q137 57 153 74 Q171 52 191 69', className: 'rh-threat-scene-bird' })
+            ),
+            profile.scene === 'power-pole' && h('g', null,
+              h('path', { d: 'M365 43 V157 M329 66 H401 M339 66 V84 M391 66 V84', className: 'rh-threat-scene-accent' }),
+              h('path', { d: 'M0 84 C140 62 248 91 339 75 M391 75 C514 48 663 87 840 55', fill: 'none', stroke: '#cbd5e1', strokeWidth: 2 }),
+              h('path', { d: 'M340 58 Q355 44 369 59 Q383 42 398 57', className: 'rh-threat-scene-bird' })
+            ),
+            habitatScene && h('g', null,
+              h('rect', { x: 76, y: 76, width: 172, height: 71, rx: 18, className: 'rh-threat-scene-soft' }),
+              h('rect', { x: 318, y: 45, width: 143, height: 92, rx: 18, className: 'rh-threat-scene-soft' }),
+              h('rect', { x: 557, y: 81, width: 197, height: 63, rx: 18, className: 'rh-threat-scene-soft' }),
+              h('path', { d: profile.scene === 'range-competition' ? 'M179 108 C278 31 414 32 522 105 C613 167 695 133 742 96' : 'M248 111 L318 91 M461 91 L557 112', className: 'rh-threat-scene-accent', strokeDasharray: profile.scene === 'fragmented-forest' ? '4 10' : '9 7' }),
+              profile.scene === 'warming-range' && h('circle', { cx: 698, cy: 40, r: 24, fill: '#fbbf24', opacity: .74 })
+            ),
+            nestScene && h('g', null,
+              h('ellipse', { cx: 424, cy: 111, rx: 86, ry: 26, fill: '#78350f', stroke: '#fbbf24', strokeWidth: 2 }),
+              h('path', { d: 'M342 104 L497 119 M354 87 L483 128 M376 82 L465 135 M337 121 L501 97', fill: 'none', stroke: '#d97706', strokeWidth: 4 }),
+              h('circle', { cx: 407, cy: 93, r: 11, fill: '#f8fafc' }),
+              h('circle', { cx: 438, cy: 94, r: 11, fill: '#f8fafc' }),
+              profile.scene === 'coastal-nest' && h('path', { d: 'M383 64 Q424 115 468 53', className: 'rh-threat-scene-accent', strokeDasharray: '5 4' })
+            ),
+            profile.scene === 'disease-transmission' && h('g', null, [185, 278, 383, 498, 611].map(function(x, i) {
+              var y = 66 + (i % 2) * 32;
+              return h('g', { key: x }, h('circle', { cx: x, cy: y, r: 17, className: 'rh-threat-scene-soft' }), h('path', { d: 'M' + (x - 24) + ' ' + y + ' H' + (x + 24) + ' M' + x + ' ' + (y - 24) + ' V' + (y + 24), className: 'rh-threat-scene-accent' }));
+            })),
+            profile.scene === 'agricultural-conflict' && h('g', null,
+              h('path', { d: 'M54 142 L245 78 L407 142 M447 142 L620 73 L793 142', className: 'rh-threat-scene-accent', opacity: .6 }),
+              h('path', { d: 'M295 51 V144 M265 82 H325', stroke: '#f8fafc', strokeWidth: 4 }),
+              h('circle', { cx: 295, cy: 40, r: 11, fill: '#f8fafc' }),
+              h('path', { d: 'M519 59 Q535 43 551 60 Q569 39 589 56', className: 'rh-threat-scene-bird' })
+            ),
+            h('text', { x: 18, y: 24, fill: profile.accent, fontSize: 11, fontWeight: 900, letterSpacing: 2 }, profile.code + ' / ' + profile.scene.toUpperCase().replace(/-/g, ' ')),
+            h('g', null, [0, 1, 2].map(function(i) {
+              var x1 = nodeXs[i] + 178;
+              var x2 = nodeXs[i + 1] - 7;
+              return h('g', { key: i }, h('path', { d: 'M' + x1 + ' 248 H' + x2, className: 'rh-threat-flow-shadow' }), h('path', { d: 'M' + x1 + ' 248 H' + x2, className: 'rh-threat-flow' }), h('path', { d: 'M' + (x2 - 8) + ' 241 L' + x2 + ' 248 L' + (x2 - 8) + ' 255 Z', className: 'rh-threat-arrow' }));
+            })),
+            h('g', null, steps.map(function(step, i) {
+              var x = nodeXs[i];
+              var active = lens === 'pathway' ? i < 2 : (lens === 'impact' ? i >= 2 : false);
+              var lines = wrapLabel(step.copy, 25);
+              return h('g', { key: step.id, className: 'rh-threat-node', 'data-threat-path-step': step.id, 'data-active': active ? 'true' : 'false' },
+                h('rect', { x: x, y: 188, width: 178, height: 122, rx: 15, className: 'rh-threat-node-bg' }),
+                h('rect', { x: x + 65, y: 199, width: 48, height: 21, rx: 9, className: 'rh-threat-node-code-bg' }),
+                h('text', { x: x + 89, y: 213, className: 'rh-threat-node-code' }, step.code),
+                h('text', { x: x + 89, y: 238, className: 'rh-threat-node-title' }, step.title),
+                h('text', { x: x + 89, y: 260, className: 'rh-threat-node-copy' }, lines.map(function(line, lineIdx) { return h('tspan', { key: lineIdx, x: x + 89, dy: lineIdx === 0 ? 0 : 13 }, line); }))
+              );
+            })),
+            h('g', null, profile.responseLayers.map(function(layer, i) {
+              var selected = !!plan[layer.id];
+              var x = gateXs[i];
+              return h('g', { key: layer.id, className: 'rh-threat-gate', 'data-selected': selected ? 'true' : 'false', 'data-threat-barrier': selected ? layer.id : undefined },
+                h('path', { d: 'M' + x + ' 220 V276', className: 'rh-threat-gate-line' }),
+                h('circle', { cx: x, cy: 327, r: 16, className: 'rh-threat-gate-bar' }),
+                h('text', { x: x, y: 330, className: 'rh-threat-gate-text' }, layer.code)
+              );
+            })),
+            h('text', { x: 420, y: 390, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 10, fontWeight: 800 }, lens === 'response' ? 'Selected green markers map chosen actions to pathway positions' : (lens === 'impact' ? 'Impact lens emphasizes the affected guild and outcome' : 'Pathway lens emphasizes where the threat begins and how exposure occurs')),
+            h('text', { x: 420, y: 410, textAnchor: 'middle', fill: '#94a3b8', fontSize: 9 }, 'Stable node positions support comparison across all 17 profiles')
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            THREATS_DB.threats.map(function(th, i) {
-              var sel = threatIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setThreatIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-rose-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-rose-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, th.threat.split(' ')[0] + ' ' + (th.threat.split(' ')[1] || ''));
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-rose-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-rose-300 tracking-tight' }, '⚠ ' + t.threat),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.affects', '🎯 Affects')),
-              h('div', { className: 'text-amber-100/90' }, t.affects)
-            ),
-            h('div', { className: 'bg-rose-900/20 border border-rose-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.scale', '📊 Scale')),
-              h('div', { className: 'text-rose-100/90' }, t.scale)
-            ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.mechanism', '🔬 Mechanism')),
-              h('div', { className: 'text-purple-100/90' }, t.mechanism)
-            ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.mitigation', '💡 Mitigation')),
-              h('div', { className: 'text-emerald-100/90' }, t.mitigation)
-            ),
-            h('div', { className: 'bg-cyan-900/20 border border-cyan-700/40 rounded p-2 text-xs' },
-              h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.how_you_can_help', '🤝 How You Can Help')),
-              h('div', { className: 'text-cyan-100/90' }, t.howHelp)
-            )
+          h('div', { className: 'rh-threat-stage-key', 'aria-hidden': 'true' },
+            h('span', null, h('i', null), 'conceptual flow'),
+            h('span', null, h('i', { 'data-key': 'gate' }), 'selected action')
           )
         );
       }
+
+      function renderThreats() {
+        var count = THREATS_DB.threats.length;
+        function safeIndex(value, length, fallback) {
+          var n = Number(value);
+          return isFinite(n) && Math.floor(n) === n && n >= 0 && n < length ? n : fallback;
+        }
+        var threatIdx = safeIndex(rh.threatIdx, count, 0);
+        var categoryIds = THREAT_CATEGORIES.map(function(item) { return item.id; });
+        var lensOptions = [
+          { id: 'pathway', code: 'FLOW', label: 'Pathway', copy: 'Trace where the pressure begins and how it reaches a raptor or prey web.' },
+          { id: 'impact', code: 'BIO', label: 'Impact', copy: 'Examine the affected guild, directness, time horizon, and reported context.' },
+          { id: 'response', code: 'ACT', label: 'Response', copy: 'Place prevention, exposure interruption, and recovery support across the chain.' }
+        ];
+        var lensIds = lensOptions.map(function(item) { return item.id; });
+        var category = categoryIds.indexOf(rh.threatCategory) >= 0 ? rh.threatCategory : 'all';
+        var lens = lensIds.indexOf(rh.threatLens) >= 0 ? rh.threatLens : 'pathway';
+        var search = typeof rh.threatSearch === 'string' ? rh.threatSearch.slice(0, 120) : '';
+        var query = search.trim().toLowerCase();
+        var compareFallback = (threatIdx + 1) % count;
+        var compareIdx = safeIndex(rh.threatCompareIdx, count, compareFallback);
+        if (compareIdx === threatIdx) compareIdx = compareFallback;
+        var threat = THREATS_DB.threats[threatIdx];
+        var profile = THREAT_VISUALS[threatIdx];
+        var compareThreat = THREATS_DB.threats[compareIdx];
+        var compareProfile = THREAT_VISUALS[compareIdx];
+        var rawPlans = rh.threatPlans && typeof rh.threatPlans === 'object' ? rh.threatPlans : {};
+        var rawPlan = rawPlans[profile.id] && typeof rawPlans[profile.id] === 'object' ? rawPlans[profile.id] : {};
+        var plan = {};
+        profile.responseLayers.forEach(function(layer) { if (rawPlan[layer.id] === true) plan[layer.id] = true; });
+        var planCount = Object.keys(plan).length;
+        var lensInfo = lensOptions.filter(function(item) { return item.id === lens; })[0];
+        var visibleEntries = THREAT_VISUALS.map(function(item, i) {
+          return { profile: item, threat: THREATS_DB.threats[i], index: i };
+        }).filter(function(entry) {
+          if (category !== 'all' && entry.profile.category !== category) return false;
+          if (!query) return true;
+          var haystack = [entry.threat.threat, entry.threat.affects, entry.threat.scale, entry.threat.mechanism, entry.threat.mitigation, entry.threat.howHelp, entry.profile.sourceLabel, entry.profile.pathwayLabel, entry.profile.outcomeLabel, entry.profile.affectedGuild, entry.profile.category].join(' ').toLowerCase();
+          return haystack.indexOf(query) >= 0;
+        });
+
+        function selectThreat(i) {
+          setRH({ threatIdx: i });
+          rhAnnounce(THREATS_DB.threats[i].threat + ' pathway selected');
+          if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+            window.setTimeout(function() {
+              var heading = document.getElementById('rh-threat-blueprint-title');
+              if (!heading) return;
+              heading.focus();
+              if (heading.scrollIntoView) heading.scrollIntoView({ behavior: 'auto', block: 'start', inline: 'nearest' });
+            }, 0);
+          }
+        }
+        function selectCategory(id) {
+          var match = THREAT_VISUALS.findIndex(function(item) { return item.category === id; });
+          var patch = { threatCategory: id };
+          if (id !== 'all' && profile.category !== id && match >= 0) patch.threatIdx = match;
+          setRH(patch);
+          rhAnnounce((id === 'all' ? 'All threats' : THREAT_CATEGORIES.filter(function(item) { return item.id === id; })[0].label) + ' shown');
+        }
+        function selectLens(id) {
+          setRH({ threatLens: id });
+          rhAnnounce(lensOptions.filter(function(item) { return item.id === id; })[0].label + ' evidence lens selected');
+        }
+        function toggleLayer(layerId) {
+          setRH(function(cur) {
+            var currentPlans = cur.threatPlans && typeof cur.threatPlans === 'object' ? cur.threatPlans : {};
+            var nextPlans = {};
+            THREAT_VISUALS.forEach(function(knownProfile) {
+              var stored = currentPlans[knownProfile.id];
+              if (!stored || typeof stored !== 'object') return;
+              var normalized = {};
+              knownProfile.responseLayers.forEach(function(layer) { if (stored[layer.id] === true) normalized[layer.id] = true; });
+              if (Object.keys(normalized).length) nextPlans[knownProfile.id] = normalized;
+            });
+            var nextPlan = Object.assign({}, nextPlans[profile.id] || {});
+            if (nextPlan[layerId]) delete nextPlan[layerId];
+            else nextPlan[layerId] = true;
+            if (Object.keys(nextPlan).length) nextPlans[profile.id] = nextPlan;
+            else delete nextPlans[profile.id];
+            return Object.assign({}, cur, { threatPlans: nextPlans });
+          });
+          rhAnnounce((plan[layerId] ? 'Removed ' : 'Added ') + layerId + ' response layer');
+        }
+        function clearDiscovery() {
+          setRH({ threatSearch: '', threatCategory: 'all' });
+          rhAnnounce('Threat search and filters cleared');
+        }
+        var selectedOutside = !visibleEntries.some(function(entry) { return entry.index === threatIdx; });
+
+        return h('div', {
+          className: 'rh-threat-lab',
+          'data-raptor-threat-lab': 'true',
+          'data-threat-id': profile.id,
+          'data-threat-category': category,
+          'data-threat-lens': lens,
+          'data-threat-plan': planCount + '-of-3',
+          style: { '--rh-threat-accent': profile.accent }
+        },
+          h('section', { className: 'rh-threat-hero', 'aria-labelledby': 'rh-threat-title' },
+            h('div', { className: 'rh-threat-hero-main' },
+              h('div', { className: 'rh-threat-hero-icon', 'aria-hidden': 'true' }, 'TRACE\n17'),
+              h('div', null,
+                h('div', { className: 'rh-threat-kicker' }, 'Conservation systems / pathway reasoning'),
+                h('h2', { className: 'rh-threat-title', id: 'rh-threat-title' }, 'Threat Systems Lab'),
+                h('p', { className: 'rh-threat-copy' }, THREATS_DB.intro)
+              )
+            ),
+            h('div', { className: 'rh-threat-summary', 'aria-label': 'Threat lab summary' },
+              h('div', { className: 'rh-threat-stat' }, h('strong', null, '17'), h('span', null, 'threat pathways')),
+              h('div', { className: 'rh-threat-stat' }, h('strong', null, '5'), h('span', null, 'systems')),
+              h('div', { className: 'rh-threat-stat' }, h('strong', null, visibleEntries.length), h('span', null, 'matching records')),
+              h('div', { className: 'rh-threat-stat' }, h('strong', null, planCount + '/3'), h('span', null, 'actions selected'))
+            )
+          ),
+          h('section', { className: 'rh-threat-controls', 'aria-label': 'Threat discovery and evidence controls' },
+            h('div', { className: 'rh-threat-control-row' },
+              h('div', { className: 'rh-threat-control-label' }, 'Threat system'),
+              h('div', { className: 'rh-threat-chip-row' }, THREAT_CATEGORIES.map(function(item) {
+                return h('button', { key: item.id, type: 'button', className: 'rh-threat-chip', onClick: function() { selectCategory(item.id); }, 'aria-pressed': category === item.id, 'data-threat-category-control': item.id }, h('span', { className: 'rh-threat-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-threat-control-row' },
+              h('div', { className: 'rh-threat-control-label' }, 'Evidence lens'),
+              h('div', { className: 'rh-threat-chip-row' }, lensOptions.map(function(item) {
+                return h('button', { key: item.id, type: 'button', className: 'rh-threat-chip', onClick: function() { selectLens(item.id); }, 'aria-pressed': lens === item.id, 'data-threat-lens-control': item.id }, h('span', { className: 'rh-threat-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-threat-control-row' },
+              h('label', { className: 'rh-threat-control-label', htmlFor: 'rh-threat-search' }, 'Search evidence'),
+              h('div', { className: 'rh-threat-search' },
+                h('input', { id: 'rh-threat-search', type: 'search', value: search, maxLength: 120, placeholder: 'Search threats, species, mechanisms, or actions', onChange: function(event) { setRH({ threatSearch: event.target.value }); }, 'data-threat-search': 'true' }),
+                (query || category !== 'all') && h('button', { type: 'button', onClick: clearDiscovery }, 'Clear filters'),
+                h('div', { className: 'rh-threat-result-count', role: 'status', 'aria-live': 'polite' }, visibleEntries.length + ' of ' + count + ' records')
+              )
+            )
+          ),
+          h('div', { className: 'rh-threat-workbench' },
+            h('section', { className: 'rh-threat-blueprint', 'aria-labelledby': 'rh-threat-blueprint-title' },
+              h('div', { className: 'rh-threat-panel-head' },
+                h('div', null, h('div', { className: 'rh-threat-section-kicker' }, profile.code + ' / ' + profile.category), h('h3', { id: 'rh-threat-blueprint-title', tabIndex: -1, 'data-threat-blueprint-heading': 'true' }, 'Source → exposure → guild → outcome')),
+                h('div', { className: 'rh-threat-lens-chip' }, lensInfo.code + ' · ' + lensInfo.label)
+              ),
+              renderThreatPathway(profile, threat, plan, lens),
+              h('div', { className: 'rh-threat-stage-note' }, lensInfo.copy + ' This is a qualitative evidence-informed model, not a forecast of population decline.')
+            ),
+            h('aside', { className: 'rh-threat-dossier', 'aria-labelledby': 'rh-threat-dossier-title' },
+              h('div', { className: 'rh-threat-dossier-head' },
+                h('div', null, h('div', { className: 'rh-threat-detail-kicker' }, profile.category + ' / ' + profile.directness), h('h3', { id: 'rh-threat-dossier-title' }, threat.threat)),
+                h('div', { className: 'rh-threat-code' }, profile.code)
+              ),
+              h('div', { className: 'rh-threat-meta-row' },
+                h('span', { className: 'rh-threat-meta' }, profile.horizon),
+                h('span', { className: 'rh-threat-meta' }, profile.affectedGuild)
+              ),
+              lens === 'pathway' && h('div', { className: 'rh-threat-reading' }, h('span', null, 'Mechanism'), h('p', null, threat.mechanism)),
+              lens === 'impact' && h('div', { className: 'rh-threat-reading', 'data-tone': 'impact' }, h('span', null, 'Affected guild + reported context'), h('p', null, threat.affects + ' · ' + threat.scale)),
+              lens === 'response' && h('div', { className: 'rh-threat-reading', 'data-tone': 'response' }, h('span', null, 'Existing mitigation'), h('p', null, threat.mitigation)),
+              h('div', { className: 'rh-threat-reading' }, h('span', null, lens === 'response' ? 'Safe individual role' : 'Pathway reading'), h('p', null, lens === 'response' ? threat.howHelp : profile.sourceLabel + ' → ' + profile.pathwayLabel + ' → ' + profile.outcomeLabel)),
+              h('div', { className: 'rh-threat-plan' },
+                h('div', { className: 'rh-threat-plan-head' }, h('span', null, 'Actions selected'), h('strong', null, planCount + ' of 3')),
+                h('div', { className: 'rh-threat-plan-track', role: 'meter', 'aria-label': 'Selected actions in this learning plan', 'aria-valuemin': 0, 'aria-valuemax': 3, 'aria-valuenow': planCount }, h('span', { style: { width: (planCount / 3 * 100) + '%' } })),
+                h('p', { className: 'rh-threat-plan-note' }, 'Selection does not estimate effectiveness or risk reduction.'),
+                h('div', { className: 'rh-threat-interventions' }, profile.responseLayers.map(function(layer) {
+                  return h('button', { key: layer.id, type: 'button', className: 'rh-threat-intervention', onClick: function() { toggleLayer(layer.id); }, 'aria-pressed': !!plan[layer.id], 'data-threat-intervention-control': layer.id },
+                    h('span', { className: 'rh-threat-intervention-code' }, layer.code),
+                    h('span', { className: 'rh-threat-intervention-copy' }, h('strong', null, layer.label), h('span', null, (layer.id === 'recover' ? 'RESPONSE' : layer.id.toUpperCase()) + ' · ' + layer.owner))
+                  );
+                }))
+              )
+            )
+          ),
+          h('section', { className: 'rh-threat-comparison', 'data-threat-comparison': 'true', 'aria-labelledby': 'rh-threat-compare-title' },
+            h('div', { className: 'rh-threat-section-head' },
+              h('div', null, h('div', { className: 'rh-threat-section-kicker' }, 'Paired pathway reading'), h('h3', { id: 'rh-threat-compare-title' }, 'Compare without inventing a danger score')),
+              h('span', null, profile.code + ' ↔ ' + compareProfile.code)
+            ),
+            h('div', { className: 'rh-threat-compare-select' },
+              h('select', { value: compareIdx, onChange: function(event) { var i = Number(event.target.value); setRH({ threatCompareIdx: i }); rhAnnounce('Comparison changed to ' + THREATS_DB.threats[i].threat); }, 'aria-label': 'Comparison threat' }, THREATS_DB.threats.map(function(item, i) { return i === threatIdx ? null : h('option', { key: THREAT_VISUALS[i].id, value: i }, item.threat); })),
+              h('div', { className: 'rh-threat-compare-badge' }, profile.category === compareProfile.category ? 'Shared system' : 'Cross-system pair')
+            ),
+            h('div', { className: 'rh-threat-compare-grid' },
+              h('div', { className: 'rh-threat-compare-cell' }, h('span', null, 'Pathway type'), h('strong', null, profile.code + ' · ' + profile.directness), h('strong', null, compareProfile.code + ' · ' + compareProfile.directness)),
+              h('div', { className: 'rh-threat-compare-cell' }, h('span', null, 'Time horizon'), h('strong', null, profile.code + ' · ' + profile.horizon), h('strong', null, compareProfile.code + ' · ' + compareProfile.horizon)),
+              h('div', { className: 'rh-threat-compare-cell' }, h('span', null, 'Affected guild'), h('strong', null, profile.code + ' · ' + profile.affectedGuild), h('strong', null, compareProfile.code + ' · ' + compareProfile.affectedGuild)),
+              h('div', { className: 'rh-threat-compare-cell' }, h('span', null, 'Upstream actor'), h('strong', null, profile.code + ' · ' + profile.responseLayers[0].owner), h('strong', null, compareProfile.code + ' · ' + compareProfile.responseLayers[0].owner))
+            ),
+            h('p', { className: 'rh-threat-compare-note' }, profile.category === compareProfile.category ? 'These pressures share a system category, but their exposure routes and responsible actors may still differ.' : 'This cross-system pair shows why conservation plans often need several kinds of expertise and authority.')
+          ),
+          h('section', { className: 'rh-threat-directory', 'aria-labelledby': 'rh-threat-directory-title' },
+            h('div', { className: 'rh-threat-section-head' },
+              h('div', null, h('div', { className: 'rh-threat-section-kicker' }, 'Threat directory'), h('h3', { id: 'rh-threat-directory-title' }, visibleEntries.length ? visibleEntries.length + ' pathways in view' : 'No matching pathways')),
+              h('span', null, selectedOutside ? 'Selected dossier retained' : 'Selection in view')
+            ),
+            visibleEntries.length ? h('div', { className: 'rh-threat-directory-grid' }, visibleEntries.map(function(entry) {
+              return h('button', { key: entry.profile.id, type: 'button', className: 'rh-threat-card', style: { '--rh-threat-accent': entry.profile.accent }, onClick: function() { selectThreat(entry.index); }, 'aria-pressed': entry.index === threatIdx, 'data-active': entry.index === threatIdx ? 'true' : 'false', 'data-threat-card': entry.profile.id },
+                h('span', { className: 'rh-threat-card-code' }, entry.profile.code),
+                h('span', { className: 'rh-threat-card-copy' }, h('strong', null, entry.threat.threat), h('span', null, entry.profile.pathwayLabel)),
+                h('span', { className: 'rh-threat-card-tag' }, entry.profile.category)
+              );
+            })) : h('div', { className: 'rh-threat-empty' },
+              h('strong', null, 'No threats match this search'),
+              h('p', null, 'Try a species, mechanism, action, or broader system.'),
+              h('button', { type: 'button', onClick: clearDiscovery }, 'Clear search and show all threats')
+            )
+          ),
+          h('div', { className: 'rh-threat-note' },
+            h('strong', null, 'Evidence boundary: '),
+            'The reported-scale statements mix locations, years, exposure measures, mortality estimates, and qualitative descriptions. This lab preserves them as context but does not rank them on one severity scale. Selecting actions visualizes plan composition; it does not estimate effectiveness or risk reduction. Verify current agency guidance before acting, and never handle sick wildlife, disturb nests, or confront suspected illegal activity.'
+          )
+        );
+      }
+
 
       // ────────────────────────────────────────────────────────
       // RENDER: EXPERT SPOTLIGHTS (v0.42)
       // ────────────────────────────────────────────────────────
       function renderExperts() {
-        var expertIdx = rh.expertIdx == null ? 0 : rh.expertIdx;
-        function setExpertIdx(i) { setRH({ expertIdx: i }); }
-        var e = EXPERT_SPOTLIGHTS.experts[expertIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-violet-900/40 to-purple-900/40 border border-violet-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🧑‍🔬'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-violet-200 tracking-tight' }, __alloT('stem.raptorhunt.expert_spotlights_2', 'Expert Spotlights')),
-                h('div', { className: 'text-sm text-violet-100/85 mt-1' }, EXPERT_SPOTLIGHTS.intro)
+        var profiles = EXPERT_VISUALS;
+        var profileCount = profiles.length;
+        var rawExpertIdx = rh.expertIdx == null ? 0 : Number(rh.expertIdx);
+        var expertIdx = isFinite(rawExpertIdx) ? Math.floor(rawExpertIdx) : 0;
+        expertIdx = Math.max(0, Math.min(profileCount - 1, expertIdx));
+        var profile = profiles[expertIdx] || profiles[0];
+        var expert = EXPERT_SPOTLIGHTS.experts[profile.expertIndex] || EXPERT_SPOTLIGHTS.experts[0];
+
+        var fieldIds = EXPERT_FIELDS.map(function(field) { return field.id; });
+        var expertField = fieldIds.indexOf(rh.expertField) >= 0 ? rh.expertField : 'all';
+        var lensIds = ['story', 'method', 'legacy'];
+        var expertLens = lensIds.indexOf(rh.expertLens) >= 0 ? rh.expertLens : 'story';
+
+        function profileIndexById(id) {
+          for (var i = 0; i < profiles.length; i += 1) {
+            if (profiles[i].id === id) return i;
+          }
+          return -1;
+        }
+
+        var compareIdx = profileIndexById(rh.expertCompareId);
+        if (compareIdx < 0 || compareIdx === expertIdx) compareIdx = (expertIdx + 1) % profileCount;
+        var compareProfile = profiles[compareIdx];
+        var compareExpert = EXPERT_SPOTLIGHTS.experts[compareProfile.expertIndex];
+        var filteredProfiles = expertField === 'all' ? profiles : profiles.filter(function(item) { return item.discipline === expertField; });
+
+        var distractors = [profiles[(expertIdx + 4) % profileCount], profiles[(expertIdx + 8) % profileCount]];
+        var correctSlot = expertIdx % 3;
+        var challengeOptions = [];
+        var distractorCursor = 0;
+        for (var optionIdx = 0; optionIdx < 3; optionIdx += 1) {
+          challengeOptions.push(optionIdx === correctSlot ? profile : distractors[distractorCursor++]);
+        }
+        var challengeIds = challengeOptions.map(function(item) { return item.id; });
+        var guessId = challengeIds.indexOf(rh.expertGuessId) >= 0 ? rh.expertGuessId : null;
+        var challengeResult = guessId == null ? 'unanswered' : (guessId === profile.id ? 'correct' : 'incorrect');
+
+        function selectProfile(id) {
+          var nextIdx = profileIndexById(id);
+          if (nextIdx >= 0) setRH({ expertIdx: nextIdx, expertGuessId: null });
+        }
+
+        function renderExpertScene(item) {
+          var bird = function(x, y, scale, key) {
+            return h('path', { key: key, className: 'rh-expert-svg-bird', transform: 'translate(' + x + ' ' + y + ') scale(' + scale + ')', d: 'M-24 5 Q-10 -10 0 2 Q10 -10 24 5 M0 2 L0 18' });
+          };
+          if (item.scene === 'field-guide') {
+            return [
+              h('rect', { key: 'p1', x: 142, y: 74, width: 205, height: 244, rx: 8, className: 'rh-expert-svg-panel' }),
+              h('rect', { key: 'p2', x: 373, y: 74, width: 205, height: 244, rx: 8, className: 'rh-expert-svg-panel' }),
+              h('path', { key: 'spine', d: 'M360 72 V322', className: 'rh-expert-svg-accent' }),
+              bird(245, 175, 2.4, 'b1'), bird(475, 174, 2.15, 'b2'),
+              h('path', { key: 'a1', d: 'M205 248 L245 210 M205 248 L222 246', className: 'rh-expert-svg-accent' }),
+              h('path', { key: 'a2', d: 'M515 245 L482 212 M515 245 L499 242', className: 'rh-expert-svg-accent' }),
+              h('text', { key: 'l1', x: 178, y: 286, className: 'rh-expert-svg-small' }, 'FIELD MARKS'),
+              h('text', { key: 'l2', x: 410, y: 286, className: 'rh-expert-svg-small' }, 'COMPARE SHAPE')
+            ];
+          }
+          if (item.scene === 'contaminant-food-web') {
+            var nodes = [{ x: 105, y: 250, label: 'APPLICATION' }, { x: 265, y: 218, label: 'INVERTEBRATE' }, { x: 425, y: 165, label: 'PREY' }, { x: 590, y: 112, label: 'RAPTOR' }];
+            return nodes.map(function(node, i) {
+              return h('g', { key: node.label },
+                i < nodes.length - 1 ? h('path', { d: 'M' + (node.x + 38) + ' ' + (node.y - 10) + ' L' + (nodes[i + 1].x - 38) + ' ' + (nodes[i + 1].y - 10), className: 'rh-expert-svg-path' }) : null,
+                h('circle', { cx: node.x, cy: node.y, r: 34, className: i === nodes.length - 1 ? 'rh-expert-svg-soft' : 'rh-expert-svg-panel' }),
+                h('text', { x: node.x, y: node.y + 58, textAnchor: 'middle', className: 'rh-expert-svg-small' }, node.label),
+                i === nodes.length - 1 ? bird(node.x, node.y - 8, .92, 'bird') : h('circle', { cx: node.x, cy: node.y, r: 7 + i * 2, className: 'rh-expert-svg-mark' })
+              );
+            });
+          }
+          if (item.scene === 'ridge-sanctuary') {
+            return [
+              h('path', { key: 'ridge', d: 'M35 315 L150 205 L232 266 L340 125 L454 248 L560 170 L685 315 Z', className: 'rh-expert-svg-panel' }),
+              h('path', { key: 'trail', d: 'M95 310 Q250 255 345 214 T610 180', className: 'rh-expert-svg-path' }),
+              h('rect', { key: 'post', x: 512, y: 203, width: 18, height: 83, className: 'rh-expert-svg-soft' }),
+              h('rect', { key: 'sign', x: 480, y: 188, width: 82, height: 42, rx: 5, className: 'rh-expert-svg-panel' }),
+              h('text', { key: 'signtext', x: 521, y: 213, textAnchor: 'middle', className: 'rh-expert-svg-small' }, 'COUNT'),
+              bird(200, 130, .85, 'b1'), bird(300, 92, .72, 'b2'), bird(420, 128, .64, 'b3')
+            ];
+          }
+          if (item.scene === 'hack-box-release') {
+            return [
+              h('rect', { key: 'box', x: 155, y: 155, width: 245, height: 145, rx: 8, className: 'rh-expert-svg-panel' }),
+              h('path', { key: 'roof', d: 'M135 155 L275 92 L420 155', className: 'rh-expert-svg-ink' }),
+              h('path', { key: 'slots', d: 'M190 190 H365 M190 218 H365 M190 246 H365', className: 'rh-expert-svg-thin' }),
+              h('path', { key: 'release', d: 'M405 198 C470 160 505 95 605 92', className: 'rh-expert-svg-path' }),
+              bird(585, 84, 1.25, 'bird'),
+              h('text', { key: 'support', x: 278, y: 330, textAnchor: 'middle', className: 'rh-expert-svg-small' }, 'ACCLIMATE  →  RELEASE  →  MONITOR')
+            ];
+          }
+          if (item.scene === 'recovery-field-program') {
+            return [
+              h('path', { key: 'axes', d: 'M110 305 V90 M110 305 H625', className: 'rh-expert-svg-thin' }),
+              h('path', { key: 'curve', d: 'M128 278 C215 275 246 238 292 236 S388 178 430 182 S525 112 605 104', className: 'rh-expert-svg-path' }),
+              [150, 286, 426, 590].map(function(x, i) { return h('g', { key: x }, h('circle', { cx: x, cy: [277, 237, 182, 106][i], r: 13, className: 'rh-expert-svg-mark' }), h('text', { x: x, y: 334, textAnchor: 'middle', className: 'rh-expert-svg-small' }, ['NEST', 'BREED', 'RELEASE', 'ADAPT'][i])); }),
+              h('path', { key: 'loop', d: 'M580 150 C650 205 630 285 540 280', className: 'rh-expert-svg-accent' }),
+              h('text', { key: 'feedback', x: 548, y: 298, className: 'rh-expert-svg-small' }, 'FEEDBACK')
+            ];
+          }
+          if (item.scene === 'acoustic-localization') {
+            return [
+              h('circle', { key: 'head', cx: 500, cy: 195, r: 102, className: 'rh-expert-svg-panel' }),
+              h('path', { key: 'face', d: 'M420 135 Q500 82 580 135 Q600 220 500 286 Q400 220 420 135 Z', className: 'rh-expert-svg-ink' }),
+              h('circle', { key: 'eye1', cx: 462, cy: 175, r: 19, className: 'rh-expert-svg-soft' }),
+              h('circle', { key: 'eye2', cx: 538, cy: 175, r: 19, className: 'rh-expert-svg-soft' }),
+              h('path', { key: 'beak', d: 'M487 208 L500 240 L513 208', className: 'rh-expert-svg-accent' }),
+              h('circle', { key: 'prey', cx: 112, cy: 252, r: 14, className: 'rh-expert-svg-mark' }),
+              h('path', { key: 'wave1', d: 'M142 252 Q235 155 420 172', className: 'rh-expert-svg-path' }),
+              h('path', { key: 'wave2', d: 'M142 265 Q250 310 424 220', className: 'rh-expert-svg-accent' }),
+              h('text', { key: 'dark', x: 90, y: 298, className: 'rh-expert-svg-small' }, 'NO LIGHT')
+            ];
+          }
+          if (item.scene === 'ethnographic-notebook') {
+            return [
+              h('rect', { key: 'left', x: 125, y: 70, width: 226, height: 260, rx: 8, className: 'rh-expert-svg-panel' }),
+              h('rect', { key: 'right', x: 369, y: 70, width: 226, height: 260, rx: 8, className: 'rh-expert-svg-panel' }),
+              h('path', { key: 'spine', d: 'M360 68 V334', className: 'rh-expert-svg-accent' }),
+              h('path', { key: 'land', d: 'M150 255 L218 158 L276 230 L326 182 V285 H150 Z', className: 'rh-expert-svg-soft' }),
+              bird(247, 132, 1.12, 'bird'),
+              h('path', { key: 'notes', d: 'M402 122 H558 M402 155 H540 M402 188 H565 M402 221 H525 M402 254 H550', className: 'rh-expert-svg-thin' }),
+              h('text', { key: 'observe', x: 166, y: 305, className: 'rh-expert-svg-small' }, 'OBSERVE PLACE'),
+              h('text', { key: 'context', x: 405, y: 305, className: 'rh-expert-svg-small' }, 'RECORD CONTEXT')
+            ];
+          }
+          if (item.scene === 'spiral-pursuit') {
+            return [
+              h('circle', { key: 'target', cx: 555, cy: 205, r: 21, className: 'rh-expert-svg-soft' }),
+              h('path', { key: 'spiral', d: 'M112 310 C160 108 446 50 590 138 C675 190 604 306 502 305 C420 304 386 234 425 190 C458 153 521 166 547 198', className: 'rh-expert-svg-path' }),
+              h('path', { key: 'sight', d: 'M430 190 L555 205', className: 'rh-expert-svg-accent' }),
+              bird(420, 184, 1.05, 'bird'),
+              h('text', { key: 'angle', x: 448, y: 224, className: 'rh-expert-svg-small' }, 'VISUAL ANGLE'),
+              h('text', { key: 'route', x: 112, y: 338, className: 'rh-expert-svg-small' }, 'MEASURED PATH  +  GEOMETRIC MODEL')
+            ];
+          }
+          if (item.scene === 'release-operations') {
+            var sites = [{ x: 145, y: 245, label: 'SITE A' }, { x: 350, y: 160, label: 'SITE B' }, { x: 565, y: 245, label: 'SITE C' }];
+            return sites.map(function(site, i) {
+              return h('g', { key: site.label },
+                i < sites.length - 1 ? h('path', { d: 'M' + (site.x + 55) + ' ' + (site.y - 30) + ' L' + (sites[i + 1].x - 55) + ' ' + (sites[i + 1].y - 30), className: 'rh-expert-svg-path' }) : null,
+                h('rect', { x: site.x - 48, y: site.y - 70, width: 96, height: 75, rx: 7, className: 'rh-expert-svg-panel' }),
+                h('path', { d: 'M' + (site.x - 58) + ' ' + (site.y - 70) + ' L' + site.x + ' ' + (site.y - 105) + ' L' + (site.x + 58) + ' ' + (site.y - 70), className: 'rh-expert-svg-ink' }),
+                h('text', { x: site.x, y: site.y + 35, textAnchor: 'middle', className: 'rh-expert-svg-small' }, site.label),
+                bird(site.x, site.y - 130, .62, 'bird')
+              );
+            });
+          }
+          if (item.scene === 'telemetry-study-area') {
+            return [
+              h('path', { key: 'map1', d: 'M90 112 Q180 55 270 118 T455 105 T630 130', className: 'rh-expert-svg-thin' }),
+              h('path', { key: 'map2', d: 'M82 262 Q180 205 282 270 T480 255 T638 278', className: 'rh-expert-svg-thin' }),
+              h('path', { key: 'route', d: 'M122 268 C190 225 230 115 330 145 S472 302 594 132', className: 'rh-expert-svg-path' }),
+              [122, 330, 594].map(function(x, i) { var y = [268, 145, 132][i]; return h('g', { key: x }, h('circle', { cx: x, cy: y, r: 14, className: 'rh-expert-svg-mark' }), h('circle', { cx: x, cy: y, r: 30, className: 'rh-expert-svg-accent' })); }),
+              h('path', { key: 'tower', d: 'M340 282 L368 184 L396 282 M354 236 H382 M348 258 H389', className: 'rh-expert-svg-ink' }),
+              h('path', { key: 'signal', d: 'M368 184 Q410 200 424 237 M368 184 Q326 200 312 237', className: 'rh-expert-svg-accent' }),
+              h('text', { key: 'study', x: 98, y: 328, className: 'rh-expert-svg-small' }, 'REPEAT SURVEYS  ·  TELEMETRY  ·  NEST RECORDS')
+            ];
+          }
+          if (item.scene === 'migration-count') {
+            return [
+              h('path', { key: 'ridge', d: 'M30 305 L130 228 L225 278 L345 150 L455 266 L555 188 L690 305 Z', className: 'rh-expert-svg-panel' }),
+              h('rect', { key: 'station', x: 505, y: 180, width: 94, height: 104, rx: 7, className: 'rh-expert-svg-soft' }),
+              h('path', { key: 'ticks', d: 'M525 208 H548 M525 226 H548 M525 244 H548 M560 208 H583 M560 226 H583 M560 244 H583', className: 'rh-expert-svg-ink' }),
+              bird(155, 135, .84, 'b1'), bird(250, 95, .72, 'b2'), bird(352, 118, .62, 'b3'), bird(438, 82, .52, 'b4'),
+              h('path', { key: 'flow', d: 'M120 175 Q320 45 505 122', className: 'rh-expert-svg-path' }),
+              h('text', { key: 'effort', x: 88, y: 334, className: 'rh-expert-svg-small' }, 'COUNT  +  WEATHER  +  EFFORT  +  TRAINING')
+            ];
+          }
+          return [
+            [155, 290, 425, 560].map(function(x, i) {
+              return h('g', { key: x },
+                h('rect', { x: x - 56, y: 112, width: 112, height: 160, rx: 7, className: 'rh-expert-svg-panel' }),
+                bird(x, 178, [1.3, 1.05, .88, 1.18][i], 'bird'),
+                h('text', { x: x, y: 246, textAnchor: 'middle', className: 'rh-expert-svg-small' }, 'VIEW ' + String.fromCharCode(65 + i))
+              );
+            }),
+            h('path', { key: 'baseline', d: 'M92 302 H625', className: 'rh-expert-svg-accent' }),
+            h('text', { key: 'compare', x: 360, y: 330, textAnchor: 'middle', className: 'rh-expert-svg-small' }, 'SAME SCALE  ·  REPEATED POSE  ·  DIRECT COMPARISON')
+          ];
+        }
+
+        function renderMethodPlate(item) {
+          var titleId = 'rh-expert-plate-title-' + item.id;
+          var descId = 'rh-expert-plate-desc-' + item.id;
+          var steps = [
+            { id: 'question', label: '01 · Question', copy: item.question },
+            { id: 'method', label: '02 · Method', copy: item.method },
+            { id: 'finding', label: '03 · Finding', copy: item.finding },
+            { id: 'impact', label: '04 · Impact', copy: item.impact }
+          ];
+          var activeStep = expertLens === 'story' ? 'question' : (expertLens === 'method' ? 'method' : 'impact');
+          return h('div', { className: 'rh-expert-blueprint' },
+            h('div', { className: 'rh-expert-panel-head' },
+              h('div', null,
+                h('div', { className: 'rh-expert-section-kicker' }, 'Scientific artifact plate'),
+                h('h3', null, item.artifact)
+              ),
+              h('div', { className: 'rh-expert-artifact-chip' }, item.code + ' · ' + item.milestoneYear)
+            ),
+            h('div', { className: 'rh-expert-stage', tabIndex: 0, 'aria-label': item.artifact + '. ' + item.method },
+              h('svg', { viewBox: '0 0 720 400', role: 'img', 'aria-labelledby': titleId + ' ' + descId, 'data-expert-method-plate': item.scene, 'data-expert-scene': item.scene },
+                h('title', { id: titleId }, item.artifact + ' for ' + expert.name),
+                h('desc', { id: descId }, item.method + ' Finding: ' + item.finding),
+                h('defs', null,
+                  h('pattern', { id: 'rh-expert-grid', width: 28, height: 28, patternUnits: 'userSpaceOnUse' },
+                    h('path', { d: 'M28 0 H0 V28', fill: 'none', stroke: '#c4b5fd', strokeOpacity: '.08', strokeWidth: '1' })
+                  ),
+                  h('marker', { id: 'rh-expert-arrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                    h('path', { d: 'M0 0 L10 5 L0 10 Z', fill: '#67e8f9' })
+                  )
+                ),
+                h('rect', { x: 0, y: 0, width: 720, height: 400, className: 'rh-expert-svg-bg' }),
+                h('rect', { x: 0, y: 0, width: 720, height: 400, className: 'rh-expert-svg-grid' }),
+                h('text', { x: 25, y: 32, className: 'rh-expert-svg-accent-label' }, item.code + ' / ' + item.milestoneYear),
+                h('text', { x: 25, y: 53, className: 'rh-expert-svg-small' }, item.artifact.toUpperCase()),
+                h('g', { className: 'rh-expert-artifact-scene', 'data-expert-scene-layer': item.scene }, renderExpertScene(item))
+              ),
+              h('div', { className: 'rh-expert-plate-key' }, 'MODEL · NOT TO SCALE')
+            ),
+            h('div', { className: 'rh-expert-method-steps', 'aria-label': 'Question, method, finding, and impact' },
+              steps.map(function(step) {
+                return h('div', { key: step.id, className: 'rh-expert-method-step', 'data-expert-method-step': step.id, 'data-active': step.id === activeStep ? 'true' : 'false' },
+                  h('span', null, step.label),
+                  h('p', null, step.copy)
+                );
+              })
+            )
+          );
+        }
+
+        var lensReading = expertLens === 'method'
+          ? { label: 'Evidence strategy', lead: profile.method, support: profile.finding }
+          : (expertLens === 'legacy'
+            ? { label: 'What persisted', lead: profile.impact, support: expert.legacy }
+            : { label: 'Origin question', lead: profile.question, support: expert.contribution });
+
+        return h('div', {
+          className: 'rh-expert-lineage-lab',
+          'data-raptor-expert-lineage-lab': 'true',
+          'data-expert-profile': profile.id,
+          'data-expert-field': expertField,
+          'data-expert-lens': expertLens
+        },
+          h('section', { className: 'rh-expert-hero', 'aria-labelledby': 'rh-expert-title' },
+            h('div', { className: 'rh-expert-hero-main' },
+              h('div', { className: 'rh-expert-hero-mark', 'aria-hidden': 'true' }, 'Q → M\nF → I'),
+              h('div', null,
+                h('div', { className: 'rh-expert-kicker' }, 'Raptor science lineage lab'),
+                h('h2', { className: 'rh-expert-title', id: 'rh-expert-title' }, 'Ideas leave evidence trails'),
+                h('p', { className: 'rh-expert-copy' }, EXPERT_SPOTLIGHTS.intro)
+              )
+            ),
+            h('div', { className: 'rh-expert-summary', 'aria-label': 'Lab scope' },
+              h('div', { className: 'rh-expert-stat' }, h('strong', null, '12'), h('span', null, 'profiles')),
+              h('div', { className: 'rh-expert-stat' }, h('strong', null, '6'), h('span', null, 'disciplines')),
+              h('div', { className: 'rh-expert-stat' }, h('strong', null, '3'), h('span', null, 'reading lenses'))
+            )
+          ),
+
+          h('section', { className: 'rh-expert-controls', 'aria-label': 'Expert lab controls' },
+            h('div', { className: 'rh-expert-control-row' },
+              h('div', { className: 'rh-expert-control-label' }, 'Filter directory'),
+              h('div', { className: 'rh-expert-chip-row' },
+                EXPERT_FIELDS.map(function(field) {
+                  var selected = expertField === field.id;
+                  return h('button', {
+                    type: 'button', key: field.id, className: 'rh-expert-chip',
+                    'data-expert-field-filter': field.id, 'data-expert-field-count': field.count,
+                    'aria-pressed': selected,
+                    onClick: function() { setRH({ expertField: field.id }); }
+                  }, h('span', { className: 'rh-expert-chip-code' }, field.code), field.label + ' · ' + field.count);
+                }),
+                h('div', { className: 'rh-expert-result-count', role: 'status', 'aria-live': 'polite' }, filteredProfiles.length + ' of ' + profileCount + ' profiles')
+              )
+            ),
+            h('div', { className: 'rh-expert-control-row' },
+              h('div', { className: 'rh-expert-control-label' }, 'Reading lens'),
+              h('div', { className: 'rh-expert-chip-row' },
+                [
+                  { id: 'story', code: 'Q', label: 'Question + context' },
+                  { id: 'method', code: 'M', label: 'Method + finding' },
+                  { id: 'legacy', code: 'I', label: 'Impact + limits' }
+                ].map(function(lens) {
+                  return h('button', {
+                    type: 'button', key: lens.id, className: 'rh-expert-chip',
+                    'data-expert-lens-control': lens.id, 'aria-pressed': expertLens === lens.id,
+                    onClick: function() { setRH({ expertLens: lens.id }); }
+                  }, h('span', { className: 'rh-expert-chip-code' }, lens.code), lens.label);
+                })
               )
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            EXPERT_SPOTLIGHTS.experts.map(function(ex, i) {
-              var sel = expertIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setExpertIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-violet-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-violet-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, ex.name.split(' ').pop());
-            })
+
+          h('section', { className: 'rh-expert-timeline', 'aria-labelledby': 'rh-expert-timeline-title' },
+            h('div', { className: 'rh-expert-section-head' },
+              h('div', null, h('div', { className: 'rh-expert-section-kicker' }, 'Evidence trail'), h('h3', { id: 'rh-expert-timeline-title' }, 'Select a milestone and inspect the method')),
+              h('span', null, String(expertIdx + 1).padStart(2, '0') + ' / ' + profileCount)
+            ),
+            h('div', { className: 'rh-expert-timeline-track' },
+              profiles.map(function(item) {
+                var itemExpert = EXPERT_SPOTLIGHTS.experts[item.expertIndex];
+                var selected = item.id === profile.id;
+                return h('button', {
+                  type: 'button', key: item.id, className: 'rh-expert-timeline-node',
+                  'data-expert-id': item.id, 'data-expert-timeline-node': item.id,
+                  'aria-pressed': selected,
+                  onClick: function() { selectProfile(item.id); }
+                },
+                  h('span', { className: 'rh-expert-timeline-year' }, item.milestoneYear),
+                  h('span', { className: 'rh-expert-timeline-name' }, itemExpert.name),
+                  h('span', { className: 'rh-expert-timeline-label' }, item.milestoneLabel)
+                );
+              })
+            )
           ),
-          h('div', { className: 'bg-slate-800/40 border border-violet-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'flex items-baseline justify-between gap-2' },
-              h('div', { className: 'text-lg font-bold text-violet-300 tracking-tight' }, e.name),
-              h('div', { className: 'text-xs text-amber-200 font-mono' }, e.country + ' · ' + e.years)
+
+          h('div', { className: 'rh-expert-workbench' },
+            renderMethodPlate(profile),
+            h('aside', { className: 'rh-expert-dossier', 'aria-labelledby': 'rh-expert-dossier-title', 'aria-live': 'polite' },
+              h('div', { className: 'rh-expert-dossier-head' },
+                h('div', null,
+                  h('div', { className: 'rh-expert-detail-kicker' }, profile.disciplineLabel),
+                  h('h3', { id: 'rh-expert-dossier-title' }, expert.name)
+                ),
+                h('div', { className: 'rh-expert-code' }, profile.code)
+              ),
+              h('div', { className: 'rh-expert-meta-row' },
+                h('span', { className: 'rh-expert-meta' }, expert.country),
+                h('span', { className: 'rh-expert-meta' }, expert.years),
+                h('span', { className: 'rh-expert-meta' }, profile.milestoneLabel)
+              ),
+              h('div', { className: 'rh-expert-reading', 'data-lens': expertLens },
+                h('span', null, lensReading.label),
+                h('strong', null, lensReading.lead),
+                h('p', null, lensReading.support)
+              ),
+              h('div', { className: 'rh-expert-callouts' },
+                profile.callouts.map(function(callout) {
+                  return h('div', { key: callout.title, className: 'rh-expert-callout' }, h('span', null, callout.title), h('p', null, callout.body));
+                })
+              ),
+              h('a', { className: 'rh-expert-source', href: profile.sourceUrl, target: '_blank', rel: 'noopener noreferrer', 'data-expert-source': profile.id }, 'Review primary or institutional source ↗')
+            )
+          ),
+
+          h('section', { className: 'rh-expert-comparison', 'data-expert-comparison': 'true', 'aria-labelledby': 'rh-expert-comparison-title' },
+            h('div', { className: 'rh-expert-section-head' },
+              h('div', null, h('div', { className: 'rh-expert-section-kicker' }, 'Compare approaches'), h('h3', { id: 'rh-expert-comparison-title' }, profile.code + ' alongside ' + compareProfile.code)),
+              h('span', null, 'No ranking · compare questions and evidence')
             ),
-            h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.contribution', '🔬 Contribution')),
-              h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' }, e.contribution)
+            h('div', { className: 'rh-expert-compare-select' },
+              h('label', null, 'Comparison profile',
+                h('select', { value: compareProfile.id, 'data-expert-compare-select': 'true', onChange: function(ev) { setRH({ expertCompareId: ev.target.value }); } },
+                  profiles.filter(function(item) { return item.id !== profile.id; }).map(function(item) {
+                    return h('option', { key: item.id, value: item.id }, EXPERT_SPOTLIGHTS.experts[item.expertIndex].name + ' · ' + item.code);
+                  })
+                )
+              ),
+              h('div', { className: 'rh-expert-compare-badge' }, profile.code + ' ↔ ' + compareProfile.code)
             ),
-            h('div', { className: 'bg-emerald-900/20 border border-emerald-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.legacy', '🌟 Legacy')),
-              h('div', { className: 'text-sm text-emerald-100/90 leading-relaxed' }, e.legacy)
+            h('div', { className: 'rh-expert-compare-grid' },
+              [
+                { label: 'Discipline', a: profile.disciplineLabel, b: compareProfile.disciplineLabel },
+                { label: 'Milestone', a: profile.milestoneYear + ' · ' + profile.milestoneLabel, b: compareProfile.milestoneYear + ' · ' + compareProfile.milestoneLabel },
+                { label: 'Method', a: profile.method, b: compareProfile.method },
+                { label: 'Impact', a: profile.impact, b: compareProfile.impact }
+              ].map(function(row) {
+                return h('div', { key: row.label, className: 'rh-expert-compare-cell' },
+                  h('span', null, row.label),
+                  h('strong', null, profile.code + ' · ' + row.a),
+                  h('strong', null, compareProfile.code + ' · ' + row.b)
+                );
+              })
             ),
-            h('div', { className: 'bg-amber-900/20 border border-amber-700/40 rounded p-3' },
-              h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, __alloT('stem.raptorhunt.how_to_learn_more', '📚 How to Learn More')),
-              h('div', { className: 'text-sm text-amber-100/90 leading-relaxed' }, e.howRemember)
+            h('p', { className: 'rh-expert-compare-note' }, expert.name + ' and ' + compareExpert.name + ' worked with different questions, evidence, constraints, and audiences. Similar impact does not imply an identical method.')
+          ),
+
+          h('section', { className: 'rh-expert-challenge', 'data-expert-challenge': profile.id, 'aria-labelledby': 'rh-expert-challenge-title' },
+            h('div', { className: 'rh-expert-section-head' },
+              h('div', null, h('div', { className: 'rh-expert-section-kicker' }, 'Match the method'), h('h3', { id: 'rh-expert-challenge-title' }, 'Which profile fits this evidence clue?')),
+              h('span', null, 'Use the method, not fame')
+            ),
+            h('div', { className: 'rh-expert-challenge-clue' }, profile.challengeClue),
+            h('div', { className: 'rh-expert-challenge-options' },
+              challengeOptions.map(function(item) {
+                var itemExpert = EXPERT_SPOTLIGHTS.experts[item.expertIndex];
+                return h('button', {
+                  type: 'button', key: item.id, className: 'rh-expert-guess',
+                  'data-expert-guess': item.id, 'aria-pressed': guessId === item.id,
+                  onClick: function() { setRH({ expertGuessId: item.id }); }
+                }, item.code + ' · ' + itemExpert.name);
+              })
+            ),
+            h('div', { className: 'rh-expert-challenge-result', role: 'status', 'aria-live': 'polite', 'data-result': challengeResult },
+              challengeResult === 'correct' ? 'Method match: correct. The clue describes ' + expert.name + '.'
+                : (challengeResult === 'incorrect' ? 'Not this match yet. Compare the evidence strategy and try again.' : 'Choose a profile, then use the feedback to refine your evidence reading.')
+            )
+          ),
+
+          h('section', { className: 'rh-expert-directory', 'aria-labelledby': 'rh-expert-directory-title' },
+            h('div', { className: 'rh-expert-section-head' },
+              h('div', null, h('div', { className: 'rh-expert-section-kicker' }, 'Curated directory'), h('h3', { id: 'rh-expert-directory-title' }, expertField === 'all' ? 'All 12 evidence trails' : filteredProfiles[0].disciplineLabel)),
+              h('span', null, filteredProfiles.length + ' profiles')
+            ),
+            h('div', { className: 'rh-expert-directory-grid' },
+              filteredProfiles.map(function(item) {
+                var itemExpert = EXPERT_SPOTLIGHTS.experts[item.expertIndex];
+                return h('button', {
+                  type: 'button', key: item.id, className: 'rh-expert-card',
+                  'data-expert-directory-card': item.id, 'data-discipline': item.discipline,
+                  'data-active': item.id === profile.id ? 'true' : 'false',
+                  onClick: function() { selectProfile(item.id); }
+                },
+                  h('span', { className: 'rh-expert-card-code' }, item.code),
+                  h('span', { className: 'rh-expert-card-copy' }, h('strong', null, itemExpert.name), h('span', null, item.artifact)),
+                  h('span', { className: 'rh-expert-card-year' }, item.milestoneYear)
+                );
+              })
             )
           )
         );
@@ -23361,226 +25066,1102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       }
 
       // ────────────────────────────────────────────────────────
-      // RENDER: RESEARCH STATIONS (v0.44)
+      // RENDER: RAPTOR RESEARCH NETWORK ATLAS
       // ────────────────────────────────────────────────────────
       function renderResearchStations() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🔬'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-indigo-200 tracking-tight' }, __alloT('stem.raptorhunt.active_research_stations', 'Active Research Stations')),
-                h('div', { className: 'text-sm text-indigo-100/85 mt-1' }, RESEARCH_STATIONS.intro)
-              )
-            )
+        var stationIds=RESEARCH_STATIONS.stations.map(function(s){return s.id;});
+        var regionIds=RESEARCH_REGIONS.map(function(r){return r.id;});
+        var roleIds=RESEARCH_ROLES.map(function(r){return r.id;});
+        var lensIds=RESEARCH_LENSES.map(function(l){return l.id;});
+        var missionIds=RESEARCH_MISSIONS.map(function(m){return m.id;});
+        var stationId=stationIds.indexOf(rh.researchStationId)>=0?rh.researchStationId:stationIds[0];
+        var regionId=regionIds.indexOf(rh.researchRegion)>=0?rh.researchRegion:'all';
+        var roleId=roleIds.indexOf(rh.researchRole)>=0?rh.researchRole:'all';
+        var lensId=lensIds.indexOf(rh.researchLens)>=0?rh.researchLens:'network';
+        var missionId=missionIds.indexOf(rh.researchMission)>=0?rh.researchMission:'migration';
+        var selected=RESEARCH_STATIONS.stations.filter(function(s){return s.id===stationId;})[0]||RESEARCH_STATIONS.stations[0];
+        var compare=RESEARCH_STATIONS.stations.filter(function(s){return s.id===rh.researchCompareId&&s.id!==selected.id;})[0];
+        if(!compare)compare=RESEARCH_STATIONS.stations.filter(function(s){return s.id!==selected.id;})[0];
+        var activeLens=RESEARCH_LENSES.filter(function(l){return l.id===lensId;})[0]||RESEARCH_LENSES[0];
+        var activeMission=RESEARCH_MISSIONS.filter(function(m){return m.id===missionId;})[0]||RESEARCH_MISSIONS[0];
+        var visible=RESEARCH_STATIONS.stations.filter(function(s){return(regionId==='all'||s.region===regionId)&&(roleId==='all'||s.role===roleId);});
+        function findRegion(id){return RESEARCH_REGIONS.filter(function(r){return r.id===id;})[0]||RESEARCH_REGIONS[0];}
+        function findRole(id){return RESEARCH_ROLES.filter(function(r){return r.id===id;})[0]||RESEARCH_ROLES[0];}
+        function setStation(id){setRH({researchStationId:id});}
+        function chip(item,current,dataName,onSelect){
+          var props={key:item.id,type:'button',className:'rh-research-chip',onClick:function(){onSelect(item.id);},'aria-pressed':item.id===current,'aria-label':item.label};
+          props[dataName]=item.id;
+          return h('button',props,h('span',{className:'rh-research-chip-code','aria-hidden':'true'},item.code),item.label);
+        }
+        function reading(){
+          if(lensId==='methods')return{label:'Method in practice',title:selected.method,copy:selected.evidence};
+          if(lensId==='careers')return{label:'Career lens',title:selected.career,copy:'This role connection is educational context, not a current vacancy or participation offer. Check the official source for present requirements.'};
+          return{label:'Network contribution',title:selected.impact,copy:selected.evidence};
+        }
+        var lensReading=reading();
+        function board(){return h('section',{className:'rh-research-board','aria-labelledby':'rh-research-board-heading'},
+          h('div',{className:'rh-research-panel-head'},h('div',null,h('div',{className:'rh-research-section-kicker'},'Schematic network board'),h('h3',{id:'rh-research-board-heading'},'Research role × region')),h('span',null,'Select any coded node · '+visible.length+' in filter')),
+          h('div',{className:'rh-research-board-scroll'},h('div',{className:'rh-research-board-stage'},
+            h('svg',{viewBox:'0 0 200 100',role:'img','aria-labelledby':'rh-research-network-title rh-research-network-desc','data-research-network-board':'true'},
+              h('title',{id:'rh-research-network-title'},'Raptor research role-by-region network'),
+              h('desc',{id:'rh-research-network-desc'},'A schematic matrix places twenty verified research, monitoring, recovery, archive, health, landscape, and capacity nodes across four broad world regions. It is not a geographic map or an institutional partnership diagram.'),
+              h('rect',{className:'rh-research-board-bg',x:0,y:0,width:200,height:100}),
+              RESEARCH_REGIONS.slice(1).map(function(r,i){return h('g',{key:r.id,'data-research-region-band':r.id},h('rect',{className:'rh-research-region-band',x:r.x0*2,y:14,width:(r.x1-r.x0)*2,height:84,'data-band-tone':i%2?'alt':'base'}),h('text',{className:'rh-research-region-label',x:r.x*2,y:8},r.label));}),
+              [14,28,42,56,70,84,98].map(function(y){return h('line',{key:'y'+y,className:'rh-research-grid-line',x1:32,y1:y,x2:200,y2:y});}),
+              [16,48,67,81,100].map(function(x){return h('line',{key:'x'+x,className:'rh-research-grid-line',x1:x*2,y1:14,x2:x*2,y2:98});}),
+              RESEARCH_ROLES.slice(1).map(function(r){return h('text',{key:r.id,className:'rh-research-role-label',x:28,y:r.y+1},r.label);}),
+              h('line',{className:'rh-research-compare-line',x1:selected.x*2,y1:selected.y,x2:compare.x*2,y2:compare.y,'data-research-compare-line':'true','aria-hidden':'true'})
+            ),
+            RESEARCH_STATIONS.stations.map(function(s){var inFilter=(regionId==='all'||s.region===regionId)&&(roleId==='all'||s.role===roleId);return h('button',{key:s.id,type:'button',className:'rh-research-marker',style:{left:s.x+'%',top:s.y+'%'},onClick:function(){setStation(s.id);},'aria-label':s.name+', '+findRegion(s.region).label+', '+findRole(s.role).label,'aria-pressed':s.id===selected.id,'data-research-marker':s.id,'data-in-filter':inFilter,'data-selected':s.id===selected.id,'data-compared':s.id===compare.id},s.code);})
+          )),
+          h('div',{className:'rh-research-board-caption'},h('span',null,'Rows show primary roles; columns show broad operating regions.'),h('strong',null,'Dashed line = comparison only, not a claimed partnership.'))
+        );}
+        function dossier(){return h('aside',{className:'rh-research-dossier','aria-live':'polite','data-research-station':selected.id,'data-research-station-scene':selected.id},
+          h('div',{className:'rh-research-dossier-head'},h('div',null,h('div',{className:'rh-research-detail-kicker'},findRole(selected.role).label),h('h3',null,selected.name)),h('span',{className:'rh-research-code'},selected.code)),
+          h('div',{className:'rh-research-meta-row'},h('span',{className:'rh-research-meta'},selected.type),h('span',{className:'rh-research-meta'},findRegion(selected.region).label),h('span',{className:'rh-research-meta'},selected.dateLabel)),
+          h('div',{className:'rh-research-reading','data-lens':lensId},h('span',null,lensReading.label),h('strong',null,lensReading.title),h('p',null,lensReading.copy)),
+          h('div',{className:'rh-research-callouts'},h('div',{className:'rh-research-callout'},h('span',null,'Operational focus'),h('p',null,selected.focus)),h('div',{className:'rh-research-callout'},h('span',null,'Place + scope'),h('p',null,selected.location+' · '+selected.country))),
+          h('a',{className:'rh-research-source',href:selected.url,target:'_blank',rel:'noopener noreferrer','data-research-source-link':'true','aria-label':'Open '+selected.sourceLabel+' for '+selected.name+' in a new tab'},'↗ '+selected.sourceLabel),
+          h('p',{className:'rh-research-reviewed'},'Source reviewed '+RESEARCH_STATIONS.reviewedAt+'. Verify current programs, access, and participation requirements with the institution.')
+        );}
+        function comparison(){
+          var items=[{label:'Entity type',first:selected.type,second:compare.type},{label:'Region + role',first:findRegion(selected.region).label+' · '+findRole(selected.role).label,second:findRegion(compare.region).label+' · '+findRole(compare.role).label},{label:'Primary method',first:selected.method,second:compare.method},{label:'Evidence output',first:selected.evidence,second:compare.evidence}];
+          return h('section',{className:'rh-research-comparison','data-research-comparison':'true','aria-labelledby':'rh-research-compare-heading'},
+            h('div',{className:'rh-research-section-head'},h('div',null,h('div',{className:'rh-research-section-kicker'},'Non-ranking comparison'),h('h3',{id:'rh-research-compare-heading'},'Compare how research roles differ')),h('span',null,selected.code+' ↔ '+compare.code)),
+            h('div',{className:'rh-research-compare-select'},h('label',{htmlFor:'rh-research-compare-select'},'Comparison node',h('select',{id:'rh-research-compare-select',value:compare.id,onChange:function(e){setRH({researchCompareId:e.target.value});}},RESEARCH_STATIONS.stations.filter(function(s){return s.id!==selected.id;}).map(function(s){return h('option',{key:s.id,value:s.id},s.name);}))),h('div',{className:'rh-research-compare-badge'},'Different roles can produce complementary evidence')),
+            h('div',{className:'rh-research-compare-grid'},items.map(function(item){return h('div',{key:item.label,className:'rh-research-compare-cell'},h('span',null,item.label),h('strong',null,selected.code+' · '+item.first),h('strong',null,compare.code+' · '+item.second));})),
+            h('p',{className:'rh-research-compare-note'},'This comparison describes roles and evidence; it does not rank institutions, claim equivalent capacity, or imply a formal relationship.')
+          );
+        }
+        function planner(){return h('section',{className:'rh-research-planner','data-research-plan':missionId,'aria-labelledby':'rh-research-plan-heading'},
+          h('div',{className:'rh-research-section-head'},h('div',null,h('div',{className:'rh-research-section-kicker'},'Question-to-evidence planner'),h('h3',{id:'rh-research-plan-heading'},'Build a three-role research path')),h('span',null,'Observe → interpret → apply')),
+          h('div',{className:'rh-research-mission-controls'},RESEARCH_MISSIONS.map(function(m){return h('button',{key:m.id,type:'button',className:'rh-research-mission',onClick:function(){setRH({researchMission:m.id});},'aria-pressed':m.id===missionId,'data-research-mission-control':m.id},m.code+' · '+m.label);})),
+          h('p',{className:'rh-research-mission-question','aria-live':'polite'},activeMission.question),
+          h('div',{className:'rh-research-plan'},activeMission.steps.map(function(step,i){return h('div',{key:step.verb,className:'rh-research-plan-step','data-research-plan-step':step.role},h('span',null,'0'+(i+1)+' · '+findRole(step.role).label),h('strong',null,step.verb),h('p',null,step.note));})),
+          h('p',{className:'rh-research-plan-note'},'Teaching model only: this route does not claim a formal partnership, full institutional capability, project feasibility, or endorsement. Real research requires local expertise, permissions, ethics, safety planning, and current institutional guidance.')
+        );}
+        return h('div',{className:'rh-research-atlas','data-raptor-research-atlas':'true','data-research-station':selected.id,'data-research-region':regionId,'data-research-role':roleId,'data-research-lens':lensId,'data-research-mission':missionId},
+          h('section',{className:'rh-research-hero','aria-labelledby':'rh-research-title'},h('div',{className:'rh-research-hero-main'},h('div',{className:'rh-research-hero-mark','aria-hidden':'true'},'FIELD ↕ EVIDENCE'),h('div',null,h('div',{className:'rh-research-kicker'},'Verified field-to-evidence directory'),h('h2',{id:'rh-research-title',className:'rh-research-title'},'Raptor Research Network Atlas'),h('p',{className:'rh-research-copy'},RESEARCH_STATIONS.intro))),h('div',{className:'rh-research-summary','aria-label':'Atlas summary'},h('div',{className:'rh-research-stat'},h('strong',null,'20'),h('span',null,'verified nodes')),h('div',{className:'rh-research-stat'},h('strong',null,'4'),h('span',null,'world regions')),h('div',{className:'rh-research-stat'},h('strong',null,'6'),h('span',null,'research roles')))),
+          h('section',{className:'rh-research-controls','aria-label':'Research atlas filters and lens'},
+            h('div',{className:'rh-research-control-row'},h('div',{className:'rh-research-control-label'},'Region'),h('div',{className:'rh-research-chip-row'},RESEARCH_REGIONS.map(function(r){return chip(r,regionId,'data-research-region-control',function(id){setRH({researchRegion:id});});})),h('div',{className:'rh-research-result-count'},visible.length+' nodes')),
+            h('div',{className:'rh-research-control-row'},h('div',{className:'rh-research-control-label'},'Primary role'),h('div',{className:'rh-research-chip-row'},RESEARCH_ROLES.map(function(r){return chip(r,roleId,'data-research-role-control',function(id){setRH({researchRole:id});});})),h('div',{className:'rh-research-result-count'},findRole(roleId).label)),
+            h('div',{className:'rh-research-control-row'},h('div',{className:'rh-research-control-label'},'Dossier lens'),h('div',{className:'rh-research-chip-row'},RESEARCH_LENSES.map(function(l){return chip(l,lensId,'data-research-lens-control',function(id){setRH({researchLens:id});});})),h('div',{className:'rh-research-result-count'},activeLens.label))
           ),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
-            RESEARCH_STATIONS.stations.map(function(s, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-indigo-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-indigo-300' }, s.name),
-                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, s.state + ' · est ' + s.established)
-                ),
-                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🔍 ' + s.focus),
-                h('div', { className: 'text-xs text-slate-200 mb-1 leading-relaxed' }, '⭐ ' + s.notable),
-                h('div', { className: 'text-[10px] text-emerald-300 font-mono' }, '🌐 ' + s.url)
-              );
-            })
+          h('div',{className:'rh-research-workbench'},board(),dossier()),comparison(),planner(),
+          h('section',{className:'rh-research-directory','aria-labelledby':'rh-research-directory-heading'},h('div',{className:'rh-research-section-head'},h('div',null,h('div',{className:'rh-research-section-kicker'},'Filtered source directory'),h('h3',{id:'rh-research-directory-heading'},'Explore every network node')),h('span',{'aria-live':'polite'},visible.length+' of '+RESEARCH_STATIONS.stations.length+' shown')),
+            visible.length?h('div',{className:'rh-research-directory-grid'},visible.map(function(s){return h('button',{key:s.id,type:'button',className:'rh-research-card',onClick:function(){setStation(s.id);},'aria-pressed':s.id===selected.id,'data-research-card':s.id,'data-active':s.id===selected.id},h('span',{className:'rh-research-card-code'},s.code),h('span',{className:'rh-research-card-copy'},h('strong',null,s.name),h('span',null,s.type+' · '+s.location)),h('span',{className:'rh-research-card-role'},findRole(s.role).label));})):h('div',{className:'rh-research-empty'},'No nodes match both filters. Choose All regions or All roles to broaden the directory.')
           )
         );
       }
 
       // ────────────────────────────────────────────────────────
-      // RENDER: CONSERVATION ORGS (v0.44)
+      // RENDER: CONSERVATION ACTION NETWORK
       // ────────────────────────────────────────────────────────
       function renderOrgs() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🏛'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-emerald-200 tracking-tight' }, __alloT('stem.raptorhunt.conservation_organizations', 'Conservation Organizations')),
-                h('div', { className: 'text-sm text-emerald-100/85 mt-1' }, CONSERVATION_ORGS.intro)
+        var actionIds = ORG_ACTIONS.map(function(item) { return item.id; });
+        var reachIds = ORG_REACHES.map(function(item) { return item.id; });
+        var lensIds = ORG_LENSES.map(function(item) { return item.id; });
+        var missionIds = ORG_MISSIONS.map(function(item) { return item.id; });
+        var action = actionIds.indexOf(rh.orgAction) >= 0 ? rh.orgAction : 'all';
+        var reach = reachIds.indexOf(rh.orgReach) >= 0 ? rh.orgReach : 'all';
+        var lens = lensIds.indexOf(rh.orgLens) >= 0 ? rh.orgLens : 'impact';
+        var missionId = missionIds.indexOf(rh.orgMission) >= 0 ? rh.orgMission : 'collision';
+        var selected = CONSERVATION_ORGS.orgs.filter(function(org) { return org.id === rh.orgNetworkId; })[0] || CONSERVATION_ORGS.orgs[0];
+        var visible = CONSERVATION_ORGS.orgs.filter(function(org) {
+          return (action === 'all' || org.action === action) && (reach === 'all' || org.reach === reach);
+        });
+        var compare = CONSERVATION_ORGS.orgs.filter(function(org) { return org.id === rh.orgCompareId && org.id !== selected.id; })[0] || CONSERVATION_ORGS.orgs.filter(function(org) { return org.id !== selected.id; })[0];
+        var mission = ORG_MISSIONS.filter(function(item) { return item.id === missionId; })[0] || ORG_MISSIONS[0];
+        var positions = [{x:100,y:18},{x:160,y:38},{x:160,y:84},{x:100,y:103},{x:40,y:84},{x:40,y:38}];
+        function actionInfo(id) { return ORG_ACTIONS.filter(function(item) { return item.id === id; })[0]; }
+        function reachInfo(id) { return ORG_REACHES.filter(function(item) { return item.id === id; })[0]; }
+        function chooseFor(nextAction, nextReach) {
+          return CONSERVATION_ORGS.orgs.filter(function(org) { return (nextAction === 'all' || org.action === nextAction) && (nextReach === 'all' || org.reach === nextReach); })[0];
+        }
+        function setAction(id) {
+          var next = chooseFor(id, reach);
+          setRH({orgAction:id,orgNetworkId:next ? next.id : selected.id});
+        }
+        function setReach(id) {
+          var next = chooseFor(action, id);
+          setRH({orgReach:id,orgNetworkId:next ? next.id : selected.id});
+        }
+        function actionChip(item) {
+          var count = CONSERVATION_ORGS.orgs.filter(function(org) { return item.id === 'all' || org.action === item.id; }).length;
+          return h('button',{key:item.id,type:'button',className:'rh-org-chip',onClick:function(){setAction(item.id);},'aria-pressed':action === item.id,'data-org-action-control':item.id},h('span',{className:'rh-org-chip-code'},item.code),item.label + ' · ' + count);
+        }
+        function reachChip(item) {
+          var count = CONSERVATION_ORGS.orgs.filter(function(org) { return item.id === 'all' || org.reach === item.id; }).length;
+          return h('button',{key:item.id,type:'button',className:'rh-org-chip',onClick:function(){setReach(item.id);},'aria-pressed':reach === item.id,'data-org-reach-control':item.id},h('span',{className:'rh-org-chip-code'},item.code),item.label + ' · ' + count);
+        }
+        var selectedAction = actionInfo(selected.action);
+        var selectedReach = reachInfo(selected.reach);
+        var lensReading = lens === 'impact' ? {
+          label:'Why this role matters',
+          title:selectedAction.summary,
+          copy:selected.approach
+        } : lens === 'participation' ? {
+          label:'A responsible first step',
+          title:'Start with the official program information.',
+          copy:'Ways to participate vary by place, age, season, training, and current organizational capacity. Use the verified source below to check what is actually available.'
+        } : {
+          label:'Trust and care check',
+          title:'Verify current guidance before you act or share.',
+          copy:'This directory does not promise access, employment, volunteering, or formal affiliation. For wildlife encounters, follow local law and trained professional guidance.'
+        };
+        return h('div',{
+          className:'rh-org-network',
+          'data-raptor-org-network':'true',
+          'data-org-node':selected.id,
+          'data-org-action':action,
+          'data-org-reach':reach,
+          'data-org-lens':lens,
+          'data-org-mission':missionId
+        },
+          h('section',{className:'rh-org-hero','aria-labelledby':'rh-org-title'},
+            h('div',{className:'rh-org-hero-main'},
+              h('div',{className:'rh-org-hero-mark','aria-hidden':'true'},'ACT\n26'),
+              h('div',null,
+                h('div',{className:'rh-org-kicker'},'Conservation systems / role literacy'),
+                h('h2',{className:'rh-org-title',id:'rh-org-title'},'Raptor Conservation Action Network'),
+                h('p',{className:'rh-org-copy'},CONSERVATION_ORGS.intro)
               )
+            ),
+            h('div',{className:'rh-org-summary','aria-label':'Conservation network summary'},
+              h('div',{className:'rh-org-stat'},h('strong',null,'26'),h('span',null,'verified nodes')),
+              h('div',{className:'rh-org-stat'},h('strong',null,'6'),h('span',null,'action modes')),
+              h('div',{className:'rh-org-stat'},h('strong',null,'3'),h('span',null,'reach models')),
+              h('div',{className:'rh-org-stat'},h('strong',null,visible.length),h('span',null,'in current view'))
             )
           ),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
-            CONSERVATION_ORGS.orgs.map(function(o, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-emerald-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-emerald-300' }, o.name),
-                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, 'est ' + o.founded)
+          h('section',{className:'rh-org-controls','aria-label':'Conservation network controls'},
+            h('div',{className:'rh-org-control-row'},
+              h('div',{className:'rh-org-control-label'},'Action mode'),
+              h('div',{className:'rh-org-chip-row'},actionChip({id:'all',code:'ALL',label:'All organizations'}))
+            ),
+            h('div',{className:'rh-org-control-row'},
+              h('div',{className:'rh-org-control-label'},'Geographic reach'),
+              h('div',{className:'rh-org-chip-row'},[{id:'all',code:'ALL',label:'All reaches'}].concat(ORG_REACHES).map(reachChip))
+            ),
+            h('div',{className:'rh-org-control-row'},
+              h('div',{className:'rh-org-control-label'},'Reading lens'),
+              h('div',{className:'rh-org-chip-row'},ORG_LENSES.map(function(item){return h('button',{key:item.id,type:'button',className:'rh-org-chip',onClick:function(){setRH({orgLens:item.id});},'aria-pressed':lens === item.id,'data-org-lens-control':item.id},h('span',{className:'rh-org-chip-code'},item.code),item.label);} ))
+            ),
+            h('div',{className:'rh-org-result-count','aria-live':'polite'},visible.length + ' of 26 organizations match this view')
+          ),
+          h('div',{className:'rh-org-workbench'},
+            h('section',{className:'rh-org-board','aria-labelledby':'rh-org-board-heading'},
+              h('div',{className:'rh-org-panel-head'},
+                h('div',null,h('div',{className:'rh-org-section-kicker'},'Interactive systems view'),h('h3',{id:'rh-org-board-heading'},'Evidence-to-action ecosystem')),
+                h('span',null,action === 'all' ? 'Choose a role hub' : actionInfo(action).label)
+              ),
+              h('div',{className:'rh-org-board-stage',tabIndex:0,'data-org-node-scene':selected.id},
+                h('svg',{viewBox:'0 0 200 120',role:'img','aria-labelledby':'rh-org-board-title rh-org-board-desc','data-org-action-board':'true'},
+                  h('title',{id:'rh-org-board-title'},'Raptor conservation evidence-to-action ecosystem'),
+                  h('desc',{id:'rh-org-board-desc'},'Six conservation action modes connect to raptors and ecosystems. The lines describe complementary roles, not formal partnerships among organizations.'),
+                  h('ellipse',{className:'rh-org-orbit',cx:'100',cy:'61',rx:'72',ry:'48'}),
+                  positions.map(function(point,i){return h('line',{key:'line-'+i,className:'rh-org-link',x1:'100',y1:'61',x2:String(point.x),y2:String(point.y)});}),
+                  h('circle',{className:'rh-org-center',cx:'100',cy:'61',r:'18'}),
+                  h('text',{className:'rh-org-center-title',x:'100',y:'58'},'RAPTORS +'),
+                  h('text',{className:'rh-org-center-title',x:'100',y:'67'},'ECOSYSTEMS'),
+                  h('text',{className:'rh-org-center-copy',x:'100',y:'74'},'EVIDENCE TO ACTION')
                 ),
-                h('div', { className: 'text-xs text-cyan-200 mb-1' }, '🎯 ' + o.focus),
-                h('div', { className: 'text-xs text-slate-300 mb-1' }, '👥 ' + o.size),
-                h('div', { className: 'text-[10px] text-emerald-300 font-mono mb-1' }, '💵 Donate: ' + o.donate),
-                h('div', { className: 'text-[10px] text-purple-300 italic' }, '🤝 Volunteer: ' + o.volunteer)
-              );
-            })
+                h('div',{className:'rh-org-hubs'},ORG_ACTIONS.map(function(item,i){
+                  var point=positions[i];
+                  var count=CONSERVATION_ORGS.orgs.filter(function(org){return org.action===item.id;}).length;
+                  return h('button',{key:item.id,type:'button',className:'rh-org-hub',style:{left:(point.x/2)+'%',top:(point.y/1.2)+'%','--hub-accent':item.color},onClick:function(){setAction(item.id);},'aria-pressed':action===item.id,'data-org-action-hub':item.id,'data-org-action-control':item.id},h('span',{className:'rh-org-hub-code'},item.code+' · '+count),h('strong',null,item.label),h('span',null,item.summary));
+                }))
+              ),
+              h('div',{className:'rh-org-board-note'},'Teaching model: hubs show complementary conservation roles. Connections do not assert that listed organizations formally partner with one another.')
+            ),
+            h('aside',{className:'rh-org-dossier','aria-labelledby':'rh-org-dossier-title','data-org-node':selected.id},
+              h('div',{className:'rh-org-dossier-head'},
+                h('div',null,h('div',{className:'rh-org-detail-kicker'},'Selected organization'),h('h3',{id:'rh-org-dossier-title'},selected.name)),
+                h('div',{className:'rh-org-code','aria-label':'Organization code '+selected.code},selected.code)
+              ),
+              h('div',{className:'rh-org-meta-row'},
+                h('span',{className:'rh-org-meta'},selectedAction.label),
+                h('span',{className:'rh-org-meta'},selectedReach.label),
+                h('span',{className:'rh-org-meta'},'Established '+selected.founded),
+                h('span',{className:'rh-org-meta'},selected.place)
+              ),
+              h('div',{className:'rh-org-reading','data-lens':lens},h('span',null,lensReading.label),h('strong',null,lensReading.title),h('p',null,lensReading.copy)),
+              h('div',{className:'rh-org-callouts'},
+                h('div',{className:'rh-org-callout'},h('span',null,'PRIMARY FOCUS'),h('p',null,selected.focus)),
+                h('div',{className:'rh-org-callout'},h('span',null,'OPERATING APPROACH'),h('p',null,selected.approach))
+              ),
+              h('a',{className:'rh-org-source',href:selected.url,target:'_blank',rel:'noopener noreferrer','data-org-source-link':selected.id},'Open verified official source ↗'),
+              h('p',{className:'rh-org-reviewed'},'Source links reviewed '+CONSERVATION_ORGS.reviewed+'. Availability, programs, and participation rules can change; confirm details directly with the organization.')
+            )
+          ),
+          h('section',{className:'rh-org-comparison','aria-labelledby':'rh-org-compare-title','data-org-comparison':compare.id},
+            h('div',{className:'rh-org-section-head'},h('div',null,h('div',{className:'rh-org-section-kicker'},'Role comparison'),h('h3',{id:'rh-org-compare-title'},'Compare operating models, not worth')),h('span',null,'descriptive · non-ranking')),
+            h('div',{className:'rh-org-compare-select'},
+              h('label',null,'Compare '+selected.name+' with',h('select',{value:compare.id,onChange:function(event){setRH({orgCompareId:event.target.value});},'aria-label':'Choose an organization to compare'},CONSERVATION_ORGS.orgs.map(function(org){return h('option',{key:org.id,value:org.id,disabled:org.id===selected.id},org.name);}))),
+              h('div',{className:'rh-org-compare-badge'},selected.code+' ↔ '+compare.code)
+            ),
+            h('div',{className:'rh-org-compare-grid'},
+              [['Primary role',actionInfo(selected.action).label,actionInfo(compare.action).label],['Reach model',reachInfo(selected.reach).label,reachInfo(compare.reach).label],['Established',selected.founded,compare.founded],['Focus',selected.focus,compare.focus]].map(function(row){return h('div',{key:row[0],className:'rh-org-compare-cell'},h('span',null,row[0]),h('strong',null,selected.code+' · '+row[1]),h('strong',null,compare.code+' · '+row[2]));})
+            ),
+            h('p',{className:'rh-org-compare-note'},'Different roles and scales can be complementary. These fields summarize public information and should not be read as performance scores, endorsements, or proof of collaboration.')
+          ),
+          h('section',{className:'rh-org-planner','aria-labelledby':'rh-org-plan-title','data-org-plan':missionId},
+            h('div',{className:'rh-org-section-head'},h('div',null,h('div',{className:'rh-org-section-kicker'},'Mission pathway'),h('h3',{id:'rh-org-plan-title'},'Build a three-role conservation response')),h('span',null,'systems thinking prompt')),
+            h('div',{className:'rh-org-mission-controls'},ORG_MISSIONS.map(function(item){return h('button',{key:item.id,type:'button',className:'rh-org-mission',onClick:function(){setRH({orgMission:item.id});},'aria-pressed':missionId===item.id,'data-org-mission-control':item.id},item.code+' · '+item.label);})),
+            h('p',{className:'rh-org-mission-question'},mission.question),
+            h('div',{className:'rh-org-plan'},mission.steps.map(function(step,i){var mode=actionInfo(step.action);return h('div',{key:step.action,className:'rh-org-plan-step','data-org-plan-step':step.action},h('span',null,'0'+(i+1)+' · '+mode.code),h('strong',null,step.verb+' with '+mode.label),h('p',null,step.note));})),
+            h('p',{className:'rh-org-plan-note'},'This pathway is a learning scaffold. It suggests role types to investigate; it does not assign work to organizations or represent a current joint program.')
+          ),
+          h('section',{className:'rh-org-directory','aria-labelledby':'rh-org-directory-title'},
+            h('div',{className:'rh-org-section-head'},h('div',null,h('div',{className:'rh-org-section-kicker'},'Verified directory'),h('h3',{id:'rh-org-directory-title'},'Explore organizations in this view')),h('span',null,visible.length+' visible · official sources')),
+            visible.length ? h('div',{className:'rh-org-directory-grid'},visible.map(function(org){var role=actionInfo(org.action);return h('button',{key:org.id,type:'button',className:'rh-org-card',onClick:function(){setRH({orgNetworkId:org.id});},'data-active':selected.id===org.id,'aria-pressed':selected.id===org.id,'data-org-card':org.id},h('span',{className:'rh-org-card-code'},org.code),h('span',{className:'rh-org-card-copy'},h('strong',null,org.name),h('span',null,org.place+' · est. '+org.founded)),h('span',{className:'rh-org-card-role'},role.label));})) : h('div',{className:'rh-org-empty'},'No organizations match both filters. Choose All reaches or a different action mode to widen the view.')
           )
         );
       }
-
       // ────────────────────────────────────────────────────────
-      // RENDER: RAPTOR MUSEUMS (v0.44)
+      // RENDER: RAPTOR MUSEUM FIELD LAB
       // ────────────────────────────────────────────────────────
       function renderMuseums() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🏛'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.raptor_museums_2', 'Raptor Museums')),
-                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, RAPTOR_MUSEUMS.intro)
+        var modeIds = MUSEUM_MODES.map(function(item){return item.id;});
+        var regionIds = MUSEUM_REGIONS.map(function(item){return item.id;});
+        var lensIds = MUSEUM_LENSES.map(function(item){return item.id;});
+        var stationIds = MUSEUM_STATIONS.map(function(item){return item.id;});
+        var inquiryIds = MUSEUM_INQUIRIES.map(function(item){return item.id;});
+        var mode = modeIds.indexOf(rh.museumMode) >= 0 ? rh.museumMode : 'all';
+        var region = regionIds.indexOf(rh.museumRegion) >= 0 ? rh.museumRegion : 'all';
+        var lens = lensIds.indexOf(rh.museumLens) >= 0 ? rh.museumLens : 'learner';
+        var stationId = stationIds.indexOf(rh.museumStation) >= 0 ? rh.museumStation : 'notice';
+        var inquiryId = inquiryIds.indexOf(rh.museumInquiry) >= 0 ? rh.museumInquiry : 'adaptation';
+        var selected = RAPTOR_MUSEUMS.museums.filter(function(item){return item.id === rh.museumVenueId;})[0] || RAPTOR_MUSEUMS.museums[0];
+        var visible = RAPTOR_MUSEUMS.museums.filter(function(item){return (mode === 'all' || item.mode === mode) && (region === 'all' || item.region === region);});
+        var compare = RAPTOR_MUSEUMS.museums.filter(function(item){return item.id === rh.museumCompareId && item.id !== selected.id;})[0] || RAPTOR_MUSEUMS.museums.filter(function(item){return item.id !== selected.id;})[0];
+        var inquiry = MUSEUM_INQUIRIES.filter(function(item){return item.id === inquiryId;})[0] || MUSEUM_INQUIRIES[0];
+        var station = MUSEUM_STATIONS.filter(function(item){return item.id === stationId;})[0] || MUSEUM_STATIONS[0];
+        var positions = [{x:36,y:34},{x:100,y:20},{x:164,y:38},{x:145,y:92},{x:60,y:96}];
+        function modeInfo(id){return MUSEUM_MODES.filter(function(item){return item.id === id;})[0];}
+        function regionInfo(id){return MUSEUM_REGIONS.filter(function(item){return item.id === id;})[0];}
+        function stationInfo(id){return MUSEUM_STATIONS.filter(function(item){return item.id === id;})[0];}
+        function chooseFor(nextMode,nextRegion){return RAPTOR_MUSEUMS.museums.filter(function(item){return (nextMode === 'all' || item.mode === nextMode) && (nextRegion === 'all' || item.region === nextRegion);})[0];}
+        function setMode(id){var next=chooseFor(id,region);setRH({museumMode:id,museumVenueId:next?next.id:selected.id});}
+        function setRegion(id){var next=chooseFor(mode,id);setRH({museumRegion:id,museumVenueId:next?next.id:selected.id});}
+        function modeChip(item){
+          var count=RAPTOR_MUSEUMS.museums.filter(function(venue){return item.id === 'all' || venue.mode === item.id;}).length;
+          return h('button',{key:item.id,type:'button',className:'rh-museum-chip',onClick:function(){setMode(item.id);},'aria-pressed':mode === item.id,'data-museum-mode-control':item.id},h('span',{className:'rh-museum-chip-code'},item.code),item.label+' · '+count);
+        }
+        function regionChip(item){
+          var count=RAPTOR_MUSEUMS.museums.filter(function(venue){return item.id === 'all' || venue.region === item.id;}).length;
+          return h('button',{key:item.id,type:'button',className:'rh-museum-chip',onClick:function(){setRegion(item.id);},'aria-pressed':region === item.id,'data-museum-region-control':item.id},h('span',{className:'rh-museum-chip-code'},item.code),item.label+' · '+count);
+        }
+        var selectedMode=modeInfo(selected.mode);
+        var selectedRegion=regionInfo(selected.region);
+        var reading = lens === 'learner' ? {
+          label:'Inquiry prompt',title:selected.question,copy:'Current station — '+station.label+': '+station.prompt
+        } : lens === 'educator' ? {
+          label:'Facilitation move',title:'Move from object to evidence to a bounded claim.',copy:'Ask learners to describe first, compare purposefully, cite labels or observable evidence, and name uncertainty before explaining.'
+        } : {
+          label:'Access and care check',title:'Verify the conditions of the visit, not just the destination.',copy:'Review current accessibility, sensory conditions, reservations, weather, welfare rules, photography policies, and closures on the official page.'
+        };
+        return h('div',{
+          className:'rh-museum-lab',
+          'data-raptor-museum-lab':'true',
+          'data-museum-venue':selected.id,
+          'data-museum-mode':mode,
+          'data-museum-region':region,
+          'data-museum-lens':lens,
+          'data-museum-station':stationId,
+          'data-museum-inquiry':inquiryId
+        },
+          h('section',{className:'rh-museum-hero','aria-labelledby':'rh-museum-title'},
+            h('div',{className:'rh-museum-hero-main'},
+              h('div',{className:'rh-museum-hero-mark','aria-hidden':'true'},'FIELD\n15'),
+              h('div',null,
+                h('div',{className:'rh-museum-kicker'},'Museum literacy / evidence in context'),
+                h('h2',{className:'rh-museum-title',id:'rh-museum-title'},'Raptor Museum Field Lab'),
+                h('p',{className:'rh-museum-copy'},RAPTOR_MUSEUMS.intro)
               )
+            ),
+            h('div',{className:'rh-museum-summary','aria-label':'Museum field lab summary'},
+              h('div',{className:'rh-museum-stat'},h('strong',null,'15'),h('span',null,'verified venues')),
+              h('div',{className:'rh-museum-stat'},h('strong',null,'4'),h('span',null,'evidence modes')),
+              h('div',{className:'rh-museum-stat'},h('strong',null,'5'),h('span',null,'inquiry moves')),
+              h('div',{className:'rh-museum-stat'},h('strong',null,visible.length),h('span',null,'in current view'))
             )
           ),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
-            RAPTOR_MUSEUMS.museums.map(function(m, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-amber-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-amber-300' }, m.name),
-                  h('div', { className: 'text-xs text-cyan-300 font-mono' }, m.state)
+          h('section',{className:'rh-museum-controls','aria-label':'Museum field lab controls'},
+            h('div',{className:'rh-museum-control-row'},
+              h('div',{className:'rh-museum-control-label'},'Evidence setting'),
+              h('div',{className:'rh-museum-chip-row'},[{id:'all',code:'ALL',label:'All settings'}].concat(MUSEUM_MODES).map(modeChip))
+            ),
+            h('div',{className:'rh-museum-control-row'},
+              h('div',{className:'rh-museum-control-label'},'Region'),
+              h('div',{className:'rh-museum-chip-row'},[{id:'all',code:'ALL',label:'All regions'}].concat(MUSEUM_REGIONS).map(regionChip))
+            ),
+            h('div',{className:'rh-museum-control-row'},
+              h('div',{className:'rh-museum-control-label'},'Planning lens'),
+              h('div',{className:'rh-museum-chip-row'},MUSEUM_LENSES.map(function(item){return h('button',{key:item.id,type:'button',className:'rh-museum-chip',onClick:function(){setRH({museumLens:item.id});},'aria-pressed':lens === item.id,'data-museum-lens-control':item.id},h('span',{className:'rh-museum-chip-code'},item.code),item.label);} ))
+            ),
+            h('div',{className:'rh-museum-result-count','aria-live':'polite'},visible.length+' of 15 venues match this view')
+          ),
+          h('div',{className:'rh-museum-workbench'},
+            h('section',{className:'rh-museum-gallery','aria-labelledby':'rh-museum-gallery-heading'},
+              h('div',{className:'rh-museum-panel-head'},
+                h('div',null,h('div',{className:'rh-museum-section-kicker'},'Interactive gallery method'),h('h3',{id:'rh-museum-gallery-heading'},'Walk the evidence trail')),
+                h('span',null,station.code+' · '+station.label)
+              ),
+              h('div',{className:'rh-museum-gallery-stage','data-museum-gallery-scene':stationId},
+                h('svg',{viewBox:'0 0 200 120',role:'img','aria-labelledby':'rh-museum-gallery-title rh-museum-gallery-desc','data-museum-gallery-board':'true'},
+                  h('title',{id:'rh-museum-gallery-title'},'Five-station museum evidence gallery'),
+                  h('desc',{id:'rh-museum-gallery-desc'},'A schematic exhibit gallery links Notice, Compare, Add context, Question, and Steward in sequence. It is a learning model, not the floor plan of any listed venue.'),
+                  h('polygon',{className:'rh-museum-floor',points:'18,25 182,25 192,108 8,108'}),
+                  h('path',{className:'rh-museum-floor-grid',d:'M30 25 L23 108 M62 25 L57 108 M94 25 L91 108 M126 25 L126 108 M158 25 L160 108 M12 82 L188 82 M15 57 L185 57'}),
+                  h('path',{className:'rh-museum-light',d:'M75 10 L123 10 L152 104 L45 104 Z'}),
+                  h('rect',{className:'rh-museum-wall',x:'84',y:'31',width:'32',height:'28',rx:'2'}),
+                  h('rect',{className:'rh-museum-case',x:'90',y:'37',width:'20',height:'16',rx:'2'}),
+                  h('path',{className:'rh-museum-bird',d:'M94 46 Q98 40 101 45 Q105 39 108 45 M101 45 L102 50 M98 50 L106 50'}),
+                  h('polyline',{className:'rh-museum-path',points:positions.map(function(point){return point.x+','+point.y;}).join(' ')})
                 ),
-                h('div', { className: 'text-xs text-slate-200 mb-1' }, '⭐ ' + m.highlights),
-                h('div', { className: 'text-xs text-emerald-300 mb-1' }, '💰 ' + m.cost),
-                h('div', { className: 'text-[10px] text-purple-300 font-mono' }, '🌐 ' + m.url)
-              );
-            })
+                h('div',{className:'rh-museum-stations'},MUSEUM_STATIONS.map(function(item,i){var point=positions[i];return h('button',{key:item.id,type:'button',className:'rh-museum-station',style:{left:(point.x/2)+'%',top:(point.y/1.2)+'%'},onClick:function(){setRH({museumStation:item.id});},'aria-pressed':stationId === item.id,'data-museum-station-control':item.id},h('span',{className:'rh-museum-station-code'},item.code),h('strong',null,item.label),h('span',null,item.prompt));}))
+              ),
+              h('div',{className:'rh-museum-gallery-note'},'Schematic method, not a venue floor plan: use the five moves with specimens, ambassadors, field observations, fossils, labels, media, and exhibit design.')
+            ),
+            h('aside',{className:'rh-museum-dossier','aria-labelledby':'rh-museum-dossier-title','data-museum-venue':selected.id},
+              h('div',{className:'rh-museum-dossier-head'},
+                h('div',null,h('div',{className:'rh-museum-detail-kicker'},'Selected learning site'),h('h3',{id:'rh-museum-dossier-title'},selected.name)),
+                h('div',{className:'rh-museum-code','aria-label':'Venue code '+selected.code},selected.code)
+              ),
+              h('div',{className:'rh-museum-meta-row'},
+                h('span',{className:'rh-museum-meta'},selectedMode.label),
+                h('span',{className:'rh-museum-meta'},selectedRegion.label),
+                h('span',{className:'rh-museum-meta'},selected.locale)
+              ),
+              h('div',{className:'rh-museum-status','data-alert':selected.alert ? 'true' : 'false','data-museum-status':selected.id},selected.status),
+              h('div',{className:'rh-museum-reading','data-lens':lens},h('span',null,reading.label),h('strong',null,reading.title),h('p',null,reading.copy)),
+              h('div',{className:'rh-museum-callouts'},
+                h('div',{className:'rh-museum-callout'},h('span',null,'LEARNING FOCUS'),h('p',null,selected.focus)),
+                h('div',{className:'rh-museum-callout'},h('span',null,'EVIDENCE FRAME'),h('p',null,selected.evidence))
+              ),
+              h('a',{className:'rh-museum-source',href:selected.url,target:'_blank',rel:'noopener noreferrer','data-museum-source-link':selected.id},'Open official visit source ↗'),
+              h('p',{className:'rh-museum-reviewed'},'Official pages reviewed '+RAPTOR_MUSEUMS.reviewed+'. Recheck hours, prices, reservations, accessibility, closures, animal availability, and travel conditions before visiting.')
+            )
+          ),
+          h('section',{className:'rh-museum-comparison','aria-labelledby':'rh-museum-compare-title','data-museum-comparison':compare.id},
+            h('div',{className:'rh-museum-section-head'},h('div',null,h('div',{className:'rh-museum-section-kicker'},'Evidence comparison'),h('h3',{id:'rh-museum-compare-title'},'Compare learning settings, not quality')),h('span',null,'descriptive · non-ranking')),
+            h('div',{className:'rh-museum-compare-select'},
+              h('label',null,'Compare '+selected.name+' with',h('select',{value:compare.id,onChange:function(event){setRH({museumCompareId:event.target.value});},'aria-label':'Choose a venue to compare'},RAPTOR_MUSEUMS.museums.map(function(item){return h('option',{key:item.id,value:item.id,disabled:item.id === selected.id},item.name);}))),
+              h('div',{className:'rh-museum-compare-badge'},selected.code+' ↔ '+compare.code)
+            ),
+            h('div',{className:'rh-museum-compare-grid'},
+              [['Evidence setting',modeInfo(selected.mode).label,modeInfo(compare.mode).label],['Region',regionInfo(selected.region).label,regionInfo(compare.region).label],['Place',selected.locale,compare.locale],['Learning focus',selected.focus,compare.focus]].map(function(row){return h('div',{key:row[0],className:'rh-museum-compare-cell'},h('span',null,row[0]),h('strong',null,selected.code+' · '+row[1]),h('strong',null,compare.code+' · '+row[2]));})
+            ),
+            h('p',{className:'rh-museum-compare-note'},'A specimen gallery, ambassador center, field site, and fossil collection answer different questions. The comparison describes evidence settings; it is not a rating, travel endorsement, or accessibility guarantee.')
+          ),
+          h('section',{className:'rh-museum-planner','aria-labelledby':'rh-museum-plan-title','data-museum-inquiry-plan':inquiryId},
+            h('div',{className:'rh-museum-section-head'},h('div',null,h('div',{className:'rh-museum-section-kicker'},'Field notebook pathway'),h('h3',{id:'rh-museum-plan-title'},'Build a three-move inquiry')),h('span',null,'before · during · after')),
+            h('div',{className:'rh-museum-inquiry-controls'},MUSEUM_INQUIRIES.map(function(item){return h('button',{key:item.id,type:'button',className:'rh-museum-inquiry',onClick:function(){setRH({museumInquiry:item.id});},'aria-pressed':inquiryId === item.id,'data-museum-inquiry-control':item.id},item.code+' · '+item.label);})),
+            h('p',{className:'rh-museum-inquiry-question'},inquiry.question),
+            h('div',{className:'rh-museum-plan'},inquiry.steps.map(function(step,i){var move=stationInfo(step.station);return h('div',{key:step.station,className:'rh-museum-plan-step','data-museum-plan-step':step.station},h('span',null,'0'+(i+1)+' · '+move.label),h('strong',null,step.verb),h('p',null,step.note));})),
+            h('p',{className:'rh-museum-plan-note'},'Use official educator and accessibility resources when available. Do not touch wildlife, enter restricted areas, or treat an ambassador encounter as permission to approach wild birds.')
+          ),
+          h('section',{className:'rh-museum-directory','aria-labelledby':'rh-museum-directory-title'},
+            h('div',{className:'rh-museum-section-head'},h('div',null,h('div',{className:'rh-museum-section-kicker'},'Verified visit directory'),h('h3',{id:'rh-museum-directory-title'},'Explore venues in this view')),h('span',null,visible.length+' visible · current details external')),
+            visible.length ? h('div',{className:'rh-museum-directory-grid'},visible.map(function(item){var setting=modeInfo(item.mode);return h('button',{key:item.id,type:'button',className:'rh-museum-card',onClick:function(){setRH({museumVenueId:item.id});},'data-active':selected.id === item.id,'aria-pressed':selected.id === item.id,'data-museum-card':item.id},h('span',{className:'rh-museum-card-code'},item.code),h('span',{className:'rh-museum-card-copy'},h('strong',null,item.name),h('span',null,item.locale)),h('span',{className:'rh-museum-card-role'},setting.label));})) : h('div',{className:'rh-museum-empty'},'No venues match both filters. Choose All regions or a different evidence setting to widen the view.')
           )
         );
       }
-
       // ────────────────────────────────────────────────────────
       // RENDER: BOOK LIBRARY (v0.44)
       // ────────────────────────────────────────────────────────
+      // ────────────────────────────────────────────────────────
+      // RENDER: RAPTOR READING FLIGHT DECK
+      // ────────────────────────────────────────────────────────
       function renderBooks() {
-        var bookCat = rh.bookCat == null ? 0 : rh.bookCat;
-        function setBookCat(i) { setRH({ bookCat: i }); }
-        var cat = BOOK_LIBRARY.categories[bookCat];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-indigo-900/40 border border-purple-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '📕'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-purple-200 tracking-tight' }, __alloT('stem.raptorhunt.recommended_reading_2', 'Recommended Reading')),
-                h('div', { className: 'text-sm text-purple-100/85 mt-1' }, BOOK_LIBRARY.intro)
+        function findById(list, id) {
+          for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+          return null;
+        }
+        function bookById(id) { return findById(BOOK_LIBRARY.books, id); }
+        function purposeInfo(id) { return findById(READING_PURPOSES, id) || READING_PURPOSES[0]; }
+        function levelInfo(id) { return findById(RAPTOR_BOOK_LEVELS, id) || RAPTOR_BOOK_LEVELS[0]; }
+
+        var purposeId = rh.readingPurpose === 'all' || findById(READING_PURPOSES, rh.readingPurpose) ? (rh.readingPurpose || 'all') : 'all';
+        var levelId = rh.readingLevel === 'all' || findById(RAPTOR_BOOK_LEVELS, rh.readingLevel) ? (rh.readingLevel || 'all') : 'all';
+        var lens = findById(READING_LENSES, rh.readingLens) || READING_LENSES[0];
+        var stage = findById(READING_STAGES, rh.readingStage) || READING_STAGES[0];
+        var mission = findById(READING_MISSIONS, rh.readingMission) || READING_MISSIONS[0];
+        var visible = BOOK_LIBRARY.books.filter(function(book) {
+          return (purposeId === 'all' || book.purpose === purposeId) && (levelId === 'all' || book.level === levelId);
+        });
+        var selected = bookById(rh.readingBookId);
+        if (!selected || visible.indexOf(selected) < 0) selected = visible[0] || BOOK_LIBRARY.books[0];
+        var compare = bookById(rh.readingCompareId);
+        if (!compare || compare.id === selected.id) compare = BOOK_LIBRARY.books.filter(function(book) { return book.id !== selected.id; })[0];
+        var selectedPurpose = purposeInfo(selected.purpose);
+        var selectedLevel = levelInfo(selected.level);
+
+        function purposeChip(item) {
+          var count = BOOK_LIBRARY.books.filter(function(book) {
+            return (item.id === 'all' || book.purpose === item.id) && (levelId === 'all' || book.level === levelId);
+          }).length;
+          return h('button', {
+            key: item.id, type: 'button', className: 'rh-reading-chip',
+            onClick: function() { setRH({ readingPurpose: item.id }); },
+            'aria-pressed': purposeId === item.id,
+            'data-reading-purpose-control': item.id
+          }, h('span', { className: 'rh-reading-chip-code' }, item.code), item.label + ' · ' + count);
+        }
+        function levelChip(item) {
+          var count = BOOK_LIBRARY.books.filter(function(book) {
+            return (item.id === 'all' || book.level === item.id) && (purposeId === 'all' || book.purpose === purposeId);
+          }).length;
+          return h('button', {
+            key: item.id, type: 'button', className: 'rh-reading-chip',
+            onClick: function() { setRH({ readingLevel: item.id }); },
+            'aria-pressed': levelId === item.id,
+            'data-reading-level-control': item.id
+          }, h('span', { className: 'rh-reading-chip-code' }, item.code), item.label + ' · ' + count);
+        }
+
+        return h('div', {
+          className: 'rh-reading-deck',
+          'data-raptor-reading-deck': 'true',
+          'data-reading-book': selected.id,
+          'data-reading-purpose': purposeId,
+          'data-reading-level': levelId,
+          'data-reading-lens': lens.id,
+          'data-reading-stage': stage.id,
+          'data-reading-mission': mission.id
+        },
+          h('section', { className: 'rh-reading-hero', 'aria-labelledby': 'rh-reading-title' },
+            h('div', { className: 'rh-reading-hero-main' },
+              h('div', { className: 'rh-reading-hero-mark', 'aria-hidden': 'true' }, 'READ\n30'),
+              h('div', null,
+                h('div', { className: 'rh-reading-kicker' }, 'Source literacy / reading by purpose'),
+                h('h2', { className: 'rh-reading-title', id: 'rh-reading-title' }, 'Raptor Reading Flight Deck'),
+                h('p', { className: 'rh-reading-copy' }, BOOK_LIBRARY.intro)
               )
+            ),
+            h('div', { className: 'rh-reading-summary', 'aria-label': 'Reading flight deck summary' },
+              h('div', { className: 'rh-reading-stat' }, h('strong', null, '30'), h('span', null, 'verified titles')),
+              h('div', { className: 'rh-reading-stat' }, h('strong', null, '5'), h('span', null, 'reading purposes')),
+              h('div', { className: 'rh-reading-stat' }, h('strong', null, '4'), h('span', null, 'flight plans')),
+              h('div', { className: 'rh-reading-stat' }, h('strong', null, visible.length), h('span', null, 'in current view'))
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            BOOK_LIBRARY.categories.map(function(c, i) {
-              var sel = bookCat === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setBookCat(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-purple-600 text-white font-bold' : 'transition-colors bg-slate-800/60 text-purple-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, c.category);
-            })
+
+          h('section', { className: 'rh-reading-controls', 'aria-label': 'Reading flight deck controls' },
+            h('div', { className: 'rh-reading-control-row' },
+              h('div', { className: 'rh-reading-control-label' }, 'Reading purpose'),
+              h('div', { className: 'rh-reading-chip-row' }, [{ id: 'all', code: 'ALL', label: 'All purposes' }].concat(READING_PURPOSES).map(purposeChip))
+            ),
+            h('div', { className: 'rh-reading-control-row' },
+              h('div', { className: 'rh-reading-control-label' }, 'Depth'),
+              h('div', { className: 'rh-reading-chip-row' }, [{ id: 'all', code: 'ALL', label: 'All depths' }].concat(RAPTOR_BOOK_LEVELS).map(levelChip))
+            ),
+            h('div', { className: 'rh-reading-control-row' },
+              h('div', { className: 'rh-reading-control-label' }, 'Use lens'),
+              h('div', { className: 'rh-reading-chip-row' }, READING_LENSES.map(function(item) {
+                return h('button', {
+                  key: item.id, type: 'button', className: 'rh-reading-chip',
+                  onClick: function() { setRH({ readingLens: item.id }); },
+                  'aria-pressed': lens.id === item.id,
+                  'data-reading-lens-control': item.id
+                }, h('span', { className: 'rh-reading-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-reading-result-count', 'aria-live': 'polite' }, visible.length + ' of 30 titles match this reading view')
           ),
-          h('div', { className: 'space-y-3' },
-            cat.books.map(function(b, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-purple-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-purple-300' }, '📕 ' + b.title),
-                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, b.year)
+
+          h('div', { className: 'rh-reading-workbench' },
+            h('section', { className: 'rh-reading-flight', 'aria-labelledby': 'rh-reading-flight-title' },
+              h('div', { className: 'rh-reading-panel-head' },
+                h('div', null, h('div', { className: 'rh-reading-section-kicker' }, 'Evidence-reading sequence'), h('h3', { id: 'rh-reading-flight-title' }, 'Fly the five reading moves')),
+                h('span', null, stage.code + ' · ' + stage.label)
+              ),
+              h('div', { className: 'rh-reading-flight-stage', 'data-reading-flight-scene': stage.id },
+                h('svg', { viewBox: '0 0 200 108', role: 'img', 'aria-labelledby': 'rh-reading-board-title rh-reading-board-desc', 'data-reading-flight-board': 'true' },
+                  h('title', { id: 'rh-reading-board-title' }, 'Five-move raptor evidence reading pathway'),
+                  h('desc', { id: 'rh-reading-board-desc' }, 'A schematic learning sequence links Observe, Identify, Explain, Act, and Reflect. It is a reading method, not a ranking of books or a formal literary canon.'),
+                  h('defs', null,
+                    h('linearGradient', { id: 'rh-reading-sky', x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0', stopColor: '#082f49' }), h('stop', { offset: '.55', stopColor: '#0f172a' }), h('stop', { offset: '1', stopColor: '#1a2e05' })),
+                    h('marker', { id: 'rh-reading-arrow', viewBox: '0 0 10 10', refX: '7', refY: '5', markerWidth: '4', markerHeight: '4', orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', className: 'rh-reading-arrow' }))
+                  ),
+                  h('rect', { x: '3', y: '5', width: '194', height: '98', rx: '13', className: 'rh-reading-sky' }),
+                  h('path', { className: 'rh-reading-horizon', d: 'M4 80 Q35 66 67 82 T132 80 T196 77' }),
+                  h('path', { className: 'rh-reading-route', markerEnd: 'url(#rh-reading-arrow)', d: 'M24 74 L62 41 L100 74 L138 41 L176 74' }),
+                  h('path', { className: 'rh-reading-wing', d: 'M91 19 Q99 12 100 25 Q101 12 109 19 M100 25 L100 31' }),
+                  READING_STAGES.map(function(item) { return h('circle', { key: item.id, className: 'rh-reading-node', cx: item.x * 2, cy: item.y, r: stage.id === item.id ? '5.2' : '3.2', 'data-active': stage.id === item.id ? 'true' : 'false' }); })
                 ),
-                h('div', { className: 'text-xs italic text-cyan-300 mb-1' }, 'by ' + b.author),
-                h('div', { className: 'text-xs text-slate-200 mb-1' }, '🎯 Focus: ' + b.focus),
-                h('div', { className: 'text-xs text-emerald-100/90 italic leading-relaxed' }, '💡 ' + b.why)
-              );
-            })
+                h('div', { className: 'rh-reading-stages' }, READING_STAGES.map(function(item) {
+                  return h('button', {
+                    key: item.id, type: 'button', className: 'rh-reading-stage',
+                    style: { left: item.x + '%', top: item.y + '%' },
+                    onClick: function() { setRH({ readingStage: item.id }); },
+                    'aria-pressed': stage.id === item.id,
+                    'data-reading-stage-control': item.id
+                  }, h('span', { className: 'rh-reading-stage-code' }, item.code), h('strong', null, item.label), h('span', null, item.prompt));
+                }))
+              ),
+              h('div', { className: 'rh-reading-flight-note' }, 'Schematic learning sequence: use the moves with any title. The route does not rank books, reading levels, authors, or traditions.')
+            ),
+
+            h('aside', { className: 'rh-reading-dossier', 'aria-labelledby': 'rh-reading-dossier-title', 'data-reading-book-scene': selected.id },
+              h('div', { className: 'rh-reading-dossier-head' },
+                h('div', null, h('div', { className: 'rh-reading-detail-kicker' }, 'Selected book dossier'), h('h3', { id: 'rh-reading-dossier-title' }, selected.title)),
+                h('div', { className: 'rh-reading-code', 'aria-label': 'Book code ' + selected.code }, selected.code)
+              ),
+              h('p', { className: 'rh-reading-byline' }, selected.author + ' · ' + selected.year),
+              h('div', { className: 'rh-reading-meta-row' },
+                h('span', { className: 'rh-reading-meta' }, selectedPurpose.label),
+                h('span', { className: 'rh-reading-meta' }, selectedLevel.label),
+                h('span', { className: 'rh-reading-meta' }, selected.form)
+              ),
+              h('div', { className: 'rh-reading-move' }, h('span', null, stage.code + ' · ' + stage.label), h('strong', null, stage.question), h('p', null, stage.prompt)),
+              h('div', { className: 'rh-reading-lens-card', 'data-lens': lens.id }, h('span', null, lens.label), h('strong', null, lens.title), h('p', null, lens.copy + ' Current focus: ' + selected.focus + '.')),
+              h('div', { className: 'rh-reading-callouts' },
+                h('div', { className: 'rh-reading-callout' }, h('span', null, 'WHY READ IT'), h('p', null, selected.why)),
+                h('div', { className: 'rh-reading-callout rh-reading-critical' }, h('span', null, 'READ CRITICALLY'), h('p', null, selected.critical))
+              ),
+              h('a', { className: 'rh-reading-source', href: selected.source, target: '_blank', rel: 'noopener noreferrer', 'data-reading-source-link': selected.id }, 'Open ' + selected.sourceLabel + ' verification source \u2197'),
+              h('p', { className: 'rh-reading-reviewed' }, 'Bibliographic records reviewed ' + BOOK_LIBRARY.reviewed + '. Availability, editions, access formats, and library holdings vary; verify the edition you use.')
+            )
+          ),
+
+          h('section', { className: 'rh-reading-comparison', 'aria-labelledby': 'rh-reading-compare-title', 'data-reading-comparison': compare.id },
+            h('div', { className: 'rh-reading-section-head' },
+              h('div', null, h('div', { className: 'rh-reading-section-kicker' }, 'Perspective comparison'), h('h3', { id: 'rh-reading-compare-title' }, 'Compare use, not quality')),
+              h('span', null, 'descriptive · non-ranking')
+            ),
+            h('div', { className: 'rh-reading-compare-select' },
+              h('label', null, 'Compare ' + selected.title + ' with', h('select', { value: compare.id, onChange: function(event) { setRH({ readingCompareId: event.target.value }); }, 'aria-label': 'Choose a book to compare' }, BOOK_LIBRARY.books.map(function(book) { return h('option', { key: book.id, value: book.id, disabled: book.id === selected.id }, book.title); }))),
+              h('div', { className: 'rh-reading-compare-badge' }, selected.code + ' \u2194 ' + compare.code)
+            ),
+            h('div', { className: 'rh-reading-compare-grid' }, [
+              ['Purpose', purposeInfo(selected.purpose).label, purposeInfo(compare.purpose).label],
+              ['Depth', levelInfo(selected.level).label, levelInfo(compare.level).label],
+              ['Form', selected.form, compare.form],
+              ['Best for', selected.focus, compare.focus]
+            ].map(function(row) { return h('div', { key: row[0], className: 'rh-reading-compare-cell' }, h('span', null, row[0]), h('strong', null, selected.code + ' · ' + row[1]), h('strong', null, compare.code + ' · ' + row[2])); })),
+            h('p', { className: 'rh-reading-compare-note' }, 'Different formats answer different questions. A memoir, field guide, youth story, historic treatise, and research manual should not be scored on one ladder.')
+          ),
+
+          h('section', { className: 'rh-reading-planner', 'aria-labelledby': 'rh-reading-plan-title', 'data-reading-plan': mission.id },
+            h('div', { className: 'rh-reading-section-head' },
+              h('div', null, h('div', { className: 'rh-reading-section-kicker' }, 'Curated three-book sequence'), h('h3', { id: 'rh-reading-plan-title' }, 'Build a reading flight plan')),
+              h('span', null, 'enter · compare · transfer')
+            ),
+            h('div', { className: 'rh-reading-mission-controls' }, READING_MISSIONS.map(function(item) {
+              return h('button', { key: item.id, type: 'button', className: 'rh-reading-mission', onClick: function() { setRH({ readingMission: item.id }); }, 'aria-pressed': mission.id === item.id, 'data-reading-mission-control': item.id }, h('span', null, item.code), item.label);
+            })),
+            h('p', { className: 'rh-reading-mission-question' }, mission.question),
+            h('div', { className: 'rh-reading-plan' }, mission.steps.map(function(step, index) {
+              var book = bookById(step.bookId);
+              return h('div', { key: step.bookId, className: 'rh-reading-plan-step', 'data-reading-plan-step': step.bookId }, h('span', null, '0' + (index + 1) + ' · ' + book.code), h('strong', null, step.verb), h('p', null, book.title), h('small', null, step.note));
+            })),
+            h('p', { className: 'rh-reading-plan-note' }, 'Borrow, preview, or use accessible editions when possible. Adult facilitation is recommended for difficult themes, historic animal handling, and technical methods.')
+          ),
+
+          h('section', { className: 'rh-reading-directory', 'aria-labelledby': 'rh-reading-directory-title' },
+            h('div', { className: 'rh-reading-section-head' },
+              h('div', null, h('div', { className: 'rh-reading-section-kicker' }, 'Verified reading shelves'), h('h3', { id: 'rh-reading-directory-title' }, 'Explore titles in this view')),
+              h('span', null, visible.length + ' visible · source checked')
+            ),
+            visible.length ? h('div', { className: 'rh-reading-directory-grid' }, visible.map(function(book) {
+              var p = purposeInfo(book.purpose);
+              var l = levelInfo(book.level);
+              return h('button', {
+                key: book.id, type: 'button', className: 'rh-reading-card',
+                onClick: function() { setRH({ readingBookId: book.id }); },
+                'aria-pressed': selected.id === book.id,
+                'data-active': selected.id === book.id,
+                'data-reading-card': book.id
+              }, h('span', { className: 'rh-reading-card-code', 'data-purpose': book.purpose }, book.code), h('span', { className: 'rh-reading-card-copy' }, h('strong', null, book.title), h('span', null, book.author + ' · ' + book.year)), h('span', { className: 'rh-reading-card-role' }, p.code + ' · ' + l.code));
+            })) : h('div', { className: 'rh-reading-empty' }, 'No titles match both filters. Choose All depths or a different reading purpose to widen the shelf.')
           )
         );
       }
 
       // ────────────────────────────────────────────────────────
-      // RENDER: DOCUMENTARIES + FILMS (v0.44)
+      // RENDER: RAPTOR SCREENING ROOM
       // ────────────────────────────────────────────────────────
       function renderFilms() {
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-red-900/40 to-rose-900/40 border border-red-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🎥'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-red-200 tracking-tight' }, __alloT('stem.raptorhunt.documentaries_films_2', 'Documentaries & Films')),
-                h('div', { className: 'text-sm text-red-100/85 mt-1' }, DOCUMENTARIES.intro)
+        function findById(list, id) {
+          for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+          return null;
+        }
+        function filmById(id) { return findById(DOCUMENTARIES.films, id); }
+        function purposeInfo(id) { return findById(FILM_PURPOSES, id) || FILM_PURPOSES[0]; }
+        function audienceInfo(id) { return findById(FILM_AUDIENCES, id) || FILM_AUDIENCES[0]; }
+
+        var purposeId = rh.filmPurpose === 'all' || findById(FILM_PURPOSES, rh.filmPurpose) ? (rh.filmPurpose || 'all') : 'all';
+        var audienceId = rh.filmAudience === 'all' || findById(FILM_AUDIENCES, rh.filmAudience) ? (rh.filmAudience || 'all') : 'all';
+        var lens = findById(FILM_LENSES, rh.filmLens) || FILM_LENSES[0];
+        var stage = findById(FILM_STAGES, rh.filmStage) || FILM_STAGES[0];
+        var mission = findById(FILM_MISSIONS, rh.filmMission) || FILM_MISSIONS[0];
+        var visible = DOCUMENTARIES.films.filter(function(film) {
+          return (purposeId === 'all' || film.purpose === purposeId) && (audienceId === 'all' || film.audience === audienceId);
+        });
+        var selected = filmById(rh.filmTitleId);
+        if (!selected || visible.indexOf(selected) < 0) selected = visible[0] || DOCUMENTARIES.films[0];
+        var compare = filmById(rh.filmCompareId);
+        if (!compare || compare.id === selected.id) compare = DOCUMENTARIES.films.filter(function(film) { return film.id !== selected.id; })[0];
+        var selectedPurpose = purposeInfo(selected.purpose);
+        var selectedAudience = audienceInfo(selected.audience);
+
+        function purposeChip(item) {
+          var count = DOCUMENTARIES.films.filter(function(film) {
+            return (item.id === 'all' || film.purpose === item.id) && (audienceId === 'all' || film.audience === audienceId);
+          }).length;
+          return h('button', {
+            key: item.id, type: 'button', className: 'rh-film-chip',
+            onClick: function() { setRH({ filmPurpose: item.id }); },
+            'aria-pressed': purposeId === item.id,
+            'data-film-purpose-control': item.id
+          }, h('span', { className: 'rh-film-chip-code' }, item.code), item.label + ' · ' + count);
+        }
+        function audienceChip(item) {
+          var count = DOCUMENTARIES.films.filter(function(film) {
+            return (item.id === 'all' || film.audience === item.id) && (purposeId === 'all' || film.purpose === purposeId);
+          }).length;
+          return h('button', {
+            key: item.id, type: 'button', className: 'rh-film-chip',
+            onClick: function() { setRH({ filmAudience: item.id }); },
+            'aria-pressed': audienceId === item.id,
+            'data-film-audience-control': item.id
+          }, h('span', { className: 'rh-film-chip-code' }, item.code), item.label + ' · ' + count);
+        }
+
+        return h('div', {
+          className: 'rh-film-room',
+          'data-raptor-screening-room': 'true',
+          'data-film-title': selected.id,
+          'data-film-purpose': purposeId,
+          'data-film-audience': audienceId,
+          'data-film-lens': lens.id,
+          'data-film-stage': stage.id,
+          'data-film-mission': mission.id
+        },
+          h('section', { className: 'rh-film-hero', 'aria-labelledby': 'rh-film-title' },
+            h('div', { className: 'rh-film-hero-main' },
+              h('div', { className: 'rh-film-hero-mark', 'aria-hidden': 'true' }, 'CUT\n20'),
+              h('div', null,
+                h('div', { className: 'rh-film-kicker' }, 'Media literacy / raptor stories on screen'),
+                h('h2', { className: 'rh-film-title', id: 'rh-film-title' }, 'Raptor Screening Room'),
+                h('p', { className: 'rh-film-copy' }, DOCUMENTARIES.intro)
               )
+            ),
+            h('div', { className: 'rh-film-summary', 'aria-label': 'Raptor screening room summary' },
+              h('div', { className: 'rh-film-stat' }, h('strong', null, '20'), h('span', null, 'source-checked titles')),
+              h('div', { className: 'rh-film-stat' }, h('strong', null, '5'), h('span', null, 'viewing purposes')),
+              h('div', { className: 'rh-film-stat' }, h('strong', null, '4'), h('span', null, 'screening plans')),
+              h('div', { className: 'rh-film-stat' }, h('strong', null, visible.length), h('span', null, 'in current view'))
             )
           ),
-          h('div', { className: 'grid md:grid-cols-2 gap-3' },
-            DOCUMENTARIES.films.map(function(f, i) {
-              return h('div', { key: i, className: 'bg-slate-800/40 border border-red-700/30 rounded-lg p-3' },
-                h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-red-300' }, '🎥 ' + f.title),
-                  h('div', { className: 'text-xs text-amber-300/80 font-mono' }, f.year)
+
+          h('section', { className: 'rh-film-controls', 'aria-label': 'Raptor screening room controls' },
+            h('div', { className: 'rh-film-control-row' },
+              h('div', { className: 'rh-film-control-label' }, 'Viewing purpose'),
+              h('div', { className: 'rh-film-chip-row' }, [{ id: 'all', code: 'ALL', label: 'All purposes' }].concat(FILM_PURPOSES).map(purposeChip))
+            ),
+            h('div', { className: 'rh-film-control-row' },
+              h('div', { className: 'rh-film-control-label' }, 'Audience'),
+              h('div', { className: 'rh-film-chip-row' }, [{ id: 'all', code: 'ALL', label: 'All audiences' }].concat(FILM_AUDIENCES).map(audienceChip))
+            ),
+            h('div', { className: 'rh-film-control-row' },
+              h('div', { className: 'rh-film-control-label' }, 'Critical lens'),
+              h('div', { className: 'rh-film-chip-row' }, FILM_LENSES.map(function(item) {
+                return h('button', {
+                  key: item.id, type: 'button', className: 'rh-film-chip',
+                  onClick: function() { setRH({ filmLens: item.id }); },
+                  'aria-pressed': lens.id === item.id,
+                  'data-film-lens-control': item.id
+                }, h('span', { className: 'rh-film-chip-code' }, item.code), item.label);
+              }))
+            ),
+            h('div', { className: 'rh-film-result-count', 'aria-live': 'polite' }, visible.length + ' of 20 titles match this screening view')
+          ),
+
+          h('div', { className: 'rh-film-workbench' },
+            h('section', { className: 'rh-film-storyboard', 'aria-labelledby': 'rh-film-story-title' },
+              h('div', { className: 'rh-film-panel-head' },
+                h('div', null, h('div', { className: 'rh-film-section-kicker' }, 'Critical-viewing sequence'), h('h3', { id: 'rh-film-story-title' }, 'Read the screen in five moves')),
+                h('span', null, stage.code + ' · ' + stage.label)
+              ),
+              h('div', { className: 'rh-film-story-stage', 'data-film-story-scene': stage.id },
+                h('svg', { viewBox: '0 0 200 108', role: 'img', 'aria-labelledby': 'rh-film-board-title rh-film-board-desc', 'data-film-storyboard': 'true' },
+                  h('title', { id: 'rh-film-board-title' }, 'Five-move raptor media-literacy storyboard'),
+                  h('desc', { id: 'rh-film-board-desc' }, 'A schematic viewing method links Watch, Notice, Verify, Discuss, and Act. It is not a ranking of films, a timeline, or a claim that every title has equal scope.'),
+                  h('defs', null,
+                    h('marker', { id: 'rh-film-arrow', viewBox: '0 0 10 10', refX: '7', refY: '5', markerWidth: '4', markerHeight: '4', orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', className: 'rh-film-arrow' }))
+                  ),
+                  h('rect', { x: '3', y: '4', width: '194', height: '100', rx: '12', className: 'rh-film-frame' }),
+                  h('rect', { x: '7', y: '14', width: '186', height: '80', rx: '10', className: 'rh-film-screen' }),
+                  h('path', { d: 'M8 78 Q40 65 69 81 T132 78 T192 76 L192 93 L8 93 Z', className: 'rh-film-screen-glow' }),
+                  [11, 29, 47, 65, 83, 101, 119, 137, 155, 173, 191].map(function(x) { return h('g', { key: x }, h('rect', { x: x - 4, y: '7', width: '7', height: '4', rx: '1', className: 'rh-film-sprocket' }), h('rect', { x: x - 4, y: '97', width: '7', height: '4', rx: '1', className: 'rh-film-sprocket' })); }),
+                  h('path', { className: 'rh-film-horizon', d: 'M8 80 Q39 67 69 82 T132 80 T192 77' }),
+                  h('path', { className: 'rh-film-route-shadow', d: 'M24 74 L62 41 L100 74 L138 41 L176 74' }),
+                  h('path', { className: 'rh-film-route', markerEnd: 'url(#rh-film-arrow)', d: 'M24 74 L62 41 L100 74 L138 41 L176 74' }),
+                  h('path', { className: 'rh-film-bird', d: 'M91 24 Q99 16 100 29 Q101 16 109 24 M100 29 L100 34' }),
+                  FILM_STAGES.map(function(item) { return h('circle', { key: item.id, className: 'rh-film-node', cx: item.x * 2, cy: item.y, r: stage.id === item.id ? '5.2' : '3.2', 'data-active': stage.id === item.id ? 'true' : 'false' }); })
                 ),
-                h('div', { className: 'text-xs italic text-cyan-300 mb-1' }, 'Platform: ' + f.platform),
-                h('div', { className: 'text-xs text-emerald-200 mb-1' }, '🎯 ' + f.focus),
-                h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, '📝 ' + f.notes)
-              );
-            })
+                h('div', { className: 'rh-film-stages' }, FILM_STAGES.map(function(item) {
+                  return h('button', {
+                    key: item.id, type: 'button', className: 'rh-film-stage-button',
+                    style: { left: item.x + '%', top: item.y + '%' },
+                    onClick: function() { setRH({ filmStage: item.id }); },
+                    'aria-pressed': stage.id === item.id,
+                    'data-film-stage-control': item.id
+                  }, h('span', { className: 'rh-film-stage-code' }, item.code), h('strong', null, item.label), h('span', null, item.prompt));
+                }))
+              ),
+              h('div', { className: 'rh-film-story-note' }, 'Schematic learning sequence: apply the moves to any scene. The route does not rank titles, certify every claim, or replace age-appropriate previewing.')
+            ),
+
+            h('aside', { className: 'rh-film-dossier', 'aria-labelledby': 'rh-film-dossier-title', 'data-film-title-scene': selected.id },
+              h('div', { className: 'rh-film-dossier-head' },
+                h('div', null, h('div', { className: 'rh-film-detail-kicker' }, 'Selected title dossier'), h('h3', { id: 'rh-film-dossier-title' }, selected.title)),
+                h('div', { className: 'rh-film-code', 'aria-label': 'Film code ' + selected.code }, selected.code)
+              ),
+              h('p', { className: 'rh-film-byline' }, selected.year + ' · ' + selected.format),
+              h('div', { className: 'rh-film-meta-row' },
+                h('span', { className: 'rh-film-meta' }, selectedPurpose.label),
+                h('span', { className: 'rh-film-meta' }, selectedAudience.label),
+                h('span', { className: 'rh-film-meta' }, selected.focus)
+              ),
+              h('div', { className: 'rh-film-move' }, h('span', null, stage.code + ' · ' + stage.label), h('strong', null, stage.question), h('p', null, stage.prompt)),
+              h('div', { className: 'rh-film-lens-card', 'data-lens': lens.id }, h('span', null, lens.label), h('strong', null, lens.title), h('p', null, lens.copy + ' Current focus: ' + selected.focus + '.')),
+              h('div', { className: 'rh-film-callouts' },
+                h('div', { className: 'rh-film-callout' }, h('span', null, 'WHY WATCH IT'), h('p', null, selected.why)),
+                h('div', { className: 'rh-film-callout', 'data-tone': 'critical' }, h('span', null, 'WATCH CRITICALLY'), h('p', null, selected.critical)),
+                h('div', { className: 'rh-film-callout', 'data-tone': 'content' }, h('span', null, 'CONTENT NOTE'), h('p', null, selected.content))
+              ),
+              h('a', { className: 'rh-film-source', href: selected.source, target: '_blank', rel: 'noopener noreferrer', 'data-film-source-link': selected.id }, 'Open ' + selected.sourceLabel + ' verification source \u2197'),
+              h('p', { className: 'rh-film-reviewed' }, 'Title records reviewed ' + DOCUMENTARIES.reviewed + '. Streaming, broadcast, captions, audio description, ratings, and regional access change; check the official source or a library before planning a screening.')
+            )
+          ),
+
+          h('section', { className: 'rh-film-comparison', 'aria-labelledby': 'rh-film-compare-title', 'data-film-comparison': compare.id },
+            h('div', { className: 'rh-film-section-head' },
+              h('div', null, h('div', { className: 'rh-film-section-kicker' }, 'Viewing comparison'), h('h3', { id: 'rh-film-compare-title' }, 'Compare purpose, not prestige')),
+              h('span', null, 'descriptive · non-ranking')
+            ),
+            h('div', { className: 'rh-film-compare-select' },
+              h('label', null, 'Compare ' + selected.title + ' with', h('select', { value: compare.id, onChange: function(event) { setRH({ filmCompareId: event.target.value }); }, 'aria-label': 'Choose a film to compare' }, DOCUMENTARIES.films.map(function(film) { return h('option', { key: film.id, value: film.id, disabled: film.id === selected.id }, film.title); }))),
+              h('div', { className: 'rh-film-compare-badge' }, selected.code + ' \u2194 ' + compare.code)
+            ),
+            h('div', { className: 'rh-film-compare-grid' }, [
+              ['Purpose', purposeInfo(selected.purpose).label, purposeInfo(compare.purpose).label],
+              ['Audience', audienceInfo(selected.audience).label, audienceInfo(compare.audience).label],
+              ['Format', selected.format, compare.format],
+              ['Best for', selected.focus, compare.focus]
+            ].map(function(row) { return h('div', { key: row[0], className: 'rh-film-compare-cell' }, h('span', null, row[0]), h('strong', null, selected.code + ' · ' + row[1]), h('strong', null, compare.code + ' · ' + row[2])); })),
+            h('p', { className: 'rh-film-compare-note' }, 'A wildlife episode, advocacy documentary, personal portrait, short agency film, and scripted drama make different kinds of evidence and should not be scored on one ladder.')
+          ),
+
+          h('section', { className: 'rh-film-planner', 'aria-labelledby': 'rh-film-plan-title', 'data-film-plan': mission.id },
+            h('div', { className: 'rh-film-section-head' },
+              h('div', null, h('div', { className: 'rh-film-section-kicker' }, 'Curated three-title sequence'), h('h3', { id: 'rh-film-plan-title' }, 'Build a screening flight plan')),
+              h('span', null, 'enter · compare · transfer')
+            ),
+            h('div', { className: 'rh-film-mission-controls' }, FILM_MISSIONS.map(function(item) {
+              return h('button', { key: item.id, type: 'button', className: 'rh-film-mission', onClick: function() { setRH({ filmMission: item.id }); }, 'aria-pressed': mission.id === item.id, 'data-film-mission-control': item.id }, h('span', null, item.code), item.label);
+            })),
+            h('p', { className: 'rh-film-mission-question' }, mission.question),
+            h('div', { className: 'rh-film-plan' }, mission.steps.map(function(step, index) {
+              var film = filmById(step.filmId);
+              return h('div', { key: step.filmId, className: 'rh-film-plan-step', 'data-film-plan-step': step.filmId }, h('span', null, '0' + (index + 1) + ' · ' + film.code), h('strong', null, step.verb), h('p', null, film.title), h('small', null, step.note));
+            })),
+            h('p', { className: 'rh-film-plan-note' }, 'Preview every title for your learners and context. Pair emotional storytelling with a current source, include captions or audio description when available, and never approach or disturb wildlife to recreate a shot.')
+          ),
+
+          h('section', { className: 'rh-film-directory', 'aria-labelledby': 'rh-film-directory-title' },
+            h('div', { className: 'rh-film-section-head' },
+              h('div', null, h('div', { className: 'rh-film-section-kicker' }, 'Verified screening shelves'), h('h3', { id: 'rh-film-directory-title' }, 'Explore titles in this view')),
+              h('span', null, visible.length + ' visible · availability varies')
+            ),
+            visible.length ? h('div', { className: 'rh-film-directory-grid' }, visible.map(function(film) {
+              var p = purposeInfo(film.purpose);
+              var a = audienceInfo(film.audience);
+              return h('button', {
+                key: film.id, type: 'button', className: 'rh-film-card',
+                onClick: function() { setRH({ filmTitleId: film.id }); },
+                'aria-pressed': selected.id === film.id,
+                'data-active': selected.id === film.id,
+                'data-film-card': film.id
+              }, h('span', { className: 'rh-film-card-code' }, film.code), h('span', { className: 'rh-film-card-copy' }, h('strong', null, film.title), h('span', null, film.year + ' · ' + film.format)), h('span', { className: 'rh-film-card-role' }, p.code + ' · ' + a.code));
+            })) : h('div', { className: 'rh-film-empty' }, 'No titles match both filters. Choose All audiences or a different viewing purpose to widen the screening shelf.')
           )
         );
       }
+
 
       // ────────────────────────────────────────────────────────
       // RENDER: NEST-BUILD COOKBOOK (v0.45)
       // ────────────────────────────────────────────────────────
       function renderCookbook() {
-        var cookIdx = rh.cookbookIdx == null ? 0 : rh.cookbookIdx;
-        function setCookIdx(i) { setRH({ cookbookIdx: i }); }
-        var n = NEST_COOKBOOK.nests[cookIdx];
-        return h('div', { className: 'space-y-4' },
-          h('div', { className: 'bg-gradient-to-br from-amber-900/40 to-yellow-900/40 border border-amber-700/40 rounded-xl p-5' },
-            h('div', { className: 'flex items-start gap-3' },
-              h('div', { className: 'text-5xl' }, '🪺'),
-              h('div', { className: 'flex-1' },
-                h('div', { className: 'text-xl font-bold text-amber-200 tracking-tight' }, __alloT('stem.raptorhunt.nest_build_cookbook_2', 'Nest-Build Cookbook')),
-                h('div', { className: 'text-sm text-amber-100/85 mt-1' }, NEST_COOKBOOK.intro)
+        var setting = NEST_SETTINGS.some(function(item) { return item.id === rh.nestSetting; }) ? rh.nestSetting : 'all';
+        var lens = NEST_LENSES.find(function(item) { return item.id === rh.nestLens; }) || NEST_LENSES[0];
+        var stage = NEST_STAGES.find(function(item) { return item.id === rh.nestStage; }) || NEST_STAGES[0];
+        var stageIndex = NEST_STAGES.indexOf(stage);
+        var mission = NEST_MISSIONS.find(function(item) { return item.id === rh.nestMission; }) || NEST_MISSIONS[0];
+        var filtered = NEST_COOKBOOK.nests.filter(function(item) { return setting === 'all' || item.setting === setting; });
+        var legacyNest = NEST_COOKBOOK.nests[rh.cookbookIdx == null ? 0 : rh.cookbookIdx];
+        var requestedId = rh.nestSpeciesId || (legacyNest && legacyNest.id);
+        var nest = filtered.find(function(item) { return item.id === requestedId; }) || filtered[0] || NEST_COOKBOOK.nests[0];
+        var compare = NEST_COOKBOOK.nests.find(function(item) { return item.id === rh.nestCompareId && item.id !== nest.id; }) || NEST_COOKBOOK.nests.find(function(item) { return item.id !== nest.id; });
+        var settingMeta = NEST_SETTINGS.find(function(item) { return item.id === nest.setting; }) || NEST_SETTINGS[1];
+
+        function setNest(id) {
+          var idx = NEST_COOKBOOK.nests.findIndex(function(item) { return item.id === id; });
+          setRH({ nestSpeciesId: id, cookbookIdx: idx < 0 ? 0 : idx });
+        }
+        function setSetting(id) {
+          var next = NEST_COOKBOOK.nests.find(function(item) { return id === 'all' || item.setting === id; });
+          var patch = { nestSetting: id };
+          if (next && id !== 'all' && nest.setting !== id) {
+            patch.nestSpeciesId = next.id;
+            patch.cookbookIdx = NEST_COOKBOOK.nests.indexOf(next);
+          }
+          setRH(patch);
+        }
+        function layerProps(index) {
+          return { className: 'rh-nest-layer', 'data-built': stageIndex >= index, 'data-current': stageIndex === index };
+        }
+        function birdMark(x, y) {
+          return h('path', { className: 'rh-nest-bird', d: 'M' + x + ' ' + y + ' q12 -13 24 0 q12 -13 24 0' });
+        }
+        function platformScene() {
+          return h('g', null,
+            h('g', layerProps(0),
+              h('path', { className: 'rh-nest-ground', d: 'M0 350 Q170 327 330 350 T760 344 V420 H0Z' }),
+              h('circle', { className: 'rh-nest-foliage', cx: 145, cy: 112, r: 66 }),
+              h('circle', { className: 'rh-nest-foliage', cx: 216, cy: 92, r: 78 }),
+              h('circle', { className: 'rh-nest-foliage', cx: 292, cy: 124, r: 62 }),
+              birdMark(566, 92),
+              h('text', { className: 'rh-nest-dimension', x: 566, y: 126 }, 'OPEN APPROACH')
+            ),
+            h('g', layerProps(1),
+              h('path', { className: 'rh-nest-wood', d: 'M188 372 C196 292 190 205 222 78 L282 82 C258 189 268 286 286 372Z' }),
+              h('path', { className: 'rh-nest-wood', d: 'M230 226 C337 204 413 209 522 247 L500 274 C405 241 329 239 241 260Z' }),
+              h('ellipse', { className: 'rh-nest-wood-top', cx: 516, cy: 261, rx: 34, ry: 15 }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M486 253 L624 194 L705 194' }),
+              h('text', { className: 'rh-nest-dimension', x: 626, y: 188 }, 'SUPPORT / LOAD PATH')
+            ),
+            h('g', layerProps(2),
+              h('ellipse', { className: 'rh-nest-cup', cx: 462, cy: 232, rx: 124, ry: 43 }),
+              h('path', { className: 'rh-nest-twig', d: 'M346 218 L565 258 M351 244 L565 211 M371 198 L548 259 M390 267 L539 197 M332 231 L581 235 M369 258 L551 220' }),
+              h('ellipse', { className: 'rh-nest-cup', cx: 462, cy: 226, rx: 76, ry: 25 }),
+              h('text', { className: 'rh-nest-dimension', x: 426, y: 293 }, 'FRAME + CUP')
+            ),
+            h('g', layerProps(3),
+              h('ellipse', { className: 'rh-nest-lining', cx: 462, cy: 224, rx: 58, ry: 16 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: 448, cy: 218, rx: 9, ry: 12 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: 470, cy: 217, rx: 9, ry: 12 })
+            ),
+            h('g', layerProps(4),
+              h('path', { className: 'rh-nest-twig-fine', d: 'M338 202 L570 264 M355 272 L579 219 M381 190 L551 272' }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M554 268 L650 314 L716 314' }),
+              h('text', { className: 'rh-nest-dimension', x: 650, y: 307 }, 'REPAIR / REUSE')
+            )
+          );
+        }
+        function cavityScene() {
+          return h('g', null,
+            h('g', layerProps(0),
+              h('path', { className: 'rh-nest-ground', d: 'M0 350 Q170 327 330 350 T760 344 V420 H0Z' }),
+              h('circle', { className: 'rh-nest-foliage', cx: 324, cy: 91, r: 86 }),
+              h('circle', { className: 'rh-nest-foliage', cx: 432, cy: 105, r: 70 }),
+              birdMark(575, 92),
+              h('text', { className: 'rh-nest-dimension', x: 575, y: 126 }, 'WOODED HABITAT')
+            ),
+            h('g', layerProps(1),
+              h('path', { className: 'rh-nest-wood', d: 'M260 390 C275 288 269 178 303 28 L436 28 C414 176 424 290 450 390Z' }),
+              h('path', { className: 'rh-nest-wood-top', d: 'M303 28 Q368 2 436 28 Q370 55 303 28Z' }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M435 200 L601 176 L700 176' }),
+              h('text', { className: 'rh-nest-dimension', x: 602, y: 169 }, 'TRUNK ENCLOSURE')
+            ),
+            h('g', layerProps(2),
+              h('ellipse', { className: 'rh-nest-chamber', cx: 372, cy: 205, rx: 54, ry: 82 }),
+              h('ellipse', { className: 'rh-nest-chamber', cx: 372, cy: 169, rx: 31, ry: 40 }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M319 250 L176 286 L78 286' }),
+              h('text', { className: 'rh-nest-dimension', x: 78, y: 278 }, 'EXISTING CHAMBER')
+            ),
+            h('g', layerProps(3),
+              h('path', { className: 'rh-nest-lining', d: 'M337 254 Q371 235 407 254' }),
+              h('ellipse', { className: 'rh-nest-egg', cx: 361, cy: 244, rx: 9, ry: 12 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: 383, cy: 244, rx: 9, ry: 12 })
+            ),
+            h('g', layerProps(4),
+              h('path', { className: 'rh-nest-twig-fine', d: 'M338 287 Q372 301 409 286' }),
+              h('text', { className: 'rh-nest-dimension', x: 319, y: 323 }, 'OCCUPY / REUSE')
+            )
+          );
+        }
+        function scrapeScene() {
+          return h('g', null,
+            h('g', layerProps(0),
+              h('path', { className: 'rh-nest-stone', d: 'M0 330 L130 292 L180 168 L326 95 L435 150 L760 126 V420 H0Z' }),
+              birdMark(564, 72),
+              h('text', { className: 'rh-nest-dimension', x: 564, y: 107 }, 'HEIGHT + OPEN AIR')
+            ),
+            h('g', layerProps(1),
+              h('path', { className: 'rh-nest-stone', d: 'M294 218 L680 206 L760 258 L398 278Z' }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M598 219 L648 174 L718 174' }),
+              h('text', { className: 'rh-nest-dimension', x: 648, y: 167 }, 'LEDGE SUPPORT')
+            ),
+            h('g', layerProps(2),
+              h('ellipse', { className: 'rh-nest-cup', cx: 500, cy: 226, rx: 76, ry: 22 }),
+              h('ellipse', { className: 'rh-nest-chamber', cx: 500, cy: 222, rx: 48, ry: 12 }),
+              h('text', { className: 'rh-nest-dimension', x: 466, y: 286 }, 'SHALLOW SCRAPE')
+            ),
+            h('g', layerProps(3),
+              h('circle', { className: 'rh-nest-wood-top', cx: 465, cy: 218, r: 4 }),
+              h('circle', { className: 'rh-nest-wood-top', cx: 489, cy: 214, r: 4 }),
+              h('circle', { className: 'rh-nest-wood-top', cx: 523, cy: 217, r: 4 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: 498, cy: 207, rx: 9, ry: 12 })
+            ),
+            h('g', layerProps(4),
+              h('path', { className: 'rh-nest-callout-line', d: 'M430 236 L252 310 L124 310' }),
+              h('text', { className: 'rh-nest-dimension', x: 124, y: 302 }, 'PREPARE AGAIN')
+            )
+          );
+        }
+        function groundScene() {
+          var burrow = nest.id === 'burrowing-owl';
+          return h('g', null,
+            h('g', layerProps(0),
+              h('path', { className: 'rh-nest-ground', d: 'M0 208 Q170 191 330 211 T760 205 V420 H0Z' }),
+              [64,104,150,608,650,699].map(function(x) { return h('path', { key: x, className: 'rh-nest-foliage', d: 'M' + x + ' 220 q-14 -58 -24 -86 M' + x + ' 220 q9 -63 27 -101' }); }),
+              birdMark(570, 76),
+              h('text', { className: 'rh-nest-dimension', x: 570, y: 110 }, 'OPEN VIEW + COVER')
+            ),
+            h('g', layerProps(1),
+              h('path', { className: 'rh-nest-soil', d: 'M0 221 Q180 202 350 222 T760 216 V420 H0Z' }),
+              burrow ? h('path', { className: 'rh-nest-tunnel-edge', d: 'M148 228 C235 240 254 310 350 312 L463 312' }) : h('ellipse', { className: 'rh-nest-cup', cx: 390, cy: 219, rx: 115, ry: 28 }),
+              h('path', { className: 'rh-nest-callout-line', d: 'M476 314 L604 343 L700 343' }),
+              h('text', { className: 'rh-nest-dimension', x: 603, y: 336 }, burrow ? 'SOIL ENCLOSURE' : 'GROUND + STEM SUPPORT')
+            ),
+            h('g', layerProps(2),
+              burrow ? h('g', null, h('path', { className: 'rh-nest-tunnel', d: 'M148 228 C235 240 254 310 350 312 L463 312' }), h('ellipse', { className: 'rh-nest-chamber', cx: 492, cy: 312, rx: 50, ry: 38 })) : h('g', null, h('path', { className: 'rh-nest-twig', d: 'M296 219 L479 235 M313 242 L470 207 M332 199 L452 244' }), h('ellipse', { className: 'rh-nest-cup', cx: 391, cy: 216, rx: 70, ry: 19 })),
+              h('text', { className: 'rh-nest-dimension', x: burrow ? 332 : 350, y: burrow ? 376 : 278 }, burrow ? 'TUNNEL + CHAMBER' : 'LOW CONCEALED BOWL')
+            ),
+            h('g', layerProps(3),
+              burrow ? h('path', { className: 'rh-nest-lining', d: 'M461 324 Q492 341 525 323' }) : h('ellipse', { className: 'rh-nest-lining', cx: 391, cy: 214, rx: 48, ry: 12 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: burrow ? 485 : 382, cy: burrow ? 317 : 207, rx: 8, ry: 11 }),
+              h('ellipse', { className: 'rh-nest-egg', cx: burrow ? 505 : 403, cy: burrow ? 317 : 207, rx: 8, ry: 11 })
+            ),
+            h('g', layerProps(4),
+              h('path', { className: 'rh-nest-twig-fine', d: burrow ? 'M127 210 Q151 198 176 215' : 'M312 250 Q390 273 469 246' }),
+              h('text', { className: 'rh-nest-dimension', x: burrow ? 72 : 316, y: burrow ? 188 : 302 }, burrow ? 'MAINTAIN ENTRANCE' : 'SEASONAL COVER')
+            )
+          );
+        }
+        function scene() {
+          if (nest.setting === 'cavity') return cavityScene();
+          if (nest.setting === 'scrape') return scrapeScene();
+          if (nest.setting === 'ground') return groundScene();
+          return platformScene();
+        }
+
+        var focusTitle = lens.id === 'structure' ? nest.support : lens.id === 'materials' ? nest.materials : nest.risk;
+        var focusCopy = lens.id === 'structure' ? nest.geometry : lens.id === 'materials' ? nest.method : NEST_COOKBOOK.safety;
+        var compareFields = [
+          { label: 'Architecture', a: settingMeta.label, b: (NEST_SETTINGS.find(function(item) { return item.id === compare.setting; }) || {}).label },
+          { label: 'Support', a: nest.support, b: compare.support },
+          { label: 'Form', a: nest.geometry, b: compare.geometry },
+          { label: 'Reuse pattern', a: nest.reuse, b: compare.reuse }
+        ];
+
+        return h('div', {
+          className: 'rh-nest-studio',
+          'data-raptor-nest-studio': 'true',
+          'data-nest-species': nest.id,
+          'data-nest-setting': setting,
+          'data-nest-lens': lens.id,
+          'data-nest-stage': stage.id,
+          'data-nest-mission': mission.id
+        },
+          h('section', { className: 'rh-nest-hero' },
+            h('div', { className: 'rh-nest-hero-main' },
+              h('div', { className: 'rh-nest-hero-mark', 'aria-hidden': 'true' }, 'NEST\nSTUDIO'),
+              h('div', null,
+                h('div', { className: 'rh-nest-kicker' }, 'Raptor architecture lab'),
+                h('h2', { className: 'rh-nest-title' }, 'Nest Architecture Studio'),
+                h('p', { className: 'rh-nest-copy' }, NEST_COOKBOOK.intro)
               )
+            ),
+            h('div', { className: 'rh-nest-summary', 'aria-label': 'Studio summary' },
+              h('div', { className: 'rh-nest-stat' }, h('strong', null, NEST_COOKBOOK.nests.length), h('span', null, 'species systems')),
+              h('div', { className: 'rh-nest-stat' }, h('strong', null, NEST_SETTINGS.length - 1), h('span', null, 'architectures')),
+              h('div', { className: 'rh-nest-stat' }, h('strong', null, NEST_STAGES.length), h('span', null, 'study moments')),
+              h('div', { className: 'rh-nest-stat' }, h('strong', null, '0'), h('span', null, 'nest material collected'))
             )
           ),
-          h('div', { className: 'flex flex-wrap gap-1' },
-            NEST_COOKBOOK.nests.map(function(nest, i) {
-              var sel = cookIdx === i;
-              return h('button', {
-                key: i,
-                onClick: function() { setCookIdx(i); },
-                className: 'px-3 py-1 rounded text-xs ' + (sel ? 'bg-amber-700 text-white font-bold' : 'transition-colors bg-slate-800/60 text-amber-200 hover:bg-slate-700/60 active:scale-[0.97]'),
-                'aria-pressed': sel
-              }, nest.species);
-            })
-          ),
-          h('div', { className: 'bg-slate-800/40 border border-amber-700/40 rounded-xl p-4 space-y-2' },
-            h('div', { className: 'text-lg font-bold text-amber-300 tracking-tight' }, '🪺 ' + n.species),
-            h('div', { className: 'grid md:grid-cols-2 gap-2' },
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-cyan-300 mb-1' }, __alloT('stem.raptorhunt.location', '📍 Location')),
-                h('div', { className: 'text-cyan-100/90' }, n.location)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-purple-300 mb-1' }, __alloT('stem.raptorhunt.size', '📐 Size')),
-                h('div', { className: 'text-purple-100/90' }, n.size)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-emerald-300 mb-1' }, __alloT('stem.raptorhunt.materials_2', '🌿 Materials')),
-                h('div', { className: 'text-emerald-100/90' }, n.materials)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-yellow-300 mb-1' }, __alloT('stem.raptorhunt.construction', '🔨 Construction')),
-                h('div', { className: 'text-yellow-100/90' }, n.construction)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-rose-300 mb-1' }, __alloT('stem.raptorhunt.stages', '📋 Stages')),
-                h('div', { className: 'text-rose-100/90' }, n.stages)
-              ),
-              h('div', { className: 'bg-slate-900/40 border border-slate-700/40 rounded p-2 text-xs' },
-                h('div', { className: 'font-bold text-blue-300 mb-1' }, __alloT('stem.raptorhunt.timing', '📅 Timing')),
-                h('div', { className: 'text-blue-100/90' }, n.timing)
-              )
+          h('section', { className: 'rh-nest-controls', 'aria-label': 'Nest studio controls' },
+            h('div', { className: 'rh-nest-control-row' },
+              h('div', { className: 'rh-nest-control-label' }, 'Architecture'),
+              h('div', { className: 'rh-nest-chip-row' }, NEST_SETTINGS.map(function(item) {
+                return h('button', { key: item.id, className: 'rh-nest-chip', type: 'button', onClick: function() { setSetting(item.id); }, 'aria-pressed': setting === item.id, 'data-nest-setting-control': item.id, title: item.note }, h('span', { className: 'rh-nest-chip-code' }, item.code), item.label);
+              }), h('span', { className: 'rh-nest-result-count', 'aria-live': 'polite' }, filtered.length + ' shown'))
+            ),
+            h('div', { className: 'rh-nest-control-row' },
+              h('div', { className: 'rh-nest-control-label' }, 'Analysis lens'),
+              h('div', { className: 'rh-nest-chip-row' }, NEST_LENSES.map(function(item) {
+                return h('button', { key: item.id, className: 'rh-nest-chip', type: 'button', onClick: function() { setRH({ nestLens: item.id }); }, 'aria-pressed': lens.id === item.id, 'data-nest-lens-control': item.id }, h('span', { className: 'rh-nest-chip-code' }, item.code), item.label);
+              }))
             )
+          ),
+          h('div', { className: 'rh-nest-workbench' },
+            h('section', { className: 'rh-nest-blueprint', 'data-nest-blueprint': nest.id },
+              h('div', { className: 'rh-nest-panel-head' }, h('div', null, h('div', { className: 'rh-nest-section-kicker' }, 'Interactive cutaway'), h('h3', null, nest.species + ' / ' + settingMeta.label)), h('span', null, stage.code + ' / ' + stage.label)),
+              h('div', { className: 'rh-nest-scene', tabIndex: 0, 'data-nest-scene': nest.setting },
+                h('svg', { viewBox: '0 0 760 420', role: 'img', 'aria-labelledby': 'rh-nest-scene-title rh-nest-scene-desc', preserveAspectRatio: 'xMidYMid meet' },
+                  h('title', { id: 'rh-nest-scene-title' }, 'Five-stage raptor nest architecture cutaway'),
+                  h('desc', { id: 'rh-nest-scene-desc' }, 'A schematic, not-to-scale cutaway for ' + nest.species + ', progressively showing site, support, form, finish, and maintenance.'),
+                  h('path', { className: 'rh-nest-grid', d: 'M0 70 H760 M0 140 H760 M0 210 H760 M0 280 H760 M0 350 H760 M95 0 V420 M190 0 V420 M285 0 V420 M380 0 V420 M475 0 V420 M570 0 V420 M665 0 V420' }),
+                  scene()
+                )
+              ),
+              h('div', { className: 'rh-nest-stage-controls', 'aria-label': 'Construction moments' }, NEST_STAGES.map(function(item) {
+                return h('button', { key: item.id, className: 'rh-nest-stage', type: 'button', onClick: function() { setRH({ nestStage: item.id }); }, 'aria-pressed': stage.id === item.id, 'data-nest-stage-control': item.id }, h('span', null, item.code), h('strong', null, item.short));
+              })),
+              h('div', { className: 'rh-nest-stage-note', 'data-nest-stage-note': stage.id }, h('strong', null, stage.label + ': '), nest.stageNotes[stageIndex] + ' ' + stage.cue)
+            ),
+            h('aside', { className: 'rh-nest-dossier', 'data-nest-dossier': nest.id },
+              h('div', { className: 'rh-nest-dossier-head' }, h('div', null, h('div', { className: 'rh-nest-detail-kicker' }, settingMeta.code + ' / field dossier'), h('h3', null, nest.species)), h('span', { className: 'rh-nest-code' }, nest.code)),
+              h('div', { className: 'rh-nest-meta-row' }, h('span', { className: 'rh-nest-meta' }, settingMeta.label), h('span', { className: 'rh-nest-meta' }, stage.short), h('span', { className: 'rh-nest-meta' }, lens.code + ' lens')),
+              h('div', { className: 'rh-nest-focus', 'data-lens': lens.id }, h('span', null, lens.label + ' question'), h('strong', null, focusTitle), h('p', null, focusCopy), h('p', null, lens.signal)),
+              h('div', { className: 'rh-nest-facts' },
+                h('div', { className: 'rh-nest-fact' }, h('span', null, 'Site'), h('p', null, nest.location)),
+                h('div', { className: 'rh-nest-fact', 'data-tone': 'green' }, h('span', null, 'Scale note'), h('p', null, nest.scale)),
+                h('div', { className: 'rh-nest-fact', 'data-tone': 'blue' }, h('span', null, 'Season + reuse'), h('p', null, nest.timing + ' ' + nest.reuse))
+              ),
+              h('a', { className: 'rh-nest-source', href: nest.source, target: '_blank', rel: 'noopener noreferrer', 'data-nest-source-link': nest.id }, 'Open source note - ' + nest.sourceLabel),
+              h('p', { className: 'rh-nest-reviewed' }, 'Source review: ' + NEST_COOKBOOK.reviewed + '. Regional behavior varies; pair this summary with local wildlife-agency guidance.')
+            )
+          ),
+          h('section', { className: 'rh-nest-comparison', 'data-nest-comparison': 'true' },
+            h('div', { className: 'rh-nest-section-head' }, h('div', null, h('div', { className: 'rh-nest-section-kicker' }, 'Constraint comparison'), h('h3', null, nest.species + ' beside another strategy')), h('span', null, 'difference, not a ranking')),
+            h('div', { className: 'rh-nest-compare-select' },
+              h('label', null, 'Compare with', h('select', { value: compare.id, onChange: function(event) { setRH({ nestCompareId: event.target.value }); }, 'aria-label': 'Compare nest species' }, NEST_COOKBOOK.nests.filter(function(item) { return item.id !== nest.id; }).map(function(item) { return h('option', { key: item.id, value: item.id }, item.species); }))),
+              h('div', { className: 'rh-nest-compare-badge' }, nest.code + ' / ' + compare.code)
+            ),
+            h('div', { className: 'rh-nest-compare-grid' }, compareFields.map(function(field) { return h('div', { key: field.label, className: 'rh-nest-compare-cell' }, h('span', null, field.label), h('strong', null, nest.species + ': ' + field.a), h('strong', null, compare.species + ': ' + field.b)); })),
+            h('p', { className: 'rh-nest-compare-note' }, 'Read each design as a response to habitat, behavior, available structures, and evolutionary history. Larger, higher, or more built does not mean more advanced.')
+          ),
+          h('section', { className: 'rh-nest-planner', 'data-nest-plan': mission.id },
+            h('div', { className: 'rh-nest-section-head' }, h('div', null, h('div', { className: 'rh-nest-section-kicker' }, 'Classroom model missions'), h('h3', null, 'Build understanding, not a wildlife nest')), h('span', null, 'craft materials only')),
+            h('div', { className: 'rh-nest-mission-controls' }, NEST_MISSIONS.map(function(item) { return h('button', { key: item.id, className: 'rh-nest-mission', type: 'button', onClick: function() { setRH({ nestMission: item.id }); }, 'aria-pressed': mission.id === item.id, 'data-nest-mission-control': item.id }, h('span', null, item.code), item.label); })),
+            h('p', { className: 'rh-nest-mission-question' }, mission.question),
+            h('div', { className: 'rh-nest-plan' }, mission.steps.map(function(item, index) { return h('div', { key: item.label, className: 'rh-nest-plan-step', 'data-nest-plan-step': index + 1 }, h('span', null, 'Step ' + (index + 1)), h('strong', null, item.label), h('p', null, item.action), h('small', null, item.detail)); })),
+            h('p', { className: 'rh-nest-plan-note' }, 'Document one claim, one observation, and one limitation. A classroom model is successful when it makes reasoning visible, not when it resembles an occupied nest.')
+          ),
+          h('aside', { className: 'rh-nest-safety' }, h('div', { className: 'rh-nest-safety-mark', 'aria-hidden': 'true' }, 'CARE'), h('div', null, h('strong', null, 'Distance-first field ethic'), h('p', null, NEST_COOKBOOK.safety))),
+          h('section', { className: 'rh-nest-directory' },
+            h('div', { className: 'rh-nest-section-head' }, h('div', null, h('div', { className: 'rh-nest-section-kicker' }, 'Species architecture shelf'), h('h3', null, setting === 'all' ? 'All 14 nest systems' : settingMeta.label + ' systems')), h('span', null, filtered.length + ' dossiers')),
+            filtered.length ? h('div', { className: 'rh-nest-directory-grid' }, filtered.map(function(item) {
+              var meta = NEST_SETTINGS.find(function(candidate) { return candidate.id === item.setting; }) || NEST_SETTINGS[1];
+              return h('button', { key: item.id, className: 'rh-nest-card', type: 'button', onClick: function() { setNest(item.id); }, 'aria-pressed': nest.id === item.id, 'data-active': nest.id === item.id, 'data-nest-card': item.id }, h('span', { className: 'rh-nest-card-code' }, item.code), h('span', { className: 'rh-nest-card-copy' }, h('strong', null, item.species), h('span', null, item.geometry)), h('span', { className: 'rh-nest-card-role' }, meta.code + ' / ' + meta.label));
+            })) : h('div', { className: 'rh-nest-empty' }, 'No species match this architecture filter.')
           )
         );
       }

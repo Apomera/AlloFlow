@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { createServer, Server } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 
 /**
@@ -23,7 +23,7 @@ const MIME: Record<string, string> = {
 const HARNESS = `<!doctype html>
 <html><head><meta charset="utf-8"><title>archstudio harness</title>
 <style>html,body{margin:0;height:100%;background:#0f172a}
-#wrap{width:900px;height:620px;overflow:hidden}</style></head>
+#wrap{width:100vw;height:620px;overflow:hidden}</style></head>
 <body><div id="wrap"></div>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
@@ -32,7 +32,10 @@ const HARNESS = `<!doctype html>
 <script>
   window.__events = { errors: [], sr: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
-  window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
+  window.__failThree = false;
+  window.StemLab.ensureThree = function () {
+    return window.__failThree ? Promise.reject(new Error('test WebGL failure')) : Promise.resolve(window.THREE);
+  };
   window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
 </script>
 <script src="/stem_lab/stem_tool_archstudio.js"></script>
@@ -56,7 +59,10 @@ const HARNESS = `<!doctype html>
         window.__toolData[b] = Object.assign({}, window.__toolData[b], patch);
         if (bump) bump();
       },
-      setToolData: function () {}, setStemLabTool: function () {}, setStemLabTab: function () {},
+      setToolData: function (updater) {
+        window.__toolData = typeof updater === 'function' ? updater(window.__toolData) : updater;
+        if (bump) bump();
+      }, setStemLabTool: function () {}, setStemLabTab: function () {},
       addToast: function () {}, awardXP: function () {}, getXP: function () { return 0; },
       announceToSR: function (m) { window.__events.sr.push(String(m)); },
       celebrate: function () {}, beep: function () {},
@@ -196,6 +202,277 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(gl.state).toBe('ready');
     expect(gl.blockCount).toBe(0);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('clicking the 3D ground places the selected object', async ({ page }) => {
+    await mount3d(page, { blocks: [] });
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({
+      y: 0, shape: 'block', material: 'stone'
+    });
+  });
+
+  test('shows a placement grid and a live shape preview before committing', async ({ page }) => {
+    await mount3d(page, { blocks: [], activeShape: 'column', activeMaterial: 'wood' });
+    expect(await page.evaluate(() => (window as any).__gl())).toMatchObject({ previewVisible: false });
+    expect((await page.evaluate(() => (window as any).__gl())).gridLineCount).toBeGreaterThanOrEqual(20);
+
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.previewVisible)).toBe(true);
+
+    await page.mouse.move(1, 1);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.previewVisible)).toBe(false);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks?.length || 0)).toBe(0);
+  });
+
+  test('camera buttons and arrow keys orbit, tilt, zoom, and reset the view', async ({ page }) => {
+    await mount3d(page, { blocks: tower() });
+    await page.getByRole('button', { name: 'Rotate view left' }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.rotY)).toBe(-53);
+
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    await canvas.focus();
+    await canvas.press('ArrowUp');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.rotX)).toBe(-34);
+    await canvas.press('+');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().rot3d?.scale)).toBe(1.15);
+
+    await page.getByRole('button', { name: 'Reset three-dimensional view' }).click();
+    expect(await page.evaluate(() => (window as any).__bucket().rot3d)).toMatchObject({ rotX: -24, rotY: -38, scale: 1 });
+  });
+
+  test('the floor grid can place, paint, and erase a selected object', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', blocks: [] }));
+    const cell = page.locator('button[data-arch-cell="0,0,0"]');
+    await expect(cell).toBeVisible();
+
+    await cell.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({
+      x: 0, y: 0, z: 0, shape: 'block', material: 'stone'
+    });
+
+    const glass = page.locator('button').filter({ hasText: /Glass/ }).first();
+    await glass.scrollIntoViewIfNeeded();
+    await glass.click();
+    await page.getByRole('button', { name: /Paint/ }).first().click();
+    await cell.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks[0]?.material)).toBe('glass');
+
+    await page.getByRole('button', { name: /Erase/ }).first().click();
+    await cell.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(0);
+  });
+
+  test('keeps replay read-only in the floor grid and settles elevated imports to ground', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    const elevated = [
+      { x: 0, y: 5, z: 0, shape: 'block', material: 'stone' },
+      { x: 0, y: 7, z: 0, shape: 'roof', material: 'wood' },
+    ];
+    await page.evaluate((blocks) => (window as any).__mount({
+      editorView: 'grid', blocks, showReplay: true, replayStep: 0, undoStack: [[]],
+    }), elevated);
+
+    await page.locator('button[data-arch-cell="1,0,0"]').click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toHaveLength(2);
+    expect(await page.evaluate(() => (window as any).__events.sr)).toContain('Exit construction replay before editing.');
+
+    await page.getByRole('button', { name: /Replay/ }).first().click();
+    await page.getByTitle('Apply gravity (drop floating blocks)').click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.map((b: any) => b.y))).toEqual([0, 1]);
+  });
+
+  test('renders the selected shape and preserves its material and rotation', async ({ page }) => {
+    await mount3d(page, {
+      blocks: [], activeShape: 'ramp', activeMaterial: 'brick',
+      activeColor: '#b45309', activeRotation: 90,
+    });
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks[0])).toMatchObject({
+      shape: 'ramp', material: 'brick', color: '#b45309', rotation: 90,
+    });
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.customShapeCount)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__gl()?.shapeCounts)).toMatchObject({ ramp: 1 });
+  });
+
+  test('renders every advertised shape across all materials without a WebGL error', async ({ page }) => {
+    const shapes = ['block', 'slab', 'ramp', 'column', 'arch', 'roof', 'pyramid', 'dome', 'cylinder', 'lbeam', 'window', 'door'];
+    const materials = ['stone', 'brick', 'wood', 'glass', 'marble', 'metal'];
+    const colors = ['#94a3b8', '#b45309', '#92400e', '#38bdf8', '#f1f5f9', '#cbd5e1'];
+    const blocks = shapes.map((shape, i) => ({
+      x: i % 4, y: 0, z: Math.floor(i / 4), shape,
+      material: materials[i % materials.length], color: colors[i % colors.length],
+      rotation: (i % 4) * 90,
+    }));
+    await mount3d(page, { blocks });
+
+    const gl = await page.evaluate(() => (window as any).__gl());
+    expect(gl.blockCount).toBe(shapes.length);
+    expect(gl.customShapeCount).toBe(shapes.length - 1);
+    for (const shape of shapes) expect(gl.shapeCounts[shape]).toBe(1);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('layer, negative-Z slice, material filter, and replay change the rendered model', async ({ page }) => {
+    const blocks = [
+      { x: 0, y: 0, z: -1, shape: 'block', material: 'stone' },
+      { x: 0, y: 1, z: -1, shape: 'column', material: 'wood' },
+      { x: 1, y: 0, z: 1, shape: 'ramp', material: 'stone' },
+      { x: 1, y: 1, z: 1, shape: 'roof', material: 'wood' },
+    ];
+
+    await mount3d(page, { blocks, viewLayer: 1 });
+    expect((await page.evaluate(() => (window as any).__gl())).blockCount).toBe(2);
+
+    await mount3d(page, { blocks, showSlice: true, sliceZ: -1, sliceZSelected: true });
+    expect((await page.evaluate(() => (window as any).__gl())).blockCount).toBe(2);
+
+    await mount3d(page, { blocks, filterMaterial: 'wood' });
+    expect((await page.evaluate(() => (window as any).__gl())).blockCount).toBe(2);
+
+    await mount3d(page, { blocks, showReplay: true, replayStep: 0, undoStack: [[blocks[0]]] });
+    expect((await page.evaluate(() => (window as any).__gl())).blockCount).toBe(1);
+  });
+
+  test('heatmap, Brick Builder, and Blueprint visibly reach the renderer', async ({ page }) => {
+    const stack = [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+      { x: 0, y: 1, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+      { x: 0, y: 2, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' },
+    ];
+
+    await mount3d(page, { blocks: stack, showHeatmap: true });
+    const heat = await page.evaluate(() => (window as any).__gl());
+    expect(new Set(heat.renderHexes).size).toBe(3);
+
+    await mount3d(page, { blocks: [stack[0]], styleMode: 'bricks' });
+    const bricks = await page.evaluate(() => (window as any).__gl());
+    expect(bricks.styleMode).toBe('bricks');
+    expect(bricks.renderHexes[0]).toBe(0xef4444);
+
+    await mount3d(page, { blocks: stack, blueprintView: true });
+    expect((await page.evaluate(() => (window as any).__gl())).viewMode).toBe('blueprint');
+  });
+
+  test('downloads real PNG and STL exports from the active renderer', async ({ page }) => {
+    await mount3d(page, {
+      blocks: [
+        { x: 0, y: 0, z: 0, shape: 'block', material: 'stone' },
+        { x: 1, y: 0, z: 0, shape: 'ramp', material: 'brick', rotation: 90 },
+      ],
+    });
+
+    const pngEvent = page.waitForEvent('download');
+    await page.getByTitle('Screenshot').click();
+    const png = await pngEvent;
+    expect(png.suggestedFilename()).toMatch(/^archstudio_screenshot_.*\.png$/);
+    const pngPath = await png.path();
+    expect(pngPath).not.toBeNull();
+    expect((await stat(pngPath!)).size).toBeGreaterThan(100);
+
+    const stlEvent = page.waitForEvent('download');
+    await page.getByRole('button', { name: /STL/ }).click();
+    const stl = await stlEvent;
+    expect(stl.suggestedFilename()).toMatch(/^architecture_studio_.*\.stl$/);
+    const stlPath = await stl.path();
+    expect(stlPath).not.toBeNull();
+    expect((await stat(stlPath!)).size).toBeGreaterThan(84);
+  });
+
+  test('paints and erases a block directly in the 3D viewport', async ({ page }) => {
+    await mount3d(page, {
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8' }],
+      activeMaterial: 'glass', activeColor: '#38bdf8',
+    });
+    const canvas = page.locator('canvas[data-arch-gl="true"]');
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+
+    await page.getByRole('button', { name: /Paint/ }).first().click();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks[0]?.material)).toBe('glass');
+
+    await page.getByRole('button', { name: /Erase/ }).first().click();
+    await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(0);
+  });
+
+  test('symmetry, keyboard rotation, multi-floor editing, undo, and redo work together', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', blocks: [] }));
+
+    const region = page.locator('#arch-studio-region');
+    await region.focus();
+    await region.press('r');
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().activeRotation)).toBe(90);
+    await page.getByRole('button', { name: 'Next floor' }).click();
+    await page.getByRole('button', { name: /Symmetry: mirror edits/ }).click();
+    await page.locator('button[data-arch-cell="2,1,0"]').click();
+
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(2);
+    const placed = await page.evaluate(() => (window as any).__bucket().blocks);
+    expect(placed.map((b: any) => b.x).sort((a: number, b: number) => a - b)).toEqual([-2, 2]);
+    expect(placed.every((b: any) => b.y === 1 && b.rotation === 90)).toBe(true);
+
+    await page.getByRole('button', { name: /Undo/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(0);
+    await page.getByRole('button', { name: /Redo/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(2);
+  });
+
+  test('keeps a far imported build inside the editable grid window', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({
+      editorView: 'grid', blocks: [{ x: 64, y: 0, z: 64, shape: 'column', material: 'stone' }],
+    }));
+    await expect(page.locator('button[data-arch-cell="64,0,64"]')).toBeVisible();
+  });
+
+  test('falls back to a fully editable floor grid when WebGL fails', async ({ page }) => {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => {
+      (window as any).__failThree = true;
+      (window as any).__mount({ blocks: [] });
+    });
+    await expect(page.getByText('3D is unavailable, but the floor grid is fully editable.')).toBeVisible();
+    const cell = page.locator('button[data-arch-cell="0,0,0"]');
+    await cell.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
+  });
+
+  test('stacks the controls and keeps the build surface usable on a narrow screen', async ({ page }) => {
+    await page.setViewportSize({ width: 500, height: 700 });
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ editorView: 'grid', blocks: [] }));
+
+    expect(await page.locator('.arch-studio-main').evaluate((el) => getComputedStyle(el).flexDirection)).toBe('column');
+    expect(await page.locator('.arch-studio-header').evaluate((el) => getComputedStyle(el).overflowX)).toBe('auto');
+    const cell = page.locator('button[data-arch-cell="0,0,0"]');
+    await cell.scrollIntoViewIfNeeded();
+    await expect(cell).toBeVisible();
+    await cell.click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks?.length)).toBe(1);
   });
 
   test('occupies the main viewport, with no spinner left behind', async ({ page }) => {

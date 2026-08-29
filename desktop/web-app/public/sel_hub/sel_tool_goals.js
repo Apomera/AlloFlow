@@ -652,6 +652,15 @@ window.SelHub = window.SelHub || {
         var celebratingGoalId = d.celebratingGoalId || null;
         var showSmartExamples = d.showSmartExamples || false;
         var smartExampleCat = d.smartExampleCat || 'academic';
+        var smartBuildMode = d.smartBuildMode === 'all' ? 'all' : 'guided';
+        var parsedSmartStep = parseInt(d.smartStep, 10);
+        var smartStep = isNaN(parsedSmartStep) ? 0 : Math.max(0, Math.min(4, parsedSmartStep));
+        var expandedGoalCandidate = d.expandedGoalId || null;
+        if (!goals.some(function(goal) { return goal.id === expandedGoalCandidate && !goal.completed; })) {
+          expandedGoalCandidate = goals.some(function(goal) { return goal.id === editingGoal && !goal.completed; }) ? editingGoal : null;
+        }
+        var expandedGoalId = expandedGoalCandidate;
+        var renamingGoalId = typeof d.renamingGoalId === 'string' && goals.some(function(goal) { return goal.id === d.renamingGoalId && !goal.completed; }) ? d.renamingGoalId : null;
         var habitCategoryFilter = d.habitCategoryFilter || 'all';
         var journeyMilestonesShown = d.journeyMilestonesShown || {};
 
@@ -682,13 +691,42 @@ window.SelHub = window.SelHub || {
           if (callTTS) callTTS(text);
         };
 
+        var getGoalDomId = function(goalId) {
+          return String(goalId).replace(/[^a-zA-Z0-9_-]/g, '-');
+        };
+
+        var focusGoalName = function(goalId) {
+          setTimeout(function() {
+            var field = document.getElementById('goal-name-input-' + getGoalDomId(goalId));
+            if (field) field.focus();
+          }, 0);
+        };
+
+        var focusGoalDisclosure = function(goalId) {
+          setTimeout(function() {
+            var button = document.getElementById('goal-disclosure-' + getGoalDomId(goalId));
+            if (button) button.focus();
+          }, 0);
+        };
+
+        var focusGoalStepInput = function(goalId) {
+          setTimeout(function() {
+            var field = document.getElementById('goal-step-input-' + getGoalDomId(goalId));
+            if (field) field.focus();
+          }, 0);
+        };
+
         var updateGoal = function(goalId, patch) {
           var next = goals.map(function(g) { return g.id === goalId ? Object.assign({}, g, patch) : g; });
           upd({ goals: next });
         };
 
         var deleteGoal = function(goalId) {
-          upd({ goals: goals.filter(function(g) { return g.id !== goalId; }) });
+          var patch = { goals: goals.filter(function(g) { return g.id !== goalId; }) };
+          if (expandedGoalId === goalId) patch.expandedGoalId = null;
+          if (editingGoal === goalId) patch.editingGoal = null;
+          if (renamingGoalId === goalId) patch.renamingGoalId = null;
+          upd(patch);
         };
 
         var addGoal = function(text, category, difficulty, smartData) {
@@ -707,7 +745,25 @@ window.SelHub = window.SelHub || {
             reflections: [],
             completionJournal: null
           };
-          upd({ goals: goals.concat([newGoal]), editingGoal: newGoal.id });
+          upd({ goals: goals.concat([newGoal]), editingGoal: newGoal.id, expandedGoalId: newGoal.id, renamingGoalId: newGoal.id });
+          focusGoalName(newGoal.id);
+        };
+
+        var toggleGoalDetails = function(goalId) {
+          var opening = expandedGoalId !== goalId;
+          var patch = { expandedGoalId: opening ? goalId : null };
+          if (!opening || renamingGoalId !== goalId) patch.renamingGoalId = null;
+          upd(patch);
+        };
+
+        var openGoalForEditing = function(goalId) {
+          upd({ expandedGoalId: goalId, renamingGoalId: goalId, tab: 'goals' });
+          focusGoalName(goalId);
+        };
+
+        var openGoalDetails = function(goalId) {
+          upd({ expandedGoalId: goalId, renamingGoalId: null, tab: 'goals' });
+          focusGoalDisclosure(goalId);
         };
 
         var toggleStep = function(goalId, stepIdx) {
@@ -1131,8 +1187,52 @@ window.SelHub = window.SelHub || {
           });
           sfxAdd();
           addGoal(ex.title, catId, 1, smartData);
-          upd({ usedSmartExample: true, showSmartExamples: false, tab: 'smart' });
+          upd({ usedSmartExample: true, showSmartExamples: false, tab: 'smart', smartBuildMode: 'guided', smartStep: 0 });
           if (addToast) addToast('\uD83D\uDCD6 SMART template loaded! Customize it to fit you.', 'info');
+        };
+
+        var getSmartFieldId = function(goalId, key) {
+          return 'smart-field-' + String(goalId).replace(/[^a-zA-Z0-9_-]/g, '-') + '-' + key;
+        };
+
+        var focusSmartField = function(goalId, key) {
+          setTimeout(function() {
+            var field = document.getElementById(getSmartFieldId(goalId, key));
+            if (field) field.focus();
+          }, 0);
+        };
+
+        var moveSmartStep = function(goal, nextStep) {
+          var boundedStep = Math.max(0, Math.min(4, nextStep));
+          upd({ smartStep: boundedStep });
+          focusSmartField(goal.id, ['S', 'M', 'A', 'R', 'T'][boundedStep]);
+        };
+
+        var firstIncompleteSmartStep = function(goal) {
+          var keys = ['S', 'M', 'A', 'R', 'T'];
+          var firstMissing = keys.findIndex(function(key) {
+            return !(goal.smart && goal.smart[key] && goal.smart[key].trim());
+          });
+          return firstMissing === -1 ? 0 : firstMissing;
+        };
+
+        var renderSmartField = function(goal, key) {
+          var info = SMART_LABELS[key];
+          var val = (goal.smart && goal.smart[key]) || '';
+          var fieldId = getSmartFieldId(goal.id, key);
+          return h('div', { key: key, style: { marginBottom: 12, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+              h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, info.emoji),
+              h('label', { htmlFor: fieldId, style: { fontSize: 13, fontWeight: 'bold', color: _goaFg('#a5b4fc') } }, key + ' — ' + info.label),
+              val ? h('span', { style: { marginLeft: 'auto', color: _goaFg('#34d399'), fontSize: 10 } }, '✓ Complete') : null
+            ),
+            h('p', { id: fieldId + '-help', style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 6 } }, info.desc),
+            h('textarea', { id: fieldId, value: val, 'aria-describedby': fieldId + '-help', onChange: function(e) {
+              var newSmart = Object.assign({}, goal.smart || {});
+              newSmart[key] = e.target.value;
+              updateGoal(goal.id, { smart: newSmart });
+            }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 76, padding: 10, borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box', lineHeight: 1.5 } })
+          );
         };
 
         // ── Difficulty helper ──
@@ -1323,7 +1423,7 @@ window.SelHub = window.SelHub || {
                     h('span', { style: { fontSize: 10, color: _goaFg('#34d399'), fontWeight: 'bold' } }, (goalOfTheWeek.progress || 0) + '%')
                   )
                 ),
-                h('button', { 'aria-label': 'Focus', onClick: function() { upd({ editingGoal: goalOfTheWeek.id, tab: 'goals' }); }, style: { padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: _goaFg('#34d399'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
+                h('button', { 'aria-label': 'Focus on goal: ' + (goalOfTheWeek.text || 'unnamed goal'), onClick: function() { if ((goalOfTheWeek.text || '').trim()) openGoalDetails(goalOfTheWeek.id); else openGoalForEditing(goalOfTheWeek.id); }, style: { minHeight: 44, padding: '6px 12px', borderRadius: 8, background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: _goaFg('#34d399'), fontSize: 10, fontWeight: 'bold', cursor: 'pointer', whiteSpace: 'nowrap' } }, '\uD83C\uDFAF Focus')
               ) : null,
               // Accountability check
               (function() {
@@ -1363,53 +1463,71 @@ window.SelHub = window.SelHub || {
                 ) : null,
               activeGoals.map(function(goal) {
                 var cat = GOAL_CATEGORIES.find(function(c) { return c.id === goal.category; }) || GOAL_CATEGORIES[2];
-                var isEditing = editingGoal === goal.id;
+                var isExpanded = expandedGoalId === goal.id;
+                var isEditing = renamingGoalId === goal.id && isExpanded;
                 var goalDiff = goal.difficulty || 1;
-                var stepInputId = 'goal-step-input-' + goal.id;
-                return h('div', { key: goal.id, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: 'rgba(99,102,241,0.06)', border: '1px solid ' + cat.color + '33', transition: 'all 0.15s' } },
+                var goalDomId = getGoalDomId(goal.id);
+                var goalLabel = (goal.text || '').trim() || 'unnamed goal';
+                var goalSteps = goal.steps || [];
+                var completedStepCount = goalSteps.filter(function(step) { return step.done; }).length;
+                var goalProgressValue = goalSteps.length > 0 ? Math.round(completedStepCount / goalSteps.length * 100) : 0;
+                var goalProgressText = goalSteps.length > 0 ? completedStepCount + ' of ' + goalSteps.length + ' steps complete' : 'No steps added yet';
+                var firstIncompleteStep = goalSteps.find(function(step) { return !step.done && (step.text || '').trim(); });
+                var nextActionText = !(goal.text || '').trim() ? 'Next: name this goal.' : goalSteps.length === 0 ? 'Next: add a first step.' : firstIncompleteStep ? 'Next: ' + firstIncompleteStep.text.trim() : 'All listed steps are complete.';
+                var stepInputId = 'goal-step-input-' + goalDomId;
+                var detailsId = 'goal-details-' + goalDomId;
+                var disclosureId = 'goal-disclosure-' + goalDomId;
+                return h('div', { key: goal.id, id: 'goal-card-' + goalDomId, style: { padding: 14, marginBottom: 10, borderRadius: 12, background: isExpanded ? 'rgba(99,102,241,0.09)' : 'rgba(99,102,241,0.04)', border: '1px solid ' + cat.color + (isExpanded ? '66' : '33'), transition: 'all 0.15s' } },
                   // Goal header
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 } },
-                    h('span', { style: { fontSize: 18 } }, cat.emoji),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                    h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, cat.emoji),
                     isEditing ?
-                      h('input', { type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 13 } }) :
-                      h('span', { style: { flex: 1, fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' }, role: 'button', tabIndex: 0, 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); upd({ editingGoal: goal.id }); } }, onClick: function() { upd({ editingGoal: goal.id }); } }, goal.text || 'Tap to name your goal...'),
+                      h('input', { id: 'goal-name-input-' + goalDomId, type: 'text', 'aria-label': 'Goal name', value: goal.text, onChange: function(e) { updateGoal(goal.id, { text: e.target.value }); }, autoFocus: true, style: { flex: '1 1 180px', minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid ' + cat.color + '44', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 13 } }) :
+                      h('button', { 'aria-label': (goal.text ? 'Rename goal: ' + goal.text : 'Name your goal'), onClick: function() { openGoalForEditing(goal.id); }, style: { flex: '1 1 180px', minHeight: 44, padding: '4px 0', border: 'none', background: 'transparent', textAlign: 'left', fontSize: 13, fontWeight: 'bold', color: _goaFg('#e2e8f0'), cursor: 'pointer' } }, goal.text || 'Name this goal...'),
                     // Difficulty indicator (flames)
-                    h('span', { title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
+                    h('span', { 'aria-label': 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, title: 'Difficulty: ' + (DIFFICULTY_LABELS[goalDiff - 1] || DIFFICULTY_LABELS[0]).label, style: { fontSize: 10, letterSpacing: -2, cursor: 'default' } }, getDifficultyFlames(goalDiff)),
                     h('select', { value: goal.category, 'aria-label': 'Category for goal: ' + (goal.text || 'unnamed goal'), onChange: function(e) { updateGoal(goal.id, { category: e.target.value }); }, style: { padding: '3px 6px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#94a3b8'), fontSize: 10, cursor: 'pointer' } },
                       GOAL_CATEGORIES.map(function(c) { return h('option', { key: c.id, value: c.id }, c.emoji + ' ' + c.label); })
                     ),
-                    h('button', { 'aria-label': 'Share goal: ' + (goal.text || 'unnamed goal'), onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\uD83D\uDCE4'),
-                    h('button', { 'aria-label': 'Delete goal: ' + (goal.text || 'unnamed goal'), onClick: function() { deleteGoal(goal.id); }, style: { minWidth: 24, minHeight: 24, background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 12, padding: 4 } }, '\u2715')
+                    h('button', { 'aria-label': 'Share goal: ' + goalLabel, onClick: function() { shareGoalToClipboard(goal); }, title: 'Share goal with buddy', style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#818cf8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\uD83D\uDCE4'),
+                    h('button', { 'aria-label': 'Delete goal: ' + goalLabel, onClick: function() { deleteGoal(goal.id); }, style: { minWidth: 44, minHeight: 44, background: 'none', border: 'none', color: _goaFg('#94a3b8'), cursor: 'pointer', fontSize: 14, padding: 4 } }, '\u2715')
                   ),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('div', { role: 'progressbar', 'aria-label': 'Progress for ' + goalLabel, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': goalProgressValue, 'aria-valuetext': goalProgressText, style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' } },
+                      h('div', { style: { width: goalProgressValue + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
+                    ),
+                    h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goalProgressValue + '%')
+                  ),
+                  h('p', { style: { margin: '0 0 8px', color: _goaFg('#cbd5e1'), fontSize: 11, lineHeight: 1.5, fontWeight: 600 } }, nextActionText),
+                  h('button', { id: disclosureId, 'aria-label': (isExpanded ? 'Collapse goal details: ' : 'Expand goal details: ') + goalLabel, 'aria-expanded': isExpanded, 'aria-controls': detailsId, onClick: function() { toggleGoalDetails(goal.id); }, style: { width: '100%', minHeight: 44, padding: '8px 12px', marginBottom: isExpanded ? 10 : 0, borderRadius: 8, border: '1px solid ' + cat.color + '44', background: isExpanded ? cat.color + '18' : 'rgba(255,255,255,0.03)', color: isExpanded ? cat.color : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                    h('span', null, isExpanded ? 'Hide goal details' : 'Show goal details'),
+                    h('span', { 'aria-hidden': 'true' }, isExpanded ? '\u25B2' : '\u25BC')
+                  ),
+                  h('div', { id: detailsId, role: 'region', 'aria-labelledby': disclosureId, hidden: !isExpanded, style: { display: isExpanded ? 'block' : 'none', paddingTop: 2 } },
                   // Difficulty selector (shown when editing)
-                  isEditing ? h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, paddingLeft: 26 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8, flexWrap: 'wrap' } },
                     h('span', { style: { fontSize: 10, color: _goaFg('#94a3b8'), fontWeight: 'bold' } }, 'Difficulty:'),
                     [1, 2, 3, 4, 5].map(function(lvl) {
                       var info = DIFFICULTY_LABELS[lvl - 1];
                       var active = goalDiff === lvl;
                       return h('button', { 'aria-label': 'Set difficulty: ' + info.label, key: lvl, onClick: function() { updateGoal(goal.id, { difficulty: lvl }); sfxClick(); }, title: info.label + ' (' + info.xpMult + 'x XP)', style: { padding: '2px 8px', borderRadius: 12, background: active ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.03)', border: active ? '1px solid rgba(245,158,11,0.4)' : '1px solid rgba(99,102,241,0.1)', color: active ? _goaFg('#fbbf24') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, getDifficultyFlames(lvl) + ' ' + info.label);
                     })
-                  ) : null,
+                  ),
                   // Progress bar with milestone markers
                   (function() {
                     var milestones = getGoalMilestones(goal);
                     var hasMilestones = milestones.length > 0;
-                    return h('div', { style: { marginBottom: 8 } },
-                      h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                        h('div', { style: { flex: 1, height: 8, borderRadius: 4, background: 'rgba(255,255,255,0.06)', overflow: 'hidden', position: 'relative' } },
-                          h('div', { style: { width: goal.progress + '%', height: '100%', background: 'linear-gradient(90deg, ' + cat.color + ', ' + cat.color + 'cc)', borderRadius: 4, transition: 'width 0.3s' } })
-                        ),
-                        h('span', { style: { fontSize: 11, fontWeight: 'bold', color: cat.color, minWidth: 32, textAlign: 'right' } }, goal.progress + '%')
-                      ),
-                      hasMilestones ? h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 3, paddingRight: 40 } },
+                    return hasMilestones ? h('div', { style: { marginBottom: 10, padding: 8, borderRadius: 8, background: 'rgba(255,255,255,0.02)' } },
+                      h('div', { style: { marginBottom: 5, fontSize: 10, fontWeight: 'bold', color: _goaFg('#94a3b8') } }, 'Milestones'),
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between' } },
                         milestones.map(function(ms) {
                           return h('div', { key: ms.threshold, style: { display: 'flex', flexDirection: 'column', alignItems: 'center', width: 24 } },
                             h('div', { style: { width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: ms.isCurrent ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.04)', border: ms.isCurrent ? '2px solid #34d399' : '1px solid rgba(99,102,241,0.2)', fontSize: 7, color: ms.isCurrent ? _goaFg('#34d399') : '#475569' } }, ms.isCurrent ? '\u2713' : ms.threshold === 100 ? '\u2605' : '\u25CB'),
                             h('span', { style: { fontSize: 7, color: ms.isCurrent ? _goaFg('#34d399') : '#475569', marginTop: 1 } }, ms.threshold + '%')
                           );
                         })
-                      ) : null
-                    );
+                      )
+                    ) : null;
                   })(),
                   // Steps
                   (goal.steps || []).map(function(step, si) {
@@ -1425,9 +1543,10 @@ window.SelHub = window.SelHub || {
                   }),
                   // Add step input
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
-                    h('input', { id: stepInputId, type: 'text', 'aria-label': 'Add a step to goal: ' + (goal.text || 'unnamed goal'), placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11 } }),
-                    h('button', { 'aria-label': 'Add step to goal: ' + (goal.text || 'unnamed goal'), onClick: function() { var inp = document.getElementById(stepInputId); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
+                    h('input', { id: stepInputId, type: 'text', 'aria-label': 'Add a step to goal: ' + goalLabel, placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, minHeight: 44, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 11 } }),
+                    h('button', { 'aria-label': 'Add step to goal: ' + goalLabel, onClick: function() { var inp = document.getElementById(stepInputId); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { minWidth: 44, minHeight: 44, padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: _goaFg('#a5b4fc'), border: 'none', fontSize: 15, fontWeight: 'bold', cursor: 'pointer' } }, '+')
                   )
+                )
                 );
               }),
               // ── Celebration Screen (shown when a goal is just completed) ──
@@ -1816,40 +1935,65 @@ window.SelHub = window.SelHub || {
                 ) :
                 h('div', null,
                   // Goal selector
-                  h('select', { value: editingGoal || '', 'aria-label': 'Select a goal for SMART planning', onChange: function(e) { upd({ editingGoal: e.target.value }); }, style: { width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12, marginBottom: 12 } },
+                  h('select', { value: editingGoal || '', 'aria-label': 'Select a goal for SMART planning', onChange: function(e) { upd({ editingGoal: e.target.value, smartStep: 0 }); }, style: { width: '100%', padding: '10px 12px', minHeight: 44, borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: _goaFg('#e2e8f0'), fontSize: 12, marginBottom: 12 } },
                     h('option', { value: '' }, '-- Select a goal --'),
                     goals.map(function(g) { return h('option', { key: g.id, value: g.id }, g.text || '(unnamed goal)'); })
                   ),
                   editGoal ? h('div', null,
                     h('div', { style: { fontSize: 14, fontWeight: 'bold', color: _goaFg('#a5b4fc'), marginBottom: 12 } }, '\uD83E\uDDE0 SMART Breakdown: ' + (editGoal.text || '(unnamed)')),
-                    ['S', 'M', 'A', 'R', 'T'].map(function(key) {
-                      var info = SMART_LABELS[key];
-                      var val = (editGoal.smart && editGoal.smart[key]) || '';
-                      return h('div', { key: key, style: { marginBottom: 12, padding: 12, borderRadius: 10, background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.1)' } },
-                        h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-                          h('span', { style: { fontSize: 16 } }, info.emoji),
-                          h('span', { style: { fontSize: 13, fontWeight: 'bold', color: _goaFg('#a5b4fc') } }, key + ' \u2014 ' + info.label),
-                          val ? h('span', { style: { marginLeft: 'auto', color: _goaFg('#34d399'), fontSize: 10 } }, '\u2713') : null
+                    h('div', { role: 'group', 'aria-label': 'SMART builder view', style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, padding: 4, marginBottom: 14, borderRadius: 10, background: 'rgba(15,23,42,0.45)', border: '1px solid rgba(99,102,241,0.15)' } },
+                      h('button', { 'aria-pressed': smartBuildMode === 'guided', onClick: function() {
+                        var nextStep = firstIncompleteSmartStep(editGoal);
+                        upd({ smartBuildMode: 'guided', smartStep: nextStep });
+                        focusSmartField(editGoal.id, ['S', 'M', 'A', 'R', 'T'][nextStep]);
+                      }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: smartBuildMode === 'guided' ? '1px solid rgba(168,85,247,0.55)' : '1px solid transparent', background: smartBuildMode === 'guided' ? 'rgba(168,85,247,0.18)' : 'transparent', color: smartBuildMode === 'guided' ? _goaFg('#ddd6fe') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'Guided steps'),
+                      h('button', { 'aria-pressed': smartBuildMode === 'all', onClick: function() { upd({ smartBuildMode: 'all' }); }, style: { minHeight: 44, padding: '8px 10px', borderRadius: 8, border: smartBuildMode === 'all' ? '1px solid rgba(168,85,247,0.55)' : '1px solid transparent', background: smartBuildMode === 'all' ? 'rgba(168,85,247,0.18)' : 'transparent', color: smartBuildMode === 'all' ? _goaFg('#ddd6fe') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'All fields')
+                    ),
+                    smartBuildMode === 'guided' ? (function() {
+                      var smartKeys = ['S', 'M', 'A', 'R', 'T'];
+                      var currentKey = smartKeys[smartStep];
+                      var currentInfo = SMART_LABELS[currentKey];
+                      return h('div', null,
+                        h('div', { style: { marginBottom: 12 } },
+                          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 6, fontSize: 11 } },
+                            h('span', { style: { color: _goaFg('#c4b5fd'), fontWeight: 'bold' } }, 'Step ' + (smartStep + 1) + ' of 5'),
+                            h('span', { style: { color: _goaFg('#94a3b8') } }, currentKey + ' — ' + currentInfo.label)
+                          ),
+                          h('div', { role: 'progressbar', 'aria-label': 'SMART builder position', 'aria-valuemin': 1, 'aria-valuemax': 5, 'aria-valuenow': smartStep + 1, 'aria-valuetext': 'Step ' + (smartStep + 1) + ' of 5: ' + currentInfo.label, style: { height: 6, borderRadius: 999, background: 'rgba(99,102,241,0.12)', overflow: 'hidden' } },
+                            h('div', { style: { width: ((smartStep + 1) / 5 * 100) + '%', height: '100%', borderRadius: 999, background: 'linear-gradient(90deg, #7c3aed, #a855f7)', transition: 'width 0.2s ease' } })
+                          )
                         ),
-                        h('p', { style: { fontSize: 11, color: _goaFg('#94a3b8'), marginBottom: 6 } }, info.desc),
-                        h('textarea', { value: val, 'aria-label': key + ' SMART goal field', onChange: function(e) {
-                          var newSmart = Object.assign({}, editGoal.smart || {});
-                          newSmart[key] = e.target.value;
-                          updateGoal(editGoal.id, { smart: newSmart });
-                        }, placeholder: info.placeholder[band] || info.placeholder.elementary, style: { width: '100%', minHeight: 50, padding: 8, borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: _goaFg('#e2e8f0'), fontSize: 12, fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' } })
+                        h('div', { 'aria-label': 'Choose a SMART step', style: { display: 'flex', justifyContent: 'space-between', gap: 6, marginBottom: 12 } },
+                          smartKeys.map(function(key, index) {
+                            var done = !!(editGoal.smart && editGoal.smart[key] && editGoal.smart[key].trim());
+                            var current = index === smartStep;
+                            return h('button', { key: key, 'aria-label': key + ': ' + SMART_LABELS[key].label + (done ? ', complete' : ', not complete'), 'aria-current': current ? 'step' : undefined, onClick: function() { moveSmartStep(editGoal, index); }, style: { minWidth: 44, minHeight: 44, borderRadius: '50%', border: current ? '2px solid #a855f7' : done ? '2px solid #22c55e' : '1px solid rgba(99,102,241,0.2)', background: current ? 'rgba(168,85,247,0.18)' : done ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.03)', color: current ? _goaFg('#ddd6fe') : done ? _goaFg('#86efac') : _goaFg('#94a3b8'), fontSize: 12, fontWeight: 'bold', cursor: 'pointer' } }, done && !current ? '\u2713' : key);
+                          })
+                        ),
+                        renderSmartField(editGoal, currentKey),
+                        h('div', { style: { display: 'flex', gap: 8, justifyContent: 'space-between' } },
+                          h('button', { disabled: smartStep === 0, onClick: function() { moveSmartStep(editGoal, smartStep - 1); }, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(255,255,255,0.03)', color: _goaFg('#cbd5e1'), fontSize: 11, fontWeight: 'bold', cursor: smartStep === 0 ? 'not-allowed' : 'pointer', opacity: smartStep === 0 ? 0.45 : 1 } }, '\u2190 Previous'),
+                          h('button', { onClick: function() { if (smartStep === 4) upd({ smartBuildMode: 'all' }); else moveSmartStep(editGoal, smartStep + 1); }, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid rgba(168,85,247,0.35)', background: _goaBg('#7c3aed'), color: _goaFg('#fff'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, smartStep === 4 ? 'Review all fields' : 'Next: ' + smartKeys[smartStep + 1] + ' \u2192')
+                        )
                       );
-                    }),
+                    })() : h('div', null,
+                      ['S', 'M', 'A', 'R', 'T'].map(function(key) { return renderSmartField(editGoal, key); })
+                    ),
                     // SMART completeness indicator
                     (function() {
                       var filled = ['S','M','A','R','T'].filter(function(k) { return editGoal.smart && editGoal.smart[k] && editGoal.smart[k].trim(); }).length;
-                      return h('div', { style: { textAlign: 'center', padding: 10, borderRadius: 8, background: filled === 5 ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.06)', border: '1px solid ' + (filled === 5 ? 'rgba(52,211,153,0.2)' : 'rgba(99,102,241,0.1)') } },
+                      return h('div', { role: 'status', 'aria-live': 'polite', style: { textAlign: 'center', padding: 12, borderRadius: 8, background: filled === 5 ? 'rgba(52,211,153,0.1)' : 'rgba(99,102,241,0.06)', border: '1px solid ' + (filled === 5 ? 'rgba(52,211,153,0.2)' : 'rgba(99,102,241,0.1)') } },
                         h('div', { style: { fontSize: 12, fontWeight: 'bold', color: filled === 5 ? _goaFg('#34d399') : _goaFg('#94a3b8') } }, filled === 5 ? '\u2705 SMART goal complete!' : filled + '/5 SMART fields filled'),
                         h('div', { style: { display: 'flex', gap: 4, justifyContent: 'center', marginTop: 6 } },
                           ['S','M','A','R','T'].map(function(k) {
                             var done = editGoal.smart && editGoal.smart[k] && editGoal.smart[k].trim();
                             return h('div', { key: k, style: { width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: done ? '#22c55e22' : 'rgba(255,255,255,0.04)', border: done ? '2px solid #22c55e' : '1px solid rgba(99,102,241,0.15)', color: done ? _goaFg('#22c55e') : _goaFg('#94a3b8'), fontSize: 11, fontWeight: 'bold' } }, k);
                           })
-                        )
+                        ),
+                        filled === 5 ? h('div', { style: { marginTop: 10 } },
+                          h('p', { style: { margin: '0 0 8px', color: _goaFg('#a7f3d0'), fontSize: 11, lineHeight: 1.5 } }, 'Your plan is clear. Turn it into one small action you can start.'),
+                          h('button', { onClick: function() { upd({ tab: 'goals', editingGoal: editGoal.id, expandedGoalId: editGoal.id, renamingGoalId: null }); focusGoalStepInput(editGoal.id); }, style: { minHeight: 44, padding: '9px 16px', borderRadius: 8, border: '1px solid rgba(52,211,153,0.35)', background: 'rgba(52,211,153,0.16)', color: _goaFg('#a7f3d0'), fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, 'Add the first action step \u2192')
+                        ) : h('p', { style: { margin: '8px 0 0', color: _goaFg('#94a3b8'), fontSize: 10, lineHeight: 1.5 } }, 'Use guided steps or view everything at once. Your work is saved either way.')
                       );
                     })()
                   ) : null

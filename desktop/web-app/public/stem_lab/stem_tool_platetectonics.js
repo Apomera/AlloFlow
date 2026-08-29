@@ -9841,7 +9841,7 @@ var d = labToolData.plateTectonics || {};
 
             React.createElement("div", { className: "mb-6 text-center" },
 
-              React.createElement("div", { className: "inline-flex items-center gap-3 px-6 py-3 rounded-2xl mb-3", style: { background: _gRed, boxShadow: '0 8px 32px rgba(220,38,38,0.3)' } },
+              React.createElement("div", { className: "inline-flex max-w-full flex-wrap items-center justify-center gap-3 px-6 py-3 rounded-2xl mb-3", style: { background: _gRed, boxShadow: '0 8px 32px rgba(220,38,38,0.3)' } },
 
                 React.createElement("span", { style: { fontSize: '32px' } }, "\uD83C\uDF0B"),
 

@@ -343,10 +343,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for space
   "buttons": 9,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 59,
+  "lengthBucket": 82,
   "paths": 0,
   "selects": 0,
-  "sha": "3b4284037e55e032",
+  "sha": "30d8d4b7da43fd04",
   "svgs": 0,
 }
 `;

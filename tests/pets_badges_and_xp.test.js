@@ -1,7 +1,7 @@
 // Pets Lab — badge-award integrity + StemLab XP wiring.
 //
-// renderQuiz() awards two badges in ONE pass when the student scores >=90%
-// (pets_quiz_pass at >=70, pets_quiz_ace at >=90). awardBadge() used to read
+// The final-answer transition can award two badges in ONE pass when the
+// learner meets the overall + strand target at >=90%. awardBadge() used to read
 // the render-snapshot `badges` and write the WHOLE map back with
 // ctx.update(), so the second call rebuilt the map from the same stale
 // snapshot and the first badge silently vanished. Same defect epidemic hit
@@ -20,6 +20,10 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const FILE = 'stem_lab/stem_tool_pets.js';
 const ID = 'petsLab';
 const QUIZ_LEN = 15;
+const SOURCE = require('node:fs').readFileSync(
+  require('node:path').resolve(process.cwd(), FILE),
+  'utf8'
+);
 
 /**
  * A ctx that really stores what the tool writes, so a clobbering write is
@@ -64,6 +68,35 @@ function renderQuizResult(score) {
   return { html, badges: s.store[ID].badges || {}, xpLog: s.xpLog, toasts: s.toasts };
 }
 
+function directBadgeAwards(ids, initialBadges = {}) {
+  const start = SOURCE.indexOf('function awardBadge(');
+  const end = SOURCE.indexOf('function markVisited(', start);
+  if (start < 0 || end <= start) throw new Error('Could not extract awardBadge');
+  const state = { badges: { ...initialBadges } };
+  const xpLog = [];
+  const toasts = [];
+  const context = {
+    badges: initialBadges,
+    _awardedBadgesRef: { current: {} },
+    BADGE_XP: { pets_quiz_pass: 10, pets_quiz_ace: 15 },
+    Date,
+    upd(key, value) {
+      state[key] = typeof value === 'function' ? value(state[key]) : value;
+    },
+    awardXP(points, reason) {
+      xpLog.push({ activityId: ID, points, reason });
+    },
+    addToast(message) { toasts.push(message); },
+    petsAnnounce() {},
+  };
+  const award = require('node:vm').runInNewContext(
+    `(function () { ${SOURCE.slice(start, end)}; return awardBadge; })()`,
+    context
+  );
+  for (const [id, label] of ids) award(id, label);
+  return { badges: state.badges, xpLog, toasts };
+}
+
 beforeAll(() => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
@@ -73,14 +106,21 @@ beforeEach(() => { resetStemLab(); loadTool(FILE, ID); });
 
 describe('Pets Lab — badge awards commit without clobbering', () => {
   it('a perfect quiz keeps BOTH the pass and the ace badge', () => {
-    const r = renderQuizResult(QUIZ_LEN);
+    const r = directBadgeAwards([
+      ['pets_quiz_pass', 'Pets Quiz Passed'],
+      ['pets_quiz_ace', 'Pets Quiz Ace'],
+    ]);
     // The regression: the earlier award used to be overwritten by the later
     // one, leaving only pets_quiz_ace behind.
     expect(Object.keys(r.badges).sort()).toEqual(['pets_quiz_ace', 'pets_quiz_pass']);
+    expect(SOURCE).toContain("if (attemptTargetMet) awardBadge('pets_quiz_pass', 'Pets Quiz Passed')");
+    expect(SOURCE).toContain("if (attemptTargetMet && attemptPct >= 90) awardBadge('pets_quiz_ace', 'Pets Quiz Ace')");
   });
 
   it('a passing-but-not-ace quiz awards only the pass badge', () => {
-    const r = renderQuizResult(11); // 73%
+    const r = directBadgeAwards([
+      ['pets_quiz_pass', 'Pets Quiz Passed'],
+    ]);
     expect(Object.keys(r.badges)).toEqual(['pets_quiz_pass']);
   });
 
@@ -104,11 +144,21 @@ describe('Pets Lab — badge awards commit without clobbering', () => {
     expect(s.toasts).toEqual([]);
     expect(Object.keys(s.store[ID].badges).sort()).toEqual(['pets_quiz_ace', 'pets_quiz_pass']);
   });
+
+  it('restoring or forging a results screen cannot mint a badge during render', () => {
+    const r = renderQuizResult(QUIZ_LEN);
+    expect(r.badges).toEqual({});
+    expect(r.xpLog).toEqual([]);
+    expect(r.toasts).toEqual([]);
+  });
 });
 
 describe('Pets Lab — StemLab XP wiring', () => {
   it('awards XP under the petsLab activity id, once per badge', () => {
-    const r = renderQuizResult(QUIZ_LEN);
+    const r = directBadgeAwards([
+      ['pets_quiz_pass', 'Pets Quiz Passed'],
+      ['pets_quiz_ace', 'Pets Quiz Ace'],
+    ]);
     expect(r.xpLog.length).toBe(2);
     for (const e of r.xpLog) {
       expect(e.activityId).toBe(ID);
@@ -121,7 +171,10 @@ describe('Pets Lab — StemLab XP wiring', () => {
   });
 
   it('the ace badge is worth more XP than the pass badge', () => {
-    const r = renderQuizResult(QUIZ_LEN);
+    const r = directBadgeAwards([
+      ['pets_quiz_pass', 'Pets Quiz Passed'],
+      ['pets_quiz_ace', 'Pets Quiz Ace'],
+    ]);
     const pass = r.xpLog.find((e) => /Passed/.test(e.reason));
     const ace = r.xpLog.find((e) => /Ace/.test(e.reason));
     expect(pass && ace).toBeTruthy();

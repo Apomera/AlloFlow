@@ -7,7 +7,8 @@ const GENERATION_STAGE_BY_TYPE = Object.freeze({
   source: 'analyze', glossary: 'analyze', analysis: 'analyze', image: 'analyze',
   faq: 'analyze', 'concept-sort': 'analyze', dbq: 'analyze', 'alignment-report': 'analyze',
   simplified: 'build', translation: 'build', quiz: 'build', outline: 'build',
-  'lesson-plan': 'build', 'note-taking': 'build', 'anchor-chart': 'build',
+  'lesson-plan': 'build', 'note-taking': 'build', 'anchor-chart': 'build', 'memory-aid': 'build',
+  'applied-challenge': 'build',
   'sentence-frames': 'build', brainstorm: 'build', adventure: 'build', persona: 'build',
   timeline: 'build', 'word-sounds': 'build',
 });
@@ -1881,7 +1882,7 @@ const describeActivityItem = (item, labels) => {
 };
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, translationMode, resolveTranslationPolicy, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, standardsContext: _ambientStandardsContext, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setGenerationStage, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini: callGeminiBase, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, memoryAidCustomInstructions, memoryAidSelectionMode, memoryAidTypes, memoryAidAuthorshipMode, memoryAidReflectionLevel, memoryAidReasoningRequired, memoryAidCount, personaCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   const setGenerationStatus = (label, stage = null) => {
     if (stage && typeof setGenerationStage === 'function') setGenerationStage(stage);
     if (typeof setGenerationStep === 'function') setGenerationStep(label);
@@ -2201,6 +2202,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             type === 'dbq' ? dbqCustomInstructions :
             type === 'note-taking' ? noteTakingCustomInstructions :
             type === 'anchor-chart' ? anchorChartCustomInstructions :
+            type === 'memory-aid' ? memoryAidCustomInstructions :
             // 2026-07-29: the PANEL's persona button goes through
             // handleGeneratePersonas (personas module), which honours this field
             // — but guided-step retries and Full Pack route through THIS branch,
@@ -2706,7 +2708,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // N identical copies. New resource types default to safe (no duplicate spend).
         const MULTILINGUAL_FANOUT_TYPES = ['simplified', 'outline', 'image', 'quiz', 'faq',
             'sentence-frames', 'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
-            'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona'];
+            'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'memory-aid',
+            'applied-challenge', 'persona'];
         if (!MULTILINGUAL_FANOUT_TYPES.includes(type)) {
             return await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
         }
@@ -3348,7 +3351,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                   status: 'unavailable'
               }
           })
-          : {
+            : {
               schemaVersion: 1,
               role: 'supplemental',
               form: 'adapted',
@@ -6886,6 +6889,347 @@ Return ONLY JSON:
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
           }
           metaInfo = `${effectiveGrade} - ${templateType}${usesLocalTextBackend ? ' - Local' : ''}`;
+      } else if (type === 'applied-challenge') {
+          // Applied Challenge Studio: lesson-grounded transfer with a persistent
+          // student workspace. AI may frame or coach, but never authors the
+          // student's response fields.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('applied-challenge');
+          const supportedFamilies = ['investigate', 'design', 'decide', 'propose', 'explore'];
+          const requestedSelection = (configOverride && configOverride.appliedChallengeSelectionMode) || 'auto';
+          const selectionMode = requestedSelection === 'manual' ? 'manual' : 'auto';
+          const requestedFamily = String((configOverride && configOverride.appliedChallengeFamily) || 'decide');
+          const manualFamily = supportedFamilies.includes(requestedFamily) ? requestedFamily : 'decide';
+          const requestedAgency = String((configOverride && configOverride.appliedChallengeAgencyMode) || 'progressive');
+          const agencyMode = ['progressive', 'ai-framed', 'co-framed', 'student-framed'].includes(requestedAgency)
+              ? requestedAgency : 'progressive';
+          const requestedScope = String((configOverride && configOverride.appliedChallengeScope) || 'standard');
+          const scope = ['compact', 'standard', 'extended'].includes(requestedScope) ? requestedScope : 'standard';
+          const challengeSourceText = usesLocalTextBackend
+              ? localExcerpt(textToProcess, 5200)
+              : (textToProcess || '').substring(0, 5000);
+          const familyGuide = {
+              investigate: 'Frame a researchable question and a feasible, ethical evidence plan. Do not invent findings or citations.',
+              design: 'Create and test a solution, model, process, or prototype against criteria and real constraints.',
+              decide: 'Compare defensible options and make an evidence-based recommendation with explicit tradeoffs.',
+              propose: 'Build a feasible plan, pitch, civic proposal, or business case. Label budgets, forecasts, prices, and adoption claims as assumptions unless the source verifies them.',
+              explore: 'Examine a philosophical, ethical, or conceptual question through reasons, alternatives, counterexamples, and implications. Never grade a worldview.',
+          };
+          const selectionDirection = selectionMode === 'manual'
+              ? 'Use the challenge family id ' + manualFamily + '. ' + familyGuide[manualFamily]
+              : 'Choose exactly one family id from investigate, design, decide, propose, or explore. Choose the family that produces the strongest authentic transfer from this lesson, not merely the most entertaining task. Explain the fit in fitReason.';
+          const agencyDirection = {
+              progressive: 'Use progressive release: give a parallel example from a DIFFERENT context, a partial frame starter, and coaching questions. The example must demonstrate a reasoning move without answering this challenge.',
+              'ai-framed': 'Write a complete driving question and challenge brief. A parallel example may model a reasoning move in a different context. Leave all student workspace fields unanswered.',
+              'co-framed': 'Provide a revisable driving question, a partial frame starter, and 2-4 meaningful frame choices. Leave decisions for the student.',
+              'student-framed': 'Do not write the driving question. Supply only a lesson-grounded seedDirection plus coaching prompts that help the student frame a question.',
+          }[agencyMode];
+          const scopeDirection = {
+              compact: 'Keep the challenge focused enough for one lesson or a short response.',
+              standard: 'Create a complete application with evidence, alternatives, tradeoffs, testing, revision, and transfer reflection.',
+              extended: 'Create a deeper inquiry or project that supports iteration, explicit assumptions, and a substantial deliverable.',
+          }[scope];
+          const challengeSchemaExample = JSON.stringify({
+              title: 'short challenge title',
+              instructions: 'student-facing directions',
+              family: 'decide',
+              fitReason: 'why this family fits the lesson',
+              brief: {
+                  context: 'authentic but bounded situation',
+                  role: 'student role',
+                  audience: 'realistic audience',
+                  drivingQuestion: 'question, except blank in student-framed mode',
+                  seedDirection: 'lesson-grounded starting direction',
+                  lockedLessonFacts: ['source-grounded fact'],
+                  openQuestions: ['unknown or evidence gap'],
+                  stakeholders: ['person or system affected'],
+                  criteria: ['success criterion'],
+                  constraints: ['constraint'],
+                  deliverable: 'specific student-created product',
+                  evidenceBoundary: 'what is established versus hypothetical',
+              },
+              supports: {
+                  parallelExample: { context: 'different context', move: 'reasoning move only', whyItHelps: 'what to notice' },
+                  frameStarter: 'partial starter',
+                  frameChoices: ['meaningful choice'],
+                  coachPrompts: ['question that does not give the answer'],
+                  phasePrompts: {
+                      workingQuestion: 'prompt', stakeholders: 'prompt', possibilities: 'prompt',
+                      evidence: 'prompt', assumptions: 'prompt', tradeoffs: 'prompt',
+                      response: 'prompt', testReflection: 'prompt', revision: 'prompt',
+                      transferReflection: 'prompt',
+                  },
+              },
+          });
+          const prompt = [
+              'Design one APPLIED CHALLENGE STUDIO resource for a ' + effectiveGrade + ' student.',
+              'Topic: ' + (sourceTopic || 'lesson application') + '.',
+              selectionDirection,
+              agencyDirection,
+              scopeDirection,
+              'The challenge must require students to USE central lesson ideas in a new situation. It is not a list of activity ideas, a quiz, a generic discussion prompt, or a completed answer.',
+              'Brief rules:',
+              '- lockedLessonFacts must contain 2-6 concise claims grounded only in the supplied lesson source.',
+              '- Separate known lesson facts from openQuestions, hypotheses, estimates, assumptions, and value judgments.',
+              '- Include at least two plausible possibilities, options, interpretations, or design directions in the workflow so the task is genuinely open.',
+              '- Give criteria, constraints, stakeholders, an audience, and a concrete deliverable appropriate to the chosen family and scope.',
+              '- Keep the context realistic but do not assert unsupplied local conditions, market data, prices, budgets, survey results, experiments, laws, or research findings.',
+              '- For investigate, create a question and evidence plan, not a fake research conclusion or fabricated citation.',
+              '- For propose, label financial and adoption claims as assumptions to verify.',
+              '- For explore, make multiple positions defensible and assess reasons rather than beliefs or identities.',
+              'Agency and student-ownership rules:',
+              '- Never put a completed response, recommendation, proposal, research finding, design, or philosophical conclusion in supports.',
+              '- A parallelExample must use a different subject/context and model only a transferable reasoning move.',
+              '- phasePrompts should guide frame, evidence, assumptions, tradeoffs, response, testing, revision, and transfer without giving the answer.',
+              'Lesson source:',
+              challengeSourceText,
+              languageDirective,
+              standardsDirective,
+              interestsDirective,
+              dokDirective,
+              effCustomInstructions ? 'TEACHER INSTRUCTIONS: ' + effCustomInstructions : '',
+              'Keep family ids and object keys in English. Write learner-facing fields in the requested language.',
+              'Return ONLY one JSON object matching this shape:',
+              challengeSchemaExample,
+          ].filter(Boolean).join('\n\n');
+          let scaffolded = {};
+          try {
+              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, 'Designing applied challenge');
+              const result = await callGemini(prompt, true);
+              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Designing applied challenge');
+              scaffolded = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Applied challenge scaffold parse failed:', parseErr);
+          }
+          const proposedFamily = String((scaffolded && scaffolded.family) || '');
+          const family = selectionMode === 'manual'
+              ? manualFamily
+              : (supportedFamilies.includes(proposedFamily) ? proposedFamily : 'decide');
+          const rawBrief = scaffolded && scaffolded.brief && typeof scaffolded.brief === 'object'
+              ? scaffolded.brief : {};
+          const rawSupports = scaffolded && scaffolded.supports && typeof scaffolded.supports === 'object'
+              ? scaffolded.supports : {};
+          const boundedList = (value, max, itemMax) => (Array.isArray(value) ? value : [])
+              .slice(0, max)
+              .map((item) => String(item || '').slice(0, itemMax).trim())
+              .filter(Boolean);
+          const lockedLessonFacts = boundedList(rawBrief.lockedLessonFacts, 12, 800);
+          const seedDirection = String(rawBrief.seedDirection || rawBrief.startingPoint || '').slice(0, 2000);
+          const rawQuestion = String(rawBrief.drivingQuestion || rawBrief.question || '').slice(0, 2000);
+          if (lockedLessonFacts.length === 0 || (!seedDirection && !rawQuestion)) {
+              throw new Error('Applied challenge generation returned no usable lesson-grounded brief.');
+          }
+          const defaultPrompts = {
+              workingQuestion: 'Write the exact question or challenge you will answer.',
+              stakeholders: 'Who is affected, and which needs, systems, criteria, and constraints matter?',
+              possibilities: 'Generate more than one plausible direction before choosing.',
+              evidence: 'Connect lesson evidence and mark what information is still needed.',
+              assumptions: 'Name estimates, hypotheses, uncertainties, and value judgments.',
+              tradeoffs: 'Compare benefits, risks, costs, exclusions, and unresolved tensions.',
+              response: 'Build the requested deliverable and make the reasoning visible.',
+              testReflection: 'Test the draft against criteria, constraints, evidence, and a strong alternative.',
+              revision: 'Revise one meaningful part after testing or feedback.',
+              transferReflection: 'Explain which lesson idea transferred and where else it could help.',
+          };
+          const rawPhasePrompts = rawSupports.phasePrompts && typeof rawSupports.phasePrompts === 'object'
+              ? rawSupports.phasePrompts : {};
+          const phasePrompts = Object.keys(defaultPrompts).reduce((result, key) => {
+              result[key] = String(rawPhasePrompts[key] || defaultPrompts[key]).slice(0, 1200);
+              return result;
+          }, {});
+          const rawExample = rawSupports.parallelExample && typeof rawSupports.parallelExample === 'object'
+              ? rawSupports.parallelExample : {};
+          const canShowExample = agencyMode === 'progressive' || agencyMode === 'ai-framed';
+          const supports = {
+              parallelExample: canShowExample ? {
+                  context: String(rawExample.context || '').slice(0, 1800),
+                  move: String(rawExample.move || rawExample.reasoningMove || '').slice(0, 2500),
+                  whyItHelps: String(rawExample.whyItHelps || '').slice(0, 1800),
+              } : { context: '', move: '', whyItHelps: '' },
+              frameStarter: agencyMode === 'progressive' || agencyMode === 'co-framed'
+                  ? String(rawSupports.frameStarter || '').slice(0, 2200) : '',
+              frameChoices: agencyMode === 'progressive' || agencyMode === 'co-framed'
+                  ? boundedList(rawSupports.frameChoices, 8, 700) : [],
+              coachPrompts: agencyMode === 'ai-framed'
+                  ? []
+                  : boundedList(rawSupports.coachPrompts, 10, 700),
+              phasePrompts,
+          };
+          const drivingQuestion = agencyMode === 'student-framed' ? '' : rawQuestion;
+          const workspace = {
+              workingQuestion: agencyMode === 'student-framed' ? '' : drivingQuestion,
+              stakeholders: '',
+              possibilities: '',
+              evidence: '',
+              assumptions: '',
+              tradeoffs: '',
+              response: '',
+              testReflection: '',
+              revision: '',
+              transferReflection: '',
+          };
+          content = {
+              schemaVersion: 2,
+              title: String((scaffolded && scaffolded.title) || sourceTopic || 'Applied Challenge Studio').slice(0, 300),
+              instructions: String((scaffolded && scaffolded.instructions) || 'Use lesson ideas to frame, investigate, build, test, revise, and explain a response of your own.').slice(0, 3000),
+              selectionMode,
+              family,
+              fitReason: String((scaffolded && scaffolded.fitReason) || familyGuide[family]).slice(0, 1600),
+              agencyMode,
+              scope,
+              brief: {
+                  family,
+                  context: String(rawBrief.context || '').slice(0, 4000),
+                  role: String(rawBrief.role || '').slice(0, 500),
+                  audience: String(rawBrief.audience || '').slice(0, 500),
+                  drivingQuestion,
+                  seedDirection,
+                  lockedLessonFacts,
+                  openQuestions: boundedList(rawBrief.openQuestions || rawBrief.unknowns, 10, 800),
+                  stakeholders: boundedList(rawBrief.stakeholders, 12, 500),
+                  criteria: boundedList(rawBrief.criteria || rawBrief.successCriteria, 12, 700),
+                  constraints: boundedList(rawBrief.constraints, 12, 700),
+                  deliverable: String(rawBrief.deliverable || '').slice(0, 1200),
+                  evidenceBoundary: String(rawBrief.evidenceBoundary || 'Treat lesson-grounded facts as evidence. Label outside claims as questions, hypotheses, estimates, or assumptions until verified.').slice(0, 2000),
+                  factLocked: true,
+                  factVerified: false,
+              },
+              supports,
+              workspace,
+              coachHint: '',
+              feedback: null,
+              sourceExcerpt: challengeSourceText,
+              lessonRef: {
+                  sourceTextSnippet: (textToProcess || '').substring(0, 200),
+                  generatedAt: new Date().toISOString(),
+                  gradeLevel: effectiveGrade,
+                  language: effectiveLanguage,
+              },
+          };
+          metaInfo = effectiveGrade + ' - ' + family + ' - ' + agencyMode + ' - ' + scope + (usesLocalTextBackend ? ' - Local' : '');
+      } else if (type === 'memory-aid') {
+          // Memory Aid Studio: content-aware mnemonic selection plus a gradual
+          // release path from AI modeling to student authorship.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('memory-aid');
+          const supportedAidTypes = [
+              'acronym-acrostic', 'rhyme-rhythm', 'chunking', 'story-chain',
+              'keyword-association', 'visual-association', 'analogy-pattern', 'sequence-cue'
+          ];
+          const requestedSelectionMode = (configOverride && configOverride.memoryAidSelectionMode) || memoryAidSelectionMode || 'auto-mix';
+          const selectionMode = requestedSelectionMode === 'manual' ? 'manual' : 'auto-mix';
+          const requestedTypes = (configOverride && configOverride.memoryAidTypes) || memoryAidTypes || [];
+          const selectedAidTypes = Array.from(new Set((Array.isArray(requestedTypes) ? requestedTypes : [])
+              .map(value => String(value || '').trim())
+              .filter(value => supportedAidTypes.includes(value))));
+          if (selectionMode === 'manual' && selectedAidTypes.length === 0) selectedAidTypes.push('keyword-association');
+          const requestedAuthorship = (configOverride && configOverride.memoryAidAuthorshipMode) || memoryAidAuthorshipMode || 'progressive';
+          const authorshipMode = ['progressive', 'generated', 'scaffolded', 'student-authored'].includes(requestedAuthorship)
+              ? requestedAuthorship : 'progressive';
+          const requestedReflection = (configOverride && configOverride.memoryAidReflectionLevel) || memoryAidReflectionLevel || 'quick';
+          const reflectionLevel = ['none', 'quick', 'full'].includes(requestedReflection) ? requestedReflection : 'quick';
+          const reasoningRequired = reflectionLevel !== 'none' && (((configOverride && configOverride.memoryAidReasoningRequired) ?? memoryAidReasoningRequired) === true);
+          const requestedCount = Number((configOverride && configOverride.memoryAidCount) || memoryAidCount || 3);
+          const targetCount = Math.max(3, Math.min(5, Number.isFinite(requestedCount) ? Math.round(requestedCount) : 3));
+          const memorySourceText = usesLocalTextBackend ? localExcerpt(textToProcess, 4200) : (textToProcess || '').substring(0, 4000);
+          const typeDirection = selectionMode === 'manual'
+              ? 'Use only these aid type ids, mixing them when more than one is supplied: ' + selectedAidTypes.join(', ') + '.'
+              : 'Choose from these aid type ids and create a purposeful mix matched to the content shape: ' + supportedAidTypes.join(', ') + '. Prefer sequence-cue or story-chain for ordered material, acronym-acrostic or chunking for lists/categories, keyword-association or visual-association for vocabulary, and analogy-pattern for relationships.';
+          const modeDirection = authorshipMode === 'progressive'
+              ? 'Use this exact repeating progression by card index: generated, scaffolded, student-authored.'
+              : 'Use the authorship mode "' + authorshipMode + '" for every card.';
+          const prompt = [
+              'Design a MEMORY AID STUDIO resource for a ' + effectiveGrade + ' student.',
+              'Topic: ' + (sourceTopic || 'lesson memory targets') + '.',
+              'Create exactly ' + targetCount + ' distinct high-value memory targets. Do not force a mnemonic onto nuanced content if compression would distort the idea; choose only facts, vocabulary, sequences, categories, formulas, or contrasts worth retrieving.',
+              typeDirection,
+              modeDirection,
+              'Authorship rules:',
+              '- generated: write a complete aiExample, explain its mapping, and still invite the student to remix or create an alternative.',
+              '- scaffolded: provide a scaffoldStarter and 2-4 scaffoldSteps, but leave meaningful choices for the student.',
+              '- student-authored: leave aiExample and scaffoldStarter empty; provide 2-4 coachPrompts that guide without supplying a finished answer.',
+              'Accuracy and inclusion rules:',
+              '- essentialFacts must be concise, factually grounded in the source, and sufficient for a teacher to review or lock.',
+              '- mapping must explicitly show how the cue leads back to every essential fact.',
+              '- Avoid stereotypes, culturally dependent wordplay, humiliating imagery, and invented facts.',
+              '- Make every card useful without requiring a visual image generator.',
+              '- Always provide a studentPrompt and reasoningPrompt. Reasoning should inspect cue-to-fact connections, not grade creativity.',
+              'Source text:',
+              memorySourceText,
+              languageDirective,
+              standardsDirective,
+              emojiDirective,
+              dokDirective,
+              effCustomInstructions ? 'TEACHER INSTRUCTIONS: ' + effCustomInstructions : '',
+              'Keep type and mode values in English because they are machine ids. Write all learner-facing fields in the requested language.',
+              'Return ONLY one JSON object with this shape:',
+              '{"title":"short title","instructions":"student-facing directions","cards":[{"target":"what to remember","essentialFacts":["fact 1","fact 2"],"type":"keyword-association","mode":"generated","aiExample":"complete example only for generated mode","mapping":"how each cue maps to the facts","scaffoldStarter":"partial starter only for scaffolded mode","scaffoldSteps":["step"],"coachPrompts":["question"],"studentPrompt":"creation invitation","reasoningPrompt":"cue-to-fact explanation prompt"}]}'
+          ].filter(Boolean).join('\n\n');
+          let scaffolded = { title: sourceTopic || 'Memory Aid Studio', instructions: '', cards: [] };
+          try {
+              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, 'Designing memory aids');
+              const result = await callGemini(prompt, true);
+              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Designing memory aids');
+              scaffolded = usesLocalTextBackend ? parseJsonLenient(result, scaffolded) : JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Memory aid scaffold parse failed:', parseErr);
+          }
+          const rawCards = Array.isArray(scaffolded && scaffolded.cards) ? scaffolded.cards : [];
+          const cards = rawCards.slice(0, targetCount).map((raw, index) => {
+              const item = raw && typeof raw === 'object' ? raw : {};
+              const progressiveMode = ['generated', 'scaffolded', 'student-authored'][index % 3];
+              const mode = authorshipMode === 'progressive'
+                  ? progressiveMode
+                  : (['generated', 'scaffolded', 'student-authored'].includes(authorshipMode) ? authorshipMode : 'student-authored');
+              const proposedType = supportedAidTypes.includes(item.type) ? item.type : supportedAidTypes[index % supportedAidTypes.length];
+              const aidType = selectionMode === 'manual'
+                  ? (selectedAidTypes.includes(proposedType) ? proposedType : selectedAidTypes[index % selectedAidTypes.length])
+                  : proposedType;
+              const target = String(item.target || item.concept || ('Memory target ' + (index + 1))).slice(0, 1000);
+              const facts = (Array.isArray(item.essentialFacts) ? item.essentialFacts : [])
+                  .slice(0, 10).map(value => String(value || '').slice(0, 600).trim()).filter(Boolean);
+              return {
+                  id: 'memory-card-' + Date.now() + '-' + index,
+                  target,
+                  essentialFacts: facts.length ? facts : [target],
+                  factLocked: true,
+                  type: aidType,
+                  mode,
+                  aiExample: mode === 'generated' ? String(item.aiExample || item.example || '').slice(0, 4000) : '',
+                  mapping: String(item.mapping || item.explanation || '').slice(0, 4000),
+                  scaffoldStarter: mode === 'scaffolded' ? String(item.scaffoldStarter || '').slice(0, 2000) : '',
+                  scaffoldSteps: mode === 'scaffolded' && Array.isArray(item.scaffoldSteps)
+                      ? item.scaffoldSteps.slice(0, 6).map(value => String(value || '').slice(0, 500)).filter(Boolean) : [],
+                  coachPrompts: Array.isArray(item.coachPrompts)
+                      ? item.coachPrompts.slice(0, 6).map(value => String(value || '').slice(0, 500)).filter(Boolean) : [],
+                  studentPrompt: String(item.studentPrompt || 'Create or personalize a memory aid that helps you retrieve the important facts.').slice(0, 1200),
+                  reasoningPrompt: String(item.reasoningPrompt || 'How does your memory aid connect to what you need to remember?').slice(0, 1200),
+                  studentDraft: '',
+                  studentReasoning: '',
+                  coachHint: '',
+                  feedback: null,
+              };
+          });
+          if (cards.length === 0) throw new Error('Memory aid generation returned no usable memory targets.');
+          content = {
+              schemaVersion: 1,
+              title: String(scaffolded.title || sourceTopic || 'Memory Aid Studio').slice(0, 300),
+              instructions: String(scaffolded.instructions || 'Study the connection, make the aid your own, and explain how it helps you remember.').slice(0, 3000),
+              selectionMode,
+              selectedTypes: selectionMode === 'manual' ? selectedAidTypes : [],
+              authorshipMode,
+              reflectionLevel,
+              reasoningRequired,
+              sourceExcerpt: memorySourceText,
+              lessonRef: {
+                  sourceTextSnippet: (textToProcess || '').substring(0, 200),
+                  generatedAt: new Date().toISOString(),
+                  gradeLevel: effectiveGrade,
+                  language: effectiveLanguage,
+              },
+              cards,
+          };
+          metaInfo = effectiveGrade + ' - ' + (selectionMode === 'auto-mix' ? 'Auto Mix' : 'Teacher Mix') + ' - ' + authorshipMode + (usesLocalTextBackend ? ' - Local' : '');
       } else if (type === 'anchor-chart') {
           // Anchor Charts — classroom visual reference.
           // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.

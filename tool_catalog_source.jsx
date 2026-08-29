@@ -140,6 +140,20 @@ const TOOL_CATALOG = [
     sidebarKey: 'sidebar.tool_anchor_chart',
   },
   {
+    id: 'memory-aid',
+    description: 'Interactive memory-aid studio with content-aware mnemonic types, AI examples, guided scaffolds, student authorship, reasoning, and strengths-first feedback.',
+    whenToUse: 'Use for high-value vocabulary, sequences, categories, formulas, or easily confused facts. Prefer Auto Mix and the See-Build-Create progression; skip concepts whose nuance would be distorted by compression.',
+    inAutofill: true,
+    sidebarKey: 'sidebar.tool_memory_aid',
+  },
+  {
+    id: 'applied-challenge',
+    description: 'Persistent applied problem-solving studio with Auto Match or teacher-selected Investigate, Design, Decide, Propose, and Explore challenges; supports progressive, AI-framed, co-framed, and student-framed agency.',
+    whenToUse: 'Use when students should transfer central lesson ideas into a sustained authentic problem, decision, design, proposal, research plan, or philosophical exploration. Unlike Activities, this produces one persistent student workspace; unlike Research Hub, Investigate frames a question and evidence plan without inventing sources or findings.',
+    inAutofill: true,
+    sidebarKey: 'sidebar.tool_applied_challenge',
+  },
+  {
     id: 'math',
     description: 'Opens the STEAM Lab — hands-on math/science tools (algebra, calculus, statistics, physics simulations, chemistry, anatomy, etc.).',
     whenToUse: 'Use for STEM content where students benefit from interactive exploration. NOT for simple arithmetic problems (use quiz for that).',

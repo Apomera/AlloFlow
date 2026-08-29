@@ -395,6 +395,9 @@
   .diss-learning-check__phases { justify-content: flex-start; }
   .diss-learning-check__options { grid-template-columns: 1fr; }
 }
+@media (max-height: 500px) {
+  .diss-next-action { position: static; }
+}
 @media (max-width: 430px) {
   .diss-next-action { grid-template-columns: 1fr; }
   .diss-next-action__step { width: auto; height: auto; min-height: 2.5rem; padding: .35rem .55rem; justify-self: start; }
@@ -923,6 +926,69 @@
       }, 120);
     } catch (e) {}
   }
+  function clampDissectionInquiryValue(value, min, max, fallback) {
+    var numeric = Number(value);
+    if (!isFinite(numeric)) numeric = fallback;
+    return Math.max(min, Math.min(max, Math.round(numeric)));
+  }
+  function defaultDissectionInquiry() {
+    return { specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+  }
+  function dissectionInquiryMetrics(inquiry) {
+    var damage = (inquiry.layerDepth * inquiry.timePress) / Math.max(1, inquiry.careLevel * (inquiry.specimenSize / 8));
+    var insight = (inquiry.layerDepth * 1.5 + inquiry.careLevel * 0.8 - inquiry.timePress * 0.3) * (inquiry.specimenSize / 8);
+    return {
+      damage: damage,
+      insight: insight,
+      state: damage > 8 ? 'destroyed' : damage > 5 ? 'damaged' : damage > 3 ? 'compromised' : insight > 8 ? 'excellent' : insight > 4 ? 'good' : 'surface'
+    };
+  }
+  function dissectionInquiryStateLabel(state) {
+    return ({
+      destroyed: 'High damage risk',
+      damaged: 'Elevated damage risk',
+      compromised: 'Compromised visibility',
+      surface: 'Surface-only access',
+      good: 'Balanced progress',
+      excellent: 'High modeled insight'
+    })[state] || 'Modeled outcome';
+  }
+  function normalizeDissectionInquiry(value) {
+    var source = value && typeof value === 'object' ? value : {};
+    var normalized = {
+      specimenSize: clampDissectionInquiryValue(source.specimenSize, 2, 30, 8),
+      layerDepth: clampDissectionInquiryValue(source.layerDepth, 1, 5, 1),
+      careLevel: clampDissectionInquiryValue(source.careLevel, 1, 10, 5),
+      timePress: clampDissectionInquiryValue(source.timePress, 1, 10, 5),
+      hypothesis: typeof source.hypothesis === 'string' ? source.hypothesis.slice(0, 2000) : '',
+      stuckRevealed: !!source.stuckRevealed,
+      understood: !!source.understood,
+      explanation: typeof source.explanation === 'string' ? source.explanation.slice(0, 3000) : '',
+      log: []
+    };
+    normalized.log = (Array.isArray(source.log) ? source.log : []).filter(function (entry) {
+      return entry && typeof entry === 'object';
+    }).slice(-20).map(function (entry) {
+      var point = {
+        specimenSize: clampDissectionInquiryValue(entry.sz, 2, 30, normalized.specimenSize),
+        layerDepth: clampDissectionInquiryValue(entry.dp, 1, 5, normalized.layerDepth),
+        careLevel: clampDissectionInquiryValue(entry.c, 1, 10, normalized.careLevel),
+        timePress: clampDissectionInquiryValue(entry.tp, 1, 10, normalized.timePress)
+      };
+      var metrics = dissectionInquiryMetrics(point);
+      return {
+        t: typeof entry.t === 'string' ? entry.t.slice(0, 20) : '',
+        sz: point.specimenSize,
+        dp: point.layerDepth,
+        c: point.careLevel,
+        tp: point.timePress,
+        dmg: metrics.damage.toFixed(1),
+        ins: metrics.insight.toFixed(1),
+        state: dissectionInquiryStateLabel(metrics.state)
+      };
+    });
+    return normalized;
+  }
   function getDisAC() { if (!_disAC) { try { _disAC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {} } if (_disAC && _disAC.state === 'suspended') { try { _disAC.resume(); } catch(e) {} } return _disAC; }
   function disTone(f,d,tp,v) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||'sine'; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function disNoise(dur,vol,hz) { if (!disSoundEnabled()) return; var ac = getDisAC(); if (!ac) return; try { var bs = Math.floor(ac.sampleRate*(dur||0.05)); var b = ac.createBuffer(1,bs,ac.sampleRate); var dd = b.getChannelData(0); for(var i=0;i<bs;i++) dd[i]=(Math.random()*2-1)*(1-i/bs); var s = ac.createBufferSource(); s.buffer=b; var f = ac.createBiquadFilter(); f.type='lowpass'; f.frequency.value=hz||600; var g = ac.createGain(); g.gain.setValueAtTime(vol||0.04,ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+(dur||0.05)); s.connect(f); f.connect(g); g.connect(ac.destination); s.start(); } catch(e) {} }
@@ -1004,10 +1070,10 @@ var d = labToolData.dissection || {};
               'They eat their own weight in soil every single day.'
             ],
             pig: [
-              'Pig organs are so similar to human that pig heart valves are used in surgery.',
+              'Processed porcine tissue is used in some bioprosthetic heart valves; that use does not make the whole pig heart identical to a human heart.',
               'Porcine insulin treated millions of diabetics before synthetic versions existed.',
               'Pigs have more taste buds (15,000) than humans (9,000).',
-              'Fetal pig anatomy is 95% identical to human fetal anatomy.',
+              'Fetal pigs share many mammalian organ systems with humans, but organ shape, proportions, vessels, and development are species-specific.',
               'Pig skin is used as temporary grafts for human burn victims.'
             ],
             perch: [
@@ -1307,7 +1373,7 @@ var d = labToolData.dissection || {};
 
               name: 'Fetal Pig (Sus scrofa)', icon: '\uD83D\uDC37',
 
-              desc: 'Mammal \u2014 4-chambered heart, diaphragm, organ systems nearly identical to human.',
+              desc: 'Mammalian specimen with a four-chambered heart and diaphragm. Major organ systems support comparison with humans, while anatomy, proportions, and development remain species-specific.',
 
               bodyShape: 'pig',
               objectives: ['Compare the 4-chambered pig heart to a human heart','Identify the diaphragm and explain negative-pressure breathing','Trace the fetal circulatory pathway through the umbilical cord','Locate the spiral colon and compare to human large intestine'],
@@ -1317,16 +1383,16 @@ var d = labToolData.dissection || {};
                 { term: 'Umbilical vein', def: 'Carries oxygenated blood from placenta to fetus through the umbilical cord.' },
                 { term: 'Spiral colon', def: 'Uniquely porcine coiled large intestine resembling a watch spring.' },
                 { term: 'Urachus', def: 'Fetal canal connecting the bladder to the umbilicus; becomes the median umbilical ligament.' },
-                { term: 'Xenotransplantation', def: 'Transplanting organs between species; pig organs are closest to human in size and function.' }
+                { term: 'Xenotransplantation', def: 'Transplanting cells, tissues, or organs between species; pigs are studied as donor sources, but immune, infectious, and physiological barriers remain.' }
               ],
 
               layers: [
 
                 { id: 'skin', name: 'Skin', icon: '\uD83E\uDDB4', color: '#fda4af', accent: '#e11d48', desc: 'Thin skin with hair follicles and umbilical cord.' },
 
-                { id: 'muscle', name: 'Musculature', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Mammalian muscles nearly identical to human.' },
+                { id: 'muscle', name: 'Musculature', icon: '\uD83D\uDCAA', color: '#f87171', accent: '#dc2626', desc: 'Mammalian muscle groups useful for comparison; attachments, proportions, and posture-related organization differ from humans.' },
 
-                { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Complete mammalian organs \u2014 closest lab animal to human.' },
+                { id: 'organs', name: 'Visceral Organs', icon: '\uD83E\uDEC1', color: '#fbbf24', accent: '#d97706', desc: 'Mammalian visceral organs with important porcine features, including distinct lobation, vessels, and a spiral colon.' },
 
                 { id: 'skeleton', name: 'Skeleton', icon: '\uD83E\uDDB4', color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', desc: 'Largely cartilaginous fetal skeleton.' },
 
@@ -1338,9 +1404,9 @@ var d = labToolData.dissection || {};
 
                 skin: [
 
-                  { id: 'epidermis_p', name: 'Epidermis', x: 0.53, y: 0.34, fn: 'Stratified squamous epithelium. Pig skin is closest animal model to human skin.', clinical: 'Pig skin used in burn treatment research and skin graft studies.' },
+                  { id: 'epidermis_p', name: 'Epidermis', x: 0.53, y: 0.34, fn: 'Stratified squamous epithelium. Pig skin is widely used as a comparative model, while structure and healing remain species-specific.', clinical: 'Pig skin is used in burn-treatment research and graft studies; model suitability does not imply identity with human skin.' },
 
-                  { id: 'umbilical', name: 'Umbilical Cord', x: 0.51, y: 0.58, fn: '2 umbilical arteries + 1 umbilical vein in Wharton\'s jelly. Same structure as human.', clinical: 'Single umbilical artery may indicate congenital abnormalities in both pigs and humans.' },
+                  { id: 'umbilical', name: 'Umbilical Cord', x: 0.51, y: 0.58, fn: 'Two umbilical arteries and one umbilical vein connect fetal circulation to the placenta. Interpret the surrounding cord and fetal vessels as porcine anatomy.', clinical: 'Humans also typically have two umbilical arteries and one vein, but comparative interpretation must retain species and developmental context.' },
 
                   { id: 'mammary', name: 'Mammary Papillae', x: 0.55, y: 0.56, fn: '6-7 pairs along ventral surface (vs 1 pair in humans). Along embryonic "milk line."', clinical: 'Supernumerary nipples occur in 1-5% of humans along the vestigial milk line.' }
 
@@ -1348,33 +1414,33 @@ var d = labToolData.dissection || {};
 
                 muscle: [
 
-                  { id: 'diaphragm_p', name: 'Diaphragm', x: 0.47, y: 0.43, fn: 'Dome separating thorax/abdomen. Primary respiratory muscle. Phrenic nerve (C3-C5). Identical to human.', clinical: 'Diaphragm is a key mammalian innovation \u2014 enables negative-pressure breathing.' },
+                  { id: 'diaphragm_p', name: 'Diaphragm', x: 0.47, y: 0.43, fn: 'Dome-shaped muscle separating thorax and abdomen and driving ventilation. Attachment pattern and proportions are porcine, not human.', clinical: 'The diaphragm supports negative-pressure breathing in both species, while its anatomy must be interpreted in the specimen\'s own body plan.' },
 
-                  { id: 'masseter_p', name: 'Masseter', x: 0.26, y: 0.42, fn: 'Powerful jaw muscle. Larger than human \u2014 pigs process tough plant material.', clinical: 'Homologous to human masseter \u2014 strongest muscle by weight in both species.' },
+                  { id: 'masseter_p', name: 'Masseter', x: 0.26, y: 0.42, fn: 'Powerful jaw-closing muscle shaped by the pig\'s skull and feeding mechanics.', clinical: 'Homologous to the human masseter, while size, orientation, and mechanical demands differ between species.' },
 
-                  { id: 'ext_oblique_p', name: 'External Oblique', x: 0.58, y: 0.46, fn: 'Largest abdominal wall muscle. Same function as human external oblique.', clinical: 'Identical innervation pattern to humans \u2014 used in surgical training.' }
+                  { id: 'ext_oblique_p', name: 'External Oblique', x: 0.58, y: 0.46, fn: 'Broad abdominal-wall muscle that supports and compresses the viscera and contributes to trunk movement.', clinical: 'Useful for comparing mammalian body-wall organization; fiber direction, attachments, and innervation should be treated as porcine anatomy.' }
 
                 ],
 
                 organs: [
 
-                  { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44, fn: '4 chambers identical to human. Complete separation of oxygenated/deoxygenated blood. Coronary arteries present.', clinical: 'Pig heart valves replace human valves in cardiac surgery. Pig-to-human heart xenotransplantation research ongoing.' },
+                  { id: 'heart_p', name: 'Heart (4-chamber)', x: 0.44, y: 0.44, fn: 'Four chambers separate pulmonary and systemic circulation. The porcine heart shares this mammalian plan with humans, while atrial, venous, ventricular, and great-vessel anatomy differs.', clinical: 'Processed porcine valve tissue is used in bioprosthetic valves, and genetically modified pig hearts are studied for xenotransplantation; species differences remain clinically important.' },
 
-                  { id: 'lungs_p', name: 'Lungs', x: 0.41, y: 0.42, fn: 'Lobed with alveolar structure identical to human. Right: 4 lobes. Left: 2-3 lobes. Pleural membranes.', clinical: 'Pig lungs used for surgical technique practice. Lobation differs slightly from human.' },
+                  { id: 'lungs_p', name: 'Lungs', x: 0.41, y: 0.42, fn: 'Alveolated, lobed lungs. The right lung has cranial, middle, caudal, and accessory lobes, and a tracheal bronchus supplies the cranial lobe; human lobation and branching differ.', clinical: 'Pig lungs are used in research and training, but their lobation and bronchial tree must not be treated as human-identical.' },
 
-                  { id: 'liver_p', name: 'Liver', x: 0.55, y: 0.44, fn: '5 lobes (more lobed than human). Bile production, detoxification, protein synthesis, glycogen storage.', clinical: 'Pig liver studied for xenotransplantation. Functionally identical to human liver.' },
+                  { id: 'liver_p', name: 'Liver', x: 0.55, y: 0.44, fn: 'Five gross lobes, with a more visibly lobated form than the human liver. Core roles include bile production, metabolism, protein synthesis, and glycogen storage.', clinical: 'Pig liver is studied as a comparative and transplantation model; shared roles do not imply identical anatomy or physiology.' },
 
-                  { id: 'stomach_p', name: 'Stomach', x: 0.54, y: 0.49, fn: 'Monogastric (simple stomach like human). Cardiac, fundic, pyloric regions. Produces HCl and pepsin.', clinical: 'Unlike ruminants (cows), pigs have simple stomachs like humans \u2014 ideal gastric research model.' },
+                  { id: 'stomach_p', name: 'Stomach', x: 0.54, y: 0.49, fn: 'Monogastric stomach with cardiac, fundic, and pyloric regions that produces acid and pepsin. Shape and mucosal regions remain species-specific.', clinical: 'The porcine stomach is a useful monogastric comparison, not a direct substitute for human gastric anatomy.' },
 
                   { id: 'sm_int_p', name: 'Small Intestine', x: 0.59, y: 0.55, fn: 'Long (~15m adult). Duodenum, jejunum, ileum. Villi for nutrient absorption.', clinical: 'Proportionally longer than human \u2014 used for surgical anastomosis training.' },
 
                   { id: 'lg_int_p', name: 'Spiral Colon', x: 0.65, y: 0.53, fn: 'Distinctive spiral colon (coiled). Cecum present. Absorbs water.', clinical: 'Spiral colon is uniquely porcine \u2014 coiled like a watch spring.' },
 
-                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Bean-shaped, retroperitoneal. Multipyramidal like human. Filter blood, regulate electrolytes.', clinical: 'Leading xenotransplantation candidates \u2014 closest to human in structure/function.' },
+                  { id: 'kidneys_p', name: 'Kidneys', x: 0.62, y: 0.39, fn: 'Bean-shaped, retroperitoneal, multipyramidal kidneys that filter blood and regulate fluid and electrolytes. Vascular and collecting-system details are porcine.', clinical: 'Pig kidneys are studied for xenotransplantation, but immune compatibility, infection risk, and physiological fit require dedicated evaluation.' },
 
                   { id: 'thymus_p', name: 'Thymus', x: 0.36, y: 0.39, fn: 'Enormous in fetus (much larger than adult). T-cell maturation. Extends from mediastinum into neck.', clinical: 'Fetal thymus demonstrates critical early immune development role.' },
 
-                  { id: 'pancreas_p', name: 'Pancreas', x: 0.60, y: 0.53, fn: 'Exocrine enzymes + endocrine insulin/glucagon. Nearly identical to human.', clinical: 'Porcine insulin treated human diabetes for decades before synthetic insulin.' },
+                  { id: 'pancreas_p', name: 'Pancreas', x: 0.60, y: 0.53, fn: 'Produces exocrine digestive enzymes and the endocrine hormones insulin and glucagon. Gross form, ducts, and tissue properties are porcine.', clinical: 'Porcine insulin treated human diabetes before recombinant human insulin; shared hormone function does not make the organs anatomically identical.' },
 
                   { id: 'bladder_p', name: 'Urinary Bladder', x: 0.67, y: 0.53, fn: 'Large distensible organ. Allantoic bladder with urachus in fetus.', clinical: 'Patent urachus is a congenital anomaly in both pigs and humans.' }
 
@@ -1382,7 +1448,7 @@ var d = labToolData.dissection || {};
 
                 skeleton: [
 
-                  { id: 'skull_p', name: 'Skull', x: 0.24, y: 0.40, fn: 'Elongated snout. Largely cartilaginous in fetus. Internal anatomy similar to human.', clinical: 'Elongated pig skull vs rounded human skull, but cranial contents are similar.' },
+                  { id: 'skull_p', name: 'Skull', x: 0.24, y: 0.40, fn: 'Elongated snout and a largely cartilaginous fetal skeleton. Cranial proportions and developmental landmarks differ substantially from humans.', clinical: 'Use the skull to compare homologous mammalian bones, not to transfer human measurements or spatial relationships directly.' },
 
                   { id: 'vert_col_p', name: 'Vertebral Column', x: 0.52, y: 0.35, fn: '7C, 14-15T, 6-7L, 4S, 20-23 caudal. More vertebrae than human. 7 cervical constant across mammals.', clinical: 'Cervical count (7) is constant across nearly all mammals \u2014 giraffe to mouse.' },
 
@@ -1392,7 +1458,7 @@ var d = labToolData.dissection || {};
 
                   { id: 'scapula_p', name: 'Scapula', x: 0.36, y: 0.39, fn: 'Triangular shoulder blade with prominent spine and acromion. Cartilaginous in fetus. Attachment for supraspinatus and infraspinatus muscles.', clinical: 'Pig scapula is more vertically oriented than human — adaptation for quadrupedal weight bearing.' },
 
-                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.37, y: 0.55, fn: 'Humerus (upper), radius and ulna (lower). Articulate with shoulder and carpals. Ulna has prominent olecranon process for triceps attachment.', clinical: 'Pig limb proportions differ from human but bone homology is exact — used in orthopedic research.' },
+                  { id: 'humerus_p', name: 'Forelimb Bones', x: 0.37, y: 0.55, fn: 'Humerus, radius, and ulna articulate with the shoulder and carpus; the ulna has a prominent olecranon for triceps attachment.', clinical: 'These are homologous mammalian bone elements, while proportions, loading, and joint orientation reflect quadrupedal locomotion.' },
 
                   { id: 'femur_p', name: 'Hindlimb Bones', x: 0.68, y: 0.55, fn: 'Femur (thigh), tibia and fibula (leg). Terminates in cloven hoof (digits III and IV). Other digits are vestigial dewclaws.', clinical: 'Pig walks on digits III-IV — an even-toed ungulate (Artiodactyla). Humans walk on entire foot sole.' },
 
@@ -1402,9 +1468,9 @@ var d = labToolData.dissection || {};
 
                 nervous: [
 
-                  { id: 'brain_p', name: 'Brain', x: 0.24, y: 0.39, fn: 'Mammalian brain with sulci/gyri. Large olfactory bulbs. Structure very similar to human.', clinical: 'Pig brains used in neurosurgery training \u2014 closer to human than any common lab animal except primates.' },
+                  { id: 'brain_p', name: 'Brain', x: 0.24, y: 0.39, fn: 'Mammalian brain with sulci, gyri, and prominent olfactory bulbs. Regional proportions and organization differ from humans.', clinical: 'Pig brains are used in some research and procedural training because of useful scale and folding, but they are not human anatomical substitutes.' },
 
-                  { id: 'spinal_p', name: 'Spinal Cord', x: 0.50, y: 0.36, fn: 'Full vertebral length in fetus. Cervical/lumbar enlargements. Gray/white matter identical to human.', clinical: 'Spinal cord organization (dorsal sensory, ventral motor) identical to human.' },
+                  { id: 'spinal_p', name: 'Spinal Cord', x: 0.50, y: 0.36, fn: 'Extends along the fetal vertebral canal with cervical and lumbar enlargements and the shared vertebrate organization of gray and white matter. Proportions and tract anatomy are species-specific.', clinical: 'Dorsal sensory and ventral motor organization is a broad vertebrate plan; do not transfer human levels or measurements directly.' },
 
                   { id: 'vagus_p', name: 'Vagus Nerve (CN X)', x: 0.35, y: 0.40, fn: 'Longest cranial nerve. Heart, lungs, GI innervation. Runs with carotid/jugular.', clinical: 'Pig vagus nerve studies led to human vagus nerve stimulator implants for epilepsy.' }
 
@@ -1588,7 +1654,7 @@ var d = labToolData.dissection || {};
 
               name: 'Sheep Eye', icon: '\uD83D\uDC41\uFE0F',
 
-              desc: 'Organ dissection \u2014 camera-type eye with lens, retina, vitreous humor. Nearly identical to human.',
+              desc: 'Mammalian eye with cornea, lens, retina, and vitreous humor. Sheep-specific features include a tapetum lucidum and a horizontal retinal specialization rather than a human fovea.',
 
               bodyShape: 'eye',
               objectives: ['Trace the path of light through the eye from cornea to retina','Explain accommodation and the role of the ciliary body','Compare the tapetum lucidum in sheep to the human eye','Identify the blind spot and explain why it exists'],
@@ -2433,19 +2499,26 @@ var d = labToolData.dissection || {};
           function clampTissueMetric(value) {
             return Math.max(0, Math.min(100, Math.round(Number(value) || 0)));
           }
-          function tissueVariantDefinition() {
-            var seed = Math.abs(Number(d.variationSeed || variationSeed || 1));
+          function tissueVariantDefinition(layerId, options) {
+            options = options || {};
+            var seed = Math.abs(Number(options.variationSeed || d.variationSeed || variationSeed || 1));
+            var variantLayerIdx = currentLayerIdx;
+            if (layerId) {
+              var resolvedLayerIdx = spec.layers.findIndex(function (layer) { return layer.id === layerId; });
+              if (resolvedLayerIdx >= 0) variantLayerIdx = resolvedLayerIdx;
+            }
             var variants = [
               { id: 'balanced', label: 'Balanced preparation', moisture: 0, tension: 0, clarity: 0, risk: 0 },
               { id: 'firm', label: 'Firm preservation', moisture: -8, tension: 14, clarity: -4, risk: 4 },
               { id: 'dry', label: 'Reduced surface moisture', moisture: -22, tension: 9, clarity: -8, risk: 8 },
               { id: 'narrow', label: 'Narrow working field', moisture: -4, tension: 18, clarity: -5, risk: 12 }
             ];
-            return variants[(seed + specimen.length + currentLayerIdx * 3) % variants.length];
+            return variants[(seed + specimen.length + variantLayerIdx * 3) % variants.length];
           }
-          function defaultTissueState() {
-            var condition = specimenCondition || 'standard';
-            var variant = tissueVariantDefinition();
+          function defaultTissueState(layerId, options) {
+            options = options || {};
+            var condition = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen'].indexOf(options.specimenCondition) >= 0 ? options.specimenCondition : (specimenCondition || 'standard');
+            var variant = tissueVariantDefinition(layerId, options);
             var moisture = spec.bodyShape === 'worm' ? 86 : (spec.bodyShape === 'eye' ? 82 : 76);
             var tension = spec.bodyShape === 'heart' ? 54 : (spec.bodyShape === 'pig' ? 48 : 40);
             var clarity = spec.bodyShape === 'eye' ? 88 : 84;
@@ -2469,8 +2542,8 @@ var d = labToolData.dissection || {};
               consequences: []
             };
           }
-          function normalizeTissueState(state) {
-            var baseline = defaultTissueState();
+          function normalizeTissueState(state, layerId, options) {
+            var baseline = defaultTissueState(layerId, options);
             state = state || {};
             return {
               moisture: clampTissueMetric(state.moisture == null ? baseline.moisture : state.moisture),
@@ -2487,6 +2560,17 @@ var d = labToolData.dissection || {};
               lastUpdatedAt: Number(state.lastUpdatedAt) || baseline.lastUpdatedAt,
               consequences: Array.isArray(state.consequences) ? state.consequences.slice(-12) : []
             };
+          }
+          function normalizeSavedProcedureByLayer(map, options) {
+            var normalizedMap = {};
+            Object.keys(map || {}).forEach(function (layerId) {
+              var procedureState = map[layerId];
+              if (!procedureState || typeof procedureState !== 'object' || Array.isArray(procedureState)) return;
+              normalizedMap[layerId] = Object.assign({}, procedureState, {
+                tissueState: normalizeTissueState(procedureState.tissueState, layerId, options)
+              });
+            });
+            return normalizedMap;
           }
           function interpolateTissueState(beforeState, afterState, progress) {
             var before = normalizeTissueState(beforeState);
@@ -4075,7 +4159,15 @@ var d = labToolData.dissection || {};
             return false;
           }
           function directGestureProcedureKey(state) {
-            return JSON.stringify(procedureTransitionSnapshot(state || currentProcedure));
+            var snapshot = procedureTransitionSnapshot(state || currentProcedure);
+            // A missing legacy tissue record receives a fresh fallback timestamp on render.
+            // Timestamps do not change whether an in-progress gesture is still safe; the
+            // remaining procedure and tissue fields continue to invalidate real state changes.
+            if (snapshot.tissueState) {
+              snapshot.tissueState = Object.assign({}, snapshot.tissueState);
+              delete snapshot.tissueState.lastUpdatedAt;
+            }
+            return JSON.stringify(snapshot);
           }
           function directGestureCalibrationKey() {
             return JSON.stringify(normalizeToolCalibration(toolCalibration));
@@ -4204,7 +4296,7 @@ var d = labToolData.dissection || {};
             canvas._toolStroke = null; canvas._toolSamples = null; canvas._toolInputType = null; canvas._toolGestureContext = null; canvas._toolResistance = null; canvas._lastResistanceLevel = null; canvas._cuttingSafetyState = null; canvas._toolPressure = 0.12; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
             if (!directGestureContextIsCurrent(gestureContext)) {
-              canvas._suppressToolClick = false;
+              canvas._suppressToolClick = true;
               setProcedureFeedback('Instrument stroke canceled because the tool, specimen, layer, or view changed before release. No cut was recorded.', 'working');
               return true;
             }
@@ -4299,12 +4391,14 @@ var d = labToolData.dissection || {};
           function finishForcepsDrag(e, cancelled) {
             var canvas = e.currentTarget, drag = canvas._forcepsDrag;
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
-            cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
+            var pointerWasCancelled = !!cancelled;
+            var gestureContextChanged = !directGestureContextIsCurrent(drag.gestureContext);
+            cancelled = pointerWasCancelled || gestureContextChanged;
             drag.active = false; var assessment = forcepsDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._forcepsDrag = null; canvas._forcepsDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
             syncCanvasPointerPresentation(canvas, null);
-            if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Forceps lift canceled. The tissue returned to its resting position.', 'working'); return true; }
+            if (cancelled) { canvas._suppressToolClick = gestureContextChanged && !pointerWasCancelled; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Forceps lift canceled. The tissue returned to its resting position.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No lift recorded. Begin on the opened tissue edge, then drag away from it.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Forceps grasp released before the tissue was lifted. Drag farther, or use the equivalent action button.', 'working'); return true; }
             if (assessment.key === 'slip') { procedureMistake('The forceps slipped before retraction. Increase grip into the 25–50 percent range and use a slower pull; no lift was recorded.'); return true; }
@@ -4394,12 +4488,14 @@ var d = labToolData.dissection || {};
           function finishPinDrag(e, cancelled) {
             var canvas = e.currentTarget, drag = canvas._pinDrag;
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
-            cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
+            var pointerWasCancelled = !!cancelled;
+            var gestureContextChanged = !directGestureContextIsCurrent(drag.gestureContext);
+            cancelled = pointerWasCancelled || gestureContextChanged;
             drag.active = false; var assessment = pinDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._pinDrag = null; canvas._pinDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
             syncCanvasPointerPresentation(canvas, null);
-            if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Pin placement canceled. The tissue returned to its resting position.', 'working'); return true; }
+            if (cancelled) { canvas._suppressToolClick = gestureContextChanged && !pointerWasCancelled; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Pin placement canceled. The tissue returned to its resting position.', 'working'); return true; }
             if (!assessment || ['position', 'crowded'].indexOf(assessment.key) >= 0) { setProcedureFeedback('No anchor recorded. Begin at the indicated endpoint and keep the second pin outside the spacing ring.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Pin engaged but was not inserted. Drag inward farther, or use the equivalent action button.', 'working'); return true; }
             if (['direction', 'shallow', 'steep', 'stress'].indexOf(assessment.key) >= 0) { procedureMistake('The pin was released outside the stable insertion envelope. Align the shaft, use a 55–75 degree angle, and release before the depth limit; no anchor was recorded.'); return true; }
@@ -4506,12 +4602,14 @@ var d = labToolData.dissection || {};
           function finishProbeDrag(e, cancelled) {
             var canvas = e.currentTarget, drag = canvas._probeDrag;
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
-            cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
+            var pointerWasCancelled = !!cancelled;
+            var gestureContextChanged = !directGestureContextIsCurrent(drag.gestureContext);
+            cancelled = pointerWasCancelled || gestureContextChanged;
             drag.active = false; var assessment = probeDragAssessment(canvas, drag.current, Date.now()) || drag.assessment;
             canvas._probeDrag = null; canvas._probeDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId);
             syncCanvasPointerPresentation(canvas, null);
-            if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Probe trace canceled. No structure was recorded.', 'working'); return true; }
+            if (cancelled) { canvas._suppressToolClick = gestureContextChanged && !pointerWasCancelled; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Probe trace canceled. No structure was recorded.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No probe trace recorded. Press a visible structure before tracing.', 'caution'); return true; }
             if (assessment.key === 'grasp') { setProcedureFeedback('Probe engaged but did not trace far enough. Drag across the structure, or use the equivalent action button.', 'working'); return true; }
             if (assessment.key === 'light') { setProcedureFeedback('Probe pressure was too light to resolve a tactile boundary. Increase calibrated pressure and try again.', 'caution'); return true; }
@@ -4588,10 +4686,12 @@ var d = labToolData.dissection || {};
           function finishDropperDrag(e, cancelled) {
             var canvas = e.currentTarget, drag = canvas._dropperDrag;
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
-            cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
+            var pointerWasCancelled = !!cancelled;
+            var gestureContextChanged = !directGestureContextIsCurrent(drag.gestureContext);
+            cancelled = pointerWasCancelled || gestureContextChanged;
             drag.active = false; var assessment = dropperDragAssessment(canvas, drag.current, Date.now()) || drag.assessment; var inputType = drag.inputType || (e.pointerType || 'mouse'); canvas._dropperDrag = null; canvas._dropperDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); syncCanvasPointerPresentation(canvas, null);
-            if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Dropper pass canceled. No saline was applied.', 'working'); return true; }
+            if (cancelled) { canvas._suppressToolClick = gestureContextChanged && !pointerWasCancelled; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Dropper pass canceled. No saline was applied.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No hydration pass recorded. Press on the specimen surface before dragging.', 'caution'); return true; }
             if (assessment.key === 'grasp') {
               setProcedureFeedback('Dropper contact was too short to demonstrate control. Drag a short flow-aligned path before release; no saline was applied.', 'working');
@@ -4670,10 +4770,12 @@ var d = labToolData.dissection || {};
           function finishWickDrag(e, cancelled) {
             var canvas = e.currentTarget, drag = canvas._wickDrag;
             if (!drag || !drag.active || (drag.pointerId != null && e.pointerId != null && drag.pointerId !== e.pointerId)) return false;
-            cancelled = !!cancelled || !directGestureContextIsCurrent(drag.gestureContext);
+            var pointerWasCancelled = !!cancelled;
+            var gestureContextChanged = !directGestureContextIsCurrent(drag.gestureContext);
+            cancelled = pointerWasCancelled || gestureContextChanged;
             drag.active = false; var assessment = wickDragAssessment(canvas, drag.current, Date.now()) || drag.assessment; var inputType = drag.inputType || (e.pointerType || 'mouse'); canvas._wickDrag = null; canvas._wickDragStatusKey = null; canvas._suppressToolClick = true;
             if (canvas.releasePointerCapture && e.pointerId != null && canvas.hasPointerCapture && canvas.hasPointerCapture(e.pointerId)) canvas.releasePointerCapture(e.pointerId); syncCanvasPointerPresentation(canvas, null);
-            if (cancelled) { canvas._suppressToolClick = false; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Wick pass canceled. No saline was removed.', 'working'); return true; }
+            if (cancelled) { canvas._suppressToolClick = gestureContextChanged && !pointerWasCancelled; canvas._toolPointer = null; canvas._toolVector = null; canvas._toolPressure = null; canvas._toolIntentState = null; setProcedureFeedback('Wick pass canceled. No saline was removed.', 'working'); return true; }
             if (!assessment || assessment.key === 'position') { setProcedureFeedback('No recovery pass recorded. Press on the pool edge before dragging.', 'caution'); return true; }
             if (assessment.key === 'grasp') {
               setProcedureFeedback('Wick contact was too short to demonstrate recovery control. Drag outward across the pool edge before release; no saline was removed.', 'working');
@@ -12908,7 +13010,7 @@ var d = labToolData.dissection || {};
           // its own layer, notes, assessment, and annotation state.
           if (d._dissLoadedSpec === specimen) {
             scheduleDissectionSave('dissection_progress_' + specimen, {
-              schemaVersion: 19,
+              schemaVersion: 21,
               exploredOrgans: d.exploredOrgans || {},
               verifiedIdentifications: d.verifiedIdentifications || {},
               revealedLayers: d.revealedLayers || {},
@@ -12926,6 +13028,7 @@ var d = labToolData.dissection || {};
               organNotes: d.organNotes || {},
               organConfidence: d.organConfidence || {},
               annotations: d.annotations || [],
+              dissInquiry: normalizeDissectionInquiry(d.dissInquiry),
               activeLayer: activeLayer,
               timeSpent: d.timeSpent || 0,
               guidedComplete: !!d.guidedComplete,
@@ -13016,10 +13119,14 @@ var d = labToolData.dissection || {};
                 organNotes: data.organNotes || {},
                 organConfidence: data.organConfidence || {},
                 annotations: Array.isArray(data.annotations) ? data.annotations : [],
+                dissInquiry: normalizeDissectionInquiry(data.dissInquiry),
                 activeLayer: savedLayer,
                 timeSpent: Number(data.timeSpent) || 0,
                 guidedComplete: !!data.guidedComplete,
-                procedureByLayer: data.procedureByLayer || {},
+                procedureByLayer: normalizeSavedProcedureByLayer(data.procedureByLayer || {}, {
+                  specimenCondition: data.specimenCondition,
+                  variationSeed: data.variationSeed
+                }),
                 attemptArchive: data.attemptArchive || {},
                 adaptiveGuidance: data.adaptiveGuidance !== false,
                 compareTechniqueAttempts: false,
@@ -13950,6 +14057,21 @@ var d = labToolData.dissection || {};
             };
           });
           var nextToolDefinition = PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === procedureNext.instrument; }) || { label: procedureNext.instrument || 'instrument' };
+          var equivalentProcedureActionDisabled = !!(d._incisionAnim && d._incisionAnim.active) || procedureNext.action === 'complete' || currentLearningGate.required || activeInstrument !== procedureNext.instrument || !nextToolReadiness || !nextToolReadiness.safeToAct;
+          var equivalentProcedureActionLabel;
+          if (procedureNext.action === 'complete') {
+            equivalentProcedureActionLabel = 'Technique protocol complete; use the Next best action card to inspect and record evidence';
+          } else if (d._incisionAnim && d._incisionAnim.active) {
+            equivalentProcedureActionLabel = 'Motor-neutral equivalent unavailable while the current technique animation finishes.';
+          } else if (currentLearningGate.required) {
+            equivalentProcedureActionLabel = 'Motor-neutral equivalent: ' + procedureNext.label + '. Complete the ' + (currentLearningGate.phase === 'reflect' ? 'reflection' : 'planning') + ' checkpoint first.';
+          } else if (activeInstrument !== procedureNext.instrument) {
+            equivalentProcedureActionLabel = 'Motor-neutral equivalent: ' + procedureNext.label + '. Select ' + nextToolDefinition.label + ' first.';
+          } else if (!nextToolReadiness || !nextToolReadiness.safeToAct) {
+            equivalentProcedureActionLabel = 'Motor-neutral equivalent: ' + procedureNext.label + '. ' + (nextToolReadiness ? nextToolReadiness.cue : 'Complete the readiness checks first.');
+          } else {
+            equivalentProcedureActionLabel = 'Motor-neutral equivalent: ' + procedureNext.label + '. Ready to record the equivalent technique action.';
+          }
           var nextActionModel;
           if (d.practicalMode && quizQ) {
             nextActionModel = { step: 6, tone: 'assessment', phase: 'Timed practical', title: quizPrompt, description: 'Submit the current identification before time expires.', label: 'Go to practical question', action: 'quiz' };
@@ -14055,7 +14177,7 @@ var d = labToolData.dissection || {};
                 focusDissectionTarget('diss-view-cycle', 'Choose the anatomical view that makes the target visible. The view was not changed automatically.');
               } else {
                 upd('techniquePanelOpen', true);
-                focusDissectionTarget('diss-procedure-panel', 'Review the field setup and decide what to adjust before continuing.');
+                focusDissectionTarget('diss-procedure-summary', 'Review the field setup and decide what to adjust before continuing.');
               }
             } else if (nextActionModel.action === 'canvas') {
               focusDissectionTarget('diss-canvas', nextActionModel.title + '. Use the pointer, or Arrow keys followed by Enter.');
@@ -14298,7 +14420,7 @@ var d = labToolData.dissection || {};
             updMany({ guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null });
             var viewed = Object.assign({}, d.specimensViewed || {});
             viewed[sk] = true;
-            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
+            updMany({ specimen: sk, activeLayer: (sp.layers && sp.layers[0] ? sp.layers[0].id : 'skin'), selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, organSearch: '', exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: null, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, resetConfirmPending: false, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), specimensViewed: viewed, _dissLoadedSpec: null, _viewTransition: null, _layerBrowseTransition: null });
             if (typeof announceToSR === 'function') announceToSR('Selected ' + sp.name + '. Loading saved progress for the ' + ((sp.layers[0] || {}).name || 'first') + ' layer.');
             if (typeof canvasNarrate === 'function') canvasNarrate('dissection', 'specimenSelect', 'Selected ' + sp.name + '. ' + sp.desc, { debounce: 500 });
           }
@@ -14310,7 +14432,7 @@ var d = labToolData.dissection || {};
           }
           function requestSpecimenReset() {
             upd('resetConfirmPending', true);
-            var message = 'Reset confirmation opened. This will remove viewed structures, verified identifications, notes, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
+            var message = 'Reset confirmation opened. This will remove viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts for ' + spec.name + '.';
             setProcedureFeedback(message, 'caution');
             if (typeof announceToSR === 'function') announceToSR(message);
             focusResetControl('diss-reset-confirm');
@@ -14323,7 +14445,7 @@ var d = labToolData.dissection || {};
           }
           function confirmSpecimenReset() {
             closeTimedPractical();
-            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
+            updMany({ activeLayer: (spec.layers[0] || {}).id || 'skin', selectedOrgan: null, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, guidedMode: false, guidedStep: 0, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, exploredOrgans: {}, verifiedIdentifications: {}, revealedLayers: {}, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, assessmentCompletedAt: 0, assessmentRecordedScore: 0, assessmentRecordedTotal: 0, assessmentEvidence: {}, quizFeedback: null, quizRetry: null, quizReviewQueue: [], completedObjectives: {}, organNotes: {}, organConfidence: {}, annotations: [], dissInquiry: defaultDissectionInquiry(), timeSpent: 0, guidedComplete: false, procedureByLayer: {}, attemptArchive: {}, compareTechniqueAttempts: false, visualEvidence: [], referenceEvidenceId: null, splitComparison: false, procedureFeedback: { message: 'Progress reset for ' + spec.name + '. Accessibility preferences were preserved.', tone: 'success', at: Date.now() }, scenarioStartedAt: 0, scenarioTimeRemaining: 0, scenarioCompletedAt: 0, activeInstrument: 'probe', livingFunctionEnabled: false, livingFunctionPaused: false, livingFunctionSpeed: 'normal', livingFunctionReplayToken: 0, incisionDepth: 'shallow', toolCalibration: normalizeToolCalibration(), canvasZoom: 1, canvasPanX: 0, canvasPanY: 0, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, rulerMode: false, annotateMode: false, labelMode: 'show', resetConfirmPending: false });
             updMany({ practicalMode: false, quizMode: false, practicalTimer: 0, practicalTargetIds: [], quizExplanation: null, guidedMode: false, guidedTargetIds: [], labelMode: d.practicalMode ? (d._prePracticalLabelMode || 'show') : (d.labelMode || 'show') });
             try { localStorage.removeItem('dissection_progress_' + specimen); } catch (e) {}
             if (addToast) addToast('\u21BA Progress reset for ' + spec.name, 'info');
@@ -14901,6 +15023,11 @@ var d = labToolData.dissection || {};
                   report += 'Specimen variation: ' + variationSeed + '\n';
                   report += 'Anatomical view: ' + anatomicalView + '; cross-section: ' + (crossSectionMode ? 'on' : 'off') + '; condition: ' + specimenCondition + '\n';
                   report += 'Scenario: ' + scenarioDefinition.label + ' (' + scenarioDefinition.difficulty + '); status: ' + (scenarioStatus.complete ? 'complete' : (scenarioStatus.expired ? 'expired' : 'in progress')) + ' (' + scenarioStatus.progress + '%); ' + scenarioStatus.detail + '; elapsed ' + (d.scenarioStartedAt ? Math.max(0, Math.round(((Number(d.scenarioCompletedAt) || Date.now()) - Number(d.scenarioStartedAt)) / 1000)) : 0) + ' seconds\n';
+                  var reportInquiry = normalizeDissectionInquiry(d.dissInquiry);
+                  var reportInquiryMetrics = dissectionInquiryMetrics(reportInquiry);
+                  report += 'Inquiry model (pedagogical heuristic): ' + dissectionInquiryStateLabel(reportInquiryMetrics.state) + '; specimen size ' + reportInquiry.specimenSize + ' cm; depth ' + reportInquiry.layerDepth + '/5; care ' + reportInquiry.careLevel + '/10; time pressure ' + reportInquiry.timePress + '/10; damage index ' + reportInquiryMetrics.damage.toFixed(1) + '; insight score ' + reportInquiryMetrics.insight.toFixed(1) + '; logged approaches ' + reportInquiry.log.length + '\n';
+                  if (reportInquiry.hypothesis.trim()) report += 'Inquiry hypothesis: ' + reportInquiry.hypothesis.replace(/\s+/g, ' ').trim() + '\n';
+                  if (reportInquiry.explanation.trim()) report += 'Inquiry explanation: ' + reportInquiry.explanation.replace(/\s+/g, ' ').trim() + '\n';
                   report += 'Instructor thresholds: score ' + instructorTarget + ', max cautions ' + instructorMaxCautions + ', required structures ' + instructorRequiredStructures + '\n';
                   report += 'Curated relationship overlay: ' + (relationshipMode ? 'on' : 'off') + '; directly visible structures: ' + visibleOrgansInView.length + '/' + organs.length + '; rendering quality: ' + renderQuality + '\n';
                   if (d.selectedOrgan && selectedRelationships.length) report += 'Selected structure relationships: ' + selectedRelationships.map(function (item) { return item.type + ': ' + item.relation + ' ' + item.organ.name; }).join('; ') + '\n';
@@ -14936,7 +15063,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'),
               d.resetConfirmPending && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
-                React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
+                React.createElement("p", { id: "diss-reset-confirm-title", role: "alert", "aria-live": "assertive", "aria-atomic": "true" }, 'Reset ' + spec.name + '? This permanently removes viewed structures, verified identifications, notes, inquiry records, evidence frames, quiz progress, and technique attempts. Accessibility preferences are preserved.'),
                 React.createElement("button", { id: "diss-reset-confirm", type: "button", "data-confirm": "true", onClick: confirmSpecimenReset }, 'Confirm reset'),
                 React.createElement("button", { id: "diss-reset-cancel", type: "button", onClick: cancelSpecimenReset }, 'Cancel')
               )
@@ -15399,8 +15526,8 @@ var d = labToolData.dissection || {};
                     )
                   ),
 
-                  React.createElement("details", { id: "diss-procedure-panel", tabIndex: -1, className: "diss-procedure", open: !!d.techniquePanelOpen, onToggle: function (event) { var open = event.currentTarget.open; if (open !== !!d.techniquePanelOpen) upd('techniquePanelOpen', open); }, "aria-labelledby": "diss-procedure-title" },
-                    React.createElement("summary", { className: "diss-procedure__summary" },
+                  React.createElement("details", { id: "diss-procedure-panel", className: "diss-procedure", open: !!d.techniquePanelOpen, onToggle: function (event) { var open = event.currentTarget.open; if (open !== !!d.techniquePanelOpen) upd('techniquePanelOpen', open); }, "aria-labelledby": "diss-procedure-title" },
+                    React.createElement("summary", { id: "diss-procedure-summary", className: "diss-procedure__summary" },
                       React.createElement("strong", null, 'Technique controls'),
                       React.createElement("span", null, layerTechniqueComplete ? 'Protocol complete' : procedureNext.label)
                     ),
@@ -15754,7 +15881,7 @@ var d = labToolData.dissection || {};
                       })
                     ),
                     React.createElement("div", { className: "diss-procedure__controls" },
-                      React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: !!(d._incisionAnim && d._incisionAnim.active) || procedureNext.action === 'complete' || currentLearningGate.required || activeInstrument !== procedureNext.instrument || !nextToolReadiness || !nextToolReadiness.safeToAct, onClick: performNextProcedureStep, "aria-describedby": "diss-equivalent-technique-note", "aria-label": procedureNext.action === 'complete' ? "Technique protocol complete; use the Next best action card to inspect and record evidence" : "Motor-neutral equivalent: " + procedureNext.label + ". Choose the required tool and complete prediction and readiness checks first." }, procedureNext.action === 'complete' ? 'Technique complete' : ('Motor-neutral: ' + procedureNext.label)),
+                      React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: equivalentProcedureActionDisabled, onClick: performNextProcedureStep, "aria-describedby": "diss-equivalent-technique-note", "aria-label": equivalentProcedureActionLabel }, procedureNext.action === 'complete' ? 'Technique complete' : ('Motor-neutral: ' + procedureNext.label)),
                       React.createElement("span", { id: "diss-equivalent-technique-note", className: "diss-sr-only" }, 'This control provides a motor-neutral equivalent after you choose the plan and prepare the field. It records supported technique and still requires an explanation before the next step.'),
                       React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": "Show a generalized safe-technique demonstration on the specimen" }, '\u25B6 Show technique'),
                       React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": "Replay the recorded technique attempt on the specimen" }, '\u21BB Replay attempt'),
@@ -15902,7 +16029,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D ' + 'Comparing across specimens' + ': ' + sel.name + ' across specimens'),
 
-                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto" },
+                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": "Specimen list" },
 
                   SPEC_KEYS.map(function (sk) {
 
@@ -16327,7 +16454,7 @@ var d = labToolData.dissection || {};
                   React.createElement("p", { id: "diss-directory-count", className: "diss-directory-status", role: "status", "aria-live": "polite", "aria-atomic": "true" },
                     organSearchText ? (filteredOrgans.length + ' matching ' + (filteredOrgans.length === 1 ? 'structure' : 'structures') + ' in ' + currentLayerDef.name + '.') : (organs.length + ' structures available in ' + currentLayerDef.name + '.')
                   ),
-                  React.createElement("div", { id: "diss-directory-results", className: "space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false" },
+                  React.createElement("div", { id: "diss-directory-results", className: "space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false", tabIndex: 0, role: "region", "aria-label": "Directory results" },
 
                     filteredOrgans.length === 0
                       ? React.createElement("p", { className: "diss-directory-empty" }, 'No structures match “' + (d.organSearch || '') + '”. Try a structure name, system, or function.')
@@ -16775,38 +16902,40 @@ var d = labToolData.dissection || {};
 
                 // ══ DISSECTION INQUIRY widget (H7b'') ══
                 (function() {
-                  var iq = d.dissInquiry || { specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-                  function setIQ(patch) { upd('dissInquiry', Object.assign({}, iq, patch)); }
+                  var iq = normalizeDissectionInquiry(d.dissInquiry);
+                  function setIQ(patch) { upd('dissInquiry', normalizeDissectionInquiry(Object.assign({}, iq, patch))); }
                   function setKey(k, v) { var p = {}; p[k] = v; setIQ(p); }
-                  // damage = (depth × timePress) / (care × specimenSize/8)
-                  var damage = (iq.layerDepth * iq.timePress) / Math.max(1, iq.careLevel * (iq.specimenSize / 8));
-                  var insight = (iq.layerDepth * 1.5 + iq.careLevel * 0.8 - iq.timePress * 0.3) * (iq.specimenSize / 8);
-                  var state = damage > 8 ? 'destroyed' : damage > 5 ? 'damaged' : damage > 3 ? 'compromised' : insight > 8 ? 'excellent' : insight > 4 ? 'good' : 'surface';
+                  var inquiryMetrics = dissectionInquiryMetrics(iq);
+                  var damage = inquiryMetrics.damage;
+                  var insight = inquiryMetrics.insight;
+                  var state = inquiryMetrics.state;
                   var sm = ({
-                    destroyed: { label: 'Specimen destroyed', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: 'Damage exceeds tolerance. Anatomy obscured by cuts. Restart with smaller specimen or more care.' },
-                    damaged: { label: 'Significant damage', color: '#fb923c', bg: '#2a1a0a', border: '#ea580c', desc: 'Specimen still usable but key relationships obscured. Common with rushed work on small specimens.' },
-                    compromised: { label: 'Compromised', color: '#facc15', bg: '#2a2410', border: '#eab308', desc: 'Visible cut errors but most anatomy intact. Workable for learning if not for documentation.' },
-                    surface: { label: 'Surface only', color: '#94a3b8', bg: '#1e293b', border: '#475569', desc: 'Low effort, low risk, low reward. Good for external anatomy lessons only.' },
-                    good: { label: 'Good progress', color: '#22d3ee', bg: '#0a1f2e', border: '#0891b2', desc: 'Effective dissection — clean cuts, visible structures, moderate insight.' },
-                    excellent: { label: 'Excellent dissection', color: '#4ade80', bg: '#0a2e1a', border: '#16a34a', desc: 'Patient, deep, careful work on a workable-sized specimen. Anatomy maximally exposed.' }
+                    destroyed: { label: dissectionInquiryStateLabel('destroyed'), color: '#fca5a5', bg: '#2a0a0a', border: '#dc2626', desc: 'The heuristic predicts severe damage and obscured relationships. Compare a smaller depth or lower time pressure.' },
+                    damaged: { label: dissectionInquiryStateLabel('damaged'), color: '#fdba74', bg: '#2a1a0a', border: '#ea580c', desc: 'The heuristic predicts that damage may obscure key relationships. Compare a slower or more careful approach.' },
+                    compromised: { label: dissectionInquiryStateLabel('compromised'), color: '#fde047', bg: '#2a2410', border: '#eab308', desc: 'The heuristic predicts some visible relationships alongside substantial technique risk.' },
+                    surface: { label: dissectionInquiryStateLabel('surface'), color: '#cbd5e1', bg: '#1e293b', border: '#64748b', desc: 'The heuristic predicts low damage risk but limited access beyond external anatomy.' },
+                    good: { label: dissectionInquiryStateLabel('good'), color: '#67e8f9', bg: '#0a1f2e', border: '#0891b2', desc: 'The heuristic predicts a useful balance of access, care, and time pressure.' },
+                    excellent: { label: dissectionInquiryStateLabel('excellent'), color: '#86efac', bg: '#0a2e1a', border: '#16a34a', desc: 'The heuristic predicts high insight with controlled technique; compare whether the assumptions are realistic.' }
                   })[state];
-                  return React.createElement("details", { className: "diss-advanced-only diss-disclosure diss-disclosure--inset rounded-xl", style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }, React.createElement("summary", { style: { color: sm.color } }, 'Advanced inquiry simulator'),
-                    React.createElement("h4", { className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Explore the Outcome'),
+                  return React.createElement("details", { className: "diss-advanced-only diss-disclosure diss-disclosure--inset rounded-xl", "data-dissection-inquiry": true, style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } }, React.createElement("summary", { style: { color: sm.color } }, 'Advanced inquiry simulator'),
+                    React.createElement("h4", { id: "diss-inquiry-title", className: "text-xs font-black uppercase tracking-wider mb-1", style: { color: sm.color } }, '🔬 Dissection Inquiry — Explore the Outcome'),
                     React.createElement("p", { className: "text-[10px] opacity-85 mb-2 leading-snug" }, 'Set specimen size, dissection depth, care level, and time pressure, then observe how the modeled outcome changes. The result updates live; record a hypothesis or pattern you notice.'),
-                    React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, sm.label),
-                    React.createElement("p", { className: "text-[10px] opacity-80 mb-2" }, sm.desc),
-                    React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                      [
-                        { label: 'Damage index', val: damage.toFixed(1) },
-                        { label: 'Insight score', val: insight.toFixed(1) }
-                      ].map(function(m) {
-                        return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
-                          React.createElement("div", { className: "text-[10px] opacity-60" }, m.label),
-                          React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
-                        );
-                      })
+                    React.createElement("div", { id: "diss-inquiry-result", role: "status", "aria-live": "polite", "aria-atomic": "true" },
+                      React.createElement("div", { className: "inline-block px-2 py-1 rounded-full text-[10px] font-bold mb-2", style: { background: sm.color, color: '#000' } }, 'Modeled outcome: ' + sm.label),
+                      React.createElement("p", { className: "text-[10px] mb-2" }, sm.desc),
+                      React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
+                        [
+                          { label: 'Damage index', val: damage.toFixed(1) },
+                          { label: 'Insight score', val: insight.toFixed(1) }
+                        ].map(function(m) {
+                          return React.createElement("div", { key: m.label, className: "p-1 rounded text-center", style: { background: '#0a0a1a', border: '1px solid ' + sm.border } },
+                            React.createElement("div", { className: "text-[10px]" }, m.label),
+                            React.createElement("div", { className: "text-[11px] font-bold font-mono", style: { color: sm.color } }, m.val)
+                          );
+                        })
+                      )
                     ),
-                    React.createElement("svg", { role: 'img', 'aria-label': 'Predicted outcome chart: damage ' + damage.toFixed(1) + ', insight ' + insight.toFixed(1), width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                    React.createElement("svg", { role: 'img', 'aria-label': 'Modeled outcome chart: damage index ' + damage.toFixed(1) + ', insight score ' + insight.toFixed(1), width: '100%', height: 100, viewBox: '0 0 320 100', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                       React.createElement("line", { x1: 30, y1: 80, x2: 310, y2: 80, stroke: '#1e293b' }),
                       React.createElement("rect", { x: 50, y: 80 - Math.max(0, Math.min(60, damage * 6)), width: 60, height: Math.max(0, Math.min(60, damage * 6)), fill: '#f87171', opacity: 0.85 }),
                       React.createElement("text", { x: 80, y: 95, fill: '#94a3b8', fontSize: 9, textAnchor: 'middle' }, 'damage'),
@@ -16816,51 +16945,64 @@ var d = labToolData.dissection || {};
                       React.createElement("text", { x: 8, y: 78, fill: '#475569', fontSize: 8 }, 'low')
                     ),
                     React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2" },
-                      React.createElement("label", { className: "text-[10px]" },
-                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Specimen size (cm)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.specimenSize)),
-                        React.createElement("input", { type: 'range', min: 2, max: 30, step: 1, value: iq.specimenSize, onChange: function(e) { setKey('specimenSize', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("div", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-size" }, 'Specimen size (cm)'), React.createElement("output", { htmlFor: "diss-inquiry-size", className: "font-mono font-bold", style: { color: sm.color } }, iq.specimenSize)),
+                        React.createElement("input", { id: "diss-inquiry-size", type: 'range', min: 2, max: 30, step: 1, value: iq.specimenSize, "aria-valuetext": iq.specimenSize + ' centimeters', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('specimenSize', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("label", { className: "text-[10px]" },
-                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Dissection depth (1-5)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.layerDepth)),
-                        React.createElement("input", { type: 'range', min: 1, max: 5, step: 1, value: iq.layerDepth, onChange: function(e) { setKey('layerDepth', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("div", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-depth" }, 'Dissection depth'), React.createElement("output", { htmlFor: "diss-inquiry-depth", className: "font-mono font-bold", style: { color: sm.color } }, iq.layerDepth + '/5')),
+                        React.createElement("input", { id: "diss-inquiry-depth", type: 'range', min: 1, max: 5, step: 1, value: iq.layerDepth, "aria-valuetext": 'level ' + iq.layerDepth + ' of 5', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('layerDepth', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("label", { className: "text-[10px]" },
-                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Care level (1-10)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.careLevel)),
-                        React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.careLevel, onChange: function(e) { setKey('careLevel', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("div", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-care" }, 'Care level'), React.createElement("output", { htmlFor: "diss-inquiry-care", className: "font-mono font-bold", style: { color: sm.color } }, iq.careLevel + '/10')),
+                        React.createElement("input", { id: "diss-inquiry-care", type: 'range', min: 1, max: 10, step: 1, value: iq.careLevel, "aria-valuetext": 'level ' + iq.careLevel + ' of 10', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('careLevel', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       ),
-                      React.createElement("label", { className: "text-[10px]" },
-                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("span", null, 'Time pressure (1-10)'), React.createElement("span", { className: "font-mono font-bold", style: { color: sm.color } }, iq.timePress)),
-                        React.createElement("input", { type: 'range', min: 1, max: 10, step: 1, value: iq.timePress, onChange: function(e) { setKey('timePress', parseInt(e.target.value, 10)); }, className: "w-full" })
+                      React.createElement("div", { className: "text-[10px]" },
+                        React.createElement("div", { className: "flex justify-between mb-0.5" }, React.createElement("label", { htmlFor: "diss-inquiry-time" }, 'Time pressure'), React.createElement("output", { htmlFor: "diss-inquiry-time", className: "font-mono font-bold", style: { color: sm.color } }, iq.timePress + '/10')),
+                        React.createElement("input", { id: "diss-inquiry-time", type: 'range', min: 1, max: 10, step: 1, value: iq.timePress, "aria-valuetext": 'level ' + iq.timePress + ' of 10', "aria-describedby": "diss-inquiry-disclaimer", onChange: function(e) { setKey('timePress', parseInt(e.target.value, 10)); }, className: "w-full min-h-11" })
                       )
                     ),
                     React.createElement("div", { className: "flex gap-2 mb-2" },
-                      React.createElement("button", { onClick: function() {
+                      React.createElement("button", { type: "button", onClick: function() {
                         var t = new Date().toISOString().slice(11, 19);
-                        setIQ({ log: iq.log.concat([{ t: t, sz: iq.specimenSize, dp: iq.layerDepth, c: iq.careLevel, tp: iq.timePress, dmg: damage.toFixed(1), ins: insight.toFixed(1), state: sm.label }]) });
-                      }, className: "flex-1 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
-                      React.createElement("button", { onClick: function() { setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 }); }, className: "px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#94a3b8', border: '1px solid #1e293b', cursor: 'pointer' } }, 'Reset')
+                        setIQ({ log: iq.log.concat([{ t: t, sz: iq.specimenSize, dp: iq.layerDepth, c: iq.careLevel, tp: iq.timePress }]) });
+                        var logMessage = 'Inquiry approach logged for ' + spec.name + ': ' + sm.label + ', damage index ' + damage.toFixed(1) + ', insight score ' + insight.toFixed(1) + '.';
+                        setProcedureFeedback(logMessage, 'success');
+                        if (typeof announceToSR === 'function') announceToSR(logMessage);
+                      }, className: "flex-1 min-h-11 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
+                      React.createElement("button", { type: "button", "aria-label": "Reset inquiry simulator inputs", onClick: function() {
+                        setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 });
+                        setProcedureFeedback('Inquiry simulator inputs reset. Saved approaches and written responses were preserved.', 'working');
+                        if (typeof announceToSR === 'function') announceToSR('Inquiry simulator inputs reset. Saved approaches and written responses were preserved.');
+                      }, className: "min-h-11 px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#cbd5e1', border: '1px solid #64748b', cursor: 'pointer' } }, 'Reset inputs')
                     ),
-                    iq.log.length > 0 && React.createElement("div", { className: "p-1.5 rounded text-[10px] font-mono mb-2", style: { background: '#0a0a1a', maxHeight: 70, overflow: 'auto', border: '1px solid #1e293b' } },
-                      iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' · sz' + e.sz + ' dp' + e.dp + ' care' + e.c + ' tp' + e.tp + ' → dmg ' + e.dmg + ' ins ' + e.ins); })
-                    ),
-                    React.createElement("label", { className: "block text-[10px] font-bold opacity-85 mb-1" }, 'Your hypothesis (which slider is most overweighted by novice dissectors? Why?)'),
-                    React.createElement("textarea", { 'aria-label': 'Your dissection outcome hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., novices push depth too fast on small specimens, destroying anatomy before identifying it...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, className: "px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #1e293b', cursor: 'pointer' } }, "🤔 I'm stuck — show open questions"),
-                    iq.stuckRevealed && React.createElement("div", { className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
-                      React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
-                      React.createElement("ul", { className: "pl-4 m-0" },
-                        React.createElement("li", null, 'Why does specimen SIZE matter so much? What\'s easier to dissect — earthworm or pig?'),
-                        React.createElement("li", null, 'When does adding depth start REDUCING insight (because you destroy what you wanted to see)?'),
-                        React.createElement("li", null, 'How does this map to the ethical case for virtual dissection — what insight do you lose?'),
-                        React.createElement("li", null, 'What would happen if you went depth=5, care=10, time=1? Why is that combination contradictory?')
+                    iq.log.length > 0 && React.createElement("section", { className: "p-1.5 rounded text-[10px] mb-2", role: "log", "aria-label": "Saved inquiry approaches", "aria-live": "polite", "aria-relevant": "additions", tabIndex: 0, style: { background: '#0a0a1a', maxHeight: 110, overflow: 'auto', border: '1px solid #64748b' } },
+                      React.createElement("h5", { className: "font-bold mb-1" }, 'Saved approaches (' + iq.log.length + '/20)'),
+                      React.createElement("ol", { className: "m-0 pl-4 font-mono" },
+                        iq.log.slice(-5).map(function(e, i) { return React.createElement("li", { key: e.t + '|' + e.sz + '|' + e.dp + '|' + i }, (e.t ? e.t + ' · ' : '') + e.state + ' · size ' + e.sz + ' cm · depth ' + e.dp + '/5 · care ' + e.c + '/10 · time ' + e.tp + '/10 · damage ' + e.dmg + ' · insight ' + e.ins); })
                       )
                     ),
-                    React.createElement("label", { className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
-                      React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                    React.createElement("label", { htmlFor: "diss-inquiry-hypothesis", className: "block text-[10px] font-bold mb-1" }, 'Your hypothesis: which factor will matter most, and why?'),
+                    React.createElement("textarea", { id: "diss-inquiry-hypothesis", value: iq.hypothesis, maxLength: 2000, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'Predict how size, depth, care, or time pressure will change the modeled outcome...', className: "w-full p-1.5 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                    React.createElement("button", { type: "button", "aria-expanded": !!iq.stuckRevealed, "aria-controls": "diss-inquiry-open-questions", onClick: function() { setIQ({ stuckRevealed: !iq.stuckRevealed }); }, className: "min-h-11 px-2 py-1 rounded text-[10px] font-bold mb-2", style: { background: '#0a0a1a', color: sm.color, border: '1px solid #64748b', cursor: 'pointer' } }, iq.stuckRevealed ? 'Hide open questions' : "🤔 I'm stuck — show open questions"),
+                    iq.stuckRevealed && React.createElement("div", { id: "diss-inquiry-open-questions", className: "p-2 rounded text-[10px] mb-2", style: { background: '#0a0a1a', border: '1px dashed ' + sm.border, lineHeight: 1.5 } },
+                      React.createElement("div", { className: "font-bold mb-1", style: { color: sm.color } }, 'Open questions (no answer key)'),
+                      React.createElement("ul", { className: "pl-4 m-0" },
+                        React.createElement("li", null, 'Which assumptions make specimen size affect the model, and would they apply equally to an earthworm and a pig?'),
+                        React.createElement("li", null, 'When does added depth reduce useful observation because relationships become obscured?'),
+                        React.createElement("li", null, 'What can virtual practice teach, and what tactile or specimen-specific evidence does it omit?'),
+                        React.createElement("li", null, 'What assumptions would make depth 5, care 10, and time pressure 1 realistic or unrealistic?')
+                      )
+                    ),
+                    React.createElement("label", { htmlFor: "diss-inquiry-understood", className: "flex items-center gap-2 text-[10px] font-bold cursor-pointer mb-1" },
+                      React.createElement("input", { id: "diss-inquiry-understood", type: 'checkbox', checked: iq.understood, "aria-controls": "diss-inquiry-explanation", onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       React.createElement("span", null, 'I can explain why this combination of size, depth, care, and time pressure yields this outcome.')
                     ),
-                    iq.understood && React.createElement("textarea", { 'aria-label': 'Explain how specimen size, depth, care, and time pressure affect the outcome', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
-                    React.createElement("p", { className: "m-0 text-[10px] italic opacity-60" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage/insight indices are pedagogical heuristics, not lab-grade rubrics. Real dissection outcomes depend on preservation quality, instrument sharpness, and specific anatomy.')
+                    iq.understood && React.createElement("div", { id: "diss-inquiry-explanation" },
+                      React.createElement("label", { htmlFor: "diss-inquiry-explanation-text", className: "block text-[10px] font-bold mb-1" }, 'Explain the modeled relationship in your own words'),
+                      React.createElement("textarea", { id: "diss-inquiry-explanation-text", value: iq.explanation, maxLength: 3000, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain how the four inputs affect the model, then name one limitation...', className: "w-full p-1.5 rounded text-[10px] mb-1", style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } })
+                    ),
+                    React.createElement("p", { id: "diss-inquiry-disclaimer", role: "note", className: "m-0 text-[10px] italic" }, 'Inquiry widget — no score, no reveal, no answer dump. Damage and insight indices are pedagogical heuristics, not lab-grade rubrics or predictions of an actual specimen. Real outcomes depend on preservation, instruments, anatomy, and technique.')
                   );
                 })(),
 
@@ -16869,7 +17011,7 @@ var d = labToolData.dissection || {};
                 React.createElement("details", { className: "diss-disclosure bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200" },
 
                   React.createElement("summary", { className: "text-violet-800" }, 'Key terms'),
-                  React.createElement("div", { className: "diss-disclosure__body space-y-1 max-h-48 overflow-y-auto" },
+                  React.createElement("div", { className: "diss-disclosure__body space-y-1 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": "Structure details" },
 
                     [
 

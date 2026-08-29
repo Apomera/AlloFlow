@@ -14,6 +14,29 @@
     renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
   };
 
+  // ★DARK-BY-DESIGN PALETTE PIN. The tool root paints #0f172a in every theme
+  // (see `var BG` in render) and its content is authored for that ground, but
+  // --allo-stem-* resolve to their LIGHT values under .theme-default, so theme
+  // text inherited #0f172a onto hardcoded-dark panels (1.22:1 x42 at depth)
+  // and --allo-stem-panel painted WHITE cards under pastel inks. Pin all NINE
+  // palette names dark inside the shell, like stem_tool_bridgelab.js does.
+  // Contrast theme keeps its own palette.
+  if (typeof document !== 'undefined' && document.head &&
+      !document.getElementById('microbiology-dark-surface-vars')) {
+    var _mbVars = document.createElement('style');
+    _mbVars.id = 'microbiology-dark-surface-vars';
+    _mbVars.textContent = 'html:not(.theme-contrast) .selh-microbiology{' +
+      '--allo-stem-canvas:#0f172a;' +
+      '--allo-stem-panel:#1e293b;' +
+      '--allo-stem-deeper:#020617;' +
+      '--allo-stem-text:#e2e8f0;' +
+      '--allo-stem-text-soft:#94a3b8;' +
+      '--allo-stem-border:#334155;' +
+      '--allo-stem-button-bg:#1e293b;' +
+      '--allo-stem-button-text:#e2e8f0;' +
+      '--allo-stem-button-border:#334155;}';
+    document.head.appendChild(_mbVars);
+  }
   // ──────────────────────────────────────────────────────────────────
   // DATA: Bacteria
   // ──────────────────────────────────────────────────────────────────
@@ -400,9 +423,37 @@
   }
   window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation };
 
+  // -- Accent hues as readable TEXT, per substrate --------------------------
+  // Content tabs are dark-authored (pastel accents) over THEME-following
+  // grounds, so every accent needs a deep partner on the light substrate.
+  // Module scope: the three standalone components below need it too.
+  var MICRO_INK_LIGHT = {
+    '#ef4444': '#b91c1c', '#0ea5e9': '#0369a1', '#a855f7': '#7e22ce',
+    '#fbbf24': '#92400e', '#10b981': '#047857', '#06b6d4': '#0e7490',
+    '#7c3aed': '#6d28d9', '#22c55e': '#15803d', '#f59e0b': '#92400e',
+    '#a78bfa': '#6d28d9',
+    '#6ee7b7': '#047857', '#a7f3d0': '#047857', '#86efac': '#166534',
+    '#7dd3fc': '#0369a1', '#67e8f9': '#0e7490', '#22d3ee': '#0e7490',
+    '#38bdf8': '#0369a1', '#93c5fd': '#1d4ed8', '#c7d2fe': '#4338ca',
+    '#c4b5fd': '#6d28d9', '#d8b4fe': '#7e22ce', '#e9d5ff': '#7e22ce',
+    '#fbcfe8': '#be185d', '#f9a8d4': '#be185d', '#fca5a5': '#b91c1c',
+    '#fecaca': '#b91c1c', '#fda4af': '#be123c', '#fde68a': '#92400e',
+    '#dcfce7': '#166534', '#ec4899': '#be185d', '#34d399': '#047857',
+    '#16a34a': '#166534', '#eab308': '#854d0e', '#facc15': '#854d0e'
+  };
+  var MICRO_INK_DARK = {
+    '#ef4444': '#fca5a5', '#0ea5e9': '#7dd3fc', '#a855f7': '#c4b5fd',
+    '#fbbf24': '#fde68a', '#10b981': '#6ee7b7', '#06b6d4': '#67e8f9',
+    '#7c3aed': '#a78bfa', '#22c55e': '#86efac', '#f59e0b': '#fcd34d',
+    '#a78bfa': '#c4b5fd', '#ec4899': '#f9a8d4', '#dc2626': '#fca5a5', '#6366f1': '#a5b4fc', '#8b5cf6': '#c4b5fd'
+  };
+  function microInkFor(color, isDark) {
+    return isDark ? (MICRO_INK_DARK[color] || color) : (MICRO_INK_LIGHT[color] || color);
+  }
   function AntibioticResistanceSim(props) {
     if (!R) return null;
     var awardXP = props.awardXP;
+    var microInk = function (c) { return microInkFor(c, !!props.isDark); };
     var ds = R.useState(60);    var dose = ds[0];      var setDose = ds[1];
     var ts = R.useState(14);    var duration = ts[0];  var setDuration = ts[1];
     var rs = R.useState(3);     var initRes = rs[0];   var setInitRes = rs[1];
@@ -487,7 +538,7 @@
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
-          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#fca5a5' } }, 'Antibiotic resistance - petri-dish evolution sim'),
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: microInk('#fca5a5') } }, 'Antibiotic resistance - petri-dish evolution sim'),
           hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Model selection acting on pre-existing resistant cells across repeated exposure rounds.')
         )
       ),
@@ -526,34 +577,34 @@
           ),
           hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 } },
             hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.30)' } },
-              hh('div', { style: { fontSize: 8, fontWeight: 800, color: '#67e8f9', textTransform: 'uppercase' } }, 'Alive'),
-              hh('div', { style: { fontSize: 14, fontWeight: 900, color: '#22d3ee' } }, totalAlive)
+              hh('div', { style: { fontSize: 8, fontWeight: 800, color: microInk('#67e8f9'), textTransform: 'uppercase' } }, 'Alive'),
+              hh('div', { style: { fontSize: 14, fontWeight: 900, color: microInk('#22d3ee') } }, totalAlive)
             ),
             hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)' } },
-              hh('div', { style: { fontSize: 8, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase' } }, '% Resistant'),
-              hh('div', { style: { fontSize: 14, fontWeight: 900, color: '#ef4444' } }, pctRes + '%')
+              hh('div', { style: { fontSize: 8, fontWeight: 800, color: microInk('#fca5a5'), textTransform: 'uppercase' } }, '% Resistant'),
+              hh('div', { style: { fontSize: 14, fontWeight: 900, color: microInk('#ef4444') } }, pctRes + '%')
             )
           )
         )
       ),
-      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: '#fde68a', fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
+      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: microInk('#fde68a'), fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
       hh('fieldset', { disabled: day > 0, style: { margin: '0 0 10px', padding: 10, borderRadius: 8, border: '1px solid rgba(167,243,208,0.38)', opacity: day > 0 ? 0.72 : 1 } },
-        hh('legend', { style: { padding: '0 6px', color: '#a7f3d0', fontSize: 11, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),
+        hh('legend', { style: { padding: '0 6px', color: microInk('#a7f3d0'), fontSize: 11, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7 } }, [{ id: 'increase', label: 'Increase' }, { id: 'similar', label: 'Stay about the same' }, { id: 'decrease', label: 'Decrease' }].map(function(option) {
           return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 7, padding: 8, borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);
         }))
       ),
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: '#fbbf24' } }, dose + '/100')),
+          hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: microInk('#fbbf24') } }, dose + '/100')),
           hh('input', { type: 'range', 'aria-label': 'Antibiotic exposure strength in the teaching model', 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: '#22d3ee' } }, duration)),
+          hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: microInk('#22d3ee') } }, duration)),
           hh('input', { type: 'range', 'aria-label': 'Number of exposure rounds in the teaching model', 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
-          hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: '#ef4444' } }, initRes + '%')),
+          hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: microInk('#ef4444') } }, initRes + '%')),
           hh('input', { type: 'range', 'aria-label': 'Initial resistance', 'aria-valuetext': initRes + '% initially resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
         )
       ),
@@ -562,10 +613,10 @@
         hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || day >= duration, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: !investigationReady || day >= duration ? 'default' : 'pointer', opacity: !investigationReady || day >= duration ? 0.4 : 1 } }, 'Step round'),
         hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Reset')
       ),
-      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: '#fde68a', fontSize: 10.5, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
+      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 10.5, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
       day >= duration && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
         hh('div', { role: 'status', 'aria-live': 'polite', style: { marginBottom: 8, paddingBottom: 7, borderBottom: '1px solid rgba(167,243,208,0.25)' } }, hh('strong', { style: { color: predictionReview && predictionReview.correct ? '#86efac' : '#fde68a' } }, predictionReview && predictionReview.correct ? 'Prediction matched. ' : 'Prediction review. '), predictionReview && predictionReview.observed === 'similar' ? 'The resistant share stayed about the same (a ' + Math.abs(predictionReview.change) + '-point change).' : 'The resistant share ' + (predictionReview ? predictionReview.observedLabel : 'was not classified') + ' by ' + Math.abs(predictionReview ? predictionReview.change : 0) + ' percentage points.'),
-        hh('strong', { style: { color: '#22c55e' } }, '2. Observe: '),
+        hh('strong', { style: { color: microInk('#22c55e') } }, '2. Observe: '),
         'The dish started with ' + initialPct + '% resistant cells. After ' + duration + ' exposure rounds at strength ' + dose + '/100, ' + totalAlive + ' cells remain and ' + pctRes + '% of them are resistant. ',
         initialPct === 0 ? 'No resistant lineage appeared because mutation and gene transfer are outside this model. ' : 'Susceptible cells were removed more often, so resistant survivors contributed a larger share of later rounds. ',
         (pctRes >= 80 ? 'Selection strongly changed the population composition.' : pctRes >= 40 ? 'Selection produced a clear resistance shift.' : 'The resistance shift was modest in this run.'),
@@ -585,6 +636,7 @@
   function SnowCholeraMap(props) {
     if (!R) return null;
     var awardXP = props.awardXP;
+    var microInk = function (c) { return microInkFor(c, !!props.isDark); };
     var ws = R.useState(0);     var week = ws[0];          var setWeek = ws[1];
     var hs = R.useState(false); var handleRemoved = hs[0]; var setHandleRemoved = hs[1];
     var sho = R.useState(true); var showDeaths = sho[0];   var setShowDeaths = sho[1];
@@ -658,7 +710,7 @@
           textAlign: 'center'
         }
       },
-        hh('div', { style: { fontWeight: 800, color: '#d8b4fe' } }, activeTooltip.address),
+        hh('div', { style: { fontWeight: 800, color: microInk('#d8b4fe') } }, activeTooltip.address),
         hh('div', { style: { marginTop: 2 } }, activeTooltip.victims + (activeTooltip.victims === 1 ? ' death' : ' deaths'))
       );
     }
@@ -667,7 +719,7 @@
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(168,85,247,0.18)', border: '1.5px solid #a855f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🗺️'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
-          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#d8b4fe' } }, 'Snow\'s map · Soho cholera outbreak, 1854'),
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: microInk('#d8b4fe') } }, 'Snow\'s map · Soho cholera outbreak, 1854'),
           hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Walk through 6 weeks of the outbreak. Try removing the Broad Street pump handle. Watch the data move.')
         )
       ),
@@ -831,7 +883,7 @@
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
         hh('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
         hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-valuetext': (WEEKS[week] && WEEKS[week].label ? WEEKS[week].label : ('week ' + week)), 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
-        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: '#fca5a5', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: microInk('#fca5a5'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
       ),
       hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(2,6,23,0.5))', borderLeft: '3px solid #a855f7' } },
         hh('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, w.note)
@@ -842,7 +894,7 @@
         hh('button', { onClick: function() { setWeek(0); setHandleRemoved(false); setOverlay('none'); }, style: { padding: '10px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, '↺ Restart outbreak')
       ),
       handleRemoved && week >= 4 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-        hh('strong', { style: { color: '#22c55e' } }, '🎓 What Snow proved: '),
+        hh('strong', { style: { color: microInk('#22c55e') } }, '🎓 What Snow proved: '),
         'The clustering of deaths around ONE pump, while other neighborhoods served by other pumps had few deaths, was inconsistent with airborne ("miasma") transmission. The dot map made the pattern visible. Removing the handle removed the source. Cholera fell. The case founded BOTH modern epidemiology AND data visualization. Tufte calls Snow\'s map "the most important data visualization ever made." (Honest footnote: case rate was already declining before removal because residents had fled - but the geographical pattern was the real evidence.)'
       ) : null
     );
@@ -852,6 +904,7 @@
   function VirtualMicroscope(props) {
     if (!R) return null;
     var awardXP = props.awardXP;
+    var microInk = function (c) { return microInkFor(c, !!props.isDark); };
     var d = props.d || {};
     var upd = props.upd || function() {};
 
@@ -980,10 +1033,10 @@
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(16,185,129,0.18)', border: '1.5px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🔬'),
         hh('div', { style: { flex: 1, minWidth: 200 } },
-          hh('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7' } }, 'Virtual microscope · swap slides'),
+          hh('div', { style: { fontSize: 13, fontWeight: 800, color: microInk('#6ee7b7') } }, 'Virtual microscope · swap slides'),
           hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Schematic teaching slides, not micrographs. Compare scale, visibility threshold, and focus.')
         ),
-        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
+        hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: microInk('#6ee7b7'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
       ),
       hh('div', { role: 'group', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
         ORGANISMS.map(function(o) {
@@ -1002,7 +1055,7 @@
           },
             hh('div', { 'aria-hidden': 'true', style: { fontSize: 16, marginBottom: 2 } }, o.icon),
             hh('div', null, o.name),
-            hh('div', { style: { fontSize: 8, opacity: 0.7, marginTop: 2 } }, o.kingdom)
+            hh('div', { style: { fontSize: 8, marginTop: 2 } }, o.kingdom)
           );
         })
       ),
@@ -1019,7 +1072,7 @@
             hh('text', { x: 100, y: 130, fontSize: 24, textAnchor: 'middle' }, '·')
           )
         ),
-        hh('div', { style: { position: 'absolute', top: 10, right: 14, padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: '#6ee7b7', fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, mag + '×')
+        hh('div', { style: { position: 'absolute', top: 10, right: 14, padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: microInk('#6ee7b7'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, mag + '×')
       ),
       hh('div', { style: { padding: '0 4px', marginBottom: 10 } },
         hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-valuetext': mag + 'x magnification', 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
@@ -1103,24 +1156,10 @@
       var setLabToolData = ctx.setToolData;
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
-      var microbiologyDark = !!ctx.isDark || ctx.theme === 'dark';
-      var microbiologyAccentInk = {
-        '#ef4444': '#b91c1c', '#0ea5e9': '#0369a1', '#a855f7': '#7e22ce',
-        '#fbbf24': '#92400e', '#10b981': '#047857', '#06b6d4': '#0e7490',
-        '#7c3aed': '#6d28d9', '#22c55e': '#15803d', '#f59e0b': '#92400e',
-        '#a78bfa': '#6d28d9'
-      };
-      var microbiologyAccentInkDark = {
-        '#ef4444': '#fca5a5', '#0ea5e9': '#7dd3fc', '#a855f7': '#c4b5fd',
-        '#fbbf24': '#fde68a', '#10b981': '#6ee7b7', '#06b6d4': '#67e8f9',
-        '#7c3aed': '#a78bfa', '#22c55e': '#86efac', '#f59e0b': '#fcd34d',
-        '#a78bfa': '#c4b5fd'
-      };
-      function microAccentText(color) {
-        return microbiologyDark
-          ? (microbiologyAccentInkDark[color] || color)
-          : (microbiologyAccentInk[color] || color);
-      }
+      // Always the dark partner: the palette is pinned dark inside the shell
+      // (see the scoped style at the top of the file), in every theme.
+      var microbiologyDark = true;
+      function microAccentText(color) { return microInkFor(color, microbiologyDark); }
 
       var savedMicrobiology = (labToolData && labToolData.microbiology) || {};
       var d = Object.assign({}, DEFAULT_MICROBIOLOGY_STATE, savedMicrobiology);
@@ -1364,18 +1403,18 @@
               ),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
                 [
-                  { age: '4.6 Gya', name: __alloT('stem.microbiology.earth_forms', 'Earth forms'), desc: __alloT('stem.microbiology.from_the_disk_around_the_young_sun_mol', 'From the disk around the young Sun. Molten surface; no atmosphere except primordial gases.'), color: '#ef4444' },
+                  { age: '4.6 Gya', name: __alloT('stem.microbiology.earth_forms', 'Earth forms'), desc: __alloT('stem.microbiology.from_the_disk_around_the_young_sun_mol', 'From the disk around the young Sun. Molten surface; no atmosphere except primordial gases.'), color: microAccentText('#ef4444') },
                   { age: '4.5 Gya', name: __alloT('stem.microbiology.moon_forming_impact', 'Moon-forming impact'), desc: __alloT('stem.microbiology.a_mars_sized_body_strikes_the_proto_ea', 'A Mars-sized body strikes the proto-Earth. Debris coalesces into the Moon. Stabilizes Earth\'s rotation axis, which becomes important for climate stability later.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                  { age: '4.4 Gya', name: __alloT('stem.microbiology.first_oceans_condense', 'First oceans condense'), desc: __alloT('stem.microbiology.surface_cools_enough_for_water_vapor_t', 'Surface cools enough for water vapor to liquefy. Continuous oceans by ~4.3 Gya. Atmosphere has no free oxygen.'), color: '#0ea5e9' },
+                  { age: '4.4 Gya', name: __alloT('stem.microbiology.first_oceans_condense', 'First oceans condense'), desc: __alloT('stem.microbiology.surface_cools_enough_for_water_vapor_t', 'Surface cools enough for water vapor to liquefy. Continuous oceans by ~4.3 Gya. Atmosphere has no free oxygen.'), color: microAccentText('#0ea5e9') },
                   { age: '4.0 Gya', name: __alloT('stem.microbiology.late_heavy_bombardment_ends', 'Late Heavy Bombardment ends'), desc: __alloT('stem.microbiology.a_long_episode_of_intense_asteroid_imp', 'A long episode of intense asteroid impacts ends around now. Surface conditions stabilize enough that life can persist if it formed.'), color: 'var(--allo-stem-text-soft, #94a3b8)' },
-                  { age: '4.0-3.5 Gya', name: __alloT('stem.microbiology.origin_of_life', 'Origin of life'), desc: __alloT('stem.microbiology.somewhere_here_we_don_t_know_exactly_w', 'Somewhere here. We don\'t know exactly where (hydrothermal vents? warm tide pools? clay surfaces?) or exactly how. The RNA world hypothesis: RNA, which can both store information AND catalyze reactions, came before DNA + protein. Self-replicating RNA molecules → enclosed in lipid vesicles → first cells.'), color: '#a855f7' },
-                  { age: '3.5 Gya', name: __alloT('stem.microbiology.luca_last_universal_common_ancestor', 'LUCA - Last Universal Common Ancestor'), desc: __alloT('stem.microbiology.a_single_celled_organism_that_is_the_a', 'A single-celled organism that is the ancestor of every living thing on Earth. We have its inferred genome (from comparing all life): it had a membrane, DNA, ribosomes, ATP, the genetic code. All life since is descended from this one cell.'), color: '#fbbf24' },
-                  { age: '3.5 Gya', name: __alloT('stem.microbiology.first_confirmed_microbial_fossils', 'First confirmed microbial fossils'), desc: __alloT('stem.microbiology.stromatolites_layered_structures_built', 'Stromatolites - layered structures built by mats of cyanobacteria-like microbes. Modern stromatolites still grow at Shark Bay, Australia. They are essentially unchanged in 3.5 billion years.'), color: '#10b981' },
-                  { age: '2.5-2.4 Gya', name: __alloT('stem.microbiology.great_oxygenation_event_goe', 'Great Oxygenation Event (GOE)'), desc: __alloT('stem.microbiology.cyanobacteria_have_been_producing_o_as', 'Cyanobacteria have been producing O₂ as a byproduct of photosynthesis for several hundred million years. Once iron in the oceans is fully oxidized, free O₂ accumulates in the atmosphere. Disaster for most existing life (oxygen is toxic to anaerobes); enables more energy-dense aerobic metabolism for the survivors.'), color: '#06b6d4' },
-                  { age: '2.1 Gya', name: __alloT('stem.microbiology.first_eukaryotes', 'First eukaryotes'), desc: __alloT('stem.microbiology.a_larger_archaeal_cell_engulfs_a_free_', 'A larger archaeal cell engulfs a free-living aerobic bacterium that becomes the mitochondrion (endosymbiosis, Lynn Margulis). The combination is the first eukaryote. Much later (~1.5 Gya), a similar event with a cyanobacterium produces the first plant cell with a chloroplast.'), color: '#7c3aed' },
-                  { age: '1.5-1.0 Gya', name: __alloT('stem.microbiology.first_multicellular_life', 'First multicellular life'), desc: __alloT('stem.microbiology.multiple_lineages_evolve_multicellular', 'Multiple lineages evolve multicellularity independently - fungi, plants, animals all separately. Cells in a colony with division of labor. The transition is biologically subtle but evolutionarily enormous.'), color: '#22c55e' },
-                  { age: '540 Mya', name: __alloT('stem.microbiology.cambrian_explosion', 'Cambrian explosion'), desc: __alloT('stem.microbiology.suddenly_most_major_animal_body_plans_', 'Suddenly, most major animal body plans appear in the fossil record within ~25 million years. The explanation is contested (genuine evolutionary rapid radiation? earlier soft-bodied ancestors that didn\'t fossilize? oxygen reaching critical levels?). Either way, the era of large multicellular animals begins.'), color: '#f59e0b' },
-                  { age: '~300 kya', name: __alloT('stem.microbiology.homo_sapiens', 'Homo sapiens'), desc: __alloT('stem.microbiology.our_species_appears_in_africa_about_30', 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.'), color: '#a78bfa' }
+                  { age: '4.0-3.5 Gya', name: __alloT('stem.microbiology.origin_of_life', 'Origin of life'), desc: __alloT('stem.microbiology.somewhere_here_we_don_t_know_exactly_w', 'Somewhere here. We don\'t know exactly where (hydrothermal vents? warm tide pools? clay surfaces?) or exactly how. The RNA world hypothesis: RNA, which can both store information AND catalyze reactions, came before DNA + protein. Self-replicating RNA molecules → enclosed in lipid vesicles → first cells.'), color: microAccentText('#a855f7') },
+                  { age: '3.5 Gya', name: __alloT('stem.microbiology.luca_last_universal_common_ancestor', 'LUCA - Last Universal Common Ancestor'), desc: __alloT('stem.microbiology.a_single_celled_organism_that_is_the_a', 'A single-celled organism that is the ancestor of every living thing on Earth. We have its inferred genome (from comparing all life): it had a membrane, DNA, ribosomes, ATP, the genetic code. All life since is descended from this one cell.'), color: microAccentText('#fbbf24') },
+                  { age: '3.5 Gya', name: __alloT('stem.microbiology.first_confirmed_microbial_fossils', 'First confirmed microbial fossils'), desc: __alloT('stem.microbiology.stromatolites_layered_structures_built', 'Stromatolites - layered structures built by mats of cyanobacteria-like microbes. Modern stromatolites still grow at Shark Bay, Australia. They are essentially unchanged in 3.5 billion years.'), color: microAccentText('#10b981') },
+                  { age: '2.5-2.4 Gya', name: __alloT('stem.microbiology.great_oxygenation_event_goe', 'Great Oxygenation Event (GOE)'), desc: __alloT('stem.microbiology.cyanobacteria_have_been_producing_o_as', 'Cyanobacteria have been producing O₂ as a byproduct of photosynthesis for several hundred million years. Once iron in the oceans is fully oxidized, free O₂ accumulates in the atmosphere. Disaster for most existing life (oxygen is toxic to anaerobes); enables more energy-dense aerobic metabolism for the survivors.'), color: microAccentText('#06b6d4') },
+                  { age: '2.1 Gya', name: __alloT('stem.microbiology.first_eukaryotes', 'First eukaryotes'), desc: __alloT('stem.microbiology.a_larger_archaeal_cell_engulfs_a_free_', 'A larger archaeal cell engulfs a free-living aerobic bacterium that becomes the mitochondrion (endosymbiosis, Lynn Margulis). The combination is the first eukaryote. Much later (~1.5 Gya), a similar event with a cyanobacterium produces the first plant cell with a chloroplast.'), color: microAccentText('#7c3aed') },
+                  { age: '1.5-1.0 Gya', name: __alloT('stem.microbiology.first_multicellular_life', 'First multicellular life'), desc: __alloT('stem.microbiology.multiple_lineages_evolve_multicellular', 'Multiple lineages evolve multicellularity independently - fungi, plants, animals all separately. Cells in a colony with division of labor. The transition is biologically subtle but evolutionarily enormous.'), color: microAccentText('#22c55e') },
+                  { age: '540 Mya', name: __alloT('stem.microbiology.cambrian_explosion', 'Cambrian explosion'), desc: __alloT('stem.microbiology.suddenly_most_major_animal_body_plans_', 'Suddenly, most major animal body plans appear in the fossil record within ~25 million years. The explanation is contested (genuine evolutionary rapid radiation? earlier soft-bodied ancestors that didn\'t fossilize? oxygen reaching critical levels?). Either way, the era of large multicellular animals begins.'), color: microAccentText('#f59e0b') },
+                  { age: '~300 kya', name: __alloT('stem.microbiology.homo_sapiens', 'Homo sapiens'), desc: __alloT('stem.microbiology.our_species_appears_in_africa_about_30', 'Our species appears in Africa about 300,000 years ago. We are recent newcomers; microbes have been here for ~14,000× longer.'), color: microAccentText('#a78bfa') }
                 ].map(function(e, i) {
                   return h('div', { key: i, style: { display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: 8, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + e.color } },
                     h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText(e.color), paddingTop: 2 } }, e.age),
@@ -1405,22 +1444,22 @@
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                 [
-                  { name: __alloT('stem.microbiology.borrelia_burgdorferi_lyme_disease', 'Borrelia burgdorferi (Lyme disease)'), kind: 'Tick-borne bacterium', color: '#ef4444',
+                  { name: __alloT('stem.microbiology.borrelia_burgdorferi_lyme_disease', 'Borrelia burgdorferi (Lyme disease)'), kind: 'Tick-borne bacterium', color: microAccentText('#ef4444'),
                     desc: __alloT('stem.microbiology.the_spirochete_bacterium_carried_by_de', 'The spirochete bacterium carried by deer ticks (Ixodes scapularis). Maine has among the highest Lyme rates per capita in the US - over 1,400 confirmed cases / 100,000 in some years. The pathogen has expanded northward with warming winters; ticks no longer die back hard in Maine winters. Early-stage Lyme (with the bullseye rash) responds well to doxycycline. Late-stage Lyme is harder to treat.'),
                     prevention: 'Long pants tucked into socks. Permethrin-treated clothing. Daily tick checks. Cool-shower-and-tumble-dryer-the-clothes-on-high after time in the woods. Removing a tick within 24-36 hours of attachment usually prevents transmission.' },
-                  { name: __alloT('stem.microbiology.vibrio_parahaemolyticus_v_vulnificus', 'Vibrio parahaemolyticus + V. vulnificus'), kind: 'Marine bacteria', color: '#0ea5e9',
+                  { name: __alloT('stem.microbiology.vibrio_parahaemolyticus_v_vulnificus', 'Vibrio parahaemolyticus + V. vulnificus'), kind: 'Marine bacteria', color: microAccentText('#0ea5e9'),
                     desc: __alloT('stem.microbiology.naturally_present_in_seawater_shellfis', 'Naturally present in seawater + shellfish, especially in warmer months. Maine\'s Vibrio cases have grown along with the warming Gulf of Maine (which is warming faster than 99% of the world ocean). Causes severe gastroenteritis or, in immunocompromised people, life-threatening sepsis. The same warming that\'s reshaping Maine\'s coast is making Vibrio more common locally.'),
                     prevention: 'Maine raw oysters are extensively tested + cold-chained. Restaurants follow strict refrigeration protocols. Immunocompromised people should avoid raw shellfish.' },
-                  { name: __alloT('stem.microbiology.eastern_equine_encephalitis_virus_eee', 'Eastern Equine Encephalitis virus (EEE)'), kind: 'Mosquito-borne virus', color: '#a855f7',
+                  { name: __alloT('stem.microbiology.eastern_equine_encephalitis_virus_eee', 'Eastern Equine Encephalitis virus (EEE)'), kind: 'Mosquito-borne virus', color: microAccentText('#a855f7'),
                     desc: __alloT('stem.microbiology.rare_but_among_the_deadliest_mosquito_', 'Rare but among the deadliest mosquito-borne viruses in the US: ~30% mortality in human cases, plus permanent neurological damage in survivors. Maintained in a swamp cycle (mosquitoes + songbirds) in freshwater wetlands. Bridge-vector mosquitoes occasionally transmit to humans, deer, horses. Maine has had occasional cases. Most years zero; some years a handful.'),
                     prevention: 'Mosquito repellent (DEET, picaridin). Long sleeves at dusk + dawn in late summer. Removing standing water. Maine Public Health monitors mosquito populations + warns of high-risk periods.' },
-                  { name: __alloT('stem.microbiology.epizootic_shell_disease_american_lobst', 'Epizootic Shell Disease (American Lobster)'), kind: 'Polymicrobial', color: '#f59e0b',
+                  { name: __alloT('stem.microbiology.epizootic_shell_disease_american_lobst', 'Epizootic Shell Disease (American Lobster)'), kind: 'Polymicrobial', color: microAccentText('#f59e0b'),
                     desc: __alloT('stem.microbiology.a_complex_disease_where_multiple_bacte', 'A complex disease where multiple bacteria erode lobster shells. Prevalent in Long Island Sound and southern New England; spreading into Gulf of Maine waters with warming. Some Maine areas now seeing 5-10% of lobsters with shell disease, up from near-zero a decade ago. Affects lobsters\' ability to molt, makes them unmarketable. Climate stress = immune weakening + faster bacterial growth = more disease.'),
                     prevention: 'Larger picture: cooling waters again. Local picture: research on resistant lobster populations + early-warning surveillance.' },
-                  { name: __alloT('stem.microbiology.sphagnum_bog_microbiome', 'Sphagnum bog microbiome'), kind: 'Acid-loving + nitrogen-fixing', color: '#10b981',
+                  { name: __alloT('stem.microbiology.sphagnum_bog_microbiome', 'Sphagnum bog microbiome'), kind: 'Acid-loving + nitrogen-fixing', color: microAccentText('#10b981'),
                     desc: __alloT('stem.microbiology.maine_s_peat_bogs_caribou_bog_big_heat', 'Maine\'s peat bogs (Caribou Bog, Big Heath, etc.) host a unique acid-tolerant community: Sphagnum moss + associated fungi + nitrogen-fixing cyanobacteria + bacterial communities that survive at pH 3-4. The bogs store enormous amounts of carbon - undisturbed peat is one of the world\'s most efficient carbon sinks per acre. Climate-relevant.'),
                     prevention: '(not a pathogen - these are protected ecosystems. Maine has dozens of preserved peatland sites studied for climate research.)' },
-                  { name: __alloT('stem.microbiology.saccharomyces_maine_cider_beer', 'Saccharomyces (Maine cider + beer)'), kind: 'Beneficial yeasts', color: '#22c55e',
+                  { name: __alloT('stem.microbiology.saccharomyces_maine_cider_beer', 'Saccharomyces (Maine cider + beer)'), kind: 'Beneficial yeasts', color: microAccentText('#22c55e'),
                     desc: __alloT('stem.microbiology.maine_s_apple_growing_tradition_produc', 'Maine\'s apple-growing tradition produces a robust cider industry; Maine breweries are among the highest density per capita in the US. Local yeasts adapted to Maine apples are still being domesticated by Maine fermentation labs. Each cidery + brewery cultivates particular yeast strains that survive cool Maine fermentation temperatures.'),
                     prevention: '(not a pathogen - economically important.)' }
                 ].map(function(m, i) {
@@ -1447,7 +1486,7 @@
       // BACTERIA
       function renderBacteria() {
         var selected = BACTERIA.find(function(b) { return b.id === d.selectedBacterium; }) || BACTERIA[0];
-        var roleColor = { beneficial: '#22c55e', 'mostly-beneficial': '#86efac', 'mostly-pathogenic': '#f59e0b', pathogenic: '#ef4444' };
+        var roleColor = { beneficial: '#86efac', 'mostly-beneficial': '#86efac', 'mostly-pathogenic': '#fcd34d', pathogenic: '#fca5a5' };
         var roleLabel = { beneficial: 'beneficial', 'mostly-beneficial': 'mostly beneficial', 'mostly-pathogenic': 'mostly pathogenic', pathogenic: 'pathogenic' };
 
         // SVG of bacterial cell wall - one for Gram-positive, one for Gram-negative
@@ -1517,9 +1556,9 @@
           return h('div', { style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.4))', padding: 12, borderRadius: 12, border: '1px solid rgba(124,58,237,0.2)', marginBottom: 12 } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 } },
               h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#c4b5fd'), marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
                   h('span', null, __alloT('stem.microbiology.slide_smear_1000x_oil_immersion', '🔬 Slide Smear (1000x Oil Immersion)')),
-                  h('span', { style: { color: '#a78bfa' } }, step === 0 ? 'Step 0: Heat-Fixed Smear' : 'Step ' + step + ': ' + stepLabels[step - 1])
+                  h('span', { style: { color: microAccentText('#a78bfa') } }, step === 0 ? 'Step 0: Heat-Fixed Smear' : 'Step ' + step + ': ' + stepLabels[step - 1])
                 ),
                 h('svg', { role: 'img', 'aria-label': 'Gram stain microscopy process visualization', viewBox: '0 0 200 150', style: { width: '100%', height: 160, display: 'block', background: 'var(--allo-stem-deeper, #070a13)', borderRadius: 8, border: '1px solid #334155' } },
                   h('circle', { cx: 100, cy: 75, r: 72, fill: 'none', stroke: '#1e293b', strokeWidth: 0.5 }),
@@ -1572,7 +1611,7 @@
                         }
                       },
                         h('div', null, btn.label),
-                        h('div', { style: { fontSize: 7, opacity: 0.7, marginTop: 1, fontWeight: 500 } }, btn.desc)
+                        h('div', { style: { fontSize: 7, marginTop: 1, fontWeight: 500 } }, btn.desc)
                       );
                     })
                   ),
@@ -1582,7 +1621,7 @@
                   }, __alloT('stem.microbiology.clear_smear', '↺ Clear Smear'))
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0e1a)', border: '1px solid #1e293b' } },
-                  h('div', { style: { fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', marginBottom: 2 } }, __alloT('stem.microbiology.stain_chemistry', 'Stain chemistry')),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', marginBottom: 2 } }, __alloT('stem.microbiology.stain_chemistry', 'Stain chemistry')),
                   h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.4 } },
                     step === 0 ? 'Select a reagent bottle to start the staining procedure on your heat-fixed slide smear.' : stepDescriptions[step - 1]
                   )
@@ -1614,7 +1653,7 @@
                     __alloT('stem.microbiology.crispr_clustered_regularly_interspaced', 'CRISPR (Clustered Regularly Interspaced Short Palindromic Repeats) is a bacterial immune system that scientists noticed in the 1990s, partially understood by 2007, and adapted as a programmable gene editor in 2012. It is the biggest revolution in molecular biology since PCR.')
                   ),
                   h('p', { style: { margin: 0, fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-                    h('strong', { style: { color: '#6ee7b7' } }, __alloT('stem.microbiology.the_2020_nobel_prize_in_chemistry', 'The 2020 Nobel Prize in Chemistry ')),
+                    h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.the_2020_nobel_prize_in_chemistry', 'The 2020 Nobel Prize in Chemistry ')),
                     __alloT('stem.microbiology.went_to_jennifer_doudna_uc_berkeley_an', 'went to Jennifer Doudna (UC Berkeley) and Emmanuelle Charpentier (Max Planck Institute) for showing that CRISPR-Cas9 could be programmed to cut any DNA sequence. The first all-female Nobel science laureate pair. Their 2012 paper is one of the most-cited biology papers of all time.')
                   )
                 ),
@@ -1623,14 +1662,14 @@
                     __alloT('stem.microbiology.bacteria_have_always_been_under_attack', 'Bacteria have always been under attack from bacteriophages (viruses that infect bacteria) - there are about 10× as many phages as bacteria in any given habitat. CRISPR is a bacterial immune system that REMEMBERS past phage attacks and protects against future ones.')
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, __alloT('stem.microbiology.the_bacterial_crispr_cas_system_in_3_s', 'The bacterial CRISPR-Cas system in 3 stages:')),
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 8 } }, __alloT('stem.microbiology.the_bacterial_crispr_cas_system_in_3_s', 'The bacterial CRISPR-Cas system in 3 stages:')),
                     h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                       h('li', null, h('strong', null, __alloT('stem.microbiology.acquisition_the_memory', 'Acquisition (the memory): ')), __alloT('stem.microbiology.when_a_phage_injects_dna_cas_proteins_', 'When a phage injects DNA, Cas proteins clip a small piece of the invader\'s DNA and integrate it into the bacterium\'s own genome at a special locus called the CRISPR array. Each piece is a "spacer." The bacterium now carries a record of the attack.')),
                       h('li', null, h('strong', null, __alloT('stem.microbiology.expression_the_surveillance', 'Expression (the surveillance): ')), __alloT('stem.microbiology.the_crispr_array_gets_transcribed_into', 'The CRISPR array gets transcribed into RNA, then processed into short "guide RNAs" (crRNAs). Each crRNA matches one past invader. The crRNAs combine with Cas proteins to make patrol complexes scanning every DNA molecule in the cell.')),
                       h('li', null, h('strong', null, __alloT('stem.microbiology.interference_the_kill', 'Interference (the kill): ')), __alloT('stem.microbiology.if_a_guide_rna_finds_a_matching_sequen', 'If a guide RNA finds a matching sequence in invading DNA, the Cas protein cuts the DNA. The phage is destroyed before it can replicate. The bacterium survives the second attack.'))
                     )
                   ),
-                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+                  h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                     h('strong', null, __alloT('stem.microbiology.why_this_is_remarkable', 'Why this is remarkable: ')),
                     __alloT('stem.microbiology.bacteria_are_supposed_to_have_only_inn', 'Bacteria are SUPPOSED to have only "innate" immunity - fast, general, no memory. CRISPR is true ADAPTIVE immunity (specific, with memory) in a single-celled organism. It is the oldest adaptive immune system on Earth, evolving in microbes about 2.6 billion years before T cells + B cells did in vertebrates.')
                   )
@@ -1640,7 +1679,7 @@
                     __alloT('stem.microbiology.cas9_crispr_associated_protein_9_is_th', 'Cas9 (CRISPR-associated protein 9) is the most famous bacterial CRISPR enzyme. It is a molecular machine that, when loaded with the right guide RNA, can find and cut any matching DNA sequence in the cell.')
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, __alloT('stem.microbiology.how_cas9_works_4_steps', 'How Cas9 works (4 steps):')),
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 8 } }, __alloT('stem.microbiology.how_cas9_works_4_steps', 'How Cas9 works (4 steps):')),
                     h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                       h('li', null, h('strong', null, 'Loading: '), __alloT('stem.microbiology.cas9_binds_a_guide_rna_the_guide_rna_h', 'Cas9 binds a guide RNA. The guide RNA has a ~20-nucleotide section matching the target sequence.')),
                       h('li', null, h('strong', null, 'Scanning: '), __alloT('stem.microbiology.the_cas9_grna_complex_scans_dna_it_fir', 'The Cas9 + gRNA complex scans DNA. It first looks for a short PAM sequence (typically "NGG") next to a potential target.')),
@@ -1661,7 +1700,7 @@
                       { name: __alloT('stem.microbiology.basic_research', 'Basic research'), desc: __alloT('stem.microbiology.knocking_out_a_gene_used_to_take_a_gra', 'Knocking out a gene used to take a graduate student\'s entire PhD. With CRISPR it takes a week. Functional studies of every gene in the human genome are now feasible. Most biology labs in the world use CRISPR daily.') }
                     ].map(function(a, i) {
                       return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + EMERALD } },
-                        h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, a.name),
+                        h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 4 } }, a.name),
                         h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, a.desc)
                       );
                     })
@@ -1672,20 +1711,20 @@
                     __alloT('stem.microbiology.crispr_makes_things_easy_that_used_to_', 'CRISPR makes things easy that used to be hard. That includes things we may not want to do.')
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', borderTop: '1px solid rgba(220,38,38,0.35)', borderRight: '1px solid rgba(220,38,38,0.35)', borderBottom: '1px solid rgba(220,38,38,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 10 } },
-                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fca5a5', marginBottom: 6 } }, __alloT('stem.microbiology.he_jiankui_2018_the_first_edited_human', 'He Jiankui (2018): the first edited human babies')),
+                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#fca5a5'), marginBottom: 6 } }, __alloT('stem.microbiology.he_jiankui_2018_the_first_edited_human', 'He Jiankui (2018): the first edited human babies')),
                     h('p', { style: { margin: 0, fontSize: 12, color: '#fee2e2', lineHeight: 1.65 } },
                       __alloT('stem.microbiology.a_chinese_researcher_used_crispr_to_ed', 'A Chinese researcher used CRISPR to edit twin embryos (knocking out the CCR5 gene to try to confer HIV resistance) and bring them to term in 2018. The international scientific community condemned the work as deeply unethical: no medical need, no informed consent that could meet the bar, no way to ensure no off-target edits, no plan for the lifetime of the twins. He was sentenced to 3 years in prison. The case prompted broad agreement that germline editing (changes that pass to future generations) is not currently ethically defensible.')
                     )
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', borderTop: '1px solid rgba(245,158,11,0.35)', borderRight: '1px solid rgba(245,158,11,0.35)', borderBottom: '1px solid rgba(245,158,11,0.35)', borderLeft: '3px solid #f59e0b', marginBottom: 10 } },
-                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#fbbf24', marginBottom: 6 } }, __alloT('stem.microbiology.somatic_vs_germline_editing', 'Somatic vs germline editing')),
+                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#fbbf24'), marginBottom: 6 } }, __alloT('stem.microbiology.somatic_vs_germline_editing', 'Somatic vs germline editing')),
                     h('p', { style: { margin: 0, fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.65 } },
                       __alloT('stem.microbiology.somatic_editing_changes_dna_in_body_ce', 'SOMATIC editing changes DNA in body cells of a living person. The edits affect that person only; not their children. (Casgevy for sickle cell is somatic.) GERMLINE editing changes DNA in sperm, eggs, or embryos. The edits pass to every cell of the resulting person AND to their descendants. The scientific consensus is: somatic editing is ethically OK for treating disease; germline editing is not currently OK because we cannot anticipate the consequences across generations.')
                     )
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', borderTop: '1px solid rgba(168,85,247,0.35)', borderRight: '1px solid rgba(168,85,247,0.35)', borderBottom: '1px solid rgba(168,85,247,0.35)', borderLeft: '3px solid #a855f7' } },
-                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#d8b4fe', marginBottom: 6 } }, __alloT('stem.microbiology.gene_drives', 'Gene drives')),
-                    h('p', { style: { margin: 0, fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+                    h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#d8b4fe'), marginBottom: 6 } }, __alloT('stem.microbiology.gene_drives', 'Gene drives')),
+                    h('p', { style: { margin: 0, fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                       __alloT('stem.microbiology.crispr_based_gene_drives_can_spread_a_', 'CRISPR-based gene drives can spread a gene through a wild population in a few generations, even if the gene reduces fitness. Proposed uses: eradicate malaria-carrying mosquitoes; eliminate invasive species. Risk: once released, hard or impossible to undo. International conversations are ongoing about whether + how to ever deploy a gene drive in the wild.')
                     )
                   )
@@ -1705,7 +1744,7 @@
                 content[step],
                 h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px dashed rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                   h('div', { style: { flex: 1, minWidth: 200 } },
-                    h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 2 } }, __alloT('stem.microbiology.interactive_crispr_gene_editor', '🔬 Interactive CRISPR Gene Editor')),
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 2 } }, __alloT('stem.microbiology.interactive_crispr_gene_editor', '🔬 Interactive CRISPR Gene Editor')),
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, __alloT('stem.microbiology.ready_to_perform_a_real_gene_edit_use_', 'Ready to perform a real gene edit? Use the full molecular editor in our DNA Lab to scan, find target PAM sites, and apply precise cuts and repairs.'))
                   ),
                   h('button', {
@@ -1741,7 +1780,7 @@
               ),
               interactiveGramStain(),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, __alloT('stem.microbiology.the_4_step_procedure_3_minutes', 'The 4-step procedure (~3 minutes):')),
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 6 } }, __alloT('stem.microbiology.the_4_step_procedure_3_minutes', 'The 4-step procedure (~3 minutes):')),
                 h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
                   h('li', null, h('strong', null, __alloT('stem.microbiology.crystal_violet_2', 'Crystal violet ')), __alloT('stem.microbiology.purple_primary_stain_soaks_all_bacteri', '(purple primary stain) - soaks all bacteria, all turn purple.')),
                   h('li', null, h('strong', null, __alloT('stem.microbiology.iodine_2', 'Iodine ')), __alloT('stem.microbiology.mordant_locks_crystal_violet_onto_the_', '(mordant) - locks crystal violet onto the cell.')),
@@ -1756,14 +1795,14 @@
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(124,58,237,0.10)', borderLeft: '3px solid #7c3aed' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#c4b5fd', marginBottom: 4 } }, __alloT('stem.microbiology.gram_positive_examples', 'Gram-positive examples')),
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#c4b5fd'), marginBottom: 4 } }, __alloT('stem.microbiology.gram_positive_examples', 'Gram-positive examples')),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, __alloT('stem.microbiology.staphylococcus_aureus_incl_mrsa_strept', 'Staphylococcus aureus (incl. MRSA), Streptococcus pneumoniae, Streptococcus pyogenes (strep throat), Bacillus anthracis (anthrax), Clostridium difficile, C. tetani, C. botulinum, Listeria, Enterococcus.')),
-                  h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } }, __alloT('stem.microbiology.generally_susceptible_to_penicillin_va', 'Generally susceptible to: penicillin, vancomycin (last-line), cephalosporins.'))
+                  h('div', { style: { fontSize: 11, color: microAccentText('#a78bfa'), marginTop: 6, fontStyle: 'italic' } }, __alloT('stem.microbiology.generally_susceptible_to_penicillin_va', 'Generally susceptible to: penicillin, vancomycin (last-line), cephalosporins.'))
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(236,72,153,0.10)', borderLeft: '3px solid #ec4899' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbcfe8', marginBottom: 4 } }, __alloT('stem.microbiology.gram_negative_examples', 'Gram-negative examples')),
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#fbcfe8'), marginBottom: 4 } }, __alloT('stem.microbiology.gram_negative_examples', 'Gram-negative examples')),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, __alloT('stem.microbiology.e_coli_salmonella_klebsiella_pseudomon', 'E. coli, Salmonella, Klebsiella, Pseudomonas aeruginosa, Vibrio (cholera + Maine shellfish Vibrios), Helicobacter pylori (ulcers), Neisseria gonorrhoeae + meningitidis, Haemophilus influenzae.')),
-                  h('div', { style: { fontSize: 11, color: '#ec4899', marginTop: 6, fontStyle: 'italic' } }, __alloT('stem.microbiology.generally_tougher_to_treat_outer_membr', 'Generally tougher to treat - outer membrane blocks many antibiotics. Often need fluoroquinolones, aminoglycosides, or specific β-lactams that penetrate the outer membrane.'))
+                  h('div', { style: { fontSize: 11, color: microAccentText('#ec4899'), marginTop: 6, fontStyle: 'italic' } }, __alloT('stem.microbiology.generally_tougher_to_treat_outer_membr', 'Generally tougher to treat - outer membrane blocks many antibiotics. Often need fluoroquinolones, aminoglycosides, or specific β-lactams that penetrate the outer membrane.'))
                 )
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 11.5, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.6 } },
@@ -1791,7 +1830,7 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || EMERALD) } },
-            h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#6ee7b7'), fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Shape: ' + selected.shape + ' · ', h('span', { style: { color: roleColor[selected.role], fontWeight: 700, textTransform: 'uppercase' } }, roleLabel[selected.role])),
             infoBlock('Where', selected.where, '#94a3b8'),
             infoBlock('What it does', selected.what, EMERALD),
@@ -1812,7 +1851,7 @@
         var selected = VIRUSES.find(function(v) { return v.id === d.selectedVirus; }) || VIRUSES[0];
         var TRANSMISSION = [
           {
-            id: 'airborne', name: __alloT('stem.microbiology.airborne_respiratory', 'Airborne / respiratory'), color: '#0ea5e9', icon: '💨',
+            id: 'airborne', name: __alloT('stem.microbiology.airborne_respiratory', 'Airborne / respiratory'), color: microAccentText('#0ea5e9'), icon: '💨',
             how: 'Tiny droplets + aerosols expelled when you breathe, talk, cough, sneeze. Hang in the air for minutes to hours. Inhaled by others.',
             examples: 'Measles (R₀ 12-18, the most contagious common infection), COVID-19, influenza, tuberculosis, RSV, common cold.',
             prevent: 'Ventilation + air filtration (HEPA, MERV-13+). Masks (N95 > surgical > cloth). Vaccination. Distance helps for droplets but matters less for aerosols (which fill the room).'
@@ -1836,25 +1875,25 @@
             prevent: 'Universal precautions (treat every blood as potentially infectious). Single-use needles + syringes. Blood-bank screening (mandatory testing for HIV, HBV, HCV since the 1980s-90s). Hepatitis B vaccination. PrEP (pre-exposure prophylaxis) for HIV.'
           },
           {
-            id: 'sexual', name: __alloT('stem.microbiology.sexual_sti', 'Sexual (STI)'), color: '#ec4899', icon: '💞',
+            id: 'sexual', name: __alloT('stem.microbiology.sexual_sti', 'Sexual (STI)'), color: microAccentText('#ec4899'), icon: '💞',
             how: 'Direct mucous-membrane or genital-skin contact during sexual activity. Pathogens that thrive in warm moist mucosal surfaces.',
             examples: 'HIV, gonorrhea, chlamydia, syphilis, herpes (HSV), HPV (linked to cervical + throat cancer), trichomoniasis, hepatitis B.',
             prevent: 'Condoms (reduce most STIs substantially but not 100% for those spread by skin contact like HPV + HSV). Vaccination (HPV, hepatitis B). Regular screening if sexually active. PrEP for HIV. Treatment of partners.'
           },
           {
-            id: 'contact', name: __alloT('stem.microbiology.direct_indirect_contact', 'Direct + indirect contact'), color: '#f59e0b', icon: '🤝',
+            id: 'contact', name: __alloT('stem.microbiology.direct_indirect_contact', 'Direct + indirect contact'), color: microAccentText('#f59e0b'), icon: '🤝',
             how: 'Skin-to-skin contact, or contact with contaminated surfaces (fomites) like doorknobs, phones, towels. The pathogen survives outside the body long enough to transmit on touch.',
             examples: 'MRSA (skin-to-skin in athletes, healthcare), scabies, lice, ringworm + athlete\'s foot (fungal), warts (HPV), conjunctivitis ("pink eye"), some common-cold viruses (rhinovirus survives on surfaces).',
             prevent: 'Handwashing. Don\'t share towels or razors. Clean shared surfaces. Cover open wounds. Treat the source.'
           },
           {
-            id: 'vertical', name: __alloT('stem.microbiology.vertical_mother_child', 'Vertical (mother → child)'), color: '#a855f7', icon: '🤰',
+            id: 'vertical', name: __alloT('stem.microbiology.vertical_mother_child', 'Vertical (mother → child)'), color: microAccentText('#a855f7'), icon: '🤰',
             how: 'Pathogen crosses the placenta, infects during delivery, or transmits in breast milk.',
             examples: 'HIV (without treatment ~25% transmission; with antiretrovirals + C-section + formula feeding, <1%). Syphilis (TORCH infections). Cytomegalovirus, rubella, toxoplasmosis. Hepatitis B.',
             prevent: 'Prenatal screening for all the TORCH pathogens. Antiretrovirals during pregnancy for HIV+ mothers (drops transmission to <1%). Hepatitis B vaccine + immunoglobulin to babies born to infected mothers within 12 hours of birth. Rubella vaccination before pregnancy.'
           },
           {
-            id: 'zoonotic', name: __alloT('stem.microbiology.zoonotic_animal_human', 'Zoonotic (animal → human)'), color: '#16a34a', icon: '🦇',
+            id: 'zoonotic', name: __alloT('stem.microbiology.zoonotic_animal_human', 'Zoonotic (animal → human)'), color: microAccentText('#16a34a'), icon: '🦇',
             how: 'A pathogen normally living in an animal jumps to humans. May or may not then spread human-to-human. Most new emerging human diseases are zoonoses.',
             examples: 'COVID-19 (probably bat → intermediate host → human). HIV (chimps → humans, early 20th c.). Ebola (bats). Rabies (any mammal). Plague (rodents → fleas → humans). Avian flu (birds). Salmonella (chickens, reptiles). Anthrax (livestock).',
             prevent: 'Wildlife habitat protection (less wildlife stress = less spillover). Surveillance of animal pathogens. Personal protection in occupational settings (veterinarians, wildlife biologists, slaughterhouse workers). Vaccinate pets (rabies). Keep wild animals wild.'
@@ -1880,7 +1919,7 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
-            h('h3', { style: { margin: '0 0 8px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 8px', color: microAccentText('#6ee7b7'), fontSize: 18 } }, selected.name),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 10 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
                 h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, __alloT('stem.microbiology.genome', 'Genome')),
@@ -1892,10 +1931,10 @@
               )
             ),
             h('p', { style: { margin: '0 0 8px', fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } },
-              h('strong', { style: { color: '#6ee7b7' } }, 'Structure: '), selected.structure
+              h('strong', { style: { color: microAccentText('#6ee7b7') } }, 'Structure: '), selected.structure
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.story', 'Story')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.story', 'Story')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.story)
             ),
             renderMicroscopeLink('viruses', selected.id)
@@ -1919,19 +1958,19 @@
               h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selT.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.icon + ' ' + selT.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_it_spreads', 'How it spreads')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_it_spreads', 'How it spreads')),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.how)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples', 'Examples')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples', 'Examples')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.examples)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.prevention', 'Prevention')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.prevention', 'Prevention')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.prevent)
                 )
               ),
-              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.r_the_basic_reproduction_number', 'R₀: the basic reproduction number. ')),
                 __alloT('stem.microbiology.how_many_new_infections_one_infected_p', 'How many new infections one infected person causes in a fully-susceptible population, on average. Measles ~12-18 (extremely high). Smallpox ~5-7. Original COVID-19 ~2-3 (with Omicron variants 8+). Ebola ~1.5-2.5. Flu ~1.3. R₀ < 1 means the outbreak dies out. R₀ > 1 means it grows. Public health interventions (vaccination, masks, sanitation, vector control) reduce the EFFECTIVE R below R₀.')
               )
@@ -1993,17 +2032,17 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#6ee7b7'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.what_we_should_not_overstate', 'What we should not overstate: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_bigger_pattern', 'The bigger pattern: ')),
                   __alloT('stem.microbiology.proteins_fold_into_shapes_determined_b', 'Proteins fold into shapes determined by their amino-acid sequence. When that folding goes wrong, even slightly, the consequences can be catastrophic. Prions are the extreme case (one misfolded protein can convert thousands of others). The same biophysics, in milder form, may underlie much of what kills humans late in life - Alzheimer\'s, Parkinson\'s, Huntington\'s, ALS. Understanding prions is not a niche curiosity; it is foundational to one of the largest health challenges of an aging world.')
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', fontSize: 11.5, color: '#fca5a5', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', border: '1px solid rgba(220,38,38,0.25)', fontSize: 11.5, color: microAccentText('#fca5a5'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.a_note_on_hope_vs_hype', 'A note on hope vs hype: ')),
                   __alloT('stem.microbiology.anti_amyloid_antibodies_for_alzheimer_', 'Anti-amyloid antibodies for Alzheimer\'s are real progress AND have real limits. Calling them either "a cure" or "a scam" is wrong. They are the first treatments that modify disease biology, with modest effect sizes, real side effects, and high cost. For people with a parent or grandparent affected by AD, this is genuine forward motion - but not yet the breakthrough family caregivers most need.')
                 )
@@ -2017,7 +2056,7 @@
       // FUNGI
       function renderFungi() {
         var selected = (d.selectedFungus && FUNGI.find(function(f) { return f.id === d.selectedFungus; })) || FUNGI[0];
-        var roleColor = { beneficial: '#22c55e', 'mostly-beneficial': '#86efac', varies: '#f59e0b', pathogenic: '#ef4444', 'pathogenic (with medical descendants)': '#a855f7' };
+        var roleColor = { beneficial: '#86efac', 'mostly-beneficial': '#86efac', varies: '#fcd34d', pathogenic: '#fca5a5', 'pathogenic (with medical descendants)': '#c4b5fd' };
         return h('div', { style: { padding: 16 } },
           sectionCard('🍄 Fungi are not plants',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
@@ -2040,18 +2079,18 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || '#a855f7') } },
-            h('h3', { style: { margin: '0 0 4px', color: '#d8b4fe', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#d8b4fe'), fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.where', 'Where')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does', 'What it does')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#d8b4fe'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does', 'What it does')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.science_note', 'Science note')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.science_note', 'Science note')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             ),
             renderMicroscopeLink('fungi', selected.id)
@@ -2097,7 +2136,7 @@
           var sel = d.selectedFungalE || 'whyrising';
           var topic = FUNGI_TOPICS.find(function(t) { return t.id === sel; }) || FUNGI_TOPICS[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#d8b4fe', fontSize: 16 } }, __alloT('stem.microbiology.emerging_fungal_infections_the_underre', '🍄 Emerging fungal infections - the underrecognized threat')),
+            h('h3', { style: { margin: '0 0 6px', color: microAccentText('#d8b4fe'), fontSize: 16 } }, __alloT('stem.microbiology.emerging_fungal_infections_the_underre', '🍄 Emerging fungal infections - the underrecognized threat')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               __alloT('stem.microbiology.when_people_picture_an_emerging_infect', 'When people picture an emerging infectious disease, they picture a virus. But the past 20 years have seen fungi rise into a serious + underappreciated category of human + ecological pathogen. Climate change, agricultural fungicide overuse, expanding immunocompromised populations, and very thin antifungal pipelines have combined to create a problem we are only beginning to take seriously.')
             ),
@@ -2107,18 +2146,18 @@
                 return h('button', {
                   key: t.id,
                   onClick: function() { upd({ selectedFungalE: t.id }); },
-                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#a855f7' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #a855f7' : '1px solid #334155' }
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#7e22ce' : '#1e293b', color: on ? '#ffffff' : '#e2e8f0', border: on ? '2px solid #a855f7' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
               })
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#d8b4fe', marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: microAccentText('#d8b4fe'), marginBottom: 8 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, __alloT('stem.microbiology.honest_framing', 'Honest framing: ')), topic.caveat
               )
             ),
-            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: microAccentText('#dcfce7'), lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.microbiology.a_note_on_proportionality', 'A note on proportionality: ')),
               __alloT('stem.microbiology.fungi_cause_an_estimated_1_5_2_million', 'Fungi cause an estimated 1.5-2 million deaths globally per year - comparable to tuberculosis. They get a fraction of the research funding, awareness, or media coverage that bacterial + viral pathogens receive. This is changing slowly. School psychologists + educators may encounter fungal infections in immunocompromised students (cancer survivors, transplant recipients, severe asthma on inhaled steroids); awareness of the basics serves those students well.')
             )
@@ -2129,7 +2168,7 @@
       // PROTISTS
       function renderProtists() {
         var selected = (d.selectedProtist && PROTISTS.find(function(p) { return p.id === d.selectedProtist; })) || PROTISTS[0];
-        var roleColor = { beneficial: '#22c55e', 'beneficial / educational': '#86efac', 'beneficial (massively)': '#22c55e', 'mostly-beneficial': '#86efac', 'mostly-beneficial (and rare-pathogenic relatives)': '#86efac', pathogenic: '#ef4444' };
+        var roleColor = { beneficial: '#86efac', 'beneficial / educational': '#86efac', 'beneficial (massively)': '#86efac', 'mostly-beneficial': '#86efac', 'mostly-beneficial (and rare-pathogenic relatives)': '#86efac', pathogenic: '#fca5a5' };
         return h('div', { style: { padding: 16 } },
           sectionCard('🦠 Protists - the diverse leftovers',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
@@ -2152,18 +2191,18 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + (roleColor[selected.role] || '#0ea5e9') } },
-            h('h3', { style: { margin: '0 0 4px', color: '#7dd3fc', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#7dd3fc'), fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, 'Kind: ' + selected.kind + ' · ', h('span', { style: { color: roleColor[selected.role] || '#94a3b8', fontWeight: 700, textTransform: 'uppercase' } }, selected.role)),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.where_2', 'Where')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #0ea5e9', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does_2', 'What it does')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does_2', 'What it does')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.science_note_2', 'Science note')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.science_note_2', 'Science note')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             ),
             renderMicroscopeLink('protists', selected.id)
@@ -2196,18 +2235,18 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #ef4444' } },
-            h('h3', { style: { margin: '0 0 4px', color: '#fca5a5', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#fca5a5'), fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12 } }, selected.kind),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #94a3b8', marginBottom: 8 } },
               h('div', { style: { fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.where_it_lives', 'Where it lives')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.where)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid #ef4444', marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does_3', 'What it does')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_it_does_3', 'What it does')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.what)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.why_it_matters', 'Why it matters')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.why_it_matters', 'Why it matters')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.sciFact)
             ),
             renderMicroscopeLink('archaea', selected.id)
@@ -2263,12 +2302,12 @@
                 return h('button', {
                   key: t.id,
                   onClick: function() { upd({ selectedExtremo: t.id }); },
-                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#6366f1' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #6366f1' : '1px solid #334155' }
+                  style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#4f46e5' : '#1e293b', color: on ? '#ffffff' : '#e2e8f0', border: on ? '2px solid #6366f1' : '1px solid #334155' }
                 }, t.emoji + ' ' + t.name);
               })
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.35)' } },
-              h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c7d2fe', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#c7d2fe'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
               h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                 h('strong', null, __alloT('stem.microbiology.honest_framing_2', 'Honest framing: ')), topic.caveat
@@ -2300,7 +2339,7 @@
             __alloT('stem.microbiology.microscopy_the_history_of_microbiology', 'Microscopy. The history of microbiology IS the history of better microscopes. Each improvement opened a whole new biology.')
           ),
 
-          h(VirtualMicroscope, { awardXP: awardXP, d: d, upd: upd }),
+          h(VirtualMicroscope, { awardXP: awardXP, d: d, upd: upd, isDark: microbiologyDark }),
 
           // Magnification slider
           sectionCard('Scale: what can you see at different magnifications?',
@@ -2316,10 +2355,10 @@
                   // Apparent size when viewed at mag - pretend pixel-size = real-size * mag / 1000 µm per visible-width
                   var apparentMm = t.sizeUm * mag / 100; // mm at this magnification (assuming 100x makes 1µm = 1mm on screen)
                   var visible = apparentMm >= 0.1 && apparentMm <= 1000;
-                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid ' + (visible ? EMERALD : '#334155'), opacity: visible ? 1 : 0.5 } },
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid ' + (visible ? EMERALD : '#334155'), opacity: visible ? 1 : 0.85 } },
                     h('div', { style: { fontSize: 12, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 2 } }, t.name),
                     h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, t.sizeUm + ' µm actual'),
-                    h('div', { style: { fontSize: 11, color: visible ? '#6ee7b7' : '#64748b', marginTop: 4 } }, visible ? '✓ visible' : (apparentMm < 0.1 ? 'too small' : 'too big to fit'))
+                    h('div', { style: { fontSize: 11, color: visible ? '#6ee7b7' : '#94a3b8', marginTop: 4 } }, visible ? '✓ visible' : (apparentMm < 0.1 ? 'too small' : 'too big to fit'))
                   );
                 })
               )
@@ -2337,7 +2376,7 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
-            h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 17 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#6ee7b7'), fontSize: 17 } }, selected.name),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10 } }, 'Resolution range: ' + selected.range),
             h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.what),
             h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.3)', fontSize: 12, color: 'var(--allo-stem-text, #fde68a)', lineHeight: 1.55 } },
@@ -2401,7 +2440,7 @@
           var sel = d.selectedDx || 'culture';
           var topic = DX.find(function(t) { return t.id === sel; }) || DX[0];
           return h('div', { style: { marginTop: 16, padding: 14, borderRadius: 12, background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.25)' } },
-            h('h3', { style: { margin: '0 0 6px', color: '#6ee7b7', fontSize: 16 } }, __alloT('stem.microbiology.diagnostic_microbiology_how_labs_actua', '🔬 Diagnostic microbiology - how labs actually identify pathogens')),
+            h('h3', { style: { margin: '0 0 6px', color: microAccentText('#6ee7b7'), fontSize: 16 } }, __alloT('stem.microbiology.diagnostic_microbiology_how_labs_actua', '🔬 Diagnostic microbiology - how labs actually identify pathogens')),
             h('p', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, margin: '0 0 12px' } },
               __alloT('stem.microbiology.every_time_someone_is_treated_for_a_re', 'Every time someone is treated for a real infection, a clinical microbiology lab has gone through specific identification + susceptibility testing steps to determine WHICH organism is causing it + what will kill it. These methods range from a 19th-century Gram stain (cost: pennies) to whole-genome sequencing (cost: hundreds of dollars). Each has a place in the workflow; combining them is the art.')
             ),
@@ -2416,22 +2455,22 @@
               })
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)' } },
-              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'Speed: ' + topic.speed + ' · Cost: ' + topic.cost),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.how_it_works', 'How it works')),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#93c5fd'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.how_it_works', 'How it works')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.how)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.when_to_use_it', 'When to use it')),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.when_to_use_it', 'When to use it')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.when)
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.honest_limits', 'Honest limits')),
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.honest_limits', 'Honest limits')),
                 h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.limit)
               )
             ),
-            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
               h('strong', null, __alloT('stem.microbiology.the_integrated_workflow', 'The integrated workflow: ')),
               __alloT('stem.microbiology.a_real_clinical_lab_does_not_choose_on', 'A real clinical lab does NOT choose ONE technique. A blood culture grows; MALDI-TOF identifies the organism in minutes; an automated susceptibility panel runs in 6-8 hours; PCR for specific resistance genes runs in parallel; sequencing happens for outbreak investigations or unusual organisms. Each test has its place; combining them rapidly + interpreting them well is what separates a good lab from a great one. School psychologists + counselors who understand the diagnostic landscape can have more useful conversations with families about WHY a test takes 3 days, WHY it might be repeated, and WHY a treating clinician changes antibiotics partway through a course.')
             )
@@ -2442,36 +2481,36 @@
       // RESISTANCE
       function renderResistance() {
         return h('div', { style: { padding: 16 } },
-          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.35)', borderRight: '1px solid rgba(239,68,68,0.35)', borderBottom: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: '#fecaca', lineHeight: 1.65 } },
+          h('div', { style: { padding: 12, borderRadius: 10, background: 'rgba(239,68,68,0.10)', borderTop: '1px solid rgba(239,68,68,0.35)', borderRight: '1px solid rgba(239,68,68,0.35)', borderBottom: '1px solid rgba(239,68,68,0.35)', borderLeft: '3px solid #ef4444', marginBottom: 12, fontSize: 12.5, color: microAccentText('#fecaca'), lineHeight: 1.65 } },
             h('strong', null, __alloT('stem.microbiology.antibiotic_resistance_is_a_global_heal', '⚠️ Antibiotic resistance is a global health crisis. ')),
             __alloT('stem.microbiology.antibiotic_resistant_infections_killed', 'Antibiotic-resistant infections killed at least 1.27 million people in 2019, with millions more deaths in which resistance contributed. The CDC ranks it among the top global health threats of this century.')
           ),
-          h(AntibioticResistanceSim, { awardXP: awardXP }),
+          h(AntibioticResistanceSim, { awardXP: awardXP, isDark: microbiologyDark }),
           sectionCard('How resistance evolves (in 5 steps)',
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
-              h('li', null, h('strong', { style: { color: '#6ee7b7' } }, __alloT('stem.microbiology.random_mutation', 'Random mutation. ')), __alloT('stem.microbiology.a_bacterium_s_dna_copies_with_rare_err', 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.')),
-              h('li', null, h('strong', { style: { color: '#6ee7b7' } }, __alloT('stem.microbiology.antibiotic_exposure', 'Antibiotic exposure. ')), __alloT('stem.microbiology.patient_takes_the_antibiotic_susceptib', 'Patient takes the antibiotic. Susceptible bacteria die in massive numbers. The few that happen to be resistant survive.')),
-              h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Selection. '), __alloT('stem.microbiology.the_resistant_survivors_have_all_the_f', 'The resistant survivors have all the food and space to themselves. They reproduce. Within hours to days, the surviving population is mostly resistant.')),
-              h('li', null, h('strong', { style: { color: '#6ee7b7' } }, 'Spread. '), __alloT('stem.microbiology.resistant_bacteria_spread_person_to_pe', 'Resistant bacteria spread person-to-person, hospital-to-community, country-to-country. Bacteria can also transfer resistance genes between species via plasmids (horizontal gene transfer).')),
-              h('li', null, h('strong', { style: { color: '#6ee7b7' } }, __alloT('stem.microbiology.the_antibiotic_stops_working', 'The antibiotic stops working. ')), __alloT('stem.microbiology.for_everyone_the_drug_that_saved_milli', 'For everyone. The drug that saved millions becomes useless. Each lost antibiotic narrows medicine\'s toolkit.'))
+              h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.random_mutation', 'Random mutation. ')), __alloT('stem.microbiology.a_bacterium_s_dna_copies_with_rare_err', 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.')),
+              h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.antibiotic_exposure', 'Antibiotic exposure. ')), __alloT('stem.microbiology.patient_takes_the_antibiotic_susceptib', 'Patient takes the antibiotic. Susceptible bacteria die in massive numbers. The few that happen to be resistant survive.')),
+              h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, 'Selection. '), __alloT('stem.microbiology.the_resistant_survivors_have_all_the_f', 'The resistant survivors have all the food and space to themselves. They reproduce. Within hours to days, the surviving population is mostly resistant.')),
+              h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, 'Spread. '), __alloT('stem.microbiology.resistant_bacteria_spread_person_to_pe', 'Resistant bacteria spread person-to-person, hospital-to-community, country-to-country. Bacteria can also transfer resistance genes between species via plasmids (horizontal gene transfer).')),
+              h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.the_antibiotic_stops_working', 'The antibiotic stops working. ')), __alloT('stem.microbiology.for_everyone_the_drug_that_saved_milli', 'For everyone. The drug that saved millions becomes useless. Each lost antibiotic narrows medicine\'s toolkit.'))
             )
           ),
           sectionCard('🔁 Horizontal gene transfer - how bacteria share resistance',
             (function() {
               var MECHS = [
-                { id: 'transform', name: __alloT('stem.microbiology.transformation', 'Transformation'), color: '#0ea5e9',
+                { id: 'transform', name: __alloT('stem.microbiology.transformation', 'Transformation'), color: microAccentText('#0ea5e9'),
                   what: 'A bacterium picks up FREE DNA from its environment (released when other bacteria die + lyse). If the bacterium is "competent" - its membrane lets DNA in - the new DNA may integrate into its chromosome.',
                   how: 'Discovered by Frederick Griffith in 1928. He showed that dead virulent Streptococcus pneumoniae could transform live non-virulent strains into virulent ones - somehow "transferring" the virulence. Avery, MacLeod, McCarty (1944) showed the transforming agent was DNA. This experiment proved DNA carries genetic information.',
                   examples: 'Streptococcus pneumoniae, Neisseria, Bacillus subtilis. Some species are "naturally competent" - they take up DNA constantly. Others can be made competent in the lab (this is how you genetically transform bacteria for biotech experiments).',
                   rate: 'Limited to neighbors. Free DNA fragments don\'t travel far. But in dense communities like biofilms, every cell is a potential donor + recipient.'
                 },
-                { id: 'transduce', name: __alloT('stem.microbiology.transduction_phage_mediated', 'Transduction (phage-mediated)'), color: '#a855f7',
+                { id: 'transduce', name: __alloT('stem.microbiology.transduction_phage_mediated', 'Transduction (phage-mediated)'), color: microAccentText('#a855f7'),
                   what: 'A bacteriophage virus infects a bacterium, replicates inside, packages some of the host\'s DNA by mistake into a new phage particle, then carries it to another bacterium when it next infects. The recipient gets the donor\'s DNA delivered like a postal package.',
                   how: 'Discovered by Joshua Lederberg + Norton Zinder in 1952 (Lederberg shared the 1958 Nobel for this + other work). Two types: GENERALIZED (any host DNA can be packaged) and SPECIALIZED (only DNA next to the phage integration site).',
                   examples: 'How methicillin resistance + staphylococcal toxin genes spread among Staphylococcus aureus strains. How some virulence genes spread in cholera + diphtheria + scarlet fever. Phage-mediated gene transfer is rampant in marine bacteria - about 10²⁴ transduction events globally PER SECOND in the oceans.',
                   rate: 'Can cross significant distances (wherever phages spread, transduced DNA spreads). Some phages have very narrow host range (one species); others can infect across species.'
                 },
-                { id: 'conjugate', name: __alloT('stem.microbiology.conjugation_pilus_mediated', 'Conjugation (pilus-mediated)'), color: '#22c55e',
+                { id: 'conjugate', name: __alloT('stem.microbiology.conjugation_pilus_mediated', 'Conjugation (pilus-mediated)'), color: microAccentText('#22c55e'),
                   what: 'A donor bacterium grows a hollow tube (sex pilus, or "F pilus") that contacts a recipient bacterium. The pilus retracts, bringing the cells together. A PLASMID (a small circular DNA loop, separate from the main chromosome) is then copied from donor to recipient through the connection.',
                   how: 'Discovered by Lederberg + Tatum in 1946 (the same Lederberg, then a 22-year-old grad student). They showed that two E. coli strains, when grown together, could exchange genetic markers. The F (fertility) plasmid encodes the pilus + makes a cell a donor.',
                   examples: 'The dominant mechanism by which antibiotic resistance genes spread in healthcare-associated bacteria. The "R plasmids" carry resistance to multiple antibiotics + can transfer between species - so a Klebsiella that has carbapenem resistance can transfer it to an E. coli in the same patient.',
@@ -2495,27 +2534,27 @@
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_happens', 'What happens')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_happens', 'What happens')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.discovery_science', 'Discovery + science')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#d8b4fe'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.discovery_science', 'Discovery + science')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples_where_it_matters', 'Examples / where it matters')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples_where_it_matters', 'Examples / where it matters')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.speed_reach', 'Speed + reach')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.speed_reach', 'Speed + reach')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.rate)
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.why_hgt_shapes_the_resistance_crisis', 'Why HGT shapes the resistance crisis: ')),
                   __alloT('stem.microbiology.a_resistance_gene_only_needs_to_evolve', 'A resistance gene only needs to evolve ONCE in any bacterium anywhere on Earth. From there, conjugation can spread it across hundreds of species. By the time clinicians notice the resistance in patients, the gene may already be present in dozens of bacterial species worldwide. The NDM-1 gene first identified in 2008 is now found in ~70 countries + multiple bacterial families. This is why the "spread to other countries" is essentially guaranteed once a resistance gene exists.')
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.hgt_in_evolution', 'HGT in evolution: ')),
                   __alloT('stem.microbiology.the_traditional_tree_of_life_with_clea', 'The traditional "tree of life" with clean branches works for animals + plants - they mostly inherit genes vertically. Bacterial + archaeal evolution is more like a "web of life" because of constant horizontal transfer. About 8% of the human genome is virus-derived (from past retroviral infections); some of those genes are now essential (placenta development uses retroviral genes). HGT is not just a curiosity - it has shaped the genomes of every organism on Earth, including us.')
                 )
@@ -2534,37 +2573,37 @@
                   { name: __alloT('stem.microbiology.beta_lactams_penicillin_amoxicillin_ce', 'Beta-lactams (penicillin, amoxicillin, cephalosporins, carbapenems)'), target: 'Cell wall (peptidoglycan synthesis)',
                     how: 'Block the enzyme that cross-links peptidoglycan strands. The bacterium tries to divide, can\'t build a wall, ruptures. Only works on actively dividing bacteria.',
                     resists: 'Bacteria produce β-lactamase enzymes that destroy the antibiotic. ESBL (extended-spectrum) and carbapenemase-producing bacteria break almost all β-lactams.',
-                    color: '#22c55e' },
+                    color: microAccentText('#22c55e') },
                   { name: __alloT('stem.microbiology.aminoglycosides_gentamicin_streptomyci', 'Aminoglycosides (gentamicin, streptomycin, tobramycin)'), target: 'Protein synthesis (30S ribosome)',
                     how: 'Bind the 30S ribosome subunit and cause mistranslation. Bacterial proteins fold wrong; cell dies.',
                     resists: 'Bacteria acquire enzymes that chemically modify the antibiotic before it can bind. Or change the ribosome target. Or pump it out.',
-                    color: '#0ea5e9' },
+                    color: microAccentText('#0ea5e9') },
                   { name: __alloT('stem.microbiology.tetracyclines_doxycycline_minocycline', 'Tetracyclines (doxycycline, minocycline)'), target: 'Protein synthesis (30S ribosome)',
                     how: 'Block the binding of tRNA to the ribosome. Protein synthesis stops.',
                     resists: 'Efflux pumps that physically remove the antibiotic from the cell. Ribosomal protection proteins. Most tetracycline resistance is plasmid-borne.',
-                    color: '#0ea5e9' },
+                    color: microAccentText('#0ea5e9') },
                   { name: __alloT('stem.microbiology.macrolides_azithromycin_erythromycin', 'Macrolides (azithromycin, erythromycin)'), target: 'Protein synthesis (50S ribosome)',
                     how: 'Bind the 50S ribosome subunit and block protein elongation. The growing peptide can\'t exit the ribosome.',
                     resists: 'Methylation of the ribosomal RNA (so the antibiotic can\'t bind). Efflux pumps. Often co-resistance with clindamycin (D-test).',
-                    color: '#a855f7' },
+                    color: microAccentText('#a855f7') },
                   { name: __alloT('stem.microbiology.fluoroquinolones_ciprofloxacin_levoflo', 'Fluoroquinolones (ciprofloxacin, levofloxacin)'), target: 'DNA replication (DNA gyrase + topoisomerase)',
                     how: 'Block the enzymes that supercoil + uncoil bacterial DNA during replication. Replication forks collapse. Cell dies.',
                     resists: 'Mutations in the gyrA/parC genes change the target. Efflux pumps. Quinolone resistance has risen dramatically in the last 20 years.',
-                    color: '#f59e0b' },
+                    color: microAccentText('#f59e0b') },
                   { name: __alloT('stem.microbiology.sulfonamides_trimethoprim', 'Sulfonamides + trimethoprim'), target: 'Folate synthesis',
                     how: 'Block two steps of bacterial folate (vitamin B9) synthesis. Without folate, bacteria can\'t make DNA. Humans get folate from food - we are not affected.',
                     resists: 'Acquired enzymes with altered active sites that the drugs can\'t inhibit. Folate uptake systems.',
-                    color: '#ec4899' },
+                    color: microAccentText('#ec4899') },
                   { name: __alloT('stem.microbiology.glycopeptides_vancomycin', 'Glycopeptides (vancomycin)'), target: 'Cell wall (D-Ala-D-Ala terminus)',
                     how: 'Bind directly to the D-Ala-D-Ala terminus of peptidoglycan precursors, physically blocking wall assembly. Last-line drug for MRSA + many Gram-positives.',
                     resists: 'VanA/VanB resistance changes the terminus to D-Ala-D-Lac, which vancomycin can\'t bind. VRE (vancomycin-resistant Enterococcus) and VRSA (vancomycin-resistant Staph) are growing problems.',
-                    color: '#ef4444' }
+                    color: microAccentText('#ef4444') }
                 ].map(function(c, i) {
                   return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + c.color } },
                     h('div', { style: { fontSize: 12.5, fontWeight: 800, color: c.color, marginBottom: 4 } }, c.name),
                     h('div', { style: { fontSize: 10.5, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 4 } }, 'Target: ' + c.target),
                     h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55, marginBottom: 6 } }, h('strong', null, __alloT('stem.microbiology.how_it_works_2', 'How it works: ')), c.how),
-                    h('div', { style: { fontSize: 11, color: '#fca5a5', lineHeight: 1.5, fontStyle: 'italic' } }, h('strong', null, __alloT('stem.microbiology.how_resistance_breaks_it', 'How resistance breaks it: ')), c.resists)
+                    h('div', { style: { fontSize: 11, color: microAccentText('#fca5a5'), lineHeight: 1.5, fontStyle: 'italic' } }, h('strong', null, __alloT('stem.microbiology.how_resistance_breaks_it', 'How resistance breaks it: ')), c.resists)
                   );
                 })
               ),
@@ -2598,7 +2637,7 @@
                 __alloT('stem.microbiology.bacteriophages_or_just_phages_are_viru', 'Bacteriophages (or just "phages") are viruses that infect bacteria - and ONLY bacteria, never human cells. The most abundant biological entity on Earth (~10³¹ of them). They were discovered in 1915-17 + used as antibacterial therapy in the Soviet Union throughout the 20th century. Western medicine largely abandoned them after antibiotics took off in the 1940s - but the antibiotic resistance crisis is bringing phage therapy back.')
               ),
               h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #6ee7b7', marginBottom: 10 } },
-                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, __alloT('stem.microbiology.why_phages_are_uniquely_promising', 'Why phages are uniquely promising:')),
+                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 8 } }, __alloT('stem.microbiology.why_phages_are_uniquely_promising', 'Why phages are uniquely promising:')),
                 h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Self-replicating: '), __alloT('stem.microbiology.a_single_phage_multiplies_inside_the_b', 'A single phage multiplies inside the bacterial host. One dose can grow into trillions, kill the infection, then disappear as targets run out.')),
                   h('li', null, h('strong', null, __alloT('stem.microbiology.highly_specific', 'Highly specific: ')), __alloT('stem.microbiology.each_phage_strain_targets_only_one_or_', 'Each phage strain targets only one (or a few) bacterial species - no collateral damage to the gut microbiome. Antibiotics kill broadly; phages are surgical.')),
@@ -2616,11 +2655,11 @@
                   h('li', null, h('strong', null, __alloT('stem.microbiology.bacterial_defense', 'Bacterial defense: ')), __alloT('stem.microbiology.bacteria_evolve_resistance_to_phages_t', 'Bacteria evolve resistance to phages too (CRISPR is one of their defenses!). Phage cocktails - multiple phages with different targets - are used to slow this.'))
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.where_it_stands_clinically', 'Where it stands clinically: ')),
                 __alloT('stem.microbiology.georgia_russia_have_continued_phage_th', 'Georgia + Russia have continued phage therapy clinically since the 1920s (Eliava Institute in Tbilisi treats ~5,000 patients/year). In the US + EU, phage therapy is currently "expanded access" / compassionate use only - given case-by-case for life-threatening multi-drug-resistant infections. ~100+ patients have been treated this way in the US since 2016. Several Phase II clinical trials are running in 2024-25 (Locus Biosciences, Armata Pharmaceuticals, Adaptive Phage Therapeutics, BiomX). First FDA-approved phage product is widely expected within ~5 years.')
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.a_famous_case_2017_san_diego', 'A famous case (2017, San Diego): ')),
                 __alloT('stem.microbiology.tom_patterson_a_ucsd_psychiatry_profes', 'Tom Patterson, a UCSD psychiatry professor, contracted a multidrug-resistant Acinetobacter baumannii infection while traveling in Egypt. After 9 months in a coma + every available antibiotic failing, his wife (epidemiologist Steffanie Strathdee) coordinated with Navy + UCSD researchers to compile a personalized phage cocktail from sewage samples around the world. He recovered. The case (documented in their 2019 book "The Perfect Predator") was a turning point in US medical interest in phage therapy.')
               )
@@ -2698,22 +2737,22 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(110,231,183,0.06)', border: '1px solid rgba(110,231,183,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#6ee7b7'), marginBottom: 2 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 10, fontStyle: 'italic' } }, 'First introduced: ' + topic.year + ' · ' + topic.who),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(59,130,246,0.06)', borderLeft: '3px solid #3b82f6', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#93c5fd', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.chemistry_mechanism', 'Chemistry + mechanism')),
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#93c5fd'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.chemistry_mechanism', 'Chemistry + mechanism')),
                     h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.chem)
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.06)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.clinical_use', 'Clinical use')),
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.clinical_use', 'Clinical use')),
                     h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.use)
                   ),
                   h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.06)', borderLeft: '3px solid #ef4444' } },
-                    h('div', { style: { fontSize: 11, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.resistance_limits', 'Resistance + limits')),
+                    h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.resistance_limits', 'Resistance + limits')),
                     h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, topic.resist)
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_honest_stewardship_message', 'The honest stewardship message: ')),
                   __alloT('stem.microbiology.the_most_important_thing_any_individua', 'The most important thing any individual + healthcare system can do is USE EXISTING ANTIBIOTICS APPROPRIATELY: not for viral infections (most colds, flu, most sore throats, most bronchitis), only for the right organism in the right dose for the right duration, with culture confirmation when possible. Every inappropriate course shortens the useful life of the entire class. CDC Be Antibiotics Aware + WHO World Antimicrobial Awareness Week campaigns reinforce this. School nurses + counselors are positioned to support family conversations about this without dismissing genuine illness.')
                 )
@@ -2776,7 +2815,7 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#7dd3fc'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_3', 'Honest framing: ')), topic.caveat
@@ -2793,27 +2832,27 @@
       function renderMicrobiome() {
         var selected = MICROBIOME.find(function(m) { return m.id === d.selectedMicrobiome; }) || MICROBIOME[0];
         var STAGES = [
-          { id: 'preg', name: __alloT('stem.microbiology.in_utero', 'In utero'), age: '0-9 months', color: '#a855f7',
+          { id: 'preg', name: __alloT('stem.microbiology.in_utero', 'In utero'), age: '0-9 months', color: microAccentText('#a855f7'),
             what: 'Long believed STERILE, this view is now being revised. Some bacterial DNA has been detected in placenta + amniotic fluid (still contested - may be contamination). The fetus is largely shielded from environmental microbes. The mother\'s microbiome shapes what the baby will be exposed to at birth.',
             shape: 'Maternal diet during pregnancy, antibiotic use, gestational diabetes, mode of stress all influence the baby\'s eventual microbiome trajectory.'
           },
-          { id: 'birth', name: __alloT('stem.microbiology.birth_first_6_months', 'Birth + first 6 months'), age: '0-6 mo', color: '#ec4899',
+          { id: 'birth', name: __alloT('stem.microbiology.birth_first_6_months', 'Birth + first 6 months'), age: '0-6 mo', color: microAccentText('#ec4899'),
             what: 'The critical seeding event. VAGINAL birth coats the baby in maternal vaginal + fecal microbes (Lactobacillus, Bifidobacterium dominate). CESAREAN birth seeds primarily skin microbes (Staphylococcus, Streptococcus) - a very different community. Breast milk delivers Bifidobacterium PLUS specific oligosaccharides (HMOs) that ONLY those bacteria can digest - milk literally feeds the bacteria that protect the baby.',
             shape: 'Mode of birth, antibiotic exposure (intrapartum or postnatal), breastfeeding vs formula, family pets, household biodiversity. The first 6 months of microbiome establishment correlate strongly with later asthma + allergy risk.'
           },
-          { id: 'weaning', name: __alloT('stem.microbiology.solid_food_introduction', 'Solid food introduction'), age: '6 mo - 2 yr', color: '#22c55e',
+          { id: 'weaning', name: __alloT('stem.microbiology.solid_food_introduction', 'Solid food introduction'), age: '6 mo - 2 yr', color: microAccentText('#22c55e'),
             what: 'Solid food → diversification. The infant gut goes from a milk-adapted community (Bifidobacterium-dominated) to an adult-like community (Bacteroidetes + Firmicutes-dominated). Fiber arrives + feeds fiber-fermenters. The full adult microbial diversity is reached around age 3.',
             shape: 'Diet variety, sugar consumption (high sugar suppresses Bifidobacterium), antibiotic courses (each one can permanently shift the trajectory), household + childcare environment.'
           },
-          { id: 'child', name: __alloT('stem.microbiology.childhood_teens', 'Childhood + teens'), age: '2-18', color: '#10b981',
+          { id: 'child', name: __alloT('stem.microbiology.childhood_teens', 'Childhood + teens'), age: '2-18', color: microAccentText('#10b981'),
             what: 'Microbiome composition is relatively stable but plastic. Each major dietary change (more carbs, more protein, more sugar, more fiber) shifts community composition within days. The "core" microbiome - about 30-40 species making up the majority - persists in most people.',
             shape: 'Diet (the biggest single lever), antibiotic use, physical activity (active kids have more diverse gut microbiomes), pets + outdoor time, stress, sleep.'
           },
-          { id: 'adult', name: __alloT('stem.microbiology.adulthood', 'Adulthood'), age: '18-65', color: '#0ea5e9',
+          { id: 'adult', name: __alloT('stem.microbiology.adulthood', 'Adulthood'), age: '18-65', color: microAccentText('#0ea5e9'),
             what: 'Relatively stable in a healthy person on a stable diet. Major life events (giving birth, immigration to a new country, severe illness, sustained dietary change) can shift the community for years. The Western "industrialized" microbiome (low fiber, high processed food) is consistently less diverse than traditional or non-industrialized populations.',
             shape: 'Diet remains dominant. Geography + culture + occupation. Acute illness + antibiotics. Major life stress. Pregnancy (for those who carry it) is the biggest natural perturbation.'
           },
-          { id: 'preg2', name: __alloT('stem.microbiology.pregnancy_the_pregnant_adult', 'Pregnancy (the pregnant adult)'), age: 'during pregnancy', color: '#fbbf24',
+          { id: 'preg2', name: __alloT('stem.microbiology.pregnancy_the_pregnant_adult', 'Pregnancy (the pregnant adult)'), age: 'during pregnancy', color: microAccentText('#fbbf24'),
             what: 'Maternal microbiome shifts dramatically - gut Bifidobacterium increases, vaginal Lactobacillus increases, oral microbiome shifts toward inflammation-promoting species (which is why dental care matters in pregnancy). These shifts likely tune the maternal immune system to tolerate the developing fetus.',
             shape: 'Maternal diet, weight gain, antibiotic exposure, pre-existing conditions. The microbiome the mother carries during pregnancy is what seeds the baby at birth.'
           },
@@ -2821,7 +2860,7 @@
             what: 'Microbiome diversity tends to DECLINE with age in industrialized populations. Specific bacteria associated with anti-inflammatory function (Faecalibacterium, Akkermansia) decrease. "Inflammaging" - chronic low-grade inflammation - is partly mediated by microbiome changes. Diet quality + activity level have outsized impact in older adults.',
             shape: 'Diet (especially fiber + plant variety, since older adults often reduce diversity unintentionally), polypharmacy (most drugs alter the gut microbiome), constipation, hospitalization, social isolation (less microbial exchange).'
           },
-          { id: 'centenarian', name: __alloT('stem.microbiology.centenarians', 'Centenarians'), age: '100+', color: '#f59e0b',
+          { id: 'centenarian', name: __alloT('stem.microbiology.centenarians', 'Centenarians'), age: '100+', color: microAccentText('#f59e0b'),
             what: 'People who reach 100+ in good health have distinctive microbiomes - often retaining diversity + anti-inflammatory bacteria more typical of much younger people. Studies of centenarian populations in Italy, Japan, Sardinia, and Costa Rica show similar "youthful microbiome" patterns despite different diets.',
             shape: 'Lifelong diet + activity + stress + genetics + sociality. Centenarians often have particularly rich social networks, which correlates with microbial diversity (social contact = microbial exchange).'
           }
@@ -2841,7 +2880,7 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#6ee7b7'), fontSize: 18 } }, selected.name),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 12 } },
               h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)' } },
                 h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase' } }, __alloT('stem.microbiology.count', 'Count')),
@@ -2854,7 +2893,7 @@
             ),
             h('p', { style: { margin: '0 0 8px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } }, selected.what),
             h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_shapes_it', 'What shapes it')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.what_shapes_it', 'What shapes it')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.shaped)
             )
           ),
@@ -2882,15 +2921,15 @@
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, sel.age)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_s_happening', 'What\'s happening')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_s_happening', 'What\'s happening')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, sel.what)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_shapes_it_2', 'What shapes it')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_shapes_it_2', 'What shapes it')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, sel.shape)
                 )
               ),
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.the_first_1_000_days', 'The first 1,000 days: ')),
                 __alloT('stem.microbiology.conception_2nd_birthday_the_most_conse', 'Conception → 2nd birthday. The most consequential window for microbiome shaping. Vaginal vs cesarean birth, breastfeeding duration, antibiotic exposure, daycare attendance, household pets - all influence the microbiome the child carries into adulthood. Many adult health outcomes (asthma, allergies, autoimmune conditions, obesity risk) correlate with first-1,000-day microbial events. Interventions to support healthy infant microbiome assembly (vaginal seeding for C-section babies, careful antibiotic stewardship, breastfeeding support) are actively researched + sometimes practiced.')
               ),
@@ -2951,12 +2990,12 @@
                     return h('button', {
                       key: t.id,
                       onClick: function() { upd({ selectedVirome: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#8b5cf6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#7c3aed' : '#1e293b', color: on ? '#ffffff' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#c4b5fd'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.what_we_should_not_overstate_2', 'What we should not overstate: ')), topic.caveat
@@ -3021,13 +3060,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#67e8f9'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.what_we_should_not_overstate_3', 'What we should not overstate: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.3)', fontSize: 11.5, color: '#fda4af', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(244,63,94,0.06)', border: '1px solid rgba(244,63,94,0.3)', fontSize: 11.5, color: microAccentText('#fda4af'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.a_note_for_educators_counselors', 'A note for educators + counselors: ')),
                   __alloT('stem.microbiology.students_families_sometimes_encounter_', 'Students + families sometimes encounter aggressive marketing of probiotics, "gut healing protocols," restrictive diets, and supplements claiming to cure mental health conditions. The respectful response is not to dismiss interest in gut-brain biology (the science is real) but to redirect toward evidence-based whole-diet patterns + the standard mental health toolkit. Honor the curiosity; protect the family budget from snake oil; never frame a child as broken-and-needing-fixing.')
                 )
@@ -3041,13 +3080,13 @@
       // BIOREMEDIATION + BIOTECHNOLOGY
       function renderBiotech() {
         var APPS = [
-          { id: 'oil', name: __alloT('stem.microbiology.oil_spill_cleanup', 'Oil spill cleanup'), color: '#fbbf24',
+          { id: 'oil', name: __alloT('stem.microbiology.oil_spill_cleanup', 'Oil spill cleanup'), color: microAccentText('#fbbf24'),
             microbe: 'Alcanivorax borkumensis, Pseudomonas putida, certain Rhodococcus species - collectively "hydrocarbon-degrading bacteria."',
             how: 'These naturally-occurring marine bacteria use hydrocarbons as their energy source. After an oil spill, populations bloom + chew through petroleum compounds, converting them to CO₂ + water + biomass. Often supplemented with nitrogen + phosphorus to stimulate growth.',
             example: '1989 Exxon Valdez (Alaska) + 2010 Deepwater Horizon (Gulf of Mexico). Bioremediation accelerated cleanup of both. About 50% of the Deepwater Horizon oil was degraded by microbes within months - far faster than any mechanical recovery could have done. Light + medium fractions degrade fastest; heavy + aromatic compounds slower.',
             limits: 'Cold water + lack of oxygen + lack of nitrogen all slow microbial degradation. Cannot dissolve into solid asphalt-like residues. Not effective in deep sediments where oxygen is absent.'
           },
-          { id: 'plastic', name: __alloT('stem.microbiology.plastic_degrading_enzymes', 'Plastic-degrading enzymes'), color: '#0ea5e9',
+          { id: 'plastic', name: __alloT('stem.microbiology.plastic_degrading_enzymes', 'Plastic-degrading enzymes'), color: microAccentText('#0ea5e9'),
             microbe: 'Ideonella sakaiensis 201-F6 (discovered 2016 in a Japanese recycling facility) + engineered variants of its enzymes PETase + MHETase.',
             how: 'Naturally evolved to digest PET (polyethylene terephthalate - the plastic in water bottles + polyester). The enzymes hydrolyze PET\'s ester bonds into the constituent monomers (terephthalic acid + ethylene glycol) which can be re-polymerized into new PET. Effectively closed-loop recycling - without burning, without virgin petroleum.',
             example: 'French company Carbios is operating a pilot facility that demonstrates ~90% PET-to-monomer conversion in hours. Engineered "FAST-PETase" + similar variants are 10-100× more efficient than the original. Full industrial-scale plant scheduled for 2025-26.',
@@ -3059,19 +3098,19 @@
             example: 'About 20% of global copper production now uses bioleaching. Chuquicamata + Escondida mines (Chile) extract billions of dollars of copper this way. Recovery is slower than conventional smelting but uses far less energy + emits less SO₂.',
             limits: 'Slow (~months for typical operation). Requires the right ore type. Best for low-grade ore where conventional methods are uneconomic.'
           },
-          { id: 'fuel', name: __alloT('stem.microbiology.biofuels', 'Biofuels'), color: '#22c55e',
+          { id: 'fuel', name: __alloT('stem.microbiology.biofuels', 'Biofuels'), color: microAccentText('#22c55e'),
             microbe: 'Saccharomyces cerevisiae (yeast) for ethanol; Zymomonas mobilis for ethanol; engineered Cyanobacteria + algae for biodiesel.',
             how: 'First-generation: yeast ferments corn or sugarcane sugars → ethanol. Second-generation: bacteria break down cellulose from non-food plants → ethanol. Third-generation: algae grow in tanks, accumulating lipids that are extracted as biodiesel.',
             example: 'Brazil is the leader in ethanol-from-sugarcane (~28% of fuel mix). The US uses corn ethanol heavily (~10% of gasoline). Cellulosic ethanol from straw + wood chips is operational but more expensive. Algal biodiesel remains a research focus more than a commercial reality.',
             limits: 'First-gen biofuels compete with food production. Net energy ratios are sometimes only ~1.5:1 (you put in nearly as much energy as you get out). Land + water use considerable.'
           },
-          { id: 'pharma', name: __alloT('stem.microbiology.pharmaceutical_production', 'Pharmaceutical production'), color: '#a855f7',
+          { id: 'pharma', name: __alloT('stem.microbiology.pharmaceutical_production', 'Pharmaceutical production'), color: microAccentText('#a855f7'),
             microbe: 'Mostly E. coli, but also yeast (Saccharomyces, Pichia pastoris), CHO cells (mammalian for antibody production).',
             how: 'Engineered to produce a specific human protein from inserted human genes. The microbe grows in bioreactors; the desired protein is harvested + purified. Pioneered by Genentech in 1978 with recombinant human insulin.',
             example: 'Insulin - nearly all therapeutic insulin worldwide is now produced by recombinant E. coli or yeast. Vaccines (hepatitis B subunit, mRNA vaccine components). Therapeutic antibodies (~$200 billion/year market) like adalimumab, trastuzumab, pembrolizumab. Industrial enzymes (washing-powder enzymes, food enzymes).',
             limits: 'Some human proteins don\'t fold or glycosylate correctly in bacteria - need yeast or mammalian cells, which are slower + more expensive. Antibody production typically uses CHO cells in bioreactors.'
           },
-          { id: 'mercury', name: __alloT('stem.microbiology.heavy_metal_radionuclide_cleanup', 'Heavy metal + radionuclide cleanup'), color: '#7c3aed',
+          { id: 'mercury', name: __alloT('stem.microbiology.heavy_metal_radionuclide_cleanup', 'Heavy metal + radionuclide cleanup'), color: microAccentText('#7c3aed'),
             microbe: 'Geobacter, Shewanella, Pseudomonas, Bacillus, Deinococcus radiodurans.',
             how: 'Certain bacteria can reduce or sequester heavy metals (uranium, chromium, arsenic, mercury) into insoluble or less-toxic forms. Geobacter reduces dissolved uranium(VI) to insoluble uranium(IV), preventing groundwater migration.',
             example: 'Department of Energy uranium-contaminated sites at Rifle, Colorado + Old Rifle, Colorado have demonstrated successful in-situ Geobacter remediation. Deinococcus radiodurans, the "world\'s toughest bacterium" (survives radiation doses 1000× lethal for humans), is being engineered to clean up radioactive contaminated sites.',
@@ -3100,19 +3139,19 @@
               h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.microbes_used', 'Microbes used')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.microbes_used', 'Microbes used')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.microbe)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_it_works_3', 'How it works')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_it_works_3', 'How it works')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.how)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.real_world_example', 'Real-world example')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.real_world_example', 'Real-world example')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.example)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(220,38,38,0.08)', borderLeft: '3px solid #dc2626' } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.limits_honest_caveats', 'Limits + honest caveats')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fca5a5'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.limits_honest_caveats', 'Limits + honest caveats')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.limits)
                 )
               )
@@ -3126,11 +3165,11 @@
                 __alloT('stem.microbiology.modern_biotechnology_no_longer_just_fi', 'Modern biotechnology no longer just FINDS useful microbes - it ENGINEERS them. Synthetic biology assembles genetic circuits + custom metabolic pathways from interchangeable parts. The Registry of Standard Biological Parts (BioBricks, 2003+) catalogs thousands of reusable DNA modules. Computer-designed organisms exist.')
               ),
               h('p', { style: { margin: '0 0 8px' } },
-                h('strong', { style: { color: '#a7f3d0' } }, __alloT('stem.microbiology.famous_examples', 'Famous examples: ')),
+                h('strong', { style: { color: microAccentText('#a7f3d0') } }, __alloT('stem.microbiology.famous_examples', 'Famous examples: ')),
                 __alloT('stem.microbiology.artemisinin_antimalarial_drug_produced', 'Artemisinin (antimalarial drug) produced in yeast by Jay Keasling\'s group at UC Berkeley - saved hundreds of millions of dollars vs extraction from sweet wormwood. Spider silk produced in goats (Nexia) + bacteria (Bolt Threads). Synthetic vanilla flavor produced by engineered yeast. Insulin in E. coli (1978, Genentech) was the first major commercial synthetic biology product.')
               ),
               h('p', { style: { margin: 0 } },
-                h('strong', { style: { color: '#a7f3d0' } }, __alloT('stem.microbiology.where_it_s_going', 'Where it\'s going: ')),
+                h('strong', { style: { color: microAccentText('#a7f3d0') } }, __alloT('stem.microbiology.where_it_s_going', 'Where it\'s going: ')),
                 __alloT('stem.microbiology.synthetic_carbon_capture_organisms_eng', 'Synthetic carbon-capture organisms (engineered cyanobacteria producing biofuels from CO₂ + sunlight). Designer probiotics (engineered gut bacteria producing therapeutic molecules in the gut). Cellular agriculture (lab-grown meat from cultured animal cells, no animal needed). Self-replicating diagnostics. The field is younger than CRISPR + moving extremely fast.')
               )
             ),
@@ -3187,13 +3226,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(244,63,94,0.08)', border: '1px solid rgba(244,63,94,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fda4af', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#fda4af'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.what_we_should_not_overstate_4', 'What we should not overstate: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11.5, color: '#a7f3d0', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 11.5, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_actionable_summary', 'The actionable summary: ')),
                   __alloT('stem.microbiology.the_hpv_vaccine_prevents_most_cervical', 'The HPV vaccine prevents most cervical, anal, and oropharyngeal cancers. The Hep B vaccine prevents most hepatitis-B-driven liver cancer. Hep C is curable in 8-12 weeks of pills. H. pylori is curable in 10-14 days of antibiotics. None of these is a future technology; all of them exist now. Their barriers are access, awareness, and political will - not science.')
                 )
@@ -3260,13 +3299,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(167,243,208,0.08)', border: '1px solid rgba(167,243,208,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#a7f3d0', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#a7f3d0'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_4', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.for_aspiring_students', 'For aspiring students: ')),
                   __alloT('stem.microbiology.igem_igem_org_is_the_entry_point_for_h', 'iGEM (igem.org) is the entry point for high-school + college students into synthetic biology. Teams design + execute a research project each summer, present at a Giant Jamboree, + win medals based on documentation quality + lab achievement. King Middle students could start with a Maine-based summer program (the Bigelow Laboratory, MDI Biological Lab Junior Investigators, Jackson Lab Maine Summer Student Program) + work toward iGEM in high school + college. The field is unusually welcoming to undergraduates + has clear paths from teen interest to research career.')
                 )
@@ -3324,18 +3363,18 @@
                     return h('button', {
                       key: t.id,
                       onClick: function() { upd({ selectedAI: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#8b5cf6' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#7c3aed' : '#1e293b', color: on ? '#ffffff' : '#e2e8f0', border: on ? '2px solid #8b5cf6' : '1px solid #334155' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(139,92,246,0.08)', border: '1px solid rgba(139,92,246,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#c4b5fd', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#c4b5fd'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_5', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: microAccentText('#dcfce7'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.try_it_yourself_today', 'Try it yourself today: ')),
                   __alloT('stem.microbiology.alphafold_protein_structure_database_a', 'AlphaFold Protein Structure Database (alphafold.ebi.ac.uk) is free + searchable. Type any gene name + see the predicted protein structure rotating in 3D in your browser. ColabFold (free, runs in Google Colab) lets you input a protein sequence + get a structure in ~ 30 minutes. Foldit (fold.it) is a citizen-science game where players solve protein folds + sometimes outperform algorithms. For middle + high school students, these are the entry points into modern computational biology - no expensive equipment, just curiosity + a browser.')
                 )
@@ -3349,13 +3388,13 @@
       // PLANT-MICROBE SYMBIOSIS + NITROGEN CYCLE
       function renderPlantMicrobe() {
         var STEPS = [
-          { id: 'fix', name: __alloT('stem.microbiology.nitrogen_fixation', 'Nitrogen fixation'), color: '#22c55e',
+          { id: 'fix', name: __alloT('stem.microbiology.nitrogen_fixation', 'Nitrogen fixation'), color: microAccentText('#22c55e'),
             actor: 'Rhizobium, Bradyrhizobium, Azospirillum, Frankia, cyanobacteria',
             process: 'N₂ (atmospheric nitrogen, 78% of air) → NH₃ (ammonia). Requires the enzyme NITROGENASE + ~16 ATP per N₂ molecule. Only bacteria + archaea can do this - no eukaryote can fix nitrogen on its own.',
             where: 'In legume root nodules (clover, soybean, peanut, alfalfa). In free-living soil bacteria. In cyanobacteria of aquatic ecosystems + rice paddies. In the symbiotic Frankia of nitrogen-fixing trees (alder, bayberry).',
             note: __alloT('stem.microbiology.earth_s_entire_biosphere_depends_on_th', 'Earth\'s entire biosphere depends on this single biochemical step. Without it, no proteins; without proteins, no life.')
           },
-          { id: 'nitrify', name: __alloT('stem.microbiology.nitrification', 'Nitrification'), color: '#0ea5e9',
+          { id: 'nitrify', name: __alloT('stem.microbiology.nitrification', 'Nitrification'), color: microAccentText('#0ea5e9'),
             actor: 'Nitrosomonas + Nitrosospira (NH₃ → NO₂⁻), then Nitrobacter + Nitrospira (NO₂⁻ → NO₃⁻)',
             process: 'Two-step oxidation of ammonia to nitrate. Most plants take up nitrogen as NITRATE (NO₃⁻), so this conversion makes biological nitrogen available to plants.',
             where: 'Aerobic soils. The plant rhizosphere. Anywhere oxygen + ammonia coexist.',
@@ -3367,13 +3406,13 @@
             where: 'Every plant\'s root system. About 90% of plant species have mycorrhizal partners (Glomeromycota for most; ectomycorrhizal Basidiomycota + Ascomycota for forest trees).',
             note: __alloT('stem.microbiology.plants_also_get_carbon_for_nitrogen_tr', 'Plants also get carbon-for-nitrogen trades: they send 10-30% of photosynthesized sugars below ground to feed root + mycorrhizal partners. The "wood-wide web" of mycorrhizal connections lets trees + plants share resources across the forest floor.')
           },
-          { id: 'cons', name: __alloT('stem.microbiology.consumption_decomposition', 'Consumption + decomposition'), color: '#f59e0b',
+          { id: 'cons', name: __alloT('stem.microbiology.consumption_decomposition', 'Consumption + decomposition'), color: microAccentText('#f59e0b'),
             actor: 'Herbivores, predators, decomposer bacteria + fungi',
             process: 'Animals eat plant proteins → animal proteins. When organisms die, decomposers break protein → amino acids → ammonia (ammonification). The nitrogen re-enters the cycle.',
             where: 'Every food web on Earth. Forest floor decomposition is mostly fungi + bacteria recycling N from leaves + wood.',
             note: __alloT('stem.microbiology.a_leaf_falling_in_a_forest_is_recycled', 'A leaf falling in a forest is recycled back into soil nitrogen by ~1 year in a temperate climate; faster in a tropical rainforest, slower in a boreal forest where cold limits decomposition.')
           },
-          { id: 'denit', name: __alloT('stem.microbiology.denitrification', 'Denitrification'), color: '#7c3aed',
+          { id: 'denit', name: __alloT('stem.microbiology.denitrification', 'Denitrification'), color: microAccentText('#7c3aed'),
             actor: 'Pseudomonas, Paracoccus, Thiobacillus (and many others)',
             process: 'NO₃⁻ → N₂ (back to atmosphere). Anaerobic bacteria use nitrate as the terminal electron acceptor when oxygen is unavailable. Closes the cycle by returning nitrogen to the atmospheric N₂ pool.',
             where: 'Waterlogged soils, swamps, deep sediments, sewage treatment plants (a wanted reaction), the human gut (a side effect).',
@@ -3405,19 +3444,19 @@
               h('div', { style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                 h('div', { style: { fontSize: 15, fontWeight: 800, color: sel.color, marginBottom: 4 } }, sel.name),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.microbes_responsible', 'Microbes responsible')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.microbes_responsible', 'Microbes responsible')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.actor)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.process', 'Process')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.process', 'Process')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.process)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.where_it_happens', 'Where it happens')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.where_it_happens', 'Where it happens')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.where)
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7' } },
-                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.why_it_matters_2', 'Why it matters')),
+                  h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#d8b4fe'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.why_it_matters_2', 'Why it matters')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.note)
                 )
               )
@@ -3429,14 +3468,14 @@
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.microbiology.about_90_of_plant_species_form_a_partn', 'About 90% of plant species form a partnership called MYCORRHIZA: roots and fungal hyphae grow together. The fungus extends the effective root system 100-1,000×, accessing water + phosphorus + other minerals the plant cannot reach. The plant gives the fungus sugars from photosynthesis. Probably the oldest symbiosis on land - about 460 million years old, and may be the reason plants colonized land in the first place.')),
               h('p', { style: { margin: '0 0 8px' } },
-                h('strong', { style: { color: '#a7f3d0' } }, __alloT('stem.microbiology.two_main_types', 'Two main types: ')),
+                h('strong', { style: { color: microAccentText('#a7f3d0') } }, __alloT('stem.microbiology.two_main_types', 'Two main types: ')),
                 h('em', null, __alloT('stem.microbiology.arbuscular_mycorrhizal_am', 'Arbuscular mycorrhizal (AM)')),
                 __alloT('stem.microbiology.fungal_hyphae_penetrate_plant_root_cel', ' - fungal hyphae penetrate plant root cells, forming branched "arbuscules" for exchange. Found in ~80% of land plants including most crops + grasses. '),
                 h('em', null, __alloT('stem.microbiology.ectomycorrhizal_ecm', 'Ectomycorrhizal (ECM)')),
                 __alloT('stem.microbiology.fungal_hyphae_form_a_sheath_around_roo', ' - fungal hyphae form a sheath around root tips without entering cells. Found mostly in temperate + boreal forest trees (oak, pine, spruce, beech).')
               ),
               h('p', { style: { margin: 0 } },
-                h('strong', { style: { color: '#a7f3d0' } }, __alloT('stem.microbiology.suzanne_simard_s_wood_wide_web_1997', 'Suzanne Simard\'s wood-wide web (1997+): ')),
+                h('strong', { style: { color: microAccentText('#a7f3d0') } }, __alloT('stem.microbiology.suzanne_simard_s_wood_wide_web_1997', 'Suzanne Simard\'s wood-wide web (1997+): ')),
                 __alloT('stem.microbiology.mycorrhizal_networks_can_connect_trees', 'Mycorrhizal networks can connect trees of different species. "Mother trees" (large old trees) appear to share photosynthate with seedlings through these networks. The forest floor is a single interconnected organism in some functional sense. Disturbance + clear-cutting + tilling destroys these networks; restoration takes years to decades.')
               )
             ),
@@ -3448,20 +3487,20 @@
               h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.microbiology.industrial_agriculture_depends_on_biol', 'Industrial agriculture depends on biological nitrogen fixation in three forms: leguminous crop rotations (alfalfa, clover, soybean) for organic nitrogen, Rhizobium-inoculated seed treatments, and supplementary Haber-Bosch synthetic fertilizers. Each option has trade-offs.')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 8 } },
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #22c55e' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#86efac', marginBottom: 4 } }, __alloT('stem.microbiology.crop_rotation', 'Crop rotation')),
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#86efac'), marginBottom: 4 } }, __alloT('stem.microbiology.crop_rotation', 'Crop rotation')),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, __alloT('stem.microbiology.plant_legumes_one_season_to_fix_nitrog', 'Plant legumes one season to "fix" nitrogen; plant nitrogen-hungry crops the next. Indigenous "three sisters" agriculture (corn + beans + squash) used this for millennia. Slow + reliable + low-input.'))
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #0ea5e9' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#7dd3fc', marginBottom: 4 } }, __alloT('stem.microbiology.rhizobium_inoculants', 'Rhizobium inoculants')),
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#7dd3fc'), marginBottom: 4 } }, __alloT('stem.microbiology.rhizobium_inoculants', 'Rhizobium inoculants')),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, __alloT('stem.microbiology.seed_coat_soybeans_peanuts_peas_with_t', 'Seed-coat soybeans, peanuts, peas with the right strain of Rhizobium before planting. Targeted, effective, used at industrial scale.'))
                 ),
                 h('div', { style: { padding: 8, borderRadius: 6, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #f59e0b' } },
-                  h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, __alloT('stem.microbiology.synthetic_fertilizer_haber_bosch', 'Synthetic fertilizer (Haber-Bosch)')),
+                  h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#fbbf24'), marginBottom: 4 } }, __alloT('stem.microbiology.synthetic_fertilizer_haber_bosch', 'Synthetic fertilizer (Haber-Bosch)')),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, __alloT('stem.microbiology.industrial_process_1909_converts_n_h_n', 'Industrial process (1909) converts N₂ + H₂ → NH₃ at high temperature + pressure. Currently feeds about half the world. Uses 1-2% of all global energy. Largest single contributor to anthropogenic reactive nitrogen on Earth.'))
                 )
               ),
               h('p', { style: { margin: 0 } },
-                h('strong', { style: { color: '#fbbf24' } }, __alloT('stem.microbiology.the_nitrogen_pollution_problem', 'The nitrogen pollution problem: ')),
+                h('strong', { style: { color: microAccentText('#fbbf24') } }, __alloT('stem.microbiology.the_nitrogen_pollution_problem', 'The nitrogen pollution problem: ')),
                 __alloT('stem.microbiology.synthetic_fertilizer_manure_run_off_in', 'Synthetic fertilizer + manure run off into rivers → coastal eutrophication → algal blooms → dead zones. The Gulf of Mexico dead zone (~15,000 km² in summer) is largely fed by Mississippi River nitrogen runoff. Smaller dead zones exist in Chesapeake Bay, Long Island Sound, and the Baltic. Precision agriculture + cover cropping + restored wetlands are the main responses.')
               )
             ),
@@ -3518,7 +3557,7 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#86efac', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#86efac'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_6', 'Honest framing: ')), topic.caveat
@@ -3620,7 +3659,7 @@
                 __alloT('stem.microbiology.each_bacterium_constantly_releases_sma', 'Each bacterium constantly releases small "autoinducer" molecules into its surroundings. When the local concentration of these molecules crosses a threshold (= many bacteria nearby), gene expression changes. Behaviors that don\'t make sense at low density (biofilm formation, virulence, light production, sporulation) only activate when there are enough cells around to do them collectively.')
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#6ee7b7', marginBottom: 6 } }, __alloT('stem.microbiology.4_examples_of_quorum_sensing_in_action', '4 examples of quorum sensing in action:')),
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 6 } }, __alloT('stem.microbiology.4_examples_of_quorum_sensing_in_action', '4 examples of quorum sensing in action:')),
                 h('ul', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, __alloT('stem.microbiology.vibrio_fischeri_bioluminescence', 'Vibrio fischeri (bioluminescence): ')), __alloT('stem.microbiology.lives_in_the_light_organ_of_the_hawaii', 'Lives in the light organ of the Hawaiian bobtail squid. Below quorum, no light (wastes energy). At high density inside the squid, the bacteria glow - providing the squid with counter-illumination camouflage. Foundational discovery of quorum sensing (Nealson + Hastings 1970s).')),
                   h('li', null, h('strong', null, __alloT('stem.microbiology.pseudomonas_aeruginosa_virulence', 'Pseudomonas aeruginosa (virulence): ')), __alloT('stem.microbiology.a_bacterium_that_infects_cystic_fibros', 'A bacterium that infects cystic fibrosis lungs + burn wounds + immunocompromised patients. Stays "stealthy" at low density; releases tissue-damaging toxins only after biofilm + quorum. Disrupting quorum signaling is an active drug-development strategy.')),
@@ -3639,7 +3678,7 @@
           sectionCard('💉 The medical reality of biofilms',
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
               __alloT('stem.microbiology.the_cdc_estimates_that', 'The CDC estimates that '),
-              h('strong', { style: { color: '#fca5a5' } }, __alloT('stem.microbiology.65_80_of_all_human_bacterial_infection', '65-80% of all human bacterial infections involve biofilms')),
+              h('strong', { style: { color: microAccentText('#fca5a5') } }, __alloT('stem.microbiology.65_80_of_all_human_bacterial_infection', '65-80% of all human bacterial infections involve biofilms')),
               __alloT('stem.microbiology.common_sites_catheters_urinary_central', '. Common sites: catheters (urinary, central venous), prosthetic joints + heart valves, contact lenses, lungs of people with cystic fibrosis, periodontitis (gum disease). Successful treatment often means removing the infected device + a long antibiotic course. Research is active on enzymatic biofilm disruptors, quorum-sensing inhibitors, phage therapy, and engineered surface coatings that resist biofilm formation.')
             ),
             '#fca5a5'
@@ -3699,10 +3738,10 @@
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
                 [
-                  { name: __alloT('stem.microbiology.neutrophils', 'Neutrophils'), arm: 'innate', role: 'First responders. Most abundant white cell. Phagocytose bacteria + fungi. Lifespan: hours. The pus in an infection is mostly dead neutrophils.', color: '#fbbf24' },
-                  { name: __alloT('stem.microbiology.macrophages', 'Macrophages'), arm: 'innate', role: 'Long-lived tissue patrollers. Eat pathogens + debris. Present chewed-up antigens to T cells (a hand-off to adaptive immunity). Live months to years.', color: '#fbbf24' },
-                  { name: __alloT('stem.microbiology.dendritic_cells', 'Dendritic cells'), arm: 'innate (bridge)', role: 'The professional antigen-presenters. Sample what\'s in tissues; migrate to lymph nodes; show T cells what they found. The key link between innate detection + adaptive response.', color: '#a855f7' },
-                  { name: __alloT('stem.microbiology.natural_killer_nk_cells', 'Natural Killer (NK) cells'), arm: 'innate', role: 'Kill cells that "look wrong" - virus-infected or cancerous. Detect a missing self-MHC signal. No memory; act on what\'s in front of them.', color: '#fbbf24' },
+                  { name: __alloT('stem.microbiology.neutrophils', 'Neutrophils'), arm: 'innate', role: 'First responders. Most abundant white cell. Phagocytose bacteria + fungi. Lifespan: hours. The pus in an infection is mostly dead neutrophils.', color: microAccentText('#fbbf24') },
+                  { name: __alloT('stem.microbiology.macrophages', 'Macrophages'), arm: 'innate', role: 'Long-lived tissue patrollers. Eat pathogens + debris. Present chewed-up antigens to T cells (a hand-off to adaptive immunity). Live months to years.', color: microAccentText('#fbbf24') },
+                  { name: __alloT('stem.microbiology.dendritic_cells', 'Dendritic cells'), arm: 'innate (bridge)', role: 'The professional antigen-presenters. Sample what\'s in tissues; migrate to lymph nodes; show T cells what they found. The key link between innate detection + adaptive response.', color: microAccentText('#a855f7') },
+                  { name: __alloT('stem.microbiology.natural_killer_nk_cells', 'Natural Killer (NK) cells'), arm: 'innate', role: 'Kill cells that "look wrong" - virus-infected or cancerous. Detect a missing self-MHC signal. No memory; act on what\'s in front of them.', color: microAccentText('#fbbf24') },
                   { name: __alloT('stem.microbiology.b_cells', 'B cells'), arm: 'adaptive', role: 'Make antibodies. Each B cell expresses one antibody specificity (about 10¹¹ possible specificities exist across all your B cells). Activated B cells become plasma cells (antibody factories) or memory B cells.', color: EMERALD },
                   { name: __alloT('stem.microbiology.t_helper_cells_cd4', 'T helper cells (CD4+)'), arm: 'adaptive', role: 'Conductors of the immune orchestra. Activate B cells, killer T cells, macrophages. HIV destroys CD4+ T cells, which is what causes AIDS.', color: EMERALD },
                   { name: __alloT('stem.microbiology.cytotoxic_killer_t_cells_cd8', 'Cytotoxic / Killer T cells (CD8+)'), arm: 'adaptive', role: 'Kill infected cells. Each recognizes one antigen + MHC class I combination. Critical for clearing viral + cancerous cells.', color: EMERALD },
@@ -3726,7 +3765,7 @@
               h('div', { style: { display: 'grid', gridTemplateColumns: '280px 1fr', gap: 12, alignItems: 'start' } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: '#0a0e1a', border: '1px solid var(--allo-stem-border, #334155)' } }, antibodySvg()),
                 h('div', null,
-                  h('div', { style: { fontSize: 12.5, fontWeight: 700, color: '#6ee7b7', marginBottom: 8 } }, __alloT('stem.microbiology.the_five_antibody_classes', 'The five antibody classes:')),
+                  h('div', { style: { fontSize: 12.5, fontWeight: 700, color: microAccentText('#6ee7b7'), marginBottom: 8 } }, __alloT('stem.microbiology.the_five_antibody_classes', 'The five antibody classes:')),
                   h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
                     h('thead', null, h('tr', null,
                       ['Class', 'Where', 'Job'].map(function(c, i) {
@@ -3742,7 +3781,7 @@
                         { c: 'IgD', w: 'B-cell surface marker', j: 'Role still being understood. Helps activate B cells.' }
                       ].map(function(r, i) {
                         return h('tr', { key: i, style: { background: i % 2 === 0 ? '#0f172a' : '#1e293b' } },
-                          h('td', { style: { padding: 5, fontWeight: 700, color: '#6ee7b7' } }, r.c),
+                          h('td', { style: { padding: 5, fontWeight: 700, color: microAccentText('#6ee7b7') } }, r.c),
                           h('td', { style: { padding: 5, color: 'var(--allo-stem-text, #e2e8f0)' } }, r.w),
                           h('td', { style: { padding: 5, color: 'var(--allo-stem-text, #cbd5e1)' } }, r.j)
                         );
@@ -3768,7 +3807,7 @@
               ),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #38bdf8' } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#7dd3fc', marginBottom: 6 } }, __alloT('stem.microbiology.mhc_class_i', 'MHC class I')),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText('#7dd3fc'), marginBottom: 6 } }, __alloT('stem.microbiology.mhc_class_i', 'MHC class I')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), __alloT('stem.microbiology.on_almost_every_nucleated_cell', 'On almost every nucleated cell.'), h('br'),
                     h('strong', null, 'Shows: '), __alloT('stem.microbiology.fragments_of_proteins_made_inside_that', 'Fragments of proteins made INSIDE that cell (so if a virus is replicating inside, viral proteins get shown).'), h('br'),
@@ -3776,7 +3815,7 @@
                   )
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid #ec4899' } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbcfe8', marginBottom: 6 } }, __alloT('stem.microbiology.mhc_class_ii', 'MHC class II')),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText('#fbcfe8'), marginBottom: 6 } }, __alloT('stem.microbiology.mhc_class_ii', 'MHC class II')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } },
                     h('strong', null, 'Where: '), __alloT('stem.microbiology.mainly_on_professional_antigen_present', 'Mainly on professional antigen-presenting cells (dendritic cells, macrophages, B cells).'), h('br'),
                     h('strong', null, 'Shows: '), __alloT('stem.microbiology.fragments_of_proteins_ingested_from_th', 'Fragments of proteins INGESTED from the environment (bacteria, dead cells, debris).'), h('br'),
@@ -3784,11 +3823,11 @@
                   )
                 )
               ),
-              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.why_organ_transplants_are_rejected', 'Why organ transplants are rejected: ')),
                 __alloT('stem.microbiology.each_person_has_a_unique_combination_o', 'Each person has a unique combination of MHC alleles (your "HLA type"). T cells are trained to ignore your own MHC + react against everyone else\'s. A transplanted organ\'s MHC molecules look "foreign" and trigger massive T-cell rejection. Transplant matching looks for the closest HLA match; immunosuppressants block T-cell activation. Identical twins can transplant without immunosuppression because their HLA is identical.')
               ),
-              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.65 } },
+              h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 12, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.checkpoint_inhibitors_cancer_immunothe', 'Checkpoint inhibitors - cancer immunotherapy: ')),
                 __alloT('stem.microbiology.cancer_cells_often_present_abnormal_pe', 'Cancer cells often present "abnormal" peptides on MHC-I + would be killed by T cells. Many cancers evade this by displaying CTLA-4 + PD-L1, which act as "brakes" on T cells. Checkpoint inhibitor drugs (pembrolizumab, nivolumab) release those brakes. The 2018 Nobel went to James Allison + Tasuku Honjo for this discovery. Has revolutionized treatment of melanoma, lung cancer, and others - sometimes curing previously-fatal disease.')
               )
@@ -3799,7 +3838,7 @@
                 __alloT('stem.microbiology.how_does_the_immune_system_remember_th', 'How does the immune system remember? Through CLONAL SELECTION - the central insight of modern immunology, proposed by Burnet in 1957 and proved over the next two decades.')
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: '#6ee7b7', marginBottom: 8 } }, __alloT('stem.microbiology.clonal_selection_in_4_steps', 'Clonal selection in 4 steps:')),
+                h('div', { style: { fontSize: 12.5, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 8 } }, __alloT('stem.microbiology.clonal_selection_in_4_steps', 'Clonal selection in 4 steps:')),
                 h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75 } },
                   h('li', null, h('strong', null, 'Diversity: '), __alloT('stem.microbiology.before_any_infection_your_body_has_b_c', 'Before any infection, your body has B cells + T cells with ~10¹¹ different antigen receptors. Each lymphocyte makes ONE specificity, generated randomly through V(D)J recombination. Most of those random specificities will never encounter their target.')),
                   h('li', null, h('strong', null, 'Selection: '), __alloT('stem.microbiology.when_a_pathogen_enters_only_the_lympho', 'When a pathogen enters, only the lymphocytes whose receptors happen to fit react. They get activated. The other 99.99...% sit out the infection.')),
@@ -3807,11 +3846,11 @@
                   h('li', null, h('strong', null, 'Memory: '), __alloT('stem.microbiology.a_subset_of_the_expanded_clones_differ', 'A subset of the expanded clones differentiate into MEMORY cells. They\'re long-lived (decades), waiting. When the same pathogen returns, they activate within hours instead of days. This is why second infections are usually milder + why vaccines work.'))
                 )
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65, marginBottom: 8 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65, marginBottom: 8 } },
                 h('strong', null, __alloT('stem.microbiology.why_vaccines_work', 'Why vaccines work: ')),
                 __alloT('stem.microbiology.a_vaccine_introduces_pathogen_pieces_o', 'A vaccine introduces pathogen pieces (or instructions for cells to make pathogen pieces, like mRNA vaccines). Clonal selection activates the matching lymphocytes. Memory cells form. When the real pathogen later arrives, response is in hours, not days. The pathogen is cleared before causing disease.')
               ),
-              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: microAccentText('#fecaca'), lineHeight: 1.65 } },
                 h('strong', null, __alloT('stem.microbiology.when_memory_fails', 'When memory fails: ')),
                 __alloT('stem.microbiology.some_pathogens_evolve_fast_enough_to_o', 'Some pathogens evolve fast enough to outrun memory (flu changes the H + N proteins annually - antigenic drift). Some hide inside cells where antibodies can\'t reach (HIV in T cells, herpes in nerves). Some actively destroy the memory itself (measles causes "immune amnesia," erasing immune memory of prior infections for 2-3 years). Vaccination + post-exposure prophylaxis are how we manage each of these.')
               )
@@ -3841,7 +3880,7 @@
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, __alloT('stem.microbiology.the_fast_general_defense_skin_mucus_st', 'The fast, general defense. Skin, mucus, stomach acid, macrophages, neutrophils, natural killer cells. Acts within minutes to hours. Same response to any pathogen - no specific memory.'))
                 ),
                 h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#6ee7b7', marginBottom: 4 } }, __alloT('stem.microbiology.adaptive_immunity', 'Adaptive immunity')),
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: microAccentText('#6ee7b7'), marginBottom: 4 } }, __alloT('stem.microbiology.adaptive_immunity', 'Adaptive immunity')),
                   h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, __alloT('stem.microbiology.the_slow_specific_defense_b_cells_make', 'The slow, specific defense. B cells (make antibodies) and T cells (kill infected cells + coordinate). Takes days the first time, but creates MEMORY cells that respond in hours on re-exposure. The basis of vaccination.'))
                 )
               )
@@ -3865,19 +3904,19 @@
           sectionCard('🧬 CAR-T cell therapy - using immunity to cure cancer',
             (function() {
               var STEPS = [
-                { id: 'collect', name: __alloT('stem.microbiology.1_collect_t_cells', '1. Collect T cells'), color: '#0ea5e9',
+                { id: 'collect', name: __alloT('stem.microbiology.1_collect_t_cells', '1. Collect T cells'), color: microAccentText('#0ea5e9'),
                   what: 'Blood is drawn from the patient. Using apheresis (similar to platelet donation), T cells are separated + frozen. The rest of the blood goes back to the patient.',
                   detail: __alloT('stem.microbiology.most_car_t_treatments_are_autologous_t', 'Most CAR-T treatments are AUTOLOGOUS - the patient\'s own cells are used. This avoids immune rejection but is slow + expensive. ALLOGENEIC CAR-T (cells from a healthy donor, available off-the-shelf) is in development.')
                 },
-                { id: 'engineer', name: __alloT('stem.microbiology.2_engineer_the_cells', '2. Engineer the cells'), color: '#a855f7',
+                { id: 'engineer', name: __alloT('stem.microbiology.2_engineer_the_cells', '2. Engineer the cells'), color: microAccentText('#a855f7'),
                   what: 'T cells are sent to a manufacturing facility. A disabled virus (lentivirus or retrovirus) delivers a custom GENE for a Chimeric Antigen Receptor (CAR) - a synthetic protein with two parts: an outside region that binds a cancer-specific antigen, and an inside region that activates the T cell.',
                   detail: __alloT('stem.microbiology.for_b_cell_cancers_leukemia_lymphoma_c', 'For B-cell cancers (leukemia, lymphoma), CAR-T cells target CD19 - a protein on the surface of all B cells. The CAR-T cells will destroy both cancerous AND healthy B cells, which is acceptable because B cell loss is manageable with IV immunoglobulin.')
                 },
-                { id: 'expand', name: __alloT('stem.microbiology.3_expand_to_billions', '3. Expand to billions'), color: '#22c55e',
+                { id: 'expand', name: __alloT('stem.microbiology.3_expand_to_billions', '3. Expand to billions'), color: microAccentText('#22c55e'),
                   what: 'The engineered T cells multiply in culture for 10-21 days, producing hundreds of millions to billions of cells.',
                   detail: __alloT('stem.microbiology.manufacturing_must_be_tightly_controll', 'Manufacturing must be tightly controlled - each patient\'s cells are a unique product. Yields vary; some patients\' cells expand poorly, sometimes requiring a second collection.')
                 },
-                { id: 'infuse', name: __alloT('stem.microbiology.4_infuse_back_into_the_patient', '4. Infuse back into the patient'), color: '#fbbf24',
+                { id: 'infuse', name: __alloT('stem.microbiology.4_infuse_back_into_the_patient', '4. Infuse back into the patient'), color: microAccentText('#fbbf24'),
                   what: 'After a brief lymphodepleting chemotherapy (3-5 days, to make immune space for the new cells), the CAR-T cells are infused back into the patient through an IV line. Total infusion takes about an hour.',
                   detail: __alloT('stem.microbiology.once_inside_the_car_t_cells_circulate_', 'Once inside, the CAR-T cells circulate, find cancer cells expressing the target antigen, bind to them, kill them, and reproduce. A single dose can lead to weeks-to-months of cancer-killing activity.')
                 },
@@ -3885,7 +3924,7 @@
                   what: 'For 2-4 weeks, the patient is monitored in or near the hospital. The main side effects are CYTOKINE RELEASE SYNDROME (CRS) - a flu-like to life-threatening immune response from the rapid cell killing - and NEUROTOXICITY (ICANS).',
                   detail: __alloT('stem.microbiology.crs_is_managed_with_tocilizumab_anti_i', 'CRS is managed with tocilizumab (anti-IL-6) + steroids. Most patients have manageable CRS; severe CRS occurs in ~10-30% + can be fatal. ICANS (confusion, seizures) responds to steroids.')
                 },
-                { id: 'outcome', name: __alloT('stem.microbiology.6_the_outcome', '6. The outcome'), color: '#86efac',
+                { id: 'outcome', name: __alloT('stem.microbiology.6_the_outcome', '6. The outcome'), color: microAccentText('#86efac'),
                   what: 'In B-cell lymphoma + leukemia, ~50% of patients who had run out of all other options achieve durable remission - many still cancer-free after 5+ years. A single infusion is the entire treatment.',
                   detail: __alloT('stem.microbiology.currently_fda_approved_car_t_products_', 'Currently FDA-approved CAR-T products: Kymriah (2017, first), Yescarta, Tecartus, Breyanzi, Carvykti (multiple myeloma), Abecma. Cost is $300,000-$500,000+ per dose. Solid tumors (breast, lung, etc.) remain much harder - fewer obvious tumor-specific antigens + the tumor microenvironment suppresses T cells.')
                 }
@@ -3907,20 +3946,20 @@
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_happens_2', 'What happens')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_happens_2', 'What happens')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.detail', 'Detail')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.detail', 'Detail')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.detail)
                   )
                 ),
 
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.emily_whitehead_the_first_car_t_patien', 'Emily Whitehead - the first CAR-T patient: ')),
                   __alloT('stem.microbiology.in_2012_6_year_old_emily_whitehead_was', 'In 2012, 6-year-old Emily Whitehead was dying of acute lymphoblastic leukemia. She had already failed every standard treatment. Her family enrolled her in Penn\'s experimental CAR-T trial. After a near-fatal CRS reaction (which they treated with tocilizumab - the FIRST time it was used for CRS), Emily achieved remission. As of 2024, she is in her late teens + remains cancer-free over a decade later. Her case made the field credible + led to the 2017 Kymriah approval.')
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_honest_challenges', 'The honest challenges: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.65 } },
                     h('li', null, h('strong', null, 'Cost: '), __alloT('stem.microbiology.300_000_500_000_per_dose_plus_100k_for', '$300,000-$500,000+ per dose, plus ~$100K for hospital + side-effect management. Total can exceed $1M. Insurance + Medicare coverage exists but access is limited globally.')),
@@ -3938,28 +3977,28 @@
             (function() {
               var HSENS = [
                 {
-                  type: 'Type I (Immediate hypersensitivity)', color: '#ef4444',
+                  type: 'Type I (Immediate hypersensitivity)', color: microAccentText('#ef4444'),
                   who: '~30% of Americans (allergies + asthma).',
                   mech: 'IgE antibodies bind innocuous antigens (peanut protein, cat dander, pollen). On re-exposure, IgE on mast cells triggers massive histamine release within minutes. Vasodilation, smooth muscle contraction, mucus production.',
                   examples: 'Hay fever, asthma, food allergies, allergic rhinitis, anaphylaxis (potentially fatal - epinephrine reverses it).',
                   treat: 'Avoidance of the trigger. Antihistamines (block histamine receptors). Inhaled corticosteroids for asthma. Oral immunotherapy + allergen desensitization (build up tolerance). Epinephrine auto-injectors for anaphylaxis. Biologics (omalizumab) for severe asthma + chronic hives.'
                 },
                 {
-                  type: 'Type II (Antibody-mediated)', color: '#f59e0b',
+                  type: 'Type II (Antibody-mediated)', color: microAccentText('#f59e0b'),
                   who: 'Specific autoimmune diseases + transfusion reactions.',
                   mech: 'IgG or IgM antibodies bind to antigens on the surface of cells, marking them for destruction by complement or NK cells. The cell itself becomes the target.',
                   examples: 'Autoimmune hemolytic anemia (RBCs destroyed), Graves disease (antibody activates thyroid → hyperthyroid), myasthenia gravis (antibodies block acetylcholine receptors at neuromuscular junction → muscle weakness), Rh hemolytic disease of the newborn.',
                   treat: 'Immunosuppression. Plasmapheresis (filter out the bad antibodies). Beta-blockers for Graves. Acetylcholinesterase inhibitors for myasthenia. Anti-D immunoglobulin during pregnancy for Rh prevention.'
                 },
                 {
-                  type: 'Type III (Immune complex)', color: '#a855f7',
+                  type: 'Type III (Immune complex)', color: microAccentText('#a855f7'),
                   who: 'Several autoimmune + drug reactions.',
                   mech: 'Antibody-antigen complexes form in the blood + deposit in small blood vessels (especially kidneys, joints, skin). Complement activation at the deposition site causes inflammation + tissue damage.',
                   examples: 'Systemic lupus erythematosus (SLE) - antibodies against your own DNA + nuclear proteins form complexes that lodge in kidneys, skin, joints. Rheumatoid arthritis. Serum sickness. Post-streptococcal glomerulonephritis.',
                   treat: 'Immunosuppression (steroids, methotrexate, biologics like rituximab + belimumab). Specific organ support (dialysis, joint care). Lifestyle modifications. Biologic therapies have transformed lupus + RA outcomes in the last 20 years.'
                 },
                 {
-                  type: 'Type IV (Delayed, T-cell-mediated)', color: '#22c55e',
+                  type: 'Type IV (Delayed, T-cell-mediated)', color: microAccentText('#22c55e'),
                   who: 'Many autoimmune diseases + delayed allergic reactions.',
                   mech: 'T cells (specifically Th1 + CD8+ cytotoxic) react against an antigen - host or environmental. Reaction develops over 24-72 hours (slower than antibody-driven). No antibody involvement.',
                   examples: 'Contact dermatitis (poison ivy, nickel allergy). Type 1 diabetes (T cells destroy pancreatic beta cells). Multiple sclerosis (T cells attack myelin in CNS). Rheumatoid arthritis (mixed Type III + IV). Tuberculin skin test positive reaction. Transplant rejection.',
@@ -3986,27 +4025,27 @@
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + selT.color } },
                   h('div', { style: { fontSize: 15, fontWeight: 800, color: selT.color, marginBottom: 8 } }, selT.type),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_common', 'How common')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.how_common', 'How common')),
                     h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.who)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(168,85,247,0.08)', borderLeft: '3px solid #a855f7', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#d8b4fe', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.mechanism', 'Mechanism')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#d8b4fe'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.mechanism', 'Mechanism')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.mech)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples_2', 'Examples')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.examples_2', 'Examples')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.examples)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(34,197,94,0.08)', borderLeft: '3px solid #22c55e' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.treatment_approach', 'Treatment approach')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#86efac'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.treatment_approach', 'Treatment approach')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, selT.treat)
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.10)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_hygiene_hypothesis_and_what_replac', 'The hygiene hypothesis (and what replaced it): ')),
                   __alloT('stem.microbiology.allergies_autoimmune_diseases_have_ris', 'Allergies + autoimmune diseases have risen dramatically in industrialized countries over the last 50-70 years. The "hygiene hypothesis" (Strachan 1989) proposed that less infection exposure in childhood under-trains the immune system. The current refinement is broader: the "OLD FRIENDS" hypothesis (Rook 2003) and microbiome research suggest that loss of biodiversity in our microbial exposures - soil microbes, helminths, commensal bacteria from natural birth + breastfeeding + farm life - leaves the immune system poorly calibrated. Not "too clean," but "missing key training partners." Many ongoing studies look at probiotic + helminth therapies for autoimmune conditions.')
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: microAccentText('#fecaca'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.why_women_are_more_susceptible', 'Why women are more susceptible: ')),
                   __alloT('stem.microbiology.most_autoimmune_diseases_hit_women_2_1', 'Most autoimmune diseases hit women 2-10× more than men (lupus 9:1, MS 3:1, RA 2-3:1, Hashimoto thyroiditis 7:1). The XX chromosome dose, estrogen effects on the immune system, microchimerism from pregnancy, and X-linked gene inactivation patterns all contribute. Active research area; not fully understood.')
                 )
@@ -4061,10 +4100,10 @@
                   ];
                   return h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11, minWidth: 720 } },
                     h('thead', null, h('tr', null,
-                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800 } }, __alloT('stem.microbiology.vaccine', 'Vaccine')),
-                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 160 } }, __alloT('stem.microbiology.disease', 'Disease')),
+                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: microAccentText('#6ee7b7'), borderBottom: '2px solid ' + EMERALD, fontWeight: 800 } }, __alloT('stem.microbiology.vaccine', 'Vaccine')),
+                      h('th', { scope: 'col', style: { padding: 6, textAlign: 'left', background: '#0a0e1a', color: microAccentText('#6ee7b7'), borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 160 } }, __alloT('stem.microbiology.disease', 'Disease')),
                       ages.map(function(a, i) {
-                        return h('th', { key: i, scope: 'col', style: { padding: 6, textAlign: 'center', background: '#0a0e1a', color: '#6ee7b7', borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 56 } }, a);
+                        return h('th', { key: i, scope: 'col', style: { padding: 6, textAlign: 'center', background: '#0a0e1a', color: microAccentText('#6ee7b7'), borderBottom: '2px solid ' + EMERALD, fontWeight: 800, minWidth: 56 } }, a);
                       })
                     )),
                     h('tbody', null,
@@ -4084,11 +4123,11 @@
                 })()
               ),
               h('div', { style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6 } },
-                h('span', { style: { color: '#6ee7b7', fontWeight: 800 } }, '●'), __alloT('stem.microbiology.standard_dose', ' = standard dose · '),
-                h('span', { style: { color: '#c4b5fd', fontWeight: 800 } }, '○'), __alloT('stem.microbiology.recommended_by_shared_decision_risk_ba', ' = recommended by shared decision / risk-based')
+                h('span', { style: { color: microAccentText('#6ee7b7'), fontWeight: 800 } }, '●'), __alloT('stem.microbiology.standard_dose', ' = standard dose · '),
+                h('span', { style: { color: microAccentText('#c4b5fd'), fontWeight: 800 } }, '○'), __alloT('stem.microbiology.recommended_by_shared_decision_risk_ba', ' = recommended by shared decision / risk-based')
               ),
 
-              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: '#a7f3d0', lineHeight: 1.6 } },
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.3)', fontSize: 12, color: microAccentText('#a7f3d0'), lineHeight: 1.6 } },
                 h('strong', null, __alloT('stem.microbiology.why_so_many_in_the_first_2_years', 'Why so many in the first 2 years? ')),
                 __alloT('stem.microbiology.the_infant_immune_system_is_still_lear', 'The infant immune system is still learning what is dangerous + what is not. The diseases on this schedule were once major killers of children: pertussis (whooping cough), Hib meningitis, measles, polio. Spacing the doses follows the immune system\'s development. Multiple antigens in the same shot (DTaP, MMR, PCV) is well-tolerated - the immune system encounters thousands of antigens daily from microbes everywhere; vaccines add a tiny calibrated set.')
               ),
@@ -4157,13 +4196,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(14,165,233,0.08)', border: '1px solid rgba(14,165,233,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#7dd3fc', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#7dd3fc'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_7', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_access_question', 'The access question: ')),
                   __alloT('stem.microbiology.mabs_are_extraordinarily_effective_for', 'mAbs are extraordinarily effective for many patients + extraordinarily expensive. List prices of $5,000-$500,000+ per year of treatment are common. Insurance coverage in the US is uneven + patient cost-share can still be unaffordable. Globally, most patients with diseases mAbs could treat cannot access them at all. Biosimilars + tiered pricing in lower-income countries help slowly. School psychologists working with families navigating these treatments may need to help with prior-authorization paperwork, copay-assistance programs, + the emotional reality of a family-bankrupting-but-life-saving drug.')
                 )
@@ -4226,13 +4265,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(236,72,153,0.08)', border: '1px solid rgba(236,72,153,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#f9a8d4', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#f9a8d4'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_8', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: microAccentText('#dcfce7'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.for_school_psychologists_counselors', 'For school psychologists + counselors: ')),
                   __alloT('stem.microbiology.vaccine_conversations_with_families_be', 'Vaccine conversations with families benefit from speaking specifics rather than generalities. Knowing what mRNA is, how it differs from older vaccine technologies, what real (not imagined) adverse events look like, how the technology was developed + by whom, and where the genuine uncertainties lie - all of these support honest conversations that respect both science + family decision-making. Dismissing vaccine concerns rarely changes minds; engaging the substance often does.')
                 )
@@ -4295,13 +4334,13 @@
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(6,182,212,0.08)', border: '1px solid rgba(6,182,212,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#67e8f9', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#67e8f9'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_9', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.school_considerations', 'School considerations: ')),
                   __alloT('stem.microbiology.school_policies_often_address_food_all', 'School policies often address food allergies (peanut-free zones, EpiPen training, lunch protocols) + asthma management (inhaler access, recess + PE accommodations) + eczema (sunscreen + lotion use). These conditions affect ~ 10-25% of students across categories. Schools that handle them well: clear written plans, trained school nurses, family-school-clinic communication, accessible epinephrine. Schools that handle them poorly: outdated information, single-event focus rather than systematic accommodation, family anxiety. School psychologists + counselors are often the trusted bridge between clinical + school systems for these students.')
                 )
@@ -4332,14 +4371,14 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)' } },
-            h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.name),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#6ee7b7'), fontSize: 18 } }, selected.name),
             h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 10, fontStyle: 'italic' } }, 'Cultures: ' + selected.cultures),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'var(--allo-stem-canvas, #0f172a)', borderLeft: '3px solid ' + EMERALD, marginBottom: 8 } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.how_it_works_4', 'How it works')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#6ee7b7'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.how_it_works_4', 'How it works')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.how)
             ),
             h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(56,189,248,0.10)', borderLeft: '3px solid #38bdf8' } },
-              h('div', { style: { fontSize: 11, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.the_story', 'The story')),
+              h('div', { style: { fontSize: 11, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 } }, __alloT('stem.microbiology.the_story', 'The story')),
               h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.65 } }, selected.story)
             )
           )
@@ -4366,31 +4405,31 @@
             })
           ),
           h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-panel, #1e293b)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + EMERALD } },
-            h('h3', { style: { margin: '0 0 4px', color: '#6ee7b7', fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
+            h('h3', { style: { margin: '0 0 4px', color: microAccentText('#6ee7b7'), fontSize: 18 } }, selected.icon + ' ' + selected.name + ' (' + selected.year + ')'),
             infoBlock('What happened', selected.what, '#94a3b8'),
             infoBlock('Why it mattered', selected.why, EMERALD),
             infoBlock('Lesson', selected.lesson, '#f59e0b')
           ),
 
           // Interactive Snow's cholera map appears when the Snow case is selected
-          d.selectedCase === 'snow' ? h('div', { style: { marginTop: 12 } }, h(SnowCholeraMap, { awardXP: awardXP })) : null,
+          d.selectedCase === 'snow' ? h('div', { style: { marginTop: 12 } }, h(SnowCholeraMap, { awardXP: awardXP, isDark: microbiologyDark })) : null,
 
           sectionCard('🌐 One Health + pandemic preparedness',
             (function() {
               var PILLARS = [
-                { id: 'animal', name: __alloT('stem.microbiology.animal_health', 'Animal health'), color: '#fbbf24',
+                { id: 'animal', name: __alloT('stem.microbiology.animal_health', 'Animal health'), color: microAccentText('#fbbf24'),
                   what: 'Veterinary medicine, wildlife biology, livestock husbandry. 70-75% of emerging human pathogens come from animals (zoonotic spillover). Surveillance of animal populations is early warning for human disease.',
                   example: 'PREDICT project (USAID, 2009-2019) surveyed ~140,000 animals + identified ~1,200 new viruses. Avian flu monitoring in poultry + wild birds. Maine\'s Cooperative Wildlife Disease Center monitors deer for chronic wasting disease + tick-borne pathogens.'
                 },
-                { id: 'human', name: __alloT('stem.microbiology.human_health', 'Human health'), color: '#0ea5e9',
+                { id: 'human', name: __alloT('stem.microbiology.human_health', 'Human health'), color: microAccentText('#0ea5e9'),
                   what: 'Clinical medicine, public health, epidemiology, hospital infection control. The traditional "health" focus - but increasingly recognized as only one pillar.',
                   example: 'Sequencing of every COVID variant within days of emergence. Wastewater epidemiology (used widely during COVID + now for polio, RSV, mpox surveillance). The CDC + state public health labs as the front line.'
                 },
-                { id: 'env', name: __alloT('stem.microbiology.environmental_health', 'Environmental health'), color: '#22c55e',
+                { id: 'env', name: __alloT('stem.microbiology.environmental_health', 'Environmental health'), color: microAccentText('#22c55e'),
                   what: 'Ecosystem health, biodiversity, climate, water quality, soil quality, urban planning. Habitat disruption + climate change drive spillover events; biodiverse + healthy ecosystems are buffer zones.',
                   example: 'Forest fragmentation + roads bring humans into closer contact with wildlife. The Nipah virus outbreaks in Malaysia (1998-99) followed deforestation that drove fruit bats into pig farms; pigs then infected humans. Climate change is expanding tick + mosquito ranges (Maine has seen this).'
                 },
-                { id: 'food', name: __alloT('stem.microbiology.food_water_systems', 'Food + water systems'), color: '#a855f7',
+                { id: 'food', name: __alloT('stem.microbiology.food_water_systems', 'Food + water systems'), color: microAccentText('#a855f7'),
                   what: 'Agricultural practices, food processing, water treatment. Industrial animal agriculture + global food supply chains can amplify + spread pathogens; sustainable food systems can buffer against this.',
                   example: 'Antibiotic use in livestock accelerates resistance (50%+ of US antibiotic use is agricultural). Concentrated animal feeding operations (CAFOs) are pandemic risk amplifiers. Aquaculture biosecurity. The 2011 German E. coli O104:H4 outbreak from sprouts killed 53.'
                 }
@@ -4412,16 +4451,16 @@
                 h('div', { style: { padding: 14, borderRadius: 12, background: 'var(--allo-stem-canvas, #0f172a)', borderTop: '1px solid var(--allo-stem-border, #334155)', borderRight: '1px solid var(--allo-stem-border, #334155)', borderBottom: '1px solid var(--allo-stem-border, #334155)', borderLeft: '3px solid ' + sel.color } },
                   h('div', { style: { fontSize: 14, fontWeight: 800, color: sel.color, marginBottom: 8 } }, sel.name),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(56,189,248,0.08)', borderLeft: '3px solid #38bdf8', marginBottom: 8 } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_it_covers', 'What it covers')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#7dd3fc'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.what_it_covers', 'What it covers')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.what)
                   ),
                   h('div', { style: { padding: 8, borderRadius: 6, background: 'rgba(245,158,11,0.08)', borderLeft: '3px solid #f59e0b' } },
-                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.real_world_example_2', 'Real-world example')),
+                    h('div', { style: { fontSize: 10.5, fontWeight: 800, color: microAccentText('#fbbf24'), textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 2 } }, __alloT('stem.microbiology.real_world_example_2', 'Real-world example')),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6 } }, sel.example)
                   )
                 ),
 
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: '#e9d5ff', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.10)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 12, color: microAccentText('#e9d5ff'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.pandemic_preparedness_what_works', 'Pandemic preparedness - what works: ')),
                   h('ul', { style: { margin: '6px 0 0 22px', padding: 0, lineHeight: 1.7 } },
                     h('li', null, h('strong', null, __alloT('stem.microbiology.global_surveillance', 'Global surveillance: ')), __alloT('stem.microbiology.who_global_outbreak_alert_response_net', 'WHO Global Outbreak Alert + Response Network (GOARN); CDC Global Disease Detection Centers; the Wildlife Conservation Society\'s One Health monitoring. Most pandemics are caught in the first weeks → can be contained if local response is fast.')),
@@ -4432,7 +4471,7 @@
                     h('li', null, h('strong', null, __alloT('stem.microbiology.honest_political_will', 'Honest political will: ')), __alloT('stem.microbiology.no_technical_solution_overcomes_politi', 'No technical solution overcomes politicization of public health. The 2024 WHO Pandemic Treaty negotiations stalled on equity issues + national sovereignty concerns; these conversations are unfinished business.'))
                   )
                 ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: '#fecaca', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.10)', border: '1px solid rgba(220,38,38,0.3)', fontSize: 12, color: microAccentText('#fecaca'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.the_next_pandemic', 'The next pandemic: ')),
                   __alloT('stem.microbiology.epidemiologists_do_not_know_whether_it', 'Epidemiologists do NOT know whether it will be influenza, coronavirus, paramyxovirus, filovirus, or something not yet known. They DO know the conditions: more frequent spillovers (3-4× more documented zoonoses now vs 50 years ago) + globalized travel + denser cities + climate-driven habitat shifts + lower vaccination + accelerating antibiotic resistance. Preparedness investment looks expensive until you compare it to the COVID-19 cost (~$16 trillion globally + 7+ million direct deaths + many millions more indirect).')
                 )
@@ -4490,18 +4529,18 @@
                     return h('button', {
                       key: t.id,
                       onClick: function() { upd({ selectedForensics: t.id }); },
-                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#dc2626' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #dc2626' : '1px solid #334155' }
+                      style: { padding: '6px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#dc2626' : '#1e293b', color: on ? '#ffffff' : '#e2e8f0', border: on ? '2px solid #dc2626' : '1px solid #334155' }
                     }, t.emoji + ' ' + t.name);
                   })
                 ),
                 h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(220,38,38,0.08)', border: '1px solid rgba(220,38,38,0.35)' } },
-                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: '#fca5a5', marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
+                  h('div', { style: { fontSize: 13.5, fontWeight: 700, color: microAccentText('#fca5a5'), marginBottom: 6 } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
                   h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.microbiology.honest_framing_10', 'Honest framing: ')), topic.caveat
                   )
                 ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: '#c7d2fe', lineHeight: 1.65 } },
+                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 11.5, color: microAccentText('#c7d2fe'), lineHeight: 1.65 } },
                   h('strong', null, __alloT('stem.microbiology.for_students_considering_this_field', 'For students considering this field: ')),
                   __alloT('stem.microbiology.microbial_forensics_careers_combine_mo', 'Microbial forensics careers combine molecular biology + bioinformatics + public health + sometimes criminal-justice work. Training paths: bachelor\'s in microbiology / biochemistry / public health → graduate work in epidemiology or computational biology → PhD or MPH for research roles, or join state public health labs / CDC / FBI labs / Department of Defense USAMRIID / Lawrence Livermore National Laboratory. The work matters + the field needs more practitioners. For Maine students: UMaine\'s School of Biology + Ecology + the Jackson Laboratory + Bigelow Lab all have research connections.')
                 )
@@ -4586,7 +4625,7 @@
           h('p', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 13, marginBottom: 12 } }, QUIZ_QUESTIONS.length + ' questions on bacteria, viruses, vaccines, antibiotic resistance, microbiome, and history.'),
           QUIZ_QUESTIONS.map(function(q, i) {
             return h('div', { key: i, style: { padding: 12, borderRadius: 10, background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: '#6ee7b7' } }, 'Q' + (i + 1) + '. '), q.q),
+              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, lineHeight: 1.55 } }, h('strong', { style: { color: microAccentText('#6ee7b7') } }, 'Q' + (i + 1) + '. '), q.q),
               q.choices.map(function(c, ci) {
                 var picked = answers[i] === ci;
                 return h('button', { key: ci,
@@ -4606,7 +4645,7 @@
       // PRINT
       function renderPrint() {
         return h('div', { style: { padding: 16 } },
-          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.4)', borderRight: '1px solid rgba(16,185,129,0.4)', borderBottom: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid ' + EMERALD, marginBottom: 12, fontSize: 12.5, color: '#a7f3d0', lineHeight: 1.65 } },
+          h('div', { className: 'no-print', style: { padding: 12, borderRadius: 10, background: 'rgba(16,185,129,0.10)', borderTop: '1px solid rgba(16,185,129,0.4)', borderRight: '1px solid rgba(16,185,129,0.4)', borderBottom: '1px solid rgba(16,185,129,0.4)', borderLeft: '3px solid ' + EMERALD, marginBottom: 12, fontSize: 12.5, color: microAccentText('#a7f3d0'), lineHeight: 1.65 } },
             h('strong', null, __alloT('stem.microbiology.microbiology_lab_reference', '🖨 Microbiology lab reference. ')),
             __alloT('stem.microbiology.a_one_page_take_along_lab_safety_bsl_l', 'A one-page take-along: lab safety (BSL levels, handling), bacteria/virus reference, antibiotic stewardship checklist, and the microbiome do/don\'t list.')
           ),
@@ -4739,14 +4778,14 @@
           else state = 'optimal';
           var sm = {
             noGrowth: { label: __alloT('stem.microbiology.no_growth', 'No growth predicted'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.45)', desc: 'One or more conditions fall outside this profile\'s teaching envelope.' },
-            slow:     { label: __alloT('stem.microbiology.slow_growth', 'Slow growth predicted'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.45)', desc: 'Conditions are tolerated, but at least one is far from the profile optimum.' },
-            normal:   { label: __alloT('stem.microbiology.healthy_growth', 'Strong growth predicted'), color: '#34d399', bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.45)', desc: 'The selected conditions fit most of this organism profile\'s envelope.' },
-            optimal:  { label: __alloT('stem.microbiology.optimal_growth', 'Near-optimum growth predicted'), color: '#a78bfa', bg: 'rgba(167,139,250,0.14)', border: 'rgba(167,139,250,0.5)', desc: 'Temperature, pH, and oxygen are all near this profile\'s modeled optimum.' }
+            slow:     { label: __alloT('stem.microbiology.slow_growth', 'Slow growth predicted'), color: microAccentText('#fbbf24'), bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.45)', desc: 'Conditions are tolerated, but at least one is far from the profile optimum.' },
+            normal:   { label: __alloT('stem.microbiology.healthy_growth', 'Strong growth predicted'), color: microAccentText('#34d399'), bg: 'rgba(52,211,153,0.12)', border: 'rgba(52,211,153,0.45)', desc: 'The selected conditions fit most of this organism profile\'s envelope.' },
+            optimal:  { label: __alloT('stem.microbiology.optimal_growth', 'Near-optimum growth predicted'), color: microAccentText('#a78bfa'), bg: 'rgba(167,139,250,0.14)', border: 'rgba(167,139,250,0.5)', desc: 'Temperature, pH, and oxygen are all near this profile\'s modeled optimum.' }
           }[state];
           var H = React.createElement;
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
             H('div', { style: { padding: 16, background: '#0f172a', borderRadius: 10, color: '#e2e8f0', border: '1px solid #34d399' } },
-              H('h3', { style: { fontSize: 14, fontWeight: 800, color: '#34d399', margin: '0 0 6px 0' } }, 'Microbial growth discovery'),
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: microAccentText('#34d399'), margin: '0 0 6px 0' } }, 'Microbial growth discovery'),
               H('p', { style: { fontSize: 12, color: '#cbd5e1', margin: '0 0 12px' } }, 'Compare organism-specific teaching profiles. Oxygen can help, be tolerated, or prevent growth depending on metabolism.'),
               H('label', { htmlFor: 'gl-profile', style: { display: 'grid', gap: 4, marginBottom: 10, fontSize: 11, fontWeight: 700, color: '#cbd5e1' } },
                 H('span', null, 'Organism profile'),
@@ -4786,7 +4825,7 @@
                  { k: 'pH', l: 'pH', unit: '', mn: 3, mx: 10, st: 0.1 },
                  { k: 'oxygen', l: 'Oxygen', unit: '%', mn: 0, mx: 100, st: 5 }].map(function(s) {
                   return H('label', { key: s.k, htmlFor: 'gl-' + s.k, style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700, color: '#cbd5e1' } },
-                    H('span', null, s.l + ': ', H('span', { style: { color: '#34d399', fontFamily: 'monospace' } }, iq[s.k] + s.unit)),
+                    H('span', null, s.l + ': ', H('span', { style: { color: microAccentText('#34d399'), fontFamily: 'monospace' } }, iq[s.k] + s.unit)),
                     H('input', {
                       id: 'gl-' + s.k,
                       type: 'range',
@@ -4838,7 +4877,7 @@
               !iq.stuckRevealed && H('button', {
                 type: 'button',
                 onClick: function() { setIQ({ stuckRevealed: true }); },
-                style: { padding: '6px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8 }
+                style: { padding: '6px 10px', background: 'rgba(251,191,36,0.15)', color: microAccentText('#fbbf24'), border: '1px solid rgba(251,191,36,0.5)', borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer', marginBottom: 8 }
               }, 'Show investigation prompts'),
               iq.stuckRevealed && H('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 6, fontSize: 11, color: '#cbd5e1', marginBottom: 8 } },
                 H('ul', { style: { margin: 0, paddingLeft: 18 } },
@@ -4847,7 +4886,7 @@
                   H('li', null, 'Move one variable just beyond the profile envelope. Which boundary is sharpest?')
                 )
               ),
-              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: '#34d399', cursor: 'pointer' } },
+              H('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 700, color: microAccentText('#34d399'), cursor: 'pointer' } },
                 H('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                 H('span', null, 'I can explain this organism\'s growth envelope')
               ),
@@ -4867,7 +4906,7 @@
         })(); break;        default:           body = renderHome();
       }
 
-      return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
+      return h('div', { className: 'selh-microbiology', 'data-microbiology-tool': 'true', style: { display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto', background: BG, color: 'var(--allo-stem-text, #e2e8f0)' } },
         h('style', null,
           '.micro-focus-panel { position: relative; overflow: hidden; margin: 12px 16px 10px; padding: 14px; border-radius: 8px; border: 1px solid rgba(16,185,129,0.30); background: linear-gradient(135deg, rgba(6,78,59,0.84), rgba(8,47,73,0.90) 55%, rgba(15,23,42,0.96)); box-shadow: 0 18px 42px rgba(2,8,23,0.28); }\n' +
           '.micro-focus-panel::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: linear-gradient(90deg, #10b981, #38bdf8, #f59e0b, #a78bfa); }\n' +
@@ -4894,7 +4933,7 @@
           '.micro-scope-cross::after { content: ""; position: absolute; left: 50%; top: -45px; width: 1px; height: 90px; background: rgba(125,211,252,0.18); }\n' +
           '.micro-scope-cell { position: absolute; display: block; border-radius: 999px; background: #6ee7b7; border: 1px solid rgba(2,6,23,0.55); box-shadow: 0 0 14px rgba(110,231,183,0.34); }\n' +
           '.micro-library-toggle { width: 100%; margin-top: 8px; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(110,231,183,0.32); background: rgba(16,185,129,0.10); color: #a7f3d0; font-size: 11px; font-weight: 900; cursor: pointer; }\n' +
-          '@media (max-width: 760px) { .micro-focus-grid { grid-template-columns: 1fr; } .micro-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n' +
+          '@media (max-width: 760px) { .micro-focus-grid { grid-template-columns: 1fr; } .micro-status-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .micro-content-region { flex: none !important; overflow: visible !important; } }\n' +
           '.micro-tab-list { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 16px; border-bottom: 1px solid rgba(30, 41, 59, 0.5); flex-shrink: 0; background: rgba(10, 14, 26, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }\n' +
           '.micro-tab-list::-webkit-scrollbar { display: none; }\n' +
           '.micro-tab-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: transparent; color: #94a3b8; font-weight: 500; font-size: 13px; cursor: pointer; white-space: nowrap; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 6px; position: relative; }\n' +
@@ -4927,7 +4966,7 @@
         h('div', { style: { padding: '12px 16px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', background: 'linear-gradient(135deg, #064e3b, var(--allo-stem-canvas, #0f172a))', display: 'flex', alignItems: 'center', gap: 12 } },
           h('div', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, '🦠'),
           h('div', null,
-            h('h2', { style: { margin: 0, color: '#6ee7b7', fontSize: 20, fontWeight: 900 } }, __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
+            h('h2', { style: { margin: 0, color: microAccentText('#6ee7b7'), fontSize: 20, fontWeight: 900 } }, __alloT('stem.microbiology.microbiology_lab', 'Microbiology Lab')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } }, __alloT('stem.microbiology.ngss_ms_ls1_hs_ls1_hs_ls3_hs_ls4_2', 'NGSS MS-LS1 · HS-LS1 · HS-LS3 · HS-LS4'))
           )
         ),
@@ -4982,7 +5021,7 @@
           )
         ),
         tabBar,
-        h('section', { role: 'region', 'aria-label': currentMicroTab.label, style: { flex: 1, overflow: 'auto', minWidth: 0 } }, body)
+        h('section', { role: 'region', className: 'micro-content-region', 'aria-label': currentMicroTab.label + ' content', style: { flex: 1, overflow: 'auto', minWidth: 0 } }, body)
       );
     }
   });

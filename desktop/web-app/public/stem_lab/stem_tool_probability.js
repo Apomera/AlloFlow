@@ -254,12 +254,31 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  function probabilityRollDicePair(sides, randomA, randomB) {
+    var numericSides = Number(sides);
+    var normalizedSides = Number.isFinite(numericSides) ? Math.max(2, Math.floor(numericSides)) : 6;
+    function faceFromRandom(randomValue) {
+      var numericRandom = Number(randomValue);
+      if (!Number.isFinite(numericRandom)) numericRandom = 0;
+      numericRandom = Math.max(0, Math.min(1 - Number.EPSILON, numericRandom));
+      return Math.floor(numericRandom * normalizedSides) + 1;
+    }
+    var first = faceFromRandom(randomA);
+    var second = faceFromRandom(randomB);
+    return { first: first, second: second, sum: first + second };
+  }
+
   function probabilityResetPatch() {
     return {
       results: [], trials: 0, convergenceHistory: [], lastResult: null,
-      _mbRemaining: null, _piPoints: [], _autoRunning: false, _bestStreak: 0
+      _mbRemaining: null, _piPoints: [], _piTotal: 0, _piInside: 0,
+      _lastPair: null, animTick: 0, _mbShaking: false,
+      _autoRunning: false, _piSlowRunning: false, galtonFalling: [],
+      _aiExplanation: null, _aiLoading: false, _bestStreak: 0
     };
   }
+
+  var PROBABILITY_AUTO_TRIAL_LIMIT = 10000;
 
   window.__ProbabilityCore = Object.assign({}, window.__ProbabilityCore || {}, {
     marbleOutcomes: probabilityMarbleOutcomes,
@@ -269,7 +288,9 @@ window.StemLab = window.StemLab || {
     withoutReplacementTree: probabilityWithoutReplacementTree,
     prepareCustomOutcomes: probabilityPrepareCustomOutcomes,
     wilsonInterval: probabilityWilsonInterval,
-    resetPatch: probabilityResetPatch
+    rollDicePair: probabilityRollDicePair,
+    resetPatch: probabilityResetPatch,
+    autoTrialLimit: PROBABILITY_AUTO_TRIAL_LIMIT
   });
 
   // Module-level: persists across React renders without causing re-render
@@ -277,6 +298,15 @@ window.StemLab = window.StemLab || {
   var _galtonAnim = { interval: null };
   var _piAnim = { interval: null };
   var PROBABILITY_CHALLENGE_TOTAL = 6;
+
+  function stopProbabilityTimers() {
+    if (_autoRun.interval) clearInterval(_autoRun.interval);
+    if (_galtonAnim.interval) clearInterval(_galtonAnim.interval);
+    if (_piAnim.interval) clearInterval(_piAnim.interval);
+    _autoRun.interval = null;
+    _galtonAnim.interval = null;
+    _piAnim.interval = null;
+  }
 
   // ══ 3D Monte Carlo volume estimator ═════════════════════════════════════
   // Throw random darts into a 1×1×1 box holding a solid; the fraction that land
@@ -643,6 +673,23 @@ window.StemLab = window.StemLab || {
       var props = ctx.props;
       var canvasNarrate = ctx.canvasNarrate;
 
+      React.useEffect(function() {
+        stopProbabilityTimers();
+        setLabToolData(function(prev) {
+          var current = prev.probability || {};
+          if (!current._autoRunning && !current._piSlowRunning) return prev;
+          return Object.assign({}, prev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
+        });
+        return function() {
+          stopProbabilityTimers();
+          setLabToolData(function(prev) {
+            var current = prev.probability || {};
+            if (!current._autoRunning && !current._piSlowRunning) return prev;
+            return Object.assign({}, prev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
+          });
+        };
+      }, []);
+
       // ── Theme detection (fixes pre-existing undefined isDark/isContrast bug) ──
       var isDark = false, isContrast = false;
       try {
@@ -675,12 +722,11 @@ var d = (labToolData.probability) || {};
           // keyboard paths so the two cannot drift; flipping the mode
           // invalidates the drawn results, so they reset together.
           function mbToggleReplacement() {
-            upd('mbWithoutReplacement', !d.mbWithoutReplacement);
-            upd('results', []);
-            upd('trials', 0);
-            upd('convergenceHistory', []);
-            upd('lastResult', null);
-            upd('_mbRemaining', null);
+            stopProbabilityTimers();
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { mbWithoutReplacement: !current.mbWithoutReplacement }) });
+            });
           }
 
 
@@ -753,7 +799,7 @@ var d = (labToolData.probability) || {};
             : customOutcomes[0] ? customOutcomes[0].label : 'Red';
 
           var setProbabilityOutcomes = function(outcomes) {
-            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            stopProbabilityTimers();
             setLabToolData(function(prev) {
               var current = prev.probability || {};
               return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { customOutcomes: outcomes }) });
@@ -763,7 +809,7 @@ var d = (labToolData.probability) || {};
           };
 
           var setCustomSubMode = function(subMode) {
-            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            stopProbabilityTimers();
             setLabToolData(function(prev) {
               var current = prev.probability || {};
               return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { customSubMode: subMode }) });
@@ -782,6 +828,7 @@ var d = (labToolData.probability) || {};
 
             var newPiPoints = [];
             var mbRemaining = d._mbRemaining;
+            var lastDicePair = null;
 
             for (let i = 0; i < n; i++) {
 
@@ -789,12 +836,9 @@ var d = (labToolData.probability) || {};
 
               else if (d.mode === 'dice') results.push(Math.floor(Math.random() * (d.diceSides || 6)) + 1);
               else if (d.mode === 'dice2') {
-                var _ds2 = d.diceSides || 6;
-                var _r1 = Math.floor(Math.random() * _ds2) + 1;
-                var _r2 = Math.floor(Math.random() * _ds2) + 1;
-                results.push(_r1 + _r2);
-                // Save the last pair on the LAST iteration for display rendering
-                if (i === n - 1) { upd('_lastPair', [_r1, _r2]); }
+                var rolledPair = probabilityRollDicePair(d.diceSides || 6, Math.random(), Math.random());
+                results.push(rolledPair.sum);
+                if (i === n - 1) lastDicePair = [rolledPair.first, rolledPair.second];
               }
 
               else if (d.mode === 'spinner') results.push(['Red', 'Blue', 'Green', 'Yellow'][Math.floor(Math.random() * 4)]);
@@ -855,6 +899,7 @@ var d = (labToolData.probability) || {};
             }
 
             if (d.mode === 'marbleBag' && d.mbWithoutReplacement) upd('_mbRemaining', mbRemaining);
+            if (lastDicePair) upd('_lastPair', lastDicePair);
 
             // Pi: flush accumulated scatter points after all n trials
             if (d.mode === 'pi' && newPiPoints.length > 0) {
@@ -971,6 +1016,13 @@ var d = (labToolData.probability) || {};
 
               if (!_pd._autoRunning) return prev;
 
+              if ((_pd.results || []).length >= PROBABILITY_AUTO_TRIAL_LIMIT) {
+                if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+                var atLimitLive = document.getElementById('allo-live-probability');
+                if (atLimitLive) atLimitLive.textContent = 'Automatic simulation reached the 10,000 trial limit. Reset the current run to continue.';
+                return Object.assign({}, prev, { probability: Object.assign({}, _pd, { _autoRunning: false }) });
+              }
+
               var _res = (_pd.results || []).slice();
 
               var _asp2 = SPORTS.find(function(s) { return s.id === (_pd.sportType || 'freethrow'); }) || SPORTS[0];
@@ -983,7 +1035,7 @@ var d = (labToolData.probability) || {};
                 return Object.assign({}, prev, { probability: Object.assign({}, _pd, { _autoRunning: false }) });
               }
 
-              var _newPiPts3 = null, _newPiTot3 = null, _newPiIn3 = null;
+              var _newPiPts3 = null, _newPiTot3 = null, _newPiIn3 = null, _newLastPair3 = null;
               var _newMbRemaining3 = _pd._mbRemaining;
 
               if (_pd.mode === 'coin') {
@@ -996,8 +1048,9 @@ var d = (labToolData.probability) || {};
 
               } else if (_pd.mode === 'dice2') {
 
-                var _pds2 = _pd.diceSides || 6;
-                _res.push((Math.floor(Math.random() * _pds2) + 1) + (Math.floor(Math.random() * _pds2) + 1));
+                var _autoPair3 = probabilityRollDicePair(_pd.diceSides || 6, Math.random(), Math.random());
+                _res.push(_autoPair3.sum);
+                _newLastPair3 = [_autoPair3.first, _autoPair3.second];
 
               } else if (_pd.mode === 'spinner') {
 
@@ -1074,7 +1127,15 @@ var d = (labToolData.probability) || {};
               if (_newPiPts3) _newPd3._piPoints = _newPiPts3;
 
               if (_newPiTot3 != null) { _newPd3._piTotal = _newPiTot3; _newPd3._piInside = _newPiIn3; }
+              if (_newLastPair3) _newPd3._lastPair = _newLastPair3;
               if (_pd.mode === 'marbleBag' && _pd.mbWithoutReplacement) _newPd3._mbRemaining = _newMbRemaining3;
+
+              if (_res.length >= PROBABILITY_AUTO_TRIAL_LIMIT) {
+                if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+                _newPd3._autoRunning = false;
+                var limitLive = document.getElementById('allo-live-probability');
+                if (limitLive) limitLive.textContent = 'Automatic simulation reached the 10,000 trial limit. Reset the current run to continue.';
+              }
 
               return Object.assign({}, prev, { probability: _newPd3 });
 
@@ -1546,30 +1607,30 @@ var d = (labToolData.probability) || {};
             'radial-gradient(ellipse 80% 45% at 50% -10%, ' + modeAccent + ' 0%, ' + modeAccent.replace('0.10', '0.04') + ' 35%, rgba(255,255,255,0) 70%), linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)';
 
           var resetTrials = function() {
-            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
+            stopProbabilityTimers();
             setLabToolData(function(prev) {
               var current = prev.probability || {};
               return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch()) });
             });
             var live = document.getElementById('allo-live-probability');
-            if (live) live.textContent = 'Probability trials reset. Automatic simulation stopped.';
+            if (live) live.textContent = 'Current run reset. Automatic simulation and animations stopped.';
           };
 
           var selectMode = function(m) {
-            if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
-            if (_galtonAnim.interval) { clearInterval(_galtonAnim.interval); _galtonAnim.interval = null; }
-            if (_piAnim.interval) { clearInterval(_piAnim.interval); _piAnim.interval = null; }
-            upd('mode', m);
-            upd('results', []);
-            upd('trials', 0);
-            upd('convergenceHistory', []);
-            upd('lastResult', null);
-            upd('_mbRemaining', null);
-            upd('_piPoints', null);
-            upd('_piTotal', 0);
-            upd('_piInside', 0);
-            upd('_autoRunning', false);
-            upd('galtonFalling', []);
+            stopProbabilityTimers();
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, probabilityResetPatch(), { mode: m }) });
+            });
+          };
+
+          var leaveProbabilityLab = function() {
+            stopProbabilityTimers();
+            setLabToolData(function(prev) {
+              var current = prev.probability || {};
+              return Object.assign({}, prev, { probability: Object.assign({}, current, { _autoRunning: false, _piSlowRunning: false }) });
+            });
+            setStemLabTool(null);
           };
 
           var renderCommandDeck = function() {
@@ -1687,7 +1748,7 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex items-center gap-3 mb-3" },
 
-              React.createElement("button", { onClick: () => setStemLabTool(null), className: "p-1.5 rounded-lg transition-colors", style: { color: _muted }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+              React.createElement("button", { onClick: leaveProbabilityLab, className: "p-1.5 rounded-lg transition-colors", style: { color: _muted }, 'aria-label': t('stem.probability.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
 
               React.createElement("h3", { className: "text-lg font-bold", style: { color: _text } }, t('stem.probability.probability_lab', "\uD83C\uDFB2 Probability Lab")),
 
@@ -3161,7 +3222,7 @@ var d = (labToolData.probability) || {};
 
             // Visual result display (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && d.mode !== 'pi' && d.mode !== 'galton' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
+            d.lastResult != null && d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && d.mode !== 'pi' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
@@ -3443,27 +3504,29 @@ var d = (labToolData.probability) || {};
             })(),
 
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { role: "group", 'aria-label': "Automatic simulation controls", className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
-              React.createElement("button", { "aria-label": d._autoRunning ? t('stem.probability.pause_auto_run', "Pause automatic simulation") : t('stem.probability.start_auto_run', "Start automatic simulation"), "aria-pressed": d._autoRunning ? "true" : "false",
+              React.createElement("button", { "aria-label": "Automatic simulation", "aria-pressed": d._autoRunning ? "true" : "false",
 
-                disabled: !customCanRun,
+                disabled: !customCanRun || !!d._piSlowRunning || (d.trials || 0) >= PROBABILITY_AUTO_TRIAL_LIMIT,
                 onClick: function() {
 
-                  if (!customCanRun) return;
-                  if (_autoRun.interval) {
+                  if (!customCanRun || d._piSlowRunning || (d.trials || 0) >= PROBABILITY_AUTO_TRIAL_LIMIT) return;
+                  if (_autoRun.interval || d._autoRunning) {
 
-                    clearInterval(_autoRun.interval);
+                    if (_autoRun.interval) clearInterval(_autoRun.interval);
 
                     _autoRun.interval = null;
 
                     upd('_autoRunning', false);
+                    if (typeof announceToSR === 'function') announceToSR('Automatic simulation paused.');
 
                   } else {
 
                     upd('_autoRunning', true);
 
                     _autoRun.interval = setInterval(runTrialAuto, d._autoSpeed || 250);
+                    if (typeof announceToSR === 'function') announceToSR('Automatic simulation started.');
 
                   }
 
@@ -3475,11 +3538,12 @@ var d = (labToolData.probability) || {};
 
               }, d._autoRunning ? '\u23F8 Pause' : '\u25B6 Auto-Run'),
 
-              [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
+              React.createElement("div", { role: "group", 'aria-label': "Automatic simulation speed", className: "flex flex-wrap gap-1" }, [['Slow', 600], ['Normal', 250], ['Fast', 80], ['Turbo', 20]].map(function(pair) {
 
-                return React.createElement("button", { "aria-label": "Set simulation speed to " + pair[0], key: pair[0], onClick: function() {
+                return React.createElement("button", { "aria-label": "Set simulation speed to " + pair[0], "aria-pressed": (d._autoSpeed || 250) === pair[1] ? "true" : "false", key: pair[0], onClick: function() {
 
                   upd('_autoSpeed', pair[1]);
+                  if (typeof announceToSR === 'function') announceToSR('Automatic simulation speed set to ' + pair[0] + '.');
 
                   if (_autoRun.interval) {
 
@@ -3491,19 +3555,21 @@ var d = (labToolData.probability) || {};
 
                 }, className: "px-2.5 py-1 rounded text-[11px] font-bold transition-all", style: { background: (d._autoSpeed||250) === pair[1] ? _btnBg : (isDark||isContrast?'rgba(139,92,246,0.1)':'#f1f5f9'), color: (d._autoSpeed||250) === pair[1] ? '#fff' : _muted } }, pair[0]);
 
-              }),
+              })),
 
               d._autoRunning && React.createElement("span", { className: "text-[11px] font-mono font-bold " + ((typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "" : "animate-pulse"), style:{color:'#22c55e'} }, '● Running — ' + d.trials + ' trials')
 
             ),
 
+            (d.trials || 0) >= PROBABILITY_AUTO_TRIAL_LIMIT && d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("p", { role: "status", className: "text-center text-[11px] font-bold mb-3", style: { color: isDark || isContrast ? '#fcd34d' : '#92400e' } }, "10,000-trial Auto limit reached. Reset the current run to start again."),
+
             // Trial buttons (hidden in tree mode)
 
             d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
-              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
+              [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun || !!d._autoRunning, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
-              React.createElement("button", { "aria-label": t('stem.probability.reset_all_trials', "Reset all trials"), onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, t('stem.probability.reset_2', "\uD83D\uDD04 Reset"))
+              React.createElement("button", { "aria-label": "Reset current run", onClick: resetTrials, className: "px-4 py-2 bg-red-50 text-red-700 font-bold rounded-lg hover:bg-red-100 text-sm" }, "\uD83D\uDD04 Reset current run")
 
             ),
 
@@ -3899,9 +3965,46 @@ var d = (labToolData.probability) || {};
             ),
 
             // ── Monte Carlo Pi Scatter ──
-            d.mode === 'pi' && d.trials > 0 && (function() {
+            d.mode === 'pi' && (function() {
 
               var _piPtsV = d._piPoints || [];
+
+              function beginPiSlowDrop() {
+                if (_piAnim.interval) return;
+                sfxProbClick();
+                var dropped = 0;
+                _piAnim.interval = setInterval(function() {
+                  setLabToolData(function(prev) {
+                    var _pp = prev.probability || {};
+                    var x = Math.random(), y = Math.random();
+                    var inside = (x * x + y * y) <= 1;
+                    var nextPts = (_pp._piPoints || []).concat([{ x: x, y: y, inside: inside }]);
+                    if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
+                    var nextRes = (_pp.results || []).concat([inside ? 'inside' : 'outside']);
+                    var nextTot = (_pp._piTotal != null ? _pp._piTotal : (_pp._piPoints || []).length) + 1;
+                    var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function(p) { return p.inside; }).length) + (inside ? 1 : 0);
+                    return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length }) });
+                  });
+                  dropped++;
+                  if (dropped >= 100) {
+                    clearInterval(_piAnim.interval);
+                    _piAnim.interval = null;
+                    sfxProbSuccess();
+                  }
+                }, 100);
+              }
+
+              if (piTotal <= 0) {
+                return React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _cardBg, border: '1px solid ' + _border } },
+                  React.createElement("div", { role: "status", className: "p-3 text-center text-sm font-bold", style: { color: _accent } }, "No estimate yet \u2014 throw a dart."),
+                  React.createElement("button", {
+                    onClick: beginPiSlowDrop,
+                    className: "mt-2 w-full px-3 py-2 rounded-lg text-[11px] font-bold transition",
+                    style: { background: '#7c3aed', color: '#fff' },
+                    'aria-label': 'Slow-drop 100 points one at a time'
+                  }, '\uD83D\uDD2C Slow-drop 100 (watch them land)')
+                );
+              }
 
               // From the running totals, NOT the capped point array — see the
               // piTotal note in render scope.

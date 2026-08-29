@@ -7600,7 +7600,8 @@ ${pageCss}
       const liveRoot = exportPreviewRef.current?.contentDocument?.documentElement;
       resumeTrackedChanges = _builderSuspendTrackedChanges(liveRoot);
       resumeReviewComments = _builderSuspendReviewComments(liveRoot);
-      await executeExportFromPreview();
+      const exported = await executeExportFromPreview();
+      if (exported !== true) return;
       try {
         if (typeof onExportSuccess === "function") onExportSuccess({ kind: "builder", format: exportPreviewMode });
       } catch (_) {
@@ -7932,7 +7933,18 @@ ${pageCss}
         "aria-label": `Set ${m.label} page margins`
       },
       m.label
-    ))))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-400 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono text-slate-600", "aria-live": "polite" }, wordCount.toLocaleString(), " words")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600 shrink-0", htmlFor: "word-goal-input" }, "Goal:"), /* @__PURE__ */ React.createElement(
+    )))), exportPreviewMode === "worksheet" && /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 mt-2 text-xs text-slate-700", htmlFor: "alloflow-worksheet-response-space" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 shrink-0" }, "Writing space:"), /* @__PURE__ */ React.createElement(
+      "select",
+      {
+        id: "alloflow-worksheet-response-space",
+        value: ["compact", "standard", "extended"].includes(exportConfig.worksheetResponseSpace) ? exportConfig.worksheetResponseSpace : "standard",
+        onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, worksheetResponseSpace: e.target.value })),
+        className: "flex-1 px-2 py-1 border border-slate-300 rounded text-xs bg-white"
+      },
+      /* @__PURE__ */ React.createElement("option", { value: "compact" }, "Compact \u2014 fewer pages"),
+      /* @__PURE__ */ React.createElement("option", { value: "standard" }, "Standard"),
+      /* @__PURE__ */ React.createElement("option", { value: "extended" }, "Extended \u2014 more room")
+    ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-400 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono text-slate-600", "aria-live": "polite" }, wordCount.toLocaleString(), " words")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600 shrink-0", htmlFor: "word-goal-input" }, "Goal:"), /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "number",

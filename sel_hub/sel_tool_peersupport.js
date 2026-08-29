@@ -357,10 +357,10 @@ window.SelHub = window.SelHub || {
               'Learn to be a supportive listener. Not a counselor — a better friend. These skills help people find their own answers.')
           ),
           // OARS overview cards
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '16px' } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '8px', marginBottom: '16px' } },
             OARS.map(function(skill) {
               return h('div', { key: skill.id, style: { background: _peC('#fff'), borderRadius: '12px', padding: '12px', border: '2px solid ' + skill.color + '33' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' } },
                   h('span', { style: { fontSize: '18px' }, 'aria-hidden': 'true' }, skill.icon),
                   h('span', { style: { fontSize: '13px', fontWeight: 800, color: _peInk(skill.color) } }, skill.label)
                 ),

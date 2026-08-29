@@ -68,7 +68,10 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('playerKeys = {};');
 
       expect(source).toContain('canvasEl._cellSimSelectOrganism = function (orgId, focusCamera)');
-      expect(source).toContain('cv._cellSimSelectOrganism(nextSelectedOrg, true);');
+      expect(source).toContain("var focusPreviewInDish = d.mode !== 'play' || !d.playAsOrganism || d.playAsOrganism === org.id;");
+      expect(source).toContain('cv._cellSimSelectOrganism(nextSelectedOrg, focusPreviewInDish);');
+      expect(source).toContain('function showCellAnatomyInDish(orgDef, anatomy)');
+      expect(source).toContain('function centerActiveCellPlayOrganism()');
       expect(source).toContain('if (target && focusCamera !== false) { cam.x = target.x; cam.y = target.y; cam.zoom = 3; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); }');
       expect(source).toContain('if (selectedOrg && selectedOrg.type === orgId)');
       expect(source).toContain('if (!nextSpawns[org.id] && cel.selectedOrganism === org.id) cel.selectedOrganism = null;');
@@ -91,24 +94,53 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain("if (typeof cel.paused === 'undefined') cel.paused = true;");
       expect(source).toContain("canvasEl._cellSimPaused = !!d.paused || (prefersReducedCellMotion && typeof d.paused === 'undefined');");
+      expect(source).toContain('var evidenceRadius = sz * (prefersReducedCellMotion ? 1.52');
+      expect(source).toContain('cctx.setLineDash([6 * dpr, 4 * dpr]);');
+      expect(source).toContain('animated: !prefersReducedCellMotion');
+      expect(source).toContain('pulseAnimated: evidenceActive && evidencePulse.animated');
+      expect(source).toContain('function shouldPrioritizePlayerControlTag(o, controlResponse)');
+      expect(source).toContain('if (!o || o !== playAsOrg || W / dpr > 340) return false;');
+      expect(source).toContain('if (!tutorial || tutorial.stationary) return false;');
+      expect(source).toContain('if (shouldPrioritizePlayerControlTag(o)) return;');
+      expect(source).toContain('anatomyLabelCount: _labelHitRegions.filter(function (region) { return region.org === o; }).length');
+      expect(source).toContain('function drawPlayerMechanismHighlight(o, sz, controlResponse, evidencePulse)');
+      expect(source).toContain("var phase = prefersReducedCellMotion ? 0.5 : (Math.sin(world.tick * 0.18) + 1) / 2;");
+      expect(source).toContain("if (visualKey === 'pseudopod')");
+      expect(source).toContain("} else if (visualKey === 'cilia')");
+      expect(source).toContain("} else if (visualKey === 'pulling_flagellum')");
+      expect(source).toContain("} else if (visualKey === 'raphe')");
+      expect(source).toContain("} else if (visualKey === 'bipolar_flagella')");
+      expect(source).toContain('o._mechanismVisualState = drawPlayerMechanismHighlight(o, sz, playerControlResponse, playerEvidencePulse);');
+      expect(source).toContain('mechanismVisualActive: !!mechanismVisualState.active');
+      expect(source).toContain("style: cellRenderPrefersReducedMotion ? undefined : { animation: 'fadeIn 0.3s ease-out' }");
+      expect(source).toContain('"data-cell-play-tutorial-panel": true');
+      expect(source).toContain("style: Object.assign({ maxHeight: 'min(94%, calc(100dvh - 24px))' }, cellRenderPrefersReducedMotion ? {} : { animation: 'slideUp 0.3s ease-out' })");
       expect(source).toContain("document.addEventListener('visibilitychange', onVisibilityChange);");
       expect(source).toContain("document.removeEventListener('visibilitychange', onVisibilityChange);");
       expect(source).toContain('var initialZoom = Math.max(0.5, Math.min(10, Number(d.zoom) || 1));');
-      expect(source).toContain('var cam = { x: 0, y: 0, zoom: initialZoom };');
+      expect(source).toContain('var cam = { x: 400, y: 300, zoom: initialZoom };');
       expect(source).toContain('var speedMultiplier = Math.max(1, Math.min(5, Math.round(Number(d.simSpeed) || 1)));');
       expect(source).toContain('var initialSelectedOrg = d.selectedOrganism ? world.organisms.find(function (o) { return o.def.id === d.selectedOrganism; }) : null;');
       expect(source).toContain('var initialPlayAsOrg = d.playAsOrganism ? world.organisms.find(function (o) { return o.def.id === d.playAsOrganism; }) : null;');
       expect(source).toContain('if (playAsOrg && canvasEl._onZoom) canvasEl._onZoom(cam.zoom);');
 
-      expect(source).toContain('canvasEl._cellSimResetView = function () { cam.x = 0; cam.y = 0; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };');
+      expect(source).toContain('canvasEl._cellSimResetView = function () { cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };');
       expect(source).toContain('"aria-label": "Reset microscope view"');
       expect(source).toContain('if (cv && cv._cellSimResetView) cv._cellSimResetView(); else upd("zoom", 1);');
 
       expect(source).toContain('canvasEl._cellSimShowOrganelleTooltip = function (orgId, organelleName)');
       expect(source).toContain('if (canvasEl._onOrganelleClick) canvasEl._onOrganelleClick(a.name);');
+      expect(source).toContain("document.querySelector('[data-cell-target-legend]')");
+      expect(source).toContain('ttSafeTop = Math.max(ttSafeTop, (ttLegendRect.bottom - ttCanvasRect.top + 8) * ttScaleY);');
+      expect(source).toContain('canvasEl._cellSimGetOrganelleTooltip = function ()');
+      expect(source).toContain('canvasEl._cellSimGetOrganelleTooltip = null;');
+      expect(source).toContain("if (e.type === 'keydown') world._tooltip = null;");
+      expect(source).toContain('if (pressed) world._tooltip = null;');
       expect(source).not.toContain('updExtAndBadge({ organellesClicked');
 
-      expect(source).toContain('"aria-label": "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy."');
+      expect(source).toContain('"aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ?');
+      expect(source).toContain('"Interactive cell biology simulation. Playing as " + activePlayDef.label');
+      expect(source).toContain(': "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy."');
     });
   });
 
@@ -184,7 +216,9 @@ describe('cell simulator canvas ref stability', () => {
       expect(source).toContain('var nextSeen = (cel.interiorSeen || []).slice();');
       expect(source).toContain('if (nextSeen.indexOf(key) < 0) nextSeen.push(key);');
       expect(source).toContain('cel.interiorSeen = nextSeen;');
-      expect(source).toContain('cel.interiorCellType = c.id; cel.interiorSel = null; return cel;');
+      expect(source).toContain('cel.interiorCellType = c.id; cel.interiorSel = null;');
+      expect(source).toContain("cel.interiorGuide = null; cel.interiorGuideStep = 0; cel.interiorSpecialization = 'general';");
+      expect(source).toContain('cel.interiorQuizChoice = null; cel.interiorQuizRevealed = false; return cel;');
       expect(source).not.toContain("function pick(key) { upd('interiorSel', key);");
       expect(source).toContain('if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }');
       expect(source).toContain('if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();');

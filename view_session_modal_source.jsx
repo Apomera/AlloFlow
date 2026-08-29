@@ -118,6 +118,7 @@ const buildRosterSessionInsightBrief = (summary) => {
     const parsed = Number(value);
     return Number.isFinite(parsed) ? Math.max(0, Math.min(max, Math.floor(parsed))) : 0;
   };
+  const unmatchedCount = Math.max(unmatchedCodenames.length, clampCount(source.unmatchedCount, 250));
   const byKind = Object.create(null);
   let submissions = 0;
   let revisions = 0;
@@ -181,7 +182,7 @@ const buildRosterSessionInsightBrief = (summary) => {
   if (followUpCodenames.length > 0) nextMoves.push({ code: 'activity-follow-up', count: followUpCodenames.length, label: 'Review incomplete activity participation and send support while the session is still open.' });
   if (absentCodenames.length > 0) nextMoves.push({ code: 'absent-catch-up', count: absentCodenames.length, label: 'Prepare a catch-up resource for learners who were not present.' });
   if (feedbackSent > revisions) nextMoves.push({ code: 'revision-opportunity', count: feedbackSent - revisions, label: 'Leave time for learners to act on feedback that has not yet produced a recorded revision.' });
-  if (unmatchedCodenames.length > 0) nextMoves.push({ code: 'resolve-codenames', count: unmatchedCodenames.length, label: 'Resolve unmatched codenames before using this session longitudinally.' });
+  if (unmatchedCount > 0) nextMoves.push({ code: 'resolve-codenames', count: unmatchedCount, label: 'Resolve unmatched codenames before using this session longitudinally.' });
   if (nextMoves.length === 0 && (activities.length > 0 || participantsWithRecordedResponse > 0)) {
     nextMoves.push({ code: 'review-evidence', count: participantsWithRecordedResponse, label: 'Review the recorded participation evidence when choosing the next lesson step.' });
   }
@@ -338,11 +339,33 @@ const shouldSaveRosterSessionSummary = (summary, note = '') => Boolean(summary &
   || (Array.isArray(summary.liveActivities) && summary.liveActivities.length > 0)
   || !!summary.organizerActivity
 ));
+// The end-session preview may temporarily show unmatched values so the teacher
+// can correct a mistyped codename while the session is still open. Those values
+// are learner-entered and may be real names, so roster history stores only a
+// count. This keeps the durable roster and its JSON export codename-only.
+const sanitizeRosterSessionForStorage = (summary) => {
+  if (!summary || typeof summary !== 'object' || Array.isArray(summary)) return summary;
+  const next = { ...summary };
+  const legacyCount = Array.isArray(summary.unmatchedCodenames)
+    ? summary.unmatchedCodenames.map(String).filter(Boolean).slice(0, 250).length
+    : 0;
+  const storedCount = Number(summary.unmatchedCount);
+  const unmatchedCount = Math.max(
+    legacyCount,
+    Number.isFinite(storedCount) ? Math.max(0, Math.min(250, Math.floor(storedCount))) : 0
+  );
+  delete next.unmatchedCodenames;
+  if (unmatchedCount > 0) next.unmatchedCount = unmatchedCount;
+  else delete next.unmatchedCount;
+  return next;
+};
+
 
 const saveRosterSessionSummary = (rosterKey, summary, note = '', retentionLimit = 30) => {
   if (!rosterKey || !summary?.id) return rosterKey;
   const cleanNote = String(note || '').trim().slice(0, 500);
-  const savedSummary = cleanNote ? { ...summary, teacherNote: cleanNote } : summary;
+  const storageSafeSummary = sanitizeRosterSessionForStorage(summary);
+  const savedSummary = cleanNote ? { ...storageSafeSummary, teacherNote: cleanNote } : storageSafeSummary;
   const existing = Array.isArray(rosterKey.sessionHistory) ? rosterKey.sessionHistory : [];
   if (!shouldSaveRosterSessionSummary(summary, cleanNote)) return rosterKey;
   const sessionHistory = [...existing.filter(item => item?.id !== savedSummary.id), savedSummary].slice(-Math.max(1, retentionLimit));

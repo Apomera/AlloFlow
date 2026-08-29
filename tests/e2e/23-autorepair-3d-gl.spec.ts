@@ -179,4 +179,32 @@ test.describe('Auto Repair Shop — 3D modules on real WebGL', () => {
     expect(Buffer.compare(clean, marked),
       'inspected parts are not visibly marked in the 3D bay').not.toBe(0);
   });
+
+  test('a running engine visibly animates the mechanical scene', async ({ page }) => {
+    await harness.mount(page, {
+      autoRepair: { view: 'repairbay', rbCase: 'charging', rbEngine: 'running' }
+    });
+    const canvas = page.locator('#wrap canvas');
+    const before = await canvas.screenshot();
+    await page.waitForTimeout(420);
+    const after = await canvas.screenshot();
+
+    expect(Buffer.compare(before, after),
+      'running the engine did not animate the fan, belt or pulleys').not.toBe(0);
+  });
+
+  test('reduced motion freezes engine animation without removing the scene', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await harness.mount(page, {
+      autoRepair: { view: 'repairbay', rbCase: 'charging', rbEngine: 'running' }
+    });
+    const canvas = page.locator('#wrap canvas');
+    const before = await canvas.screenshot();
+    await page.waitForTimeout(420);
+    const after = await canvas.screenshot();
+
+    expect(Buffer.compare(before, after),
+      'reduced-motion mode still animated the engine scene').toBe(0);
+    expect(await page.evaluate(() => (window as any).__glLive()?.lost)).toBe(false);
+  });
 });

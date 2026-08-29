@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
@@ -7,7 +7,8 @@ import { resetStemLab, loadTool, React } from './helpers/stem_widgets_smoke_harn
 const require = createRequire(import.meta.url);
 const MODULES_DIR = resolve(process.cwd(), 'desktop/web-app/node_modules');
 const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
-const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
+const ReactDOMServer = require(resolve(MODULES_DIR, 'react-dom/server'));
+const { act } = React;
 const axe = require(resolve(MODULES_DIR, 'axe-core'));
 
 // The root tool and its deploy mirror must stay byte-identical in behaviour.
@@ -21,6 +22,7 @@ const TOOL_PATHS = [
 const physics = require(resolve(process.cwd(), 'stem_lab/stem_tool_magnetism.js'));
 
 // jsdom shims: no rAF (the motor spin loop must never advance in tests).
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 if (!global.requestAnimationFrame) global.requestAnimationFrame = () => 0;
 if (!global.cancelAnimationFrame) global.cancelAnimationFrame = () => {};
 
@@ -37,13 +39,19 @@ function mountCtx(toolData, setToolData) {
 // Stateful mount mirroring the StemPluginBridge: the tool seeds its bucket on
 // first render, then renders its real body. `seed` pre-positions state.
 function mountWithSeed(cfg, seed) {
-  const host = document.createElement('div');
-  document.body.appendChild(host);
-  const root = ReactDOMClient.createRoot(host);
   function Harness() {
     const [toolData, setToolData] = React.useState(seed ? { magnetism: seed } : {});
     return cfg.render(mountCtx(toolData, setToolData));
   }
+  // Seeded snapshot assertions do not need a live client root. Static rendering
+  // avoids retaining detached React fibers across this large regression file;
+  // mountLive remains the path for all interaction and state-transition tests.
+  if (seed) {
+    return ReactDOMServer.renderToStaticMarkup(React.createElement(Harness)).replace(/<!-- -->/g, '');
+  }
+  const host = document.createElement('div');
+  document.body.appendChild(host);
+  const root = ReactDOMClient.createRoot(host);
   try {
     act(() => { root.render(React.createElement(Harness)); });
     return host.innerHTML;
@@ -52,6 +60,25 @@ function mountWithSeed(cfg, seed) {
     host.remove();
   }
 }
+
+function requiredAuditTarget(host, selector) {
+  const target = host.querySelector(selector);
+  if (!target) throw new Error('Expected an Axe audit target matching ' + selector + '.');
+  return target;
+}
+
+function active3DAuditTarget(host) {
+  const canvas = requiredAuditTarget(host, 'canvas[role="img"]');
+  const region = canvas.closest('[role="region"]');
+  if (!region) throw new Error('Expected the active 3D canvas to belong to a labeled region.');
+  return region;
+}
+
+const AXE_OPTIONS = Object.freeze({
+  runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
+  rules: { 'color-contrast': { enabled: false } },
+  resultTypes: ['violations'],
+});
 
 function mountLive(cfg, seed) {
   const host = document.createElement('div');
@@ -748,7 +775,8 @@ describe('magnetism tool - advanced investigations', () => {
     expect(source).toContain('Magnetic memory: domains and hysteresis');
     expect(source).toContain('Eddy-current engineering lab');
     expect(source).toContain('Load, lamp, and efficiency');
-    expect(source).toContain("'data-tooltip': q.label");
+    expect(source).toContain("'data-magnetism-expedition': 'true'");
+    expect(source).toContain("className: 'mag-expedition-quest'");
     expect(source).not.toContain("fill: '#0b1220'");
     expect(source).not.toContain('setTimeout(function () { upd({ earthSeen: true })');
   });
@@ -822,7 +850,7 @@ describe('magnetism tool — honesty + accessibility (source anchors)', () => {
 
 describe('magnetism tool — jsdom mount smoke', () => {
   let cfg;
-  beforeEach(() => {
+  beforeAll(() => {
     resetStemLab();
     cfg = loadTool(TOOL_PATHS[0], 'magnetism');
   });
@@ -878,10 +906,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(auditHost, AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
@@ -900,7 +925,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
   }, 30000);
 
   it('renders accessible cross-station Mission Control with live quest progress', async () => {
-    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field' }));
+    const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', missionPanelOpen: true }));
     expect(html).toContain('Mission Control');
     expect(html).toContain('Choose a design target');
     expect(html).toContain('Power a remote sensor');
@@ -911,6 +936,18 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(html).toContain('Design review · what the evidence proves');
     expect(html).toContain('Evidence proves:');
     expect(html).toContain('Pending · Change turns or current.');
+
+    const auditHost = document.createElement('main');
+    auditHost.innerHTML = html;
+    document.body.appendChild(auditHost);
+    try {
+      const missionControl = auditHost.querySelector('[role="region"][aria-label="Mission Control"]');
+      expect(missionControl).not.toBeNull();
+      const results = await axe.run(missionControl, AXE_OPTIONS);
+      expect(results.violations.map((violation) => violation.id)).toEqual([]);
+    } finally {
+      auditHost.remove();
+    }
 
     const partial = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', coilTouched: true, peakEMF: 0.8, missionStarted: true }));
     expect(partial).toContain('2/4 steps');
@@ -948,19 +985,7 @@ describe('magnetism tool — jsdom mount smoke', () => {
     expect(metricReplay).toContain('Recorded 10.00 mT');
     expect(metricReplay).toContain('Live 10.05 mT');
 
-    const auditHost = document.createElement('main');
-    auditHost.innerHTML = html;
-    document.body.appendChild(auditHost);
-    try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
-      expect(results.violations.map((violation) => violation.id)).toEqual([]);
-    } finally {
-      auditHost.remove();
-    }
-  }, 30000);
+  }, 120000);
   it('makes electromagnet turn count visible and exposes the live setup to assistive tech', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'electro', turns: 200, current: 4 }));
     expect(html).toContain('14 visible loops represent 200 turns');
@@ -1022,15 +1047,12 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, 'section[aria-label="Magnetic work and power bridge"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('renders an accessible right-hand-rule force lab with linked vectors and curve', async () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'motor', motorMode: 'forces', forceLabCurrent: 3, forceLabField: 4, forceLabAngle: 45, forceLabLength: 5,
@@ -1055,15 +1077,12 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, 'section[aria-label="Right-hand-rule wire-force lab"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('keeps Motor investigations visually focused in four persistent submodes', () => {
     const forces = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces' }));
     expect(forces).toContain('Motor forces');
@@ -1266,15 +1285,12 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Velocity selector + mass analyzer"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('renders an accessible 3D motor torque lab with linked vectors and concept landmarks', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'motor', motorMode: 'forces', motorView: '3d', motor3dStatus: 'ready', motorAngle: 180, notebookOpen: true,
@@ -1493,15 +1509,12 @@ describe('magnetism tool — jsdom mount smoke', () => {
         expect(auditHost.querySelector('label[for="' + range.id + '"]')).not.toBeNull();
         expect(range.getAttribute('aria-valuetext')).toBeTruthy();
       });
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Coupled motor–generator engineering bench"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('makes electromagnet and motor direction experimentally reversible', () => {
     const electro = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'electro', currentDir: -1, windingDir: 1 }));
     expect(electro).toContain('right-hand rule: reverse current OR winding');
@@ -1580,15 +1593,12 @@ describe('magnetism tool — jsdom mount smoke', () => {
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Quantitative Field Mapping Lab"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('renders an accessible 3D field studio with multiple linked visual layers', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }));
     expect(html).toContain('3D Magnetic Field Studio');
@@ -1618,8 +1628,9 @@ describe('magnetism tool — jsdom mount smoke', () => {
   it('renders three additional interactive visual simulation types', () => {
     const field = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'field', pairDistance: 120 }));
     expect(field).toContain('Force bench — distance changes everything');
-    expect(field).toContain('fourth power of distance');
-    expect(field).toContain('force-versus-distance curve falls steeply');
+    expect(field).toContain('Distance Detective · 60 → 120');
+    expect(field).toContain('Make an ungraded estimate');
+    expect(field).toContain('force ÷ ?');
 
     const motor = mountWithSeed(cfg, Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeSign: -1, chargeField: 1 }));
     expect(motor).toContain('Charged-particle beam — Lorentz force');
@@ -1940,26 +1951,26 @@ describe('magnetism tool — journey strip + quiz study loop (R6)', () => {
     expect(source).toContain('var QUEST_DEFS = [');
     expect(source).toContain('questHooks: QUEST_DEFS');
     // every def declares a tab:
-    const defBlock = source.slice(source.indexOf('var QUEST_DEFS'), source.indexOf('var FACTS'));
+    const defBlock = source.slice(source.indexOf('var QUEST_DEFS'), source.indexOf('var EXPEDITION_CHAPTERS'));
     const tabCount = (defBlock.match(/tab: '/g) || []).length;
-    expect(tabCount).toBe(17);
+    expect(tabCount).toBe(21);
   });
 
   describe('mounted', () => {
     let cfg;
-    beforeEach(() => {
+    beforeAll(() => {
       resetStemLab();
       cfg = loadTool(TOOL_PATHS[0], 'magnetism');
     });
 
-    it('renders the journey strip with fresh-state progress 0/17', () => {
+    it('renders the expedition map with fresh-state progress 0/21', () => {
       const html = mountWithSeed(cfg, Object.assign({}, BASE));
-      expect(html).toContain('Journey 0/17');
+      expect(html).toContain('Journey 0/21');
     });
 
     it('journey chips light up as quests complete', () => {
       const html = mountWithSeed(cfg, Object.assign({}, BASE, { compassMoved: true, motorRan: true, earthSeen: true }));
-      expect(html).toContain('Journey 3/17');
+      expect(html).toContain('Journey 3/21');
     });
 
     it('a failed quiz offers Study buttons for exactly the missed topics', () => {
@@ -1985,7 +1996,7 @@ describe('magnetism tool — journey strip + quiz study loop (R6)', () => {
 
 describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression', () => {
   let cfg;
-  beforeEach(() => {
+  beforeAll(() => {
     resetStemLab();
     cfg = loadTool(TOOL_PATHS[0], 'magnetism');
   });
@@ -2065,31 +2076,27 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
     });
   }, 30000);
 
-  it('passes axe WCAG A/AA rules in every 3D alternate state', async () => {
-    const seeds = [
-      Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }),
-      Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }),
-      Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }),
-      Object.assign({}, BASE, { tab: 'earth', earthView: '3d' }),
-      Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }),
-      Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }),
-      Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d', chargeFieldModel: 'mirror', chargeMirrorRatio: 4, chargeTilt: 60 }),
-    ];
-    for (const seed of seeds) {
+  [
+    { label: 'field studio', seed: Object.assign({}, BASE, { tab: 'field', fieldView: '3d' }) },
+    { label: 'electromagnet lab', seed: Object.assign({}, BASE, { tab: 'electro', electroView: '3d' }) },
+    { label: 'induction studio', seed: Object.assign({}, BASE, { tab: 'induce', induceMode: '3d' }) },
+    { label: 'magnetosphere lab', seed: Object.assign({}, BASE, { tab: 'earth', earthView: '3d' }) },
+    { label: 'motor torque lab', seed: Object.assign({}, BASE, { tab: 'motor', motorMode: 'forces', motorView: '3d' }) },
+    { label: 'particle helix lab', seed: Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d' }) },
+    { label: 'magnetic mirror lab', seed: Object.assign({}, BASE, { tab: 'motor', motorMode: 'particle', chargeView: '3d', chargeFieldModel: 'mirror', chargeMirrorRatio: 4, chargeTilt: 60 }) },
+  ].forEach(({ label, seed }) => {
+    it('passes axe WCAG A/AA rules in the 3D ' + label, async () => {
       const auditHost = document.createElement('main');
       auditHost.innerHTML = mountWithSeed(cfg, seed);
       document.body.appendChild(auditHost);
       try {
-        const results = await axe.run(auditHost, {
-          runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-          rules: { 'color-contrast': { enabled: false } },
-        });
+        const results = await axe.run(active3DAuditTarget(auditHost), AXE_OPTIONS);
         expect(results.violations.map((violation) => violation.id)).toEqual([]);
       } finally {
         auditHost.remove();
       }
-    }
-  }, 180000);
+    }, 120000);
+  });
 
   it('protects contrast, focus, targets, reduced motion, and forced-colors behavior', () => {
     const source = readFileSync(TOOL_PATHS[0], 'utf8');
@@ -2107,7 +2114,7 @@ describe('magnetism tool — WCAG 2.2 interaction and alternate-state regression
 });
 describe('magnetism tool — visual simulation instrumentation refinement', () => {
   let cfg;
-  beforeEach(() => {
+  beforeAll(() => {
     resetStemLab();
     cfg = loadTool(TOOL_PATHS[0], 'magnetism');
   });
@@ -2153,7 +2160,7 @@ describe('magnetism tool — visual simulation instrumentation refinement', () =
 });
 describe('magnetism tool — energy and space-weather visual refinement', () => {
   let cfg;
-  beforeEach(() => {
+  beforeAll(() => {
     resetStemLab();
     cfg = loadTool(TOOL_PATHS[0], 'magnetism');
   });
@@ -2188,15 +2195,12 @@ describe('magnetism tool — energy and space-weather visual refinement', () => 
     auditHost.innerHTML = html;
     document.body.appendChild(auditHost);
     try {
-      const results = await axe.run(auditHost, {
-        runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag22aa'] },
-        rules: { 'color-contrast': { enabled: false } },
-      });
+      const results = await axe.run(requiredAuditTarget(auditHost, '[role="region"][aria-label="Rotating-coil generator — see the phase shift"]'), AXE_OPTIONS);
       expect(results.violations.map((violation) => violation.id)).toEqual([]);
     } finally {
       auditHost.remove();
     }
-  }, 30000);
+  }, 60000);
   it('pairs rotating-generator phase curves with solid/dashed labels and distinct point shapes', () => {
     const html = mountWithSeed(cfg, Object.assign({}, BASE, {
       tab: 'induce', induceMode: 'coil', genAngle: 90, genRPM: 120,

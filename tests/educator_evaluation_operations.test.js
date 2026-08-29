@@ -35,7 +35,13 @@ describe('educator evaluation district operations center', () => {
     const reviewed = harness.invoke('reviewPortalDirectoryChange', {
       kind: 'assignment', candidate: { teacherId: 't1', evaluatorEmail: EVALUATOR, active: false },
     }).review;
-    harness.invoke('adminUpsertMember', { email: 'new.evaluator@district.example', displayName: 'New Evaluator', role: 'evaluator', active: true });
+    const concurrent = harness.invoke('reviewPortalDirectoryChange', {
+      kind: 'member',
+      candidate: { email: 'new.evaluator@district.example', displayName: 'New Evaluator', role: 'evaluator', active: true },
+    }).review;
+    harness.invoke('performPortalDirectoryChange', {
+      reviewToken: concurrent.token, acknowledgeImpact: true,
+    });
     expect(harness.invokeError('performPortalDirectoryChange', { reviewToken: reviewed.token, acknowledgeImpact: true }).code).toBe('review_stale');
   });
 
@@ -141,6 +147,69 @@ describe('educator evaluation district operations center', () => {
     expect(harness.invokeError('reviewPortalArchiveRestoreRehearsal', { archiveId: archive.id }).code).toBe('not_found');
   });
 
+  it('requires reviewed notice delivery and locks its exact outcome through recovery checks', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'educator_evaluation_source.jsx'), 'utf8');
+    expect(source).toContain("typeof repository.reviewNotification !== 'function'");
+    expect(source).toContain('const prior = await repository.getNotificationOutcome({ teacherId: teacher.id, target });');
+    expect(source).toContain("!['not_started', 'no_unresolved'].includes(String(prior.status).toLowerCase())");
+    expect(source).toContain('const repeatApproved = repeatPriorNotice === true');
+    expect(source).toContain('if (!repeatApproved) {');
+    expect(source).toContain('repeatEligible: !!(result && result.repeatEligible)');
+    expect(source).toContain("'Prepare another reviewed notice'");
+    expect(source).toContain("beginNotificationReview('', true)");
+    expect(source).toContain("beginNotificationReview(notificationState.recipient, notificationState.repeatPrior === true)");
+    expect(source).toContain("result.status === 'recipient_selection_required'");
+    expect(source).toContain("status: 'selecting_recipient'");
+    expect(source).toContain('!review.token || !review.portalUrl');
+    expect(source).toContain('const lookup = { teacherId: notificationState.teacherId, target: notificationState.target, reviewToken:');
+    expect(source).toContain('repository.sendNotification({ teacherId: lookup.teacherId, target: lookup.target, reviewToken: lookup.reviewToken, acknowledged: true })');
+    expect(source).toContain('if (result && result.preDispatch === true) responseError.preDispatch = true;');
+    expect(source).toContain("if (error && error.preDispatch === true)");
+    expect(source).toContain('scopedOutcome = await repository.getNotificationOutcome({ teacherId: lookup.teacherId, target: lookup.target });');
+    expect(source).toContain("!['not_started', 'no_unresolved'].includes(String(scopedOutcome.status).toLowerCase())");
+    expect(source).toContain("recordNotificationOutcome({ teacherId: lookup.teacherId, target: lookup.target, reviewToken: '' }, scopedOutcome)");
+    expect(source).toContain('This send was refused before dispatch, but the portal could not verify whether an earlier notice for this educator and target is unresolved.');
+    expect(source).toContain('Nothing was sent; you may prepare a fresh review.');
+    expect(source).toContain("if (status === 'not_started')");
+    expect(source).toContain("if (!['completed', 'recovery_pending', 'delivery_unknown'].includes(status)) status = 'delivery_unknown'");
+    expect(source).toContain("setNotificationReceipts((current) => Object.assign({}, current, { [key]: receipt }))");
+    expect(source).toContain('audit recovery is pending. Do not resend this notice');
+    expect(source).toContain('The exact delivery outcome is still unknown. Do not resend this notice; check the exact notice outcome.');
+    expect(source).toContain('The notice response was lost. Do not resend this notice. Check the exact notice outcome before taking any other action.');
+    expect(source).toContain('const outcomeRequest = { teacherId: receipt.teacherId, target: receipt.target };');
+    expect(source).toContain('if (receipt.reviewToken) outcomeRequest.reviewToken = receipt.reviewToken;');
+    expect(source).toContain('repository.getNotificationOutcome(outcomeRequest)');
+    expect(source).toContain("'Exact notice receipt'");
+    expect(source).toContain("notificationReceipt.status !== 'completed'");
+    expect(source).toContain("'Check exact notice outcome'");
+    expect(source).toContain('disabled={!selectedTeacher || notificationBusy || notificationActionsDisabled || !!notificationReceipt}');
+  });
+
+  it('maps the integrity-review envelope and treats historical Message/Audit extras as informational', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'educator_evaluation_source.jsx'), 'utf8');
+    expect(source).toContain('const review = Object.assign({}, response, ticket)');
+    expect(source).toContain("const counts = review.counts && typeof review.counts === 'object'");
+    expect(source).toContain("const samples = review.samples && typeof review.samples === 'object'");
+    expect(source).toContain("const parity = review.parity && typeof review.parity === 'object'");
+    expect(source).toContain('Array.isArray(review.issueSamples)');
+    expect(source).toContain('Array.isArray(review.effects)');
+    expect(source).toContain('suppliedEffects.length ? suppliedEffects : fallbackEffects');
+    expect(source).toContain('counts.totalRepairable');
+    expect(source).toContain('counts.totalAmbiguous');
+    expect(source).toContain('secondaryDuplicateMessageIdCount');
+    expect(source).toContain('secondaryDuplicateAuditIdCount');
+    expect(source).toContain('secondaryDuplicateSnapshotIdCount');
+    expect(source).toContain('ledgerOnlySnapshots: aeSetupHealthCount(checks.secondaryLedgerOnlySnapshotCount)');
+    expect(source).toContain('historicalLedgerOnly: aeSetupHealthCount(checks.secondaryLedgerOnlyMessageCount)');
+    expect(source).toContain('parityCounts.duplicate + parityCounts.ledgerOnlySnapshots + parityCounts.ambiguous');
+    expect(source).toContain('historical Message/Audit extra (informational)');
+    expect(source).toContain("projection match') + (parityCounts.historicalLedgerOnly");
+    expect(source).toContain('!(checks.secondaryManualReviewRequired || checks.secondaryInspectionUnavailable || checks.secondaryReconciliationRequired || parityIssueTotal > 0)');
+    expect(source).toContain('health.recoveryQueues');
+    expect(source).toContain('health.emailQuota');
+    expect(source).toContain('ref={headingRef} tabIndex={-1}');
+  });
+
   it('wires the operations-center UX and all authenticated portal adapters', () => {
     const root = process.cwd();
     const source = fs.readFileSync(path.join(root, 'educator_evaluation_source.jsx'), 'utf8');
@@ -151,8 +220,57 @@ describe('educator evaluation district operations center', () => {
     expect(source).toContain('Review schedule impact');
     expect(source).toContain('Create verified private export');
     expect(source).toContain('Load and verify annual archives');
-    for (const method of ['getPortalAdminOperations', 'reviewPortalDirectoryChange', 'performPortalDirectoryChange', 'reviewPortalCycleSchedule', 'performPortalCycleSchedule', 'reviewPortalWorkspaceConfiguration', 'performPortalWorkspaceConfiguration', 'reviewPortalDistrictExport', 'performPortalDistrictExport', 'getPortalAnnualArchives', 'reviewPortalArchiveRestoreRehearsal', 'performPortalArchiveRestoreRehearsal']) {
+    expect(source).toContain('function AeSetupObservability');
+    expect(source).toContain('function AeIntegrityRepairReview');
+    expect(source).toContain('function AeReleasedAccessRecoveryReview');
+    expect(source).toContain('Review ledger repair');
+    expect(source).toContain('Confirm reviewed repair');
+    expect(source).toContain('repository.reviewWorkspaceIntegrity()');
+    expect(source).toContain('reviewToken: review.token, acknowledgeRepair: true');
+    expect(source).toContain('disabled={!repairable || !acknowledged || busy}');
+    expect(source).toContain('Automatic ledger repair is unavailable.');
+    expect(source).toContain('secondaryMismatchedMessageCount');
+    expect(source).toContain('secondaryDuplicateAuditIdCount');
+    expect(source).toContain('secondaryLedgerOnlySnapshotCount');
+    expect(source).toContain('auditChainVerifiedRows');
+    expect(source).toContain('pendingRecoveryTotal');
+    expect(source).toContain('oldestRecoveryAgeHours');
+    expect(source).toContain('emailQuotaRemaining');
+    expect(source).toContain('releaseQueueCount');
+    expect(source).toContain('repository.reviewReleasedAccessRecovery({})');
+    expect(source).toContain('reviewToken: review.token, acknowledgeAccessPolicy: true');
+    expect(source).toContain('disabled={manualReviewRequired || !acknowledged || busy}');
+    expect(source).toContain('Released-summary access recovery review');
+    expect(source).toContain('exportState.review.authorizedExportsAcl');
+    expect(source).toContain('!exportAclReview || !aeValidAuthorizedExportsAclReview(exportAclReview)');
+    expect(source).toContain("disabled={!exportAck || exportAclBlocked || exportState.status === 'performing'}");
+    expect(source).toContain('Authorized Exports access review');
+    expect(source).toContain('Existing files');
+    expect(source).toContain('Drifted files');
+    expect(source).toContain('Explicit access grants');
+    expect(source).toContain('Folder drift');
+    expect(builder).toContain("reviewWorkspaceIntegrity: () => callPortalAdminRpc('reviewPortalWorkspaceIntegrity')");
+    expect(builder).toContain("reconcileWorkspaceIntegrity: (request) => callPortalAdminRpc('reconcilePortalWorkspaceIntegrity', request)");
+    expect(builder).toContain("reviewReleasedAccessRecovery: (request) => callPortalAdminRpc('reviewPortalReleasedEvaluationAccessRecovery', request)");
+    expect(builder).toContain("reconcileReleasedAccess: (request) => callPortalAdminRpc('reconcilePortalReleasedEvaluationAccess', request)");
+    for (const method of ['reviewPortalWorkspaceIntegrity', 'reconcilePortalWorkspaceIntegrity', 'reviewPortalReleasedEvaluationAccessRecovery', 'reconcilePortalReleasedEvaluationAccess', 'getPortalAdminOperations', 'reviewPortalDirectoryChange', 'performPortalDirectoryChange', 'reviewPortalCycleSchedule', 'performPortalCycleSchedule', 'reviewPortalWorkspaceConfiguration', 'performPortalWorkspaceConfiguration', 'reviewPortalDistrictExport', 'performPortalDistrictExport', 'getPortalAnnualArchives', 'reviewPortalArchiveRestoreRehearsal', 'performPortalArchiveRestoreRehearsal']) {
       expect(builder).toContain(`'${method}'`);
     }
+  });
+
+  it('keeps direct directory mutators private and exposes only the reviewed RPC workflow', () => {
+    const root = process.cwd();
+    const server = fs.readFileSync(path.join(root, 'apps_script', 'educator_evaluation', 'Code.gs'), 'utf8');
+    const builder = fs.readFileSync(path.join(root, '_build_educator_evaluation_apps_script.js'), 'utf8');
+    expect(server).not.toMatch(/^function adminUpsertMember\s*\(/m);
+    expect(server).not.toMatch(/^function adminUpsertAssignment\s*\(/m);
+    expect(server).toMatch(/^function upsertMemberRow_\s*\(/m);
+    expect(server).toMatch(/^function upsertAssignmentRow_\s*\(/m);
+    expect(server).toMatch(/function performPortalDirectoryChange\([\s\S]*?upsertMemberRow_\(/);
+    expect(server).toMatch(/function performPortalDirectoryChange\([\s\S]*?upsertAssignmentRow_\(/);
+    expect(builder).toContain("reviewDirectoryChange: (request) => callPortalAdminRpc('reviewPortalDirectoryChange', request)");
+    expect(builder).toContain("performDirectoryChange: (request) => callPortalAdminRpc('performPortalDirectoryChange', request)");
+    expect(builder).not.toContain('adminUpsertMember');
+    expect(builder).not.toContain('adminUpsertAssignment');
   });
 });

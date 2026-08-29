@@ -23,6 +23,7 @@ import { React, ReactDOMClient, makeCtx, resetStemLab, loadTool } from './helper
 
 const FILE = 'stem_lab/stem_tool_geometryworld.js';
 const SOURCE = readFileSync(FILE, 'utf8');
+const PUBLIC_SOURCE = readFileSync('desktop/web-app/public/stem_lab/stem_tool_geometryworld.js', 'utf8');
 const ENGINE_KEY = '__geoWorldEngine';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -473,6 +474,17 @@ describe('Geometry World single measurement path', () => {
     expect(SOURCE).toContain("engine.performMeasurement('touch');");
   });
 
+  it('routes the exact Surface and Net reveal through the same estimate gate', () => {
+    const netCase = SOURCE.slice(
+      SOURCE.indexOf("case 'KeyN':"),
+      SOURCE.indexOf("case 'ShiftLeft':", SOURCE.indexOf("case 'KeyN':")),
+    );
+    expect(netCase).toContain("engine.performMeasurement('surface');");
+    expect(netCase).not.toContain('engine.measureStructure(');
+    expect(netCase).toContain('nm.accessibleMeasurementAnnouncement');
+    expect(SOURCE).toContain('m.accessibleMeasurementAnnouncement = measurementAnnouncement;');
+  });
+
   it('gives touch the feedback the duplicate had lost', () => {
     // The mobile copy never drew the dimension lines or the selection glow — the
     // main visual affordance for reading L x W x H — gave no first-measurement XP,
@@ -486,7 +498,7 @@ describe('Geometry World single measurement path', () => {
     expect(fn).toContain("awardXP('geometryWorld', 5, 'First measurement');");
     expect(fn).toContain("if (ts2.step === 2 && !ts2.dismissed) upd('tutorialStep', 3);");
     // History comes from the engine bridge, not a stale React closure.
-    expect(fn).toContain('(((engine._predictionState || {}).history) || [])');
+    expect(fn).toContain('(predictionState.history || [])');
   });
 
   it('uses the cached block array instead of rebuilding it per keypress', () => {
@@ -535,6 +547,15 @@ describe('Geometry World application mode is scoped to the 3D surface', () => {
     expect(apps[0].id, 'the only application should be the 3D surface').toBe('geoworld-fs-wrap');
     m.unmount();
   }, 20000);
+
+  it('keeps the imperative canvas out of the tree because the viewport owns its semantics', () => {
+    for (const source of [SOURCE, PUBLIC_SOURCE]) {
+      const start = source.indexOf("var cnv = document.createElement('canvas');");
+      const setup = source.slice(start, source.indexOf('engine.renderer = new THREE.WebGLRenderer', start));
+      expect(setup).toContain("cnv.setAttribute('aria-hidden', 'true');");
+      expect(setup).toContain('container.appendChild(cnv);');
+    }
+  });
 
   it('exposes the tool as a named landmark instead', () => {
     // A landmark is navigable without changing interaction mode.
@@ -626,6 +647,12 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("className: 'gw-action-bar'");
     expect(SOURCE).toContain('.gw-action-bar{bottom:98px!important;');
     expect(SOURCE).toContain('flex-wrap:nowrap!important;overflow-x:auto;');
+  });
+
+  it('keeps every narrow-screen hotbar item inside the horizontal scroll range', () => {
+    [SOURCE, PUBLIC_SOURCE].forEach((source) => {
+      expect(source).toContain('.gw-hotbar{max-width:calc(100vw - 12px)!important;justify-content:flex-start!important;flex-wrap:nowrap!important;overflow-x:auto;}');
+    });
   });
 
   it('uses shared dialog framing while preserving the full-screen intro variant', () => {

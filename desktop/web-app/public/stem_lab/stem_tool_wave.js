@@ -88,6 +88,8 @@ window.StemLab = window.StemLab || {
       var canvasA11yDesc = ctx.canvasA11yDesc;
       var canvasNarrate = ctx.canvasNarrate;
       var props = ctx.props;
+      var isContrast = !!ctx.isContrast;
+      var isDark = !!ctx.isDark;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
 
       // ── Tool body (wave) ──
@@ -2111,7 +2113,7 @@ const d = labToolData.wave;
 
             // Harmonic selector (standing mode only)
 
-            waveMode === 'standing' && React.createElement("div", { className: "flex gap-2 mb-3 items-center" },
+            waveMode === 'standing' && React.createElement("div", { className: "flex gap-2 mb-3 items-center rounded-lg p-1", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
 
               React.createElement("span", { className: "text-xs font-bold text-cyan-700" }, __alloT('stem.wave.standing_harmonic_label', 'Harmonic:')),
 
@@ -2127,7 +2129,7 @@ const d = labToolData.wave;
 
             // Standing wave info
 
-            waveMode === 'standing' && React.createElement("div", { className: "bg-cyan-50 rounded-lg p-3 border border-cyan-200 mb-3 text-xs text-cyan-800" },
+            waveMode === 'standing' && React.createElement("div", { className: "rounded-lg p-3 border border-cyan-200 mb-3 text-xs text-cyan-800", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
 
               React.createElement("p", { className: "font-bold mb-1" }, "\uD83C\uDFB8 " + __alloT('stem.wave.standing_wave_title', 'Standing Wave \u2014 Harmonic #') + (d.harmonic || 1)),
 
@@ -2502,7 +2504,7 @@ const d = labToolData.wave;
 
             // ── Investigate — surfaces the two inquiry widgets buried in the library ──
 
-            React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 bg-indigo-50 flex items-center gap-3 flex-wrap" },
+            React.createElement("div", { className: "mb-3 p-3 rounded-xl border-2 border-indigo-200 flex items-center gap-3 flex-wrap", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("span", { className: "text-xl", "aria-hidden": "true" }, '🔬'),
               React.createElement("p", { className: "text-xs text-indigo-900 font-semibold flex-1 min-w-[220px] m-0" }, __alloT('stem.wave.investigate_intro', 'Ready to think like a physicist? Two open-ended investigations — no answer dumps, just you and the data.')),
               React.createElement("button", { onClick: function () { upd('expSection', 'discoverWave'); if (typeof addToast === 'function') addToast('🔬 ' + __alloT('stem.wave.toast_opened_below', 'Opened below — scroll down to the Reference Library'), 'info'); }, className: "transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]" }, '🔬 ' + __alloT('stem.wave.btn_discover', 'Discover') + ' f·λ = v'),
@@ -2519,7 +2521,13 @@ const d = labToolData.wave;
                 { myth: __alloT('stem.wave.myth4_myth', 'When waves cancel, their energy is destroyed.'), truth: __alloT('stem.wave.myth4_truth', 'Energy is never destroyed — it redistributes. The dark bands in the ripple tank sit right next to extra-bright ones; the total stays constant.'), btn: __alloT('stem.wave.myth4_btn', 'Find the dark bands'), demo: { waveMode: 'ripple' } }
               ];
               var mythsOpen = !!d.mythsOpen;
-              return React.createElement("div", { className: "mb-3 rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/60 overflow-hidden" },
+              var mythTheme = isContrast
+                ? { surface: '#000000', border: '#ffff00' }
+                : isDark
+                  ? { surface: '#2b1633', border: '#e879f9' }
+                  : { surface: '#fdf4ff', border: '#f5d0fe' };
+              return React.createElement("div", { className: "wave-myths-panel mb-3 rounded-xl border-2 border-fuchsia-200 bg-fuchsia-50/60 overflow-hidden", style: { backgroundColor: mythTheme.surface, borderColor: mythTheme.border } },
+                React.createElement("style", null, '.theme-dark .wave-myths-panel .text-fuchsia-900{color:#fae8ff!important}.theme-dark .wave-myths-panel .text-fuchsia-700{color:#f5d0fe!important}.theme-dark .wave-myths-panel>button:hover{background:#3f1d49!important}'),
                 React.createElement("button", {
                   onClick: function () { upd('mythsOpen', !mythsOpen); },
                   "aria-expanded": mythsOpen,
@@ -2549,7 +2557,7 @@ const d = labToolData.wave;
 
             // Quiz
 
-            React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+            React.createElement("div", { className: "flex flex-wrap items-center gap-2 mb-2" },
 
               React.createElement("button", { onClick: function () {
 
@@ -2739,7 +2747,7 @@ const d = labToolData.wave;
               function setAiLevel(id) {
                 setLabToolData(function (prev) { return Object.assign({}, prev, { wave: Object.assign({}, prev.wave, { aiLevel: id }) }); });
               }
-              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200 bg-purple-50", role: "region", },
+              return React.createElement("div", { className: "mt-3 p-3 rounded-xl border-2 border-purple-200", role: "region", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
                 React.createElement("div", { className: "flex items-center flex-wrap gap-2 mb-1.5" },
                   React.createElement("span", { className: "text-sm font-bold text-purple-700" }, "\u2728 " + __alloT('stem.wave.ai_explain_heading', 'Explain at my level')),
                   React.createElement("div", { className: "ml-auto flex gap-1", role: "group", "aria-label": __alloT('stem.wave.aria_reading_level_group', 'Reading level') },

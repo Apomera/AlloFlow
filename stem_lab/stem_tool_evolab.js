@@ -117,6 +117,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       var useState = React.useState;
       var useEffect = React.useEffect;
       var useRef = React.useRef;
+      var _capstoneCaptureLocksRef = useRef({});
+      var _capstoneSourceCounterRef = useRef(0);
+
+      var newCapstoneSourceRunKey = function(moduleId) {
+        _capstoneSourceCounterRef.current += 1;
+        return moduleId + ':' + Date.now().toString(36) + '-' + _capstoneSourceCounterRef.current + '-' + Math.random().toString(36).slice(2, 8);
+      };
 
       var d = (ctx.toolData && ctx.toolData['evoLab']) || {};
       var upd = function(key, val) { ctx.update('evoLab', key, val); };
@@ -132,6 +139,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         if (savedBadges && d.evoBadges === undefined) upd('evoBadges', savedBadges);
         var savedQuizBest = lsGet('evoLab.quizBest.v1', null);
         if (savedQuizBest != null && d.misconQuizBest === undefined) upd('misconQuizBest', savedQuizBest);
+        var savedCapstone = lsGet('evoLab.capstone.v2', null);
+        if (savedCapstone && d.evoCapstone === undefined) upd('evoCapstone', savedCapstone);
       }
 
       // Top-level view selector. 'menu' is the hub; each module has its own view.
@@ -161,6 +170,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // otherwise-stable views on every host re-render, tearing DOM and
       // dropping keyboard focus.
       BackBar = stableType('BackBar', BackBar);
+      CapstoneCapture = stableType('CapstoneCapture', CapstoneCapture);
       StatCard = stableType('StatCard', StatCard);
       LabeledSlider = stableType('LabeledSlider', LabeledSlider);
       TeacherNotes = stableType('TeacherNotes', TeacherNotes);
@@ -189,6 +199,116 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         }
       };
 
+      var describeCapstoneTrialPlan = function(plan) {
+        if (!plan || !plan.strategy) return '';
+        if (plan.strategy === 'repeat') {
+          var repeatTarget = clamp(parseInt(plan.targetRuns, 10) || 2, 2, 3);
+          return 'Repeat the same settings ' + repeatTarget + ' times to measure run-to-run variation.';
+        }
+        if (plan.strategy === 'change-one' && plan.factorLabel && String(plan.levelA || '').trim() && String(plan.levelB || '').trim()) {
+          return 'Change only ' + plan.factorLabel + ': ' + String(plan.levelA).trim() + ' → ' + String(plan.levelB).trim() + '. Hold every other setting constant.';
+        }
+        return 'Finish choosing one factor and two comparison levels before opening the simulator.';
+      };
+
+      var normalizeCapstoneFactorValue = function(value) {
+        var text = String(value == null ? '' : value).trim().toLowerCase();
+        var numeric = text.match(/^([-+]?\d*\.?\d+)\s*(%)?$/);
+        return numeric ? String(Number(numeric[1])) + (numeric[2] || '') : text;
+      };
+
+      var capstoneFactorMap = function(comparison) {
+        var map = {};
+        var factors = comparison && Array.isArray(comparison.factors) ? comparison.factors : [];
+        factors.forEach(function(factor) {
+          if (!factor || !factor.id) return;
+          map[factor.id] = {
+            label: factor.label || factor.id,
+            value: factor.value,
+            comparable: normalizeCapstoneFactorValue(factor.value)
+          };
+        });
+        return map;
+      };
+
+      var assessCapstoneTrialPlan = function(plan, runs) {
+        var target = plan && plan.strategy === 'repeat' ? clamp(parseInt(plan.targetRuns, 10) || 2, 2, 3) : 2;
+        var usableRuns = (Array.isArray(runs) ? runs : []).filter(function(run) {
+          return run && run.comparison && Array.isArray(run.comparison.factors) && run.comparison.factors.length;
+        });
+        if (!plan || !plan.strategy) return { status: 'legacy', target: 1, title: 'Open investigation', detail: 'No pre-run trial plan was saved for this older project.' };
+        if (usableRuns.length < target) return { status: 'pending', target: target, title: usableRuns.length + ' of ' + target + ' distinct trials captured', detail: 'Complete a fresh trajectory for each remaining trial.' };
+        var factorMaps = usableRuns.slice(0, target).map(function(run) { return capstoneFactorMap(run.comparison); });
+        var commonIds = Object.keys(factorMaps[0]).filter(function(id) {
+          return factorMaps.every(function(map) { return Object.prototype.hasOwnProperty.call(map, id); });
+        });
+        if (!commonIds.length) return { status: 'unknown', target: target, title: 'Plan check unavailable', detail: 'These captures do not include comparable structured settings.' };
+        var changed = commonIds.filter(function(id) {
+          var first = factorMaps[0][id].comparable;
+          return factorMaps.some(function(map) { return map[id].comparable !== first; });
+        });
+        var changedLabels = changed.map(function(id) { return factorMaps[0][id].label; });
+        if (plan.strategy === 'repeat' && changed.length === 0) {
+          return { status: 'match', target: target, title: 'Captured settings match the repeat plan', detail: 'All tracked settings match across the planned trials.', changed: changed };
+        }
+        var plannedLevelA = normalizeCapstoneFactorValue(plan && plan.levelA);
+        var plannedLevelB = normalizeCapstoneFactorValue(plan && plan.levelB);
+        var capturedLevelA = factorMaps[0][plan.factor] ? factorMaps[0][plan.factor].comparable : '';
+        var capturedLevelB = factorMaps[1] && factorMaps[1][plan.factor] ? factorMaps[1][plan.factor].comparable : '';
+        var plannedLevelsMatch = !plannedLevelA || !plannedLevelB || (capturedLevelA === plannedLevelA && capturedLevelB === plannedLevelB);
+        if (plan.strategy === 'change-one' && changed.length === 1 && changed[0] === plan.factor && plannedLevelsMatch) {
+          return { status: 'match', target: target, title: 'Controlled comparison captured', detail: 'Only ' + (plan.factorLabel || changedLabels[0]) + ' changed across the planned trials.', changed: changed };
+        }
+        if (plan.strategy === 'change-one' && changed.length === 1 && changed[0] === plan.factor && !plannedLevelsMatch) {
+          return { status: 'mismatch', target: target, title: 'Captured settings need attention', detail: 'Captured ' + (plan.factorLabel || changedLabels[0]) + ' levels were ' + factorMaps[0][plan.factor].value + ' → ' + factorMaps[1][plan.factor].value + '; the plan called for ' + plan.levelA + ' → ' + plan.levelB + '.', changed: changed };
+        }
+        var detail = changed.length ? 'Tracked changes: ' + changedLabels.join(', ') + '.' : 'No tracked setting changed.';
+        if (plan.strategy === 'repeat') detail += ' A repeat plan needs every tracked setting to match.';
+        else detail += ' The plan called for changing only ' + (plan.factorLabel || 'the chosen factor') + '.';
+        return { status: 'mismatch', target: target, title: 'Captured settings need attention', detail: detail, changed: changed };
+      };
+
+      // Capture a structured simulator snapshot into the active Capstone. The
+      // shared record shape lets every linked model feed the same notebook and
+      // printable evidence table without asking students to transcribe charts.
+      var captureCapstoneRun = function(moduleId, snapshot) {
+        var capstone = d.evoCapstone || {};
+        if (!capstone.scenarioId || capstone.module !== moduleId || !snapshot) return;
+        var runs = Array.isArray(capstone.runs) ? capstone.runs.slice() : [];
+        var sourceRunKey = snapshot.sourceRunKey || '';
+        var captureLockKey = moduleId + '|' + sourceRunKey;
+        var alreadyCaptured = !!sourceRunKey && (runs.some(function(run) { return run.moduleId === moduleId && run.sourceRunKey === sourceRunKey; }) || _capstoneCaptureLocksRef.current[captureLockKey]);
+        if (alreadyCaptured) {
+          announce('This trajectory is already captured. Reset the model or run a fresh lineage batch for another trial.');
+          return;
+        }
+        if (sourceRunKey) _capstoneCaptureLocksRef.current[captureLockKey] = true;
+        var nextRunId = Math.max(1, parseInt(capstone.nextRunId, 10) || 1);
+        var record = Object.assign({}, snapshot, {
+          id: 'run-' + nextRunId,
+          moduleId: moduleId,
+          capturedAt: new Date().toISOString(),
+          planIntent: capstone.trialPlan ? Object.assign({}, capstone.trialPlan) : null
+        });
+        runs.push(record);
+        // Keep the most recent eight runs so repeated trials remain useful
+        // without allowing the session payload or printed report to balloon.
+        if (runs.length > 8) runs = runs.slice(runs.length - 8);
+        var notebook = Object.assign({ baseline: '', settings: '', outcome: '', claim: '', surprise: '' }, capstone.notebook || {});
+        if (!notebook.baseline.trim()) notebook.baseline = record.baseline || '';
+        if (!notebook.settings.trim()) notebook.settings = record.settings || '';
+        if (!notebook.outcome.trim()) notebook.outcome = record.outcome || '';
+        var nextCapstone = Object.assign({}, capstone, {
+          runs: runs,
+          nextRunId: nextRunId + 1,
+          notebook: notebook,
+          evidenceVerdict: ''
+        });
+        upd('evoCapstone', nextCapstone);
+        lsSet('evoLab.capstone.v2', nextCapstone);
+        announce('Captured simulator run ' + nextRunId + ' for the Capstone evidence notebook.');
+      };
+
       // ─────────────────────────────────────────────────────
       // SHARED COMPONENTS
       // ─────────────────────────────────────────────────────
@@ -198,6 +318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       function BackBar(props) {
         var mission = d.evoCapstone && d.evoCapstone.scenarioId && d.evoCapstone.module === view ? d.evoCapstone : null;
         var missionItems = mission && Array.isArray(mission.dataMission) ? mission.dataMission : [];
+        var missionPlanSummary = mission ? describeCapstoneTrialPlan(mission.trialPlan) : '';
         return h(React.Fragment, null,
           h('div', { className: 'flex flex-wrap items-center gap-3 bg-gradient-to-r from-emerald-700 to-teal-700 text-white p-4 shadow' },
             h('button', {
@@ -221,7 +342,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               h('div', { className: 'min-w-0' },
                 h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-amber-800' }, '📍 Capstone field mission'),
                 h('div', { className: 'font-black text-slate-900' }, mission.scenarioTitle || 'Active investigation'),
-                h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, mission.moduleHint || 'Run the model, record exact settings, and compare the outcome with your prediction.')
+                h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, mission.moduleHint || 'Run the model, record exact settings, and compare the outcome with your prediction.'),
+                missionPlanSummary && h('p', { className: 'mt-2 rounded-lg border border-violet-200 bg-violet-50 px-2 py-1.5 text-xs font-bold leading-relaxed text-violet-900' }, 'Trial plan: ' + missionPlanSummary)
               ),
               missionItems.length > 0 && h('ol', { className: 'grid min-w-0 flex-1 grid-cols-1 gap-1 text-xs text-slate-700 sm:grid-cols-3' },
                 missionItems.map(function(item, index) {
@@ -237,6 +359,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'flex-shrink-0 rounded-xl bg-amber-700 px-4 py-2 text-sm font-black text-white shadow hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300'
               }, 'Return to notebook →')
             )
+          )
+        );
+      }
+
+      // Appears only inside the simulator linked to an active Capstone. Each
+      // lab supplies a snapshot factory so the saved values reflect the exact
+      // model state at the moment the learner chooses to capture it.
+      function CapstoneCapture(props) {
+        var capstone = d.evoCapstone || {};
+        if (!capstone.scenarioId || capstone.module !== props.moduleId) return null;
+        var capstoneRuns = Array.isArray(capstone.runs) ? capstone.runs : [];
+        var capturedCount = capstoneRuns.filter(function(run) { return run.moduleId === props.moduleId; }).length;
+        var alreadyCaptured = !!props.sourceRunKey && capstoneRuns.some(function(run) { return run.moduleId === props.moduleId && run.sourceRunKey === props.sourceRunKey; });
+        var planTarget = capstone.trialPlan && capstone.trialPlan.strategy === 'repeat' ? clamp(parseInt(capstone.trialPlan.targetRuns, 10) || 2, 2, 3) : capstone.trialPlan && capstone.trialPlan.strategy === 'change-one' ? 2 : null;
+        var planSummary = describeCapstoneTrialPlan(capstone.trialPlan);
+        return h('section', {
+          'data-evolab-capture': props.moduleId,
+          'aria-label': 'Capture simulator evidence for the Capstone project',
+          className: 'evolab-no-print rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-yellow-50 p-4 shadow-sm'
+        },
+          h('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between' },
+            h('div', { className: 'min-w-0' },
+              h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-amber-800' }, '📸 Evidence bridge'),
+              h('h3', { className: 'mt-1 font-black text-slate-900' }, alreadyCaptured ? 'This trajectory is already captured' : props.ready ? 'This run is ready to capture' : 'Run the model before capturing evidence'),
+              h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-700' }, alreadyCaptured ? 'Reset the model or run a fresh lineage batch before capturing another distinct trial.' : props.ready ? props.readyHint : props.emptyHint),
+              h('div', { className: 'mt-2 text-xs font-bold text-amber-900' }, capturedCount + ' run' + (capturedCount === 1 ? '' : 's') + ' captured for this project' + (planTarget ? ' · target ' + planTarget : '')),
+              planSummary && h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, planSummary)
+            ),
+            h('button', {
+              type: 'button',
+              disabled: !props.ready || alreadyCaptured,
+              onClick: function() {
+                if (!props.ready || alreadyCaptured || typeof props.getSnapshot !== 'function') return;
+                captureCapstoneRun(props.moduleId, props.getSnapshot());
+              },
+              'aria-label': 'Capture this ' + props.moduleLabel + ' run in the Capstone evidence notebook',
+              className: 'flex-shrink-0 rounded-xl px-5 py-3 text-sm font-black shadow transition-colors ' + (props.ready && !alreadyCaptured ? 'bg-amber-700 text-white hover:bg-amber-800 focus:outline-none focus:ring-4 focus:ring-amber-300' : 'cursor-not-allowed bg-slate-200 text-slate-600')
+            }, alreadyCaptured ? '✓ Captured' : props.ready ? '📸 Capture this run' : 'Run required')
           )
         );
       }
@@ -691,7 +851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           // Progress banner
           h('div', {
             'aria-live': 'polite',
-            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
+            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex flex-wrap items-center justify-between gap-4'
           },
             h('div', { className: 'flex items-center gap-3' },
               h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🎯'),
@@ -1063,6 +1223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var generationsState = useState(100), generations = generationsState[0], setGenerations = generationsState[1];
         var trialsState = useState([]), trials = trialsState[0], setTrials = trialsState[1];
         var runIdState = useState(0), runId = runIdState[0], setRunId = runIdState[1];
+        var lastRunMetaState = useState(null), lastRunMeta = lastRunMetaState[0], setLastRunMeta = lastRunMetaState[1];
 
         // Run ONE lineage of N generations starting at p=0.5. Returns array of p values.
         var runOneLineage = function(n, gens) {
@@ -1092,7 +1253,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             traces.push(runOneLineage(popSize, generations));
           }
           setTrials(traces);
-          setRunId(runId + 1);
+          var nextRunId = runId + 1;
+          setRunId(nextRunId);
+          setLastRunMeta({ popSize: popSize, generations: generations, runId: nextRunId, sourceRunKey: newCapstoneSourceRunKey('geneticDrift') });
           // Compute fixation summary
           var fixed0 = traces.filter(function(t) { return t[t.length - 1] === 0; }).length;
           var fixed1 = traces.filter(function(t) { return t[t.length - 1] === 1; }).length;
@@ -1101,7 +1264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
 
         // SVG line chart of the 5 lineages
         var W = 600, H = 280, padL = 40, padR = 12, padT = 12, padB = 28;
-        var xMax = generations;
+        var xMax = lastRunMeta ? lastRunMeta.generations : generations;
         var toX = function(g) { return padL + (g / xMax) * (W - padL - padR); };
         var toY = function(p) { return padT + (1 - p) * (H - padT - padB); };
         var lineColors = ['#10b981', '#06b6d4', '#f43f5e', '#a855f7', '#f59e0b'];
@@ -1114,6 +1277,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         var fixedCount = trials.filter(function(t) { return t[t.length - 1] === 0 || t[t.length - 1] === 1; }).length;
+        var driftSnapshot = function() {
+          if (!lastRunMeta || trials.length === 0) return null;
+          var finals = trials.map(function(trace) { return trace[trace.length - 1]; });
+          var fixedAtA = finals.filter(function(value) { return value === 1; }).length;
+          var lostA = finals.filter(function(value) { return value === 0; }).length;
+          var polymorphic = finals.length - fixedAtA - lostA;
+          var minFinal = Math.min.apply(Math, finals);
+          var maxFinal = Math.max.apply(Math, finals);
+          var meanFinal = finals.reduce(function(sum, value) { return sum + value; }, 0) / finals.length;
+          var meanAbsoluteDisplacement = finals.reduce(function(sum, value) { return sum + Math.abs(value - 0.5); }, 0) / finals.length;
+          var finalText = finals.map(function(value) { return value.toFixed(3); }).join(', ');
+          var fixationGenerations = trials.map(function(trace) {
+            for (var i = 1; i < trace.length; i++) if (trace[i] === 0 || trace[i] === 1) return i;
+            return null;
+          });
+          return {
+            sourceRunKey: lastRunMeta.sourceRunKey,
+            moduleLabel: 'Genetic Drift Simulator',
+            comparison: {
+              designKey: 'N=' + lastRunMeta.popSize + '|generations=' + lastRunMeta.generations,
+              designLabel: 'N = ' + lastRunMeta.popSize + ' for ' + lastRunMeta.generations + ' generations',
+              primaryLabel: 'mean absolute displacement from p(A) = 0.500',
+              primaryValue: meanAbsoluteDisplacement,
+              primaryDisplay: meanAbsoluteDisplacement.toFixed(3),
+              precision: 3,
+              unit: '',
+              factors: [
+                { id: 'populationSize', label: 'Population size', value: lastRunMeta.popSize },
+                { id: 'generations', label: 'Generations', value: lastRunMeta.generations }
+              ]
+            },
+            baseline: 'Generation 0: N = ' + lastRunMeta.popSize + ' diploid individuals; p(A) = 0.500 in all 5 lineages.',
+            settings: '5 independent lineages for ' + lastRunMeta.generations + ' generations; random sampling only (no selection, mutation, or migration).',
+            outcome: 'Final p(A): ' + finalText + '. Range ' + minFinal.toFixed(3) + '–' + maxFinal.toFixed(3) + '; A fixed in ' + fixedAtA + '/5, A lost in ' + lostA + '/5, and ' + polymorphic + '/5 remained polymorphic.',
+            metrics: [
+              { label: 'Population N', value: String(lastRunMeta.popSize) },
+              { label: 'Generations', value: String(lastRunMeta.generations) },
+              { label: 'Mean final p(A)', value: meanFinal.toFixed(3) },
+              { label: 'Mean absolute displacement from 0.500', value: meanAbsoluteDisplacement.toFixed(3) },
+              { label: 'Final p(A) values', value: finalText },
+              { label: 'First fixation generations', value: fixationGenerations.map(function(value) { return value == null ? 'not fixed' : String(value); }).join(', ') }
+            ]
+          };
+        };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🎲', title: t('stem.evolab.genetic_drift_simulator', 'Genetic Drift Simulator') }),
@@ -1159,7 +1366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 h('text', { x: 8, y: toY(0) + 4, fontSize: '10', fill: '#475569' }, t('stem.evolab.p_0_a_fixed', 'p=0 (a fixed)')),
                 // X labels
                 h('text', { x: padL, y: H - 8, fontSize: '10', fill: '#475569' }, t('stem.evolab.gen_0', 'gen 0')),
-                h('text', { x: W - padR - 32, y: H - 8, fontSize: '10', fill: '#475569' }, 'gen ' + generations),
+                h('text', { x: W - padR - 32, y: H - 8, fontSize: '10', fill: '#475569' }, 'gen ' + xMax),
                 // Lineage traces (or an empty-state hint before the first run)
                 trials.length === 0
                   ? h('text', { x: W / 2, y: H / 2, textAnchor: 'middle', fontSize: '13', fill: '#94a3b8', fontStyle: 'italic' }, t('stem.evolab.press_run_to_watch_5_lineages_drift_by', 'Press Run to watch 5 lineages drift by chance'))
@@ -1198,10 +1405,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-6 py-3 rounded-xl font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-lg transition-colors'
               }, t('stem.evolab.run_5_lineages', '🎲 Run 5 Lineages')),
               h('button', {
-                onClick: function() { setTrials([]); setRunId(0); },
+                onClick: function() { setTrials([]); setRunId(0); setLastRunMeta(null); },
                 className: 'px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
               }, t('stem.evolab.clear', '↺ Clear'))
             ),
+            h(CapstoneCapture, {
+              moduleId: 'geneticDrift',
+              moduleLabel: 'Genetic Drift Simulator',
+              sourceRunKey: lastRunMeta && lastRunMeta.sourceRunKey,
+              ready: trials.length > 0 && !!lastRunMeta,
+              readyHint: 'Save the five final allele frequencies, fixation counts, and the exact N and generation settings.',
+              emptyHint: 'Run five lineages first. The captured record will preserve their exact endpoints and run-time settings.',
+              getSnapshot: driftSnapshot
+            }),
             // Reference
             h('div', { className: 'bg-rose-50 border border-rose-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-rose-800 mb-2' }, t('stem.evolab.why_drift_matters', '📖 Why Drift Matters')),
@@ -1328,6 +1544,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // RAF cancel/restart every step). Updated whenever state changes.
         var creaturesRef = useRef([]);
         var historyRef = useRef([]); // mean trait per generation, for chart
+        var selectionBaselineRef = useRef({ mean: 0.5, std: 0.29, population: POP_SIZE });
+        var selectionSessionRef = useRef('');
         var canvasRef = useRef(null);
         var rafRef = useRef(null);
         var lastGenTickRef = useRef(0);
@@ -1347,20 +1565,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // Initialize / reset population. Each creature is randomly placed,
         // gets a random trait from [0,1] uniform, random velocity.
         var initPopulation = function() {
+          selectionSessionRef.current = newCapstoneSourceRunKey('selectionSandbox');
           var pop = [];
+          var initialSum = 0, initialSumSq = 0;
           for (var i = 0; i < POP_SIZE; i++) {
+            var initialTrait = Math.random();
             pop.push({
               x: 30 + Math.random() * 740,
               y: 30 + Math.random() * 220,
               vx: (Math.random() - 0.5) * 30,
               vy: (Math.random() - 0.5) * 30,
-              trait: Math.random(),
+              trait: initialTrait,
               alive: true,
               age: 0
             });
+            initialSum += initialTrait;
+            initialSumSq += initialTrait * initialTrait;
           }
+          var initialMean = initialSum / POP_SIZE;
+          var initialVariance = (initialSumSq / POP_SIZE) - initialMean * initialMean;
+          var initialStd = Math.sqrt(Math.max(0, initialVariance));
           creaturesRef.current = pop;
-          historyRef.current = [{ gen: 0, mean: 0.5, std: 0.29, alive: POP_SIZE }];
+          selectionBaselineRef.current = { mean: initialMean, std: initialStd, population: POP_SIZE };
+          historyRef.current = [{ gen: 0, mean: initialMean, std: initialStd, alive: POP_SIZE }];
+          generationRef.current = 0;
+          autoRunRef.current = false;
+          setAutoRun(false);
           setGeneration(0);
         };
 
@@ -1401,7 +1631,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             survivors = pop.sort(function(a, b) { return fitnessOf(b.trait) - fitnessOf(a.trait); }).slice(0, Math.max(2, Math.floor(pop.length / 2)));
           }
           // Reproduce until population is back to POP_SIZE.
-          var next = survivors.slice();
+          // Discrete generations: sample a full offspring generation with
+          // replacement from selected parents. Equal fitness can now drift.
+          var next = [];
           var mutNow = mutSizeRef.current;
           while (next.length < POP_SIZE) {
             var parent = survivors[Math.floor(Math.random() * survivors.length)];
@@ -1618,6 +1850,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         };
 
         var latest = historyRef.current[historyRef.current.length - 1] || { mean: 0.5, std: 0.29, alive: POP_SIZE };
+        var selectionSnapshot = function() {
+          if (generation <= 0) return null;
+          var baseline = selectionBaselineRef.current;
+          var traitShift = latest.mean - baseline.mean;
+          var spreadShift = latest.std - baseline.std;
+          var low = 0, middle = 0, high = 0;
+          creaturesRef.current.forEach(function(creature) {
+            if (creature.trait < 0.35) low++;
+            else if (creature.trait > 0.65) high++;
+            else middle++;
+          });
+          var targetText = preset.mode === 'bimodal' ? 'targets 0.20 and 0.80' : preset.width >= 900 ? 'no fitness target (drift only)' : 'target ' + preset.ideal.toFixed(2);
+          return {
+            sourceRunKey: selectionSessionRef.current,
+            moduleLabel: 'Selection Sandbox',
+            comparison: {
+              designKey: preset.label + '|strength=' + selStrength.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|generations=' + generation,
+              designLabel: preset.label + ', strength ' + selStrength.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', ' + generation + ' generations',
+              primaryLabel: 'mean trait shift',
+              primaryValue: traitShift,
+              primaryDisplay: (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3),
+              precision: 3,
+              unit: '',
+              factors: [
+                { id: 'selectionPreset', label: 'Selection preset', value: preset.label },
+                { id: 'selectionStrength', label: 'Selection strength', value: Number(selStrength.toFixed(2)) },
+                { id: 'traitVariation', label: 'Offspring trait variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'generations', label: 'Generations', value: generation }
+              ]
+            },
+            baseline: 'Generation 0: ' + baseline.population + ' modeled organisms; mean trait ' + baseline.mean.toFixed(3) + ', SD ' + baseline.std.toFixed(3) + '.',
+            settings: preset.label + '; ' + targetText + '; selection strength ' + selStrength.toFixed(2) + '; offspring trait variation σ = ' + mutSize.toFixed(2) + '; settings shown at capture.',
+            outcome: 'Generation ' + generation + ': mean trait ' + latest.mean.toFixed(3) + ' (Δ ' + (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) + '), SD ' + latest.std.toFixed(3) + ' (Δ ' + (spreadShift >= 0 ? '+' : '') + spreadShift.toFixed(3) + '); ' + latest.alive + '/50 survived the last selection pass before reproduction restored the census to 50.',
+            metrics: [
+              { label: 'Preset', value: preset.label },
+              { label: 'Generation', value: String(generation) },
+              { label: 'Mean trait shift', value: (traitShift >= 0 ? '+' : '') + traitShift.toFixed(3) },
+              { label: 'Low / middle / high traits', value: low + ' / ' + middle + ' / ' + high },
+              { label: 'Last selection survivors', value: latest.alive + ' of 50' }
+            ]
+          };
+        };
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🧪', title: t('stem.evolab.selection_sandbox_2', 'Selection Sandbox') }),
@@ -1712,6 +1986,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 transition-colors'
               }, t('stem.evolab.reset_population', '↺ Reset Population'))
             ),
+            h(CapstoneCapture, {
+              moduleId: 'selectionSandbox',
+              moduleLabel: 'Selection Sandbox',
+              sourceRunKey: selectionSessionRef.current,
+              ready: generation > 0 && !autoRun,
+              readyHint: 'Save the realized starting distribution, current trait shift, variation, and last selection-survivor count.',
+              emptyHint: autoRun ? 'Stop Auto-Run to freeze a consistent generation before capturing.' : 'Advance at least one generation before capturing a run.',
+              getSnapshot: selectionSnapshot
+            }),
             // Educational reference
             h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2' }, t('stem.evolab.what_you_re_seeing', '📖 What you\'re seeing')),
@@ -3097,6 +3380,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var autoRunRef2 = useRef(autoRun);
         var tickRef = useRef(tick);
         var historyRef = useRef(history);
+        var antibioticBaselineRef = useRef({ population: POP_CAP, resistantCount: 0, resistantPct: 0, meanResistance: 0, configuredStart: startRes });
+        var antibioticSessionRef = useRef('');
+        var exposureRef = useRef({ ticks: 0, blocks: 0, wasOn: false });
         // Mirror state into refs every render so the long-lived RAF closure
         // sees the latest values without re-mounting.
         antibioticRef.current = antibiotic;
@@ -3107,7 +3393,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         historyRef.current = history;
 
         var initPopulation = function() {
+          antibioticSessionRef.current = newCapstoneSourceRunKey('antibioticLab');
           var pop = [];
+          var initialResistanceSum = 0;
           for (var i = 0; i < POP_CAP; i++) {
             // startRes fraction begin partially resistant; rest are susceptible.
             var r = Math.random() < startRes ? clamp(0.6 + Math.random() * 0.3, 0, 1) : clamp(Math.random() * 0.1, 0, 1);
@@ -3119,11 +3407,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               r: r,
               alive: true
             });
+            initialResistanceSum += r;
           }
           bacteriaRef.current = pop;
+          tickRef.current = 0;
+          autoRunRef2.current = false;
+          antibioticRef.current = false;
+          exposureRef.current = { ticks: 0, blocks: 0, wasOn: false };
+          setAutoRun(false);
+          setAntibiotic(false);
           setTick(0);
           var resCount = pop.filter(function(b) { return b.r > 0.5; }).length;
-          setHistory([{ tick: 0, pop: pop.length, resistant: resCount, anti: false }]);
+          antibioticBaselineRef.current = {
+            population: pop.length,
+            resistantCount: resCount,
+            resistantPct: pop.length ? (resCount / pop.length) * 100 : null,
+            meanResistance: pop.length ? initialResistanceSum / pop.length : null,
+            configuredStart: startRes
+          };
+          var initialHistory = [{ tick: 0, pop: pop.length, resistant: resCount, anti: false }];
+          historyRef.current = initialHistory;
+          setHistory(initialHistory);
         };
 
         // Advance one "step" (~few hours of bacterial life). Either:
@@ -3136,6 +3440,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           var dose = doseRef.current;
           var mut = mutRef.current;
           var survivors;
+          if (antiOn) {
+            exposureRef.current.ticks++;
+            if (!exposureRef.current.wasOn) exposureRef.current.blocks++;
+          }
+          exposureRef.current.wasOn = antiOn;
           if (antiOn) {
             survivors = [];
             for (var i = 0; i < pop.length; i++) {
@@ -3253,6 +3562,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var pop = bacteriaRef.current;
         var resistantCount = pop.filter(function(b) { return b.r > 0.5; }).length;
         var resistantPct = pop.length > 0 ? Math.round((resistantCount / pop.length) * 100) : 0;
+        var antibioticSnapshot = function() {
+          if (tick <= 0) return null;
+          var baseline = antibioticBaselineRef.current;
+          var meanResistance = pop.length ? pop.reduce(function(sum, bacterium) { return sum + bacterium.r; }, 0) / pop.length : null;
+          var exactResistantPct = pop.length ? (resistantCount / pop.length) * 100 : null;
+          var pctDelta = exactResistantPct == null || baseline.resistantPct == null ? null : exactResistantPct - baseline.resistantPct;
+          var outcomeText = pop.length === 0
+            ? 'Tick ' + tick + ': the modeled population is extinct; resistant fraction and mean resistance are not defined.'
+            : 'Tick ' + tick + ': ' + pop.length + ' bacteria; ' + resistantCount + '/' + pop.length + ' (' + exactResistantPct.toFixed(1) + '%) above the model resistance threshold r > 0.50; mean resistance ' + meanResistance.toFixed(3) + '; population change ' + (pop.length - baseline.population) + '.';
+          return {
+            sourceRunKey: antibioticSessionRef.current,
+            moduleLabel: 'Antibiotic Resistance Lab',
+            comparison: {
+              designKey: 'start=' + baseline.configuredStart.toFixed(3) + '|ticks=' + tick + '|exposure=' + exposureRef.current.ticks + '|blocks=' + exposureRef.current.blocks + '|dose=' + doseStrength.toFixed(2) + '|variation=' + mutRate.toFixed(2),
+              designLabel: Math.round(baseline.configuredStart * 100) + '% starting-resistance setting, antibiotic active ' + exposureRef.current.ticks + '/' + tick + ' ticks, dose ' + doseStrength.toFixed(2) + ', variation σ = ' + mutRate.toFixed(2),
+              primaryLabel: 'resistant-share change',
+              primaryValue: pctDelta,
+              primaryDisplay: pctDelta == null ? 'not defined (extinct)' : (pctDelta >= 0 ? '+' : '') + pctDelta.toFixed(1) + ' percentage points',
+              precision: 1,
+              unit: ' percentage points',
+              factors: [
+                { id: 'startingResistance', label: 'Starting resistance setting', value: Math.round(baseline.configuredStart * 100) + '%' },
+                { id: 'elapsedTicks', label: 'Elapsed ticks', value: tick },
+                { id: 'exposureTicks', label: 'Antibiotic exposure ticks', value: exposureRef.current.ticks },
+                { id: 'exposureBlocks', label: 'Exposure blocks', value: exposureRef.current.blocks },
+                { id: 'doseStrength', label: 'Dose strength', value: Number(doseStrength.toFixed(2)) },
+                { id: 'traitVariation', label: 'Offspring resistance variation', value: Number(mutRate.toFixed(2)) }
+              ]
+            },
+            baseline: 'Tick 0: ' + baseline.population + ' modeled bacteria; ' + baseline.resistantCount + '/' + baseline.population + ' (' + baseline.resistantPct.toFixed(1) + '%) above r > 0.50; mean resistance ' + baseline.meanResistance.toFixed(3) + '. Starting-resistance setting: ' + Math.round(baseline.configuredStart * 100) + '%.',
+            settings: tick + ' ticks; antibiotic active for ' + exposureRef.current.ticks + '/' + tick + ' ticks in ' + exposureRef.current.blocks + ' exposure block' + (exposureRef.current.blocks === 1 ? '' : 's') + '; dose strength ' + doseStrength.toFixed(2) + '; offspring resistance variation σ = ' + mutRate.toFixed(2) + '; current settings shown at capture.',
+            outcome: outcomeText,
+            metrics: [
+              { label: 'Elapsed ticks', value: String(tick) },
+              { label: 'Antibiotic exposure', value: exposureRef.current.ticks + ' of ' + tick + ' ticks' },
+              { label: 'Final population', value: String(pop.length) },
+              { label: 'Final resistant share', value: exactResistantPct == null ? 'not defined (extinct)' : exactResistantPct.toFixed(1) + '%' },
+              { label: 'Resistant-share change', value: pctDelta == null ? 'not defined (extinct)' : (pctDelta >= 0 ? '+' : '') + pctDelta.toFixed(1) + ' percentage points' }
+            ]
+          };
+        };
 
         // History line chart of resistance % over time.
         var renderHistoryChart = function() {
@@ -3401,6 +3751,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 hint: t('stem.evolab.antibiotic_starting_resistance_limit', 'Fraction of the initial modeled population above the resistance threshold. Outcomes vary stochastically; a small resistant minority can expand under selection but is not guaranteed to do so.')
               })
             ),
+            h(CapstoneCapture, {
+              moduleId: 'antibioticLab',
+              moduleLabel: 'Antibiotic Resistance Lab',
+              sourceRunKey: antibioticSessionRef.current,
+              ready: tick > 0 && !autoRun,
+              readyHint: 'Save the realized starting resistance, exposure history, population change, and final resistant share.',
+              emptyHint: autoRun ? 'Stop Auto-Run to freeze one consistent tick before capturing.' : 'Advance at least one tick before capturing a run.',
+              getSnapshot: antibioticSnapshot
+            }),
             // Try-this experiments
             h('div', { className: 'bg-white border-2 border-fuchsia-400 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-fuchsia-800 mb-3' }, t('stem.evolab.try_these_experiments_5', '🧪 Try these experiments')),
@@ -3915,6 +4274,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var predRef = useRef([]);
         var preyRef = useRef([]);
         var historyRef = useRef([]);
+        var coevolutionBaselineRef = useRef({ predatorMean: 0.3, preyMean: 0.3, predatorPopulation: POP_PER_SIDE, preyPopulation: POP_PER_SIDE });
+        var coevolutionSessionRef = useRef('');
         var canvasRef = useRef(null);
         var rafRef = useRef(null);
         var lastTickRef = useRef(0);
@@ -3930,7 +4291,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         autoRunRef4.current = autoRun;
 
         var initPopulations = function() {
+          coevolutionSessionRef.current = newCapstoneSourceRunKey('coevolution');
           var preds = [], prey = [];
+          var initialPredSum = 0, initialPreySum = 0;
           for (var i = 0; i < POP_PER_SIDE; i++) {
             // Both populations start at speed 0.3 (slow ancestors).
             preds.push({
@@ -3947,10 +4310,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               vy: (Math.random() - 0.5) * 18,
               speed: clamp(randNormal(0.3, 0.05), 0, 1)
             });
+            initialPredSum += preds[preds.length - 1].speed;
+            initialPreySum += prey[prey.length - 1].speed;
           }
+          var initialPredMean = initialPredSum / preds.length;
+          var initialPreyMean = initialPreySum / prey.length;
           predRef.current = preds;
           preyRef.current = prey;
-          historyRef.current = [{ gen: 0, predMean: 0.3, preyMean: 0.3, gap: 0, capture: 0 }];
+          coevolutionBaselineRef.current = { predatorMean: initialPredMean, preyMean: initialPreyMean, predatorPopulation: preds.length, preyPopulation: prey.length };
+          historyRef.current = [{ gen: 0, predMean: initialPredMean, preyMean: initialPreyMean, gap: initialPredMean - initialPreyMean, capture: null }];
+          generationRef.current = 0;
+          autoRunRef4.current = false;
+          setAutoRun(false);
           setGeneration(0);
         };
 
@@ -4146,6 +4517,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var predMean = predRef.current.length > 0 ? pSum / predRef.current.length : 0;
         var preyMean = preyRef.current.length > 0 ? ySum / preyRef.current.length : 0;
         var gap = predMean - preyMean;
+        var coevolutionSnapshot = function() {
+          if (generation <= 0) return null;
+          var baseline = coevolutionBaselineRef.current;
+          var historyAfterStart = historyRef.current.filter(function(point) { return point.gen > 0 && point.capture != null; });
+          var latestPoint = historyAfterStart[historyAfterStart.length - 1] || { capture: null };
+          var averageCapture = historyAfterStart.length ? historyAfterStart.reduce(function(sum, point) { return sum + point.capture; }, 0) / historyAfterStart.length : null;
+          var predShift = predMean - baseline.predatorMean;
+          var preyShift = preyMean - baseline.preyMean;
+          return {
+            sourceRunKey: coevolutionSessionRef.current,
+            moduleLabel: 'Coevolution Lab',
+            comparison: {
+              designKey: 'generations=' + generation + '|pressure=' + huntPressure.toFixed(2) + '|variation=' + mutSize.toFixed(2) + '|cost=' + (costEnabled ? 'on' : 'off'),
+              designLabel: generation + ' generations, pressure ' + huntPressure.toFixed(2) + ', variation σ = ' + mutSize.toFixed(2) + ', predator cost ' + (costEnabled ? 'on' : 'off'),
+              primaryLabel: 'mean capture rate',
+              primaryValue: averageCapture == null ? null : averageCapture * 100,
+              primaryDisplay: averageCapture == null ? 'not measured' : Math.round(averageCapture * 100) + '%',
+              precision: 0,
+              unit: '%',
+              factors: [
+                { id: 'generations', label: 'Generations', value: generation },
+                { id: 'huntPressure', label: 'Hunt pressure', value: Number(huntPressure.toFixed(2)) },
+                { id: 'traitVariation', label: 'Offspring speed variation', value: Number(mutSize.toFixed(2)) },
+                { id: 'predatorCost', label: 'Predator speed cost', value: costEnabled ? 'On' : 'Off' }
+              ]
+            },
+            baseline: 'Generation 0: predators n=' + baseline.predatorPopulation + ', mean model speed ' + baseline.predatorMean.toFixed(3) + '; prey n=' + baseline.preyPopulation + ', mean model speed ' + baseline.preyMean.toFixed(3) + '; gap ' + (baseline.predatorMean - baseline.preyMean).toFixed(3) + '.',
+            settings: generation + ' generations; hunt pressure ' + huntPressure.toFixed(2) + '; offspring speed variation σ = ' + mutSize.toFixed(2) + '; predator speed-cost toggle ' + (costEnabled ? 'ON' : 'OFF') + '; current settings shown at capture.',
+            outcome: 'Generation ' + generation + ': predator mean ' + predMean.toFixed(3) + ' (Δ ' + (predShift >= 0 ? '+' : '') + predShift.toFixed(3) + '); prey mean ' + preyMean.toFixed(3) + ' (Δ ' + (preyShift >= 0 ? '+' : '') + preyShift.toFixed(3) + '); gap ' + gap.toFixed(3) + '; final capture ' + (latestPoint.capture == null ? 'not measured' : Math.round(latestPoint.capture * 100) + '%') + '; run-average capture ' + (averageCapture == null ? 'not measured' : Math.round(averageCapture * 100) + '%') + '. The model refills each population to 30 after each generation.',
+            metrics: [
+              { label: 'Generation', value: String(generation) },
+              { label: 'Predator trait shift', value: (predShift >= 0 ? '+' : '') + predShift.toFixed(3) },
+              { label: 'Prey trait shift', value: (preyShift >= 0 ? '+' : '') + preyShift.toFixed(3) },
+              { label: 'Final trait gap', value: gap.toFixed(3) },
+              { label: 'Mean capture rate', value: averageCapture == null ? 'not measured' : Math.round(averageCapture * 100) + '%' }
+            ]
+          };
+        };
 
         // SVG history chart of both means + capture rate.
         var renderHistoryChart = function() {
@@ -4273,6 +4682,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-slate-200 hover:bg-slate-300 text-slate-700'
               }, t('stem.evolab.reset_4', '↺ Reset'))
             ),
+            h(CapstoneCapture, {
+              moduleId: 'coevolution',
+              moduleLabel: 'Coevolution Lab',
+              sourceRunKey: coevolutionSessionRef.current,
+              ready: generation > 0 && !autoRun,
+              readyHint: 'Save both realized starting means, reciprocal trait shifts, the trait gap, and capture-rate evidence.',
+              emptyHint: autoRun ? 'Stop Auto-Run to freeze one consistent generation before capturing.' : 'Advance at least one generation before capturing a run.',
+              getSnapshot: coevolutionSnapshot
+            }),
             // Try-this experiments
             h('div', { className: 'bg-white border-2 border-red-400 rounded-xl p-4' },
               h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-red-800 mb-3' }, t('stem.evolab.try_these_experiments_7', '🧪 Try these experiments')),
@@ -6190,6 +6608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'antibioticLab',
             moduleLabel: '💊 Antibiotic Resistance Lab',
             moduleHint: 'Use the Antibiotic Resistance Lab as your model — same mechanism, different organism. Set Starting Resistance to 1%, Apply Antibiotic, and run for 10-30 ticks.',
+            trialPlan: { version: 1, strategy: 'repeat', factor: '', factorLabel: '', levelA: '', levelB: '', targetRuns: 2 },
             mechanismCue: 'Natural selection changes allele frequencies when resistance is heritable and pesticide exposure changes which pests reproduce.',
             dataMission: [
               'Record the starting resistance percentage and population size.',
@@ -6217,6 +6636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'geneticDrift',
             moduleLabel: '🎲 Genetic Drift Simulator',
             moduleHint: 'Use the Genetic Drift Simulator with N=10 (matches the founders) and 100 generations. Run multiple lineages to see the range of possible outcomes.',
+            trialPlan: { version: 1, strategy: 'repeat', factor: '', factorLabel: '', levelA: '', levelB: '', targetRuns: 2 },
             mechanismCue: 'Genetic drift is random sampling. Its effects are stronger in small populations, and repeated lineages can end differently even from identical starting conditions.',
             dataMission: [
               'Confirm N = 10 and a starting allele frequency of 0.50.',
@@ -6244,6 +6664,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'selectionSandbox',
             moduleLabel: '🧪 Selection Sandbox',
             moduleHint: 'Use the Selection Sandbox with the "Maine Snowshoe Hare" preset. The "ideal" trait is set to 0.68 (later molt). Run for 30+ generations.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'selectionStrength', factorLabel: 'Selection strength', levelA: '0.40', levelB: '1.00', targetRuns: 2 },
             mechanismCue: 'Directional selection can shift a population only when useful variation is heritable. Whether adaptation keeps pace also depends on population size and the rate of environmental change.',
             dataMission: [
               'Record the starting mean trait, ideal trait, and population size.',
@@ -6271,6 +6692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             module: 'coevolution',
             moduleLabel: '🐆 Coevolution Lab',
             moduleHint: 'Use the Coevolution Lab as a model. Treat predator = invasive species, prey = native plant. Apply Hunt Pressure for the invasive\'s strong selection. Try with and without "Cost of Speed" enabled.',
+            trialPlan: { version: 1, strategy: 'change-one', factor: 'predatorCost', factorLabel: 'Predator speed cost', levelA: 'On', levelB: 'Off', targetRuns: 2 },
             mechanismCue: 'Coevolution requires reciprocal selection: each population changes the selective environment experienced by the other. A one-sided response is adaptation, but not necessarily coevolution.',
             dataMission: [
               'Record both populations\' starting trait values and sizes.',
@@ -6321,14 +6743,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         // Keep the investigation in host-owned toolData rather than component
         // state. Students leave this view to run a simulator; local hook state
         // would be destroyed on that navigation and erase their predictions.
-        // Session state also lets every linked lab offer a direct return route.
+        // Persisted state also lets every linked lab offer a direct return route.
         var capstone = d.evoCapstone || {};
         var step = clamp(capstone.step == null ? 0 : capstone.step, 0, 4);
         var scenarioId = capstone.scenarioId || null;
         var studentName = capstone.studentName || '';
         var predictions = Array.isArray(capstone.predictions) ? capstone.predictions : ['', '', ''];
         var reflections = Array.isArray(capstone.reflections) ? capstone.reflections : ['', '', ''];
-        var notebook = Object.assign({ baseline: '', settings: '', outcome: '', surprise: '' }, capstone.notebook || {});
+        var notebook = Object.assign({ baseline: '', settings: '', outcome: '', claim: '', surprise: '' }, capstone.notebook || {});
+        var capturedRuns = Array.isArray(capstone.runs) ? capstone.runs : [];
+        var hasExplicitRuns = Array.isArray(capstone.runs);
+        var trialPlan = capstone.trialPlan || null;
+        var hasExplicitTrialPlan = Object.prototype.hasOwnProperty.call(capstone, 'trialPlan') && !!trialPlan;
         var evidenceVerdict = capstone.evidenceVerdict || '';
         var EVIDENCE_VERDICTS = [
           { value: 'supported', label: 'Supported', detail: 'The observed pattern matched the prediction.' },
@@ -6339,22 +6765,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         var evidenceVerdictLabel = (EVIDENCE_VERDICTS.filter(function(option) { return option.value === evidenceVerdict; })[0] || {}).label || 'Not evaluated';
 
         var saveCapstone = function(patch) {
-          upd('evoCapstone', Object.assign({}, capstone, patch));
+          var nextCapstone = Object.assign({}, capstone, patch);
+          upd('evoCapstone', nextCapstone);
+          lsSet('evoLab.capstone.v2', nextCapstone);
         };
         var setStep = function(nextStep) { saveCapstone({ step: clamp(nextStep, 0, 4) }); };
         var setStudentName = function(name) { saveCapstone({ studentName: name }); };
 
         var scenario = scenarioId ? SCENARIOS.find(function(s) { return s.id === scenarioId; }) : null;
+        var CAPSTONE_FACTOR_OPTIONS = {
+          geneticDrift: [
+            { id: 'populationSize', label: 'Population size', levelA: '10', levelB: '100' },
+            { id: 'generations', label: 'Generations', levelA: '50', levelB: '100' }
+          ],
+          selectionSandbox: [
+            { id: 'selectionStrength', label: 'Selection strength', levelA: '0.40', levelB: '1.00' },
+            { id: 'traitVariation', label: 'Offspring trait variation', levelA: '0.02', levelB: '0.08' },
+            { id: 'generations', label: 'Generations', levelA: '30', levelB: '60' }
+          ],
+          antibioticLab: [
+            { id: 'doseStrength', label: 'Dose strength', levelA: '0.55', levelB: '0.85' },
+            { id: 'startingResistance', label: 'Starting resistance', levelA: '1%', levelB: '10%' },
+            { id: 'traitVariation', label: 'Offspring resistance variation', levelA: '0.02', levelB: '0.08' }
+          ],
+          coevolution: [
+            { id: 'huntPressure', label: 'Hunt pressure', levelA: '0.35', levelB: '0.75' },
+            { id: 'traitVariation', label: 'Offspring speed variation', levelA: '0.02', levelB: '0.08' },
+            { id: 'predatorCost', label: 'Predator speed cost', levelA: 'On', levelB: 'Off' },
+            { id: 'generations', label: 'Generations', levelA: '20', levelB: '40' }
+          ]
+        };
+        var CAPSTONE_OUTCOMES = {
+          geneticDrift: 'mean absolute displacement and fixation/loss',
+          selectionSandbox: 'trait response',
+          antibioticLab: 'resistant-share change',
+          coevolution: 'capture rate and reciprocal trait shifts'
+        };
+        var factorOptions = scenario && scenario.module ? (CAPSTONE_FACTOR_OPTIONS[scenario.module] || []) : [];
+        var trialPlanTarget = trialPlan && trialPlan.strategy === 'repeat' ? clamp(parseInt(trialPlan.targetRuns, 10) || 2, 2, 3) : 2;
+        var displayedTrialTarget = hasExplicitTrialPlan ? trialPlanTarget : 1;
+        var trialPlanReady = !hasExplicitTrialPlan || trialPlan.strategy === 'repeat' || (trialPlan.strategy === 'change-one' && !!trialPlan.factor && String(trialPlan.levelA || '').trim().length > 0 && String(trialPlan.levelB || '').trim().length > 0 && String(trialPlan.levelA || '').trim() !== String(trialPlan.levelB || '').trim());
+        var trialPlanLocked = capturedRuns.length > 0;
+        var trialAssessment = assessCapstoneTrialPlan(trialPlan, capturedRuns);
+
+        var setTrialPlan = function(patch) {
+          if (!trialPlan || trialPlanLocked) return;
+          saveCapstone({ trialPlan: Object.assign({}, trialPlan, patch) });
+        };
 
         var resetAll = function() {
-          upd('evoCapstone', { step: 0, scenarioId: null, scenarioTitle: '', studentName: '', predictions: ['', '', ''], reflections: ['', '', ''], notebook: { baseline: '', settings: '', outcome: '', surprise: '' }, evidenceVerdict: '', module: null, moduleLabel: '', moduleHint: '', mechanismCue: '', dataMission: [] });
+          var blankProject = { step: 0, scenarioId: null, scenarioTitle: '', studentName: '', predictions: ['', '', ''], reflections: ['', '', ''], notebook: { baseline: '', settings: '', outcome: '', claim: '', surprise: '' }, runs: [], nextRunId: 1, evidenceVerdict: '', trialPlan: null, module: null, moduleLabel: '', moduleHint: '', mechanismCue: '', dataMission: [] };
+          upd('evoCapstone', blankProject);
+          lsSet('evoLab.capstone.v2', blankProject);
           announce('Capstone Project reset.');
         };
 
         var canAdvance = function() {
           if (step === 0) return !!scenarioId;
           if (step === 1) return predictions.every(function(p) { return p.trim().length >= 10; });
-          if (step === 2) return notebook.baseline.trim().length >= 10 && notebook.outcome.trim().length >= 10;
+          if (step === 2) {
+            var notesReady = notebook.baseline.trim().length >= 10 && notebook.outcome.trim().length >= 10;
+            var capturesReady = !scenario.module || !hasExplicitRuns || (hasExplicitTrialPlan ? trialPlanReady && capturedRuns.length >= trialPlanTarget : capturedRuns.length > 0);
+            return notesReady && capturesReady;
+          }
           if (step === 3) return !!evidenceVerdict && reflections.every(function(r) { return r.trim().length >= 10; });
           return false;
         };
@@ -6378,6 +6851,180 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           saveCapstone({ evidenceVerdict: value });
           announce('Evidence verdict selected: ' + value + '.');
         };
+        var removeCapturedRun = function(runId) {
+          var nextRuns = capturedRuns.filter(function(run) { return run.id !== runId; });
+          saveCapstone({ runs: nextRuns, evidenceVerdict: '' });
+          announce('Captured simulator run removed from the evidence notebook.');
+        };
+        var clearCapturedRuns = function() {
+          saveCapstone({ runs: [], evidenceVerdict: '' });
+          announce('All captured simulator runs cleared. Your interpretation notes were kept.');
+        };
+
+        var renderComparisonCoach = function(forReport) {
+          if (!capturedRuns.length || (forReport && capturedRuns.length < 2)) return null;
+          var comparisonRuns = capturedRuns.filter(function(run) {
+            return run && run.comparison && run.comparison.primaryLabel;
+          });
+          var firstComparison = comparisonRuns.length ? comparisonRuns[0].comparison : null;
+          var designKeys = [];
+          comparisonRuns.forEach(function(run) {
+            var key = run.comparison.designKey || run.settings || 'unspecified';
+            if (designKeys.indexOf(key) === -1) designKeys.push(key);
+          });
+          var sameDesign = comparisonRuns.length === capturedRuns.length && designKeys.length === 1;
+          var controlledPlanComparison = hasExplicitTrialPlan && trialPlan.strategy === 'change-one' && trialAssessment.status === 'match';
+          var numericValues = comparisonRuns.map(function(run) {
+            return run.comparison.primaryValue == null ? NaN : Number(run.comparison.primaryValue);
+          }).filter(function(value) { return isFinite(value); });
+          var precision = firstComparison && isFinite(Number(firstComparison.precision)) ? clamp(Number(firstComparison.precision), 0, 4) : 2;
+          var unit = firstComparison && firstComparison.unit ? firstComparison.unit : '';
+          var label = firstComparison ? firstComparison.primaryLabel : 'key outcome';
+          var formatValue = function(value) { return Number(value).toFixed(precision) + unit; };
+          var rangeText = '';
+          if (numericValues.length >= 2) {
+            var low = Math.min.apply(Math, numericValues);
+            var high = Math.max.apply(Math, numericValues);
+            var mean = numericValues.reduce(function(sum, value) { return sum + value; }, 0) / numericValues.length;
+            rangeText = label + ' ranged from ' + formatValue(low) + ' to ' + formatValue(high) + ' (mean ' + formatValue(mean) + ') across ' + numericValues.length + ' numeric runs.';
+          }
+          var designLabel = firstComparison && firstComparison.designLabel ? firstComparison.designLabel : 'the recorded settings';
+          var claimStarter = '';
+          if (capturedRuns.length >= 2 && controlledPlanComparison && rangeText) {
+            claimStarter = 'Across two controlled runs that changed only ' + (trialPlan.factorLabel || 'the planned setting') + ', ' + rangeText.charAt(0).toLowerCase() + rangeText.slice(1) + ' This pattern suggests ______ because ______; this model does not include ______.';
+          } else if (capturedRuns.length >= 2 && sameDesign && rangeText) {
+            claimStarter = 'Across ' + capturedRuns.length + ' repeated runs with ' + designLabel + ', ' + rangeText.charAt(0).toLowerCase() + rangeText.slice(1) + ' This variation suggests ______ because ______; this model does not include ______.';
+          } else if (capturedRuns.length >= 2 && rangeText) {
+            claimStarter = 'Across ' + capturedRuns.length + ' runs using ' + Math.max(1, designKeys.length) + ' setting combinations, ' + rangeText.charAt(0).toLowerCase() + rangeText.slice(1) + ' I can attribute this difference to ______ only if it was the one setting changed; otherwise this is an association, not a controlled causal test.';
+          } else if (capturedRuns.length >= 2) {
+            claimStarter = 'Across ' + capturedRuns.length + ' captured runs, I observed ______. The runs ' + (sameDesign ? 'used matching settings, so their differences show run-to-run variation' : 'used different settings, so I must identify what was held constant') + '. This model does not include ______.';
+          }
+          var claimReady = (notebook.claim || '').trim().length >= 10;
+
+          return h('section', { 'aria-label': 'Evidence comparison coach', className: 'rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-violet-50 to-fuchsia-50 p-4 space-y-3' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-violet-800' }, 'Evidence Coach'),
+                h('h4', { className: 'mt-1 text-base font-black text-slate-900' }, capturedRuns.length < 2 ? 'One run is evidence; two runs reveal a pattern' : controlledPlanComparison ? 'Controlled one-setting comparison' : (sameDesign ? 'Repeated-trial comparison' : 'Changed-settings comparison'))
+              ),
+              capturedRuns.length >= 2 && h('span', { className: 'rounded-full border px-3 py-1 text-xs font-black ' + (controlledPlanComparison || sameDesign ? 'border-cyan-300 bg-cyan-50 text-cyan-900' : 'border-amber-300 bg-amber-50 text-amber-900') }, controlledPlanComparison ? 'Plan aligned' : sameDesign ? 'Settings match' : Math.max(1, designKeys.length) + ' setting combinations')
+            ),
+            !forReport && h('ol', { 'aria-label': 'Evidence-building progress', className: 'grid grid-cols-1 gap-2 sm:grid-cols-3' },
+              [
+                { label: 'Capture', detail: capturedRuns.length + (capturedRuns.length === 1 ? ' run' : ' runs'), done: capturedRuns.length >= 1 },
+                { label: 'Compare', detail: capturedRuns.length >= 2 ? 'pattern ready' : 'capture 1 more', done: capturedRuns.length >= 2 },
+                { label: 'Claim', detail: claimReady ? 'drafted' : capturedRuns.length >= 2 ? 'starter ready' : 'waiting', done: claimReady }
+              ].map(function(item, index) {
+                return h('li', { key: item.label, className: 'flex items-center gap-2 rounded-xl border p-2 text-xs ' + (item.done ? 'border-emerald-300 bg-white text-emerald-900' : 'border-slate-300 bg-white/70 text-slate-600') },
+                  h('span', { className: 'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full font-black ' + (item.done ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700') }, item.done ? '✓' : index + 1),
+                  h('span', null, h('strong', { className: 'block' }, item.label), item.detail)
+                );
+              })
+            ),
+            capturedRuns.length < 2 ? h('div', { role: 'status', className: 'rounded-xl border border-violet-200 bg-white p-3 text-sm leading-relaxed text-slate-700' },
+              h('strong', { className: 'text-violet-900' }, 'Next move: '),
+              hasExplicitTrialPlan ? (trialPlan.strategy === 'repeat' ? 'complete a fresh trajectory with every tracked setting unchanged.' : 'complete a fresh trajectory at the second planned level while holding every other tracked setting constant.') : 'capture a second run. Keep every setting the same to measure run-to-run variation, or change exactly one setting to test a focused question.'
+            ) : h(React.Fragment, null,
+              hasExplicitTrialPlan && h('div', { className: 'rounded-xl border p-3 text-sm leading-relaxed ' + (trialAssessment.status === 'match' ? 'border-emerald-300 bg-emerald-50 text-emerald-950' : trialAssessment.status === 'mismatch' ? 'border-amber-400 bg-amber-50 text-amber-950' : 'border-violet-200 bg-white text-slate-700') },
+                h('strong', { className: 'block' }, trialAssessment.title),
+                h('span', { className: 'mt-1 block' }, trialAssessment.detail),
+                h('span', { className: 'mt-1 block text-xs' }, 'Endpoint check only: the notebook cannot verify that settings stayed unchanged during each trajectory.')
+              ),
+              h('div', { className: 'rounded-xl border border-violet-200 bg-white p-3 text-sm leading-relaxed text-slate-700' },
+                rangeText && h('p', { className: 'font-bold text-slate-900' }, rangeText),
+                h('p', { className: rangeText ? 'mt-2' : '' }, controlledPlanComparison
+                  ? 'Exactly the planned factor differs in the captured endpoints, so this is a controlled model comparison. Interpret the pattern within the model’s assumptions.'
+                  : sameDesign
+                  ? 'Because this model includes randomness, a range is expected. The spread describes repeatability; it is not automatically experimental error.'
+                  : 'These runs do not all share the same settings. Treat outcome differences as an association unless every setting except one was held constant.'),
+                numericValues.length < comparisonRuns.length && h('p', { className: 'mt-2 text-xs text-amber-900' }, 'At least one captured outcome was undefined or qualitative, so it is excluded from the numeric range.')
+              ),
+              claimStarter && h('div', { className: 'rounded-xl border border-fuchsia-200 bg-white p-3' },
+                h('div', { className: 'text-xs font-black uppercase tracking-wider text-fuchsia-800' }, 'Editable claim starter'),
+                h('p', { id: 'evo-capstone-claim-starter', className: 'mt-2 text-sm leading-relaxed text-slate-800' }, claimStarter),
+                !forReport && h('button', {
+                  type: 'button',
+                  disabled: (notebook.claim || '').trim().length > 0,
+                  onClick: function() {
+                    if ((notebook.claim || '').trim()) return;
+                    setNotebook('claim', claimStarter);
+                    announce('Claim starter added to the interpretation notebook.');
+                  },
+                  'aria-describedby': 'evo-capstone-claim-starter',
+                  className: 'mt-3 rounded-lg px-3 py-2 text-xs font-black ' + ((notebook.claim || '').trim().length > 0 ? 'cursor-not-allowed bg-slate-200 text-slate-600' : 'bg-fuchsia-700 text-white hover:bg-fuchsia-800 focus:outline-none focus:ring-4 focus:ring-fuchsia-300')
+                }, (notebook.claim || '').trim().length > 0 ? 'Claim already started' : 'Use claim starter')
+              )
+            )
+          );
+        };
+
+        var renderCapturedRuns = function(forReport) {
+          if (!capturedRuns.length) return null;
+          return h('section', { 'aria-label': forReport ? 'Captured simulator evidence' : 'Captured simulator runs', className: 'space-y-2' },
+            h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+              h('div', null,
+                h('h4', { className: 'text-sm font-black text-slate-900' }, 'Captured simulator runs'),
+                h('p', { className: 'text-xs text-slate-600' }, capturedRuns.length + (capturedRuns.length === 1 ? ' run ready to analyze' : ' runs ready to compare'))
+              ),
+              !forReport && h('button', {
+                type: 'button',
+                onClick: clearCapturedRuns,
+                'aria-label': 'Clear all saved run snapshots',
+                className: 'rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-bold text-rose-800 transition-colors hover:bg-rose-50'
+              }, 'Clear all')
+            ),
+            h('div', {
+              role: 'region',
+              tabIndex: 0,
+              'aria-label': 'Captured simulator runs comparison table',
+              className: 'overflow-x-auto rounded-xl border border-slate-300 bg-white focus:outline-none focus:ring-2 focus:ring-cyan-500'
+            },
+              h('table', { className: 'w-full border-collapse text-left text-xs', style: { minWidth: '760px' } },
+                h('caption', { className: 'sr-only' }, 'Captured simulator runs and their starting conditions, settings, and outcomes'),
+                h('thead', { className: 'bg-slate-100 text-slate-700' },
+                  h('tr', null,
+                    h('th', { scope: 'col', className: 'border-b border-slate-300 px-3 py-2 font-black' }, 'Run'),
+                    h('th', { scope: 'col', className: 'border-b border-slate-300 px-3 py-2 font-black' }, 'Starting conditions'),
+                    h('th', { scope: 'col', className: 'border-b border-slate-300 px-3 py-2 font-black' }, 'Test settings'),
+                    h('th', { scope: 'col', className: 'border-b border-slate-300 px-3 py-2 font-black' }, 'Observed outcome'),
+                    !forReport && h('th', { scope: 'col', className: 'border-b border-slate-300 px-3 py-2 font-black' }, 'Actions')
+                  )
+                ),
+                h('tbody', null,
+                  capturedRuns.map(function(run, index) {
+                    return h('tr', { key: run.id || index, className: index % 2 ? 'bg-slate-50' : 'bg-white' },
+                      h('th', { scope: 'row', className: 'align-top border-b border-slate-200 px-3 py-3 font-black text-slate-900' },
+                        h('span', { className: 'block' }, 'Run ' + (index + 1)),
+                        h('span', { className: 'mt-1 block font-normal text-slate-600' }, run.moduleLabel || scenario.moduleLabel)
+                      ),
+                      h('td', { className: 'align-top border-b border-slate-200 px-3 py-3 leading-relaxed text-slate-700' }, run.baseline || 'Not recorded'),
+                      h('td', { className: 'align-top border-b border-slate-200 px-3 py-3 leading-relaxed text-slate-700' }, run.settings || 'Not recorded'),
+                      h('td', { className: 'align-top border-b border-slate-200 px-3 py-3 leading-relaxed text-slate-700' },
+                        h('div', null, run.outcome || 'Not recorded'),
+                        Array.isArray(run.metrics) && run.metrics.length > 0 && h('dl', { className: 'mt-2 space-y-1 border-t border-slate-200 pt-2' },
+                          run.metrics.map(function(metric, metricIndex) {
+                            return h('div', { key: metric.label || metricIndex, className: 'flex items-start justify-between gap-3' },
+                              h('dt', { className: 'font-bold text-slate-600' }, metric.label),
+                              h('dd', { className: 'text-right font-black text-slate-900' }, metric.value)
+                            );
+                          })
+                        )
+                      ),
+                      !forReport && h('td', { className: 'align-top border-b border-slate-200 px-3 py-3' },
+                        h('button', {
+                          type: 'button',
+                          onClick: function() { removeCapturedRun(run.id); },
+                          'aria-label': 'Remove run ' + (index + 1) + ' snapshot',
+                          className: 'rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-bold text-slate-700 transition-colors hover:border-rose-400 hover:text-rose-800'
+                        }, 'Remove')
+                      )
+                    );
+                  })
+                )
+              )
+            )
+          );
+        };
 
         // Step 0: Pick a scenario
         var renderStep0 = function() {
@@ -6396,8 +7043,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                       scenarioTitle: s.title,
                       predictions: ['', '', ''],
                       reflections: ['', '', ''],
-                      notebook: { baseline: '', settings: '', outcome: '', surprise: '' },
+                      notebook: { baseline: '', settings: '', outcome: '', claim: '', surprise: '' },
+                      runs: [],
+                      nextRunId: 1,
                       evidenceVerdict: '',
+                      trialPlan: s.trialPlan ? Object.assign({}, s.trialPlan) : null,
                       module: s.module,
                       moduleLabel: s.moduleLabel,
                       moduleHint: s.moduleHint,
@@ -6463,17 +7113,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
           );
         };
 
+        var renderTrialPlanner = function() {
+          if (!scenario || !scenario.module || !hasExplicitTrialPlan) return null;
+          var selectedFactor = factorOptions.filter(function(option) { return option.id === trialPlan.factor; })[0] || null;
+          var outcomeMeasure = CAPSTONE_OUTCOMES[scenario.module] || 'the key outcome';
+          var planQuestion = trialPlan.strategy === 'repeat'
+            ? 'How much does ' + outcomeMeasure + ' vary when the setup is repeated?'
+            : trialPlanReady
+              ? 'How does changing ' + String(trialPlan.factorLabel || (selectedFactor && selectedFactor.label) || 'the setting').toLowerCase() + ' from ' + String(trialPlan.levelA).trim() + ' to ' + String(trialPlan.levelB).trim() + ' affect ' + outcomeMeasure + '?'
+              : 'Choose one setting and two levels to generate a focused investigation question.';
+          var assessmentTone = trialAssessment.status === 'match'
+            ? 'border-emerald-300 bg-emerald-50 text-emerald-950'
+            : trialAssessment.status === 'mismatch'
+              ? 'border-amber-400 bg-amber-50 text-amber-950'
+              : 'border-violet-200 bg-violet-50 text-violet-950';
+          return h('section', { 'aria-labelledby': 'evo-trial-planner-heading', className: 'rounded-2xl border-2 border-violet-300 bg-gradient-to-br from-white to-violet-50 p-4 space-y-4' },
+            h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+              h('div', null,
+                h('div', { className: 'text-xs font-black uppercase tracking-[0.18em] text-violet-800' }, 'Plan before testing'),
+                h('h4', { id: 'evo-trial-planner-heading', className: 'mt-1 text-lg font-black text-slate-900' }, 'What should the next trial tell you?'),
+                h('p', { id: 'evo-trial-planner-help', className: 'mt-1 max-w-3xl text-sm leading-relaxed text-slate-700' }, 'Repeat a setup to reveal run-to-run randomness, or change exactly one setting to test a focused cause. Captured settings—not the plan—remain the evidence.')
+              ),
+              trialPlanLocked && h('span', { className: 'rounded-full border border-slate-300 bg-white px-3 py-1 text-xs font-black text-slate-700' }, 'Plan locked after capture')
+            ),
+            h('fieldset', { 'aria-describedby': 'evo-trial-planner-help', disabled: trialPlanLocked, className: 'space-y-3' },
+              h('legend', { className: 'text-sm font-black text-slate-900' }, 'Comparison design'),
+              h('div', { className: 'grid grid-cols-1 gap-3 md:grid-cols-2' },
+                h('label', { className: 'flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 ' + (trialPlan.strategy === 'repeat' ? 'border-cyan-500 bg-cyan-50' : 'border-slate-300 bg-white') },
+                  h('input', {
+                    type: 'radio', name: 'evo-capstone-plan-strategy', value: 'repeat', checked: trialPlan.strategy === 'repeat',
+                    onChange: function() { setTrialPlan({ strategy: 'repeat', factor: '', factorLabel: '', levelA: '', levelB: '', targetRuns: trialPlan.targetRuns || 2 }); },
+                    className: 'mt-1 h-4 w-4 accent-cyan-700'
+                  }),
+                  h('span', null,
+                    h('strong', { className: 'block text-sm text-slate-900' }, 'Repeat the same setup'),
+                    h('span', { className: 'mt-1 block text-xs leading-relaxed text-slate-700' }, 'Keep every tracked setting identical. Differences show stochastic variation and repeatability.')
+                  )
+                ),
+                h('label', { className: 'flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 ' + (trialPlan.strategy === 'change-one' ? 'border-fuchsia-500 bg-fuchsia-50' : 'border-slate-300 bg-white') },
+                  h('input', {
+                    type: 'radio', name: 'evo-capstone-plan-strategy', value: 'change-one', checked: trialPlan.strategy === 'change-one',
+                    onChange: function() {
+                      var option = selectedFactor || factorOptions[0];
+                      setTrialPlan({ strategy: 'change-one', targetRuns: 2, factor: option ? option.id : '', factorLabel: option ? option.label : '', levelA: option ? option.levelA : '', levelB: option ? option.levelB : '' });
+                    },
+                    className: 'mt-1 h-4 w-4 accent-fuchsia-700'
+                  }),
+                  h('span', null,
+                    h('strong', { className: 'block text-sm text-slate-900' }, 'Change one setting'),
+                    h('span', { className: 'mt-1 block text-xs leading-relaxed text-slate-700' }, 'Compare two levels of one factor while holding all other tracked settings constant.')
+                  )
+                )
+              ),
+              trialPlan.strategy === 'repeat' && h('div', { className: 'max-w-xs' },
+                h('label', { htmlFor: 'evo-trial-repeat-count', className: 'block text-xs font-black text-slate-800' }, 'Planned distinct trials'),
+                h('select', {
+                  id: 'evo-trial-repeat-count', value: String(trialPlanTarget),
+                  onChange: function(e) { setTrialPlan({ targetRuns: parseInt(e.target.value, 10) || 2 }); },
+                  className: 'mt-1 w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500'
+                }, h('option', { value: '2' }, '2 trials'), h('option', { value: '3' }, '3 trials'))
+              ),
+              trialPlan.strategy === 'change-one' && h('div', { className: 'grid grid-cols-1 gap-3 md:grid-cols-3' },
+                h('div', null,
+                  h('label', { htmlFor: 'evo-trial-factor', className: 'block text-xs font-black text-slate-800' }, 'One setting to change'),
+                  h('select', {
+                    id: 'evo-trial-factor', value: trialPlan.factor || '',
+                    onChange: function(e) {
+                      var option = factorOptions.filter(function(candidate) { return candidate.id === e.target.value; })[0];
+                      setTrialPlan({ factor: option ? option.id : '', factorLabel: option ? option.label : '', levelA: option ? option.levelA : '', levelB: option ? option.levelB : '' });
+                    },
+                    className: 'mt-1 w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500'
+                  }, factorOptions.map(function(option) { return h('option', { key: option.id, value: option.id }, option.label); }))
+                ),
+                h('div', null,
+                  h('label', { htmlFor: 'evo-trial-level-a', className: 'block text-xs font-black text-slate-800' }, 'Run 1 level'),
+                  h('input', { id: 'evo-trial-level-a', type: 'text', value: trialPlan.levelA || '', onChange: function(e) { setTrialPlan({ levelA: e.target.value }); }, className: 'mt-1 w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500' })
+                ),
+                h('div', null,
+                  h('label', { htmlFor: 'evo-trial-level-b', className: 'block text-xs font-black text-slate-800' }, 'Run 2 level'),
+                  h('input', { id: 'evo-trial-level-b', type: 'text', value: trialPlan.levelB || '', onChange: function(e) { setTrialPlan({ levelB: e.target.value }); }, className: 'mt-1 w-full rounded-lg border border-slate-500 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500' })
+                )
+              )
+            ),
+            h('div', { className: 'rounded-xl border border-violet-200 bg-white p-3' },
+              h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, 'Investigation question'),
+              h('p', { className: 'mt-1 text-sm font-bold leading-relaxed text-slate-900' }, planQuestion)
+            ),
+            h('div', { role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 ' + assessmentTone },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                h('strong', { className: 'text-sm' }, trialAssessment.title),
+                h('span', { className: 'text-xs font-black' }, Math.min(capturedRuns.length, trialPlanTarget) + ' / ' + trialPlanTarget)
+              ),
+              h('progress', { value: Math.min(capturedRuns.length, trialPlanTarget), max: trialPlanTarget, 'aria-label': 'Distinct planned trials captured', className: 'mt-2 h-2 w-full accent-violet-700' }),
+              h('p', { className: 'mt-2 text-xs leading-relaxed' }, trialAssessment.detail),
+              capturedRuns.length >= trialPlanTarget && h('p', { className: 'mt-1 text-xs leading-relaxed' }, 'This checks captured endpoint settings only; it cannot verify that a setting stayed unchanged during a trajectory.')
+            )
+          );
+        };
+
         // Step 2: Run the simulation
         var renderStep2 = function() {
           if (!scenario) return null;
           return h('div', { className: 'space-y-3' },
             h('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, t('stem.evolab.step_3_run_the_simulation', 'Step 3: Run the simulation')),
+            renderTrialPlanner(),
             h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1' }, t('stem.evolab.recommended_module', '🧪 Recommended module')),
               h('div', { className: 'text-base font-bold text-slate-800 mb-2' }, scenario.moduleLabel),
               h('p', { className: 'text-sm text-slate-700 mb-3' }, scenario.moduleHint),
               scenario.module && h('button', {
+                disabled: !trialPlanReady,
                 onClick: function() {
+                  if (!trialPlanReady) return;
                   saveCapstone({
                     module: scenario.module,
                     moduleLabel: scenario.moduleLabel,
@@ -6484,12 +7235,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   goto(scenario.module);
                 },
                 'aria-label': 'Open ' + scenario.moduleLabel + ' to run the simulation',
-                className: 'transition-colors px-5 py-3 rounded-xl font-bold bg-emerald-700 hover:bg-emerald-800 text-white shadow-lg'
-              }, '→ Open ' + scenario.moduleLabel)
+                'aria-describedby': !trialPlanReady ? 'evo-trial-plan-required' : undefined,
+                className: 'px-5 py-3 rounded-xl font-bold shadow-lg ' + (trialPlanReady ? 'transition-colors bg-emerald-700 hover:bg-emerald-800 text-white' : 'cursor-not-allowed bg-slate-200 text-slate-700')
+              }, capturedRuns.length === 0 ? '→ Open ' + scenario.moduleLabel + ' — Run 1 of ' + displayedTrialTarget : capturedRuns.length < displayedTrialTarget ? '→ Run the comparison' : '→ Open another trial'),
+              !trialPlanReady && h('p', { id: 'evo-trial-plan-required', className: 'mt-2 text-sm font-bold text-rose-800' }, 'Finish the two comparison levels before opening the simulator.')
             ),
             h('section', { 'aria-label': 'Scenario data mission', className: 'rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4' },
               h('div', { className: 'text-xs font-black uppercase tracking-wider text-cyan-900' }, '🔎 Your data mission'),
-              h('p', { className: 'mt-1 text-sm text-slate-700' }, 'Use the same settings for each trial. Exact values make your result easier to compare, explain, and repeat.'),
+              h('p', { className: 'mt-1 text-sm text-slate-700' }, trialPlan && trialPlan.strategy === 'change-one' ? 'Change only the planned factor. Keep every other tracked setting—including duration—the same.' : 'Use the same settings for each planned trial. Exact values make the result easier to compare, explain, and repeat.'),
               h('ol', { className: 'mt-3 grid grid-cols-1 gap-2 md:grid-cols-3' },
                 scenario.dataMission.map(function(item, index) {
                   return h('li', { key: index, className: 'flex items-start gap-2 rounded-lg border border-cyan-200 bg-white p-3 text-sm text-slate-700' },
@@ -6499,22 +7252,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 })
               )
             ),
+            capturedRuns.length > 0 ? h(React.Fragment, null, renderCapturedRuns(false), renderComparisonCoach(false)) : scenario.module && h('div', { role: 'status', className: 'rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-700' },
+              h('div', { className: 'font-black text-slate-900' }, 'No simulator runs captured yet'),
+              h('p', { className: 'mt-1' }, 'Open the linked model, run a trial, then choose “Capture this run.” The exact settings and outcomes will return here automatically.')
+            ),
             h('section', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
               h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.evidence_notebook', '📓 Evidence notebook')),
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, t('stem.evolab.evidence_notebook', '📓 Interpretation notebook')),
                 h('div', { className: 'text-[10px] font-bold text-amber-800 bg-white border border-amber-300 rounded-full px-2 py-1' }, t('stem.evolab.saved_during_lab_visits', 'Saved during lab visits'))
               ),
-              h('p', { className: 'text-sm text-slate-700 mb-3' }, t('stem.evolab.record_numbers_not_just_impressions', 'Record numbers, not just impressions. At minimum, capture a starting condition and an observed outcome so another student could understand what changed.')),
+              h('p', { className: 'text-sm text-slate-700 mb-3' }, t('stem.evolab.record_numbers_not_just_impressions', 'Captured values are filled automatically the first time. Add context, revise the interpretation, and note surprises or model limits in your own words.')),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 [
                   { key: 'baseline', label: 'Starting conditions *', prompt: 'Population size, generation 0, trait or allele frequency…' },
                   { key: 'settings', label: 'Test settings', prompt: 'What did you change? Include values, generations, and number of trials.' },
                   { key: 'outcome', label: 'Observed outcome *', prompt: 'What changed? Include at least one number or a clearly described pattern.' },
+                  { key: 'claim', label: 'Comparison claim', prompt: 'Across repeated runs… This pattern suggests… The model does not include…' },
                   { key: 'surprise', label: 'Surprise or model limit', prompt: 'What surprised you, or what can this simplified model not show?' }
                 ].map(function(field) {
                   var required = field.key === 'baseline' || field.key === 'outcome';
                   var complete = !required || (notebook[field.key] || '').trim().length >= 10;
-                  return h('div', { key: field.key },
+                  return h('div', { key: field.key, className: field.key === 'claim' ? 'md:col-span-2' : '' },
                     h('label', { htmlFor: 'evo-capstone-' + field.key, className: 'block text-xs font-black text-slate-800 mb-1' }, field.label),
                     h('textarea', {
                       id: 'evo-capstone-' + field.key,
@@ -6535,7 +7293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 disabled: !canAdvance(),
                 'aria-label': t('stem.evolab.i_ve_run_the_simulation_advance_to_the', 'I\'ve run the simulation; advance to the reflection step'),
                 className: 'px-5 py-2.5 rounded-lg font-bold ' + (canAdvance() ? 'transition-colors bg-cyan-700 hover:bg-cyan-800 text-white' : 'bg-slate-200 text-slate-700 cursor-not-allowed')
-              }, canAdvance() ? t('stem.evolab.evidence_recorded_continue', '✓ Evidence recorded — continue') : t('stem.evolab.record_required_evidence', 'Record starting conditions + outcome'))
+              }, canAdvance() ? t('stem.evolab.evidence_recorded_continue', '✓ Evidence recorded — continue') : (scenario.module && hasExplicitRuns && capturedRuns.length === 0 ? 'Capture at least one simulator run' : t('stem.evolab.record_required_evidence', 'Record starting conditions + outcome')))
             )
           );
         };
@@ -6560,7 +7318,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                 ),
                 h('div', { className: 'p-4' },
                   h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, 'After the test — observed outcome'),
-                  h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-800' }, notebook.outcome || '(no outcome recorded)')
+                  h('p', { className: 'mt-2 text-sm leading-relaxed text-slate-800' }, notebook.outcome || '(no outcome recorded)'),
+                  notebook.claim && h('div', { className: 'mt-3 border-t border-violet-200 pt-3' },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, 'Comparison claim'),
+                    h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-800' }, notebook.claim)
+                  )
                 )
               )
             ),
@@ -6663,11 +7425,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
               // Evidence notebook
               h('div', null,
                 h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-emerald-800 mb-2' }, t('stem.evolab.3_evidence_notebook', '3. Evidence Notebook')),
+                trialPlan && h('section', { 'aria-label': 'Trial plan made before testing', className: 'mb-3 rounded-xl border-2 border-violet-300 bg-violet-50 p-4' },
+                  h('h4', { className: 'text-sm font-black text-violet-950' }, 'Trial plan — made before testing'),
+                  h('dl', { className: 'mt-2 grid grid-cols-1 gap-2 text-sm md:grid-cols-2' },
+                    [
+                      ['Design', trialPlan.strategy === 'repeat' ? 'Repeat the same setup' : 'Change one setting'],
+                      ['Planned comparison', describeCapstoneTrialPlan(trialPlan)],
+                      ['Outcome measure', CAPSTONE_OUTCOMES[scenario.module] || 'Student-selected outcome'],
+                      ['Planned distinct trials', String(trialPlanTarget)],
+                      ['Plan check', trialAssessment.title],
+                      ['Check detail', trialAssessment.detail]
+                    ].map(function(entry) {
+                      return h('div', { key: entry[0], className: 'rounded-lg border border-violet-200 bg-white p-2' },
+                        h('dt', { className: 'text-xs font-black uppercase tracking-wider text-violet-800' }, entry[0]),
+                        h('dd', { className: 'mt-1 leading-relaxed text-slate-800' }, entry[1])
+                      );
+                    })
+                  ),
+                  h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-600' }, 'Plan checks compare captured endpoint settings; they cannot verify whether controls changed during a trajectory.')
+                ),
+                capturedRuns.length > 0 && renderCapturedRuns(true),
+                capturedRuns.length > 1 && renderComparisonCoach(true),
                 h('dl', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                   [
                     ['Starting conditions', notebook.baseline],
                     ['Test settings', notebook.settings],
                     ['Observed outcome', notebook.outcome],
+                    ['Comparison claim', notebook.claim],
                     ['Surprise or model limit', notebook.surprise]
                   ].map(function(entry) {
                     return h('div', { key: entry[0], className: 'rounded-lg border border-slate-300 p-3' },
@@ -6735,7 +7519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
                   var isDone = i < step;
                   return h('div', { key: i, className: 'flex items-center flex-1 ' + (i === STEPS.length - 1 ? '' : 'after:flex-1') },
                     h('div', { className: 'flex flex-col items-center flex-1' },
-                      h('div', { className: 'w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm ' + (isCurrent ? 'bg-emerald-700 text-white shadow' : isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-600') }, isDone ? '✓' : (i + 1)),
+                      h('div', { 'aria-current': isCurrent ? 'step' : undefined, className: 'w-8 h-8 rounded-full font-bold flex items-center justify-center text-sm ' + (isCurrent ? 'bg-emerald-700 text-white shadow' : isDone ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-100 text-slate-600') }, isDone ? '✓' : (i + 1)),
                       h('div', { className: 'text-[10px] font-bold mt-1 ' + (isCurrent ? 'text-emerald-700' : 'text-slate-600') }, stepName)
                     ),
                     i < STEPS.length - 1 && h('div', { 'aria-hidden': true, className: 'h-0.5 flex-1 ' + (i < step ? 'bg-emerald-300' : 'bg-slate-200') })

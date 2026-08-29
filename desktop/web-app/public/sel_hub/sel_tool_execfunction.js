@@ -495,10 +495,10 @@ window.SelHub = window.SelHub || {
           h('div', { style: { height: '100%', width: Math.round((exploredCount / TABS.length) * 100) + '%', background: 'linear-gradient(90deg, ' + CYAN + ', #06b6d4)', transition: 'width 0.5s ease' } })
         ),
         h('div', {
-          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' },
-          role: 'tablist', 'aria-label': 'Executive Function sections'
+          style: { display: 'flex', gap: '3px', padding: '8px 12px 6px', overflowX: 'auto', alignItems: 'center' }
         },
-          TABS.map(function(t) {
+          h('div', { role: 'tablist', 'aria-label': 'Executive Function sections', style: { display: 'flex', gap: '3px' } },
+            TABS.map(function(t) {
             var a = activeTab === t.id;
             var explored = !!exploredTabs[t.id];
             return h('button', {
@@ -506,11 +506,13 @@ window.SelHub = window.SelHub || {
               'aria-selected': a ? 'true' : 'false',
               'aria-label': t.label,
               onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
+              onFocus: function(ev) { if (ev.currentTarget && ev.currentTarget.scrollIntoView) ev.currentTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); },
               style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? _efC('#cffafe') : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : _efC('#475569'), fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
             );
-          }),
+            })
+          ),
           h('span', { style: { marginLeft: '8px', fontSize: '10px', color: CYAN_DARK, fontWeight: 700, whiteSpace: 'nowrap', background: _efC('#cffafe'), padding: '2px 8px', borderRadius: '10px', flexShrink: 0 } }, exploredCount + '/' + TABS.length),
           h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', style: { marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.8, flexShrink: 0 } }, soundOn ? '🔊' : '🔇')
         )

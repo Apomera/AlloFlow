@@ -16,15 +16,13 @@ function TeacherHistoryTab({
   hasSourceOrAnalysis,
   rosterKey,
   setIsRosterKeyOpen,
-  setShowBatchConfig,
+  onDifferentiateByGroup,
   t
 }) {
   const noop = () => null;
   const ClipboardList = window.ClipboardList || noop;
   const Settings = window.Settings || noop;
   const Layers = window.Layers || noop;
-  const safeBatchConfig = setShowBatchConfig || (() => {
-  });
   return /* @__PURE__ */ React.createElement("div", { id: "ui-roster-strip", className: "bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(ClipboardList, { size: 16 }), " ", t("roster.strip_title") || "Class Groups"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setIsRosterKeyOpen(true), className: "p-1.5 rounded-md hover:bg-indigo-100 text-indigo-600", title: t("roster.title") || "Manage Roster", "aria-label": t("roster.title"), "data-help-key": "roster_manage_button" }, /* @__PURE__ */ React.createElement(Settings, { size: 14 })))), /* @__PURE__ */ React.createElement("div", { className: "p-3" }, rosterKey && Object.keys(rosterKey.groups || {}).length > 0 ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-2" }, Object.entries(rosterKey.groups).map(([gid, g]) => /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -39,10 +37,7 @@ function TeacherHistoryTab({
   ))), /* @__PURE__ */ React.createElement(
     "button",
     {
-      onClick: () => {
-        setIsRosterKeyOpen(true);
-        setTimeout(() => safeBatchConfig(true), 300);
-      },
+      onClick: onDifferentiateByGroup,
       disabled: !hasSourceOrAnalysis,
       className: "w-full px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 border border-amber-600"
     },

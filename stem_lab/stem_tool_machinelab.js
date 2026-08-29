@@ -3470,7 +3470,7 @@ window.StemLab = window.StemLab || {
         }
         var eq = work && work.equal;
         return card([
-          h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+          h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
             __alloT('stem.machinelab.the_trade', 'The trade')),
           h('p', { key: 'p', style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
             __alloT('stem.machinelab.trade_body', 'Mechanical advantage trades distance for force. It never creates energy.')),
@@ -3570,7 +3570,7 @@ window.StemLab = window.StemLab || {
         }
 
         return card([
-          h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, [
+          h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } }, [
             h('span', { key: 't' }, __alloT('stem.machinelab.prove_it', 'Prove it')),
             proven ? h('span', { key: 'p', style: { marginLeft: 8, fontSize: 12, color: T.ok, fontWeight: 700 } },
               __alloT('stem.machinelab.proven', 'proven')) : null
@@ -3846,7 +3846,7 @@ window.StemLab = window.StemLab || {
             key: 'hd',
             style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }
           }, [
-            h('h4', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
+            h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
               __alloT('stem.machinelab.energy_ledger', 'Energy ledger')),
             h('button', {
               key: 'tog',
@@ -4505,7 +4505,7 @@ window.StemLab = window.StemLab || {
       function partsPanel() {
         var parts = partsOf(machineId);
         return card([
-          h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
+          h('h3', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
             __alloT('stem.machinelab.parts_title', 'Simple machines in this engine')),
           h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
             pick({
@@ -4835,7 +4835,7 @@ window.StemLab = window.StemLab || {
                 : __alloT('stem.machinelab.gl_loading', 'Loading the 3D view...')) : null
             ], 'glcard'),
             card([
-              h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } }, [
+              h('h3', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } }, [
                 h('span', { key: 't' }, machineMeta.icon + ' ' + machineLabel(machineId)),
                 readAloud(pick(MACHINE_COPY[machineId] || MACHINE_COPY.trebuchet, band), 'tts')
               ]),
@@ -4855,7 +4855,7 @@ window.StemLab = window.StemLab || {
           h('div', { key: 'r' }, [
             ledger(preview, 'buildledger'),
             card([
-              h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
+              h('h3', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.the_winch', 'The winch')),
               h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.5 } },
                 pick({
@@ -5061,7 +5061,7 @@ window.StemLab = window.StemLab || {
               revealMetrics
                 ? h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_path', 'Computed path'))
                 : h('span', { key: 't', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.range_world_predict', 'Predict to reveal the path')),
-              revealMetrics ? h('span', { key: 'f', style: { color: '#38bdf8' } }, '⚑ ' + __alloT('stem.machinelab.range_world_flag', 'Impact flag')) : null
+              revealMetrics ? h('span', { key: 'f', style: { color: '#7dd3fc' } }, '⚑ ' + __alloT('stem.machinelab.range_world_flag', 'Impact flag')) : null
             ]),
             camControls(rangeCam, __alloT('stem.machinelab.range_lane', '3D range lane'), 'range'),
             rangeStatus !== 'ready' ? h('p', {
@@ -5073,7 +5073,7 @@ window.StemLab = window.StemLab || {
           h('div', { key: 'l' }, [
             oddStoneNote('rangeodd'),
             card([
-              h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+              h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.predict_fire', 'Predict, then fire')),
               h('p', { key: 'p', style: { margin: '0 0 8px', fontSize: 13, color: T.muted } },
                 __alloT('stem.machinelab.predict_body', 'How far will this machine throw? Write a number before you pull the release.')),
@@ -5112,7 +5112,7 @@ window.StemLab = window.StemLab || {
                 key: 'hd',
                 style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }
               }, [
-                h('h4', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
+                h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                   __alloT('stem.machinelab.flight_path', 'Flight path')),
                 ((d.shotHistory || []).length > 1) ? h('button', {
                   key: 'ov', 'aria-pressed': (d.showOverlay !== false) ? 'true' : 'false',
@@ -5159,7 +5159,7 @@ window.StemLab = window.StemLab || {
               ])
             ], 'traj') : null,
             card([
-              h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+              h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.conditions', 'Conditions')),
               h('div', { key: 'gv', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
                 GRAVITY_PRESETS.map(function (gp) {
@@ -5202,7 +5202,7 @@ window.StemLab = window.StemLab || {
           h('div', { key: 'r' }, [
             ledger(d.animating ? (s || preview) : preview, 'rangeledger'),
             (d.shotHistory && d.shotHistory.length > 1) ? card([
-              h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+              h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
                 __alloT('stem.machinelab.shot_log', 'Shot log')),
               h('table', { key: 't', style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: T.text } }, [
                 h('thead', { key: 'h' }, h('tr', null, [
@@ -5238,7 +5238,7 @@ window.StemLab = window.StemLab || {
         });
         if (!uses.length) return null;
         return card([
-          h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+          h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
             __alloT('stem.machinelab.meet_title', 'Where you meet this machine')),
           h('ul', { key: 'l', style: { listStyle: 'none', margin: 0, padding: 0 } },
             uses.map(function (u) {
@@ -5424,7 +5424,7 @@ window.StemLab = window.StemLab || {
               }
             }, [
               h('span', { key: 'e', style: { color: '#fbbf24' } }, '● ' + __alloT('stem.machinelab.effort_path', 'Effort path')),
-              h('span', { key: 'l', style: { color: '#38bdf8' } }, '● ' + __alloT('stem.machinelab.load_path', 'Load path'))
+              h('span', { key: 'l', style: { color: '#7dd3fc' } }, '● ' + __alloT('stem.machinelab.load_path', 'Load path'))
             ]),
             camControls(shopCam, __alloT('stem.machinelab.workshop', 'simple-machine workshop'), 'shop'),
             h('div', {
@@ -5518,7 +5518,7 @@ window.StemLab = window.StemLab || {
               ], 'copy'),
               card([
                 h('div', { key: 'head', style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 10 } }, [
-                  h('h4', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
+                  h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                     __alloT('stem.machinelab.tune_station', 'Tune this station')),
                   h('span', { key: 'p', style: { fontSize: 11, color: T.dim } }, completed + '/6 ' + __alloT('stem.machinelab.proven_short', 'proven'))
                 ])
@@ -5928,7 +5928,7 @@ window.StemLab = window.StemLab || {
               ], 'wallcard'),
 
               card([
-                h('h4', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } }, presetMeta.label),
+                h('h3', { key: 'h', style: { margin: '0 0 4px', fontSize: 14, color: T.text } }, presetMeta.label),
                 h('p', { key: 'p', style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.55 } }, presetMeta.lesson)
               ], 'walllesson'),
 
@@ -5976,7 +5976,7 @@ window.StemLab = window.StemLab || {
 
             h('div', { key: 'r' }, [
               card([
-                h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+                h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
                   __alloT('stem.machinelab.siege_stats', 'The siege')),
                 h('div', { key: 'rows', style: { display: 'grid', gap: 5 } }, [
                   [__alloT('stem.machinelab.st_shots', 'Shots loosed'), String(d.shotsFired || 0)],
@@ -6001,7 +6001,7 @@ window.StemLab = window.StemLab || {
               ], 'stats'),
 
               d.lastImpact && d.lastImpact.outcome === 'hit' ? card([
-                h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+                h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
                   __alloT('stem.machinelab.last_blow', 'The last blow')),
                 h('p', { key: 'a', style: { margin: '0 0 4px', fontSize: 13, color: T.text } },
                   __alloT('stem.machinelab.blow_energy', 'Energy delivered: ') + fmt(d.lastImpact.ke, 0) + ' J'),
@@ -6017,7 +6017,7 @@ window.StemLab = window.StemLab || {
                   key: 'hd',
                   style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, marginBottom: 6, flexWrap: 'wrap' }
                 }, [
-                  h('h4', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
+                  h('h3', { key: 'h', style: { margin: 0, fontSize: 14, color: T.text } },
                     __alloT('stem.machinelab.wall_state', 'Wall state')),
                   h('button', {
                     key: 'tog', 'aria-pressed': d.wallAsTable ? 'true' : 'false',
@@ -6198,7 +6198,7 @@ window.StemLab = window.StemLab || {
           resize: 'vertical', marginBottom: 10, fontFamily: 'inherit'
         };
         return card([
-          h('h4', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
+          h('h3', { key: 'h', style: { margin: '0 0 8px', fontSize: 14, color: T.text } },
             '🔬 ' + __alloT('stem.machinelab.iq_title', 'Build your own theory')),
 
           h('label', {
@@ -6369,7 +6369,7 @@ window.StemLab = window.StemLab || {
         var saved = d.bestStones || null;
         var stale = !!(saved && saved.sig !== bestStoneSignature());
         var kids = [
-          h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+          h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
             __alloT('stem.machinelab.best_title', 'Which stone flies furthest?')),
           h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
             pick({
@@ -6608,7 +6608,7 @@ window.StemLab = window.StemLab || {
 
         return h('div', { key: 'cmpview' }, [
           card([
-            h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 15, color: T.text } },
+            h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 15, color: T.text } },
               __alloT('stem.machinelab.compare_title', 'Three machines, one stone')),
             h('p', { key: 'p', style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
               pick({
@@ -6680,7 +6680,7 @@ window.StemLab = window.StemLab || {
               }, band))
           ], 'cmptable'),
           card([
-            h('h4', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+            h('h3', { key: 'h', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
               __alloT('stem.machinelab.cmp_try', 'Things worth trying')),
             // Four prompts, restated per band like the rest of the tool. This
             // block was the last single-register text in the view: a K-2 reader
@@ -6791,7 +6791,7 @@ window.StemLab = window.StemLab || {
             ].map(function (it, i) {
               spoken.push(it.t + '. ' + it.b);
               return h('div', { key: 'h' + i, style: { marginBottom: 12 } }, [
-                h('h5', { key: 't', style: { margin: '0 0 3px', fontSize: 13, fontWeight: 800, color: T.text } }, it.t),
+                h('h4', { key: 't', style: { margin: '0 0 3px', fontSize: 13, fontWeight: 800, color: T.text } }, it.t),
                 h('p', { key: 'b', style: { margin: 0, fontSize: 13, lineHeight: 1.6, color: T.muted } }, it.b)
               ]);
             }))
@@ -6856,7 +6856,7 @@ window.StemLab = window.StemLab || {
             h('div', { key: 'copy', style: { minWidth: 220, flex: '1 1 260px' } }, [
               h('div', { key: 'ey', style: { fontSize: 10, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: T.accent, marginBottom: 3 } },
                 __alloT('stem.machinelab.manual_route_eyebrow', 'Step back into the world')),
-              h('h4', { key: 'title', style: { margin: 0, fontSize: 14, color: T.text } }, manualRoute.icon + ' ' + manualRoute.title),
+              h('h3', { key: 'title', style: { margin: 0, fontSize: 14, color: T.text } }, manualRoute.icon + ' ' + manualRoute.title),
               h('p', { key: 'p', style: { margin: '4px 0 0', fontSize: 12, lineHeight: 1.5, color: T.muted } }, manualRoute.copy)
             ]),
             h('button', {

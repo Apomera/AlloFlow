@@ -39,13 +39,17 @@ const harness = new GlHarness({
     window.__canvasCount = function () {
       return document.querySelectorAll('#wrap canvas').length;
     };
-    // Press and release a movement key through the window listeners the tool
-    // installs, so this exercises the real keyboard path rather than a method.
+    // Press and release a movement key from the labelled, focusable stage.
+    // This exercises the real keyboard path without letting arrow keys on
+    // radios or other controls move the scene.
     window.__walk = function (code, ms) {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: code, bubbles: true }));
+      var target = document.querySelector('.petslab-sensory-stage');
+      if (!target) return Promise.resolve(false);
+      target.focus();
+      target.dispatchEvent(new KeyboardEvent('keydown', { code: code, bubbles: true }));
       return new Promise(function (done) {
         setTimeout(function () {
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: code, bubbles: true }));
+          target.dispatchEvent(new KeyboardEvent('keyup', { code: code, bubbles: true }));
           done(true);
         }, ms || 400);
       });
@@ -286,16 +290,26 @@ test.describe('Pets Lab sensory perspective — WebGL', () => {
     await expect(region.locator('img')).toHaveCount(1);
     await expect(page.getByRole('button', { name: 'Replace Human comparison frame' })).toBeFocused();
 
-    // Navigation is genuinely locked, including the global arrow-key path.
+    // Navigation is genuinely locked from the same focusable stage that owns
+    // movement input. Focus it before the baseline so the comparison does not
+    // confuse a focus-induced page scroll with a camera change.
     await expect(page.getByRole('button', { name: /Walk forward/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /Reset/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /Balls/ })).toBeDisabled();
     await expect(page.getByRole('button', { name: /Lighting locked/ })).toBeDisabled();
+    const stage = page.locator('.petslab-sensory-stage');
+    await stage.focus();
+    await expect(stage).toBeFocused();
+    await expect(stage).toHaveAccessibleName(/Camera locked for comparison/);
+    await expect(stage).toHaveAttribute('aria-describedby', 'petslab-sensory-lock-note');
+    await expect(page.locator('.petslab-stage-hud--bottom')).toContainText(
+      'Camera locked · clear comparison to move',
+    );
     const lockedBefore = await canvas.screenshot({ timeout: 60000 });
-    const arrowPrevented = await page.evaluate(() => {
+    const arrowPrevented = await stage.evaluate((target) => {
       const down = new KeyboardEvent('keydown', { code: 'ArrowDown', bubbles: true, cancelable: true });
-      window.dispatchEvent(down);
-      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowDown', bubbles: true }));
+      target.dispatchEvent(down);
+      target.dispatchEvent(new KeyboardEvent('keyup', { code: 'ArrowDown', bubbles: true }));
       return down.defaultPrevented;
     });
     expect(arrowPrevented, 'locked comparison swallowed an arrow key needed for page scrolling').toBe(false);
@@ -357,6 +371,8 @@ test.describe('Pets Lab sensory perspective — WebGL', () => {
     await expect(region.locator('.petslab-sensory-compare-empty')).toHaveCount(3);
     await expect(page.getByRole('button', { name: /Reset/ })).toBeEnabled();
     await expect(page.getByRole('button', { name: /Walk forward/ })).toBeEnabled();
+    await expect(stage).toHaveAccessibleName(/Use arrow keys or W A S D to move/);
+    await expect(stage).not.toHaveAttribute('aria-describedby');
 
     // Captures are ephemeral: closing and reopening the room starts clean.
     await page.getByRole('radio', { name: /^Human / }).click();

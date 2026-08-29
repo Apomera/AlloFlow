@@ -16569,7 +16569,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                             h('select', {
                                 value: tgt.type,
                                 onChange: e => updateTarget(tgt.id, 'type', e.target.value),
-                                
+                                'aria-label': 'Data collection type for ' + ((tgt.name || '').trim() || 'target behavior'),
                                 className: 'text-[11px] border border-slate-400 rounded-lg px-2 py-1.5 bg-white font-medium'
                             }, DATA_TYPES.map(dt => h('option', { key: dt.id, value: dt.id }, `${dt.icon} ${dt.label}`))),
                             targets.length > 1 && h('button', { onClick: () => removeTarget(tgt.id), title: 'Remove target', 'aria-label': 'Remove target', className: 'text-red-600 hover:text-red-600 text-sm' }, '✕')

@@ -7,18 +7,19 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
     expect(source).toContain("tabIndex: 0, role: 'application'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D aquaculture farm simulator'");
-    expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P Escape'");
+    expect(source).toContain("'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight F P C Escape'");
     expect(source).toContain('event.currentTarget.focus()');
     expect(source).toContain("event.currentTarget.style.outline = '3px solid #5eead4'");
     expect(source).toContain("target.matches('input, textarea, select, button, [contenteditable=\"true\"]')");
     expect(source).toContain("window.addEventListener('keydown', onKeyDown)");
     expect(source).toContain('if (target !== canvas) return');
-    expect(source).toContain("if (e.repeat && (key === 'f' || key === 'p')) return");
+    expect(source).toContain("if (e.repeat && (key === 'f' || key === 'p' || key === 'c')) return");
     expect(source).toContain("canvas.addEventListener('blur', clearKeys)");
     expect(source).toContain("canvas.removeEventListener('blur', clearKeys)");
     expect(source).toContain("window.removeEventListener('keydown', onKeyDown)");
     expect(source).toContain('WASD or arrow keys to pilot');
-    expect(source).toContain('P to take a water-quality probe reading');
+    expect(source).toContain('P for a surface sample');
+    expect(source).toContain('C for a crop-depth sample');
   });
 
   it('renders the active canvas before deferred initialization and focuses it on launch', () => {
@@ -37,7 +38,12 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('(prev || []).concat([ev.reading]).slice(-50)');
     expect(source).toContain("typeof ev.count === 'number' ? ev.count : c + 1");
     expect(source).toContain('boatState.passedRedNun && boatState.droppersDeployed >= 5');
-    expect(source).toContain("s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d' }");
+    expect(source).toContain('boatState.surfaceSampled && boatState.cropDepthSampled');
+    expect(source).toContain("takeProbeReading('surface')");
+    expect(source).toContain("takeProbeReading('crop')");
+    expect(source).toContain("s3.completedMissions['mission-1'] = { completedAt: Date.now(), mode: '3d', summary: missionSummary }");
+    expect(source).toContain('missionProgress: (boatState.passedRedNun ? 1 : 0)');
+    expect(source).toContain('setMissionDebrief(missionSummary)');
   });
 
   it('provides touch and assistive-technology controls with safe release cleanup', () => {
@@ -48,6 +54,71 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('props.onLostPointerCapture = function()');
     expect(source).toContain("event.key === 'Enter' || event.key === ' '");
     expect(source).toContain('clearFarmControlPulses()');
+    expect(source).toContain("{ key: 'p', label: 'Surface sample', hold: false, stage: 'sample' }");
+    expect(source).toContain("{ key: 'c', label: 'Crop-depth sample', hold: false, stage: 'sample' }");
+    expect(source).toContain("disabled: actionUnavailable");
+    expect(source).toContain("'aria-describedby': c.stage ? 'aq-3d-objective-text' : undefined");
+  });
+
+  it('aligns the visual bow, inbound buoy lanes, and chart with red-right-returning', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain("boat.rotation.y = Math.PI; // model bow is +z");
+    expect(source).toContain('boat.rotation.y = boatState.heading + Math.PI');
+    expect(source).toContain("addBuoy(4, -5, 'red-nun')");
+    expect(source).toContain("addBuoy(-4, -5, 'green-can')");
+    expect(source).not.toContain("addBuoy(-4, -5, 'red-nun')");
+    expect(source).toContain('var inbound = Math.cos(boatState.heading) > 0.35 && boatState.speed > 0.5');
+    expect(source).toContain('!bb.userData.wrongSideWarned');
+    expect(source).toContain('boatState.buoyViolations += 1');
+    expect(source).toContain("[{ x: 350, y: 125 }, { x: 350, y: 190 }, { x: 350, y: 255 }]");
+    expect(source).toContain('Inbound / returning');
+  });
+
+  it('adds reliable one-shot actions, a live route map, and an evidence debrief', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    expect(source).toContain('var actionRequests = {}');
+    expect(source).toContain("actionRequests['f'] = false");
+    expect(source).toContain('Deploy all five droppers before comparing depth samples.');
+    expect(source).toContain('var missionWaterProfile = {');
+    expect(source).toContain("type: 'comparison', text: describeDepthComparison");
+    expect(source).toContain("className: 'aq-3d-route-map'");
+    expect(source).toContain("'aria-label': '3D mission progress'");
+    expect(source).toContain("className: 'aq-3d-debrief'");
+    expect(source).toContain('function save3DMissionNote()');
+    expect(source).toContain('var activeMissionProbes =');
+    expect(source).toContain("openMissionEvidenceAtHealth('crop', missionDebrief)");
+    expect(source).toContain('function loadMissionEvidenceAtDepth(depth, summaryOverride)');
+    expect(source).toContain("className: 'aq-mussel-mission-evidence'");
+    expect(source).toContain("className: 'aq-mussel-mission-profile'");
+    expect(source).toContain("className: 'aq-mussel-mission-evidence-table'");
+    expect(source).toContain("'aria-pressed': selected");
+    expect(source).toContain("evidenceSource: 'mission-' + sampleDepth");
+    expect(source).toContain("route: 'musseldeep', label: 'Interpret your paired samples'");
+    expect(source).toContain('.aq-3d-mission-hud,.aq-3d-probe-hud');
+  });
+
+  it('turns field conditions into replayable 3D and guided evidence', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquaculture.js'), 'utf8');
+    const scenarioRegistry = source.slice(
+      source.indexOf('var AQ_FIELD_MISSION_SCENARIOS = ['),
+      source.indexOf('function aqFieldMissionScenario')
+    );
+    expect(source).toContain('var AQ_FIELD_MISSION_SCENARIOS = [');
+    expect(scenarioRegistry.match(/id: '(?:training|freshet|heat-slack)'/g) || []).toHaveLength(3);
+    expect(source).toContain("className: 'aq-content-card aq-field-mission-briefing'");
+    expect(source).toContain("'aria-label': 'Boat mission field conditions'");
+    expect(source).toContain("className: 'aq-field-condition-figure'");
+    expect(source).toContain('missionScenario.scene.sky');
+    expect(source).toContain('missionScenario.scene.water');
+    expect(source).toContain('var currentDrift = missionScenario.currentDrift');
+    expect(source).toContain('missionScenario.waveScale');
+    expect(source).toContain('missionScenarioId: missionScenarioId');
+    expect(source).toContain('aqMissionScenarioProbeReading(scenario.id');
+    expect(source).toContain('scenarioId: guidedMission.scenarioId');
+    expect(source).toContain('scenarioId: missionScenario.id');
+    expect(source).toContain('debriefScenario.badge');
+    expect(source).toContain('missionDepthComparison.summary.scenarioName');
+    expect(source).toContain('.aq-field-condition-layout{grid-template-columns:minmax(0,1fr)!important}');
   });
 
   it('suspends hidden simulations and provides a direct Escape exit path', () => {
@@ -212,8 +283,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('.aq-btn:not(:disabled):hover');
     expect(source).toContain('@media(prefers-reduced-motion:reduce)');
     expect(source).toContain('.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}');
-    expect(source.match(/className: 'aq-content-card'/g) || []).toHaveLength(289);
-    expect(source.match(/className: 'aq-section-kicker'/g) || []).toHaveLength(289);
+    expect(source.match(/className: 'aq-section-kicker'/g) || []).toHaveLength(290);
     expect(source).toContain("className: 'aq-topic-group'");
     expect(source).toContain("className: 'aq-topic-group-summary'");
     expect(source).toContain('.aq-section-kicker:after');

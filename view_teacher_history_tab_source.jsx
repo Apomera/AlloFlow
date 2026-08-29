@@ -14,10 +14,7 @@
  *   setIsRosterKeyOpen     — opens roster management modal
  *   t                      — translation function
  *
- * NOTE: setShowBatchConfig is referenced in the source but UNDEFINED in
- * AlloFlowANTI.txt (caught by the dep enumerator). Preserved as a noop
- * fallback to match existing broken-button behavior. TODO: wire up real
- * batch-config state setter.
+ *   onDifferentiateByGroup — opens the roster directly to batch configuration
  *
  * Icons (from window globals): ClipboardList, Settings, Layers
  */
@@ -26,16 +23,13 @@ function TeacherHistoryTab({
   hasSourceOrAnalysis,
   rosterKey,
   setIsRosterKeyOpen,
-  setShowBatchConfig,
+  onDifferentiateByGroup,
   t,
 }) {
   const noop = () => null;
   const ClipboardList = window.ClipboardList || noop;
   const Settings = window.Settings || noop;
   const Layers = window.Layers || noop;
-  // setShowBatchConfig is a phantom in the source; fall back to noop to
-  // avoid runtime TypeError if the rare-path button is clicked.
-  const safeBatchConfig = setShowBatchConfig || (() => {});
 
   return (
     <div id="ui-roster-strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0">
@@ -65,7 +59,7 @@ function TeacherHistoryTab({
                 </button>
               ))}
             </div>
-            <button onClick={() => { setIsRosterKeyOpen(true); setTimeout(() => safeBatchConfig(true), 300); }}
+            <button onClick={onDifferentiateByGroup}
               disabled={!hasSourceOrAnalysis}
               className="w-full px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 border border-amber-600"
             >

@@ -40,10 +40,12 @@ The evaluation web app should:
 - map that account to a server-owned membership and explicit evaluator/educator assignment;
 - keep the central spreadsheet and Drive folder unshared from ordinary users, exposing only authorized record-shaped server methods;
 - bundle the same reviewed evaluation UI rather than load mutable code or confidential data through a third-party CDN;
-- use Gmail only for content-free notifications linking to the authenticated portal;
+- use Gmail only for reviewed, content-free notifications sent to one exact
+  server-resolved district recipient and linking to the generic authenticated
+  portal root, never an educator or record deep link;
 - keep messages, explicit opened/acknowledged receipts, server-generated workflow milestones, immutable revisions, and audit events in the portal;
-- limit the current UI's formal-observation cohort calculation to the permission-filtered workspace returned for the evaluator and suppress results below ten distinct contributing peers;
-- wire the existing server cohort endpoint before offering comparisons across a broader school or district population.
+- serve formal-observation cohort comparisons through `getPortalCohortStats(...)`, where the server derives the actor and authorized subject, selects only same-building/type active peers visible to that evaluator, contributes one mean per distinct peer, and suppresses groups below ten;
+- return only the selected educator result plus the aggregate/count disclosure; never calculate or expose a peer cohort from browser-filtered record rows.
 
 Apps Script, Gmail, Drive, Sheets, and Vault are currently listed as Google Workspace Core Services. This gives the district a simpler contractual and administrative starting point, but it does not automatically make custom code FERPA compliant. The LEA must approve the purpose and data practices, validate the deployment configuration, retain direct control, and address student PII and separate personnel-record obligations.
 
@@ -117,15 +119,57 @@ Each observation, walkthrough, SPM, and cycle can have an append-only thread:
 - edits are disabled; corrections are appended
 - explicit opened and acknowledged receipts remain separate; approval, return, and signature are server-generated workflow milestones
 - in-app notifications contain no sensitive evaluation content
-- optional email notification says only that new activity is available and links back to the authenticated portal
+- optional email notification says only that new activity is available and links back to the generic authenticated portal root
 
 This meets the communication need without sending the actual evaluation through ordinary email.
+
+Email dispatch uses a separate review/perform/outcome contract. Review shows
+the exact directory-derived recipient and generic message. If a teacher has
+multiple active assigned evaluators, the first review returns only the bounded
+authorized account choices and requires an explicit selection before issuing a
+token; an arbitrary client address is rejected. Multiple active teacher
+accounts for one educator are a directory conflict that fails closed for
+manual recovery, never a recipient picker. A resolved review binds the
+initiating actor, educator, target, selected recipient, directory state,
+validated portal URL, and latest canonical notification Audit ID for that
+educator-and-target delivery scope. The token is also the durable server-side
+operation identity. The confirmation shows that exact validated portal root,
+not merely a generic link label, and the browser does not persist notification
+tokens. Exact-token operation lookup runs before mutable operation gates, so a
+known outcome remains replayable even if later repository recovery is needed.
+For a fresh operation, locked perform reauthorizes the complete token scope,
+refuses before mail when a workspace commit is pending, mail quota is
+exhausted, or sealed-intent/audit-outbox capacity is unavailable, and rechecks
+both the delivery scope and the review's prior canonical Audit ID. Any
+intervening completion makes a competing pre-issued review stale, including
+one issued to another authorized actor. A verified sealed intent precedes
+`MailApp`, and its deterministic Audit receipt is replayed under the same ID if
+delivery completed while the audit sink was unavailable. Repeating perform or
+querying the outcome after a lost response never resends.
+
+A token-bearing outcome lookup selects the exact operation. After reload, a
+tokenless lookup searches for one unique unresolved educator-and-target
+delivery scope across currently authorized actors; the initiating actor remains
+sealed for authorization and Audit attribution, but cannot hide the same
+delivery from another authorized actor. Ambiguous unresolved matches fail
+closed. With no unresolved operation, canonical notification history returns a
+`completed` prior outcome with `priorCompletion:true`, `repeatEligible:true`,
+and `completedAt`; no canonical history returns `no_unresolved`. The portal
+requires the explicit **Prepare another reviewed notice** action before opening
+a fresh review after prior completion. A server/bridge error marked
+`preDispatch:true` proves only that that attempt did not start mail. The UI
+still performs a tokenless delivery-scope lookup and unlocks only on
+`no_unresolved` or exact-token `not_started`; completed, pending, unknown,
+ambiguous, and failed lookups remain locked. Because `MailApp` offers no
+transactional idempotency key, an interruption after dispatch starts but before
+confirmation is reported as `delivery_unknown` and requires manual recovery;
+the safer at-most-once policy never guesses that another email is harmless.
 
 ### Longitudinal and cohort analytics
 
 Preserve observation-specific human ratings and evidence snapshots by date. Never overwrite the annual domain rating when another observation is signed.
 
-Current pilot boundary: the UI can display immutable prior-cycle snapshots that were seeded or already recorded, but it has no controlled annual rollover operation to close one year, create the next cycle, carry forward the approved roster, and preserve assignments atomically. The district must not describe this pilot as operational multi-year cycle management until that administrator-controlled rollover is built and tested.
+Current pilot boundary: the administrator now has a controlled, archive-first annual rollover that carries forward the approved roster and assignments, retains immutable cycle snapshots, and opens clean next-year cycles. The workflow is deliberately staged and recoverable rather than described as one atomic transaction: a sealed deterministic archive intent precedes Drive creation, every active-state change is revisioned and locked, and completion requires exact Audit and Config readback. A district still must test backup/restore, retention, legal hold, incident recovery, and ownership before describing the pilot as operational multi-year records management.
 
 The principal view can provide:
 
@@ -202,13 +246,14 @@ A dedicated “Principal Edition” installer can be added later, but it should 
 - Google Workspace sign-in
 - organization membership and assigned-evaluator authorization
 - domain-only Apps Script repository with server-side Workspace identity, assignment checks, protected Sheets/Drive storage, and authorization tests
-- saved threads, receipts, content-free notifications, immutable versions, and manual Refresh
-- no portal downloads, imports, or reset until an LEA-approved export policy and audited server export workflow are implemented
+- saved threads, receipts, reviewed exact-recipient content-free notifications
+  with sealed at-most-once outcomes, immutable versions, and manual Refresh
+- no direct browser downloads, imports, or reset; administrator-only reviewed private exports are available only through the audited server workflow after LEA approval of purpose, destination, retention, legal hold, and official-record handling
 - text and district-approved Drive references only; secure attachment handling remains future work
 - longitudinal teacher trend view and privacy-suppressed cohort aggregates within the evaluator's authorized workspace
 
 - district-domain sandbox with synthetic data and a documented Firebase/Google Cloud scale-up decision
-- administrator-controlled annual rollover before any operational multi-year claim
+- administrator-controlled archive-first annual rollover with deterministic recovery; operational multi-year claims still require an LEA-tested backup/restore and records-administration procedure
 
 ### Phase 2 — production authorization
 

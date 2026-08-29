@@ -89,8 +89,11 @@ function playWeek(species, picks, careMask) {
   }
   s.minDomain = Math.min(s.phys, s.ment, s.soc, s.env);
   s.spent = start - s.money;
-  // Mirrors nextDay()'s award test.
-  s.badge = s.phys >= 70 && s.ment >= 70 && s.soc >= 70 && s.env >= 70 && !s.lowMoney;
+  // Mirrors evaluateCareWelfare() plus nextDay()'s award test.
+  s.moneySustainable = !s.lowMoney && s.money >= 0;
+  s.energySustainable = s.en > 20 && s.tiredCare === 0;
+  s.sustainable = s.moneySustainable && s.energySustainable;
+  s.badge = s.minDomain >= 70 && s.sustainable;
   return s;
 }
 
@@ -151,13 +154,12 @@ describe('Pets Lab — care-sim economy invariants', () => {
     expect(all.some((w) => !w.badge)).toBe(true);
   });
 
-  // All four welfare domains gate the badge (Five Domains coherence).
-  it('the badge gate covers every welfare domain the sim tracks', () => {
+  // The weakest welfare domain and both caregiver-resource constraints gate
+  // the badge; strong animal scores cannot erase an exhausted/overdrawn plan.
+  it('the badge gate covers welfare plus caregiver sustainability', () => {
     const gate = (SRC.match(/var earned = \(([^;]*)\);/) || [])[1] || '';
-    for (const domain of ['phys', 'ment', 'soc', 'env']) {
-      expect(gate).toContain('c.' + domain + ' >= 70');
-    }
-    expect(gate).toContain('!c.lowMoney');
+    expect(gate).toContain('finalWelfare.minimum >= 70');
+    expect(gate).toContain('finalWelfare.sustainable');
   });
 
   it('no species can neglect a domain and still earn the badge', () => {
@@ -195,6 +197,12 @@ describe('Pets Lab — care-sim economy invariants', () => {
       const w = playWeek(sp, cheapPicks, (1 << days.length) - 1);
       expect(w.en).toBeGreaterThan(0);
     }
+  });
+
+  it.each(SPECIES)('%s: at least one badge path is sustainable for the caregiver', (sp) => {
+    const badgeWeeks = [...allWeeks(sp)].filter((w) => w.badge);
+    expect(badgeWeeks.length).toBeGreaterThan(0);
+    expect(badgeWeeks.every((w) => w.moneySustainable && w.energySustainable)).toBe(true);
   });
 
   it('the stated badge criteria match the code', () => {

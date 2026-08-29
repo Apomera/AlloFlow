@@ -740,6 +740,7 @@
     var fallback = function () {
       try {
         var ta = document.createElement('textarea');
+        ta.setAttribute('aria-label', 'Temporary field for copying diagnostics');
         ta.value = text;
         ta.style.position = 'fixed'; ta.style.opacity = '0';
         document.body.appendChild(ta);
@@ -808,6 +809,7 @@
       var fallback = function () {
         try {
           var ta = document.createElement('textarea');
+          ta.setAttribute('aria-label', 'Temporary field for copying session diagnostics');
           ta.value = text;
           ta.style.position = 'fixed'; ta.style.opacity = '0';
           document.body.appendChild(ta);
@@ -839,6 +841,7 @@
       var fallback = function () {
         try {
           var ta = document.createElement('textarea');
+          ta.setAttribute('aria-label', 'Temporary field for copying text-to-speech diagnostics');
           ta.value = text;
           ta.style.position = 'fixed'; ta.style.opacity = '0';
           document.body.appendChild(ta);
@@ -881,6 +884,7 @@
       function copyFallback(txt) {
         try {
           var ta = document.createElement('textarea');
+          ta.setAttribute('aria-label', 'Temporary field for copying the error report');
           ta.value = txt;
           ta.style.position = 'fixed'; ta.style.opacity = '0';
           document.body.appendChild(ta);

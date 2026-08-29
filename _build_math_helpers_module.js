@@ -16,7 +16,7 @@ const outputCode =
 if (window.AlloModules && window.AlloModules.MathHelpersModule) { console.log('[CDN] MathHelpersModule already loaded, skipping'); return; }
 ${source}
 window.AlloModules.MathHelpersModule = true;
-console.log('[MathHelpers] 5 helpers registered');
+console.log('[MathHelpers] helpers registered');
 })();
 `;
 

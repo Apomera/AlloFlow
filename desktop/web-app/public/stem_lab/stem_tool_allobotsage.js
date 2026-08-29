@@ -2033,7 +2033,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     t('stem.allobotsage.button_that_ll_take_you_to_the_tool_th', ' button. That\'ll take you to the tool that unlocks it.')
                   ),
                   h('p', { className: 'text-[12px] text-amber-700 italic' },
-                    t('stem.allobotsage.allobot_is_watching_your_progress_ever', 'AlloBot is watching your progress everywhere. Even a single mission, problem, or drill in another tool will start unlocking spells here.')
+                    t('stem.allobotsage.practice_across_alloflow_counts_here', 'Your practice across AlloFlow counts here. Even a single mission, problem, or drill in another tool will start unlocking spells here.')
                   )
                 )
               : [

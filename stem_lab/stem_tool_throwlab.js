@@ -2760,9 +2760,9 @@ window.StemLab = window.StemLab || {
         var matched = actualKey === trial.predictionKey;
         return {
           matched: matched,
-          title: matched ? 'Prediction confirmed' : 'Evidence changed the story',
+          title: matched ? 'Evidence matched your call' : 'Evidence differed from your call',
           summary: matched
-            ? 'You called ' + trial.predictionLabel + ', and the result matched. Now change one variable and predict again.'
+            ? 'You called ' + trial.predictionLabel + ', and the result landed there. Change one variable and test whether the pattern repeats.'
             : 'You called ' + trial.predictionLabel + '; the evidence landed in ' + (actual ? actual.label : cleanOutcomeText(result)) + '. Surprises are useful data—use the next rep to test why.'
         };
       }
@@ -3283,8 +3283,8 @@ window.StemLab = window.StemLab || {
             if (celebrate) celebrate();
           }, 600);
         }
-        if (currentPredictionFeedback && currentPredictionFeedback.matched && addToast) {
-          scheduleTl(function() { addToast('🔬 Prediction matched the evidence'); }, 950);
+        if (currentPredictionFeedback && addToast) {
+          scheduleTl(function() { addToast('🔬 Call compared with the evidence'); }, 950);
         }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
         scheduleTl(function() {
@@ -5404,7 +5404,7 @@ window.StemLab = window.StemLab || {
         },
           [
             ['1', __alloT('stem.throwlab.loop_choose', 'Choose'), __alloT('stem.throwlab.loop_choose_detail', 'Pick a sport and setup')],
-            ['2', __alloT('stem.throwlab.loop_predict', 'Predict'), __alloT('stem.throwlab.loop_predict_detail', 'Call the outcome')],
+            ['2', __alloT('stem.throwlab.loop_predict', 'Hypothesize'), __alloT('stem.throwlab.loop_predict_detail', 'Make an ungraded call')],
             ['3', __alloT('stem.throwlab.loop_launch', 'Launch'), __alloT('stem.throwlab.loop_launch_detail', 'Watch the evidence')],
             ['4', __alloT('stem.throwlab.loop_compare', 'Compare'), __alloT('stem.throwlab.loop_compare_detail', 'Change one variable')]
           ].map(function(step) {
@@ -6274,13 +6274,13 @@ window.StemLab = window.StemLab || {
                       role: 'status',
                       style: {
                         marginTop: 10, padding: '9px 10px', borderRadius: 8,
-                        background: feedback.matched ? 'rgba(16,185,129,0.12)' : 'rgba(124,58,237,0.12)',
-                        border: '1px solid ' + (feedback.matched ? 'rgba(52,211,153,0.55)' : 'rgba(196,181,253,0.52)'),
+                        background: 'rgba(56,189,248,0.10)',
+                        border: '1px solid rgba(125,211,252,0.45)',
                         color: '#e2e8f0', fontSize: 11, lineHeight: 1.45
                       }
                     },
-                      h('strong', { style: { display: 'block', marginBottom: 2, color: feedback.matched ? '#6ee7b7' : '#c4b5fd' } },
-                        (feedback.matched ? '✓ ' : '↗ ') + feedback.title),
+                      h('strong', { style: { display: 'block', marginBottom: 2, color: '#bae6fd' } },
+                        '🔬 ' + feedback.title),
                       feedback.summary
                     );
                   })(),
@@ -6676,10 +6676,10 @@ window.StemLab = window.StemLab || {
               },
                 h('legend', { style: { padding: '0 5px', color: '#ddd6fe', fontSize: 11, fontWeight: 900 } },
                   __alloT('stem.throwlab.call_your_shot', 'Call your shot'),
-                  h('span', { style: { color: '#94a3b8', fontWeight: 600 } }, ' · optional')
+                  h('span', { style: { color: '#94a3b8', fontWeight: 600 } }, ' · ungraded hypothesis · optional')
                 ),
                 h('p', { style: { margin: '0 0 7px', color: '#cbd5e1', fontSize: 10, lineHeight: 1.4 } },
-                  __alloT('stem.throwlab.prediction_no_penalty', 'Predict before you launch. There is no penalty for being surprised—surprises create the next question.')),
+                  __alloT('stem.throwlab.prediction_no_penalty', 'Make an ungraded call before launch. A match is not a score; both matches and surprises can guide the next test.')),
                 h('div', { className: 'throwlab-call-grid' },
                   options.map(function(option) {
                     var selected = d.predictionKey === option.key;
@@ -6691,7 +6691,7 @@ window.StemLab = window.StemLab || {
                       onClick: function() {
                         var nextKey = selected ? null : option.key;
                         upd('predictionKey', nextKey);
-                        tlAnnounce(nextKey ? 'Prediction: ' + option.label + '. Launch when ready.' : 'Prediction cleared.');
+                        tlAnnounce(nextKey ? 'Ungraded call: ' + option.label + '. Launch when ready.' : 'Call cleared.');
                       },
                       style: {
                         padding: '8px 7px', borderRadius: 8, cursor: 'pointer', textAlign: 'left',
@@ -6706,7 +6706,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 predictionStats.attempts ? h('div', { style: { marginTop: 6, color: '#c4b5fd', fontSize: 10 } },
-                  'Prediction record: ' + predictionStats.matches + ' matched · ' + predictionStats.attempts + ' called') : null
+                  'Calls compared: ' + predictionStats.attempts + ' · Evidence matches: ' + predictionStats.matches + ' · descriptive, not scored') : null
               );
             })(),
             h('div', {

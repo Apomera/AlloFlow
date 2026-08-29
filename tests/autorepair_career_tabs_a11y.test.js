@@ -25,10 +25,15 @@ describe('AutoRepair Career tabs accessibility', () => {
     expect(source).toContain("key === 'End'");
   });
 
-  it('links the active Career section to its tabpanel', () => {
+  it('links every Career section to a stable tabpanel and hides inactive panels', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("id: 'autorepair-career-panel-' + carView");
-    expect(source).toContain("'aria-labelledby': 'autorepair-career-tab-' + carView");
-    expect(source).toContain('tabIndex: 0');
+    expect(source).toContain('function careerPanel(id, content)');
+    expect(source).toContain("id: 'autorepair-career-panel-' + id");
+    expect(source).toContain("'aria-labelledby': 'autorepair-career-tab-' + id");
+    expect(source).toContain('tabIndex: active ? 0 : -1');
+    expect(source).toContain('hidden: active ? undefined : true');
+    expect(source).toContain("careerPanel('overview', overview())");
+    expect(source).toContain("careerPanel('ase', ase())");
+    expect(source).toContain("careerPanel('pathway', pathway())");
   });
 });

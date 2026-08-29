@@ -278,6 +278,10 @@ window.StemLab = window.StemLab || {
       // ── SVG Geometry ──
       // ══════════════════════════════════════════════════════════════
       var cx = 200, cy = 200, r = 160, rayLen = 170;
+      // The responsive 400-unit viewBox renders at about 300 CSS px on a
+      // 320px viewport. A 17-unit radius keeps each ray handle above the
+      // WCAG 2.5.8 24px minimum while preserving the full protractor in view.
+      var rayHandleRadius = 17;
       var rad = angleValue * Math.PI / 180;
       var rayEndX = cx + rayLen * Math.cos(-rad);
       var rayEndY = cy + rayLen * Math.sin(-rad);
@@ -843,7 +847,7 @@ window.StemLab = window.StemLab || {
           activeTab === 'explore' && h('div', { className: 'space-y-3' },
           // ── SVG Protractor ──
           h('div', { className: 'bg-white rounded-xl border-2 border-purple-200 p-2 sm:p-3 flex justify-center relative overflow-x-auto' },
-            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, className: 'select-none', role: 'group', 'aria-label': convertedAngle + ' ' + angleClass + ' interactive protractor', 'data-protractor-svg': true },
+            h('div', { 'aria-live': 'polite', 'aria-atomic': 'true', style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap' } }, convertedAngle + ', ' + angleClass + ' angle'), h('svg', { width: 400, height: 420, viewBox: '0 0 400 420', preserveAspectRatio: 'xMidYMid meet', className: 'select-none', role: 'group', 'aria-label': convertedAngle + ' ' + angleClass + ' interactive protractor', 'data-protractor-svg': true, style: { width: '100%', height: 'auto', maxWidth: 400, minWidth: 0, flex: '1 1 400px' } },
               // Outer circle + semi-circle fills
               h('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: '#e9d5ff', strokeWidth: 1 }),
               // Filled angle wedge
@@ -864,7 +868,7 @@ window.StemLab = window.StemLab || {
               showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[11px] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
-              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: 12, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': 'Second angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
+              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': 'Second angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
               showSecondRay && h('text', { x: cx, y: cy + arcR + 22, textAnchor: 'middle', className: 'text-[11px] fill-cyan-600 font-bold select-none' }, '\u2220 Between: ' + angleBetween + '\u00B0'),
               // Arc
               angleValue > 0 && angleValue < 360 && h('path', {
@@ -878,7 +882,7 @@ window.StemLab = window.StemLab || {
                 estimateActive ? '?' : convertedAngle
               ),
               // Draggable handle
-              h('circle', { cx: rayEndX, cy: rayEndY, r: 14, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': 'Angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
+              h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': 'Angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
@@ -915,7 +919,7 @@ window.StemLab = window.StemLab || {
 
           // Slider
           h('div', { className: 'bg-white rounded-xl p-3 border border-purple-100' },
-            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': convertedAngle, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600' }),
+            h('input', { type: 'range', min: 0, max: 360, value: angleValue, onChange: function(e) { setAngleValue(snapAngle(parseInt(e.target.value))); setAngleFeedback(null); }, 'aria-valuetext': convertedAngle, 'aria-label': t('stem.angles.angle_value_slider', 'Angle value slider'), className: 'w-full h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer accent-purple-600', style: { boxSizing: 'content-box', padding: '8px 0', backgroundClip: 'content-box' } }),
             h('div', { className: 'flex justify-between mt-1' },
               h('span', { className: 'text-[11px] text-slate-600' }, '0\u00B0'),
               h('div', { className: 'flex gap-2' },
@@ -1188,10 +1192,10 @@ window.StemLab = window.StemLab || {
                 { name: t('stem.angles.vertical', 'Vertical'), desc: t('stem.angles.opposite_angles_formed_by_intersecting', 'Opposite angles formed by intersecting lines; always equal'), example: '\u2220A = \u2220C', icon: '\u2716', color: 'purple' },
                 { name: t('stem.angles.adjacent', 'Adjacent'), desc: t('stem.angles.angles_that_share_a_common_vertex_and_', 'Angles that share a common vertex and side'), example: '\u2220AOB + \u2220BOC', icon: '\uD83D\uDC49', color: 'green' }
               ].map(function(rel) {
-                return h('div', { key: rel.name, className: 'p-3 rounded-xl bg-' + rel.color + '-50 border border-' + rel.color + '-200' },
+                return h('div', { key: rel.name, className: 'min-w-0 p-3 rounded-xl bg-' + rel.color + '-50 border border-' + rel.color + '-200' },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-base' }, rel.icon),
-                    h('span', { className: 'text-sm font-bold text-' + rel.color + '-700' }, rel.name)
+                    h('span', { className: 'text-sm font-bold text-' + rel.color + '-700', style: { overflowWrap: 'anywhere' } }, rel.name)
                   ),
                   h('div', { className: 'text-[11px] text-' + rel.color + '-700 mb-1' }, rel.desc),
                   h('div', { className: 'text-[11px] text-' + rel.color + '-700 font-mono' }, rel.example)
@@ -1329,7 +1333,7 @@ window.StemLab = window.StemLab || {
           // ── Angle Unit Converter ──
           h('div', { className: 'bg-white rounded-xl p-4 border border-green-200' },
             h('div', { className: 'text-xs font-bold text-green-700 uppercase mb-3' }, t('stem.angles.angle_unit_converter', '\uD83D\uDD04 Angle Unit Converter')),
-            h('div', { className: 'grid grid-cols-4 gap-3' },
+            h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-3' },
               h('div', { className: 'bg-green-50 rounded-lg p-3 text-center' },
                 h('div', { className: 'text-[11px] font-bold text-green-700 uppercase' }, t('stem.angles.degrees_2', 'Degrees')),
                 h('div', { className: 'text-lg font-bold text-green-800' }, angleValue + '\u00B0')

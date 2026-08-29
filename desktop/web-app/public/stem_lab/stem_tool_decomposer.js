@@ -1435,7 +1435,7 @@
           ),
 
           /* ── Tab bar ── */
-          h('div', { className: 'flex gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
+          h('div', { className: 'flex flex-wrap gap-1 mb-4 bg-slate-100 rounded-xl p-1', role: 'tablist', 'aria-label': 'Decomposer Lab sections' },
             TABS.map(function(t, tabIndex) {
               var active = tab === t.id;
               return h('button', { key: t.id,

@@ -330,7 +330,7 @@
 
           function build(THREE, node) {
             var renderer;
-            var reducedMotion = (function () {
+            var reducedMotion = typeof props.reduced === 'boolean' ? props.reduced : (function () {
               try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
               catch (e) { return false; }
             })();
@@ -1042,7 +1042,10 @@
                 setStatus('failed');
               });
             },
-            sync: function (next) { props = next; },
+            sync: function (next) {
+              props = next || {};
+              if (S && typeof props.reduced === 'boolean') S.reduced = props.reduced;
+            },
             nudge: function (dYaw, dPitch) {
               if (!S) return;
               S.yaw += dYaw;
@@ -4768,6 +4771,23 @@
               // it is missing from its own defaults on render, so a partial
               // payload restores cleanly rather than blanking the tool.
               if (snap.tool === 'machineLab' && snap.data) setLabToolData(function (prev) { return Object.assign({}, prev, { machineLab: Object.assign({}, prev.machineLab, snap.data) }); });
+              // Art Studio snapshots preserve editable inputs and settings, but
+              // rendered animation frames live only in the mounted component.
+              // Merge the payload and defensively reset transient playback flags
+              // so Load never presents controls for frames that do not exist.
+              if (snap.tool === 'artStudio' && snap.data) setLabToolData(function (prev) {
+                return Object.assign({}, prev, {
+                  artStudio: Object.assign({}, prev.artStudio, snap.data, {
+                    stereoAnimPlaying: false,
+                    stereoAnimRendering: false,
+                    stereoAnimHasFrames: false,
+                    stereoAnimProgress: 0,
+                    stereoAnimIndex: 0,
+                    stereoAnimAiGenerating: false,
+                    stereoAnimAiMotionStatus: ''
+                  })
+                });
+              });
             },
             className: "text-[10px] font-bold text-indigo-500 hover:text-indigo-700 transition-colors"
           }, "\u21A9 Load"), /*#__PURE__*/React.createElement("button", { "aria-label": "Set Tool Snapshots",
@@ -5114,7 +5134,7 @@
               },
               { id: 'plateTectonics', icon: '🌋', label: 'Plate Tectonics', desc: 'Explore tectonic plates, earthquakes, volcanoes, and continental drift.', aliases: ['convection', 'mantle convection', 'heat transfer'], color: 'orange', ready: true },
               { id: 'geologyExplorer', icon: '⛰️', label: 'Geology Explorer', desc: 'Dig a 3D voxel cross-section of the crust — identify rocks, read the layers, and find the pluton that cuts them.', color: 'amber', ready: true },
-              { id: 'geoQuiz', icon: '🗺️', label: 'Geography Quiz', desc: 'Test your world geography knowledge with interactive maps, flags, and capitals.', color: 'sky', ready: true },
+              { id: 'geoQuiz', icon: '🗺️', label: 'Geography Explorer', desc: 'Find countries on a live map, quiz capitals, continents and landmarks, compare sizes, estimate distances, and spin a 3D globe.', color: 'sky', ready: true },
               // gisStudio registers itself in stem_tool_gisstudio.js but had NO tile here,
               // so a finished, tested, mirrored tool was unreachable from the picker —
               // check_stem_tile_catalog and stem_plugin_fallback_allowlist were both red
@@ -5773,6 +5793,26 @@
               if (!state) return 0;
               try { return getCount(state) || 0; } catch (e) { return 0; }
             };
+            var _countPetsDecoderMastery = function (state) {
+              if (!state || typeof state !== 'object') return 0;
+              if (state.decoderCanonicalCount != null && state.decoderCanonicalCount !== '' && isFinite(Number(state.decoderCanonicalCount))) {
+                return Math.max(0, Math.min(27, Math.floor(Number(state.decoderCanonicalCount))));
+              }
+              // Migration fallback for older snapshots: current Pets records
+              // carry self-identifying species + signal fields. Reject bare
+              // orphan keys and cap the result until Pets republishes the
+              // canonical count on its next mount.
+              var mastery = state.decoderMastery && typeof state.decoderMastery === 'object'
+                ? state.decoderMastery
+                : {};
+              var allowedSpecies = { '🐕 Dogs': true, '🐈 Cats': true, '🐰 Rabbits': true, '🦜 Birds': true };
+              var verified = Object.keys(mastery).filter(function (key) {
+                var entry = mastery[key];
+                return !!(entry && typeof entry === 'object' && allowedSpecies[entry.species] &&
+                  typeof entry.signal === 'string' && key === entry.species + '|' + entry.signal);
+              }).length;
+              return Math.min(27, verified);
+            };
             var _atlasEntries = [
               { id: 'birdLab', icon: '🪶', label: 'BirdLab Life List',
                 color: '#10b981', accent: 'rgba(16,185,129,0.15)',
@@ -5781,7 +5821,7 @@
               { id: 'petsLab', icon: '🐾', label: 'PetsLab Decoder',
                 color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
                 slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
-                count: function () { var s = _readSlot('__alloflowPetsLab', 'petsLab.state.v1'); return s && s.decoderMastery ? Object.keys(s.decoderMastery).length : 0; } },
+                count: function () { return _countPetsDecoderMastery(_readSlot('__alloflowPetsLab', 'petsLab.state.v1')); } },
               { id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,

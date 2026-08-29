@@ -649,7 +649,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
               </div>
             </div>
           )}
-          <div className="p-8 overflow-y-auto custom-scrollbar">
+          <div className="p-4 sm:p-8 overflow-y-auto custom-scrollbar">
               {step === 1 && (
                   <div className="space-y-6 animate-in motion-reduce:animate-none slide-in-from-right-4 duration-300">
                       <div>
@@ -1035,7 +1035,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           />
                                       </div>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_tone_label')}</label>
                                           <div className="relative">
@@ -1082,7 +1082,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                           </div>
                                       </div>
                                   </div>
-                                  <div className="grid grid-cols-2 gap-4">
+                                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                       <div>
                                           <label className="block text-xs font-bold text-slate-600 uppercase mb-1">{t('wizard.input_level_label')}</label>
                                           <div className="relative">
@@ -1142,12 +1142,12 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                   </div>
                                   {!isParentMode && (
                                     <div className="bg-slate-50 p-2 rounded-lg border border-slate-400">
-                                        <div className="flex justify-between items-center mb-2">
+                                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                                             <span id="quickstart-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
                                                 <CheckCircle size={12} className="text-green-600" aria-hidden="true"/> {isIndependentMode ? t('wizard.learning_goals') : t('wizard.target_standard')}
                                             </span>
                                             {!isIndependentMode && (
-                                            <div role="group" aria-labelledby="quickstart-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
+                                            <div role="group" aria-labelledby="quickstart-standard-mode-label" className="flex self-start bg-white rounded-md border border-slate-400 p-0.5 shadow-sm sm:self-auto">
                                                 <button type="button"
                                                     data-help-key="wizard_std_mode_ai"
                                                     aria-pressed={standardMode === 'ai'}
@@ -1169,14 +1169,14 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         </div>
                                         {standardMode === 'ai' ? (
                                             <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
-                                                <div className="flex gap-2">
+                                                <div className="flex flex-col gap-2 sm:flex-row">
                                                     {!isIndependentMode && (
                                                     <input dir="auto" aria-label={t('common.common_standards_region_placeholder')}
                                                         type="text"
                                                         value={aiStandardRegion}
                                                         onChange={(e) => setAiStandardRegion(e.target.value)}
                                                         placeholder={t('common.standards_region_placeholder')}
-                                                        className="w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                                        className="w-full text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 sm:w-1/3"
                                                     />
                                                     )}
                                                     <input dir="auto" aria-label={t('common.enter_ai_standard_query')}
@@ -1185,13 +1185,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                         onChange={(e) => setAiStandardQuery(e.target.value)}
                                                         onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
                                                         data-help-key="standards_query_input" placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
-                                                        className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                                        className="min-w-0 w-full flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                     />
                                                     <button type="button"
                                                         onClick={handleFindStandards} data-help-key="standards_search_btn"
                                                         disabled={isFindingStandards || !aiStandardQuery.trim()}
                                                         aria-busy={isFindingStandards}
-                                                        className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors motion-reduce:transition-none shadow-sm"
+                                                        className="min-h-11 min-w-11 self-end bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 transition-colors motion-reduce:transition-none shadow-sm sm:self-auto"
                                                         title={t('standards.search_button_title')}
                                                         aria-label={t('standards.search_button_title')}
                                                     >
@@ -1234,7 +1234,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="flex gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
+                                            <div className="flex flex-col gap-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200 sm:flex-row">
                                                 <input dir="auto" aria-label={t('common.enter_standard_input_value')}
                                                     type="text"
                                                     value={standardInputValue}
@@ -1242,13 +1242,13 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                                     onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
                                                     data-help-key="wizard_std_manual_input"
                                                     placeholder={t('standards.manual_placeholder')}
-                                                    className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                                    className="min-w-0 w-full flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
                                                 />
                                                 <button type="button"
                                                     aria-label={t('common.add')}
                                                     onClick={handleAddStandard}
                                                     disabled={!standardInputValue.trim() || localData.standards.length >= 3}
-                                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50"
+                                                    className="min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-1.5 rounded hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 sm:self-auto"
                                                     data-help-key="wizard_std_manual_add_btn"
                                                     title={t('standards.add_standard')}
                                                 >
@@ -1385,7 +1385,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </div>
                               <div>
                                   <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.output_languages_label')}</label>
-                                  <div className="flex gap-2 mb-2">
+                                  <div className="mb-2 flex flex-col gap-2 sm:flex-row">
                                       <input dir="auto" aria-label={t('common.enter_wiz_lang_input')}
                                         type="text"
                                         value={wizLangInput}
@@ -1393,14 +1393,14 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         onKeyDown={(e) => e.key === 'Enter' && addWizLanguage()}
                                         data-help-key="wizard_lang_input"
                                         placeholder={t('wizard.language_placeholder')}
-                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
+                                        className="min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500 bg-white"
                                         disabled={localData.languages.length >= 4}
                                       />
                                       <button type="button" aria-label={t('common.add')}
                                         data-help-key="wizard_lang_add_btn"
                                         onClick={addWizLanguage}
                                         disabled={!wizLangInput.trim() || localData.languages.length >= 4}
-                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none"
+                                        className="min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
                                       >
                                         <Plus size={20} />
                                       </button>
@@ -1441,7 +1441,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                               </div>
                               <div>
                                   <label className="block text-sm font-bold text-slate-600 mb-1">{t('wizard.interests_label_optional').replace(' (Optional)', '')}<span className="text-slate-600 font-normal"> (Optional)</span></label>
-                                  <div className="flex gap-2 mb-2">
+                                  <div className="mb-2 flex flex-col gap-2 sm:flex-row">
                                       <input dir="auto" aria-label={t('common.enter_wiz_interest_input')}
                                         type="text"
                                         value={wizInterestInput}
@@ -1449,14 +1449,14 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                         onKeyDown={(e) => e.key === 'Enter' && addWizInterest()}
                                         data-help-key="wizard_interest_input"
                                         placeholder={t('wizard.interest_placeholder')}
-                                        className="flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500"
+                                        className="min-w-0 w-full flex-grow p-3 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-500"
                                         disabled={localData.interests.length >= 5}
                                       />
                                       <button type="button" aria-label={t('common.add')}
                                         data-help-key="wizard_interest_add_btn"
                                         onClick={addWizInterest}
                                         disabled={!wizInterestInput.trim() || localData.interests.length >= 5}
-                                        className="bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none"
+                                        className="min-h-11 min-w-11 self-end bg-indigo-100 text-indigo-700 p-3 rounded-xl hover:bg-indigo-200 disabled:opacity-50 transition-colors motion-reduce:transition-none sm:self-auto"
                                       >
                                         <Plus size={20} />
                                       </button>

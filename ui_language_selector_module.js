@@ -21,6 +21,14 @@ var ArrowRight = _lazyIcon('ArrowRight');
 const UiLanguageSelector = () => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState("");
+  const languageCopy = (key, fallback) => {
+    try {
+      const value = t(key);
+      return value && value !== key ? value : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
   const FALLBACK_LANGUAGE_OPTIONS = [
     { value: "English", endonym: "English" },
     { value: "Acholi", endonym: "Leb Acholi", provenance: "english-passthrough" },
@@ -150,7 +158,7 @@ const UiLanguageSelector = () => {
   const handleRegenerate = () => {
     const _setConfirm = typeof setConfirmDialog !== "undefined" ? setConfirmDialog : window && window.setConfirmDialog;
     if (typeof _setConfirm === "function") {
-      _setConfirm({ message: t("language_selector.confirm_regenerate") || "Regenerate language pack?", onConfirm: () => {
+      _setConfirm({ message: languageCopy("language_selector.confirm_regenerate", "Regenerate language pack?"), onConfirm: () => {
         regenerateLanguage();
       } });
     } else {
@@ -164,7 +172,7 @@ const UiLanguageSelector = () => {
         className: "bg-indigo-600 h-full transition-all duration-300 ease-out",
         style: { width: `${progress}%` }
       }
-    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " ", t("language_selector.status_generating")));
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin motion-reduce:animate-none" }), " ", languageCopy("language_selector.status_generating", "Generating translation...")));
   }
   return /* @__PURE__ */ React.createElement("div", { className: "relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-100 p-1.5 rounded-lg text-indigo-600" }, /* @__PURE__ */ React.createElement(Globe, { size: 14 })), /* @__PURE__ */ React.createElement(
     "select",
@@ -172,18 +180,18 @@ const UiLanguageSelector = () => {
       value: commonLanguages.some((l) => l.value === currentUiLanguage) ? currentUiLanguage : "Custom",
       onChange: handleChange,
       className: "bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate",
-      "aria-label": t("language_selector.select_label"),
+      "aria-label": languageCopy("language_selector.select_label", "Select UI Language"),
       "data-help-key": "ui_language_select"
     },
     commonLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang.value, value: lang.value }, optionLabel(lang))),
-    /* @__PURE__ */ React.createElement("option", { value: "Custom" }, t("language_selector.custom_option"))
+    /* @__PURE__ */ React.createElement("option", { value: "Custom" }, languageCopy("language_selector.custom_option", "Custom..."))
   ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: handleRegenerate,
       className: "p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors",
-      title: t("language_selector.regenerate_tooltip"),
-      "aria-label": t("language_selector.regenerate_tooltip"),
+      title: languageCopy("language_selector.regenerate_tooltip", "Regenerate Translations"),
+      "aria-label": languageCopy("language_selector.regenerate_tooltip", "Regenerate Translations"),
       "data-help-key": "ui_lang_regenerate_btn"
     },
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 12 })
@@ -195,7 +203,7 @@ const UiLanguageSelector = () => {
       onChange: (e) => importLanguagePack(e.target.files[0]),
       className: "hidden",
       accept: ".json",
-      "aria-label": t("language_selector.upload_tooltip"),
+      "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
       "data-help-key": "ui_lang_import_btn"
     }
   ), /* @__PURE__ */ React.createElement(
@@ -204,8 +212,8 @@ const UiLanguageSelector = () => {
       onClick: () => fileInputRef.current.click(),
       "data-help-key": "source_upload_btn",
       className: "p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
-      title: t("language_selector.upload_tooltip"),
-      "aria-label": t("language_selector.upload_tooltip")
+      title: languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
+      "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack")
     },
     /* @__PURE__ */ React.createElement(FolderOpen, { size: 12 })
   ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
@@ -213,8 +221,8 @@ const UiLanguageSelector = () => {
     {
       onClick: exportLanguagePack,
       className: "p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
-      title: t("language_selector.download_tooltip"),
-      "aria-label": t("language_selector.download_tooltip"),
+      title: languageCopy("language_selector.download_tooltip", "Export Language Pack"),
+      "aria-label": languageCopy("language_selector.download_tooltip", "Export Language Pack"),
       "data-help-key": "ui_lang_export_btn"
     },
     /* @__PURE__ */ React.createElement(Download, { size: 12 })
@@ -225,9 +233,9 @@ const UiLanguageSelector = () => {
       value: manualInput,
       onChange: (e) => setManualInput(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleManualSubmit(),
-      placeholder: t("language_selector.search_placeholder"),
+      placeholder: languageCopy("language_selector.search_placeholder", "Enter Language..."),
       className: "text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600",
-      "aria-label": t("language_selector.search_placeholder"),
+      "aria-label": languageCopy("language_selector.search_placeholder", "Enter Language..."),
       "data-help-key": "ui_lang_manual_input"
     }
   ), /* @__PURE__ */ React.createElement(
@@ -236,7 +244,7 @@ const UiLanguageSelector = () => {
       onClick: handleManualSubmit,
       disabled: !manualInput.trim(),
       className: "p-1 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
-      "aria-label": t("language_selector.set_custom_label"),
+      "aria-label": languageCopy("language_selector.set_custom_label", "Set Custom Language"),
       "data-help-key": "ui_lang_manual_submit"
     },
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 10 })

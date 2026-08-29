@@ -115,6 +115,101 @@ window.StemLab = window.StemLab || {
     };
   } catch (e) {}
 
+  // ═══ Le Chatelier simulator — pure equilibrium model (testable, no DOM) ═══
+  // N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g). Ideal gases; K(T) from the van 't Hoff equation
+  // with ΔH° held constant (a textbook estimate — real K drifts from it by up to
+  // a factor of ~2 by 700 K because ΔH° itself moves a little with temperature).
+  // Kp°(298 K) follows from ΔG°f(NH₃) = −16.4 kJ/mol; ΔH° from ΔfH°(NH₃) = −45.9 kJ/mol.
+  var HABER = { dH: -91900, Kp298: Math.exp(32800 / (8.314 * 298.15)), R: 8.314, Rbar: 0.083145, T0: 298.15 };
+  function haberKp(T) {                                 // bar⁻²
+    return HABER.Kp298 * Math.exp(-(HABER.dH / HABER.R) * (1 / T - 1 / HABER.T0));
+  }
+  function haberKc(T) {                                 // M⁻²  (Kc = Kp·(RT)^−Δn with Δn = −2)
+    var RT = HABER.Rbar * T;
+    return haberKp(T) * RT * RT;
+  }
+  function haberQ(n1, n2, n3, V) {                      // reaction quotient from moles + volume (L)
+    var a = n1 / V, b = n2 / V, c = n3 / V;
+    if (a <= 0 || b <= 0) return Infinity;
+    if (c <= 0) return 0;
+    return (c * c) / (a * b * b * b);
+  }
+  // Solve for the extent ξ (mol) that brings Q back to K. Q(ξ) rises monotonically
+  // from 0 to ∞ across the feasible range, so bisection in log space is exact.
+  function haberEquilibrium(n1, n2, n3, V, T) {
+    var K = haberKc(T);
+    var Q0 = haberQ(n1, n2, n3, V);
+    var lo = -n3 / 2, hi = Math.min(n1, n2 / 3);
+    var xi = 0;
+    if (hi > lo) {
+      var lnK = Math.log(K);
+      var f = function(x) {
+        var a = (n1 - x) / V, b = (n2 - 3 * x) / V, c = (n3 + 2 * x) / V;
+        return 2 * Math.log(c) - Math.log(a) - 3 * Math.log(b) - lnK;
+      };
+      var span = hi - lo, a0 = lo + span * 1e-12, b0 = hi - span * 1e-12;
+      for (var i = 0; i < 200; i++) {
+        var mid = (a0 + b0) / 2;
+        if (f(mid) > 0) b0 = mid; else a0 = mid;
+      }
+      xi = (a0 + b0) / 2;
+    }
+    var N2 = n1 - xi, H2 = n2 - 3 * xi, NH3 = n3 + 2 * xi;
+    var tot = N2 + H2 + NH3;
+    return {
+      N2: N2, H2: H2, NH3: NH3, V: V, T: T, Kc: K, Kp: haberKp(T), Q0: Q0, xi: xi,
+      direction: Math.abs(xi) < 1e-9 * Math.max(1, n1 + n2 + n3) ? 'none' : (xi > 0 ? 'forward' : 'reverse'),
+      conc: { N2: N2 / V, H2: H2 / V, NH3: NH3 / V },
+      fracNH3: tot > 0 ? NH3 / tot : 0,
+      pressureBar: tot * HABER.Rbar * T / V
+    };
+  }
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      HABER: HABER, haberKp: haberKp, haberKc: haberKc, haberQ: haberQ, haberEquilibrium: haberEquilibrium
+    });
+  } catch (e) {}
+
+  // ═══ Gas-law sandbox — pure model (testable, no DOM) ═══
+  // Two gas constants, deliberately both named: the L·bar form for PV = nRT so the
+  // readout is in bar, and the SI form for kinetic-theory speeds in m/s. Mixing them
+  // up is the classic unit bug, so neither is a bare literal at the call site.
+  var GAS_R_LBAR = 0.083145;      // L·bar/(mol·K)
+  var GAS_R_SI = 8.314462618;     // J/(mol·K)
+  var ATM_PER_BAR = 1 / 1.01325;
+
+  function gasSolve(state, target) {          // PV = nRT, solved for whichever term is missing
+    var P = state.P, V = state.V, n = state.n, T = state.T;
+    if (target === 'P') return (n * GAS_R_LBAR * T) / V;
+    if (target === 'V') return (n * GAS_R_LBAR * T) / P;
+    if (target === 'n') return (P * V) / (GAS_R_LBAR * T);
+    if (target === 'T') return (P * V) / (n * GAS_R_LBAR);
+    return NaN;
+  }
+  // Root-mean-square molecular speed, sqrt(3RT/M). M arrives in g/mol (how every
+  // periodic table gives it) and is converted here — forgetting that factor of 1000
+  // is the other classic unit bug.
+  function gasRmsSpeed(molarMassGPerMol, T) {
+    return Math.sqrt(3 * GAS_R_SI * T / (molarMassGPerMol / 1000));
+  }
+  // Graham's law: how much faster gas 1 effuses than gas 2. Lighter = faster.
+  function gasEffusionRatio(M1, M2) { return Math.sqrt(M2 / M1); }
+  // Van der Waals: real gases have size (b) and attract each other (a). Returns the
+  // pressure a real gas exerts, which the ideal law over-predicts once molecules are
+  // close enough to pull on one another.
+  function gasVanDerWaals(n, V, T, a, b) {
+    return (n * GAS_R_LBAR * T) / (V - n * b) - a * n * n / (V * V);
+  }
+  try {
+    window.__alloMoleculePure = Object.assign(window.__alloMoleculePure || {}, {
+      GAS_R_LBAR: GAS_R_LBAR, GAS_R_SI: GAS_R_SI, ATM_PER_BAR: ATM_PER_BAR,
+      gasSolve: gasSolve, gasRmsSpeed: gasRmsSpeed, gasEffusionRatio: gasEffusionRatio,
+      gasVanDerWaals: gasVanDerWaals
+    });
+  } catch (e) {}
+
+
+
   if (window.StemLab && window.StemLab.isRegistered && window.StemLab.isRegistered('molecule')) return;
 
 
@@ -432,6 +527,7 @@ window.StemLab = window.StemLab || {
           const reactionCoeffs = d.reactionCoeffs || null;
           const reactionResult = d.reactionResult || null;
           const updMulti = (obj) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, ...obj } }));
+          const isContrast = !!ctx.isContrast;
           const isDark = !!ctx.isDark || !!ctx.isContrast;
 
           // ═══ Keyboard Shortcuts ═══
@@ -1769,35 +1865,36 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   React.createElement("p", { className: "mt-2 text-xs leading-relaxed text-slate-600" }, "The lab is easier when students choose a mode by task: inspect, combine, build, research, or balance."),
                   React.createElement("div", { className: "mt-3 grid grid-cols-3 gap-2" },
                     [
-                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857'],
-                      ['Research points', totalRP, '#d97706'],
-                      ['Formula', d.formula || '-', '#2563eb']
+                      ['Compounds', discovered.length + '/' + COMPOUNDS.length, '#047857', '#6ee7b7'],
+                      ['Research points', totalRP, '#d97706', '#fcd34d'],
+                      ['Formula', d.formula || '-', '#2563eb', '#93c5fd']
                     ].map(function(stat) {
                       return React.createElement("div", { key: stat[0], className: "rounded-lg border border-slate-200 bg-white p-2" },
                         React.createElement("div", { className: "text-[10px] font-bold uppercase text-slate-500", style: { letterSpacing: 0 } }, stat[0]),
-                        React.createElement("div", { className: "mt-1 text-sm font-black", style: { color: stat[2], wordBreak: 'break-word' } }, stat[1])
+                        React.createElement("div", { className: "mt-1 text-sm font-black", style: { color: isContrast ? '#ffff00' : (isDark ? stat[3] : stat[2]), wordBreak: 'break-word' } }, stat[1])
                       );
                     })
                   )
                 ),
                 React.createElement("div", { className: "grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6" },
                   [
-                    { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e' },
-                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0e7490', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
-                    { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea' },
-                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#92400e' },
-                    { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb' },
-                    { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626' }
+                    { id: 'viewer', title: 'View', body: '3D model and formula readout.', tone: '#0f766e', darkTone: '#5eead4' },
+                    { id: 'realStructures', title: 'Real Structures', body: 'Open Mol* protein and DNA viewer.', tone: '#0e7490', darkTone: '#67e8f9', action: function() { if (typeof setLabToolData === 'function') setLabToolData(function(prev) { var cur = Object.assign({}, (prev && prev._moleculeShelf) || {}); cur.returnTool = 'molecule'; var next = Object.assign({}, prev); next._moleculeShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('moleculeShelf'); if (typeof announceToSR === 'function') announceToSR('Opening Molecule Shelf real structures viewer.'); } else if (typeof addToast === 'function') addToast('Real structures viewer is not available right now.', 'info'); } },
+                    { id: 'creator', title: 'Create', body: 'Combine atoms and discover compounds.', tone: '#9333ea', darkTone: '#d8b4fe' },
+                    { id: 'build', title: 'Build', body: 'Drag atoms and sketch bonds.', tone: '#92400e', darkTone: '#fcd34d' },
+                    { id: 'table', title: 'Research', body: 'Use the periodic table as reference.', tone: '#2563eb', darkTone: '#93c5fd' },
+                    { id: 'reactions', title: 'React', body: 'Balance equations and products.', tone: '#dc2626', darkTone: '#fda4af' }
                   ].map(function(route) {
                     var active = mode === route.id;
                     var launchesShelf = typeof route.action === 'function';
+                    var routeTone = isContrast ? '#ffff00' : (isDark ? route.darkTone : route.tone);
                     return React.createElement("button", { key: route.id,
                       onClick: function() { if (launchesShelf) { route.action(); return; } upd('moleculeMode', route.id); },
                       className: "min-h-[104px] rounded-xl border bg-white p-3 text-left transition-all hover:shadow-md active:scale-[0.98]",
-                      style: { borderColor: active ? route.tone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + route.tone + '33' : 'none' } },
-                      React.createElement("div", { className: "text-sm font-black", style: { color: route.tone } }, route.title),
+                      style: { borderColor: active ? routeTone : '#cbd5e1', boxShadow: active ? '0 0 0 2px ' + routeTone + '33' : 'none' } },
+                      React.createElement("div", { className: "text-sm font-black", style: { color: routeTone } }, route.title),
                       React.createElement("div", { className: "mt-1 text-[11px] leading-relaxed text-slate-600" }, route.body),
-                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: route.tone } }, launchesShelf ? "Launch" : (active ? "Open now" : "Open"))
+                      React.createElement("div", { className: "mt-2 text-[11px] font-black", style: { color: routeTone } }, launchesShelf ? "Launch" : (active ? "Open now" : "Open"))
                     );
                   })
                 )
@@ -1936,7 +2033,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ))
                   ),
 
-              React.createElement("div", { className: "mt-2 text-center" },
+              React.createElement("div", { className: "mt-2 text-center rounded-lg py-1", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
                 React.createElement("span", { className: "text-sm font-bold text-slate-600" }, "Formula: "),
                 React.createElement("span", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.formula || '-'),
                 d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
@@ -3568,7 +3665,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             ),
 
             // ═══ Challenges Panel ═══
-            React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+            React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3 rounded-lg px-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", { open: completedChallenges.length > 0 && completedChallenges.length < MOLECULE_CHALLENGES.length },
                 React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
                   "🏆 Challenges (" + completedChallenges.length + "/" + MOLECULE_CHALLENGES.length + ")"
@@ -3594,7 +3691,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             
             // ═══ AI Chemistry Tutor ═══
-            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3" },
+            React.createElement("div", { className: "mt-3 border-t border-slate-200 pt-3 rounded-lg px-2 pb-2", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
               React.createElement("details", null,
                 React.createElement("summary", { className: "transition-colors text-xs font-bold text-slate-600 cursor-pointer hover:text-slate-800 select-none" },
                   __alloT('stem.molecule.ask_the_chemistry_tutor', "🧑‍🔬 Ask the Chemistry Tutor")
@@ -4906,9 +5003,234 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       }
 
       function renderEquilibriumSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+        var h = React.createElement;
+        var DEF = { n1: 1, n2: 3, n3: 0, V: 10, T: 700 };
+        // Composition is stored AFTER equilibration, so every render is a settled
+        // state and every button applies exactly one stress to a settled state.
+        var seeded = (typeof d2.eqT === 'number');
+        var base = seeded
+          ? { N2: d2.eqN2, H2: d2.eqH2, NH3: d2.eqNH3, V: d2.eqV, T: d2.eqT }
+          : haberEquilibrium(DEF.n1, DEF.n2, DEF.n3, DEF.V, DEF.T);
+        var cur = haberEquilibrium(base.N2, base.H2, base.NH3, base.V, base.T);   // idempotent on a settled state
+        var last = d2.eqLast || null;
+
+        var SUPS = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹', '-': '⁻' };
+        function sup(v) { return String(v).split('').map(function (c) { return SUPS[c] != null ? SUPS[c] : ''; }).join(''); }
+        function num(x, digits) { return isFinite(x) ? Number(x).toFixed(digits) : '—'; }
+        function sciK(x) {
+          if (!isFinite(x) || x <= 0) return x === 0 ? '0' : '∞';
+          if (x >= 0.01 && x < 1000) return Number(x.toPrecision(3)).toString();
+          var e = Math.floor(Math.log(x) / Math.LN10);
+          return (x / Math.pow(10, e)).toFixed(2) + ' × 10' + sup(e);
+        }
+        function pct(x) { return (100 * x).toFixed(1) + '%'; }
+
+        function shiftSentence(L) {
+          if (!L) return '';
+          if (L.kind === 'noshift') return __alloT('stem.molecule.eq_no_shift', 'No shift: Q still equals K, so the composition does not change.');
+          var dirWord = L.direction === 'forward' ? __alloT('stem.molecule.eq_dir_forward', 'forward (→), making more NH₃')
+            : L.direction === 'reverse' ? __alloT('stem.molecule.eq_dir_reverse', 'in reverse (←), breaking NH₃ back down')
+            : __alloT('stem.molecule.eq_dir_none', 'nowhere — it was already at equilibrium');
+          return __alloT('stem.molecule.eq_shift_sentence', 'The reaction runs') + ' ' + dirWord + '. NH₃: ' + num(L.nh3Before, 2) + ' → ' + num(L.nh3After, 2) + ' mol (' + pct(L.fracBefore) + ' → ' + pct(L.fracAfter) + ' ' + __alloT('stem.molecule.eq_of_mixture', 'of the mixture') + ').';
+        }
+        function applyStress(s) {
+          var st = { n1: cur.N2, n2: cur.H2, n3: cur.NH3, V: cur.V, T: cur.T };
+          var before = { NH3: st.n3, frac: cur.fracNH3, K: cur.Kc };
+          s.fn(st);
+          var Q0 = haberQ(st.n1, st.n2, st.n3, st.V);
+          var K1 = haberKc(st.T);
+          var next = haberEquilibrium(st.n1, st.n2, st.n3, st.V, st.T);
+          var rec = { id: s.id, label: s.label, kind: s.kind, Q0: Q0, K0: before.K, K1: K1, direction: next.direction,
+                      nh3Before: before.NH3, nh3After: next.NH3, fracBefore: before.frac, fracAfter: next.fracNH3 };
+          try { setExp({ eqN2: next.N2, eqH2: next.H2, eqNH3: next.NH3, eqV: next.V, eqT: next.T, eqLast: rec }); } catch (e) {}
+          if (typeof announceToSR === 'function') {
+            try { announceToSR(s.label + '. ' + shiftSentence(rec)); } catch (e) {}
+          }
+        }
+
+        var STRESSES = [
+          { id: 'addN2', group: 'conc', label: __alloT('stem.molecule.eq_add_n2', '+1 mol N₂'), kind: 'shift', fn: function (s) { s.n1 += 1; } },
+          { id: 'addH2', group: 'conc', label: __alloT('stem.molecule.eq_add_h2', '+1 mol H₂'), kind: 'shift', fn: function (s) { s.n2 += 1; } },
+          { id: 'addNH3', group: 'conc', label: __alloT('stem.molecule.eq_add_nh3', '+1 mol NH₃'), kind: 'shift', fn: function (s) { s.n3 += 1; } },
+          { id: 'removeNH3', group: 'conc', label: __alloT('stem.molecule.eq_remove_nh3', 'Remove half the NH₃'), kind: 'shift', fn: function (s) { s.n3 *= 0.5; } },
+          { id: 'compress', group: 'vol', label: __alloT('stem.molecule.eq_compress', 'Compress (V ÷ 2)'), kind: 'shift', fn: function (s) { s.V = Math.max(0.5, s.V / 2); } },
+          { id: 'expand', group: 'vol', label: __alloT('stem.molecule.eq_expand', 'Expand (V × 2)'), kind: 'shift', fn: function (s) { s.V = Math.min(400, s.V * 2); } },
+          { id: 'heat', group: 'temp', label: __alloT('stem.molecule.eq_heat', 'Heat (+100 K)'), kind: 'temp', fn: function (s) { s.T = Math.min(1100, s.T + 100); } },
+          { id: 'cool', group: 'temp', label: __alloT('stem.molecule.eq_cool', 'Cool (−100 K)'), kind: 'temp', fn: function (s) { s.T = Math.max(300, s.T - 100); } },
+          { id: 'catalyst', group: 'trap', label: __alloT('stem.molecule.eq_catalyst', 'Add a catalyst'), kind: 'noshift', fn: function () {} },
+          { id: 'inert', group: 'trap', label: __alloT('stem.molecule.eq_inert', 'Add argon (same V)'), kind: 'noshift', fn: function () {} }
+        ];
+        var GROUP_META = {
+          conc: { title: __alloT('stem.molecule.eq_group_conc', 'Change an amount'), cls: 'bg-sky-50 border-sky-300 text-sky-900 hover:bg-sky-100' },
+          vol:  { title: __alloT('stem.molecule.eq_group_vol', 'Change the volume (pressure)'), cls: 'bg-violet-50 border-violet-300 text-violet-900 hover:bg-violet-100' },
+          temp: { title: __alloT('stem.molecule.eq_group_temp', 'Change the temperature'), cls: 'bg-orange-50 border-orange-300 text-orange-900 hover:bg-orange-100' },
+          trap: { title: __alloT('stem.molecule.eq_group_trap', 'Common traps'), cls: 'bg-slate-50 border-slate-400 text-slate-800 hover:bg-slate-100' }
+        };
+
+        // ── particle box: molecules in proportion to moles, box width in proportion to volume ──
+        var BOX_H = 120, BOX_W_FULL = 300;
+        var boxW = Math.round(BOX_W_FULL * Math.max(0.42, Math.min(1, Math.sqrt(cur.V / DEF.V))));
+        var totalMol = cur.N2 + cur.H2 + cur.NH3;
+        var perGlyph = totalMol > 0 ? Math.max(totalMol / 64, 0.1) : 0.1;   // never more than ~64 drawn molecules
+        var counts = { N2: Math.round(cur.N2 / perGlyph), H2: Math.round(cur.H2 / perGlyph), NH3: Math.round(cur.NH3 / perGlyph) };
+        var glyphs = [];
+        (function () {
+          // Deterministic jitter (LCG) so the picture is identical between renders: no motion, no flicker.
+          var seed = 7;
+          var rnd = function () { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+          var all = [];
+          for (var i = 0; i < counts.N2; i++) all.push('N2');
+          for (var j = 0; j < counts.H2; j++) all.push('H2');
+          for (var k = 0; k < counts.NH3; k++) all.push('NH3');
+          // Seeded Fisher-Yates so the box reads as a mixture, not three stripes.
+          // (A comparator that calls rnd() is INCONSISTENT — its result is engine-defined.)
+          for (var sh = all.length - 1; sh > 0; sh--) {
+            var sj = Math.floor(rnd() * (sh + 1));
+            var tmp = all[sh]; all[sh] = all[sj]; all[sj] = tmp;
+          }
+          var n = all.length;
+          var cols = Math.max(1, Math.ceil(Math.sqrt(n * boxW / BOX_H)));
+          var rows = Math.max(1, Math.ceil(n / cols));
+          var cw = boxW / cols, chh = BOX_H / rows;
+          for (var q = 0; q < n; q++) {
+            var cx = (q % cols) * cw + cw / 2 + (rnd() - 0.5) * cw * 0.5;
+            var cy = Math.floor(q / cols) * chh + chh / 2 + (rnd() - 0.5) * chh * 0.5;
+            cx = Math.max(7, Math.min(boxW - 7, cx)); cy = Math.max(7, Math.min(BOX_H - 7, cy));
+            var sp = all[q];
+            if (sp === 'N2') glyphs.push(h('g', { key: 'g' + q, 'data-eq-species': 'N2' }, h('circle', { cx: cx - 3, cy: cy, r: 3.6, fill: '#3b82f6' }), h('circle', { cx: cx + 3, cy: cy, r: 3.6, fill: '#3b82f6' })));
+            else if (sp === 'H2') glyphs.push(h('g', { key: 'g' + q, 'data-eq-species': 'H2' }, h('circle', { cx: cx - 2.4, cy: cy, r: 2.6, fill: '#e2e8f0' }), h('circle', { cx: cx + 2.4, cy: cy, r: 2.6, fill: '#e2e8f0' })));
+            else glyphs.push(h('g', { key: 'g' + q, 'data-eq-species': 'NH3' }, h('circle', { cx: cx, cy: cy, r: 3.8, fill: '#2dd4bf' }), h('circle', { cx: cx - 4.6, cy: cy + 3, r: 2.3, fill: '#e2e8f0' }), h('circle', { cx: cx + 4.6, cy: cy + 3, r: 2.3, fill: '#e2e8f0' }), h('circle', { cx: cx, cy: cy - 5.2, r: 2.3, fill: '#e2e8f0' })));
+          }
+        })();
+        var boxLabel = __alloT('stem.molecule.eq_box_sr', 'Particle box') + ': ' + counts.N2 + ' N₂, ' + counts.H2 + ' H₂, ' + counts.NH3 + ' NH₃ '
+          + __alloT('stem.molecule.eq_box_sr_2', 'molecules drawn in proportion to the moles present; the box width shows the container volume') + ' (' + num(cur.V, 1) + ' L).';
+
+        var bars = [
+          { id: 'N2', label: 'N₂', c: cur.conc.N2, fill: '#2563eb' },
+          { id: 'H2', label: 'H₂', c: cur.conc.H2, fill: '#64748b' },
+          { id: 'NH3', label: 'NH₃', c: cur.conc.NH3, fill: '#0f766e' }
+        ];
+        var cMax = Math.max(0.05, bars[0].c, bars[1].c, bars[2].c);
+
+        var statusText;
+        if (!last) {
+          statusText = __alloT('stem.molecule.eq_status_idle', 'The mixture below is at equilibrium. Pick a stress and watch which way it runs — and by how much.');
+        } else if (last.kind === 'noshift') {
+          statusText = last.label + '. ' + (last.id === 'catalyst'
+            ? __alloT('stem.molecule.eq_catalyst_why', 'A catalyst lowers the energy barrier for the forward AND reverse reactions equally, so it changes how fast equilibrium is reached — never where it sits.')
+            : __alloT('stem.molecule.eq_inert_why', 'Argon takes no part in the reaction. At constant volume the concentrations of N₂, H₂ and NH₃ are exactly what they were, so Q still equals K and nothing shifts.'));
+        } else if (last.kind === 'temp') {
+          statusText = last.label + '. ' + __alloT('stem.molecule.eq_temp_why', 'Temperature is the ONE stress that changes K itself') + ': K ' + sciK(last.K0) + ' → ' + sciK(last.K1) + '. '
+            + __alloT('stem.molecule.eq_exo_why', 'This reaction is exothermic, so heat behaves like a product: adding heat pushes toward reactants, removing it pushes toward NH₃.') + ' ' + shiftSentence(last);
+        } else {
+          statusText = last.label + '. ' + __alloT('stem.molecule.eq_q_vs_k', 'Right after the stress') + ' Q = ' + sciK(last.Q0) + ' ' + (last.Q0 < last.K1 ? '<' : last.Q0 > last.K1 ? '>' : '=') + ' K = ' + sciK(last.K1) + ', ' + __alloT('stem.molecule.eq_k_unchanged', 'and K has not moved') + '. ' + shiftSentence(last);
+        }
+        var statusCls = !last ? 'bg-white border-slate-200 text-slate-700'
+          : last.kind === 'noshift' ? 'bg-slate-50 border-slate-300 text-slate-800'
+          : last.direction === 'forward' ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+          : last.direction === 'reverse' ? 'bg-rose-50 border-rose-300 text-rose-900'
+          : 'bg-slate-50 border-slate-300 text-slate-800';
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm', 'data-testid': 'mol-equilibrium-sim' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.chemical_equilibrium_le_chatelier', '⇌ Chemical equilibrium + Le Chatelier')),
           React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.reversible_reactions_reach_dynamic_equ', 'Reversible reactions reach dynamic equilibrium when forward rate = reverse rate. Concentrations stop changing (but reactions keep going both ways). Keq = product of [products]^coefficients / product of [reactants]^coefficients.')),
+
+          // ── the live simulator ──
+          h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 mb-3' },
+            h('div', { className: 'flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-2' },
+              h('div', { className: 'text-[11.5px] font-black text-slate-800' }, __alloT('stem.molecule.eq_sim_title', '🧪 Stress the Haber process and watch it answer')),
+              h('div', { className: 'font-mono text-[12px] font-bold text-indigo-800' }, 'N₂(g) + 3 H₂(g) ⇌ 2 NH₃(g)'),
+              h('div', { className: 'text-[11px] font-bold text-orange-800' }, 'ΔH° ≈ −92 kJ/mol (' + __alloT('stem.molecule.eq_exothermic', 'exothermic') + ')')
+            ),
+            h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' } },
+              // particle box
+              h('div', null,
+                h('div', { className: 'text-[10.5px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.eq_box_title', 'Inside the container') + ' · V = ' + num(cur.V, 1) + ' L · T = ' + Math.round(cur.T) + ' K (' + Math.round(cur.T - 273.15) + ' °C) · P ≈ ' + num(cur.pressureBar, 1) + ' bar'),
+                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 6, display: 'flex', justifyContent: 'center' } },
+                  h('svg', { viewBox: '0 0 ' + BOX_W_FULL + ' ' + BOX_H, role: 'img', 'aria-label': boxLabel, style: { width: '100%', maxWidth: '360px', height: 'auto', display: 'block' } },
+                    h('rect', { x: (BOX_W_FULL - boxW) / 2, y: 0, width: boxW, height: BOX_H, rx: 6, fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 1.5 }),
+                    h('g', { transform: 'translate(' + ((BOX_W_FULL - boxW) / 2) + ' 0)' }, glyphs)
+                  )
+                ),
+                h('div', { className: 'flex flex-wrap gap-x-3 gap-y-0.5 mt-1 text-[10.5px] font-bold text-slate-700' },
+                  h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#2563eb' } }, '●● '), 'N₂'),
+                  h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#64748b' } }, '•• '), 'H₂'),
+                  h('span', null, h('span', { 'aria-hidden': 'true', style: { color: '#0f766e' } }, '●˙ '), 'NH₃'),
+                  h('span', { className: 'text-slate-600 font-medium' }, __alloT('stem.molecule.eq_box_note', '1 drawn molecule ≈') + ' ' + num(perGlyph, 2) + ' mol')
+                )
+              ),
+              // concentration bars + readouts
+              h('div', null,
+                h('div', { className: 'text-[10.5px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.eq_conc_title', 'Concentrations at equilibrium (mol/L)')),
+                h('div', { className: 'space-y-1.5', role: 'list' },
+                  bars.map(function (b) {
+                    return h('div', { key: b.id, role: 'listitem', className: 'flex items-center gap-2' },
+                      h('span', { className: 'w-9 text-[11px] font-black text-slate-800 text-right' }, b.label),
+                      h('div', { className: 'flex-1 h-4 rounded bg-slate-100 overflow-hidden', 'aria-hidden': 'true' },
+                        h('div', { style: { width: Math.max(1, 100 * b.c / cMax) + '%', height: '100%', background: b.fill, transition: 'width 0.6s ease' } })),
+                      h('span', { className: 'w-16 text-[11px] font-mono font-bold text-slate-800' }, num(b.c, 3))
+                    );
+                  })
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-1.5 mt-2 text-center' },
+                  h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
+                    h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, 'Kc(T)'),
+                    h('div', { className: 'text-[12px] font-mono font-black text-indigo-800' }, sciK(cur.Kc))),
+                  h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
+                    h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, 'Q ' + __alloT('stem.molecule.eq_now', 'now')),
+                    h('div', { className: 'text-[12px] font-mono font-black text-emerald-700' }, '= K')),
+                  h('div', { className: 'rounded-lg bg-white border border-slate-200 p-1.5' },
+                    h('div', { className: 'text-[9.5px] font-bold uppercase tracking-wide text-slate-600' }, __alloT('stem.molecule.eq_nh3_share', 'NH₃ share')),
+                    h('div', { className: 'text-[12px] font-mono font-black text-teal-700' }, pct(cur.fracNH3)))
+                )
+              )
+            ),
+            // stress buttons
+            h('div', { className: 'mt-3 grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' } },
+              ['conc', 'vol', 'temp', 'trap'].map(function (gid) {
+                var meta = GROUP_META[gid];
+                return h('div', { key: gid, role: 'group', 'aria-label': meta.title },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wide text-slate-600 mb-1' }, meta.title),
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    STRESSES.filter(function (s) { return s.group === gid; }).map(function (s) {
+                      return h('button', {
+                        key: s.id, type: 'button', 'data-eq-stress': s.id,
+                        onClick: function () { applyStress(s); },
+                        className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 ' + meta.cls
+                      }, s.label);
+                    })
+                  )
+                );
+              })
+            ),
+            h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
+              h('button', {
+                type: 'button', 'data-eq-stress': 'reset',
+                onClick: function () { try { setExp({ eqN2: undefined, eqH2: undefined, eqNH3: undefined, eqV: undefined, eqT: undefined, eqLast: null }); } catch (e) {} },
+                className: 'min-h-[36px] px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600'
+              }, '↺ ' + __alloT('stem.molecule.eq_reset', 'Reset: 1 mol N₂ + 3 mol H₂, 10 L, 700 K'))
+            ),
+            // what just happened
+            h('div', { role: 'status', 'aria-live': 'polite', 'data-testid': 'mol-eq-status', className: 'mt-3 rounded-lg border p-2.5 text-[11.5px] leading-relaxed ' + statusCls },
+              (last && last.kind !== 'noshift') ? h('span', { 'aria-hidden': 'true', className: 'mr-1 text-base font-black' }, last.direction === 'forward' ? '→' : last.direction === 'reverse' ? '←' : '=') : null,
+              statusText
+            ),
+            h('p', { className: 'mt-2 text-[10.5px] text-slate-600 italic leading-snug' }, __alloT('stem.molecule.eq_model_note', 'Model: ideal gases; K(T) from the van ’t Hoff equation with ΔH° held constant. Real K values drift from this by up to a factor of ~2 at high temperature, and real plants run near 200 bar to buy yield back — this box runs at whatever pressure its moles, volume and temperature give.'))
+          ),
+
+          // ── the ideas the simulator is quietly teaching ──
+          h('div', { className: 'grid gap-2 mb-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' } },
+            [
+              { t: __alloT('stem.molecule.eq_idea1_t', 'Only temperature moves K'), b: __alloT('stem.molecule.eq_idea1_b', 'Adding, removing, compressing: Q changes, K does not, and the mixture chases K. Heat or cool it and K itself moves.') },
+              { t: __alloT('stem.molecule.eq_idea2_t', 'A shift is partial'), b: __alloT('stem.molecule.eq_idea2_b', '“Shifts right” never means “goes to completion”. Some of the added reactant is used up; the rest stays. Read the numbers, not just the arrow.') },
+              { t: __alloT('stem.molecule.eq_idea3_t', 'Nothing has stopped'), b: __alloT('stem.molecule.eq_idea3_b', 'At equilibrium N₂ and H₂ are still becoming NH₃, and NH₃ is still splitting — at exactly the same rate. Flat concentrations, busy molecules.') },
+              { t: __alloT('stem.molecule.eq_idea4_t', 'Why Haber runs hot anyway'), b: __alloT('stem.molecule.eq_idea4_b', 'Cooling raises the yield here, but near 300 K the reaction is far too slow to be useful. Industry accepts a smaller K at ~700 K, then adds a catalyst for speed and pressure for yield.') }
+            ].map(function (c, i) {
+              return h('div', { key: 'idea' + i, className: 'rounded-lg border border-slate-200 bg-slate-50 p-2.5' },
+                h('div', { className: 'text-[11px] font-black text-slate-800 mb-0.5' }, c.t),
+                h('div', { className: 'text-[11px] text-slate-700 leading-snug' }, c.b));
+            })
+          ),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-300 mb-3' },
             React.createElement('div', { className: 'text-[11px] font-bold text-indigo-800 mb-1' }, __alloT('stem.molecule.le_chatelier_s_principle', 'Le Chatelier\'s principle')),
             React.createElement('div', { className: 'text-[12px] text-indigo-900 leading-relaxed' }, __alloT('stem.molecule.if_a_stress_is_applied_to_a_system_at_', 'If a stress is applied to a system at equilibrium, the system shifts to relieve that stress. Predict the direction of shift to make sense of how rxns respond to changes.'))
@@ -5942,9 +6264,229 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
       ];
 
       function renderGasLawsSection() {
-        return React.createElement('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
+        var h = React.createElement;
+        // Three of P, V, n, T are set by the student; the fourth is whatever the
+        // ideal gas law makes it. That framing is the point: the four are not
+        // independent, and "which one am I solving for?" is the actual skill.
+        var solveFor = ['P', 'V', 'n', 'T'].indexOf(d2.glSolve) >= 0 ? d2.glSolve : 'P';
+        function numOr(v, fb) { var x = Number(v); return (v === '' || v === null || v === undefined || !isFinite(x)) ? fb : x; }
+        var st = {
+          P: Math.max(0.1, Math.min(50, numOr(d2.glP, 1))),
+          V: Math.max(0.5, Math.min(50, numOr(d2.glV, 22.71))),
+          n: Math.max(0.1, Math.min(5, numOr(d2.gln, 1))),
+          T: Math.max(100, Math.min(1000, numOr(d2.glT, 273.15)))
+        };
+        st[solveFor] = gasSolve(st, solveFor);
+
+        var GASES = [
+          { id: 'He', name: __alloT('stem.molecule.gl_gas_he', 'Helium'), sym: 'He', M: 4.0026, a: 0.0346, b: 0.0238, fill: '#f59e0b' },
+          { id: 'N2', name: __alloT('stem.molecule.gl_gas_n2', 'Nitrogen'), sym: 'N₂', M: 28.014, a: 1.370, b: 0.0387, fill: '#3b82f6' },
+          { id: 'O2', name: __alloT('stem.molecule.gl_gas_o2', 'Oxygen'), sym: 'O₂', M: 31.998, a: 1.382, b: 0.0319, fill: '#ef4444' },
+          { id: 'CO2', name: __alloT('stem.molecule.gl_gas_co2', 'Carbon dioxide'), sym: 'CO₂', M: 44.009, a: 3.640, b: 0.0427, fill: '#14b8a6' }
+        ];
+        var gas = null;
+        for (var gi = 0; gi < GASES.length; gi++) { if (GASES[gi].id === d2.glGas) { gas = GASES[gi]; break; } }
+        if (!gas) gas = GASES[1];
+
+        function set(patch) { try { setExp(patch); } catch (e) {} }
+        function fmt(x, dp) { return isFinite(x) ? Number(x).toFixed(dp) : '—'; }
+
+        var VARS = {
+          P: { label: __alloT('stem.molecule.gl_pressure', 'Pressure'), unit: 'bar', key: 'glP', min: 0.1, max: 50, step: 0.1, dp: 2, color: '#7c3aed' },
+          V: { label: __alloT('stem.molecule.gl_volume', 'Volume'), unit: 'L', key: 'glV', min: 0.5, max: 50, step: 0.5, dp: 2, color: '#0369a1' },
+          n: { label: __alloT('stem.molecule.gl_moles', 'Amount'), unit: 'mol', key: 'gln', min: 0.1, max: 5, step: 0.1, dp: 2, color: '#047857' },
+          T: { label: __alloT('stem.molecule.gl_temperature', 'Temperature'), unit: 'K', key: 'glT', min: 100, max: 1000, step: 5, dp: 1, color: '#c2410c' }
+        };
+
+        // ── particle box: count tracks moles, box size tracks volume, streak length
+        //    tracks molecular speed. Everything is drawn from the numbers above, so
+        //    the picture cannot disagree with the readout.
+        var rms = gasRmsSpeed(gas.M, st.T);
+        var BOX = 150;
+        var boxSide = Math.round(BOX * Math.max(0.35, Math.min(1, Math.pow(st.V / 50, 1 / 3))));
+        var glyphCount = Math.max(3, Math.min(70, Math.round(st.n * 14)));
+        var streak = Math.max(1.5, Math.min(11, rms / 90));
+        var particles = [];
+        (function () {
+          // Seeded LCG: the scatter must be identical between renders, or the box
+          // would appear to churn every time an unrelated slider moved.
+          var seed = 1013;
+          var rnd = function () { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; };
+          for (var i = 0; i < glyphCount; i++) {
+            var cx = 6 + rnd() * (boxSide - 12);
+            var cy = 6 + rnd() * (boxSide - 12);
+            var ang = rnd() * Math.PI * 2;
+            particles.push(h('g', { key: 'p' + i },
+              h('line', {
+                x1: cx, y1: cy,
+                x2: cx - Math.cos(ang) * streak, y2: cy - Math.sin(ang) * streak,
+                stroke: gas.fill, strokeOpacity: 0.55, strokeWidth: 1.4, strokeLinecap: 'round'
+              }),
+              h('circle', { cx: cx, cy: cy, r: 2.6, fill: gas.fill })
+            ));
+          }
+        })();
+        var boxLabel = __alloT('stem.molecule.gl_box_sr', 'Particle box') + ': ' + glyphCount + ' '
+          + __alloT('stem.molecule.gl_box_sr_2', 'molecules drawn for') + ' ' + fmt(st.n, 2) + ' mol '
+          + __alloT('stem.molecule.gl_box_sr_3', 'in a container of') + ' ' + fmt(st.V, 2) + ' L. '
+          + __alloT('stem.molecule.gl_box_sr_4', 'The trail behind each molecule is its speed: root-mean-square speed is')
+          + ' ' + Math.round(rms) + ' ' + __alloT('stem.molecule.gl_box_sr_5', 'metres per second at') + ' ' + fmt(st.T, 0) + ' K.';
+
+        // ── the Kelvin trap, computed rather than asserted ──
+        // Charles's law on a real pair of temperatures, worked both ways.
+        var c1 = 25, c2 = 50;
+        var kelvinFactor = (c2 + 273.15) / (c1 + 273.15);
+        var celsiusFactor = c2 / c1;
+
+        // ── real vs ideal, at the student's own conditions ──
+        var pIdeal = (st.n * GAS_R_LBAR * st.T) / st.V;
+        var pReal = gasVanDerWaals(st.n, st.V, st.T, gas.a, gas.b);
+        var deviation = pIdeal !== 0 ? (pReal - pIdeal) / pIdeal * 100 : 0;
+
+        var molarVol = st.V / st.n;
+
+        return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm', 'data-testid': 'mol-gaslaws' },
           React.createElement('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, __alloT('stem.molecule.gas_laws_2', '💨 Gas laws')),
           React.createElement('p', { className: 'text-[12px] text-slate-700 mb-3 leading-relaxed' }, __alloT('stem.molecule.quantitative_relationships_between_p_v', 'Quantitative relationships between P, V, T, and n (moles) for gases. Use Kelvin for temperature.')),
+
+          // ── the sandbox ──
+          h('div', { className: 'rounded-xl border border-indigo-200 bg-indigo-50/40 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.gl_sim_title', '💨 Set any three. The fourth is not yours to choose.')),
+            h('div', { className: 'font-mono text-[13px] font-black text-indigo-800 mb-2' }, 'PV = nRT'),
+
+            h('div', { role: 'group', 'aria-label': __alloT('stem.molecule.gl_solve_for', 'Solve for'), className: 'flex flex-wrap items-center gap-1.5 mb-3' },
+              h('span', { className: 'text-[10.5px] font-bold uppercase tracking-wide text-slate-600 mr-1' }, __alloT('stem.molecule.gl_solve_for', 'Solve for')),
+              ['P', 'V', 'n', 'T'].map(function (k) {
+                var on = solveFor === k;
+                return h('button', {
+                  key: k, type: 'button', 'data-gl-solve': k, 'aria-pressed': on,
+                  onClick: function () { set({ glSolve: k }); },
+                  className: 'min-h-[36px] px-3 py-1.5 rounded-lg text-[11px] font-black border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 '
+                    + (on ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                }, VARS[k].label + ' (' + k + ')');
+              })
+            ),
+
+            h('div', { className: 'grid gap-3', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))' } },
+              // sliders + result
+              h('div', null,
+                ['P', 'V', 'n', 'T'].map(function (k) {
+                  var meta = VARS[k];
+                  var isResult = solveFor === k;
+                  var val = st[k];
+                  if (isResult) {
+                    return h('div', { key: k, 'data-gl-result': k, className: 'mb-2 rounded-lg border-2 border-indigo-400 bg-white p-2' },
+                      h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                        h('span', { className: 'text-[10.5px] font-bold uppercase tracking-wide text-indigo-700' }, meta.label + ' — ' + __alloT('stem.molecule.gl_calculated', 'calculated')),
+                        h('span', { className: 'ml-auto font-mono text-[15px] font-black', style: { color: meta.color } }, fmt(val, meta.dp) + ' ' + meta.unit)
+                      ),
+                      k === 'P' ? h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, '= ' + fmt(val * ATM_PER_BAR, 3) + ' atm') : null,
+                      k === 'T' ? h('div', { className: 'text-[10px] text-slate-600 mt-0.5' }, '= ' + fmt(val - 273.15, 1) + ' °C') : null
+                    );
+                  }
+                  var inputId = 'gl-' + k;
+                  return h('div', { key: k, className: 'mb-2' },
+                    h('label', { htmlFor: inputId, className: 'flex items-baseline gap-2 text-[10.5px] font-bold text-slate-700 flex-wrap' },
+                      h('span', null, meta.label),
+                      h('span', { className: 'ml-auto font-mono text-[11.5px] font-black', style: { color: meta.color } }, fmt(val, meta.dp) + ' ' + meta.unit),
+                      k === 'T' ? h('span', { className: 'text-[10px] font-medium text-slate-500 w-full' }, '(' + fmt(val - 273.15, 1) + ' °C)') : null
+                    ),
+                    h('input', {
+                      id: inputId, type: 'range', min: meta.min, max: meta.max, step: meta.step, value: val,
+                      'aria-valuetext': fmt(val, meta.dp) + ' ' + meta.unit + (k === 'T' ? ', ' + fmt(val - 273.15, 1) + ' degrees Celsius' : ''),
+                      onChange: function (e) { var patch = {}; patch[meta.key] = Number(e.target.value); set(patch); },
+                      className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer',
+                      style: { accentColor: meta.color }
+                    })
+                  );
+                }),
+                h('div', { className: 'mt-1 rounded-lg bg-white border border-slate-200 p-2 text-[10.5px] text-slate-700' },
+                  h('span', { className: 'font-bold' }, __alloT('stem.molecule.gl_molar_volume', 'Molar volume')), ': ' + fmt(molarVol, 2) + ' L/mol. ',
+                  __alloT('stem.molecule.gl_molar_volume_note', 'At 0 °C and 1 bar every ideal gas gives 22.71 L/mol — helium and carbon dioxide alike, because the law never asks what the molecule is.'))
+              ),
+              // particle box + speed
+              h('div', null,
+                h('div', { className: 'flex flex-wrap items-center gap-1.5 mb-1' },
+                  h('span', { className: 'text-[10.5px] font-bold text-slate-700' }, __alloT('stem.molecule.gl_which_gas', 'Which gas')),
+                  GASES.map(function (g) {
+                    var on = g.id === gas.id;
+                    return h('button', {
+                      key: g.id, type: 'button', 'data-gl-gas': g.id, 'aria-pressed': on,
+                      onClick: function () { set({ glGas: g.id }); },
+                      className: 'min-h-[32px] px-2 py-1 rounded-md text-[10.5px] font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 '
+                        + (on ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                    }, g.sym);
+                  })
+                ),
+                h('div', { style: { background: '#0f172a', borderRadius: 10, padding: 6, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: BOX + 12 } },
+                  h('svg', { viewBox: '0 0 ' + BOX + ' ' + BOX, role: 'img', 'aria-label': boxLabel, style: { width: '100%', maxWidth: '230px', height: 'auto', display: 'block' } },
+                    h('rect', {
+                      x: (BOX - boxSide) / 2, y: (BOX - boxSide) / 2, width: boxSide, height: boxSide,
+                      rx: 5, fill: '#1e293b', stroke: '#94a3b8', strokeWidth: 1.5
+                    }),
+                    h('g', { transform: 'translate(' + ((BOX - boxSide) / 2) + ' ' + ((BOX - boxSide) / 2) + ')' }, particles)
+                  )
+                ),
+                h('div', { className: 'mt-1 rounded-lg bg-white border border-slate-200 p-2' },
+                  h('div', { className: 'text-[10.5px] font-bold text-slate-800' },
+                    gas.name + ' — ' + __alloT('stem.molecule.gl_rms', 'average molecular speed') + ': ' + Math.round(rms) + ' m/s'),
+                  h('div', { className: 'text-[10px] text-slate-600 leading-snug mt-0.5' },
+                    __alloT('stem.molecule.gl_pressure_is', 'Pressure is not molecules shoving each other apart. It is how often, and how hard, they strike the walls. Squeeze the box and each molecule simply reaches a wall sooner — it never speeds up. Only temperature changes speed.'))
+                )
+              )
+            )
+          ),
+
+          // ── the Kelvin trap ──
+          h('div', { 'data-testid': 'mol-gl-kelvin', className: 'rounded-xl border border-orange-300 bg-orange-50 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-orange-900 mb-1' }, __alloT('stem.molecule.gl_kelvin_title', '🌡 The mistake that eats the most exam marks')),
+            h('p', { className: 'text-[11px] text-orange-900 leading-relaxed mb-2' },
+              __alloT('stem.molecule.gl_kelvin_body', 'Heat a balloon from 25 °C to 50 °C. You doubled the number on the thermometer, so the balloon doubles in size?')),
+            h('div', { className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' } },
+              h('div', { className: 'rounded-lg bg-white border-2 border-rose-300 p-2' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-rose-700 mb-0.5' }, '✗ ' + __alloT('stem.molecule.gl_kelvin_wrong', 'Using °C')),
+                h('div', { className: 'font-mono text-[11px] text-slate-800' }, '50 / 25 = ×' + fmt(celsiusFactor, 2)),
+                h('div', { className: 'text-[10px] text-rose-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_wrong_note', 'Predicts the balloon doubles.'))),
+              h('div', { className: 'rounded-lg bg-white border-2 border-emerald-400 p-2' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-emerald-700 mb-0.5' }, '✓ ' + __alloT('stem.molecule.gl_kelvin_right', 'Using K')),
+                h('div', { className: 'font-mono text-[11px] text-slate-800' }, '323.15 / 298.15 = ×' + fmt(kelvinFactor, 3)),
+                h('div', { className: 'text-[10px] text-emerald-700 mt-0.5' }, __alloT('stem.molecule.gl_kelvin_right_note', 'The real answer: about 8% bigger.')))
+            ),
+            h('p', { className: 'text-[10.5px] text-orange-900 leading-snug mt-2' },
+              __alloT('stem.molecule.gl_kelvin_why', 'Celsius has its zero in the wrong place. Doubling a Celsius reading does not double anything physical, because 0 °C is not "no thermal energy" — it is just where water freezes. Kelvin starts at true zero, so in Kelvin the ratios mean what they say. Every gas law wants Kelvin.'))
+          ),
+
+          // ── real vs ideal, at the student's own numbers ──
+          h('div', { 'data-testid': 'mol-gl-real', className: 'rounded-xl border border-slate-300 bg-slate-50 p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.gl_real_title', '⚠ Where the ideal gas law stops telling the truth')),
+            h('div', { className: 'flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[11px] font-bold mb-1' },
+              h('span', { className: 'text-slate-700' }, __alloT('stem.molecule.gl_real_ideal', 'Ideal') + ': ' + fmt(pIdeal, 3) + ' bar'),
+              h('span', { className: 'text-slate-700' }, __alloT('stem.molecule.gl_real_vdw', 'Van der Waals') + ' (' + gas.sym + '): ' + fmt(pReal, 3) + ' bar'),
+              h('span', { style: { color: Math.abs(deviation) > 1 ? '#b45309' : '#047857' } }, __alloT('stem.molecule.gl_real_gap', 'gap') + ': ' + (deviation > 0 ? '+' : '') + fmt(deviation, 2) + '%')
+            ),
+            h('p', { className: 'text-[10.5px] text-slate-700 leading-snug' },
+              __alloT('stem.molecule.gl_real_body', 'The ideal law assumes molecules take up no room and ignore each other. Both assumptions hold well in a roomy, warm container and fail in a cramped, cold one. Shrink the volume or drop the temperature and watch the gap open — it opens fastest for CO₂, whose molecules attract each other most.'))
+          ),
+
+          // ── Graham's law, live ──
+          h('div', { 'data-testid': 'mol-gl-graham', className: 'rounded-xl border border-slate-200 bg-white p-3 mb-3' },
+            h('div', { className: 'text-[11.5px] font-black text-slate-800 mb-1' }, __alloT('stem.molecule.gl_graham_title', '🏃 Why helium escapes a balloon first')),
+            h('div', { className: 'space-y-1' },
+              GASES.map(function (g) {
+                var ratio = gasEffusionRatio(g.M, GASES[1].M);   // versus N₂
+                var speed = gasRmsSpeed(g.M, st.T);
+                return h('div', { key: 'gr' + g.id, className: 'flex items-center gap-2' },
+                  h('span', { className: 'w-12 text-[11px] font-black text-slate-800' }, g.sym),
+                  h('div', { className: 'flex-1 h-3 rounded bg-slate-100 overflow-hidden', 'aria-hidden': 'true' },
+                    h('div', { style: { width: Math.max(2, Math.min(100, speed / 20)) + '%', height: '100%', background: g.fill } })),
+                  h('span', { className: 'w-40 text-right text-[10.5px] font-mono font-bold text-slate-700' },
+                    Math.round(speed) + ' m/s · ×' + fmt(ratio, 2) + ' ' + __alloT('stem.molecule.gl_vs_n2', 'vs N₂'))
+                );
+              })
+            ),
+            h('p', { className: 'text-[10.5px] text-slate-600 leading-snug mt-1.5' },
+              __alloT('stem.molecule.gl_graham_body', 'At one temperature every gas carries the same average kinetic energy — so the light molecules must move faster to match the heavy ones. Helium is seven times lighter than nitrogen and moves about 2.6 times quicker, which is exactly √7. That is Graham\'s law, and it is why the helium balloon is on the floor by morning while the air-filled one is not.'))
+          ),
           React.createElement('div', { className: 'space-y-2' },
             GAS_LAWS.map(function(g, i) {
               return React.createElement('div', { key: 'g'+i, className: 'p-3 rounded-lg bg-slate-50 border border-slate-200' },

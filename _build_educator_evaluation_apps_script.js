@@ -84,6 +84,8 @@ function portalError(value) {
   else if (detail && typeof detail.code === 'string') error.code = detail.code;
   if (value && typeof value.retryable === 'boolean') error.retryable = value.retryable;
   else if (detail && typeof detail.retryable === 'boolean') error.retryable = detail.retryable;
+  if (value && typeof value.preDispatch === 'boolean') error.preDispatch = value.preDispatch;
+  else if (detail && typeof detail.preDispatch === 'boolean') error.preDispatch = detail.preDispatch;
   return error;
 }
 
@@ -314,12 +316,18 @@ function mountPortal(initialRoute) {
     kind: 'apps-script',
     bootstrap: getPortalBootstrap,
     saveWorkspace: savePortalWorkspace,
+    reviewNotification: (request) => callPortalAdminRpc('reviewPortalNotification', request),
     sendNotification: sendPortalNotification,
+    getNotificationOutcome: (request) => callPortalAdminRpc('getPortalNotificationOutcome', request),
     reviewReleasedEvaluation: reviewPortalReleasedEvaluation,
     shareReleasedEvaluation: sharePortalReleasedEvaluation,
     recordReleasedSummaryOpened: recordPortalReleasedSummaryOpened,
     getCohortStats: (request) => callPortalAdminRpc('getPortalCohortStats', request),
     getSetupHealth: getPortalSetupHealthClient,
+    reviewWorkspaceIntegrity: () => callPortalAdminRpc('reviewPortalWorkspaceIntegrity'),
+    reconcileWorkspaceIntegrity: (request) => callPortalAdminRpc('reconcilePortalWorkspaceIntegrity', request),
+    reviewReleasedAccessRecovery: (request) => callPortalAdminRpc('reviewPortalReleasedEvaluationAccessRecovery', request),
+    reconcileReleasedAccess: (request) => callPortalAdminRpc('reconcilePortalReleasedEvaluationAccess', request),
     reviewAnnualRollover: reviewPortalAnnualRolloverClient,
     performAnnualRollover: performPortalAnnualRolloverClient,
     reconcileAnnualRollover: reconcilePortalAnnualRolloverClient,
@@ -332,6 +340,7 @@ function mountPortal(initialRoute) {
     performConfiguration: (request) => callPortalAdminRpc('performPortalWorkspaceConfiguration', request),
     reviewDistrictExport: (request) => callPortalAdminRpc('reviewPortalDistrictExport', request),
     performDistrictExport: (request) => callPortalAdminRpc('performPortalDistrictExport', request),
+    getArtifactOperationOutcome: (request) => callPortalAdminRpc('getPortalArtifactOperationOutcome', request),
     getAnnualArchives: () => callPortalAdminRpc('getPortalAnnualArchives'),
     reviewArchiveRestoreRehearsal: (request) => callPortalAdminRpc('reviewPortalArchiveRestoreRehearsal', request),
     performArchiveRestoreRehearsal: (request) => callPortalAdminRpc('performPortalArchiveRestoreRehearsal', request),

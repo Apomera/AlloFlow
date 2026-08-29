@@ -33,10 +33,21 @@
   var SMK_REVALIDATION_CONCURRENCY = 2;
   var SMK_REVALIDATION_CACHE_MS = 5 * 60 * 1000;
   var SMK_VERIFIED_RECORD_CACHE = {};
+  var YALE_PROVIDER = 'Yale University Art Gallery Open Access';
+  var YALE_LUX_API = 'https://lux.collections.yale.edu/api';
+  var YALE_GALLERY_ID = 'https://lux.collections.yale.edu/data/group/41310ca5-8137-45fe-ac2c-a6a04e2235f1';
+  var YALE_OPEN_TERMS = 'https://artgallery.yale.edu/using-collection';
+  var YALE_REVALIDATION_CONCURRENCY = 2;
+  var YALE_REVALIDATION_CACHE_MS = 5 * 60 * 1000;
+  var YALE_REVALIDATION_CACHE_LIMIT = 64;
+  var YALE_VERIFIED_RECORD_CACHE = Object.create(null);
+  var MUSEUMS_VICTORIA_PROVIDER = 'Museums Victoria Collections';
+  var MUSEUMS_VICTORIA_API = 'https://collections.museumsvictoria.com.au/api';
+  var MUSEUMS_VICTORIA_REVALIDATION_CONCURRENCY = 2;
   var LIVE_PROVIDER_NAMES = [
     'Wikimedia Commons', NGA_PROVIDER, SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER,
-    SMK_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art',
-    'Library of Congress', 'Wellcome Collection', 'Getty Museum Open Content', 'Openverse'
+    SMK_PROVIDER, YALE_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art',
+    'Library of Congress', 'Wellcome Collection', 'Getty Museum Open Content', MUSEUMS_VICTORIA_PROVIDER, 'Openverse'
   ];
   var COMMONS_PROVIDER_PROFILES = Object.create(null);
   COMMONS_PROVIDER_PROFILES[NGA_PROVIDER] = { category: NGA_COMMONS_CATEGORY, accent: ['#e6dfcf', '#6b573b'] };
@@ -55,14 +66,44 @@
   var GETTY_COLLECTION_API = 'https://data.getty.edu/museum/collection';
   var OPENVERSE_API = 'https://api.openverse.org/v1';
   var LIVE_SESSION_MAX_RESULTS = 96;
+  var BOARD_RENDER_STEP = 24;
   var LIVE_SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   var VISION_CONTACT_SHEET_LIMIT = 16;
   var PALETTE_MAX_ASSETS = 48;
+  var COMPARISON_MAX_ASSETS = 4;
   var PREPARATION_FORMATS = {
     square: { width: 1200, height: 1200, label: 'Square 1:1' },
     landscape: { width: 1600, height: 900, label: 'Landscape 16:9' },
     portrait: { width: 1200, height: 1600, label: 'Portrait 3:4' },
     banner: { width: 1600, height: 600, label: 'Header banner 8:3' }
+  };
+  var USAGE_INTENT_ORDER = ['auto', 'flexible', 'background', 'focal', 'reference', 'texture', 'accent'];
+  var USAGE_INTENTS = {
+    auto: { label: 'Sourcebook suggestion', shortLabel: 'Suggested', description: 'Choose a role from the asset type and current preparation.' },
+    flexible: { label: 'Flexible asset', shortLabel: 'Flexible', description: 'Keep this asset open for several possible placements.' },
+    background: { label: 'Page background', shortLabel: 'Background', description: 'Place behind other page content as a supporting visual field.' },
+    focal: { label: 'Main visual', shortLabel: 'Main visual', description: 'Use as the primary image or artwork on a page.' },
+    reference: { label: 'Diagram or reference', shortLabel: 'Reference', description: 'Support explanation, close reading, labeling, or discussion.' },
+    texture: { label: 'Texture or pattern', shortLabel: 'Texture', description: 'Repeat or layer as a visual texture or pattern.' },
+    accent: { label: 'Accent or header', shortLabel: 'Accent', description: 'Use as a smaller detail, divider, border, or header strip.' }
+  };
+  var USAGE_PLAN_ORDER = ['balanced', 'education', 'artwork'];
+  var USAGE_PLANS = {
+    balanced: {
+      label: 'Balanced set', buttonLabel: 'Balance roles', sourceLabel: 'Sourcebook balanced-set plan',
+      description: 'Build a varied general-purpose set with a main visual, reference, background, texture, and accent as space allows.',
+      roles: ['focal', 'reference', 'background', 'texture', 'accent', 'flexible']
+    },
+    education: {
+      label: 'Educational set', buttonLabel: 'Plan for teaching', sourceLabel: 'Sourcebook educational-set plan',
+      description: 'Prioritize explanatory references, a clear main visual, and supporting background and header assets.',
+      roles: ['reference', 'focal', 'background', 'accent', 'reference', 'texture', 'flexible']
+    },
+    artwork: {
+      label: 'Artwork set', buttonLabel: 'Plan for artwork', sourceLabel: 'Sourcebook artwork-set plan',
+      description: 'Prioritize a focal image, tactile textures, a background field, and accents for creative composition.',
+      roles: ['focal', 'texture', 'background', 'accent', 'texture', 'flexible', 'reference']
+    }
   };
 
   function commonsPreview(filename) {
@@ -270,6 +311,10 @@
       search: function (q) { return 'https://open.smk.dk/en/art?filters=public_domain%3Atrue%7Chas_image%3Atrue&q=' + encodeURIComponent(q || 'open visual material'); }
     },
     {
+      id: 'yuag', name: YALE_PROVIDER, mark: 'YUAG', note: 'Nearly 300,000 gallery objects — exact manifest and image-canvas public-domain statements required',
+      search: function (q) { return 'https://artgallery.yale.edu/collections/objects?search=' + encodeURIComponent(q || 'open visual material'); }
+    },
+    {
       id: 'met', name: 'The Met Open Access', mark: 'MET', note: 'Live public-domain object records',
       search: function (q) { return 'https://www.metmuseum.org/art/collection/search?q=' + encodeURIComponent(q || 'public domain visual material') + '&showOnly=openAccess'; }
     },
@@ -294,6 +339,10 @@
       search: function (q) { return 'https://www.getty.edu/art/collection/search?query=' + encodeURIComponent(q || 'open content visual material'); }
     },
     {
+      id: 'mv', name: MUSEUMS_VICTORIA_PROVIDER, mark: 'MV', note: 'Exact image-level PDM, CC0, or CC BY 4.0 only · review cultural context',
+      search: function (q) { return 'https://collections.museumsvictoria.com.au/search?query=' + encodeURIComponent(q || 'open visual material'); }
+    },
+    {
       id: 'openverse', name: 'Openverse', mark: 'OV', note: 'Broad live index · exact PDM, CC0, or CC BY records only',
       search: function (q) { return 'https://openverse.org/search/image?q=' + encodeURIComponent(q || 'open visual material'); }
     },
@@ -306,6 +355,19 @@
       search: function (q) { return 'https://digitalcollections.nypl.org/search/index?keywords=' + encodeURIComponent(q || 'public domain visual material'); }
     }
   ];
+
+  function providerPresentation(value) {
+    var name = String(value || '').replace(/[\u0000-\u001f\u007f]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (LIVE_PROVIDER_NAMES.indexOf(name) === -1) return { name: 'Public collection', mark: 'SRC', known: false };
+    var configured = PROVIDERS.filter(function (provider) { return provider.name === name; })[0];
+    var mark = configured && /^[A-Z0-9]{1,5}$/.test(String(configured.mark || '')) ? configured.mark : '';
+    if (!mark) {
+      mark = name.split(/\s+/).filter(function (word) {
+        return ['the', 'of', 'and', 'open', 'access'].indexOf(word.toLowerCase()) === -1;
+      }).map(function (word) { return word.charAt(0).toUpperCase(); }).join('').slice(0, 4);
+    }
+    return { name: name, mark: mark || 'SRC', known: true };
+  }
 
   var STARTERS = [
     'quiet wood grain for a reading handout',
@@ -345,6 +407,12 @@
     'pd-cc0': { pd: true, cc0: true },
     all: { pd: true, cc0: true, ccby: true }
   };
+  var MATERIAL_KIND_NAMES = ['All', 'Maps', 'Textures', 'Patterns', 'Blueprints', 'Science', 'Botanical', 'Archival', 'Visual assets'];
+  var LOADED_RIGHTS_PRESENTATION = [
+    { rightsType: 'pd', label: 'Public Domain' },
+    { rightsType: 'cc0', label: 'CC0' },
+    { rightsType: 'ccby', label: 'CC BY' }
+  ];
   var COMMONS_API = 'https://commons.wikimedia.org/w/api.php';
 
   function normalizedSearchPage(value) {
@@ -675,6 +743,53 @@
     return Object.prototype.hasOwnProperty.call(item, 'objectNumber') || Object.prototype.hasOwnProperty.call(item, 'providerRecordId');
   }
 
+  function isSerializedYaleAsset(item) {
+    if (!item || typeof item !== 'object') return false;
+    if (String(item.provider || '').trim().toLowerCase() === YALE_PROVIDER.toLowerCase()) return true;
+    var yaleHosts = {
+      'lux.collections.yale.edu': true, 'artgallery.yale.edu': true,
+      'manifests.collections.yale.edu': true, 'media.art.yale.edu': true,
+      'images.collections.yale.edu': true
+    };
+    var hasYaleHost = [item.sourceUrl, item.imageUrl, item.downloadUrl, item.yaleManifestUrl, item.yaleIiifServiceUrl].some(function (value) {
+      var parsed = parsedSmkHttpsUrl(value);
+      return !!(parsed && yaleHosts[parsed.hostname]);
+    });
+    return hasYaleHost || /^yale-live-/i.test(String(item.id || ''))
+      || Object.prototype.hasOwnProperty.call(item, 'yaleLuxId')
+      || Object.prototype.hasOwnProperty.call(item, 'yaleManifestUrl');
+  }
+
+  function isSerializedSourceVerifiedAsset(item) {
+    return isSerializedMuseumsVictoriaAsset(item) || isSerializedSmkAsset(item) || isSerializedYaleAsset(item);
+  }
+
+  function sourceVerifiedAssetIdentityMatches(raw, verified) {
+    if (!raw || !verified) return false;
+    if (verified.provider === MUSEUMS_VICTORIA_PROVIDER) {
+      var rawMuseumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(raw);
+      var verifiedMuseumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(verified);
+      return !!(rawMuseumsVictoriaIdentity && verifiedMuseumsVictoriaIdentity
+        && rawMuseumsVictoriaIdentity.recordPath === verifiedMuseumsVictoriaIdentity.recordPath
+        && rawMuseumsVictoriaIdentity.mediaId === verifiedMuseumsVictoriaIdentity.mediaId
+        && rawMuseumsVictoriaIdentity.sourceUrl === verifiedMuseumsVictoriaIdentity.sourceUrl);
+    }
+    if (verified.provider === SMK_PROVIDER) {
+      return isSerializedSmkAsset(raw)
+        && smkObjectNumberFromAsset(Object.assign({}, raw, { provider: SMK_PROVIDER })).toLowerCase() === smkObjectNumberFromAsset(verified).toLowerCase();
+    }
+    if (verified.provider === YALE_PROVIDER) {
+      var rawIdentity = yaleIdentityFromAsset(raw);
+      return !!(rawIdentity
+        && rawIdentity.sourceUrl === safeYaleSourceUrl(verified.sourceUrl)
+        && rawIdentity.objectId === String(verified.providerRecordId || '')
+        && rawIdentity.luxUuid === normalizedYaleLuxId(verified.yaleLuxId)
+        && rawIdentity.manifestUrl === safeYaleManifestUrl(verified.yaleManifestUrl)
+        && rawIdentity.iiifServiceUrl === yaleIiifServiceFromAsset(verified));
+    }
+    return false;
+  }
+
   function normalizeSmkRights(record) {
     if (!record || record.public_domain !== true || record.has_image !== true) return null;
     if (typeof record.rights !== 'string') return null;
@@ -899,6 +1014,418 @@
     }, function (error) {
       requestContext.finish();
       throw error;
+    });
+  }
+
+
+  function safeYaleLuxObjectUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'lux.collections.yale.edu') return '';
+    return /^\/data\/object\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(parsed.pathname) ? parsed.href : '';
+  }
+
+  function safeYaleSourceUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'artgallery.yale.edu') return '';
+    return /^\/collections\/objects\/\d{1,12}$/i.test(parsed.pathname) ? parsed.href : '';
+  }
+
+  function safeYaleManifestUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'manifests.collections.yale.edu') return '';
+    return /^\/yuag\/obj\/\d{1,12}$/i.test(parsed.pathname) ? parsed.href : '';
+  }
+
+  function safeYaleMediaEquivalentUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'media.art.yale.edu') return '';
+    return /^\/content\/lux\/obj\/\d{1,12}\.json$/i.test(parsed.pathname) ? parsed.href : '';
+  }
+
+  function safeYaleIiifServiceUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'images.collections.yale.edu') return '';
+    return /^\/iiif\/2\/yuag:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(parsed.pathname) ? parsed.href.replace(/\/$/, '') : '';
+  }
+
+  function safeYalePreparedImageUrl(value) {
+    var parsed = parsedSmkHttpsUrl(value);
+    if (!parsed || parsed.hostname !== 'images.collections.yale.edu') return '';
+    return /^\/iiif\/2\/yuag:[0-9a-f-]{36}\/full\/!(?:1200,1200|3000,3000)\/0\/default\.jpg$/i.test(parsed.pathname) ? parsed.href : '';
+  }
+
+  function yaleIiifServiceFromAsset(item) {
+    if (!item || typeof item !== 'object') return '';
+    var candidates = [item.yaleIiifServiceUrl];
+    [item.imageUrl, item.downloadUrl].forEach(function (value) {
+      var prepared = safeYalePreparedImageUrl(value);
+      var marker = prepared.indexOf('/full/!');
+      if (marker > 0) candidates.push(prepared.slice(0, marker));
+    });
+    for (var index = 0; index < candidates.length; index += 1) {
+      var serviceUrl = safeYaleIiifServiceUrl(candidates[index]);
+      var serviceUuid = yaleIdFromUrl(serviceUrl, /^\/iiif\/2\/yuag:([0-9a-f-]{36})$/i).toLowerCase();
+      if (serviceUuid && normalizedYaleLuxId(serviceUuid)) {
+        return 'https://images.collections.yale.edu/iiif/2/yuag:' + serviceUuid;
+      }
+    }
+    return '';
+  }
+
+  function yaleCollectStrings(value, output, depth) {
+    var list = output || [];
+    var level = Number(depth || 0);
+    if (level > 10 || list.length >= 2500 || value == null) return list;
+    if (typeof value === 'string' || typeof value === 'number') {
+      var text = String(value).trim();
+      if (text) list.push(text);
+      return list;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(function (entry) { yaleCollectStrings(entry, list, level + 1); });
+      return list;
+    }
+    if (typeof value === 'object') {
+      Object.keys(value).slice(0, 250).forEach(function (key) { yaleCollectStrings(value[key], list, level + 1); });
+    }
+    return list;
+  }
+
+  function yaleIdFromUrl(value, pattern) {
+    var parsed = parsedSmkHttpsUrl(value);
+    var match = parsed && parsed.pathname.match(pattern);
+    return match ? match[1] : '';
+  }
+
+  function yaleRecordLinks(record) {
+    if (!record || typeof record !== 'object') return null;
+    var luxUrl = safeYaleLuxObjectUrl(record.id || record['@id']);
+    if (!luxUrl) return null;
+    var strings = yaleCollectStrings(record, [], 0);
+    function firstSafe(normalizer) {
+      for (var i = 0; i < strings.length; i += 1) {
+        var safe = normalizer(strings[i]);
+        if (safe) return safe;
+      }
+      return '';
+    }
+    var sourceUrl = firstSafe(safeYaleSourceUrl);
+    var manifestUrl = firstSafe(safeYaleManifestUrl);
+    var mediaEquivalentUrl = firstSafe(safeYaleMediaEquivalentUrl);
+    var sourceId = yaleIdFromUrl(sourceUrl, /^\/collections\/objects\/(\d{1,12})$/i);
+    var manifestId = yaleIdFromUrl(manifestUrl, /^\/yuag\/obj\/(\d{1,12})$/i);
+    var mediaId = yaleIdFromUrl(mediaEquivalentUrl, /^\/content\/lux\/obj\/(\d{1,12})\.json$/i);
+    var luxUuid = yaleIdFromUrl(luxUrl, /^\/data\/object\/([0-9a-f-]{36})$/i).toLowerCase();
+    if (!sourceId || sourceId !== manifestId || sourceId !== mediaId || !luxUuid) return null;
+    return {
+      objectId: sourceId, luxUuid: luxUuid, luxUrl: luxUrl,
+      sourceUrl: sourceUrl, manifestUrl: manifestUrl, mediaEquivalentUrl: mediaEquivalentUrl
+    };
+  }
+
+  function yaleIiifTextValues(value, output, depth) {
+    var list = output || [];
+    var level = Number(depth || 0);
+    if (level > 5 || list.length >= 100 || value == null) return list;
+    if (typeof value === 'string' || typeof value === 'number') {
+      var text = plainMetadata(value);
+      if (text) list.push(text);
+      return list;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(function (entry) { yaleIiifTextValues(entry, list, level + 1); });
+      return list;
+    }
+    if (typeof value === 'object') {
+      Object.keys(value).slice(0, 40).forEach(function (key) { yaleIiifTextValues(value[key], list, level + 1); });
+    }
+    return list;
+  }
+
+  function yaleIiifMetadataValue(metadata, labels) {
+    var wanted = (Array.isArray(labels) ? labels : [labels]).map(function (label) { return String(label || '').trim().toLowerCase(); });
+    var entries = Array.isArray(metadata) ? metadata : [];
+    for (var i = 0; i < entries.length; i += 1) {
+      var labelValues = yaleIiifTextValues(entries[i] && entries[i].label, [], 0).map(function (value) { return value.toLowerCase(); });
+      if (!labelValues.some(function (value) { return wanted.indexOf(value) !== -1; })) continue;
+      var values = yaleIiifTextValues(entries[i] && entries[i].value, [], 0);
+      if (values.length) return values.join('; ');
+    }
+    return '';
+  }
+
+  function yaleImageBodies(canvas) {
+    var bodies = [];
+    (canvas && Array.isArray(canvas.items) ? canvas.items : []).forEach(function (page) {
+      (page && Array.isArray(page.items) ? page.items : []).forEach(function (annotation) {
+        var body = annotation && annotation.body;
+        if (Array.isArray(body)) bodies = bodies.concat(body);
+        else if (body && typeof body === 'object') bodies.push(body);
+      });
+    });
+    return bodies;
+  }
+
+  function yaleItemFromManifest(record, manifest, query, requestedKind) {
+    var links = yaleRecordLinks(record);
+    if (!links || !manifest || typeof manifest !== 'object') return null;
+    var manifestUrl = safeYaleManifestUrl(manifest.id || manifest['@id']);
+    if (!manifestUrl || manifestUrl !== links.manifestUrl) return null;
+    var homepageStrings = yaleCollectStrings(manifest.homepage, [], 0);
+    var homepageMatches = homepageStrings.some(function (value) { return safeYaleSourceUrl(value) === links.sourceUrl; });
+    if (!homepageMatches) return null;
+    var copyrightStatement = yaleIiifMetadataValue(manifest.metadata, 'Copyright Statement');
+    if (copyrightStatement.trim().toLowerCase() !== 'public domain') return null;
+
+    var canvases = Array.isArray(manifest.items) ? manifest.items : [];
+    var selected = null;
+    for (var canvasIndex = 0; canvasIndex < canvases.length && !selected; canvasIndex += 1) {
+      var canvas = canvases[canvasIndex];
+      var imageUseRights = yaleIiifMetadataValue(canvas && canvas.metadata, 'Image Use Rights');
+      if (imageUseRights.trim().toLowerCase() !== 'no copyright - united states') continue;
+      var bodies = yaleImageBodies(canvas);
+      for (var bodyIndex = 0; bodyIndex < bodies.length && !selected; bodyIndex += 1) {
+        var body = bodies[bodyIndex];
+        if (!body || body.type !== 'Image' || String(body.format || '').toLowerCase() !== 'image/jpeg') continue;
+        var services = Array.isArray(body.service) ? body.service : (body.service ? [body.service] : []);
+        var serviceUrl = '';
+        for (var serviceIndex = 0; serviceIndex < services.length && !serviceUrl; serviceIndex += 1) {
+          serviceUrl = safeYaleIiifServiceUrl(services[serviceIndex] && (services[serviceIndex].id || services[serviceIndex]['@id']));
+        }
+        if (!serviceUrl) continue;
+        var bodyUrl = parsedSmkHttpsUrl(body.id || body['@id']);
+        var serviceParsed = parsedSmkHttpsUrl(serviceUrl);
+        if (!bodyUrl || !serviceParsed || bodyUrl.hostname !== serviceParsed.hostname || bodyUrl.pathname.indexOf(serviceParsed.pathname + '/') !== 0) continue;
+        selected = { canvas: canvas, body: body, serviceUrl: serviceUrl, imageUseRights: imageUseRights };
+      }
+    }
+    if (!selected) return null;
+
+    var serviceUuid = yaleIdFromUrl(selected.serviceUrl, /^\/iiif\/2\/yuag:([0-9a-f-]{36})$/i).toLowerCase();
+    if (!serviceUuid) return null;
+    var title = yaleIiifTextValues(manifest.label, [], 0)[0] || plainMetadata(record._label) || 'Yale University Art Gallery object ' + links.objectId;
+    var creator = yaleIiifMetadataValue(manifest.metadata, ['Artist/Maker', 'Creator', 'Artist', 'Maker']) || 'Creator listed on the Yale object record';
+    var year = yaleIiifMetadataValue(manifest.metadata, ['Date', 'Creation Date']) || 'See source record';
+    var details = [
+      yaleIiifMetadataValue(manifest.metadata, ['Medium', 'Materials']),
+      yaleIiifMetadataValue(manifest.metadata, ['Culture', 'Classification']),
+      yaleIiifMetadataValue(manifest.metadata, ['Credit Line'])
+    ].filter(Boolean);
+    var description = details.join(' · ') || 'Public-domain visual asset from the Yale University Art Gallery.';
+    if (title.length > 180) title = title.slice(0, 177) + '...';
+    if (creator.length > 160) creator = creator.slice(0, 157) + '...';
+    if (year.length > 80) year = year.slice(0, 77) + '...';
+    if (description.length > 280) description = description.slice(0, 277) + '...';
+    var classification = [title, creator, year, description, plainMetadata(record._label)].join(' ');
+    return {
+      id: 'yale-live-' + links.objectId + '-' + serviceUuid.replace(/-/g, '').slice(0, 12),
+      providerRecordId: links.objectId, yaleLuxId: links.luxUuid, yaleManifestUrl: links.manifestUrl,
+      title: title, kind: inferMaterialKind([query, classification].join(' '), requestedKind), provider: YALE_PROVIDER,
+      year: year, creator: creator, description: description,
+      license: 'Public domain — No Copyright in the United States', licenseUrl: YALE_OPEN_TERMS,
+      rightsType: 'pd', rightsShort: 'Public domain',
+      rightsNote: 'The Yale IIIF manifest says Copyright Statement: Public domain, and this exact image canvas says Image Use Rights: No Copyright - United States. Verify the linked Gallery record before use.',
+      tags: normalizeWords(classification), accent: ['#e8e2d4', '#3d5e71'],
+      sourceUrl: links.sourceUrl,
+      yaleIiifServiceUrl: 'https://images.collections.yale.edu/iiif/2/yuag:' + serviceUuid,
+      imageUrl: selected.serviceUrl + '/full/!1200,1200/0/default.jpg',
+      downloadUrl: selected.serviceUrl + '/full/!3000,3000/0/default.jpg',
+      pixelWidth: normalizedPixelDimension(selected.body.width || selected.canvas.width),
+      pixelHeight: normalizedPixelDimension(selected.body.height || selected.canvas.height),
+      live: true,
+      rightsMetadataSource: 'Yale IIIF manifest ' + links.manifestUrl + '; Copyright Statement=Public domain; canvas Image Use Rights=No Copyright - United States'
+    };
+  }
+
+  function fetchYaleJson(url, fetchFn, signal) {
+    var requestContext = providerRequestContext(signal, 12000);
+    return fetchFn(url, requestContext.options).then(function (response) {
+      if (!response || !response.ok) throw providerHttpError(YALE_PROVIDER, response);
+      return response.json();
+    }).then(function (payload) {
+      requestContext.finish();
+      return payload;
+    }, function (error) {
+      requestContext.finish();
+      throw error;
+    });
+  }
+
+  function normalizedYaleLuxId(value) {
+    var normalized = String(value || '').trim().toLowerCase();
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(normalized) ? normalized : '';
+  }
+
+  function yaleIdentityFromAsset(item) {
+    if (!isSerializedYaleAsset(item)) return null;
+    var luxUuid = normalizedYaleLuxId(item.yaleLuxId);
+    var objectId = String(item.providerRecordId || '').trim();
+    var sourceUrl = safeYaleSourceUrl(item.sourceUrl);
+    var manifestUrl = safeYaleManifestUrl(item.yaleManifestUrl);
+    var iiifServiceUrl = yaleIiifServiceFromAsset(item);
+    var sourceId = yaleIdFromUrl(sourceUrl, /^\/collections\/objects\/(\d{1,12})$/i);
+    var manifestId = yaleIdFromUrl(manifestUrl, /^\/yuag\/obj\/(\d{1,12})$/i);
+    if (!luxUuid || !/^\d{1,12}$/.test(objectId) || objectId !== sourceId || objectId !== manifestId || !iiifServiceUrl) return null;
+    var luxUrl = safeYaleLuxObjectUrl('https://lux.collections.yale.edu/data/object/' + luxUuid);
+    if (!luxUrl) return null;
+    return {
+      asset: item, luxUuid: luxUuid, objectId: objectId, luxUrl: luxUrl,
+      sourceUrl: sourceUrl, manifestUrl: manifestUrl, iiifServiceUrl: iiifServiceUrl,
+      cacheKey: luxUuid + '|' + objectId + '|' + manifestUrl + '|' + iiifServiceUrl
+    };
+  }
+
+  function cloneYaleVerifiedItem(item) {
+    return Object.assign({}, item, {
+      tags: Array.isArray(item && item.tags) ? item.tags.slice() : [],
+      accent: Array.isArray(item && item.accent) ? item.accent.slice() : ['#e8e2d4', '#3d5e71']
+    });
+  }
+
+  function pruneYaleVerifiedRecordCache(nowValue) {
+    var now = Number(nowValue || Date.now());
+    Object.keys(YALE_VERIFIED_RECORD_CACHE).forEach(function (key) {
+      var entry = YALE_VERIFIED_RECORD_CACHE[key];
+      if (!entry || !isFinite(entry.savedAt) || entry.savedAt > now + 300000 || now - entry.savedAt > YALE_REVALIDATION_CACHE_MS) {
+        delete YALE_VERIFIED_RECORD_CACHE[key];
+      }
+    });
+    var keys = Object.keys(YALE_VERIFIED_RECORD_CACHE);
+    if (keys.length <= YALE_REVALIDATION_CACHE_LIMIT) return;
+    keys.sort(function (a, b) {
+      return Number(YALE_VERIFIED_RECORD_CACHE[a].savedAt || 0) - Number(YALE_VERIFIED_RECORD_CACHE[b].savedAt || 0);
+    }).slice(0, keys.length - YALE_REVALIDATION_CACHE_LIMIT).forEach(function (key) {
+      delete YALE_VERIFIED_RECORD_CACHE[key];
+    });
+  }
+
+  function fetchYaleAssetByIdentity(identity, options) {
+    var opts = options || {};
+    var fetchFn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    if (!fetchFn) return Promise.reject(new Error('Yale Gallery record verification is unavailable in this browser.'));
+    if (!identity || !identity.luxUrl) return Promise.reject(new Error('A Yale Gallery asset is missing a trustworthy LUX identity.'));
+    return fetchYaleJson(identity.luxUrl, fetchFn, opts.signal).then(function (record) {
+      var links = yaleRecordLinks(record);
+      if (!links
+        || links.luxUrl !== identity.luxUrl
+        || links.luxUuid !== identity.luxUuid
+        || links.objectId !== identity.objectId
+        || links.sourceUrl !== identity.sourceUrl
+        || links.manifestUrl !== identity.manifestUrl) {
+        throw new Error('A Yale Gallery LUX record no longer matches the saved object identity.');
+      }
+      return fetchYaleJson(links.manifestUrl, fetchFn, opts.signal).then(function (manifest) {
+        var fresh = yaleItemFromManifest(record, manifest, '', 'All');
+        if (!fresh) throw new Error('A Yale Gallery record no longer has verified public-domain canvas rights or usable media.');
+        if (!sourceVerifiedAssetIdentityMatches(identity.asset, fresh)) {
+          throw new Error('A Yale Gallery record changed identity during verification.');
+        }
+        return cloneYaleVerifiedItem(fresh);
+      });
+    });
+  }
+
+  function fetchYaleAssetsByIdentities(assets, options) {
+    var opts = options || {};
+    var candidates = Array.isArray(assets) ? assets : [];
+    if (!candidates.length) return Promise.resolve([]);
+    var identities = candidates.map(yaleIdentityFromAsset);
+    if (identities.some(function (identity) { return !identity; })) {
+      return Promise.reject(new Error('A Yale Gallery asset is missing a trustworthy LUX, object, source, or manifest identity.'));
+    }
+    var uniqueByKey = Object.create(null);
+    identities.forEach(function (identity) {
+      if (!uniqueByKey[identity.cacheKey]) uniqueByKey[identity.cacheKey] = identity;
+    });
+    var now = Date.now();
+    pruneYaleVerifiedRecordCache(now);
+    var verifiedByKey = Object.create(null);
+    var missing = [];
+    Object.keys(uniqueByKey).forEach(function (key) {
+      var identity = uniqueByKey[key];
+      var cached = !opts.bypassCache && YALE_VERIFIED_RECORD_CACHE[key];
+      if (cached && now - cached.savedAt <= YALE_REVALIDATION_CACHE_MS
+        && sourceVerifiedAssetIdentityMatches(identity.asset, cached.item)) {
+        verifiedByKey[key] = cloneYaleVerifiedItem(cached.item);
+      } else {
+        if (cached) delete YALE_VERIFIED_RECORD_CACHE[key];
+        missing.push(identity);
+      }
+    });
+    var firstError = null;
+    return mapWithConcurrency(missing, YALE_REVALIDATION_CONCURRENCY, function (identity) {
+      return fetchYaleAssetByIdentity(identity, opts).then(function (fresh) {
+        verifiedByKey[identity.cacheKey] = cloneYaleVerifiedItem(fresh);
+        YALE_VERIFIED_RECORD_CACHE[identity.cacheKey] = {
+          savedAt: Date.now(), item: cloneYaleVerifiedItem(fresh)
+        };
+        pruneYaleVerifiedRecordCache(Date.now());
+        return true;
+      }).catch(function (error) {
+        if (!firstError) firstError = error;
+        throw error;
+      });
+    }).then(function (outcomes) {
+      if (firstError || outcomes.some(function (outcome) { return outcome !== true; })) {
+        throw firstError || new Error('Yale Gallery record verification did not complete.');
+      }
+      return identities.map(function (identity) {
+        var fresh = verifiedByKey[identity.cacheKey];
+        if (!fresh || !sourceVerifiedAssetIdentityMatches(identity.asset, fresh)) {
+          throw new Error('A Yale Gallery record could not be verified against its saved identity.');
+        }
+        return cloneYaleVerifiedItem(fresh);
+      });
+    });
+  }
+
+  function searchYaleLive(query, options) {
+    var q = String(query || '').trim();
+    if (!q) return Promise.resolve([]);
+    var opts = options || {};
+    var fetchFn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    if (!fetchFn) return Promise.reject(new Error('Yale University Art Gallery live search is unavailable in this browser.'));
+    var requestedLimit = Number(opts.limit);
+    var maximum = isFinite(requestedLimit) && requestedLimit > 0 ? Math.max(1, Math.min(12, Math.floor(requestedLimit))) : 8;
+    var page = normalizedSearchPage(opts.page);
+    var kindHints = {
+      Maps: ' map cartography', Textures: ' surface textile material', Patterns: ' textile ornament pattern',
+      Blueprints: ' architecture plan technical drawing', Science: ' scientific anatomical study',
+      Botanical: ' botanical natural history', Archival: ' historic works on paper ephemera'
+    };
+    var scopedQuery = {
+      AND: [
+        { hasDigitalImage: 1 },
+        { text: q + (kindHints[opts.kind] || '') },
+        { OR: [
+          { memberOf: { curatedBy: { id: YALE_GALLERY_ID } } },
+          { memberOf: { curatedBy: { memberOf: { id: YALE_GALLERY_ID } } } }
+        ] }
+      ]
+    };
+    var searchUrl = YALE_LUX_API + '/search/item?q=' + encodeURIComponent(JSON.stringify(scopedQuery))
+      + '&page=' + (page + 1) + '&pageLength=' + maximum;
+    return fetchYaleJson(searchUrl, fetchFn, opts.signal).then(function (payload) {
+      if (!payload || !Array.isArray(payload.orderedItems)) throw new Error('Yale LUX returned an invalid search response.');
+      var seen = {};
+      var objectUrls = payload.orderedItems.map(function (entry) {
+        return safeYaleLuxObjectUrl(typeof entry === 'string' ? entry : entry && (entry.id || entry['@id']));
+      }).filter(function (url) {
+        if (!url || seen[url]) return false;
+        seen[url] = true;
+        return true;
+      }).slice(0, maximum);
+      return mapWithConcurrency(objectUrls, 3, function (objectUrl) {
+        return fetchYaleJson(objectUrl, fetchFn, opts.signal).then(function (record) {
+          var links = yaleRecordLinks(record);
+          if (!links || links.luxUrl !== objectUrl) return null;
+          return fetchYaleJson(links.manifestUrl, fetchFn, opts.signal).then(function (manifest) {
+            return yaleItemFromManifest(record, manifest, q, opts.kind);
+          });
+        });
+      });
+    }).then(function (items) {
+      return (Array.isArray(items) ? items : []).filter(Boolean);
     });
   }
 
@@ -1630,6 +2157,282 @@
     });
   }
 
+
+  // Museums Victoria's search facet is record-level, but a record may mix open
+  // and restricted media. Flatten media and bind every admitted result to its
+  // exact record, image id, licence URI, and official printable rendition.
+  function museumsVictoriaRecordIdentity(value) {
+    var raw = value && typeof value === 'object' ? String(value.id || '') : String(value || '');
+    raw = raw.trim();
+    if (/^https:/i.test(raw)) {
+      var parsed = parsedSmkHttpsUrl(raw);
+      if (!parsed || parsed.hostname !== 'collections.museumsvictoria.com.au') return null;
+      raw = parsed.pathname.replace(/^\/+/, '');
+    } else {
+      raw = raw.replace(/^\/+/, '');
+    }
+    var match = raw.match(/^(items|specimens|species|articles)\/(\d{1,12})$/i);
+    if (!match) return null;
+    var recordType = match[1].toLowerCase();
+    var recordId = match[2];
+    var recordPath = recordType + '/' + recordId;
+    return {
+      recordType: recordType, recordId: recordId, recordPath: recordPath,
+      sourceUrl: 'https://collections.museumsvictoria.com.au/' + recordPath,
+      apiUrl: MUSEUMS_VICTORIA_API + '/' + recordPath
+    };
+  }
+
+  function safeMuseumsVictoriaSourceUrl(value) {
+    var identity = museumsVictoriaRecordIdentity(value);
+    var safe = safeHttpsUrl(value);
+    return identity && safe === identity.sourceUrl ? identity.sourceUrl : '';
+  }
+
+  function normalizedMuseumsVictoriaMediaId(value) {
+    var match = String(value || '').trim().match(/^(?:media\/)?(\d{1,12})$/i);
+    return match ? match[1] : '';
+  }
+
+  function safeMuseumsVictoriaMediaUrl(value, expectedMediaId, expectedSize) {
+    var safe = safeHttpsUrl(value);
+    var match = safe.match(/^https:\/\/collections\.museumsvictoria\.com\.au\/content\/media\/\d{1,12}\/(\d{1,12})-(large|medium|small|thumbnail)\.jpg$/i);
+    if (!match) return '';
+    var mediaId = normalizedMuseumsVictoriaMediaId(expectedMediaId);
+    var size = String(expectedSize || '').trim().toLowerCase();
+    if ((mediaId && match[1] !== mediaId) || (size && match[2].toLowerCase() !== size)) return '';
+    return safe;
+  }
+
+  function normalizeMuseumsVictoriaMediaRights(media) {
+    var candidate = media && typeof media === 'object' ? media : {};
+    var licence = candidate.licence && typeof candidate.licence === 'object' ? candidate.licence : {};
+    var rawUrl = safeHttpsUrl(licence.uri);
+    if (!rawUrl) return null;
+    var normalizedUrl = rawUrl.replace(/\/+$/, '').toLowerCase();
+    var descriptors = [licence.name, licence.shortName, candidate.rightsStatement].map(function (value) {
+      return plainMetadata(value).toLowerCase();
+    }).filter(Boolean).join(' | ');
+    if (/all rights reserved|third[- ]party copyright|permission (?:is )?required|no derivatives|noncommercial|non-commercial|\bcc by(?:[- ](?:nc|nd|sa))+\b|\b(?:nc|nd|sa)\b/.test(descriptors)) return null;
+    if (normalizedUrl === 'https://creativecommons.org/publicdomain/zero/1.0') {
+      if (/\bcc by\b|attribution required/.test(descriptors)) return null;
+      return { license: 'CC0 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/', rightsType: 'cc0', rightsShort: 'CC0' };
+    }
+    if (normalizedUrl === 'https://creativecommons.org/publicdomain/mark/1.0') {
+      if (/\bcc by\b|attribution required/.test(descriptors)) return null;
+      return { license: 'Public Domain Mark 1.0', licenseUrl: 'https://creativecommons.org/publicdomain/mark/1.0/', rightsType: 'pd', rightsShort: 'Public domain' };
+    }
+    if (normalizedUrl === 'https://creativecommons.org/licenses/by/4.0') {
+      if (descriptors && !/\bcc by\b|creative commons attribution/.test(descriptors)) return null;
+      return { license: 'CC BY 4.0', licenseUrl: 'https://creativecommons.org/licenses/by/4.0/', rightsType: 'ccby', rightsShort: 'CC BY' };
+    }
+    return null;
+  }
+
+  function museumsVictoriaTextList(value) {
+    var list = Array.isArray(value) ? value : (value == null ? [] : [value]);
+    return list.map(function (entry) {
+      if (entry && typeof entry === 'object') return plainMetadata(entry.name || entry.displayName || entry.label || entry.title || entry.value);
+      return plainMetadata(entry);
+    }).filter(Boolean);
+  }
+
+  function museumsVictoriaItemsFromRecord(record, query, requestedKind, onlyMediaId) {
+    if (!record || typeof record !== 'object') return [];
+    var identity = museumsVictoriaRecordIdentity(record);
+    if (!identity) return [];
+    var wantedMediaId = normalizedMuseumsVictoriaMediaId(onlyMediaId);
+    var mediaList = Array.isArray(record.media) ? record.media : [];
+    var baseTitle = plainMetadata(record.displayTitle || record.title || record.name || record.objectName);
+    var recordSummary = plainMetadata(record.summary || record.description || record.objectSummary || record.classification || record.category || record.discipline);
+    var recordYear = plainMetadata(record.date || record.dateDisplay || record.productionDate || record.dateModified) || 'See source record';
+    return mediaList.map(function (media) {
+      if (!media || String(media.type || '').trim().toLowerCase() !== 'image') return null;
+      var mediaId = normalizedMuseumsVictoriaMediaId(media.id);
+      if (!mediaId || (wantedMediaId && mediaId !== wantedMediaId)) return null;
+      var rights = normalizeMuseumsVictoriaMediaRights(media);
+      if (!rights) return null;
+      var large = media.large && typeof media.large === 'object' ? media.large : {};
+      var medium = media.medium && typeof media.medium === 'object' ? media.medium : {};
+      var small = media.small && typeof media.small === 'object' ? media.small : {};
+      var downloadUrl = safeMuseumsVictoriaMediaUrl(large.uri, mediaId, 'large');
+      var imageUrl = safeMuseumsVictoriaMediaUrl(medium.uri, mediaId, 'medium')
+        || safeMuseumsVictoriaMediaUrl(small.uri, mediaId, 'small')
+        || downloadUrl;
+      if (!imageUrl || !downloadUrl) return null;
+      var caption = plainMetadata(media.caption || media.alternativeText);
+      var title = baseTitle || caption || ('Museums Victoria image ' + mediaId);
+      if (caption && baseTitle && caption.toLowerCase() !== baseTitle.toLowerCase()) title += ' — ' + caption;
+      title = title.slice(0, 180);
+      var creators = museumsVictoriaTextList(media.creators);
+      var credit = plainMetadata(media.credit);
+      var sources = museumsVictoriaTextList(media.sources);
+      var creator = creators.join('; ') || credit || 'Creator listed on the Museums Victoria record';
+      creator = creator.slice(0, 160);
+      var description = [caption, recordSummary, credit, sources.join('; ')].filter(Boolean).join(' · ');
+      if (!description) description = 'Openly reusable image from Museums Victoria Collections.';
+      description = description.slice(0, 280);
+      var rightsStatement = plainMetadata(media.rightsStatement);
+      var rightsNote = rights.rightsType === 'ccby'
+        ? 'Museums Victoria assigns CC BY 4.0 to this exact image; attribution is required. Review the linked record and cultural context before use.'
+        : 'Museums Victoria marks this exact image ' + rights.rightsShort + '. Review the linked record and cultural context before use.';
+      var classification = [title, creator, description, record.category, record.discipline, record.collection].join(' ');
+      return {
+        id: 'mv-live-' + identity.recordType + '-' + identity.recordId + '-' + mediaId,
+        mvRecordPath: identity.recordPath, mvMediaId: mediaId,
+        title: title, kind: inferMaterialKind([query, classification].join(' '), requestedKind), provider: MUSEUMS_VICTORIA_PROVIDER,
+        year: recordYear.slice(0, 80), creator: creator, description: description,
+        license: rights.license, licenseUrl: rights.licenseUrl, rightsType: rights.rightsType, rightsShort: rights.rightsShort,
+        rightsNote: rightsNote, tags: normalizeWords(classification), accent: ['#dce9e4', '#315f57'],
+        sourceUrl: identity.sourceUrl, imageUrl: imageUrl, downloadUrl: downloadUrl,
+        pixelWidth: normalizedPixelDimension(large.width), pixelHeight: normalizedPixelDimension(large.height),
+        live: true,
+        rightsMetadataSource: 'Museums Victoria API ' + identity.recordPath + '; media/' + mediaId + '; media licence=' + rights.licenseUrl + (rightsStatement ? '; rightsStatement=' + rightsStatement : '')
+      };
+    }).filter(Boolean);
+  }
+
+  function isSerializedMuseumsVictoriaAsset(item) {
+    if (!item || typeof item !== 'object') return false;
+    if (String(item.provider || '').trim().toLowerCase() === MUSEUMS_VICTORIA_PROVIDER.toLowerCase()) return true;
+    var hasOfficialHost = [item.sourceUrl, item.imageUrl, item.downloadUrl].some(function (value) {
+      var safe = safeHttpsUrl(value);
+      return /^https:\/\/collections\.museumsvictoria\.com\.au\//i.test(safe);
+    });
+    return hasOfficialHost || /^mv-live-/i.test(String(item.id || ''))
+      || Object.prototype.hasOwnProperty.call(item, 'mvRecordPath')
+      || Object.prototype.hasOwnProperty.call(item, 'mvMediaId');
+  }
+
+  function museumsVictoriaIdentityFromAsset(item) {
+    if (!isSerializedMuseumsVictoriaAsset(item)) return null;
+    var fromSource = museumsVictoriaRecordIdentity(item.sourceUrl);
+    var fromSavedPath = item.mvRecordPath ? museumsVictoriaRecordIdentity(item.mvRecordPath) : fromSource;
+    var mediaId = normalizedMuseumsVictoriaMediaId(item.mvMediaId);
+    var imageUrl = safeMuseumsVictoriaMediaUrl(item.imageUrl, mediaId);
+    var downloadUrl = safeMuseumsVictoriaMediaUrl(item.downloadUrl, mediaId, 'large');
+    if (!fromSource || !fromSavedPath || fromSource.recordPath !== fromSavedPath.recordPath || !mediaId || !imageUrl || !downloadUrl) return null;
+    return {
+      asset: item, recordPath: fromSource.recordPath, recordType: fromSource.recordType,
+      recordId: fromSource.recordId, mediaId: mediaId, sourceUrl: fromSource.sourceUrl,
+      apiUrl: fromSource.apiUrl, imageUrl: imageUrl, downloadUrl: downloadUrl,
+      cacheKey: fromSource.recordPath + '|media/' + mediaId
+    };
+  }
+
+  function fetchMuseumsVictoriaJson(url, fetchFn, signal) {
+    var requestContext = providerRequestContext(signal, 12000);
+    return fetchFn(url, requestContext.options).then(function (response) {
+      if (!response || !response.ok) throw providerHttpError(MUSEUMS_VICTORIA_PROVIDER, response);
+      return response.json();
+    }).then(function (payload) {
+      requestContext.finish();
+      return payload;
+    }, function (error) {
+      requestContext.finish();
+      throw error;
+    });
+  }
+
+  function museumsVictoriaRecordFromPayload(payload) {
+    var responsePayload = payload && payload.response;
+    return Array.isArray(responsePayload) ? (responsePayload.length === 1 ? responsePayload[0] : null)
+      : (responsePayload && typeof responsePayload === 'object' ? responsePayload : payload);
+  }
+
+  function museumsVictoriaFreshAssetFromRecord(identity, record) {
+    if (!identity) throw new Error('A Museums Victoria asset is missing a trustworthy record and media identity.');
+    var fresh = museumsVictoriaItemsFromRecord(record, '', 'All', identity.mediaId)[0];
+    if (!fresh) throw new Error('A Museums Victoria record no longer has the saved image with an allowed exact media licence.');
+    var freshIdentity = museumsVictoriaIdentityFromAsset(fresh);
+    if (!freshIdentity || freshIdentity.recordPath !== identity.recordPath || freshIdentity.mediaId !== identity.mediaId || freshIdentity.sourceUrl !== identity.sourceUrl) {
+      throw new Error('A Museums Victoria record changed identity during verification.');
+    }
+    return cloneLiveSearchItem(fresh);
+  }
+
+  function fetchMuseumsVictoriaAssetByIdentity(identity, options) {
+    var opts = options || {};
+    var fetchFn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    if (!fetchFn) return Promise.reject(new Error('Museums Victoria record verification is unavailable in this browser.'));
+    if (!identity || !identity.apiUrl) return Promise.reject(new Error('A Museums Victoria asset is missing a trustworthy record and media identity.'));
+    return fetchMuseumsVictoriaJson(identity.apiUrl, fetchFn, opts.signal).then(function (payload) {
+      return museumsVictoriaFreshAssetFromRecord(identity, museumsVictoriaRecordFromPayload(payload));
+    });
+  }
+
+  function fetchMuseumsVictoriaAssetsByIdentities(assets, options) {
+    var opts = options || {};
+    var candidates = Array.isArray(assets) ? assets : [];
+    if (!candidates.length) return Promise.resolve([]);
+    var identities = candidates.map(museumsVictoriaIdentityFromAsset);
+    if (identities.some(function (identity) { return !identity; })) {
+      return Promise.reject(new Error('A Museums Victoria asset is missing a trustworthy record, media, source, or rendition identity.'));
+    }
+    var fetchFn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    if (!fetchFn) return Promise.reject(new Error('Museums Victoria record verification is unavailable in this browser.'));
+    var identitiesByRecord = Object.create(null);
+    identities.forEach(function (identity) {
+      if (!identitiesByRecord[identity.recordPath]) identitiesByRecord[identity.recordPath] = [];
+      if (!identitiesByRecord[identity.recordPath].some(function (saved) { return saved.cacheKey === identity.cacheKey; })) {
+        identitiesByRecord[identity.recordPath].push(identity);
+      }
+    });
+    var verifiedByKey = Object.create(null);
+    var firstError = null;
+    return mapWithConcurrency(Object.keys(identitiesByRecord), MUSEUMS_VICTORIA_REVALIDATION_CONCURRENCY, function (recordPath) {
+      var recordIdentities = identitiesByRecord[recordPath];
+      var representative = recordIdentities[0];
+      return fetchMuseumsVictoriaJson(representative.apiUrl, fetchFn, opts.signal).then(function (payload) {
+        var record = museumsVictoriaRecordFromPayload(payload);
+        recordIdentities.forEach(function (identity) {
+          verifiedByKey[identity.cacheKey] = museumsVictoriaFreshAssetFromRecord(identity, record);
+        });
+        return true;
+      }).catch(function (error) {
+        if (!firstError) firstError = error;
+        throw error;
+      });
+    }).then(function (outcomes) {
+      if (firstError || outcomes.some(function (outcome) { return outcome !== true; })) {
+        throw firstError || new Error('Museums Victoria record verification did not complete.');
+      }
+      return identities.map(function (identity) {
+        var fresh = verifiedByKey[identity.cacheKey];
+        if (!fresh) throw new Error('A Museums Victoria record could not be verified against its saved identity.');
+        return cloneLiveSearchItem(fresh);
+      });
+    });
+  }
+  function searchMuseumsVictoriaLive(query, options) {
+    var q = String(query || '').trim();
+    if (!q) return Promise.resolve([]);
+    var opts = options || {};
+    var fetchFn = typeof window.fetch === 'function' ? window.fetch.bind(window) : null;
+    if (!fetchFn) return Promise.reject(new Error('Museums Victoria live search is unavailable in this browser.'));
+    var maximum = liveProviderLimit(MUSEUMS_VICTORIA_PROVIDER, opts.limit);
+    var candidateLimit = Math.max(maximum, Math.min(60, maximum * 2));
+    var page = normalizedSearchPage(opts.page) + 1;
+    var licenceFacet = opts.rightsScope === 'all' ? 'public domain,cc by' : 'public domain';
+    var searchUrl = MUSEUMS_VICTORIA_API + '/search?query=' + encodeURIComponent(q)
+      + '&hasimages=yes&imagelicence=' + encodeURIComponent(licenceFacet)
+      + '&sort=relevance&page=' + page + '&perpage=' + candidateLimit + '&envelope=true';
+    return fetchMuseumsVictoriaJson(searchUrl, fetchFn, opts.signal).then(function (payload) {
+      if (!payload || Number(payload.status) !== 200 || !Array.isArray(payload.response)) {
+        throw new Error('Museums Victoria returned an invalid search response.');
+      }
+      var items = [];
+      var seen = Object.create(null);
+      payload.response.forEach(function (record) {
+        museumsVictoriaItemsFromRecord(record, q, opts.kind).forEach(function (item) {
+          if (items.length >= maximum || seen[item.id] || !allowedByRightsScope(item, opts.rightsScope || 'all')) return;
+          seen[item.id] = true;
+          items.push(item);
+        });
+      });
+      return items;
+    });
+  }
   // Openverse aggregates many public repositories. Its own documentation asks
   // users to verify license metadata, so Sourcebook accepts only canonical PDM,
   // CC0, and unmodified CC BY combinations and keeps the Openverse record as the
@@ -1852,11 +2655,221 @@
     return run();
   }
 
-  var LIVE_SEARCH_CACHE = {};
+
   var LIVE_SEARCH_CACHE_MS = 5 * 60 * 1000;
+  var LIVE_SEARCH_PARTIAL_CACHE_MS = 45 * 1000;
+  var LIVE_SEARCH_CACHE_MAX = 64;
+  var LIVE_SEARCH_CACHE_SCHEMA = 3;
+  var LIVE_SEARCH_CACHE = Object.create(null);
+  var LIVE_SEARCH_CACHE_ORDER = [];
+  var LIVE_PROVIDER_LIMIT_RULES = Object.create(null);
+  LIVE_PROVIDER_LIMIT_RULES['Wikimedia Commons'] = { min: 4, max: 24, fallback: 24 };
+  LIVE_PROVIDER_LIMIT_RULES[NGA_PROVIDER] = { min: 4, max: 18, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES[SMITHSONIAN_PROVIDER] = { min: 4, max: 18, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES[BHL_PROVIDER] = { min: 4, max: 18, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES[NARA_PROVIDER] = { min: 4, max: 18, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES[SMK_PROVIDER] = { min: 4, max: 24, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES[YALE_PROVIDER] = { min: 1, max: 12, fallback: 8 };
+  LIVE_PROVIDER_LIMIT_RULES['The Met Open Access'] = { min: 4, max: 12, fallback: 12 };
+  LIVE_PROVIDER_LIMIT_RULES['Art Institute of Chicago'] = { min: 4, max: 12, fallback: 12 };
+  LIVE_PROVIDER_LIMIT_RULES['Cleveland Museum of Art'] = { min: 4, max: 24, fallback: 24 };
+  LIVE_PROVIDER_LIMIT_RULES['Library of Congress'] = { min: 3, max: 6, fallback: 6 };
+  LIVE_PROVIDER_LIMIT_RULES['Wellcome Collection'] = { min: 6, max: 36, fallback: 24 };
+  LIVE_PROVIDER_LIMIT_RULES['Getty Museum Open Content'] = { min: 3, max: 8, fallback: 8 };
+  LIVE_PROVIDER_LIMIT_RULES[MUSEUMS_VICTORIA_PROVIDER] = { min: 4, max: 24, fallback: 18 };
+  LIVE_PROVIDER_LIMIT_RULES['Openverse'] = { min: 4, max: 32, fallback: 24 };
+
+  function boundedLiveInteger(value, fallback, minimum, maximum) {
+    var number = Number(value);
+    if (!isFinite(number) || number === 0) number = Number(fallback);
+    number = number < 0 ? Math.ceil(number) : Math.floor(number);
+    return Math.max(minimum, Math.min(maximum, number));
+  }
+
+  function liveProviderLimit(provider, value) {
+    var rule = LIVE_PROVIDER_LIMIT_RULES[provider] || { min: 1, max: 24, fallback: 12 };
+    return boundedLiveInteger(value, rule.fallback, rule.min, rule.max);
+  }
+
+  function liveSearchLimitProfile(provider, value) {
+    var names = provider === 'All' ? LIVE_PROVIDER_NAMES : [provider];
+    return names.map(function (name) { return name + ':' + liveProviderLimit(name, value); }).join(',');
+  }
+
+  function liveResultLimit(value) {
+    return boundedLiveInteger(value, 48, 1, 80);
+  }
+
+  function cloneLiveSearchItem(item) {
+    return Object.assign({}, item, {
+      tags: Array.isArray(item && item.tags) ? item.tags.slice() : [],
+      accent: Array.isArray(item && item.accent) ? item.accent.slice() : item && item.accent
+    });
+  }
+
+  function cloneLiveSearchItems(items) {
+    return (Array.isArray(items) ? items : []).map(cloneLiveSearchItem);
+  }
+
+  function cloneLiveSearchReports(reports) {
+    return (Array.isArray(reports) ? reports : []).map(function (report) { return Object.assign({}, report); });
+  }
+
+  function removeLiveSearchCacheKey(key) {
+    delete LIVE_SEARCH_CACHE[key];
+    LIVE_SEARCH_CACHE_ORDER = LIVE_SEARCH_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+  }
+
+  function pruneLiveSearchCache(nowValue) {
+    var now = Number(nowValue || Date.now());
+    Object.keys(LIVE_SEARCH_CACHE).forEach(function (key) {
+      var record = LIVE_SEARCH_CACHE[key];
+      var savedAt = Number(record && record.savedAt);
+      var ttlMs = Number(record && record.ttlMs);
+      if (!record || !isFinite(savedAt) || !isFinite(ttlMs) || ttlMs <= 0 || now - savedAt >= ttlMs) removeLiveSearchCacheKey(key);
+    });
+    while (LIVE_SEARCH_CACHE_ORDER.length > LIVE_SEARCH_CACHE_MAX) removeLiveSearchCacheKey(LIVE_SEARCH_CACHE_ORDER[0]);
+  }
+
+  function touchLiveSearchCacheKey(key) {
+    LIVE_SEARCH_CACHE_ORDER = LIVE_SEARCH_CACHE_ORDER.filter(function (candidate) { return candidate !== key; });
+    LIVE_SEARCH_CACHE_ORDER.push(key);
+  }
+
+  function readLiveSearchCache(key, nowValue) {
+    pruneLiveSearchCache(nowValue);
+    var record = LIVE_SEARCH_CACHE[key];
+    if (!record) return null;
+    touchLiveSearchCacheKey(key);
+    return { items: cloneLiveSearchItems(record.items), reports: cloneLiveSearchReports(record.reports) };
+  }
+
+  function writeLiveSearchCache(key, payload, nowValue) {
+    var now = Number(nowValue || Date.now());
+    pruneLiveSearchCache(now);
+    LIVE_SEARCH_CACHE[key] = {
+      savedAt: now,
+      ttlMs: Number(payload && payload.ttlMs) || LIVE_SEARCH_CACHE_MS,
+      items: cloneLiveSearchItems(payload && payload.items),
+      reports: cloneLiveSearchReports(payload && payload.reports)
+    };
+    touchLiveSearchCacheKey(key);
+    while (LIVE_SEARCH_CACHE_ORDER.length > LIVE_SEARCH_CACHE_MAX) removeLiveSearchCacheKey(LIVE_SEARCH_CACHE_ORDER[0]);
+  }
 
   function providerSupportsLiveSearch(provider) {
     return provider === 'All' || LIVE_PROVIDER_NAMES.indexOf(provider) !== -1;
+  }
+
+  function providerReportCanRetry(report) {
+    return !!(report
+      && LIVE_PROVIDER_NAMES.indexOf(String(report.provider || '')) !== -1
+      && (report.status === 'error' || report.status === 'cancelled'));
+  }
+
+  function providerReportCanSearchDeeper(report, currentBatch) {
+    if (!report || LIVE_PROVIDER_NAMES.indexOf(String(report.provider || '')) === -1) return false;
+    if (report.status !== 'ready' && report.status !== 'cached') return false;
+    var current = normalizedSearchPage(currentBatch);
+    var previous = report.batch == null ? current : normalizedSearchPage(report.batch);
+    return Math.max(current, previous) < 40;
+  }
+
+  function providerReportTargetBatch(report, currentBatch, retryFailedBatch) {
+    var current = normalizedSearchPage(currentBatch);
+    var previous = report && report.batch != null ? normalizedSearchPage(report.batch) : current;
+    if (retryFailedBatch) return previous;
+    return normalizedSearchPage(Math.max(current, previous) + 1);
+  }
+
+  var PROVIDER_COVERAGE_ROUTES = {
+    Maps: ['Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, 'Cleveland Museum of Art', 'The Met Open Access', 'Art Institute of Chicago', 'Wikimedia Commons', YALE_PROVIDER, SMK_PROVIDER, 'Openverse'],
+    Blueprints: [MUSEUMS_VICTORIA_PROVIDER, 'Library of Congress', NARA_PROVIDER, SMITHSONIAN_PROVIDER, 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'Wikimedia Commons', YALE_PROVIDER, 'Openverse'],
+    Archival: ['Library of Congress', NARA_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', 'The Met Open Access', 'Art Institute of Chicago', 'Openverse'],
+    Botanical: [BHL_PROVIDER, SMITHSONIAN_PROVIDER, 'Wellcome Collection', 'Wikimedia Commons', YALE_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Openverse'],
+    Science: ['Wellcome Collection', SMITHSONIAN_PROVIDER, BHL_PROVIDER, NARA_PROVIDER, 'Library of Congress', MUSEUMS_VICTORIA_PROVIDER, 'Wikimedia Commons', 'Openverse'],
+    Textures: ['Openverse', 'Wikimedia Commons', 'The Met Open Access', 'Art Institute of Chicago', 'Cleveland Museum of Art', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    Patterns: ['Openverse', 'Wikimedia Commons', 'Art Institute of Chicago', 'Cleveland Museum of Art', 'The Met Open Access', SMK_PROVIDER, YALE_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    'Visual assets': ['Wikimedia Commons', 'Openverse', SMITHSONIAN_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER],
+    All: ['Wikimedia Commons', 'Openverse', 'Library of Congress', SMITHSONIAN_PROVIDER, NARA_PROVIDER, 'The Met Open Access', 'Cleveland Museum of Art', 'Art Institute of Chicago', 'Wellcome Collection', BHL_PROVIDER, YALE_PROVIDER, SMK_PROVIDER, MUSEUMS_VICTORIA_PROVIDER]
+  };
+
+  function buildProviderCoverageGuide(reports, items, requestedKind, currentBatch) {
+    var seen = Object.create(null);
+    var safeReports = (Array.isArray(reports) ? reports : []).filter(function (report) {
+      var provider = String(report && report.provider || '');
+      if (LIVE_PROVIDER_NAMES.indexOf(provider) === -1 || seen[provider]) return false;
+      seen[provider] = true;
+      return true;
+    });
+    var loadedByProvider = Object.create(null);
+    (Array.isArray(items) ? items : []).forEach(function (item) {
+      var provider = String(item && item.provider || '');
+      if (!item || !ALLOWED_RIGHTS[item.rightsType] || LIVE_PROVIDER_NAMES.indexOf(provider) === -1) return;
+      loadedByProvider[provider] = (loadedByProvider[provider] || 0) + 1;
+    });
+    var checked = safeReports.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; });
+    var contributedCount = checked.filter(function (report) { return !!loadedByProvider[report.provider]; }).length;
+    var attentionCount = safeReports.filter(function (report) { return report.status === 'error' || report.status === 'cancelled'; }).length;
+    var cooldownCount = safeReports.filter(function (report) { return report.status === 'cooldown'; }).length;
+    var workingCount = safeReports.filter(function (report) { return report.status === 'searching' || report.status === 'retrying'; }).length;
+    var kind = MATERIAL_KIND_NAMES.indexOf(requestedKind) !== -1 ? requestedKind : 'All';
+    var route = PROVIDER_COVERAGE_ROUTES[kind] || PROVIDER_COVERAGE_ROUTES.All;
+    var candidates = checked.filter(function (report) {
+      return providerReportCanSearchDeeper(report, currentBatch);
+    }).map(function (report) {
+      var routeIndex = route.indexOf(report.provider);
+      if (routeIndex === -1) routeIndex = route.length + LIVE_PROVIDER_NAMES.indexOf(report.provider);
+      var batch = report.batch == null ? normalizedSearchPage(currentBatch) : normalizedSearchPage(report.batch);
+      var loaded = loadedByProvider[report.provider] || 0;
+      return {
+        provider: report.provider,
+        batch: batch,
+        loaded: loaded,
+        score: 1000 - (routeIndex * 24) - (batch * 120) + (loaded ? 0 : 60) - Math.min(loaded, 8) * 5,
+        report: report
+      };
+    }).sort(function (a, b) {
+      return b.score - a.score || a.batch - b.batch || a.provider.localeCompare(b.provider);
+    });
+    var next = candidates[0] || null;
+    var resolvedCount = checked.length + attentionCount + cooldownCount;
+    var completionPercent = safeReports.length ? Math.round((resolvedCount / safeReports.length) * 100) : 0;
+    var reason = '';
+    if (next) {
+      if (next.loaded) reason = 'Continue a productive ' + next.provider + ' trail while balancing collection depth.';
+      else if (kind === 'All') reason = 'Broaden coverage through a strong, least-explored reusable collection.';
+      else reason = next.provider + ' is a strong match for ' + kind.toLowerCase() + ' and still has an unexplored batch.';
+    }
+    return {
+      totalCount: safeReports.length,
+      checkedCount: checked.length,
+      contributedCount: contributedCount,
+      emptyCount: Math.max(0, checked.length - contributedCount),
+      attentionCount: attentionCount,
+      cooldownCount: cooldownCount,
+      workingCount: workingCount,
+      completionPercent: Math.max(0, Math.min(100, completionPercent)),
+      nextProvider: next ? next.provider : '',
+      nextBatch: next ? providerReportTargetBatch(next.report, currentBatch, false) : null,
+      reason: reason
+    };
+  }
+
+  function discoveryBatchRoute(values, fallback, batch) {
+    var queries = sanitizeDiscoveryQueries(values, fallback);
+    var safeFallback = String(fallback || '').replace(/\s+/g, ' ').trim().slice(0, 140);
+    if (!queries.length && safeFallback) queries = [safeFallback];
+    var logicalBatch = normalizedSearchPage(batch);
+    var variantCount = Math.max(1, queries.length);
+    var variantIndex = logicalBatch % variantCount;
+    return {
+      query: queries[variantIndex] || safeFallback,
+      providerPage: Math.floor(logicalBatch / variantCount),
+      variantIndex: variantIndex,
+      variantCount: variantCount,
+      batch: logicalBatch
+    };
   }
 
   function curatedProviderMessage(provider) {
@@ -1873,10 +2886,15 @@
     var provider = opts.provider || 'All';
     var queries = sanitizeDiscoveryQueries(opts.queries, query);
     var page = normalizedSearchPage(opts.page);
-    var cacheKey = [queries.join('~').toLowerCase(), opts.kind || 'All', provider, opts.rightsScope || 'all', page].join('|');
-    var cached = LIVE_SEARCH_CACHE[cacheKey];
-    if (cached && Date.now() - cached.savedAt < Number(cached.ttlMs || LIVE_SEARCH_CACHE_MS)) {
-      if (typeof opts.onProgress === 'function') (cached.reports || []).forEach(function (report) {
+    var route = discoveryBatchRoute(queries, query, page);
+    var routedQuery = route.query;
+    var providerPage = route.providerPage;
+    var providerLimitProfile = liveSearchLimitProfile(provider, opts.limit);
+    var resultLimit = liveResultLimit(opts.resultLimit);
+    var cacheKey = [LIVE_SEARCH_CACHE_SCHEMA, queries.join('~').toLowerCase(), opts.kind || 'All', provider, opts.rightsScope || 'all', page, providerLimitProfile, resultLimit].join('|');
+    var cached = readLiveSearchCache(cacheKey, Date.now());
+    if (cached) {
+      if (typeof opts.onProgress === 'function') cached.reports.forEach(function (report) {
         try {
           opts.onProgress(Object.assign({}, report, {
             status: report.ok ? 'cached' : report.status,
@@ -1885,50 +2903,56 @@
         } catch (_) {}
       });
       if (typeof opts.onPartial === 'function' && cached.items.length) {
-        try { opts.onPartial(cached.items.slice(), { provider: 'Recent search', status: 'cached', count: cached.items.length }); } catch (_) {}
+        try { opts.onPartial(cloneLiveSearchItems(cached.items), { provider: 'Recent search', status: 'cached', count: cached.items.length }); } catch (_) {}
       }
-      return Promise.resolve(cached.items.slice());
+      return Promise.resolve(cloneLiveSearchItems(cached.items));
     }
     var jobs = [];
-    function providerQuery(index) { return queries[Math.min(index, queries.length - 1)] || String(query || '').trim(); }
+    function limitFor(name) { return liveProviderLimit(name, opts.limit); }
     if (provider === 'All' || provider === 'Wikimedia Commons') {
-      jobs.push({ provider: 'Wikimedia Commons', run: function () { return searchCommonsLive(providerQuery(0), { kind: opts.kind, limit: Math.min(24, Number(opts.limit || 24)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Wikimedia Commons', run: function () { return searchCommonsLive(routedQuery, { kind: opts.kind, limit: limitFor('Wikimedia Commons'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === NGA_PROVIDER) {
-      jobs.push({ provider: NGA_PROVIDER, run: function () { return searchNgaLive(providerQuery(provider === 'All' ? 1 : 0), { kind: opts.kind, limit: Math.min(18, Number(opts.limit || 18)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: NGA_PROVIDER, run: function () { return searchNgaLive(routedQuery, { kind: opts.kind, limit: limitFor(NGA_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === SMITHSONIAN_PROVIDER) {
-      jobs.push({ provider: SMITHSONIAN_PROVIDER, run: function () { return searchSmithsonianLive(providerQuery(provider === 'All' ? 2 : 0), { kind: opts.kind, limit: Math.min(18, Number(opts.limit || 18)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: SMITHSONIAN_PROVIDER, run: function () { return searchSmithsonianLive(routedQuery, { kind: opts.kind, limit: limitFor(SMITHSONIAN_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === BHL_PROVIDER) {
-      jobs.push({ provider: BHL_PROVIDER, run: function () { return searchBhlLive(providerQuery(0), { kind: opts.kind, limit: Math.min(18, Number(opts.limit || 18)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: BHL_PROVIDER, run: function () { return searchBhlLive(routedQuery, { kind: opts.kind, limit: limitFor(BHL_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === NARA_PROVIDER) {
-      jobs.push({ provider: NARA_PROVIDER, run: function () { return searchNaraLive(providerQuery(provider === 'All' ? 1 : 0), { kind: opts.kind, limit: Math.min(18, Number(opts.limit || 18)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: NARA_PROVIDER, run: function () { return searchNaraLive(routedQuery, { kind: opts.kind, limit: limitFor(NARA_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === SMK_PROVIDER) {
-      jobs.push({ provider: SMK_PROVIDER, run: function () { return searchSmkLive(providerQuery(provider === 'All' ? 2 : 0), { kind: opts.kind, limit: Math.min(24, Number(opts.limit || 18)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: SMK_PROVIDER, run: function () { return searchSmkLive(routedQuery, { kind: opts.kind, limit: limitFor(SMK_PROVIDER), page: providerPage, signal: opts.signal }); } });
+    }
+    if (provider === 'All' || provider === YALE_PROVIDER) {
+      jobs.push({ provider: YALE_PROVIDER, run: function () { return searchYaleLive(routedQuery, { kind: opts.kind, limit: limitFor(YALE_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'The Met Open Access') {
-      jobs.push({ provider: 'The Met Open Access', run: function () { return searchMetLive(providerQuery(provider === 'All' ? 1 : 0), { kind: opts.kind, limit: Math.min(12, Number(opts.limit || 12)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'The Met Open Access', run: function () { return searchMetLive(routedQuery, { kind: opts.kind, limit: limitFor('The Met Open Access'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Art Institute of Chicago') {
-      jobs.push({ provider: 'Art Institute of Chicago', run: function () { return searchAicLive(providerQuery(provider === 'All' ? 2 : 0), { kind: opts.kind, limit: Math.min(24, Number(opts.limit || 24)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Art Institute of Chicago', run: function () { return searchAicLive(routedQuery, { kind: opts.kind, limit: limitFor('Art Institute of Chicago'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Cleveland Museum of Art') {
-      jobs.push({ provider: 'Cleveland Museum of Art', run: function () { return searchCmaLive(providerQuery(provider === 'All' ? 3 : 0), { kind: opts.kind, limit: Math.min(24, Number(opts.limit || 24)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Cleveland Museum of Art', run: function () { return searchCmaLive(routedQuery, { kind: opts.kind, limit: limitFor('Cleveland Museum of Art'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Library of Congress') {
-      jobs.push({ provider: 'Library of Congress', run: function () { return searchLocLive(providerQuery(provider === 'All' ? 4 : 0), { kind: opts.kind, limit: Math.min(12, Number(opts.limit || 12)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Library of Congress', run: function () { return searchLocLive(routedQuery, { kind: opts.kind, limit: limitFor('Library of Congress'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Wellcome Collection') {
-      jobs.push({ provider: 'Wellcome Collection', run: function () { return searchWellcomeLive(providerQuery(provider === 'All' ? 5 : 0), { kind: opts.kind, limit: Math.min(36, Number(opts.limit || 24)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Wellcome Collection', run: function () { return searchWellcomeLive(routedQuery, { kind: opts.kind, limit: limitFor('Wellcome Collection'), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Getty Museum Open Content') {
-      jobs.push({ provider: 'Getty Museum Open Content', run: function () { return searchGettyLive(providerQuery(provider === 'All' ? 6 : 0), { kind: opts.kind, limit: Math.min(8, Number(opts.limit || 8)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Getty Museum Open Content', run: function () { return searchGettyLive(routedQuery, { kind: opts.kind, limit: limitFor('Getty Museum Open Content'), page: providerPage, signal: opts.signal }); } });
+    }
+    if (provider === 'All' || provider === MUSEUMS_VICTORIA_PROVIDER) {
+      jobs.push({ provider: MUSEUMS_VICTORIA_PROVIDER, run: function () { return searchMuseumsVictoriaLive(routedQuery, { kind: opts.kind, rightsScope: opts.rightsScope || 'all', limit: limitFor(MUSEUMS_VICTORIA_PROVIDER), page: providerPage, signal: opts.signal }); } });
     }
     if (provider === 'All' || provider === 'Openverse') {
-      jobs.push({ provider: 'Openverse', run: function () { return searchOpenverseLive(providerQuery(provider === 'All' ? 7 : 0), { kind: opts.kind, rightsScope: opts.rightsScope || 'all', limit: Math.min(32, Number(opts.limit || 24)), page: page, signal: opts.signal }); } });
+      jobs.push({ provider: 'Openverse', run: function () { return searchOpenverseLive(routedQuery, { kind: opts.kind, rightsScope: opts.rightsScope || 'all', limit: limitFor('Openverse'), page: providerPage, signal: opts.signal }); } });
     }
     if (!jobs.length) return Promise.resolve([]);
     return Promise.all(jobs.map(function (job) {
@@ -1936,7 +2960,7 @@
         if (result.ok && typeof opts.onPartial === 'function') {
           var partial = mergeAssets([], result.items).filter(function (item) { return allowedByRightsScope(item, opts.rightsScope || 'all'); });
           if (partial.length) {
-            try { opts.onPartial(partial, Object.assign({ provider: job.provider, status: 'ready', count: partial.length }, result.report || {})); } catch (_) {}
+            try { opts.onPartial(cloneLiveSearchItems(partial), Object.assign({ provider: job.provider, status: 'ready', count: partial.length }, result.report || {})); } catch (_) {}
           }
         }
         return result;
@@ -1956,12 +2980,13 @@
       var items = [];
       results.forEach(function (result) { items = items.concat(result.items); });
       var admitted = mergeAssets([], items).filter(function (item) { return allowedByRightsScope(item, opts.rightsScope || 'all'); });
-      var ranked = rankDiscoveryResults(admitted, query, opts.kind, Number(opts.resultLimit || 48));
+      var ranked = rankDiscoveryResults(admitted, query, opts.kind, resultLimit);
       var allReady = results.every(function (result) { return result.ok; });
-      LIVE_SEARCH_CACHE[cacheKey] = {
-        savedAt: Date.now(), ttlMs: allReady ? LIVE_SEARCH_CACHE_MS : 45000,
-        items: ranked.slice(), reports: results.map(function (result) { return Object.assign({ ok: result.ok }, result.report || {}); })
-      };
+      writeLiveSearchCache(cacheKey, {
+        ttlMs: allReady ? LIVE_SEARCH_CACHE_MS : LIVE_SEARCH_PARTIAL_CACHE_MS,
+        items: ranked,
+        reports: results.map(function (result) { return Object.assign({ ok: result.ok }, result.report || {}); })
+      }, Date.now());
       return ranked;
     });
   }
@@ -2019,6 +3044,54 @@
     return list;
   }
 
+  function filterLoadedResultsByFacets(items, facets, rightsScope) {
+    var opts = facets && typeof facets === 'object' ? facets : {};
+    var targetProvider = String(opts.provider || 'All').replace(/\s+/g, ' ').trim() || 'All';
+    var targetKind = String(opts.kind || 'All').replace(/\s+/g, ' ').trim() || 'All';
+    var targetRights = String(opts.rightsType || 'All').replace(/\s+/g, ' ').trim() || 'All';
+    var scope = RIGHTS_SCOPES[rightsScope] ? rightsScope : 'all';
+    if (targetProvider !== 'All' && LIVE_PROVIDER_NAMES.indexOf(targetProvider) === -1) return [];
+    if (targetKind !== 'All' && MATERIAL_KIND_NAMES.indexOf(targetKind) === -1) return [];
+    if (targetRights !== 'All' && !ALLOWED_RIGHTS[targetRights]) return [];
+    return (Array.isArray(items) ? items : []).filter(function (item) {
+      return item && allowedByRightsScope(item, scope)
+        && (targetProvider === 'All' || item.provider === targetProvider)
+        && (targetKind === 'All' || item.kind === targetKind)
+        && (targetRights === 'All' || item.rightsType === targetRights);
+    });
+  }
+
+  function filterLoadedResultsByProvider(items, provider, rightsScope) {
+    return filterLoadedResultsByFacets(items, { provider: provider }, rightsScope);
+  }
+
+  function loadedProviderCoverage(items, rightsScope) {
+    var admitted = filterLoadedResultsByFacets(items, null, rightsScope);
+    var counts = Object.create(null);
+    admitted.forEach(function (item) { counts[item.provider] = (counts[item.provider] || 0) + 1; });
+    return LIVE_PROVIDER_NAMES.filter(function (name) { return counts[name] > 0; }).map(function (name) {
+      return { provider: name, count: counts[name] };
+    });
+  }
+
+  function loadedKindCoverage(items, rightsScope) {
+    var admitted = filterLoadedResultsByFacets(items, null, rightsScope);
+    var counts = Object.create(null);
+    admitted.forEach(function (item) { counts[item.kind] = (counts[item.kind] || 0) + 1; });
+    return MATERIAL_KIND_NAMES.slice(1).filter(function (name) { return counts[name] > 0; }).map(function (name) {
+      return { kind: name, count: counts[name] };
+    });
+  }
+
+  function loadedRightsCoverage(items, rightsScope) {
+    var admitted = filterLoadedResultsByFacets(items, null, rightsScope);
+    var counts = Object.create(null);
+    admitted.forEach(function (item) { counts[item.rightsType] = (counts[item.rightsType] || 0) + 1; });
+    return LOADED_RIGHTS_PRESENTATION.filter(function (entry) { return counts[entry.rightsType] > 0; }).map(function (entry) {
+      return { rightsType: entry.rightsType, label: entry.label, count: counts[entry.rightsType] };
+    });
+  }
+
   function sanitizeDiscoveryQueries(values, fallback) {
     var list = [String(fallback || '').trim()].concat(Array.isArray(values) ? values : []);
     var seen = {};
@@ -2039,6 +3112,12 @@
       Science: 'scientific educational diagram', Botanical: 'botanical natural history illustration',
       Archival: 'historic archival ephemera print', 'Visual assets': 'printable visual source'
     };
+    var alternateHints = {
+      Maps: 'topographic relief watershed atlas', Textures: 'material sample close-up surface',
+      Patterns: 'decorative motif fabric ornament', Blueprints: 'engineering patent construction drawing',
+      Science: 'anatomical laboratory research figure', Botanical: 'herbarium specimen plant plate',
+      Archival: 'document poster broadside ephemera', 'Visual assets': 'open access reference image'
+    };
     var words = normalizeWords(q);
     var expanded = words.slice();
     words.forEach(function (word) {
@@ -2050,7 +3129,7 @@
       queries: sanitizeDiscoveryQueries([
         q + ' ' + (hints[kind] || 'printable visual material'),
         expanded.slice(0, 12).join(' '),
-        q + ' historic scientific educational illustration'
+        q + ' ' + (alternateHints[kind] || 'open access reference image')
       ], q),
       paletteSize: normalizePaletteTarget(requestedPaletteSize),
       reason: 'Balanced for relevance, visual variety, provider diversity, and printable reuse.',
@@ -2348,7 +3427,7 @@
       file: String(item.file || '').slice(0, 240), live: item.live === true,
       recommended: item.recommended === true,
       recommendationSource: String(item.recommendationSource || '').slice(0, 40),
-      rightsMetadataSource: item.rightsMetadataSource || ''
+      rightsMetadataSource: String(item.rightsMetadataSource || '').replace(/\s+/g, ' ').trim().slice(0, 1000)
     };
     if (String(item.provider || '') === SMK_PROVIDER) {
       var objectNumber = smkObjectNumberFromAsset(item);
@@ -2357,12 +3436,39 @@
       portable.objectNumber = objectNumber;
       if (providerRecordId) portable.providerRecordId = providerRecordId;
     }
+    if (String(item.provider || '') === MUSEUMS_VICTORIA_PROVIDER) {
+      var museumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(item);
+      if (!museumsVictoriaIdentity) return null;
+      portable.mvRecordPath = museumsVictoriaIdentity.recordPath;
+      portable.mvMediaId = museumsVictoriaIdentity.mediaId;
+    }
+    if (String(item.provider || '') === YALE_PROVIDER) {
+      var yaleSource = safeYaleSourceUrl(item.sourceUrl);
+      var yaleObjectId = yaleIdFromUrl(yaleSource, /^\/collections\/objects\/(\d{1,12})$/i);
+      var yaleManifest = safeYaleManifestUrl(item.yaleManifestUrl);
+      var yaleManifestId = yaleIdFromUrl(yaleManifest, /^\/yuag\/obj\/(\d{1,12})$/i);
+      var yaleLuxId = String(item.yaleLuxId || '').trim().toLowerCase();
+      var yaleIiifServiceUrl = yaleIiifServiceFromAsset(item);
+      if (!yaleObjectId || yaleObjectId !== yaleManifestId || !normalizedYaleLuxId(yaleLuxId) || !yaleIiifServiceUrl) return null;
+      portable.providerRecordId = yaleObjectId;
+      portable.yaleLuxId = yaleLuxId;
+      portable.yaleManifestUrl = yaleManifest;
+      portable.yaleIiifServiceUrl = yaleIiifServiceUrl;
+    }
     return portable;
   }
 
   function sourcebookImportedDomainAllowed(provider, sourceUrl, imageUrl, downloadUrl) {
+    if (provider === MUSEUMS_VICTORIA_PROVIDER) {
+      return !!(safeMuseumsVictoriaSourceUrl(sourceUrl)
+        && safeMuseumsVictoriaMediaUrl(imageUrl)
+        && safeMuseumsVictoriaMediaUrl(downloadUrl, '', 'large'));
+    }
     if (provider === SMK_PROVIDER) {
       return !!(safeSmkSourceUrl(sourceUrl) && safeSmkMediaUrl(imageUrl) && safeSmkMediaUrl(downloadUrl));
+    }
+    if (provider === YALE_PROVIDER) {
+      return !!(safeYaleSourceUrl(sourceUrl) && safeYalePreparedImageUrl(imageUrl) && safeYalePreparedImageUrl(downloadUrl));
     }
     var domains = {
       'Wikimedia Commons': { source: ['commons.wikimedia.org'], media: ['commons.wikimedia.org', 'upload.wikimedia.org'] },
@@ -2389,13 +3495,18 @@
   }
 
   function sourcebookImportedRightsAllowed(provider, rightsType, licenseUrl) {
+    if (provider === MUSEUMS_VICTORIA_PROVIDER) {
+      var museumsVictoriaRights = normalizeMuseumsVictoriaMediaRights({ licence: { uri: licenseUrl } });
+      return !!(museumsVictoriaRights && museumsVictoriaRights.rightsType === rightsType && museumsVictoriaRights.licenseUrl === licenseUrl);
+    }
+    if (provider === YALE_PROVIDER) return rightsType === 'pd' && licenseUrl === YALE_OPEN_TERMS;
     if (provider !== SMK_PROVIDER) return true;
     var normalized = normalizeSmkRights({ public_domain: true, has_image: true, rights: licenseUrl });
     return !!(normalized && normalized.rightsType === rightsType);
   }
 
   function normalizePersistedNonSmkAsset(raw) {
-    if (!raw || typeof raw !== 'object' || isSerializedSmkAsset(raw)) return null;
+    if (!raw || typeof raw !== 'object' || isSerializedSourceVerifiedAsset(raw)) return null;
     var provider = String(raw.provider || '').trim();
     var sourceUrl = safeHttpsUrl(raw.sourceUrl);
     var imageUrl = safeHttpsUrl(raw.imageUrl);
@@ -2501,7 +3612,10 @@
         license: raw.license, licenseUrl: licenseUrl, rightsType: raw.rightsType,
         rightsShort: raw.rightsShort, rightsNote: raw.rightsNote, description: raw.description,
         accent: raw.accent, live: false, rightsMetadataSource: raw.rightsMetadataSource,
-        objectNumber: raw.objectNumber, providerRecordId: raw.providerRecordId
+        objectNumber: raw.objectNumber, providerRecordId: raw.providerRecordId,
+        mvRecordPath: raw.mvRecordPath, mvMediaId: raw.mvMediaId,
+        yaleLuxId: raw.yaleLuxId, yaleManifestUrl: raw.yaleManifestUrl,
+        yaleIiifServiceUrl: raw.yaleIiifServiceUrl
       });
       if (!item) return null;
       seen[id] = true;
@@ -2523,7 +3637,7 @@
 
   function serializedAssetsContainSmk(assets) {
     return (Array.isArray(assets) ? assets : []).some(function (item) {
-      return item && String(item.provider || '') === SMK_PROVIDER;
+      return isSerializedSourceVerifiedAsset(item);
     });
   }
 
@@ -2537,28 +3651,75 @@
     return candidate && !serializedAssetsContainSmk(candidate.assets) ? candidate : null;
   }
 
-  function revalidateImportedSmkAssets(assets, options) {
+  function revalidateImportedSourceVerifiedAssets(assets, options) {
     var candidates = Array.isArray(assets) ? assets : [];
-    var smkCandidates = candidates.filter(function (item) { return item.provider === SMK_PROVIDER; });
-    if (!smkCandidates.length) return Promise.resolve(candidates.slice());
+    var smkCandidates = [];
+    var yaleCandidates = [];
+    var museumsVictoriaCandidates = [];
+    candidates.forEach(function (item) {
+      if (isSerializedMuseumsVictoriaAsset(item)) museumsVictoriaCandidates.push(item);
+      else if (isSerializedYaleAsset(item)) yaleCandidates.push(item);
+      else if (isSerializedSmkAsset(item)) smkCandidates.push(item);
+    });
     var objectNumbers = smkCandidates.map(smkObjectNumberFromAsset);
     if (objectNumbers.some(function (value) { return !value; })) {
       return Promise.reject(new Error('An SMK Open asset is missing a trustworthy object number.'));
     }
-    return fetchSmkArtworksByObjectNumbers(objectNumbers, options).then(function (freshSmkItems) {
-      var freshCursor = 0;
+    var smkVerification = smkCandidates.length
+      ? fetchSmkArtworksByObjectNumbers(objectNumbers, options)
+      : Promise.resolve([]);
+    var yaleVerification = yaleCandidates.length
+      ? fetchYaleAssetsByIdentities(yaleCandidates, options)
+      : Promise.resolve([]);
+    var museumsVictoriaVerification = museumsVictoriaCandidates.length
+      ? fetchMuseumsVictoriaAssetsByIdentities(museumsVictoriaCandidates, options)
+      : Promise.resolve([]);
+
+    return Promise.all([smkVerification, yaleVerification, museumsVictoriaVerification]).then(function (verifiedGroups) {
+      var freshSmkItems = verifiedGroups[0];
+      var freshYaleItems = verifiedGroups[1];
+      var freshMuseumsVictoriaItems = verifiedGroups[2];
+      var smkCursor = 0;
+      var yaleCursor = 0;
+      var museumsVictoriaCursor = 0;
       var seenIds = {};
       return candidates.map(function (candidate) {
         var refreshed = candidate;
-        if (candidate.provider === SMK_PROVIDER) {
-          var fresh = freshSmkItems[freshCursor++];
-          if (!fresh || candidate.licenseUrl !== fresh.licenseUrl || candidate.rightsType !== fresh.rightsType) {
+        if (isSerializedMuseumsVictoriaAsset(candidate)) {
+          var freshMuseumsVictoria = freshMuseumsVictoriaItems[museumsVictoriaCursor++];
+          if (!freshMuseumsVictoria
+            || candidate.licenseUrl !== freshMuseumsVictoria.licenseUrl
+            || candidate.rightsType !== freshMuseumsVictoria.rightsType
+            || !sourceVerifiedAssetIdentityMatches(candidate, freshMuseumsVictoria)) {
+            throw new Error('A Museums Victoria image has changed identity or rights since it was saved.');
+          }
+          refreshed = portableAsset(Object.assign({}, freshMuseumsVictoria, {
+            recommended: candidate.recommended === true,
+            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
+          }));
+          if (!refreshed) throw new Error('A Museums Victoria image could not be normalized after verification.');
+        } else if (isSerializedYaleAsset(candidate)) {
+          var freshYale = freshYaleItems[yaleCursor++];
+          if (!freshYale
+            || candidate.licenseUrl !== freshYale.licenseUrl
+            || candidate.rightsType !== freshYale.rightsType
+            || !sourceVerifiedAssetIdentityMatches(candidate, freshYale)) {
+            throw new Error('A Yale Gallery record has changed identity or rights since it was saved.');
+          }
+          refreshed = portableAsset(Object.assign({}, freshYale, {
+            recommended: candidate.recommended === true,
+            recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
+          }));
+          if (!refreshed) throw new Error('A Yale Gallery record could not be normalized after verification.');
+        } else if (isSerializedSmkAsset(candidate)) {
+          var freshSmk = freshSmkItems[smkCursor++];
+          if (!freshSmk || candidate.licenseUrl !== freshSmk.licenseUrl || candidate.rightsType !== freshSmk.rightsType) {
             throw new Error('An SMK Open record has changed rights since it was saved.');
           }
-          if (candidate.providerRecordId && candidate.providerRecordId !== fresh.providerRecordId) {
+          if (candidate.providerRecordId && candidate.providerRecordId !== freshSmk.providerRecordId) {
             throw new Error('An SMK Open object number now resolves to a different record.');
           }
-          refreshed = portableAsset(Object.assign({}, fresh, {
+          refreshed = portableAsset(Object.assign({}, freshSmk, {
             recommended: candidate.recommended === true,
             recommendationSource: candidate.recommended === true ? candidate.recommendationSource : ''
           }));
@@ -2571,13 +3732,17 @@
     });
   }
 
+  // Compatibility alias for callers from earlier Sourcebook versions.
+  function revalidateImportedSmkAssets(assets, options) {
+    return revalidateImportedSourceVerifiedAssets(assets, options);
+  }
   function revalidateLiveSession(session, options) {
     var opts = options || {};
     var candidate = normalizeLiveSessionCandidate(session, opts.nowValue);
     if (!candidate) return Promise.reject(new Error('The saved Sourcebook session is invalid or expired.'));
     return revalidateImportedSmkAssets(candidate.results, opts).then(function (results) {
       if (results.some(function (item) { return !allowedByRightsScope(item, candidate.rightsScope); })) {
-        throw new Error('A refreshed SMK Open record is outside the saved rights scope.');
+        throw new Error('A refreshed source-verified record is outside the saved rights scope.');
       }
       return Object.assign({}, candidate, { results: results });
     });
@@ -2598,18 +3763,22 @@
   function revalidateSavedSmkAssets(savedAssets, options) {
     var source = savedAssets && typeof savedAssets === 'object' ? savedAssets : {};
     var keys = Object.keys(source).filter(function (id) {
-      return isSerializedSmkAsset(source[id]);
+      return isSerializedSourceVerifiedAsset(source[id]);
     }).sort();
     if (!keys.length) return Promise.resolve({ assets: {}, idMap: {} });
     if (keys.some(function (id) { return String(source[id].id || '') !== id; })) {
-      return Promise.reject(new Error('Saved SMK Open asset identifiers are inconsistent.'));
+      return Promise.reject(new Error('Saved source-verified asset identifiers are inconsistent.'));
     }
     var candidate = normalizePaletteManifestCandidate({
-      schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Saved SMK Open assets',
-      assets: keys.map(function (id) { return Object.assign({}, source[id], { provider: SMK_PROVIDER, preparation: {} }); })
+      schema: 'org.owlflow.sourcebook-palette', version: 1, title: 'Saved source-verified assets',
+      assets: keys.map(function (id) {
+        var raw = source[id];
+        var authoritativeProvider = isSerializedMuseumsVictoriaAsset(raw) ? MUSEUMS_VICTORIA_PROVIDER : (isSerializedYaleAsset(raw) ? YALE_PROVIDER : (isSerializedSmkAsset(raw) ? SMK_PROVIDER : String(raw.provider || '')));
+        return Object.assign({}, raw, { provider: authoritativeProvider, preparation: {} });
+      })
     });
     if (!candidate || candidate.assets.length !== keys.length) {
-      return Promise.reject(new Error('Saved SMK Open assets could not be parsed safely.'));
+      return Promise.reject(new Error('Saved source-verified assets could not be parsed safely.'));
     }
     return revalidateImportedSmkAssets(candidate.assets, options || {}).then(function (freshItems) {
       var assets = {};
@@ -2625,9 +3794,108 @@
   function savedSmkAssetsSignature(savedAssets) {
     var source = savedAssets && typeof savedAssets === 'object' ? savedAssets : {};
     var keys = Object.keys(source).filter(function (id) {
-      return isSerializedSmkAsset(source[id]);
+      return isSerializedSourceVerifiedAsset(source[id]);
     }).sort();
     return keys.length ? JSON.stringify(keys.map(function (id) { return source[id]; })) : '';
+  }
+
+  function normalizedAltText(value) {
+    return String(value == null ? '' : value)
+      .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 300);
+  }
+
+  function suggestedAltText(item) {
+    var asset = item && typeof item === 'object' ? item : {};
+    var description = normalizedAltText(asset.description);
+    var title = normalizedAltText(asset.title);
+    if (description && description.toLowerCase() !== title.toLowerCase()) return description;
+    if (title) return title;
+    var kind = normalizedAltText(asset.kind);
+    var provider = normalizedAltText(asset.provider);
+    if (kind && provider) return kind + ' visual asset from ' + provider;
+    if (kind) return kind + ' visual asset';
+    return provider ? 'Visual asset from ' + provider : 'Visual asset';
+  }
+
+  function normalizedUsageIntent(value) {
+    var candidate = String(value || '').trim().toLowerCase();
+    return USAGE_INTENTS[candidate] ? candidate : 'auto';
+  }
+
+  function normalizedUsagePlanTag(value) {
+    var candidate = String(value || '').trim().toLowerCase();
+    return USAGE_PLANS[candidate] ? candidate : '';
+  }
+
+  function normalizedUsagePlan(value) {
+    return normalizedUsagePlanTag(value) || 'balanced';
+  }
+
+  function resolvedUsageIntent(item, value) {
+    var prep = value && typeof value === 'object' ? value : {};
+    var selected = normalizedUsageIntent(prep.usageIntent);
+    var planId = selected === 'auto' ? '' : normalizedUsagePlanTag(prep.usagePlan);
+    var resolved = selected;
+    if (selected === 'auto') {
+      var kind = String(item && item.kind || '').toLowerCase();
+      if (prep.mode === 'tile' || kind === 'textures' || kind === 'patterns') resolved = 'texture';
+      else if (prep.aspect === 'banner') resolved = 'accent';
+      else if (kind === 'maps' || kind === 'science' || kind === 'blueprints') resolved = 'reference';
+      else if (kind === 'archival' || kind === 'botanical') resolved = 'focal';
+      else resolved = 'flexible';
+    }
+    var entry = USAGE_INTENTS[resolved] || USAGE_INTENTS.flexible;
+    return {
+      id: resolved,
+      label: entry.label,
+      shortLabel: entry.shortLabel,
+      description: entry.description,
+      suggested: selected === 'auto',
+      selected: selected,
+      source: selected === 'auto' ? 'suggestion' : (planId ? 'sourcebook-plan' : 'manual'),
+      sourceLabel: selected === 'auto' ? 'Sourcebook suggestion' : (planId ? USAGE_PLANS[planId].sourceLabel : 'user planned'),
+      planId: planId,
+      planLabel: planId ? USAGE_PLANS[planId].label : ''
+    };
+  }
+
+  function summarizeUsageIntents(items, preparation) {
+    var counts = {};
+    USAGE_INTENT_ORDER.slice(1).forEach(function (id) { counts[id] = 0; });
+    var total = 0;
+    var automatic = 0;
+    var sourcebookPlanned = 0;
+    var manual = 0;
+    var planCounts = { balanced: 0, education: 0, artwork: 0 };
+    (Array.isArray(items) ? items : []).forEach(function (item) {
+      if (!item) return;
+      var rawPreparation = preparation && preparation[item.id];
+      var intent = resolvedUsageIntent(item, rawPreparation);
+      total += 1;
+      if (normalizedUsageIntent(rawPreparation && rawPreparation.usageIntent) === 'auto') automatic += 1;
+      else if (intent.planId) {
+        sourcebookPlanned += 1;
+        planCounts[intent.planId] += 1;
+      } else manual += 1;
+      if (Object.prototype.hasOwnProperty.call(counts, intent.id)) counts[intent.id] += 1;
+    });
+    return {
+      total: total,
+      automatic: automatic,
+      sourcebookPlanned: sourcebookPlanned,
+      manual: manual,
+      planCounts: planCounts,
+      counts: counts,
+      entries: USAGE_INTENT_ORDER.slice(1).map(function (id) {
+        return { id: id, label: USAGE_INTENTS[id].shortLabel, count: counts[id] };
+      }).filter(function (entry) { return entry.count > 0; }),
+      plans: USAGE_PLAN_ORDER.map(function (id) {
+        return { id: id, label: USAGE_PLANS[id].label, count: planCounts[id] };
+      }).filter(function (entry) { return entry.count > 0; })
+    };
   }
 
   function normalizedPreparation(value) {
@@ -2638,14 +3906,282 @@
     var x = Number(prep.x);
     var y = Number(prep.y);
     var tile = Number(prep.tile);
+    var usageIntent = normalizedUsageIntent(prep.usageIntent);
     return {
       mode: mode,
       aspect: mode === 'fit' ? 'original' : aspect,
       zoom: Math.max(100, Math.min(220, isFinite(zoom) ? zoom : 100)),
       x: Math.max(0, Math.min(100, isFinite(x) ? x : 50)),
       y: Math.max(0, Math.min(100, isFinite(y) ? y : 50)),
-      tile: Math.max(60, Math.min(360, isFinite(tile) ? tile : 180))
+      tile: Math.max(60, Math.min(360, isFinite(tile) ? tile : 180)),
+      usageIntent: usageIntent,
+      usagePlan: usageIntent === 'auto' ? '' : normalizedUsagePlanTag(prep.usagePlan),
+      decorative: prep.decorative === true,
+      altText: normalizedAltText(prep.altText),
+      altTextCustomized: prep.altTextCustomized === true,
+      altTextReviewed: prep.altTextReviewed === true || (prep.altTextCustomized === true && !!normalizedAltText(prep.altText))
     };
+  }
+
+  var USAGE_ROLE_KIND_SCORES = {
+    reference: { Maps: 70, Blueprints: 70, Science: 70, Botanical: 34, Archival: 22, 'Visual assets': 12 },
+    focal: { Archival: 60, Botanical: 55, 'Visual assets': 48, Science: 22, Maps: 18, Blueprints: 16 },
+    background: { Textures: 62, Patterns: 55, Maps: 28, Archival: 16, Botanical: 12 },
+    texture: { Textures: 80, Patterns: 74, Botanical: 14, Archival: 10 },
+    accent: { Patterns: 60, Archival: 34, Botanical: 28, Blueprints: 16, Textures: 14 },
+    flexible: { 'Visual assets': 12, Archival: 8, Botanical: 8 }
+  };
+  var USAGE_ROLE_TERMS = {
+    reference: /\b(?:diagram|map|plan|blueprint|chart|figure|anatom|technical|scientific|atlas|survey)\b/i,
+    focal: /\b(?:portrait|poster|print|illustration|photograph|painting|specimen|scene)\b/i,
+    background: /\b(?:background|landscape|field|wash|paper|surface|panorama)\b/i,
+    texture: /\b(?:texture|grain|pattern|surface|fabric|wood|stone|paper|marble)\b/i,
+    accent: /\b(?:border|ornament|motif|banner|header|strip|decorative|divider)\b/i
+  };
+
+  function usagePlanSlots(planId, count) {
+    var plan = USAGE_PLANS[normalizedUsagePlan(planId)];
+    var total = Math.max(0, Math.min(PALETTE_MAX_ASSETS, Number(count || 0)));
+    var slots = [];
+    while (slots.length < total) slots.push(plan.roles[slots.length % plan.roles.length]);
+    return slots;
+  }
+
+  function usageRoleScore(item, preparation, role) {
+    var prep = normalizedPreparation(preparation);
+    var kind = String(item && item.kind || 'Visual assets');
+    var scoreTable = USAGE_ROLE_KIND_SCORES[role] || {};
+    var score = Number(scoreTable[kind] || 0);
+    var metadata = [item && item.title, item && item.description].concat(item && item.tags || []).join(' ');
+    if (USAGE_ROLE_TERMS[role] && USAGE_ROLE_TERMS[role].test(metadata)) score += 18;
+    if (resolvedUsageIntent(item, prep).id === role) score += 20;
+    if (role === 'texture' && prep.mode === 'tile') score += 60;
+    if (role === 'accent' && prep.aspect === 'banner') score += 60;
+    if (role === 'background' && prep.aspect === 'landscape') score += 14;
+    if (role === 'focal' && prep.aspect === 'portrait') score += 10;
+    var width = normalizedPixelDimension(item && item.pixelWidth);
+    var height = normalizedPixelDimension(item && item.pixelHeight);
+    var ratio = width && height ? width / height : 0;
+    if ((role === 'reference' || role === 'focal') && width * height >= 3000000) score += 10;
+    if (role === 'background' && ratio >= 1.25) score += 14;
+    if (role === 'accent' && ratio >= 1.8) score += 18;
+    return score;
+  }
+
+  function planPaletteUsage(items, preparation, planValue) {
+    var planId = normalizedUsagePlan(planValue);
+    var plan = USAGE_PLANS[planId];
+    var prepById = preparation && typeof preparation === 'object' ? preparation : {};
+    var seen = {};
+    var rows = (Array.isArray(items) ? items : []).filter(function (item) {
+      if (!item || !item.id || seen[item.id] || !ALLOWED_RIGHTS[item.rightsType]) return false;
+      seen[item.id] = true;
+      return true;
+    }).slice(0, PALETTE_MAX_ASSETS).map(function (item, index) {
+      var prep = normalizedPreparation(prepById[item.id]);
+      var manual = prep.usageIntent !== 'auto' && !prep.usagePlan;
+      return {
+        item: item,
+        index: index,
+        preparation: prep,
+        scoringPreparation: prep.usagePlan ? Object.assign({}, prep, { usageIntent: 'auto', usagePlan: '' }) : prep,
+        manual: manual,
+        role: manual ? prep.usageIntent : ''
+      };
+    });
+    var slots = usagePlanSlots(planId, rows.length);
+    var preserved = 0;
+    rows.forEach(function (row) {
+      if (!row.manual) return;
+      preserved += 1;
+      var slotIndex = slots.indexOf(row.role);
+      if (slotIndex !== -1) slots.splice(slotIndex, 1);
+    });
+    var openRows = rows.filter(function (row) { return !row.manual; });
+    slots = slots.slice(0, openRows.length);
+    while (slots.length < openRows.length) slots.push('flexible');
+    var remaining = openRows.slice();
+    slots.forEach(function (role) {
+      remaining.sort(function (left, right) {
+        return usageRoleScore(right.item, right.scoringPreparation, role) - usageRoleScore(left.item, left.scoringPreparation, role)
+          || left.index - right.index;
+      });
+      var selected = remaining.shift();
+      if (selected) selected.role = role;
+    });
+    var plannedPreparation = {};
+    var changed = 0;
+    var planned = 0;
+    rows.forEach(function (row) {
+      if (row.manual) {
+        plannedPreparation[row.item.id] = Object.assign({}, row.preparation, { usagePlan: '' });
+        return;
+      }
+      var role = USAGE_INTENTS[row.role] ? row.role : 'flexible';
+      planned += 1;
+      if (row.preparation.usageIntent !== role || row.preparation.usagePlan !== planId) changed += 1;
+      plannedPreparation[row.item.id] = Object.assign({}, row.preparation, { usageIntent: role, usagePlan: planId });
+    });
+    return {
+      planId: planId,
+      label: plan.label,
+      description: plan.description,
+      preparation: plannedPreparation,
+      planned: planned,
+      changed: changed,
+      preserved: preserved,
+      assignments: rows.map(function (row) {
+        return {
+          id: row.item.id,
+          role: row.role,
+          label: (USAGE_INTENTS[row.role] || USAGE_INTENTS.flexible).label,
+          preserved: row.manual,
+          sourceLabel: row.manual ? 'user planned' : plan.sourceLabel
+        };
+      }),
+      summary: summarizeUsageIntents(rows.map(function (row) { return row.item; }), plannedPreparation)
+    };
+  }
+
+  function buildPaletteRoleBoard(items, preparation, planValue) {
+    var prepById = preparation && typeof preparation === 'object' ? preparation : {};
+    var seen = {};
+    var selected = (Array.isArray(items) ? items : []).filter(function (item) {
+      if (!item || !item.id || seen[item.id] || !ALLOWED_RIGHTS[item.rightsType]) return false;
+      seen[item.id] = true;
+      return true;
+    }).slice(0, PALETTE_MAX_ASSETS);
+    var planId = normalizedUsagePlanTag(planValue);
+    if (!planId) {
+      var planCounts = { balanced: 0, education: 0, artwork: 0 };
+      selected.forEach(function (item) {
+        var savedPlan = normalizedPreparation(prepById[item.id]).usagePlan;
+        if (savedPlan) planCounts[savedPlan] += 1;
+      });
+      USAGE_PLAN_ORDER.forEach(function (candidate) {
+        if (!planId || planCounts[candidate] > planCounts[planId]) planId = candidate;
+      });
+      if (!planCounts[planId]) planId = 'balanced';
+    }
+    var plan = USAGE_PLANS[planId];
+    var slots = usagePlanSlots(planId, selected.length);
+    var requiredByRole = {};
+    var itemsByRole = {};
+    USAGE_INTENT_ORDER.slice(1).forEach(function (roleId) {
+      requiredByRole[roleId] = 0;
+      itemsByRole[roleId] = [];
+    });
+    slots.forEach(function (roleId) {
+      if (Object.prototype.hasOwnProperty.call(requiredByRole, roleId)) requiredByRole[roleId] += 1;
+    });
+    selected.forEach(function (item) {
+      var intent = resolvedUsageIntent(item, prepById[item.id]);
+      var roleId = Object.prototype.hasOwnProperty.call(itemsByRole, intent.id) ? intent.id : 'flexible';
+      itemsByRole[roleId].push({
+        id: item.id,
+        title: item.title,
+        kind: item.kind,
+        provider: item.provider,
+        imageUrl: item.imageUrl,
+        rightsType: item.rightsType,
+        rightsShort: item.rightsShort,
+        sourceLabel: intent.sourceLabel
+      });
+    });
+    var groups = USAGE_INTENT_ORDER.slice(1).map(function (roleId) {
+      var intent = USAGE_INTENTS[roleId];
+      var count = itemsByRole[roleId].length;
+      var required = requiredByRole[roleId];
+      return {
+        id: roleId,
+        label: intent.label,
+        shortLabel: intent.shortLabel,
+        description: intent.description,
+        required: required,
+        count: count,
+        missing: Math.max(0, required - count),
+        items: itemsByRole[roleId]
+      };
+    }).filter(function (group) { return group.required > 0 || group.count > 0; });
+    var missing = groups.filter(function (group) { return group.missing > 0; });
+    var requiredSlots = slots.length;
+    var coveredSlots = groups.reduce(function (total, group) {
+      return total + Math.min(group.count, group.required);
+    }, 0);
+    var coveragePercent = requiredSlots ? Math.round(coveredSlots / requiredSlots * 100) : 0;
+    var missingLabel = missing.map(function (group) {
+      return group.shortLabel + ' ' + group.missing;
+    }).join(', ');
+    return {
+      planId: planId,
+      planLabel: plan.label,
+      description: plan.description,
+      total: selected.length,
+      requiredSlots: requiredSlots,
+      coveredSlots: coveredSlots,
+      coveragePercent: coveragePercent,
+      ready: requiredSlots > 0 && missing.length === 0,
+      groups: groups,
+      missing: missing,
+      missingLabel: missingLabel,
+      summary: plan.label + ' \\u00b7 ' + coveragePercent + '% role coverage' + (missingLabel ? ' \\u00b7 Suggested gaps: ' + missingLabel : '')
+    };
+  }
+
+  function accessibilityDescription(item, preparation) {
+    var prep = normalizedPreparation(preparation);
+    var suggestion = suggestedAltText(item);
+    if (prep.decorative) {
+      return { decorative: true, altText: '', source: 'decorative-choice', suggestion: suggestion, reviewed: true };
+    }
+    if (prep.altTextCustomized && prep.altText) {
+      return { decorative: false, altText: prep.altText, source: 'user-edited', suggestion: suggestion, reviewed: true };
+    }
+    return {
+      decorative: false,
+      altText: suggestion,
+      source: 'catalog-metadata',
+      suggestion: suggestion,
+      reviewed: prep.altTextReviewed === true
+    };
+  }
+
+  function accessibilityReviewStatus(item, preparation) {
+    var accessibility = accessibilityDescription(item, preparation);
+    var status = accessibility.decorative ? 'decorative' : (accessibility.reviewed ? 'confirmed' : 'suggested');
+    var label = status === 'decorative'
+      ? 'Decorative'
+      : (status === 'suggested' ? 'Review suggestion' : (accessibility.source === 'user-edited' ? 'User-edited' : 'Confirmed'));
+    return {
+      status: status,
+      label: label,
+      reviewed: accessibility.reviewed,
+      decorative: accessibility.decorative,
+      source: accessibility.source,
+      altText: accessibility.altText
+    };
+  }
+
+  function summarizeAccessibilityReview(items, preparation) {
+    var summary = { total: 0, suggested: 0, confirmed: 0, decorative: 0, userEdited: 0, reviewed: 0 };
+    (Array.isArray(items) ? items : []).forEach(function (item) {
+      if (!item) return;
+      var review = accessibilityReviewStatus(item, preparation && preparation[item.id]);
+      summary.total += 1;
+      summary[review.status] += 1;
+      if (review.source === 'user-edited') summary.userEdited += 1;
+    });
+    summary.reviewed = summary.confirmed + summary.decorative;
+    return summary;
+  }
+
+  function filterPaletteByAccessibility(items, preparation, value) {
+    var filter = ['all', 'suggested', 'confirmed', 'decorative'].indexOf(value) !== -1 ? value : 'all';
+    var list = Array.isArray(items) ? items : [];
+    if (filter === 'all') return list.slice();
+    return list.filter(function (item) {
+      return item && accessibilityReviewStatus(item, preparation && preparation[item.id]).status === filter;
+    });
   }
 
   function preparationDimensions(value) {
@@ -2741,13 +4277,148 @@
     };
   }
 
+  function palettePreflightItem(item, preparation, measured) {
+    var rightsVerified = !!(item && ALLOWED_RIGHTS[item.rightsType]);
+    var accessibility = accessibilityReviewStatus(item, preparation);
+    var readiness = printReadiness(item, preparation, measured);
+    var printStatus = 'verify';
+    if (readiness.status === 'ready') printStatus = 'ready';
+    else if (readiness.status === 'usable' || (readiness.status === 'preview' && readiness.label === 'Preview supports output')) printStatus = 'usable';
+    else if (readiness.status === 'low' || readiness.status === 'caution') printStatus = 'attention';
+    var issues = [];
+    if (!rightsVerified) issues.push('rights');
+    if (!accessibility.reviewed) issues.push('accessibility');
+    if (printStatus === 'attention' || printStatus === 'verify') issues.push('print');
+    return {
+      rightsVerified: rightsVerified,
+      attributionRequired: !!(item && item.rightsType === 'ccby'),
+      accessibilityStatus: accessibility.status,
+      accessibilityReviewed: accessibility.reviewed,
+      printStatus: printStatus,
+      printReadiness: readiness,
+      issues: issues
+    };
+  }
+
+  function summarizePalettePreflight(items, preparation, measuredDimensions) {
+    var summary = {
+      total: 0, rightsVerified: 0, rightsBlocked: 0,
+      accessibilityReviewed: 0, accessibilitySuggested: 0,
+      printReady: 0, printUsable: 0, printAttention: 0, printVerify: 0,
+      attributionRequired: 0, pendingChecks: 0, ready: false
+    };
+    (Array.isArray(items) ? items : []).forEach(function (item) {
+      if (!item) return;
+      var preflight = palettePreflightItem(item, preparation && preparation[item.id], measuredDimensions && measuredDimensions[item.id]);
+      summary.total += 1;
+      if (preflight.rightsVerified) summary.rightsVerified += 1;
+      else summary.rightsBlocked += 1;
+      if (preflight.accessibilityReviewed) summary.accessibilityReviewed += 1;
+      else summary.accessibilitySuggested += 1;
+      if (preflight.printStatus === 'ready') summary.printReady += 1;
+      else if (preflight.printStatus === 'usable') summary.printUsable += 1;
+      else if (preflight.printStatus === 'attention') summary.printAttention += 1;
+      else summary.printVerify += 1;
+      if (preflight.attributionRequired) summary.attributionRequired += 1;
+    });
+    summary.pendingChecks = summary.rightsBlocked + summary.accessibilitySuggested + summary.printAttention + summary.printVerify;
+    summary.ready = summary.total > 0 && summary.pendingChecks === 0;
+    return summary;
+  }
+
+  function palettePreflightLabel(summary) {
+    var value = summary && typeof summary === 'object' ? summary : summarizePalettePreflight([]);
+    var printSupported = Number(value.printReady || 0) + Number(value.printUsable || 0);
+    return value.rightsVerified + '/' + value.total + ' rights verified; '
+      + value.accessibilityReviewed + '/' + value.total + ' accessibility reviewed; '
+      + printSupported + '/' + value.total + ' print supported; '
+      + value.printAttention + ' print attention; ' + value.printVerify + ' verify full-size';
+  }
+
+  function palettePreflightRows(items, preparation, measuredDimensions) {
+    return (Array.isArray(items) ? items : []).filter(Boolean).map(function (item, index) {
+      var itemPreparation = preparation && preparation[item.id];
+      var preflight = palettePreflightItem(item, itemPreparation, measuredDimensions && measuredDimensions[item.id]);
+      var usageIntent = resolvedUsageIntent(item, itemPreparation);
+      var actions = [];
+      if (!preflight.rightsVerified) actions.push('Confirm reusable rights before output');
+      if (!preflight.accessibilityReviewed) actions.push('Review image purpose and alt text');
+      if (preflight.printStatus === 'attention') actions.push('Review print enlargement and fine detail');
+      else if (preflight.printStatus === 'verify') actions.push('Verify full-size pixel dimensions');
+      return {
+        number: index + 1,
+        id: String(item.id || '').slice(0, 180),
+        title: String(item.title || 'Untitled visual asset').replace(/\s+/g, ' ').trim().slice(0, 180),
+        provider: String(item.provider || 'Unknown source').replace(/\s+/g, ' ').trim().slice(0, 120),
+        usageIntent: usageIntent.id,
+        usageIntentLabel: usageIntent.label,
+        usageIntentSuggested: usageIntent.suggested,
+        usageIntentSource: usageIntent.source,
+        usageIntentSourceLabel: usageIntent.sourceLabel,
+        usageIntentPlanId: usageIntent.planId,
+        rightsLabel: String(item.rightsShort || item.license || 'Unknown rights').replace(/\s+/g, ' ').trim().slice(0, 160),
+        rightsVerified: preflight.rightsVerified,
+        accessibilityStatus: preflight.accessibilityStatus,
+        accessibilityReviewed: preflight.accessibilityReviewed,
+        accessibilityLabel: preflight.accessibilityReviewed
+          ? (preflight.accessibilityStatus === 'decorative' ? 'Decorative confirmed' : 'Reviewed')
+          : 'Review needed',
+        printStatus: preflight.printStatus,
+        printLabel: preflight.printReadiness.label,
+        printNote: preflight.printReadiness.note,
+        attributionRequired: preflight.attributionRequired,
+        status: preflight.issues.length ? 'review' : 'ready',
+        issues: preflight.issues.slice(),
+        actions: actions,
+        sourceUrl: safeHttpsUrl(item.sourceUrl)
+      };
+    });
+  }
+
+  function palettePreflightReport(items, preparation, measuredDimensions, title) {
+    var rows = palettePreflightRows(items, preparation, measuredDimensions);
+    var summary = summarizePalettePreflight(items, preparation, measuredDimensions);
+    var roleBoard = buildPaletteRoleBoard(items, preparation);
+    var reportTitle = String(title || 'My source palette').replace(/\s+/g, ' ').trim().slice(0, 80) || 'My source palette';
+    var lines = [
+      'SOURCEBOOK OUTPUT PREFLIGHT',
+      reportTitle,
+      '',
+      'Summary: ' + palettePreflightLabel(summary),
+      'Overall status: ' + (summary.ready ? 'Ready - all current evidence checks pass' : 'Review ' + summary.pendingChecks + ' remaining check' + (summary.pendingChecks === 1 ? '' : 's')),
+      'Visual set (advisory): ' + roleBoard.summary,
+      'Visual-set guidance never blocks output.',
+      ''
+    ];
+    rows.forEach(function (row) {
+      lines.push(row.number + '. ' + row.title + ' - ' + row.provider);
+      lines.push('Intended use: ' + row.usageIntentLabel + ' - ' + row.usageIntentSourceLabel);
+      lines.push('Rights: ' + (row.rightsVerified ? 'Verified - ' : 'Blocked - ') + row.rightsLabel);
+      lines.push('Accessibility: ' + row.accessibilityLabel);
+      lines.push('Print: ' + row.printLabel + ' - ' + row.printNote);
+      lines.push('Attribution: ' + (row.attributionRequired ? 'Required; credit is included in Sourcebook output' : 'Provenance is included; no CC BY credit required'));
+      if (row.actions.length) lines.push('Next: ' + row.actions.join('; '));
+      lines.push('Source: ' + (row.sourceUrl || 'See the saved Sourcebook source metadata'));
+      lines.push('');
+    });
+    return lines.join('\n').trim();
+  }
   function buildPageDesignerArtwork(item, preparation, dataUrl) {
     if (!item || !ALLOWED_RIGHTS[item.rightsType] || !/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(String(dataUrl || ''))) return null;
     var prep = normalizedPreparation(preparation);
+    var accessibility = accessibilityDescription(item, prep);
+    var usageIntent = resolvedUsageIntent(item, prep);
     return {
       src: dataUrl,
       title: String(item.title || 'Sourcebook visual asset').slice(0, 120),
-      altText: String(item.description || item.title || 'Sourcebook visual asset').replace(/\s+/g, ' ').trim().slice(0, 300),
+      altText: accessibility.altText,
+      decorative: accessibility.decorative,
+      altTextSource: accessibility.source,
+      altTextReviewed: accessibility.reviewed,
+      usageIntent: usageIntent.id,
+      usageIntentLabel: usageIntent.label,
+      usageIntentSource: usageIntent.sourceLabel,
+      usagePlan: usageIntent.planId,
       sourceTool: 'sourcebook',
       sourceTab: String(item.provider || '').slice(0, 60),
       assetId: String(item.id || '').slice(0, 100),
@@ -2761,7 +4432,7 @@
       sourcePixelWidth: normalizedPixelDimension(item.pixelWidth),
       sourcePixelHeight: normalizedPixelDimension(item.pixelHeight),
       printReadiness: printReadiness(item, prep).label,
-      preparation: prep,
+      preparation: Object.assign({}, prep, { usageIntent: usageIntent.id }),
       createdAt: Date.now()
     };
   }
@@ -2865,6 +4536,7 @@
       var cellWidth = 240;
       var cellHeight = 190;
       var canvas = window.document.createElement('canvas');
+      canvas.setAttribute('aria-hidden', 'true');
       canvas.width = columns * cellWidth;
       canvas.height = Math.ceil(rows.length / columns) * cellHeight;
       var painter = canvas.getContext && canvas.getContext('2d');
@@ -2959,10 +4631,20 @@
     var info = preparedImageInfo(dataUrl);
     if (!item || !ALLOWED_RIGHTS[item.rightsType] || !info) return '';
     var prep = normalizedPreparation(preparation);
+    var usageIntent = resolvedUsageIntent(item, prep);
     var slug = sourcebookSlug(item.title, 'sourcebook-asset');
     var sourceUrl = /^https:\/\//i.test(String(item.sourceUrl || '')) ? String(item.sourceUrl) : '';
     var licenseUrl = /^https:\/\//i.test(String(item.licenseUrl || '')) ? String(item.licenseUrl) : '';
     var preparationLabel = preparationDescription(prep);
+    var accessibility = accessibilityDescription(item, prep);
+    var accessibilityBasis = accessibility.source === 'user-edited'
+      ? 'User-edited'
+      : (accessibility.decorative ? 'User marked decorative' : 'Catalog metadata');
+    var imagePurpose = accessibility.decorative ? 'Decorative' : 'Informative';
+    var packagedAltText = accessibility.decorative ? 'Empty alt text (alt="")' : accessibility.altText;
+    var accessibilityReviewLabel = accessibility.decorative
+      ? 'Decorative choice confirmed'
+      : (accessibility.reviewed ? 'Confirmed in Sourcebook' : 'Review before publishing');
     var packageReadiness = printReadiness(item, prep);
     var resolutionLabel = packageReadiness.width
       ? packageReadiness.label + ' - ' + packageReadiness.width + ' x ' + packageReadiness.height + ' px; ' + packageReadiness.print300
@@ -2971,12 +4653,12 @@
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escapeHtml(item.title) + ' - Sourcebook source package</title><style>'
       + '@page{margin:.55in}*{box-sizing:border-box}body{margin:0;background:#eef2ed;color:#18352d;font:15px/1.5 system-ui,sans-serif}.sheet{width:min(900px,calc(100% - 32px));margin:24px auto;background:#fff;border:1px solid #aebeb6;border-radius:20px;overflow:hidden;box-shadow:0 15px 45px #18352d22}.head{padding:24px 28px;background:#e6eee9;border-bottom:1px solid #bdccc5}.eyebrow{margin:0;color:#547066;font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase}h1{margin:5px 0 2px;font:800 32px Georgia,serif}.sub{margin:0;color:#53675f}.visual{padding:28px;background:#f6f3ea;text-align:center}.visual img{display:block;max-width:100%;max-height:680px;margin:auto;object-fit:contain;border:1px solid #d0d7d3;background:#fff}.actions{display:flex;flex-wrap:wrap;gap:10px;padding:0 28px 20px}.button{display:inline-flex;min-height:44px;align-items:center;padding:0 16px;border-radius:10px;background:#245a49;color:#fff;font-weight:800;text-decoration:none}.button.alt{background:#fff;color:#245a49;border:1px solid #8ba79b}.details{padding:0 28px 28px}.rights{padding:16px;border-left:5px solid #219268;background:#eef8f3;margin-bottom:18px}.rights strong{display:block;font-size:18px}.rights p{margin:5px 0}.details dl{display:grid;grid-template-columns:150px 1fr;gap:8px 14px}.details dt{font-weight:800}.details dd{margin:0;overflow-wrap:anywhere}.credit{padding:14px;background:#f5f3ed;border:1px solid #d7d4ca;overflow-wrap:anywhere}.notice{font-size:12px;color:#586a63}.screen-note{font-size:12px;color:#586a63;margin-left:auto;align-self:center}@media(max-width:600px){.details dl{grid-template-columns:1fr}.sheet{width:100%;margin:0;border:0;border-radius:0}.screen-note{width:100%}}@media print{body{background:#fff}.sheet{width:100%;margin:0;border:0;box-shadow:none}.actions{padding-bottom:8px}.button,.screen-note{display:none}.visual{padding:12px}.visual img{max-height:6.4in}}'
       + '</style></head><body><main class="sheet"><header class="head"><p class="eyebrow">Sourcebook prepared visual asset</p><h1>' + escapeHtml(item.title) + '</h1><p class="sub">' + escapeHtml(item.creator) + ' &middot; ' + escapeHtml(item.year) + ' &middot; ' + escapeHtml(item.provider) + '</p></header>'
-      + '<section class="visual" aria-label="Prepared asset"><img src="' + dataUrl + '" alt="' + escapeHtml(item.description || item.title) + '"></section>'
+      + '<section class="visual"><img src="' + dataUrl + '" alt="' + escapeHtml(accessibility.altText) + '"></section>'
       + '<nav class="actions" aria-label="Source package actions"><a class="button" href="' + dataUrl + '" download="' + slug + '.' + info.extension + '">Save prepared image</a>'
       + (sourceUrl ? '<a class="button alt" href="' + escapeHtml(sourceUrl) + '">Open source record</a>' : '')
       + '<span class="screen-note">Use your browser\'s Print command for a source sheet.</span></nav>'
       + '<section class="details"><div class="rights"><strong>' + escapeHtml(item.license) + '</strong><p>' + escapeHtml(item.rightsNote) + '</p>' + licenseLink + '</div>'
-      + '<dl><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Material type</dt><dd>' + escapeHtml(item.kind) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd><dt>Source record</dt><dd>' + (sourceUrl ? '<a href="' + escapeHtml(sourceUrl) + '">' + escapeHtml(sourceUrl) + '</a>' : 'See provider record') + '</dd></dl>'
+      + '<dl><dt>Intended use</dt><dd>' + escapeHtml(usageIntent.label + ' - ' + usageIntent.sourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd><dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Material type</dt><dd>' + escapeHtml(item.kind) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd><dt>Source record</dt><dd>' + (sourceUrl ? '<a href="' + escapeHtml(sourceUrl) + '">' + escapeHtml(sourceUrl) + '</a>' : 'See provider record') + '</dd></dl>'
       + '<h2>Credit and provenance</h2><p class="credit">' + escapeHtml(attributionText(item)) + '</p><p class="notice">This item passed Sourcebook\'s Public Domain, CC0, or CC BY allowlist. Rights metadata is reproduced from the linked item record; verify that record for your intended use.</p></section></main></body></html>';
   }
 
@@ -3010,27 +4692,43 @@
     if (!selected.length || selected.some(function (item) { return !item || !ALLOWED_RIGHTS[item.rightsType]; })) return '';
     var packageTitle = String(title || 'My source palette').slice(0, 80);
     var rightsCounts = { pd: 0, cc0: 0, ccby: 0 };
+    var packagePreflight = summarizePalettePreflight(selected, prep);
+    var packagePreflightSummary = palettePreflightLabel(packagePreflight);
+    var packageRoleBoard = buildPaletteRoleBoard(selected, prep);
     var cards = selected.map(function (item, index) {
       var dataUrl = String(images[item.id] || '');
       var info = preparedImageInfo(dataUrl);
       if (!info) return '';
       var itemPrep = normalizedPreparation(prep[item.id]);
+      var accessibility = accessibilityDescription(item, itemPrep);
+      var accessibilityBasis = accessibility.source === 'user-edited'
+        ? 'User-edited'
+        : (accessibility.decorative ? 'User marked decorative' : 'Catalog metadata');
+      var imagePurpose = accessibility.decorative ? 'Decorative' : 'Informative';
+      var packagedAltText = accessibility.decorative ? 'Empty alt text (alt="")' : accessibility.altText;
+      var accessibilityReviewLabel = accessibility.decorative
+        ? 'Decorative choice confirmed'
+        : (accessibility.reviewed ? 'Confirmed in Sourcebook' : 'Review before publishing');
       var slug = sourcebookSlug(item.title, 'sourcebook-asset');
       var sourceUrl = /^https:\/\//i.test(String(item.sourceUrl || '')) ? String(item.sourceUrl) : '';
       var licenseUrl = /^https:\/\//i.test(String(item.licenseUrl || '')) ? String(item.licenseUrl) : '';
       rightsCounts[item.rightsType] += 1;
       var preparationLabel = preparationDescription(itemPrep);
       var itemReadiness = printReadiness(item, itemPrep);
+      var itemPreflightRow = palettePreflightRows([item], prep)[0];
+      var itemPreflightNote = itemPreflightRow.status === 'ready'
+        ? 'Ready - all current evidence checks pass'
+        : 'Review - ' + itemPreflightRow.actions.join('; ');
       var resolutionLabel = itemReadiness.width
         ? itemReadiness.label + ' - ' + itemReadiness.width + ' x ' + itemReadiness.height + ' px; ' + itemReadiness.print300
         : itemReadiness.label + ' - verify the full-size image dimensions at the source record';
-      return '<article class="asset"><div class="number">' + (index + 1) + '</div><div class="visual"><img src="' + dataUrl + '" alt="' + escapeHtml(item.description || item.title) + '"></div>'
+      return '<article class="asset"><div class="number">' + (index + 1) + '</div><div class="visual"><img src="' + dataUrl + '" alt="' + escapeHtml(accessibility.altText) + '"></div>'
         + '<div class="asset-body"><p class="kind">' + escapeHtml(item.kind) + '</p><h2>' + escapeHtml(item.title) + '</h2><p class="meta">' + escapeHtml(item.creator) + ' &middot; ' + escapeHtml(item.year) + ' &middot; ' + escapeHtml(item.provider) + '</p>'
         + '<div class="asset-actions"><a class="button" href="' + dataUrl + '" download="' + slug + '.' + info.extension + '">Save prepared image</a>'
         + (sourceUrl ? '<a class="button alt" href="' + escapeHtml(sourceUrl) + '">Open source record</a>' : '') + '</div>'
         + '<div class="rights"><strong>' + escapeHtml(item.license) + '</strong><p>' + escapeHtml(item.rightsNote) + '</p>'
         + (licenseUrl ? '<a href="' + escapeHtml(licenseUrl) + '">Review license terms</a>' : '') + '</div>'
-        + '<dl><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd></dl>'
+        + '<dl><dt>Output preflight</dt><dd>' + escapeHtml(itemPreflightNote) + '</dd><dt>Intended use</dt><dd>' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</dd><dt>Preparation</dt><dd>' + escapeHtml(preparationLabel) + '</dd><dt>Image purpose</dt><dd>' + escapeHtml(imagePurpose) + '</dd><dt>Alt text</dt><dd>' + escapeHtml(packagedAltText) + '</dd><dt>Alt text basis</dt><dd>' + escapeHtml(accessibilityBasis) + '</dd><dt>Alt text review</dt><dd>' + escapeHtml(accessibilityReviewLabel) + '</dd><dt>Print readiness</dt><dd>' + escapeHtml(resolutionLabel) + '</dd><dt>Rights metadata</dt><dd>' + escapeHtml(item.rightsMetadataSource || 'Curated source record') + '</dd></dl>'
         + '<h3>Credit and provenance</h3><p class="credit">' + escapeHtml(attributionText(item)) + '</p></div></article>';
     });
     if (cards.some(function (card) { return !card; })) return '';
@@ -3041,7 +4739,8 @@
     ].filter(Boolean).join(' &middot; ');
     return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="sourcebook-rights-policy" content="allowlist:public-domain,cc0,cc-by"><title>' + escapeHtml(packageTitle) + ' - Sourcebook palette package</title><style>'
       + '@page{margin:.45in}*{box-sizing:border-box}body{margin:0;background:#edf1ed;color:#18352d;font:14px/1.45 system-ui,sans-serif}.book{width:min(1080px,calc(100% - 32px));margin:24px auto}.book-head{padding:28px;background:#183b32;color:#fff;border-radius:22px}.eyebrow,.kind{margin:0;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.eyebrow{color:#b9d2c8}h1{font:800 34px Georgia,serif;margin:6px 0}.summary{margin:0;color:#d7e5df}.instructions{margin:14px 0 0;padding:11px 14px;background:#294f44;border-radius:12px;font-size:12px}.asset{position:relative;margin:20px 0;background:#fff;border:1px solid #b8c7c0;border-radius:20px;overflow:hidden;break-inside:avoid;box-shadow:0 12px 30px #18352d15}.number{position:absolute;z-index:1;top:12px;left:12px;display:grid;place-items:center;width:34px;height:34px;border-radius:50%;background:#183b32;color:#fff;font-weight:900}.visual{min-height:300px;padding:24px;background:#f5f1e8;display:grid;place-items:center}.visual img{display:block;max-width:100%;max-height:620px;border:1px solid #d1d8d4;background:#fff}.asset-body{padding:24px}.kind{color:#557066}h2{font:800 25px Georgia,serif;margin:4px 0}.meta{margin:0 0 14px;color:#5c6e66}.asset-actions{display:flex;flex-wrap:wrap;gap:9px;margin:14px 0}.button{display:inline-flex;min-height:42px;align-items:center;padding:0 14px;border-radius:10px;background:#245a49;color:#fff;font-weight:800;text-decoration:none}.button.alt{background:#fff;color:#245a49;border:1px solid #8ba79b}.rights{padding:14px;border-left:5px solid #219268;background:#eef8f3}.rights strong{font-size:16px}.rights p{margin:4px 0}.asset dl{display:grid;grid-template-columns:130px 1fr;gap:6px 12px}.asset dt{font-weight:900}.asset dd{margin:0;overflow-wrap:anywhere}h3{font:800 17px Georgia,serif;margin:16px 0 6px}.credit{margin:0;padding:12px;background:#f5f3ed;border:1px solid #d7d4ca;overflow-wrap:anywhere}.notice{padding:18px 22px;background:#fff;border:1px solid #c5d0cb;border-radius:14px;color:#596c64;font-size:11px}@media(max-width:620px){.book{width:100%;margin:0}.book-head,.asset,.notice{border-radius:0}.asset dl{grid-template-columns:1fr}}@media print{body{background:#fff}.book{width:100%;margin:0}.book-head{border-radius:0;padding:18px 20px}.instructions,.asset-actions{display:none}.asset{box-shadow:none;margin:14px 0}.visual{min-height:0;padding:12px}.visual img{max-height:5.7in}.asset-body{padding:16px}.notice{border:0;padding:10px 0}}'
-      + '</style></head><body><main class="book" data-sourcebook-schema="org.owlflow.sourcebook-palette-package" data-sourcebook-version="1"><header class="book-head"><p class="eyebrow">Sourcebook prepared palette</p><h1>' + escapeHtml(packageTitle) + '</h1><p class="summary">' + selected.length + ' prepared visual asset' + (selected.length === 1 ? '' : 's') + ' &middot; ' + rightsSummary + '</p><p class="instructions">Each image is embedded in this file for offline reuse. Use each Save prepared image link, or use your browser\'s Print command to create a source sheet or PDF.</p></header>'
+      + '</style></head><body><main class="book" data-sourcebook-schema="org.owlflow.sourcebook-palette-package" data-sourcebook-version="1" data-sourcebook-preflight="' + (packagePreflight.ready ? 'ready' : 'review') + '"><header class="book-head"><p class="eyebrow">Sourcebook prepared palette</p><h1>' + escapeHtml(packageTitle) + '</h1><p class="summary">' + selected.length + ' prepared visual asset' + (selected.length === 1 ? '' : 's') + ' &middot; ' + rightsSummary + '</p><p class="instructions"><strong>Output preflight:</strong> ' + escapeHtml(packagePreflightSummary) + '. Each image is embedded in this file for offline reuse. Use each Save prepared image link, or use your browser\'s Print command to create a source sheet or PDF.</p></header>'
+      + '<section class="notice" style="margin:20px 0" data-sourcebook-role-plan="' + escapeHtml(packageRoleBoard.planId) + '" data-sourcebook-role-coverage="' + packageRoleBoard.coveragePercent + '"><strong>Visual set map (advisory):</strong> ' + escapeHtml(packageRoleBoard.summary) + '. Missing roles never block output.</section>'
       + cards.join('') + '<footer class="notice"><strong>Reuse safeguard:</strong> Every item in this package passed Sourcebook\'s strict Public Domain, CC0, or CC BY allowlist. Rights metadata and attribution are reproduced from linked item records; verify each source record for your intended use.</footer></main></body></html>';
   }
 
@@ -3067,6 +4766,18 @@
       seen[item.id] = true;
       return true;
     });
+  }
+
+  function mergeRecoveredProviderItems(current, recovered, scope) {
+    var retained = mergeAssets([], Array.isArray(current) ? current : []).filter(function (item) {
+      return allowedByRightsScope(item, scope || 'all');
+    });
+    var known = {};
+    retained.forEach(function (item) { known[item.id] = true; });
+    var additions = mergeAssets([], Array.isArray(recovered) ? recovered : []).filter(function (item) {
+      return allowedByRightsScope(item, scope || 'all') && !known[item.id];
+    });
+    return { items: retained.concat(additions), additions: additions };
   }
 
   function buildPaletteManifest(ids, preparation, title, extraAssets) {
@@ -3110,9 +4821,20 @@
           rightsMetadataSource: item.rightsMetadataSource || 'Curated source record',
           preparation: normalizedPreparation(prep[item.id])
         };
+        if (item.provider === MUSEUMS_VICTORIA_PROVIDER) {
+          var museumsVictoriaIdentity = museumsVictoriaIdentityFromAsset(item);
+          asset.mvRecordPath = museumsVictoriaIdentity ? museumsVictoriaIdentity.recordPath : '';
+          asset.mvMediaId = museumsVictoriaIdentity ? museumsVictoriaIdentity.mediaId : '';
+        }
         if (item.provider === SMK_PROVIDER) {
           asset.objectNumber = smkObjectNumberFromAsset(item);
           asset.providerRecordId = normalizedSmkProviderRecordId(item.providerRecordId);
+        }
+        if (item.provider === YALE_PROVIDER) {
+          asset.providerRecordId = String(item.providerRecordId || '');
+          asset.yaleLuxId = String(item.yaleLuxId || '');
+          asset.yaleManifestUrl = safeYaleManifestUrl(item.yaleManifestUrl);
+          asset.yaleIiifServiceUrl = yaleIiifServiceFromAsset(item);
         }
         return asset;
       })
@@ -3139,18 +4861,28 @@
     var popup = window.open('', '_blank');
     if (!popup) return false;
     try { popup.opener = null; } catch (_) {}
+    var printPreflight = summarizePalettePreflight(items, preparation);
+    var printPreflightSummary = palettePreflightLabel(printPreflight);
     var cards = items.map(function (item) {
-      var prep = preparation[item.id] || { mode: 'fit', zoom: 100, x: 50, y: 50, tile: 180 };
+      var prep = normalizedPreparation(preparation[item.id]);
+      var accessibility = accessibilityDescription(item, prep);
+      var accessibilityNote = accessibility.decorative
+        ? 'Decorative; uses empty alt text.'
+        : 'Informative; alt text: ' + accessibility.altText + (accessibility.reviewed ? ' Review confirmed.' : ' Catalog suggestion; review before publishing.');
+      var itemPreflightRow = palettePreflightRows([item], preparation)[0];
+      var itemPreflightNote = itemPreflightRow.status === 'ready'
+        ? 'Ready - all current evidence checks pass.'
+        : 'Review - ' + itemPreflightRow.actions.join('; ') + '.';
       var visual;
       if (prep.mode === 'tile') {
-        visual = '<div class="tile" style="background-image:url(&quot;' + escapeHtml(item.imageUrl) + '&quot;);background-size:' + Number(prep.tile || 180) + 'px auto"></div>';
+        visual = '<div class="tile"' + (accessibility.decorative ? ' aria-hidden="true"' : ' role="img" aria-label="' + escapeHtml(accessibility.altText) + '"') + ' style="background-image:url(&quot;' + escapeHtml(item.imageUrl) + '&quot;);background-size:' + Number(prep.tile || 180) + 'px auto"></div>';
       } else {
-        visual = '<div class="image"><img src="' + escapeHtml(item.imageUrl) + '" alt="" style="object-fit:' + (prep.mode === 'crop' ? 'cover' : 'contain') + ';object-position:' + Number(prep.x || 50) + '% ' + Number(prep.y || 50) + '%;transform:scale(' + (Number(prep.zoom || 100) / 100) + ')"></div>';
+        visual = '<div class="image"><img src="' + escapeHtml(item.imageUrl) + '" alt="' + escapeHtml(accessibility.altText) + '" style="object-fit:' + (prep.mode === 'crop' ? 'cover' : 'contain') + ';object-position:' + Number(prep.x || 50) + '% ' + Number(prep.y || 50) + '%;transform:scale(' + (Number(prep.zoom || 100) / 100) + ')"></div>';
       }
-      return '<article>' + visual + '<h2>' + escapeHtml(item.title) + '</h2><p class="meta">' + escapeHtml(item.creator) + ' · ' + escapeHtml(item.year) + '</p><p><strong>' + escapeHtml(item.license) + '</strong> — ' + escapeHtml(item.rightsNote) + '</p><p class="url">Credit: ' + escapeHtml(attributionText(item)) + '</p></article>';
+      return '<article>' + visual + '<h2>' + escapeHtml(item.title) + '</h2><p class="meta">' + escapeHtml(item.creator) + ' · ' + escapeHtml(item.year) + '</p><p class="usage"><strong>Intended use:</strong> ' + escapeHtml(itemPreflightRow.usageIntentLabel + ' - ' + itemPreflightRow.usageIntentSourceLabel) + '</p><p class="preflight"><strong>Output preflight:</strong> ' + escapeHtml(itemPreflightNote) + '</p><p class="accessibility"><strong>Accessibility:</strong> ' + escapeHtml(accessibilityNote) + '</p><p><strong>' + escapeHtml(item.license) + '</strong> — ' + escapeHtml(item.rightsNote) + '</p><p class="url">Credit: ' + escapeHtml(attributionText(item)) + '</p></article>';
     }).join('');
     popup.document.open();
-    popup.document.write('<!doctype html><html><head><title>' + escapeHtml(title || 'Sourcebook palette') + '</title><style>@page{margin:.45in}*{box-sizing:border-box}body{font:11px/1.35 system-ui,sans-serif;color:#17221d;margin:0}header{border-bottom:2px solid #17221d;margin-bottom:16px;padding-bottom:10px}h1{font:700 28px Georgia,serif;margin:0}header p{margin:4px 0 0;color:#52635b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}article{break-inside:avoid;border:1px solid #b8c4bd;padding:10px;background:white}.image,.tile{height:260px;overflow:hidden;background:#eef1ed}.image img{width:100%;height:100%;display:block}.tile{background-repeat:repeat}h2{font:700 17px Georgia,serif;margin:9px 0 2px}.meta{color:#52635b;margin:0 0 7px}p{margin:4px 0}.url{font-size:9px;overflow-wrap:anywhere;border-top:1px solid #d9dfdb;padding-top:6px}.notice{font-size:9px;margin-top:18px;color:#52635b}@media print{.screen{display:none}}</style></head><body><header><h1>' + escapeHtml(title || 'Sourcebook palette') + '</h1><p>Prepared visual assets with source and reuse notes</p></header><main class="grid">' + cards + '</main><p class="notice">Every item in this sheet passed Sourcebook’s strict Public Domain, CC0, or CC BY allowlist. Rights metadata and attribution are reproduced from linked item records; verify the source record for your intended use.</p><script>window.addEventListener("load",function(){setTimeout(function(){window.print()},350)})<\/script></body></html>');
+    popup.document.write('<!doctype html><html><head><title>' + escapeHtml(title || 'Sourcebook palette') + '</title><style>@page{margin:.45in}*{box-sizing:border-box}body{font:11px/1.35 system-ui,sans-serif;color:#17221d;margin:0}header{border-bottom:2px solid #17221d;margin-bottom:16px;padding-bottom:10px}h1{font:700 28px Georgia,serif;margin:0}header p{margin:4px 0 0;color:#52635b}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}article{break-inside:avoid;border:1px solid #b8c4bd;padding:10px;background:white}.image,.tile{height:260px;overflow:hidden;background:#eef1ed}.image img{width:100%;height:100%;display:block}.tile{background-repeat:repeat}h2{font:700 17px Georgia,serif;margin:9px 0 2px}.meta{color:#52635b;margin:0 0 7px}p{margin:4px 0}.url{font-size:9px;overflow-wrap:anywhere;border-top:1px solid #d9dfdb;padding-top:6px}.notice{font-size:9px;margin-top:18px;color:#52635b}@media print{.screen{display:none}}</style></head><body><header><h1>' + escapeHtml(title || 'Sourcebook palette') + '</h1><p>Output preflight: ' + escapeHtml(printPreflightSummary) + '</p><p>Prepared visual assets with source and reuse notes</p></header><main class="grid">' + cards + '</main><p class="notice">Every item in this sheet passed Sourcebook’s strict Public Domain, CC0, or CC BY allowlist. Rights metadata and attribution are reproduced from linked item records; verify the source record for your intended use.</p><script>window.addEventListener("load",function(){setTimeout(function(){window.print()},350)})<\/script></body></html>');
     popup.document.close();
     return true;
   }
@@ -3168,10 +4900,11 @@
   }
 
   window.SourcebookProviders = {
-    version: 38,
+    version: 54,
     paletteMaxAssets: PALETTE_MAX_ASSETS,
     liveProviderNames: LIVE_PROVIDER_NAMES.slice(),
     providers: PROVIDERS,
+    providerPresentation: providerPresentation,
     materials: MATERIALS.slice(),
     searchCurated: searchMaterials,
     searchOpen: searchOpenSources,
@@ -3181,20 +4914,36 @@
     searchBhl: searchBhlLive,
     searchNara: searchNaraLive,
     searchSmk: searchSmkLive,
+    searchYale: searchYaleLive,
     searchMet: searchMetLive,
     searchAic: searchAicLive,
     searchCma: searchCmaLive,
     searchLoc: searchLocLive,
     searchWellcome: searchWellcomeLive,
     searchGetty: searchGettyLive,
+    searchMuseumsVictoria: searchMuseumsVictoriaLive,
     searchOpenverse: searchOpenverseLive,
     normalizeSearchPage: normalizedSearchPage,
     providerRequestContext: providerRequestContext,
     retryAfterMilliseconds: retryAfterMilliseconds,
     runProviderSearch: runProviderSearch,
+    providerReportCanRetry: providerReportCanRetry,
+    providerReportCanSearchDeeper: providerReportCanSearchDeeper,
+    providerReportTargetBatch: providerReportTargetBatch,
+    buildProviderCoverageGuide: buildProviderCoverageGuide,
+    mergeRecoveredProviderItems: mergeRecoveredProviderItems,
+    liveProviderLimit: liveProviderLimit,
+    liveSearchLimitProfile: liveSearchLimitProfile,
+    liveResultLimit: liveResultLimit,
     normalizeSearchHistory: normalizeSearchHistory,
     normalizePaletteTarget: normalizePaletteTarget,
     filterAndSortBoard: filterAndSortBoard,
+    filterLoadedResultsByFacets: filterLoadedResultsByFacets,
+    filterLoadedResultsByProvider: filterLoadedResultsByProvider,
+    loadedProviderCoverage: loadedProviderCoverage,
+    loadedKindCoverage: loadedKindCoverage,
+    loadedRightsCoverage: loadedRightsCoverage,
+    discoveryBatchRoute: discoveryBatchRoute,
     buildLiveSession: buildLiveSession,
     normalizeLiveSession: normalizeLiveSession,
     revalidateLiveSession: revalidateLiveSession,
@@ -3217,6 +4966,12 @@
     normalizeCommonsPage: commonsItemFromPage,
     normalizeSmkRights: normalizeSmkRights,
     normalizeSmkArtwork: smkItemFromArtwork,
+    normalizeYaleManifest: yaleItemFromManifest,
+    normalizeYaleRecordLinks: yaleRecordLinks,
+    normalizeYaleLuxId: normalizedYaleLuxId,
+    yaleIdentityFromAsset: yaleIdentityFromAsset,
+    fetchYaleAssets: fetchYaleAssetsByIdentities,
+    revalidateSourceVerifiedAssets: revalidateImportedSourceVerifiedAssets,
     fetchSmkArtwork: fetchSmkArtworkByObjectNumber,
     fetchSmkArtworks: fetchSmkArtworksByObjectNumbers,
     normalizeMetObject: metItemFromObject,
@@ -3229,6 +4984,10 @@
     normalizeGettyRights: normalizeGettyMediaRights,
     normalizeGettyImage: gettyImageFromRecords,
     gettySearchTerms: gettySearchTerms,
+    normalizeMuseumsVictoriaRights: normalizeMuseumsVictoriaMediaRights,
+    normalizeMuseumsVictoriaRecord: museumsVictoriaItemsFromRecord,
+    museumsVictoriaIdentityFromAsset: museumsVictoriaIdentityFromAsset,
+    fetchMuseumsVictoriaAssets: fetchMuseumsVictoriaAssetsByIdentities,
     normalizeOpenverseRights: normalizeOpenverseRights,
     normalizeOpenverseImage: openverseItemFromRecord,
     openverseLicenseFilter: openverseLicenseFilter,
@@ -3237,6 +4996,23 @@
     normalizePalette: normalizePaletteManifest,
     revalidatePalette: revalidatePaletteManifest,
     buildPalette: buildPaletteManifest,
+    normalizeAltText: normalizedAltText,
+    suggestAltText: suggestedAltText,
+    accessibilityDescription: accessibilityDescription,
+    accessibilityReviewStatus: accessibilityReviewStatus,
+    summarizeAccessibilityReview: summarizeAccessibilityReview,
+    filterPaletteByAccessibility: filterPaletteByAccessibility,
+    palettePreflightItem: palettePreflightItem,
+    summarizePalettePreflight: summarizePalettePreflight,
+    palettePreflightLabel: palettePreflightLabel,
+    palettePreflightRows: palettePreflightRows,
+    palettePreflightReport: palettePreflightReport,
+    normalizeUsageIntent: normalizedUsageIntent,
+    normalizeUsagePlan: normalizedUsagePlan,
+    resolveUsageIntent: resolvedUsageIntent,
+    summarizeUsageIntents: summarizeUsageIntents,
+    planPaletteUsage: planPaletteUsage,
+    buildPaletteRoleBoard: buildPaletteRoleBoard,
     normalizePreparation: normalizedPreparation,
     preparationDimensions: preparationDimensions,
     preparationDescription: preparationDescription,
@@ -3305,9 +5081,24 @@
       var _boardFilterState = React.useState('');
       var boardFilter = _boardFilterState[0];
       var setBoardFilter = _boardFilterState[1];
+      var _loadedProviderFilterState = React.useState('All');
+      var loadedProviderFilter = _loadedProviderFilterState[0];
+      var setLoadedProviderFilter = _loadedProviderFilterState[1];
+      var _loadedKindFilterState = React.useState('All');
+      var loadedKindFilter = _loadedKindFilterState[0];
+      var setLoadedKindFilter = _loadedKindFilterState[1];
+      var _loadedRightsFilterState = React.useState('All');
+      var loadedRightsFilter = _loadedRightsFilterState[0];
+      var setLoadedRightsFilter = _loadedRightsFilterState[1];
+      var _boardVisibleLimitState = React.useState(BOARD_RENDER_STEP);
+      var boardVisibleLimit = _boardVisibleLimitState[0];
+      var setBoardVisibleLimit = _boardVisibleLimitState[1];
       var _paletteFilterState = React.useState('');
       var paletteFilter = _paletteFilterState[0];
       var setPaletteFilter = _paletteFilterState[1];
+      var _paletteAccessibilityFilterState = React.useState('all');
+      var paletteAccessibilityFilter = _paletteAccessibilityFilterState[0];
+      var setPaletteAccessibilityFilter = _paletteAccessibilityFilterState[1];
       var _paletteSelectionState = React.useState([]);
       var checkedPaletteIds = _paletteSelectionState[0];
       var setCheckedPaletteIds = _paletteSelectionState[1];
@@ -3317,6 +5108,12 @@
       var _boardViewState = React.useState(storedBoardView);
       var boardView = _boardViewState[0];
       var setBoardView = _boardViewState[1];
+      var _comparisonState = React.useState([]);
+      var comparisonIds = _comparisonState[0];
+      var setComparisonIds = _comparisonState[1];
+      var _comparisonOpenState = React.useState(false);
+      var comparisonOpen = _comparisonOpenState[0];
+      var setComparisonOpen = _comparisonOpenState[1];
       var _mobileDetailState = React.useState(false);
       var mobileDetailOpen = _mobileDetailState[0];
       var setMobileDetailOpen = _mobileDetailState[1];
@@ -3346,12 +5143,15 @@
       var setLiveStatus = _liveStatusState[1];
       var _liveMessageState = React.useState(storedLiveSession
         ? 'Restored ' + storedLiveSession.results.length + ' rights-verified results from your recent Sourcebook session.'
-        : (storedSmkLiveSession ? 'Verifying saved SMK Open records before restoring this board...' : ''));
+        : (storedSmkLiveSession ? 'Verifying saved source records before restoring this board...' : ''));
       var liveMessage = _liveMessageState[0];
       var setLiveMessage = _liveMessageState[1];
       var _providerProgressState = React.useState({});
       var providerProgress = _providerProgressState[0];
       var setProviderProgress = _providerProgressState[1];
+      var _providerRecoveryState = React.useState('');
+      var retryingProvider = _providerRecoveryState[0];
+      var setRetryingProvider = _providerRecoveryState[1];
       var _searchPageState = React.useState(storedLiveSession ? storedLiveSession.page : 0);
       var searchPage = _searchPageState[0];
       var setSearchPage = _searchPageState[1];
@@ -3401,7 +5201,7 @@
       var pinnedRecommendationIds = _pinnedRecommendationState[0];
       var setPinnedRecommendationIds = _pinnedRecommendationState[1];
       var rawSavedSmkKeys = Object.keys(rawSavedAssets).filter(function (id) {
-        return isSerializedSmkAsset(rawSavedAssets[id]);
+        return isSerializedSourceVerifiedAsset(rawSavedAssets[id]);
       }).sort();
       var storedSmkSessionSignature = storedSmkLiveSession ? JSON.stringify(rootState.liveSession) : '';
       var savedSmkSignature = savedSmkAssetsSignature(rawSavedAssets);
@@ -3411,9 +5211,12 @@
       var _savedSmkVerificationState = React.useState(rawSavedSmkKeys.length ? 'loading' : 'idle');
       var savedSmkVerificationStatus = _savedSmkVerificationState[0];
       var setSavedSmkVerificationStatus = _savedSmkVerificationState[1];
-      var _savedSmkMessageState = React.useState(rawSavedSmkKeys.length ? 'Checking saved SMK Open assets before showing them...' : '');
+      var _savedSmkMessageState = React.useState(rawSavedSmkKeys.length ? 'Checking saved source-verified assets before showing them...' : '');
       var savedSmkMessage = _savedSmkMessageState[0];
       var setSavedSmkMessage = _savedSmkMessageState[1];
+      var _savedVerificationRetryState = React.useState(0);
+      var savedVerificationRetry = _savedVerificationRetryState[0];
+      var setSavedVerificationRetry = _savedVerificationRetryState[1];
       var savedAssets = {};
       Object.keys(rawSavedAssets).forEach(function (id) {
         var raw = rawSavedAssets[id];
@@ -3423,7 +5226,7 @@
       Object.keys(verifiedSavedSmkAssets).forEach(function (id) {
         var raw = rawSavedAssets[id];
         var verified = verifiedSavedSmkAssets[id];
-        if (isSerializedSmkAsset(raw) && smkObjectNumberFromAsset(Object.assign({}, raw, { provider: SMK_PROVIDER })).toLowerCase() === smkObjectNumberFromAsset(verified).toLowerCase()) {
+        if (sourceVerifiedAssetIdentityMatches(raw, verified)) {
           savedAssets[id] = verified;
         }
       });
@@ -3440,6 +5243,17 @@
       var mobileDetailDialogRef = React.useRef(null);
       var mobileDetailCloseRef = React.useRef(null);
       var mobileDetailTriggerRef = React.useRef(null);
+      var boardWindowSignature = JSON.stringify([
+        query, boardFilter, loadedProviderFilter, loadedKindFilter, loadedRightsFilter, boardSort, boardView, kind, provider, rightsScope,
+        showingCollection ? 'palette' : 'results',
+        liveResults.map(function (item) { return item.id; })
+      ]);
+      var boardWindowSignatureRef = React.useRef(boardWindowSignature);
+      var effectiveBoardVisibleLimit = boardWindowSignatureRef.current === boardWindowSignature
+        ? boardVisibleLimit : BOARD_RENDER_STEP;
+      if (boardWindowSignatureRef.current !== boardWindowSignature) {
+        boardWindowSignatureRef.current = boardWindowSignature;
+      }
 
       React.useEffect(function () {
         if (!storedSmkLiveSession || !storedSmkSessionSignature) return undefined;
@@ -3447,7 +5261,7 @@
         var liveRequest = beginLiveRequest();
         setLiveResults([]);
         setLiveStatus('loading');
-        setLiveMessage('Verifying saved SMK Open records before restoring this board...');
+        setLiveMessage('Verifying saved source records before restoring this board...');
         revalidateLiveSession(rootState.liveSession, { signal: liveRequest.signal }).then(function (restored) {
           if (liveRequestRef.current !== liveRequest.id) return;
           setDraft(restored.query);
@@ -3462,7 +5276,7 @@
           setDiscoveryNote(restored.discoveryNote);
           setLiveResults(restored.results);
           setLiveStatus('ready');
-          setLiveMessage('Restored ' + restored.results.length + ' SMK-inclusive results after checking every SMK record against its current source record.');
+          setLiveMessage('Restored ' + restored.results.length + ' results after checking every rights-sensitive record against its current source record.');
           setProviderProgress({});
           finishLiveRequest(liveRequest.id);
           announce('Saved Sourcebook results verified and restored');
@@ -3471,8 +5285,8 @@
           finishLiveRequest(liveRequest.id);
           setLiveResults([]);
           setLiveStatus('error');
-          setLiveMessage('Saved SMK Open results could not be verified, so none of them were restored. ' + (error && error.message ? error.message : 'Try a new search when the network is available.'));
-          announce('Saved SMK Open results were not restored');
+          setLiveMessage('Saved source-verified results could not be verified, so none of them were restored. ' + (error && error.message ? error.message : 'Try a new search when the network is available.'));
+          announce('Saved source-verified results were not restored');
         });
         return function () {
           if (liveAbortRef.current && liveAbortRef.current.id === liveRequest.id) {
@@ -3496,21 +5310,21 @@
         }
         if (trustedSavedSmkSignatureRef.current === savedSmkSignature) {
           setSavedSmkVerificationStatus('ready');
-          setSavedSmkMessage('Saved SMK Open assets are verified for this session.');
+          setSavedSmkMessage('Saved source-verified assets are trusted for this live session.');
           return undefined;
         }
         var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         savedSmkAbortRef.current = { id: requestId, controller: controller };
         setVerifiedSavedSmkAssets({});
         setSavedSmkVerificationStatus('loading');
-        setSavedSmkMessage('Checking saved SMK Open assets before showing them...');
+        setSavedSmkMessage('Checking saved source-verified assets before showing them...');
         revalidateSavedSmkAssets(rawSavedAssets, { signal: controller ? controller.signal : null }).then(function (verified) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
           setVerifiedSavedSmkAssets(verified.assets);
           setSavedSmkVerificationStatus('ready');
           var count = Object.keys(verified.assets).length;
-          setSavedSmkMessage('Verified ' + count + ' saved SMK Open asset' + (count === 1 ? '' : 's') + ' against current source records.');
+          setSavedSmkMessage('Verified ' + count + ' saved source-verified asset' + (count === 1 ? '' : 's') + ' against current source records.');
           var latest = latestPaletteStateRef.current || { collection: [], preparation: {}, savedAssets: {} };
           var nextSavedAssets = {};
           Object.keys(latest.savedAssets || {}).forEach(function (id) {
@@ -3535,14 +5349,14 @@
             }
           });
           patch({ savedAssets: nextSavedAssets, collection: nextCollection, preparation: nextPreparation });
-          announce('Saved SMK Open palette assets verified');
+          announce('Saved source-verified palette assets verified');
         }).catch(function (error) {
           if (savedSmkRequestRef.current !== requestId) return;
           savedSmkAbortRef.current = null;
           setVerifiedSavedSmkAssets({});
           setSavedSmkVerificationStatus('error');
-          setSavedSmkMessage('Saved SMK Open assets are hidden because current source records could not be verified. ' + (error && error.message ? error.message : 'Try again when the network is available.'));
-          announce('Saved SMK Open palette assets hidden because verification failed');
+          setSavedSmkMessage('Saved source-verified assets are hidden because current source records could not be verified. ' + (error && error.message ? error.message : 'Try again when the network is available.'));
+          announce('Saved source-verified palette assets hidden because verification failed');
         });
         return function () {
           if (savedSmkAbortRef.current && savedSmkAbortRef.current.id === requestId) {
@@ -3551,7 +5365,7 @@
             ++savedSmkRequestRef.current;
           }
         };
-      }, [savedSmkSignature]);
+      }, [savedSmkSignature, savedVerificationRetry]);
 
       React.useEffect(function () {
         if (!mobileDetailOpen || typeof document === 'undefined') return undefined;
@@ -3636,6 +5450,10 @@
         };
       }, [mobileDetailOpen]);
 
+      React.useEffect(function () {
+        setBoardVisibleLimit(BOARD_RENDER_STEP);
+      }, [boardWindowSignature]);
+
       function patch(next) {
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('sourcebook', next);
         else if (typeof ctx.update === 'function') Object.keys(next).forEach(function (key) { ctx.update('sourcebook', key, next[key]); });
@@ -3649,7 +5467,7 @@
         var trusted = {};
         Object.keys(nextAssets || {}).forEach(function (id) {
           var item = nextAssets[id];
-          if (item && item.provider === SMK_PROVIDER) {
+          if (item && (item.provider === SMK_PROVIDER || item.provider === YALE_PROVIDER || item.provider === MUSEUMS_VICTORIA_PROVIDER)) {
             var portable = portableAsset(item);
             if (portable) trusted[id] = portable;
           }
@@ -3657,7 +5475,7 @@
         trustedSavedSmkSignatureRef.current = savedSmkAssetsSignature(nextAssets);
         setVerifiedSavedSmkAssets(trusted);
         setSavedSmkVerificationStatus(Object.keys(trusted).length ? 'ready' : 'idle');
-        setSavedSmkMessage(Object.keys(trusted).length ? 'Saved SMK Open assets are verified for this session.' : '');
+        setSavedSmkMessage(Object.keys(trusted).length ? 'Saved source-verified assets are trusted for this live session.' : '');
       }
 
       function persistLiveBoard(items, overrides) {
@@ -3677,6 +5495,7 @@
         var safeReport = {
           provider: String(report.provider).slice(0, 80), status: String(report.status || 'searching').slice(0, 24),
           count: Math.max(0, Number(report.count || 0)), attempt: Math.max(0, Number(report.attempt || 0)),
+          batch: normalizedSearchPage(report.batch),
           retryAt: Math.max(0, Number(report.retryAt || 0)),
           message: String(report.message || '').replace(/\s+/g, ' ').trim().slice(0, 120)
         };
@@ -3687,9 +5506,17 @@
         });
       }
 
+      function providerProgressForBatch(batch) {
+        var safeBatch = normalizedSearchPage(batch);
+        return function (report) {
+          trackProviderProgress(Object.assign({}, report || {}, { batch: safeBatch }));
+        };
+      }
+
       function beginLiveRequest() {
         var previous = liveAbortRef.current;
         if (previous && previous.controller && typeof previous.controller.abort === 'function') previous.controller.abort();
+        setRetryingProvider('');
         var requestId = ++liveRequestRef.current;
         var controller = typeof window.AbortController === 'function' ? new window.AbortController() : null;
         liveAbortRef.current = { id: requestId, controller: controller };
@@ -3706,6 +5533,7 @@
         liveAbortRef.current = null;
         ++liveRequestRef.current;
         setCurationBusy(false);
+        setRetryingProvider('');
         setLiveStatus(liveResults.length ? 'ready' : 'idle');
         setLiveMessage(message || (liveResults.length ? 'Search stopped. Your existing verified board is unchanged.' : 'Search stopped.'));
         setProviderProgress(function (current) {
@@ -3735,6 +5563,7 @@
         }
         try {
           var field = document.createElement('textarea');
+          field.setAttribute('aria-label', 'Temporary field for copying sourcebook text');
           field.value = text;
           field.setAttribute('readonly', 'readonly');
           field.style.position = 'fixed';
@@ -3894,6 +5723,26 @@
         }).catch(function () { return requestMetadataCuration(); });
       }
 
+      function showCuratedFallback(failedProvider) {
+        var failedName = String(failedProvider || '').trim();
+        resetLoadedFacets();
+        var providerSpecific = !!failedName && failedName !== 'All';
+        setLiveResults([]);
+        setLiveStatus('error');
+        setDiscoveryNote('');
+        setDiscoveryPlan(null);
+        setCanLoadMore(false);
+        setProviderProgress({});
+        if (providerSpecific) setProvider('All');
+        patch(providerSpecific ? { provider: 'All', liveSession: null } : { liveSession: null });
+        setLiveMessage(providerSpecific
+          ? failedName + ' could not be reached. The collection filter switched to All; showing the built-in shelf as an offline fallback.'
+          : 'Federated search is unavailable. The small built-in shelf is still ready as an offline fallback.');
+        announce(providerSpecific
+          ? failedName + ' unavailable. Collection filter switched to All and curated results are shown.'
+          : 'Live search unavailable. Showing curated Sourcebook results.');
+      }
+
       function runLiveSearch(value, requestedKind, shouldAutoPick, providerOverride) {
         var next = String(value || '').trim();
         var activeProvider = providerOverride || provider;
@@ -3935,11 +5784,11 @@
         setDiscoveryPlan(null);
         setSearchPage(0);
         setCanLoadMore(false);
-        setLiveMessage(capability.textAi ? 'Gemini is refining the search plan; Sourcebook independently verifies every resultâ€™s rights.' : 'No-AI mode: searching public collections, checking item-level rights, and ranking catalog metadata...');
+        setLiveMessage(capability.textAi ? 'Gemini is refining the search plan; Sourcebook independently verifies every result\u2019s rights.' : 'No-AI mode: searching public collections, checking item-level rights, and ranking catalog metadata...');
         requestDiscoveryPlan(next, requestedKind || kind).then(function (plan) {
           return searchOpenSources(next, {
             kind: requestedKind || kind, provider: activeProvider, rightsScope: rightsScope, queries: plan.queries,
-            limit: 24, resultLimit: 48, page: 0, onProgress: trackProviderProgress, signal: liveRequest.signal,
+            limit: 24, resultLimit: 48, page: 0, onProgress: providerProgressForBatch(0), signal: liveRequest.signal,
             onPartial: function (items, report) {
               if (requestId !== liveRequestRef.current || !items.length) return;
               streamedItems = rankDiscoveryResults(mergeAssets(streamedItems, items), next, requestedKind || kind, 48);
@@ -3974,14 +5823,15 @@
             }
             setLiveStatus('ready');
             setSearchPage(0);
-            setCanLoadMore(result.items.length > 0);
+            var canSearchMore = result.items.length > 0 || (Array.isArray(result.plan.queries) && result.plan.queries.length > 1);
+            setCanLoadMore(canSearchMore);
             var matchQuality = summarizeMatchQuality(result.items, result.plan.query, result.plan.kind);
             var nextDiscoveryNote = (curation.visionUsed ? 'Gemini visual review: ' : (curation.aiUsed ? 'Gemini metadata review: ' : 'Deterministic metadata ranking: ')) + (curation.reason || result.plan.reason);
             setLiveMessage(liveResultSummary(result.items) + ' ' + (curation.items.length
               ? curation.items.length + ' metadata-supported match' + (curation.items.length === 1 ? ' was' : 'es were') + ' selected' + (curation.visionUsed ? ' after visual review.' : ' for a starter palette.')
               : 'No result was auto-selected because none had matching catalog metadata.') + (matchQuality.broad ? ' ' + matchQuality.broad + ' broad result' + (matchQuality.broad === 1 ? ' remains' : 's remain') + ' available for exploration.' : ''));
             setDiscoveryNote(nextDiscoveryNote);
-            persistLiveBoard(decorated, { query: next, kind: requestedKind || kind, provider: activeProvider, page: 0, canLoadMore: result.items.length > 0, discoveryPlan: result.plan, discoveryNote: nextDiscoveryNote });
+            persistLiveBoard(decorated, { query: next, kind: requestedKind || kind, provider: activeProvider, page: 0, canLoadMore: canSearchMore, discoveryPlan: result.plan, discoveryNote: nextDiscoveryNote });
             if (shouldAutoPick && autoCurate && curation.items.length) {
               addItemsToPalette(curation.items, 'Sourcebook selected ' + curation.items.length + ' verified matches and added them to your palette.');
             }
@@ -3991,15 +5841,71 @@
         }).catch(function () {
           if (requestId !== liveRequestRef.current) return;
           finishLiveRequest(requestId);
-          setLiveResults([]);
-          setLiveStatus('error');
-          setDiscoveryNote('');
-          setDiscoveryPlan(null);
-          setCanLoadMore(false);
-          patch({ liveSession: null });
-          setLiveMessage('Federated search is unavailable. The small built-in shelf is still ready as an offline fallback.');
-          announce('Live search unavailable. Showing curated Sourcebook results.');
+          showCuratedFallback(activeProvider);
         });
+      }
+
+      function runTargetedProviderBatch(providerName, requestedBatch, retryFailedBatch) {
+        var name = String(providerName || '').trim();
+        if (!query || LIVE_PROVIDER_NAMES.indexOf(name) === -1 || searchActive || retryingProvider) return;
+        var targetBatch = normalizedSearchPage(requestedBatch);
+        var targetRequest = beginLiveRequest();
+        var requestId = targetRequest.id;
+        var plan = Object.assign({}, discoveryPlan || buildDiscoveryPlan(query, kind, paletteTarget), { paletteSize: paletteTarget });
+        var action = retryFailedBatch ? 'Retrying' : 'Searching deeper in';
+        setRetryingProvider(name);
+        setLiveStatus('loading-more');
+        setLiveMessage(action + ' ' + name + ' only (collection batch ' + (targetBatch + 1) + '). Your current rights-verified board will stay in place.');
+        announce(action + ' ' + name + ' only');
+        searchOpenSources(query, {
+          kind: kind, provider: name, rightsScope: rightsScope, queries: plan.queries,
+          limit: 24, resultLimit: 48, page: targetBatch, onProgress: providerProgressForBatch(targetBatch), signal: targetRequest.signal
+        }).then(function (items) {
+          if (requestId !== liveRequestRef.current) return;
+          var recovery = mergeRecoveredProviderItems(liveResults, items, rightsScope);
+          var merged = recovery.items;
+          var additions = recovery.additions;
+          setLiveResults(merged);
+          setDiscoveryPlan(plan);
+          setLiveStatus('ready');
+          setRetryingProvider('');
+          if (!liveResults.length && merged[0]) {
+            setActiveId(merged[0].id);
+            patch({ activeId: merged[0].id });
+          }
+          setLiveMessage(additions.length
+            ? name + (retryFailedBatch ? ' recovered ' : ' added ') + additions.length + ' new rights-verified asset' + (additions.length === 1 ? '' : 's') + ' from collection batch ' + (targetBatch + 1) + '. ' + merged.length + ' live matches are now on the board.'
+            : name + ' completed collection batch ' + (targetBatch + 1) + ', but no new asset matched the current query and reuse scope. Your board is unchanged.');
+          persistLiveBoard(merged, {
+            query: query, kind: kind, provider: provider, rightsScope: rightsScope,
+            page: searchPage, canLoadMore: canLoadMore, discoveryPlan: plan, discoveryNote: discoveryNote
+          });
+          announce(additions.length
+            ? additions.length + ' verified Sourcebook results added from ' + name
+            : name + ' completed the next collection batch with no new matching reusable assets');
+          finishLiveRequest(requestId);
+        }, function () {
+          if (requestId !== liveRequestRef.current) return;
+          finishLiveRequest(requestId);
+          setRetryingProvider('');
+          setLiveStatus(liveResults.length ? 'ready' : 'error');
+          setLiveMessage(name + ' collection batch ' + (targetBatch + 1) + ' is unavailable. Your current rights-verified board is unchanged; retry this collection later.');
+          announce(name + ' collection batch could not be reached');
+        });
+      }
+
+      function retryProviderCollection(providerName) {
+        var name = String(providerName || '').trim();
+        var report = providerProgress[name];
+        if (!providerReportCanRetry(report)) return;
+        runTargetedProviderBatch(name, providerReportTargetBatch(report, searchPage, true), true);
+      }
+
+      function searchDeeperProviderCollection(providerName) {
+        var name = String(providerName || '').trim();
+        var report = providerProgress[name];
+        if (!providerReportCanSearchDeeper(report, searchPage)) return;
+        runTargetedProviderBatch(name, providerReportTargetBatch(report, searchPage, false), false);
       }
 
       function resetPinnedRecommendations() {
@@ -4036,6 +5942,7 @@
         if (nextProvider !== provider) setProvider(nextProvider);
         setRecentSearches(nextHistory);
         setBoardFilter('');
+        resetLoadedFacets();
         setRefinementDraft('');
         patch({ query: next, kind: nextKind, provider: nextProvider, searchHistory: nextHistory });
         var count = searchMaterials(next, nextKind, nextProvider, rightsScope).length;
@@ -4053,6 +5960,17 @@
         announce('Searching across collections for visuals related to ' + item.title);
       }
 
+      function findMoreFromCollection(item) {
+        if (!item || item.live !== true || !providerSupportsLiveSearch(item.provider)) return;
+        var focusedQuery = buildSimilarSearch(item) || String(item.title || '').trim() || String(query || '').trim();
+        if (!focusedQuery) return;
+        setShowingCollection(false);
+        setBoardFilter('');
+        submitSearch(focusedQuery, { kind: item.kind || kind, provider: item.provider });
+        toast('Searching only ' + item.provider + ' for more visuals like this.', 'info');
+        announce('Searching only ' + item.provider);
+      }
+
       function findSharperAlternative(item) {
         var similarQuery = buildSimilarSearch(item);
         if (!similarQuery) return;
@@ -4060,7 +5978,7 @@
         setShowingCollection(false);
         setBoardFilter('');
         submitSearch(sharperQuery, { kind: item.kind, provider: 'All' });
-        toast('Searching public collections for a sharper alternative to â€œ' + item.title + 'â€.', 'info');
+        toast('Searching public collections for a sharper alternative to \u201c' + item.title + '\u201d.', 'info');
         announce('Searching for a higher-resolution alternative to ' + item.title);
       }
 
@@ -4094,23 +6012,27 @@
         setLiveMessage('Searching deeper in the public collections and checking another batch of item-level rights...');
         searchOpenSources(query, {
           kind: kind, provider: provider, rightsScope: rightsScope, queries: plan.queries,
-          limit: 24, resultLimit: 48, page: nextPage, onProgress: trackProviderProgress, signal: liveRequest.signal
+          limit: 24, resultLimit: 48, page: nextPage, onProgress: providerProgressForBatch(nextPage), signal: liveRequest.signal
         }).then(function (items) {
           if (requestId !== liveRequestRef.current) return;
           var known = {};
           liveResults.forEach(function (item) { known[item.id] = true; });
           var additions = items.filter(function (item) { return !known[item.id]; });
           var merged = mergeAssets(liveResults, additions);
-          var moreAvailable = additions.length > 0 && nextPage < 40;
+          var moreAvailable = nextPage < 40 && (additions.length > 0 || nextPage + 1 < plan.queries.length);
           setLiveResults(merged);
           setSearchPage(nextPage);
           setCanLoadMore(moreAvailable);
           setLiveStatus('ready');
           setLiveMessage(additions.length
             ? 'Added ' + additions.length + ' newly verified assets. ' + merged.length + ' live matches are now on the board.'
-            : 'No additional rights-verified assets were found in the next provider batch.');
+            : (moreAvailable
+              ? 'This search interpretation added no new rights-verified assets. Choose Find more to try the next interpretation.'
+              : 'No additional rights-verified assets were found after checking the available interpretations.'));
           persistLiveBoard(merged, { page: nextPage, canLoadMore: moreAvailable, discoveryPlan: plan });
-          announce(additions.length ? additions.length + ' more verified Sourcebook results added' : 'No more verified Sourcebook results found');
+          announce(additions.length
+            ? additions.length + ' more verified Sourcebook results added'
+            : (moreAvailable ? 'No new matches in this interpretation; another is ready' : 'No more verified Sourcebook results found'));
           finishLiveRequest(requestId);
         }).catch(function () {
           if (requestId !== liveRequestRef.current) return;
@@ -4122,7 +6044,8 @@
       }
 
       function clearLiveBoard() {
-        if (!liveResults.length) return;
+        if (!liveResults.length && !canLoadMore) return;
+        resetLoadedFacets();
         if (liveAbortRef.current && liveAbortRef.current.controller && typeof liveAbortRef.current.controller.abort === 'function') liveAbortRef.current.controller.abort();
         liveAbortRef.current = null;
         ++liveRequestRef.current;
@@ -4204,6 +6127,7 @@
         patch({ collection: [], savedAssets: {}, preparation: {}, paletteUndo: createPaletteUndoSnapshot() });
         setCheckedPaletteIds([]);
         setPaletteFilter('');
+        setPaletteAccessibilityFilter('all');
         setShowingCollection(false);
         toast('Sourcebook palette cleared.', 'info');
         announce('Sourcebook palette cleared');
@@ -4221,6 +6145,8 @@
       }
 
       function setFilter(filterKind, value) {
+        resetLoadedFacets();
+        setBoardFilter('');
         if (filterKind === 'kind') {
           setKind(value);
           patch({ kind: value });
@@ -4232,9 +6158,10 @@
           patch({ provider: value });
           if (query) {
             var providerRequest = beginLiveRequest();
+            var providerPlan = buildDiscoveryPlan(query, kind, paletteTarget);
             setSearchPage(0);
             setCanLoadMore(false);
-            setDiscoveryPlan(buildDiscoveryPlan(query, kind, paletteTarget));
+            setDiscoveryPlan(providerPlan);
             if (!providerSupportsLiveSearch(value)) {
               setLiveResults([]);
               setLiveStatus('ready');
@@ -4247,20 +6174,20 @@
             var requestId = providerRequest.id;
             setLiveStatus('loading');
             setProviderProgress({});
-            searchOpenSources(query, { kind: kind, provider: value, rightsScope: rightsScope, limit: 18, page: 0, onProgress: trackProviderProgress, signal: providerRequest.signal }).then(function (items) {
+            searchOpenSources(query, { kind: kind, provider: value, rightsScope: rightsScope, queries: providerPlan.queries, limit: 18, page: 0, onProgress: providerProgressForBatch(0), signal: providerRequest.signal }).then(function (items) {
               if (requestId !== liveRequestRef.current) return;
+              var providerCanLoadMore = items.length > 0 || providerPlan.queries.length > 1;
               setLiveResults(items);
               if (items[0]) { setActiveId(items[0].id); patch({ activeId: items[0].id }); }
               setLiveStatus('ready');
-              setCanLoadMore(items.length > 0);
+              setCanLoadMore(providerCanLoadMore);
               setLiveMessage(liveResultSummary(items));
-              persistLiveBoard(items, { provider: value, page: 0, canLoadMore: items.length > 0, discoveryPlan: buildDiscoveryPlan(query, kind, paletteTarget), discoveryNote: '' });
+              persistLiveBoard(items, { provider: value, page: 0, canLoadMore: providerCanLoadMore, discoveryPlan: providerPlan, discoveryNote: '' });
               finishLiveRequest(requestId);
             }).catch(function () {
               if (requestId !== liveRequestRef.current) return;
               finishLiveRequest(requestId);
-              setLiveResults([]); setLiveStatus('error'); setLiveMessage('This live source is unavailable. The curated shelf is still ready to use.');
-              patch({ liveSession: null });
+              showCuratedFallback(value);
             });
           }
         }
@@ -4272,9 +6199,10 @@
           setLiveResults(filteredRightsItems);
           if (query) {
             var rightsRequest = beginLiveRequest();
+            var rightsPlan = buildDiscoveryPlan(query, kind, paletteTarget);
             setSearchPage(0);
             setCanLoadMore(false);
-            setDiscoveryPlan(buildDiscoveryPlan(query, kind, paletteTarget));
+            setDiscoveryPlan(rightsPlan);
             if (!providerSupportsLiveSearch(provider)) {
               setLiveResults([]);
               setLiveStatus('ready');
@@ -4287,18 +6215,18 @@
             var rightsRequestId = rightsRequest.id;
             setLiveStatus('loading');
             setProviderProgress({});
-            searchOpenSources(query, { kind: kind, provider: provider, rightsScope: value, limit: 18, page: 0, onProgress: trackProviderProgress, signal: rightsRequest.signal }).then(function (items) {
+            searchOpenSources(query, { kind: kind, provider: provider, rightsScope: value, queries: rightsPlan.queries, limit: 18, page: 0, onProgress: providerProgressForBatch(0), signal: rightsRequest.signal }).then(function (items) {
               if (rightsRequestId !== liveRequestRef.current) return;
-              setLiveResults(items); setLiveStatus('ready'); setCanLoadMore(items.length > 0);
+              var rightsCanLoadMore = items.length > 0 || rightsPlan.queries.length > 1;
+              setLiveResults(items); setLiveStatus('ready'); setCanLoadMore(rightsCanLoadMore);
               if (items[0]) { setActiveId(items[0].id); patch({ activeId: items[0].id }); }
               setLiveMessage(liveResultSummary(items));
-              persistLiveBoard(items, { rightsScope: value, page: 0, canLoadMore: items.length > 0, discoveryPlan: buildDiscoveryPlan(query, kind, paletteTarget), discoveryNote: '' });
+              persistLiveBoard(items, { rightsScope: value, page: 0, canLoadMore: rightsCanLoadMore, discoveryPlan: rightsPlan, discoveryNote: '' });
               finishLiveRequest(rightsRequestId);
             }).catch(function () {
               if (rightsRequestId !== liveRequestRef.current) return;
               finishLiveRequest(rightsRequestId);
-              setLiveResults([]); setLiveStatus('error'); setLiveMessage('Live search is unavailable. The curated shelf is still ready to use.');
-              patch({ liveSession: null });
+              showCuratedFallback(provider);
             });
           } else {
             setLiveStatus('idle');
@@ -4332,6 +6260,9 @@
 
       function updatePrep(id, values) {
         var next = Object.assign({}, preparation);
+        if (values && Object.prototype.hasOwnProperty.call(values, 'usageIntent') && !Object.prototype.hasOwnProperty.call(values, 'usagePlan')) {
+          values = Object.assign({}, values, { usagePlan: '' });
+        }
         next[id] = Object.assign({ mode: 'fit', zoom: 100, x: 50, y: 50, tile: 180 }, next[id] || {}, values);
         patch({ preparation: next, paletteUndo: null });
       }
@@ -4383,7 +6314,7 @@
         if (!targetIds.length) targetIds = collection.slice();
         targetIds.forEach(function (id) {
           var current = normalizedPreparation(next[id]);
-          if (mode === 'reset' || mode === 'fit') next[id] = { mode: 'fit', zoom: 100, x: 50, y: 50, tile: 180 };
+          if (mode === 'reset' || mode === 'fit') next[id] = Object.assign({}, current, { mode: 'fit', aspect: 'original', zoom: 100, x: 50, y: 50, tile: 180 });
           else if (mode === 'crop') next[id] = Object.assign({}, current, { mode: 'crop', zoom: Math.max(120, current.zoom) });
           else next[id] = Object.assign({}, current, { mode: 'tile' });
         });
@@ -4392,6 +6323,42 @@
         var scope = targetIds.length === collection.length ? 'Every palette asset' : targetIds.length + ' selected asset' + (targetIds.length === 1 ? '' : 's');
         toast(scope + ' ' + (targetIds.length === 1 ? 'is' : 'are') + ' ' + label + '.', 'success');
         announce(scope + ' ' + label);
+      }
+
+      function applyUsageIntentToPalette(intent) {
+        var normalizedIntent = normalizedUsageIntent(intent);
+        if (!collection.length || normalizedIntent !== intent) return;
+        var next = Object.assign({}, preparation);
+        var targetIds = checkedPaletteIds.filter(function (id) { return collection.indexOf(id) !== -1; });
+        if (!targetIds.length) targetIds = collection.slice();
+        targetIds.forEach(function (id) {
+          next[id] = Object.assign({}, normalizedPreparation(next[id]), { usageIntent: normalizedIntent, usagePlan: '' });
+        });
+        patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
+        var intentLabel = USAGE_INTENTS[normalizedIntent].label;
+        var scope = targetIds.length === collection.length ? 'Every palette asset' : targetIds.length + ' selected asset' + (targetIds.length === 1 ? '' : 's');
+        toast(scope + ' will use ' + intentLabel.toLowerCase() + '.', 'success');
+        announce(scope + ' planned as ' + intentLabel);
+      }
+
+      function applyUsagePlanToPalette(planValue) {
+        if (!collection.length) return;
+        var planId = normalizedUsagePlan(planValue);
+        var targetIds = checkedPaletteIds.filter(function (id) { return collection.indexOf(id) !== -1; });
+        if (!targetIds.length) targetIds = collection.slice();
+        var targetItems = targetIds.map(function (id) {
+          return allAssets.filter(function (item) { return item.id === id; })[0] || null;
+        }).filter(Boolean);
+        var planned = planPaletteUsage(targetItems, preparation, planId);
+        if (!planned.planned) {
+          toast('Every selected asset already has a role you set. Reset intended use to Sourcebook suggestion before auto-planning it.', 'info');
+          return;
+        }
+        var next = Object.assign({}, preparation, planned.preparation);
+        patch({ preparation: next, paletteUndo: createPaletteUndoSnapshot() });
+        var preservedNote = planned.preserved ? ' Kept ' + planned.preserved + ' role' + (planned.preserved === 1 ? '' : 's') + ' you already set.' : '';
+        toast('Planned ' + planned.planned + ' asset' + (planned.planned === 1 ? '' : 's') + ' as a ' + planned.label.toLowerCase() + '.' + preservedNote, 'success');
+        announce('Sourcebook applied the ' + planned.label + ' role plan');
       }
 
       function sendToPageDesigner(item) {
@@ -4553,10 +6520,38 @@
       var results = searchMaterials(query, kind, provider, rightsScope);
       var savedAssetList = Object.keys(savedAssets).map(function (id) { return portableAsset(savedAssets[id]); }).filter(Boolean);
       var allAssets = mergeAssets(MATERIALS, liveResults.concat(savedAssetList));
+      var comparisonEligibleById = Object.create(null);
+      allAssets.forEach(function (item) {
+        if (!item || !ALLOWED_RIGHTS[item.rightsType] || !allowedByRightsScope(item, rightsScope)) return;
+        comparisonEligibleById[item.id] = item;
+      });
+      var comparisonItems = comparisonIds.map(function (id) { return comparisonEligibleById[id] || null; }).filter(Boolean).slice(0, COMPARISON_MAX_ASSETS);
+      var comparisonAvailabilitySignature = rightsScope + '|' + Object.keys(comparisonEligibleById).sort().join('|');
+      React.useEffect(function () {
+        var validIds = comparisonIds.filter(function (id) { return !!comparisonEligibleById[id]; }).slice(0, COMPARISON_MAX_ASSETS);
+        var unchanged = validIds.length === comparisonIds.length && validIds.every(function (id, index) { return id === comparisonIds[index]; });
+        if (unchanged) return;
+        setComparisonIds(validIds);
+        if (validIds.length < 2) setComparisonOpen(false);
+      }, [comparisonAvailabilitySignature]);
       var combinedResults = mergeAssets(query ? liveResults : results, query ? results : liveResults).filter(function (item) {
         return allowedByRightsScope(item, rightsScope) && (kind === 'All' || item.kind === kind) && (provider === 'All' || item.provider === provider);
       });
-      var refinedResults = filterAndSortBoard(combinedResults, boardFilter, boardSort);
+      var loadedProviderCoverageList = loadedProviderCoverage(combinedResults, rightsScope);
+      var loadedProviderKnown = loadedProviderFilter === 'All' || loadedProviderCoverageList.some(function (entry) { return entry.provider === loadedProviderFilter; });
+      var effectiveLoadedProviderFilter = loadedProviderKnown ? loadedProviderFilter : 'All';
+      var loadedProviderResults = filterLoadedResultsByFacets(combinedResults, { provider: effectiveLoadedProviderFilter }, rightsScope);
+      var loadedKindCoverageList = loadedKindCoverage(loadedProviderResults, rightsScope);
+      var loadedKindKnown = loadedKindFilter === 'All' || loadedKindCoverageList.some(function (entry) { return entry.kind === loadedKindFilter; });
+      var effectiveLoadedKindFilter = loadedKindKnown ? loadedKindFilter : 'All';
+      var loadedKindResults = filterLoadedResultsByFacets(loadedProviderResults, { kind: effectiveLoadedKindFilter }, rightsScope);
+      var loadedRightsCoverageList = loadedRightsCoverage(loadedKindResults, rightsScope);
+      var loadedRightsKnown = loadedRightsFilter === 'All' || loadedRightsCoverageList.some(function (entry) { return entry.rightsType === loadedRightsFilter; });
+      var effectiveLoadedRightsFilter = loadedRightsKnown ? loadedRightsFilter : 'All';
+      var loadedFacetResults = filterLoadedResultsByFacets(loadedKindResults, { rightsType: effectiveLoadedRightsFilter }, rightsScope);
+      var effectiveLoadedRightsLabel = effectiveLoadedRightsFilter === 'All' ? 'all allowed reuse statuses' : (loadedRightsCoverageList.filter(function (entry) { return entry.rightsType === effectiveLoadedRightsFilter; })[0] || { label: effectiveLoadedRightsFilter }).label;
+      var hasLoadedLocalFilters = effectiveLoadedProviderFilter !== 'All' || effectiveLoadedKindFilter !== 'All' || effectiveLoadedRightsFilter !== 'All' || !!boardFilter.trim();
+      var refinedResults = filterAndSortBoard(loadedFacetResults, boardFilter, boardSort);
       var recommendedItems = liveResults.filter(function (item) {
         return item.recommended && allowedByRightsScope(item, rightsScope);
       });
@@ -4569,34 +6564,111 @@
       var selectedItems = collection.map(function (id) {
         return allAssets.filter(function (item) { return item.id === id; })[0] || null;
       }).filter(Boolean);
-      var filteredPaletteItems = filterAndSortBoard(selectedItems, paletteFilter, 'recommended');
+      var paletteAccessibilitySummary = summarizeAccessibilityReview(selectedItems, preparation);
+      var paletteUsageSummary = summarizeUsageIntents(selectedItems, preparation);
+      var paletteRoleBoard = buildPaletteRoleBoard(selectedItems, preparation);
+      var nextAccessibilityReviewItem = selectedItems.filter(function (item) {
+        return accessibilityReviewStatus(item, preparation[item.id]).status === 'suggested';
+      })[0] || null;
+      var textFilteredPaletteItems = filterAndSortBoard(selectedItems, paletteFilter, 'recommended');
+      var filteredPaletteItems = filterPaletteByAccessibility(textFilteredPaletteItems, preparation, paletteAccessibilityFilter);
       var checkedPaletteItems = selectedItems.filter(function (item) {
         return checkedPaletteIds.indexOf(item.id) !== -1;
       });
       var exportItems = checkedPaletteItems.length ? checkedPaletteItems : selectedItems;
+      var outputPreflightSummary = summarizePalettePreflight(exportItems, preparation, measuredDimensions);
+      var outputPreflightRows = palettePreflightRows(exportItems, preparation, measuredDimensions);
+      var outputReviewRows = outputPreflightRows.filter(function (row) { return row.status === 'review'; });
+      var outputQueueRows = outputReviewRows.length ? outputReviewRows : outputPreflightRows;
+      var outputPrintSupported = outputPreflightSummary.printReady + outputPreflightSummary.printUsable;
+      var nextOutputReviewRow = outputReviewRows[0] || null;
+      var nextOutputReviewItem = nextOutputReviewRow ? exportItems.filter(function (item) { return item.id === nextOutputReviewRow.id; })[0] || null : null;
+      var nextOutputPrintIssue = exportItems.filter(function (item) {
+        return palettePreflightItem(item, preparation[item.id], measuredDimensions[item.id]).printStatus === 'attention';
+      })[0] || exportItems.filter(function (item) {
+        return palettePreflightItem(item, preparation[item.id], measuredDimensions[item.id]).printStatus === 'verify';
+      })[0] || null;
+      var outputPreflightReportText = palettePreflightReport(exportItems, preparation, measuredDimensions, storedTitle);
       var exportIds = exportItems.map(function (item) { return item.id; });
-      var selectedRightsCounts = selectedItems.reduce(function (counts, item) {
+      var exportRightsCounts = exportItems.reduce(function (counts, item) {
         if (Object.prototype.hasOwnProperty.call(counts, item.rightsType)) counts[item.rightsType] += 1;
         return counts;
       }, { pd: 0, cc0: 0, ccby: 0 });
-      var selectedRightsSummary = [
-        selectedRightsCounts.pd ? selectedRightsCounts.pd + ' Public Domain' : '',
-        selectedRightsCounts.cc0 ? selectedRightsCounts.cc0 + ' CC0' : '',
-        selectedRightsCounts.ccby ? selectedRightsCounts.ccby + ' CC BY' : ''
+      var exportRightsSummary = [
+        exportRightsCounts.pd ? exportRightsCounts.pd + ' Public Domain' : '',
+        exportRightsCounts.cc0 ? exportRightsCounts.cc0 + ' CC0' : '',
+        exportRightsCounts.ccby ? exportRightsCounts.ccby + ' CC BY' : ''
       ].filter(Boolean).join(' · ');
-      var visible = showingCollection ? filteredPaletteItems : refinedResults;
+      var visible = showingCollection ? filteredPaletteItems : refinedResults.slice(0, effectiveBoardVisibleLimit);
+      var hiddenLoadedResultCount = showingCollection ? 0 : Math.max(0, refinedResults.length - visible.length);
       var publicDomainResultCount = refinedResults.filter(function (item) { return item.rightsType === 'pd'; }).length;
+      var yaleLiveResultCount = liveResults.filter(function (item) { return item.provider === YALE_PROVIDER; }).length;
       var active = allAssets.filter(function (item) { return item.id === activeId; })[0] || visible[0] || MATERIALS[0];
       var activePrep = normalizedPreparation(preparation[active.id]);
+      var activeUsageIntent = resolvedUsageIntent(active, activePrep);
       var activeDimensions = preparationDimensions(activePrep);
-      var kinds = ['All', 'Maps', 'Textures', 'Patterns', 'Blueprints', 'Science', 'Botanical', 'Archival', 'Visual assets'];
+      var kinds = MATERIAL_KIND_NAMES.slice();
       var providers = ['All'].concat(LIVE_PROVIDER_NAMES);
       var providerReportList = providers.slice(1).map(function (name) { return providerProgress[name]; }).filter(Boolean);
+      var providerRetryableCount = providerReportList.filter(providerReportCanRetry).length;
+      var providerDeepenableCount = providerReportList.filter(function (report) { return providerReportCanSearchDeeper(report, searchPage); }).length;
       var searchActive = liveStatus === 'loading' || liveStatus === 'loading-more' || liveStatus === 'curating';
+      var coverageGuide = buildProviderCoverageGuide(providerReportList, liveResults, kind, searchPage);
+
+      function resetLoadedFacets() {
+        setLoadedProviderFilter('All');
+        setLoadedKindFilter('All');
+        setLoadedRightsFilter('All');
+      }
+
+      function activateFirstLoadedResult(items) {
+        var next = Array.isArray(items) ? items : [];
+        setBoardVisibleLimit(BOARD_RENDER_STEP);
+        if (!next[0]) return;
+        setActiveId(next[0].id);
+        patch({ activeId: next[0].id });
+      }
+
+      function chooseLoadedProvider(value) {
+        var next = filterLoadedResultsByFacets(combinedResults, { provider: value }, rightsScope);
+        setLoadedProviderFilter(value);
+        setLoadedKindFilter('All');
+        setLoadedRightsFilter('All');
+        activateFirstLoadedResult(next);
+        announce(value === 'All'
+          ? 'Showing all ' + next.length + ' loaded Sourcebook results'
+          : 'Showing ' + next.length + ' loaded results from ' + value);
+      }
+
+      function chooseLoadedKind(value) {
+        var next = filterLoadedResultsByFacets(loadedProviderResults, { kind: value }, rightsScope);
+        setLoadedKindFilter(value);
+        setLoadedRightsFilter('All');
+        activateFirstLoadedResult(next);
+        announce(value === 'All'
+          ? 'Showing every visual type in the selected loaded collections'
+          : 'Showing ' + next.length + ' loaded ' + value.toLowerCase() + ' result' + (next.length === 1 ? '' : 's'));
+      }
+
+      function chooseLoadedRights(value) {
+        var next = filterLoadedResultsByFacets(loadedKindResults, { rightsType: value }, rightsScope);
+        setLoadedRightsFilter(value);
+        activateFirstLoadedResult(next);
+        var label = value === 'All' ? 'all allowed reuse statuses' : (loadedRightsCoverageList.filter(function (entry) { return entry.rightsType === value; })[0] || { label: value }).label;
+        announce('Showing ' + next.length + ' loaded results with ' + label);
+      }
+
+      function clearLoadedFilters() {
+        resetLoadedFacets();
+        setBoardFilter('');
+        activateFirstLoadedResult(combinedResults);
+        announce('Cleared all local Sourcebook board filters');
+      }
 
       function controlButton(label, selected, onClick, extra) {
         return h('button', Object.assign({
           type: 'button', onClick: onClick,
+          'aria-pressed': selected ? 'true' : 'false',
           className: 'px-3 py-2 rounded-full text-xs font-black border transition-colors ' + (selected ? 'bg-[#183b32] text-white border-[#183b32]' : 'bg-white text-[#38564d] border-[#a9bdb5] hover:border-[#315f52]')
         }, extra || {}), label);
       }
@@ -4610,7 +6682,44 @@
         return tones[readiness && readiness.tone] || tones.slate;
       }
 
-      function preview(item, prep, height, onFocusPoint, showOutputAspect) {
+      function toggleComparison(item) {
+        if (!item || !ALLOWED_RIGHTS[item.rightsType] || !allowedByRightsScope(item, rightsScope)) return;
+        var nextIds = comparisonItems.map(function (candidate) { return candidate.id; });
+        var currentIndex = nextIds.indexOf(item.id);
+        if (currentIndex !== -1) {
+          nextIds.splice(currentIndex, 1);
+          setComparisonIds(nextIds);
+          if (nextIds.length < 2 && comparisonOpen) setComparisonOpen(false);
+          announce('Removed ' + item.title + ' from the comparison shortlist');
+          return;
+        }
+        if (nextIds.length >= COMPARISON_MAX_ASSETS) {
+          toast('Comparison holds up to four rights-verified assets. Remove one before adding another.', 'info');
+          announce('Comparison shortlist is full at four assets');
+          return;
+        }
+        nextIds.push(item.id);
+        setComparisonIds(nextIds);
+        announce('Added ' + item.title + ' to the comparison shortlist. ' + nextIds.length + ' of four selected.');
+      }
+
+      function clearComparison() {
+        if (!comparisonItems.length) return;
+        setComparisonIds([]);
+        setComparisonOpen(false);
+        announce('Cleared the Sourcebook comparison shortlist');
+      }
+
+      function openComparison() {
+        if (comparisonItems.length < 2) {
+          announce('Add at least two rights-verified assets to compare');
+          return;
+        }
+        setComparisonOpen(true);
+        announce('Comparing ' + comparisonItems.length + ' rights-verified Sourcebook assets');
+      }
+
+      function preview(item, prep, height, onFocusPoint, showOutputAspect, cardPresentation) {
         var isTile = prep && prep.mode === 'tile';
         var previewDimensions = showOutputAspect ? preparationDimensions(prep) : null;
         var previewRatio = previewDimensions && previewDimensions.width && previewDimensions.height
@@ -4630,7 +6739,7 @@
           style: {
             height: previewRatio ? 'auto' : (height || 250),
             aspectRatio: previewRatio || undefined,
-            background: isTile ? fallback : fallback,
+            background: fallback,
             backgroundImage: isTile ? 'url("' + item.imageUrl + '"), ' + fallback : fallback,
             backgroundRepeat: isTile ? 'repeat' : 'no-repeat',
             backgroundSize: isTile ? Number(prep.tile || 180) + 'px auto' : 'cover'
@@ -4663,29 +6772,40 @@
           className: 'pointer-events-none absolute h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-[#183b32]/40 shadow-[0_0_0_2px_rgba(24,59,50,.8)]',
           style: { left: Number((prep && prep.x) || 50) + '%', top: Number((prep && prep.y) || 50) + '%' }
         }), h('span', {
-          'aria-hidden': 'true', className: 'absolute left-3 bottom-2 text-[10px] font-black uppercase tracking-[.16em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
-        }, item.kind));
+          'aria-hidden': 'true', className: 'pointer-events-none absolute left-3 bottom-2 max-w-[70%] truncate text-[10px] font-black uppercase tracking-[.14em] px-2 py-1 rounded-full bg-white/90 text-[#29483f] shadow-sm'
+        }, (cardPresentation ? cardPresentation.mark + ' · ' : '') + item.kind), cardPresentation && h('span', {
+          'aria-hidden': 'true', 'data-sourcebook-card-rights': item.rightsType,
+          className: 'pointer-events-none absolute right-3 top-2 max-w-[58%] truncate rounded-full bg-emerald-100/95 px-2 py-1 text-[10px] font-black text-emerald-950 shadow-sm'
+        }, '✓ ' + item.rightsShort));
       }
 
       function inspectSourcebookItem(item) {
         if (!item) return;
         setActiveId(item.id);
         patch({ activeId: item.id });
+        announce('Inspecting ' + item.title + ' from ' + providerPresentation(item.provider).name + '. Reuse rights: ' + item.rightsShort + '.');
         if (window.matchMedia && window.matchMedia('(max-width: 1023px)').matches) {
           mobileDetailTriggerRef.current = typeof document !== 'undefined' ? document.activeElement : null;
           setMobileDetailOpen(true);
         }
       }
 
+
       function resultCard(item) {
         var saved = collection.indexOf(item.id) !== -1;
         var paletteIndex = collection.indexOf(item.id);
         var checked = checkedPaletteIds.indexOf(item.id) !== -1;
+        var comparing = comparisonItems.some(function (candidate) { return candidate.id === item.id; });
         var match = query ? discoveryMatchDetails(item, selectionQuery || query, kind) : null;
         var cardReadiness = printReadiness(item, normalizedPreparation(preparation[item.id]), measuredDimensions[item.id]);
+        var cardAccessibility = accessibilityReviewStatus(item, preparation[item.id]);
+        var cardUsageIntent = resolvedUsageIntent(item, preparation[item.id]);
+        var providerInfo = providerPresentation(item.provider);
+        var showCardReadiness = boardView === 'research' || ['unknown', 'low', 'caution'].indexOf(cardReadiness.status) !== -1
+          || (cardReadiness.status === 'preview' && cardReadiness.label === 'Check full-size file');
         return h('article', {
-          key: item.id,
-          className: 'group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ' + (checked ? 'border-amber-500 ring-2 ring-amber-200' : (active.id === item.id ? 'border-[#2f6b59] ring-2 ring-[#aad3c5]' : 'border-[#cad6d0]'))
+          key: item.id, 'data-sourcebook-result-card': item.id, 'data-sourcebook-active': active.id === item.id ? 'true' : 'false',
+          className: 'group relative overflow-hidden rounded-2xl border bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg ' + (checked ? 'border-amber-500 ring-2 ring-amber-200' : (comparing ? 'border-sky-500 ring-2 ring-sky-200' : (active.id === item.id ? 'border-[#2f6b59] ring-2 ring-[#aad3c5]' : 'border-[#cad6d0]')))
         }, showingCollection && h('label', {
           className: 'absolute left-3 top-3 z-10 inline-flex min-h-[40px] cursor-pointer items-center gap-2 rounded-xl border border-[#9cada6] bg-white/95 px-3 text-[11px] font-black text-[#29483f] shadow-sm'
         },
@@ -4696,34 +6816,58 @@
           'Select'
         ), h('button', {
           type: 'button', onClick: function () { inspectSourcebookItem(item); },
-          className: 'block w-full text-left', 'aria-label': 'Inspect ' + item.title
-        }, preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, boardView === 'gallery' ? 180 : (item.kind === 'Archival' || item.kind === 'Botanical' ? 280 : 210)),
+          className: 'relative block w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#2f6b59]',
+          'data-sourcebook-inspect': item.id,
+          'aria-pressed': active.id === item.id ? 'true' : 'false',
+          'aria-controls': 'sourcebook-detail-panel',
+          'aria-label': 'Inspect and prepare ' + item.title + ' from ' + providerInfo.name + '. Reuse rights: ' + item.rightsShort + '.' + (item.provider === MUSEUMS_VICTORIA_PROVIDER ? ' Review the source record for cultural context before use.' : '')
+        }, preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, boardView === 'gallery' ? 180 : (item.kind === 'Archival' || item.kind === 'Botanical' ? 280 : 210), null, false, providerInfo),
+          h('span', { 'aria-hidden': 'true', className: 'pointer-events-none absolute bottom-2 right-3 rounded-full bg-[#183b32]/95 px-2.5 py-1 text-[10px] font-black text-white shadow-sm' }, 'Inspect & prepare')
+        ),
         h('div', { className: boardView === 'gallery' ? 'p-3' : 'p-4' },
-          h('div', { className: 'flex items-start gap-3' },
-            h('div', { className: 'min-w-0 flex-1' },
-              h('h3', { className: 'font-black text-[#18352d] leading-tight' }, item.title),
-              h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' · ' + item.year)
-            ),
-            h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-[11px] font-black bg-emerald-100 text-emerald-900' }, '✓ ' + item.rightsShort)
+          h('p', { 'data-sourcebook-card-provider': providerInfo.name, className: 'mb-1 text-[10px] font-black uppercase tracking-[.12em] text-[#4d685e]' }, providerInfo.name),
+          h('div', { className: 'min-w-0' },
+            h('h3', { className: 'font-black text-[#18352d] leading-tight' }, item.title),
+            h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' · ' + item.year)
           ),
+          item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', {
+            'data-sourcebook-cultural-context': 'card',
+            className: 'mt-2 inline-flex rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-[10px] font-black text-amber-950',
+            title: 'Review the source record for cultural context and any community guidance before reuse.'
+          }, 'Review context · source record'),
           item.recommended && h('p', { className: 'mt-2 inline-flex rounded-full bg-[#183b32] px-2.5 py-1 text-[11px] font-black uppercase tracking-[.1em] text-white' }, item.recommendationSource || 'Recommended'),
-          h('p', {
+          showingCollection && h('p', {
+            className: 'mt-2 ml-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ' + (cardAccessibility.status === 'suggested' ? 'bg-amber-100 text-amber-950' : (cardAccessibility.status === 'decorative' ? 'bg-sky-100 text-sky-950' : 'bg-emerald-100 text-emerald-950')),
+            'data-sourcebook-card-accessibility': cardAccessibility.status
+          }, cardAccessibility.status === 'suggested' ? 'Alt text - review suggestion' : (cardAccessibility.status === 'decorative' ? 'Accessibility - decorative' : (cardAccessibility.source === 'user-edited' ? 'Alt text - user-edited' : 'Alt text - confirmed'))),
+          showingCollection && h('p', {
+            className: 'mt-2 ml-1 inline-flex rounded-full bg-violet-100 px-2.5 py-1 text-[10px] font-black text-violet-950',
+            'data-sourcebook-card-usage-intent': cardUsageIntent.id,
+            title: cardUsageIntent.description
+          }, (cardUsageIntent.suggested ? 'Suggested · ' : '') + cardUsageIntent.shortLabel),
+          showCardReadiness && h('p', {
             className: 'mt-2 ml-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ' + readinessBadgeClasses(cardReadiness),
             title: cardReadiness.note
           }, cardReadiness.label + (cardReadiness.width ? ' - ' + cardReadiness.width + ' x ' + cardReadiness.height : '')),
-          match && h('p', {
+          match && !item.recommended && h('p', {
             className: 'mt-2 inline-flex rounded-full px-2.5 py-1 text-[10px] font-black ' + (match.label === 'Strong match' ? 'bg-emerald-100 text-emerald-950' : (match.label === 'Related match' ? 'bg-sky-100 text-sky-950' : 'bg-slate-100 text-slate-700')),
             title: match.matches.length ? 'Matched source metadata: ' + match.matches.join(', ') : 'This broader result is retained for visual exploration'
           }, match.label + (match.matches.length ? ' · ' + match.matches.slice(0, 2).join(', ') : '')),
-          boardView === 'research' && item.live && h('p', { className: 'mt-2 text-[11px] font-black uppercase tracking-[.1em] text-[#2f6b59]' }, 'Live result · rights metadata checked'),
           boardView === 'research' && h('p', { className: 'mt-3 text-xs leading-relaxed text-[#40564e]' }, item.description)
-        )),
+        ),
         h('div', { className: 'flex flex-wrap gap-2 px-4 pb-4' },
           h('button', {
             type: 'button', disabled: palettePackageBusy, onClick: function () { toggleSaved(item); },
             'aria-pressed': saved,
             className: 'flex-1 min-h-[42px] rounded-xl text-xs font-black border ' + (saved ? 'bg-[#183b32] text-white border-[#183b32]' : 'bg-[#eef5f1] text-[#244c40] border-[#b6cec4] hover:bg-[#e2eee9]')
           }, showingCollection ? 'Remove' : (saved ? '✓ Saved' : '+ Save to palette')),
+          !showingCollection && h('button', {
+            type: 'button', onClick: function () { toggleComparison(item); },
+            'aria-pressed': comparing ? 'true' : 'false',
+            'data-sourcebook-compare-toggle': item.id,
+            className: 'flex-1 min-h-[42px] rounded-xl border text-xs font-black ' + (comparing ? 'border-sky-700 bg-sky-700 text-white' : 'border-sky-200 bg-sky-50 text-sky-950 hover:bg-sky-100'),
+            title: comparing ? 'Remove this asset from the comparison shortlist' : 'Add this asset to a local comparison shortlist'
+          }, comparing ? 'Comparing' : '+ Compare'),
           showingCollection && h('button', {
             type: 'button', disabled: palettePackageBusy || paletteIndex <= 0, onClick: function () { movePaletteItem(item.id, -1); },
             className: 'min-h-[42px] px-3 rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] disabled:opacity-35',
@@ -4738,7 +6882,7 @@
             href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
             className: 'min-h-[42px] px-3 inline-flex items-center rounded-xl border border-[#b6c5bf] text-xs font-black text-[#38564d] hover:bg-[#f2f5f3]',
             'aria-label': 'Open source record for ' + item.title
-          }, 'Source ↗')
+          }, 'Source record ↗')
         ));
       }
 
@@ -4746,9 +6890,11 @@
         var saved = collection.indexOf(item.id) !== -1;
         var match = query ? discoveryMatchDetails(item, selectionQuery || query, kind) : null;
         var readiness = printReadiness(item, activePrep, measuredDimensions[item.id]);
+        var accessibility = accessibilityDescription(item, activePrep);
         var canSeekSharper = readiness.status === 'low' || readiness.status === 'caution' || readiness.status === 'unknown' || (readiness.status === 'preview' && readiness.label === 'Check full-size file');
         return h('aside', {
           className: 'sb-detail lg:sticky lg:top-0 lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto self-start rounded-3xl border border-[#a9beb5] bg-[#f5f1e8] overflow-x-hidden shadow-[0_18px_50px_rgba(37,63,54,.12)] focus:outline-none focus:ring-2 focus:ring-[#2f6b59]',
+          id: 'sourcebook-detail-panel',
           tabIndex: 0,
           'aria-label': 'Selected source details and preparation controls'
         },
@@ -4796,19 +6942,50 @@
                 h('h3', { id: 'sourcebook-rights-title', className: 'font-black text-sm text-[#243e35]' }, item.license)
               ),
               h('p', { className: 'mt-2 text-[11px] leading-relaxed text-[#4f625b]' }, item.rightsNote),
+              item.rightsMetadataSource && h('details', { className: 'mt-3 rounded-xl border border-[#d3dfda] bg-[#f6faf8] px-3 py-2' },
+                h('summary', { className: 'cursor-pointer text-[11px] font-black text-[#315c50]' }, 'How reuse rights were checked'),
+                h('p', { className: 'mt-2 break-words text-[10px] leading-relaxed text-[#5a6f67]', 'data-sourcebook-rights-evidence': 'true' }, item.rightsMetadataSource)
+              ),
               item.licenseUrl && h('a', { href: item.licenseUrl, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-2 mr-3 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, 'License terms ↗'),
               h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-2 text-xs font-black text-[#1e6a55] underline underline-offset-2' }, 'Verify on source record ↗')
+            ),
+            item.provider === MUSEUMS_VICTORIA_PROVIDER && h('section', {
+              className: 'rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950',
+              'data-sourcebook-cultural-context': 'detail',
+              'aria-label': 'Museums Victoria context check'
+            },
+              h('h3', { className: 'text-sm font-black' }, 'Review context'),
+              h('p', { className: 'mt-2 text-[11px] font-bold leading-relaxed' }, 'Reuse rights are verified for this image. Review the source record for cultural context and appropriateness before use.'),
+              h('a', { href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer', className: 'mt-2 inline-block text-xs font-black underline underline-offset-2' }, 'Review source record ↗')
             ),
             h('section', { className: 'space-y-3', 'aria-labelledby': 'sourcebook-prepare-title' },
               h('div', { className: 'flex items-center justify-between' },
                 h('h3', { id: 'sourcebook-prepare-title', className: 'font-black text-sm text-[#243e35]' }, 'Prepare for use'),
                 h('span', { className: 'text-[10px] text-[#56655e]' }, 'Saved per item')
               ),
+              h('div', {
+                className: 'rounded-2xl border border-violet-200 bg-violet-50 p-3',
+                'data-sourcebook-usage-intent': activeUsageIntent.id
+              },
+                h('label', { className: 'block text-[11px] font-black text-violet-950' }, 'Intended use',
+                  h('select', {
+                    value: activePrep.usageIntent,
+                    onChange: function (event) { updatePrep(item.id, { usageIntent: event.target.value, usagePlan: '' }); },
+                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-300 bg-white px-3 text-xs font-bold text-[#30264f]',
+                    'aria-label': 'Intended use for this visual asset'
+                  }, USAGE_INTENT_ORDER.map(function (intentId) {
+                    return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
+                  }))
+                ),
+                h('p', { className: 'mt-2 text-[10px] font-bold leading-relaxed text-violet-900' },
+                  (activeUsageIntent.suggested ? 'Suggested by Sourcebook: ' : (activeUsageIntent.planId ? activeUsageIntent.sourceLabel + ': ' : 'Planned by you: ')) + activeUsageIntent.label + '. ' + activeUsageIntent.description
+                )
+              ),
               h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': 'Preparation presets' },
                 h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'fit', aspect: 'original', zoom: 100, x: 50, y: 50 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Full image'),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'landscape', zoom: 125, x: 50, y: 50 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Page background'),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'banner', zoom: 145, x: 50, y: 35 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Header strip'),
-                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'tile', aspect: 'square', tile: 160 }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Repeat pattern')
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'landscape', zoom: 125, x: 50, y: 50, usageIntent: 'background' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Page background'),
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'crop', aspect: 'banner', zoom: 145, x: 50, y: 35, usageIntent: 'accent' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Header strip'),
+                h('button', { type: 'button', onClick: function () { updatePrep(item.id, { mode: 'tile', aspect: 'square', tile: 160, usageIntent: 'texture' }); }, className: 'min-h-[40px] rounded-xl border border-[#a9bbb3] bg-white px-3 text-[11px] font-black text-[#294d42] hover:bg-[#eef5f1]' }, 'Repeat pattern')
               ),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 controlButton('Fit', activePrep.mode === 'fit', function () { updatePrep(item.id, { mode: 'fit' }); }),
@@ -4840,6 +7017,78 @@
                 ? 'Full image keeps the original image dimensions.'
                 : activeDimensions.label + ' output - ' + activeDimensions.width + ' x ' + activeDimensions.height + ' px PNG.')
             ),
+            h('section', {
+              className: 'space-y-3 rounded-2xl border border-[#b8ccc3] bg-[#eef5f1] p-4',
+              'aria-labelledby': 'sourcebook-accessibility-title',
+              'data-sourcebook-accessibility': 'editor'
+            },
+              h('div', { className: 'flex items-center justify-between gap-3' },
+                h('h3', { id: 'sourcebook-accessibility-title', className: 'text-sm font-black text-[#243e35]' }, 'Accessibility for reuse'),
+                h('span', {
+                  className: 'rounded-full border border-[#9db9ad] bg-white px-2 py-1 text-[9px] font-black uppercase tracking-wide text-[#35594c]',
+                  'data-sourcebook-alt-text-source': accessibility.source,
+                  'data-sourcebook-alt-text-reviewed': accessibility.reviewed ? 'true' : 'false'
+                }, accessibility.source === 'user-edited' ? 'User-edited' : (accessibility.decorative ? 'Decorative' : (accessibility.reviewed ? 'Catalog - confirmed' : 'Review needed')))
+              ),
+              h('p', { className: 'text-[11px] font-bold leading-relaxed text-[#4e645b]' }, 'This is a metadata-grounded starting point, not a visual AI description. Confirm it against the full image and the context where it will be used.'),
+              h('div', { className: 'grid grid-cols-2 gap-2', 'aria-label': 'Image purpose' },
+                h('button', {
+                  type: 'button',
+                  onClick: function () { updatePrep(item.id, { decorative: false }); },
+                  'aria-pressed': accessibility.decorative ? 'false' : 'true',
+                  'data-sourcebook-image-purpose': 'informative',
+                  className: 'min-h-[42px] rounded-xl border px-3 text-[11px] font-black ' + (accessibility.decorative ? 'border-[#b4c4bd] bg-white text-[#456158]' : 'border-[#276b57] bg-[#dcece5] text-[#174a3b]')
+                }, 'Informative'),
+                h('button', {
+                  type: 'button',
+                  onClick: function () { updatePrep(item.id, { decorative: true }); },
+                  'aria-pressed': accessibility.decorative ? 'true' : 'false',
+                  'data-sourcebook-image-purpose': 'decorative',
+                  className: 'min-h-[42px] rounded-xl border px-3 text-[11px] font-black ' + (accessibility.decorative ? 'border-[#276b57] bg-[#dcece5] text-[#174a3b]' : 'border-[#b4c4bd] bg-white text-[#456158]')
+                }, 'Decorative')
+              ),
+              accessibility.decorative
+                ? h('div', { className: 'rounded-xl border border-[#b7c9c0] bg-white p-3', 'data-sourcebook-decorative-note': 'true' },
+                    h('p', { className: 'text-xs font-black text-[#274d40]' }, 'Decorative: empty alt text'),
+                    h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed text-[#596b63]' }, 'Exports use alt="" so assistive technology can skip this image. Use this only when nearby content already conveys its meaning.')
+                  )
+                : h('div', { className: 'space-y-2' },
+                    h('label', { htmlFor: 'sourcebook-alt-' + item.id, className: 'block text-[11px] font-black text-[#36574c]' }, 'Alt text'),
+                    h('textarea', {
+                      id: 'sourcebook-alt-' + item.id,
+                      value: accessibility.altText,
+                      rows: 3,
+                      maxLength: 300,
+                      onChange: function (event) { updatePrep(item.id, { decorative: false, altText: event.target.value, altTextCustomized: true, altTextReviewed: true }); },
+                      className: 'w-full resize-y rounded-xl border border-[#9eb5ab] bg-white px-3 py-2 text-xs leading-relaxed text-[#243e35] focus:border-[#276b57] focus:outline-none focus:ring-2 focus:ring-[#276b57]/20',
+                      'data-sourcebook-alt-text': 'editor',
+                      'aria-describedby': 'sourcebook-alt-help-' + item.id
+                    }),
+                    h('div', { className: 'flex items-center justify-between gap-3 text-[9px] font-bold text-[#5b6d65]' },
+                      h('span', { id: 'sourcebook-alt-help-' + item.id }, accessibility.source === 'user-edited' ? 'Saved with this asset.' : 'Suggested from verified catalog metadata.'),
+                      h('span', null, accessibility.altText.length + '/300')
+                    ),
+                    accessibility.source === 'catalog-metadata' && !accessibility.reviewed && h('button', {
+                      type: 'button',
+                      onClick: function () {
+                        updatePrep(item.id, { decorative: false, altTextReviewed: true });
+                        toast('Alt text marked reviewed for this asset.', 'success');
+                        announce('Sourcebook alt text marked reviewed');
+                      },
+                      className: 'min-h-[38px] rounded-lg bg-[#276b57] px-3 text-[10px] font-black text-white hover:bg-[#1f5847]',
+                      'data-sourcebook-confirm-alt-text': item.id
+                    }, 'Confirm this alt text'),
+                    accessibility.source === 'catalog-metadata' && accessibility.reviewed && h('p', {
+                      className: 'rounded-lg bg-emerald-100 px-3 py-2 text-[10px] font-black text-emerald-950',
+                      'data-sourcebook-alt-text-confirmed': item.id
+                    }, 'Confirmed for this asset.'),
+                    accessibility.source === 'user-edited' && h('button', {
+                      type: 'button',
+                      onClick: function () { updatePrep(item.id, { decorative: false, altText: '', altTextCustomized: false, altTextReviewed: false }); },
+                      className: 'min-h-[36px] rounded-lg border border-[#9eb5ab] bg-white px-3 text-[10px] font-black text-[#36574c] hover:bg-[#f6faf8]'
+                    }, 'Reset to metadata')
+                  )
+            ),
             h('div', { className: 'grid grid-cols-2 gap-2' },
               h('button', {
                 type: 'button', onClick: function () { sendToPageDesigner(item); }, disabled: handoffId === item.id,
@@ -4851,7 +7100,19 @@
                 className: 'col-span-2 min-h-[46px] rounded-xl border border-[#b35a35] bg-white text-[#8c452b] font-black text-xs hover:bg-[#fff5ef] disabled:opacity-60 disabled:cursor-wait',
                 title: 'Download a self-contained source sheet with the prepared image, credit, license, and source record'
               }, packageId === item.id ? 'Building source package...' : 'Download source package'),
-              h('button', { type: 'button', onClick: function () { toggleSaved(item); }, className: 'min-h-[44px] rounded-xl font-black text-xs ' + (saved ? 'bg-[#183b32] text-white' : 'bg-[#d9e9e2] text-[#20483c]') }, saved ? '✓ In palette' : '+ Save'),
+              h('button', {
+                type: 'button',
+                onClick: function () { toggleSaved(item); },
+                'aria-pressed': saved ? 'true' : 'false',
+                'aria-label': saved ? 'Remove ' + item.title + ' from palette' : 'Save ' + item.title + ' to palette',
+                className: 'min-h-[44px] rounded-xl font-black text-xs ' + (saved ? 'bg-[#183b32] text-white' : 'bg-[#d9e9e2] text-[#20483c]')
+              }, saved ? '✓ In palette' : '+ Save'),
+              item.live === true && providerSupportsLiveSearch(item.provider) && h('button', {
+                type: 'button', onClick: function () { findMoreFromCollection(item); },
+                'data-sourcebook-more-from-provider': item.provider,
+                'aria-label': 'Find more ' + item.kind + ' assets from ' + item.provider,
+                className: 'col-span-2 min-h-[44px] rounded-xl bg-[#e6efe9] border border-[#9eb9ae] px-3 font-black text-xs text-[#214c3f] hover:bg-[#d8e8e0]'
+              }, 'More from ' + providerPresentation(item.provider).name),
               h('button', { type: 'button', onClick: function () {
                 copyText(attributionText(item)).then(function (copied) { toast(copied ? 'Attribution copied.' : 'Attribution could not be copied in this browser.', copied ? 'success' : 'error'); });
               }, className: 'min-h-[44px] rounded-xl bg-white border border-[#a9bbb3] font-black text-xs text-[#294d42]' }, 'Copy credit'),
@@ -4873,7 +7134,7 @@
               h('div', null,
                 h('h1', { className: 'font-serif text-3xl md:text-4xl font-black tracking-tight text-[#17372e]' }, 'Sourcebook'),
                 h('p', { className: 'mt-1 text-sm text-[#426157]' }, 'Describe what you need. Sourcebook searches large public collections, checks item-level rights, and selects a strong starter palette for educational materials or artwork.'),
-                h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.')
+                h('p', { className: 'mt-1 text-[11px] font-bold text-[#557168]' }, 'Federated search covers Commons, National Gallery of Art Open Access, Smithsonian Open Access, Biodiversity Heritage Library, the U.S. National Archives, SMK Open, Yale University Art Gallery Open Access, The Met, Art Institute of Chicago, Cleveland Museum, the Library of Congress, Wellcome Collection, Getty Museum Open Content, Museums Victoria Collections, and Openverse’s broad open-media index. The small built-in shelf is only an offline fallback.')
               )
             ),
             h('div', { className: 'mt-4 rounded-2xl border border-[#a7c0b5] bg-white/75 px-3.5 py-3 shadow-sm', role: 'status', 'data-sourcebook-ai-mode': capability.mode },
@@ -4898,7 +7159,7 @@
             ),
             h('label', { className: 'inline-flex min-h-[48px] items-center gap-2 rounded-xl border border-[#a9bbb4] bg-white px-3 text-xs font-black text-[#38564d]' },
               h('input', { type: 'checkbox', checked: autoCurate, onChange: function (event) { var checked = !!event.target.checked; setAutoCurate(checked); patch({ autoCurate: checked }); }, className: 'h-4 w-4 accent-[#183b32]' }),
-              'Save picks'
+              'Save picks to palette'
             ),
             h('button', { type: 'submit', className: 'min-h-[48px] px-6 rounded-xl bg-[#183b32] text-white text-sm font-black shadow-md hover:bg-[#245447]' }, autoCurate ? 'Find & save ' + paletteTarget : 'Search verified visuals')
           ),
@@ -4943,7 +7204,10 @@
             return h('button', {
               key: item.id, type: 'button', role: 'listitem', onClick: function () { inspectSourcebookItem(item); },
               className: 'relative h-12 w-12 shrink-0 overflow-hidden rounded-xl border-2 bg-[#edf1ed] ' + (isChecked ? 'border-amber-500 ring-2 ring-amber-200' : (isActive ? 'border-[#2f6b59]' : 'border-[#cad6d0]')),
-              title: 'Preview ' + item.title, 'aria-label': 'Preview saved source ' + item.title
+              title: 'Preview ' + item.title,
+              'aria-label': 'Preview saved source ' + item.title,
+              'aria-pressed': isActive ? 'true' : 'false',
+              'aria-controls': 'sourcebook-detail-panel'
             },
               h('img', { src: item.imageUrl, alt: '', className: 'h-full w-full object-cover', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
               isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-500 text-[9px] font-black text-white' }, '✓')
@@ -4952,9 +7216,17 @@
           h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? 'Viewing palette' : 'View palette')
         ),
         savedSmkVerificationStatus !== 'idle' && h('div', {
-          className: 'sb-no-print mb-4 rounded-xl border px-3 py-2 text-xs font-bold ' + (savedSmkVerificationStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : (savedSmkVerificationStatus === 'loading' ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')),
+          className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + (savedSmkVerificationStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : (savedSmkVerificationStatus === 'loading' ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950')),
           role: 'status', 'aria-live': 'polite', 'data-sourcebook-smk-saved-status': savedSmkVerificationStatus
-        }, savedSmkMessage),
+        },
+          h('span', { className: 'min-w-0 flex-1' }, savedSmkMessage),
+          savedSmkVerificationStatus === 'error' && h('button', {
+            type: 'button',
+            onClick: function () { setSavedVerificationRetry(function (value) { return value + 1; }); },
+            className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/80 px-3 py-2 text-[11px] font-black',
+            'data-sourcebook-retry-verification': 'true'
+          }, 'Retry verification')
+        ),
         query && liveStatus !== 'idle' && h('div', {
           className: 'sb-no-print mb-4 flex items-center gap-3 rounded-xl border px-3 py-2 text-xs font-bold ' + (liveStatus === 'error' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-emerald-50 text-emerald-950'),
           role: 'status', 'aria-live': 'polite', 'data-sourcebook-live-status': liveStatus
@@ -4962,14 +7234,19 @@
           h('span', { className: 'min-w-0 flex-1' }, liveMessage || 'Searching public collections and checking item-level rights metadata…'),
           searchActive && h('button', { type: 'button', onClick: function () { stopLiveRequest(); }, className: 'min-h-[40px] shrink-0 rounded-lg border border-current bg-white/70 px-3 py-2 text-[11px] font-black', 'aria-label': 'Stop the active Sourcebook search' }, 'Stop search')
         ),
-        providerReportList.length > 0 && h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#bfd0c8] bg-[#f7faf8] px-3 py-2', open: searchActive || undefined, 'aria-label': 'Provider search progress' },
+        providerReportList.length > 0 && h('details', { className: 'sb-no-print mb-4 rounded-2xl border border-[#bfd0c8] bg-[#f7faf8] px-3 py-2', open: searchActive || providerRetryableCount > 0 || undefined, 'aria-label': 'Provider search progress' },
           h('summary', { className: 'flex min-h-[40px] cursor-pointer items-center text-xs font-black text-[#315248]' },
             h('span', { className: 'mr-auto' }, searchActive ? 'Searching public collections…' : 'Collection search report'),
-            h('span', { className: 'text-[11px] font-bold' }, providerReportList.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; }).length + ' of ' + providerReportList.length + ' responded')
+            h('span', { className: 'text-[11px] font-bold' }, providerReportList.filter(function (report) { return report.status === 'ready' || report.status === 'cached'; }).length + ' of ' + providerReportList.length + ' responded' + (providerRetryableCount ? ' / ' + providerRetryableCount + ' need attention' : (providerDeepenableCount ? ' / open to search one collection deeper' : '')))
           ),
           h('div', { className: 'mt-2 grid gap-2 border-t border-[#d8e3de] pt-2 sm:grid-cols-2 lg:grid-cols-3', 'aria-live': 'polite' }, providerReportList.map(function (report) {
           var good = report.status === 'ready' || report.status === 'cached';
           var working = report.status === 'searching' || report.status === 'retrying';
+          var canRetry = providerReportCanRetry(report);
+          var canSearchDeeper = providerReportCanSearchDeeper(report, searchPage);
+          var hasProviderAction = canRetry || canSearchDeeper;
+          var isTargeting = retryingProvider === report.provider;
+          var loadedProviderCount = liveResults.filter(function (item) { return item.provider === report.provider && allowedByRightsScope(item, rightsScope); }).length;
           var tone = good ? 'border-emerald-200 bg-emerald-50 text-emerald-950' : (working ? 'border-sky-200 bg-sky-50 text-sky-950' : 'border-amber-200 bg-amber-50 text-amber-950');
           var statusLabel = report.status === 'ready' ? report.count + ' verified' : (report.status === 'cached' ? report.count + ' cached' : (report.status === 'cooldown' ? 'Cooling down' : (report.status === 'retrying' ? 'Retrying once' : (report.status === 'cancelled' ? 'Stopped' : (report.status === 'error' ? 'Unavailable' : 'Searching')))));
           return h('div', { key: report.provider, className: 'rounded-xl border px-3 py-2 ' + tone },
@@ -4977,18 +7254,93 @@
               h('strong', { className: 'truncate text-[11px]' }, report.provider),
               h('span', { className: 'shrink-0 text-[11px] font-black uppercase tracking-[.06em]' }, statusLabel)
             ),
-            report.message && h('p', { className: 'mt-1 text-[11px] leading-snug opacity-80' }, report.message)
+            report.message && h('p', { className: 'mt-1 text-[11px] leading-snug opacity-80' }, report.message),
+            h('p', {
+              className: 'mt-1 text-[10px] font-black uppercase tracking-[.05em] opacity-70',
+              'data-sourcebook-provider-batch': report.provider
+            }, 'Collection batch ' + (report.batch + 1) + ' / ' + loadedProviderCount + ' loaded on board'),
+            hasProviderAction && h('div', { className: 'mt-2 border-t border-current/20 pt-2' },
+              h('p', { className: 'mb-2 text-[10px] font-bold leading-snug opacity-80' }, canRetry
+                ? 'Retries this collection batch only; current verified board stays intact.'
+                : 'Checks only the next query batch in this collection; other collections are not requested.'),
+              h('button', {
+                type: 'button',
+                onClick: function () { if (canRetry) retryProviderCollection(report.provider); else searchDeeperProviderCollection(report.provider); },
+                disabled: searchActive || !!retryingProvider,
+                className: 'min-h-[44px] w-full rounded-lg border border-current bg-white/80 px-3 py-2 text-[11px] font-black disabled:cursor-wait disabled:opacity-60',
+                'aria-label': (canRetry ? 'Retry only ' : 'Search next batch only in ') + report.provider,
+                'data-sourcebook-retry-provider': canRetry ? report.provider : undefined,
+                'data-sourcebook-deepen-provider': canSearchDeeper ? report.provider : undefined
+              }, isTargeting ? (canRetry ? 'Retrying...' : 'Searching...') : (canRetry ? 'Retry collection' : 'Search next batch'))
+            )
           );
         }))),
+        providerReportList.length > 0 && h('section', {
+          className: 'sb-no-print mb-4 overflow-hidden rounded-2xl border border-[#b8d7ca] bg-gradient-to-br from-[#f4fbf7] via-white to-[#eef7f2] shadow-[0_8px_24px_rgba(24,59,50,0.08)]',
+          'aria-labelledby': 'sourcebook-coverage-guide-title',
+          'data-sourcebook-coverage-guide': 'true'
+        },
+          h('div', { className: 'flex flex-col gap-2 border-b border-[#d3e5dc] px-4 py-3 sm:flex-row sm:items-start sm:justify-between' },
+            h('div', null,
+              h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#4b7969]' }, 'Coverage guide'),
+              h('h3', { id: 'sourcebook-coverage-guide-title', className: 'mt-1 text-sm font-black text-[#183b32]' }, 'Choose the most useful next collection'),
+              h('p', { className: 'mt-1 max-w-2xl text-[11px] font-semibold leading-relaxed text-[#597269]' }, 'Deterministic source routing / one collection request. Your current rights-verified board and palette stay intact.')
+            ),
+            h('span', { className: 'w-fit rounded-full border border-[#b8d7ca] bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[.08em] text-[#31584c]' }, kind === 'All' ? 'Balanced coverage' : kind + ' route')
+          ),
+          h('div', { className: 'grid grid-cols-3 gap-2 px-4 pt-3', 'aria-label': 'Collection coverage summary' },
+            h('div', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'contributed' },
+              h('strong', { className: 'block text-lg leading-none text-emerald-900' }, coverageGuide.contributedCount),
+              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-emerald-800' }, 'Contributed')
+            ),
+            h('div', { className: 'rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'empty' },
+              h('strong', { className: 'block text-lg leading-none text-slate-800' }, coverageGuide.emptyCount),
+              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-slate-600' }, 'No match yet')
+            ),
+            h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 px-2.5 py-2', 'data-sourcebook-coverage-metric': 'attention' },
+              h('strong', { className: 'block text-lg leading-none text-amber-900' }, coverageGuide.attentionCount + coverageGuide.cooldownCount),
+              h('span', { className: 'mt-1 block text-[9px] font-black uppercase tracking-[.08em] text-amber-800' }, 'Need attention')
+            )
+          ),
+          h('div', { className: 'px-4 pt-3', 'aria-label': 'Collection reports resolved ' + coverageGuide.completionPercent + ' percent' },
+            h('div', { className: 'flex items-center justify-between text-[10px] font-black uppercase tracking-[.07em] text-[#526c62]' },
+              h('span', null, coverageGuide.checkedCount + ' checked / ' + coverageGuide.totalCount + ' reporting'),
+              h('span', null, coverageGuide.completionPercent + '% resolved')
+            ),
+            h('div', { className: 'mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#dbe9e2]' },
+              h('span', { className: 'block h-full rounded-full bg-gradient-to-r from-[#2d7762] to-[#79ad98]', style: { width: coverageGuide.completionPercent + '%' } })
+            )
+          ),
+          coverageGuide.nextProvider ? h('div', { className: 'm-4 mt-3 flex flex-col gap-3 rounded-xl border border-[#b6cec3] bg-white p-3 sm:flex-row sm:items-center' },
+            h('div', { className: 'min-w-0 flex-1' },
+              h('p', { className: 'text-[10px] font-black uppercase tracking-[.08em] text-[#658076]' }, 'Recommended next / batch ' + (coverageGuide.nextBatch + 1)),
+              h('strong', { className: 'mt-0.5 block text-sm text-[#183b32]' }, coverageGuide.nextProvider),
+              h('p', { className: 'mt-1 text-[11px] font-semibold leading-relaxed text-[#597269]' }, coverageGuide.reason)
+            ),
+            h('button', {
+              type: 'button',
+              onClick: function () { searchDeeperProviderCollection(coverageGuide.nextProvider); },
+              disabled: searchActive || !!retryingProvider,
+              className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 py-2 text-xs font-black text-white shadow-sm transition hover:bg-[#245345] disabled:cursor-wait disabled:opacity-60',
+              'aria-label': 'Search the recommended next collection: ' + coverageGuide.nextProvider,
+              'data-sourcebook-smart-expand': coverageGuide.nextProvider,
+              'data-sourcebook-coverage-next-batch': coverageGuide.nextBatch
+            }, retryingProvider === coverageGuide.nextProvider ? 'Searching...' : 'Search this collection next')
+          ) : h('p', { className: 'm-4 mt-3 rounded-xl border border-[#d4e2dc] bg-white px-3 py-3 text-[11px] font-bold leading-relaxed text-[#526c62]' }, 'No additional targeted batch is available from the collections that responded. Retry any collection needing attention or start a broader query.')
+        ),
         query && discoveryNote && h('div', { className: 'sb-no-print mb-4 rounded-xl border border-[#b9c9c2] bg-[#f7f4eb] px-3 py-2 text-xs text-[#395248]' },
           h('strong', null, 'Selection note: '), discoveryNote
         ),
         h('details', { className: 'sb-no-print mb-5 rounded-2xl border border-[#b9c9c2] bg-white px-3 py-2' },
           h('summary', { className: 'flex min-h-[42px] cursor-pointer items-center text-xs font-black text-[#315248]' },
             h('span', { className: 'mr-auto' }, 'Filters and search options'),
-            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[11px]' }, kind + ' · ' + (provider === 'All' ? '13 collections' : provider) + ' · ' + (rightsScope === 'pd' ? 'Public Domain' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY')))
+            h('span', { className: 'rounded-full bg-[#e9f1ed] px-2.5 py-1 text-[11px]' }, kind + ' · ' + (provider === 'All' ? LIVE_PROVIDER_NAMES.length + ' collections' : provider) + ' · ' + (rightsScope === 'pd' ? 'Public Domain' : (rightsScope === 'pd-cc0' ? 'PD + CC0' : 'PD + CC0 + CC BY')))
           ),
           h('div', { className: 'mt-3 space-y-3 border-t border-[#d8e0dc] pt-3' },
+            h('p', {
+              className: 'rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-[11px] font-bold leading-relaxed text-sky-950',
+              'data-sourcebook-search-settings-note': 'true'
+            }, 'Changing material type, reuse scope, or search scope starts a fresh rights-checked collection search. Use Explore loaded board below for instant filtering.'),
             h('div', { className: 'flex gap-2 flex-wrap', 'aria-label': 'Material type filters' }, kinds.map(function (value) { return controlButton(value, kind === value, function () { setFilter('kind', value); }); })),
             h('div', { className: 'flex flex-col md:flex-row md:items-center gap-3' },
               h('div', { className: 'flex gap-2 flex-wrap flex-1 items-center', 'aria-label': 'Reuse rights filters' },
@@ -4997,8 +7349,11 @@
                 controlButton('Include CC0', rightsScope === 'pd-cc0', function () { setFilter('rights', 'pd-cc0'); }),
                 controlButton('Include CC BY', rightsScope === 'all', function () { setFilter('rights', 'all'); })
               ),
-              h('label', { className: 'text-xs font-black text-[#4d645b]' }, 'Collection ',
-                h('select', { value: provider, onChange: function (event) { setFilter('provider', event.target.value); }, className: 'ml-1 min-h-[42px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-xs font-bold' }, providers.map(function (value) { return h('option', { key: value, value: value }, value); }))
+              h('div', { className: 'rounded-xl border border-[#c2d0ca] bg-[#f7faf8] px-3 py-2' },
+                h('label', { className: 'text-xs font-black text-[#4d645b]' }, 'Search scope ',
+                  h('select', { value: provider, onChange: function (event) { setFilter('provider', event.target.value); }, className: 'ml-1 min-h-[42px] rounded-xl border border-[#a9bbb4] bg-white px-3 text-xs font-bold' }, providers.map(function (value) { return h('option', { key: value, value: value }, value); }))
+                ),
+                h('p', { className: 'mt-1 text-[10px] font-bold text-[#62766e]' }, 'Changing this starts a new collection search.')
               ),
               h('label', { className: 'inline-flex min-h-[42px] items-center gap-2 rounded-xl border border-[#c2d0ca] bg-[#eef4f0] px-3 text-[11px] font-black text-[#31584c]', title: capability.visionAi ? 'Let Gemini compare a temporary contact sheet of rights-verified thumbnails' : 'Visual AI is not connected. Sourcebook still searches and ranks rights-verified catalog metadata.' },
                 h('input', { type: 'checkbox', checked: visualReview && capability.visionAi, disabled: !capability.visionAi, onChange: function (event) { var checked = !!event.target.checked; setVisualReview(checked); patch({ visualReview: checked }); }, className: 'h-4 w-4 accent-[#183b32]' }),
@@ -5009,12 +7364,12 @@
           )
         ),
         h('div', { className: 'grid lg:grid-cols-[minmax(0,1fr)_350px] gap-5 items-start' },
-          h('main', null,
+          h('main', { className: 'min-w-0' },
             h('div', { className: 'flex flex-wrap items-end justify-between gap-3 mb-3' },
               h('div', null,
                 h('p', { className: 'text-[10px] uppercase tracking-[.18em] font-black text-[#5c6f67]' }, showingCollection ? 'Saved working set' : (query ? 'Federated public collections' : 'Offline fallback shelf')),
-                h('h2', { className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? visible.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
-                !showingCollection && h('p', { className: 'mt-1 text-[11px] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' shown')
+                h('h2', { className: 'font-serif text-2xl font-black text-[#18352d]' }, showingCollection ? storedTitle : (query ? refinedResults.length + ' matches for “' + query + '”' : 'Browse the starting shelf')),
+                !showingCollection && h('p', { className: 'mt-1 text-[11px] font-bold text-[#597067]' }, publicDomainResultCount + ' public-domain result' + (publicDomainResultCount === 1 ? '' : 's') + ' available')
               ),
               h('div', { className: 'sb-no-print flex flex-wrap justify-end gap-2' },
                 controlButton('Results (' + combinedResults.length + ')', !showingCollection, function () { setShowingCollection(false); }),
@@ -5028,7 +7383,93 @@
                 }, 'Undo palette change')
               )
             ),
-            !showingCollection && combinedResults.length > 0 && h('div', {
+            !showingCollection && combinedResults.length > 0 && loadedProviderCoverageList.length > 0 && h('section', {
+              className: 'sb-no-print mb-3 rounded-2xl border border-[#8fb2a5] bg-gradient-to-br from-[#eef6f2] to-white p-3 shadow-sm',
+              'aria-label': 'Explore loaded Sourcebook results',
+              'data-sourcebook-loaded-provider-filter': 'true',
+              'data-sourcebook-loaded-facets': 'true'
+            },
+              h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                h('div', null,
+                  h('h3', { className: 'font-serif text-lg font-black text-[#183b32]' }, 'Explore loaded board'),
+                  h('p', { className: 'mt-0.5 text-[10px] font-black uppercase tracking-[.1em] text-[#587168]' }, 'Instant filters · no new search')
+                ),
+                hasLoadedLocalFilters && h('button', {
+                  type: 'button', onClick: clearLoadedFilters,
+                  className: 'min-h-[40px] rounded-xl border border-[#8fa99f] bg-white px-3 text-[11px] font-black text-[#31584c]',
+                  'data-sourcebook-clear-loaded-filters': 'true'
+                }, 'Clear local filters')
+              ),
+              h('div', { className: 'mt-3 space-y-3' },
+                h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, 'Collection'),
+                  h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter loaded results by collection' },
+                    h('button', {
+                      type: 'button', onClick: function () { chooseLoadedProvider('All'); },
+                      'aria-pressed': effectiveLoadedProviderFilter === 'All' ? 'true' : 'false',
+                      'data-sourcebook-loaded-provider': 'All',
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedProviderFilter === 'All' ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
+                    }, 'All · ' + combinedResults.length),
+                    loadedProviderCoverageList.map(function (entry) {
+                      var selected = effectiveLoadedProviderFilter === entry.provider;
+                      return h('button', {
+                        key: entry.provider, type: 'button', onClick: function () { chooseLoadedProvider(entry.provider); },
+                        'aria-pressed': selected ? 'true' : 'false',
+                        'data-sourcebook-loaded-provider': entry.provider,
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#183b32] bg-[#183b32] text-white' : 'border-[#9fb6ad] bg-white text-[#31584c]')
+                      }, entry.provider + ' · ' + entry.count);
+                    })
+                  )
+                ),
+                loadedKindCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, 'Visual type'),
+                  h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter loaded results by visual type' },
+                    h('button', {
+                      type: 'button', onClick: function () { chooseLoadedKind('All'); },
+                      'aria-pressed': effectiveLoadedKindFilter === 'All' ? 'true' : 'false',
+                      'data-sourcebook-loaded-kind': 'All',
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedKindFilter === 'All' ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
+                    }, 'All types · ' + loadedProviderResults.length),
+                    loadedKindCoverageList.map(function (entry) {
+                      var selected = effectiveLoadedKindFilter === entry.kind;
+                      return h('button', {
+                        key: entry.kind, type: 'button', onClick: function () { chooseLoadedKind(entry.kind); },
+                        'aria-pressed': selected ? 'true' : 'false',
+                        'data-sourcebook-loaded-kind': entry.kind,
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-[#315f7a] bg-[#315f7a] text-white' : 'border-sky-200 bg-white text-[#315f7a]')
+                      }, entry.kind + ' · ' + entry.count);
+                    })
+                  )
+                ),
+                loadedRightsCoverageList.length > 0 && h('div', { className: 'rounded-xl border border-[#c4d5ce] bg-white/80 p-2.5' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.12em] text-[#536c63]' }, 'Reuse status'),
+                  h('div', { className: 'mt-1.5 flex gap-2 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter loaded results by reuse status' },
+                    h('button', {
+                      type: 'button', onClick: function () { chooseLoadedRights('All'); },
+                      'aria-pressed': effectiveLoadedRightsFilter === 'All' ? 'true' : 'false',
+                      'data-sourcebook-loaded-rights': 'All',
+                      className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (effectiveLoadedRightsFilter === 'All' ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-emerald-200 bg-white text-emerald-900')
+                    }, 'All allowed · ' + loadedKindResults.length),
+                    loadedRightsCoverageList.map(function (entry) {
+                      var selected = effectiveLoadedRightsFilter === entry.rightsType;
+                      return h('button', {
+                        key: entry.rightsType, type: 'button', onClick: function () { chooseLoadedRights(entry.rightsType); },
+                        'aria-pressed': selected ? 'true' : 'false',
+                        'data-sourcebook-loaded-rights': entry.rightsType,
+                        className: 'min-h-[44px] shrink-0 rounded-full border px-3 text-[11px] font-black ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white' : (entry.rightsType === 'ccby' ? 'border-amber-300 bg-amber-50 text-amber-950' : 'border-emerald-200 bg-white text-emerald-900'))
+                      }, entry.label + ' · ' + entry.count);
+                    })
+                  )
+                )
+              ),
+              h('p', { className: 'mt-3 rounded-lg bg-[#183b32] px-3 py-2 text-[10px] font-bold text-white', role: 'status', 'aria-live': 'polite', 'data-sourcebook-loaded-facet-status': 'true' },
+                'Showing ' + loadedFacetResults.length + ' of ' + combinedResults.length + ' loaded rights-verified result' + (combinedResults.length === 1 ? '' : 's')
+                  + (effectiveLoadedProviderFilter === 'All' ? ' across all loaded collections' : ' from ' + effectiveLoadedProviderFilter)
+                  + (effectiveLoadedKindFilter === 'All' ? '' : ' · ' + effectiveLoadedKindFilter)
+                  + (effectiveLoadedRightsFilter === 'All' ? '' : ' · ' + effectiveLoadedRightsLabel)
+                  + '. No provider request was made.'
+              )
+            ),            !showingCollection && combinedResults.length > 0 && h('div', {
               className: 'sb-no-print mb-3 grid gap-2 rounded-2xl border border-[#b9c9c2] bg-white p-3 sm:grid-cols-[minmax(0,1fr)_auto]',
               'aria-label': 'Refine loaded Sourcebook results'
             },
@@ -5054,20 +7495,21 @@
                 )
               ),
               h('p', { id: 'sourcebook-board-filter-count', className: 'text-[10px] font-bold text-[#5a7168] sm:col-span-2', role: 'status' },
-                'Showing ' + refinedResults.length + ' of ' + combinedResults.length + ' loaded result' + (combinedResults.length === 1 ? '' : 's') + (boardFilter.trim() ? ' for local filter "' + boardFilter.trim() + '"' : '')
+                refinedResults.length + ' of ' + loadedFacetResults.length + ' locally selected result' + (loadedFacetResults.length === 1 ? '' : 's') + ' match the text and sort controls' + (boardFilter.trim() ? ', including local filter "' + boardFilter.trim() + '"' : '') + '. ' + combinedResults.length + ' total rights-verified results are loaded. ' + visible.length + ' currently rendered.'
               )
             ),
-            !showingCollection && query && liveResults.length > 0 && h('div', {
+            !showingCollection && query && (liveResults.length > 0 || canLoadMore) && h('div', {
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-[#b9c9c2] bg-[#eef4f0] p-3',
               'aria-label': 'Live result expansion and curation controls'
             },
-              h('span', { className: 'mr-auto text-[11px] font-bold text-[#476158]' }, liveResults.length + ' verified live assets across ' + (searchPage + 1) + ' provider batch' + (searchPage ? 'es' : '')),
+              h('span', { className: 'mr-auto text-[11px] font-bold text-[#476158]' }, liveResults.length + ' verified live assets across ' + (searchPage + 1) + ' search batch' + (searchPage ? 'es' : '')),
               h('div', { className: 'flex flex-wrap items-center gap-1.5', 'aria-label': 'Live match quality' },
                 h('span', { className: 'rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950', title: 'Catalog metadata directly supports the request' }, liveMatchQuality.strong + ' strong'),
                 h('span', { className: 'rounded-full bg-sky-100 px-2.5 py-1 text-[10px] font-black text-sky-950', title: 'Some catalog metadata supports the request' }, liveMatchQuality.related + ' related'),
                 liveMatchQuality.broad > 0 && h('span', { className: 'rounded-full bg-slate-200 px-2.5 py-1 text-[10px] font-black text-slate-700', title: 'Useful for exploration, but not automatically recommended' }, liveMatchQuality.broad + ' broad')
               ),
-              h('span', { className: 'rounded-full border border-[#aac0b7] bg-white px-2.5 py-1 text-[10px] font-black text-[#426157]', title: 'Up to 96 verified results are saved with this project and revalidated when restored' }, 'Auto-saved for 7 days'),
+              h('span', { className: 'rounded-full border border-[#aac0b7] bg-white px-2.5 py-1 text-[10px] font-black text-[#426157]', title: 'Up to 96 verified results are saved for seven days; rights-sensitive sources are checked or require a fresh search when restored' }, 'Board saved for 7 days'),
+              yaleLiveResultCount > 0 && h('span', { className: 'rounded-full border border-sky-300 bg-sky-50 px-2.5 py-1 text-[10px] font-black text-sky-950', title: 'Saved Yale results are hidden until their exact LUX object and IIIF canvas rights are checked again' }, 'Yale: rechecked after reload'),
               h('button', {
                 type: 'button', disabled: !canLoadMore || liveStatus === 'loading' || liveStatus === 'loading-more', onClick: loadMoreResults,
                 className: 'min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40'
@@ -5137,7 +7579,14 @@
                 var saved = collection.indexOf(item.id) !== -1;
                 var pinned = pinnedRecommendationIds.indexOf(item.id) !== -1;
                 return h('article', { key: item.id, className: 'min-w-0 bg-[#f7f4ed] text-[#18352d]' },
-                  h('button', { type: 'button', onClick: function () { inspectSourcebookItem(item); }, className: 'block w-full text-left', 'aria-label': 'Inspect curated pick ' + (index + 1) + ': ' + item.title },
+                  h('button', {
+                    type: 'button',
+                    onClick: function () { inspectSourcebookItem(item); },
+                    className: 'block w-full text-left',
+                    'aria-label': 'Inspect curated pick ' + (index + 1) + ': ' + item.title,
+                    'aria-pressed': active && active.id === item.id ? 'true' : 'false',
+                    'aria-controls': 'sourcebook-detail-panel'
+                  },
                     h('div', { className: 'relative' },
                       preview(item, { mode: 'fit', zoom: 100, x: 50, y: 50 }, recommendedItems.length <= 4 ? 185 : 150),
                       h('span', { className: 'absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-full bg-[#183b32] px-2 text-[11px] font-black text-white shadow-md' }, '#' + (index + 1)),
@@ -5215,10 +7664,301 @@
                   : 'No subset selected. Preparation and output actions use all ' + selectedItems.length + ' palette assets.'
               )
             ),
-            showingCollection && selectedItems.length > 0 && h('div', { className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[11px] text-emerald-950' },
-              h('strong', null, 'Rights check passed:'),
-              h('span', null, selectedRightsSummary),
-              h('span', { className: 'ml-auto font-bold' }, selectedItems.length + ' / ' + PALETTE_MAX_ASSETS + ' reusable asset' + (selectedItems.length === 1 ? '' : 's'))
+            showingCollection && selectedItems.length > 0 && h('section', {
+              className: 'sb-no-print mb-3 overflow-hidden rounded-2xl border border-violet-200 bg-violet-50',
+              'aria-labelledby': 'sourcebook-usage-plan-title',
+              'data-sourcebook-usage-plan': paletteUsageSummary.total
+            },
+              h('div', { className: 'grid gap-3 border-b border-violet-200 bg-white p-4 md:grid-cols-[minmax(0,1fr)_260px] md:items-center' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.15em] text-violet-700' }, 'Reuse plan'),
+                  h('h2', { id: 'sourcebook-usage-plan-title', className: 'mt-1 font-serif text-lg font-black text-[#2f254d]' }, 'Plan how each asset will be used'),
+                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-violet-900' }, 'Sourcebook can suggest a role from the material type and preparation, or you can set one. The plan travels with JSON, source packages, print sheets, and Page Designer handoff.')
+                ),
+                h('label', { className: 'text-[10px] font-black text-violet-950' }, (checkedPaletteItems.length ? 'Set use for selected assets' : 'Set use for all palette assets'),
+                  h('select', {
+                    value: '',
+                    onChange: function (event) { if (event.target.value) applyUsageIntentToPalette(event.target.value); },
+                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-300 bg-white px-3 text-xs font-bold text-[#30264f]',
+                    'data-sourcebook-bulk-usage-intent': checkedPaletteItems.length || selectedItems.length,
+                    'aria-label': checkedPaletteItems.length ? 'Set intended use for selected palette assets' : 'Set intended use for every palette asset'
+                  },
+                    h('option', { value: '', disabled: true }, 'Choose intended use…'),
+                    USAGE_INTENT_ORDER.map(function (intentId) {
+                      return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
+                    })
+                  )
+                )
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-2 p-3', 'aria-label': 'Palette intended use coverage' },
+                paletteUsageSummary.entries.map(function (entry) {
+                  return h('span', {
+                    key: entry.id,
+                    className: 'rounded-full border border-violet-200 bg-white px-2.5 py-1 text-[10px] font-black text-violet-950',
+                    'data-sourcebook-usage-count': entry.id + ':' + entry.count
+                  }, entry.label + ' ' + entry.count);
+                }),
+                h('span', { className: 'ml-auto text-[10px] font-bold text-violet-800' }, paletteUsageSummary.automatic + ' suggested · ' + paletteUsageSummary.sourcebookPlanned + ' Sourcebook-planned · ' + paletteUsageSummary.manual + ' set by you')
+              ),
+              h('div', { className: 'grid gap-3 border-t border-violet-200 bg-[#f7f4ff] p-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-violet-700' }, 'One-click role planning'),
+                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-violet-900' }, 'Sourcebook balances roles from catalog metadata, preparation, dimensions, and set coverage. Roles you assigned yourself stay unchanged, and no new search or AI request is made.')
+                ),
+                h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': checkedPaletteItems.length ? 'Plan roles for selected palette assets' : 'Plan roles for the full palette' },
+                  USAGE_PLAN_ORDER.map(function (planId) {
+                    var usagePlan = USAGE_PLANS[planId];
+                    return h('button', {
+                      key: planId,
+                      type: 'button',
+                      onClick: function () { applyUsagePlanToPalette(planId); },
+                      className: 'min-h-[40px] rounded-xl border border-violet-300 bg-white px-3 text-[11px] font-black text-violet-950 hover:bg-violet-100',
+                      title: usagePlan.description,
+                      'data-sourcebook-usage-plan-action': planId
+                    }, usagePlan.buttonLabel);
+                  })
+                )
+              ),
+              h('div', {
+                className: 'border-t border-violet-200 bg-white',
+                'data-sourcebook-role-map': paletteRoleBoard.planId
+              },
+                h('div', { className: 'flex flex-col gap-3 border-b border-violet-100 bg-[#fbfaff] p-4 sm:flex-row sm:items-center' },
+                  h('div', { className: 'min-w-0 flex-1' },
+                    h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-violet-700' }, 'Visual set map'),
+                    h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-[#4b4164]' }, paletteRoleBoard.description)
+                  ),
+                  h('span', {
+                    className: 'self-start rounded-full border px-3 py-1.5 text-[10px] font-black ' + (paletteRoleBoard.ready ? 'border-emerald-300 bg-emerald-50 text-emerald-900' : 'border-amber-300 bg-amber-50 text-amber-900'),
+                    'data-sourcebook-role-coverage': paletteRoleBoard.coveragePercent
+                  }, paletteRoleBoard.coveragePercent + '% covered \\u00b7 ' + paletteRoleBoard.planLabel)
+                ),
+                h('div', { className: 'grid gap-3 p-4 sm:grid-cols-2 xl:grid-cols-3', role: 'list', 'aria-label': paletteRoleBoard.planLabel + ' visual roles' },
+                  paletteRoleBoard.groups.map(function (group) {
+                    return h('article', {
+                      key: group.id,
+                      role: 'listitem',
+                      className: 'min-w-0 rounded-2xl border p-3 ' + (group.missing ? 'border-amber-200 bg-amber-50/70' : 'border-violet-100 bg-[#fbfaff]'),
+                      'data-sourcebook-role-group': group.id
+                    },
+                      h('div', { className: 'flex items-start justify-between gap-2' },
+                        h('h3', { className: 'text-xs font-black text-[#30264f]' }, group.label),
+                        h('span', { className: 'shrink-0 rounded-full bg-white px-2 py-1 text-[9px] font-black text-violet-800' }, group.required ? group.count + '/' + group.required : group.count + ' saved')
+                      ),
+                      h('p', { className: 'mt-1 text-[9px] font-semibold leading-relaxed text-[#665d79]' }, group.description),
+                      h('div', { className: 'mt-3 grid grid-cols-4 gap-2' },
+                        group.items.slice(0, 4).map(function (roleItem) {
+                          return h('button', {
+                            key: roleItem.id,
+                            type: 'button',
+                            onClick: function () { inspectSourcebookItem(roleItem); },
+                            className: 'group relative aspect-square min-w-0 overflow-hidden rounded-xl border border-violet-200 bg-violet-50 text-left focus:outline-none focus:ring-2 focus:ring-violet-500',
+                            title: roleItem.title + ' - ' + roleItem.sourceLabel,
+                            'aria-label': 'Inspect ' + roleItem.title + ' planned as ' + group.label,
+                            'data-sourcebook-role-asset': roleItem.id
+                          },
+                            h('img', { src: roleItem.imageUrl, alt: '', loading: 'lazy', referrerPolicy: 'no-referrer', className: 'h-full w-full object-cover transition-transform group-hover:scale-105' }),
+                            h('span', { className: 'absolute bottom-1 right-1 grid h-5 min-w-5 place-items-center rounded-full border border-white/70 bg-[#183b32]/90 px-1 text-[9px] font-black text-white', 'aria-hidden': 'true' }, providerPresentation(roleItem.provider).mark)
+                          );
+                        }),
+                        group.missing > 0 && h('div', {
+                          className: 'col-span-2 flex min-h-[72px] flex-col items-center justify-center rounded-xl border border-dashed border-amber-400 bg-white px-2 text-center',
+                          'data-sourcebook-role-gap': group.id
+                        },
+                          h('span', { className: 'text-[10px] font-black text-amber-900' }, 'Needs ' + group.missing + ' ' + group.shortLabel.toLowerCase()),
+                          h('span', { className: 'mt-1 text-[8px] font-bold uppercase tracking-[.1em] text-amber-700' }, 'Suggested gap')
+                        )
+                      ),
+                      group.items.length > 4 && h('p', { className: 'mt-2 text-[9px] font-black text-violet-700' }, '+' + (group.items.length - 4) + ' more in this role')
+                    );
+                  })
+                ),
+                h('div', { className: 'flex flex-col gap-1 border-t border-violet-100 bg-[#f7f4ff] px-4 py-3 text-[10px] font-bold text-violet-900 sm:flex-row sm:items-center sm:justify-between' },
+                  h('span', { 'data-sourcebook-role-gaps': paletteRoleBoard.missing.length }, paletteRoleBoard.ready ? 'All planned roles covered' : 'Suggested gaps: ' + paletteRoleBoard.missingLabel),
+                  h('span', null, 'Advisory only - missing roles never block output.')
+                )
+              )
+            ),
+            showingCollection && selectedItems.length > 0 && h('section', {
+              className: 'sb-no-print mb-3 overflow-hidden rounded-2xl border border-[#9fb9ae] bg-white',
+              'aria-labelledby': 'sourcebook-output-preflight-title',
+              'data-sourcebook-output-preflight': outputPreflightSummary.ready ? 'ready' : 'review'
+            },
+              h('div', { className: 'flex flex-col gap-3 border-b border-[#d3dfda] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, checkedPaletteItems.length ? 'Selected output' : 'Full palette output'),
+                  h('h2', { id: 'sourcebook-output-preflight-title', className: 'mt-1 font-serif text-xl font-black' }, 'Output preflight'),
+                  h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d1e0db]' }, 'A truthful snapshot of intended use, reuse rights, accessibility review, print evidence, and attribution before download.')
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-2' },
+                  h('span', {
+                    className: 'rounded-full px-3 py-1.5 text-[10px] font-black ' + (outputPreflightSummary.ready ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'),
+                    'data-sourcebook-preflight-status': outputPreflightSummary.pendingChecks
+                  }, outputPreflightSummary.ready ? 'Ready for output' : outputPreflightSummary.pendingChecks + ' check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + ' remain'),
+                  h('span', { className: 'rounded-full border border-[#65867a] bg-white/10 px-3 py-1.5 text-[10px] font-black', 'data-sourcebook-output-count': exportItems.length }, exportItems.length + ' asset' + (exportItems.length === 1 ? '' : 's'))
+                )
+              ),
+              h('div', { className: 'grid gap-px bg-[#dbe5e1] sm:grid-cols-2 xl:grid-cols-4' },
+                h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-rights': outputPreflightSummary.rightsVerified + '/' + outputPreflightSummary.total },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, 'Rights check passed:'),
+                  h('p', { className: 'mt-1 text-lg font-black text-emerald-800' }, outputPreflightSummary.rightsVerified + '/' + outputPreflightSummary.total),
+                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, exportRightsSummary || 'No output assets')
+                ),
+                h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-accessibility': outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, 'Accessibility reviewed'),
+                  h('p', { className: 'mt-1 text-lg font-black ' + (outputPreflightSummary.accessibilitySuggested ? 'text-amber-800' : 'text-emerald-800') }, outputPreflightSummary.accessibilityReviewed + '/' + outputPreflightSummary.total),
+                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.accessibilitySuggested ? outputPreflightSummary.accessibilitySuggested + ' catalog suggestion' + (outputPreflightSummary.accessibilitySuggested === 1 ? '' : 's') + ' to review' : 'Every image purpose is confirmed')
+                ),
+                h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-print': outputPrintSupported + '/' + outputPreflightSummary.total },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, 'Print supported'),
+                  h('p', { className: 'mt-1 text-lg font-black ' + (outputPreflightSummary.printAttention || outputPreflightSummary.printVerify ? 'text-amber-800' : 'text-emerald-800') }, outputPrintSupported + '/' + outputPreflightSummary.total),
+                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.printAttention + ' need attention | ' + outputPreflightSummary.printVerify + ' verify full-size')
+                ),
+                h('div', { className: 'bg-white p-3', 'data-sourcebook-preflight-attribution': outputPreflightSummary.attributionRequired },
+                  h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, 'CC BY attribution'),
+                  h('p', { className: 'mt-1 text-lg font-black text-[#31584c]' }, outputPreflightSummary.attributionRequired),
+                  h('p', { className: 'mt-1 text-[9px] font-bold text-[#5a6d65]' }, outputPreflightSummary.attributionRequired ? 'Required credits are included in output' : 'No CC BY credit required')
+                )
+              ),
+              h('div', { className: 'flex flex-col gap-3 border-t border-[#d3dfda] bg-[#f1f6f3] p-3 lg:flex-row lg:items-center' },
+                h('p', { className: 'min-w-0 flex-1 text-[10px] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
+                  outputPreflightSummary.ready
+                    ? 'All output checks currently have supporting evidence.'
+                    : outputReviewRows.length + ' asset' + (outputReviewRows.length === 1 ? '' : 's') + ' account for ' + outputPreflightSummary.pendingChecks + ' remaining evidence check' + (outputPreflightSummary.pendingChecks === 1 ? '' : 's') + '. Output remains available with every review note preserved.'
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', {
+                    type: 'button',
+                    disabled: !outputPreflightRows.length,
+                    onClick: function () {
+                      copyText(outputPreflightReportText).then(function (copied) {
+                        toast(copied ? 'Output preflight report copied.' : 'The preflight report could not be copied in this browser.', copied ? 'success' : 'error');
+                        announce(copied ? 'Output preflight report copied' : 'Could not copy output preflight report');
+                      });
+                    },
+                    className: 'min-h-[42px] rounded-xl border border-[#6c8b80] bg-white px-4 text-xs font-black text-[#244c40] disabled:opacity-40',
+                    'data-sourcebook-copy-preflight': outputPreflightRows.length
+                  }, 'Copy preflight report'),
+                  h('button', {
+                    type: 'button',
+                    disabled: !nextOutputReviewItem,
+                    onClick: function () {
+                      if (!nextOutputReviewItem) return;
+                      setPaletteAccessibilityFilter('all');
+                      inspectSourcebookItem(nextOutputReviewItem);
+                      announce('Reviewing remaining output checks for ' + nextOutputReviewItem.title);
+                    },
+                    className: 'min-h-[42px] rounded-xl bg-[#b84d37] px-4 text-xs font-black text-white disabled:opacity-40',
+                    'data-sourcebook-review-next-check': nextOutputReviewItem ? nextOutputReviewItem.id : '',
+                    'data-sourcebook-review-print-issue': nextOutputPrintIssue ? nextOutputPrintIssue.id : ''
+                  }, nextOutputReviewItem ? 'Review next check' : 'All checks complete')
+                )
+              ),
+              h('details', {
+                className: 'border-t border-[#d3dfda] bg-white',
+                open: outputReviewRows.length > 0,
+                'data-sourcebook-preflight-queue': outputReviewRows.length
+              },
+                h('summary', { className: 'cursor-pointer px-4 py-3 text-[11px] font-black text-[#244c40] hover:bg-[#f5f8f6]' },
+                  outputReviewRows.length
+                    ? 'Asset review queue · ' + outputReviewRows.length + ' need action'
+                    : 'Asset-level preflight receipt · ' + outputPreflightRows.length + ' ready'
+                ),
+                h('div', { className: 'grid gap-2 border-t border-[#e0e8e4] bg-[#f6f8f7] p-3 md:grid-cols-2' }, outputQueueRows.map(function (row) {
+                  return h('article', {
+                    key: row.id,
+                    className: 'rounded-xl border border-[#c6d4ce] bg-white p-3',
+                    'data-sourcebook-preflight-row': row.id,
+                    'data-sourcebook-preflight-row-status': row.status
+                  },
+                    h('div', { className: 'flex items-start gap-3' },
+                      h('div', { className: 'min-w-0 flex-1' },
+                        h('p', { className: 'truncate text-xs font-black text-[#18352d]' }, row.title),
+                        h('p', { className: 'mt-0.5 truncate text-[9px] font-bold uppercase tracking-[.1em] text-[#60736b]' }, row.provider)
+                      ),
+                      h('button', {
+                        type: 'button',
+                        onClick: function () {
+                          var rowItem = exportItems.filter(function (item) { return item.id === row.id; })[0];
+                          if (!rowItem) return;
+                          setPaletteAccessibilityFilter('all');
+                          inspectSourcebookItem(rowItem);
+                          announce('Inspecting output checks for ' + rowItem.title);
+                        },
+                        className: 'min-h-[38px] shrink-0 rounded-lg border border-[#8fa69d] bg-white px-3 text-[10px] font-black text-[#244c40]'
+                      }, row.status === 'review' ? 'Review' : 'Inspect')
+                    ),
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                      h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[9px] font-black text-violet-950' }, row.usageIntentLabel + (row.usageIntentSuggested ? ' · suggested' : (row.usageIntentPlanId ? ' · ' + USAGE_PLANS[row.usageIntentPlanId].label : ''))),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (row.rightsVerified ? 'bg-emerald-100 text-emerald-950' : 'bg-rose-100 text-rose-950') }, row.rightsVerified ? 'Rights verified' : 'Rights blocked'),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (row.accessibilityReviewed ? 'bg-emerald-100 text-emerald-950' : 'bg-amber-100 text-amber-950') }, row.accessibilityLabel),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + ((row.printStatus === 'ready' || row.printStatus === 'usable') ? 'bg-sky-100 text-sky-950' : 'bg-amber-100 text-amber-950') }, row.printLabel),
+                      row.attributionRequired && h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[9px] font-black text-violet-950' }, 'Credit required')
+                    ),
+                    h('p', { className: 'mt-2 text-[10px] font-bold leading-relaxed text-[#53685f]' },
+                      row.actions.length ? 'Next: ' + row.actions.join('; ') + '.' : 'All current evidence checks pass.'
+                    )
+                  );
+                }))
+              )
+            ),
+            showingCollection && selectedItems.length > 0 && h('section', {
+              className: 'sb-no-print mb-3 overflow-hidden rounded-2xl border border-[#9ebcaf] bg-[#f4f8f6]',
+              'aria-labelledby': 'sourcebook-palette-accessibility-title',
+              'data-sourcebook-palette-accessibility': 'review'
+            },
+              h('div', { className: 'grid gap-3 border-b border-[#c7d8d1] bg-white p-4 md:grid-cols-[minmax(0,1fr)_220px] md:items-center' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.15em] text-[#507167]' }, 'Accessibility review queue'),
+                  h('h2', { id: 'sourcebook-palette-accessibility-title', className: 'mt-1 font-serif text-lg font-black text-[#18352d]' }, 'Check image purpose and alt text'),
+                  h('p', { className: 'mt-1 text-[11px] font-bold leading-relaxed text-[#53685f]' }, 'Catalog suggestions remain clearly labeled until you confirm them, edit them, or mark the image decorative. Export stays available and preserves the review status.')
+                ),
+                h('div', { className: 'rounded-xl border border-[#b6cbc2] bg-[#eef5f1] p-3' },
+                  h('div', { className: 'flex items-center justify-between gap-2 text-[10px] font-black text-[#31584c]' },
+                    h('span', { 'data-sourcebook-accessibility-progress': paletteAccessibilitySummary.reviewed + '/' + paletteAccessibilitySummary.total }, paletteAccessibilitySummary.reviewed + ' of ' + paletteAccessibilitySummary.total + ' reviewed'),
+                    h('span', null, paletteAccessibilitySummary.total ? Math.round((paletteAccessibilitySummary.reviewed / paletteAccessibilitySummary.total) * 100) + '%' : '0%')
+                  ),
+                  h('progress', {
+                    value: paletteAccessibilitySummary.reviewed,
+                    max: Math.max(1, paletteAccessibilitySummary.total),
+                    className: 'mt-2 block h-2 w-full accent-[#276b57]',
+                    'aria-label': 'Palette accessibility review progress'
+                  })
+                )
+              ),
+              h('div', { className: 'flex flex-wrap gap-2 p-3', 'aria-label': 'Filter palette by accessibility review status' }, [
+                { id: 'all', label: 'All', count: paletteAccessibilitySummary.total },
+                { id: 'suggested', label: 'Review suggestions', count: paletteAccessibilitySummary.suggested },
+                { id: 'confirmed', label: 'Confirmed', count: paletteAccessibilitySummary.confirmed },
+                { id: 'decorative', label: 'Decorative', count: paletteAccessibilitySummary.decorative }
+              ].map(function (entry) {
+                var selected = paletteAccessibilityFilter === entry.id;
+                return h('button', {
+                  key: entry.id,
+                  type: 'button',
+                  onClick: function () { setPaletteAccessibilityFilter(entry.id); },
+                  'aria-pressed': selected ? 'true' : 'false',
+                  'data-sourcebook-accessibility-filter': entry.id,
+                  className: 'min-h-[38px] rounded-full border px-3 text-[10px] font-black ' + (selected ? 'border-[#276b57] bg-[#276b57] text-white' : 'border-[#aabeb5] bg-white text-[#35594d]')
+                }, entry.label + ' (' + entry.count + ')');
+              })),
+              h('div', { className: 'flex flex-col gap-3 border-t border-[#d5e1dc] bg-[#edf4f1] p-3 sm:flex-row sm:items-center' },
+                h('p', { className: 'min-w-0 flex-1 text-[10px] font-bold leading-relaxed text-[#4d655c]', role: 'status', 'aria-live': 'polite' },
+                  paletteAccessibilitySummary.userEdited + ' user-edited | ' + paletteAccessibilitySummary.suggested + ' catalog suggestion' + (paletteAccessibilitySummary.suggested === 1 ? '' : 's') + ' to review | ' + paletteAccessibilitySummary.decorative + ' decorative'
+                ),
+                h('button', {
+                  type: 'button',
+                  disabled: !nextAccessibilityReviewItem,
+                  onClick: function () {
+                    if (!nextAccessibilityReviewItem) return;
+                    setPaletteAccessibilityFilter('suggested');
+                    inspectSourcebookItem(nextAccessibilityReviewItem);
+                    announce('Reviewing accessibility for ' + nextAccessibilityReviewItem.title);
+                  },
+                  className: 'min-h-[42px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40',
+                  'data-sourcebook-review-next': nextAccessibilityReviewItem ? nextAccessibilityReviewItem.id : ''
+                }, nextAccessibilityReviewItem ? 'Review next suggestion' : 'Accessibility review complete')
+              )
             ),
             showingCollection && selectedItems.length > 0 && h('div', {
               className: 'sb-no-print mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-[#c4d2cc] bg-[#f5f7f4] px-3 py-2',
@@ -5247,8 +7987,130 @@
                   )
                 );
               }))
+            ),            !showingCollection && comparisonItems.length > 0 && h('section', {
+              className: 'sb-no-print mb-4 overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 via-white to-emerald-50 shadow-[0_8px_24px_rgba(14,116,144,0.08)]',
+              'aria-label': 'Sourcebook comparison shortlist',
+              'data-sourcebook-comparison-tray': comparisonItems.length
+            },
+              h('div', { className: 'flex flex-col gap-3 p-3 sm:flex-row sm:items-center' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.14em] text-sky-800' }, 'Compare before saving'),
+                  h('p', { className: 'mt-1 text-xs font-bold leading-relaxed text-[#38564d]' }, comparisonItems.length + ' of ' + COMPARISON_MAX_ASSETS + ' rights-verified candidates selected. ' + (comparisonItems.length < 2 ? 'Add one more to review them side by side.' : 'Review source, reuse, relevance, and print readiness without another search.'))
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', {
+                    type: 'button', onClick: openComparison, disabled: comparisonItems.length < 2,
+                    className: 'min-h-[44px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white disabled:opacity-40',
+                    'data-sourcebook-open-comparison': 'true'
+                  }, 'Review side by side (' + comparisonItems.length + ')'),
+                  h('button', {
+                    type: 'button', onClick: clearComparison,
+                    className: 'min-h-[44px] rounded-xl border border-[#9fb8ae] bg-white px-3 text-xs font-black text-[#38564d]',
+                    'data-sourcebook-clear-comparison': 'true'
+                  }, 'Clear')
+                )
+              ),
+              h('div', { className: 'grid gap-px border-t border-sky-100 bg-sky-100 sm:grid-cols-2 lg:grid-cols-4', 'aria-label': 'Compared candidate previews' }, comparisonItems.map(function (item, index) {
+                return h('div', { key: item.id, className: 'flex min-w-0 items-center gap-2 bg-white p-2.5' },
+                  h('div', { className: 'relative h-14 w-16 shrink-0 overflow-hidden rounded-lg bg-[#e8ece7]' },
+                    h('img', { src: item.imageUrl, alt: '', loading: 'lazy', className: 'h-full w-full object-cover', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
+                    h('span', { 'aria-hidden': 'true', className: 'absolute left-1 top-1 rounded-full bg-[#183b32] px-1.5 py-0.5 text-[9px] font-black text-white' }, index + 1)
+                  ),
+                  h('div', { className: 'min-w-0 flex-1' },
+                    h('p', { className: 'truncate text-[9px] font-black uppercase tracking-[.08em] text-[#60766d]' }, item.provider),
+                    h('p', { className: 'mt-0.5 line-clamp-2 text-[11px] font-black leading-tight text-[#18352d]' }, item.title),
+                    h('p', { className: 'mt-1 text-[9px] font-bold text-emerald-800' }, item.rightsShort)
+                  ),
+                  h('button', {
+                    type: 'button', onClick: function () { toggleComparison(item); },
+                    className: 'min-h-[40px] shrink-0 rounded-lg border border-slate-200 bg-slate-50 px-2 text-[10px] font-black text-slate-700',
+                    'aria-label': 'Remove ' + item.title + ' from comparison',
+                    'data-sourcebook-comparison-remove': item.id
+                  }, 'Remove')
+                );
+              }))
             ),
-            visible.length ? h('div', { className: 'sb-board grid items-start ' + (boardView === 'gallery' ? 'sm:grid-cols-2 xl:grid-cols-3 gap-3' : 'md:grid-cols-2 gap-4') }, visible.map(resultCard).concat(!showingCollection && searchActive && liveResults.length > 0 ? [
+            !showingCollection && comparisonOpen && comparisonItems.length > 1 && h('section', {
+              className: 'sb-no-print mb-5 overflow-hidden rounded-3xl border border-[#9fc0b4] bg-[#f7faf8] shadow-[0_18px_45px_rgba(24,59,50,.14)]',
+              'aria-labelledby': 'sourcebook-comparison-title',
+              'data-sourcebook-comparison-panel': comparisonItems.length
+            },
+              h('div', { className: 'flex flex-col gap-3 border-b border-[#cbdcd5] bg-[#183b32] p-4 text-white sm:flex-row sm:items-center' },
+                h('div', { className: 'min-w-0 flex-1' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[.16em] text-[#a9c9bd]' }, 'Local evaluation / no new provider request'),
+                  h('h2', { id: 'sourcebook-comparison-title', className: 'mt-1 font-serif text-xl font-black' }, 'Compare ' + comparisonItems.length + ' visual sources'),
+                  h('p', { className: 'mt-1 text-[11px] font-semibold text-[#d2e2dc]' }, 'Every candidate still passes the active reuse-rights scope. Saving remains a separate, explicit action.')
+                ),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', {
+                    type: 'button',
+                    onClick: function () { addItemsToPalette(comparisonItems, 'Saved ' + comparisonItems.length + ' compared assets to your palette.'); },
+                    className: 'min-h-[44px] rounded-xl bg-[#f3ead7] px-4 text-xs font-black text-[#183b32]',
+                    'data-sourcebook-save-comparison': 'true'
+                  }, 'Save compared (' + comparisonItems.length + ')'),
+                  h('button', {
+                    type: 'button', onClick: function () { setComparisonOpen(false); },
+                    className: 'min-h-[44px] rounded-xl border border-[#6f9185] bg-white/10 px-4 text-xs font-black text-white',
+                    'data-sourcebook-close-comparison': 'true'
+                  }, 'Close')
+                )
+              ),
+              h('div', { className: 'grid gap-3 p-3 sm:grid-cols-2 md:p-4' }, comparisonItems.map(function (item, index) {
+                var itemPreparation = normalizedPreparation(preparation[item.id]);
+                var itemReadiness = printReadiness(item, itemPreparation, measuredDimensions[item.id]);
+                var itemMatch = query ? discoveryMatchDetails(item, selectionQuery || query, kind) : null;
+                var itemSaved = collection.indexOf(item.id) !== -1;
+                var pixelLabel = itemReadiness.width && itemReadiness.height ? itemReadiness.width + ' x ' + itemReadiness.height + ' px' : 'Verify full-size file';
+                return h('article', {
+                  key: item.id,
+                  className: 'overflow-hidden rounded-2xl border border-[#c5d5ce] bg-white shadow-sm',
+                  'data-sourcebook-comparison-item': item.id,
+                  'data-sourcebook-comparison-rights': item.rightsType
+                },
+                  h('div', { className: 'relative h-44 overflow-hidden bg-[#e8ece7]' },
+                    h('img', { src: item.imageUrl, alt: '', loading: 'lazy', className: 'h-full w-full object-contain', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
+                    h('span', { className: 'absolute left-3 top-3 rounded-full bg-[#183b32] px-2.5 py-1 text-[10px] font-black text-white' }, 'Candidate ' + (index + 1)),
+                    h('span', { className: 'absolute right-3 top-3 rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-black text-emerald-950' }, item.rightsShort)
+                  ),
+                  h('div', { className: 'p-4' },
+                    h('p', { className: 'text-[9px] font-black uppercase tracking-[.12em] text-[#60766d]' }, item.provider),
+                    h('h3', { className: 'mt-1 text-base font-black leading-tight text-[#18352d]' }, item.title),
+                    h('p', { className: 'mt-1 text-[11px] text-[#5c6e67]' }, item.creator + ' / ' + item.year),
+                    item.provider === MUSEUMS_VICTORIA_PROVIDER && h('p', { className: 'mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2 py-1.5 text-[10px] font-black text-amber-950' }, 'Review the source record for cultural context and community guidance.'),
+                    h('dl', { className: 'mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1.5 text-[11px]' },
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Match'),
+                      h('dd', { className: 'font-bold text-[#18352d]' }, itemMatch ? itemMatch.label : 'Browse match'),
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Source'),
+                      h('dd', { className: 'font-bold text-[#18352d]' }, item.provider),
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Reuse'),
+                      h('dd', { className: 'font-bold text-emerald-800' }, item.rightsShort),
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Print'),
+                      h('dd', { className: 'font-bold ' + readinessBadgeClasses(itemReadiness) + ' w-fit rounded-full px-2 py-0.5' }, itemReadiness.label),
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Pixels'),
+                      h('dd', { className: 'font-bold text-[#18352d]' }, pixelLabel),
+                      h('dt', { className: 'font-black text-[#526b62]' }, 'Material'),
+                      h('dd', { className: 'font-bold text-[#18352d]' }, item.kind)
+                    ),
+                    h('p', { className: 'mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[10px] font-bold leading-relaxed text-emerald-950' }, item.license + '. ' + item.rightsNote),
+                    h('p', { className: 'mt-2 line-clamp-3 text-[10px] font-semibold leading-relaxed text-[#5c6e67]' }, 'Credit: ' + attributionText(item)),
+                    h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                      h('button', {
+                        type: 'button', disabled: itemSaved, onClick: function () { if (!itemSaved) toggleSaved(item); },
+                        className: 'min-h-[42px] flex-1 rounded-xl bg-[#183b32] px-3 text-xs font-black text-white disabled:opacity-50'
+                      }, itemSaved ? 'Saved' : 'Save to palette'),
+                      h('button', {
+                        type: 'button', onClick: function () { inspectSourcebookItem(item); },
+                        className: 'min-h-[42px] rounded-xl border border-[#9fb3aa] bg-white px-3 text-xs font-black text-[#38564d]'
+                      }, 'Inspect'),
+                      h('a', {
+                        href: item.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+                        className: 'inline-flex min-h-[42px] items-center rounded-xl border border-[#9fb3aa] bg-white px-3 text-xs font-black text-[#38564d]'
+                      }, 'Source')
+                    )
+                  )
+                );
+              }))
+            ),            visible.length ? h('div', { id: 'sourcebook-results-board', className: 'sb-board grid items-start ' + (boardView === 'gallery' ? 'sm:grid-cols-2 xl:grid-cols-3 gap-3' : 'md:grid-cols-2 gap-4') }, visible.map(resultCard).concat(!showingCollection && searchActive && liveResults.length > 0 ? [
               h('div', { key: 'sourcebook-streaming-placeholder', className: 'sb-no-print overflow-hidden rounded-2xl border border-dashed border-sky-300 bg-sky-50/70', role: 'status' },
                 h('div', { className: 'h-[180px] animate-pulse bg-gradient-to-br from-sky-100 via-white to-emerald-100 motion-reduce:animate-none' }),
                 h('p', { className: 'p-3 text-[11px] font-black text-sky-950' }, 'Checking the remaining public collections…')
@@ -5260,7 +8122,28 @@
               showingCollection && paletteFilter.trim() && h('button', { type: 'button', onClick: function () { setPaletteFilter(''); }, className: 'sb-no-print mt-4 min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, 'Clear palette filter'),
               !showingCollection && boardFilter.trim() && h('button', { type: 'button', onClick: function () { setBoardFilter(''); }, className: 'sb-no-print mt-4 min-h-[40px] rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, 'Clear local filter')
             ),
-            h('section', { className: 'sb-no-print mt-6 rounded-3xl bg-[#1d3a32] text-[#edf5f1] p-5', 'aria-labelledby': 'sourcebook-more-title' },
+            !showingCollection && refinedResults.length > BOARD_RENDER_STEP && h('div', {
+              className: 'sb-no-print mt-4 flex flex-col items-start justify-between gap-3 rounded-2xl border border-[#b8cbc3] bg-[#f1f6f3] p-4 sm:flex-row sm:items-center',
+              'data-sourcebook-loaded-results': visible.length + '/' + refinedResults.length
+            },
+              h('div', null,
+                h('p', { className: 'text-xs font-black text-[#29483f]', role: 'status', 'aria-live': 'polite' }, 'Showing ' + visible.length + ' of ' + refinedResults.length + ' loaded results'),
+                h('p', { className: 'mt-1 text-[11px] leading-relaxed text-[#5a6f67]' }, 'These assets are already rights-checked and loaded. Reveal more without starting another provider search.')
+              ),
+              h('button', {
+                type: 'button',
+                onClick: function () {
+                  if (hiddenLoadedResultCount <= 0) return;
+                  var nextVisibleLimit = Math.min(refinedResults.length, effectiveBoardVisibleLimit + BOARD_RENDER_STEP);
+                  setBoardVisibleLimit(nextVisibleLimit);
+                  announce('Showing ' + nextVisibleLimit + ' of ' + refinedResults.length + ' loaded Sourcebook results');
+                },
+                className: 'min-h-[42px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white shadow-sm hover:bg-[#245447] aria-disabled:cursor-default aria-disabled:opacity-70',
+                'aria-controls': 'sourcebook-results-board',
+                'aria-disabled': hiddenLoadedResultCount <= 0 ? 'true' : 'false',
+                'data-sourcebook-show-more-loaded': 'true'
+              }, hiddenLoadedResultCount > 0 ? ('Show ' + Math.min(BOARD_RENDER_STEP, hiddenLoadedResultCount) + ' more loaded results') : 'All loaded results shown')
+            ),            h('section', { className: 'sb-no-print mt-6 rounded-3xl bg-[#1d3a32] text-[#edf5f1] p-5', 'aria-labelledby': 'sourcebook-more-title' },
               h('div', { className: 'flex items-start justify-between gap-3' },
                 h('div', null,
                   h('p', { className: 'text-[11px] uppercase tracking-[.16em] font-black text-[#a9c8bd]' }, 'Search beyond this board'),

@@ -1468,7 +1468,7 @@ const RoleSelectionModal = React.memo(({
     return value && value !== key ? value : fallback;
   };
   const usesGlobalVoiceAccess = typeof onStartVoiceAccess === 'function';
-  const micStatusText = usesGlobalVoiceAccess ? micStatus === 'granted' ? roleCopy('roles.voice_access_active', 'Voice Access started') : micStatus === 'denied' ? roleCopy('roles.voice_access_denied', 'Voice Access could not start') : micStatus === 'requesting' ? roleCopy('roles.voice_access_starting', 'Starting Voice Access...') : roleCopy('roles.voice_access_enable', 'Enable Voice Access') : micStatus === 'granted' ? t('roles.mic_ready') : micStatus === 'unsupported' ? t('roles.voice_not_supported') : micStatus === 'denied' ? t('roles.mic_denied') : micStatus === 'requesting' ? t('roles.mic_requesting') : t('roles.mic_enable');
+  const micStatusText = usesGlobalVoiceAccess ? micStatus === 'granted' ? roleCopy('roles.voice_access_active', 'Voice Access started') : micStatus === 'denied' ? roleCopy('roles.voice_access_denied', 'Voice Access could not start') : micStatus === 'requesting' ? roleCopy('roles.voice_access_starting', 'Starting Voice Access...') : roleCopy('roles.voice_access_enable', 'Enable Voice Access') : micStatus === 'granted' ? roleCopy('roles.mic_ready', 'Microphone Ready') : micStatus === 'unsupported' ? roleCopy('roles.voice_not_supported', 'Voice features are not supported in this browser.') : micStatus === 'denied' ? roleCopy('roles.mic_denied', 'Access Denied (Check Browser Settings)') : micStatus === 'requesting' ? roleCopy('roles.mic_requesting', 'Requesting Access...') : roleCopy('roles.mic_enable', 'Enable Microphone Access');
   return /*#__PURE__*/React.createElement("div", {
     ref: roleRef,
     className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-md overflow-y-auto py-4 sm:py-8 px-4 animate-in fade-in duration-300 motion-reduce:animate-none",
@@ -1493,10 +1493,10 @@ const RoleSelectionModal = React.memo(({
   }))), /*#__PURE__*/React.createElement("h2", {
     id: "role-selection-title",
     className: "text-3xl font-black text-slate-800 mb-2 tracking-tight"
-  }, t('roles.title')), /*#__PURE__*/React.createElement("p", {
+  }, roleCopy('roles.title', 'Welcome to AlloFlow')), /*#__PURE__*/React.createElement("p", {
     id: "role-selection-description",
     className: "text-slate-600 mb-8 font-medium"
-  }, t('roles.subtitle')), /*#__PURE__*/React.createElement("div", {
+  }, roleCopy('roles.subtitle', 'How will you be using the app today?')), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
   }, /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('student', event),
@@ -1508,7 +1508,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-teal-700"
-  }, t('roles.student'))), /*#__PURE__*/React.createElement("button", {
+  }, roleCopy('roles.student', 'Student'))), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('teacher', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-indigo-400 hover:bg-indigo-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_teacher"
@@ -1518,7 +1518,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-indigo-700"
-  }, t('roles.teacher')), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
+  }, roleCopy('roles.teacher', 'Teacher')), lastTimeBadge('teacher')), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('parent', event),
     className: "flex flex-col items-center h-full justify-start gap-3 p-6 rounded-xl border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50 transition-all group shadow-sm hover:shadow-md active:scale-95 focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:outline-none",
     "data-help-key": "role_parent"
@@ -1528,7 +1528,7 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-orange-700"
-  }, t('roles.parent')), /*#__PURE__*/React.createElement("span", {
+  }, roleCopy('roles.parent', 'Parent')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]"
   }, t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'), lastTimeBadge('parent')), /*#__PURE__*/React.createElement("button", {
     onClick: event => handleRoleClick('independent', event),
@@ -1540,11 +1540,11 @@ const RoleSelectionModal = React.memo(({
     size: 32
   })), /*#__PURE__*/React.createElement("span", {
     className: "font-bold text-slate-700 group-hover:text-cyan-700"
-  }, t('roles.independent')), lastTimeBadge('independent'))), /*#__PURE__*/React.createElement("div", {
+  }, roleCopy('roles.independent', 'Independent Learner')), lastTimeBadge('independent'))), /*#__PURE__*/React.createElement("div", {
     className: "border-t border-slate-100 pt-4"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2"
-  }, usesGlobalVoiceAccess ? roleCopy('roles.voice_access_setup', 'Voice Access') : t('roles.mic_setup')), /*#__PURE__*/React.createElement("button", {
+  }, usesGlobalVoiceAccess ? roleCopy('roles.voice_access_setup', 'Voice Access') : roleCopy('roles.mic_setup', 'Optional Setup')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleMicCheck,
     disabled: micStatus === 'granted' || micStatus === 'requesting',
@@ -1574,7 +1574,7 @@ const RoleSelectionModal = React.memo(({
   }, micStatus === 'idle' ? '' : micStatusText), micStatus === 'idle' && /*#__PURE__*/React.createElement("p", {
     id: "role-mic-tip",
     className: "text-[11px] text-slate-600 mt-2"
-  }, usesGlobalVoiceAccess ? roleCopy('roles.voice_access_tip', 'Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.') : t('roles.mic_tip'))))));
+  }, usesGlobalVoiceAccess ? roleCopy('roles.voice_access_tip', 'Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.') : roleCopy('roles.mic_tip', 'Recommended: Click above to prevent interruptions later.'))))));
 });
 const StudentEntryModal = React.memo(({
   isOpen,
@@ -1802,7 +1802,7 @@ const StudentEntryModal = React.memo(({
   }, anim))))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-xl font-black text-indigo-600 tracking-tight truncate mr-2",
+    className: "min-w-0 flex-grow break-words text-start text-xl font-black text-indigo-600 tracking-tight me-2",
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true"

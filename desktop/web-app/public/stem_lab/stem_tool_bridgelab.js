@@ -28,7 +28,13 @@
       '--allo-stem-deeper:#020617;' +
       '--allo-stem-text:#e2e8f0;' +
       '--allo-stem-text-soft:#94a3b8;' +
-      '--allo-stem-border:#334155;}';
+      '--allo-stem-border:#334155;}' +
+      // Let the tall design brief and tab panel share normal document flow
+      // whenever a fixed-height immersive layout would collapse the panel.
+      '@media (max-width:640px),(max-height:500px){' +
+      '.selh-bridgelab{height:auto!important;min-height:100%;}' +
+      '.selh-bridgelab>[role="tabpanel"]{flex:none!important;overflow:visible!important;}' +
+      '}';
     document.head.appendChild(_blVars);
   }
   if (!window.StemLab || !window.StemLab.registerTool) {
@@ -1466,9 +1472,12 @@
               ),
               // The elevation. Always rendered; hidden, not removed, when 3D is up.
               h('div', {
+                role: glLive ? undefined : 'region',
+                'aria-label': glLive ? undefined : __alloT('stem.bridgelab.bridge_side_elevation_scroll_region', 'Bridge side elevation horizontal scroll region'),
+                tabIndex: glLive ? -1 : 0,
                 style: {
                   borderRadius: 12, background: 'var(--allo-stem-deeper, #0a0e1a)',
-                  overflowX: 'auto',
+                  overflowX: 'auto', outlineOffset: 3,
                   visibility: glLive ? 'hidden' : 'visible',
                   height: glLive ? 0 : undefined,
                   padding: glLive ? 0 : 12,
@@ -1787,7 +1796,7 @@
                     )
                   : h('div', null,
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 8 } }, '✓ ' + results.length + ' combinations pass. Top 5 by cost:'),
-                      h('div', { style: { overflowX: 'auto' } },
+                      h('div', { role: 'region', 'aria-label': 'Top bridge designs by cost', tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
                         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 0 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {

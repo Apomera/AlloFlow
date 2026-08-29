@@ -1910,6 +1910,7 @@
             '.astr-focus:focus-visible{outline:2px solid #fbbf24;outline-offset:2px;border-radius:8px}' +
             '.astr-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}' +
             '@media (prefers-reduced-motion: reduce){.astr-anim{animation:none!important;transition:none!important}.astr-anim-bg{background-position:0 0!important}}' +
+            '@media (max-height:500px){.selh-astronomy{height:auto!important;min-height:100%}.selh-astronomy #astronomy-main{flex:none!important;overflow:visible!important}}' +
             '.astr-btn{transition:background-color 0.15s ease-out, transform 0.05s ease-out}' +
             '.astr-btn:hover:not(:disabled){filter:brightness(1.1)}' +
             '.astr-btn:active:not(:disabled){transform:translateY(1px)}' +
@@ -3296,7 +3297,7 @@
 
               h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' constellations'),
 
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10, maxHeight: 700, overflowY: 'auto', padding: 4 } },
+              h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.astronomy.constellation_results', 'Constellation results'), className: 'astr-focus', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))', gap: 10, maxHeight: 700, overflowY: 'auto', padding: 4 } },
                 filtered.map(function(c) {
                   return h('div', {
                     key: c.abbr + '-' + c.name,
@@ -3305,7 +3306,7 @@
                     style: { padding: 10, borderRadius: 8, background: '#0f172a', border: '1px solid #334155' }
                   },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 } },
-                      h('h4', { style: { margin: 0, color: '#c7d2fe', fontSize: 14 } }, c.name),
+                      h('h3', { style: { margin: 0, color: '#c7d2fe', fontSize: 14 } }, c.name),
                       h('span', { style: { fontSize: 10, color: '#fbbf24', fontFamily: 'monospace' } }, c.abbr)
                     ),
                     h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6, fontStyle: 'italic' } }, c.english),
@@ -3929,7 +3930,7 @@
             + 'Surface color and relief: ',
             h('a', {
               href: 'https://svs.gsfc.nasa.gov/4720', target: '_blank',
-              rel: 'noopener noreferrer', style: { color: '#a5b4fc' }
+              rel: 'noopener noreferrer', style: { color: '#a5b4fc', textDecoration: 'underline' }
             }, 'NASA Scientific Visualization Studio LRO/LOLA data'),
             '.'
           )
@@ -7617,7 +7618,7 @@
               filtered.length ? h('div', { id: 'astronomy-messier-results', role: 'list', 'aria-label': 'Messier catalog results', tabIndex: 0, className: 'astr-focus', style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
                 filtered.map(function(o, index) {
                   var resultId = 'astronomy-messier-result-' + index;
-                  return h('article', {
+                  return h('div', {
                     key: 'M' + o.m,
                     role: 'listitem',
                     'aria-labelledby': resultId,
@@ -8302,7 +8303,7 @@
               // Shower summary card
               h('div', { id: 'astronomy-meteor-shower-summary', role: 'region', 'aria-live': 'polite', 'aria-label': selected.name + ' shower summary', style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 12 } },
                 h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 6, flexWrap: 'wrap' } },
-                  h('h4', { style: { margin: 0, color: '#fbbf24', fontSize: 17 } }, selected.name),
+                  h('h3', { style: { margin: 0, color: '#fbbf24', fontSize: 17 } }, selected.name),
                   h('span', { style: { fontSize: 11, color: '#94a3b8' } }, 'Peak: '),
                   h('span', { style: { fontSize: 12, color: '#e2e8f0', fontWeight: 600 } }, selected.peak),
                   h('span', { style: { fontSize: 11, color: '#94a3b8', marginLeft: 8 } }, 'ZHR: '),
@@ -9755,7 +9756,8 @@
 
               h('div', { 'aria-live': 'polite', style: { fontSize: 11, color: '#94a3b8', marginBottom: 8 } }, 'Showing ' + filtered.length + ' of ' + TERMS.length + ' terms'),
 
-              h('dl', { style: { maxHeight: 600, overflowY: 'auto', padding: 4, margin: 0 } },
+              h('div', { tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.astronomy.glossary_entries', 'Glossary entries'), className: 'astr-focus', style: { maxHeight: 600, overflowY: 'auto', padding: 4 } },
+              h('dl', { style: { margin: 0 } },
                 filtered.map(function(t, idx) {
                   return h('div', {
                     key: 'glos-' + idx,
@@ -9768,7 +9770,7 @@
                     h('dd', { style: { margin: 0, fontSize: 11, color: '#e2e8f0', lineHeight: 1.5 } }, t.def)
                   );
                 })
-              )
+              ))
             ),
             '#6366f1'
           );
@@ -10076,7 +10078,7 @@
                 // Right: controls + readout
                 h('div', null,
                   h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', marginBottom: 10 } },
-                    h('h4', { style: { margin: 0, color: '#f97316', fontSize: 14, marginBottom: 4 } }, selectedTarget.name),
+                    h('h3', { style: { margin: 0, color: '#f97316', fontSize: 14, marginBottom: 4 } }, selectedTarget.name),
                     h('div', { style: { fontSize: 11, color: '#94a3b8' } }, selectedTarget.type + ' · magnitude ' + selectedTarget.mag + ' · ~ ' + selectedTarget.sizeArcmin + " arcmin"),
                     h('p', { style: { margin: '6px 0 0', fontSize: 12, color: '#e2e8f0', lineHeight: 1.55 } }, selectedTarget.info)
                   ),
@@ -10316,7 +10318,7 @@
                 h('li', null, __alloT('stem.astronomy.real_stars_cluster_on_the_main_sequenc', 'Real stars cluster on the "main sequence." Investigate why.')))),
             h('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },
               h('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
-                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, 'aria-controls': 'astronomy-hr-explanation' }),
+                h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, 'aria-expanded': iq.understood ? 'true' : 'false', 'aria-controls': iq.understood ? 'astronomy-hr-explanation' : undefined }),
                 __alloT('stem.astronomy.i_understand_explain_in_own_words', 'I understand — explain in own words')),
               iq.understood && h('textarea', { id: 'astronomy-hr-explanation', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value.slice(0, 1500) }); }, placeholder: __alloT('stem.astronomy.explain_how_mass_temperature_and_lumin', 'Explain how mass, temperature, and luminosity define a stellar category.'),
                 'aria-label': 'Explain your H-R diagram understanding', maxLength: 1500,

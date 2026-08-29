@@ -105,6 +105,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       triggers: [],
       practices: [],
       currentZone: null,        // optional today's check-in
+      selectedPractice: null,   // one gentle move chosen during check-in
       lastUpdated: null
     };
   }
@@ -127,7 +128,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       var _wtT = (ctx && ctx.theme) || {};
       var _wtHC = !!_wtT.isContrast, _wtL = !_wtHC && !_wtT.isDark;
       var _wt_BGL = {'#1e293b':'#ffffff','#0f172a':'#f8fafc'}, _wt_BGH = {'#1e293b':'#000000','#0f172a':'#000000','#fff':'#000000'};
-      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
+      var _wt_FGL = {'#cbd5e1':'#334155','#5eead4':'#0f766e','#94a3b8':'#64748b','#e2e8f0':'#1e293b','#99f6e4':'#0f766e','#fbbf24':'#854d0e','#a78bfa':'#6d28d9','#fecaca':'#b91c1c','#e9d5ff':'#581c87','#fcd34d':'#78350f','#fde68a':'#92400e','#ef4444':'#b91c1c','#14b8a6':'#0f766e','#0ea5e9':'#0369a1'}, _wt_FGH = {'#cbd5e1':'#ffff00','#5eead4':'#ffff00','#94a3b8':'#ffff00','#e2e8f0':'#ffff00','#64748b':'#ffff00','#99f6e4':'#ffff00','#fff':'#ffff00','#fbbf24':'#ffff00','#a78bfa':'#ffff00','#fecaca':'#ffff00','#ef4444':'#ffff00','#14b8a6':'#ffff00','#bae6fd':'#ffff00','#0ea5e9':'#ffff00','#e9d5ff':'#ffff00','#0f172a':'#ffff00','#475569':'#ffff00','#fcd34d':'#ffff00','#fde68a':'#ffff00'};
       var _wt_BDL = {'#334155':'#e2e8f0','#1e293b':'#e5e7eb','#475569':'#cbd5e1'}, _wt_BDH = {'#334155':'#ffff00','#1e293b':'#ffff00','#475569':'#ffff00','#a78bfa':'#ffff00','#14b8a6':'#ffff00','#cbd5e1':'#ffff00','#0d9488':'#ffff00','#f59e0b':'#ffff00'};
       var _wtBg = function(h){ return _wtHC ? (_wt_BGH[h]||h) : (_wtL ? (_wt_BGL[h]||h) : h); };
       var _wtFg = function(h){ return _wtHC ? (_wt_FGH[h]||h) : (_wtL ? (_wt_FGL[h]||h) : h); };
@@ -170,11 +171,11 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
 
       function navTabs() {
         var tabs = [
-          { id: 'window', label: 'My Window', icon: 'ðŸªŸ' },
-          { id: 'edit', label: 'Edit', icon: 'âœï¸' },
-          { id: 'checkin', label: 'Check in', icon: 'ðŸ“' },
-          { id: 'print', label: 'Print view', icon: 'ðŸ–¨' },
-          { id: 'about', label: 'About', icon: 'â„¹' }
+          { id: 'window', label: 'My Window', icon: '🪟' },
+          { id: 'edit', label: 'Edit', icon: '✏️' },
+          { id: 'checkin', label: 'Check in', icon: '📍' },
+          { id: 'print', label: 'Print view', icon: '🖨️' },
+          { id: 'about', label: 'About', icon: 'ℹ️' }
         ];
         return h('div', { className: 'no-print', style: { display: 'flex', gap: 6, marginBottom: 16, flexWrap: 'wrap' } },
           h('div', {
@@ -436,53 +437,137 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('windowOfToleranc
       // CHECK IN — today's zone
       // ═══════════════════════════════════════════════════════════
       function renderCheckin() {
-        function setZone(z) { setWOT({ currentZone: z }); }
+        function setZone(z) {
+          setWOT({ currentZone: z, selectedPractice: null });
+          if (announceToSR) announceToSR((z === 'hyper' ? 'Hyperarousal' : z === 'hypo' ? 'Hypoarousal' : 'In the window') + ' selected');
+        }
+        function choosePractice(practice) {
+          setWOT({ selectedPractice: practice });
+          if (announceToSR) announceToSR('Regulation practice selected: ' + practice);
+        }
         var cur = d.currentZone;
+        var practices = d.practices || [];
+        var chosenPractice = practices.indexOf(d.selectedPractice) !== -1 ? d.selectedPractice : null;
+        var zoneInfo = {
+          hyper: {
+            label: 'Hyperarousal', title: 'High activation', icon: '⚡', color: _wtFg('#ef4444'),
+            signal: 'Fast • tight • urgent', direction: 'Slow + orient',
+            fallback: 'Try a longer exhale or press both feet into the floor.'
+          },
+          window: {
+            label: 'In the window', title: 'Ready zone', icon: '🪟', color: _wtFg('#14b8a6'),
+            signal: 'Present • flexible • connected', direction: 'Notice + protect',
+            fallback: 'Name one thing helping you feel steady right now.'
+          },
+          hypo: {
+            label: 'Hypoarousal', title: 'Low activation', icon: '🌙', color: _wtFg('#0ea5e9'),
+            signal: 'Foggy • distant • slowed', direction: 'Warm + gently activate',
+            fallback: 'Look around slowly and add one small, comfortable movement.'
+          }
+        };
+        var activeInfo = cur ? zoneInfo[cur] : null;
+
+        function pathStep(number, label, value, color) {
+          return h('div', { style: { minWidth: 0, padding: 12, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid ' + (_wtHC ? '#ffff00' : color + '55') } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 } },
+              h('span', { 'aria-hidden': 'true', style: { width: 22, height: 22, borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: _wtHC ? '#000000' : color + '24', border: '1px solid ' + color, color: color, fontSize: 11, fontWeight: 900 } }, String(number)),
+              h('span', { style: { color: color, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.6 } }, label)
+            ),
+            h('div', { style: { color: _wtFg('#e2e8f0'), fontSize: 12.5, lineHeight: 1.5, fontWeight: 650 } }, value)
+          );
+        }
 
         return h('div', null,
-          h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), border: '1px solid #1e293b', marginBottom: 12 } },
-            h('div', { style: { fontSize: 14, fontWeight: 800, color: _wtFg('#99f6e4'), marginBottom: 8 } }, '📍 Right now, where am I?'),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          h('div', { style: { padding: 16, borderRadius: 14, background: _wtHC ? '#000000' : 'linear-gradient(180deg, rgba(239,68,68,0.11) 0%, rgba(20,184,166,0.12) 49%, rgba(14,165,233,0.11) 100%)', border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(148,163,184,0.26)'), marginBottom: 12, boxShadow: _wtHC ? 'none' : '0 18px 42px rgba(15,23,42,0.18)' } },
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', marginBottom: 12 } },
+              h('div', null,
+                h('div', { style: { fontSize: 15, fontWeight: 900, color: _wtFg('#99f6e4'), marginBottom: 3 } }, '📍 Where is my nervous system right now?'),
+                h('div', { style: { fontSize: 12, color: _wtFg('#cbd5e1'), lineHeight: 1.5 } }, 'Choose the closest fit. This is information, not a grade.')
+              ),
+              h('div', { style: { padding: '6px 9px', borderRadius: 999, background: _wtBg('#0f172a'), border: '1px solid #334155', color: _wtFg('#94a3b8'), fontSize: 10.5, fontWeight: 850, letterSpacing: 0.35 } }, '↑ MORE ACTIVATION')
+            ),
+            h('div', { role: 'group', 'aria-label': 'Nervous system activation continuum', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
               h('button', { onClick: function() { setZone('hyper'); }, 'aria-label': 'I am hyperaroused right now', 'aria-pressed': cur === 'hyper',
-                style: { padding: 14, borderRadius: 10, border: '2px solid ' + (cur === 'hyper' ? _wtFg('#ef4444') : '#334155'), background: cur === 'hyper' ? 'rgba(239,68,68,0.18)' : _wtBg('#1e293b'), color: _wtFg('#fecaca'), cursor: 'pointer', textAlign: 'left' } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: _wtFg('#ef4444'), marginBottom: 4 } }, '🔺 Hyperarousal — too activated'),
-                h('div', { style: { fontSize: 12, color: _wtFg('#cbd5e1'), lineHeight: 1.55 } }, 'Heart racing, snappy, can\'t sit still, racing thoughts, overwhelmed.')
+                'data-wot-zone': 'hyper',
+                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'hyper' ? _wtFg('#ef4444') : '#334155'), background: cur === 'hyper' ? 'rgba(239,68,68,0.22)' : _wtBg('#1e293b'), color: _wtFg('#fecaca'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hyper' && !_wtHC ? '0 10px 28px rgba(239,68,68,0.16)' : 'none' } },
+                h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.45)', fontSize: 20 } }, '⚡'),
+                h('span', null,
+                  h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtFg('#ef4444'), marginBottom: 3 } }, 'High activation · Hyperarousal'),
+                  h('span', { style: { display: 'block', fontSize: 11.5, color: _wtFg('#cbd5e1'), lineHeight: 1.45 } }, 'Fast • tight • urgent — overwhelmed or ready to react')
+                ),
+                cur === 'hyper' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(239,68,68,0.2)', border: '1px solid ' + _wtFg('#ef4444'), color: _wtFg('#ef4444'), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(239,68,68,0.45)' } })
               ),
               h('button', { onClick: function() { setZone('window'); }, 'aria-label': 'I am in the window right now', 'aria-pressed': cur === 'window',
-                style: { padding: 14, borderRadius: 10, border: '2px solid ' + (cur === 'window' ? _wtFg('#14b8a6') : '#334155'), background: cur === 'window' ? 'rgba(20,184,166,0.18)' : _wtBg('#1e293b'), color: _wtFg('#99f6e4'), cursor: 'pointer', textAlign: 'left' } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: _wtFg('#14b8a6'), marginBottom: 4 } }, '🪟 In the window — regulated'),
-                h('div', { style: { fontSize: 12, color: _wtFg('#cbd5e1'), lineHeight: 1.55 } }, 'I can think and feel. I can listen, choose, connect.')
+                'data-wot-zone': 'window',
+                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'window' ? _wtFg('#14b8a6') : '#334155'), background: cur === 'window' ? 'rgba(20,184,166,0.22)' : _wtBg('#1e293b'), color: _wtFg('#99f6e4'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'window' && !_wtHC ? '0 10px 28px rgba(20,184,166,0.18)' : 'none' } },
+                h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,184,166,0.16)', border: '1px solid rgba(20,184,166,0.45)', fontSize: 20 } }, '🪟'),
+                h('span', null,
+                  h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtFg('#14b8a6'), marginBottom: 3 } }, 'Ready zone · In the window'),
+                  h('span', { style: { display: 'block', fontSize: 11.5, color: _wtFg('#cbd5e1'), lineHeight: 1.45 } }, 'Present • flexible • connected — enough room to choose')
+                ),
+                cur === 'window' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(20,184,166,0.2)', border: '1px solid ' + _wtFg('#14b8a6'), color: _wtFg('#14b8a6'), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(20,184,166,0.45)' } })
               ),
               h('button', { onClick: function() { setZone('hypo'); }, 'aria-label': 'I am hypoaroused right now', 'aria-pressed': cur === 'hypo',
-                style: { padding: 14, borderRadius: 10, border: '2px solid ' + (cur === 'hypo' ? _wtFg('#0ea5e9') : '#334155'), background: cur === 'hypo' ? 'rgba(14,165,233,0.18)' : _wtBg('#1e293b'), color: _wtFg('#bae6fd'), cursor: 'pointer', textAlign: 'left' } },
-                h('div', { style: { fontSize: 14, fontWeight: 800, color: _wtFg('#0ea5e9'), marginBottom: 4 } }, '🔻 Hypoarousal — too shut down'),
-                h('div', { style: { fontSize: 12, color: _wtFg('#cbd5e1'), lineHeight: 1.55 } }, 'Foggy, numb, slow, going through motions, far away.')
+                'data-wot-zone': 'hypo',
+                style: { width: '100%', padding: 12, borderRadius: 12, border: '2px solid ' + (cur === 'hypo' ? _wtFg('#0ea5e9') : '#334155'), background: cur === 'hypo' ? 'rgba(14,165,233,0.22)' : _wtBg('#1e293b'), color: _wtFg('#bae6fd'), cursor: 'pointer', textAlign: 'left', display: 'grid', gridTemplateColumns: '42px minmax(0, 1fr) auto', alignItems: 'center', gap: 11, boxShadow: cur === 'hypo' && !_wtHC ? '0 10px 28px rgba(14,165,233,0.16)' : 'none' } },
+                h('span', { 'aria-hidden': 'true', style: { width: 40, height: 40, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(14,165,233,0.16)', border: '1px solid rgba(14,165,233,0.45)', fontSize: 20 } }, '🌙'),
+                h('span', null,
+                  h('span', { style: { display: 'block', fontSize: 14, fontWeight: 900, color: _wtFg('#0ea5e9'), marginBottom: 3 } }, 'Low activation · Hypoarousal'),
+                  h('span', { style: { display: 'block', fontSize: 11.5, color: _wtFg('#cbd5e1'), lineHeight: 1.45 } }, 'Foggy • distant • slowed — shut down or far away')
+                ),
+                cur === 'hypo' ? h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : 'rgba(14,165,233,0.2)', border: '1px solid ' + _wtFg('#0ea5e9'), color: _wtFg('#0ea5e9'), fontSize: 10.5, fontWeight: 900, whiteSpace: 'nowrap' } }, '● HERE') : h('span', { 'aria-hidden': 'true', style: { width: 8, height: 8, borderRadius: '50%', background: 'rgba(14,165,233,0.45)' } })
               )
-            )
+            ),
+            h('div', { style: { textAlign: 'right', color: _wtFg('#94a3b8'), fontSize: 10.5, fontWeight: 850, letterSpacing: 0.35, marginTop: 9 } }, '↓ LESS ACTIVATION')
           ),
 
           // Show triggers + practices if outside the window
           cur && cur !== 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'Return to the window guidance' },
-            h('div', { style: { padding: 14, borderRadius: 10, background: _wtBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '3px solid #a78bfa', marginBottom: 10 } },
-              h('div', { style: { fontSize: 13, fontWeight: 800, color: _wtFg('#a78bfa'), marginBottom: 8 } }, '🛟 Things that bring me back to the window'),
-              (d.practices || []).length > 0
-                ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
-                    d.practices.map(function(s, i) {
-                      return h('div', { key: i, style: { padding: '6px 12px', borderRadius: 14, background: 'rgba(167,139,250,0.18)', border: '1px solid #a78bfa', fontSize: 12.5, color: _wtFg('#e9d5ff'), fontWeight: 700 } }, s);
+            h('div', { style: { padding: 15, borderRadius: 12, background: _wtBg('#0f172a'), borderTop: '1px solid #1e293b', borderRight: '1px solid #1e293b', borderBottom: '1px solid #1e293b', borderLeft: '4px solid #a78bfa', marginBottom: 10 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+                h('div', null,
+                  h('div', { style: { fontSize: 13.5, fontWeight: 900, color: _wtFg('#a78bfa'), marginBottom: 3 } }, '🛟 Choose one gentle move'),
+                  h('div', { style: { fontSize: 11.5, color: _wtFg('#94a3b8'), lineHeight: 1.45 } }, 'One familiar practice is enough. You can change your choice.')
+                ),
+                h('span', { style: { padding: '5px 8px', borderRadius: 999, background: _wtHC ? '#000000' : activeInfo.color + '18', border: '1px solid ' + activeInfo.color, color: activeInfo.color, fontSize: 10.5, fontWeight: 900 } }, activeInfo.direction)
+              ),
+              practices.length > 0
+                ? h('div', { role: 'group', 'aria-label': 'Choose regulation practice', style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                    practices.map(function(s, i) {
+                      var selected = chosenPractice === s;
+                      return h('button', { key: i, onClick: function() { choosePractice(s); }, 'aria-pressed': chosenPractice === s,
+                        style: { padding: '7px 11px', borderRadius: 999, background: selected ? 'rgba(167,139,250,0.24)' : _wtBg('#1e293b'), border: '1px solid ' + (selected ? _wtFg('#a78bfa') : '#475569'), fontSize: 12, color: selected ? _wtFg('#e9d5ff') : _wtFg('#cbd5e1'), fontWeight: selected ? 850 : 650, cursor: 'pointer', textAlign: 'left' } },
+                        (selected ? '✓ ' : '') + s);
                     })
                   )
                 : h('div', { style: { fontSize: 12, color: _wtFg('#94a3b8'), fontStyle: 'italic' } },
-                    'You have not added practices yet. ',
+                    activeInfo.fallback + ' ',
                     h('button', { onClick: function() { goto('edit'); }, style: { background: 'transparent', border: 'none', color: _wtFg('#a78bfa'), cursor: 'pointer', textDecoration: 'underline', fontSize: 12 } }, 'Add some.'))
             ),
-            h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(167,139,250,0.10)', border: '1px solid rgba(167,139,250,0.3)', fontSize: 12, color: _wtFg('#e9d5ff'), lineHeight: 1.6 } },
-              'Pick ONE practice. Do it. Notice if your zone shifts at all. You do not have to be back in the window in three minutes; sometimes it takes longer, sometimes you need a person, not just a practice. That is okay.'
+            h('section', { 'aria-label': 'Notice choose recheck regulation path', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : 'linear-gradient(135deg, rgba(167,139,250,0.13), rgba(15,23,42,0.58))', border: '1px solid ' + (_wtHC ? '#ffff00' : 'rgba(167,139,250,0.34)') } },
+              h('div', { style: { fontSize: 12, color: _wtFg('#e9d5ff'), fontWeight: 900, textTransform: 'uppercase', letterSpacing: 0.7, marginBottom: 9 } }, 'Notice → Choose → Recheck'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 8 } },
+                pathStep(1, 'Notice', activeInfo.title + ': ' + activeInfo.signal, activeInfo.color),
+                pathStep(2, 'Choose', chosenPractice || activeInfo.fallback, _wtFg('#a78bfa')),
+                pathStep(3, 'Recheck', 'After 2–3 minutes, look for even a 1% shift.', _wtFg('#14b8a6'))
+              ),
+              h('div', { style: { marginTop: 10, fontSize: 11.5, color: _wtFg('#cbd5e1'), lineHeight: 1.55 } }, 'You do not have to force your way into the window. If the feeling stays intense, bring in a safe person.')
             )
           ) : null,
 
-          cur === 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'In-window check-in result', style: { padding: 14, borderRadius: 10, background: 'rgba(20,184,166,0.10)', borderTop: '1px solid rgba(20,184,166,0.3)', borderRight: '1px solid rgba(20,184,166,0.3)', borderBottom: '1px solid rgba(20,184,166,0.3)', borderLeft: '3px solid #14b8a6', fontSize: 13, color: _wtFg('#99f6e4'), lineHeight: 1.65 } },
-            h('strong', null, '🪟 You are in the window. '),
-            'Good. Notice what it feels like, in your body, right now. The more you know your own "in-window" signs, the easier it is to tell when you are drifting out.'
+          cur === 'window' ? h('div', { role: 'status', 'aria-live': 'polite', 'aria-label': 'In-window check-in result', style: { padding: 15, borderRadius: 12, background: _wtHC ? '#000000' : 'linear-gradient(135deg, rgba(20,184,166,0.16), rgba(15,23,42,0.52))', borderTop: '1px solid rgba(20,184,166,0.38)', borderRight: '1px solid rgba(20,184,166,0.38)', borderBottom: '1px solid rgba(20,184,166,0.38)', borderLeft: '4px solid #14b8a6', color: _wtFg('#99f6e4'), lineHeight: 1.65 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 9, marginBottom: 10 } },
+              h('span', { 'aria-hidden': 'true', style: { width: 38, height: 38, borderRadius: 11, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(20,184,166,0.18)', border: '1px solid rgba(20,184,166,0.48)', fontSize: 19 } }, '🪟'),
+              h('div', null,
+                h('div', { style: { fontSize: 14, fontWeight: 900 } }, 'You have some room to choose.'),
+                h('div', { style: { fontSize: 11.5, color: _wtFg('#cbd5e1') } }, 'Ready does not have to mean perfectly calm.')
+              )
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 8 } },
+              pathStep(1, 'Notice', 'What does steady feel like in your body?', _wtFg('#14b8a6')),
+              pathStep(2, 'Protect', 'Name one thing helping right now.', _wtFg('#a78bfa')),
+              pathStep(3, 'Continue', 'Take the next demand one step at a time.', _wtFg('#fbbf24'))
+            )
           ) : null,
 
           softPointer()

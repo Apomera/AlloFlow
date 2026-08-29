@@ -380,6 +380,21 @@ describe('Geology Explorer — directional core rig', () => {
     };
   };
 
+  const certificationReport = ({ angle = 'vertical', depth = 6, sampleCount = depth, integrity = 0.97, stopReason = null } = {}) => ({
+    angle,
+    targetDepth: depth,
+    stopReason,
+    samples: Array.from({ length: sampleCount }, (_, index) => ({
+      key: 'material-' + ((index % 3) + 1), depth: index + 1, integrity,
+    })),
+  });
+  const certificationEvaluation = (score, integrityPercent, overrides = {}) => Object.assign({
+    score,
+    fullCore: true,
+    safeBoundary: false,
+    integrityPercent,
+  }, overrides);
+
   it('exposes safe surface-only angle and depth presets as defensive copies', () => {
     expect(P.coreRigAngles()).toEqual({ vertical: 90, slant: 60, shallow: 35 });
     expect(P.coreRigDepths()).toEqual([6, 9, 12]);
@@ -431,6 +446,645 @@ describe('Geology Explorer — directional core rig', () => {
     expect(P.coreRigDrillDuration('basement', 'Igneous (intrusive)')).toBe(600);
     expect(P.coreRigDrillDuration('oceanWater', 'Water')).toBe(0);
     expect(P.coreRigDrillDuration('magma', 'Molten')).toBe(0);
+  });
+
+  it('offers three distinct feed profiles and matches each formation to a recovery strategy', () => {
+    expect(P.coreRigFeedModes()).toEqual(['preserve', 'cruise', 'torque']);
+    expect(P.coreRigFeedModes().map((mode) => P.coreRigFeedProfile(mode).label)).toEqual(['Preserve', 'Cruise', 'Torque']);
+    expect(P.coreRigFeedProfile('preserve')).toMatchObject({ id: 'preserve', speedMultiplier: 0.72, heatMultiplier: 0.55 });
+    expect(P.coreRigFeedProfile('torque')).toMatchObject({ id: 'torque', speedMultiplier: 1.45, heatMultiplier: 1.55 });
+    expect(P.coreRigFeedProfile('not-a-mode').id).toBe('cruise');
+
+    const preserve = P.coreRigFeedProfile('preserve');
+    preserve.label = 'mutated';
+    expect(P.coreRigFeedProfile('preserve').label).toBe('Preserve');
+
+    expect(P.coreRigFormationLoad('soil', 'Surface')).toEqual({ label: 'Loose', idealMode: 'preserve' });
+    expect(P.coreRigFormationLoad('quartz', 'Mineral')).toEqual({ label: 'Crystalline', idealMode: 'preserve' });
+    expect(P.coreRigFormationLoad('basement', 'Igneous (intrusive)')).toEqual({ label: 'Hard', idealMode: 'torque' });
+    expect(P.coreRigFormationLoad('sandstone', 'Sedimentary')).toEqual({ label: 'Layered', idealMode: 'cruise' });
+    expect(P.coreRigFormationLoad('unknown-rock', 'Dense')).toEqual({ label: 'Dense', idealMode: 'cruise' });
+  });
+
+  it('turns feed mismatch and excess heat into deterministic integrity loss', () => {
+    expect(P.coreRigIntegrityLoss('preserve', 'preserve', 0.4, 2)).toBe(0);
+    expect(P.coreRigIntegrityLoss('preserve', 'torque', 0, 2)).toBe(0.12);
+    expect(P.coreRigIntegrityLoss('cruise', 'torque', 0, 2)).toBe(0.07);
+    expect(P.coreRigIntegrityLoss('torque', 'torque', 0.84, 2)).toBe(0.088);
+    expect(P.coreRigIntegrityLoss('preserve', 'torque', 0.84, 2)).toBe(0.208);
+    expect(P.coreRigIntegrityLoss('preserve', 'torque', -4, -2)).toBe(0);
+
+    expect(P.coreRigIntegrityFromStress(0)).toBe(1);
+    expect(P.coreRigIntegrityFromStress(0.123)).toBe(0.88);
+    expect(P.coreRigIntegrityFromStress(0.45)).toBe(0.55);
+    expect(P.coreRigIntegrityFromStress(99)).toBe(0.55);
+    expect(P.coreRigIntegrityFromStress(-1)).toBe(1);
+  });
+
+  it('summarizes rated sample integrity while treating legacy samples as neutral', () => {
+    const legacy = [{ key: 'soil', depth: 1 }, { key: 'shale', depth: 2 }];
+    expect(P.coreRigQualitySummary(legacy)).toEqual({
+      ratedCount: 0, averageIntegrity: 1, integrityPercent: 100, pristineCount: 0,
+    });
+    expect(P.coreRigQualitySummary()).toEqual({
+      ratedCount: 0, averageIntegrity: 1, integrityPercent: 100, pristineCount: 0,
+    });
+
+    const samples = [{ integrity: 1 }, { integrity: 0.98 }, { integrity: 0.75 }, { integrity: null }];
+    const snapshot = JSON.parse(JSON.stringify(samples));
+    expect(P.coreRigQualitySummary(samples)).toEqual({
+      ratedCount: 3, averageIntegrity: 0.91, integrityPercent: 91, pristineCount: 2,
+    });
+    expect(samples).toEqual(snapshot);
+    expect(P.coreRigQualitySummary([{ integrity: 9 }, { integrity: 0.1 }])).toEqual({
+      ratedCount: 2, averageIntegrity: 0.78, integrityPercent: 78, pristineCount: 1,
+    });
+  });
+
+  it('creates a fair deterministic scan beat and honest interval-quality feedback', () => {
+    expect(P.coreRigIntervalScanMs()).toBe(700);
+    expect(P.coreRigIntervalScanning(1700, 1000, true, true)).toBe(true);
+    expect(P.coreRigIntervalScanning(1700, 1699, true, true)).toBe(true);
+    expect(P.coreRigIntervalScanning(1700, 1700, true, true)).toBe(false);
+    expect(P.coreRigIntervalScanning(1700, 1000, false, true)).toBe(false);
+    expect(P.coreRigIntervalScanning(1700, 1000, true, false)).toBe(false);
+    expect(P.coreRigIntervalScanning('bad', 1000, true, true)).toBe(false);
+
+    [
+      [0.97, 'pristine', 97],
+      [0.965, 'stable', 97],
+      [0.85, 'stable', 85],
+      [0.849, 'damaged', 85],
+      [0.2, 'damaged', 55],
+      [2, 'pristine', 100],
+    ].forEach(([integrity, tier, integrityPercent]) => {
+      expect(P.coreRigIntervalFeedback('Granite', integrity, 4)).toMatchObject({
+        name: 'Granite', tier, integrityPercent, pristineStreak: 4,
+      });
+    });
+
+    const pristine = P.coreRigIntervalFeedback('Granite', 0.97, 3);
+    const stable = P.coreRigIntervalFeedback('Shale', 0.85, 9);
+    const damaged = P.coreRigIntervalFeedback('Limestone', 0.84, 2);
+    expect(pristine.summary).toContain('pristine streak 3');
+    expect(stable.summary).toContain('streak reset');
+    expect(damaged.summary).toContain('streak reset');
+
+    const previous = { summary: pristine.summary };
+    const previousSnapshot = JSON.parse(JSON.stringify(previous));
+    const cue = P.coreRigFormationCue('Hard', 'TORQUE', previous);
+    expect(cue).toMatchObject({ formationLoad: 'Hard', idealFeedMode: 'torque', idealFeedLabel: 'Torque' });
+    [previous.summary, 'Next formation', 'Hard', 'Torque'].forEach((fragment) => expect(cue.prompt).toContain(fragment));
+    expect(P.coreRigFormationCue('Hard', 'TORQUE', previous)).toEqual(cue);
+    expect(P.coreRigFormationCue('Loose', 'preserve')).toMatchObject({ idealFeedMode: 'preserve', idealFeedLabel: 'Preserve' });
+    expect(previous).toEqual(previousSnapshot);
+  });
+
+  it('summarizes a trajectory without exposing ordered formations or hidden voxel data', () => {
+    const homogeneous = [
+      { key: 'sandstone', type: 'Sedimentary' },
+      { key: 'sandstone', type: 'Sedimentary' },
+      { key: 'sandstone', type: 'Sedimentary' },
+    ];
+    const homogeneousBefore = JSON.parse(JSON.stringify(homogeneous));
+    expect(P.coreRigTrajectoryScan(homogeneous, null, 3)).toEqual({
+      requestedDepth: 3,
+      recoverable: 3,
+      coveragePct: 100,
+      loadCounts: { preserve: 0, cruise: 3, torque: 0 },
+      dominantFeed: 'cruise',
+      transitions: 0,
+      variability: 'steady',
+      riskLevel: 'clear',
+      advice: expect.any(String),
+    });
+    expect(homogeneous).toEqual(homogeneousBefore);
+
+    const alternating = [
+      { key: 'soil', type: 'Surface', name: 'Secret loam', color: '#f00', x: 91 },
+      { key: 'basement', type: 'Metamorphic', depth: 72 },
+      { key: 'soil', type: 'Surface' },
+      { key: 'basement', type: 'Metamorphic' },
+      { key: 'soil', type: 'Surface' },
+      { key: 'basement', type: 'Metamorphic' },
+    ];
+    const volatile = P.coreRigTrajectoryScan(alternating, 'fluid', 9);
+    expect(volatile).toMatchObject({
+      requestedDepth: 9,
+      recoverable: 6,
+      coveragePct: 67,
+      loadCounts: { preserve: 3, cruise: 0, torque: 3 },
+      dominantFeed: 'balanced',
+      transitions: 5,
+      variability: 'volatile',
+      riskLevel: 'caution',
+    });
+    expect(P.coreRigTrajectoryScan(alternating.slice(0, 4), 'blocked', 6).riskLevel).toBe('limited');
+    expect(P.coreRigTrajectoryScan([
+      { key: 'soil', type: 'Surface' }, { key: 'basement', type: 'Metamorphic' },
+    ], null, 2)).toMatchObject({ dominantFeed: 'balanced', advice: expect.stringMatching(/Balanced/) });
+    expect(P.coreRigTrajectoryScan([null, {}, 42], null, 3).loadCounts).toEqual({
+      preserve: 0, cruise: 3, torque: 0,
+    });
+    expect(P.coreRigTrajectorySummary(volatile)).toMatch(/6\/9 recoverable.*volatile resistance.*5 load shifts.*caution boundary risk/i);
+
+    const secretInput = [{
+      key: 'secret-magma-key', type: 'Secret Type', name: 'Secret Basalt',
+      color: '#ff0000', x: 99, y: 77, z: 88, depth: 66,
+    }];
+    const sanitized = P.coreRigTrajectoryScan(secretInput, 'hazard', 12);
+    expect(Object.keys(sanitized).sort()).toEqual([
+      'advice', 'coveragePct', 'dominantFeed', 'loadCounts', 'recoverable',
+      'requestedDepth', 'riskLevel', 'transitions', 'variability',
+    ]);
+    const serialized = JSON.stringify(sanitized);
+    ['secret-magma-key', 'Secret Type', 'Secret Basalt', '#ff0000', '"x"', '"y"', '"z"', '"depth"'].forEach((secret) => {
+      expect(serialized).not.toContain(secret);
+    });
+
+    const firstSnapshot = P.coreRigTrajectorySnapshot(volatile);
+    firstSnapshot.loadCounts.preserve = 99;
+    firstSnapshot.advice = 'mutated';
+    expect(P.coreRigTrajectorySnapshot(volatile)).toEqual(volatile);
+    const maliciousSnapshot = P.coreRigTrajectorySnapshot(Object.assign({}, volatile, {
+      key: 'hidden-key', name: 'Hidden name', loadCounts: Object.assign({}, volatile.loadCounts, { secret: 99 }),
+    }));
+    expect(JSON.stringify(maliciousSnapshot)).not.toMatch(/hidden-key|Hidden name|secret/);
+  });
+
+  it('turns the Bore Brief into three deterministic, non-punitive recovery seals', () => {
+    const scan = P.coreRigTrajectoryScan([
+      { key: 'sandstone', type: 'Sedimentary' },
+      { key: 'basement', type: 'Metamorphic' },
+      { key: 'soil', type: 'Surface' },
+    ], null, 3);
+    const objectivesById = (brief) => Object.fromEntries(brief.objectives.map((objective) => [objective.id, objective]));
+
+    const unfinished = P.coreRigBoreBrief(scan, [
+      { integrity: 1 }, { integrity: 0.849 },
+    ], 2, false);
+    expect(unfinished).toMatchObject({ metCount: 1, total: 3, complete: false, finished: false });
+    expect(objectivesById(unfinished).recovery).toMatchObject({ current: 2, target: 3, met: false, state: 'pending' });
+    expect(objectivesById(unfinished).preservation).toMatchObject({ current: 92.5, target: 85, met: true, state: 'met' });
+    expect(objectivesById(unfinished).precision).toMatchObject({ current: 2, target: 3, met: false, state: 'pending' });
+    expect(unfinished.metCount).toBe(1);
+
+    const belowThreshold = P.coreRigBoreBrief(scan, [
+      { integrity: 0.849 }, { integrity: 0.849 }, { integrity: 0.849 },
+    ], 3, true);
+    expect(objectivesById(belowThreshold).preservation).toMatchObject({ current: 84.9, met: false, state: 'missed' });
+
+    const exactThreshold = P.coreRigBoreBrief(scan, [
+      { integrity: 0.85 }, { integrity: 0.85 }, { integrity: 0.85 },
+    ], 3, true);
+    expect(exactThreshold).toMatchObject({ metCount: 3, total: 3, complete: true, finished: true, summary: 'Bore Brief 3/3 complete' });
+    expect(exactThreshold.objectives.every((objective) => objective.state === 'met')).toBe(true);
+
+    const missingIntegrity = P.coreRigBoreBrief(scan, [
+      { integrity: 1 }, {}, { integrity: 1 },
+    ], 3, true);
+    expect(objectivesById(missingIntegrity).preservation).toMatchObject({ met: false, state: 'missed' });
+
+    const shortScan = P.coreRigTrajectoryScan([
+      { key: 'soil', type: 'Surface' }, { key: 'sandstone', type: 'Sedimentary' },
+    ], 'fluid', 6);
+    expect(objectivesById(P.coreRigBoreBrief(shortScan, [{ integrity: 1 }, { integrity: 1 }], 2, true)).precision)
+      .toMatchObject({ target: 2, current: 2, met: true });
+
+    const immutable = P.coreRigBoreBrief(scan, [{ integrity: 1 }], 1, false);
+    immutable.objectives[0].label = 'mutated';
+    expect(P.coreRigBoreBrief(scan, [{ integrity: 1 }], 1, false).objectives[0].label).toBe('Recover the safe column');
+  });
+
+
+  it('builds a spoiler-safe core cassette with neutral future, current, and scanning slots', () => {
+    const samples = [
+      { key: 'sandstone', name: 'Sandstone', type: 'Sedimentary', color: '#c99b61', depth: 1, integrity: 0.98 },
+      { key: 'shale', name: 'Shale', type: 'Sedimentary', color: '#667085', depth: 2, integrity: 0.91 },
+    ];
+    const forbiddenBeforeRecovery = ['sample', 'key', 'name', 'color', 'depth'];
+    const assertNeutral = (slot, state) => {
+      expect(slot.state).toBe(state);
+      forbiddenBeforeRecovery.forEach((field) => expect(slot).not.toHaveProperty(field));
+    };
+
+    const idle = P.coreRigCoreCassette(samples, 6, false, false);
+    expect(idle).toMatchObject({ total: 6, revealedCount: 2, running: false, scanning: false });
+    expect(idle.slots).toHaveLength(6);
+    expect(idle.slots.map((slot) => slot.state)).toEqual([
+      'recovered', 'recovered', 'pending', 'pending', 'pending', 'pending',
+    ]);
+    expect(idle.slots[0].key || idle.slots[0].sample?.key).toBe('sandstone');
+    idle.slots.slice(2).forEach((slot) => assertNeutral(slot, 'pending'));
+
+    const cutting = P.coreRigCoreCassette(samples, 6, true, false);
+    expect(cutting).toMatchObject({ total: 6, revealedCount: 2, running: true, scanning: false });
+    expect(cutting.slots.map((slot) => slot.state)).toEqual([
+      'recovered', 'recovered', 'current', 'pending', 'pending', 'pending',
+    ]);
+    assertNeutral(cutting.slots[2], 'current');
+
+    const scanning = P.coreRigCoreCassette(samples, 6, true, true);
+    expect(scanning).toMatchObject({ total: 6, revealedCount: 2, running: true, scanning: true });
+    expect(scanning.slots.map((slot) => slot.state)).toEqual([
+      'recovered', 'recovered', 'scanning', 'pending', 'pending', 'pending',
+    ]);
+    assertNeutral(scanning.slots[2], 'scanning');
+    scanning.slots.slice(3).forEach((slot) => assertNeutral(slot, 'pending'));
+  });
+
+  it('caps the cassette at 24 intervals and returns defensive recovered samples', () => {
+    const samples = Array.from({ length: 30 }, (_, index) => ({
+      key: 'material-' + index, name: 'Material ' + index, color: '#abcdef', depth: index + 1, integrity: 0.9,
+    }));
+    const snapshot = JSON.parse(JSON.stringify(samples));
+    const cassette = P.coreRigCoreCassette(samples, 999, true, false);
+    expect(cassette).toMatchObject({ total: 24, revealedCount: 24, running: true, scanning: false });
+    expect(cassette.slots).toHaveLength(24);
+    expect(cassette.slots.every((slot) => slot.state === 'recovered')).toBe(true);
+
+    cassette.slots[0].key = 'mutated';
+    if (cassette.slots[0].sample) cassette.slots[0].sample.name = 'mutated';
+    expect(samples).toEqual(snapshot);
+    const fresh = P.coreRigCoreCassette(samples, 24, false, false);
+    expect(fresh.slots[0].key || fresh.slots[0].sample?.key).toBe('material-0');
+    expect(fresh.slots[0].sample?.name || fresh.slots[0].name).toBe('Material 0');
+  });
+
+  it('compresses only consecutive formations into an immutable public core profile', () => {
+    const report = {
+      id: 'core-compression', sceneId: 'crust', angle: 'vertical', targetDepth: 6,
+      samples: [
+        { key: 'sandstone', name: 'Sandstone', type: 'Sedimentary', color: '#c99b61', depth: 1, integrity: 1 },
+        { key: 'sandstone', name: 'Sandstone', type: 'Sedimentary', color: '#c99b61', depth: 2, integrity: 0.9 },
+        { key: 'shale', name: 'Shale', type: 'Sedimentary', color: '#667085', depth: 3, integrity: 0.85 },
+        { key: 'sandstone', name: 'Sandstone', type: 'Sedimentary', color: '#c99b61', depth: 4, integrity: 0.8 },
+      ],
+    };
+    const snapshot = JSON.parse(JSON.stringify(report));
+    const compressed = P.coreRigCompressedCore(report);
+    expect(compressed).toMatchObject({ intervalCount: 4, formationCount: 3 });
+    expect(compressed.bands.map(({ key, startDepth, endDepth, count }) => ({ key, startDepth, endDepth, count }))).toEqual([
+      { key: 'sandstone', startDepth: 1, endDepth: 2, count: 2 },
+      { key: 'shale', startDepth: 3, endDepth: 3, count: 1 },
+      { key: 'sandstone', startDepth: 4, endDepth: 4, count: 1 },
+    ]);
+    expect(compressed.bands[0].avgIntegrity).toBeCloseTo(0.95, 8);
+    expect(report).toEqual(snapshot);
+
+    compressed.bands[0].key = 'mutated';
+    expect(P.coreRigCompressedCore(report).bands[0].key).toBe('sandstone');
+
+    const capped = P.coreRigCompressedCore({ samples: Array.from({ length: 30 }, (_, depth) => ({
+      key: depth < 25 ? 'a' : 'b', name: 'Public formation', depth: depth + 1, integrity: 1,
+    })) });
+    expect(capped.intervalCount).toBe(24);
+    expect(capped.bands.reduce((sum, band) => sum + band.count, 0)).toBe(24);
+  });
+
+  it('compares same-scene one-variable experiments with symmetric ids and sequence evidence', () => {
+    const makeReport = (id, angle, targetDepth, keys, extras = {}) => Object.assign({
+      id, sceneId: 'crust', angle, targetDepth, completedAt: id === 'core-a' ? 100 : 200,
+      samples: keys.map((key, index) => ({
+        key, name: key[0].toUpperCase() + key.slice(1), type: 'Rock', color: '#778899', depth: index + 1, integrity: 0.96,
+      })),
+    }, extras);
+    const previous = makeReport('core-a', 'vertical', 9, ['sandstone', 'sandstone', 'shale', 'limestone']);
+    const next = makeReport('core-b', 'slant', 9, ['sandstone', 'quartz', 'shale', 'shale', 'limestone']);
+    const previousSnapshot = JSON.parse(JSON.stringify(previous));
+    const nextSnapshot = JSON.parse(JSON.stringify(next));
+
+    const comparison = P.coreRigCompareReports(previous, next);
+    expect(comparison).toMatchObject({
+      eligible: true, changedVariable: 'angle', lcsLength: 3, lcsRatio: 0.75, similarityPct: 75,
+      sharedFormations: ['sandstone', 'shale', 'limestone'], newFormations: ['quartz'],
+    });
+    expect(typeof comparison.finding).toBe('string');
+    expect(comparison.finding.length).toBeGreaterThan(0);
+    expect(comparison.pairId).toContain('core-a');
+    expect(comparison.pairId).toContain('core-b');
+    expect(P.coreRigCompareReports(next, previous).pairId).toBe(comparison.pairId);
+    expect(previous).toEqual(previousSnapshot);
+    expect(next).toEqual(nextSnapshot);
+
+    comparison.sharedFormations.push('mutated');
+    expect(P.coreRigCompareReports(previous, next).sharedFormations).toEqual(['sandstone', 'shale', 'limestone']);
+  });
+
+  it('rejects inconclusive report pairs and never copies hidden world data into comparisons', () => {
+    const report = (id, sceneId, angle, targetDepth, key) => ({
+      id, sceneId, angle, targetDepth, completedAt: 100,
+      origin: { x: 999, y: 998, z: 997 }, yaw: 1.25, path: ['secret-path'], plannedStop: 'secret-stop',
+      trajectoryScan: { secretTrajectory: 'secret-trajectory' },
+      samples: [{ key, name: key, depth: 1, integrity: 1, x: 996, y: 995, z: 994, path: 'secret-sample-path' }],
+    });
+    const base = report('base', 'crust', 'vertical', 6, 'sandstone');
+    const bothChanged = report('both', 'crust', 'slant', 9, 'shale');
+    const otherScene = report('scene', 'geode', 'slant', 6, 'quartz');
+    const sameProgram = report('same-program', 'crust', 'vertical', 6, 'shale');
+    const sameId = Object.assign({}, sameProgram, { id: 'base', angle: 'slant' });
+
+    [
+      P.coreRigCompareReports(base, bothChanged),
+      P.coreRigCompareReports(base, otherScene),
+      P.coreRigCompareReports(base, sameProgram),
+      P.coreRigCompareReports(base, sameId),
+    ].forEach((comparison) => expect(comparison).toMatchObject({ eligible: false, pairId: null, changedVariable: null }));
+
+    const valid = P.coreRigCompareReports(base, report('valid', 'crust', 'slant', 6, 'shale'));
+    const hiddenKeys = [];
+    const visit = (value) => {
+      if (!value || typeof value !== 'object') return;
+      Object.keys(value).forEach((key) => { hiddenKeys.push(key); visit(value[key]); });
+    };
+    visit(valid);
+    ['origin', 'yaw', 'path', 'plannedStop', 'trajectoryScan', 'x', 'y', 'z'].forEach((key) => {
+      expect(hiddenKeys).not.toContain(key);
+    });
+    expect(JSON.stringify(valid)).not.toMatch(/secret-(?:path|stop|trajectory|sample-path)/);
+  });
+
+  it('selects a deterministic uncertified next experiment that changes exactly one variable', () => {
+    const report = { id: 'source', sceneId: 'crust', angle: 'vertical', targetDepth: 6, samples: [{ key: 'sandstone', depth: 1 }] };
+    const certification = { version: 1, programs: P.normalizeCoreRigPrograms() };
+    const snapshot = JSON.parse(JSON.stringify(certification));
+
+    const first = P.coreRigNextExperiment(report, certification);
+    expect(first).toMatchObject({ programKey: 'slant@6', angle: 'slant', depth: 6, changedVariable: 'angle' });
+    expect(P.coreRigNextExperiment(report, certification)).toEqual(first);
+    expect(Number(first.angle !== report.angle) + Number(first.depth !== report.targetDepth)).toBe(1);
+    expect(certification).toEqual(snapshot);
+
+    certification.programs['slant@6'].tier = 1;
+    const second = P.coreRigNextExperiment(report, certification);
+    expect(second).toMatchObject({ programKey: 'shallow@6', angle: 'shallow', depth: 6, changedVariable: 'angle' });
+
+    certification.programs['shallow@6'].tier = 3;
+    const depthExperiment = P.coreRigNextExperiment(report, certification);
+    expect(depthExperiment).toMatchObject({ programKey: 'vertical@9', angle: 'vertical', depth: 9, changedVariable: 'depth' });
+
+    P.coreRigProgramCatalog().forEach((program) => {
+      if (program.angle === report.angle || program.depth === report.targetDepth) certification.programs[program.key].tier = 1;
+    });
+    expect(P.coreRigNextExperiment(report, certification)).toBeNull();
+    expect(certification.programs['slant@9'].tier).toBe(0);
+    expect(P.coreRigNextExperiment({ angle: 'invalid', targetDepth: 6 }, certification)).toBeNull();
+  });
+
+
+  it('clamps persisted core samples to the sanitized target depth before scoring', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_geologyexplorer.js'), 'utf8');
+    const start = source.indexOf('function saveCoreRigReport(');
+    const end = source.indexOf('function startFieldRun(', start);
+    const saveBody = source.slice(start, end);
+    expect(start).toBeGreaterThan(-1);
+    expect(end).toBeGreaterThan(start);
+    expect(saveBody).toMatch(/samples:\s*report\.samples\.slice\(0,\s*reportedDepth\)/);
+    expect(saveBody).not.toContain('report.samples.slice(0, 24)');
+    expect(saveBody.indexOf('samples: report.samples.slice')).toBeLessThan(saveBody.indexOf('coreRigEvaluation(cleanReport)'));
+  });
+
+  it('tracks a loaded trajectory challenge through ready, beaten, matched, and behind states', () => {
+    expect(P.coreRigChallengeProgress(126, 136)).toEqual({
+      replayScore: 126, bestScore: 136, xpTarget: 137, resultScore: null, delta: null, state: 'ready',
+    });
+    expect(P.coreRigChallengeProgress(126, 100, 140)).toMatchObject({
+      replayScore: 126, bestScore: 126, xpTarget: 127, resultScore: 140, delta: 14, state: 'beaten',
+    });
+    expect(P.coreRigChallengeProgress(126, 126, 126)).toMatchObject({ delta: 0, state: 'matched' });
+    expect(P.coreRigChallengeProgress(126, 126, 99)).toMatchObject({ delta: -27, state: 'behind' });
+    expect(P.coreRigChallengeProgress(-1, 999, 999)).toEqual({
+      replayScore: 0, bestScore: 200, xpTarget: null, resultScore: 200, delta: 200, state: 'beaten',
+    });
+  });
+
+  it('defines a stable defensive 3 by 3 certification program and tier catalog', () => {
+    const expected = ['vertical@6', 'vertical@9', 'vertical@12', 'slant@6', 'slant@9', 'slant@12', 'shallow@6', 'shallow@9', 'shallow@12'];
+    expect(P.coreRigProgramCatalog().map((program) => program.key)).toEqual(expected);
+    expect(P.coreRigProgramCatalog().map(({ angle, depth }) => [angle, depth])).toEqual([
+      ['vertical', 6], ['vertical', 9], ['vertical', 12],
+      ['slant', 6], ['slant', 9], ['slant', 12],
+      ['shallow', 6], ['shallow', 9], ['shallow', 12],
+    ]);
+    expected.forEach((key) => {
+      const [angle, depth] = key.split('@');
+      expect(P.coreRigProgramKey(angle, Number(depth))).toBe(key);
+    });
+
+    const programs = P.coreRigProgramCatalog();
+    programs[0].key = 'mutated'; programs.push({ key: 'extra' });
+    expect(P.coreRigProgramCatalog().map((program) => program.key)).toEqual(expected);
+
+    expect(P.coreRigCertificationTiers().map(({ level, label }) => [level, label])).toEqual([
+      [0, 'Unrated'], [1, 'Certified'], [2, 'Advanced'], [3, 'Mastered'],
+    ]);
+    const tiers = P.coreRigCertificationTiers(); tiers[1].label = 'mutated';
+    expect(P.coreRigCertificationTiers()[1].label).toBe('Certified');
+  });
+
+  it('requires complete modern integrity evidence and a valid finish at every certification tier boundary', () => {
+    const tier = (score, integrity, overrides = {}) => {
+      const report = certificationReport({ depth: 9, integrity, stopReason: overrides.stopReason || null });
+      const evaluation = certificationEvaluation(score, Math.round(integrity * 100), overrides.evaluation || {});
+      return P.coreRigCertificationTier(report, evaluation);
+    };
+
+    expect(tier(64, 1)).toMatchObject({ level: 0, label: 'Unrated' });
+    expect(tier(65, 0.84)).toMatchObject({ level: 0, label: 'Unrated' });
+    expect(tier(65, 0.85)).toMatchObject({ level: 1, label: 'Certified' });
+    expect(tier(134, 1)).toMatchObject({ level: 1, label: 'Certified' });
+    expect(tier(135, 0.91)).toMatchObject({ level: 1, label: 'Certified' });
+    expect(tier(135, 0.92)).toMatchObject({ level: 2, label: 'Advanced' });
+    expect(tier(174, 1)).toMatchObject({ level: 2, label: 'Advanced' });
+    expect(tier(175, 0.96)).toMatchObject({ level: 2, label: 'Advanced' });
+    expect(tier(175, 0.97)).toMatchObject({ level: 3, label: 'Mastered' });
+
+    const perfectSix = certificationReport({ depth: 6, sampleCount: 6, integrity: 1 });
+    expect(P.coreRigProgramRating(perfectSix, certificationEvaluation(168, 100))).toBe(200);
+    expect(P.coreRigCertificationTier(perfectSix, certificationEvaluation(168, 100))).toMatchObject({ level: 3, label: 'Mastered', rating: 200 });
+
+    const missingIntegrity = certificationReport({ integrity: 1 });
+    delete missingIntegrity.samples[2].integrity;
+    expect(P.coreRigCertificationTier(missingIntegrity, certificationEvaluation(200, 100))).toMatchObject({ level: 0, label: 'Unrated' });
+    expect(P.coreRigCertificationTier(certificationReport({ integrity: 1 }), certificationEvaluation(200, 100, { fullCore: false, safeBoundary: false }))).toMatchObject({ level: 0, label: 'Unrated' });
+
+    const insufficientBoundary = certificationReport({ depth: 9, sampleCount: 6, integrity: 0.92, stopReason: 'fluid' });
+    expect(P.coreRigCertificationTier(insufficientBoundary, certificationEvaluation(135, 92, { fullCore: false, safeBoundary: true }))).toMatchObject({ level: 0, label: 'Unrated' });
+    const safeBoundary = certificationReport({ depth: 9, sampleCount: 7, integrity: 0.92, stopReason: 'fluid' });
+    expect(P.coreRigCertificationTier(safeBoundary, certificationEvaluation(135, 92, { fullCore: false, safeBoundary: true }))).toMatchObject({ level: 2, label: 'Advanced' });
+    ['cancelled', 'blocked', 'spent'].forEach((stopReason) => {
+      const stopped = certificationReport({ integrity: 1, stopReason });
+      expect(P.coreRigCertificationTier(stopped, certificationEvaluation(200, 100, { fullCore: true, safeBoundary: true }))).toMatchObject({ level: 0, label: 'Unrated' });
+    });
+  });
+
+  it('bounds certification XP to incremental tenths and exposes the next earning score', () => {
+    expect(P.coreRigCertificationReward(0, 65)).toBe(7);
+    expect(P.coreRigCertificationReward(65, 65)).toBe(0);
+    expect(P.coreRigCertificationReward(65, 70)).toBe(0);
+    expect(P.coreRigCertificationReward(65, 71)).toBe(1);
+    expect(P.coreRigCertificationReward(135, 175)).toBe(4);
+    expect(P.coreRigCertificationReward(0, 200)).toBe(20);
+    expect(P.coreRigCertificationReward(200, 999)).toBe(0);
+    expect(P.coreRigCertificationReward(undefined, undefined)).toBe(0);
+
+    expect(P.coreRigCertificationXpTarget(0)).toBe(1);
+    expect(P.coreRigCertificationXpTarget(65)).toBe(71);
+    expect(P.coreRigCertificationXpTarget(70)).toBe(71);
+    expect(P.coreRigCertificationXpTarget(71)).toBe(81);
+    expect(P.coreRigCertificationXpTarget(190)).toBe(191);
+    expect(P.coreRigCertificationXpTarget(191)).toBeNull();
+    expect(P.coreRigCertificationXpTarget(200)).toBeNull();
+
+    let incremental = 0;
+    for (let score = 1; score <= 200; score += 1) incremental += P.coreRigCertificationReward(score - 1, score);
+    expect(incremental).toBe(20);
+    expect(incremental).toBe(P.coreRigCertificationReward(0, 200));
+  });
+
+  it('normalizes certification storage to exactly the nine canonical program cells', () => {
+    const expected = P.coreRigProgramCatalog().map((program) => program.key);
+    const input = { 'vertical@6': { angle: 'vertical', depth: 6, tier: 1, bestScore: 65, bestRating: 77, attempts: 2, reportIds: ['v6-a'] }, 'invalid@99': { bestScore: 200 } };
+    const snapshot = JSON.parse(JSON.stringify(input));
+    const normalized = P.normalizeCoreRigPrograms(input);
+    expect(Object.keys(normalized)).toEqual(expected);
+    expect(normalized['invalid@99']).toBeUndefined();
+    expect(normalized['vertical@6']).toMatchObject({ angle: 'vertical', depth: 6, bestScore: 65, attempts: 2 });
+    expected.slice(1).forEach((key) => {
+      const [angle, depth] = key.split('@');
+      expect(normalized[key]).toMatchObject({ angle, depth: Number(depth), bestScore: 0, attempts: 0 });
+    });
+    expect(P.normalizeCoreRigPrograms(normalized)).toEqual(normalized);
+    expect(input).toEqual(snapshot);
+  });
+
+  it('derives actionable program guidance from the last assessment and ignores ineligible scores for XP', () => {
+    const openProgram = P.normalizeCoreRigPrograms()['vertical@6'];
+    const openGuidance = P.coreRigCertificationGuidance(openProgram);
+    ['Grade C', '85% integrity', 'target recovery', 'protected boundary', '75%'].forEach((fragment) => expect(openGuidance).toContain(fragment));
+
+    const scoreGuidance = P.coreRigCertificationGuidance({
+      attempts: 1, tier: 0, lastScore: 64, lastIntegrity: 90, lastEligible: true, lastFullCore: true, lastSafeBoundary: false,
+    });
+    expect(scoreGuidance).toContain('Need Grade C');
+    const integrityGuidance = P.coreRigCertificationGuidance({
+      attempts: 1, tier: 0, lastScore: 90, lastIntegrity: 84, lastEligible: true, lastFullCore: true, lastSafeBoundary: false,
+    });
+    expect(integrityGuidance).toContain('85% integrity');
+    const finishGuidance = P.coreRigCertificationGuidance({
+      attempts: 1, tier: 0, lastScore: 90, lastIntegrity: 90, lastEligible: false, lastFullCore: false, lastSafeBoundary: false,
+    });
+    ['75%', 'target or protected boundary'].forEach((fragment) => expect(finishGuidance).toContain(fragment));
+
+    expect(P.coreRigCertificationGuidance({ attempts: 1, tier: 1 })).toMatch(/Advanced target.*135 program rating.*92%/);
+    expect(P.coreRigCertificationGuidance({ attempts: 1, tier: 2 })).toMatch(/Mastered target.*175 program rating.*97%/);
+    expect(P.coreRigCertificationGuidance({ attempts: 1, tier: 3 })).toContain('Highest operator tier earned');
+
+    const cancelledReport = certificationReport({ angle: 'vertical', depth: 9, integrity: 0.8, stopReason: 'cancelled' });
+    const cancelled = P.advanceCoreRigCertification(undefined, cancelledReport, certificationEvaluation(200, 80), 900, 'cancelled-first');
+    expect(cancelled).toMatchObject({
+      certificationReward: 0, programKey: 'vertical@9', tierUp: false, newBest: false, duplicate: false,
+      assessment: { level: 0, eligible: false },
+      program: {
+        bestScore: 0, tier: 0, attempts: 1, lastScore: 200, lastIntegrity: 80,
+        lastEligible: false, lastFullCore: true, lastSafeBoundary: false, lastStopReason: 'cancelled',
+      },
+    });
+    ['85% integrity', '75%', 'target or protected boundary'].forEach((fragment) => {
+      expect(P.coreRigCertificationGuidance(cancelled.program)).toContain(fragment);
+    });
+
+    const qualifiedReport = certificationReport({ angle: 'vertical', depth: 9, integrity: 0.85 });
+    const qualified = P.advanceCoreRigCertification(cancelled.entry, qualifiedReport, certificationEvaluation(65, 85), 901, 'qualified-second');
+    expect(qualified).toMatchObject({ certificationReward: 7, newBest: true, tierUp: true, duplicate: false, program: { bestScore: 65, tier: 1 } });
+  });
+
+  it('uses Certified Core Operator for nine qualified cells and reserves Master for nine mastered cells', () => {
+    let entry;
+    P.coreRigProgramCatalog().forEach((program, index) => {
+      const report = certificationReport({ angle: program.angle, depth: program.depth, integrity: 0.85 });
+      entry = P.advanceCoreRigCertification(entry, report, certificationEvaluation(65, 85), 3000 + index, 'certified-' + program.key).entry;
+    });
+    expect(P.coreRigCertificationSummary(entry)).toMatchObject({
+      total: 9, certified: 9, advanced: 0, mastered: 0, percent: 100, complete: true, title: 'Certified Core Operator',
+    });
+  });
+
+  it('advances one program immutably, rejects duplicate callbacks, and isolates report ids per cell', () => {
+    const report = certificationReport({ angle: 'vertical', depth: 6, integrity: 0.85 });
+    const first = P.advanceCoreRigCertification(undefined, report, certificationEvaluation(65, 85), 1000, 'cert-1');
+    expect(first).toMatchObject({
+      programKey: 'vertical@6', tierUp: true, newBest: true, duplicate: false,
+      entry: { version: 1 },
+    });
+    expect(first.certificationReward).toBe(P.coreRigCertificationReward(0, first.assessment.rating));
+    expect(Object.keys(first.entry.programs)).toEqual(P.coreRigProgramCatalog().map((program) => program.key));
+    expect(first.program).toEqual(first.entry.programs['vertical@6']);
+    expect(P.coreRigCertificationSummary(first.entry)).toMatchObject({
+      total: 9, certified: 1, advanced: 0, mastered: 0, attempts: 1, percent: 11, complete: false,
+    });
+
+    const firstSnapshot = JSON.parse(JSON.stringify(first.entry));
+    const lower = P.advanceCoreRigCertification(first.entry, report, certificationEvaluation(60, 85), 1001, 'cert-2');
+    expect(lower).toMatchObject({ certificationReward: 0, programKey: 'vertical@6', tierUp: false, newBest: false, duplicate: false });
+    expect(P.coreRigCertificationSummary(lower.entry)).toMatchObject({ certified: 1, advanced: 0, mastered: 0, attempts: 2 });
+    expect(first.entry).toEqual(firstSnapshot);
+
+    const duplicate = P.advanceCoreRigCertification(lower.entry, report, certificationEvaluation(200, 100), 9999, 'cert-1');
+    expect(duplicate).toMatchObject({ certificationReward: 0, programKey: 'vertical@6', tierUp: false, newBest: false, duplicate: true });
+    expect(duplicate.entry).toEqual(lower.entry);
+
+    const advancedReport = certificationReport({ angle: 'vertical', depth: 6, integrity: 0.92 });
+    const advanced = P.advanceCoreRigCertification(lower.entry, advancedReport, certificationEvaluation(135, 92), 1002, 'cert-3');
+    expect(advanced).toMatchObject({ tierUp: true, newBest: true, duplicate: false });
+    expect(advanced.certificationReward).toBe(P.coreRigCertificationReward(lower.entry.programs['vertical@6'].bestRating, advanced.assessment.rating));
+    expect(P.coreRigCertificationSummary(advanced.entry)).toMatchObject({ certified: 1, advanced: 1, mastered: 0, attempts: 3 });
+
+    const secondProgram = certificationReport({ angle: 'slant', depth: 9, integrity: 0.85 });
+    const isolated = P.advanceCoreRigCertification(advanced.entry, secondProgram, certificationEvaluation(65, 85), 1003, 'cert-1');
+    expect(isolated).toMatchObject({ certificationReward: 7, programKey: 'slant@9', tierUp: true, newBest: true, duplicate: false });
+    expect(P.coreRigCertificationSummary(isolated.entry)).toMatchObject({
+      total: 9, certified: 2, advanced: 1, mastered: 0, attempts: 4, percent: 22, complete: false,
+    });
+  });
+
+  it('caps the global nine-program certification loop at 180 XP and reports full mastery', () => {
+    let entry;
+    let earned = 0;
+    const transitions = [];
+    P.coreRigProgramCatalog().forEach((program, index) => {
+      const report = certificationReport({ angle: program.angle, depth: program.depth, integrity: 1 });
+      const transition = P.advanceCoreRigCertification(entry, report, certificationEvaluation(200, 100), 2000 + index, 'master-' + program.key);
+      transitions.push(transition); earned += transition.certificationReward; entry = transition.entry;
+    });
+    expect(earned).toBe(180);
+    expect(transitions.every((transition) => transition.certificationReward === 20 && transition.tierUp && transition.newBest && !transition.duplicate)).toBe(true);
+    expect(P.coreRigCertificationSummary(entry)).toMatchObject({
+      total: 9, certified: 9, advanced: 9, mastered: 9, attempts: 9, percent: 100, complete: true, title: 'Master Core Operator',
+    });
+
+
+    const failedProgram = P.coreRigProgramCatalog().find((program) => program.depth === 9);
+    const failedReport = certificationReport({ angle: failedProgram.angle, depth: failedProgram.depth, integrity: 0.8, stopReason: 'cancelled' });
+    const failedRetry = P.advanceCoreRigCertification(entry, failedReport, certificationEvaluation(200, 80), 9998, 'failed-after-master');
+    expect(failedRetry).toMatchObject({
+      certificationReward: 0, tierUp: false, newBest: false, duplicate: false,
+      assessment: { level: 0, eligible: false },
+      program: {
+        bestScore: 200, tier: 3, tierLabel: 'Mastered', lastScore: 200, lastIntegrity: 80,
+        lastEligible: false, lastFullCore: true, lastSafeBoundary: false, lastStopReason: 'cancelled',
+      },
+    });
+    entry = failedRetry.entry;
+    expect(P.coreRigCertificationSummary(entry)).toMatchObject({ mastered: 9, attempts: 10, title: 'Master Core Operator' });
+    const masteredSnapshot = JSON.parse(JSON.stringify(entry));
+    let replayReward = 0;
+    P.coreRigProgramCatalog().forEach((program) => {
+      const replay = P.advanceCoreRigCertification(entry, certificationReport({ angle: program.angle, depth: program.depth, integrity: 1 }), certificationEvaluation(200, 100), 9999, 'master-' + program.key);
+      expect(replay.duplicate).toBe(true); replayReward += replay.certificationReward; entry = replay.entry;
+    });
+    expect(replayReward).toBe(0);
+    expect(entry).toEqual(masteredSnapshot);
   });
 
   it('summarizes the recovered column for the journal and safe-stop readout', () => {

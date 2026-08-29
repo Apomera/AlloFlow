@@ -67,6 +67,7 @@ describe('normalizeSeating', () => {
             [t.seats[1].id]: 'Ana',          // duplicate student ⇒ second dropped
             ghost_seat: 'Bo',                 // unknown seat ⇒ dropped
             [t.seats[2].id]: 'Bo',
+            [t.seats[3].id]: 'Zed',          // removed/non-roster student => dropped
           },
         },
       },
@@ -267,7 +268,6 @@ describe('describeSeatForStudent (BehaviorLens bridge)', () => {
     return {
       className: 'Period 3',
       students: { wolf: 'g1', hawk: 'g1', owl: '' },
-      displayNames: { wolf: 'Marcus W.', hawk: 'Jada H.' },
       groups: { g1: { name: 'Group 1', color: '#4F46E5' } },
       seating: {
         activeLayoutId: 'layout1',
@@ -289,22 +289,21 @@ describe('describeSeatForStudent (BehaviorLens bridge)', () => {
     };
   }
 
-  it('describes position, pod, and anchors — matching by roster key or display name', () => {
+  it('describes position, pod, and anchors by codename only', () => {
     const rk = rosterWithChart();
     const byKey = S.describeSeatForStudent(rk, 'wolf');
     expect(byKey).toContain('Test day:');
     expect(byKey).toContain('front of room');
     expect(byKey).toContain('pod of 3');
     expect(byKey).toContain('by window');
-    expect(byKey).not.toContain('Jada');        // neighbors off by default
-    const byDisplay = S.describeSeatForStudent(rk, 'marcus w.');
-    expect(byDisplay).toBe(byKey);
+    expect(byKey).not.toContain('hawk');        // neighbors off by default
+    expect(S.describeSeatForStudent(rk, 'marcus w.')).toBe(null);
   });
 
-  it('includes neighbor display names only with the opt-in', () => {
+  it('includes neighbor codenames only with the opt-in', () => {
     const rk = rosterWithChart();
     const withNeighbors = S.describeSeatForStudent(rk, 'wolf', { includeNeighbors: true });
-    expect(withNeighbors).toContain('next to Jada H.');
+    expect(withNeighbors).toContain('next to hawk');
     const isolated = S.describeSeatForStudent(rk, 'owl', { includeNeighbors: true });
     expect(isolated).toContain('back of room');
     expect(isolated).toContain('single desk');

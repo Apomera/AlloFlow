@@ -41,6 +41,32 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     expect(source).toContain("data-allobot-satellite-state={isListening ? 'listening' : 'idle'}");
   });
 
+  it('groups satellite controls in a theme-aware visual orbit', () => {
+    expect(source).toContain('data-allobot-control-surface="true"');
+    expect(source).toContain('data-allobot-control-theme={theme}');
+    expect(source).toContain("data-allobot-control-visibility={coarsePointer ? 'persistent' : 'reveal'}");
+    expect(source).toContain("data-allobot-control-live={isListening ? 'true' : 'false'}");
+    expect(source).toContain('className="allobot-control-orbit"');
+    expect(source).toContain("data-allobot-control-orbit-state={isListening ? 'listening' : 'idle'}");
+    expect(source).toContain('[data-allobot-control-surface="true"][data-allobot-control-theme="dark"]');
+    expect(source).toContain('[data-allobot-control-surface="true"][data-allobot-control-theme="contrast"]');
+    expect(source).toContain('[data-allobot-control-live="true"] .allobot-control-orbit');
+    expect(source).toContain('--allobot-satellite-listening-border');
+  });
+
+  it('connects the antenna to the shell and keeps its lamp states layered', () => {
+    expect(source).toContain('antennaVisualState');
+    expect(source).toContain('antennaCoreFill');
+    expect(source).toContain('data-allobot-antenna-mount');
+    expect(source).toContain('data-allobot-antenna-lamp');
+    expect(source).toContain('data-allobot-antenna-state');
+    for (const layer of ['socket', 'socket-highlight', 'stalk', 'signal-waves', 'lamp-housing', 'lamp-core', 'lamp-catchlight', 'sleep-dash']) {
+      expect(source).toContain(`data-allobot-antenna-layer="${layer}"`);
+    }
+    expect(source).toContain("theme === 'contrast' ? '#FFFFFF' : '#64748B'");
+    expect(source).toContain("style={{ transformOrigin: '50px 5px' }}");
+  });
+
   it('lets a touch reach the orbit controls instead of starting a drag', () => {
     // The container owns the drag gesture and calls preventDefault() on
     // touchstart, which cancels the synthesised click outright. Stopping
@@ -74,6 +100,25 @@ describe('AlloBot target, speech, and SMIL accessibility', () => {
     expect(source).toContain('theme={theme}');
     expect(source).toContain('.allobot-speech-bubble[data-allobot-bubble-theme="dark"]');
     expect(source).toContain('.allobot-speech-bubble[data-allobot-bubble-theme="contrast"]');
+  });
+
+  it('stages bubbles away from responsive side accessories and rechecks live geometry', () => {
+    for (const text of [source]) {
+      expect(text).toContain('avoidSide');
+      expect(text).toContain('preferredAttachment');
+      expect(text).toContain('alternateAttachment');
+      expect(text).toContain('availableByAttachment');
+      expect(text).toContain('data-allobot-bubble-avoid-side');
+      expect(text).toContain('data-allobot-bubble-attachment');
+      expect(text).toContain('ResizeObserver');
+      expect(text).toContain("addEventListener('resize', resolvePlacement)");
+      expect(text).toContain("removeEventListener('resize', resolvePlacement)");
+    }
+    expect(source).toContain("avoidSide === 'left'");
+    expect(source).toContain("avoidSide === 'right'");
+    expect(source).toContain("const anchorRect = bubbleRef.current.parentElement?.getBoundingClientRect() || rect;");
+    expect(source).toContain('avoidSide={accessoryRenderSide}');
+    expect(source).toContain("placement.endsWith('-left') ? 'left' : 'right'");
   });
 
   it('owns movement and celebration effect styling without host utilities', () => {

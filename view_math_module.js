@@ -39,26 +39,474 @@
 
   // ── Inline parametric diagram renderer — DELEGATE (canonical impl in utils_pure / UtilsPure) ──
 function _renderDiagramSvg(tool, state, titleText) {
-  // Canonical impl lives in utils_pure (window.AlloModules.UtilsPure) — shared with QuizView so
-  // math + quiz never drift. Delegate to it; null if not loaded (caller falls back to the button).
-  var _U = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure;
-  return _U && _U._renderDiagramSvg ? _U._renderDiagramSvg(tool, state, titleText) : null;
+  try {
+    // Canonical impl lives in utils_pure (window.AlloModules.UtilsPure) — shared with QuizView so
+    // math + quiz never drift. Delegate to it; null if not loaded (caller falls back to the button).
+    var _U = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure;
+    return _U && typeof _U._renderDiagramSvg === 'function' ? _U._renderDiagramSvg(tool, state, titleText) : null;
+  } catch (error) {
+    try {
+      console.warn('[MathView] Could not render restored manipulative diagram:', error);
+    } catch (_) {}
+    return null;
+  }
+}
+function _mathStableHash(value) {
+  var text = String(value == null ? '' : value);
+  var hash = 2166136261;
+  for (var i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+function _mathProblemKey(problem, index, resourceId) {
+  var suppliedKey = problem && _mathScalarText(problem.id != null ? problem.id : problem.problemId).trim();
+  if (suppliedKey) {
+    return Object.prototype.hasOwnProperty.call(Object.prototype, suppliedKey) ? 'problem-id-' + _mathStableHash((resourceId || 'math') + '|' + suppliedKey) : suppliedKey;
+  }
+  var seed = [resourceId || 'legacy-math', problem && (problem.question || problem.problem || ''), problem && (problem.answer || problem.correct_answer || ''), problem && (problem.taskType || '')].join('|');
+  return 'problem-' + _mathStableHash(seed) + '-' + index;
+}
+function _mathScalarText(value, maxLength = 12000) {
+  try {
+    if (typeof value !== 'string' && typeof value !== 'number') return '';
+    var limit = Number.isFinite(maxLength) ? Math.max(0, Math.min(250000, Math.floor(maxLength))) : 12000;
+    return String(value).slice(0, limit);
+  } catch (_) {
+    return '';
+  }
+}
+function _mathPlainRecord(value) {
+  try {
+    return value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  } catch (_) {
+    return {};
+  }
+}
+function _mathSafeShallowCopy(value) {
+  var copy = {};
+  try {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return copy;
+    var visited = 0;
+    for (var key in value) {
+      if (visited++ >= 256) break;
+      var ownsKey = false;
+      try {
+        ownsKey = Object.prototype.hasOwnProperty.call(value, key);
+      } catch (_) {}
+      if (!ownsKey) continue;
+      if (key === '__proto__' || key === 'prototype' || key === 'constructor') continue;
+      try {
+        copy[key] = value[key];
+      } catch (_) {}
+    }
+  } catch (_) {}
+  return copy;
+}
+function _mathSafeArraySnapshot(value, maxLength) {
+  var copy = [];
+  try {
+    if (!Array.isArray(value)) return copy;
+    var length = Number(value.length);
+    var limit = Number.isFinite(maxLength) ? Math.max(0, Math.floor(maxLength)) : 0;
+    if (!Number.isInteger(length) || length < 0) return copy;
+    var count = Math.min(length, limit);
+    for (var index = 0; index < count; index += 1) {
+      try {
+        copy.push(value[index]);
+      } catch (_) {
+        copy.push(undefined);
+      }
+    }
+  } catch (_) {}
+  return copy;
+}
+var _MATH_MANIPULATIVE_TOOLS = Object.freeze(['coordinate', 'base10', 'numberline', 'fractions', 'volume', 'protractor', 'funcGrapher', 'physics', 'chemBalance', 'punnett', 'circuit', 'dataPlot', 'inequality', 'molecule', 'calculus', 'wave', 'cell']);
+function _mathIsSupportedManipulativeTool(tool) {
+  return typeof tool === 'string' && tool.length <= 32 && _MATH_MANIPULATIVE_TOOLS.includes(tool);
+}
+function _mathManipulativeResponseAvailability(response) {
+  if (!response || !_mathIsSupportedManipulativeTool(response.tool)) {
+    return {
+      available: false,
+      reason: 'invalid-tool'
+    };
+  }
+  try {
+    var grader = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.MathManipulativeGrader : null;
+    var hasViewGrader = grader && (typeof grader.evaluateMathViewManipulativeResponse === 'function' || typeof grader.gradeMathViewManipulativeResponse === 'function');
+    if (!hasViewGrader || typeof grader.evaluateManipulativeResponse !== 'function') {
+      return {
+        available: false,
+        reason: 'checker-unavailable'
+      };
+    }
+    if (Array.isArray(grader.supportedTools) && !grader.supportedTools.includes(response.tool)) {
+      return {
+        available: false,
+        reason: 'checker-unavailable'
+      };
+    }
+    // A structured probe with no actual state must reach `invalid-actual` only
+    // after the canonical grader has accepted the target. This avoids trapping
+    // learners in a manipulative-only UI for malformed restored/generated data.
+    var targetCheck = grader.evaluateManipulativeResponse(response.tool, undefined, response.state);
+    if (targetCheck && targetCheck.supported === true && targetCheck.reason === 'invalid-actual') {
+      return {
+        available: true,
+        reason: 'ready'
+      };
+    }
+    if (targetCheck && targetCheck.reason === 'invalid-target') {
+      return {
+        available: false,
+        reason: 'invalid-target'
+      };
+    }
+    return {
+      available: false,
+      reason: 'checker-unavailable'
+    };
+  } catch (_) {
+    return {
+      available: false,
+      reason: 'checker-unavailable'
+    };
+  }
+}
+function _mathManipulativeFallbackMessage(availability) {
+  if (availability && availability.reason === 'lab-unavailable') {
+    return 'This problem\u2019s manipulative lab is unavailable here. Type your work instead.';
+  }
+  if (availability && availability.reason === 'invalid-tool') {
+    return 'This problem\u2019s manipulative response is unavailable because its tool type is invalid. Type your work instead.';
+  }
+  if (availability && availability.reason === 'invalid-target') {
+    return 'This problem has an invalid manipulative target. Type your work instead; your answer will not be marked wrong because of this setup issue.';
+  }
+  return 'This problem\u2019s manipulative checker is unavailable. Type your work instead.';
+}
+function _mathFractionDenominatorLimit() {
+  try {
+    var grader = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathManipulativeGrader;
+    var configured = Number(grader && grader.limits && grader.limits.maxFractionDenominator);
+    return Number.isInteger(configured) && configured >= 2 ? Math.min(20, configured) : 20;
+  } catch (_) {
+    return 20;
+  }
+}
+function _mathRequestActivity(kind, resourceId, problemKey) {
+  try {
+    var helpers = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MathHelpers;
+    var query = kind === 'check' ? helpers && helpers.isMathCheckRequestActive : helpers && helpers.isMathHintRequestActive;
+    return typeof query === 'function' ? query(resourceId, problemKey) === true : null;
+  } catch (_) {
+    return null;
+  }
+}
+function _normalizeMathManipulative(value) {
+  var raw = _mathSafeShallowCopy(value);
+  var tool = _mathScalarText(raw.tool);
+  if (!tool) return null;
+  return {
+    tool,
+    state: _mathSafeShallowCopy(raw.state),
+    __source: value
+  };
+}
+function _normalizeMathCheckResult(value) {
+  try {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    var raw = _mathSafeShallowCopy(value);
+    var verdict = typeof raw.verdict === 'string' && ['correct', 'partial', 'incorrect', 'error'].includes(raw.verdict) ? raw.verdict : 'incorrect';
+    var score = Number.isFinite(raw.score) ? Math.max(0, Math.min(100, Math.round(raw.score))) : 0;
+    var hintsUsed = Number.isFinite(raw.hintsUsed) ? Math.max(0, Math.min(3, Math.floor(raw.hintsUsed))) : 0;
+    return {
+      ...raw,
+      checking: raw.checking === true,
+      checked: raw.checked === true,
+      verdict,
+      score,
+      hintsUsed,
+      feedback: _mathScalarText(raw.feedback) || 'Your saved result could not be fully restored. Try checking your work again.',
+      xpEarned: Number.isFinite(raw.xpEarned) ? Math.max(0, Math.floor(raw.xpEarned)) : 0
+    };
+  } catch (_) {
+    return null;
+  }
+}
+function _normalizeMathHintState(value) {
+  try {
+    var raw = _mathSafeShallowCopy(value);
+    var hints = [];
+    var rawHints = _mathSafeArraySnapshot(raw.hints, 12);
+    for (var hintIndex = 0; hintIndex < rawHints.length && hints.length < 3; hintIndex += 1) {
+      if (typeof rawHints[hintIndex] !== 'string') continue;
+      var hint = rawHints[hintIndex].slice(0, 1000).trim();
+      if (hint) hints.push(hint);
+    }
+    var declaredCount = Number(raw.count);
+    var count = Math.max(hints.length, Number.isFinite(declaredCount) ? Math.floor(declaredCount) : 0);
+    return {
+      hints,
+      loading: raw.loading === true,
+      count: Math.max(0, Math.min(3, count))
+    };
+  } catch (_) {
+    return {
+      hints: [],
+      loading: false,
+      count: 0
+    };
+  }
+}
+function _normalizeMathSteps(steps) {
+  try {
+    if (!Array.isArray(steps)) {
+      var singleStep = _mathScalarText(steps).trim();
+      if (singleStep) return [{
+        explanation: singleStep,
+        latex: ''
+      }];
+      return [];
+    }
+    var normalizedSteps = [];
+    var rawSteps = _mathSafeArraySnapshot(steps, 50);
+    for (var stepIndex = 0; stepIndex < rawSteps.length; stepIndex += 1) {
+      var step = rawSteps[stepIndex];
+      var isStepRecord = false;
+      try {
+        isStepRecord = !!step && typeof step === 'object' && !Array.isArray(step);
+      } catch (_) {}
+      if (typeof step !== 'string' && !isStepRecord) continue;
+      if (typeof step === 'string') {
+        var explanation = _mathScalarText(step);
+        if (explanation) normalizedSteps.push({
+          explanation,
+          latex: ''
+        });
+      } else {
+        var safeStep = _mathSafeShallowCopy(step);
+        var normalizedStep = {
+          ...safeStep,
+          explanation: _mathScalarText(safeStep.explanation),
+          latex: _mathScalarText(safeStep.latex),
+          expression: _mathScalarText(safeStep.expression)
+        };
+        if (normalizedStep.explanation || normalizedStep.latex || normalizedStep.expression) {
+          normalizedSteps.push(normalizedStep);
+        }
+      }
+    }
+    return normalizedSteps;
+  } catch (_) {
+    return [];
+  }
+}
+
+// Accessible-math prompts can outlive the render that opened them. These pure
+// comparisons operate on per-MathView refs so separate or concurrent instances
+// cannot invalidate one another.
+function _mathAccessibleContextMatches(registry, request) {
+  if (!request || registry.resourceId !== request.resourceId || registry.artifact !== request.artifact) return false;
+  var current = registry.contexts.get(request.contextKey);
+  return !!current && current.enabled === true && current.value === request.value && current.problemToken === request.problemToken;
+}
+function _mathAccessibleRequestIsCurrent(registry, pending, request) {
+  return pending.get(request.contextKey) === request.requestId && _mathAccessibleContextMatches(registry, request);
+}
+function _mathManipulativeActualState(tool, snapshot) {
+  try {
+    var state = _mathPlainRecord(snapshot);
+    var directKeys = {
+      coordinate: 'gridPoints',
+      base10: 'base10Value',
+      numberline: 'numberLineMarkers',
+      fractions: 'fractionPieces',
+      volume: 'cubeDims',
+      protractor: 'angleValue'
+    };
+    if (Object.prototype.hasOwnProperty.call(directKeys, tool)) return state[directKeys[tool]];
+    var toolData = _mathPlainRecord(state.labToolData);
+    if (tool === 'circuit' && Object.prototype.hasOwnProperty.call(toolData, '_circuit')) return toolData._circuit;
+    return Object.prototype.hasOwnProperty.call(toolData, tool) ? toolData[tool] : undefined;
+  } catch (_) {
+    return undefined;
+  }
+}
+function _mathManipulativeDiagnostic(evaluation) {
+  var result = _mathPlainRecord(evaluation);
+  if (result.supported !== true || result.reason === 'unsupported-tool') {
+    return {
+      response: null,
+      message: 'This manipulative checker is temporarily unavailable. Your work was not marked wrong.',
+      tone: 'error'
+    };
+  }
+  if (result.correct === true && result.reason === 'match') {
+    return {
+      response: '(Manipulative: CORRECT ✅)',
+      message: 'Manipulative match correct! 🎉',
+      tone: 'success'
+    };
+  }
+  if (result.reason === 'mismatch') {
+    return {
+      response: '(Manipulative: INCORRECT ❌)',
+      message: 'That manipulative setup does not match yet. Keep trying!',
+      tone: 'error'
+    };
+  }
+  if (result.reason === 'invalid-actual') {
+    return {
+      response: null,
+      message: 'Complete every required part of the manipulative before checking. Your work was not marked wrong.',
+      tone: 'info'
+    };
+  }
+  if (result.reason === 'invalid-target') {
+    return {
+      response: null,
+      message: 'This problem has an invalid manipulative target. Your work was not marked wrong.',
+      tone: 'error'
+    };
+  }
+  return {
+    response: null,
+    message: 'The manipulative state could not be checked safely. Reopen it and try again.',
+    tone: 'error'
+  };
+}
+function _normalizeMathProblems(generatedContent, resourceId) {
+  try {
+    var data = generatedContent && generatedContent.data;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return [];
+    var rawProblems = Array.isArray(data.problems) ? data.problems : data.problem != null || data.question != null ? [{
+      question: data.problem != null ? data.problem : data.question,
+      answer: data.answer,
+      taskType: data.taskType,
+      expression: data.expression,
+      steps: data.steps,
+      realWorld: data.realWorld,
+      manipulativeSupport: data.manipulativeSupport,
+      manipulativeResponse: data.manipulativeResponse,
+      _verification: data._verification
+    }] : [];
+    var usedViewKeys = new Set();
+    return _mathSafeArraySnapshot(rawProblems, 200).filter(problem => {
+      try {
+        return problem && typeof problem === 'object' && !Array.isArray(problem);
+      } catch (_) {
+        return false;
+      }
+    }).map((problem, index) => {
+      var safeProblem = _mathSafeShallowCopy(problem);
+      var baseViewKey = _mathProblemKey(safeProblem, index, resourceId);
+      var viewKey = baseViewKey;
+      var collision = 0;
+      while (usedViewKeys.has(viewKey)) {
+        viewKey = `${baseViewKey}-duplicate-${index}-${++collision}`;
+      }
+      usedViewKeys.add(viewKey);
+      return {
+        ...safeProblem,
+        question: _mathScalarText(safeProblem.question),
+        problem: _mathScalarText(safeProblem.problem),
+        answer: _mathScalarText(safeProblem.answer ?? safeProblem.correct_answer),
+        correct_answer: _mathScalarText(safeProblem.correct_answer),
+        taskType: _mathScalarText(safeProblem.taskType),
+        expression: _mathScalarText(safeProblem.expression),
+        realWorld: _mathScalarText(safeProblem.realWorld),
+        manipulativeSupport: _normalizeMathManipulative(safeProblem.manipulativeSupport),
+        manipulativeResponse: _normalizeMathManipulative(safeProblem.manipulativeResponse),
+        _verification: safeProblem._verification ? _mathSafeShallowCopy(safeProblem._verification) : null,
+        steps: _normalizeMathSteps(safeProblem.steps),
+        __viewKey: viewKey
+      };
+    }).filter(problem => problem.question.trim() || problem.problem.trim());
+  } catch (_) {
+    return [];
+  }
 }
 function MathView(props) {
+  props = _mathSafeShallowCopy(props);
+  var noop = () => {};
+  var accessibleInputRegistryRef = React.useRef({
+    resourceId: null,
+    artifact: null,
+    contexts: new Map()
+  });
+  var nextAccessibleInputRegistry = {
+    resourceId: null,
+    artifact: null,
+    contexts: new Map()
+  };
+  var accessibleInputPendingRef = React.useRef(new Map());
+  var accessibleInputSequenceRef = React.useRef(0);
+  var activeManipulativeSessionRef = React.useRef(null);
+  React.useLayoutEffect(() => {
+    var previousRegistry = accessibleInputRegistryRef.current;
+    var pending = accessibleInputPendingRef.current;
+    pending.forEach((requestId, contextKey) => {
+      var previousContext = previousRegistry && previousRegistry.contexts ? previousRegistry.contexts.get(contextKey) : null;
+      var nextContext = nextAccessibleInputRegistry.contexts.get(contextKey);
+      var unchanged = previousRegistry.resourceId === nextAccessibleInputRegistry.resourceId && previousRegistry.artifact === nextAccessibleInputRegistry.artifact && previousContext && nextContext && previousContext.enabled === nextContext.enabled && previousContext.value === nextContext.value && previousContext.problemToken === nextContext.problemToken;
+      if (!unchanged) pending.delete(contextKey);
+    });
+    accessibleInputRegistryRef.current = nextAccessibleInputRegistry;
+  });
+  React.useEffect(() => () => {
+    accessibleInputRegistryRef.current = {
+      resourceId: null,
+      artifact: null,
+      contexts: new Map()
+    };
+    accessibleInputPendingRef.current.clear();
+    activeManipulativeSessionRef.current = null;
+  }, []);
   // State reads
-  var t = props.t;
-  var generatedContent = props.generatedContent;
-  var isTeacherMode = props.isTeacherMode;
-  var isIndependentMode = props.isIndependentMode;
-  var isProcessing = props.isProcessing;
-  var showMathAnswers = props.showMathAnswers;
-  var mathSelfGradeMode = props.mathSelfGradeMode;
-  var mathEditInput = props.mathEditInput;
-  var isMathEditingChat = props.isMathEditingChat;
-  var mathHintData = props.mathHintData;
-  var mathCheckResults = props.mathCheckResults;
-  var mathSubject = props.mathSubject;
-  var studentResponses = props.studentResponses;
+  var t = typeof props.t === 'function' ? props.t : key => key;
+  var generatedContentArtifact = props.generatedContent;
+  React.useLayoutEffect(() => {
+    if (activeManipulativeSessionRef.current && activeManipulativeSessionRef.current.artifact !== generatedContentArtifact) {
+      activeManipulativeSessionRef.current = null;
+    }
+  }, [generatedContentArtifact]);
+  var generatedContent = _mathSafeShallowCopy(generatedContentArtifact);
+  var rawGeneratedMathData = generatedContent.data;
+  var plainGeneratedMathData = _mathPlainRecord(rawGeneratedMathData);
+  var hasGeneratedMathData = !!rawGeneratedMathData && plainGeneratedMathData === rawGeneratedMathData;
+  generatedContent.data = _mathSafeShallowCopy(plainGeneratedMathData);
+  var isProcessing = props.isProcessing === true;
+  if (generatedContent.type !== 'math' || !hasGeneratedMathData) {
+    return /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite"
+    }, isProcessing ? 'Preparing math content...' : 'No math activity is ready. Generate one or select one from history.');
+  }
+  var mathTitle = _mathScalarText(generatedContent.data.title, 2000);
+  var mathMeta = _mathScalarText(generatedContent.meta, 2000);
+  var mathGraphAlt = _mathScalarText(generatedContent.data.graphAlt, 4000);
+  var resourceSeed = mathTitle || _mathScalarText(generatedContent.data.problem, 12000) || _mathScalarText(generatedContent.timestamp, 500) || 'math';
+  var suppliedResourceId = _mathScalarText(generatedContent.id, 500).trim();
+  var suppliedMathResourceId = _mathScalarText(props.mathResourceId).trim().slice(0, 1000);
+  var mathResourceId = suppliedMathResourceId || (suppliedResourceId ? Object.prototype.hasOwnProperty.call(Object.prototype, suppliedResourceId) ? 'math-resource-' + _mathStableHash(resourceSeed + '|' + suppliedResourceId) : suppliedResourceId : 'legacy-math-' + _mathStableHash(resourceSeed));
+  var mathProblems = _normalizeMathProblems(generatedContent, mathResourceId);
+  if (!mathProblems.length) return /*#__PURE__*/React.createElement("div", {
+    role: "alert"
+  }, "This math activity has no displayable problems. Try regenerating it.");
+  var isTeacherMode = props.isTeacherMode === true;
+  var isIndependentMode = props.isIndependentMode === true;
+  var showMathAnswers = props.showMathAnswers === true;
+  var mathSelfGradeMode = props.mathSelfGradeMode === true;
+  var mathStudentAnswers = _mathSafeShallowCopy(props.mathStudentAnswers);
+  var mathEditInput = _mathScalarText(props.mathEditInput);
+  var isMathEditingChat = props.isMathEditingChat === true;
+  var mathHintData = _mathSafeShallowCopy(props.mathHintData);
+  var mathCheckResults = _mathSafeShallowCopy(props.mathCheckResults);
+  var mathSubject = _mathScalarText(props.mathSubject) || 'Math';
+  var studentResponses = _mathSafeShallowCopy(props.studentResponses);
   var gridPoints = props.gridPoints;
   var base10Value = props.base10Value;
   var numberLineMarkers = props.numberLineMarkers;
@@ -69,48 +517,85 @@ function MathView(props) {
   var cubeBuilderMode = props.cubeBuilderMode;
   var cubePositions = props.cubePositions;
   // Setters
-  var setStemLabTool = props.setStemLabTool;
-  var setStemLabTab = props.setStemLabTab;
-  var setShowStemLab = props.setShowStemLab;
-  var setGridPoints = props.setGridPoints;
-  var setBase10Value = props.setBase10Value;
-  var setNumberLineRange = props.setNumberLineRange;
-  var setFractionPieces = props.setFractionPieces;
-  var setCubeDims = props.setCubeDims;
-  var setAngleValue = props.setAngleValue;
-  var setMathEditInput = props.setMathEditInput;
-  var setCubeBuilderMode = props.setCubeBuilderMode;
-  var setCubePositions = props.setCubePositions;
-  var setCubeBuilderChallenge = props.setCubeBuilderChallenge;
-  var setCubeBuilderFeedback = props.setCubeBuilderFeedback;
+  var setStemLabTool = typeof props.setStemLabTool === 'function' ? props.setStemLabTool : noop;
+  var setStemLabTab = typeof props.setStemLabTab === 'function' ? props.setStemLabTab : noop;
+  var setShowStemLab = typeof props.setShowStemLab === 'function' ? props.setShowStemLab : noop;
+  var canSetGridPoints = typeof props.setGridPoints === 'function';
+  var setGridPoints = canSetGridPoints ? props.setGridPoints : noop;
+  var canSetBase10Value = typeof props.setBase10Value === 'function';
+  var setBase10Value = canSetBase10Value ? props.setBase10Value : noop;
+  var setNumberLineRange = typeof props.setNumberLineRange === 'function' ? props.setNumberLineRange : noop;
+  var canSetNumberLineMarkers = typeof props.setNumberLineMarkers === 'function';
+  var setNumberLineMarkers = canSetNumberLineMarkers ? props.setNumberLineMarkers : noop;
+  var canSetFractionPieces = typeof props.setFractionPieces === 'function';
+  var setFractionPieces = canSetFractionPieces ? props.setFractionPieces : noop;
+  var canSetCubeDims = typeof props.setCubeDims === 'function';
+  var setCubeDims = canSetCubeDims ? props.setCubeDims : noop;
+  var canSetAngleValue = typeof props.setAngleValue === 'function';
+  var setAngleValue = canSetAngleValue ? props.setAngleValue : noop;
+  var canSetLabToolData = typeof props.setLabToolData === 'function';
+  var setLabToolData = canSetLabToolData ? props.setLabToolData : noop;
+  var canSetMathEditInput = typeof props.setMathEditInput === 'function';
+  var setMathEditInput = canSetMathEditInput ? props.setMathEditInput : noop;
+  var canSetMathStudentAnswers = typeof props.setMathStudentAnswers === 'function';
+  var setMathStudentAnswers = canSetMathStudentAnswers ? props.setMathStudentAnswers : noop;
+  var setCubeBuilderMode = typeof props.setCubeBuilderMode === 'function' ? props.setCubeBuilderMode : noop;
+  var setCubePositions = typeof props.setCubePositions === 'function' ? props.setCubePositions : noop;
+  var setCubeBuilderChallenge = typeof props.setCubeBuilderChallenge === 'function' ? props.setCubeBuilderChallenge : noop;
+  var setCubeBuilderFeedback = typeof props.setCubeBuilderFeedback === 'function' ? props.setCubeBuilderFeedback : noop;
   // Handlers
-  var handleToggleShowMathAnswers = props.handleToggleShowMathAnswers;
-  var handleSetShowMathAnswersToTrue = props.handleSetShowMathAnswersToTrue;
-  var handleToggleMathSelfGrade = props.handleToggleMathSelfGrade;
-  var submitMathSelfGrade = props.submitMathSelfGrade;
-  var handleStudentInput = props.handleStudentInput;
-  var handleMathProblemEdit = props.handleMathProblemEdit;
-  var handleCheckMathWork = props.handleCheckMathWork;
-  var handleResetMathCheck = props.handleResetMathCheck;
-  var handleGetMathHint = props.handleGetMathHint;
-  var handleGenerateSimilar = props.handleGenerateSimilar;
-  var handleMathEdit = props.handleMathEdit;
-  var isMathEditing = props.isMathEditing;
-  var toggleMathEdit = props.toggleMathEdit;
+  var canToggleShowMathAnswers = typeof props.handleToggleShowMathAnswers === 'function';
+  var canToggleMathSelfGrade = typeof props.handleToggleMathSelfGrade === 'function';
+  var canSubmitMathSelfGrade = typeof props.submitMathSelfGrade === 'function';
+  var canHandleStudentInput = typeof props.handleStudentInput === 'function';
+  var canHandleMathProblemEdit = typeof props.handleMathProblemEdit === 'function';
+  var canHandleCheckMathWork = typeof props.handleCheckMathWork === 'function';
+  var canHandleResetMathCheck = typeof props.handleResetMathCheck === 'function';
+  var canHandleGetMathHint = typeof props.handleGetMathHint === 'function';
+  var canHandleGenerateSimilar = typeof props.handleGenerateSimilar === 'function';
+  var canHandleMathEdit = typeof props.handleMathEdit === 'function';
+  var canToggleMathEdit = typeof props.toggleMathEdit === 'function';
+  var canCopyToClipboard = typeof props.copyToClipboard === 'function';
+  var canSetShowMathAnswers = typeof props.handleSetShowMathAnswersToTrue === 'function';
+  var canOpenStemLab = typeof props.setStemLabTool === 'function' && typeof props.setStemLabTab === 'function' && typeof props.setShowStemLab === 'function';
+  var canPrepareMathManipulativeTool = tool => {
+    if (tool === 'coordinate') return canSetGridPoints;
+    if (tool === 'base10') return canSetBase10Value;
+    if (tool === 'numberline') return canSetNumberLineMarkers;
+    if (tool === 'fractions') return canSetFractionPieces;
+    if (tool === 'volume') return canSetCubeDims;
+    if (tool === 'protractor') return canSetAngleValue;
+    return canSetLabToolData;
+  };
+  var canOpenCubeLab = canOpenStemLab && typeof props.setCubeBuilderMode === 'function' && typeof props.setCubePositions === 'function' && typeof props.setCubeBuilderChallenge === 'function' && typeof props.setCubeBuilderFeedback === 'function';
+  var handleToggleShowMathAnswers = canToggleShowMathAnswers ? props.handleToggleShowMathAnswers : noop;
+  var handleSetShowMathAnswersToTrue = canSetShowMathAnswers ? props.handleSetShowMathAnswersToTrue : noop;
+  var handleToggleMathSelfGrade = canToggleMathSelfGrade ? props.handleToggleMathSelfGrade : noop;
+  var submitMathSelfGrade = canSubmitMathSelfGrade ? props.submitMathSelfGrade : noop;
+  var handleStudentInput = canHandleStudentInput ? props.handleStudentInput : noop;
+  var handleMathProblemEdit = canHandleMathProblemEdit ? props.handleMathProblemEdit : noop;
+  var handleCheckMathWork = canHandleCheckMathWork ? props.handleCheckMathWork : noop;
+  var handleResetMathCheck = canHandleResetMathCheck ? props.handleResetMathCheck : noop;
+  var handleGetMathHint = canHandleGetMathHint ? props.handleGetMathHint : noop;
+  var handleGenerateSimilar = canHandleGenerateSimilar ? props.handleGenerateSimilar : noop;
+  var handleMathEdit = canHandleMathEdit ? props.handleMathEdit : noop;
+  var isMathEditing = typeof props.isMathEditing === 'function' ? props.isMathEditing : () => false;
+  var toggleMathEdit = canToggleMathEdit ? props.toggleMathEdit : noop;
   // Pure helpers
-  var formatMathQuestion = props.formatMathQuestion;
-  var formatInlineText = props.formatInlineText;
-  var sanitizeHtml = props.sanitizeHtml;
-  var copyToClipboard = props.copyToClipboard;
-  var addToast = props.addToast;
+  var formatMathQuestion = typeof props.formatMathQuestion === 'function' ? props.formatMathQuestion : problem => problem.question || problem.problem || problem.expression || '';
+  var formatInlineText = typeof props.formatInlineText === 'function' ? props.formatInlineText : text => _mathScalarText(text);
+  var sanitizeHtml = typeof props.sanitizeHtml === 'function' ? props.sanitizeHtml : () => '';
+  var copyToClipboard = canCopyToClipboard ? props.copyToClipboard : noop;
+  var addToast = typeof props.addToast === 'function' ? props.addToast : noop;
   // Components
-  var MathSymbol = props.MathSymbol;
+  var MathSymbol = typeof props.MathSymbol === 'function' ? props.MathSymbol : symbolProps => /*#__PURE__*/React.createElement("span", null, _mathScalarText(symbolProps?.text));
   var callTTS = props.callTTS;
   var selectedVoice = props.selectedVoice;
 
   // Shared accessible math entry: this only inserts notation into the existing
   // response/edit flows. It does not generate problems or grade answers.
   var ensureAccessibleMathInput = () => {
+    if (typeof window === 'undefined') return Promise.reject(new Error('Math input is unavailable outside the browser'));
     if (window.AlloMathInput) return Promise.resolve(window.AlloMathInput);
     if (typeof window.__alloLoadPlugin !== 'function') return Promise.reject(new Error('Math input loader is unavailable'));
     return window.__alloLoadPlugin('mathlive_loader.js').then(() => window.AlloMathInput);
@@ -126,17 +611,34 @@ function MathView(props) {
       }
       return;
     }
-    if (window.speechSynthesis) {
+    if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance === 'function') {
       window.speechSynthesis.cancel();
       window.speechSynthesis.speak(new SpeechSynthesisUtterance(spoken));
     }
   };
   var appendInlineMath = (currentValue, latex) => {
     const current = String(currentValue || '').trimEnd();
-    const math = `\\(${String(latex || '').trim()}\\)`;
+    const normalizedLatex = String(latex || '').trim();
+    if (!normalizedLatex) return current;
+    const math = `\\(${normalizedLatex}\\)`;
     return current ? `${current} ${math}` : math;
   };
-  var openAccessibleMathInput = options => {
+  var openAccessibleMathInput = rawOptions => {
+    var options = _mathPlainRecord(rawOptions);
+    var contextKey = _mathScalarText(options.contextKey);
+    var registry = accessibleInputRegistryRef.current;
+    var pending = accessibleInputPendingRef.current;
+    var currentContext = registry.contexts.get(contextKey);
+    if (!contextKey || !currentContext || currentContext.enabled !== true || typeof options.onInsert !== 'function') return;
+    var request = {
+      requestId: ++accessibleInputSequenceRef.current,
+      contextKey,
+      resourceId: registry.resourceId,
+      artifact: registry.artifact,
+      value: currentContext.value,
+      problemToken: currentContext.problemToken
+    };
+    pending.set(contextKey, request.requestId);
     ensureAccessibleMathInput().then(mathInput => {
       if (!mathInput || typeof mathInput.promptEquation !== 'function') throw new Error('Accessible math input did not initialize');
       return mathInput.promptEquation({
@@ -146,270 +648,604 @@ function MathView(props) {
         onSpeak: playSpokenMath
       });
     }).then(result => {
-      if (result) options.onInsert(result);
+      if (!result || !_mathAccessibleRequestIsCurrent(accessibleInputRegistryRef.current, pending, request)) return;
+      var latestContext = accessibleInputRegistryRef.current.contexts.get(contextKey);
+      options.onInsert(result, latestContext.value, () => _mathAccessibleContextMatches(accessibleInputRegistryRef.current, request));
     }).catch(error => {
-      addToast(`Accessible math input is unavailable: ${error?.message || 'unknown error'}`, 'error');
+      if (_mathAccessibleRequestIsCurrent(accessibleInputRegistryRef.current, pending, request)) {
+        addToast(`Accessible math input is unavailable: ${error?.message || 'unknown error'}`, 'error');
+      }
+    }).then(() => {
+      if (pending.get(contextKey) === request.requestId) {
+        pending.delete(contextKey);
+      }
     });
   };
-  var mathKeyboardButton = (onClick, label = 'Open accessible math keyboard') => /*#__PURE__*/React.createElement("button", {
+  var mathKeyboardButton = (onClick, label = 'Open accessible math keyboard', disabled = false) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-math-input-launch": "math-work",
     "aria-label": label,
     title: label,
-    onClick: onClick,
-    className: "mt-2 inline-flex items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+    disabled: disabled,
+    onClick: disabled ? undefined : onClick,
+    className: "mt-2 inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-bold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-300 disabled:cursor-not-allowed disabled:opacity-50"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
   }, "⌨"), " Math keyboard");
+  var resourceCheckResults = _mathSafeShallowCopy(mathCheckResults[mathResourceId]);
+  var resourceStudentResponses = _mathSafeShallowCopy(studentResponses[mathResourceId]);
+  var getMathCheckResult = problemKey => {
+    var result = _normalizeMathCheckResult(resourceCheckResults[problemKey]);
+    if (result?.checking === true && _mathRequestActivity('check', mathResourceId, problemKey) === false) {
+      return {
+        ...result,
+        checking: false
+      };
+    }
+    return result;
+  };
+  var getMathHintState = problemKey => {
+    var resourceHints = _mathSafeShallowCopy(mathHintData[mathResourceId]);
+    var nestedHint = Object.prototype.hasOwnProperty.call(resourceHints, String(problemKey)) ? resourceHints[String(problemKey)] : undefined;
+    var legacyKey = `${mathResourceId}_${problemKey}`;
+    var legacyHint = Object.prototype.hasOwnProperty.call(mathHintData, legacyKey) ? mathHintData[legacyKey] : undefined;
+    var state = _normalizeMathHintState(nestedHint !== undefined ? nestedHint : legacyHint);
+    return state.loading === true && _mathRequestActivity('hint', mathResourceId, problemKey) === false ? {
+      ...state,
+      loading: false
+    } : state;
+  };
+  var isMathResponseLocked = problemKey => {
+    var result = getMathCheckResult(problemKey);
+    return result?.checking === true || result?.checked === true;
+  };
+  var manipulativeResponseAvailability = new Map(mathProblems.map(problem => {
+    var availability = _mathManipulativeResponseAvailability(problem.manipulativeResponse);
+    if (availability.available === true && (!canOpenStemLab || !canPrepareMathManipulativeTool(problem.manipulativeResponse.tool))) {
+      availability = {
+        available: false,
+        reason: 'lab-unavailable'
+      };
+    }
+    return [problem.__viewKey, availability];
+  }));
+  var getMathManipulativeResponseAvailability = problem => manipulativeResponseAvailability.get(problem.__viewKey) || {
+    available: false,
+    reason: 'checker-unavailable'
+  };
+  var mathAccessibleContextKey = (kind, problemKey) => [mathResourceId, kind, String(problemKey)].join('|');
+  var accessibleContexts = new Map();
+  mathProblems.forEach((problem, problemIndex) => {
+    var usesManipulativeResponse = getMathManipulativeResponseAvailability(problem).available === true;
+    var problemToken = _mathStableHash([problem.__viewKey, problem.question, problem.problem, problem.answer, problem.taskType, problemIndex].join('|'));
+    var responseValue = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
+    accessibleContexts.set(mathAccessibleContextKey('problem-question', problem.__viewKey), {
+      enabled: canHandleMathProblemEdit && isMathEditing(problemIndex, problem.__viewKey, mathResourceId),
+      value: problem.question || problem.problem || '',
+      problemToken
+    });
+    accessibleContexts.set(mathAccessibleContextKey('self-answer', problem.__viewKey), {
+      enabled: mathSelfGradeMode && canSetMathStudentAnswers,
+      value: _mathScalarText(mathStudentAnswers[problem.__viewKey]),
+      problemToken
+    });
+    accessibleContexts.set(mathAccessibleContextKey('teacher-work', problem.__viewKey), {
+      enabled: isTeacherMode && isIndependentMode && !mathSelfGradeMode && !usesManipulativeResponse && canHandleStudentInput,
+      value: responseValue,
+      problemToken
+    });
+    accessibleContexts.set(mathAccessibleContextKey('student-work', problem.__viewKey), {
+      enabled: !isTeacherMode && !mathSelfGradeMode && !usesManipulativeResponse && canHandleStudentInput && !isMathResponseLocked(problem.__viewKey),
+      value: responseValue,
+      problemToken
+    });
+  });
+  nextAccessibleInputRegistry = {
+    resourceId: mathResourceId,
+    artifact: generatedContentArtifact,
+    contexts: accessibleContexts
+  };
+  var mathResponseInputId = problemKey => 'math-response-' + _mathStableHash(mathResourceId + '|' + problemKey);
+  var mathSelfAnswerInputId = problemKey => 'math-self-answer-' + _mathStableHash(mathResourceId + '|' + problemKey);
+  var mathEditButtonId = problemKey => 'math-edit-toggle-' + _mathStableHash(mathResourceId + '|' + problemKey);
+  var answeredSelfGradeCount = mathProblems.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
+  var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length;
+  var selfGradeHelpId = 'math-self-grade-help-' + _mathStableHash(mathResourceId);
+  var activeCheckIndex = mathProblems.findIndex(problem => getMathCheckResult(problem.__viewKey)?.checking === true);
+  var activeHintIndex = mathProblems.findIndex(problem => getMathHintState(problem.__viewKey).loading === true);
+  var mathAsyncStatus = isMathEditingChat ? 'Updating math problems...' : activeCheckIndex >= 0 ? `Evaluating work for problem ${activeCheckIndex + 1}.` : activeHintIndex >= 0 ? `Preparing a hint for problem ${activeHintIndex + 1}.` : isProcessing ? 'Generating math content...' : '';
+  var graphHtml = '';
+  if (typeof generatedContent.data.graphData === 'string' && generatedContent.data.graphData) {
+    try {
+      var graphSource = _mathScalarText(generatedContent.data.graphData, 250000);
+      graphHtml = _mathScalarText(sanitizeHtml(graphSource), 250000);
+    } catch (_) {
+      graphHtml = '';
+    }
+  }
+  var currentManipulativeSnapshot = () => ({
+    gridPoints,
+    base10Value,
+    numberLineMarkers,
+    fractionPieces,
+    cubeDims,
+    angleValue,
+    labToolData
+  });
+  var openMathManipulativeSupport = problem => {
+    try {
+      var support = problem.manipulativeSupport;
+      if (!support) return;
+      var tool = support.tool;
+      var target = _mathPlainRecord(support.state);
+      if (!_mathIsSupportedManipulativeTool(tool)) {
+        addToast('This visual support is unavailable because its tool type is invalid.', 'error');
+        return;
+      }
+      if (!canOpenStemLab) {
+        addToast('This visual support cannot open because the manipulative lab is unavailable.', 'error');
+        return;
+      }
+      if (!canPrepareMathManipulativeTool(tool)) {
+        addToast('This visual support cannot open because its lab state controls are unavailable.', 'error');
+        return;
+      }
+      var ownsSupportValue = key => {
+        try {
+          return Object.prototype.hasOwnProperty.call(target, key);
+        } catch (_) {
+          return false;
+        }
+      };
+      var finiteSupportValue = (value, fallback, required) => {
+        if (value == null && !required) return fallback;
+        var numeric;
+        try {
+          numeric = Number(value);
+        } catch (_) {
+          throw new Error('invalid numeric support state');
+        }
+        if (!Number.isFinite(numeric)) {
+          if (required) throw new Error('invalid numeric support state');
+          return fallback;
+        }
+        return numeric;
+      };
+      var applySupportState = noop;
+      if (tool === 'coordinate') {
+        var supportPoints = _mathSafeArraySnapshot(target.points, 128).map(point => _mathSafeShallowCopy(point));
+        applySupportState = () => setGridPoints(supportPoints);
+      } else if (tool === 'base10') {
+        var supportBase10 = {
+          ...target
+        };
+        applySupportState = () => setBase10Value(supportBase10);
+      } else if (tool === 'numberline') {
+        var rawSupportRange = target.range;
+        var supportRange = null;
+        if (rawSupportRange != null) {
+          if (_mathPlainRecord(rawSupportRange) !== rawSupportRange) throw new Error('invalid number-line range');
+          supportRange = _mathSafeShallowCopy(rawSupportRange);
+        }
+        var supportMarkers = _mathSafeArraySnapshot(target.markers, 128).map(marker => marker && typeof marker === 'object' ? _mathSafeShallowCopy(marker) : marker);
+        applySupportState = () => {
+          setNumberLineMarkers(supportMarkers);
+          if (supportRange) setNumberLineRange(supportRange);
+        };
+      } else if (tool === 'fractions') {
+        var supportFractionLimit = _mathFractionDenominatorLimit();
+        var supportDenominatorRaw = finiteSupportValue(target.denominator, 8, ownsSupportValue('denominator'));
+        var supportDenominator = Number.isInteger(supportDenominatorRaw) && supportDenominatorRaw >= 2 ? Math.min(supportFractionLimit, supportDenominatorRaw) : Math.min(8, supportFractionLimit);
+        var supportNumeratorRaw = finiteSupportValue(target.numerator, 0, ownsSupportValue('numerator'));
+        var supportFraction = {
+          numerator: Math.max(0, Math.min(supportDenominator, Math.floor(supportNumeratorRaw))),
+          denominator: supportDenominator
+        };
+        applySupportState = () => setFractionPieces(supportFraction);
+      } else if (tool === 'volume') {
+        var rawSupportDims = target.dims;
+        if (rawSupportDims != null && _mathPlainRecord(rawSupportDims) !== rawSupportDims) {
+          throw new Error('invalid volume dimensions');
+        }
+        var supportDims = _mathSafeShallowCopy(rawSupportDims);
+        var normalizedSupportDims = {
+          l: finiteSupportValue(supportDims.l, 1, Object.prototype.hasOwnProperty.call(supportDims, 'l')),
+          w: finiteSupportValue(supportDims.w, 1, Object.prototype.hasOwnProperty.call(supportDims, 'w')),
+          h: finiteSupportValue(supportDims.h, 1, Object.prototype.hasOwnProperty.call(supportDims, 'h'))
+        };
+        applySupportState = () => setCubeDims(normalizedSupportDims);
+      } else if (tool === 'protractor') {
+        var supportAngle = finiteSupportValue(target.angle, 0, ownsSupportValue('angle'));
+        applySupportState = () => setAngleValue(supportAngle);
+      } else {
+        var seeded = {
+          ...target
+        };
+        if (tool === 'wave') {
+          if (Object.prototype.hasOwnProperty.call(target, 'wave2')) seeded.showSecond = target.wave2;
+          if (Object.prototype.hasOwnProperty.call(target, 'amp2')) seeded.amplitude2 = target.amp2;
+          if (Object.prototype.hasOwnProperty.call(target, 'freq2')) seeded.frequency2 = target.freq2;
+        } else if (tool === 'cell') {
+          seeded.mode = 'interior';
+          if (typeof target.type === 'string') seeded.interiorCellType = target.type;
+          if (typeof target.selectedOrganelle === 'string') seeded.interiorSel = target.selectedOrganelle;
+        }
+        applySupportState = () => setLabToolData(previous => {
+          var next = {
+            ..._mathPlainRecord(previous)
+          };
+          if (tool === 'circuit') next._circuit = seeded;else next[tool] = seeded;
+          return next;
+        });
+      }
+      activeManipulativeSessionRef.current = null;
+      applySupportState();
+      setStemLabTool(tool);
+      setShowStemLab(true);
+      setStemLabTab('explore');
+    } catch (_) {
+      activeManipulativeSessionRef.current = null;
+      addToast('This visual support contains invalid data and could not be opened safely.', 'error');
+    }
+  };
+  var openMathManipulativeResponse = problem => {
+    var response = problem.manipulativeResponse;
+    var availability = getMathManipulativeResponseAvailability(problem);
+    if (!response || availability.available !== true) {
+      addToast(_mathManipulativeFallbackMessage(availability), 'error');
+      return;
+    }
+    var tool = response.tool;
+    var target = _mathPlainRecord(response.state);
+    var baseline = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
+    var resetAvailable = true;
+    if (problem.manipulativeResponse.tool === 'coordinate') {
+      resetAvailable = canSetGridPoints;
+      setGridPoints([]);
+    } else if (problem.manipulativeResponse.tool === 'base10') {
+      resetAvailable = canSetBase10Value;
+      setBase10Value({
+        ones: 0,
+        tens: 0,
+        hundreds: 0,
+        thousands: 0
+      });
+    } else if (problem.manipulativeResponse.tool === 'numberline') {
+      resetAvailable = canSetNumberLineMarkers;
+      setNumberLineMarkers([]);
+      if (_mathPlainRecord(target.range) === target.range) {
+        setNumberLineRange({
+          min: target.range.min,
+          max: target.range.max
+        });
+      }
+    } else if (problem.manipulativeResponse.tool === 'fractions') {
+      var fractionLimit = _mathFractionDenominatorLimit();
+      var denominator = Number(target.denominator);
+      setFractionPieces({
+        numerator: 0,
+        denominator: Number.isInteger(denominator) && denominator >= 2 ? Math.min(fractionLimit, denominator) : Math.min(8, fractionLimit)
+      });
+      resetAvailable = canSetFractionPieces;
+    } else if (problem.manipulativeResponse.tool === 'volume') {
+      setCubeDims({
+        l: 1,
+        w: 1,
+        h: 1
+      });
+      resetAvailable = canSetCubeDims;
+    } else if (problem.manipulativeResponse.tool === 'protractor') {
+      setAngleValue(0);
+      resetAvailable = canSetAngleValue;
+    } else {
+      resetAvailable = canSetLabToolData;
+      setLabToolData(previous => {
+        var next = {
+          ..._mathPlainRecord(previous)
+        };
+        delete next[tool];
+        if (tool === 'circuit') delete next._circuit;
+        return next;
+      });
+    }
+    activeManipulativeSessionRef.current = {
+      artifact: generatedContentArtifact,
+      resourceId: mathResourceId,
+      problemKey: problem.__viewKey,
+      responseSource: response.__source,
+      tool,
+      baseline,
+      requiresChange: !resetAvailable
+    };
+    setStemLabTool(tool);
+    setShowStemLab(true);
+    setStemLabTab('explore');
+  };
+  var checkMathManipulativeResponse = problem => {
+    var response = problem.manipulativeResponse;
+    var availability = getMathManipulativeResponseAvailability(problem);
+    if (!response || availability.available !== true) {
+      addToast(_mathManipulativeFallbackMessage(availability), 'error');
+      return;
+    }
+    var tool = response.tool;
+    var session = activeManipulativeSessionRef.current;
+    if (!session || session.artifact !== generatedContentArtifact || session.resourceId !== mathResourceId || session.problemKey !== problem.__viewKey || session.responseSource !== response.__source || session.tool !== tool) {
+      addToast('Open this problem’s manipulative before checking so its workspace can be prepared safely.', 'info');
+      return;
+    }
+    var currentActual = _mathManipulativeActualState(tool, currentManipulativeSnapshot());
+    if (session.requiresChange && currentActual === session.baseline) {
+      addToast('Complete this problem’s manipulative before checking. Previous problem work is not reused.', 'info');
+      return;
+    }
+    var evaluation;
+    try {
+      const manipulativeGrader = typeof window !== 'undefined' && window.AlloModules ? window.AlloModules.MathManipulativeGrader : null;
+      if (manipulativeGrader && typeof manipulativeGrader.evaluateMathViewManipulativeResponse === 'function') {
+        evaluation = manipulativeGrader.evaluateMathViewManipulativeResponse(response, currentManipulativeSnapshot());
+      } else if (manipulativeGrader && typeof manipulativeGrader.gradeMathViewManipulativeResponse === 'function') {
+        var supported = !Array.isArray(manipulativeGrader.supportedTools) || manipulativeGrader.supportedTools.includes(tool);
+        var correct = supported && manipulativeGrader.gradeMathViewManipulativeResponse(response, currentManipulativeSnapshot());
+        evaluation = {
+          correct,
+          supported,
+          reason: supported ? correct ? 'match' : 'mismatch' : 'unsupported-tool',
+          tool
+        };
+      } else {
+        evaluation = {
+          correct: false,
+          supported: false,
+          reason: 'unsupported-tool',
+          tool
+        };
+      }
+    } catch (_) {
+      evaluation = {
+        correct: false,
+        supported: true,
+        reason: 'invalid-state',
+        tool
+      };
+    }
+    var diagnostic = _mathManipulativeDiagnostic(evaluation);
+    if (diagnostic.response) handleStudentInput(mathResourceId, problem.__viewKey, diagnostic.response);
+    addToast(diagnostic.message, diagnostic.tone);
+  };
+  var renderMathManipulativeResponse = problem => {
+    var response = problem.manipulativeResponse;
+    if (!response || getMathManipulativeResponseAvailability(problem).available !== true) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      "data-math-manipulative-response": response.tool,
+      className: "bg-emerald-50 bg-opacity-50 p-4 rounded-xl border border-emerald-200"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-emerald-800 font-bold mb-3 flex items-center gap-2"
+    }, "🧩 Solve this problem using the ", response.tool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: !canOpenStemLab,
+      onClick: () => openMathManipulativeResponse(problem),
+      className: "min-h-[44px] px-4 py-2 bg-white text-emerald-700 font-bold rounded-lg border border-emerald-300 hover:bg-emerald-100 transition-all text-sm shadow-sm flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-50"
+    }, "Open ", response.tool), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: !canHandleStudentInput,
+      onClick: () => checkMathManipulativeResponse(problem),
+      className: "min-h-[44px] px-4 py-2 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all text-sm shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
+    }, "Check My Manipulative")), typeof resourceStudentResponses[problem.__viewKey] === 'string' && resourceStudentResponses[problem.__viewKey] && /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
+      className: `mt-3 text-sm font-bold ${resourceStudentResponses[problem.__viewKey].startsWith('(Manipulative: CORRECT') ? 'text-green-600' : 'text-red-600'}`
+    }, resourceStudentResponses[problem.__viewKey]));
+  };
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10",
+    className: "min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10",
     "data-help-key": "math_panel"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm"
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "sr-only"
+  }, mathAsyncStatus), /*#__PURE__*/React.createElement("div", {
+    className: "bg-indigo-50 p-4 sm:p-6 rounded-xl border border-indigo-100 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-start mb-3"
+    className: "flex flex-wrap justify-between items-start gap-3 mb-3"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-black text-indigo-600 uppercase tracking-widest"
-  }, generatedContent.meta ? generatedContent.meta.split(' - ')[0] : mathSubject), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    "aria-label": t('common.hide'),
+  }, mathMeta ? mathMeta.split(' - ')[0] : mathSubject), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2"
+  }, isTeacherMode && !mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers'),
+    "aria-pressed": showMathAnswers,
     onClick: handleToggleShowMathAnswers,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${showMathAnswers ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`,
+    disabled: !canToggleShowMathAnswers,
+    className: `flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${showMathAnswers ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`,
     "data-help-key": "math_toggle_answers"
   }, showMathAnswers ? /*#__PURE__*/React.createElement(EyeOff, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Eye, {
     size: 14
   }), showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleMathSelfGrade,
-    className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`
+    "aria-pressed": mathSelfGradeMode,
+    disabled: !canToggleMathSelfGrade,
+    className: `flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`
   }, "✏️ ", mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')), mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
-    onClick: submitMathSelfGrade,
-    className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600 transition-all"
+    type: "button",
+    onClick: () => submitMathSelfGrade(mathResourceId, mathProblems),
+    "aria-describedby": selfGradeHelpId,
+    disabled: !canSubmitMathSelfGrade || !hasAllSelfGradeAnswers,
+    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600 transition-all disabled:cursor-not-allowed disabled:opacity-50"
   }, "📊 Submit Assessment"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.copy'),
+    disabled: !canCopyToClipboard,
     onClick: () => {
-      const text = generatedContent?.data.problems.map((p, i) => `${i + 1}. ${formatMathQuestion(p)}\nAnswer: ${p.answer}`).join('\n\n');
+      const includeAnswers = isTeacherMode && showMathAnswers;
+      const text = mathProblems.map((p, i) => {
+        const answer = includeAnswers && p.answer != null ? `\nAnswer: ${p.answer}` : '';
+        return `${i + 1}. ${formatMathQuestion(p)}${answer}`;
+      }).join('\n\n');
       copyToClipboard(text);
     },
-    className: "text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors",
+    className: "min-h-[44px] min-w-[44px] text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors",
     title: t('math.display.copy_all')
   }, /*#__PURE__*/React.createElement(Copy, {
     size: 14
-  })))), /*#__PURE__*/React.createElement("div", {
+  })))), /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl md:text-3xl font-bold text-indigo-900 font-serif leading-tight"
-  }, generatedContent?.data.title)), generatedContent?.data.graphData && /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
+  }, mathTitle || 'Math Practice'), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
+    id: selfGradeHelpId,
+    className: "mt-2 text-sm font-medium text-emerald-800"
+  }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white p-4 sm:p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14
   }), " ", t('math.display.visual_header')), /*#__PURE__*/React.createElement("div", {
-    className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-hidden svg-container",
+    className: "w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-x-auto svg-container",
     role: "img",
-    "aria-label": generatedContent?.data?.graphAlt || 'Visual diagram for this problem',
+    "aria-label": mathGraphAlt || 'Visual diagram for this problem',
     dangerouslySetInnerHTML: {
-      __html: sanitizeHtml(generatedContent?.data.graphData)
+      __html: graphHtml
     },
     "data-help-key": "math_graph"
-  })), (generatedContent?.data.problems || [{
-    question: generatedContent?.data.problem,
-    answer: generatedContent?.data.answer,
-    steps: generatedContent?.data.steps,
-    realWorld: generatedContent?.data.realWorld
-  }]).map((problem, pIdx) => /*#__PURE__*/React.createElement("div", {
-    key: pIdx,
+  })), mathProblems.map((problem, pIdx) => /*#__PURE__*/React.createElement("section", {
+    key: problem.__viewKey,
+    "aria-label": `Problem ${pIdx + 1}`,
     className: "space-y-4 border-b border-slate-100 pb-8 last:border-0",
     "data-help-key": "math_problem"
   }, /*#__PURE__*/React.createElement("div", {
-    className: `bg-white p-4 rounded-xl border shadow-sm flex gap-4 items-start ${isMathEditing(pIdx) ? 'border-amber-300 ring-2 ring-amber-100' : 'border-indigo-100'}`
+    className: `bg-white p-4 rounded-xl border shadow-sm flex flex-wrap sm:flex-nowrap gap-4 items-start ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'border-amber-300 ring-2 ring-amber-100' : 'border-indigo-100'}`
   }, /*#__PURE__*/React.createElement("div", {
+    "aria-hidden": "true",
     className: "bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5 shadow-sm"
   }, pIdx + 1), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow"
-  }, isMathEditing(pIdx) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+    className: "min-w-0 flex-grow"
+  }, isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
+    autoFocus: true,
     "aria-label": t('math.edit_problem_question') || `Edit math problem ${pIdx + 1}`,
+    "aria-describedby": `math-edit-hint-${_mathStableHash(mathResourceId + '|' + problem.__viewKey)}`,
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none resize-y bg-amber-50/50 font-serif text-lg leading-relaxed text-slate-800 min-h-[60px]",
     value: problem.question || problem.problem || '',
-    onChange: e => handleMathProblemEdit(pIdx, 'question', e.target.value),
+    onChange: e => handleMathProblemEdit(pIdx, 'question', e.target.value, null, problem.__viewKey, mathResourceId),
+    disabled: !canHandleMathProblemEdit,
+    onKeyDown: event => {
+      if (event.key !== 'Enter' || !event.ctrlKey && !event.metaKey || !canToggleMathEdit) return;
+      event.preventDefault();
+      toggleMathEdit(pIdx, problem.__viewKey, mathResourceId);
+      if (typeof window !== 'undefined') window.setTimeout(() => {
+        if (typeof document !== 'undefined') document.getElementById(mathEditButtonId(problem.__viewKey))?.focus();
+      }, 0);
+    },
     placeholder: t('common.placeholder_enter_problem_question')
   }), mathKeyboardButton(() => openAccessibleMathInput({
     title: `Add math to problem ${pIdx + 1}`,
-    onInsert: result => handleMathProblemEdit(pIdx, 'question', appendInlineMath(problem.question || problem.problem || '', result.latex))
-  }), 'Open accessible math keyboard for this problem')) : /*#__PURE__*/React.createElement("div", {
+    contextKey: mathAccessibleContextKey('problem-question', problem.__viewKey),
+    onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'question', appendInlineMath(currentValue, result.latex), null, problem.__viewKey, mathResourceId)
+  }), 'Open accessible math keyboard for this problem', !canHandleMathProblemEdit), /*#__PURE__*/React.createElement("p", {
+    id: `math-edit-hint-${_mathStableHash(mathResourceId + '|' + problem.__viewKey)}`,
+    className: "mt-1 text-xs text-slate-600"
+  }, "Press Ctrl+Enter or Command+Enter to finish editing.")) : /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-medium text-slate-800 font-serif"
-  }, formatInlineText(formatMathQuestion(problem), false)), problem._verification && /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "sr-only"
+  }, `Problem ${pIdx + 1}: `), formatInlineText(formatMathQuestion(problem), false)), problem._verification && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: "11px",
       marginLeft: "6px",
       opacity: 0.8
     },
     title: problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""
-  }, problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : "")), isTeacherMode && /*#__PURE__*/React.createElement("button", {
-    "aria-label": isMathEditing(pIdx) ? "Save edits" : "Edit problem",
-    onClick: () => toggleMathEdit(pIdx),
-    className: `shrink-0 p-1.5 rounded-lg transition-all ${isMathEditing(pIdx) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`,
-    title: isMathEditing(pIdx) ? "Done editing" : "Edit this problem"
-  }, isMathEditing(pIdx) ? /*#__PURE__*/React.createElement(CheckCircle2, {
+  }, problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : "")), isTeacherMode && !mathSelfGradeMode && /*#__PURE__*/React.createElement("button", {
+    id: mathEditButtonId(problem.__viewKey),
+    type: "button",
+    "aria-label": isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Save edits" : "Edit problem",
+    onClick: () => toggleMathEdit(pIdx, problem.__viewKey, mathResourceId),
+    disabled: !canToggleMathEdit,
+    className: `min-h-[44px] min-w-[44px] shrink-0 p-1.5 rounded-lg transition-all disabled:cursor-not-allowed disabled:opacity-50 ${isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`,
+    title: isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? "Done editing" : "Edit this problem"
+  }, isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 16
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }))), isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && /*#__PURE__*/React.createElement("div", {
-    className: "ml-4 sm:ml-12 mt-4 mb-4 space-y-3"
+  }))), problem.manipulativeResponse && getMathManipulativeResponseAvailability(problem).available !== true && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    "data-math-manipulative-error": getMathManipulativeResponseAvailability(problem).reason,
+    className: "ml-0 sm:ml-12 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-semibold text-red-800"
+  }, _mathManipulativeFallbackMessage(getMathManipulativeResponseAvailability(problem))), mathSelfGradeMode ? /*#__PURE__*/React.createElement("div", {
+    className: "ml-0 sm:ml-12 mt-4 space-y-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: mathSelfAnswerInputId(problem.__viewKey),
+    className: "block text-sm font-bold text-emerald-800"
+  }, 'Your answer for problem ' + (pIdx + 1)), /*#__PURE__*/React.createElement("input", {
+    id: mathSelfAnswerInputId(problem.__viewKey),
+    type: "text",
+    value: _mathScalarText(mathStudentAnswers[problem.__viewKey]),
+    onChange: event => setMathStudentAnswers(previous => ({
+      ..._mathPlainRecord(previous),
+      [problem.__viewKey]: event.target.value
+    })),
+    disabled: !canSetMathStudentAnswers,
+    className: "w-full min-h-[44px] rounded-xl border border-emerald-300 bg-white px-3 py-2 text-lg font-serif text-slate-800 outline-none focus:ring-2 focus:ring-emerald-300",
+    autoComplete: "off"
+  }), mathKeyboardButton(() => openAccessibleMathInput({
+    title: `Enter answer for problem ${pIdx + 1}`,
+    contextKey: mathAccessibleContextKey('self-answer', problem.__viewKey),
+    onInsert: (result, currentValue, isContextCurrent) => setMathStudentAnswers(previous => isContextCurrent() ? {
+      ..._mathPlainRecord(previous),
+      [problem.__viewKey]: appendInlineMath(currentValue, result.latex)
+    } : previous)
+  }), `Open accessible math keyboard for answer ${pIdx + 1}`, !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && /*#__PURE__*/React.createElement("div", {
+    className: "ml-0 sm:ml-12 mt-4 mb-4 space-y-3"
   }, problem.manipulativeSupport && (() => {
     // Inline accessible diagram (step 2): show the parametric scaffold inline +
     // screen-readable for supported types; the Open-in-Lab button below stays for full editing.
-    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, generatedContent && generatedContent.data && generatedContent.data.title);
+    var _suppSvg = _renderDiagramSvg(problem.manipulativeSupport.tool, problem.manipulativeSupport.state, mathTitle);
     return _suppSvg ? /*#__PURE__*/React.createElement("div", {
-      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-hidden",
+      className: "mb-2 flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-3 overflow-x-auto",
       dangerouslySetInnerHTML: {
         __html: _suppSvg
       }
     }) : null;
   })(), problem.manipulativeSupport && /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setStemLabTool(problem.manipulativeSupport.tool);
-      // Scaffold seeding: support is a worked example (NOT the student's answer),
-      // so seed the FULL target state — unlike manipulativeResponse below, which
-      // seeds NEUTRAL so the student must configure it themselves.
-      if (problem.manipulativeSupport.tool === 'coordinate' && problem.manipulativeSupport.state?.points) {
-        setGridPoints(problem.manipulativeSupport.state.points);
-      } else if (problem.manipulativeSupport.tool === 'base10' && problem.manipulativeSupport.state) {
-        setBase10Value(problem.manipulativeSupport.state);
-      } else if (problem.manipulativeSupport.tool === 'numberline' && problem.manipulativeSupport.state?.range) {
-        setNumberLineRange(problem.manipulativeSupport.state.range);
-      } else if (problem.manipulativeSupport.tool === 'fractions' && problem.manipulativeSupport.state) {
-        setFractionPieces({
-          numerator: problem.manipulativeSupport.state.numerator || 0,
-          denominator: problem.manipulativeSupport.state.denominator || 8
-        });
-      } else if (problem.manipulativeSupport.tool === 'volume' && problem.manipulativeSupport.state?.dims) {
-        setCubeDims({
-          l: problem.manipulativeSupport.state.dims.l || 1,
-          w: problem.manipulativeSupport.state.dims.w || 1,
-          h: problem.manipulativeSupport.state.dims.h || 1
-        });
-      }
-      setShowStemLab(true);
-      setStemLabTab('explore');
-    },
-    className: "flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2"
+    type: "button",
+    disabled: !canOpenStemLab,
+    onClick: () => openMathManipulativeSupport(problem),
+    className: "flex min-h-[44px] items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2 disabled:cursor-not-allowed disabled:opacity-50"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-lg"
-  }, "📂"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"), problem.manipulativeResponse ? /*#__PURE__*/React.createElement("div", {
-    className: "bg-emerald-50 bg-opacity-50 p-4 rounded-xl border border-emerald-200"
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-sm text-emerald-800 font-bold mb-3 flex items-center gap-2"
-  }, "🧩 Solve this problem using the ", problem.manipulativeResponse.tool, " manipulative instead of typing."), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      setStemLabTool(problem.manipulativeResponse.tool);
-      if (problem.manipulativeResponse.tool === 'numberline' && problem.manipulativeResponse.state?.range) {
-        setNumberLineRange(problem.manipulativeResponse.state.range);
-      } else if (problem.manipulativeResponse.tool === 'fractions' && problem.manipulativeResponse.state) {
-        setFractionPieces({
-          numerator: 0,
-          denominator: problem.manipulativeResponse.state.denominator || 8
-        });
-      } else if (problem.manipulativeResponse.tool === 'volume' && problem.manipulativeResponse.state?.dims) {
-        setCubeDims({
-          l: 1,
-          w: 1,
-          h: 1
-        });
-      } else if (problem.manipulativeResponse.tool === 'protractor') {
-        setAngleValue(0);
-      }
-      setShowStemLab(true);
-      setStemLabTab('explore');
-    },
-    className: "px-4 py-2 bg-white text-emerald-700 font-bold rounded-lg border border-emerald-300 hover:bg-emerald-100 transition-all text-sm shadow-sm flex items-center gap-2"
-  }, "Open ", problem.manipulativeResponse.tool), /*#__PURE__*/React.createElement("button", {
-    onClick: () => {
-      let isCorrect = false;
-      const target = problem.manipulativeResponse.state || {};
-      if (problem.manipulativeResponse.tool === 'coordinate') {
-        const targetPts = (target.points || []).map(p => `${p.x},${p.y}`).sort();
-        const studentPts = gridPoints.map(p => `${p.x},${p.y}`).sort();
-        isCorrect = targetPts.length === studentPts.length && targetPts.every((v, i) => v === studentPts[i]);
-      } else if (problem.manipulativeResponse.tool === 'base10') {
-        isCorrect = base10Value.hundreds === (target.hundreds || 0) && base10Value.tens === (target.tens || 0) && base10Value.ones === (target.ones || 0);
-      } else if (problem.manipulativeResponse.tool === 'numberline') {
-        const targetMarkers = (target.markers || []).map(m => m.value).sort((a, b) => a - b);
-        const studentMarkers = numberLineMarkers.map(m => m.value).sort((a, b) => a - b);
-        isCorrect = targetMarkers.length === studentMarkers.length && targetMarkers.every((v, i) => Math.abs(v - studentMarkers[i]) < 0.01);
-      } else if (problem.manipulativeResponse.tool === 'fractions') {
-        isCorrect = fractionPieces.numerator === (target.numerator || 0) && fractionPieces.denominator === (target.denominator || 1);
-      } else if (problem.manipulativeResponse.tool === 'volume') {
-        const td = target.dims || {};
-        isCorrect = cubeDims.l === (td.l || 1) && cubeDims.w === (td.w || 1) && cubeDims.h === (td.h || 1);
-      } else if (problem.manipulativeResponse.tool === 'protractor') {
-        isCorrect = Math.abs(angleValue - (target.angle || 0)) <= 2;
-      } else if (problem.manipulativeResponse.tool === 'funcGrapher') {
-        const lt = labToolData.funcGrapher;
-        isCorrect = lt.type === (target.type || 'quadratic') && Math.abs(lt.a - (target.a || 0)) < 0.1 && Math.abs(lt.b - (target.b || 0)) < 0.1 && Math.abs(lt.c - (target.c || 0)) < 0.1;
-      } else if (problem.manipulativeResponse.tool === 'physics') {
-        const lp = labToolData.physics;
-        isCorrect = Math.abs(lp.angle - (target.angle || 45)) <= 2 && Math.abs(lp.velocity - (target.velocity || 20)) <= 1;
-      } else if (problem.manipulativeResponse.tool === 'chemBalance') {
-        const lc = labToolData.chemBalance;
-        const tc = target.coefficients || [];
-        isCorrect = tc.length > 0 && lc.coefficients.length === tc.length && lc.coefficients.every((v, i) => v === tc[i]);
-      } else if (problem.manipulativeResponse.tool === 'punnett') {
-        const lpn = labToolData.punnett;
-        isCorrect = JSON.stringify(lpn.parent1.sort()) === JSON.stringify((target.parent1 || []).sort()) && JSON.stringify(lpn.parent2.sort()) === JSON.stringify((target.parent2 || []).sort());
-      } else if (problem.manipulativeResponse.tool === 'circuit') {
-        const lcr = labToolData.circuit;
-        isCorrect = Math.abs(lcr.voltage - (target.voltage || 9)) < 0.5;
-      } else if (problem.manipulativeResponse.tool === 'dataPlot') {
-        const ldp = labToolData.dataPlot;
-        const tPts = (target.points || []).map(p => `${Math.round(p.x)},${Math.round(p.y)}`).sort();
-        const sPts = ldp.points.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).sort();
-        isCorrect = tPts.length === sPts.length && tPts.every((v, i) => v === sPts[i]);
-      } else if (problem.manipulativeResponse.tool === 'inequality') {
-        const li = labToolData.inequality;
-        isCorrect = li.expr.replace(/\s/g, '') === (target.expr || '').replace(/\s/g, '');
-      } else if (problem.manipulativeResponse.tool === 'molecule') {
-        const lm = labToolData.molecule;
-        isCorrect = lm.formula.replace(/\s/g, '').toLowerCase() === (target.formula || '').replace(/\s/g, '').toLowerCase();
-      } else if (problem.manipulativeResponse.tool === 'calculus') {
-        const lcl = labToolData.calculus;
-        isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
-      } else if (problem.manipulativeResponse.tool === 'wave') {
-        const lw = labToolData.wave;
-        isCorrect = Math.abs(lw.amplitude - (target.amplitude || 1)) < 0.1 && Math.abs(lw.frequency - (target.frequency || 1)) < 0.1;
-      } else if (problem.manipulativeResponse.tool === 'cell') {
-        const lce = labToolData.cell;
-        isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
-      }
-      handleStudentInput(generatedContent.id, pIdx, isCorrect ? '(Manipulative: CORRECT ✅)' : '(Manipulative: INCORRECT ❌)');
-      addToast(isCorrect ? 'Manipulative match correct! 🎉' : 'Manipulative geometry incorrect. Keep trying!', isCorrect ? 'success' : 'error');
-    },
-    className: "px-4 py-2 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all text-sm shadow-sm"
-  }, "Check My Manipulative")), studentResponses[generatedContent.id]?.[pIdx] && /*#__PURE__*/React.createElement("div", {
-    className: `mt-3 text-sm font-bold ${studentResponses[generatedContent.id]?.[pIdx].includes('CORRECT') ? 'text-green-600' : 'text-red-600'}`
-  }, studentResponses[generatedContent.id]?.[pIdx])) : /*#__PURE__*/React.createElement("div", {
+  }, "📂"), " Open Visual Support (", problem.manipulativeSupport.tool, ")"), getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-3 left-3 text-slate-600"
   }, /*#__PURE__*/React.createElement(Pencil, {
     size: 16
   })), /*#__PURE__*/React.createElement("textarea", {
+    id: mathResponseInputId(problem.__viewKey),
     "aria-label": t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`,
     className: "w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]",
     placeholder: t('math.display.placeholder_work'),
-    value: studentResponses[generatedContent.id]?.[pIdx] || '',
-    onChange: e => handleStudentInput(generatedContent.id, pIdx, e.target.value),
+    value: _mathScalarText(resourceStudentResponses[problem.__viewKey]),
+    onChange: e => handleStudentInput(mathResourceId, problem.__viewKey, e.target.value),
+    disabled: !canHandleStudentInput,
     "data-help-key": "math_student_work"
   }), mathKeyboardButton(() => openAccessibleMathInput({
     title: `Add math to work for problem ${pIdx + 1}`,
-    onInsert: result => handleStudentInput(generatedContent.id, pIdx, appendInlineMath(studentResponses[generatedContent.id]?.[pIdx] || '', result.latex))
-  })))), showMathAnswers ? /*#__PURE__*/React.createElement("div", {
+    contextKey: mathAccessibleContextKey('teacher-work', problem.__viewKey),
+    onInsert: (result, currentValue) => {
+      const responseInput = typeof document !== 'undefined' ? document.getElementById(mathResponseInputId(problem.__viewKey)) : null;
+      if (!responseInput || responseInput.disabled) return;
+      handleStudentInput(mathResourceId, problem.__viewKey, appendInlineMath(currentValue, result.latex));
+    }
+  }), `Open accessible math keyboard for work on problem ${pIdx + 1}`, !canHandleStudentInput))), showMathAnswers ? /*#__PURE__*/React.createElement("div", {
     className: "animate-in fade-in slide-in-from-top-2 duration-300"
   }, problem.steps && problem.steps.length > 0 && /*#__PURE__*/React.createElement("div", {
-    className: "ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4"
+    className: "ml-0 sm:ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4"
   }, problem.steps.map((step, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "bg-white p-4 rounded-lg border border-slate-100 shadow-sm"
@@ -418,21 +1254,23 @@ function MathView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-xs font-bold text-slate-600 uppercase tracking-widest mt-1"
   }, t('math.display.step_label'), " ", idx + 1), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow w-full overflow-hidden"
-  }, isMathEditing(pIdx) ? /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0 flex-grow w-full overflow-x-auto"
+  }, isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('math.edit_step_explanation') || `Edit step ${idx + 1} explanation`,
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-y bg-amber-50/50 text-sm text-slate-700 min-h-[40px]",
     value: step.explanation || '',
-    onChange: e => handleMathProblemEdit(pIdx, 'step_explanation', e.target.value, idx),
+    onChange: e => handleMathProblemEdit(pIdx, 'step_explanation', e.target.value, idx, problem.__viewKey, mathResourceId),
+    disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_step_explanation')
   }), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('math.edit_step_latex') || `Edit step ${idx + 1} LaTeX expression`,
     type: "text",
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 text-sm font-mono text-slate-600",
     value: step.latex || '',
-    onChange: e => handleMathProblemEdit(pIdx, 'step_latex', e.target.value, idx),
+    onChange: e => handleMathProblemEdit(pIdx, 'step_latex', e.target.value, idx, problem.__viewKey, mathResourceId),
+    disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_latex_expression_optional')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "text-slate-700 mb-2 leading-relaxed font-medium text-sm"
@@ -443,19 +1281,20 @@ function MathView(props) {
   }, /*#__PURE__*/React.createElement(MathSymbol, {
     text: step.latex
   }))))))))), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 md:grid-cols-2 gap-4 ml-4 mt-4"
+    className: "grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 sm:ml-4 mt-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-xs font-black text-green-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  }), " ", t('math.display.answer_header')), isMathEditing(pIdx) ? /*#__PURE__*/React.createElement("input", {
+  }), " ", t('math.display.answer_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement("input", {
     type: "text",
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900",
     "aria-label": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`,
     value: problem.answer || '',
-    onChange: e => handleMathProblemEdit(pIdx, 'answer', e.target.value),
+    onChange: e => handleMathProblemEdit(pIdx, 'answer', e.target.value, null, problem.__viewKey, mathResourceId),
+    disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_enter_answer')
   }) : /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-bold text-green-900 font-serif"
@@ -467,49 +1306,60 @@ function MathView(props) {
     className: "text-xs font-black text-orange-600 uppercase tracking-widest mb-2 flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Globe, {
     size: 14
-  }), " ", t('math.display.connection_header')), isMathEditing(pIdx) ? /*#__PURE__*/React.createElement("textarea", {
+  }), " ", t('math.display.connection_header')), isMathEditing(pIdx, problem.__viewKey, mathResourceId) ? /*#__PURE__*/React.createElement("textarea", {
     "aria-label": t('math.edit_real_world') || 'Edit real-world connection',
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-y bg-amber-50/50 text-sm text-orange-900 min-h-[40px]",
     value: problem.realWorld || '',
-    onChange: e => handleMathProblemEdit(pIdx, 'realWorld', e.target.value),
+    onChange: e => handleMathProblemEdit(pIdx, 'realWorld', e.target.value, null, problem.__viewKey, mathResourceId),
+    disabled: !canHandleMathProblemEdit,
     placeholder: t('common.placeholder_real_world_connection')
   }) : /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-orange-900 leading-relaxed font-medium"
   }, problem.realWorld)))) : /*#__PURE__*/React.createElement("div", {
-    className: "ml-12 p-3 bg-slate-50 border border-slate-400 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4"
+    className: "ml-0 sm:ml-12 p-3 bg-slate-50 border border-slate-400 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4"
   }, isIndependentMode ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.show_math_answers'),
     onClick: handleSetShowMathAnswersToTrue,
-    className: "flex items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg"
+    disabled: !canSetShowMathAnswers,
+    className: "flex min-h-[44px] items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
   }, /*#__PURE__*/React.createElement(Eye, {
     size: 16
   }), " ", t('math.display.reveal_solution')) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(EyeOff, {
     size: 14
   }), " ", t('math.display.answer_hidden')))) : /*#__PURE__*/React.createElement("div", {
-    className: "ml-4 sm:ml-12 mt-4 space-y-3"
-  }, /*#__PURE__*/React.createElement("div", {
+    className: "ml-0 sm:ml-12 mt-4 space-y-3"
+  }, getMathManipulativeResponseAvailability(problem).available === true ? renderMathManipulativeResponse(problem) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "relative"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-3 left-3 text-slate-600"
   }, /*#__PURE__*/React.createElement(Pencil, {
     size: 16
   })), /*#__PURE__*/React.createElement("textarea", {
+    id: mathResponseInputId(problem.__viewKey),
     "aria-label": t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`,
     className: "w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]",
     placeholder: t('math.display.placeholder_work') || 'Show your work here... Type your answer and explain your thinking.',
-    value: studentResponses[generatedContent.id]?.[pIdx] || '',
-    onChange: e => handleStudentInput(generatedContent.id, pIdx, e.target.value),
-    disabled: mathCheckResults[generatedContent.id]?.[pIdx]?.checking
+    value: _mathScalarText(resourceStudentResponses[problem.__viewKey]),
+    onChange: e => handleStudentInput(mathResourceId, problem.__viewKey, e.target.value),
+    disabled: !canHandleStudentInput || isMathResponseLocked(problem.__viewKey)
   }), mathKeyboardButton(() => openAccessibleMathInput({
     title: `Add math to work for problem ${pIdx + 1}`,
-    onInsert: result => handleStudentInput(generatedContent.id, pIdx, appendInlineMath(studentResponses[generatedContent.id]?.[pIdx] || '', result.latex))
-  }))), (() => {
-    const checkResult = mathCheckResults[generatedContent.id]?.[pIdx];
-    const studentWork = studentResponses[generatedContent.id]?.[pIdx] || '';
+    contextKey: mathAccessibleContextKey('student-work', problem.__viewKey),
+    onInsert: (result, currentValue) => {
+      const responseInput = typeof document !== 'undefined' ? document.getElementById(mathResponseInputId(problem.__viewKey)) : null;
+      if (!responseInput || responseInput.disabled) return;
+      handleStudentInput(mathResourceId, problem.__viewKey, appendInlineMath(currentValue, result.latex));
+    }
+  }), `Open accessible math keyboard for work on problem ${pIdx + 1}`, !canHandleStudentInput || isMathResponseLocked(problem.__viewKey))), (() => {
+    const checkResult = getMathCheckResult(problem.__viewKey);
+    const studentWork = _mathScalarText(resourceStudentResponses[problem.__viewKey]);
     return /*#__PURE__*/React.createElement(React.Fragment, null, !checkResult?.checked && /*#__PURE__*/React.createElement("button", {
-      onClick: () => handleCheckMathWork(generatedContent.id, pIdx, problem.question || problem.problem, problem.answer, problem.steps, studentWork),
-      disabled: !studentWork || studentWork.trim().length < 5 || checkResult?.checking,
-      className: "flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]",
+      type: "button",
+      "aria-busy": checkResult?.checking === true,
+      onClick: () => handleCheckMathWork(mathResourceId, problem.__viewKey, problem.question || problem.problem, problem.answer, problem.steps, studentWork),
+      disabled: !canHandleCheckMathWork || !studentWork.trim() || checkResult?.checking === true,
+      className: "flex min-h-[44px] items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]",
       "data-help-key": "math_check_work"
     }, checkResult?.checking ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 16,
@@ -517,14 +1367,10 @@ function MathView(props) {
     }), " ", t('math.check.checking') || 'Evaluating your work...') : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sparkles, {
       size: 16
     }), " ", t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
-      const hintKey = `${generatedContent.id}_${pIdx}`;
-      const hintInfo = mathHintData[hintKey] || {
-        hints: [],
-        loading: false,
-        count: 0
-      };
+      const hintInfo = getMathHintState(problem.__viewKey);
       return /*#__PURE__*/React.createElement("div", {
-        className: "space-y-2"
+        className: "space-y-2",
+        "aria-live": "polite"
       }, hintInfo.hints.map((hint, hIdx) => /*#__PURE__*/React.createElement("div", {
         key: hIdx,
         className: "flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in fade-in slide-in-from-top-1 duration-200"
@@ -537,9 +1383,11 @@ function MathView(props) {
       }, "Hint ", hIdx + 1, " of 3"), /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-amber-900 font-medium leading-relaxed mt-0.5"
       }, hint)))), hintInfo.count < 3 && /*#__PURE__*/React.createElement("button", {
-        onClick: () => handleGetMathHint(generatedContent.id, pIdx, problem.question || problem.problem, problem.answer, problem.steps),
-        disabled: hintInfo.loading,
-        className: "flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+        type: "button",
+        "aria-busy": hintInfo.loading,
+        onClick: () => handleGetMathHint(mathResourceId, problem.__viewKey, problem.question || problem.problem, problem.answer, problem.steps),
+        disabled: !canHandleGetMathHint || hintInfo.loading,
+        className: "flex min-h-[44px] items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
       }, hintInfo.loading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
         size: 14,
         className: "animate-spin motion-reduce:animate-none"
@@ -547,9 +1395,11 @@ function MathView(props) {
         className: "text-sm"
       }, "💡"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
     })(), checkResult?.checked && /*#__PURE__*/React.createElement("div", {
+      role: "status",
+      "aria-live": "polite",
       className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`
     }, /*#__PURE__*/React.createElement("div", {
-      className: `px-4 py-3 flex items-center justify-between ${checkResult.verdict === 'correct' ? 'bg-green-100' : checkResult.verdict === 'partial' ? 'bg-amber-100' : 'bg-red-100'}`
+      className: `px-4 py-3 flex flex-wrap items-center justify-between gap-2 ${checkResult.verdict === 'correct' ? 'bg-green-100' : checkResult.verdict === 'partial' ? 'bg-amber-100' : 'bg-red-100'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2"
     }, /*#__PURE__*/React.createElement("span", {
@@ -558,21 +1408,23 @@ function MathView(props) {
       className: `font-black text-sm uppercase tracking-wider ${checkResult.verdict === 'correct' ? 'text-green-700' : checkResult.verdict === 'partial' ? 'text-amber-700' : 'text-red-700'}`
     }, checkResult.verdict === 'correct' ? t('math.check.verdict_correct') || 'Correct!' : checkResult.verdict === 'partial' ? t('math.check.verdict_partial') || 'Partially Correct' : t('math.check.verdict_incorrect') || 'Not Quite Right')), /*#__PURE__*/React.createElement("div", {
       className: `px-3 py-1 rounded-full text-xs font-black ${checkResult.score >= 80 ? 'bg-green-200 text-green-800' : checkResult.score >= 40 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800'}`
-    }, checkResult.score, "% · ", checkResult.hintsUsed > 0 ? `-${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''} · ` : '', "+", Math.round(checkResult.score / 10 * Math.max(0.25, 1 - (checkResult.hintsUsed || 0) * 0.25)), " XP")), /*#__PURE__*/React.createElement("div", {
+    }, checkResult.score, "%", checkResult.hintsUsed > 0 ? ` · -${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''}` : '', checkResult.xpEarned > 0 ? ` · +${checkResult.xpEarned} XP` : '')), /*#__PURE__*/React.createElement("div", {
       className: "px-4 py-3"
     }, /*#__PURE__*/React.createElement("p", {
       className: `text-sm leading-relaxed font-medium ${checkResult.verdict === 'correct' ? 'text-green-800' : checkResult.verdict === 'partial' ? 'text-amber-800' : 'text-red-800'}`
     }, checkResult.feedback)), /*#__PURE__*/React.createElement("div", {
       className: "px-4 pb-3 flex justify-end"
     }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => handleResetMathCheck(generatedContent.id, pIdx),
-      className: `flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors ${checkResult.verdict === 'correct' ? 'text-green-600 hover:bg-green-100' : 'text-indigo-600 hover:bg-indigo-100'}`
+      type: "button",
+      onClick: () => handleResetMathCheck(mathResourceId, problem.__viewKey),
+      disabled: !canHandleResetMathCheck,
+      className: `flex min-h-[44px] items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${checkResult.verdict === 'correct' ? 'text-green-600 hover:bg-green-100' : 'text-indigo-600 hover:bg-indigo-100'}`
     }, /*#__PURE__*/React.createElement(RefreshCw, {
       size: 12
     }), checkResult.verdict === 'correct' ? t('math.check.try_another') || 'Revise Answer' : t('math.check.try_again') || 'Try Again'))), checkResult?.checked && problem.steps && problem.steps.length > 0 && /*#__PURE__*/React.createElement("details", {
       className: "mt-3 group"
     }, /*#__PURE__*/React.createElement("summary", {
-      className: "flex items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all"
+      className: "flex min-h-[44px] items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-sm"
     }, "📖"), /*#__PURE__*/React.createElement("span", {
@@ -599,7 +1451,7 @@ function MathView(props) {
     }, /*#__PURE__*/React.createElement(MathSymbol, {
       text: step.latex
     })), step.expression && !step.latex && /*#__PURE__*/React.createElement("div", {
-      className: "mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700"
+      className: "mt-1.5 max-w-full overflow-x-auto px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700"
     }, /*#__PURE__*/React.createElement(MathSymbol, {
       text: step.expression
     }))))), problem.answer && /*#__PURE__*/React.createElement("div", {
@@ -609,6 +1461,8 @@ function MathView(props) {
     }, "✅"), /*#__PURE__*/React.createElement("span", {
       className: "text-sm font-bold text-green-700"
     }, "Answer: ", problem.answer), (mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: !canOpenCubeLab,
       onClick: () => {
         setShowStemLab(true);
         setStemLabTab('explore');
@@ -625,23 +1479,24 @@ function MathView(props) {
           setCubeBuilderFeedback(null);
         }
       },
-      className: "ml-auto text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm"
+      className: "ml-auto min-h-[44px] text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-50"
     }, "📦 Try with cubes")))));
-  })()))), (generatedContent?.data.problems?.length === 1 || !generatedContent?.data.problems && generatedContent?.data.problem) && /*#__PURE__*/React.createElement("div", {
+  })())))), mathProblems.length === 1 && /*#__PURE__*/React.createElement("div", {
     className: "mt-8 flex justify-center pb-4"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.generate_content'),
     onClick: handleGenerateSimilar,
-    disabled: isProcessing,
+    disabled: !canHandleGenerateSimilar || isProcessing,
     "aria-busy": isProcessing,
-    className: "flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
+    className: "flex min-h-[44px] items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100",
     "data-help-key": "math_generate_similar"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18,
     className: "animate-spin motion-reduce:animate-none"
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18
-  }), t('math.display.generate_similar'))), isTeacherMode && generatedContent?.data?.problems?.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }), t('math.display.generate_similar'))), isTeacherMode && mathProblems.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 mb-2"
@@ -652,22 +1507,27 @@ function MathView(props) {
   }, t('math.edit_with_allobot')), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] text-indigo-400 font-medium"
   }, t('math.edit_helper'))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
+    className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: mathEditInput,
     onChange: e => setMathEditInput(e.target.value),
     onKeyDown: e => {
-      if (e.key === "Enter" && mathEditInput.trim() && !isMathEditingChat) handleMathEdit(mathEditInput);
+      if (e.key !== "Enter" || !mathEditInput.trim() || isMathEditingChat || isProcessing || !canHandleMathEdit) return;
+      e.preventDefault();
+      handleMathEdit(mathEditInput, mathResourceId);
     },
     placeholder: "e.g. Make these easier, add 2 more division problems, change to a space theme...",
     className: "flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-400",
     "aria-label": t("a11y.edit_math_problems"),
-    disabled: isMathEditingChat
+    "aria-busy": isMathEditingChat || isProcessing,
+    disabled: !canSetMathEditInput || isMathEditingChat || isProcessing
   }), /*#__PURE__*/React.createElement("button", {
-    onClick: () => handleMathEdit(mathEditInput),
-    disabled: !mathEditInput.trim() || isMathEditingChat,
-    className: "px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
+    type: "button",
+    onClick: () => handleMathEdit(mathEditInput, mathResourceId),
+    "aria-busy": isMathEditingChat || isProcessing,
+    disabled: !canHandleMathEdit || !mathEditInput.trim() || isMathEditingChat || isProcessing,
+    className: "min-h-[44px] px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
   }, isMathEditingChat ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: "animate-spin motion-reduce:animate-none"
@@ -675,12 +1535,13 @@ function MathView(props) {
     className: "flex flex-wrap gap-1 mt-2"
   }, ["Make easier", "Make harder", "Add word problems", "Add more problems", "Change theme", "Simplify steps"].map(suggestion => /*#__PURE__*/React.createElement("button", {
     key: suggestion,
+    type: "button",
     onClick: () => {
       setMathEditInput(suggestion);
-      handleMathEdit(suggestion);
+      handleMathEdit(suggestion, mathResourceId);
     },
-    disabled: isMathEditing,
-    className: "px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
+    disabled: !canSetMathEditInput || !canHandleMathEdit || isMathEditingChat || isProcessing,
+    className: "min-h-[44px] px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
   }, suggestion)))));
 }
 

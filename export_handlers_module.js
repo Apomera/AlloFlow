@@ -44,15 +44,28 @@
   // downloads folder reads "photosynthesis.html" instead of N identical
   // "alloflow-export.html" files. Falls back to the localized generic name.
   const _alloExportFilename = (htmlContent, fallback) => {
+    const sanitize = (value) => {
+      let safe = String(value == null ? '' : value);
+      try { if (typeof safe.normalize === 'function') safe = safe.normalize('NFC'); } catch (_) {}
+      safe = safe
+        .replace(/[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
+        .replace(/[\\/:*?"<>|#%&{}]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 60)
+        .replace(/[. ]+$/g, '');
+      if (/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safe)) safe = '_' + safe;
+      return safe;
+    };
     try {
       const m = String(htmlContent || '').match(/<title>([^<]{1,160})<\/title>/i);
       let raw = m && m[1] ? m[1] : '';
       raw = raw.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
       raw = raw.split('—')[0].trim(); // strip the " — <pageTitle>" suffix
-      const slug = raw.replace(/[\\/:*?"<>|#%&{}]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+      const slug = sanitize(raw);
       if (slug.length >= 3) return slug;
     } catch (_) { /* fall through to the generic name */ }
-    return fallback;
+    return sanitize(fallback) || 'alloflow-export';
   };
 
   // Printing can begin before web fonts or image decodes finish, which leaves
@@ -62,39 +75,51 @@
   const _alloWaitForPrintReady = async (printWindow, timeoutMs) => {
     const win = printWindow;
     const doc = win && win.document;
-    if (!doc) return;
+    if (!doc) return { ready: false, timedOut: false, failedImages: 0, totalImages: 0, fontsFailed: false };
     const waitMs = Number.isFinite(timeoutMs) ? Math.max(0, timeoutMs) : 6000;
     const tasks = [];
+    let fontsFailed = false;
+    let failedImages = 0;
+    const failed = [];
+    const markImageFailed = function(img) {
+      if (failed.indexOf(img) !== -1) return;
+      failed.push(img);
+      failedImages++;
+    };
     if (doc.readyState === 'loading' && typeof win.addEventListener === 'function') {
       tasks.push(new Promise(function(resolve) {
         win.addEventListener('load', resolve, { once: true });
       }));
     }
     if (doc.fonts && doc.fonts.ready && typeof doc.fonts.ready.then === 'function') {
-      tasks.push(Promise.resolve(doc.fonts.ready).catch(function() {}));
+      tasks.push(Promise.resolve(doc.fonts.ready).catch(function() { fontsFailed = true; }));
     }
     const images = doc.images ? Array.from(doc.images) : [];
     images.forEach(function(img) {
+      try { img.loading = 'eager'; } catch (_) {}
+      try { if (typeof img.setAttribute === 'function') { img.setAttribute('loading', 'eager'); img.setAttribute('fetchpriority', 'high'); } } catch (_) {}
       const decode = function() {
         if (typeof img.decode !== 'function') return Promise.resolve();
-        try { return Promise.resolve(img.decode()).catch(function() {}); }
-        catch (_) { return Promise.resolve(); }
+        try { return Promise.resolve(img.decode()).catch(function() { markImageFailed(img); }); }
+        catch (_) { markImageFailed(img); return Promise.resolve(); }
       };
       if (img.complete) {
-        tasks.push(decode());
+        if (typeof img.naturalWidth === 'number' && img.naturalWidth === 0) markImageFailed(img);
+        else tasks.push(decode());
       } else if (typeof img.addEventListener === 'function') {
         tasks.push(new Promise(function(resolve) {
           const finish = function() { decode().then(resolve, resolve); };
           img.addEventListener('load', finish, { once: true });
-          img.addEventListener('error', resolve, { once: true });
+          img.addEventListener('error', function() { markImageFailed(img); resolve(); }, { once: true });
         }));
       }
     });
+    let timedOut = false;
     if (tasks.length) {
       let timeoutId;
       await Promise.race([
         Promise.all(tasks.map(function(task) { return Promise.resolve(task).catch(function() {}); })),
-        new Promise(function(resolve) { timeoutId = setTimeout(resolve, waitMs); })
+        new Promise(function(resolve) { timeoutId = setTimeout(function() { timedOut = true; resolve(); }, waitMs); })
       ]);
       if (timeoutId) clearTimeout(timeoutId);
     }
@@ -105,6 +130,13 @@
         setTimeout(resolve, 0);
       }
     });
+    return {
+      ready: !timedOut && !fontsFailed && failedImages === 0,
+      timedOut: timedOut,
+      failedImages: failedImages,
+      totalImages: images.length,
+      fontsFailed: fontsFailed
+    };
   };
 
   const _alloInstructionalTextForExport = (item) => {
@@ -198,7 +230,7 @@
       link.href = url;
       link.download = fname + '.html';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
     }
     if (addToast && t) addToast(t('export_status.html_success'), 'success');
   };
@@ -226,44 +258,62 @@
     }
   };
 
-  // Browsers commonly block a second automatic download. Keep the private
-  // teacher artifact behind an explicit, persistent user gesture instead of
-  // claiming success after a download the browser may have silently dropped.
-  const _alloOfferPrivateTeacherDownload = (file) => {
-    if (!file || !file.blob || !file.name) throw new Error('Private teacher materials could not be prepared.');
-    const prior = document.getElementById('allo-private-teacher-download');
+  // Browsers commonly block a second automatic download. Keep secondary
+  // artifacts behind an explicit, persistent user gesture instead of claiming
+  // success after a download the browser may have silently dropped.
+  const _alloOfferSecondaryDownload = (file, options) => {
+    const opts = options || {};
+    if (!file || !file.blob || !file.name) throw new Error(opts.errorMessage || 'The secondary download could not be prepared.');
+    const panelId = opts.id || 'allo-secondary-download';
+    const prior = document.getElementById(panelId);
     if (prior) {
       try { if (prior.__alloObjectUrl) URL.revokeObjectURL(prior.__alloObjectUrl); } catch (_) {}
       prior.remove();
     }
     const url = URL.createObjectURL(file.blob);
     const panel = document.createElement('div');
-    panel.id = 'allo-private-teacher-download';
+    panel.id = panelId;
     panel.__alloObjectUrl = url;
     panel.setAttribute('role', 'region');
-    panel.setAttribute('aria-label', 'Private teacher materials download');
-    panel.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(560px,calc(100vw - 32px));padding:14px 16px;border:3px solid #9f1239;border-radius:12px;background:#fff1f2;color:#881337;box-shadow:0 12px 32px rgba(15,23,42,.28);font:700 15px/1.4 system-ui,sans-serif;';
+    panel.setAttribute('aria-label', opts.ariaLabel || 'Additional export download');
+    panel.style.cssText = opts.panelStyle || 'position:fixed;right:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(560px,calc(100vw - 32px));padding:14px 16px;border:3px solid #0369a1;border-radius:12px;background:#f0f9ff;color:#0c4a6e;box-shadow:0 12px 32px rgba(15,23,42,.28);font:700 15px/1.4 system-ui,sans-serif;';
     const text = document.createElement('span');
-    text.textContent = 'Student HTML downloaded. Keep this separate teacher download private:';
+    text.textContent = opts.message || 'Your main file downloaded. An additional file is ready:';
     const link = document.createElement('a');
     link.href = url;
     link.download = file.name;
-    link.textContent = 'Download private teacher materials';
-    link.style.cssText = 'display:inline-flex;min-height:44px;align-items:center;padding:8px 12px;border-radius:8px;background:#9f1239;color:#fff;text-decoration:none;font-weight:800;';
+    link.textContent = opts.linkText || 'Download additional file';
+    link.style.cssText = opts.linkStyle || 'display:inline-flex;min-height:44px;align-items:center;padding:8px 12px;border-radius:8px;background:#0369a1;color:#fff;text-decoration:none;font-weight:800;';
     const dismiss = document.createElement('button');
     dismiss.type = 'button';
     dismiss.textContent = 'Dismiss';
-    dismiss.style.cssText = 'min-height:44px;padding:8px 12px;border:2px solid #9f1239;border-radius:8px;background:#fff;color:#881337;font:inherit;cursor:pointer;';
+    dismiss.style.cssText = opts.dismissStyle || 'min-height:44px;padding:8px 12px;border:2px solid #0369a1;border-radius:8px;background:#fff;color:#0c4a6e;font:inherit;cursor:pointer;';
     const cleanup = () => {
       try { URL.revokeObjectURL(url); } catch (_) {}
       if (panel.parentNode) panel.remove();
     };
-    link.addEventListener('click', () => setTimeout(cleanup, 2000));
+    link.addEventListener('click', () => setTimeout(cleanup, 4000));
     dismiss.addEventListener('click', cleanup);
     panel.appendChild(text); panel.appendChild(link); panel.appendChild(dismiss);
     (document.body || document.documentElement).appendChild(panel);
     return link;
   };
+  const _alloOfferPrivateTeacherDownload = (file) => _alloOfferSecondaryDownload(file, {
+    id: 'allo-private-teacher-download',
+    errorMessage: 'Private teacher materials could not be prepared.',
+    ariaLabel: 'Private teacher materials download',
+    message: 'Student HTML downloaded. Keep this separate teacher download private:',
+    linkText: 'Download private teacher materials',
+    panelStyle: 'position:fixed;right:16px;bottom:16px;z-index:2147483646;display:flex;align-items:center;gap:10px;flex-wrap:wrap;max-width:min(560px,calc(100vw - 32px));padding:14px 16px;border:3px solid #9f1239;border-radius:12px;background:#fff1f2;color:#881337;box-shadow:0 12px 32px rgba(15,23,42,.28);font:700 15px/1.4 system-ui,sans-serif;',
+    linkStyle: 'display:inline-flex;min-height:44px;align-items:center;padding:8px 12px;border-radius:8px;background:#9f1239;color:#fff;text-decoration:none;font-weight:800;',
+    dismissStyle: 'min-height:44px;padding:8px 12px;border:2px solid #9f1239;border-radius:8px;background:#fff;color:#881337;font:inherit;cursor:pointer;'
+  });
+  const _alloOfferProjectBackupDownload = (file) => _alloOfferSecondaryDownload(file, {
+    id: 'allo-project-backup-download',
+    ariaLabel: 'Editable project backup download',
+    message: 'HTML downloaded. Keep an editable project backup too:',
+    linkText: 'Download project backup'
+  });
 
   // ── executeExportFromPreview ─────────────────────────────────────
   // Orchestrates an export driven by the preview iframe. If the iframe
@@ -847,6 +897,158 @@
     .replace(/^#{1,6}\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\s+/g, ' ').trim();
   const _alloKaEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const _alloKaSplit = (t) => (String(t).match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [t]).map((x) => String(x).trim()).filter(Boolean);
+  const _alloKaIgnoredElement = (el) => {
+    if (!el || el.nodeType !== 1) return false;
+    const tag = String(el.tagName || '').toLowerCase();
+    if (['script', 'style', 'template', 'noscript', 'button', 'input', 'select', 'textarea', 'audio', 'video'].indexOf(tag) !== -1) return true;
+    if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return true;
+    if (el.classList && (el.classList.contains('allo-ka-bar') || el.classList.contains('allo-ka-audios'))) return true;
+    if (tag === 'a') {
+      const role = String(el.getAttribute('role') || '').toLowerCase();
+      const rel = String(el.getAttribute('rel') || '').toLowerCase().split(/\s+/);
+      const cls = String(el.className || '').toLowerCase();
+      if (role === 'doc-noteref' || rel.indexOf('footnote') !== -1 || /(?:^|\s)(?:footnote-ref|noteref)(?:\s|$)/.test(cls)) return true;
+    }
+    return false;
+  };
+  const _alloKaAtomicSpeech = (el) => {
+    const tag = String(el && el.tagName || '').toLowerCase();
+    if (tag === 'math') {
+      const labelled = el.getAttribute('aria-label') || el.getAttribute('alttext');
+      if (labelled) return String(labelled);
+      const annotation = el.querySelector && el.querySelector('annotation[encoding="application/x-tex"],annotation[encoding="application/tex"]');
+      return String((annotation && annotation.textContent) || el.textContent || '');
+    }
+    if (tag === 'ruby') {
+      const clone = el.cloneNode(true);
+      Array.from(clone.querySelectorAll('rt,rp')).forEach((node) => node.remove());
+      return String(clone.textContent || '');
+    }
+    return String(el && el.textContent || '');
+  };
+  const _alloKaLinearize = (target) => {
+    const segments = [];
+    let text = '';
+    const appendGap = () => { if (text && !/\s$/.test(text)) text += ' '; };
+    const walk = (node) => {
+      if (!node) return;
+      if (node.nodeType === 3) {
+        const value = String(node.data || '');
+        if (!value) return;
+        const start = text.length;
+        text += value;
+        segments.push({ type: 'text', node: node, start: start, end: text.length });
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      if (_alloKaIgnoredElement(node)) { appendGap(); return; }
+      const tag = String(node.tagName || '').toLowerCase();
+      if (tag === 'br') { appendGap(); return; }
+      if (tag === 'math' || tag === 'ruby') {
+        const spoken = _alloKaAtomicSpeech(node);
+        if (!spoken) return;
+        const start = text.length;
+        text += spoken;
+        segments.push({ type: 'atom', node: node, start: start, end: text.length });
+        return;
+      }
+      Array.from(node.childNodes || []).forEach(walk);
+    };
+    walk(target);
+    return { text: text, segments: segments };
+  };
+  const _alloKaSentenceRanges = (linear) => {
+    const text = String(linear && linear.text || '');
+    if (!text.trim()) return [];
+    const chars = text.split('');
+    (linear.segments || []).forEach((segment) => {
+      if (segment.type !== 'atom') return;
+      for (let i = segment.start; i < segment.end; i++) {
+        if (chars[i] === '.' || chars[i] === '!' || chars[i] === '?') chars[i] = '\uFFFC';
+      }
+    });
+    const masked = chars.join('');
+    const matcher = /[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g;
+    const found = [];
+    let match;
+    while ((match = matcher.exec(masked)) !== null) {
+      let start = match.index;
+      let end = match.index + match[0].length;
+      while (start < end && /\s/.test(text.charAt(start))) start++;
+      while (end > start && /\s/.test(text.charAt(end - 1))) end--;
+      const voice = _alloKaClean(text.slice(start, end));
+      if (voice) found.push({ start: start, end: end, text: voice });
+      if (!match[0]) matcher.lastIndex++;
+    }
+    if (!found.length) {
+      const voice = _alloKaClean(text);
+      if (voice) found.push({ start: 0, end: text.length, text: voice });
+    }
+    return found;
+  };
+  const _alloKaUnwrapGenerated = (target) => {
+    const wrappers = Array.from(target.querySelectorAll('.ka-s[data-ka-generated="true"]')).reverse();
+    wrappers.forEach((wrapper) => {
+      const parent = wrapper.parentNode;
+      if (!parent) return;
+      while (wrapper.firstChild) parent.insertBefore(wrapper.firstChild, wrapper);
+      parent.removeChild(wrapper);
+    });
+  };
+  const _alloKaWrapSentences = (target, startIndex) => {
+    const doc = target && (target.ownerDocument || document);
+    if (!target || !doc) return [];
+    _alloKaUnwrapGenerated(target);
+    const linear = _alloKaLinearize(target);
+    const ranges = _alloKaSentenceRanges(linear).map((range, offset) => Object.assign(range, { idx: startIndex + offset }));
+    if (!ranges.length) return [];
+    const made = {};
+    const remember = (idx, wrapper) => {
+      if (!made[idx]) made[idx] = [];
+      made[idx].push(wrapper);
+    };
+    linear.segments.forEach((segment) => {
+      if (!segment.node || !segment.node.parentNode) return;
+      if (segment.type === 'atom') {
+        const range = ranges.find((candidate) => candidate.start < segment.end && candidate.end > segment.start);
+        if (!range) return;
+        const wrapper = doc.createElement('span');
+        wrapper.className = 'ka-s';
+        wrapper.setAttribute('data-ka-s', String(range.idx));
+        wrapper.setAttribute('data-ka-generated', 'true');
+        segment.node.parentNode.insertBefore(wrapper, segment.node);
+        wrapper.appendChild(segment.node);
+        remember(range.idx, wrapper);
+        return;
+      }
+      const original = String(segment.node.data || '');
+      const overlaps = ranges.filter((range) => range.start < segment.end && range.end > segment.start);
+      if (!overlaps.length) return;
+      const fragment = doc.createDocumentFragment();
+      let cursor = 0;
+      overlaps.forEach((range) => {
+        const from = Math.max(0, range.start - segment.start);
+        const to = Math.min(original.length, range.end - segment.start);
+        if (from > cursor) fragment.appendChild(doc.createTextNode(original.slice(cursor, from)));
+        if (to > from) {
+          const wrapper = doc.createElement('span');
+          wrapper.className = 'ka-s';
+          wrapper.setAttribute('data-ka-s', String(range.idx));
+          wrapper.setAttribute('data-ka-generated', 'true');
+          wrapper.textContent = original.slice(from, to);
+          fragment.appendChild(wrapper);
+          remember(range.idx, wrapper);
+        }
+        cursor = Math.max(cursor, to);
+      });
+      if (cursor < original.length) fragment.appendChild(doc.createTextNode(original.slice(cursor)));
+      segment.node.parentNode.replaceChild(fragment, segment.node);
+    });
+    return ranges.filter((range) => made[range.idx] && made[range.idx].length).map((range) => {
+      made[range.idx][0].setAttribute('data-ka-text', range.text);
+      return { idx: range.idx, text: range.text };
+    });
+  };
   const _alloKaraokeProcess = async (root, opts) => {
     opts = opts || {};
     const callTTS = opts.callTTS, selectedVoice = opts.selectedVoice, addToast = opts.addToast;
@@ -854,6 +1056,19 @@
     const compressAudio = audioConfig.quality === 'compressed';
     const mode = 'embedded';
     const doc = root.ownerDocument || document;
+    let runtimeCopy = {};
+    try {
+      const runtimeCopyEl = doc.getElementById('alloflow-runtime-copy');
+      runtimeCopy = runtimeCopyEl && runtimeCopyEl.textContent ? JSON.parse(runtimeCopyEl.textContent) : {};
+    } catch (_) { runtimeCopy = {}; }
+    const runtimeText = (key, fallback, variables) => {
+      let value = Object.prototype.hasOwnProperty.call(runtimeCopy, key) ? runtimeCopy[key] : fallback;
+      value = String(value == null ? '' : value);
+      const replacements = variables && typeof variables === 'object' ? variables : {};
+      return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, name) => (
+        Object.prototype.hasOwnProperty.call(replacements, name) ? String(replacements[name]) : match
+      ));
+    };
     const result = { assets: [], downloads: [] };
     if (typeof callTTS !== 'function') {
       if (addToast) addToast('Selected-voice audio is not available right now, so the export will download without audio.', 'info');
@@ -902,6 +1117,15 @@
       if (!root.querySelector('#allo-ka-script')) {
         const _sc = doc.createElement('script'); _sc.id = 'allo-ka-script';
         _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function announce(m){var n=document.getElementById("allo-ka-live");if(!n){n=document.createElement("div");n.id="allo-ka-live";n.setAttribute("role","alert");n.setAttribute("aria-live","assertive");n.setAttribute("aria-atomic","true");n.style.cssText="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;";(document.body||document.documentElement).appendChild(n);}n.textContent="";setTimeout(function(){n.textContent=String(m||"");},0);}function setBtn(b,t,p){if(!b)return;b.textContent=t;b.setAttribute("aria-pressed",p?"true":"false");b.setAttribute("aria-label",t.replace(/[^\\w\\s-]/g,"").trim()||"Read aloud");}function findBox(id){var boxes=document.querySelectorAll(".allo-ka-audios");for(var i=0;i<boxes.length;i++){if((boxes[i].getAttribute("data-ka-for")||"")===String(id||""))return boxes[i];}return null;}function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function ensureStopButton(btn){if(!btn||!btn.parentNode)return null;var ex=btn.parentNode.querySelector(".allo-ka-stop");if(ex)return ex;var s=document.createElement("button");s.type="button";s.className="allo-ka-stop";s.textContent="Stop";s.style.cssText="margin-left:8px;padding:7px 12px;background:#475569;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9em;";s.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();stop();});btn.parentNode.insertBefore(s,btn.nextSibling);return s;}function stop(){if(!active)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.cancel();active.utter=null;}else{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}}catch(e){}clearHi(active.spans);setBtn(active.btn,"\\u{1F50A} Read aloud",false);if(active.stopBtn){try{active.stopBtn.remove();}catch(e){}}active=null;}function pause(){if(!active||active.paused)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.pause();}else{var a=active.audios[active.idx];if(a)a.pause();}}catch(e){}active.paused=true;setBtn(active.btn,"\\u25B6 Resume",true);}function resume(){if(!active||!active.paused)return;if(active.mode==="browser"){active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);try{if(window.speechSynthesis)window.speechSynthesis.resume();}catch(e){}return;}var a=active.audios[active.idx];if(!a){step(active,active.idx+1);return;}active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}function step(state,i){if(!active||active!==state)return;var count=state.mode==="browser"?state.spans.length:state.audios.length;if(i>=count){stop();return;}state.idx=i;state.paused=false;if(state.mode==="browser"){var sp=state.spans[i];if(!sp){step(state,i+1);return;}clearHi(state.spans);sp.classList.add("ka-on");var text=(sp.textContent||"").trim();if(!text){step(state,i+1);return;}if(!window.speechSynthesis||typeof SpeechSynthesisUtterance==="undefined"){announce("Browser read-aloud is not available here.");stop();return;}try{window.speechSynthesis.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(text);state.utter=u;u.rate=1;u.onend=function(){if(active===state&&!state.paused)step(state,i+1);};u.onerror=function(){if(active===state)stop();};setBtn(state.btn,"\\u23F8 Pause",true);try{window.speechSynthesis.speak(u);}catch(e){stop();}return;}var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx)state.spans[k].classList.add("ka-on");}try{a.currentTime=0;}catch(e){}a.onended=function(){if(active===state&&!state.paused)step(state,i+1);};setBtn(state.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("click",function(e){var stopBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-stop");if(stopBtn){e.preventDefault();stop();return;}var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active&&active.btn===btn){if(active.paused)resume();else pause();return;}if(active)stop();var id=btn.getAttribute("data-ka-for");var sec=btn.closest(".section")||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var mode=btn.getAttribute("data-ka-mode")||"embedded";var audios=[];if(mode==="browser"){if(!spans.length)return;}else{var box=findBox(id);audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return;}active={mode:mode,audios:audios,spans:spans,idx:0,btn:btn,stopBtn:ensureStopButton(btn),paused:false,utter:null};step(active,0);});})();`;
+        // A sentence can span several preserved inline elements. Group its
+        // generated text fragments so browser speech still speaks/highlights
+        // one complete sentence; legacy one-span exports keep working too.
+        _sc.textContent = _sc.textContent
+          .replace('function clearHi(s){', 'function groupSpans(spans){var groups=[],map={};for(var i=0;i<spans.length;i++){var key=spans[i].getAttribute("data-ka-s");if(key===null)key="legacy-"+i;if(!Object.prototype.hasOwnProperty.call(map,key)){map[key]=groups.length;groups.push([]);}groups[map[key]].push(spans[i]);}return groups;}function clearHi(s){')
+          .replace('var count=state.mode==="browser"?state.spans.length:state.audios.length;', 'var count=state.mode==="browser"?state.groups.length:state.audios.length;')
+          .replace('var sp=state.spans[i];if(!sp){step(state,i+1);return;}clearHi(state.spans);sp.classList.add("ka-on");var text=(sp.textContent||"").trim();', 'var group=state.groups[i];if(!group||!group.length){step(state,i+1);return;}clearHi(state.spans);for(var g=0;g<group.length;g++)group[g].classList.add("ka-on");var text=(group[0].getAttribute("data-ka-text")||group.map(function(sp){return sp.textContent||"";}).join("")).trim();')
+          .replace('if(mode==="browser"){if(!spans.length)return;}else{', 'var groups=groupSpans(spans);if(mode==="browser"){if(!groups.length)return;}else{')
+          .replace('active={mode:mode,audios:audios,spans:spans,idx:0,', 'active={mode:mode,audios:audios,spans:spans,groups:groups,idx:0,');
         _body.appendChild(_sc);
       }
     } catch (e) { /* injection best-effort */ }
@@ -909,21 +1133,22 @@
     const audioJobs = [];
     for (let si = 0; si < sections.length; si++) {
       const sec = sections[si];
+      Array.from(sec.querySelectorAll('.allo-ka-bar[data-ka-generated="true"],.allo-ka-audios[data-ka-generated="true"]')).forEach((node) => node.remove());
       const ps = sec.querySelectorAll('p');
       const targets = ps.length ? ps : [sec];
       const items = [];
       let gi = 0;
       for (let pi = 0; pi < targets.length; pi++) {
         const p = targets[pi];
-        const clean = _alloKaClean(p.textContent || '');
-        if (!clean) continue;
-        const sents = _alloKaSplit(clean);
-        p.innerHTML = sents.map((se) => { const idx = gi++; items.push({ idx: idx, text: se }); return '<span class="ka-s" data-ka-s="' + idx + '">' + _alloKaEsc(se) + '</span>'; }).join(' ');
+        const wrapped = _alloKaWrapSentences(p, gi);
+        if (!wrapped.length) continue;
+        for (let wi = 0; wi < wrapped.length; wi++) items.push(wrapped[wi]);
+        gi += wrapped.length;
       }
       if (!items.length) continue;
       sec.classList.add('allo-ka-passage');
       const forId = sec.id || ('ka' + si);
-      const bar = doc.createElement('div'); bar.className = 'allo-ka-bar'; bar.style.cssText = 'margin:6px 0 10px;';
+      const bar = doc.createElement('div'); bar.className = 'allo-ka-bar'; bar.setAttribute('data-ka-generated', 'true'); bar.style.cssText = 'margin:6px 0 10px;';
       const btn = doc.createElement('button'); btn.type = 'button'; btn.className = 'allo-ka-play'; btn.setAttribute('data-ka-for', forId);
       btn.setAttribute('data-ka-mode', mode);
       btn.setAttribute('aria-pressed', 'false');
@@ -932,16 +1157,17 @@
       bar.appendChild(btn);
       let abox = null;
       if (mode === 'embedded') {
-        abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
+        abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-generated', 'true'); abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
       }
       const fe = sec.firstElementChild;
       if (fe && fe.nextSibling) sec.insertBefore(bar, fe.nextSibling); else sec.appendChild(bar);
       if (abox) sec.appendChild(abox);
+      const passage = { bar: bar, abox: abox, btn: btn, forId: forId, total: items.length, ready: 0 };
       for (let k = 0; k < items.length; k++) {
         if (!abox) continue;
-        audioJobs.push({ item: items[k], abox: abox });
+        audioJobs.push({ item: items[k], abox: abox, passage: passage });
       }
-      processed.push({ bar: bar, abox: abox });
+      processed.push(passage);
     }
     if (!processed.length && !downloadPlans.length) {
       if (addToast) addToast('No readable passage text was found for read-aloud.', 'info');
@@ -958,39 +1184,57 @@
         if (progress) progress.update(progressState.done, progressState.total, 'Generating audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
         let au = null;
         try { au = await _alloCallExportTTS(callTTS, job.item.text, selectedVoice || 'Puck', docLanguage); } catch (e) { au = null; }
-        if (!au || typeof au !== 'string') continue;
         let dataUrl = null;
         let _blob = null;
-        // callTTS returns a blob: object URL for Gemini/Kokoro/Piper in this app.
-        // Fetch it and convert to a base64 data: URL so the clip embeds in the
-        // file and plays fully offline after download. data: URLs work too.
-        try {
-          const _resp = await fetch(au);
-          _blob = await _resp.blob();
-          if (compressAudio && _blob) {
-            if (progress) progress.update(progressState.done, progressState.total, 'Compressing audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
-            _blob = await _alloCompressAudioBlob(_blob);
-          }
-          dataUrl = await _alloBlobToDataUrl(_blob);
-        } catch (e) { dataUrl = au.indexOf('data:') === 0 ? au : null; }
-        if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
+        if (au && typeof au === 'string') {
+          // callTTS returns a blob: object URL for Gemini/Kokoro/Piper in this app.
+          // Fetch it and convert to a base64 data: URL so the clip embeds in the
+          // file and plays fully offline after download. data: URLs work too.
+          try {
+            const _resp = await fetch(au);
+            _blob = await _resp.blob();
+            if (compressAudio && _blob) {
+              if (progress) progress.update(progressState.done, progressState.total, 'Compressing audio for sentence ' + (k + 1) + ' of ' + audioJobs.length + '...');
+              _blob = await _alloCompressAudioBlob(_blob);
+            }
+            dataUrl = await _alloBlobToDataUrl(_blob);
+          } catch (e) { dataUrl = au.indexOf('data:') === 0 ? au : null; }
+          if (au.indexOf('blob:') === 0) { try { URL.revokeObjectURL(au); } catch (e) {} }
+        }
         if (dataUrl && typeof dataUrl === 'string' && dataUrl.indexOf('data:') === 0) {
           const a = doc.createElement('audio'); a.setAttribute('preload', 'none'); a.setAttribute('data-ka-s', String(job.item.idx)); a.src = dataUrl;
           job.abox.appendChild(a);
           embeddedCount++;
+          if (job.passage) job.passage.ready++;
         }
         progressState.done++;
         if (progress) progress.update(progressState.done, progressState.total, 'Preparing embedded audio...');
     }
-    if (audioJobs.length && !embeddedCount) {
+    if (audioJobs.length) {
       for (let r = 0; r < processed.length; r++) {
-        try { if (processed[r].bar) processed[r].bar.remove(); } catch (e) {}
-        try { if (processed[r].abox) processed[r].abox.remove(); } catch (e) {}
+        const passage = processed[r];
+        if (!passage || passage.ready >= passage.total) continue;
+        const note = doc.createElement('p');
+        note.className = 'allo-ka-status';
+        note.id = 'allo-ka-status-' + r;
+        note.setAttribute('role', 'note');
+        note.style.cssText = 'margin:7px 0 0;padding:8px 10px;border:2px solid #a16207;border-radius:8px;background:#fff7ed;color:#7c2d12;font-size:.88em;font-weight:650;line-height:1.4;';
+        if (!passage.ready) {
+          note.textContent = runtimeText('readAloudUnavailable', 'Read-aloud audio wasn\u2019t available for this passage. The passage text is still available below.');
+          try { if (passage.btn) passage.btn.remove(); } catch (e) {}
+          try { if (passage.abox) passage.abox.remove(); } catch (e) {}
+        } else {
+          note.textContent = runtimeText('readAloudPartial', 'Audio is available for {ready} of {total} sentences. Read the text for the missing portions.', { ready: passage.ready, total: passage.total });
+          if (passage.btn) passage.btn.setAttribute('aria-describedby', note.id);
+        }
+        if (passage.bar) passage.bar.appendChild(note);
       }
+    }
+    if (audioJobs.length && !embeddedCount) {
       if (addToast) addToast('Could not generate inline passage audio, so that playback control was removed.', 'info');
     } else if (audioJobs.length && embeddedCount < audioJobs.length) {
-      // #12: some passages voiced, some did not — the rest still play, but say so.
-      if (addToast) addToast('Audio could not be generated for ' + (audioJobs.length - embeddedCount) + ' of ' + audioJobs.length + ' passages; the others play normally.', 'info');
+      // #12: some sentences voiced, some did not — the rest still play, but say so.
+      if (addToast) addToast('Audio could not be generated for ' + (audioJobs.length - embeddedCount) + ' of ' + audioJobs.length + ' sentences; the others play normally.', 'info');
     }
     const built = await _alloBuildAudioDownloadAssets(downloadPlans, { callTTS: callTTS, selectedVoice: selectedVoice, quality: audioConfig.quality, singleFile: !!opts.singleFile, language: docLanguage }, progress, progressState);
     result.assets = built.assets || [];
@@ -1096,10 +1340,32 @@
     doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner').forEach((node) => node.remove());
     doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
     doc.querySelectorAll('.alloflow-cs-strip[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
+    // A stale Builder iframe may still contain timeline answer metadata or
+    // the canonical order. Remove both, then materialize a deterministic
+    // non-canonical presentation that remains stable for the downloaded file.
+    const stableHash = (value) => {
+      let h = 2166136261;
+      const text = String(value == null ? '' : value);
+      for (let i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return h >>> 0;
+    };
+    doc.querySelectorAll('.alloflow-tl-strips').forEach((container) => {
+      const original = Array.from(container.querySelectorAll(':scope > .alloflow-tl-strip'));
+      const shuffled = original.slice().sort((a, b) => stableHash(a.textContent) - stableHash(b.textContent));
+      if (shuffled.length > 1 && shuffled.every((node, index) => node === original[index])) shuffled.push(shuffled.shift());
+      shuffled.forEach((node, index) => {
+        node.removeAttribute('data-original-index');
+        node.setAttribute('data-initial-index', String(index));
+        container.appendChild(node);
+      });
+      const response = container.querySelector('.alloflow-tl-response');
+      if (response) response.value = '';
+    });
+    doc.querySelectorAll('.alloflow-tl-check-btn').forEach((node) => node.remove());
     if (!doc.getElementById('alloflow-assessment-export-safety')) {
       const style = doc.createElement('style');
       style.id = 'alloflow-assessment-export-safety';
-      style.textContent = '.quiz-controls,.alloflow-cs-controls{display:none!important}';
+      style.textContent = '.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn{display:none!important}';
       doc.head.appendChild(style);
     }
     if (doc.title) doc.title = doc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
@@ -1162,7 +1428,7 @@
     }
     const mode = exportPreviewMode;
     const isWorksheet = mode === 'worksheet';
-    const _assessmentStudentOnly = mode === 'html' && !!(exportConfig && exportConfig.assessmentMode === true);
+    const _assessmentStudentOnly = !!(exportConfig && exportConfig.assessmentMode === true);
     const _separateTeacherStudent = mode === 'html' && _alloShouldSeparateStudentTeacher(exportConfig);
     // Split student files must carry their own media: the private teacher ZIP
     // intentionally does not double as a shared asset container.
@@ -1266,6 +1532,17 @@
       }
     }
 
+    // Assessment safety applies to every student-facing artifact, including
+    // Print and Worksheet. This final DOM pass protects a stale edited preview
+    // just as it protects downloaded HTML.
+    if (_assessmentStudentOnly) {
+      try { htmlContent = _alloSanitizeAssessmentStudentHtml(htmlContent); }
+      catch (assessmentSafetyError) {
+        _alloExportNotice(assessmentSafetyError && assessmentSafetyError.message ? assessmentSafetyError.message : 'Assessment content could not be verified as student-safe.', 'error', addToast);
+        return false;
+      }
+    }
+
     // Read-aloud audio is handled by the download-time modal above (inline
     // sentence-karaoke on every reading passage), replacing the old per-text toggles.
 
@@ -1281,9 +1558,16 @@
     if (mode === 'print' || mode === 'worksheet') {
       const printWindow = window.open('', '_blank');
       if (printWindow) {
+        // The exported runtime normally asks who is working before enabling
+        // local autosave. Print popups are transient and must never show that
+        // learner-workspace prompt in the worksheet/PDF handoff.
+        try { printWindow.__alloflowPrintExport = true; } catch (_) {}
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        await _alloWaitForPrintReady(printWindow);
+        const readiness = await _alloWaitForPrintReady(printWindow);
+        if (readiness && !readiness.ready) {
+          _alloExportNotice('Some fonts or images were still loading. Check the print preview and retry if anything is missing.', 'info', addToast);
+        }
         try { if (typeof printWindow.focus === 'function') printWindow.focus(); } catch (_) {}
         printWindow.print();
         if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
@@ -1297,13 +1581,7 @@
       // "index.html" files.
       const _htmlName = _alloExportFilename(htmlContent, 'alloflow-export');
       if (_assessmentStudentOnly) {
-        let assessmentHtml;
-        try { assessmentHtml = _alloSanitizeAssessmentStudentHtml(htmlContent); }
-        catch (assessmentSafetyError) {
-          _alloExportNotice(assessmentSafetyError && assessmentSafetyError.message ? assessmentSafetyError.message : 'Assessment HTML could not be verified as student-safe.', 'error', addToast);
-          return false;
-        }
-        await _alloDownloadFiles([{ name: _htmlName + '.html', blob: new Blob([assessmentHtml], { type: 'text/html;charset=utf-8' }) }]);
+        await _alloDownloadFiles([{ name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) }]);
         if (addToast) addToast('Assessment HTML downloaded without answer-bearing project data.', 'success');
         if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
         return true;
@@ -1344,24 +1622,24 @@
         link.href = url;
         link.download = _htmlName + '-' + new Date().toISOString().split('T')[0] + '.zip';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
         if (addToast) addToast('Export downloaded!', 'success');
       } else if (!_wantSingleFile) {
-        // Just the lesson + its data (2 files) — download them separately so
-        // teachers never have to extract a zip. Distinct names avoid collisions.
-        if (addToast) addToast('Downloading files…', 'info');
-        await _alloDownloadFiles([
-          { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) },
-          { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) }
-        ]);
-        if (addToast) addToast('Export downloaded!', 'success');
+        // Auto-download the lesson once, then require a real user gesture for
+        // its editable project backup so browsers cannot silently block it.
+        if (addToast) addToast('Downloading HTML…', 'info');
+        const htmlFile = { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) };
+        const projectFile = { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) };
+        await _alloDownloadFiles([htmlFile]);
+        _alloOfferProjectBackupDownload(projectFile);
+        if (addToast) addToast('HTML downloaded. Project backup is ready from the on-screen button.', 'success');
       } else {
         const blob = new Blob([htmlContent], { type: 'text/html' });
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url; link.download = _alloExportFilename(htmlContent, 'alloflow-export') + '.html';
         document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
         if (addToast) addToast('HTML export downloaded!', 'success');
       }
       if (typeof setShowExportPreview === 'function') setShowExportPreview(false);
@@ -1388,7 +1666,15 @@
       return;
     }
     const isWorksheet = mode === 'worksheet';
-    const htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
+    let htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
+    if (exportConfig && exportConfig.assessmentMode === true) {
+      try { htmlContent = _alloSanitizeAssessmentStudentHtml(htmlContent); }
+      catch (assessmentSafetyError) {
+        if (typeof warnLog === 'function') warnLog('Assessment export safety check failed', assessmentSafetyError);
+        _alloExportNotice('Assessment content could not be verified as student-safe.', 'error', addToast);
+        return false;
+      }
+    }
     const _exportMeaningfulText = String(htmlContent || '').replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '').replace(/<[^>]+>/g, ' ').replace(/&nbsp;|&#160;/gi, ' ').trim();
     const _exportHasNonTextContent = /<(?:img|svg|canvas|video|audio|math|table|form|input|textarea|select|hr)\b/i.test(String(htmlContent || ''));
     if (!htmlContent || (!_exportMeaningfulText && !_exportHasNonTextContent)) {
@@ -1434,9 +1720,14 @@
       if (addToast && t) addToast(mode === 'worksheet' ? t('export_status.prep_worksheet') : t('export_status.prep_print'), 'info');
       const printWindow = window.open('', '_blank');
       if (printWindow) {
+        // Keep the transient print document out of learner-scoped autosave.
+        try { printWindow.__alloflowPrintExport = true; } catch (_) {}
         printWindow.document.write(htmlContent);
         printWindow.document.close();
-        await _alloWaitForPrintReady(printWindow);
+        const readiness = await _alloWaitForPrintReady(printWindow);
+        if (readiness && !readiness.ready) {
+          _alloExportNotice('Some fonts or images were still loading. Check the print preview and retry if anything is missing.', 'info', addToast);
+        }
         try { if (typeof printWindow.focus === 'function') printWindow.focus(); } catch (_) {}
         printWindow.print();
       } else {
@@ -1450,9 +1741,8 @@
       const _htmlName = _alloExportFilename(htmlContent, (t ? t('export.filenames.html_pack') : 'alloflow-export'));
       if (exportConfig && exportConfig.assessmentMode === true) {
         try {
-          const assessmentHtml = _alloSanitizeAssessmentStudentHtml(htmlContent);
           await _alloDownloadFiles([
-            { name: _htmlName + '.html', blob: new Blob([assessmentHtml], { type: 'text/html;charset=utf-8' }) }
+            { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) }
           ]);
           if (addToast) addToast('Assessment HTML downloaded without answer-bearing project data.', 'success');
           if (alloBotRef && alloBotRef.current && t) alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
@@ -1481,15 +1771,16 @@
         }
       }
       try {
-        if (addToast) addToast('Downloading files…', 'info');
-        await _alloDownloadFiles([
-          { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) },
-          { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) }
-        ]);
-        if (addToast && t) addToast(t('export.bundle_downloaded'), 'success');
+        if (addToast) addToast('Downloading HTML…', 'info');
+        const htmlFile = { name: _htmlName + '.html', blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }) };
+        const projectFile = { name: _htmlName + '-project.json', blob: new Blob([JSON.stringify(history, null, 2)], { type: 'application/json' }) };
+        await _alloDownloadFiles([htmlFile]);
+        _alloOfferProjectBackupDownload(projectFile);
+        if (addToast) addToast('HTML downloaded. Project backup is ready from the on-screen button.', 'success');
         if (alloBotRef && alloBotRef.current && t) {
           alloBotRef.current.speak(t('bot_events.feedback_export_complete'), 'happy');
         }
+        return true;
       } catch (err) {
         if (typeof warnLog === 'function') warnLog('Export download failed', err);
         downloadHtmlBlob(htmlContent, deps);

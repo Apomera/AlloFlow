@@ -1890,6 +1890,7 @@
         // ink() comment says, so give them that canvas back. Light theme is untouched and
         // already measured clean.
         style: isDark ? { background: '#0b1120', borderRadius: 12, padding: 10 } : null },
+        h('style', null, '@media (max-height:500px){[data-heat-lab] nav[aria-label="Heat lab topics"]{position:static!important}}'),
 
         // ── header ──
         h('div', { className: 'relative overflow-hidden rounded-xl border mb-1 px-3 py-2.5', style: { background: 'linear-gradient(115deg, #2a0f04 0%, #451a03 46%, #0c1a2e 100%)', borderColor: 'rgba(251,146,60,0.4)' } },

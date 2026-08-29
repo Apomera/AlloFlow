@@ -1885,7 +1885,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
             return h('button', {
               key: b,
               onClick: function() { upd('viewBand', b); },
-              className: 'px-2 py-1 rounded font-bold ' + (sel ? 'bg-indigo-500 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
+              className: 'px-2 py-1 rounded font-bold ' + (sel ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600')
             }, b === 'middle' ? 'Middle school' : 'High school');
           })
         );
@@ -1977,7 +1977,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
               ),
               h('button', {
                 onClick: function() { switchTab(suggestion.tab, suggestion.cta); },
-                className: 'px-4 py-2 rounded-lg bg-indigo-500 text-white text-sm font-bold hover:bg-indigo-400 shrink-0 no-print'
+                className: 'px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-400 shrink-0 no-print'
               }, 'Go \u2192')
             )
           ),

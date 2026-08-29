@@ -1450,11 +1450,11 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
         micStatus === 'denied' ? roleCopy('roles.voice_access_denied', 'Voice Access could not start') :
         micStatus === 'requesting' ? roleCopy('roles.voice_access_starting', 'Starting Voice Access...') :
         roleCopy('roles.voice_access_enable', 'Enable Voice Access')
-      : micStatus === 'granted' ? t('roles.mic_ready') :
-        micStatus === 'unsupported' ? t('roles.voice_not_supported') :
-        micStatus === 'denied' ? t('roles.mic_denied') :
-        micStatus === 'requesting' ? t('roles.mic_requesting') :
-        t('roles.mic_enable');
+      : micStatus === 'granted' ? roleCopy('roles.mic_ready', 'Microphone Ready') :
+        micStatus === 'unsupported' ? roleCopy('roles.voice_not_supported', 'Voice features are not supported in this browser.') :
+        micStatus === 'denied' ? roleCopy('roles.mic_denied', 'Access Denied (Check Browser Settings)') :
+        micStatus === 'requesting' ? roleCopy('roles.mic_requesting', 'Requesting Access...') :
+        roleCopy('roles.mic_enable', 'Enable Microphone Access');
   return (
   <div
     ref={roleRef}
@@ -1476,8 +1476,8 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
            <Layers size={48} className="text-indigo-600" />
         </div>
       </div>
-      <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{t('roles.title')}</h2>
-      <p id="role-selection-description" className="text-slate-600 mb-8 font-medium">{t('roles.subtitle')}</p>
+      <h2 id="role-selection-title" className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{roleCopy('roles.title', 'Welcome to AlloFlow')}</h2>
+      <p id="role-selection-description" className="text-slate-600 mb-8 font-medium">{roleCopy('roles.subtitle', 'How will you be using the app today?')}</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <button
             onClick={(event) => handleRoleClick('student', event)}
@@ -1487,7 +1487,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             <div className="bg-teal-100 text-teal-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <GraduationCap size={32} />
             </div>
-            <span className="font-bold text-slate-700 group-hover:text-teal-700">{t('roles.student')}</span>
+            <span className="font-bold text-slate-700 group-hover:text-teal-700">{roleCopy('roles.student', 'Student')}</span>
         </button>
         <button
             onClick={(event) => handleRoleClick('teacher', event)}
@@ -1497,7 +1497,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             <div className="bg-indigo-100 text-indigo-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:-rotate-12">
                 <School size={32} />
             </div>
-            <span className="font-bold text-slate-700 group-hover:text-indigo-700">{t('roles.teacher')}</span>
+            <span className="font-bold text-slate-700 group-hover:text-indigo-700">{roleCopy('roles.teacher', 'Teacher')}</span>
             {lastTimeBadge('teacher')}
         </button>
         <button
@@ -1508,7 +1508,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             <div className="bg-orange-100 text-orange-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <Heart size={32} />
             </div>
-            <span className="font-bold text-slate-700 group-hover:text-orange-700">{t('roles.parent')}</span>
+            <span className="font-bold text-slate-700 group-hover:text-orange-700">{roleCopy('roles.parent', 'Parent')}</span>
             <span className="text-[11px] leading-tight text-slate-500 text-center max-w-[13rem]">{t('parent_mode.role_description') || 'Support learning at home with family-friendly tools.'}</span>
             {lastTimeBadge('parent')}
         </button>
@@ -1520,12 +1520,12 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
             <div className="bg-cyan-100 text-cyan-600 p-4 rounded-full group-hover:scale-110 transition-transform group-hover:rotate-12">
                 <UserCircle2 size={32} />
             </div>
-            <span className="font-bold text-slate-700 group-hover:text-cyan-700">{t('roles.independent')}</span>
+            <span className="font-bold text-slate-700 group-hover:text-cyan-700">{roleCopy('roles.independent', 'Independent Learner')}</span>
             {lastTimeBadge('independent')}
         </button>
       </div>
       <div className="border-t border-slate-100 pt-4">
-          <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{usesGlobalVoiceAccess ? roleCopy('roles.voice_access_setup', 'Voice Access') : t('roles.mic_setup')}</p>
+          <p className="text-[11px] text-slate-600 uppercase tracking-widest font-bold mb-2">{usesGlobalVoiceAccess ? roleCopy('roles.voice_access_setup', 'Voice Access') : roleCopy('roles.mic_setup', 'Optional Setup')}</p>
           <button
             type="button"
             onClick={handleMicCheck}
@@ -1553,7 +1553,7 @@ const RoleSelectionModal = React.memo(({ onSelect, onGateRequired, onStartVoiceA
               <p id="role-mic-tip" className="text-[11px] text-slate-600 mt-2">
                   {usesGlobalVoiceAccess
                     ? roleCopy('roles.voice_access_tip', 'Your browser or operating system may ask for microphone activation once. After permission, continuous voice command listening starts. Voice Access is optional; touch, pointer, and keyboard remain available.')
-                    : t('roles.mic_tip')}
+                    : roleCopy('roles.mic_tip', 'Recommended: Click above to prevent interruptions later.')}
               </p>
           )}
       </div>
@@ -1723,7 +1723,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 </label>
             </div>
             <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
-                <div className="text-xl font-black text-indigo-600 tracking-tight truncate mr-2" role="status" aria-live="polite" aria-atomic="true">
+                <div className="min-w-0 flex-grow break-words text-start text-xl font-black text-indigo-600 tracking-tight me-2" role="status" aria-live="polite" aria-atomic="true">
                     {selectedAdj} {selectedAnimal}
                 </div>
                 <button

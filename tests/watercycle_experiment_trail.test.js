@@ -54,8 +54,20 @@ describe('Water Cycle experiment trail', () => {
       expect(source).toContain('onClick: function() { replayWcObservation(entry); }');
       expect(source).toContain('var evidencePrediction = WATER_CYCLE_PREDICTIONS[entry.answer];');
       expect(source).toContain('className: "wc-log-entry-evidence"');
-      expect(source).toContain('Prediction matched the evidence.');
-      expect(source).toContain('"Evidence: " + evidenceLabel');
+      expect(source).toContain('entry.matched ? "Evidence agrees" : "Evidence differs"');
+      expect(source).toContain('" · Claim: " + prediction.shortLabel');
+      expect(source).toContain('Claim: " + prediction.label');
+      expect(
+        source.includes('". Evidence " + (entry.matched ? "agrees with" : "differs from") + " the claim.') ||
+        (source.includes('"The evidence agrees with the claim."') && source.includes('"The evidence differs from the claim."'))
+      ).toBe(true);
+      expect(
+        source.includes('"Strongest modeled shift: " + evidenceLabel') ||
+        source.includes('"Evidence supports: " + evidenceLabel')
+      ).toBe(true);
+      expect(source).not.toContain('Prediction matched the evidence.');
+      expect(source).not.toContain('Prediction differed from the evidence.');
+      expect(source).not.toContain('" · Hypothesis: " + prediction.shortLabel');
       expect(source).toContain('var routeShares = entry.routeShares || null;');
       expect(source).toContain('var routeMixAccessibility = hasRouteShares');
       expect(source).toContain('className: "wc-log-entry-route-mix"');

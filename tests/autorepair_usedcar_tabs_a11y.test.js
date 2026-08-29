@@ -25,10 +25,14 @@ describe('AutoRepair Used-Car tabs accessibility', () => {
     expect(source).toContain("key === 'End'");
   });
 
-  it('links the active Used-Car section to its tabpanel', () => {
+  it('keeps every Used-Car tab linked to a stable reciprocal panel', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("id: 'autorepair-usedcar-panel-' + ucView");
-    expect(source).toContain("'aria-labelledby': 'autorepair-usedcar-tab-' + ucView");
-    expect(source).toContain('tabIndex: 0');
+    expect(source).toContain('function usedCarPanel(id, content)');
+    expect(source).toContain("id: 'autorepair-usedcar-panel-' + id");
+    expect(source).toContain("'aria-labelledby': 'autorepair-usedcar-tab-' + id");
+    expect(source).toContain('tabIndex: active ? 0 : -1');
+    expect(source).toContain('hidden: active ? undefined : true');
+    expect(source).toContain("'data-ar-usedcar-panel': id");
+    expect(source).toContain("'data-ar-panel-state': active ? 'active' : 'inactive'");
   });
 });

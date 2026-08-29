@@ -20345,7 +20345,7 @@ test('no a11y violations', async () => {
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('career', CAREER_TOPICS)),
 
         // ── BUILD tab: No app yet — show prompt input ──
-        activeTab === 'build' && h('div', { id: 'applab-panel-build', role: 'tabpanel', 'aria-labelledby': 'applab-tab-build', tabIndex: 0, style: { flex: 1, minHeight: 0 } },
+        activeTab === 'build' && h('div', { id: 'applab-panel-build', role: 'tabpanel', 'aria-labelledby': 'applab-tab-build', tabIndex: 0, style: { flex: 1, minHeight: 0, overflowY: 'auto' } },
           !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
 
           // ── Visual Pipeline Configurator ──
@@ -20752,8 +20752,9 @@ test('no a11y violations', async () => {
           )
         ),
 
-        ),
-
+        // Keep the loading state and inquiry widget in this tab panel's scroll
+        // flow. As root flex siblings, the tall inquiry widget could collapse
+        // the Build panel and paint over its overflowing controls.
         // Loading overlay
         isGenerating && !html && h('div', { style: { textAlign: 'center', padding: '40px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px', animation: 'pulse 1.5s infinite' }, 'aria-hidden': true }, '💡'),
@@ -20834,6 +20835,7 @@ test('no a11y violations', async () => {
             h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.applab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.'))
           );
         })()
+        )
       );
     }
   });

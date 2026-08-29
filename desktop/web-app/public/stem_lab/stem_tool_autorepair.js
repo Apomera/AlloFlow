@@ -53,7 +53,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (document.getElementById('allo-ar-focus-css')) return;
     var st = document.createElement('style');
     st.id = 'allo-ar-focus-css';
-    st.textContent = '[data-ar-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}';
+    st.textContent = [
+      '[data-ar-focusable]:focus-visible{outline:3px solid #fbbf24!important;outline-offset:2px!important;border-radius:6px}',
+      // Keep the bypass link operable even if React event handling is delayed.
+      'a[href="#ar-menu-categories"]:focus{position:static!important;left:auto!important;top:auto!important;width:auto!important;height:auto!important;overflow:visible!important;display:inline-block!important;padding:6px 12px!important;background:#fbbf24!important;color:#0f172a!important;text-decoration:none!important;font-weight:700!important;border-radius:6px!important;margin-bottom:10px!important}'
+    ].join('');
     if (document.head) document.head.appendChild(st);
   })();
 
@@ -81,17 +85,1417 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       'button[data-ar-focusable] {',
       '  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease !important;',
       '}',
-      'button[data-ar-focusable]:hover {',
-      '  transform: translateY(-2px);',
-      '  border-color: #f59e0b !important;',
-      '  box-shadow: 0 6px 14px rgba(245,158,11,0.18);',
+      '@media (hover: hover) and (pointer: fine) {',
+      '  button[data-ar-focusable]:not(:disabled):not([aria-disabled="true"]):hover {',
+      '    transform: translateY(-2px);',
+      '    border-color: #f59e0b !important;',
+      '    box-shadow: 0 6px 14px rgba(245,158,11,0.18);',
+      '  }',
+      '  .ar-menu-quick-card:hover .ar-menu-card-arrow, .ar-menu-module-card:hover .ar-menu-card-arrow { transform: translateX(4px); }',
       '}',
       'button[data-ar-focusable]:focus-visible {',
       '  transform: translateY(-2px);',
       '}',
-      'button[data-ar-focusable][aria-pressed="true"] {',
+      '@keyframes ar-bay-live-pulse {',
+      '  0%,100% { box-shadow:0 0 0 0 rgba(251,191,36,.42),0 0 10px rgba(251,191,36,.82); }',
+      '  50% { box-shadow:0 0 0 6px rgba(251,191,36,0),0 0 16px rgba(251,191,36,.95); }',
+      '}',
+      '.ar-bay-viewer-frame{position:relative;min-width:0;padding:10px;overflow:hidden;border:1px solid rgba(100,116,139,.58);border-radius:16px;background:radial-gradient(circle at 18% 0,rgba(56,189,248,.12),transparent 34%),linear-gradient(145deg,#1e293b 0%,#111827 48%,#070b14 100%);box-shadow:0 16px 34px rgba(2,6,23,.22),inset 0 1px 0 rgba(255,255,255,.08),inset 0 -1px 0 rgba(2,6,23,.75)}',
+      '.ar-bay-viewer-frame::before{content:"";position:absolute;inset:0 0 auto;height:3px;pointer-events:none;background:repeating-linear-gradient(120deg,#f59e0b 0 16px,#111827 16px 29px)}',
+      '.ar-bay-viewport{isolation:isolate;border-radius:13px!important;border-color:rgba(148,163,184,.66)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),inset 0 -42px 72px rgba(2,6,23,.22),0 9px 24px rgba(2,6,23,.34)}',
+      '.ar-bay-viewport::before{content:"";position:absolute;inset:0;z-index:1;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,rgba(255,255,255,.055),transparent 16%,transparent 76%,rgba(2,6,23,.18));box-shadow:inset 0 0 42px rgba(2,6,23,.2)}',
+      '.ar-bay-viewport canvas{filter:saturate(1.08) contrast(1.025)}',
+      '.ar-bay-viewport-hud{position:absolute;z-index:3;top:9px;right:9px;display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:3px 8px;border:1px solid rgba(148,163,184,.48);border-radius:999px;background:rgba(2,6,23,.72);color:#e2e8f0;font-size:9px;font-weight:950;letter-spacing:.11em;box-shadow:0 5px 14px rgba(2,6,23,.3);pointer-events:none}',
+      '.ar-bay-viewport-hud-dot{width:7px;height:7px;border-radius:999px;background:#38bdf8;box-shadow:0 0 10px rgba(56,189,248,.8)}',
+      '.ar-bay-viewport[data-ar-bay-state="off"] .ar-bay-viewport-hud-dot{background:#34d399;box-shadow:0 0 10px rgba(52,211,153,.78)}',
+      '.ar-bay-viewport[data-ar-bay-state="running"] .ar-bay-viewport-hud-dot{background:#fbbf24;animation:ar-bay-live-pulse 1.35s ease-in-out infinite}',
+      '.ar-bay-orientation{display:flex;justify-content:space-between;gap:6px;margin-top:8px;color:#cbd5e1!important;font-size:10px;font-weight:850;letter-spacing:.045em}',
+      '.ar-bay-orientation span:nth-child(2){color:#fbbf24}',
+      '.ar-bay-controls{display:flex;gap:6px;margin-top:8px;padding:7px;flex-wrap:wrap;align-items:center;border:1px solid rgba(100,116,139,.4);border-radius:10px;background:rgba(2,6,23,.48)}',
+      '.ar-bay-controls>button{min-width:38px!important;min-height:38px!important;border-color:rgba(148,163,184,.44)!important;background:rgba(15,23,42,.78)!important;color:#e2e8f0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}',
+      '.ar-bay-controls>button[aria-pressed="true"]{color:#0f172a!important}',
+      '.ar-bay-hint{margin-top:8px!important;padding:8px 9px;border-left:3px solid #38bdf8;border-radius:0 7px 7px 0;background:rgba(15,23,42,.72);color:#cbd5e1!important}',
+      '.ar-repair-engine-state{position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}',
+      '.ar-repair-engine-state[data-ar-engine-state="running"]{box-shadow:0 0 0 2px rgba(245,158,11,.12),inset 4px 0 0 #f59e0b}',
+      '@media(max-width:560px){.ar-bay-viewer-frame{padding:7px;border-radius:13px}.ar-bay-viewport-hud{top:7px;right:7px}.ar-bay-orientation{font-size:8.5px;letter-spacing:.02em}.ar-bay-controls{gap:5px;padding:6px}.ar-bay-controls>button{flex:1 1 40px}}',
+      '@media(prefers-reduced-motion:reduce){.ar-bay-viewport[data-ar-bay-state="running"] .ar-bay-viewport-hud-dot{animation:none!important}}',
+      '@media(forced-colors:active){.ar-bay-viewer-frame,.ar-bay-viewport,.ar-bay-controls,.ar-bay-hint,.ar-repair-engine-state,.ar-bay-controls>button{forced-color-adjust:auto;border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important;box-shadow:none!important}.ar-bay-viewport-hud{border:2px solid CanvasText!important;background:Canvas!important;color:CanvasText!important}.ar-bay-viewport-hud-dot{background:Highlight!important;box-shadow:none!important}.ar-bay-controls>button:focus-visible{outline:3px solid Highlight!important;outline-offset:3px}}',
+      '@media print{.ar-bay-viewer-frame{border:1px solid #000!important;background:#fff!important;box-shadow:none!important;break-inside:avoid}.ar-bay-viewer-frame::before,.ar-bay-viewport::before,.ar-bay-viewport-hud,.ar-bay-controls{display:none!important}.ar-bay-viewport{border:1px solid #000!important;box-shadow:none!important}.ar-bay-viewport canvas{filter:grayscale(1)!important}.ar-bay-orientation,.ar-bay-hint{color:#000!important;background:#fff!important}}',
+      'button[data-ar-focusable][aria-pressed="true"]:not([data-ar-roadside-choice]):not([data-ar-safety-item]) {',
       '  border-color: #fbbf24 !important;',
       '  box-shadow: 0 4px 10px rgba(251,191,36,0.25);',
+      '}',
+      '.ar-workflow-shell { width: 100%; box-sizing: border-box; }',
+      '.ar-workflow-rail { margin: 0 0 14px; padding: 14px; border-radius: 12px; }',
+      '.ar-workflow-rail-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 10px; }',
+      '.ar-workflow-stage-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }',
+      '.ar-workflow-stage { min-width: 0; padding: 10px; border-radius: 10px; }',
+      '.ar-workflow-stage[aria-current="step"] { box-shadow: 0 0 0 2px rgba(245,158,11,0.28); }',
+      '.ar-workflow-stage-top { display: flex; align-items: center; gap: 8px; }',
+      '.ar-workflow-stage-marker { width: 28px; height: 28px; flex: 0 0 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; font-size: 12px; font-weight: 900; }',
+      '.ar-workflow-stage-copy { min-width: 0; flex: 1; }',
+      '.ar-workflow-stage-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
+      '.ar-workflow-stage-meta { display: block; margin-top: 2px; font-size: 11px; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-workflow-state-label { display: inline-flex; align-items: center; width: fit-content; margin-top: 7px; padding: 2px 7px; border-radius: 999px; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-workflow-progress-track { display: block; width: 100%; height: 7px; margin-top: 10px; overflow: hidden; border-radius: 999px; }',
+      '.ar-workflow-progress-fill { display: block; height: 100%; border-radius: inherit; }',
+      '.ar-workflow-status { margin-top: 10px; padding: 9px 10px; border-left: 4px solid currentColor; border-radius: 6px; font-size: 12px; font-weight: 750; line-height: 1.5; }',
+      '.ar-workflow-panel { border-radius: 12px; }',
+      '.ar-workflow-step-list { position: relative; list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }',
+      '.ar-workflow-step-list::before { content: ""; position: absolute; left: 25px; top: 18px; bottom: 18px; width: 2px; background: currentColor; opacity: 0.18; pointer-events: none; }',
+      '.ar-workflow-step-row { position: relative; margin: 0; padding: 0; }',
+      '.ar-workflow-step-card { position: relative; z-index: 1; }',
+      '.ar-workflow-step-marker { position: relative; z-index: 2; }',
+      '.ar-roadside-choice { position: relative; }',
+      '.ar-roadside-choice[data-ar-choice-state="correct-answer"] { box-shadow: 0 5px 18px rgba(16,185,129,0.14); }',
+      '.ar-roadside-choice[data-ar-choice-state="selected-incorrect"] { box-shadow: 0 5px 18px rgba(239,68,68,0.12); }',
+      '.ar-workflow-tabs { max-width: 100%; overflow-x: auto; flex-wrap: nowrap !important; padding-bottom: 4px; scrollbar-width: thin; }',
+      '.ar-workflow-tabs > button { flex: 0 0 auto; min-height: 44px; }',
+      '.ar-score-summary { display: flex; align-items: center; gap: 18px; }',
+      '.ar-score-ring { width: 104px; height: 104px; flex: 0 0 104px; border-radius: 999px; display: grid; place-items: center; }',
+      '.ar-score-ring-inner { width: 78px; height: 78px; border-radius: inherit; display: grid; place-items: center; text-align: center; font-weight: 900; line-height: 1.05; }',
+      '.ar-roadside-actions { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-top: 10px; }',
+      '.ar-tools-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-tools-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-tools-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-tools-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-tools-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-tools-hero-stats { flex: 0 0 auto; display: grid; grid-template-columns: repeat(2, minmax(105px, 1fr)); gap: 8px; }',
+      '.ar-tools-stat { min-width: 0; padding: 10px 11px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-tools-stat strong { display: block; font-size: 18px; line-height: 1; }',
+      '.ar-tools-stat span { display: block; margin-top: 4px; font-size: 11px; font-weight: 700; line-height: 1.3; }',
+      '.ar-tools-tabs { display: flex; gap: 7px; max-width: 100%; margin-bottom: 14px; padding: 3px 2px 7px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; }',
+      '.ar-tools-tabs > button { flex: 0 0 auto; min-height: 44px; }',
+      '.ar-tools-panel { min-width: 0; }',
+      '.ar-tools-library-grid { display: grid; grid-template-columns: minmax(330px, 0.96fr) minmax(0, 1.04fr); gap: 14px; align-items: start; }',
+      '.ar-tools-catalog { min-width: 0; padding: 14px; border-radius: 13px; }',
+      '.ar-tools-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 10px; }',
+      '.ar-tools-catalog-head h2 { margin: 0; font-size: 17px; line-height: 1.3; }',
+      '.ar-tools-count { flex: 0 0 auto; display: inline-flex; align-items: center; min-height: 28px; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }',
+      '.ar-tools-picker { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-tools-detail-jump { grid-column: 1 / -1; min-height: 44px; display: inline-flex; align-items: center; justify-content: space-between; gap: 9px; padding: 8px 11px; border-radius: 9px; font-size: 12px; font-weight: 750; line-height: 1.35; text-decoration-thickness: 2px; text-underline-offset: 3px; overflow-wrap: anywhere; }',
+      '.ar-tools-detail-jump strong { min-width: 0; flex: 1; overflow-wrap: anywhere; }',
+      '.ar-tools-option { min-width: 0; min-height: 76px; display: flex !important; align-items: flex-start !important; gap: 9px !important; padding: 10px !important; text-align: left !important; overflow-wrap: anywhere; }',
+      '.ar-tools-option-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 9px; font-size: 19px; }',
+      '.ar-tools-option-copy { min-width: 0; flex: 1; }',
+      '.ar-tools-option-name { display: block; font-size: 12px; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-tools-option-foot { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-top: 7px; flex-wrap: wrap; }',
+      '.ar-tools-cost, .ar-tools-option-state { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.2; }',
+      '.ar-tools-detail { position: sticky; top: 12px; min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; break-inside: avoid; }',
+      '.ar-tools-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-tools-detail-icon { width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center; border-radius: 12px; font-size: 25px; }',
+      '.ar-tools-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-tools-detail-status { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-tools-detail-title { margin: 0; font-size: 18px; line-height: 1.3; overflow-wrap: anywhere; }',
+      '.ar-tools-detail-cost { display: inline-flex; margin-top: 7px; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 850; }',
+      '.ar-tools-facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-tools-fact { min-width: 0; padding: 10px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-tools-fact-wide { grid-column: 1 / -1; }',
+      '.ar-tools-fact-label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.ar-tools-fact p { margin: 0; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }',
+      '.ar-tools-empty { min-height: 360px; display: grid; place-items: center; align-content: center; text-align: center; }',
+      '.ar-tools-empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; font-size: 27px; }',
+      '.ar-tools-game { min-width: 0; }',
+      '.ar-tools-game-head { margin-bottom: 10px; padding: 13px; border-radius: 12px; }',
+      '.ar-tools-progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }',
+      '.ar-tools-progress-label { font-size: 11px; font-weight: 900; letter-spacing: 0.055em; text-transform: uppercase; }',
+      '.ar-tools-progress-bar { height: 10px; overflow: hidden; border-radius: 999px; }',
+      '.ar-tools-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-tools-question { padding: 16px; border-radius: 13px; overflow-wrap: anywhere; }',
+      '.ar-tools-question-meta { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; flex-wrap: wrap; }',
+      '.ar-tools-question-chip { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }',
+      '.ar-tools-game-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }',
+      '.ar-tools-game-option { min-width: 0; min-height: 64px; display: flex !important; align-items: flex-start !important; gap: 9px !important; padding: 10px 11px !important; text-align: left !important; overflow-wrap: anywhere; }',
+      '.ar-tools-game-option:disabled { opacity: 1; }',
+      '.ar-tools-game-marker { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; border-radius: 9px; font-size: 18px; }',
+      '.ar-tools-game-copy { min-width: 0; flex: 1; }',
+      '.ar-tools-game-name { display: block; font-size: 12px; font-weight: 800; line-height: 1.35; }',
+      '.ar-tools-game-state { display: inline-flex; align-items: center; margin-top: 6px; padding: 3px 7px; border-radius: 999px; font-size: 11px; font-weight: 850; line-height: 1.2; }',
+      '.ar-tools-game-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; flex-wrap: wrap; }',
+      '.ar-tools-selection-count { font-size: 12px; font-weight: 750; }',
+      '.ar-tools-feedback, .ar-tools-complete { margin-top: 10px; padding: 16px; border-radius: 13px; overflow-wrap: anywhere; }',
+      '.ar-tools-feedback h3, .ar-tools-complete h2 { margin: 0 0 7px; font-size: 17px; line-height: 1.35; }',
+      '.ar-tools-feedback p, .ar-tools-complete p { margin: 0; font-size: 13px; line-height: 1.55; }',
+      '.ar-tools-feedback-summary { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }',
+      '.ar-tools-feedback-summary span { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }',
+      '.ar-tools-shell button, .ar-tools-detail-jump { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-tools-library-grid { grid-template-columns: 1fr; }',
+      '  .ar-tools-detail { position: static; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-tools-shell { padding: 10px; }',
+      '  .ar-tools-hero { flex-direction: column; padding: 15px; border-radius: 13px; }',
+      '  .ar-tools-hero-stats { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-tools-picker, .ar-tools-facts, .ar-tools-game-options { grid-template-columns: 1fr; }',
+      '  .ar-tools-fact-wide { grid-column: auto; }',
+      '  .ar-tools-catalog, .ar-tools-detail, .ar-tools-question, .ar-tools-feedback, .ar-tools-complete { padding: 13px; }',
+      '  .ar-tools-game-footer { align-items: stretch; flex-direction: column; }',
+      '  .ar-tools-game-footer > button { width: 100%; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-tools-progress-fill { transition: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-tools-hero, .ar-tools-stat, .ar-tools-catalog, .ar-tools-option, .ar-tools-detail, .ar-tools-fact, .ar-tools-game-head, .ar-tools-question, .ar-tools-game-option, .ar-tools-feedback, .ar-tools-complete { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-tools-tab[data-ar-tab-state=active], .ar-tools-option[data-ar-option-state=selected], .ar-tools-game-option[data-ar-game-state=selected] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-tools-tab:focus-visible, .ar-tools-detail-jump:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-tools-progress-fill { background: Highlight !important; }',
+      '  .ar-tools-cost, .ar-tools-option-state, .ar-tools-game-state, .ar-tools-question-chip, .ar-tools-detail-jump { border: 1px solid CanvasText !important; }',
+      '  .ar-bay-viewer-frame, .ar-bay-viewport, .ar-bay-controls, .ar-bay-hint, .ar-repair-engine-state { border: 2px solid CanvasText !important; background: Canvas !important; color: CanvasText !important; box-shadow: none !important; }',
+      '  .ar-bay-viewer-frame::before, .ar-bay-viewport::before { display: none !important; }',
+      '  .ar-bay-viewport-hud { border: 1px solid CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }',
+      '  .ar-bay-viewport-hud-dot { background: Highlight !important; box-shadow: none !important; animation: none !important; }',
+      '  .ar-bay-controls > button { border: 2px solid ButtonText !important; background: ButtonFace !important; color: ButtonText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-tools-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-tools-shell, .ar-tools-shell * { color: black !important; }',
+      '  .ar-tools-tabs, .ar-tools-picker, .ar-tools-detail-jump, .ar-tools-empty, .ar-tools-game-options, .ar-tools-game-footer, .ar-tools-game[data-ar-tools-game-state=question] { display: none !important; }',
+      '  .ar-tools-library-grid { display: block !important; }',
+      '  .ar-tools-detail { position: static !important; }',
+      '  .ar-tools-hero, .ar-tools-stat, .ar-tools-catalog, .ar-tools-detail, .ar-tools-fact, .ar-tools-game-head, .ar-tools-question, .ar-tools-feedback, .ar-tools-complete { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-tools-shell .ar-tools-cost, .ar-tools-shell .ar-tools-option-state, .ar-tools-shell .ar-tools-game-state, .ar-tools-shell .ar-tools-question-chip { background: white !important; color: black !important; border: 1px solid black !important; }',
+      '}',
+
+      '.ar-estimate-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-estimate-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-estimate-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-estimate-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-estimate-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-estimate-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-estimate-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-estimate-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-estimate-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-estimate-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-estimate-filter-bar { margin-bottom: 14px; padding: 12px; border-radius: 13px; }',
+      '.ar-estimate-filter-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }',
+      '.ar-estimate-filter-head strong { font-size: 12px; line-height: 1.35; }',
+      '.ar-estimate-filter-head span { font-size: 11px; line-height: 1.35; }',
+      '.ar-estimate-filters { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; }',
+      '.ar-estimate-filter { min-width: 0; min-height: 48px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 6px !important; padding: 8px !important; text-align: center !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-estimate-filter-icon { font-size: 15px; line-height: 1; }',
+      '.ar-estimate-filter-copy { min-width: 0; }',
+      '.ar-estimate-filter-label { display: block; font-size: 11px; font-weight: 900; line-height: 1.25; }',
+      '.ar-estimate-filter-count { display: block; margin-top: 2px; font-size: 9px; font-weight: 750; line-height: 1.2; }',
+      '.ar-estimate-layout { display: grid; grid-template-columns: minmax(420px, 1.12fr) minmax(0, 0.88fr); gap: 14px; align-items: start; }',
+      '.ar-estimate-catalog, .ar-estimate-detail { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-estimate-catalog { padding: 15px; border-radius: 14px; }',
+      '.ar-estimate-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 11px; flex-wrap: wrap; }',
+      '.ar-estimate-catalog-head h2 { margin: 0; font-size: 18px; line-height: 1.3; }',
+      '.ar-estimate-catalog-head p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-estimate-count-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; }',
+      '.ar-estimate-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-estimate-item-wrap { min-width: 0; }',
+      '.ar-estimate-item { width: 100%; min-width: 0; min-height: 112px; display: flex !important; flex-direction: column; align-items: stretch !important; gap: 7px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-estimate-item:hover { transform: translateY(-1px); }',
+      '.ar-estimate-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+      '.ar-estimate-item-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 9px; font-size: 18px; }',
+      '.ar-estimate-verdict-chip { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 6px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.2; }',
+      '.ar-estimate-item-name { display: block; font-size: 13px; font-weight: 900; line-height: 1.38; }',
+      '.ar-estimate-item-state { display: block; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-estimate-detail { position: sticky; top: 12px; min-height: 430px; padding: 16px; border-radius: 14px; }',
+      '.ar-estimate-detail-empty { min-height: 396px; display: grid; place-items: center; align-content: center; padding: 10px; text-align: center; }',
+      '.ar-estimate-detail-empty-icon { width: 62px; height: 62px; display: grid; place-items: center; margin-bottom: 11px; border-radius: 999px; font-size: 30px; }',
+      '.ar-estimate-detail-empty h2 { margin: 0 0 6px; font-size: 18px; line-height: 1.35; }',
+      '.ar-estimate-detail-empty p { max-width: 420px; margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-estimate-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-estimate-detail-icon { width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center; border-radius: 11px; font-size: 24px; }',
+      '.ar-estimate-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-estimate-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-estimate-detail h2 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-estimate-detail-verdict { display: inline-flex; margin-top: 7px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.25; }',
+      '.ar-estimate-detail-block { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-estimate-detail-block + .ar-estimate-detail-block { margin-top: 9px; }',
+      '.ar-estimate-detail-block strong { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-estimate-detail-block p { margin: 0; font-size: 13px; line-height: 1.6; }',
+      '.ar-estimate-rights { margin-top: 14px; padding: 14px; border-radius: 12px; overflow-wrap: anywhere; }',
+      '.ar-estimate-rights h2 { margin: 0 0 5px; font-size: 15px; line-height: 1.35; }',
+      '.ar-estimate-rights p { margin: 0; font-size: 12px; line-height: 1.6; }',
+      '.ar-estimate-print-guide { display: none; }',
+      '.ar-estimate-print-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-estimate-print-item { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-estimate-print-item h3 { margin: 0 0 7px; font-size: 14px; line-height: 1.35; }',
+      '.ar-estimate-print-item p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-estimate-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-estimate-hero { grid-template-columns: 1fr; }',
+      '  .ar-estimate-hero-stats { max-width: 500px; }',
+      '  .ar-estimate-filters { grid-template-columns: repeat(3, minmax(0, 1fr)); }',
+      '  .ar-estimate-layout { grid-template-columns: 1fr; }',
+      '  .ar-estimate-detail { position: static; min-height: 0; }',
+      '  .ar-estimate-detail-empty { min-height: 220px; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-estimate-shell { padding: 10px; }',
+      '  .ar-estimate-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-estimate-hero-stats { grid-template-columns: 1fr; max-width: none; }',
+      '  .ar-estimate-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-estimate-filter:last-child { grid-column: 1 / -1; }',
+      '  .ar-estimate-grid { grid-template-columns: 1fr; }',
+      '  .ar-estimate-catalog, .ar-estimate-detail, .ar-estimate-rights { padding: 13px; }',
+      '  .ar-estimate-detail-head { align-items: flex-start; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-estimate-filter, .ar-estimate-item { transition: none !important; }',
+      '  .ar-estimate-item:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-estimate-hero, .ar-estimate-stat, .ar-estimate-filter-bar, .ar-estimate-filter, .ar-estimate-catalog, .ar-estimate-item, .ar-estimate-detail, .ar-estimate-detail-block, .ar-estimate-rights, .ar-estimate-verdict-chip, .ar-estimate-detail-verdict { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-estimate-filter[data-ar-filter-state=active], .ar-estimate-item[data-ar-option-state=active] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-estimate-filter:focus-visible, .ar-estimate-item:focus-visible, .ar-estimate-rights a:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-estimate-item-icon, .ar-estimate-detail-icon, .ar-estimate-detail-empty-icon { background: Highlight !important; color: HighlightText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-estimate-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-estimate-shell, .ar-estimate-shell * { color: black !important; }',
+      '  .ar-estimate-filter-bar, .ar-estimate-layout, [data-ar-estimate-print-hide=true] { display: none !important; }',
+      '  .ar-estimate-print-guide { display: block !important; }',
+      '  .ar-estimate-hero, .ar-estimate-stat, .ar-estimate-rights, .ar-estimate-print-item, .ar-estimate-detail-block { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-estimate-print-item, .ar-estimate-detail-block, .ar-estimate-rights { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-estimate-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
+      '.ar-inspection-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-inspection-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-inspection-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-inspection-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-inspection-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-inspection-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-inspection-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-inspection-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-inspection-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-inspection-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-inspection-progress-card { margin-bottom: 14px; padding: 13px; border-radius: 13px; }',
+      '.ar-inspection-progress-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }',
+      '.ar-inspection-progress-copy strong { display: block; font-size: 13px; line-height: 1.35; }',
+      '.ar-inspection-progress-copy span { display: block; margin-top: 2px; font-size: 11px; line-height: 1.35; }',
+      '.ar-inspection-progress-value { flex: 0 0 auto; font-size: 12px; font-weight: 900; }',
+      '.ar-inspection-progress-track { width: 100%; height: 11px; overflow: hidden; border-radius: 999px; }',
+      '.ar-inspection-progress-fill { height: 100%; min-width: 0; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-inspection-layout { display: grid; grid-template-columns: minmax(420px, 1.06fr) minmax(0, 0.94fr); gap: 14px; align-items: start; }',
+      '.ar-inspection-catalog, .ar-inspection-detail { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-inspection-catalog { padding: 15px; border-radius: 14px; }',
+      '.ar-inspection-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 11px; flex-wrap: wrap; }',
+      '.ar-inspection-catalog-head h2 { margin: 0; font-size: 18px; line-height: 1.3; }',
+      '.ar-inspection-catalog-head p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-inspection-count-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; }',
+      '.ar-inspection-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-inspection-item-wrap { min-width: 0; }',
+      '.ar-inspection-item { width: 100%; min-width: 0; min-height: 108px; display: flex !important; flex-direction: column; align-items: stretch !important; gap: 8px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-inspection-item:hover { transform: translateY(-1px); }',
+      '.ar-inspection-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+      '.ar-inspection-item-icon { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border-radius: 9px; font-size: 19px; }',
+      '.ar-inspection-item-status { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.2; }',
+      '.ar-inspection-item-name { display: block; font-size: 13px; font-weight: 900; line-height: 1.38; }',
+      '.ar-inspection-item-action { display: block; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-inspection-detail { position: sticky; top: 12px; min-height: 470px; padding: 16px; border-radius: 14px; }',
+      '.ar-inspection-detail-empty { min-height: 436px; display: grid; place-items: center; align-content: center; padding: 10px; text-align: center; }',
+      '.ar-inspection-detail-empty-icon { width: 64px; height: 64px; display: grid; place-items: center; margin-bottom: 11px; border-radius: 999px; font-size: 31px; }',
+      '.ar-inspection-detail-empty h2 { margin: 0 0 6px; font-size: 18px; line-height: 1.35; }',
+      '.ar-inspection-detail-empty p { max-width: 420px; margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-inspection-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-inspection-detail-icon { width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center; border-radius: 11px; font-size: 24px; }',
+      '.ar-inspection-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-inspection-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-inspection-detail h2 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-inspection-detail-state { display: inline-flex; margin-top: 7px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.25; }',
+      '.ar-inspection-detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-inspection-detail-block { min-width: 0; padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-inspection-detail-block[data-ar-inspection-span=full] { grid-column: 1 / -1; }',
+      '.ar-inspection-detail-block strong { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-inspection-detail-block p { margin: 0; font-size: 12px; line-height: 1.56; }',
+      '.ar-inspection-check-action { width: 100%; margin-top: 11px; }',
+      '.ar-inspection-complete { margin-top: 14px; padding: 13px; border-radius: 12px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-inspection-complete strong { display: block; font-size: 14px; line-height: 1.35; }',
+      '.ar-inspection-complete span { display: block; margin-top: 3px; font-size: 11px; line-height: 1.45; }',
+      '.ar-inspection-reality { margin-top: 14px; padding: 14px; border-radius: 12px; overflow-wrap: anywhere; }',
+      '.ar-inspection-reality h2 { margin: 0 0 5px; font-size: 15px; line-height: 1.35; }',
+      '.ar-inspection-reality p { margin: 0; font-size: 12px; line-height: 1.6; }',
+      '.ar-inspection-print-guide { display: none; }',
+      '.ar-inspection-print-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-inspection-print-item { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-inspection-print-item h3 { margin: 0 0 7px; font-size: 14px; line-height: 1.35; }',
+      '.ar-inspection-print-item p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-inspection-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-inspection-hero { grid-template-columns: 1fr; }',
+      '  .ar-inspection-hero-stats { max-width: 500px; }',
+      '  .ar-inspection-layout { grid-template-columns: 1fr; }',
+      '  .ar-inspection-detail { position: static; min-height: 0; }',
+      '  .ar-inspection-detail-empty { min-height: 220px; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-inspection-shell { padding: 10px; }',
+      '  .ar-inspection-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-inspection-hero-stats { grid-template-columns: 1fr; max-width: none; }',
+      '  .ar-inspection-grid, .ar-inspection-detail-grid { grid-template-columns: 1fr; }',
+      '  .ar-inspection-detail-block[data-ar-inspection-span=full] { grid-column: auto; }',
+      '  .ar-inspection-catalog, .ar-inspection-detail, .ar-inspection-reality { padding: 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-inspection-progress-fill, .ar-inspection-item { transition: none !important; }',
+      '  .ar-inspection-item:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-inspection-hero, .ar-inspection-stat, .ar-inspection-progress-card, .ar-inspection-progress-track, .ar-inspection-catalog, .ar-inspection-item, .ar-inspection-detail, .ar-inspection-detail-block, .ar-inspection-complete, .ar-inspection-reality, .ar-inspection-item-status, .ar-inspection-detail-state { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-inspection-item[data-ar-option-state=active], .ar-inspection-check-action[aria-pressed=true] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-inspection-item:focus-visible, .ar-inspection-check-action:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-inspection-progress-fill, .ar-inspection-item-icon, .ar-inspection-detail-icon, .ar-inspection-detail-empty-icon { background: Highlight !important; color: HighlightText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-inspection-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-inspection-shell, .ar-inspection-shell * { color: black !important; }',
+      '  .ar-inspection-shell [role=navigation], .ar-inspection-progress-card, .ar-inspection-layout { display: none !important; }',
+      '  .ar-inspection-print-guide { display: block !important; }',
+      '  .ar-inspection-hero, .ar-inspection-stat, .ar-inspection-complete, .ar-inspection-reality, .ar-inspection-print-item { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-inspection-print-item, .ar-inspection-complete, .ar-inspection-reality { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-inspection-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
+      '.ar-scams-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-scams-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-scams-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-scams-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-scams-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-scams-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-scams-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-scams-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-scams-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-scams-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-scams-playbook { margin-bottom: 14px; padding: 13px; border-radius: 13px; }',
+      '.ar-scams-playbook-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }',
+      '.ar-scams-playbook-head strong { font-size: 13px; line-height: 1.35; }',
+      '.ar-scams-playbook-head span { font-size: 11px; line-height: 1.35; }',
+      '.ar-scams-playbook-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-scams-playbook-step { min-width: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: center; padding: 9px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-scams-playbook-step strong { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 999px; font-size: 11px; }',
+      '.ar-scams-playbook-step span { font-size: 10px; font-weight: 850; line-height: 1.3; }',
+      '.ar-scams-layout { display: grid; grid-template-columns: minmax(430px, 1.06fr) minmax(0, 0.94fr); gap: 14px; align-items: start; }',
+      '.ar-scams-catalog, .ar-scams-detail { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-scams-catalog { padding: 15px; border-radius: 14px; }',
+      '.ar-scams-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 11px; flex-wrap: wrap; }',
+      '.ar-scams-catalog-head h2 { margin: 0; font-size: 18px; line-height: 1.3; }',
+      '.ar-scams-catalog-head p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-scams-count-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; }',
+      '.ar-scams-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-scams-item-wrap { min-width: 0; }',
+      '.ar-scams-item { width: 100%; min-width: 0; min-height: 104px; display: flex !important; flex-direction: column; align-items: stretch !important; gap: 8px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-scams-item:hover { transform: translateY(-1px); }',
+      '.ar-scams-item-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+      '.ar-scams-item-icon { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border-radius: 9px; font-size: 19px; }',
+      '.ar-scams-item-chip { display: inline-flex; align-items: center; min-height: 24px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.2; }',
+      '.ar-scams-item-name { display: block; font-size: 13px; font-weight: 900; line-height: 1.38; }',
+      '.ar-scams-item-action { display: block; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-scams-detail { position: sticky; top: 12px; min-height: 462px; padding: 16px; border-radius: 14px; }',
+      '.ar-scams-detail-empty { min-height: 428px; display: grid; place-items: center; align-content: center; padding: 10px; text-align: center; }',
+      '.ar-scams-detail-empty-icon { width: 64px; height: 64px; display: grid; place-items: center; margin-bottom: 11px; border-radius: 999px; font-size: 31px; }',
+      '.ar-scams-detail-empty h2 { margin: 0 0 6px; font-size: 18px; line-height: 1.35; }',
+      '.ar-scams-detail-empty p { max-width: 420px; margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-scams-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-scams-detail-icon { width: 48px; height: 48px; flex: 0 0 48px; display: grid; place-items: center; border-radius: 11px; font-size: 24px; }',
+      '.ar-scams-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-scams-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-scams-detail h2 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-scams-detail-chip { display: inline-flex; margin-top: 7px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.25; }',
+      '.ar-scams-detail-grid { display: grid; gap: 9px; }',
+      '.ar-scams-detail-block { min-width: 0; padding: 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-scams-detail-block strong { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-scams-detail-block p, .ar-scams-detail-block blockquote { margin: 0; font-size: 12px; line-height: 1.56; }',
+      '.ar-scams-detail-block blockquote { font-style: italic; }',
+      '.ar-scams-rights { margin-top: 14px; padding: 14px; border-radius: 12px; overflow-wrap: anywhere; }',
+      '.ar-scams-rights h2 { margin: 0 0 5px; font-size: 15px; line-height: 1.35; }',
+      '.ar-scams-rights p { margin: 0; font-size: 12px; line-height: 1.6; }',
+      '.ar-scams-print-guide { display: none; }',
+      '.ar-scams-print-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-scams-print-item { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-scams-print-item h3 { margin: 0 0 7px; font-size: 14px; line-height: 1.35; }',
+      '.ar-scams-print-item p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-scams-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-scams-hero { grid-template-columns: 1fr; }',
+      '  .ar-scams-hero-stats { max-width: 500px; }',
+      '  .ar-scams-playbook-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-scams-layout { grid-template-columns: 1fr; }',
+      '  .ar-scams-detail { position: static; min-height: 0; }',
+      '  .ar-scams-detail-empty { min-height: 220px; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-scams-shell { padding: 10px; }',
+      '  .ar-scams-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-scams-hero-stats, .ar-scams-playbook-grid, .ar-scams-grid { grid-template-columns: 1fr; max-width: none; }',
+      '  .ar-scams-catalog, .ar-scams-detail, .ar-scams-rights { padding: 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-scams-item { transition: none !important; }',
+      '  .ar-scams-item:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-scams-hero, .ar-scams-stat, .ar-scams-playbook, .ar-scams-playbook-step, .ar-scams-catalog, .ar-scams-item, .ar-scams-detail, .ar-scams-detail-block, .ar-scams-rights, .ar-scams-item-chip, .ar-scams-detail-chip { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-scams-item[data-ar-option-state=active] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-scams-item:focus-visible, .ar-scams-rights a:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-scams-item-icon, .ar-scams-detail-icon, .ar-scams-detail-empty-icon, .ar-scams-playbook-step strong { background: Highlight !important; color: HighlightText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-scams-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-scams-shell, .ar-scams-shell * { color: black !important; }',
+      '  .ar-scams-shell [role=navigation], .ar-scams-playbook, .ar-scams-layout { display: none !important; }',
+      '  .ar-scams-print-guide { display: block !important; }',
+      '  .ar-scams-hero, .ar-scams-stat, .ar-scams-rights, .ar-scams-print-item { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-scams-print-item, .ar-scams-rights { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-scams-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
+      '.ar-cold-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-cold-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-cold-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-cold-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-cold-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-cold-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-cold-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-cold-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-cold-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-cold-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-cold-progress-card { margin-bottom: 14px; padding: 13px; border-radius: 13px; }',
+      '.ar-cold-progress-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 9px; flex-wrap: wrap; }',
+      '.ar-cold-progress-copy strong { display: block; font-size: 13px; line-height: 1.35; }',
+      '.ar-cold-progress-copy span { display: block; margin-top: 2px; font-size: 11px; line-height: 1.35; }',
+      '.ar-cold-progress-value { flex: 0 0 auto; font-size: 12px; font-weight: 900; }',
+      '.ar-cold-progress-track { width: 100%; height: 11px; overflow: hidden; border-radius: 999px; }',
+      '.ar-cold-progress-fill { height: 100%; min-width: 0; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-cold-filter-card { margin-bottom: 14px; padding: 12px; border-radius: 13px; }',
+      '.ar-cold-filter-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }',
+      '.ar-cold-filter-head strong { font-size: 12px; line-height: 1.35; }',
+      '.ar-cold-filter-head span { font-size: 11px; line-height: 1.35; }',
+      '.ar-cold-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }',
+      '.ar-cold-filter { min-width: 0; min-height: 48px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 7px !important; padding: 8px !important; text-align: center !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-cold-filter-icon { font-size: 15px; line-height: 1; }',
+      '.ar-cold-filter-copy { min-width: 0; }',
+      '.ar-cold-filter-label { display: block; font-size: 11px; font-weight: 900; line-height: 1.25; }',
+      '.ar-cold-filter-count { display: block; margin-top: 2px; font-size: 9px; font-weight: 750; line-height: 1.2; }',
+      '.ar-cold-catalog { padding: 15px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-cold-catalog-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 11px; flex-wrap: wrap; }',
+      '.ar-cold-catalog-head h2 { margin: 0; font-size: 18px; line-height: 1.3; }',
+      '.ar-cold-catalog-head p { margin: 4px 0 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-cold-count-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; }',
+      '.ar-cold-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-cold-item-wrap { min-width: 0; }',
+      '.ar-cold-item { width: 100%; min-width: 0; min-height: 196px; display: flex !important; flex-direction: column; align-items: stretch !important; gap: 8px !important; padding: 13px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-cold-item:hover { transform: translateY(-1px); }',
+      '.ar-cold-item-top { display: flex; align-items: center; gap: 9px; }',
+      '.ar-cold-item-icon { width: 39px; height: 39px; flex: 0 0 39px; display: grid; place-items: center; border-radius: 10px; font-size: 20px; }',
+      '.ar-cold-item-heading { min-width: 0; flex: 1; }',
+      '.ar-cold-item-name { display: block; font-size: 13px; font-weight: 900; line-height: 1.36; }',
+      '.ar-cold-urgency { display: inline-flex; margin-top: 4px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.2; }',
+      '.ar-cold-check { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; border-radius: 999px; font-size: 13px; font-weight: 950; }',
+      '.ar-cold-item-detail, .ar-cold-item-action { margin: 0; font-size: 12px; line-height: 1.55; }',
+      '.ar-cold-item-action { margin-top: auto; padding-top: 8px; border-top: 1px solid; }',
+      '.ar-cold-item-action strong { font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-cold-complete { margin-top: 14px; padding: 13px; border-radius: 12px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-cold-complete strong { display: block; font-size: 14px; line-height: 1.35; }',
+      '.ar-cold-complete span { display: block; margin-top: 3px; font-size: 11px; line-height: 1.45; }',
+      '.ar-cold-print-guide { display: none; }',
+      '.ar-cold-print-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-cold-print-item { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-cold-print-item h3 { margin: 0 0 7px; font-size: 14px; line-height: 1.35; }',
+      '.ar-cold-print-item p { margin: 4px 0 0; font-size: 11px; line-height: 1.5; }',
+      '.ar-cold-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-cold-hero { grid-template-columns: 1fr; }',
+      '  .ar-cold-hero-stats { max-width: 500px; }',
+      '  .ar-cold-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-cold-grid { grid-template-columns: 1fr; }',
+      '  .ar-cold-item { min-height: 0; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-cold-shell { padding: 10px; }',
+      '  .ar-cold-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-cold-hero-stats, .ar-cold-filters { grid-template-columns: 1fr; max-width: none; }',
+      '  .ar-cold-catalog { padding: 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-cold-progress-fill, .ar-cold-filter, .ar-cold-item { transition: none !important; }',
+      '  .ar-cold-item:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-cold-hero, .ar-cold-stat, .ar-cold-progress-card, .ar-cold-progress-track, .ar-cold-filter-card, .ar-cold-filter, .ar-cold-catalog, .ar-cold-item, .ar-cold-item-icon, .ar-cold-urgency, .ar-cold-check, .ar-cold-complete { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-cold-filter[data-ar-filter-state=active], .ar-cold-item[aria-pressed=true] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-cold-filter:focus-visible, .ar-cold-item:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-cold-progress-fill, .ar-cold-item-icon, .ar-cold-check[data-ar-check-state=checked] { background: Highlight !important; color: HighlightText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-cold-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-cold-shell, .ar-cold-shell * { color: black !important; }',
+      '  .ar-cold-shell [role=navigation], .ar-cold-filter-card, .ar-cold-catalog { display: none !important; }',
+      '  .ar-cold-print-guide { display: block !important; }',
+      '  .ar-cold-hero, .ar-cold-stat, .ar-cold-progress-card, .ar-cold-complete, .ar-cold-print-item { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-cold-print-item, .ar-cold-complete { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-cold-print-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
+      '.ar-diagnose-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-diagnose-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-diagnose-hero-copy { min-width: 0; max-width: 760px; }',
+      '.ar-diagnose-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-diagnose-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-diagnose-hero p { overflow-wrap: anywhere; }',
+      '.ar-diagnose-mode-chip { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 8px; max-width: 210px; padding: 9px 11px; border-radius: 999px; font-size: 11px; font-weight: 850; line-height: 1.3; overflow-wrap: anywhere; }',
+      '.ar-diagnose-tabs { display: flex; gap: 7px; max-width: 100%; margin-bottom: 14px; padding: 3px 2px 7px; overflow-x: auto; flex-wrap: nowrap; scrollbar-width: thin; }',
+      '.ar-diagnose-tabs > button { flex: 0 0 auto; min-height: 44px; }',
+      '.ar-diagnose-panel { min-width: 0; }',
+      '.ar-diagnose-intro { grid-column: 1 / -1; min-width: 0; padding: 14px; border-radius: 12px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-diagnose-channel { min-width: 0; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-channel-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 8px; border-radius: 11px; font-size: 22px; }',
+      '.ar-diagnose-master-detail { display: grid; grid-template-columns: minmax(260px, 0.86fr) minmax(0, 1.14fr); gap: 14px; align-items: start; }',
+      '.ar-diagnose-picker { min-width: 0; display: flex; flex-direction: column; gap: 8px; }',
+      '.ar-diagnose-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-diagnose-detail-jump { grid-column: 1 / -1; min-height: 44px; display: inline-flex; align-items: center; justify-content: space-between; gap: 9px; padding: 8px 11px; border-radius: 9px; font-size: 12px; font-weight: 750; line-height: 1.35; text-decoration-thickness: 2px; text-underline-offset: 3px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-detail-jump strong { min-width: 0; flex: 1; overflow-wrap: anywhere; }',
+      '.ar-diagnose-option { min-width: 0; min-height: 52px; display: flex !important; align-items: center !important; justify-content: space-between !important; gap: 10px !important; overflow-wrap: anywhere; }',
+      '.ar-diagnose-option-copy { min-width: 0; flex: 1; display: block; text-align: left; overflow-wrap: anywhere; }',
+      '.ar-diagnose-option-copy strong { display: block; font-size: 13px; line-height: 1.35; }',
+      '.ar-diagnose-option-meta { display: block; margin-top: 3px; font-size: 12px; font-weight: 550; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-diagnose-option-actions { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }',
+      '.ar-diagnose-option-state { display: inline-flex; align-items: center; padding: 3px 7px; border-radius: 999px; font-size: 11px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }',
+      '.ar-diagnose-detail { position: sticky; top: 12px; min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; break-inside: avoid; }',
+      '.ar-diagnose-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }',
+      '.ar-diagnose-detail-heading { min-width: 0; flex: 1; }',
+      '.ar-diagnose-detail-status { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
+      '.ar-diagnose-detail-title { margin: 0; font-size: 18px; line-height: 1.25; overflow-wrap: anywhere; }',
+      '.ar-diagnose-report { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-diagnose-fact { min-width: 0; padding: 10px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-fact-wide { grid-column: 1 / -1; }',
+      '.ar-diagnose-fact-label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.055em; text-transform: uppercase; }',
+      '.ar-diagnose-fact p { margin: 0; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }',
+      '.ar-diagnose-empty { min-height: 260px; display: grid; place-items: center; align-content: center; text-align: center; }',
+      '.ar-diagnose-empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; font-size: 27px; }',
+      '.ar-diagnose-visual-group + .ar-diagnose-visual-group { margin-top: 8px; padding-top: 10px; }',
+      '.ar-diagnose-quiz { min-width: 0; }',
+      '.ar-diagnose-score { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; padding: 11px; border-radius: 11px; }',
+      '.ar-diagnose-score-chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }',
+      '.ar-diagnose-score-chip { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 8px; border-radius: 999px; font-size: 11px; }',
+      '.ar-diagnose-question { padding: 16px; border-radius: 12px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; margin-top: 10px; }',
+      '.ar-diagnose-answer { min-height: 58px; display: flex !important; align-items: flex-start !important; gap: 10px !important; text-align: left !important; line-height: 1.45 !important; overflow-wrap: anywhere; }',
+      '.ar-diagnose-answer-marker { width: 26px; height: 26px; flex: 0 0 26px; display: grid; place-items: center; border-radius: 999px; font-size: 11px; font-weight: 900; }',
+      '.ar-diagnose-feedback { padding: 16px; border-radius: 13px; overflow-wrap: anywhere; }',
+      '.ar-diagnose-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-diagnose-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-diagnose-master-detail { grid-template-columns: 1fr; }',
+      '  .ar-diagnose-detail { position: static; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-diagnose-shell { padding: 10px; }',
+      '  .ar-diagnose-hero { flex-direction: column; padding: 15px; border-radius: 13px; }',
+      '  .ar-diagnose-mode-chip { max-width: none; }',
+      '  .ar-diagnose-overview-grid, .ar-diagnose-picker-grid, .ar-diagnose-report, .ar-diagnose-answers { grid-template-columns: 1fr; }',
+      '  .ar-diagnose-fact-wide { grid-column: auto; }',
+      '  .ar-diagnose-detail { padding: 13px; }',
+      '  .ar-diagnose-option-actions { justify-content: flex-start; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-channel, .ar-diagnose-option, .ar-diagnose-detail, .ar-diagnose-fact, .ar-diagnose-score, .ar-diagnose-question, .ar-diagnose-feedback { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-diagnose-option[data-ar-option-state="selected"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-diagnose-tab[data-ar-tab-state="active"] { border-color: Highlight !important; outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-diagnose-tab:focus-visible, .ar-diagnose-detail-jump:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-diagnose-option-state, .ar-diagnose-answer-marker, .ar-diagnose-detail-jump { border: 1px solid CanvasText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-diagnose-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-diagnose-shell, .ar-diagnose-shell * { color: black !important; }',
+      '  .ar-diagnose-tabs, .ar-diagnose-picker, .ar-diagnose-empty, .ar-diagnose-detail-jump, .ar-diagnose-quiz[data-ar-diagnose-quiz="idle"], .ar-diagnose-quiz[data-ar-diagnose-quiz="question"], .ar-diagnose-quiz button { display: none !important; }',
+      '  .ar-diagnose-master-detail { display: block !important; }',
+      '  .ar-diagnose-detail { position: static !important; break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-diagnose-channel, .ar-diagnose-fact, .ar-diagnose-hero, .ar-diagnose-intro, .ar-diagnose-detail, .ar-diagnose-feedback, .ar-diagnose-score { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-diagnose-shell .ar-severity-badge, .ar-diagnose-shell .ar-diagnose-mode-chip, .ar-diagnose-shell .ar-diagnose-score-chip { background: white !important; color: black !important; border: 1px solid black !important; }',
+      '}',
+
+
+      '.ar-lab-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-lab-nav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid currentColor; flex-wrap: wrap; }',
+      '.ar-lab-nav-note { font-size: 11px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }',
+      '.ar-lab-hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-lab-hero-copy { min-width: 0; max-width: 760px; }',
+      '.ar-lab-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-lab-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-lab-state-chip, .ar-lab-card-state, .ar-lab-feedback-state { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px; font-size: 11px; font-weight: 900; line-height: 1.25; }',
+      '.ar-lab-progress-card { margin-bottom: 14px; padding: 14px; border-radius: 13px; }',
+      '.ar-lab-progress-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 9px; flex-wrap: wrap; }',
+      '.ar-lab-progress-head h2 { margin: 0; font-size: 17px; line-height: 1.3; }',
+      '.ar-lab-progress-track { width: 100%; height: 10px; overflow: hidden; border-radius: 999px; }',
+      '.ar-lab-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-lab-scoring-legend { display: flex; gap: 7px; margin-top: 10px; flex-wrap: wrap; }',
+      '.ar-lab-scoring-legend span { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; }',
+      '.ar-lab-picker-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-lab-scenario { min-width: 0; min-height: 210px; display: flex !important; flex-direction: column; align-items: stretch !important; padding: 15px !important; text-align: left !important; overflow-wrap: anywhere; }',
+      '.ar-lab-scenario-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }',
+      '.ar-lab-scenario-icon { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border-radius: 12px; font-size: 24px; }',
+      '.ar-lab-scenario-name { display: block; margin-top: 11px; font-size: 16px; font-weight: 900; line-height: 1.3; }',
+      '.ar-lab-scenario-meta { display: flex; align-items: center; gap: 7px; margin-top: 7px; flex-wrap: wrap; }',
+      '.ar-lab-difficulty, .ar-lab-decision-count { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border-radius: 999px; font-size: 11px; font-weight: 800; line-height: 1.25; }',
+      '.ar-lab-scenario-intro { flex: 1; margin: 10px 0 0; font-size: 12px; line-height: 1.55; }',
+      '.ar-lab-card-action { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 12px; padding-top: 10px; font-size: 12px; font-weight: 900; }',
+      '.ar-lab-workbench { display: grid; grid-template-columns: minmax(270px, 0.72fr) minmax(0, 1.28fr); gap: 14px; align-items: start; }',
+      '.ar-lab-decision, .ar-lab-dossier { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-lab-dossier { position: sticky; top: 12px; }',
+      '.ar-lab-case-strip { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; padding: 10px; border-radius: 10px; flex-wrap: wrap; }',
+      '.ar-lab-case-strip-copy { min-width: 0; flex: 1; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }',
+      '.ar-lab-evidence-summary { display: block; margin-top: 5px; font-size: 11px; line-height: 1.45; }',
+      '.ar-lab-case-link { min-height: 44px; display: inline-flex; align-items: center; padding: 6px 9px; border-radius: 8px; font-size: 12px; font-weight: 800; text-underline-offset: 3px; }',
+      '.ar-lab-run-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }',
+      '.ar-lab-run-head h2 { margin: 0; font-size: 17px; line-height: 1.3; }',
+      '.ar-lab-stage-list { list-style: none; margin: 11px 0 14px; padding: 2px 1px 7px; display: grid; gap: 7px; overflow-x: auto; scrollbar-width: thin; }',
+      '.ar-lab-stage { min-width: 88px; padding: 8px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-lab-stage-marker { width: 26px; height: 26px; display: grid; place-items: center; margin-bottom: 6px; border-radius: 999px; font-size: 11px; font-weight: 900; }',
+      '.ar-lab-stage-label { display: block; font-size: 10px; font-weight: 900; letter-spacing: 0.04em; line-height: 1.25; text-transform: uppercase; }',
+      '.ar-lab-last-move { margin-bottom: 12px; padding: 11px; border-left: 4px solid currentColor; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-lab-last-move strong { display: block; margin-bottom: 3px; font-size: 12px; }',
+      '.ar-lab-last-move span { display: block; font-size: 12px; line-height: 1.45; }',
+      '.ar-lab-question { padding: 14px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-lab-question h2 { margin: 0; font-size: 18px; line-height: 1.4; }',
+      '.ar-lab-choices { display: grid; gap: 9px; margin-top: 10px; }',
+      '.ar-lab-choice { min-width: 0; min-height: 58px; display: flex !important; align-items: flex-start !important; gap: 10px !important; padding: 11px 12px !important; text-align: left !important; overflow-wrap: anywhere; }',
+      '.ar-lab-choice-marker { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; border-radius: 999px; font-size: 11px; font-weight: 900; }',
+      '.ar-lab-choice-copy { min-width: 0; flex: 1; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }',
+      '.ar-lab-dossier h2 { margin: 0 0 10px; font-size: 17px; line-height: 1.3; }',
+      '.ar-lab-vehicle-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-lab-case-fact { min-width: 0; padding: 9px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-lab-case-fact-wide { grid-column: 1 / -1; }',
+      '.ar-lab-case-label { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.055em; text-transform: uppercase; }',
+      '.ar-lab-case-fact p, .ar-lab-symptoms { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-lab-symptoms { padding-left: 18px; }',
+      '.ar-lab-results-summary { display: grid; grid-template-columns: minmax(150px, 0.34fr) minmax(0, 1fr); gap: 16px; align-items: center; margin-bottom: 14px; padding: 18px; border-radius: 15px; }',
+      '.ar-lab-grade-panel { min-width: 0; text-align: center; }',
+      '.ar-lab-grade { width: 112px; height: 112px; display: grid; place-items: center; margin: 0 auto 8px; border-radius: 999px; font-size: 54px; font-weight: 950; line-height: 1; }',
+      '.ar-lab-results-copy { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-lab-results-copy h2 { margin: 8px 0 5px; font-size: 21px; line-height: 1.25; }',
+      '.ar-lab-score { display: block; margin-top: 8px; font-size: 18px; font-weight: 900; line-height: 1.25; }',
+      '.ar-lab-results-progress { margin-top: 11px; }',
+      '.ar-lab-results-progress-label { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: 11px; font-weight: 800; flex-wrap: wrap; }',
+      '.ar-lab-review-heading { margin: 0 0 10px; font-size: 18px; line-height: 1.3; }',
+      '.ar-lab-review-list { list-style: none; margin: 0 0 14px; padding: 0; display: grid; gap: 10px; }',
+      '.ar-lab-feedback { min-width: 0; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; break-inside: avoid; }',
+      '.ar-lab-feedback-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }',
+      '.ar-lab-feedback-step { font-size: 11px; font-weight: 900; letter-spacing: 0.055em; text-transform: uppercase; }',
+      '.ar-lab-feedback h3 { margin: 0 0 9px; font-size: 14px; line-height: 1.45; }',
+      '.ar-lab-choice-panel, .ar-lab-best-panel { padding: 10px; border-radius: 9px; }',
+      '.ar-lab-best-panel { margin-top: 7px; }',
+      '.ar-lab-panel-label { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; }',
+      '.ar-lab-choice-panel p, .ar-lab-best-panel p { margin: 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-lab-truth { margin-bottom: 14px; padding: 14px; border-radius: 11px; overflow-wrap: anywhere; }',
+      '.ar-lab-truth h2 { margin: 0 0 6px; font-size: 17px; line-height: 1.3; }',
+      '.ar-lab-truth p { margin: 0; font-size: 13px; line-height: 1.6; }',
+      '.ar-lab-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }',
+      '.ar-lab-shell button, .ar-lab-case-link { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-lab-picker-grid, .ar-lab-workbench { grid-template-columns: 1fr; }',
+      '  .ar-lab-dossier { position: static; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-lab-shell { padding: 10px; }',
+      '  .ar-lab-hero { flex-direction: column; padding: 15px; border-radius: 13px; }',
+      '  .ar-lab-state-chip { align-self: flex-start; }',
+      '  .ar-lab-decision, .ar-lab-dossier, .ar-lab-results-summary { padding: 13px; }',
+      '  .ar-lab-vehicle-grid, .ar-lab-results-summary { grid-template-columns: 1fr; }',
+      '  .ar-lab-stage-list { grid-template-columns: 1fr !important; overflow-x: visible; }',
+      '  .ar-lab-case-fact-wide { grid-column: auto; }',
+      '  .ar-lab-actions { align-items: stretch; flex-direction: column; }',
+      '  .ar-lab-actions > button { width: 100%; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-lab-progress-fill { transition: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-lab-hero, .ar-lab-progress-card, .ar-lab-scenario, .ar-lab-decision, .ar-lab-dossier, .ar-lab-case-strip, .ar-lab-stage, .ar-lab-last-move, .ar-lab-question, .ar-lab-choice, .ar-lab-results-summary, .ar-lab-feedback, .ar-lab-choice-panel, .ar-lab-best-panel, .ar-lab-truth { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-lab-scenario[data-ar-scenario-state=completed], .ar-lab-stage[data-ar-stage-state=current], .ar-lab-feedback[data-ar-feedback-state=best] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-lab-choice:focus-visible, .ar-lab-case-link:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-lab-progress-fill { background: Highlight !important; }',
+      '  .ar-lab-state-chip, .ar-lab-card-state, .ar-lab-feedback-state, .ar-lab-difficulty, .ar-lab-decision-count { border: 1px solid CanvasText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-lab-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-lab-shell, .ar-lab-shell * { color: black !important; }',
+      '  .ar-lab-nav, .ar-lab-actions, .ar-lab-case-link, [data-ar-lab-print-hide=true] { display: none !important; }',
+      '  .ar-lab-picker-grid, .ar-lab-workbench, .ar-lab-results-summary { display: block !important; }',
+      '  .ar-lab-dossier { position: static !important; margin-top: 12px; }',
+      '  .ar-lab-hero, .ar-lab-progress-card, .ar-lab-scenario, .ar-lab-decision, .ar-lab-dossier, .ar-lab-case-strip, .ar-lab-stage, .ar-lab-last-move, .ar-lab-question, .ar-lab-choice, .ar-lab-results-summary, .ar-lab-feedback, .ar-lab-choice-panel, .ar-lab-best-panel, .ar-lab-truth, .ar-lab-grade, .ar-lab-case-fact, .ar-lab-scenario-icon, .ar-lab-choice-marker, .ar-lab-progress-track, .ar-lab-scoring-legend span { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-lab-progress-fill { display: none !important; }',
+      '  .ar-lab-scenario, .ar-lab-feedback, .ar-lab-truth, .ar-lab-dossier { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-lab-state-chip, .ar-lab-card-state, .ar-lab-feedback-state, .ar-lab-difficulty, .ar-lab-decision-count { background: white !important; color: black !important; border: 1px solid black !important; }',
+      '}',
+
+      '.ar-safety-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-safety-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-safety-hero-copy { min-width: 0; max-width: 760px; }',
+      '.ar-safety-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-safety-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-safety-hero-icon { width: 68px; height: 68px; display: grid; place-items: center; border-radius: 18px; font-size: 34px; }',
+      '.ar-safety-progress { margin-bottom: 14px; padding: 14px; border-radius: 13px; }',
+      '.ar-safety-progress-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 9px; flex-wrap: wrap; }',
+      '.ar-safety-progress-copy { min-width: 0; }',
+      '.ar-safety-progress-copy h2 { margin: 0; font-size: 16px; line-height: 1.35; }',
+      '.ar-safety-progress-copy p { margin: 3px 0 0; font-size: 11px; line-height: 1.45; }',
+      '.ar-safety-progress-count { flex: 0 0 auto; font-size: 13px; font-weight: 900; }',
+      '.ar-safety-progress-track { width: 100%; height: 10px; overflow: hidden; border-radius: 999px; }',
+      '.ar-safety-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-safety-layout { display: grid; grid-template-columns: minmax(300px, 0.78fr) minmax(0, 1.22fr); gap: 14px; align-items: start; }',
+      '.ar-safety-picker, .ar-safety-detail { min-width: 0; padding: 16px; border-radius: 14px; box-sizing: border-box; overflow-wrap: anywhere; }',
+      '.ar-safety-picker-head { margin-bottom: 12px; }',
+      '.ar-safety-picker-head h2 { margin: 0; font-size: 18px; line-height: 1.3; }',
+      '.ar-safety-picker-head p { margin: 5px 0 0; font-size: 12px; line-height: 1.5; }',
+      '.ar-safety-module-list { display: grid; grid-template-columns: 1fr; gap: 9px; }',
+      '.ar-safety-module-wrap { min-width: 0; }',
+      '.ar-safety-module { position: relative; width: 100%; min-width: 0; min-height: 104px; display: flex !important; align-items: flex-start !important; gap: 11px !important; padding: 12px 12px 12px 18px !important; text-align: left !important; overflow: hidden; overflow-wrap: anywhere; transition: border-color 120ms ease, background 120ms ease, transform 120ms ease; }',
+      '.ar-safety-module:hover { transform: translateY(-1px); }',
+      '.ar-safety-hazard-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; pointer-events: none; }',
+      '.ar-safety-module-icon { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 11px; font-size: 22px; }',
+      '.ar-safety-module-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 5px; }',
+      '.ar-safety-module-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 7px; flex-wrap: wrap; }',
+      '.ar-safety-hazard-tag { font-size: 10px; font-weight: 900; letter-spacing: 0.075em; line-height: 1.3; text-transform: uppercase; }',
+      '.ar-safety-module-state { display: inline-flex; align-items: center; gap: 4px; padding: 3px 7px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-safety-module-name { display: block; font-size: 13px; font-weight: 850; line-height: 1.35; }',
+      '.ar-safety-module-action { display: block; margin-top: auto; font-size: 11px; font-weight: 800; line-height: 1.35; }',
+      '.ar-safety-detail { position: sticky; top: 12px; }',
+      '.ar-safety-detail-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 13px; }',
+      '.ar-safety-detail-heading { min-width: 0; }',
+      '.ar-safety-detail-kicker { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }',
+      '.ar-safety-detail h2 { margin: 0; font-size: clamp(19px, 2.6vw, 24px); line-height: 1.25; }',
+      '.ar-safety-detail-badge { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-safety-rule { margin-bottom: 12px; padding: 13px; border-left: 5px solid currentColor; border-radius: 10px; }',
+      '.ar-safety-rule h3, .ar-safety-consequence h3 { display: block; margin: 0 0 5px; font-size: 13px; font-weight: 900; letter-spacing: 0.045em; line-height: 1.35; text-transform: uppercase; }',
+      '.ar-safety-rule p, .ar-safety-consequence p, .ar-safety-why p { margin: 0; font-size: 14px; line-height: 1.58; }',
+      '.ar-safety-why { margin-bottom: 13px; padding: 12px; border-radius: 10px; }',
+      '.ar-safety-why h3, .ar-safety-checklist h3 { margin: 0 0 6px; font-size: 14px; line-height: 1.35; }',
+      '.ar-safety-checklist { margin-bottom: 13px; }',
+      '.ar-safety-checklist-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }',
+      '.ar-safety-checklist-item { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 8px; align-items: start; padding: 9px; border-radius: 9px; font-size: 13px; line-height: 1.55; break-inside: avoid; }',
+      '.ar-safety-check-marker { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 999px; font-size: 11px; font-weight: 900; }',
+      '.ar-safety-consequence { padding: 12px; border-radius: 10px; }',
+      '.ar-safety-empty { min-height: 470px; display: grid; place-items: center; align-content: center; padding: 28px; text-align: center; }',
+      '.ar-safety-empty-icon { width: 72px; height: 72px; display: grid; place-items: center; margin-bottom: 12px; border-radius: 999px; font-size: 35px; }',
+      '.ar-safety-empty h2 { margin: 0; font-size: 21px; line-height: 1.3; }',
+      '.ar-safety-empty p { max-width: 470px; margin: 7px auto 0; font-size: 13px; line-height: 1.55; }',
+      '.ar-safety-empty-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; width: 100%; max-width: 520px; margin-top: 18px; }',
+      '.ar-safety-empty-step { min-width: 0; padding: 9px; border-radius: 9px; }',
+      '.ar-safety-empty-step strong { display: block; margin-bottom: 3px; font-size: 11px; }',
+      '.ar-safety-empty-step span { display: block; font-size: 10px; line-height: 1.4; }',
+      '.ar-safety-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-safety-layout { grid-template-columns: 1fr; }',
+      '  .ar-safety-module-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-safety-detail { position: static; }',
+      '  .ar-safety-empty { min-height: 320px; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-safety-shell { padding: 10px; }',
+      '  .ar-safety-hero { grid-template-columns: 1fr; padding: 15px; border-radius: 13px; }',
+      '  .ar-safety-hero-icon { width: 52px; height: 52px; font-size: 27px; }',
+      '  .ar-safety-module-list, .ar-safety-empty-steps { grid-template-columns: 1fr; }',
+      '  .ar-safety-picker, .ar-safety-detail { padding: 13px; }',
+      '  .ar-safety-detail-head { flex-direction: column; }',
+      '  .ar-safety-detail-badge { align-self: flex-start; }',
+      '  .ar-safety-empty { min-height: 260px; padding: 22px 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-safety-progress-fill, .ar-safety-module { transition: none !important; }',
+      '  .ar-safety-module:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-safety-hero, .ar-safety-progress, .ar-safety-picker, .ar-safety-detail, .ar-safety-module, .ar-safety-rule, .ar-safety-why, .ar-safety-checklist-item, .ar-safety-consequence, .ar-safety-empty-step { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-safety-module[data-ar-safety-state="viewing"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-safety-hazard-stripe, .ar-safety-progress-fill { background: Highlight !important; }',
+      '  .ar-safety-module-state, .ar-safety-detail-badge, .ar-safety-module-icon, .ar-safety-check-marker { border: 1px solid CanvasText !important; }',
+      '  .ar-safety-module:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '}',
+      '@media print {',
+      '  .ar-safety-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-safety-shell, .ar-safety-shell * { color: black !important; }',
+      '  .ar-safety-layout { display: block !important; }',
+      '  .ar-safety-shell[data-ar-safety-state="active"] .ar-safety-picker { display: none !important; }',
+      '  .ar-safety-detail { position: static !important; margin-top: 12px; }',
+      '  .ar-safety-progress-fill { display: none !important; }',
+      '  .ar-safety-hero, .ar-safety-progress, .ar-safety-picker, .ar-safety-detail, .ar-safety-module, .ar-safety-rule, .ar-safety-why, .ar-safety-checklist-item, .ar-safety-consequence, .ar-safety-empty-step, .ar-safety-module-state, .ar-safety-detail-badge, .ar-safety-module-icon, .ar-safety-check-marker, .ar-safety-progress-track { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-safety-detail, .ar-safety-module, .ar-safety-rule, .ar-safety-checklist-item, .ar-safety-consequence { break-inside: avoid; page-break-inside: avoid; }',
+      '}',
+
+      '.ar-career-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-career-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-career-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-career-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-career-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-career-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-career-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-career-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-career-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-career-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; padding: 6px; border-radius: 13px; }',
+      '.ar-career-tab { min-width: 0; min-height: 50px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 9px 12px !important; overflow-wrap: anywhere; transition: background 120ms ease, color 120ms ease, border-color 120ms ease; }',
+      '.ar-career-tab-icon { font-size: 18px; line-height: 1; }',
+      '.ar-career-tab-copy { min-width: 0; }',
+      '.ar-career-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
+      '.ar-career-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.82; }',
+      '.ar-career-panel { min-width: 0; outline: none; }',
+      '.ar-career-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-career-section + .ar-career-section { margin-top: 14px; }',
+      '.ar-career-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-career-section-head-copy { min-width: 0; max-width: 760px; }',
+      '.ar-career-section h2 { margin: 0; font-size: 19px; line-height: 1.3; }',
+      '.ar-career-section-intro { margin: 5px 0 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-career-section-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-career-big-picture { margin-top: 12px; padding: 11px 12px; border-left: 4px solid currentColor; border-radius: 9px; font-size: 12px; line-height: 1.55; }',
+      '.ar-career-salary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-career-salary-card { min-width: 0; min-height: 132px; display: flex; flex-direction: column; padding: 12px; border-radius: 11px; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-career-salary-card:hover { transform: translateY(-1px); }',
+      '.ar-career-salary-step { display: inline-flex; align-items: center; align-self: flex-start; padding: 3px 6px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.ar-career-salary-label { display: block; margin-top: 9px; font-size: 14px; font-weight: 900; line-height: 1.35; }',
+      '.ar-career-salary-value { display: block; margin-top: 6px; font-size: 13px; line-height: 1.55; }',
+      '.ar-career-reality-grid { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr); gap: 14px; align-items: stretch; }',
+      '.ar-career-realities, .ar-career-tool-note { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-career-realities h2, .ar-career-tool-note h2 { margin: 0 0 9px; font-size: 17px; line-height: 1.35; }',
+      '.ar-career-reality-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }',
+      '.ar-career-reality-item { display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 8px; align-items: start; font-size: 13px; line-height: 1.55; }',
+      '.ar-career-reality-marker { width: 25px; height: 25px; display: grid; place-items: center; border-radius: 999px; font-size: 11px; font-weight: 900; }',
+      '.ar-career-tool-icon { width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 12px; font-size: 24px; }',
+      '.ar-career-tool-note p { margin: 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-career-ase-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-career-ase-card { min-width: 0; min-height: 150px; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-career-ase-card:hover { transform: translateY(-1px); }',
+      '.ar-career-ase-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 9px; }',
+      '.ar-career-ase-code { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 10px; font-family: monospace; font-size: 14px; font-weight: 950; }',
+      '.ar-career-ase-type { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; letter-spacing: 0.045em; line-height: 1.3; text-transform: uppercase; }',
+      '.ar-career-ase-card h3 { margin: 0 0 6px; font-size: 14px; line-height: 1.35; }',
+      '.ar-career-ase-card p { margin: 0; font-size: 13px; line-height: 1.55; }',
+      '.ar-career-path-list { position: relative; list-style: none; margin: 0; padding: 0 0 0 44px; display: grid; gap: 10px; }',
+      '.ar-career-path-list::before { content: ""; position: absolute; left: 18px; top: 22px; bottom: 22px; width: 3px; background: currentColor; opacity: 0.22; }',
+      '.ar-career-path-item { position: relative; min-width: 0; }',
+      '.ar-career-path-marker { position: absolute; z-index: 2; left: -44px; top: 15px; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 999px; font-size: 12px; font-weight: 950; }',
+      '.ar-career-path-card { min-width: 0; padding: 14px; border-radius: 11px; overflow-wrap: anywhere; break-inside: avoid; }',
+      '.ar-career-path-stage { display: block; margin-bottom: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }',
+      '.ar-career-path-card h3 { margin: 0 0 6px; font-size: 15px; line-height: 1.4; }',
+      '.ar-career-path-card p { margin: 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-career-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-career-hero { grid-template-columns: 1fr; }',
+      '  .ar-career-hero-stats { max-width: 480px; }',
+      '  .ar-career-salary-grid, .ar-career-ase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-career-reality-grid { grid-template-columns: 1fr; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-career-shell { padding: 10px; }',
+      '  .ar-career-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-career-hero-stats, .ar-career-salary-grid, .ar-career-ase-grid { grid-template-columns: 1fr; }',
+      '  .ar-career-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 5px; }',
+      '  .ar-career-tab { flex-direction: column; gap: 4px !important; padding: 8px 5px !important; text-align: center !important; }',
+      '  .ar-career-tab-icon { font-size: 16px; }',
+      '  .ar-career-section, .ar-career-realities, .ar-career-tool-note { padding: 13px; }',
+      '  .ar-career-section-head { flex-direction: column; }',
+      '  .ar-career-section-chip { align-self: flex-start; }',
+      '  .ar-career-path-list { padding-left: 35px; }',
+      '  .ar-career-path-list::before { left: 14px; }',
+      '  .ar-career-path-marker { left: -35px; width: 31px; height: 31px; top: 13px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-career-tab, .ar-career-salary-card, .ar-career-ase-card { transition: none !important; }',
+      '  .ar-career-salary-card:hover, .ar-career-ase-card:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-career-hero, .ar-career-stat, .ar-career-tabs, .ar-career-tab, .ar-career-section, .ar-career-salary-card, .ar-career-realities, .ar-career-tool-note, .ar-career-ase-card, .ar-career-path-card { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-career-tab[data-ar-tab-state="active"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-career-tab:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-career-ase-code, .ar-career-path-marker, .ar-career-reality-marker { background: Highlight !important; color: HighlightText !important; border: 1px solid CanvasText !important; }',
+      '  .ar-career-path-list::before { background: CanvasText !important; opacity: 1; }',
+      '}',
+      '@media print {',
+      '  .ar-career-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-career-shell, .ar-career-shell * { color: black !important; }',
+      '  .ar-career-tabs, [data-ar-career-print-hide="true"] { display: none !important; }',
+      '  .ar-career-panel[hidden] { display: block !important; }',
+      '  .ar-career-panel + .ar-career-panel { margin-top: 18px; }',
+      '  .ar-career-hero, .ar-career-stat, .ar-career-section, .ar-career-salary-card, .ar-career-realities, .ar-career-tool-note, .ar-career-ase-card, .ar-career-path-card, .ar-career-ase-code, .ar-career-ase-type, .ar-career-section-chip, .ar-career-reality-marker, .ar-career-tool-icon, .ar-career-path-marker { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-career-salary-card, .ar-career-ase-card, .ar-career-path-card, .ar-career-realities, .ar-career-tool-note { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-career-salary-grid, .ar-career-ase-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '  .ar-career-path-list::before { background: black !important; opacity: 1; }',
+      '}',
+
+      '.ar-usedcar-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-usedcar-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-usedcar-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-usedcar-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-usedcar-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-usedcar-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-usedcar-hero-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-usedcar-hero-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-usedcar-hero-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-usedcar-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; padding: 6px; border-radius: 13px; }',
+      '.ar-usedcar-tab { min-width: 0; min-height: 50px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 9px 12px !important; overflow-wrap: anywhere; transition: background 120ms ease, color 120ms ease, border-color 120ms ease; }',
+      '.ar-usedcar-tab-icon { font-size: 18px; line-height: 1; }',
+      '.ar-usedcar-tab-copy { min-width: 0; }',
+      '.ar-usedcar-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
+      '.ar-usedcar-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.84; }',
+      '.ar-usedcar-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-usedcar-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-usedcar-section + .ar-usedcar-section { margin-top: 14px; }',
+      '.ar-usedcar-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-usedcar-section-head-copy { min-width: 0; max-width: 780px; }',
+      '.ar-usedcar-section h2 { margin: 0; font-size: 19px; line-height: 1.3; }',
+      '.ar-usedcar-section-intro { margin: 5px 0 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-usedcar-section-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-usedcar-practice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-usedcar-practice { min-width: 0; min-height: 150px; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-usedcar-practice:hover { transform: translateY(-1px); }',
+      '.ar-usedcar-practice-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }',
+      '.ar-usedcar-practice-icon { width: 38px; height: 38px; flex: 0 0 38px; display: grid; place-items: center; border-radius: 10px; font-size: 19px; }',
+      '.ar-usedcar-practice-step { font-size: 9px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.ar-usedcar-practice h3 { margin: 2px 0 0; font-size: 14px; line-height: 1.35; }',
+      '.ar-usedcar-practice p { margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-usedcar-master-detail { display: grid; grid-template-columns: minmax(360px, 1.08fr) minmax(0, 0.92fr); gap: 14px; align-items: start; }',
+      '.ar-usedcar-flag-picker, .ar-usedcar-flag-detail { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-usedcar-flag-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-usedcar-flag-wrap { min-width: 0; }',
+      '.ar-usedcar-flag { width: 100%; min-width: 0; min-height: 96px; display: flex !important; flex-direction: column; align-items: stretch !important; gap: 7px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-usedcar-flag:hover { transform: translateY(-1px); }',
+      '.ar-usedcar-flag-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+      '.ar-usedcar-flag-index { width: 29px; height: 29px; flex: 0 0 29px; display: grid; place-items: center; border-radius: 999px; font-family: monospace; font-size: 10px; font-weight: 950; }',
+      '.ar-usedcar-flag-area { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.3; }',
+      '.ar-usedcar-flag-label { display: block; font-size: 13px; font-weight: 900; line-height: 1.38; }',
+      '.ar-usedcar-flag-state { display: block; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-usedcar-flag-detail { position: sticky; top: 12px; min-height: 320px; padding: 16px; border-radius: 14px; }',
+      '.ar-usedcar-detail-empty { min-height: 286px; display: grid; place-items: center; align-content: center; padding: 10px; text-align: center; }',
+      '.ar-usedcar-detail-empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; font-size: 28px; }',
+      '.ar-usedcar-detail-empty h3 { margin: 0 0 6px; font-size: 17px; line-height: 1.35; }',
+      '.ar-usedcar-detail-empty p { max-width: 420px; margin: 0; font-size: 13px; line-height: 1.55; }',
+      '.ar-usedcar-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-usedcar-detail-icon { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border-radius: 11px; font-size: 23px; }',
+      '.ar-usedcar-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-usedcar-flag-detail h3 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-usedcar-detail-block { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-usedcar-detail-block + .ar-usedcar-detail-block { margin-top: 9px; }',
+      '.ar-usedcar-detail-block strong { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-usedcar-detail-block p { margin: 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-usedcar-print-flags { display: none; }',
+      '.ar-usedcar-walk-progress { margin-bottom: 14px; padding: 14px; border-radius: 13px; }',
+      '.ar-usedcar-progress-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 7px; }',
+      '.ar-usedcar-progress-label { font-size: 12px; font-weight: 900; line-height: 1.35; }',
+      '.ar-usedcar-progress-value { font-family: monospace; font-size: 12px; font-weight: 850; line-height: 1.35; }',
+      '.ar-usedcar-progress-track { height: 11px; overflow: hidden; border-radius: 999px; }',
+      '.ar-usedcar-progress-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-usedcar-walk-list { position: relative; list-style: none; margin: 0; padding: 0 0 0 46px; display: grid; gap: 9px; }',
+      '.ar-usedcar-walk-list::before { content: ""; position: absolute; left: 19px; top: 24px; bottom: 24px; width: 3px; background: currentColor; opacity: 0.2; }',
+      '.ar-usedcar-walk-item { position: relative; min-width: 0; }',
+      '.ar-usedcar-walk-marker { position: absolute; z-index: 2; left: -46px; top: 14px; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 999px; font-family: monospace; font-size: 11px; font-weight: 950; }',
+      '.ar-usedcar-walk-step { width: 100%; min-width: 0; min-height: 78px; display: grid !important; grid-template-columns: minmax(0, 1fr) auto; gap: 12px !important; align-items: center !important; padding: 13px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-usedcar-walk-step:hover { transform: translateY(-1px); }',
+      '.ar-usedcar-walk-copy { min-width: 0; }',
+      '.ar-usedcar-walk-kicker { display: block; margin-bottom: 4px; font-size: 9px; font-weight: 900; letter-spacing: 0.055em; text-transform: uppercase; }',
+      '.ar-usedcar-walk-text { display: block; font-size: 13px; line-height: 1.58; }',
+      '.ar-usedcar-walk-state { display: inline-flex; align-items: center; padding: 4px 7px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.3; white-space: nowrap; }',
+      '.ar-usedcar-status { display: block; margin-top: 7px; font-size: 11px; line-height: 1.4; }',
+      '.ar-usedcar-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-usedcar-hero { grid-template-columns: 1fr; }',
+      '  .ar-usedcar-hero-stats { max-width: 480px; }',
+      '  .ar-usedcar-practice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-usedcar-master-detail { grid-template-columns: 1fr; }',
+      '  .ar-usedcar-flag-detail { position: static; min-height: 0; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-usedcar-shell { padding: 10px; }',
+      '  .ar-usedcar-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-usedcar-hero-stats, .ar-usedcar-practice-grid, .ar-usedcar-flag-grid { grid-template-columns: 1fr; }',
+      '  .ar-usedcar-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 5px; }',
+      '  .ar-usedcar-tab { flex-direction: column; gap: 4px !important; padding: 8px 5px !important; text-align: center !important; }',
+      '  .ar-usedcar-tab-icon { font-size: 16px; }',
+      '  .ar-usedcar-section, .ar-usedcar-flag-detail { padding: 13px; }',
+      '  .ar-usedcar-section-head { flex-direction: column; }',
+      '  .ar-usedcar-section-chip { align-self: flex-start; }',
+      '  .ar-usedcar-walk-list { padding-left: 36px; }',
+      '  .ar-usedcar-walk-list::before { left: 14px; }',
+      '  .ar-usedcar-walk-marker { left: -36px; width: 31px; height: 31px; top: 14px; }',
+      '  .ar-usedcar-walk-step { grid-template-columns: 1fr; }',
+      '  .ar-usedcar-walk-state { justify-self: start; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-usedcar-tab, .ar-usedcar-practice, .ar-usedcar-flag, .ar-usedcar-progress-fill, .ar-usedcar-walk-step { transition: none !important; }',
+      '  .ar-usedcar-practice:hover, .ar-usedcar-flag:hover, .ar-usedcar-walk-step:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-usedcar-hero, .ar-usedcar-hero-stat, .ar-usedcar-tabs, .ar-usedcar-tab, .ar-usedcar-section, .ar-usedcar-practice, .ar-usedcar-flag, .ar-usedcar-flag-detail, .ar-usedcar-detail-block, .ar-usedcar-walk-progress, .ar-usedcar-walk-step, .ar-usedcar-walk-state { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-usedcar-tab[data-ar-tab-state="active"], .ar-usedcar-flag[aria-pressed="true"], .ar-usedcar-walk-step[aria-current="step"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-usedcar-tab:focus-visible, .ar-usedcar-flag:focus-visible, .ar-usedcar-walk-step:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-usedcar-progress-track { border: 1px solid CanvasText !important; background: Canvas !important; }',
+      '  .ar-usedcar-progress-fill, .ar-usedcar-walk-marker, .ar-usedcar-flag-index, .ar-usedcar-practice-icon, .ar-usedcar-detail-icon { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-usedcar-walk-list::before { background: CanvasText !important; opacity: 1; }',
+      '}',
+      '@media print {',
+      '  .ar-usedcar-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-usedcar-shell, .ar-usedcar-shell * { color: black !important; }',
+      '  .ar-usedcar-tabs, [data-ar-usedcar-print-hide="true"] { display: none !important; }',
+      '  .ar-usedcar-panel[hidden], .ar-usedcar-print-flags { display: block !important; }',
+      '  .ar-usedcar-panel + .ar-usedcar-panel { margin-top: 18px; }',
+      '  .ar-usedcar-flag-picker, .ar-usedcar-flag-detail { display: none !important; }',
+      '  .ar-usedcar-hero, .ar-usedcar-hero-stat, .ar-usedcar-section, .ar-usedcar-practice, .ar-usedcar-print-flag, .ar-usedcar-detail-block, .ar-usedcar-walk-progress, .ar-usedcar-walk-step, .ar-usedcar-walk-state, .ar-usedcar-practice-icon, .ar-usedcar-walk-marker { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-usedcar-practice, .ar-usedcar-print-flag, .ar-usedcar-detail-block, .ar-usedcar-walk-step { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-usedcar-practice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '  .ar-usedcar-progress-fill, .ar-usedcar-walk-list::before { background: black !important; opacity: 1; }',
+      '}',
+
+      '.ar-ev-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-ev-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.46fr); gap: 18px; align-items: center; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-ev-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-ev-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-ev-title { margin: 7px 0 6px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-ev-hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }',
+      '.ar-ev-hero-stat { min-width: 0; padding: 10px; border-radius: 10px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-ev-hero-stat strong { display: block; font-size: 21px; font-weight: 950; line-height: 1.1; }',
+      '.ar-ev-hero-stat span { display: block; margin-top: 4px; font-size: 10px; font-weight: 750; line-height: 1.35; }',
+      '.ar-ev-tabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 14px; padding: 6px; border-radius: 13px; }',
+      '.ar-ev-tab { min-width: 0; min-height: 50px; display: flex !important; align-items: center !important; justify-content: center !important; gap: 8px !important; padding: 9px 12px !important; overflow-wrap: anywhere; transition: background 120ms ease, color 120ms ease, border-color 120ms ease; }',
+      '.ar-ev-tab-icon { font-size: 18px; line-height: 1; }',
+      '.ar-ev-tab-copy { min-width: 0; }',
+      '.ar-ev-tab-label { display: block; font-size: 12px; font-weight: 900; line-height: 1.3; }',
+      '.ar-ev-tab-note { display: block; margin-top: 2px; font-size: 10px; font-weight: 700; line-height: 1.3; opacity: 0.84; }',
+      '.ar-ev-panel { min-width: 0; outline: none; overflow-wrap: anywhere; }',
+      '.ar-ev-section { min-width: 0; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-ev-section + .ar-ev-section, .ar-ev-section + .ar-ev-critical { margin-top: 14px; }',
+      '.ar-ev-section-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }',
+      '.ar-ev-section-head-copy { min-width: 0; max-width: 760px; }',
+      '.ar-ev-section h2 { margin: 0; font-size: 19px; line-height: 1.3; }',
+      '.ar-ev-section-intro { margin: 5px 0 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-ev-section-chip { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 10px; font-weight: 900; line-height: 1.3; }',
+      '.ar-ev-fact-grid, .ar-ev-overview-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-ev-fact-card { min-width: 0; min-height: 128px; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-ev-fact-card:hover { transform: translateY(-1px); }',
+      '.ar-ev-fact-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }',
+      '.ar-ev-fact-icon { width: 36px; height: 36px; flex: 0 0 36px; display: grid; place-items: center; border-radius: 9px; font-size: 18px; }',
+      '.ar-ev-fact-label { font-size: 13px; font-weight: 900; line-height: 1.35; }',
+      '.ar-ev-fact-value { margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-ev-critical { display: grid; grid-template-columns: 46px minmax(0, 1fr); gap: 12px; align-items: start; padding: 15px; border-radius: 13px; overflow-wrap: anywhere; }',
+      '.ar-ev-critical-icon { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 11px; font-size: 23px; }',
+      '.ar-ev-critical h2 { margin: 0 0 5px; font-size: 16px; line-height: 1.35; }',
+      '.ar-ev-critical p { margin: 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-ev-master-detail, .ar-ev-safety-layout, .ar-ev-diff-layout { display: grid; grid-template-columns: minmax(300px, 0.92fr) minmax(0, 1.08fr); gap: 14px; align-items: start; }',
+      '.ar-ev-picker, .ar-ev-detail { min-width: 0; overflow-wrap: anywhere; }',
+      '.ar-ev-option-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }',
+      '.ar-ev-safety-list, .ar-ev-safety-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '.ar-ev-option-wrap { min-width: 0; }',
+      '.ar-ev-option, .ar-ev-choice { width: 100%; min-width: 0; min-height: 74px; display: flex !important; align-items: flex-start !important; gap: 10px !important; padding: 11px !important; text-align: left !important; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease, background 120ms ease; }',
+      '.ar-ev-option:hover, .ar-ev-choice:hover { transform: translateY(-1px); }',
+      '.ar-ev-option-icon { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 9px; font-size: 19px; }',
+      '.ar-ev-option-index { width: 31px; height: 31px; flex: 0 0 31px; display: grid; place-items: center; border-radius: 999px; font-family: monospace; font-size: 11px; font-weight: 950; }',
+      '.ar-ev-option-copy { min-width: 0; flex: 1 1 auto; }',
+      '.ar-ev-option-label { display: block; font-size: 13px; font-weight: 900; line-height: 1.4; }',
+      '.ar-ev-option-state { display: block; margin-top: 4px; font-size: 10px; font-weight: 800; line-height: 1.3; }',
+      '.ar-ev-detail { position: sticky; top: 12px; min-height: 260px; padding: 16px; border-radius: 14px; overflow-wrap: anywhere; }',
+      '.ar-ev-detail-empty { min-height: 226px; display: grid; place-items: center; align-content: center; text-align: center; padding: 8px; }',
+      '.ar-ev-detail-empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; font-size: 28px; }',
+      '.ar-ev-detail-empty h3 { margin: 0 0 6px; font-size: 17px; line-height: 1.35; }',
+      '.ar-ev-detail-empty p { max-width: 440px; margin: 0; font-size: 13px; line-height: 1.55; }',
+      '.ar-ev-detail-head { display: flex; align-items: flex-start; gap: 11px; margin-bottom: 12px; }',
+      '.ar-ev-detail-icon { width: 46px; height: 46px; flex: 0 0 46px; display: grid; place-items: center; border-radius: 11px; font-size: 23px; }',
+      '.ar-ev-detail-kicker { display: block; margin-bottom: 3px; font-size: 10px; font-weight: 900; letter-spacing: 0.07em; text-transform: uppercase; }',
+      '.ar-ev-detail h3 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-ev-rule, .ar-ev-detail-block { padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-ev-rule { margin-bottom: 9px; border-left: 4px solid currentColor; }',
+      '.ar-ev-rule strong, .ar-ev-detail-block strong { display: block; margin-bottom: 4px; font-size: 11px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-ev-rule p, .ar-ev-detail-block p { margin: 0; font-size: 14px; line-height: 1.6; }',
+      '.ar-ev-detail-block + .ar-ev-detail-block { margin-top: 9px; }',
+      '.ar-ev-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-ev-hero { grid-template-columns: 1fr; }',
+      '  .ar-ev-hero-stats { max-width: 480px; }',
+      '  .ar-ev-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-ev-master-detail, .ar-ev-safety-layout, .ar-ev-diff-layout { grid-template-columns: 1fr; }',
+      '  .ar-ev-detail { position: static; min-height: 0; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-ev-shell { padding: 10px; }',
+      '  .ar-ev-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-ev-hero-stats, .ar-ev-fact-grid, .ar-ev-overview-grid, .ar-ev-safety-list, .ar-ev-safety-grid { grid-template-columns: 1fr; }',
+      '  .ar-ev-tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; padding: 5px; }',
+      '  .ar-ev-tab { flex-direction: column; gap: 4px !important; padding: 8px 5px !important; text-align: center !important; }',
+      '  .ar-ev-tab-icon { font-size: 16px; }',
+      '  .ar-ev-section, .ar-ev-detail { padding: 13px; }',
+      '  .ar-ev-section-head { flex-direction: column; }',
+      '  .ar-ev-section-chip { align-self: flex-start; }',
+      '  .ar-ev-critical { grid-template-columns: 38px minmax(0, 1fr); padding: 13px; }',
+      '  .ar-ev-critical-icon { width: 38px; height: 38px; font-size: 20px; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-ev-tab, .ar-ev-fact-card, .ar-ev-option, .ar-ev-choice { transition: none !important; }',
+      '  .ar-ev-fact-card:hover, .ar-ev-option:hover, .ar-ev-choice:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-ev-hero, .ar-ev-hero-stat, .ar-ev-tabs, .ar-ev-tab, .ar-ev-section, .ar-ev-fact-card, .ar-ev-critical, .ar-ev-option, .ar-ev-choice, .ar-ev-detail, .ar-ev-rule, .ar-ev-detail-block { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-ev-tab[data-ar-tab-state="active"], .ar-ev-option[data-ar-option-state="active"], .ar-ev-choice[aria-pressed="true"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-ev-tab:focus-visible, .ar-ev-option:focus-visible, .ar-ev-choice:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-ev-fact-icon, .ar-ev-option-icon, .ar-ev-option-index, .ar-ev-detail-icon, .ar-ev-critical-icon { background: Highlight !important; color: HighlightText !important; border: 1px solid CanvasText !important; }',
+      '}',
+      '@media print {',
+      '  .ar-ev-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-ev-shell, .ar-ev-shell * { color: black !important; }',
+      '  .ar-ev-tabs, [data-ar-ev-print-hide="true"] { display: none !important; }',
+      '  .ar-ev-panel[hidden] { display: block !important; }',
+      '  .ar-ev-panel + .ar-ev-panel { margin-top: 18px; }',
+      '  .ar-ev-detail-empty { display: none !important; }',
+      '  .ar-ev-hero, .ar-ev-hero-stat, .ar-ev-section, .ar-ev-fact-card, .ar-ev-critical, .ar-ev-option, .ar-ev-choice, .ar-ev-detail, .ar-ev-rule, .ar-ev-detail-block, .ar-ev-fact-icon, .ar-ev-option-icon, .ar-ev-option-index, .ar-ev-detail-icon, .ar-ev-critical-icon, .ar-ev-section-chip { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-ev-fact-card, .ar-ev-critical, .ar-ev-option, .ar-ev-choice, .ar-ev-detail, .ar-ev-rule, .ar-ev-detail-block { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-ev-fact-grid, .ar-ev-overview-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }',
+      '}',
+
+      '.ar-path-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-path-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 0.48fr); gap: 18px; align-items: stretch; margin-bottom: 14px; padding: clamp(17px, 3vw, 25px); border-radius: 16px; overflow: hidden; }',
+      '.ar-path-hero-copy { min-width: 0; align-self: center; max-width: 720px; }',
+      '.ar-path-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-path-title { margin: 7px 0 7px; font-size: clamp(23px, 3.4vw, 33px); line-height: 1.1; letter-spacing: -0.025em; overflow-wrap: anywhere; }',
+      '.ar-path-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-path-dashboard { min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 13px; border-radius: 13px; }',
+      '.ar-path-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }',
+      '.ar-path-stat { min-width: 0; padding: 9px 7px; border-radius: 9px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-path-stat strong { display: block; font-size: 20px; font-weight: 950; line-height: 1.1; }',
+      '.ar-path-stat span { display: block; margin-top: 4px; font-size: 9px; font-weight: 800; line-height: 1.3; }',
+      '.ar-path-progress-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; margin-bottom: 6px; }',
+      '.ar-path-progress-label { font-size: 11px; font-weight: 900; line-height: 1.35; }',
+      '.ar-path-progress-value { font-size: 11px; font-family: monospace; font-weight: 800; line-height: 1.35; }',
+      '.ar-path-progress-track, .ar-path-week-track { position: relative; width: 100%; overflow: hidden; border-radius: 999px; }',
+      '.ar-path-progress-track { height: 12px; }',
+      '.ar-path-week-track { height: 7px; margin-top: 6px; }',
+      '.ar-path-progress-fill, .ar-path-week-fill { height: 100%; border-radius: inherit; transition: width 180ms ease; }',
+      '.ar-path-next { min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: 9px; overflow-wrap: anywhere; }',
+      '.ar-path-next-copy { min-width: 0; text-align: left; }',
+      '.ar-path-next-kicker { display: block; font-size: 9px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }',
+      '.ar-path-next-label { display: block; margin-top: 2px; font-size: 12px; font-weight: 850; line-height: 1.35; }',
+      '.ar-path-week-list { position: relative; list-style: none; margin: 0; padding: 0 0 0 56px; display: grid; gap: 14px; }',
+      '.ar-path-week-list::before { content: ""; position: absolute; left: 23px; top: 28px; bottom: 28px; width: 3px; background: currentColor; opacity: 0.2; }',
+      '.ar-path-week-wrap { position: relative; min-width: 0; }',
+      '.ar-path-week-marker { position: absolute; z-index: 2; left: -56px; top: 19px; width: 48px; height: 48px; display: grid; place-items: center; border-radius: 999px; font-size: 14px; font-weight: 950; }',
+      '.ar-path-week { min-width: 0; padding: 17px; border-radius: 15px; overflow-wrap: anywhere; transition: border-color 140ms ease, box-shadow 140ms ease; }',
+      '.ar-path-week[data-ar-path-week-state="current"] { box-shadow: 0 12px 26px rgba(15,23,42,0.10); }',
+      '.ar-path-week-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 10px; }',
+      '.ar-path-week-title-wrap { min-width: 0; display: flex; align-items: flex-start; gap: 10px; }',
+      '.ar-path-week-icon { width: 42px; height: 42px; flex: 0 0 42px; display: grid; place-items: center; border-radius: 10px; font-size: 22px; }',
+      '.ar-path-week h2 { margin: 0; font-size: 18px; line-height: 1.35; }',
+      '.ar-path-week-count { display: block; margin-top: 3px; font-size: 11px; font-weight: 750; line-height: 1.35; }',
+      '.ar-path-week-state { flex: 0 0 auto; display: inline-flex; align-items: center; padding: 5px 8px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.3; letter-spacing: 0.045em; text-transform: uppercase; }',
+      '.ar-path-theme { margin: 0 0 12px; padding: 10px 11px; border-left: 4px solid currentColor; border-radius: 9px; font-size: 13px; line-height: 1.58; }',
+      '.ar-path-module-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }',
+      '.ar-path-module-wrap { min-width: 0; }',
+      '.ar-path-module { min-width: 0; height: 100%; display: flex; flex-direction: column; padding: 13px; border-radius: 11px; overflow-wrap: anywhere; transition: transform 120ms ease, border-color 120ms ease; }',
+      '.ar-path-module:hover { transform: translateY(-1px); }',
+      '.ar-path-module-head { display: flex; align-items: flex-start; gap: 9px; margin-bottom: 8px; }',
+      '.ar-path-module-index { width: 34px; height: 34px; flex: 0 0 34px; display: grid; place-items: center; border-radius: 9px; font-family: monospace; font-size: 10px; font-weight: 950; }',
+      '.ar-path-module-title { min-width: 0; flex: 1 1 auto; }',
+      '.ar-path-module h3 { margin: 0; font-size: 14px; line-height: 1.4; }',
+      '.ar-path-module-state { display: inline-flex; align-items: center; margin-top: 5px; padding: 3px 6px; border-radius: 999px; font-size: 9px; font-weight: 900; line-height: 1.3; }',
+      '.ar-path-module-why { flex: 1 1 auto; margin: 0; font-size: 13px; line-height: 1.58; }',
+      '.ar-path-module-why strong { font-size: 10px; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-path-module-actions { display: flex; gap: 7px; margin-top: 12px; padding-top: 11px; }',
+      '.ar-path-module-actions > button { min-width: 0; flex: 1 1 0; min-height: 44px; padding: 8px 9px !important; font-size: 11px !important; overflow-wrap: anywhere; }',
+      '.ar-path-outcome { margin-top: 12px; padding: 12px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-path-outcome h3 { margin: 0 0 5px; font-size: 13px; line-height: 1.4; }',
+      '.ar-path-outcome p { margin: 0; font-size: 13px; line-height: 1.6; }',
+      '.ar-path-status { display: block; margin-top: 7px; font-size: 11px; line-height: 1.4; }',
+      '.ar-path-shell button { min-height: 44px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-path-hero { grid-template-columns: 1fr; }',
+      '  .ar-path-dashboard { max-width: 560px; }',
+      '  .ar-path-module-list { grid-template-columns: 1fr; }',
+      '}',
+      '@media (max-width: 560px) {',
+      '  .ar-path-shell { padding: 10px; }',
+      '  .ar-path-hero { padding: 15px; border-radius: 13px; }',
+      '  .ar-path-stats { grid-template-columns: 1fr; }',
+      '  .ar-path-week-list { padding-left: 37px; }',
+      '  .ar-path-week-list::before { left: 15px; }',
+      '  .ar-path-week-marker { left: -37px; width: 32px; height: 32px; top: 17px; font-size: 11px; }',
+      '  .ar-path-week { padding: 13px; }',
+      '  .ar-path-week-head { flex-direction: column; }',
+      '  .ar-path-week-state { align-self: flex-start; }',
+      '  .ar-path-week-icon { width: 36px; height: 36px; flex-basis: 36px; font-size: 19px; }',
+      '  .ar-path-module-actions { flex-direction: column; }',
+      '  .ar-path-module-actions > button { width: 100%; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  .ar-path-progress-fill, .ar-path-week-fill, .ar-path-week, .ar-path-module { transition: none !important; }',
+      '  .ar-path-module:hover { transform: none !important; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-path-hero, .ar-path-dashboard, .ar-path-stat, .ar-path-next, .ar-path-week, .ar-path-week-icon, .ar-path-week-state, .ar-path-module, .ar-path-module-index, .ar-path-module-state, .ar-path-outcome, .ar-path-theme { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-path-week[data-ar-path-week-state="current"] { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '  .ar-path-module[data-ar-path-module-state="visited"] { outline: 2px solid Highlight !important; outline-offset: 1px; }',
+      '  .ar-path-progress-track, .ar-path-week-track { border: 1px solid CanvasText !important; background: Canvas !important; }',
+      '  .ar-path-progress-fill, .ar-path-week-fill, .ar-path-week-marker, .ar-path-module-index { background: Highlight !important; color: HighlightText !important; }',
+      '  .ar-path-week-list::before { background: CanvasText !important; opacity: 1; }',
+      '  .ar-path-toggle:focus-visible, .ar-path-open:focus-visible, .ar-path-next:focus-visible { outline: 3px solid Highlight !important; outline-offset: 3px; }',
+      '}',
+      '@media print {',
+      '  .ar-path-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-path-shell, .ar-path-shell * { color: black !important; }',
+      '  .ar-path-module-actions, .ar-path-next, [data-ar-path-print-hide="true"] { display: none !important; }',
+      '  .ar-path-hero, .ar-path-dashboard, .ar-path-stat, .ar-path-week, .ar-path-week-icon, .ar-path-week-state, .ar-path-module, .ar-path-module-index, .ar-path-module-state, .ar-path-outcome, .ar-path-theme { background: white !important; color: black !important; border: 1px solid black !important; box-shadow: none !important; }',
+      '  .ar-path-week, .ar-path-module, .ar-path-outcome { break-inside: avoid; page-break-inside: avoid; }',
+      '  .ar-path-progress-track, .ar-path-week-track { border: 1px solid black !important; background: white !important; }',
+      '  .ar-path-progress-fill, .ar-path-week-fill, .ar-path-week-marker { background: black !important; color: white !important; }',
+      '  .ar-path-week-list::before { background: black !important; opacity: 1; }',
+      '}',
+
+      '.ar-log-shell { width: 100%; max-width: 1120px; margin: 0 auto; padding: clamp(12px, 3vw, 24px); box-sizing: border-box; }',
+      '.ar-log-hero { margin-bottom: 14px; padding: clamp(16px, 3vw, 24px); border-radius: 16px; overflow: hidden; }',
+      '.ar-log-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }',
+      '.ar-log-hero-copy { min-width: 0; max-width: 720px; }',
+      '.ar-log-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.11em; text-transform: uppercase; }',
+      '.ar-log-hero-title { margin: 7px 0 6px; font-size: clamp(22px, 3.2vw, 31px); line-height: 1.12; letter-spacing: -0.02em; }',
+      '.ar-log-hero-copy p { overflow-wrap: anywhere; }',
+      '.ar-log-hero-icon { width: 52px; height: 52px; flex: 0 0 52px; display: grid; place-items: center; border-radius: 14px; font-size: 26px; }',
+      '.ar-log-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 18px; }',
+      '.ar-log-stat { min-width: 0; padding: 10px 11px; border-radius: 10px; overflow-wrap: anywhere; }',
+      '.ar-log-stat-label { display: block; font-size: 11px; line-height: 1.35; }',
+      '.ar-log-stat-value { display: block; margin-top: 4px; font-size: clamp(17px, 2.4vw, 22px); font-weight: 900; line-height: 1.1; }',
+      '.ar-log-stat-meta { display: block; margin-top: 4px; font-size: 10px; line-height: 1.35; }',
+      '.ar-log-layout { display: grid; grid-template-columns: minmax(280px, 0.82fr) minmax(0, 1.38fr); gap: 14px; align-items: start; }',
+      '.ar-log-form-card, .ar-log-ledger { min-width: 0; box-sizing: border-box; border-radius: 14px; }',
+      '.ar-log-form-card { position: sticky; top: 12px; padding: 16px; }',
+      '.ar-log-form-head { margin-bottom: 12px; }',
+      '.ar-log-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-log-field { min-width: 0; display: flex; flex-direction: column; gap: 4px; overflow-wrap: anywhere; }',
+      '.ar-log-field-wide { grid-column: 1 / -1; }',
+      '.ar-log-field input, .ar-log-field textarea { width: 100%; min-width: 0; box-sizing: border-box; }',
+      '.ar-log-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding-top: 12px; }',
+      '.ar-log-form-footer > button { min-width: 148px; }',
+      '.ar-log-ledger { padding: 16px; }',
+      '.ar-log-toolbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }',
+      '.ar-log-export-actions { display: flex; gap: 7px; flex-wrap: wrap; }',
+      '.ar-log-shell button { min-height: 44px; }',
+      '.ar-log-undo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; overflow-wrap: anywhere; }',
+      '.ar-log-timeline { position: relative; list-style: none; margin: 0; padding: 0 0 0 34px; display: flex; flex-direction: column; gap: 10px; }',
+      '.ar-log-timeline::before { content: ""; position: absolute; left: 13px; top: 17px; bottom: 17px; width: 2px; background: currentColor; opacity: 0.18; pointer-events: none; }',
+      '.ar-log-entry-wrap { position: relative; min-width: 0; margin: 0; padding: 0; }',
+      '.ar-log-marker { position: absolute; z-index: 2; left: -27px; top: 18px; width: 14px; height: 14px; border-radius: 999px; border: 3px solid currentColor; box-sizing: border-box; }',
+      '.ar-log-entry { min-width: 0; padding: 14px; border-radius: 11px; overflow-wrap: anywhere; break-inside: avoid; }',
+      '.ar-log-entry[data-ar-log-entry-state="confirming"] { border-width: 2px !important; }',
+      '.ar-log-entry-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; flex-wrap: wrap; }',
+      '.ar-log-entry-title { min-width: 0; flex: 1 1 220px; margin: 0; font-size: 15px; line-height: 1.35; overflow-wrap: anywhere; }',
+      '.ar-log-meta { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin: 10px 0 0; }',
+      '.ar-log-meta > div { min-width: 0; padding: 7px 8px; border-radius: 7px; overflow-wrap: anywhere; }',
+      '.ar-log-meta dt { margin: 0; font-size: 10px; font-weight: 850; letter-spacing: 0.04em; text-transform: uppercase; }',
+      '.ar-log-meta dd { margin: 3px 0 0; font-size: 12px; font-weight: 750; line-height: 1.35; }',
+      '.ar-log-notes { margin: 10px 0 0; padding-top: 9px; font-size: 12px; line-height: 1.55; overflow-wrap: anywhere; }',
+      '.ar-log-confirm { margin-top: 10px; overflow-wrap: anywhere; }',
+      '.ar-log-empty { min-height: 210px; display: grid; place-items: center; align-content: center; padding: 26px 18px; border-radius: 12px; text-align: center; overflow-wrap: anywhere; }',
+      '.ar-log-empty-icon { width: 58px; height: 58px; display: grid; place-items: center; margin-bottom: 10px; border-radius: 999px; font-size: 28px; }',
+      '@media (max-width: 860px) {',
+      '  .ar-log-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }',
+      '  .ar-log-layout { grid-template-columns: 1fr; }',
+      '  .ar-log-form-card { position: static; }',
+      '}',
+      '@media (max-width: 520px) {',
+      '  .ar-log-shell { padding: 10px; }',
+      '  .ar-log-hero { border-radius: 13px; padding: 15px; }',
+      '  .ar-log-hero-icon { width: 44px; height: 44px; flex-basis: 44px; font-size: 22px; }',
+      '  .ar-log-stats, .ar-log-form-grid, .ar-log-meta { grid-template-columns: 1fr; }',
+      '  .ar-log-field-wide { grid-column: auto; }',
+      '  .ar-log-form-card, .ar-log-ledger { padding: 13px; }',
+      '  .ar-log-timeline { padding-left: 26px; }',
+      '  .ar-log-timeline::before { left: 9px; }',
+      '  .ar-log-marker { left: -22px; }',
+      '  .ar-log-form-footer, .ar-log-toolbar, .ar-log-entry-head { align-items: stretch; flex-direction: column; }',
+      '  .ar-log-form-footer > button, .ar-log-export-actions, .ar-log-export-actions > button { width: 100%; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-log-hero, .ar-log-stat, .ar-log-form-card, .ar-log-ledger, .ar-log-entry, .ar-log-empty, .ar-log-undo { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-log-marker { background: Highlight !important; color: Highlight !important; border-color: Canvas !important; }',
+      '  .ar-log-entry[data-ar-log-entry-state="confirming"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '}',
+      '@media print {',
+      '  .ar-log-shell { max-width: none !important; padding: 0 !important; color: black !important; }',
+      '  .ar-log-layout { display: block !important; }',
+      '  .ar-log-form-card, .ar-log-undo, .ar-log-export-actions, .ar-log-confirm { display: none !important; }',
+      '  .ar-log-ledger, .ar-log-entry, .ar-log-stat, .ar-log-hero { background: white !important; color: black !important; box-shadow: none !important; }',
+      '  .ar-log-ledger { padding: 0 !important; border: 0 !important; }',
+      '  .ar-log-entry { break-inside: avoid; page-break-inside: avoid; }',
+      '}',
+
+      '@media (max-width: 640px) {',
+      '  .ar-workflow-stage-list { grid-template-columns: 1fr !important; }',
+      '  .ar-workflow-stage { padding: 9px 10px; }',
+      '  .ar-workflow-step-list::before { left: 23px; }',
+      '  .ar-score-summary { align-items: flex-start; flex-direction: column; }',
+      '  .ar-score-ring { width: 92px; height: 92px; flex-basis: 92px; }',
+      '  .ar-score-ring-inner { width: 68px; height: 68px; }',
+      '  .ar-roadside-actions { align-items: stretch; flex-direction: column; }',
+      '  .ar-roadside-actions > button { width: 100%; min-height: 44px; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-workflow-stage, .ar-workflow-step-card, .ar-roadside-choice, .ar-workflow-panel { border: 2px solid CanvasText !important; box-shadow: none !important; }',
+      '  .ar-workflow-stage[aria-current="step"], .ar-workflow-step-card[aria-current="step"] { outline: 3px solid Highlight !important; outline-offset: 2px; }',
+      '  .ar-score-ring { background: Canvas !important; border: 4px solid Highlight !important; }',
+      '}',
+      '.ar-menu-shell {',
+      '  width: 100%;',
+      '  max-width: 1120px;',
+      '  margin: 0 auto;',
+      '  padding: clamp(12px, 3vw, 24px);',
+      '  box-sizing: border-box;',
+      '}',
+      '.ar-menu-hero {',
+      '  position: relative;',
+      '  isolation: isolate;',
+      '  overflow: hidden;',
+      '  border-radius: 18px;',
+      '  padding: clamp(18px, 4vw, 32px);',
+      '}',
+      '.ar-menu-hero::after {',
+      '  content: "";',
+      '  position: absolute;',
+      '  inset: 0 0 0 52%;',
+      '  z-index: -1;',
+      '  opacity: 0.08;',
+      '  pointer-events: none;',
+      '  background-image: linear-gradient(90deg, currentColor 1px, transparent 1px), linear-gradient(currentColor 1px, transparent 1px);',
+      '  background-size: 22px 22px;',
+      '  transform: skewX(-10deg) scale(1.15);',
+      '}',
+      '.ar-menu-hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }',
+      '.ar-menu-hero-copy { max-width: 720px; }',
+      '.ar-menu-hero-title { margin: 8px 0 8px; font-size: clamp(26px, 4vw, 38px); line-height: 1.08; letter-spacing: -0.025em; }',
+      '.ar-menu-eyebrow { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }',
+      '.ar-menu-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }',
+      '.ar-menu-actions > button { min-height: 44px; }',
+      '.ar-menu-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 22px; }',
+      '.ar-menu-stat { min-width: 0; padding: 10px 12px; border-radius: 10px; backdrop-filter: blur(4px); }',
+      '.ar-menu-stat-value { display: block; font-size: 21px; font-weight: 900; line-height: 1; }',
+      '.ar-menu-stat-label { display: block; margin-top: 5px; font-size: 11px; font-weight: 700; line-height: 1.3; }',
+      '.ar-menu-section-heading { margin: 22px 0 10px; }',
+      '.ar-menu-section-heading h2 { margin: 0; font-size: clamp(18px, 2.5vw, 22px); }',
+      '.ar-menu-section-heading p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; }',
+      '.ar-menu-quick-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }',
+      '.ar-menu-quick-card { min-height: 126px; position: relative; overflow: hidden; }',
+      '.ar-menu-quick-card .ar-menu-card-arrow, .ar-menu-module-card .ar-menu-card-arrow { transition: transform 200ms ease; }',
+      '.ar-menu-category { margin-top: 14px; }',
+      '.ar-menu-category-button { min-height: 76px; position: relative; overflow: hidden; }',
+      '.ar-menu-category-button::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--ar-category-accent); }',
+      '.ar-menu-icon-well { width: 44px; height: 44px; flex: 0 0 44px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; }',
+      '.ar-menu-module-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 10px; margin-top: 10px; }',
+      '.ar-menu-module-card { min-height: 148px; position: relative; overflow: hidden; }',
+      '.ar-menu-progress-track { width: 100%; height: 6px; overflow: hidden; border-radius: 999px; }',
+      '.ar-menu-progress-fill { height: 100%; border-radius: inherit; transition: width 300ms ease; }',
+      '@media (max-width: 700px) {',
+      '  .ar-menu-hero-top { display: block; }',
+      '  .ar-menu-quick-grid { grid-template-columns: 1fr; }',
+      '  .ar-menu-quick-card { min-height: 104px; }',
+      '}',
+      '@media (max-width: 480px) {',
+      '  .ar-menu-shell { padding: 10px; }',
+      '  .ar-menu-hero { border-radius: 14px; padding: 16px; }',
+      '  .ar-menu-stats { grid-template-columns: 1fr; }',
+      '  .ar-menu-stat { display: flex; align-items: baseline; gap: 8px; }',
+      '  .ar-menu-stat-label { margin-top: 0; }',
+      '  .ar-menu-category-button { align-items: flex-start !important; }',
+      '  .ar-menu-module-grid { grid-template-columns: 1fr; }',
+      '}',
+      '@media (forced-colors: active) {',
+      '  .ar-menu-hero::after { display: none; }',
+      '  .ar-menu-icon-well, .ar-menu-stat { border: 1px solid CanvasText !important; }',
       '}',
       '.ar-stripe-anim {',
       '  background-image: repeating-linear-gradient(45deg, rgba(245,158,11,0.35) 0 8px, rgba(245,158,11,0.10) 8px 16px);',
@@ -102,7 +1506,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       '.ar-pulse-ring    { animation: ar-pulse-ring 1.6s ease-out infinite; display: inline-block; border-radius: 9999px; }',
       // Print stylesheet — strip motion, hide nav/back, expand details, force white bg
       '@media print {',
-      '  button[data-ar-focusable] { display: none !important; }',
+      '  [data-ar-print-hide="true"] { display: none !important; }',
       '  .ar-stripe-anim, .ar-warning-blink, .ar-pulse-ring { animation: none !important; }',
       '  body { background: white !important; color: black !important; }',
       '}'
@@ -1684,6 +3088,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // The 30-minute walkaround a Maine teen should learn before buying their
   // first car. Salt-state cars hide problems in places New Mexico cars don\'t.
   // ─────────────────────────────────────────────────────────
+  var USED_CAR_BEST_PRACTICES = [
+    { id: 'research', icon: '🆔', title: 'Research before visiting', i18n: 'stem.autorepair.run_a_carfax_nhtsa_recall_check_via_vi', text: 'Run a CarFax + NHTSA recall check via VIN BEFORE you go look. ($40 well spent.)' },
+    { id: 'cold-start', icon: '❄️', title: 'Ask for a cold start', i18n: 'stem.autorepair.insist_on_a_cold_start_warm_engines_hi', text: 'Insist on a COLD start. Warm engines hide problems.' },
+    { id: 'inspection', icon: '🔍', title: 'Book an independent PPI', i18n: 'stem.autorepair.pay_for_a_80_150_pre_purchase_inspecti', text: 'Pay for a $80–150 pre-purchase inspection (PPI) at an independent shop on anything over $5,000.' },
+    { id: 'paperwork', icon: '📄', title: 'Verify title and registration', i18n: 'stem.autorepair.get_the_title_and_registration_in_your', text: 'Get the title and registration in your name within 30 days (Maine requirement).' },
+    { id: 'test-drive', icon: '🛣️', title: 'Drive every condition', i18n: 'stem.autorepair.test_drive_30_minutes_including_highwa', text: 'Test drive 30+ minutes including highway, stop-and-go, and bumpy back-roads.' },
+    { id: 'records', icon: '📚', title: 'Request service history', i18n: 'stem.autorepair.ask_for_service_records_the_owner_who_', text: 'Ask for service records. The owner who says "I don\'t have any" is selling a car someone else didn\'t care about.' }
+  ];
+
   var USED_CAR_CHECK = {
     intro: 'In Maine, the cheap-on-paper used car often has $3,000–$8,000 of hidden rust and deferred maintenance. A 30-minute pre-purchase inspection catches 80% of it. Bring this checklist to the seller.',
     redFlags: [
@@ -2606,6 +4019,144 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       return Object.assign({}, m, { milesUntil: milesUntil, monthsUntil: monthsUntil, status: status, vehicleAge: vehicleAge });
     });
     return upcoming;
+  }
+
+  // Service-log helpers stay pure so validation, legacy-data cleanup and CSV
+  // safety can be tested independently from the rendered form.
+  function arValidateServiceEntry(draft, existingEntries, todayIso) {
+    var input = draft && typeof draft === 'object' ? draft : {};
+    var entries = Array.isArray(existingEntries) ? existingEntries : [];
+    var errors = {};
+    var date = String(input.date == null ? '' : input.date).trim();
+    var service = String(input.service == null ? '' : input.service).trim();
+    var odoText = String(input.odo == null ? '' : input.odo).trim();
+    var costText = String(input.cost == null ? '' : input.cost).trim();
+    var notes = String(input.notes == null ? '' : input.notes).trim();
+    var today = todayIso || new Date().toISOString().slice(0, 10);
+
+    function isRealIsoDate(value) {
+      var match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+      if (!match) return false;
+      var year = Number(match[1]);
+      var month = Number(match[2]);
+      var day = Number(match[3]);
+      var parsed = new Date(Date.UTC(year, month - 1, day));
+      return parsed.getUTCFullYear() === year &&
+        parsed.getUTCMonth() === month - 1 &&
+        parsed.getUTCDate() === day;
+    }
+
+    if (!date || !isRealIsoDate(date)) errors.date = 'Enter a valid service date.';
+    else if (date > today) errors.date = 'Service date cannot be in the future.';
+
+    if (!service) errors.service = 'Describe the service that was performed.';
+    else if (service.length > 120) errors.service = 'Service description must be 120 characters or fewer.';
+
+    var odo = 0;
+    if (odoText) {
+      odo = Number(odoText);
+      if (!isFinite(odo) || Math.floor(odo) !== odo || odo < 0 || odo > 1500000) {
+        errors.odo = 'Odometer must be a whole number from 0 to 1,500,000.';
+        odo = 0;
+      }
+    }
+
+    var cost = 0;
+    if (costText) {
+      cost = Number(costText);
+      if (!isFinite(cost) || cost < 0 || cost > 1000000) {
+        errors.cost = 'Cost must be from $0 to $1,000,000.';
+        cost = 0;
+      } else {
+        cost = Math.round(cost * 100) / 100;
+      }
+    }
+
+    if (notes.length > 500) errors.notes = 'Notes must be 500 characters or fewer.';
+
+    var value = { date: date, odo: odo, service: service, cost: cost, notes: notes };
+    if (Object.keys(errors).length === 0) {
+      var duplicate = entries.some(function(entry) {
+        return entry &&
+          String(entry.date || '').trim() === value.date &&
+          Number(entry.odo || 0) === value.odo &&
+          String(entry.service || '').trim().toLowerCase() === value.service.toLowerCase();
+      });
+      if (duplicate) errors.duplicate = 'This date, odometer, and service already exist in the log.';
+    }
+
+    return { valid: Object.keys(errors).length === 0, errors: errors, value: value };
+  }
+
+  function arNextServiceEntryId(entries, nowMs) {
+    var list = Array.isArray(entries) ? entries : [];
+    var parsedTime = Number(nowMs);
+    if (!isFinite(parsedTime)) parsedTime = Date.now();
+    var base = 'log_' + Math.max(0, Math.floor(parsedTime));
+    var used = {};
+    list.forEach(function(entry) {
+      if (entry && entry.id != null) used[String(entry.id)] = true;
+    });
+    if (!used[base]) return base;
+    var suffix = 2;
+    while (used[base + '_' + suffix]) suffix++;
+    return base + '_' + suffix;
+  }
+
+  function arNormalizeServiceEntries(entries) {
+    var list = Array.isArray(entries) ? entries : [];
+    var used = {};
+    return list.filter(function(entry) {
+      return entry && typeof entry === 'object';
+    }).map(function(entry, index) {
+      var baseId = String(entry.id == null || entry.id === '' ? 'legacy_' + index : entry.id);
+      var id = baseId;
+      var suffix = 2;
+      while (used[id]) {
+        id = baseId + '_' + suffix;
+        suffix++;
+      }
+      used[id] = true;
+      var odo = Number(entry.odo);
+      var cost = Number(entry.cost);
+      return {
+        id: id,
+        date: String(entry.date == null ? '' : entry.date).trim(),
+        odo: isFinite(odo) && odo >= 0 ? Math.floor(odo) : 0,
+        service: String(entry.service == null ? '' : entry.service).trim() || 'Unlabelled service',
+        cost: isFinite(cost) && cost >= 0 ? Math.round(cost * 100) / 100 : 0,
+        notes: String(entry.notes == null ? '' : entry.notes).trim()
+      };
+    });
+  }
+
+  function arBuildServiceCSV(entries) {
+    var list = Array.isArray(entries) ? entries : [];
+
+    function safeCell(value) {
+      var text = String(value == null ? '' : value);
+      // Spreadsheet programs can execute cells beginning with these characters.
+      // Prefix a single quote while preserving the learner's original text.
+      if (/^[\s]*[=+\-@]/.test(text)) text = "'" + text;
+      return '"' + text.replace(/"/g, '""') + '"';
+    }
+
+    var lines = ['date,odometer,service,cost,notes'];
+    list.forEach(function(entry) {
+      if (!entry || typeof entry !== 'object') return;
+      var odo = Number(entry.odo);
+      var cost = Number(entry.cost);
+      if (!isFinite(odo) || odo < 0) odo = 0;
+      if (!isFinite(cost) || cost < 0) cost = 0;
+      lines.push([
+        safeCell(entry.date),
+        safeCell(Math.floor(odo)),
+        safeCell(entry.service),
+        safeCell((Math.round(cost * 100) / 100).toFixed(2)),
+        safeCell(entry.notes)
+      ].join(','));
+    });
+    return lines.join('\r\n');
   }
 
   // ─────────────────────────────────────────────────────────
@@ -3983,19 +5534,213 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (api.wantShadow) ground.receiveShadow = true;
     api.scene.add(ground);
 
-    // Car body corner + sill, lifted as a unit when jacked
+    // Shoulder paint and subtle asphalt patches give the procedure real scale.
+    var shoulderLine = new THREE.Mesh(
+      new THREE.BoxGeometry(8.2, 0.018, 0.09),
+      api.trim(api.contrast ? 0xffffff : 0xf2d46b, 18)
+    );
+    shoulderLine.position.set(0, 0.012, -1.95);
+    api.scene.add(shoulderLine);
+    var patchMat = new THREE.MeshBasicMaterial({
+      color: api.contrast ? 0xffffff : 0x555f6b,
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.32
+    });
+    [[-2.4, 1.4, 0.42], [1.8, -0.8, 0.28], [2.8, 1.5, 0.20]].forEach(function (patch) {
+      var asphaltPatch = new THREE.Mesh(
+        new THREE.CircleGeometry(patch[2], 20), patchMat);
+      asphaltPatch.rotation.x = -Math.PI / 2;
+      asphaltPatch.position.set(patch[0], 0.015, patch[1]);
+      api.scene.add(asphaltPatch);
+    });
+    var contactShadow = new THREE.Mesh(
+      new THREE.CircleGeometry(1, 40),
+      new THREE.MeshBasicMaterial({
+        color: api.contrast ? 0x000000 : 0x111827,
+        transparent: true,
+        opacity: api.contrast ? 0.38 : 0.20,
+        depthWrite: false
+      })
+    );
+    contactShadow.name = 'vehicle-contact-shadow';
+    contactShadow.rotation.x = -Math.PI / 2;
+    contactShadow.scale.set(2.32, 0.72, 1);
+    contactShadow.position.set(0, 0.026, 0.04);
+    api.scene.add(contactShadow);
+    for (var reflector = -3; reflector <= 3; reflector++) {
+      var roadStud = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.026, 0.055),
+        api.trim(api.contrast ? 0xffffff : 0xe9eef3, 64)
+      );
+      roadStud.position.set(reflector * 1.05, 0.03, -1.95);
+      api.scene.add(roadStud);
+    }
+
+    // A bevelled four-door compact, with real glazing, body seams, lamps and
+    // wheel proportions, keeps the procedure readable without looking toy-like.
     var car = new THREE.Group();
-    var bodyMat = api.trim(api.contrast ? 0xffffff : 0x3b6ea5, 40);
-    var body = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.85, 1.5), bodyMat);
-    body.position.set(0, 1.05, 0);
+    car.name = 'roadside-compact-car';
+    var frontWheelX = -1.22;
+    var rearWheelX = 1.28;
+    var wheelY = 0.40;
+    var bodyMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0x2f78aa,
+      shininess: api.contrast ? 0 : 96,
+      specular: 0xd5e8f4
+    });
+    var bodyShape = new THREE.Shape();
+    bodyShape.moveTo(-2.10, 0.58);
+    bodyShape.lineTo(-2.04, 0.84);
+    bodyShape.lineTo(-1.82, 1.08);
+    bodyShape.lineTo(-0.78, 1.23);
+    bodyShape.lineTo(-0.31, 1.70);
+    bodyShape.lineTo(0.62, 1.72);
+    bodyShape.lineTo(1.16, 1.29);
+    bodyShape.lineTo(1.82, 1.12);
+    bodyShape.lineTo(2.05, 0.86);
+    bodyShape.lineTo(2.10, 0.58);
+    bodyShape.closePath();
+    var body = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(bodyShape, {
+        depth: 1.38,
+        bevelEnabled: !api.contrast,
+        bevelThickness: 0.055,
+        bevelSize: 0.055,
+        bevelSegments: 3,
+        curveSegments: 16
+      }),
+      bodyMat
+    );
+    body.name = 'painted-unibody-shell';
+    body.position.z = -0.69;
     car.add(body);
-    var roof = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.55, 1.35), bodyMat);
-    roof.position.set(0.1, 1.72, 0);
-    car.add(roof);
-    var sill = new THREE.Mesh(new THREE.BoxGeometry(2.7, 0.14, 0.16),
-      api.trim(api.contrast ? 0xffffff : 0x27384d, 20));
-    sill.position.set(0, 0.58, 0.74);
-    car.add(sill);
+    var glassMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x000000 : 0x10283b,
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.90,
+      shininess: 108,
+      specular: 0xe4f5ff,
+      side: THREE.DoubleSide
+    });
+    function glassPanel(points, z, name) {
+      var glassShape = new THREE.Shape();
+      glassShape.moveTo(points[0][0], points[0][1]);
+      for (var gp = 1; gp < points.length; gp++) {
+        glassShape.lineTo(points[gp][0], points[gp][1]);
+      }
+      glassShape.closePath();
+      var glass = new THREE.Mesh(
+        new THREE.ShapeGeometry(glassShape, 12), glassMat);
+      glass.name = name;
+      glass.position.z = z;
+      car.add(glass);
+    }
+    [0.758, -0.758].forEach(function (z) {
+      glassPanel([
+        [-0.70, 1.25], [-0.28, 1.64], [0.08, 1.65], [0.08, 1.25]
+      ], z, 'front-door-glass');
+      glassPanel([
+        [0.19, 1.25], [0.19, 1.65], [0.58, 1.65], [1.05, 1.25]
+      ], z, 'rear-door-glass');
+    });
+    var frontWindshield = new THREE.Mesh(
+      new THREE.BoxGeometry(0.055, 0.52, 1.26), glassMat);
+    frontWindshield.name = 'laminated-front-windshield';
+    frontWindshield.position.set(-0.53, 1.47, 0);
+    frontWindshield.rotation.z = -0.66;
+    car.add(frontWindshield);
+    var rearWindshield = new THREE.Mesh(
+      new THREE.BoxGeometry(0.055, 0.48, 1.24), glassMat);
+    rearWindshield.name = 'heated-rear-window';
+    rearWindshield.position.set(0.88, 1.47, 0);
+    rearWindshield.rotation.z = 0.66;
+    car.add(rearWindshield);
+    var trimMat = api.trim(api.contrast ? 0xffffff : 0x172232, 36);
+    var paintHighlightMat = new THREE.MeshBasicMaterial({
+      color: api.contrast ? 0xffffff : 0x9fd9f4,
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.42
+    });
+    [0.770, -0.770].forEach(function (z) {
+      var sill = new THREE.Mesh(
+        new THREE.BoxGeometry(3.48, 0.11, 0.055), trimMat);
+      sill.position.set(0.02, 0.60, z);
+      car.add(sill);
+      var beltline = new THREE.Mesh(
+        new THREE.BoxGeometry(3.36, 0.022, 0.028), paintHighlightMat);
+      beltline.position.set(0.02, 1.20, z * 1.01);
+      car.add(beltline);
+      [frontWheelX, rearWheelX].forEach(function (x) {
+        var wheelArch = new THREE.Mesh(
+          new THREE.TorusGeometry(0.48, 0.032, 10, 40), trimMat);
+        wheelArch.position.set(x, wheelY + 0.01, z);
+        car.add(wheelArch);
+      });
+      [0.13, 1.08].forEach(function (x, seamIndex) {
+        var doorSeam = new THREE.Mesh(
+          new THREE.BoxGeometry(0.018, seamIndex ? 0.46 : 0.62, 0.022),
+          trimMat
+        );
+        doorSeam.position.set(x, seamIndex ? 0.93 : 0.99, z * 1.012);
+        car.add(doorSeam);
+      });
+      [-0.20, 0.66].forEach(function (x) {
+        var handle = new THREE.Mesh(
+          new THREE.BoxGeometry(0.19, 0.032, 0.032), trimMat);
+        handle.position.set(x, 1.15, z * 1.018);
+        car.add(handle);
+      });
+      var mirror = new THREE.Mesh(
+        new THREE.BoxGeometry(0.23, 0.12, 0.17), bodyMat);
+      mirror.name = 'folding-side-mirror';
+      mirror.position.set(-0.61, 1.39, z + (z > 0 ? 0.10 : -0.10));
+      car.add(mirror);
+    });
+    var undertray = new THREE.Mesh(
+      new THREE.BoxGeometry(3.48, 0.10, 1.16), trimMat);
+    undertray.position.set(0, 0.57, 0);
+    car.add(undertray);
+    var headlampMat = new THREE.MeshPhongMaterial({
+      color: 0xe7f6ff,
+      emissive: api.contrast ? 0x000000 : 0x8ecdf1,
+      emissiveIntensity: 0.32,
+      shininess: 100
+    });
+    [-0.38, 0.38].forEach(function (z) {
+      var headlamp = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.17, 0.30), headlampMat);
+      headlamp.position.set(-2.065, 0.97, z);
+      car.add(headlamp);
+      var tailLamp = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.20, 0.28),
+        api.trim(api.contrast ? 0xffffff : 0xb91c1c, 74)
+      );
+      tailLamp.position.set(2.065, 0.98, z);
+      car.add(tailLamp);
+    });
+    var grille = new THREE.Mesh(
+      new THREE.BoxGeometry(0.045, 0.23, 0.72), trimMat);
+    grille.name = 'front-grille';
+    grille.position.set(-2.115, 0.82, 0);
+    car.add(grille);
+    var licensePlate = new THREE.Mesh(
+      new THREE.BoxGeometry(0.028, 0.16, 0.38),
+      api.trim(api.contrast ? 0xffffff : 0xe8edf2, 24)
+    );
+    licensePlate.name = 'rear-license-plate';
+    licensePlate.position.set(2.12, 0.81, 0);
+    car.add(licensePlate);
+    [-2.07, 2.07].forEach(function (x) {
+      var bumper = new THREE.Mesh(
+        new THREE.BoxGeometry(0.14, 0.13, 1.27), trimMat);
+      bumper.position.set(x, 0.69, 0);
+      car.add(bumper);
+    });
+    var antenna = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.012, 0.018, 0.32, 8), trimMat);
+    antenna.position.set(0.74, 1.86, 0);
+    antenna.rotation.z = -0.10;
+    car.add(antenna);
     car.position.y = lift;
     if (api.wantShadow) car.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
     api.scene.add(car);
@@ -4017,27 +5762,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var jpMesh = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.13, 0.13),
       api.trim(api.contrast ? 0xffffff : 0xf59e0b, 50));
     jp.add(jpMesh);
-    jp.position.set(-0.42, 0.58, 0.76);
+    jp.position.set(frontWheelX + 0.55, 0.58, 0.76);
     reg('jackpoint', jp, car);
 
     function wheel(radius, width, tyreHex) {
       var g = new THREE.Group();
-      var tyre = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, width, 26),
-        api.trim(api.contrast ? 0xdddddd : tyreHex, 6));
-      tyre.rotation.x = Math.PI / 2;
-      g.add(tyre);
-      var rim = new THREE.Mesh(new THREE.CylinderGeometry(radius * 0.58, radius * 0.58, width * 1.04, 22),
-        api.trim(api.contrast ? 0xffffff : 0xc3cbd6, 60));
+      g.name = 'realistic-wheel-assembly';
+      var tyreMat = api.trim(api.contrast ? 0xdddddd : tyreHex, 7);
+      g.add(new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 0.77, radius * 0.23, 16, 44),
+        tyreMat
+      ));
+      [-0.48, 0.48].forEach(function (side) {
+        var sidewallRib = new THREE.Mesh(
+          new THREE.TorusGeometry(radius * 0.77, radius * 0.014, 8, 44),
+          api.trim(api.contrast ? 0xffffff : 0x343b46, 12)
+        );
+        sidewallRib.position.z = width * side;
+        g.add(sidewallRib);
+      });
+      var brakeRotor = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius * 0.48, radius * 0.48, width * 0.18, 28),
+        api.trim(api.contrast ? 0xffffff : 0x87919e, 64)
+      );
+      brakeRotor.rotation.x = Math.PI / 2;
+      brakeRotor.position.z = -width * 0.08;
+      g.add(brakeRotor);
+      var rimMat = api.trim(api.contrast ? 0xffffff : 0xcbd5df, 82);
+      var rim = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius * 0.29, radius * 0.29, width * 0.82, 24),
+        rimMat
+      );
       rim.rotation.x = Math.PI / 2;
       g.add(rim);
+      var rimLip = new THREE.Mesh(
+        new THREE.TorusGeometry(radius * 0.30, radius * 0.025, 8, 32),
+        rimMat
+      );
+      rimLip.position.z = width * 0.43;
+      g.add(rimLip);
+      for (var spokeIndex = 0; spokeIndex < 5; spokeIndex++) {
+        var spokeAngle = spokeIndex / 5 * Math.PI * 2;
+        var spoke = new THREE.Mesh(
+          new THREE.BoxGeometry(0.055, radius * 0.46, width * 0.22),
+          rimMat
+        );
+        spoke.position.set(
+          Math.sin(spokeAngle) * radius * 0.18,
+          Math.cos(spokeAngle) * radius * 0.18,
+          width * 0.36
+        );
+        spoke.rotation.z = -spokeAngle;
+        g.add(spoke);
+      }
+      var hubCap = new THREE.Mesh(
+        new THREE.CylinderGeometry(radius * 0.12, radius * 0.12, width * 0.88, 18),
+        rimMat
+      );
+      hubCap.rotation.x = Math.PI / 2;
+      g.add(hubCap);
       return g;
     }
 
     // Flat tyre — on the car, or lying on the ground once removed
     var flat = wheel(0.40, 0.24, 0x1b1f27);
-    if (stowed) flat.position.set(-1.85, -0.8, 1.15);                   // back in the boot
-    else if (flatOff) { flat.position.set(-1.85, 0.12, 1.15); flat.rotation.x = Math.PI / 2; }
-    else { flat.position.set(-0.95, 0.40 + lift, 0.70); }
+    if (!flatOff && !stowed) flat.scale.y = 0.82;
+    if (stowed) flat.position.set(-2.10, -0.8, 1.15);                   // back in the boot
+    else if (flatOff) { flat.position.set(-1.80, 0.12, 1.28); flat.rotation.x = Math.PI / 2; }
+    else { flat.position.set(frontWheelX, wheelY - 0.03 + lift, 0.72); }
     reg('wheel', flat);
 
     // Lug nuts — on the flat while mounted, on the spare once fitted
@@ -4051,7 +5843,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       lugs.add(nut);
     }
     if (flatOff && !spareOn) lugs.position.set(-1.55, 0.05, 1.5);        // set aside
-    else lugs.position.set(-0.95, 0.40 + lift, 0.70);
+    else lugs.position.set(frontWheelX, wheelY - 0.03 + lift, 0.72);
     reg('lugs', lugs);
 
     // Hub, visible only with the wheel off
@@ -4059,22 +5851,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       var hub = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.12, 18),
         api.trim(api.contrast ? 0xffffff : 0x6b7280, 40));
       hub.rotation.x = Math.PI / 2;
-      hub.position.set(-0.95, 0.40 + lift, 0.66);
+      hub.position.set(frontWheelX, wheelY - 0.03 + lift, 0.68);
       if (api.wantShadow) hub.castShadow = true;
       api.scene.add(hub);
+      var caliper = new THREE.Mesh(
+        new THREE.BoxGeometry(0.10, 0.24, 0.10),
+        api.trim(api.contrast ? 0xffffff : 0x9f332a, 52)
+      );
+      caliper.position.set(frontWheelX + 0.21, wheelY - 0.01 + lift, 0.62);
+      if (api.wantShadow) caliper.castShadow = true;
+      api.scene.add(caliper);
+      for (var studIndex = 0; studIndex < 5; studIndex++) {
+        var studAngle = studIndex / 5 * Math.PI * 2;
+        var stud = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.022, 0.022, 0.08, 8),
+          api.trim(0x9ca3af, 55)
+        );
+        stud.rotation.x = Math.PI / 2;
+        stud.position.set(
+          frontWheelX + Math.cos(studAngle) * 0.10,
+          wheelY - 0.03 + lift + Math.sin(studAngle) * 0.10,
+          0.73
+        );
+        api.scene.add(stud);
+      }
     }
 
     // Rear wheel, always on
     var rear = wheel(0.40, 0.24, 0x1b1f27);
-    rear.position.set(1.05, 0.40 + lift, 0.70);
+    rear.position.set(rearWheelX, wheelY + lift, 0.72);
     if (api.wantShadow) rear.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
     api.scene.add(rear);
 
     // Spare — leaning by the car, then mounted
     var spare = wheel(0.38, 0.20, 0x2a2f39);
-    if (spareOn) spare.position.set(-0.95, 0.40 + lift, 0.70);
-    else if (jackOut) { spare.position.set(-2.05, 0.38, 0.05); spare.rotation.y = 0.3; }
-    else spare.position.set(-2.05, -0.6, 0.05);                          // still in the boot
+    if (spareOn) spare.position.set(frontWheelX, wheelY + lift, 0.72);
+    else if (jackOut) { spare.position.set(-2.34, 0.38, 0.18); spare.rotation.y = 0.3; }
+    else spare.position.set(-2.34, -0.6, 0.18);                          // still in the boot
     reg('spare', spare);
 
     // Jack — out of the boot, then under the jack point
@@ -4084,7 +5897,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var jcol = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.30 + lift, 0.09), api.trim(0xd1d5db, 50));
     jcol.position.y = 0.16 + lift / 2;
     jack.add(jcol);
-    if (jackUnder) jack.position.set(-0.42, 0.02, 0.76);
+    [-1, 1].forEach(function (dir) {
+      var scissorArm = new THREE.Mesh(
+        new THREE.BoxGeometry(0.055, 0.36 + lift * 0.7, 0.045),
+        api.trim(0x7b8795, 46)
+      );
+      scissorArm.position.y = 0.17 + lift / 2;
+      scissorArm.rotation.z = dir * 0.48;
+      jack.add(scissorArm);
+    });
+    var saddle = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.075, 0.075, 0.035, 14),
+      api.trim(0x2d3744, 28)
+    );
+    saddle.position.y = 0.34 + lift;
+    jack.add(saddle);
+    var jackHandle = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.018, 0.018, 0.54, 9),
+      api.trim(0x94a3b8, 52)
+    );
+    jackHandle.position.set(0.30, 0.16, 0);
+    jackHandle.rotation.z = Math.PI / 2.8;
+    jack.add(jackHandle);
+    if (jackUnder) jack.position.set(frontWheelX + 0.55, 0.02, 0.76);
     else if (jackOut) jack.position.set(-1.6, 0.02, 1.55);
     else jack.position.set(-1.6, -0.7, 1.55);
     reg('jack', jack);
@@ -4093,8 +5928,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     var chock = new THREE.Group();
     var cw = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.16, 0.24), api.trim(0xca8a04, 18));
     chock.add(cw);
-    if (chockOut) chock.position.set(1.52, 0.08, 0.70);
-    else chock.position.set(1.52, -0.7, 0.70);
+    if (chockOut) chock.position.set(rearWheelX + 0.48, 0.08, 0.72);
+    else chock.position.set(rearWheelX + 0.48, -0.7, 0.72);
     reg('chock', chock);
 
     return { meshes: meshes, picks: picks, anchor: ground };
@@ -4108,6 +5943,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   function buildEngineBayScene(THREE, api) {
     var meshes = {};
     var picks = [];
+    var engineRunning = !!(api.sceneProps && api.sceneProps.engineRunning);
+    var coolingFan = null;
+    var beltPulleys = [];
+    var alternatorRotor = null;
+    var beltMarker = null;
+    var idleParts = [];
     // Bay shell: floor + low fender rails + firewall. Kept deliberately LOW
     // and dark — it exists to frame the parts, and earlier taller walls just
     // occluded them from any useful camera angle. The grille side is left
@@ -4120,6 +5961,417 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     floor.position.set(0, -0.04, 0);
     if (api.wantShadow) floor.receiveShadow = true;
     api.scene.add(floor);
+
+    // A restrained working-shop environment grounds the car instead of leaving
+    // the engine bay floating in an abstract studio. The pieces are decorative,
+    // share a small material set, and stay outside the picking graph.
+    var serviceBay = new THREE.Group();
+    serviceBay.name = 'service-bay-environment';
+    var concreteMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x080808 : (api.dark ? 0x252b35 : 0x737b86),
+      shininess: 4, specular: 0x181c22
+    });
+    var floorWearMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : (api.dark ? 0x3f4650 : 0x565f69),
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.20,
+      shininess: 7,
+      specular: api.contrast ? 0x000000 : 0x222831
+    });
+    var floorSheenMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0x7893a8,
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.13,
+      shininess: api.contrast ? 0 : 96,
+      specular: api.contrast ? 0x000000 : 0xc8e6f5
+    });
+    var floorScuffMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0x171b21,
+      transparent: !api.contrast,
+      opacity: api.contrast ? 1 : 0.24,
+      shininess: 3,
+      specular: 0x111111
+    });
+    var wallMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x111111 : (api.dark ? 0x202a38 : 0xc8ced5),
+      shininess: 5, specular: 0x202631
+    });
+    var steelMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x555555 : 0x344155,
+      shininess: 42, specular: 0x9aa7b8
+    });
+    var safetyMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0xf5b522,
+      shininess: 34, specular: 0xffe4a0
+    });
+    var cabinetMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0x777777 : 0x8f1d2c,
+      shininess: 58, specular: 0xf0a0a8
+    });
+    function shopMesh(geometry, material, position, rotation, casts, receives) {
+      var mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position[0], position[1], position[2]);
+      if (rotation) mesh.rotation.set(rotation[0], rotation[1], rotation[2]);
+      mesh.userData.decorative = true;
+      if (api.wantShadow) {
+        mesh.castShadow = !!casts;
+        mesh.receiveShadow = !!receives;
+      }
+      serviceBay.add(mesh);
+      return mesh;
+    }
+    var shopFloor = shopMesh(
+      new THREE.BoxGeometry(7.8, 0.08, 6.8),
+      concreteMat, [0, -0.42, 0.35], null, false, true
+    );
+    shopFloor.name = 'epoxy-service-floor';
+
+    // Real shop floors are never perfectly uniform. Low-profile translucent
+    // patches, expansion joints, and partial tyre arcs give the epoxy scale and
+    // history without turning the scene into a dirty or distracting space.
+    var floorPatina = new THREE.Group();
+    floorPatina.name = 'service-bay-floor-patina';
+    [
+      [-2.46, -1.42, 1.25, 0.48, -0.22, floorWearMat],
+      [2.62, 0.92, 0.82, 0.34, 0.34, floorWearMat],
+      [-0.72, 2.14, 1.42, 0.24, -0.08, floorSheenMat],
+      [1.12, 1.70, 0.92, 0.30, 0.18, floorSheenMat]
+    ].forEach(function (patchSpec, patchIndex) {
+      var floorPatch = new THREE.Mesh(
+        new THREE.CircleGeometry(0.34, 22),
+        patchSpec[5]
+      );
+      floorPatch.name = 'epoxy-floor-wear-' + patchIndex;
+      floorPatch.rotation.x = -Math.PI / 2;
+      floorPatch.rotation.z = patchSpec[4];
+      floorPatch.scale.set(patchSpec[2], patchSpec[3], 1);
+      floorPatch.position.set(patchSpec[0], -0.369, patchSpec[1]);
+      floorPatch.userData.decorative = true;
+      floorPatina.add(floorPatch);
+    });
+    [-1, 1].forEach(function (side, scuffIndex) {
+      var tyreScuff = new THREE.Mesh(
+        new THREE.TorusGeometry(0.48, 0.012, 4, 34, Math.PI * 1.36),
+        floorScuffMat
+      );
+      tyreScuff.name = 'service-tyre-scuff-' + scuffIndex;
+      tyreScuff.rotation.x = Math.PI / 2;
+      tyreScuff.rotation.z = side * 0.24;
+      tyreScuff.position.set(side * 1.42, -0.356, 1.05 + side * 0.10);
+      tyreScuff.userData.decorative = true;
+      floorPatina.add(tyreScuff);
+    });
+    serviceBay.add(floorPatina);
+
+    var floorSeams = new THREE.Group();
+    floorSeams.name = 'epoxy-expansion-seam-grid';
+    [-1.42, 0.26, 2.02].forEach(function (z, seamIndex) {
+      var crossSeam = new THREE.Mesh(
+        new THREE.BoxGeometry(7.34, 0.009, 0.018),
+        api.trim(api.contrast ? 0xffffff : 0x343b44, 3)
+      );
+      crossSeam.name = 'floor-cross-seam-' + seamIndex;
+      crossSeam.position.set(0, -0.366, z);
+      crossSeam.userData.decorative = true;
+      floorSeams.add(crossSeam);
+    });
+    [-1.90, 1.90].forEach(function (x, seamIndex) {
+      var longSeam = new THREE.Mesh(
+        new THREE.BoxGeometry(0.018, 0.009, 6.32),
+        api.trim(api.contrast ? 0xffffff : 0x343b44, 3)
+      );
+      longSeam.name = 'floor-long-seam-' + seamIndex;
+      longSeam.position.set(x, -0.366, 0.26);
+      longSeam.userData.decorative = true;
+      floorSeams.add(longSeam);
+    });
+    serviceBay.add(floorSeams);
+    shopMesh(new THREE.BoxGeometry(7.6, 3.1, 0.08), wallMat,
+      [0, 1.08, -3.02], null, false, true);
+    shopMesh(new THREE.BoxGeometry(7.6, 0.76, 0.045), steelMat,
+      [0, 0.12, -2.96], null, false, true);
+
+    // Two-post lift and its swing arms frame the vehicle without covering parts.
+    var rubberLiftMat = api.trim(api.contrast ? 0xffffff : 0x171b20, 8);
+    [-2.46, 2.46].forEach(function (x) {
+      shopMesh(new THREE.BoxGeometry(0.26, 2.55, 0.34), steelMat,
+        [x, 0.86, -0.12], null, true, true);
+      shopMesh(new THREE.BoxGeometry(0.62, 0.055, 0.72), steelMat,
+        [x, -0.34, -0.10], null, true, true);
+      var liftCarriage = shopMesh(
+        new THREE.BoxGeometry(0.38, 0.34, 0.43), steelMat,
+        [x, 0.26, -0.10], null, true, true);
+      liftCarriage.name = 'two-post-lift-carriage';
+      shopMesh(new THREE.BoxGeometry(1.12, 0.07, 0.16), safetyMat,
+        [x * 0.72, -0.24, 0.36], [0, x < 0 ? -0.24 : 0.24, 0], true, true);
+      var liftPad = shopMesh(
+        new THREE.CylinderGeometry(0.14, 0.13, 0.055, 18), rubberLiftMat,
+        [x * 0.50, -0.17, 0.36], null, true, true);
+      liftPad.name = 'two-post-lift-rubber-pad';
+      [-0.19, 0.19].forEach(function (anchorX) {
+        [-0.19, 0.19].forEach(function (anchorZ) {
+          var anchorBolt = shopMesh(
+            new THREE.CylinderGeometry(0.032, 0.032, 0.04, 10), steelMat,
+            [x + anchorX, -0.32, -0.10 + anchorZ], null, true, false);
+          anchorBolt.name = 'lift-base-anchor-bolt';
+        });
+      });
+    });
+    shopMesh(new THREE.BoxGeometry(5.18, 0.20, 0.30), steelMat,
+      [0, 2.03, -0.12], null, true, true);
+    var liftControl = shopMesh(
+      new THREE.BoxGeometry(0.24, 0.40, 0.13), steelMat,
+      [-2.28, 1.08, 0.10], null, true, true);
+    liftControl.name = 'two-post-lift-control';
+    shopMesh(
+      new THREE.CylinderGeometry(0.045, 0.045, 0.03, 14),
+      api.trim(api.contrast ? 0xffffff : 0xc81e1e, 54),
+      [-2.28, 1.15, 0.18], [Math.PI / 2, 0, 0], true, false);
+    shopMesh(
+      new THREE.CylinderGeometry(0.032, 0.032, 0.03, 14),
+      api.trim(api.contrast ? 0xffffff : 0x2e9d55, 42),
+      [-2.28, 1.02, 0.18], [Math.PI / 2, 0, 0], true, false);
+    [-2.08, 2.08].forEach(function (x) {
+      shopMesh(new THREE.BoxGeometry(0.075, 0.025, 4.85), safetyMat,
+        [x, -0.365, 0.46], null, false, false);
+    });
+    for (var stripe = 0; stripe < 7; stripe++) {
+      shopMesh(new THREE.BoxGeometry(0.42, 0.026, 0.12),
+        stripe % 2 ? steelMat : safetyMat,
+        [-1.35 + stripe * 0.45, -0.36, 2.48], [0, 0.28, 0], false, false);
+    }
+    var floorDrain = shopMesh(
+      new THREE.BoxGeometry(0.82, 0.024, 0.25), steelMat,
+      [0.78, -0.365, 1.78], null, false, false);
+    floorDrain.name = 'service-bay-floor-drain';
+    for (var drainSlot = 0; drainSlot < 6; drainSlot++) {
+      shopMesh(
+        new THREE.BoxGeometry(0.035, 0.027, 0.20), concreteMat,
+        [0.48 + drainSlot * 0.12, -0.348, 1.78],
+        null, false, false);
+    }
+    shopMesh(
+      new THREE.BoxGeometry(7.10, 0.012, 0.022),
+      api.trim(api.contrast ? 0xffffff : 0x38414b, 5),
+      [0, -0.365, 2.06], null, false, false);
+
+    // Roll cabinet and pegboard silhouettes create recognizable shop scale.
+    var toolCabinet = new THREE.Group();
+    toolCabinet.name = 'shop-tool-cabinet';
+    var cabinetBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.92, 1.02, 0.42), cabinetMat);
+    cabinetBody.position.set(2.58, 0.10, -2.67);
+    toolCabinet.add(cabinetBody);
+    for (var drawer = 0; drawer < 5; drawer++) {
+      var drawerFace = new THREE.Mesh(
+        new THREE.BoxGeometry(0.78, 0.12, 0.025), steelMat);
+      drawerFace.position.set(2.58, -0.22 + drawer * 0.17, -2.445);
+      toolCabinet.add(drawerFace);
+      var drawerPull = new THREE.Mesh(
+        new THREE.BoxGeometry(0.34, 0.025, 0.025), safetyMat);
+      drawerPull.position.set(2.58, -0.22 + drawer * 0.17, -2.425);
+      toolCabinet.add(drawerPull);
+    }
+    var cabinetTop = new THREE.Mesh(
+      new THREE.BoxGeometry(0.98, 0.055, 0.46), steelMat);
+    cabinetTop.position.set(2.58, 0.635, -2.67);
+    toolCabinet.add(cabinetTop);
+    [2.28, 2.88].forEach(function (casterX) {
+      var caster = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.055, 0.055, 0.05, 12),
+        api.trim(api.contrast ? 0xffffff : 0x171b22, 10)
+      );
+      caster.rotation.x = Math.PI / 2;
+      caster.position.set(casterX, -0.45, -2.54);
+      toolCabinet.add(caster);
+    });
+    toolCabinet.traverse(function (node) {
+      if (node.isMesh && api.wantShadow) {
+        node.castShadow = true;
+        node.receiveShadow = true;
+      }
+    });
+    serviceBay.add(toolCabinet);
+    shopMesh(new THREE.BoxGeometry(1.45, 0.86, 0.05),
+      api.trim(api.contrast ? 0xffffff : 0x8c6b47, 12),
+      [-2.35, 1.02, -2.94], null, false, false);
+    for (var tool = 0; tool < 5; tool++) {
+      shopMesh(new THREE.BoxGeometry(0.055, 0.42 - tool * 0.035, 0.035),
+        tool % 2 ? safetyMat : steelMat,
+        [-2.78 + tool * 0.22, 1.02, -2.895],
+        [0, 0, tool % 2 ? 0.26 : -0.18], true, false);
+    }
+
+    var hoseMat = api.trim(api.contrast ? 0xffffff : 0x256d8f, 30);
+    var hoseReel = shopMesh(
+      new THREE.TorusGeometry(0.25, 0.045, 10, 34), hoseMat,
+      [1.18, 1.25, -2.88], null, true, false);
+    hoseReel.name = 'retractable-air-hose-reel';
+    shopMesh(
+      new THREE.CylinderGeometry(0.08, 0.08, 0.10, 16), steelMat,
+      [1.18, 1.25, -2.85], [Math.PI / 2, 0, 0], true, false);
+    shopMesh(
+      new THREE.CylinderGeometry(0.025, 0.025, 0.70, 9), hoseMat,
+      [1.18, 0.82, -2.87], [0, 0, 0.10], true, false);
+    var safetyPlacard = shopMesh(
+      new THREE.BoxGeometry(0.70, 0.48, 0.025),
+      api.trim(api.contrast ? 0xffffff : 0xe8edf2, 16),
+      [0.10, 1.39, -2.91], null, false, false);
+    safetyPlacard.name = 'shop-safety-placard';
+    shopMesh(
+      new THREE.BoxGeometry(0.58, 0.08, 0.018),
+      api.trim(api.contrast ? 0x000000 : 0xb91c1c, 42),
+      [0.10, 1.52, -2.89], null, false, false);
+    for (var placardLine = 0; placardLine < 3; placardLine++) {
+      shopMesh(
+        new THREE.BoxGeometry(0.44 - placardLine * 0.05, 0.025, 0.018),
+        steelMat,
+        [0.10, 1.39 - placardLine * 0.08, -2.887],
+        null, false, false);
+    }
+
+    // Cool overhead service lights add soft, localized reflection to materials.
+    var lampMat = new THREE.MeshPhongMaterial({
+      color: 0xf8fafc,
+      emissive: api.contrast ? 0x000000 : 0xdff5ff,
+      emissiveIntensity: 0.74,
+      shininess: 90
+    });
+    [-1.38, 1.38].forEach(function (x) {
+      shopMesh(new THREE.BoxGeometry(1.14, 0.055, 0.24), lampMat,
+        [x, 2.28, -0.56], null, false, false);
+      if (!api.contrast) {
+        var workLight = new THREE.PointLight(0xd7efff, 0.30, 5.2, 2);
+        workLight.position.set(x, 2.05, -0.34);
+        serviceBay.add(workLight);
+      }
+    });
+    api.scene.add(serviceBay);
+
+    // Painted fenders, strut towers, fasteners, and a raised hood give the same
+    // frame of reference as a real transverse-engine vehicle.
+    var paintMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0x315b7d,
+      shininess: api.contrast ? 0 : 82,
+      specular: 0xb9cede
+    });
+    [-1.56, 1.56].forEach(function (x) {
+      var apron = new THREE.Mesh(
+        new THREE.BoxGeometry(0.30, 0.12, 2.42), paintMat);
+      apron.position.set(x, 0.27, 0);
+      if (api.wantShadow) {
+        apron.castShadow = true;
+        apron.receiveShadow = true;
+      }
+      api.scene.add(apron);
+      var tower = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.23, 0.27, 0.22, 24), paintMat);
+      tower.position.set(x * 0.86, 0.24, -0.47);
+      api.scene.add(tower);
+      var towerCap = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.075, 0.075, 0.035, 16), steelMat);
+      towerCap.position.set(x * 0.86, 0.37, -0.47);
+      api.scene.add(towerCap);
+      [-0.82, -0.22, 0.38, 0.92].forEach(function (z) {
+        var fastener = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.025, 0.025, 0.025, 10), steelMat);
+        fastener.position.set(x, 0.35, z);
+        api.scene.add(fastener);
+      });
+    });
+    var frontTieBar = new THREE.Mesh(
+      new THREE.BoxGeometry(3.08, 0.13, 0.15), paintMat);
+    frontTieBar.position.set(0, 0.12, 1.18);
+    api.scene.add(frontTieBar);
+
+    var hood = new THREE.Group();
+    hood.name = 'raised-hood-underside';
+    hood.add(new THREE.Mesh(
+      new THREE.BoxGeometry(3.62, 0.085, 1.34), paintMat));
+    var hoodInsulation = new THREE.Mesh(
+      new THREE.BoxGeometry(3.14, 0.022, 0.96),
+      api.trim(api.contrast ? 0xffffff : 0x20252c, 5)
+    );
+    hoodInsulation.name = 'hood-insulation-pad';
+    hoodInsulation.position.set(0, -0.058, -0.02);
+    hood.add(hoodInsulation);
+    [-1.18, 0, 1.18].forEach(function (x) {
+      var hoodRib = new THREE.Mesh(
+        new THREE.BoxGeometry(0.075, 0.055, 1.12), steelMat);
+      hoodRib.position.set(x, -0.086, 0);
+      hood.add(hoodRib);
+    });
+    [
+      [new THREE.BoxGeometry(3.28, 0.028, 0.035), [0, -0.073, -0.61]],
+      [new THREE.BoxGeometry(3.28, 0.028, 0.035), [0, -0.073, 0.61]],
+      [new THREE.BoxGeometry(0.035, 0.028, 1.18), [-1.64, -0.073, 0]],
+      [new THREE.BoxGeometry(0.035, 0.028, 1.18), [1.64, -0.073, 0]]
+    ].forEach(function (sealSpec, sealIndex) {
+      var hoodSeal = new THREE.Mesh(
+        sealSpec[0],
+        api.trim(api.contrast ? 0xffffff : 0x11161d, 4)
+      );
+      hoodSeal.name = 'hood-weather-seal-' + sealIndex;
+      hoodSeal.position.set(sealSpec[1][0], sealSpec[1][1], sealSpec[1][2]);
+      hood.add(hoodSeal);
+    });
+    var hoodLatch = new THREE.Mesh(
+      new THREE.TorusGeometry(0.12, 0.015, 7, 20, Math.PI),
+      steelMat
+    );
+    hoodLatch.name = 'hood-latch-striker';
+    hoodLatch.position.set(0, -0.13, 0.57);
+    hood.add(hoodLatch);
+    var hoodLamp = new THREE.Mesh(
+      new THREE.BoxGeometry(1.22, 0.035, 0.10), lampMat);
+    hoodLamp.name = 'hood-task-lamp-lens';
+    hoodLamp.position.set(0, -0.118, 0.43);
+    hood.add(hoodLamp);
+    if (!api.contrast) {
+      var hoodWorkLight = new THREE.PointLight(0xffefd2, 0.38, 3.4, 2);
+      hoodWorkLight.name = 'hood-mounted-task-light';
+      hoodWorkLight.position.set(0, -0.22, 0.36);
+      hood.add(hoodWorkLight);
+    }
+    hood.position.set(0, 1.52, -1.66);
+    hood.rotation.x = -0.20;
+    if (api.wantShadow) {
+      hood.traverse(function (node) {
+        if (node.isMesh) node.castShadow = true;
+      });
+    }
+    api.scene.add(hood);
+    var hoodStrut = new THREE.Mesh(
+      new THREE.BoxGeometry(0.035, 1.24, 0.035), steelMat);
+    hoodStrut.position.set(1.46, 0.84, -1.31);
+    hoodStrut.rotation.z = -0.31;
+    api.scene.add(hoodStrut);
+
+    // Visible radiator fan makes the Repair Bay engine state meaningful.
+    coolingFan = new THREE.Group();
+    coolingFan.name = 'radiator-cooling-fan';
+    var fanMat = api.trim(api.contrast ? 0xffffff : 0x202936, 24);
+    coolingFan.add(new THREE.Mesh(
+      new THREE.TorusGeometry(0.31, 0.025, 8, 28), fanMat));
+    for (var blade = 0; blade < 6; blade++) {
+      var angle = blade / 6 * Math.PI * 2;
+      var fanBlade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.09, 0.34, 0.025), fanMat);
+      fanBlade.position.set(
+        Math.cos(angle) * 0.15,
+        Math.sin(angle) * 0.15,
+        0
+      );
+      fanBlade.rotation.z = -angle + 0.38;
+      coolingFan.add(fanBlade);
+    }
+    var fanHub = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.085, 0.085, 0.08, 16), steelMat);
+    fanHub.rotation.x = Math.PI / 2;
+    coolingFan.add(fanHub);
+    coolingFan.position.set(0, 0.22, 0.91);
+    api.scene.add(coolingFan);
+
     var wallGeo = new THREE.BoxGeometry(0.08, 0.30, 2.4);
     var lWall = new THREE.Mesh(wallGeo, shellMat); lWall.position.set(-1.70, 0.15, 0); api.scene.add(lWall);
     var rWall = new THREE.Mesh(wallGeo, shellMat); rWall.position.set(1.70, 0.15, 0); api.scene.add(rWall);
@@ -4132,30 +6384,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     // exist so the bay reads as a connected SYSTEM instead of a dozen loose
     // boxes, and so "the fat duct running to the engine" in the air-filter
     // copy is a thing the student can actually see.
-    function hose(pts, radius, colorHex) {
+    var hoseClampMat = new THREE.MeshPhongMaterial({
+      color: api.contrast ? 0xffffff : 0xaab4c2,
+      shininess: api.contrast ? 0 : 88,
+      specular: 0xf0f5fa
+    });
+    var conduitRingMat = api.trim(api.contrast ? 0xffffff : 0x293341, 20);
+    function addHoseRing(curve, t, radius, material, name) {
+      var ring = new THREE.Mesh(
+        new THREE.TorusGeometry(
+          radius * 1.08,
+          Math.max(0.004, radius * 0.12),
+          7,
+          22
+        ),
+        material
+      );
+      ring.name = name;
+      ring.position.copy(curve.getPoint(t));
+      ring.quaternion.setFromUnitVectors(
+        new THREE.Vector3(0, 0, 1),
+        curve.getTangent(t).normalize()
+      );
+      if (api.wantShadow) ring.castShadow = true;
+      api.scene.add(ring);
+      return ring;
+    }
+    function hose(pts, radius, colorHex, name, corrugations, clamped) {
       var curve = new THREE.CatmullRomCurve3(pts.map(function (p) {
         return new THREE.Vector3(p[0], p[1], p[2]);
       }));
       var m = new THREE.Mesh(
-        new THREE.TubeGeometry(curve, 22, radius, 9, false),
+        new THREE.TubeGeometry(curve, 30, radius, 12, false),
         new THREE.MeshPhongMaterial({
           color: api.contrast ? 0xdddddd : colorHex,
           shininess: 22, specular: 0x333333
         })
       );
+      m.name = name;
       if (api.wantShadow) m.castShadow = true;
       api.scene.add(m);
+      if (clamped !== false) {
+        addHoseRing(curve, 0.035, radius, hoseClampMat, name + '-clamp-start');
+        addHoseRing(curve, 0.965, radius, hoseClampMat, name + '-clamp-end');
+      }
+      for (var corrugation = 0; corrugation < (corrugations || 0); corrugation++) {
+        addHoseRing(
+          curve,
+          (corrugation + 1) / ((corrugations || 0) + 1),
+          radius,
+          conduitRingMat,
+          name + '-corrugation'
+        );
+      }
       return m;
     }
-    // Upper + lower radiator hoses (radiator ⇄ engine)
-    hose([[0.30, 0.36, 0.98], [0.36, 0.52, 0.66], [0.30, 0.50, 0.30]], 0.045, 0x1f2937);
-    hose([[-0.40, 0.10, 0.98], [-0.48, 0.16, 0.62], [-0.44, 0.20, 0.26]], 0.045, 0x1f2937);
-    // Intake duct: air filter box → engine. Deliberately fat and obvious.
-    hose([[0.82, 0.34, 0.28], [0.60, 0.44, 0.10], [0.34, 0.52, -0.06]], 0.070, 0x111827);
-    // Battery cable → fuse box
-    hose([[-1.04, 0.46, 0.52], [-1.02, 0.44, 0.34], [-1.10, 0.36, 0.20]], 0.026, 0xb91c1c);
-    // Coolant overflow line → radiator neck
-    hose([[-1.00, 0.56, -0.58], [-0.30, 0.50, -0.10], [0.60, 0.36, 0.86]], 0.020, 0x334155);
+    // Upper + lower radiator hoses (radiator ⇄ engine), with real clamp bands.
+    hose(
+      [[0.30, 0.36, 0.98], [0.36, 0.52, 0.66], [0.30, 0.50, 0.30]],
+      0.045, 0x1f2937, 'upper-radiator-hose', 0, true);
+    hose(
+      [[-0.40, 0.10, 0.98], [-0.48, 0.16, 0.62], [-0.44, 0.20, 0.26]],
+      0.045, 0x1f2937, 'lower-radiator-hose', 0, true);
+    // Corrugated intake duct: air filter box → engine.
+    hose(
+      [[0.82, 0.34, 0.28], [0.60, 0.44, 0.10], [0.34, 0.52, -0.06]],
+      0.070, 0x111827, 'corrugated-intake-duct', 8, true);
+    // Battery positive cable, ground strap, and clipped engine wiring loom.
+    hose(
+      [[-1.04, 0.46, 0.52], [-1.02, 0.44, 0.34], [-1.10, 0.36, 0.20]],
+      0.026, 0xb91c1c, 'positive-battery-cable', 0, false);
+    hose(
+      [[-1.15, 0.46, 0.58], [-1.38, 0.39, 0.38], [-1.52, 0.31, 0.16]],
+      0.022, 0x151a22, 'battery-ground-strap', 0, false);
+    hose(
+      [[-0.58, 0.77, -0.18], [-0.18, 0.79, -0.20], [0.58, 0.76, -0.17]],
+      0.018, 0x121923, 'ignition-wiring-loom', 7, false);
+    // Coolant overflow line → radiator neck.
+    hose(
+      [[-1.00, 0.56, -0.58], [-0.30, 0.50, -0.10], [0.60, 0.36, 0.86]],
+      0.020, 0x334155, 'coolant-overflow-line', 0, true);
+    // Paired metal brake lines are narrow and rigid, not rubber hoses.
+    hose(
+      [[0.84, 0.44, -0.84], [0.55, 0.35, -1.02], [0.08, 0.28, -1.06]],
+      0.009, 0xaab4c0, 'brake-hard-line-left', 0, false);
+    hose(
+      [[0.91, 0.42, -0.82], [0.66, 0.30, -0.96], [0.22, 0.24, -1.04]],
+      0.009, 0x8e99a8, 'brake-hard-line-right', 0, false);
 
     // Parts
     var meshes = {};
@@ -4191,28 +6506,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             fin.position.y = -p.size[2] * 0.34 + af * (p.size[2] * 0.135);
             group.add(fin);
           }
-          var nose = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.07, 14), api.trim(0x9ca3af, 60));
-          nose.position.y = p.size[2] * 0.5 + 0.03;
-          group.add(nose);
+          var alternatorPulley = new THREE.Group();
+          alternatorPulley.name = 'alternator-pulley-rotor';
+          alternatorPulley.position.y = p.size[2] * 0.5 + 0.03;
+          var nose = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.075, 0.075, 0.07, 18),
+            api.trim(0x9ca3af, 60)
+          );
+          alternatorPulley.add(nose);
+          for (var alternatorSpoke = 0; alternatorSpoke < 3; alternatorSpoke++) {
+            var altSpoke = new THREE.Mesh(
+              new THREE.BoxGeometry(0.018, 0.012, 0.115),
+              api.trim(0x4b5563, 38)
+            );
+            altSpoke.position.y = 0.041;
+            altSpoke.rotation.y = alternatorSpoke / 3 * Math.PI;
+            alternatorPulley.add(altSpoke);
+          }
+          group.add(alternatorPulley);
+          alternatorRotor = alternatorPulley;
         }
       } else if (p.shape === 'belt') {
-        var beltMesh = new THREE.Mesh(new THREE.TorusGeometry(p.size[0], p.size[2], 10, 30), mat);
+        var beltMesh = new THREE.Mesh(
+          new THREE.TorusGeometry(p.size[0], p.size[2], 12, 44), mat);
+        beltMesh.name = 'serpentine-belt-loop';
         beltMesh.rotation.y = Math.PI / 2;
         group.add(beltMesh);
         // Ribs. The copy tells students to look for cracks ACROSS the ribs,
         // so the ribs need to be visible rather than implied.
         for (var rb = 0; rb < 5; rb++) {
-          var rib = new THREE.Mesh(new THREE.TorusGeometry(p.size[0], 0.007, 5, 30), api.trim(0x334155, 8));
+          var rib = new THREE.Mesh(
+            new THREE.TorusGeometry(p.size[0], 0.007, 6, 44),
+            api.trim(0x334155, 8)
+          );
           rib.rotation.y = Math.PI / 2;
           rib.position.x = -0.018 + rb * 0.009;
           group.add(rib);
         }
+        beltMarker = new THREE.Mesh(
+          new THREE.BoxGeometry(0.022, 0.060, 0.018),
+          api.trim(api.contrast ? 0xffffff : 0x657182, 26)
+        );
+        beltMarker.name = 'belt-witness-mark';
+        beltMarker.userData.pathRadius = p.size[0];
+        beltMarker.position.set(p.size[2] * 1.02, p.size[0], 0);
+        group.add(beltMarker);
         var pulleyMat = api.trim(0x9ca3af, 62);
-        [[0, p.size[0] * 0.78, 0], [0, -p.size[0] * 0.78, 0]].forEach(function (o) {
-          var pl = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.09, 16), pulleyMat);
+        [[0, p.size[0] * 0.78, 0], [0, -p.size[0] * 0.78, 0]].forEach(function (o, pulleyIndex) {
+          var pulleySpin = new THREE.Group();
+          pulleySpin.name = 'belt-pulley-' + pulleyIndex;
+          pulleySpin.position.set(o[0], o[1], o[2]);
+          var pl = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.09, 0.09, 0.09, 20), pulleyMat);
           pl.rotation.z = Math.PI / 2;
-          pl.position.set(o[0], o[1], o[2]);
-          group.add(pl);
+          pulleySpin.add(pl);
+          for (var pulleySpoke = 0; pulleySpoke < 3; pulleySpoke++) {
+            var spoke = new THREE.Mesh(
+              new THREE.BoxGeometry(0.018, 0.13, 0.024),
+              api.trim(0x4b5563, 34)
+            );
+            spoke.position.x = 0.052;
+            spoke.rotation.x = pulleySpoke / 3 * Math.PI;
+            pulleySpin.add(spoke);
+          }
+          group.add(pulleySpin);
+          beltPulleys.push(pulleySpin);
         });
       } else if (p.shape === 'battery') {
         group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
@@ -4223,6 +6581,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           vent.position.set(-0.10 + vc * 0.10, p.size[1] * 0.5 + 0.015, 0);
           group.add(vent);
         }
+        var holdDown = new THREE.Mesh(
+          new THREE.BoxGeometry(p.size[0] * 0.86, 0.035, 0.045),
+          api.trim(0x94a3b8, 52)
+        );
+        holdDown.position.set(0, p.size[1] * 0.48, 0);
+        group.add(holdDown);
+        var batteryLabel = new THREE.Mesh(
+          new THREE.BoxGeometry(p.size[0] * 0.42, 0.012, p.size[2] * 0.34),
+          api.trim(0xe2e8f0, 12)
+        );
+        batteryLabel.position.set(0, p.size[1] * 0.525, 0.03);
+        group.add(batteryLabel);
         var posT = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.09, 12), api.trim(0xdc2626, 40));
         posT.position.set(-p.size[0] * 0.28, p.size[1] * 0.55, 0);
         group.add(posT);
@@ -4241,10 +6611,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         group.add(tube);
       } else if (p.shape === 'tank') {
         group.add(new THREE.Mesh(new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]), mat));
+        var fluidHex = p.id === 'coolant' ? 0xf06f86 : (p.id === 'brake' ? 0xd9a441 : 0x3b9be8);
+        var fluid = new THREE.Mesh(
+          new THREE.BoxGeometry(p.size[0] * 0.82, p.size[1] * 0.38, p.size[2] * 0.82),
+          new THREE.MeshPhongMaterial({
+            color: api.contrast ? 0xffffff : fluidHex,
+            transparent: !api.contrast,
+            opacity: api.contrast ? 1 : 0.72,
+            shininess: 56,
+            specular: 0xe7f5ff
+          })
+        );
+        fluid.position.y = -p.size[1] * 0.22;
+        group.add(fluid);
+        var meniscus = new THREE.Mesh(
+          new THREE.BoxGeometry(p.size[0] * 0.84, 0.012, p.size[2] * 0.84),
+          new THREE.MeshPhongMaterial({
+            color: api.contrast ? 0xffffff : fluidHex,
+            transparent: !api.contrast,
+            opacity: api.contrast ? 1 : 0.82,
+            shininess: api.contrast ? 0 : 92,
+            specular: api.contrast ? 0x000000 : 0xffffff
+          })
+        );
+        meniscus.name = p.id + '-fluid-meniscus';
+        meniscus.position.y = fluid.position.y + p.size[1] * 0.19;
+        group.add(meniscus);
+        if (p.id === 'brake') {
+          var booster = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.19, 0.19, 0.10, 22),
+            api.trim(0x202630, 34)
+          );
+          booster.rotation.x = Math.PI / 2;
+          booster.position.set(0, -0.05, -p.size[2] * 0.62);
+          group.add(booster);
+        }
         var cap = new THREE.Mesh(new THREE.CylinderGeometry(p.size[0] * 0.32, p.size[0] * 0.32, 0.08, 14),
           api.trim(p.capColor ? parseInt(p.capColor.slice(1), 16) : 0x334155, 44));
         cap.position.y = p.size[1] * 0.5 + 0.04;
         group.add(cap);
+        var capGrip = new THREE.Mesh(
+          new THREE.TorusGeometry(p.size[0] * 0.33, 0.012, 6, 20),
+          api.trim(p.capColor ? parseInt(p.capColor.slice(1), 16) : 0x334155, 28)
+        );
+        capGrip.name = p.id + '-cap-grip-ring';
+        capGrip.rotation.x = Math.PI / 2;
+        capGrip.position.y = p.size[1] * 0.5 + 0.085;
+        group.add(capGrip);
         // MIN / MAX bands — the thing the "read it against the lines" copy
         // is asking the student to find.
         [[0.30, 0x94a3b8], [-0.16, 0x94a3b8]].forEach(function (bd) {
@@ -4264,17 +6677,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         if (p.id === 'engine') {
           // Valve cover (where the oil filler cap lives) + intake plenum.
-          var vcover = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.78, 0.16, p.size[2] * 0.52), api.trim(0x3f4b5c, 34));
+          var coverGasket = new THREE.Mesh(
+            new THREE.BoxGeometry(p.size[0] * 0.82, 0.022, p.size[2] * 0.56),
+            api.trim(0x111827, 12)
+          );
+          coverGasket.name = 'valve-cover-gasket-seam';
+          coverGasket.position.set(-0.06, p.size[1] * 0.5 + 0.005, -0.02);
+          group.add(coverGasket);
+          var vcover = new THREE.Mesh(
+            new THREE.BoxGeometry(p.size[0] * 0.78, 0.16, p.size[2] * 0.52),
+            api.trim(0x3f4b5c, 34)
+          );
           vcover.position.set(-0.06, p.size[1] * 0.5 + 0.08, -0.02);
           group.add(vcover);
+          [
+            [-0.30, -0.18], [-0.10, -0.18], [0.10, -0.18], [0.30, -0.18],
+            [-0.30, 0.18], [-0.10, 0.18], [0.10, 0.18], [0.30, 0.18]
+          ].forEach(function (boltSpec, engineBoltIndex) {
+            var engineCoverBolt = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.018, 0.018, 0.026, 10),
+              api.trim(0xa3acb8, 66)
+            );
+            engineCoverBolt.name = 'valve-cover-fastener-' + engineBoltIndex;
+            engineCoverBolt.position.set(
+              boltSpec[0] * p.size[0],
+              p.size[1] * 0.5 + 0.17,
+              boltSpec[1] * p.size[2]
+            );
+            group.add(engineCoverBolt);
+          });
+          for (var coverRib = 0; coverRib < 4; coverRib++) {
+            var valveRib = new THREE.Mesh(
+              new THREE.BoxGeometry(0.035, 0.026, p.size[2] * 0.40),
+              api.trim(0x697586, 44)
+            );
+            valveRib.position.set(
+              -p.size[0] * 0.24 + coverRib * p.size[0] * 0.16,
+              p.size[1] * 0.5 + 0.172,
+              -0.02
+            );
+            group.add(valveRib);
+          }
+          for (var coilIndex = 0; coilIndex < 4; coilIndex++) {
+            var coil = new THREE.Mesh(
+              new THREE.BoxGeometry(0.16, 0.065, 0.13),
+              api.trim(0x141b25, 22)
+            );
+            coil.position.set(
+              -p.size[0] * 0.27 + coilIndex * p.size[0] * 0.18,
+              p.size[1] * 0.5 + 0.18,
+              -0.03
+            );
+            group.add(coil);
+          }
           var plenum = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, p.size[0] * 0.62, 14), api.trim(0x475569, 40));
           plenum.rotation.z = Math.PI / 2;
           plenum.position.set(0.10, p.size[1] * 0.5 + 0.06, 0.26);
           group.add(plenum);
+          var runnerMat = api.trim(api.contrast ? 0xffffff : 0x343d49, 25);
+          for (var runnerIndex = 0; runnerIndex < 4; runnerIndex++) {
+            var runnerX = -p.size[0] * 0.23 + runnerIndex * p.size[0] * 0.15;
+            var runnerCurve = new THREE.CatmullRomCurve3([
+              new THREE.Vector3(runnerX, p.size[1] * 0.5 + 0.10, 0.21),
+              new THREE.Vector3(runnerX, p.size[1] * 0.5 + 0.15, 0.35),
+              new THREE.Vector3(runnerX, p.size[1] * 0.5 - 0.01, p.size[2] * 0.51)
+            ]);
+            var manifoldRunner = new THREE.Mesh(
+              new THREE.TubeGeometry(runnerCurve, 12, 0.025, 7, false),
+              runnerMat
+            );
+            manifoldRunner.name = 'intake-manifold-runner-' + runnerIndex;
+            group.add(manifoldRunner);
+          }
           // Exhaust manifold heat shield, front face.
           var shield = new THREE.Mesh(new THREE.BoxGeometry(p.size[0] * 0.66, 0.20, 0.06), api.trim(0x8a8f98, 52));
           shield.position.set(0, 0.02, p.size[2] * 0.5 + 0.03);
           group.add(shield);
+          for (var shieldDimpleIndex = 0; shieldDimpleIndex < 6; shieldDimpleIndex++) {
+            var shieldDimple = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.015, 0.015, 0.014, 10),
+              api.trim(0x4b5563, 58)
+            );
+            shieldDimple.name = 'heat-shield-fastener-' + shieldDimpleIndex;
+            shieldDimple.rotation.x = Math.PI / 2;
+            shieldDimple.position.set(
+              -p.size[0] * 0.26 + shieldDimpleIndex * p.size[0] * 0.105,
+              shieldDimpleIndex % 2 ? 0.06 : -0.02,
+              p.size[2] * 0.5 + 0.068
+            );
+            group.add(shieldDimple);
+          }
+        }
+        if (p.id === 'fusebox') {
+          for (var relayRidge = 0; relayRidge < 4; relayRidge++) {
+            var ridge = new THREE.Mesh(
+              new THREE.BoxGeometry(p.size[0] * 0.72, 0.018, 0.018),
+              api.trim(0x475569, 18)
+            );
+            ridge.position.set(
+              0,
+              p.size[1] * 0.51,
+              -p.size[2] * 0.26 + relayRidge * p.size[2] * 0.17
+            );
+            group.add(ridge);
+          }
         }
         if (p.id === 'airbox') {
           // Lid clips — the thing you undo to check the filter.
@@ -4292,6 +6798,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       group.position.set(p.pos[0], p.pos[1], p.pos[2]);
+      if (['engine', 'oilcap', 'dipstick', 'belt', 'alternator'].indexOf(p.id) !== -1) {
+        idleParts.push({
+          group: group,
+          x: p.pos[0],
+          y: p.pos[1],
+          z: p.pos[2]
+        });
+      }
       group.userData.partId = p.id;
       group.traverse(function (o) {
         if (!o.isMesh) return;
@@ -4302,7 +6816,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       api.scene.add(group);
       meshes[p.id] = group;
     });
-    return { meshes: meshes, picks: picks, anchor: floor };
+    return {
+      meshes: meshes,
+      picks: picks,
+      anchor: floor,
+      frame: engineRunning && !api.reduced ? function (now) {
+        var spin = (now * 0.0062) % (Math.PI * 2);
+        if (coolingFan) {
+          coolingFan.rotation.z = spin;
+        }
+        for (var pulleyIndex = 0; pulleyIndex < beltPulleys.length; pulleyIndex++) {
+          beltPulleys[pulleyIndex].rotation.x = -spin * 1.35;
+        }
+        if (alternatorRotor) {
+          alternatorRotor.rotation.y = spin * 1.72;
+        }
+        if (beltMarker) {
+          var beltAngle = spin * 1.28;
+          var beltRadius = beltMarker.userData.pathRadius || 0.30;
+          beltMarker.position.y = Math.cos(beltAngle) * beltRadius;
+          beltMarker.position.z = Math.sin(beltAngle) * beltRadius;
+          beltMarker.rotation.x = beltAngle;
+        }
+        var idle = Math.sin(now * 0.034) * 0.0035;
+        for (var idleIndex = 0; idleIndex < idleParts.length; idleIndex++) {
+          var idlePart = idleParts[idleIndex];
+          idlePart.group.position.x = idlePart.x + idle * (idleIndex % 2 ? 0.35 : -0.35);
+          idlePart.group.position.y = idlePart.y + idle;
+          idlePart.group.position.z = idlePart.z;
+        }
+      } : null
+    };
   }
 
   // The viewer shell now lives on the host (window.StemLab.makeBayViewer),
@@ -4720,6 +7264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         accentHi: '#92400e', link: '#1d4ed8', good: '#047857',
         warn: '#b45309', bad: '#b91c1c'
       };
+      var onStrongFill = isDark || isContrast ? '#000000' : '#ffffff';
 
       var view = d.view || 'menu';
       var setView = function(v) { upd('view', v); arAnnounce('Now showing: ' + v); };
@@ -4738,7 +7283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function btnPrimary(extra) {
         return Object.assign({
           padding: '10px 16px', borderRadius: 8,
-          background: T.accent, color: '#0f172a',
+          background: T.accent, color: onStrongFill,
           border: '1px solid ' + T.accent,
           cursor: 'pointer', fontWeight: 700, fontSize: 14
         }, extra || {});
@@ -4760,11 +7305,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }, extra || {});
       }
 
-      function backBar(title) {
-        return h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-          h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
+      function backBar(title, navigationLabel) {
+        return h('div', {
+          'data-ar-print-hide': 'true',
+          role: navigationLabel ? 'navigation' : undefined,
+          'aria-label': navigationLabel || undefined,
+          style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border }
+        },
+          h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
             onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.autorepair.menu', '← Menu')),
-          h('h1', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
+          !navigationLabel && h('h1', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
         );
       }
 
@@ -4775,15 +7325,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         );
       }
 
+      function severityA11yLabel(sev) {
+        return ({ high: 'Stop and fix', now: 'Now', medium: 'Soon', soon: 'Soon', low: 'Monitor', monitor: 'Monitor' })[sev] || sev;
+      }
+
       function severityBadge(sev) {
         var color = sev === 'high' || sev === 'now' ? T.bad : (sev === 'medium' || sev === 'soon' ? T.warn : T.good);
         var label = ({ high: '🔴 Stop & fix', now: '🔴 Now', medium: '🟡 Soon', soon: '🟡 Soon', low: '🟢 Monitor', monitor: '🟢 Monitor' })[sev] || sev;
-        return h('span', { style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: color, color: '#0f172a', fontWeight: 700, fontSize: 11 } }, label);
+        return h('span', {
+          className: 'ar-severity-badge',
+          'data-ar-severity': sev,
+          'aria-label': 'Urgency: ' + severityA11yLabel(sev),
+          style: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: color, color: onStrongFill, fontWeight: 700, fontSize: 11 }
+        }, label);
       }
 
       // ─────────────────────────────────────────
       // MENU view
       // ─────────────────────────────────────────
+      function workflowRail(id, label, stages, completedCount, statusText) {
+        var totalStages = stages.length;
+        var boundedCompleted = Math.max(0, Math.min(totalStages, Number(completedCount) || 0));
+        var progressPercent = totalStages > 0 ? Math.round((boundedCompleted / totalStages) * 100) : 0;
+        var progressText = boundedCompleted + ' of ' + totalStages + ' complete';
+        return h('section', {
+          'data-ar-workflow-rail': id,
+          'data-ar-repair-stage-rail': id === 'repair' ? 'true' : undefined,
+          'data-ar-roadside-progress': id === 'roadside-practice' ? 'true' : undefined,
+          className: 'ar-workflow-rail',
+          'aria-label': label,
+          style: { background: T.card, border: '1px solid ' + T.border }
+        },
+          h('div', { className: 'ar-workflow-rail-heading' },
+            h('strong', { style: { color: T.text, fontSize: 13 } }, label),
+            h('span', { style: { color: T.muted, fontSize: 11, fontWeight: 800, whiteSpace: 'nowrap' } }, progressText)
+          ),
+          h('ol', {
+            className: 'ar-workflow-stage-list',
+            'aria-label': label,
+            style: { gridTemplateColumns: 'repeat(' + totalStages + ', minmax(0, 1fr))' }
+          },
+            stages.map(function(stage, index) {
+              var state = stage.state || 'upcoming';
+              var isCurrent = state === 'current' || state === 'resolved-correct' || state === 'resolved-incorrect';
+              var isPositive = state === 'complete' || state === 'resolved-correct';
+              var tone = isPositive ? T.good : (state === 'resolved-incorrect' ? T.bad : (state === 'current' ? T.accentHi : T.dim));
+              var stateLabel = state === 'complete' ? 'Complete'
+                : state === 'current' ? 'Current'
+                : state === 'resolved-correct' ? 'Resolved correctly'
+                : state === 'resolved-incorrect' ? 'Review'
+                : 'Upcoming';
+              var marker = isPositive ? '✓' : (state === 'resolved-incorrect' ? '!' : String(index + 1));
+              return h('li', {
+                key: stage.id || index,
+                'data-ar-workflow-stage': stage.id || String(index + 1),
+                'data-ar-roadside-stage': id === 'roadside-practice' ? (stage.id || String(index + 1)) : undefined,
+                'data-ar-stage-state': state,
+                'aria-current': isCurrent ? 'step' : undefined,
+                className: 'ar-workflow-stage',
+                style: {
+                  background: state === 'current' ? T.cardAlt : T.bg,
+                  border: (isCurrent ? '2px' : '1px') + ' solid ' + tone
+                }
+              },
+                h('span', { className: 'ar-workflow-stage-top' },
+                  h('span', {
+                    'aria-hidden': 'true',
+                    className: 'ar-workflow-stage-marker',
+                    style: {
+                      background: state === 'upcoming' ? T.card : tone,
+                      border: '1px solid ' + tone,
+                      color: state === 'upcoming' ? T.text : (isDark || isContrast ? '#0f172a' : '#ffffff')
+                    }
+                  }, marker),
+                  h('span', { className: 'ar-workflow-stage-copy' },
+                    h('span', { className: 'ar-workflow-stage-label', style: { color: T.text } }, stage.label),
+                    stage.meta && h('span', { className: 'ar-workflow-stage-meta', style: { color: T.muted } }, stage.meta)
+                  )
+                ),
+                h('span', {
+                  'data-ar-state-label': state,
+                  className: 'ar-workflow-state-label',
+                  style: { color: T.text, background: T.cardAlt, border: '1px solid ' + tone }
+                }, stateLabel)
+              );
+            })
+          ),
+          h('span', {
+            role: 'progressbar',
+            'data-ar-workflow-progress': id,
+            'aria-label': label,
+            'aria-valuemin': 0,
+            'aria-valuemax': totalStages,
+            'aria-valuenow': boundedCompleted,
+            'aria-valuetext': progressText,
+            className: 'ar-workflow-progress-track',
+            style: { background: T.borderSoft }
+          },
+            h('span', {
+              'aria-hidden': 'true',
+              className: 'ar-workflow-progress-fill',
+              style: { width: progressPercent + '%', background: boundedCompleted === totalStages ? T.good : T.accent }
+            })
+          ),
+          statusText && h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            'aria-atomic': 'true',
+            className: 'ar-workflow-status',
+            style: { color: boundedCompleted === totalStages ? T.good : T.accentHi, background: T.cardAlt }
+          }, statusText)
+        );
+      }
+
       function renderMenu() {
         var categories = [
           { id: 'owning', icon: '🚗', name: __alloT('stem.autorepair.owning_daily_use', 'Owning + daily use'),
@@ -4855,8 +7509,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var badgeCount = Object.keys(badges).length;
         var collapsedCats = d.collapsedCats || {};
 
-        // Progress on the two 3D modules, surfaced on their menu tiles so a
-        // student can see where they left off without opening each one.
+        // Progress on the hands-on 3D modules is surfaced on the dashboard so
+        // learners can immediately resume without opening each module first.
         var uhSeenCount = Object.keys(d.uhSeen || {}).length;
         var rbDoneRec = d.rbDone || {};
         var rbSolved = 0;
@@ -4868,78 +7522,440 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null
         };
 
-        return h('div', { role: 'main', 'aria-label': __alloT('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'), style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        function parseMenuProgress(value) {
+          if (!value) return null;
+          var parts = String(value).split('/');
+          var maximum = Number(parts[1]);
+          var current = Number(parts[0]);
+          if (!isFinite(current) || !isFinite(maximum) || maximum <= 0) return null;
+          current = Math.max(0, Math.min(maximum, current));
+          return { current: current, maximum: maximum, percent: Math.round((current / maximum) * 100) };
+        }
+
+        function menuTone(darkAccent, darkSoft, lightAccent, lightSoft) {
+          if (isContrast) return { accent: T.accentHi, soft: T.cardAlt };
+          return isDark
+            ? { accent: darkAccent, soft: darkSoft }
+            : { accent: lightAccent, soft: lightSoft };
+        }
+
+        var categoryTones = {
+          owning: menuTone('#38bdf8', '#102a3c', '#0369a1', '#e0f2fe'),
+          'diagnose-cat': menuTone('#c084fc', '#2b1a3b', '#7e22ce', '#f3e8ff'),
+          'fix-cat': menuTone('#fb923c', '#3a2416', '#c2410c', '#ffedd5'),
+          'consumer-cat': menuTone('#34d399', '#123228', '#047857', '#d1fae5'),
+          'career-cat': menuTone('#818cf8', '#1d2344', '#4338ca', '#e0e7ff'),
+          'progress-cat': menuTone('#fbbf24', '#352b14', '#a16207', '#fef3c7')
+        };
+
+        var quickStarts = [
+          {
+            id: 'firstcar', icon: '🚗',
+            kicker: __alloT('stem.autorepair.new_driver', 'New driver'),
+            label: __alloT('stem.autorepair.i_just_got_a_car', 'I just got a car'),
+            desc: __alloT('stem.autorepair.build_a_safe_30_day_ownership_routine', 'Build a safe 30-day ownership routine.'),
+            tone: categoryTones.owning
+          },
+          {
+            id: 'diagnose', icon: '🔍',
+            kicker: __alloT('stem.autorepair.symptom_first', 'Symptom first'),
+            label: __alloT('stem.autorepair.something_seems_wrong', 'Something seems wrong'),
+            desc: __alloT('stem.autorepair.read_the_clues_before_replacing_parts', 'Read the clues before replacing parts.'),
+            tone: categoryTones['diagnose-cat']
+          },
+          {
+            id: 'roadside', icon: '🚨',
+            kicker: __alloT('stem.autorepair.urgent_safety', 'Urgent safety'),
+            label: __alloT('stem.autorepair.im_stuck_roadside', 'I’m stuck roadside'),
+            desc: __alloT('stem.autorepair.choose_the_safe_first_move', 'Choose the safe first move.'),
+            tone: categoryTones['fix-cat']
+          }
+        ];
+
+        var totalModules = categories.reduce(function (sum, category) { return sum + category.modules.length; }, 0);
+        var activeProgressCount = 0;
+        Object.keys(moduleProgress).forEach(function (id) {
+          var progress = parseMenuProgress(moduleProgress[id]);
+          if (progress && progress.current < progress.maximum) activeProgressCount++;
+        });
+
+        var resumeOptions = [
+          { id: 'underhood', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)') },
+          { id: 'repairbay', label: __alloT('stem.autorepair.repair_bay_menu', 'Repair Bay (3D)') },
+          { id: 'tyre', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)') }
+        ];
+        var resumeTarget = null;
+        for (var resumeIndex = 0; resumeIndex < resumeOptions.length; resumeIndex++) {
+          var resumeProgress = parseMenuProgress(moduleProgress[resumeOptions[resumeIndex].id]);
+          if (resumeProgress && resumeProgress.current < resumeProgress.maximum) {
+            resumeTarget = resumeOptions[resumeIndex];
+            break;
+          }
+        }
+        var primaryTarget = resumeTarget ? resumeTarget.id : 'path';
+        var primaryLabel = resumeTarget
+          ? __alloT('stem.autorepair.continue_learning', 'Continue learning') + ': ' + resumeTarget.label
+          : __alloT('stem.autorepair.start_the_4_week_learning_path', 'Start the 4-week learning path');
+
+        var heroBackground = isContrast
+          ? T.card
+          : (isDark
+            ? 'linear-gradient(135deg, #172033 0%, #1e293b 58%, #302512 100%)'
+            : 'linear-gradient(135deg, #ffffff 0%, #fff7ed 58%, #fef3c7 100%)');
+        var statBackground = isContrast ? T.cardAlt : (isDark ? 'rgba(15,23,42,0.68)' : 'rgba(255,255,255,0.78)');
+
+        function menuStat(value, label, icon) {
+          return h('div', {
+            'data-ar-menu-stat': label,
+            className: 'ar-menu-stat',
+            style: { background: statBackground, border: '1px solid ' + T.borderSoft }
+          },
+            h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, icon),
+            h('span', { className: 'ar-menu-stat-value', style: { color: T.text } }, String(value)),
+            h('span', { className: 'ar-menu-stat-label', style: { color: T.muted } }, label)
+          );
+        }
+
+        return h('div', {
+          role: 'main',
+          'aria-label': __alloT('stem.autorepair.auto_repair_shop_main_menu', 'Auto Repair Shop main menu'),
+          'data-ar-menu-dashboard': 'true',
+          className: 'ar-menu-shell',
+          style: { color: T.text }
+        },
           h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
             style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
             onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#0f172a', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
             onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
           }, __alloT('stem.autorepair.skip_to_module_categories', 'Skip to module categories')),
-          h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
-              h('span', { 'aria-hidden': 'true' }, '🔧 '), __alloT('stem.autorepair.auto_repair_shop', 'Auto Repair Shop')),
-            h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
-              __alloT('stem.autorepair.diagnose_like_a_tech_repair_like_a_pro', 'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with '),
-              h('strong', { style: { color: T.accentHi } }, 'RoadReady'), __alloT('stem.autorepair.you_drive_a_car_and_maintain_it', ' — you drive a car AND maintain it.'))
-          ),
-          badgeCount > 0 && h('button', { 'data-ar-focusable': true,
-            'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
-            onClick: function() { setView('badges'); },
-            style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
-            h('span', { 'aria-hidden': 'true', className: 'ar-pulse-ring' }, '🏅 '),
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.badges_earned', 'Badges earned: ')), String(badgeCount), __alloT('stem.autorepair.tap_to_view_gallery', ' — tap to view gallery →')
-          ),
-          h('div', { id: 'ar-menu-categories', role: 'group', tabIndex: -1, 'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories') }),
-          categories.map(function(cat) {
-            var collapsed = !!collapsedCats[cat.id];
-            return h('div', { key: cat.id, style: { marginBottom: 14 } },
-              h('button', { 'data-ar-focusable': true,
-                'aria-label': (collapsed ? 'Expand' : 'Collapse') + ' ' + cat.name,
-                'aria-expanded': collapsed ? 'false' : 'true',
-                onClick: function() {
-                  var nv = Object.assign({}, collapsedCats);
-                  nv[cat.id] = !nv[cat.id];
-                  upd('collapsedCats', nv);
-                },
-                style: { width: '100%', padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, color: T.text, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 } },
-                h('span', { style: { fontSize: 26 } }, cat.icon),
-                h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontWeight: 800, fontSize: 16, color: T.accentHi } }, cat.name),
-                  h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, cat.desc + ' · ' + cat.modules.length + ' modules')
+
+          h('section', {
+            'data-ar-menu-hero': 'true',
+            className: 'ar-menu-hero',
+            'aria-labelledby': 'ar-menu-title',
+            style: {
+              background: heroBackground,
+              border: '1px solid ' + T.border,
+              boxShadow: isContrast ? 'none' : '0 18px 44px rgba(15,23,42,0.16)'
+            }
+          },
+            h('div', { className: 'ar-menu-hero-top' },
+              h('div', { className: 'ar-menu-hero-copy' },
+                h('span', { className: 'ar-menu-eyebrow', style: { color: T.accentHi } },
+                  h('span', { 'aria-hidden': 'true' }, '◆'),
+                  __alloT('stem.autorepair.garage_learning_dashboard', 'Garage learning dashboard')
                 ),
-                h('span', { style: { fontSize: 14, color: T.dim } }, collapsed ? '▶' : '▼')
-              ),
-              !collapsed && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 } },
-                cat.modules.map(function(m) {
-                  var prog = moduleProgress[m.id];
-                  return h('button', { 'data-ar-focusable': true, key: m.id,
-                    'aria-label': 'Open ' + m.label + ' module' + (prog ? ' — progress ' + prog : ''),
-                    onClick: function() { setView(m.id); },
-                    style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (prog ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
-                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
-                      h('span', { style: { fontSize: 22 } }, m.icon),
-                      h('strong', { style: { fontWeight: 700, fontSize: 14, color: T.text } }, m.label),
-                      prog && h('span', { style: { marginLeft: 'auto', fontSize: 11, fontWeight: 800, color: T.accentHi, whiteSpace: 'nowrap' } }, prog)
-                    ),
-                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, m.desc)
-                  );
-                })
+                h('h1', { id: 'ar-menu-title', className: 'ar-menu-hero-title', style: { color: T.text } },
+                  h('span', { 'aria-hidden': 'true' }, '🔧 '),
+                  __alloT('stem.autorepair.auto_repair_shop', 'Auto Repair Shop')
+                ),
+                h('p', { style: { margin: 0, maxWidth: 700, fontSize: 14, color: T.muted, lineHeight: 1.6 } },
+                  __alloT('stem.autorepair.diagnose_like_a_tech_repair_like_a_pro', 'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with '),
+                  h('strong', { style: { color: T.accentHi } }, 'RoadReady'),
+                  __alloT('stem.autorepair.you_drive_a_car_and_maintain_it', ' — you drive a car AND maintain it.')
+                ),
+                h('div', { className: 'ar-menu-actions' },
+                  h('button', {
+                    'data-ar-focusable': true,
+                    'data-ar-primary-action': primaryTarget,
+                    onClick: function() { setView(primaryTarget); },
+                    style: btnPrimary({ minHeight: 44, color: isDark || isContrast ? '#0f172a' : '#ffffff' })
+                  }, primaryLabel, h('span', { 'aria-hidden': 'true' }, ' →')),
+                  h('button', {
+                    'data-ar-focusable': true,
+                    'aria-label': __alloT('stem.autorepair.view_badge_gallery', 'View badge gallery') + ' — ' + badgeCount + ' ' + __alloT('stem.autorepair.badges_earned_lower', 'badges earned'),
+                    onClick: function() { setView('badges'); },
+                    style: btnSecondary({ minHeight: 44, background: statBackground })
+                  },
+                    h('span', { 'aria-hidden': 'true', className: badgeCount > 0 ? 'ar-pulse-ring' : '' }, '🏅 '),
+                    __alloT('stem.autorepair.badge_gallery', 'Badge gallery'),
+                    h('span', { style: { marginLeft: 7, fontWeight: 900, color: T.accentHi } }, String(badgeCount))
+                  )
+                )
               )
-            );
-          }),
-          h('div', { style: { marginTop: 16, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_reality', '🌲 Maine reality: ')),
-            MAINE_CONTEXT.fleetAge, ' ', MAINE_CONTEXT.salt
+            ),
+            h('div', { className: 'ar-menu-stats', 'aria-label': __alloT('stem.autorepair.learning_status', 'Learning status') },
+              menuStat(totalModules, __alloT('stem.autorepair.modules_to_explore', 'modules to explore'), '▦'),
+              menuStat(activeProgressCount, __alloT('stem.autorepair.hands_on_modules_active', 'hands-on modules active'), '◴'),
+              menuStat(badgeCount, __alloT('stem.autorepair.badges_earned_lower', 'badges earned'), '★')
+            )
+          ),
+
+          h('section', { 'aria-labelledby': 'ar-quick-start-title' },
+            h('div', { className: 'ar-menu-section-heading' },
+              h('h2', { id: 'ar-quick-start-title', style: { color: T.text } },
+                __alloT('stem.autorepair.what_brings_you_into_the_garage', 'What brings you into the garage?')
+              ),
+              h('p', { style: { color: T.muted } },
+                __alloT('stem.autorepair.pick_your_situation_for_a_fast_start', 'Pick your situation for a fast start, or browse every module below.')
+              )
+            ),
+            h('div', { className: 'ar-menu-quick-grid' },
+              quickStarts.map(function(item) {
+                return h('button', {
+                  key: item.id,
+                  'data-ar-focusable': true,
+                  'data-ar-quick-start': item.id,
+                  'aria-label': item.label + ': ' + item.desc,
+                  onClick: function() { setView(item.id); },
+                  className: 'ar-menu-quick-card',
+                  style: {
+                    padding: 14,
+                    borderRadius: 12,
+                    border: '1px solid ' + item.tone.accent,
+                    background: isContrast ? T.cardAlt : 'linear-gradient(145deg, ' + item.tone.soft + ' 0%, ' + T.card + ' 88%)',
+                    color: T.text,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 6
+                  }
+                },
+                  h('span', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 } },
+                    h('span', {
+                      'aria-hidden': 'true',
+                      className: 'ar-menu-icon-well',
+                      style: { background: item.tone.soft, border: '1px solid ' + item.tone.accent, fontSize: 22 }
+                    }, item.icon),
+                    h('span', { 'aria-hidden': 'true', className: 'ar-menu-card-arrow', style: { color: item.tone.accent, fontSize: 18, fontWeight: 900 } }, '→')
+                  ),
+                  h('span', { style: { fontSize: 11, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', color: item.tone.accent } }, item.kicker),
+                  h('strong', { style: { display: 'block', fontSize: 16, lineHeight: 1.25, color: T.text } }, item.label),
+                  h('span', { style: { display: 'block', marginTop: 'auto', fontSize: 12, lineHeight: 1.5, color: T.muted } }, item.desc)
+                );
+              })
+            )
+          ),
+
+          h('div', { className: 'ar-menu-section-heading' },
+            h('h2', { style: { color: T.text } }, __alloT('stem.autorepair.explore_the_full_shop', 'Explore the full shop')),
+            h('p', { style: { color: T.muted } },
+              __alloT('stem.autorepair.open_a_category_then_choose_your_next_skill', 'Open a category, then choose your next skill.')
+            )
+          ),
+
+          h('div', {
+            id: 'ar-menu-categories',
+            role: 'group',
+            tabIndex: -1,
+            'aria-label': __alloT('stem.autorepair.module_categories', 'Auto Repair module categories')
+          },
+            categories.map(function(cat, catIndex) {
+              var collapsed = !!collapsedCats[cat.id];
+              var tone = categoryTones[cat.id];
+              var panelId = 'ar-category-panel-' + cat.id;
+              var categoryNumber = (catIndex < 9 ? '0' : '') + String(catIndex + 1);
+              return h('section', {
+                key: cat.id,
+                'data-ar-category': cat.id,
+                className: 'ar-menu-category'
+              },
+                h('button', {
+                  'data-ar-focusable': true,
+                  'data-ar-category-toggle': cat.id,
+                  'aria-label': (collapsed ? 'Expand' : 'Collapse') + ' ' + cat.name,
+                  'aria-expanded': collapsed ? 'false' : 'true',
+                  'aria-controls': panelId,
+                  onClick: function() {
+                    var nv = Object.assign({}, collapsedCats);
+                    nv[cat.id] = !nv[cat.id];
+                    upd('collapsedCats', nv);
+                  },
+                  className: 'ar-menu-category-button',
+                  style: {
+                    '--ar-category-accent': tone.accent,
+                    width: '100%',
+                    padding: '13px 14px',
+                    borderRadius: 12,
+                    background: isContrast ? T.card : 'linear-gradient(90deg, ' + tone.soft + ' 0%, ' + T.card + ' 74%)',
+                    border: '1px solid ' + tone.accent,
+                    color: T.text,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12
+                  }
+                },
+                  h('span', {
+                    'aria-hidden': 'true',
+                    className: 'ar-menu-icon-well',
+                    style: { background: tone.soft, border: '1px solid ' + tone.accent, fontSize: 24 }
+                  }, cat.icon),
+                  h('span', { style: { flex: 1, minWidth: 0 } },
+                    h('span', { style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 } },
+                      h('strong', { style: { fontWeight: 900, fontSize: 16, color: T.text } }, cat.name),
+                      h('span', {
+                        style: {
+                          padding: '2px 7px',
+                          borderRadius: 999,
+                          background: tone.soft,
+                          border: '1px solid ' + tone.accent,
+                          color: T.text,
+                          fontSize: 10,
+                          fontWeight: 900,
+                          whiteSpace: 'nowrap'
+                        }
+                      }, categoryNumber + ' · ' + cat.modules.length + ' ' + __alloT('stem.autorepair.modules_lower', 'modules'))
+                    ),
+                    h('span', { style: { display: 'block', fontSize: 12, color: T.muted, marginTop: 4, lineHeight: 1.4 } }, cat.desc)
+                  ),
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 15, color: tone.accent, fontWeight: 900 } }, collapsed ? '▶' : '▼')
+                ),
+                !collapsed && h('div', {
+                  id: panelId,
+                  role: 'region',
+                  'aria-label': cat.name,
+                  className: 'ar-menu-module-grid'
+                },
+                  cat.modules.map(function(m) {
+                    var progressInfo = parseMenuProgress(moduleProgress[m.id]);
+                    var progressText = progressInfo
+                      ? progressInfo.current + ' of ' + progressInfo.maximum + ' ' + __alloT('stem.autorepair.complete_lower', 'complete')
+                      : '';
+                    return h('button', {
+                      'data-ar-focusable': true,
+                      'data-ar-module-card': m.id,
+                      key: m.id,
+                      'aria-label': 'Open ' + m.label + ' module' + (progressInfo ? ' — progress ' + progressText : ''),
+                      onClick: function() { setView(m.id); },
+                      className: 'ar-menu-module-card',
+                      style: {
+                        textAlign: 'left',
+                        padding: 13,
+                        borderRadius: 11,
+                        background: T.cardAlt,
+                        border: '1px solid ' + (progressInfo ? tone.accent : T.border),
+                        color: T.text,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 9,
+                        boxShadow: isContrast ? 'none' : '0 4px 14px rgba(15,23,42,0.08)'
+                      }
+                    },
+                      h('span', { style: { display: 'flex', alignItems: 'center', gap: 9 } },
+                        h('span', {
+                          'aria-hidden': 'true',
+                          className: 'ar-menu-icon-well',
+                          style: { background: tone.soft, border: '1px solid ' + tone.accent, fontSize: 21 }
+                        }, m.icon),
+                        h('strong', { style: { flex: 1, fontWeight: 800, fontSize: 14, lineHeight: 1.3, color: T.text } }, m.label),
+                        h('span', { 'aria-hidden': 'true', className: 'ar-menu-card-arrow', style: { color: tone.accent, fontSize: 17, fontWeight: 900 } }, '→')
+                      ),
+                      h('span', { style: { display: 'block', flex: 1, fontSize: 12, color: T.muted, lineHeight: 1.5 } }, m.desc),
+                      progressInfo && h('span', { style: { display: 'block', marginTop: 2 } },
+                        h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginBottom: 5, fontSize: 11, fontWeight: 800, color: T.text } },
+                          h('span', null, progressInfo.current === progressInfo.maximum
+                            ? __alloT('stem.autorepair.complete', 'Complete')
+                            : __alloT('stem.autorepair.in_progress', 'In progress')),
+                          h('span', null, progressText)
+                        ),
+                        h('span', {
+                          role: 'progressbar',
+                          'data-ar-progress': m.id,
+                          'aria-label': m.label + ' progress',
+                          'aria-valuemin': 0,
+                          'aria-valuemax': progressInfo.maximum,
+                          'aria-valuenow': progressInfo.current,
+                          'aria-valuetext': progressText,
+                          className: 'ar-menu-progress-track',
+                          style: { display: 'block', background: T.borderSoft }
+                        },
+                          h('span', {
+                            'aria-hidden': 'true',
+                            className: 'ar-menu-progress-fill',
+                            style: { display: 'block', width: progressInfo.percent + '%', background: tone.accent }
+                          })
+                        )
+                      )
+                    );
+                  })
+                )
+              );
+            })
+          ),
+
+          h('aside', {
+            role: 'note',
+            'data-ar-maine-note': 'true',
+            style: {
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 12,
+              marginTop: 20,
+              padding: 14,
+              borderRadius: 12,
+              background: categoryTones['consumer-cat'].soft,
+              border: '1px solid ' + categoryTones['consumer-cat'].accent,
+              color: T.muted,
+              lineHeight: 1.55
+            }
+          },
+            h('span', {
+              'aria-hidden': 'true',
+              className: 'ar-menu-icon-well',
+              style: {
+                background: T.card,
+                border: '1px solid ' + categoryTones['consumer-cat'].accent,
+                fontSize: 23
+              }
+            }, '🌲'),
+            h('span', null,
+              h('strong', { style: { display: 'block', color: T.text, fontSize: 13, marginBottom: 2 } },
+                __alloT('stem.autorepair.maine_reality', 'Maine reality')
+              ),
+              h('span', { style: { fontSize: 12 } }, MAINE_CONTEXT.fleetAge, ' ', MAINE_CONTEXT.salt)
+            )
           ),
           disclaimerFooter()
         );
       }
 
-      // ─────────────────────────────────────────
       // DIAGNOSE view — 4 sub-modes (obd / listen / fluid / visual)
-      // ─────────────────────────────────────────
       function renderDiagnose() {
         var dxView = d.dxView || 'overview';
         var DX_TAB_IDS = ['overview', 'obd', 'listen', 'listenQuiz', 'fluid', 'visual'];
+        var DX_MODE_META = {
+          overview: { icon: '\uD83D\uDD0D', label: 'Overview', desc: 'Build a repeatable four-channel diagnostic habit before replacing parts.' },
+          obd: { icon: '\uD83D\uDD0C', label: 'OBD-II codes', desc: 'Treat a code as evidence, then verify the likely cause before buying a part.' },
+          listen: { icon: '\uD83D\uDC42', label: 'Listen', desc: 'Use when, where, and how a noise changes to narrow the fault.' },
+          listenQuiz: { icon: '\uD83C\uDFAF', label: 'Listen Quiz', desc: 'Practice matching real driving conditions to the most likely cause.' },
+          fluid: { icon: '\uD83D\uDEE2\uFE0F', label: 'Fluids', desc: 'Compare location, color, smell, and level before deciding what is safe.' },
+          visual: { icon: '\uD83D\uDC41\uFE0F', label: 'Visual', desc: 'Inspect under the hood and underneath for evidence you can see and document.' }
+        };
+        var dxMeta = DX_MODE_META[dxView] || DX_MODE_META.overview;
+
+        function focusSoon(selector) {
+          if (typeof document === 'undefined') return;
+          setTimeout(function() {
+            var target = document.querySelector(selector);
+            if (target && typeof target.focus === 'function') target.focus();
+          }, 30);
+        }
+
+        function toggleDxSelection(key, selected, nextId, label) {
+          upd(key, selected ? null : nextId);
+          if (selected) arAnnounce(label + ' selection cleared. No diagnostic report selected.');
+        }
+
+        function dxDetailJump(mode, title) {
+          return h('a', {
+            href: '#autorepair-diagnose-detail-' + mode,
+            className: 'ar-diagnose-detail-jump',
+            'data-ar-focusable': true,
+            'data-ar-diagnose-detail-jump': mode,
+            'aria-label': 'View selected details for ' + title,
+            onClick: function() { focusSoon('#autorepair-diagnose-detail-' + mode); },
+            style: { background: T.card, color: T.link, border: '1px solid ' + T.border }
+          },
+            h('span', null, 'View selected details'),
+            h('strong', null, title),
+            h('span', { 'aria-hidden': 'true' }, '↓')
+          );
+        }
+
         function dxTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
@@ -4953,41 +7969,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var nextTab = tabs[nextIndex];
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         }
+
         function tabBtn(id, label) {
           var active = dxView === id;
           return h('button', { 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-diagnose-tab-' + id,
+            'data-ar-diagnose-tab': id,
+            'data-ar-tab-state': active ? 'active' : 'inactive',
+            className: 'ar-diagnose-tab',
             'aria-controls': 'autorepair-diagnose-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
             onKeyDown: function(e) { dxTabKeyDown(e, DX_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('dxView', id); },
-            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+            style: Object.assign({}, btnSecondary(), {
+              background: active ? T.accent : T.cardAlt,
+              color: active ? onStrongFill : T.text,
+              fontWeight: active ? 850 : 650
+            }) }, label);
+        }
+
+        function dxOption(mode, id, selected, label, meta, badge, onClick, accessibleDetail) {
+          return h('button', {
+            key: id,
+            type: 'button',
+            'data-ar-focusable': true,
+            className: 'ar-diagnose-option',
+            'data-ar-diagnose-option': id,
+            'data-ar-option-state': selected ? 'selected' : 'available',
+            'aria-label': label + (meta ? ': ' + meta : '') + (accessibleDetail ? '. ' + accessibleDetail : ''),
+            'aria-pressed': selected ? 'true' : 'false',
+            'aria-controls': 'autorepair-diagnose-detail-' + mode,
+            onClick: onClick,
+            style: Object.assign({}, btnSecondary(), {
+              background: selected ? T.accent : T.cardAlt,
+              color: selected ? onStrongFill : T.text,
+              borderColor: selected ? T.accent : T.border,
+              fontWeight: selected ? 850 : 650
+            })
+          },
+            h('span', { className: 'ar-diagnose-option-copy' },
+              h('strong', null, label),
+              meta && h('span', { className: 'ar-diagnose-option-meta' }, meta)
+            ),
+            h('span', { className: 'ar-diagnose-option-actions' },
+              badge || null,
+              h('span', {
+                className: 'ar-diagnose-option-state',
+                'data-ar-diagnose-state-label': selected ? 'selected' : 'available',
+                style: {
+                  background: selected ? T.card : T.bg,
+                  color: selected ? T.text : T.muted,
+                  border: '1px solid ' + T.border
+                }
+              }, selected ? 'Selected' : 'View')
+            )
+          );
+        }
+
+        function dxEmptyDetail(mode, icon, title, copy) {
+          var titleId = 'autorepair-diagnose-detail-title-' + mode;
+          return h('section', {
+            id: 'autorepair-diagnose-detail-' + mode,
+            role: 'region',
+            className: 'ar-diagnose-detail ar-diagnose-empty',
+            'data-ar-diagnose-detail': 'empty',
+            'data-ar-diagnose-empty': mode,
+            'aria-labelledby': titleId,
+            style: {
+              background: T.card,
+              border: '1px dashed ' + T.border,
+              color: T.muted
+            }
+          },
+            h('span', {
+              className: 'ar-diagnose-empty-icon',
+              'aria-hidden': 'true',
+              style: { background: T.cardAlt, border: '1px solid ' + T.border }
+            }, icon),
+            h('h3', { id: titleId, style: { margin: '0 0 6px', color: T.text, fontSize: 16 } }, title),
+            h('p', { style: { maxWidth: 360, margin: 0, fontSize: 12, lineHeight: 1.55 } }, copy)
+          );
+        }
+
+        function dxFact(label, text, tone, wide) {
+          return h('div', {
+            className: 'ar-diagnose-fact' + (wide ? ' ar-diagnose-fact-wide' : ''),
+            'data-ar-diagnose-fact': label.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            style: { background: T.cardAlt, border: '1px solid ' + T.border }
+          },
+            h('span', { className: 'ar-diagnose-fact-label', style: { color: tone || T.accentHi } }, label),
+            h('p', { style: { color: T.text } }, text)
+          );
+        }
+
+        function dxDetail(mode, itemId, title, badge, facts) {
+          var titleId = 'autorepair-diagnose-detail-title-' + mode;
+          return h('section', {
+            id: 'autorepair-diagnose-detail-' + mode,
+            role: 'region',
+            className: 'ar-diagnose-detail',
+            'data-ar-diagnose-detail': itemId,
+            'aria-labelledby': titleId,
+            tabIndex: -1,
+            style: {
+              background: T.card,
+              border: '2px solid ' + T.accent,
+              boxShadow: '0 12px 30px rgba(15,23,42,0.11)'
+            }
+          },
+            h('div', { className: 'ar-diagnose-detail-header' },
+              h('div', { className: 'ar-diagnose-detail-heading' },
+                h('span', {
+                  className: 'ar-diagnose-detail-status',
+                  role: 'status',
+                  'aria-live': 'polite',
+                  'aria-atomic': 'true',
+                  style: { color: T.accentHi }
+                }, 'Selected: ' + title),
+                h('h3', { id: titleId, className: 'ar-diagnose-detail-title', style: { color: T.text } }, title)
+              ),
+              badge || null
+            ),
+            h('div', { className: 'ar-diagnose-report' }, facts)
+          );
         }
 
         function dxOverview() {
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.four_diagnostic_channels', '🔍 Four diagnostic channels')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.real_techs_use_4_senses_1_tool_each_fi', 'Real techs use 4 senses + 1 tool. Each finds different problems. Get fluent in all four.')),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
-                [
-                  { icon: '🔌', name: __alloT('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: __alloT('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
-                  { icon: '👂', name: __alloT('stem.autorepair.listen', 'Listen'), desc: __alloT('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
-                  { icon: '🛢️', name: __alloT('stem.autorepair.fluids', 'Fluids'), desc: __alloT('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
-                  { icon: '👁️', name: __alloT('stem.autorepair.visual', 'Visual'), desc: __alloT('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
-                ].map(function(c) {
-                  return h('div', { key: c.name, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                    h('div', { style: { fontSize: 22, marginBottom: 4 } }, c.icon),
-                    h('strong', { style: { display: 'block', fontSize: 13, color: T.text, marginBottom: 4 } }, c.name),
-                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.45 } }, c.desc)
-                  );
-                })
-              )
+          var channels = [
+            { id: 'obd', icon: '\uD83D\uDD0C', name: __alloT('stem.autorepair.obd_ii_computer', 'OBD-II (computer)'), desc: __alloT('stem.autorepair.plug_in_scanner_read_codes_catches_any', 'Plug in scanner. Read codes. Catches anything the engine computer flagged.') },
+            { id: 'listen', icon: '\uD83D\uDC42', name: __alloT('stem.autorepair.listen', 'Listen'), desc: __alloT('stem.autorepair.squeals_clicks_knocks_rattles_each_has', 'Squeals, clicks, knocks, rattles. Each has a story. Old-school but unbeatable.') },
+            { id: 'fluid', icon: '\uD83D\uDEE2\uFE0F', name: __alloT('stem.autorepair.fluids', 'Fluids'), desc: __alloT('stem.autorepair.color_smell_level_tells_you_about_cool', 'Color, smell, level. Tells you about cooling, lubrication, transmission, brakes.') },
+            { id: 'visual', icon: '\uD83D\uDC41\uFE0F', name: __alloT('stem.autorepair.visual', 'Visual'), desc: __alloT('stem.autorepair.belts_hoses_leaks_lines_tires_maine_un', 'Belts, hoses, leaks, lines, tires. Maine: undercarriage rust above all.') }
+          ];
+          return h('div', { 'data-ar-diagnose-overview': true },
+            h('section', {
+              className: 'ar-diagnose-intro',
+              'data-ar-diagnose-intro': 'overview',
+              'aria-labelledby': 'autorepair-diagnose-overview-title',
+              style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 12 }
+            },
+              h('h2', { id: 'autorepair-diagnose-overview-title', style: { margin: '0 0 6px', fontSize: 17, color: T.text } },
+                __alloT('stem.autorepair.four_diagnostic_channels', '\uD83D\uDD0D Four diagnostic channels')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                __alloT('stem.autorepair.real_techs_use_4_senses_1_tool_each_fi', 'Real techs use 4 senses + 1 tool. Each finds different problems. Get fluent in all four.'))
             ),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_diagnostic_reality', '🌲 Maine diagnostic reality')),
+            h('div', { className: 'ar-diagnose-overview-grid' },
+              channels.map(function(channel) {
+                return h('article', {
+                  key: channel.id,
+                  className: 'ar-diagnose-channel',
+                  'data-ar-diagnose-channel': channel.id,
+                  style: { background: T.cardAlt, border: '1px solid ' + T.border }
+                },
+                  h('span', {
+                    className: 'ar-diagnose-channel-icon',
+                    'data-ar-diagnose-icon': true,
+                    'aria-hidden': 'true',
+                    style: { background: T.card, border: '1px solid ' + T.border }
+                  }, channel.icon),
+                  h('h3', { style: { margin: '0 0 5px', fontSize: 14, color: T.text } }, channel.name),
+                  h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.5 } }, channel.desc)
+                );
+              })
+            ),
+            h('aside', {
+              role: 'note',
+              style: { marginTop: 12, padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border }
+            },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
+                __alloT('stem.autorepair.maine_diagnostic_reality', '\uD83C\uDF32 Maine diagnostic reality')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, MAINE_CONTEXT.salt, ' ', MAINE_CONTEXT.rust)
             )
           );
@@ -4996,98 +8147,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function dxObd() {
           var picked = d.dxObdPicked || null;
           var pickedCode = picked ? OBD_CODES.find(function(c) { return c.code === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.obd_ii_code_library', '🔌 OBD-II code library')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+          return h('div', {
+            className: 'ar-diagnose-master-detail',
+            'data-ar-diagnose-workbench': 'obd'
+          },
+            h('section', {
+              className: 'ar-diagnose-intro',
+              'data-ar-diagnose-intro': 'obd',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('h2', { style: { margin: '0 0 6px', fontSize: 17, color: T.text } }, __alloT('stem.autorepair.obd_ii_code_library', '\uD83D\uDD0C OBD-II code library')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.tap_a_code_to_see_what_it_means_common', 'Tap a code to see what it means, common causes, and DIY-vs-shop verdict. '),
                 h('strong', null, __alloT('stem.autorepair.free_service', 'Free service: ')),
                 __alloT('stem.autorepair.napa_o_reilly_autozone_will_read_your_', 'NAPA / O\'Reilly / AutoZone will read your codes free.'))
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14 } },
+            h('div', {
+              role: 'group',
+              'aria-label': 'OBD-II code choices',
+              className: 'ar-diagnose-picker ar-diagnose-picker-grid',
+              'data-ar-diagnose-picker': 'obd'
+            },
+              pickedCode && dxDetailJump('obd', pickedCode.code + ' — ' + pickedCode.name),
               OBD_CODES.map(function(c) {
-                var sel = picked === c.code;
-                return h('button', { key: c.code, 'data-ar-focusable': true,
-                  'aria-label': c.code + ': ' + c.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('dxObdPicked', sel ? null : c.code); awardBadge('obd-explorer', 'OBD Explorer'); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    fontWeight: sel ? 800 : 600
-                  }) },
-                  c.code, h('br'), h('span', { style: { fontSize: 10, fontWeight: 500, opacity: 0.85 } }, c.name)
-                );
+                var selected = picked === c.code;
+                return dxOption('obd', c.code, selected, c.code, c.name, null, function() {
+                  toggleDxSelection('dxObdPicked', selected, c.code, c.code + ' — ' + c.name);
+                  awardBadge('obd-explorer', 'OBD Explorer');
+                });
               })
             ),
-            pickedCode && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } }, pickedCode.code),
-                h('span', { style: { fontSize: 14, color: T.text, fontWeight: 700 } }, pickedCode.name),
-                severityBadge(pickedCode.severity)
-              ),
-              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_means', 'What it means: ')), pickedCode.meaning),
-              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.common_causes', 'Common causes: ')), pickedCode.common),
-              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, 'DIY: '), pickedCode.diy),
-              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.take_to_shop_if', 'Take to shop if: ')), pickedCode.shop),
-              h('p', { style: { margin: 0, color: T.dim, fontSize: 11, fontStyle: 'italic' } },
-                h('strong', null, 'Dashboard: '), pickedCode.illuminates)
-            )
+            pickedCode ? dxDetail('obd', pickedCode.code, pickedCode.code + ' \u2014 ' + pickedCode.name,
+              severityBadge(pickedCode.severity), [
+                dxFact(__alloT('stem.autorepair.what_it_means', 'What it means'), pickedCode.meaning, T.accentHi, true),
+                dxFact(__alloT('stem.autorepair.common_causes', 'Common causes'), pickedCode.common, T.warn, true),
+                dxFact('DIY / verify', pickedCode.diy, T.good, false),
+                dxFact(__alloT('stem.autorepair.take_to_shop_if', 'Take to shop if'), pickedCode.shop, T.warn, false),
+                dxFact('Dashboard evidence', pickedCode.illuminates, T.muted, true)
+              ]) : dxEmptyDetail('obd', '\uD83D\uDD0C', 'Choose an OBD-II code',
+                'Select a code to inspect its meaning, common causes, verification path, and shop boundary.')
           );
         }
 
         function dxListen() {
           var picked = d.dxListenPicked || null;
           var pickedCue = picked ? LISTEN_CUES.find(function(c) { return c.id === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.what_s_that_noise', '👂 What\'s that noise?')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+          return h('div', {
+            className: 'ar-diagnose-master-detail',
+            'data-ar-diagnose-workbench': 'listen'
+          },
+            h('section', {
+              className: 'ar-diagnose-intro',
+              'data-ar-diagnose-intro': 'listen',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('h2', { style: { margin: '0 0 6px', fontSize: 17, color: T.text } }, __alloT('stem.autorepair.what_s_that_noise', '\uD83D\uDC42 What\'s that noise?')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.pick_a_noise_you_might_hear_the_tool_t', 'Pick a noise you might hear. The tool tells you when it usually happens, what it usually is, and DIY-vs-shop verdict.'))
             ),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+            h('div', {
+              role: 'group',
+              'aria-label': 'Noise symptom choices',
+              className: 'ar-diagnose-picker',
+              'data-ar-diagnose-picker': 'listen'
+            },
+              pickedCue && dxDetailJump('listen', pickedCue.name),
               LISTEN_CUES.map(function(c) {
-                var sel = picked === c.id;
-                return h('button', { key: c.id, 'data-ar-focusable': true,
-                  'aria-label': c.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('dxListenPicked', sel ? null : c.id); awardBadge('listener', 'Listener'); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontWeight: sel ? 800 : 600,
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8
-                  }) },
-                  h('span', null, c.name),
-                  severityBadge(c.urgency)
-                );
+                var selected = picked === c.id;
+                return dxOption('listen', c.id, selected, c.name, null, severityBadge(c.urgency), function() {
+                  toggleDxSelection('dxListenPicked', selected, c.id, c.name);
+                  awardBadge('listener', 'Listener');
+                }, 'Urgency: ' + severityA11yLabel(c.urgency));
               })
             ),
-            pickedCue && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedCue.name),
-              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', null, 'When: '), pickedCue.when),
-              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.likely_cause', 'Likely cause: ')), pickedCue.cause),
-              h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, 'DIY: '), pickedCue.diy),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.warn } }, 'Shop: '), pickedCue.shop)
-            )
+            pickedCue ? dxDetail('listen', pickedCue.id, pickedCue.name, severityBadge(pickedCue.urgency), [
+              dxFact('When it happens', pickedCue.when, T.accentHi, true),
+              dxFact(__alloT('stem.autorepair.likely_cause', 'Likely cause'), pickedCue.cause, T.warn, true),
+              dxFact('DIY / verify', pickedCue.diy, T.good, false),
+              dxFact('Shop boundary', pickedCue.shop, T.warn, false)
+            ]) : dxEmptyDetail('listen', '\uD83D\uDC42', 'Choose a noise',
+              'Select the sound that best matches what you hear, then compare when it happens and what changes it.')
           );
         }
 
-        // Listen Quiz — flips the LISTEN_CUES reference into a 4-choice game.
-        // Student gets the symptom context ('when') and picks the most likely cause.
-        // Pulls 3 distractor causes from other cues. Score + streak persists in d.
         function dxListenQuiz() {
           var cueId = d.dxQuizCueId;
           var choices = d.dxQuizChoices || [];
@@ -5095,11 +8237,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var score = d.dxQuizScore || 0;
           var attempts = d.dxQuizAttempts || 0;
           var streak = d.dxQuizStreak || 0;
-          // Initialize first round on render if no question loaded yet
           var current = cueId ? LISTEN_CUES.find(function(c) { return c.id === cueId; }) : null;
+
           function startRound() {
             var idx = Math.floor(Math.random() * LISTEN_CUES.length);
-            // Avoid immediate repeat
             if (LISTEN_CUES.length > 1 && LISTEN_CUES[idx].id === cueId) idx = (idx + 1) % LISTEN_CUES.length;
             var target = LISTEN_CUES[idx];
             var distractorPool = LISTEN_CUES.filter(function(c) { return c.id !== target.id; });
@@ -5109,13 +8250,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             }
             var distractors = distractorPool.slice(0, 3).map(function(c) { return c.id; });
             var nextChoices = distractors.concat([target.id]);
-            // Shuffle final 4
             for (var k = nextChoices.length - 1; k > 0; k--) {
               var l = Math.floor(Math.random() * (k + 1));
               var t2 = nextChoices[k]; nextChoices[k] = nextChoices[l]; nextChoices[l] = t2;
             }
             updMulti({ dxQuizCueId: target.id, dxQuizChoices: nextChoices, dxQuizPicked: null });
+            arAnnounce('New listening diagnosis question ready.');
+            focusSoon('[data-ar-diagnose-question="true"]');
           }
+
           function pickAnswer(choiceId) {
             if (picked) return;
             var correct = choiceId === cueId;
@@ -5127,90 +8270,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               dxQuizStreak: nextStreak,
               dxQuizBestStreak: Math.max(d.dxQuizBestStreak || 0, nextStreak)
             });
+            arAnnounce(correct ? 'Correct diagnosis.' : 'Review the diagnosis and evidence.');
+            focusSoon('[data-ar-diagnose-feedback]');
             if (correct) awardBadge('listen-quiz-correct', 'Listen quiz: correct');
             if (nextStreak >= 5) awardBadge('listen-quiz-streak5', 'Listen quiz: 5-streak');
           }
+
           var pct = attempts > 0 ? Math.round((score / attempts) * 100) : 0;
-          // Reveal-time UI
+
+          function scoreHeader(showReset) {
+            return h('div', {
+              className: 'ar-diagnose-score',
+              'data-ar-diagnose-score': true,
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', { className: 'ar-diagnose-score-chips' },
+                h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } },
+                  'Score ', h('strong', { style: { color: T.text, fontFamily: 'monospace' } }, score + ' / ' + attempts)),
+                attempts > 0 && h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } },
+                  'Accuracy ', h('strong', { style: { color: pct >= 70 ? T.good : pct >= 40 ? T.warn : T.bad, fontFamily: 'monospace' } }, pct + '%')),
+                streak > 0 && h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } }, '\uD83D\uDD25 Streak ', h('strong', null, streak)),
+                d.dxQuizBestStreak > 1 && h('span', { className: 'ar-diagnose-score-chip', style: { background: T.cardAlt, color: T.muted } }, 'Best ', h('strong', null, d.dxQuizBestStreak))
+              ),
+              showReset && attempts > 0 && h('button', { 'data-ar-focusable': true,
+                onClick: function() { updMulti({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
+                style: Object.assign({}, btnSecondary(), { fontSize: 11 })
+              }, __alloT('stem.autorepair.reset_score', '\u21BA Reset score'))
+            );
+          }
+
           if (picked && current) {
             var pickedCue = LISTEN_CUES.find(function(c) { return c.id === picked; });
             var isCorrect = picked === cueId;
-            return h('div', null,
-              // Score header
-              h('div', { style: { padding: 10, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
-                  h('span', { style: { fontSize: 11, color: T.muted } }, 'Score: ', h('strong', { style: { color: T.text, fontFamily: 'monospace' } }, score + ' / ' + attempts)),
-                  attempts > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Accuracy: ', h('strong', { style: { color: pct >= 70 ? T.good : pct >= 40 ? T.warn : T.bad, fontFamily: 'monospace' } }, pct + '%')),
-                  streak > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, h('span', null, '🔥 streak ' + streak)),
-                  d.dxQuizBestStreak > 1 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Best: ' + d.dxQuizBestStreak)
+            return h('div', {
+              className: 'ar-diagnose-quiz',
+              'data-ar-diagnose-quiz': 'result'
+            },
+              scoreHeader(false),
+              h('section', {
+                role: 'region',
+                'aria-label': (isCorrect ? 'Correct diagnosis: ' : 'Review the evidence: ') + current.name,
+                tabIndex: -1,
+                className: 'ar-diagnose-feedback',
+                'data-ar-diagnose-feedback': isCorrect ? 'correct' : 'review',
+                style: {
+                  background: T.card,
+                  border: '2px solid ' + (isCorrect ? T.good : T.warn)
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 9 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 25, color: isCorrect ? T.good : T.warn } }, isCorrect ? '\u2713' : '\u21BA'),
+                  h('div', null,
+                    h('span', { style: { display: 'block', color: isCorrect ? T.good : T.warn, fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                      isCorrect ? 'Correct diagnosis' : 'Review the evidence'),
+                    h('h2', { style: { margin: '3px 0 0', color: T.text, fontSize: 17, lineHeight: 1.35 } }, current.name)
+                  )
+                ),
+                !isCorrect && h('p', { style: { margin: '0 0 9px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                  __alloT('stem.autorepair.you_picked', 'You picked: '), h('strong', { style: { color: T.text } }, pickedCue ? pickedCue.name : 'Unknown')),
+                h('div', { className: 'ar-diagnose-report' },
+                  dxFact(__alloT('stem.autorepair.likely_cause_2', 'Likely cause'), current.cause, T.warn, true),
+                  dxFact('DIY / verify', current.diy, T.good, false),
+                  dxFact('Shop boundary', current.shop, T.warn, false)
                 )
               ),
-              // Verdict card
-              h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (isCorrect ? T.good : T.warn), marginBottom: 10 } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                  h('span', { style: { fontSize: 24 } }, isCorrect ? '✓' : '✗'),
-                  h('strong', { style: { fontSize: 14, color: isCorrect ? T.good : T.warn } },
-                    isCorrect ? ('Correct — that was a ' + current.name + '.')
-                              : ('Not quite. The answer was: ' + current.name))
-                ),
-                !isCorrect && h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
-                  __alloT('stem.autorepair.you_picked', 'You picked: '), h('strong', { style: { color: T.text } }, pickedCue ? pickedCue.name : 'Unknown')),
-                h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.likely_cause_2', 'Likely cause: ')), current.cause),
-                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.good } }, 'DIY: '), current.diy),
-                h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.warn } }, 'Shop: '), current.shop)
-              ),
-              h('button', { 'data-ar-focusable': true,
-                onClick: startRound,
-                style: btnPrimary()
-              }, __alloT('stem.autorepair.next_noise', '↻ Next noise →'))
+              h('button', { 'data-ar-focusable': true, onClick: startRound, style: Object.assign({}, btnPrimary(), { marginTop: 10 }) },
+                __alloT('stem.autorepair.next_noise', '\u21BB Next noise \u2192'))
             );
           }
-          // Question UI
-          return h('div', null,
-            h('div', { style: { padding: 10, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
-                h('span', { style: { fontSize: 11, color: T.muted } }, 'Score: ', h('strong', { style: { color: T.text, fontFamily: 'monospace' } }, score + ' / ' + attempts)),
-                attempts > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Accuracy: ', h('strong', { style: { color: pct >= 70 ? T.good : pct >= 40 ? T.warn : T.bad, fontFamily: 'monospace' } }, pct + '%')),
-                streak > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, h('span', null, '🔥 streak ' + streak))
-              ),
-              attempts > 0 && h('button', { 'data-ar-focusable': true,
-                onClick: function() { updMulti({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
-                style: Object.assign({}, btnSecondary(), { fontSize: 11 })
-              }, __alloT('stem.autorepair.reset_score', '↺ Reset score'))
+
+          if (!current) {
+            return h('div', {
+              className: 'ar-diagnose-quiz',
+              'data-ar-diagnose-quiz': 'idle'
+            },
+              h('section', {
+                className: 'ar-diagnose-question',
+                style: { background: T.card, border: '1px solid ' + T.border, textAlign: 'center' }
+              },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 30 } }, '\uD83C\uDFAF'),
+                h('h2', { style: { margin: '8px 0 6px', fontSize: 18, color: T.text } }, __alloT('stem.autorepair.diagnose_by_ear', 'Diagnose by ear')),
+                h('p', { style: { maxWidth: 620, margin: '0 auto 13px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                  'You will get a noise and when it happens. Pick the most likely cause from four options. ' + LISTEN_CUES.length + ' real Maine-flavored cues are in rotation.'),
+                h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, __alloT('stem.autorepair.start', '\uD83D\uDE97 Start'))
+              )
+            );
+          }
+
+          return h('div', {
+            className: 'ar-diagnose-quiz',
+            'data-ar-diagnose-quiz': 'question'
+          },
+            scoreHeader(true),
+            h('section', {
+              tabIndex: -1,
+              className: 'ar-diagnose-question',
+              'data-ar-diagnose-question': 'true',
+              style: { background: T.card, border: '2px solid ' + T.accent }
+            },
+              h('span', { className: 'ar-diagnose-eyebrow', style: { color: T.accentHi } },
+                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDC42'), 'Listen \u2014 what do you hear?'),
+              h('h2', { style: { margin: '8px 0 5px', color: T.text, fontSize: 18, lineHeight: 1.4 } },
+                h('span', { style: { color: T.muted, fontSize: 12 } }, 'When: '), current.when),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                __alloT('stem.autorepair.pick_the_most_likely_cause', 'Pick the most likely cause.'))
             ),
-            !current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diagnose_by_ear', '🎯 Diagnose by ear')),
-              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                'You will get a noise + when it happens. Pick the most likely cause from 4 options. ' + LISTEN_CUES.length + ' real Maine-flavored cues in rotation.'),
-              h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, __alloT('stem.autorepair.start', '🚗 Start'))
-            ),
-            current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 10 } },
-              h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.accentHi, marginBottom: 6 } }, __alloT('stem.autorepair.listen_what_do_you_hear', '👂 Listen — what do you hear?')),
-              h('p', { style: { margin: '0 0 4px', color: T.text, fontSize: 14, lineHeight: 1.5 } },
-                h('strong', null, 'When: '), current.when),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
-                __alloT('stem.autorepair.pick_the_most_likely_cause', 'Pick the most likely cause:'))
-            ),
-            current && h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.autorepair.cause_choices', 'Cause choices'), style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              choices.map(function(cid) {
+            h('div', {
+              role: 'group',
+              'aria-label': __alloT('stem.autorepair.cause_choices', 'Cause choices'),
+              className: 'ar-diagnose-answers',
+              'data-ar-diagnose-answers': true
+            },
+              choices.map(function(cid, choiceIndex) {
                 var c = LISTEN_CUES.find(function(x) { return x.id === cid; });
                 if (!c) return null;
-                return h('button', { key: cid, 'data-ar-focusable': true,
-                  role: 'radio', 'aria-checked': 'false',
+                return h('button', {
+                  key: cid,
+                  type: 'button',
+                  'data-ar-focusable': true,
+                  className: 'ar-diagnose-answer',
+                  'data-ar-diagnose-choice': cid,
                   onClick: function() { pickAnswer(cid); },
                   style: Object.assign({}, btnSecondary(), {
                     background: T.cardAlt,
                     color: T.text,
-                    textAlign: 'left',
-                    fontWeight: 600,
+                    fontWeight: 650,
                     padding: '12px 14px',
-                    fontSize: 13,
-                    lineHeight: 1.4
+                    fontSize: 13
                   })
-                }, c.cause);
+                },
+                  h('span', {
+                    className: 'ar-diagnose-answer-marker',
+                    'aria-hidden': 'true',
+                    style: { background: T.card, border: '1px solid ' + T.border }
+                  }, String.fromCharCode(65 + choiceIndex)),
+                  h('span', null, c.cause)
+                );
               })
             )
           );
@@ -5219,110 +8414,151 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function dxFluid() {
           var picked = d.dxFluidPicked || null;
           var pickedFluid = picked ? FLUID_CHECKS.find(function(c) { return c.id === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.fluid_analysis', '🛢️ Fluid analysis')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+          return h('div', {
+            className: 'ar-diagnose-master-detail',
+            'data-ar-diagnose-workbench': 'fluid'
+          },
+            h('section', {
+              className: 'ar-diagnose-intro',
+              'data-ar-diagnose-intro': 'fluid',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('h2', { style: { margin: '0 0 6px', fontSize: 17, color: T.text } }, __alloT('stem.autorepair.fluid_analysis', '\uD83D\uDEE2\uFE0F Fluid analysis')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.five_fluids_your_car_needs_you_to_look', 'Five fluids your car needs you to look at. Color + smell + level tells you almost everything.'))
             ),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+            h('div', {
+              role: 'group',
+              'aria-label': 'Vehicle fluid choices',
+              className: 'ar-diagnose-picker',
+              'data-ar-diagnose-picker': 'fluid'
+            },
+              pickedFluid && dxDetailJump('fluid', pickedFluid.name),
               FLUID_CHECKS.map(function(c) {
-                var sel = picked === c.id;
-                return h('button', { key: c.id, 'data-ar-focusable': true,
-                  'aria-label': c.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('dxFluidPicked', sel ? null : c.id); awardBadge('fluid-reader', 'Fluid Reader'); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontWeight: sel ? 800 : 600
-                  }) }, c.name);
+                var selected = picked === c.id;
+                return dxOption('fluid', c.id, selected, c.name, null, null, function() {
+                  toggleDxSelection('dxFluidPicked', selected, c.id, c.name);
+                  awardBadge('fluid-reader', 'Fluid Reader');
+                });
               })
             ),
-            pickedFluid && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedFluid.name),
-              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.where', '📍 Where: ')), pickedFluid.where),
-              h('p', { style: { margin: '0 0 6px', color: T.good, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.healthy', '✅ Healthy: ')), pickedFluid.healthy),
-              h('p', { style: { margin: '0 0 6px', color: T.bad, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.bad', '⚠️ Bad: ')), pickedFluid.bad),
-              h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.smell', '👃 Smell: ')), pickedFluid.smell),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.level', '📏 Level: ')), pickedFluid.level)
-            )
+            pickedFluid ? dxDetail('fluid', pickedFluid.id, pickedFluid.name, null, [
+              dxFact(__alloT('stem.autorepair.where', 'Where'), pickedFluid.where, T.accentHi, true),
+              dxFact(__alloT('stem.autorepair.healthy', 'Healthy'), pickedFluid.healthy, T.good, false),
+              dxFact(__alloT('stem.autorepair.bad', 'Concern'), pickedFluid.bad, T.bad, false),
+              dxFact(__alloT('stem.autorepair.smell', 'Smell'), pickedFluid.smell, T.muted, false),
+              dxFact(__alloT('stem.autorepair.level', 'Level'), pickedFluid.level, T.accentHi, false)
+            ]) : dxEmptyDetail('fluid', '\uD83D\uDEE2\uFE0F', 'Choose a vehicle fluid',
+              'Select a fluid to compare healthy appearance, warning signs, smell, level, and location.')
           );
         }
 
         function dxVisual() {
           var picked = d.dxVisualPicked || null;
           var pickedItem = picked ? VISUAL_CHECKS.find(function(c) { return c.id === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.visual_inspection', '👁️ Visual inspection')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+
+          function visualOptions(area) {
+            return VISUAL_CHECKS.filter(function(c) { return c.area === area; }).map(function(c) {
+              var selected = picked === c.id;
+              return dxOption('visual', c.id, selected, c.name, null, null, function() {
+                toggleDxSelection('dxVisualPicked', selected, c.id, c.name);
+                if (area === 'hood') awardBadge('visual-inspector', 'Visual Inspector');
+              });
+            });
+          }
+
+          return h('div', {
+            className: 'ar-diagnose-master-detail',
+            'data-ar-diagnose-workbench': 'visual'
+          },
+            h('section', {
+              className: 'ar-diagnose-intro',
+              'data-ar-diagnose-intro': 'visual',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('h2', { style: { margin: '0 0 6px', fontSize: 17, color: T.text } }, __alloT('stem.autorepair.visual_inspection', '\uD83D\uDC41\uFE0F Visual inspection')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.5_things_to_check_under_the_hood_5_thi', '5 things to check under the hood + 5 things to check underneath. Maine: spring undercarriage check is non-negotiable.'))
             ),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.under_the_hood', 'Under the hood')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
-              VISUAL_CHECKS.filter(function(c) { return c.area === 'hood'; }).map(function(c) {
-                var sel = picked === c.id;
-                return h('button', { key: c.id, 'data-ar-focusable': true,
-                  'aria-label': c.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('dxVisualPicked', sel ? null : c.id); awardBadge('visual-inspector', 'Visual Inspector'); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: sel ? 800 : 600
-                  }) }, c.name);
-              })
+            h('div', {
+              role: 'group',
+              'aria-label': 'Visual inspection choices',
+              className: 'ar-diagnose-picker',
+              'data-ar-diagnose-picker': 'visual'
+            },
+              pickedItem && dxDetailJump('visual', pickedItem.name),
+              h('section', { className: 'ar-diagnose-visual-group' },
+                h('h3', { style: { margin: '0 0 7px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.under_the_hood', 'Under the hood')),
+                h('div', { className: 'ar-diagnose-picker-grid' }, visualOptions('hood'))
+              ),
+              h('section', { className: 'ar-diagnose-visual-group', style: { borderTop: '1px solid ' + T.border } },
+                h('h3', { style: { margin: '0 0 7px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.underneath_maine_spring_inspection', 'Underneath (Maine: spring inspection)')),
+                h('div', { className: 'ar-diagnose-picker-grid' }, visualOptions('under'))
+              )
             ),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, __alloT('stem.autorepair.underneath_maine_spring_inspection', 'Underneath (Maine: spring inspection)')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
-              VISUAL_CHECKS.filter(function(c) { return c.area === 'under'; }).map(function(c) {
-                var sel = picked === c.id;
-                return h('button', { key: c.id, 'data-ar-focusable': true,
-                  'aria-label': c.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('dxVisualPicked', sel ? null : c.id); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: sel ? 800 : 600
-                  }) }, c.name);
-              })
-            ),
-            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.name),
-              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', null, __alloT('stem.autorepair.look_for', '👁️ Look for: ')), pickedItem.look),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.flag_if', '🚩 Flag if: ')), pickedItem.finding)
-            )
+            pickedItem ? dxDetail('visual', pickedItem.id, pickedItem.name, null, [
+              dxFact(__alloT('stem.autorepair.look_for', 'Look for'), pickedItem.look, T.accentHi, true),
+              dxFact(__alloT('stem.autorepair.flag_if', 'Flag if'), pickedItem.finding, T.warn, true)
+            ]) : dxEmptyDetail('visual', '\uD83D\uDC41\uFE0F', 'Choose an inspection point',
+              'Select an under-hood or underneath item to see what to inspect and what should be flagged.')
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🔍 Diagnose'),
-          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.diagnose_sub_modes', 'Diagnose sub-modes'),
-            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-            tabBtn('overview', 'Overview'),
-            tabBtn('obd', '🔌 OBD codes'),
-            tabBtn('listen', '👂 Listen'),
-            tabBtn('listenQuiz', '🎯 Listen Quiz'),
-            tabBtn('fluid', '🛢️ Fluids'),
-            tabBtn('visual', '👁️ Visual')
+        return h('main', {
+          role: 'main',
+          className: 'ar-workflow-shell ar-diagnose-shell',
+          'data-ar-diagnose-shell': true,
+          style: { color: T.text }
+        },
+          backBar('\uD83D\uDD0D Diagnose', 'Diagnose navigation'),
+          h('section', {
+            className: 'ar-diagnose-hero',
+            'data-ar-diagnose-hero': true,
+            'aria-labelledby': 'autorepair-diagnose-title',
+            style: {
+              background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')',
+              border: '1px solid ' + T.border,
+              boxShadow: '0 14px 34px rgba(15,23,42,0.12)'
+            }
+          },
+            h('div', { className: 'ar-diagnose-hero-copy' },
+              h('span', { className: 'ar-diagnose-eyebrow', style: { color: T.accentHi } },
+                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEE0\uFE0F'), 'Diagnostic bay'),
+              h('h1', { id: 'autorepair-diagnose-title', className: 'ar-diagnose-title', style: { color: T.text } },
+                'Read the evidence before replacing the part'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+                'Move from symptom to evidence, verification, and a clear DIY-or-shop boundary. Codes and clues narrow the problem; they do not prove a part failed.')
+            ),
+            h('span', {
+              className: 'ar-diagnose-mode-chip',
+              'data-ar-diagnose-active-mode': dxView,
+              style: { background: T.card, border: '1px solid ' + T.border, color: T.text }
+            },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, dxMeta.icon),
+              h('span', null,
+                h('strong', { style: { display: 'block' } }, dxMeta.label),
+                h('span', { style: { display: 'block', marginTop: 2, color: T.muted, fontWeight: 600 } }, dxMeta.desc)
+              )
+            )
           ),
-          h('div', { role: 'tabpanel',
+          h('div', {
+            role: 'tablist', 'aria-label': __alloT('stem.autorepair.diagnose_sub_modes', 'Diagnose sub-modes'),
+            className: 'ar-diagnose-tabs',
+            'data-ar-diagnose-tabs': true
+          },
+            tabBtn('overview', 'Overview'),
+            tabBtn('obd', '\uD83D\uDD0C OBD codes'),
+            tabBtn('listen', '\uD83D\uDC42 Listen'),
+            tabBtn('listenQuiz', '\uD83C\uDFAF Listen Quiz'),
+            tabBtn('fluid', '\uD83D\uDEE2\uFE0F Fluids'),
+            tabBtn('visual', '\uD83D\uDC41\uFE0F Visual')
+          ),
+          h('div', {
+            role: 'tabpanel',
             id: 'autorepair-diagnose-panel-' + dxView,
             'aria-labelledby': 'autorepair-diagnose-tab-' + dxView,
+            'data-ar-diagnose-panel': dxView,
+            className: 'ar-diagnose-panel',
             tabIndex: 0
           },
             dxView === 'overview' && dxOverview(),
@@ -5357,6 +8593,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var progress = arRepairStepProgress(totalSteps, viewedForThis);
           var doneSteps = progress.done;
           var pct = Math.round((doneSteps / totalSteps) * 100);
+          var workflowPhase = !safetyStatus.complete ? 'safety' : (progress.complete ? 'complete' : 'steps');
+          var nextRepairStep = progress.next
+            ? pickedRepair.steps.find(function(step) { return step.n === progress.next; })
+            : null;
+          var safetyRemaining = Math.max(0, safetyStatus.total - safetyStatus.done);
+          var repairStages = [
+            {
+              id: 'safety',
+              label: __alloT('stem.autorepair.safety_setup', 'Safety setup'),
+              meta: safetyStatus.done + ' / ' + safetyStatus.total + ' confirmed',
+              state: workflowPhase === 'safety' ? 'current' : 'complete'
+            },
+            {
+              id: 'procedure',
+              label: __alloT('stem.autorepair.guided_repair', 'Guided repair'),
+              meta: doneSteps + ' / ' + totalSteps + ' reviewed',
+              state: workflowPhase === 'steps' ? 'current' : (workflowPhase === 'complete' ? 'complete' : 'upcoming')
+            },
+            {
+              id: 'complete',
+              label: __alloT('stem.autorepair.walkthrough_complete', 'Walkthrough complete'),
+              meta: pct + '%',
+              state: workflowPhase === 'complete' ? 'complete' : 'upcoming'
+            }
+          ];
+          var repairStageCompleted = workflowPhase === 'safety' ? 0 : (workflowPhase === 'steps' ? 1 : 3);
+          var repairWorkflowStatus = workflowPhase === 'safety'
+            ? 'Safety setup — confirm ' + safetyRemaining + ' more ' + (safetyRemaining === 1 ? 'item' : 'items') + ' to unlock the repair.'
+            : workflowPhase === 'steps'
+              ? 'Current task — step ' + progress.next + ' of ' + totalSteps + ': ' + (nextRepairStep ? nextRepairStep.do : '')
+              : 'Walkthrough complete — every repair step has been reviewed.';
+          var safetyPanelBackground = isContrast ? T.card : (isDark ? '#2a1a10' : '#fff7ed');
 
           function toggleRepairSafety(code) {
             var next = Object.assign({}, safetyChecks);
@@ -5398,12 +8666,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             }
           }
 
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          return h('div', {
+            'data-ar-repair-workflow': pickedRepair.id,
+            className: 'ar-workflow-shell',
+            style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text }
+          },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
+              h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_repair_list', 'Back to repair list'),
                 onClick: function() { upd('repairPicked', null); }, style: btnGhost() }, __alloT('stem.autorepair.repair_list', '← Repair list')),
-              h('span', { style: { fontSize: 24 } }, pickedRepair.icon),
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, pickedRepair.icon),
               h('h2', { style: { margin: 0, fontSize: 18, color: T.text } }, pickedRepair.name)
+            ),
+            workflowRail(
+              'repair',
+              __alloT('stem.autorepair.repair_workflow_progress', 'Repair workflow progress'),
+              repairStages,
+              repairStageCompleted,
+              repairWorkflowStatus
             ),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginBottom: 14 } },
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
@@ -5453,14 +8732,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               pickedRepair.consumables && h('div', { style: { marginTop: 8, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
                 h('strong', { style: { color: T.text } }, 'Consumables: '), pickedRepair.consumables)
             ),
-            h('section', { 'aria-labelledby': 'ar-repair-safety-title',
-              style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid ' + (safetyStatus.complete ? '#86efac' : '#ea580c'), marginBottom: 14 } },
-              h('h4', { id: 'ar-repair-safety-title', style: { margin: '0 0 6px', fontSize: 13, color: '#fed7aa' } },
+            h('section', {
+              'aria-labelledby': 'ar-repair-safety-title',
+              'data-ar-workflow-section': 'safety',
+              'data-ar-section-state': safetyStatus.complete ? 'complete' : 'current',
+              className: 'ar-workflow-panel',
+              style: { padding: 13, background: safetyPanelBackground, border: '2px solid ' + (safetyStatus.complete ? T.good : T.warn), marginBottom: 14 }
+            },
+              h('h4', { id: 'ar-repair-safety-title', style: { margin: '0 0 6px', fontSize: 14, color: T.text } },
                 __alloT('stem.autorepair.safety_check', '🛡️ Safety check — clear before step review')),
-              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#ffedd5', lineHeight: 1.55 } },
+              h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.safety_check_intro', 'Actively acknowledge each condition. This learning check cannot verify a real vehicle or replace its service manual.')),
               h('div', { role: 'status', 'aria-live': 'polite',
-                style: { marginBottom: 8, fontSize: 12, color: safetyStatus.complete ? '#bbf7d0' : '#fed7aa', fontWeight: 800 } },
+                style: { marginBottom: 8, fontSize: 12, color: safetyStatus.complete ? T.good : T.warn, fontWeight: 800 } },
                 __alloT('stem.autorepair.safety_check_progress', 'Safety check: ') + safetyStatus.done + ' / ' + safetyStatus.total +
                   (safetyStatus.complete ? __alloT('stem.autorepair.safety_check_ready', ' understood — step review unlocked.') : __alloT('stem.autorepair.safety_check_locked', ' understood — step review locked.'))),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 7 } },
@@ -5472,46 +8756,102 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                       'aria-pressed': checked,
                       'aria-label': (checked ? 'Unconfirm' : 'Confirm') + ' safety item: ' + label,
                       onClick: function() { toggleRepairSafety(code); },
-                      style: { width: '100%', minHeight: 44, textAlign: 'left', padding: '9px 11px', borderRadius: 8,
-                        background: checked ? '#14532d' : '#431407', border: '1px solid ' + (checked ? '#86efac' : '#fdba74'),
-                        color: checked ? '#dcfce7' : '#ffedd5', cursor: 'pointer', display: 'flex', gap: 9, alignItems: 'flex-start', lineHeight: 1.45 } },
-                      h('span', { 'aria-hidden': 'true', style: { fontWeight: 900, flexShrink: 0 } }, checked ? '✓' : '○'),
-                      h('span', { style: { fontSize: 12.5, fontWeight: checked ? 700 : 600 } }, __alloT('stem.autorepair.i_understand', 'I understand: '), label))
+                      className: 'ar-workflow-step-card',
+                      style: {
+                        width: '100%', minHeight: 46, textAlign: 'left', padding: '9px 11px', borderRadius: 9,
+                        background: checked ? (isContrast ? T.cardAlt : (isDark ? '#123228' : '#ecfdf5')) : T.cardAlt,
+                        border: '2px solid ' + (checked ? T.good : T.warn),
+                        color: T.text, cursor: 'pointer', display: 'flex', gap: 9, alignItems: 'flex-start', lineHeight: 1.45
+                      } },
+                      h('span', { 'aria-hidden': 'true', style: { color: checked ? T.good : T.warn, fontWeight: 900, flexShrink: 0 } }, checked ? '✓' : '○'),
+                      h('span', { style: { flex: 1, fontSize: 12.5, fontWeight: checked ? 700 : 600 } }, __alloT('stem.autorepair.i_understand', 'I understand: '), label),
+                      h('span', {
+                        'data-ar-state-label': checked ? 'confirmed' : 'unconfirmed',
+                        className: 'ar-workflow-state-label',
+                        style: { marginTop: 0, color: T.text, background: T.card, border: '1px solid ' + (checked ? T.good : T.warn), whiteSpace: 'nowrap' }
+                      }, checked ? __alloT('stem.autorepair.confirmed', 'Confirmed') : __alloT('stem.autorepair.check_me', 'Check me'))
+                    )
                   );
                 })
               ),
               safetyStatus.done > 0 && h('button', { type: 'button', 'data-ar-focusable': true,
                 onClick: function() { upd('repairSafetyChecks', {}); arAnnounce('Safety check reset.'); },
-                style: { minHeight: 40, marginTop: 8, padding: '6px 10px', borderRadius: 7, border: '1px solid #fdba74', background: 'transparent', color: '#ffedd5', cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
+                style: { minHeight: 44, marginTop: 8, padding: '7px 11px', borderRadius: 7, border: '1px solid ' + T.warn, background: T.card, color: T.text, cursor: 'pointer', fontSize: 12, fontWeight: 700 } },
                 __alloT('stem.autorepair.reset_safety_check', 'Reset safety check'))
             ),
-            h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 } },
+            h('section', {
+              'data-ar-workflow-section': 'procedure',
+              'data-ar-section-state': progress.complete ? 'complete' : (safetyStatus.complete ? 'current' : 'locked'),
+              className: 'ar-workflow-panel',
+              style: { padding: 13, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                 h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.step_by_step', '📋 Step-by-step')),
                 h('span', { role: 'status', 'aria-live': 'polite', style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, doneSteps + ' / ' + totalSteps + ' reviewed (' + pct + '%)')
               ),
+              h('span', {
+                role: 'progressbar',
+                'data-ar-repair-progress': pickedRepair.id,
+                'aria-label': pickedRepair.name + ' reviewed steps',
+                'aria-valuemin': 0,
+                'aria-valuemax': totalSteps,
+                'aria-valuenow': doneSteps,
+                'aria-valuetext': doneSteps + ' of ' + totalSteps + ' reviewed',
+                className: 'ar-workflow-progress-track',
+                style: { marginTop: 0, marginBottom: 9, background: T.borderSoft }
+              },
+                h('span', { 'aria-hidden': 'true', className: 'ar-workflow-progress-fill',
+                  style: { width: pct + '%', background: progress.complete ? T.good : T.accent } })
+              ),
               h('p', { id: 'ar-repair-step-help', style: { margin: '0 0 9px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
                 __alloT('stem.autorepair.repair_step_help', 'Read the entire procedure before touching a vehicle. In this learning walkthrough, mark each step reviewed in order after clearing the safety check.')),
-              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              h('ol', { className: 'ar-workflow-step-list', 'aria-label': __alloT('stem.autorepair.ordered_repair_steps', 'Ordered repair steps') },
                 pickedRepair.steps.map(function(s) {
                   var viewed = s.n <= progress.done;
                   var isNext = s.n === progress.next;
                   var locked = !viewed && (!safetyStatus.complete || !isNext);
                   var stepState = viewed ? 'reviewed' : (safetyStatus.complete && isNext ? 'next' : (safetyStatus.complete ? 'locked-order' : 'locked-safety'));
-                  var stateLabel = viewed ? 'Reviewed' : (stepState === 'next' ? 'Ready to review' : (stepState === 'locked-safety' ? 'Locked until the safety check is complete' : 'Locked until step ' + progress.next + ' is reviewed'));
-                  return h('div', { key: s.n, role: 'listitem' }, h('button', { type: 'button', 'data-ar-focusable': true,
-                    'data-ar-repair-step': s.n, 'data-ar-step-state': stepState,
-                    'aria-disabled': locked, 'aria-describedby': 'ar-repair-step-help',
-                    'aria-label': 'Step ' + s.n + ': ' + stateLabel,
-                    onClick: function() { reviewRepairStep(s); },
-                    style: { width: '100%', minHeight: 48, textAlign: 'left', padding: 10, borderRadius: 8,
-                      background: viewed ? T.cardAlt : T.bg, border: '1px solid ' + (viewed ? T.accent : (isNext && safetyStatus.complete ? T.accentHi : T.border)),
-                      color: T.text, cursor: locked ? 'not-allowed' : 'pointer', opacity: locked ? 0.72 : 1, display: 'flex', gap: 10, alignItems: 'flex-start' } },
-                    h('span', { 'aria-hidden': 'true', style: { background: viewed ? T.accent : (isNext && safetyStatus.complete ? T.warn : T.dim), color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, viewed ? '✓' : s.n),
-                    h('span', { style: { flex: 1 } },
-                      h('span', { style: { display: 'block', fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do),
-                      h('span', { style: { display: 'block', marginTop: 4, fontSize: 10.5, color: viewed ? T.good : (stepState === 'next' ? T.accentHi : T.dim), fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.04em' } }, stateLabel))
-                  ));
+                  var stateLabel = viewed ? 'Reviewed' : (stepState === 'next' ? 'Do this now' : (stepState === 'locked-safety' ? 'Complete safety setup' : 'Complete step ' + progress.next + ' first'));
+                  var stepTone = viewed ? T.good : (stepState === 'next' ? T.accentHi : T.dim);
+                  var stepBackground = viewed
+                    ? (isContrast ? T.cardAlt : (isDark ? '#123228' : '#ecfdf5'))
+                    : (stepState === 'next' ? T.cardAlt : T.bg);
+                  return h('li', { key: s.n, className: 'ar-workflow-step-row' },
+                    h('button', { type: 'button', 'data-ar-focusable': true,
+                      'data-ar-repair-step': s.n, 'data-ar-step-state': stepState,
+                      'aria-disabled': locked, 'aria-describedby': 'ar-repair-step-help',
+                      'aria-current': stepState === 'next' ? 'step' : undefined,
+                      'aria-label': 'Step ' + s.n + ': ' + stateLabel,
+                      onClick: function() { reviewRepairStep(s); },
+                      className: 'ar-workflow-step-card',
+                      style: {
+                        width: '100%', minHeight: 52, textAlign: 'left', padding: 10, borderRadius: 9,
+                        background: stepBackground, border: '1px solid ' + stepTone, borderLeft: '4px solid ' + stepTone,
+                        color: T.text, cursor: locked ? 'not-allowed' : 'pointer',
+                        display: 'flex', gap: 10, alignItems: 'flex-start',
+                        boxShadow: stepState === 'next' && !isContrast ? '0 5px 18px rgba(245,158,11,0.16)' : 'none'
+                      } },
+                      h('span', {
+                        'aria-hidden': 'true',
+                        className: 'ar-workflow-step-marker',
+                        style: {
+                          background: viewed || stepState === 'next' ? stepTone : T.card,
+                          color: viewed || stepState === 'next' ? (isDark || isContrast ? '#0f172a' : '#ffffff') : T.text,
+                          border: '1px solid ' + stepTone,
+                          borderRadius: 999, width: 28, height: 28, display: 'inline-flex',
+                          alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 900, flexShrink: 0
+                        }
+                      }, viewed ? '✓' : (stepState === 'next' ? s.n : '🔒')),
+                      h('span', { style: { flex: 1, minWidth: 0 } },
+                        h('span', { style: { display: 'block', fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do),
+                        h('span', {
+                          'data-ar-state-label': stepState,
+                          className: 'ar-workflow-state-label',
+                          style: { color: T.text, background: T.card, border: '1px solid ' + stepTone }
+                        }, stateLabel)
+                      )
+                    )
+                  );
                 })
               )
             ),
@@ -5559,71 +8899,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function renderTools() {
         var toolsView = d.toolsView || 'library';
         var TOOLS_TAB_IDS = ['library', 'game'];
+        var TOOLS_MODE_META = { library: { label: 'Reference library', icon: '📖' }, game: { label: 'Job Card Challenge', icon: '🎯' } };
+        var toolsMeta = TOOLS_MODE_META[toolsView] || TOOLS_MODE_META.library;
+
+        function toolsFocusSoon(selector) {
+          if (typeof document === 'undefined') return;
+          setTimeout(function() { var target = document.querySelector(selector); if (target && typeof target.focus === 'function') target.focus(); }, 30);
+        }
         function toolsTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
-          e.preventDefault();
-          var nextIndex = index;
+          e.preventDefault(); var nextIndex = index;
           if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % TOOLS_TAB_IDS.length;
           if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + TOOLS_TAB_IDS.length) % TOOLS_TAB_IDS.length;
-          if (key === 'Home') nextIndex = 0;
-          if (key === 'End') nextIndex = TOOLS_TAB_IDS.length - 1;
-          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-          var nextTab = tabs[nextIndex];
-          if (nextTab) { nextTab.focus(); nextTab.click(); }
+          if (key === 'Home') nextIndex = 0; if (key === 'End') nextIndex = TOOLS_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role=tab]'); var nextTab = tabs[nextIndex]; if (nextTab) { nextTab.focus(); nextTab.click(); }
         }
         function tabBtn(id, label) {
           var active = toolsView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
-            id: 'autorepair-tools-tab-' + id,
-            'aria-controls': 'autorepair-tools-panel-' + id,
-            'aria-selected': active ? 'true' : 'false',
-            tabIndex: active ? 0 : -1,
-            onKeyDown: function(e) { toolsTabKeyDown(e, TOOLS_TAB_IDS.indexOf(id)); },
-            onClick: function() { upd('toolsView', id); },
-            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+          return h('button', { 'data-ar-focusable': true, type: 'button', role: 'tab', id: 'autorepair-tools-tab-' + id, className: 'ar-tools-tab', 'data-ar-tools-tab': id, 'data-ar-tab-state': active ? 'active' : 'inactive', 'aria-controls': 'autorepair-tools-panel-' + id, 'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1, onKeyDown: function(e) { toolsTabKeyDown(e, TOOLS_TAB_IDS.indexOf(id)); }, onClick: function() { upd('toolsView', id); }, style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, fontWeight: active ? 850 : 650 }) }, label);
+        }
+        function toolFact(label, text, tone, wide) {
+          return h('article', { className: 'ar-tools-fact' + (wide ? ' ar-tools-fact-wide' : ''), 'data-ar-tools-fact': label.toLowerCase().replace(/[^a-z0-9]+/g, '-'), style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('span', { className: 'ar-tools-fact-label', style: { color: tone || T.accentHi } }, label), h('p', { style: { color: T.text } }, text));
+        }
+        function toolDetailJump(tool) {
+          return h('a', { href: '#autorepair-tools-detail', className: 'ar-tools-detail-jump', 'data-ar-focusable': true, 'data-ar-tools-detail-jump': tool.id, 'aria-label': 'View selected tool details for ' + tool.name, onClick: function() { toolsFocusSoon('#autorepair-tools-detail'); }, style: { background: T.card, color: T.link, border: '1px solid ' + T.border } }, h('span', null, 'View selected tool'), h('strong', null, tool.name), h('span', { 'aria-hidden': 'true' }, '↓'));
         }
 
         function library() {
           var picked = d.toolPicked || null;
           var pickedTool = picked ? TOOLS_LIBRARY.find(function(t) { return t.id === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.tool_library', '🧰 Tool library')),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.tap_a_tool_to_see_what_it_is_when_you_', 'Tap a tool to see what it is, when you need it, and what it costs. Build a starter kit incrementally — you don\'t need everything to start.'))
-            ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 14 } },
-              TOOLS_LIBRARY.map(function(t) {
-                var sel = picked === t.id;
-                return h('button', { key: t.id, 'data-ar-focusable': true,
-                  'aria-label': t.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('toolPicked', sel ? null : t.id); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontSize: 12,
-                    fontWeight: sel ? 800 : 600,
-                    display: 'flex', alignItems: 'flex-start', gap: 8
-                  }) },
-                  h('span', { style: { fontSize: 18 } }, t.icon),
-                  h('span', null, t.name, h('br'), h('span', { style: { fontSize: 10, opacity: 0.8 } }, t.cost))
-                );
-              })
-            ),
-            pickedTool && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontSize: 28 } }, pickedTool.icon),
-                h('h4', { style: { margin: 0, fontSize: 15, color: T.accentHi } }, pickedTool.name)
+          function toggleTool(tool, selected) { upd('toolPicked', selected ? null : tool.id); if (selected) arAnnounce(tool.name + ' selection cleared. No tool spec sheet selected.'); }
+          return h('div', { className: 'ar-tools-library-grid', 'data-ar-tools-library': pickedTool ? 'selected' : 'empty' },
+            h('section', { className: 'ar-tools-catalog', 'aria-labelledby': 'autorepair-tools-catalog-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-tools-catalog-head' },
+                h('div', null, h('h2', { id: 'autorepair-tools-catalog-title', style: { color: T.text } }, 'Tool wall'), h('p', { style: { margin: '4px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } }, 'Inspect what each tool does, when it earns a place in the kit, and what a practical starter version costs.')),
+                h('span', { className: 'ar-tools-count', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, TOOLS_LIBRARY.length + ' tools')
               ),
-              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                h('strong', null, __alloT('stem.autorepair.what', '🔧 What: ')), pickedTool.what),
-              h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.when', '🕐 When: ')), pickedTool.when),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.buy', '💵 Buy: ')), pickedTool.buy)
+              pickedTool && toolDetailJump(pickedTool),
+              h('div', { role: 'group', 'aria-label': 'Tool reference choices', className: 'ar-tools-picker', 'data-ar-tools-picker': 'library', style: { marginTop: pickedTool ? 9 : 0 } },
+                TOOLS_LIBRARY.map(function(tool) {
+                  var selected = picked === tool.id;
+                  return h('button', { key: tool.id, type: 'button', 'data-ar-focusable': true, className: 'ar-tools-option', 'data-ar-tool-option': tool.id, 'data-ar-option-state': selected ? 'selected' : 'available', 'aria-label': tool.name + '. Cost ' + tool.cost + '. ' + (selected ? 'Selected' : 'Inspect'), 'aria-pressed': selected ? 'true' : 'false', 'aria-controls': 'autorepair-tools-detail', onClick: function() { toggleTool(tool, selected); }, style: Object.assign({}, btnSecondary(), { background: selected ? T.accent : T.cardAlt, color: selected ? onStrongFill : T.text, borderColor: selected ? T.accent : T.border, fontWeight: selected ? 800 : 650 }) },
+                    h('span', { className: 'ar-tools-option-icon', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, tool.icon),
+                    h('span', { className: 'ar-tools-option-copy' }, h('span', { className: 'ar-tools-option-name' }, tool.name), h('span', { className: 'ar-tools-option-foot' }, h('span', { className: 'ar-tools-cost', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, tool.cost), h('span', { className: 'ar-tools-option-state', 'data-ar-tools-state-label': selected ? 'selected' : 'available', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, selected ? 'Selected' : 'Inspect')))
+                  );
+                })
+              )
+            ),
+            pickedTool ? h('section', { id: 'autorepair-tools-detail', role: 'region', tabIndex: -1, className: 'ar-tools-detail', 'data-ar-tools-detail': pickedTool.id, 'aria-labelledby': 'autorepair-tools-detail-title', style: { background: T.card, border: '2px solid ' + T.accent, boxShadow: '0 12px 30px rgba(15,23,42,0.11)' } },
+              h('div', { className: 'ar-tools-detail-head' }, h('span', { className: 'ar-tools-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, pickedTool.icon), h('div', { className: 'ar-tools-detail-heading' }, h('span', { className: 'ar-tools-detail-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { color: T.accentHi } }, 'Selected tool'), h('h2', { id: 'autorepair-tools-detail-title', className: 'ar-tools-detail-title', style: { color: T.text } }, pickedTool.name), h('span', { className: 'ar-tools-detail-cost', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, pickedTool.cost))),
+              h('div', { className: 'ar-tools-facts' }, toolFact('What it is', pickedTool.what, T.accentHi, true), toolFact('Use it when', pickedTool.when, T.warn, false), toolFact('Buying note', pickedTool.buy, T.good, false))
+            ) : h('section', { id: 'autorepair-tools-detail', role: 'region', className: 'ar-tools-detail ar-tools-empty', 'data-ar-tools-detail': 'empty', 'data-ar-tools-empty': 'library', 'aria-labelledby': 'autorepair-tools-empty-title', style: { background: T.card, color: T.muted, border: '1px dashed ' + T.border } },
+              h('span', { className: 'ar-tools-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🧰'),
+              h('h2', { id: 'autorepair-tools-empty-title', style: { margin: '0 0 6px', color: T.text, fontSize: 17 } }, 'Choose a tool from the wall'),
+              h('p', { style: { maxWidth: 360, margin: 0, fontSize: 12, lineHeight: 1.55 } }, 'Its spec sheet will explain the job it does, when it matters, and what a sensible starter purchase costs.')
             )
           );
         }
@@ -5631,118 +8961,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function game() {
           var qIdx = d.toolGameIdx || 0;
           var question = TOOL_GAME[qIdx];
+          function restart() { upd('toolGameIdx', 0); upd('toolGameAnswers', {}); arAnnounce('Tool selection game restarted.'); toolsFocusSoon('[data-ar-tools-question=true]'); }
           if (!question) {
-            return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.tool_selection_complete', '🎉 Tool selection complete')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.you_ve_worked_through_every_scenario_r', 'You\'ve worked through every scenario. Ready to apply this in real life: practice on a non-running car at a junkyard, take a CTE class, or volunteer with someone\'s project.')),
-              h('button', { 'data-ar-focusable': true, onClick: function() { upd('toolGameIdx', 0); upd('toolGameAnswers', {}); },
-                style: btnPrimary() }, __alloT('stem.autorepair.start_over', '🔄 Start over'))
+            return h('div', { className: 'ar-tools-game', 'data-ar-tools-game-state': 'complete' },
+              h('div', { className: 'ar-tools-game-head', style: { background: T.card, border: '1px solid ' + T.border } }, h('div', { className: 'ar-tools-progress-row' }, h('span', { className: 'ar-tools-progress-label', style: { color: T.good } }, 'Challenge complete'), h('span', { style: { color: T.muted, fontSize: 12, fontWeight: 750 } }, TOOL_GAME.length + ' of ' + TOOL_GAME.length)), h('div', { role: 'progressbar', 'aria-label': 'Tool challenge progress', 'aria-valuemin': 0, 'aria-valuemax': TOOL_GAME.length, 'aria-valuenow': TOOL_GAME.length, className: 'ar-tools-progress-bar', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('div', { className: 'ar-tools-progress-fill', style: { width: '100%', background: T.good } }))),
+              h('section', { role: 'region', 'aria-label': 'Tool selection complete', tabIndex: -1, className: 'ar-tools-complete', 'data-ar-tools-complete': true, style: { background: T.card, border: '2px solid ' + T.good } },
+                h('span', { 'aria-hidden': 'true', style: { display: 'block', fontSize: 31, marginBottom: 7 } }, '🎉'), h('h2', { style: { color: T.text } }, __alloT('stem.autorepair.tool_selection_complete', 'Tool selection complete')),
+                h('p', { style: { color: T.muted } }, __alloT('stem.autorepair.you_ve_worked_through_every_scenario_r', 'You have worked through every scenario. Ready to apply this in real life: practice on a non-running car at a junkyard, take a CTE class, or volunteer on a community project.')),
+                h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', type: 'button', onClick: restart, style: Object.assign({}, btnPrimary(), { marginTop: 12 }) }, __alloT('stem.autorepair.start_over', '↻ Start over'))
+              )
             );
           }
-          var answers = d.toolGameAnswers || {};
-          var picked = answers[question.id] || [];
-          var allOptions = question.correct.concat(question.distractors);
-          // Randomize but stable for question
-          var orderKey = 'order_' + question.id;
-          var order = answers[orderKey];
-          if (!order) {
-            order = allOptions.slice().sort(function() { return Math.random() - 0.5; });
-            answers = Object.assign({}, answers);
-            answers[orderKey] = order;
-            upd('toolGameAnswers', answers);
-          }
+          var answers = d.toolGameAnswers || {}, picked = answers[question.id] || [], allOptions = question.correct.concat(question.distractors), orderKey = 'order_' + question.id, order = answers[orderKey];
+          if (!order) { order = allOptions.slice().sort(function() { return Math.random() - 0.5; }); answers = Object.assign({}, answers); answers[orderKey] = order; upd('toolGameAnswers', answers); }
           var submitted = !!answers[question.id + '_submitted'];
-
-          function togglePick(tid) {
-            if (submitted) return;
-            var newPicked = picked.indexOf(tid) >= 0 ? picked.filter(function(x) { return x !== tid; }) : picked.concat([tid]);
-            var newAns = Object.assign({}, answers); newAns[question.id] = newPicked;
-            upd('toolGameAnswers', newAns);
-          }
-          function submit() {
-            var newAns = Object.assign({}, answers); newAns[question.id + '_submitted'] = true;
-            upd('toolGameAnswers', newAns);
-            // grade
-            var correctSet = question.correct;
-            var allCorrect = correctSet.length === picked.length && correctSet.every(function(c) { return picked.indexOf(c) >= 0; });
-            if (allCorrect) {
-              awardBadge('tool-picker-' + question.id, 'Picked tools: ' + question.label.slice(0, 30) + '...');
-              arAnnounce('Correct toolset.');
-            } else {
-              arAnnounce('Not quite — review the explanation.');
-            }
-          }
-          function next() {
-            upd('toolGameIdx', qIdx + 1);
-          }
-
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Question ' + (qIdx + 1) + ' of ' + TOOL_GAME.length),
-              h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.text } }, question.label)
-            ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 14 } },
+          var allCorrect = question.correct.length === picked.length && question.correct.every(function(c) { return picked.indexOf(c) >= 0; });
+          var progressPct = Math.round(((qIdx + 1) / TOOL_GAME.length) * 100);
+          function togglePick(tid) { if (submitted) return; var newPicked = picked.indexOf(tid) >= 0 ? picked.filter(function(x) { return x !== tid; }) : picked.concat([tid]); var newAns = Object.assign({}, answers); newAns[question.id] = newPicked; upd('toolGameAnswers', newAns); }
+          function submit() { var newAns = Object.assign({}, answers); newAns[question.id + '_submitted'] = true; upd('toolGameAnswers', newAns); if (allCorrect) { awardBadge('tool-picker-' + question.id, 'Picked tools: ' + question.label.slice(0, 30) + '...'); arAnnounce('Correct toolset.'); } else { arAnnounce('Not quite — review the explanation.'); } toolsFocusSoon('[data-ar-tools-feedback]'); }
+          function next() { var finishing = qIdx + 1 >= TOOL_GAME.length; upd('toolGameIdx', qIdx + 1); arAnnounce(finishing ? 'Tool selection game complete.' : 'Next tool-selection question ready.'); toolsFocusSoon(finishing ? '[data-ar-tools-complete]' : '[data-ar-tools-question=true]'); }
+          return h('div', { className: 'ar-tools-game', 'data-ar-tools-game-state': submitted ? 'review' : 'question', 'data-ar-tools-game-question': question.id },
+            h('div', { className: 'ar-tools-game-head', style: { background: T.card, border: '1px solid ' + T.border } }, h('div', { className: 'ar-tools-progress-row' }, h('span', { className: 'ar-tools-progress-label', style: { color: T.accentHi } }, 'Job Card Challenge'), h('span', { style: { color: T.muted, fontSize: 12, fontWeight: 750 } }, 'Question ' + (qIdx + 1) + ' of ' + TOOL_GAME.length)), h('div', { role: 'progressbar', 'aria-label': 'Tool challenge progress', 'aria-valuemin': 0, 'aria-valuemax': TOOL_GAME.length, 'aria-valuenow': qIdx + 1, 'aria-valuetext': 'Question ' + (qIdx + 1) + ' of ' + TOOL_GAME.length, className: 'ar-tools-progress-bar', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('div', { className: 'ar-tools-progress-fill', style: { width: progressPct + '%', background: T.accent } }))),
+            h('section', { tabIndex: -1, className: 'ar-tools-question', 'data-ar-tools-question': 'true', 'aria-labelledby': 'autorepair-tools-question-title', style: { background: T.card, border: '2px solid ' + T.accent } }, h('div', { className: 'ar-tools-question-meta' }, h('span', { className: 'ar-tools-eyebrow', style: { color: T.accentHi } }, h('span', { 'aria-hidden': 'true' }, '🧰'), 'Build the kit'), h('span', { className: 'ar-tools-question-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, question.correct.length + ' required')), h('h2', { id: 'autorepair-tools-question-title', style: { margin: '0 0 6px', color: T.text, fontSize: 18, lineHeight: 1.4 } }, question.label), h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, 'Select every tool the job requires. Extra tools count against exact-set grading.')),
+            h('div', { role: 'group', 'aria-label': 'Tools for this job card', className: 'ar-tools-game-options', 'data-ar-tools-game-options': question.id },
               order.map(function(tid) {
-                var t = TOOLS_LIBRARY.find(function(x) { return x.id === tid; });
-                if (!t) return null;
-                var isPicked = picked.indexOf(tid) >= 0;
-                var isCorrect = question.correct.indexOf(tid) >= 0;
-                var fb = submitted ? (isCorrect ? (isPicked ? 'good' : 'missed') : (isPicked ? 'wrong' : 'ok')) : null;
-                var bg, border;
-                if (fb === 'good') { bg = '#064e3b'; border = T.good; }
-                else if (fb === 'missed') { bg = '#78350f'; border = T.warn; }
-                else if (fb === 'wrong') { bg = '#7f1d1d'; border = T.bad; }
-                else if (fb === 'ok') { bg = T.cardAlt; border = T.border; }
-                else if (isPicked) { bg = T.accent; border = T.accent; }
-                else { bg = T.cardAlt; border = T.border; }
-                return h('button', { key: tid, 'data-ar-focusable': true,
-                  'aria-label': t.name + (isPicked ? ' (picked)' : ''),
-                  'aria-pressed': isPicked ? 'true' : 'false',
-                  disabled: submitted,
-                  onClick: function() { togglePick(tid); },
-                  style: {
-                    padding: 10, borderRadius: 8, background: bg, color: isPicked && !submitted ? '#0f172a' : T.text,
-                    border: '1px solid ' + border, cursor: submitted ? 'default' : 'pointer',
-                    textAlign: 'left', fontSize: 12, fontWeight: isPicked ? 700 : 500,
-                    display: 'flex', alignItems: 'center', gap: 8
-                  } },
-                  h('span', { style: { fontSize: 18 } }, t.icon),
-                  h('span', null, t.name)
+                var tool = TOOLS_LIBRARY.find(function(x) { return x.id === tid; }); if (!tool) return null;
+                var isPicked = picked.indexOf(tid) >= 0, isCorrect = question.correct.indexOf(tid) >= 0;
+                var feedback = submitted ? (isCorrect ? (isPicked ? 'correct' : 'missed') : (isPicked ? 'wrong' : 'not-needed')) : null;
+                var stateLabel = feedback === 'correct' ? 'Correct' : feedback === 'missed' ? 'Missed · required' : feedback === 'wrong' ? 'Not needed' : feedback === 'not-needed' ? 'Not selected' : isPicked ? 'Selected' : 'Available';
+                var tone = feedback === 'correct' ? T.good : feedback === 'missed' ? T.warn : feedback === 'wrong' ? T.bad : null;
+                var activePick = isPicked && !submitted, chipBackground = tone || T.card, chipColor = tone ? onStrongFill : T.text;
+                return h('button', { key: tid, type: 'button', 'data-ar-focusable': true, className: 'ar-tools-game-option', 'data-ar-tool-game-option': tid, 'data-ar-game-state': feedback || (isPicked ? 'selected' : 'available'), 'data-ar-tool-feedback': feedback || 'none', 'aria-label': tool.name + '. ' + stateLabel, 'aria-pressed': isPicked ? 'true' : 'false', disabled: submitted, onClick: function() { togglePick(tid); }, style: { background: activePick ? T.accent : T.cardAlt, color: activePick ? onStrongFill : T.text, border: '2px solid ' + (tone || (activePick ? T.accent : T.border)), cursor: submitted ? 'default' : 'pointer', fontFamily: 'inherit', fontWeight: isPicked ? 750 : 600 } },
+                  h('span', { className: 'ar-tools-game-marker', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, tool.icon),
+                  h('span', { className: 'ar-tools-game-copy' }, h('span', { className: 'ar-tools-game-name' }, tool.name), h('span', { className: 'ar-tools-game-state', 'data-ar-tools-game-state-label': feedback || (isPicked ? 'selected' : 'available'), style: { background: chipBackground, color: chipColor, border: '1px solid ' + (tone || T.border) } }, stateLabel))
                 );
               })
             ),
-            !submitted && h('button', { 'data-ar-focusable': true,
-              'aria-label': __alloT('stem.autorepair.submit_toolset_selection', 'Submit toolset selection'),
-              disabled: picked.length === 0, onClick: submit,
-              style: Object.assign({}, btnPrimary(), { opacity: picked.length === 0 ? 0.5 : 1 }) }, __alloT('stem.autorepair.lock_in_toolset', '✅ Lock in toolset')),
-            submitted && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginTop: 8 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.why_these_tools', '🎓 Why these tools: ')),
-              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.5 } }, question.why),
-              h('div', { style: { marginTop: 10 } },
-                h('button', { 'data-ar-focusable': true, onClick: next,
-                  style: btnPrimary() }, qIdx + 1 < TOOL_GAME.length ? '→ Next question' : '🎉 Finish')
-              )
-            )
+            h('div', { className: 'ar-tools-game-footer' }, h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'ar-tools-selection-count', 'data-ar-tools-selection-count': picked.length, style: { color: T.muted } }, picked.length + ' selected · ' + question.correct.length + ' required'), !submitted && h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', type: 'button', 'aria-label': __alloT('stem.autorepair.submit_toolset_selection', 'Submit toolset selection'), disabled: picked.length === 0, onClick: submit, style: Object.assign({}, btnPrimary(), { opacity: picked.length === 0 ? 0.55 : 1 }) }, __alloT('stem.autorepair.lock_in_toolset', '✓ Lock in toolset'))),
+            submitted && h('section', { role: 'region', 'aria-label': allCorrect ? 'Correct toolset explanation' : 'Review toolset explanation', tabIndex: -1, className: 'ar-tools-feedback', 'data-ar-tools-feedback': allCorrect ? 'correct' : 'review', style: { background: T.card, border: '2px solid ' + (allCorrect ? T.good : T.warn) } }, h('h3', { style: { color: allCorrect ? T.good : T.warn } }, allCorrect ? '✓ Correct toolset' : '↻ Review the job card'), h('p', { style: { color: T.text } }, question.why), h('div', { className: 'ar-tools-feedback-summary' }, h('span', { style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, picked.length + ' selected'), h('span', { style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, question.correct.length + ' required')), h('button', { 'data-ar-focusable': true, 'data-ar-print-hide': 'true', type: 'button', onClick: next, style: Object.assign({}, btnPrimary(), { marginTop: 11 }) }, qIdx + 1 < TOOL_GAME.length ? 'Next question →' : 'Finish 🎉'))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🧰 Tools'),
-          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.tool_sub_modes', 'Tool sub-modes'),
-            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-            tabBtn('library', '📖 Library'),
-            tabBtn('game', '🎮 Selection mini-game')
+        return h('main', { role: 'main', className: 'ar-tools-shell', 'data-ar-tools-shell': true, style: { color: T.text } },
+          backBar('🧰 Tools', 'Tools navigation'),
+          h('section', { className: 'ar-tools-hero', 'data-ar-tools-hero': true, 'aria-labelledby': 'autorepair-tools-title', style: { background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')', border: '1px solid ' + T.border, boxShadow: '0 14px 34px rgba(15,23,42,0.12)' } },
+            h('div', { className: 'ar-tools-hero-copy' }, h('span', { className: 'ar-tools-eyebrow', style: { color: T.accentHi } }, h('span', { 'aria-hidden': 'true' }, '🔧'), 'Tool crib'), h('h1', { id: 'autorepair-tools-title', className: 'ar-tools-title', style: { color: T.text } }, 'Build the kit before the job'), h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, 'Learn what belongs on the cart, what can wait, and why the exact toolset changes with the repair.')),
+            h('div', { className: 'ar-tools-hero-stats', 'aria-label': 'Tools workspace summary' }, h('div', { className: 'ar-tools-stat', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.accentHi, fontFamily: 'monospace' } }, TOOLS_LIBRARY.length), h('span', { style: { color: T.muted } }, 'Reference tools')), h('div', { className: 'ar-tools-stat', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.good, fontFamily: 'monospace' } }, TOOL_GAME.length), h('span', { style: { color: T.muted } }, 'Job-card challenges')))
           ),
-          h('div', { role: 'tabpanel',
-            id: 'autorepair-tools-panel-' + toolsView,
-            'aria-labelledby': 'autorepair-tools-tab-' + toolsView,
-            tabIndex: 0
-          },
-            toolsView === 'library' && library(),
-            toolsView === 'game' && game(),
-            disclaimerFooter()
-          )
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.tool_sub_modes', 'Tool sub-modes'), className: 'ar-tools-tabs', 'data-ar-tools-tabs': true }, tabBtn('library', '📖 Library'), tabBtn('game', '🎯 ' + toolsMeta.label)),
+          h('div', { role: 'tabpanel', id: 'autorepair-tools-panel-' + toolsView, 'aria-labelledby': 'autorepair-tools-tab-' + toolsView, 'data-ar-tools-panel': toolsView, className: 'ar-tools-panel', tabIndex: 0 }, toolsView === 'library' && library(), toolsView === 'game' && game(), disclaimerFooter())
         );
       }
 
@@ -5752,80 +9019,172 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function renderSafety() {
         var picked = d.safetyPicked || null;
         var pickedMod = picked ? SAFETY_MODULES.find(function(m) { return m.id === picked; }) : null;
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🛡️ Safety modules'),
-          h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-            __alloT('stem.autorepair.six_safety_areas_skipping_any_of_these', 'Six safety areas. Skipping any of these can cost you a hand, an eye, or your life. Tap each module to see the rule + checklist.')),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
-            SAFETY_MODULES.map(function(m) {
-              var sel = picked === m.id;
-              // Hazard-class palette — color tells students at a glance what kind of harm.
-              var pal = m.id === 'jack-stands'    ? { stripe: '#dc2626', soft: 'rgba(239,68,68,0.10)',  text: '#fecaca', tag: 'CRUSH HAZARD' }
-                      : m.id === 'electrical'     ? { stripe: '#f59e0b', soft: 'rgba(245,158,11,0.10)', text: '#fde68a', tag: 'SHOCK / SHORT' }
-                      : m.id === 'refrigerant'    ? { stripe: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  text: '#a5f3fc', tag: 'COLD + CHEMICAL' }
-                      : m.id === 'hot-exhaust'    ? { stripe: '#ea580c', soft: 'rgba(234,88,12,0.10)',  text: '#fed7aa', tag: 'BURN' }
-                      : m.id === 'spring-tension' ? { stripe: '#e11d48', soft: 'rgba(225,29,72,0.10)',  text: '#fecdd3', tag: 'STORED ENERGY' }
-                      : m.id === 'fluid-disposal' ? { stripe: '#16a34a', soft: 'rgba(22,163,74,0.10)',  text: '#bbf7d0', tag: 'ENVIRONMENT + LAW' }
-                      : { stripe: '#94a3b8', soft: 'rgba(148,163,184,0.10)', text: '#e2e8f0', tag: 'SAFETY' };
-              return h('button', { key: m.id, 'data-ar-focusable': true,
-                'aria-label': m.name + ' — ' + pal.tag,
-                'aria-pressed': sel ? 'true' : 'false',
-                onClick: function() { upd('safetyPicked', sel ? null : m.id); awardBadge('safety-' + m.id, 'Safety: ' + m.name); },
-                style: {
-                  position: 'relative',
-                  textAlign: 'left',
-                  padding: '12px 12px 12px 18px',
-                  borderRadius: 10,
-                  border: '2px solid ' + (sel ? pal.stripe : 'rgba(148,163,184,0.25)'),
-                  background: sel ? pal.soft : T.cardAlt,
-                  color: T.text,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 10,
-                  boxShadow: sel ? ('0 4px 12px ' + pal.stripe + '33, inset 0 1px 0 rgba(255,255,255,0.04)') : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-                  transition: 'border-color 120ms ease, background 120ms ease'
-                }
-              },
-                h('span', { 'aria-hidden': 'true',
-                  style: {
-                    position: 'absolute', left: 0, top: 0, bottom: 0, width: 6,
-                    background: pal.stripe,
-                    borderRadius: '10px 0 0 10px'
-                  }
-                }),
-                h('span', { 'aria-hidden': 'true',
-                  style: {
-                    flexShrink: 0,
-                    width: 38, height: 38, borderRadius: '50%',
-                    background: pal.soft,
-                    border: '2px solid ' + pal.stripe,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 20
-                  }
-                }, m.icon),
-                h('span', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
-                  h('span', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', color: pal.text } }, pal.tag),
-                  h('span', { style: { fontSize: 13, fontWeight: 700, color: T.text, lineHeight: 1.2 } }, m.name)
-                )
-              );
-            })
+        var safetyBadgeIds = SAFETY_MODULES.map(function(m) { return 'safety-' + m.id; });
+        var reviewedCount = safetyBadgeIds.filter(function(id) { return !!badges[id]; }).length;
+        var reviewedPct = Math.round((reviewedCount / SAFETY_MODULES.length) * 100);
+
+        function safetyPalette(id) {
+          return id === 'jack-stands'    ? { stripe: '#dc2626', soft: 'rgba(220,38,38,0.10)', tag: 'CRUSH HAZARD' }
+               : id === 'electrical'     ? { stripe: '#d97706', soft: 'rgba(217,119,6,0.11)', tag: 'SHOCK / SHORT' }
+               : id === 'refrigerant'    ? { stripe: '#0891b2', soft: 'rgba(8,145,178,0.11)', tag: 'COLD + CHEMICAL' }
+               : id === 'hot-exhaust'    ? { stripe: '#ea580c', soft: 'rgba(234,88,12,0.10)', tag: 'BURN' }
+               : id === 'spring-tension' ? { stripe: '#e11d48', soft: 'rgba(225,29,72,0.10)', tag: 'STORED ENERGY' }
+               : id === 'fluid-disposal' ? { stripe: '#15803d', soft: 'rgba(21,128,61,0.10)', tag: 'ENVIRONMENT + LAW' }
+               : { stripe: T.border, soft: T.cardAlt, tag: 'SAFETY' };
+        }
+
+        function safetyFocusSoon(selector, delay) {
+          if (typeof document === 'undefined') return;
+          setTimeout(function() {
+            var target = document.querySelector(selector);
+            if (target && typeof target.focus === 'function') target.focus();
+          }, delay || 40);
+        }
+
+        function chooseSafety(m, selected) {
+          var badgeId = 'safety-' + m.id;
+          var isNewBadge = !badges[badgeId];
+          upd('safetyPicked', selected ? null : m.id);
+          if (!selected) awardBadge(badgeId, 'Safety: ' + m.name);
+          if (selected || !isNewBadge) arAnnounce(m.name + (selected ? ' safety briefing closed.' : ' safety briefing opened.'));
+          safetyFocusSoon(selected ? '[data-ar-safety-module="' + m.id + '"]' : '[data-ar-safety-detail="' + m.id + '"]', !selected && isNewBadge ? 160 : 50);
+        }
+
+        function safetyModuleButton(m, index) {
+          var selected = !!pickedMod && pickedMod.id === m.id;
+          var reviewed = !!badges['safety-' + m.id];
+          var state = selected ? 'viewing' : (reviewed ? 'reviewed' : 'ready');
+          var stateLabel = selected ? 'Viewing' : (reviewed ? 'Reviewed' : 'Not reviewed');
+          var pal = safetyPalette(m.id);
+          return h('button', {
+            key: m.id,
+            type: 'button',
+            'data-ar-focusable': true,
+            'data-ar-safety-item': m.id,
+            'data-ar-safety-module': m.id,
+            'data-ar-safety-state': state,
+            'data-ar-hazard-class': pal.tag.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''),
+            className: 'ar-safety-module',
+            'aria-label': m.name + '. ' + pal.tag + '. ' + stateLabel,
+            'aria-pressed': selected ? 'true' : 'false',
+            'aria-expanded': selected ? 'true' : 'false',
+            'aria-controls': 'autorepair-safety-detail',
+            onClick: function() { chooseSafety(m, selected); },
+            style: {
+              borderRadius: 11,
+              border: '2px solid ' + (selected ? pal.stripe : T.border),
+              background: selected ? pal.soft : T.cardAlt,
+              color: T.text,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              boxShadow: selected ? ('0 7px 18px ' + pal.stripe + '24') : 'none'
+            }
+          },
+            h('span', { className: 'ar-safety-hazard-stripe', 'aria-hidden': 'true', style: { background: pal.stripe } }),
+            h('span', { className: 'ar-safety-module-icon', 'aria-hidden': 'true', style: { background: T.card, border: '2px solid ' + pal.stripe } }, m.icon),
+            h('span', { className: 'ar-safety-module-copy' },
+              h('span', { className: 'ar-safety-module-top' },
+                h('span', { className: 'ar-safety-hazard-tag', style: { color: T.text } }, String(index + 1).padStart(2, '0') + ' · ' + pal.tag),
+                h('span', { className: 'ar-safety-module-state', 'data-ar-safety-state-label': state, style: { background: T.card, color: T.text, border: '1px solid ' + (selected ? pal.stripe : T.border) } }, stateLabel)
+              ),
+              h('span', { className: 'ar-safety-module-name', style: { color: T.text } }, m.name),
+              h('span', { className: 'ar-safety-module-action', style: { color: T.muted } }, selected ? 'Close briefing' : (reviewed ? 'Review briefing →' : 'Open briefing →'))
+            )
+          );
+        }
+
+        function safetyDetail() {
+          if (!pickedMod) {
+            return h('section', {
+              id: 'autorepair-safety-detail',
+              role: 'region',
+              'aria-labelledby': 'autorepair-safety-empty-title',
+              tabIndex: -1,
+              className: 'ar-safety-detail ar-safety-empty',
+              'data-ar-safety-detail': 'empty',
+              'data-ar-safety-detail-state': 'empty',
+              style: { background: T.card, border: '1px dashed ' + T.border }
+            },
+              h('span', { className: 'ar-safety-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '2px solid ' + T.border } }, '🛡️'),
+              h('h2', { id: 'autorepair-safety-empty-title', style: { color: T.text } }, 'Choose a hazard briefing'),
+              h('p', { style: { color: T.muted } }, 'Open any module to review the non-negotiable rule, why it matters, and the checks to complete before work begins.'),
+              h('div', { className: 'ar-safety-empty-steps', 'aria-label': 'Three-step safety habit' },
+                h('div', { className: 'ar-safety-empty-step', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.text } }, '1 · Identify'), h('span', { style: { color: T.muted } }, 'Name the energy or exposure.')),
+                h('div', { className: 'ar-safety-empty-step', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.text } }, '2 · Isolate'), h('span', { style: { color: T.muted } }, 'Remove or contain the hazard.')),
+                h('div', { className: 'ar-safety-empty-step', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.text } }, '3 · Verify'), h('span', { style: { color: T.muted } }, 'Test before hands enter.'))
+              )
+            );
+          }
+          var pal = safetyPalette(pickedMod.id);
+          var moduleIndex = SAFETY_MODULES.findIndex(function(m) { return m.id === pickedMod.id; });
+          return h('section', {
+            id: 'autorepair-safety-detail',
+            role: 'region',
+            'aria-labelledby': 'autorepair-safety-detail-title',
+            tabIndex: -1,
+            className: 'ar-safety-detail',
+            'data-ar-safety-detail': pickedMod.id,
+            'data-ar-safety-detail-state': 'active',
+            style: { background: T.card, border: '2px solid ' + pal.stripe, boxShadow: '0 14px 32px rgba(15,23,42,0.10)' }
+          },
+            h('div', { className: 'ar-safety-detail-head' },
+              h('div', { className: 'ar-safety-detail-heading' },
+                h('span', { className: 'ar-safety-detail-kicker', style: { color: T.muted } }, 'Safety brief ' + (moduleIndex + 1) + ' of ' + SAFETY_MODULES.length + ' · ' + pal.tag),
+                h('h2', { id: 'autorepair-safety-detail-title', style: { color: T.text } }, pickedMod.icon + ' ' + pickedMod.name)
+              ),
+              h('span', { className: 'ar-safety-detail-badge', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + pal.stripe } }, '● Brief open')
+            ),
+            h('div', { className: 'ar-safety-rule', 'data-ar-safety-rule': true, style: { background: pal.soft, color: T.text, borderColor: pal.stripe } },
+              h('h3', { style: { color: T.text } }, __alloT('stem.autorepair.key_rule', '⚠️ Key rule')),
+              h('p', { style: { color: T.text } }, pickedMod.keyRule)
+            ),
+            h('section', { className: 'ar-safety-why', 'aria-labelledby': 'autorepair-safety-why-title', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('h3', { id: 'autorepair-safety-why-title', style: { color: T.text } }, 'Why this matters'),
+              h('p', { style: { color: T.text } }, pickedMod.why)
+            ),
+            h('section', { className: 'ar-safety-checklist', 'aria-labelledby': 'autorepair-safety-checklist-title', 'data-ar-safety-checklist': pickedMod.checklist.length },
+              h('h3', { id: 'autorepair-safety-checklist-title', style: { color: T.text } }, __alloT('stem.autorepair.checklist', '✓ Before-you-start checklist')),
+              h('ul', { role: 'list', className: 'ar-safety-checklist-list' },
+                pickedMod.checklist.map(function(c, i) {
+                  return h('li', { key: i, className: 'ar-safety-checklist-item', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-safety-check-marker', 'aria-hidden': 'true', style: { background: T.card, color: T.good, border: '1px solid ' + T.good } }, i + 1),
+                    h('span', null, c)
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'ar-safety-consequence', 'data-ar-safety-consequence': true, style: { background: 'rgba(185,28,28,0.08)', color: T.text, border: '2px solid ' + T.bad } },
+              h('h3', { style: { color: T.bad } }, __alloT('stem.autorepair.if_you_skip_this', '🛑 If you skip this')),
+              h('p', { style: { color: T.text } }, pickedMod.consequenceOfSkipping)
+            )
+          );
+        }
+
+        return h('main', { role: 'main', className: 'ar-safety-shell', 'data-ar-safety-shell': true, 'data-ar-safety-state': pickedMod ? 'active' : 'catalog', style: { color: T.text } },
+          backBar('🛡️ Safety modules', 'Safety navigation'),
+          h('section', { className: 'ar-safety-hero', 'data-ar-safety-hero': true, 'aria-labelledby': 'autorepair-safety-title', style: { background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')', border: '1px solid ' + T.border, boxShadow: '0 14px 34px rgba(15,23,42,0.12)' } },
+            h('div', { className: 'ar-safety-hero-copy' },
+              h('span', { className: 'ar-safety-eyebrow', style: { color: T.bad } }, h('span', { 'aria-hidden': 'true' }, '⚠️'), 'Shop safety'),
+              h('h1', { id: 'autorepair-safety-title', className: 'ar-safety-title', style: { color: T.text } }, 'Pause before the wrench turns'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, __alloT('stem.autorepair.six_safety_areas_skipping_any_of_these', 'Six safety areas. Skipping any of these can cost you a hand, an eye, or your life. Open each briefing before the job begins.'))
+            ),
+            h('div', { className: 'ar-safety-hero-icon', 'aria-hidden': 'true', style: { background: T.card, border: '2px solid ' + T.bad, color: T.text } }, '🛡️')
           ),
-          pickedMod && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, pickedMod.icon + ' ' + pickedMod.name),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-              h('strong', { style: { color: '#fed7aa', fontSize: 13 } }, __alloT('stem.autorepair.key_rule', '⚠️ Key rule: ')),
-              h('span', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedMod.keyRule)
+          h('section', { className: 'ar-safety-progress', 'aria-labelledby': 'autorepair-safety-progress-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-safety-progress-head' },
+              h('div', { className: 'ar-safety-progress-copy' }, h('h2', { id: 'autorepair-safety-progress-title', style: { color: T.text } }, reviewedCount === SAFETY_MODULES.length ? 'All briefings reviewed' : 'Briefing progress'), h('p', { style: { color: T.muted } }, 'A module counts as reviewed when you open it. Reopen any brief at any time.')),
+              h('span', { className: 'ar-safety-progress-count', 'data-ar-safety-reviewed-count': reviewedCount, style: { color: reviewedCount === SAFETY_MODULES.length ? T.good : T.accentHi } }, reviewedCount + ' / ' + SAFETY_MODULES.length + ' reviewed')
             ),
-            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, 'Why: '), pickedMod.why),
-            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.autorepair.checklist', '✓ Checklist')),
-            h('ul', { role: 'list', style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-              pickedMod.checklist.map(function(c, i) { return h('li', { key: i, role: 'listitem' }, c); })
+            h('div', { role: 'progressbar', 'aria-label': 'Safety briefings reviewed', 'aria-valuemin': 0, 'aria-valuemax': SAFETY_MODULES.length, 'aria-valuenow': reviewedCount, 'aria-valuetext': reviewedCount + ' of ' + SAFETY_MODULES.length + ' safety modules reviewed', className: 'ar-safety-progress-track', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-safety-progress-fill', style: { width: reviewedPct + '%', background: reviewedCount === SAFETY_MODULES.length ? T.good : T.accent } })
+            )
+          ),
+          h('div', { className: 'ar-safety-layout' },
+            h('section', { className: 'ar-safety-picker', 'data-ar-safety-picker': true, 'aria-labelledby': 'autorepair-safety-picker-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-safety-picker-head' }, h('h2', { id: 'autorepair-safety-picker-title', style: { color: T.text } }, 'Hazard briefings'), h('p', { style: { color: T.muted } }, 'Choose a card. The briefing opens beside this deck and receives focus.')),
+              h('div', { role: 'list', 'aria-label': 'Automotive safety modules', className: 'ar-safety-module-list' }, SAFETY_MODULES.map(function(m, index) { return h('div', { key: m.id, role: 'listitem', className: 'ar-safety-module-wrap' }, safetyModuleButton(m, index)); }))
             ),
-            h('div', { style: { marginTop: 10, padding: 8, borderRadius: 6, background: T.cardAlt, fontSize: 11, color: T.bad, fontWeight: 700 } },
-              __alloT('stem.autorepair.if_you_skip_this', '🛑 If you skip this: '), pickedMod.consequenceOfSkipping)
+            safetyDetail()
           ),
           disclaimerFooter()
         );
@@ -5835,8 +9194,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // CAREER view
       // ─────────────────────────────────────────
       function renderCareer() {
-        var carView = d.carView || 'overview';
         var CAREER_TAB_IDS = ['overview', 'ase', 'pathway'];
+        var requestedCarView = typeof d.carView === 'string' ? d.carView : 'overview';
+        var carView = CAREER_TAB_IDS.indexOf(requestedCarView) >= 0 ? requestedCarView : 'overview';
+        var CAREER_TABS = {
+          overview: { icon: '📊', label: 'Overview', note: '4 pay bands' },
+          ase: { icon: '🏅', label: 'ASE areas', note: CAREER_DATA.aseAreas.length + ' certifications' },
+          pathway: { icon: '🛣️', label: 'Pathway', note: CAREER_DATA.pathway.length + ' stages' }
+        };
+
         function careerTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
@@ -5850,63 +9216,101 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var nextTab = tabs[nextIndex];
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         }
-        function tabBtn(id, label) {
+
+        function tabBtn(id) {
           var active = carView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          var meta = CAREER_TABS[id];
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-career-tab-' + id,
             'aria-controls': 'autorepair-career-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
+            className: 'ar-career-tab',
+            'data-ar-career-tab': id,
+            'data-ar-tab-state': active ? 'active' : 'inactive',
             onKeyDown: function(e) { careerTabKeyDown(e, CAREER_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('carView', id); },
-            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+          },
+            h('span', { className: 'ar-career-tab-icon', 'aria-hidden': 'true' }, meta.icon),
+            h('span', { className: 'ar-career-tab-copy' },
+              h('span', { className: 'ar-career-tab-label' }, meta.label),
+              h('span', { className: 'ar-career-tab-note' }, active ? 'Current view' : meta.note)
+            )
+          );
         }
 
         function overview() {
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.auto_repair_as_a_career', '🏅 Auto repair as a career')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, CAREER_DATA.overview),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
-                [
-                  { label: 'Entry-level', val: CAREER_DATA.entrySalary, color: T.muted },
-                  { label: 'ASE-certified', val: CAREER_DATA.aseCertSalary, color: T.accentHi },
-                  { label: __alloT('stem.autorepair.master_tech', 'Master Tech'), val: CAREER_DATA.masterTech, color: T.good },
-                  { label: __alloT('stem.autorepair.specialist_ev_diesel', 'Specialist (EV/Diesel)'), val: CAREER_DATA.specialist, color: T.good }
-                ].map(function(r) {
-                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                    h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
-                    h('div', { style: { fontSize: 13, color: r.color, fontWeight: 700 } }, r.val)
+          var salaryBands = [
+            { label: 'Entry-level', val: CAREER_DATA.entrySalary },
+            { label: 'ASE-certified', val: CAREER_DATA.aseCertSalary },
+            { label: __alloT('stem.autorepair.master_tech', 'Master Tech'), val: CAREER_DATA.masterTech },
+            { label: __alloT('stem.autorepair.specialist_ev_diesel', 'Specialist (EV/Diesel)'), val: CAREER_DATA.specialist }
+          ];
+          return h('div', { className: 'ar-career-overview', 'data-ar-career-overview': true },
+            h('section', { className: 'ar-career-section', 'aria-labelledby': 'autorepair-career-overview-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-career-section-head' },
+                h('div', { className: 'ar-career-section-head-copy' },
+                  h('h2', { id: 'autorepair-career-overview-title', style: { color: T.text } }, __alloT('stem.autorepair.auto_repair_as_a_career', '🏅 Auto repair as a career')),
+                  h('p', { className: 'ar-career-section-intro', style: { color: T.muted } }, CAREER_DATA.overview)
+                ),
+                h('span', { className: 'ar-career-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, 'Field outlook')
+              )
+            ),
+            h('section', { className: 'ar-career-section', 'aria-labelledby': 'autorepair-career-salary-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-career-section-head' },
+                h('div', { className: 'ar-career-section-head-copy' }, h('h2', { id: 'autorepair-career-salary-title', style: { color: T.text } }, 'Earning path'), h('p', { className: 'ar-career-section-intro', style: { color: T.muted } }, 'Experience, certification, and specialty training open different pay bands.')),
+                h('span', { className: 'ar-career-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, salaryBands.length + ' pay bands')
+              ),
+              h('div', { role: 'list', className: 'ar-career-salary-grid' },
+                salaryBands.map(function(r, index) {
+                  return h('article', { key: r.label, role: 'listitem', className: 'ar-career-salary-card', 'data-ar-career-salary': index + 1, 'data-ar-career-salary-tier': index + 1, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-career-salary-step', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, 'Band ' + (index + 1)),
+                    h('span', { className: 'ar-career-salary-label', style: { color: index > 1 ? T.good : (index === 1 ? T.accentHi : T.text) } }, r.label),
+                    h('span', { className: 'ar-career-salary-value', style: { color: T.muted } }, r.val)
                   );
                 })
               ),
-              h('p', { style: { margin: '12px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, CAREER_DATA.bigPicture)
+              h('div', { role: 'note', className: 'ar-career-big-picture', style: { background: T.cardAlt, color: T.muted, borderColor: T.accent } }, h('strong', { style: { color: T.text } }, 'Market signal: '), CAREER_DATA.bigPicture)
             ),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.maine_realities', '🌲 Maine realities')),
-              h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
-                CAREER_DATA.maineRealities.map(function(r, i) { return h('li', { key: i }, r); })
+            h('div', { className: 'ar-career-reality-grid' },
+              h('section', { className: 'ar-career-realities', 'aria-labelledby': 'autorepair-career-maine-title', style: { background: T.card, border: '1px solid ' + T.border } },
+                h('h2', { id: 'autorepair-career-maine-title', style: { color: T.text } }, __alloT('stem.autorepair.maine_realities', '🌲 Maine realities')),
+                h('ul', { role: 'list', className: 'ar-career-reality-list' },
+                  CAREER_DATA.maineRealities.map(function(r, i) {
+                    return h('li', { key: i, className: 'ar-career-reality-item', 'data-ar-career-reality': i + 1, style: { color: T.muted } }, h('span', { className: 'ar-career-reality-marker', 'aria-hidden': 'true', style: { background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.border } }, i + 1), h('span', null, r));
+                  })
+                )
               ),
-              h('p', { style: { margin: '10px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.tool_investment', '🧰 Tool investment: ')), CAREER_DATA.toolInvestment)
+              h('aside', { className: 'ar-career-tool-note', 'aria-labelledby': 'autorepair-career-tools-title', style: { background: T.card, border: '1px solid ' + T.border } },
+                h('span', { className: 'ar-career-tool-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🧰'),
+                h('h2', { id: 'autorepair-career-tools-title', style: { color: T.text } }, __alloT('stem.autorepair.tool_investment', 'Tool investment')),
+                h('p', { style: { color: T.muted } }, CAREER_DATA.toolInvestment)
+              )
             )
           );
         }
 
         function ase() {
-          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ase_certification_areas', '🏅 ASE certification areas')),
-            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              __alloT('stem.autorepair.each_area_60_test_fee_2_years_work_exp', 'Each area: $60 test fee, 2 years\' work experience required to certify. Recerts every 5 years. '),
-              h('strong', null, __alloT('stem.autorepair.master_tech_2', 'Master Tech ')), __alloT('stem.autorepair.all_8_of_a1_a8', '= all 8 of A1–A8.')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+          return h('section', { className: 'ar-career-section', 'data-ar-career-ase': true, 'aria-labelledby': 'autorepair-career-ase-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-career-section-head' },
+              h('div', { className: 'ar-career-section-head-copy' },
+                h('h2', { id: 'autorepair-career-ase-title', style: { color: T.text } }, __alloT('stem.autorepair.ase_certification_areas', '🏅 ASE certification areas')),
+                h('p', { className: 'ar-career-section-intro', style: { color: T.muted } }, __alloT('stem.autorepair.each_area_60_test_fee_2_years_work_exp', 'Each area: $60 test fee, 2 years\' work experience required to certify. Recerts every 5 years. '), h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.master_tech_2', 'Master Tech ')), __alloT('stem.autorepair.all_8_of_a1_a8', '= all 8 of A1–A8.'))
+              ),
+              h('span', { className: 'ar-career-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, CAREER_DATA.aseAreas.length + ' certification areas')
+            ),
+            h('div', { role: 'note', className: 'ar-career-big-picture', style: { background: T.cardAlt, color: T.muted, borderColor: T.accent } }, h('strong', { style: { color: T.text } }, 'Master track: '), 'Complete A1–A8. A9 adds light-vehicle diesel specialization.'),
+            h('div', { role: 'list', className: 'ar-career-ase-grid' },
               CAREER_DATA.aseAreas.map(function(a) {
-                return h('div', { key: a.code, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
-                    h('span', { style: { background: T.accent, color: '#0f172a', fontWeight: 800, fontSize: 11, padding: '2px 6px', borderRadius: 4 } }, a.code),
-                    h('strong', { style: { fontSize: 12, color: T.text } }, a.name)
+                var specialty = a.code === 'A9';
+                return h('article', { key: a.code, role: 'listitem', className: 'ar-career-ase-card', 'data-ar-career-ase-code': a.code, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { className: 'ar-career-ase-card-head' },
+                    h('span', { className: 'ar-career-ase-code', style: { background: T.accent, color: onStrongFill, border: '1px solid ' + T.accent } }, a.code),
+                    h('span', { className: 'ar-career-ase-type', 'data-ar-career-ase-type': specialty ? 'specialty' : 'master-track', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, specialty ? 'Diesel specialty' : 'Master track')
                   ),
-                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, a.focus)
+                  h('h3', { style: { color: T.text } }, a.name),
+                  h('p', { style: { color: T.muted } }, a.focus)
                 );
               })
             )
@@ -5914,15 +9318,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         function pathway() {
-          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.career_pathway_maine', '🛤️ Career pathway (Maine)')),
-            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+          return h('section', { className: 'ar-career-section', 'data-ar-career-pathway': true, 'aria-labelledby': 'autorepair-career-pathway-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-career-section-head' },
+              h('div', { className: 'ar-career-section-head-copy' }, h('h2', { id: 'autorepair-career-pathway-title', style: { color: T.text } }, __alloT('stem.autorepair.career_pathway_maine', '🛤️ Career pathway (Maine)')), h('p', { className: 'ar-career-section-intro', style: { color: T.muted } }, 'A practical route from high-school CTE to certification, specialization, and shop leadership.')),
+              h('span', { className: 'ar-career-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, CAREER_DATA.pathway.length + ' stages')
+            ),
+            h('ol', { role: 'list', className: 'ar-career-path-list' },
               CAREER_DATA.pathway.map(function(p) {
-                return h('div', { key: p.stage, role: 'listitem', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, display: 'flex', gap: 10, alignItems: 'flex-start' } },
-                  h('span', { 'aria-hidden': 'true', style: { background: T.accent, color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, p.stage),
-                  h('div', null,
-                    h('strong', { style: { display: 'block', fontSize: 13, color: T.accentHi, marginBottom: 4 } }, p.title),
-                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, p.desc)
+                return h('li', { key: p.stage, className: 'ar-career-path-item', 'data-ar-career-stage': p.stage, 'data-ar-career-path-stage': p.stage },
+                  h('span', { className: 'ar-career-path-marker', 'aria-hidden': 'true', style: { background: T.accent, color: onStrongFill, border: '2px solid ' + T.card } }, p.stage),
+                  h('article', { className: 'ar-career-path-card', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('span', { className: 'ar-career-path-stage', style: { color: T.accentHi } }, 'Stage ' + p.stage),
+                    h('h3', { style: { color: T.text } }, p.title),
+                    h('p', { style: { color: T.muted } }, p.desc)
                   )
                 );
               })
@@ -5930,24 +9338,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🏅 Career'),
-          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.career_sections', 'Career sections'),
-            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-            tabBtn('overview', 'Overview'),
-            tabBtn('ase', 'ASE areas'),
-            tabBtn('pathway', 'Pathway')
+        function careerPanel(id, content) {
+          var active = carView === id;
+          return h('section', { role: 'tabpanel',
+            id: 'autorepair-career-panel-' + id,
+            'aria-labelledby': 'autorepair-career-tab-' + id,
+            tabIndex: active ? 0 : -1,
+            hidden: active ? undefined : true,
+            className: 'ar-career-panel',
+            'data-ar-career-panel': id,
+            'data-ar-panel-state': active ? 'active' : 'inactive'
+          }, content);
+        }
+
+        return h('main', { role: 'main', className: 'ar-career-shell', 'data-ar-career-shell': true, 'data-ar-career-view': carView, style: { color: T.text } },
+          backBar('🏅 Career', 'Career navigation'),
+          h('section', { className: 'ar-career-hero', 'data-ar-career-hero': true, 'aria-labelledby': 'autorepair-career-title', style: { background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')', border: '1px solid ' + T.border, boxShadow: '0 14px 34px rgba(15,23,42,0.12)' } },
+            h('div', { className: 'ar-career-hero-copy' },
+              h('span', { className: 'ar-career-eyebrow', style: { color: T.accentHi } }, h('span', { 'aria-hidden': 'true' }, '🏁'), 'Career pathways'),
+              h('h1', { id: 'autorepair-career-title', className: 'ar-career-title', style: { color: T.text } }, 'Build a career that keeps moving'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.6 } }, 'Compare earning bands, map ASE certification, and follow a practical Maine route from CTE to specialty work.')
+            ),
+            h('div', { className: 'ar-career-hero-stats', 'aria-label': 'Career guide summary' },
+              h('div', { className: 'ar-career-stat', 'data-ar-career-stat': 'views', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.accentHi } }, CAREER_TAB_IDS.length), h('span', { style: { color: T.muted } }, 'Career views')),
+              h('div', { className: 'ar-career-stat', 'data-ar-career-stat': 'ase', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.good } }, CAREER_DATA.aseAreas.length), h('span', { style: { color: T.muted } }, 'ASE areas')),
+              h('div', { className: 'ar-career-stat', 'data-ar-career-stat': 'pathway', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.accentHi } }, CAREER_DATA.pathway.length), h('span', { style: { color: T.muted } }, 'Pathway stages'))
+            )
           ),
-          h('div', { role: 'tabpanel',
-            id: 'autorepair-career-panel-' + carView,
-            'aria-labelledby': 'autorepair-career-tab-' + carView,
-            tabIndex: 0
-          },
-            carView === 'overview' && overview(),
-            carView === 'ase' && ase(),
-            carView === 'pathway' && pathway(),
-            disclaimerFooter()
-          )
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.career_sections', 'Career sections'), 'aria-orientation': 'horizontal', className: 'ar-career-tabs', 'data-ar-career-tabs': true, style: { background: T.card, border: '1px solid ' + T.border } }, tabBtn('overview'), tabBtn('ase'), tabBtn('pathway')),
+          careerPanel('overview', overview()),
+          careerPanel('ase', ase()),
+          careerPanel('pathway', pathway()),
+          disclaimerFooter()
         );
       }
 
@@ -6194,8 +9616,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ESTIMATE DECODER view
       // ─────────────────────────────────────────
       function renderEstimate() {
-        var picked = d.estPicked || null;
-        var pickedItem = picked ? ESTIMATE_ITEMS.find(function(i) { return i.id === picked; }) : null;
+        var ESTIMATE_FILTER_IDS = ['all', 'standard', 'diy', 'depends', 'often-upsell'];
+        var requestedFilter = typeof d.estFilter === 'string' ? d.estFilter : 'all';
+        var estFilter = ESTIMATE_FILTER_IDS.indexOf(requestedFilter) >= 0 ? requestedFilter : 'all';
+        var requestedPicked = typeof d.estPicked === 'string' ? d.estPicked : null;
+        var requestedItem = requestedPicked ? ESTIMATE_ITEMS.find(function(i) { return i.id === requestedPicked; }) : null;
+        var pickedItem = requestedItem && (estFilter === 'all' || requestedItem.verdict === estFilter) ? requestedItem : null;
+        var picked = pickedItem ? pickedItem.id : null;
         var verdictColor = function(v) {
           if (v === 'standard') return T.good;
           if (v === 'diy') return T.accentHi;
@@ -6210,62 +9637,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           if (v === 'often-upsell') return '🚩 Often an upsell';
           return v;
         };
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('💵 Estimate decoder'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.read_a_shop_quote_like_a_pro', '💵 Read a shop quote like a pro')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.tap_a_line_item_to_see_what_it_actuall', 'Tap a line item to see what it actually means, what fair pricing looks like, and whether it\'s legitimate, DIY-able, or a common upsell to push back on.')),
-            h('div', { style: { display: 'flex', gap: 8, fontSize: 11, flexWrap: 'wrap' } },
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, __alloT('stem.autorepair.standard', '✅ Standard')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, __alloT('stem.autorepair.diy_2', '🔧 DIY')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.warn, border: '1px solid ' + T.warn, fontWeight: 700 } }, __alloT('stem.autorepair.depends', '⚠️ Depends')),
-              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, __alloT('stem.autorepair.often_upsell', '🚩 Often upsell'))
+        var verdictIcon = function(v) {
+          if (v === 'standard') return '✅';
+          if (v === 'diy') return '🔧';
+          if (v === 'depends') return '⚠️';
+          if (v === 'often-upsell') return '🚩';
+          return '•';
+        };
+        var verdictCounts = ESTIMATE_ITEMS.reduce(function(counts, item) {
+          counts[item.verdict] = (counts[item.verdict] || 0) + 1;
+          return counts;
+        }, {});
+        var FILTERS = [
+          { id: 'all', icon: '📋', label: 'All items', count: ESTIMATE_ITEMS.length },
+          { id: 'standard', icon: '✅', label: 'Standard', count: verdictCounts.standard || 0 },
+          { id: 'diy', icon: '🔧', label: 'DIY-friendly', count: verdictCounts.diy || 0 },
+          { id: 'depends', icon: '⚠️', label: 'Depends', count: verdictCounts.depends || 0 },
+          { id: 'often-upsell', icon: '🚩', label: 'Often upsell', count: verdictCounts['often-upsell'] || 0 }
+        ];
+        var visibleItems = estFilter === 'all' ? ESTIMATE_ITEMS : ESTIMATE_ITEMS.filter(function(item) { return item.verdict === estFilter; });
+
+        function filterButton(filter) {
+          var active = estFilter === filter.id;
+          return h('button', { type: 'button', key: filter.id, 'data-ar-focusable': true,
+            className: 'ar-estimate-filter',
+            'data-ar-estimate-filter-id': filter.id,
+            'data-ar-filter-state': active ? 'active' : 'inactive',
+            'aria-pressed': active ? 'true' : 'false',
+            onClick: function() {
+              var nextPicked = pickedItem && filter.id !== 'all' && pickedItem.verdict !== filter.id ? null : picked;
+              updMulti({ estFilter: filter.id, estPicked: nextPicked });
+              arAnnounce(filter.label + ' estimate filter selected. ' + filter.count + ' items.');
+            },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 6px 14px rgba(15,23,42,.10)' : 'none' })
+          },
+            h('span', { className: 'ar-estimate-filter-icon', 'aria-hidden': 'true' }, filter.icon),
+            h('span', { className: 'ar-estimate-filter-copy' },
+              h('span', { className: 'ar-estimate-filter-label' }, filter.label),
+              h('span', { className: 'ar-estimate-filter-count' }, filter.count + ' items')
+            )
+          );
+        }
+
+        function estimateDetail() {
+          return h('article', { id: 'autorepair-estimate-detail', role: 'region', className: 'ar-estimate-detail',
+            'data-ar-estimate-detail': true,
+            'data-ar-estimate-detail-state': pickedItem ? 'active' : 'empty',
+            'aria-live': 'polite',
+            'aria-labelledby': 'autorepair-estimate-detail-title',
+            style: { background: T.card, border: '2px solid ' + (pickedItem ? verdictColor(pickedItem.verdict) : T.border) }
+          },
+            pickedItem ? h('div', null,
+              h('div', { className: 'ar-estimate-detail-head' },
+                h('span', { className: 'ar-estimate-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + verdictColor(pickedItem.verdict) } }, pickedItem.icon),
+                h('div', { className: 'ar-estimate-detail-heading' },
+                  h('span', { className: 'ar-estimate-detail-kicker', style: { color: T.accentHi } }, 'Line item · Viewing'),
+                  h('h2', { id: 'autorepair-estimate-detail-title', style: { color: T.text } }, pickedItem.name),
+                  h('span', { className: 'ar-estimate-detail-verdict', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + verdictColor(pickedItem.verdict) } }, verdictLabel(pickedItem.verdict))
+                )
+              ),
+              h('div', { className: 'ar-estimate-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_is', '📋 What it is')),
+                h('p', { style: { color: T.text } }, pickedItem.what)
+              ),
+              h('div', { className: 'ar-estimate-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.fair_price', '💵 Fair price')),
+                h('p', { style: { color: T.muted } }, pickedItem.fairPrice)
+              ),
+              h('div', { className: 'ar-estimate-detail-block', style: { background: T.cardAlt, border: '1px solid ' + verdictColor(pickedItem.verdict) } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.what_to_know', '🎯 What to know')),
+                h('p', { style: { color: T.muted } }, pickedItem.flag)
+              )
+            ) : h('div', { className: 'ar-estimate-detail-empty' },
+              h('span', { className: 'ar-estimate-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '💵'),
+              h('h2', { id: 'autorepair-estimate-detail-title', style: { color: T.text } }, 'Choose a line item'),
+              h('p', { style: { color: T.muted } }, 'Open any estimate item to compare its purpose, price guidance, and decision notes.')
+            )
+          );
+        }
+
+        return h('main', { className: 'ar-estimate-shell', 'data-ar-estimate-shell': true, 'data-ar-estimate-filter': estFilter, 'data-ar-estimate-selection': pickedItem ? 'active' : 'empty', style: { color: T.text } },
+          backBar('💵 Estimate decoder', 'Estimate decoder navigation'),
+          h('header', { className: 'ar-estimate-hero', 'data-ar-estimate-hero': true, 'aria-labelledby': 'autorepair-estimate-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-estimate-hero-copy' },
+              h('span', { className: 'ar-estimate-eyebrow', style: { color: T.accentHi } }, '💵 Repair quote field guide'),
+              h('h1', { id: 'autorepair-estimate-title', className: 'ar-estimate-title', style: { color: T.text } }, __alloT('stem.autorepair.read_a_shop_quote_like_a_pro', 'Read a shop quote like a pro')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.65 } }, __alloT('stem.autorepair.tap_a_line_item_to_see_what_it_actuall', 'Tap a line item to see what it actually means, what fair pricing looks like, and whether it\'s legitimate, DIY-able, or a common upsell to push back on.'))
+            ),
+            h('div', { className: 'ar-estimate-hero-stats', 'aria-label': 'Estimate decoder contents' },
+              [
+                { value: ESTIMATE_ITEMS.length, label: 'line items' },
+                { value: 4, label: 'verdict types' },
+                { value: 1, label: 'rights guide' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-estimate-stat', 'data-ar-estimate-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
             )
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
-            ESTIMATE_ITEMS.map(function(it) {
-              var sel = picked === it.id;
-              return h('button', { key: it.id, 'data-ar-focusable': true,
-                'aria-label': it.name,
-                'aria-pressed': sel ? 'true' : 'false',
-                onClick: function() { upd('estPicked', sel ? null : it.id); awardBadge('estimate-decoder', 'Estimate Decoder'); },
-                style: Object.assign({}, btnSecondary(), {
-                  background: sel ? T.accent : T.cardAlt,
-                  color: sel ? '#0f172a' : T.text,
-                  textAlign: 'left',
-                  fontWeight: sel ? 800 : 600,
-                  display: 'flex', flexDirection: 'column', gap: 2,
-                  borderColor: sel ? T.accent : verdictColor(it.verdict)
-                }) },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
-                  h('span', { style: { fontSize: 16 } }, it.icon),
-                  h('span', { style: { fontSize: 12 } }, it.name)
-                ),
-                h('span', { style: { fontSize: 10, opacity: 0.85, color: sel ? '#0f172a' : verdictColor(it.verdict) } },
-                  verdictLabel(it.verdict))
-              );
-            })
-          ),
-          pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + verdictColor(pickedItem.verdict) } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
-              h('span', { style: { fontSize: 24 } }, pickedItem.icon),
-              h('h4', { style: { margin: 0, fontSize: 16, color: T.text } }, pickedItem.name),
-              h('span', { style: { marginLeft: 'auto', padding: '4px 10px', borderRadius: 12, background: verdictColor(pickedItem.verdict), color: '#0f172a', fontSize: 11, fontWeight: 800 } },
-                verdictLabel(pickedItem.verdict))
+          h('section', { className: 'ar-estimate-filter-bar', 'data-ar-estimate-filter-bar': true, 'aria-labelledby': 'autorepair-estimate-filter-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-estimate-filter-head' },
+              h('strong', { id: 'autorepair-estimate-filter-title', style: { color: T.text } }, 'Filter by decision type'),
+              h('span', { style: { color: T.muted } }, visibleItems.length + ' of ' + ESTIMATE_ITEMS.length + ' items shown')
             ),
-            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_it_is', '📋 What it is: ')), pickedItem.what),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.fair_price', '💵 Fair price: ')), pickedItem.fairPrice),
-            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + verdictColor(pickedItem.verdict), fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-              h('strong', { style: { color: verdictColor(pickedItem.verdict) } }, __alloT('stem.autorepair.what_to_know', '🎯 What to know: ')),
-              pickedItem.flag)
+            h('div', { role: 'group', 'aria-label': 'Estimate line item filters', className: 'ar-estimate-filters' }, FILTERS.map(filterButton))
           ),
-          h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.consumer_rights_in_maine', '🛡️ Consumer rights in Maine: ')),
-            __alloT('stem.autorepair.you_have_the_right_to_a_written_estima', 'You have the right to a written estimate before any work begins, the old parts back if you ask, and an itemized invoice. The shop cannot exceed the estimate by more than 10% without your re-authorization. Maine Attorney General\'s consumer protection: '),
-            h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/ag/consumer')
+          h('div', { className: 'ar-estimate-layout' },
+            h('section', { className: 'ar-estimate-catalog', 'data-ar-estimate-catalog': true, 'aria-labelledby': 'autorepair-estimate-catalog-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-estimate-catalog-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-estimate-catalog-title', style: { color: T.text } }, 'Estimate line items'),
+                  h('p', { style: { color: T.muted } }, 'Choose an item to inspect its full decision guide.')
+                ),
+                h('span', { className: 'ar-estimate-count-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, visibleItems.length + ' shown')
+              ),
+              h('ul', { role: 'list', className: 'ar-estimate-grid' },
+                visibleItems.map(function(it) {
+              var sel = picked === it.id;
+                  return h('li', { key: it.id, className: 'ar-estimate-item-wrap' },
+                    h('button', { type: 'button', id: 'autorepair-estimate-item-' + it.id, 'data-ar-focusable': true,
+                      className: 'ar-estimate-item',
+                      'data-ar-estimate-item-id': it.id,
+                      'data-ar-estimate-verdict': it.verdict,
+                      'data-ar-option-state': sel ? 'active' : 'inactive',
+                      'aria-label': it.name + ', ' + verdictLabel(it.verdict) + (sel ? ', viewing' : ', open item'),
+                      'aria-controls': 'autorepair-estimate-detail',
+                      'aria-expanded': sel ? 'true' : 'false',
+                      'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function() {
+                        upd('estPicked', sel ? null : it.id);
+                        arAnnounce(it.name + (sel ? ' closed.' : ' opened. ' + verdictLabel(it.verdict)));
+                        if (!sel) awardBadge('estimate-decoder', 'Estimate Decoder');
+                      },
+                      style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : verdictColor(it.verdict)), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,.10)' : 'none' })
+                    },
+                      h('span', { className: 'ar-estimate-item-top' },
+                        h('span', { className: 'ar-estimate-item-icon', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, it.icon),
+                        h('span', { className: 'ar-estimate-verdict-chip', style: { background: T.card, color: T.text, border: '1px solid ' + verdictColor(it.verdict) } }, verdictIcon(it.verdict) + ' ' + verdictLabel(it.verdict).replace(/^[^ ]+ /, ''))
+                      ),
+                      h('span', { className: 'ar-estimate-item-name' }, it.name),
+                      h('span', { className: 'ar-estimate-item-state' }, sel ? 'Viewing' : 'Open guide')
+                    )
+                  );
+                })
+              )
+            ),
+            estimateDetail()
+          ),
+          h('aside', { className: 'ar-estimate-rights', 'data-ar-estimate-rights': true, 'aria-labelledby': 'autorepair-estimate-rights-title', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('h2', { id: 'autorepair-estimate-rights-title', style: { color: T.accentHi } }, __alloT('stem.autorepair.consumer_rights_in_maine', '🛡️ Consumer rights in Maine')),
+            h('p', { style: { color: T.muted } },
+              __alloT('stem.autorepair.you_have_the_right_to_a_written_estima', 'You have the right to a written estimate before any work begins, the old parts back if you ask, and an itemized invoice. The shop cannot exceed the estimate by more than 10% without your re-authorization. Maine Attorney General\'s consumer protection: '),
+              h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/ag/consumer')
+            )
+          ),
+          h('section', { className: 'ar-estimate-print-guide', 'data-ar-estimate-print-guide': true, 'aria-labelledby': 'autorepair-estimate-print-title' },
+            h('h2', { id: 'autorepair-estimate-print-title' }, 'Complete estimate decoder'),
+            h('ol', { className: 'ar-estimate-print-grid' },
+              ESTIMATE_ITEMS.map(function(it) {
+                return h('li', { key: 'print-' + it.id, className: 'ar-estimate-print-item', 'data-ar-estimate-print-item': it.id },
+                  h('h3', null, it.icon + ' ' + it.name + ' — ' + verdictLabel(it.verdict)),
+                  h('p', null, h('strong', null, 'What it is: '), it.what),
+                  h('p', null, h('strong', null, 'Fair price: '), it.fairPrice),
+                  h('p', null, h('strong', null, 'What to know: '), it.flag)
+                );
+              })
+            )
           ),
           disclaimerFooter()
         );
@@ -6275,77 +9814,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // INSPECTION view — Maine annual sticker prep
       // ─────────────────────────────────────────
       function renderInspection() {
-        var picked = d.inspectionPicked || null;
-        var pickedItem = picked ? INSPECTION_ITEMS.find(function(i) { return i.id === picked; }) : null;
-        var checked = d.inspectionChecked || {};
-        // Read by the self-check button's label but never declared, so that
-        // button threw while rendering. Its own onClick toggles
-        // checked[pickedItem.id], which is exactly the state being described.
-        var isChecked = !!(pickedItem && checked[pickedItem.id]);
-        var doneCount = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+        var requestedPicked = typeof d.inspectionPicked === 'string' ? d.inspectionPicked : null;
+        var pickedItem = requestedPicked ? INSPECTION_ITEMS.find(function(i) { return i.id === requestedPicked; }) : null;
+        var picked = pickedItem ? pickedItem.id : null;
+        var checkedSource = d.inspectionChecked && typeof d.inspectionChecked === 'object' && !Array.isArray(d.inspectionChecked)
+          ? d.inspectionChecked
+          : {};
+        var checked = {};
+        INSPECTION_ITEMS.forEach(function(item) {
+          if (checkedSource[item.id] === true) checked[item.id] = true;
+        });
         var totalCount = INSPECTION_ITEMS.length;
+        var doneCount = INSPECTION_ITEMS.filter(function(item) { return checked[item.id] === true; }).length;
         var pct = Math.round((doneCount / totalCount) * 100);
+        var isComplete = doneCount === totalCount;
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🌲 Maine inspection prep'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_annual_safety_inspection', '🌲 Maine annual safety inspection')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+        function inspectionDetail() {
+          var isChecked = !!(pickedItem && checked[pickedItem.id] === true);
+          return h('article', { id: 'autorepair-inspection-detail', role: 'region', className: 'ar-inspection-detail',
+            'data-ar-inspection-detail': true,
+            'data-ar-inspection-detail-state': pickedItem ? 'active' : 'empty',
+            'aria-live': 'polite',
+            'aria-labelledby': 'autorepair-inspection-detail-title',
+            style: { background: T.card, border: '2px solid ' + (pickedItem ? T.accent : T.border) }
+          },
+            pickedItem ? h('div', null,
+              h('div', { className: 'ar-inspection-detail-head' },
+                h('span', { className: 'ar-inspection-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, pickedItem.icon),
+                h('div', { className: 'ar-inspection-detail-heading' },
+                  h('span', { className: 'ar-inspection-detail-kicker', style: { color: T.accentHi } }, 'Inspection area · Viewing'),
+                  h('h2', { id: 'autorepair-inspection-detail-title', style: { color: T.text } }, pickedItem.area),
+                  h('span', { className: 'ar-inspection-detail-state', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + (isChecked ? T.good : T.border) } },
+                    isChecked ? '✓ Self-check complete' : 'Self-check not complete')
+                )
+              ),
+              h('div', { className: 'ar-inspection-detail-grid' },
+                h('div', { className: 'ar-inspection-detail-block', 'data-ar-inspection-span': 'full', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_they_check', '🔍 What they check')),
+                  h('p', { style: { color: T.text } }, pickedItem.whatTheyCheck)
+                ),
+                h('div', { className: 'ar-inspection-detail-block', 'data-ar-inspection-span': 'full', style: { background: T.cardAlt, border: '1px solid ' + T.bad } },
+                  h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.common_fails', '🚩 Common fails')),
+                  h('p', { style: { color: T.muted } }, pickedItem.commonFails)
+                ),
+                h('div', { className: 'ar-inspection-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.good } },
+                  h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.diy_3', '🔧 DIY')),
+                  h('p', { style: { color: T.muted } }, pickedItem.diy)
+                ),
+                h('div', { className: 'ar-inspection-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.warn } },
+                  h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.shop_2', '🏪 Shop')),
+                  h('p', { style: { color: T.muted } }, pickedItem.shop)
+                ),
+                h('div', { className: 'ar-inspection-detail-block', 'data-ar-inspection-span': 'full', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pre_walk_tip', '💡 Pre-walk tip')),
+                  h('p', { style: { color: T.muted } }, pickedItem.tip)
+                )
+              ),
+              h('button', { type: 'button', 'data-ar-focusable': true, className: 'ar-inspection-check-action',
+                'data-ar-inspection-check-action': pickedItem.id,
+                'aria-label': (isChecked ? 'Unmark ' : 'Mark ') + pickedItem.area + ' as self-checked',
+                'aria-pressed': isChecked ? 'true' : 'false',
+                onClick: function() {
+                  var nextValue = !isChecked;
+                  var nextChecked = {};
+                  INSPECTION_ITEMS.forEach(function(item) {
+                    if (checked[item.id] === true) nextChecked[item.id] = true;
+                  });
+                  if (nextValue) nextChecked[pickedItem.id] = true;
+                  else delete nextChecked[pickedItem.id];
+                  var nextDone = INSPECTION_ITEMS.filter(function(item) { return nextChecked[item.id] === true; }).length;
+                  upd('inspectionChecked', nextChecked);
+                  arAnnounce(pickedItem.area + (nextValue ? ' marked self-checked.' : ' self-check removed.'));
+                  if (nextValue && nextDone === totalCount) awardBadge('inspection-prep', 'Inspection Self-Walk');
+                },
+                style: btnPrimary()
+              }, isChecked ? '✓ Checked — mark incomplete' : '✓ Mark this area self-checked')
+            ) : h('div', { className: 'ar-inspection-detail-empty' },
+              h('span', { className: 'ar-inspection-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🌲'),
+              h('h2', { id: 'autorepair-inspection-detail-title', style: { color: T.text } }, 'Choose an inspection area'),
+              h('p', { style: { color: T.muted } }, 'Open any area to review what the station checks, common failures, repair paths, and a practical pre-walk tip.')
+            )
+          );
+        }
+
+        return h('main', { className: 'ar-inspection-shell',
+          'data-ar-inspection-shell': true,
+          'data-ar-inspection-selection': pickedItem ? 'active' : 'empty',
+          'data-ar-inspection-progress': isComplete ? 'complete' : (doneCount ? 'in-progress' : 'empty'),
+          style: { color: T.text }
+        },
+          backBar('🌲 Maine inspection prep', 'Inspection prep navigation'),
+          h('header', { className: 'ar-inspection-hero', 'data-ar-inspection-hero': true, 'aria-labelledby': 'autorepair-inspection-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-inspection-hero-copy' },
+              h('span', { className: 'ar-inspection-eyebrow', style: { color: T.accentHi } }, '🌲 Annual sticker field guide'),
+              h('h1', { id: 'autorepair-inspection-title', className: 'ar-inspection-title', style: { color: T.text } }, __alloT('stem.autorepair.maine_annual_safety_inspection', 'Maine annual safety inspection')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
               __alloT('stem.autorepair.maine_requires_annual_safety_inspectio', 'Maine requires annual safety inspection ($12.50 fee at any licensed station). Failed sticker = 60 days to repair + recertify, or you stop driving. '),
               h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pre_walk_your_car_using_this_8_area_ch', 'Pre-walk your car using this 8-area checklist BEFORE you drive in.')),
-              __alloT('stem.autorepair.many_fails_are_5_minute_diy_fixes_bulb', ' Many fails are 5-minute DIY fixes — bulb, fuse, washer fluid.')),
-            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: T.muted, marginTop: 8 } },
-              h('span', { style: { color: T.accentHi, fontWeight: 700 } }, __alloT('stem.autorepair.self_walk_progress', 'Self-walk progress:')),
-              h('span', { style: { fontFamily: 'monospace' } }, doneCount + ' / ' + totalCount + ' areas checked (' + pct + '%)')
+              __alloT('stem.autorepair.many_fails_are_5_minute_diy_fixes_bulb', ' Many fails are 5-minute DIY fixes — bulb, fuse, washer fluid.')
+            ),
+            ),
+            h('div', { className: 'ar-inspection-hero-stats', 'aria-label': 'Inspection self-walk summary' },
+              [
+                { value: totalCount, label: 'inspection areas' },
+                { value: doneCount, label: 'self-checked' },
+                { value: totalCount - doneCount, label: 'remaining' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-inspection-stat', 'data-ar-inspection-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
             )
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
-            INSPECTION_ITEMS.map(function(item) {
-              var sel = picked === item.id;
-              var isChecked = !!checked[item.id];
-              return h('button', { key: item.id, 'data-ar-focusable': true,
-                'aria-label': item.area + (isChecked ? ' (checked)' : ''),
-                'aria-pressed': sel ? 'true' : 'false',
-                onClick: function() { upd('inspectionPicked', sel ? null : item.id); },
-                style: Object.assign({}, btnSecondary(), {
-                  background: sel ? T.accent : (isChecked ? '#064e3b' : T.cardAlt),
-                  color: sel ? '#0f172a' : (isChecked ? '#d1fae5' : T.text),
-                  textAlign: 'left',
-                  fontWeight: sel ? 800 : 600,
-                  display: 'flex', alignItems: 'center', gap: 8
-                }) },
-                h('span', { style: { fontSize: 20 } }, item.icon),
-                h('span', null, item.area, isChecked ? ' ✓' : '')
-              );
-            })
-          ),
-          pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedItem.icon + ' ' + pickedItem.area),
-            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_they_check', '🔍 What they check: ')), pickedItem.whatTheyCheck),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.common_fails', '🚩 Common fails: ')), pickedItem.commonFails),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.diy_3', '🔧 DIY: ')), pickedItem.diy),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.shop_2', '🏪 Shop: ')), pickedItem.shop),
-            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.pre_walk_tip', '💡 Pre-walk tip: ')), pickedItem.tip),
-            h('div', { style: { marginTop: 10 } },
-              h('button', { 'data-ar-focusable': true,
-                'aria-label': 'Mark ' + pickedItem.area + ' as self-checked',
-                onClick: function() {
-                  var nv = Object.assign({}, checked); nv[pickedItem.id] = !nv[pickedItem.id];
-                  upd('inspectionChecked', nv);
-                  if (Object.keys(nv).filter(function(k){return nv[k];}).length === totalCount) {
-                    awardBadge('inspection-prep', 'Inspection Self-Walk');
-                  }
-                },
-                style: btnPrimary() }, isChecked ? '✓ Checked — uncheck' : '✓ Mark this area self-checked')
+          h('section', { className: 'ar-inspection-progress-card', 'data-ar-inspection-progress-card': true, 'aria-labelledby': 'autorepair-inspection-progress-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-inspection-progress-head' },
+              h('div', { className: 'ar-inspection-progress-copy' },
+                h('strong', { id: 'autorepair-inspection-progress-title', style: { color: T.text } }, __alloT('stem.autorepair.self_walk_progress', 'Self-walk progress')),
+                h('span', { style: { color: T.muted } }, isComplete ? 'All eight areas are marked complete.' : 'Mark each area after you inspect it on your vehicle.')
+              ),
+              h('span', { className: 'ar-inspection-progress-value', style: { color: T.accentHi } }, doneCount + ' / ' + totalCount + ' · ' + pct + '%')
+            ),
+            h('div', { role: 'progressbar', className: 'ar-inspection-progress-track',
+              'data-ar-inspection-progressbar': true,
+              'aria-valuemin': '0',
+              'aria-valuemax': String(totalCount),
+              'aria-valuenow': String(doneCount),
+              'aria-valuetext': doneCount + ' of ' + totalCount + ' inspection areas self-checked',
+              style: { background: T.cardAlt, border: '1px solid ' + T.border }
+            },
+              h('div', { className: 'ar-inspection-progress-fill', style: { width: pct + '%', background: T.good } })
             )
           ),
-          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-            h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_reality_2', '🌲 Maine reality: ')), MAINE_CONTEXT.inspection, ' ', MAINE_CONTEXT.sticker),
+          h('div', { className: 'ar-inspection-layout' },
+            h('section', { className: 'ar-inspection-catalog', 'data-ar-inspection-catalog': true, 'aria-labelledby': 'autorepair-inspection-catalog-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-inspection-catalog-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-inspection-catalog-title', style: { color: T.text } }, 'Eight inspection areas'),
+                  h('p', { style: { color: T.muted } }, 'Choose an area, review the guide, then mark your self-check.')
+                ),
+                h('span', { className: 'ar-inspection-count-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, doneCount + ' checked')
+              ),
+              h('ul', { role: 'list', className: 'ar-inspection-grid' },
+                INSPECTION_ITEMS.map(function(item) {
+                  var sel = picked === item.id;
+                  var itemChecked = checked[item.id] === true;
+                  return h('li', { key: item.id, className: 'ar-inspection-item-wrap' },
+                    h('button', { type: 'button', id: 'autorepair-inspection-item-' + item.id, 'data-ar-focusable': true,
+                      className: 'ar-inspection-item',
+                      'data-ar-inspection-item-id': item.id,
+                      'data-ar-inspection-item-state': sel ? 'viewing' : (itemChecked ? 'checked' : 'todo'),
+                      'data-ar-option-state': sel ? 'active' : 'inactive',
+                      'aria-label': item.area + ', ' + (itemChecked ? 'self-check complete' : 'not self-checked') + (sel ? ', viewing' : ', open guide'),
+                      'aria-controls': 'autorepair-inspection-detail',
+                      'aria-expanded': sel ? 'true' : 'false',
+                      'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function() {
+                        upd('inspectionPicked', sel ? null : item.id);
+                        arAnnounce(item.area + (sel ? ' closed.' : ' inspection guide opened.'));
+                      },
+                      style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : (itemChecked ? T.good : T.border)), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,.10)' : 'none' })
+                    },
+                      h('span', { className: 'ar-inspection-item-top' },
+                        h('span', { className: 'ar-inspection-item-icon', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, item.icon),
+                        h('span', { className: 'ar-inspection-item-status', style: { background: T.card, color: T.text, border: '1px solid ' + (itemChecked ? T.good : T.border) } }, itemChecked ? '✓ Self-checked' : 'Not checked')
+                      ),
+                      h('span', { className: 'ar-inspection-item-name' }, item.area),
+                      h('span', { className: 'ar-inspection-item-action' }, sel ? 'Viewing guide' : 'Open guide')
+                    )
+                  );
+                })
+              )
+            ),
+            inspectionDetail()
+          ),
+          isComplete && h('div', { role: 'status', 'aria-live': 'polite', className: 'ar-inspection-complete', 'data-ar-inspection-complete': true, style: { background: T.cardAlt, border: '2px solid ' + T.good } },
+            h('strong', { style: { color: T.good } }, '✓ Inspection self-walk complete'),
+            h('span', { style: { color: T.muted } }, 'All eight areas are checked. Bring any repair notes with you to the inspection station.')
+          ),
+          h('aside', { className: 'ar-inspection-reality', 'data-ar-inspection-reality': true, 'aria-labelledby': 'autorepair-inspection-reality-title', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('h2', { id: 'autorepair-inspection-reality-title', style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_reality_2', '🌲 Maine reality')),
+            h('p', { style: { color: T.muted } }, MAINE_CONTEXT.inspection, ' ', MAINE_CONTEXT.sticker)
+          ),
+          h('section', { className: 'ar-inspection-print-guide', 'data-ar-inspection-print-guide': true, 'aria-labelledby': 'autorepair-inspection-print-title' },
+            h('h2', { id: 'autorepair-inspection-print-title' }, 'Complete Maine inspection self-walk'),
+            h('ol', { className: 'ar-inspection-print-grid' },
+              INSPECTION_ITEMS.map(function(item) {
+                return h('li', { key: 'print-' + item.id, className: 'ar-inspection-print-item', 'data-ar-inspection-print-item': item.id },
+                  h('h3', null, item.icon + ' ' + item.area),
+                  h('p', null, h('strong', null, 'What they check: '), item.whatTheyCheck),
+                  h('p', null, h('strong', null, 'Common fails: '), item.commonFails),
+                  h('p', null, h('strong', null, 'DIY: '), item.diy),
+                  h('p', null, h('strong', null, 'Shop: '), item.shop),
+                  h('p', null, h('strong', null, 'Pre-walk tip: '), item.tip)
+                );
+              })
+            )
+          ),
           disclaimerFooter()
         );
       }
@@ -6353,7 +10018,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // USED CAR view — pre-purchase inspection
       // ─────────────────────────────────────────
-      function renderUsedCar() {
+      function renderUsedCarLegacy() {
         var ucView = d.ucView || 'overview';
         var USED_CAR_TAB_IDS = ['overview', 'flags', 'walk'];
         function usedCarTabKeyDown(e, index) {
@@ -6491,12 +10156,310 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         );
       }
 
+      function renderUsedCar() {
+        var USED_CAR_TAB_IDS = ['overview', 'flags', 'walk'];
+        var requestedUcView = typeof d.ucView === 'string' ? d.ucView : 'overview';
+        var ucView = USED_CAR_TAB_IDS.indexOf(requestedUcView) >= 0 ? requestedUcView : 'overview';
+        var USED_CAR_TABS = {
+          overview: { icon: '🛒', label: 'Overview', note: USED_CAR_BEST_PRACTICES.length + ' buying practices' },
+          flags: { icon: '🚩', label: 'Red flags', note: USED_CAR_CHECK.redFlags.length + ' warning signs' },
+          walk: { icon: '🚶', label: 'Walkaround', note: USED_CAR_CHECK.walkaround.length + ' field steps' }
+        };
+
+        function usedCarTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % USED_CAR_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + USED_CAR_TAB_IDS.length) % USED_CAR_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = USED_CAR_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
+        function tabBtn(id) {
+          var active = ucView === id;
+          var meta = USED_CAR_TABS[id];
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-usedcar-tab-' + id,
+            'aria-controls': 'autorepair-usedcar-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            className: 'ar-usedcar-tab',
+            'data-ar-usedcar-tab': id,
+            'data-ar-tab-state': active ? 'active' : 'inactive',
+            onKeyDown: function(e) { usedCarTabKeyDown(e, USED_CAR_TAB_IDS.indexOf(id)); },
+            onClick: function() { upd('ucView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+          },
+            h('span', { className: 'ar-usedcar-tab-icon', 'aria-hidden': 'true' }, meta.icon),
+            h('span', { className: 'ar-usedcar-tab-copy' },
+              h('span', { className: 'ar-usedcar-tab-label' }, meta.label),
+              h('span', { className: 'ar-usedcar-tab-note' }, active ? 'Current view' : meta.note)
+            )
+          );
+        }
+
+        function ucOverview() {
+          return h('div', { className: 'ar-usedcar-overview', 'data-ar-usedcar-overview': true },
+            h('section', { className: 'ar-usedcar-section', 'aria-labelledby': 'autorepair-usedcar-overview-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { className: 'ar-usedcar-section-head' },
+                h('div', { className: 'ar-usedcar-section-head-copy' },
+                  h('h2', { id: 'autorepair-usedcar-overview-title', style: { color: T.text } }, 'Prepare before the inspection'),
+                  h('p', { className: 'ar-usedcar-section-intro', style: { color: T.muted } }, USED_CAR_CHECK.intro)
+                ),
+                h('span', { className: 'ar-usedcar-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, USED_CAR_BEST_PRACTICES.length + ' practices')
+              )
+            ),
+            h('section', { className: 'ar-usedcar-section', 'aria-labelledby': 'autorepair-usedcar-practices-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-usedcar-section-head' },
+                h('div', { className: 'ar-usedcar-section-head-copy' },
+                  h('h2', { id: 'autorepair-usedcar-practices-title', style: { color: T.text } }, __alloT('stem.autorepair.best_practices', '✅ Best practices')),
+                  h('p', { className: 'ar-usedcar-section-intro', style: { color: T.muted } }, 'Bring these six checkpoints into every buying conversation.')
+                )
+              ),
+              h('ol', { className: 'ar-usedcar-practice-grid', style: { listStyle: 'none', margin: 0, padding: 0 } },
+                USED_CAR_BEST_PRACTICES.map(function(p, index) {
+                  return h('li', { key: p.id },
+                    h('article', { className: 'ar-usedcar-practice', 'data-ar-usedcar-practice': index + 1, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                      h('div', { className: 'ar-usedcar-practice-head' },
+                        h('span', { className: 'ar-usedcar-practice-icon', 'aria-hidden': 'true', style: { background: T.card, border: '1px solid ' + T.border } }, p.icon),
+                        h('div', null,
+                          h('span', { className: 'ar-usedcar-practice-step', style: { color: T.accentHi } }, 'Practice ' + (index + 1)),
+                          h('h3', { style: { color: T.text } }, p.title)
+                        )
+                      ),
+                      h('p', { style: { color: T.muted } }, __alloT(p.i18n, p.text))
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function ucFlags() {
+          var requestedFlag = typeof d.ucFlagPicked === 'string' ? d.ucFlagPicked : null;
+          var pickedFlag = requestedFlag ? USED_CAR_CHECK.redFlags.find(function(f) { return f.id === requestedFlag; }) : null;
+          var picked = pickedFlag ? pickedFlag.id : null;
+          return h('div', { className: 'ar-usedcar-flags', 'data-ar-usedcar-flags': true },
+            h('section', { className: 'ar-usedcar-section', 'aria-labelledby': 'autorepair-usedcar-flags-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { className: 'ar-usedcar-section-head' },
+                h('div', { className: 'ar-usedcar-section-head-copy' },
+                  h('h2', { id: 'autorepair-usedcar-flags-title', style: { color: T.text } }, __alloT('stem.autorepair.10_red_flags', '🚩 10 red flags')),
+                  h('p', { className: 'ar-usedcar-section-intro', style: { color: T.muted } }, __alloT('stem.autorepair.if_you_see_any_of_these_slow_down_each', 'If you see any of these, slow down. Each one is negotiable. Each one tells you something the seller may or may not be telling you.'))
+                ),
+                h('span', { className: 'ar-usedcar-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, USED_CAR_CHECK.redFlags.length + ' warning signs')
+              )
+            ),
+            h('div', { className: 'ar-usedcar-master-detail' },
+              h('section', { className: 'ar-usedcar-flag-picker', 'aria-label': 'Choose a used-car red flag to inspect' },
+                h('ul', { role: 'list', className: 'ar-usedcar-flag-grid' },
+                  USED_CAR_CHECK.redFlags.map(function(f, index) {
+                    var sel = picked === f.id;
+                    return h('li', { key: f.id, className: 'ar-usedcar-flag-wrap' },
+                      h('button', { type: 'button', id: 'autorepair-usedcar-flag-' + f.id, 'data-ar-focusable': true,
+                        className: 'ar-usedcar-flag',
+                        'data-ar-usedcar-flag-id': f.id,
+                        'data-ar-option-state': sel ? 'active' : 'inactive',
+                        'aria-label': f.flag + ', ' + f.area + (sel ? ', viewing' : ', open flag'),
+                        'aria-controls': 'autorepair-usedcar-flag-detail',
+                        'aria-expanded': sel ? 'true' : 'false',
+                        'aria-pressed': sel ? 'true' : 'false',
+                        onClick: function() { upd('ucFlagPicked', sel ? null : f.id); },
+                        style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : T.border), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+                      },
+                        h('span', { className: 'ar-usedcar-flag-top' },
+                          h('span', { className: 'ar-usedcar-flag-index', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, index + 1),
+                          h('span', { className: 'ar-usedcar-flag-area', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, f.area)
+                        ),
+                        h('span', { className: 'ar-usedcar-flag-label' }, f.flag),
+                        h('span', { className: 'ar-usedcar-flag-state' }, sel ? 'Viewing' : 'Open flag')
+                      )
+                    );
+                  })
+                )
+              ),
+              h('article', { id: 'autorepair-usedcar-flag-detail', role: 'region', className: 'ar-usedcar-flag-detail',
+                'data-ar-usedcar-flag-detail': true,
+                'data-ar-usedcar-flag-detail-state': pickedFlag ? 'active' : 'empty',
+                'aria-live': 'polite',
+                'aria-labelledby': 'autorepair-usedcar-flag-detail-title',
+                style: { background: T.card, border: '2px solid ' + (pickedFlag ? T.bad : T.border) }
+              },
+                pickedFlag ? h('div', null,
+                  h('div', { className: 'ar-usedcar-detail-head' },
+                    h('span', { className: 'ar-usedcar-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.bad } }, '🚩'),
+                    h('div', null,
+                      h('span', { className: 'ar-usedcar-detail-kicker', style: { color: T.accentHi } }, pickedFlag.area + ' · Viewing'),
+                      h('h3', { id: 'autorepair-usedcar-flag-detail-title', style: { color: T.text } }, pickedFlag.flag)
+                    )
+                  ),
+                  h('div', { className: 'ar-usedcar-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_to_look_for', '🔍 What to look for')),
+                    h('p', { style: { color: T.text } }, pickedFlag.what)
+                  ),
+                  h('div', { className: 'ar-usedcar-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.bad } },
+                    h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.if_found', '🎯 If found')),
+                    h('p', { style: { color: T.muted } }, pickedFlag.ifFound)
+                  )
+                ) : h('div', { className: 'ar-usedcar-detail-empty' },
+                  h('span', { className: 'ar-usedcar-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🚩'),
+                  h('h3', { id: 'autorepair-usedcar-flag-detail-title', style: { color: T.text } }, 'Choose a red flag'),
+                  h('p', { style: { color: T.muted } }, 'Open any warning sign to see exactly what to inspect and how it should affect the buying decision.')
+                )
+              )
+            ),
+            h('section', { className: 'ar-usedcar-print-flags', 'aria-labelledby': 'autorepair-usedcar-print-flags-title' },
+              h('h2', { id: 'autorepair-usedcar-print-flags-title' }, 'Complete red-flag guide'),
+              USED_CAR_CHECK.redFlags.map(function(f, index) {
+                return h('article', { key: 'print-' + f.id, className: 'ar-usedcar-print-flag', 'data-ar-usedcar-print-flag': f.id },
+                  h('h3', null, (index + 1) + '. ' + f.flag + ' — ' + f.area),
+                  h('div', { className: 'ar-usedcar-detail-block' }, h('strong', null, 'What to look for'), h('p', null, f.what)),
+                  h('div', { className: 'ar-usedcar-detail-block' }, h('strong', null, 'If found'), h('p', null, f.ifFound))
+                );
+              })
+            )
+          );
+        }
+
+        function ucWalk() {
+          var rawChecked = d.ucWalkChecked;
+          var checked = rawChecked && typeof rawChecked === 'object' && !Array.isArray(rawChecked) ? rawChecked : {};
+          var total = USED_CAR_CHECK.walkaround.length;
+          var done = USED_CAR_CHECK.walkaround.filter(function(s) { return checked[s.step] === true; }).length;
+          var percent = Math.max(0, Math.min(100, (done / total) * 100));
+          var percentLabel = Math.round(percent);
+          var firstUnchecked = USED_CAR_CHECK.walkaround.find(function(s) { return checked[s.step] !== true; }) || null;
+          var complete = done === total;
+          return h('div', { className: 'ar-usedcar-walk', 'data-ar-usedcar-walk': true },
+            h('section', { className: 'ar-usedcar-section', 'aria-labelledby': 'autorepair-usedcar-walk-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { className: 'ar-usedcar-section-head' },
+                h('div', { className: 'ar-usedcar-section-head-copy' },
+                  h('h2', { id: 'autorepair-usedcar-walk-title', style: { color: T.text } }, __alloT('stem.autorepair.9_step_walkaround', '🚶 9-step walkaround')),
+                  h('p', { className: 'ar-usedcar-section-intro', style: { color: T.muted } }, __alloT('stem.autorepair.tap_each_step_to_mark_complete_practic', 'Tap each step to mark complete. Practice the routine on a friend\'s car BEFORE you go look at one to buy. '))
+                ),
+                h('span', { className: 'ar-usedcar-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, done + ' / ' + total + ' checked')
+              )
+            ),
+            h('div', { role: 'progressbar', className: 'ar-usedcar-walk-progress',
+              'data-ar-usedcar-walk-progress': true,
+              'data-ar-progress-percent': percent,
+              'aria-label': 'Used-car walkaround progress',
+              'aria-valuemin': 0,
+              'aria-valuemax': total,
+              'aria-valuenow': done,
+              'aria-valuetext': done + ' of ' + total + ' steps checked',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', { className: 'ar-usedcar-progress-head' },
+                h('span', { className: 'ar-usedcar-progress-label', style: { color: T.text } }, complete ? 'Walkaround complete' : 'Inspection progress'),
+                h('span', { className: 'ar-usedcar-progress-value', style: { color: T.muted } }, done + ' / ' + total + ' · ' + percentLabel + '%')
+              ),
+              h('div', { className: 'ar-usedcar-progress-track', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('div', { className: 'ar-usedcar-progress-fill', style: { width: percent + '%', background: T.accent } })
+              ),
+              h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'ar-usedcar-status', 'data-ar-usedcar-status': true, style: { color: T.muted } },
+                complete ? h('span', { 'data-ar-usedcar-complete': true }, '✓ Used Car Buyer — all nine field steps are checked.') : 'Next step: ' + firstUnchecked.step + ' — ' + firstUnchecked.do
+              )
+            ),
+            h('ol', { className: 'ar-usedcar-walk-list', 'data-ar-usedcar-timeline': true },
+              USED_CAR_CHECK.walkaround.map(function(s) {
+                var isChecked = checked[s.step] === true;
+                var isCurrent = !isChecked && firstUnchecked && firstUnchecked.step === s.step;
+                var stepState = isChecked ? 'checked' : (isCurrent ? 'current' : 'upcoming');
+                var visibleState = isChecked ? '✓ Checked' : (isCurrent ? 'Next step' : 'Not checked');
+                return h('li', { key: s.step, className: 'ar-usedcar-walk-item' },
+                  h('span', { className: 'ar-usedcar-walk-marker', 'aria-hidden': 'true', style: { background: isChecked ? T.accent : T.card, color: isChecked ? onStrongFill : T.text, border: '2px solid ' + (isChecked || isCurrent ? T.accent : T.border) } }, isChecked ? '✓' : s.step),
+                  h('button', { type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-usedcar-walk-step',
+                    'data-ar-usedcar-walk-step': s.step,
+                    'data-ar-usedcar-walk-state': stepState,
+                    'aria-label': 'Step ' + s.step + ': ' + s.do + '. ' + (isChecked ? 'Checked.' : (isCurrent ? 'Next step, not checked.' : 'Not checked.')),
+                    'aria-pressed': isChecked ? 'true' : 'false',
+                    'aria-current': isCurrent ? 'step' : undefined,
+                    onClick: function() {
+                      var nv = Object.assign({}, checked);
+                      var nextValue = !isChecked;
+                      nv[s.step] = nextValue;
+                      var nextDone = USED_CAR_CHECK.walkaround.filter(function(step) { return nv[step.step] === true; }).length;
+                      upd('ucWalkChecked', nv);
+                      arAnnounce('Walkaround step ' + s.step + (nextValue ? ' checked.' : ' unchecked.'));
+                      if (nextValue && nextDone === total) awardBadge('used-car-buyer', 'Used Car Buyer');
+                    },
+                    style: Object.assign({}, btnSecondary(), { background: isChecked ? T.accent : T.card, color: isChecked ? onStrongFill : T.text, border: '2px solid ' + (isChecked || isCurrent ? T.accent : T.border), fontWeight: isChecked ? 800 : 700, boxShadow: isCurrent ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+                  },
+                    h('span', { className: 'ar-usedcar-walk-copy' },
+                      h('span', { className: 'ar-usedcar-walk-kicker' }, 'Step ' + s.step),
+                      h('span', { className: 'ar-usedcar-walk-text' }, s.do)
+                    ),
+                    h('span', { className: 'ar-usedcar-walk-state', style: { background: isChecked ? T.card : T.cardAlt, color: T.text, border: '1px solid ' + (isChecked || isCurrent ? T.accent : T.border) } }, visibleState)
+                  )
+                );
+              })
+            )
+          );
+        }
+
+        function usedCarPanel(id, content) {
+          var active = ucView === id;
+          return h('section', { role: 'tabpanel',
+            id: 'autorepair-usedcar-panel-' + id,
+            'aria-labelledby': 'autorepair-usedcar-tab-' + id,
+            tabIndex: active ? 0 : -1,
+            hidden: active ? undefined : true,
+            className: 'ar-usedcar-panel',
+            'data-ar-usedcar-panel': id,
+            'data-ar-panel-state': active ? 'active' : 'inactive'
+          }, content);
+        }
+
+        return h('main', { className: 'ar-usedcar-shell', 'data-ar-usedcar-shell': true, 'data-ar-usedcar-view': ucView, style: { color: T.text } },
+          backBar('🛒 Used car buying', 'Used car navigation'),
+          h('header', { className: 'ar-usedcar-hero', 'data-ar-usedcar-hero': true, 'aria-labelledby': 'autorepair-usedcar-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-usedcar-hero-copy' },
+              h('span', { className: 'ar-usedcar-eyebrow', style: { color: T.accentHi } }, '🛒 Pre-purchase field guide'),
+              h('h1', { id: 'autorepair-usedcar-title', className: 'ar-usedcar-title', style: { color: T.text } }, __alloT('stem.autorepair.buying_a_used_car_in_maine', 'Buying a used car in Maine')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.65 } }, USED_CAR_CHECK.intro)
+            ),
+            h('div', { className: 'ar-usedcar-hero-stats', 'aria-label': 'Used-car guide contents' },
+              [
+                { value: USED_CAR_BEST_PRACTICES.length, label: 'buying practices' },
+                { value: USED_CAR_CHECK.redFlags.length, label: 'red flags' },
+                { value: USED_CAR_CHECK.walkaround.length, label: 'walkaround steps' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-usedcar-hero-stat', 'data-ar-usedcar-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
+            )
+          ),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.used_car_sub_modes', 'Used-car sub-modes'), 'aria-orientation': 'horizontal', className: 'ar-usedcar-tabs', 'data-ar-usedcar-tabs': true, style: { background: T.card, border: '1px solid ' + T.border } },
+            USED_CAR_TAB_IDS.map(tabBtn)
+          ),
+          usedCarPanel('overview', ucOverview()),
+          usedCarPanel('flags', ucFlags()),
+          usedCarPanel('walk', ucWalk()),
+          disclaimerFooter()
+        );
+      }
+
       // ─────────────────────────────────────────
       // EV / HYBRID view
       // ─────────────────────────────────────────
       function renderEv() {
-        var evView = d.evView || 'overview';
         var EV_TAB_IDS = ['overview', 'safety', 'diffs'];
+        var requestedEvView = typeof d.evView === 'string' ? d.evView : 'overview';
+        var evView = EV_TAB_IDS.indexOf(requestedEvView) >= 0 ? requestedEvView : 'overview';
+        var EV_TABS = {
+          overview: { icon: '⚡', label: 'Overview', note: '4 field notes' },
+          safety: { icon: '🛡️', label: 'HV safety', note: EV_SAFETY.length + ' rules' },
+          diffs: { icon: '🔄', label: 'vs ICE', note: EV_KEY_DIFFERENCES.length + ' service shifts' }
+        };
         function evTabKeyDown(e, index) {
           var key = e.key;
           if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
@@ -6510,141 +10473,226 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var nextTab = tabs[nextIndex];
           if (nextTab) { nextTab.focus(); nextTab.click(); }
         }
-        function tabBtn(id, label) {
+        function tabBtn(id) {
           var active = evView === id;
-          return h('button', { 'data-ar-focusable': true, role: 'tab',
+          var meta = EV_TABS[id];
+          return h('button', { type: 'button', 'data-ar-focusable': true, role: 'tab',
             id: 'autorepair-ev-tab-' + id,
             'aria-controls': 'autorepair-ev-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
+            className: 'ar-ev-tab',
+            'data-ar-ev-tab': id,
+            'data-ar-tab-state': active ? 'active' : 'inactive',
             onKeyDown: function(e) { evTabKeyDown(e, EV_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('evView', id); },
-            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+          },
+            h('span', { className: 'ar-ev-tab-icon', 'aria-hidden': 'true' }, meta.icon),
+            h('span', { className: 'ar-ev-tab-copy' },
+              h('span', { className: 'ar-ev-tab-label' }, meta.label),
+              h('span', { className: 'ar-ev-tab-note' }, active ? 'Current view' : meta.note)
+            )
+          );
         }
 
         function evOverview() {
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ev_hybrid_service_the_future_of_the_tr', '⚡ EV / hybrid service — the future of the trade')),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, EV_OVERVIEW.bigPicture),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+          return h('div', { className: 'ar-ev-overview', 'data-ar-ev-overview': true },
+            h('section', { className: 'ar-ev-section', 'aria-labelledby': 'autorepair-ev-overview-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-ev-section-head' },
+                h('div', { className: 'ar-ev-section-head-copy' },
+                  h('h2', { id: 'autorepair-ev-overview-title', style: { color: T.text } }, __alloT('stem.autorepair.ev_hybrid_service_the_future_of_the_tr', '⚡ EV / hybrid service — the future of the trade')),
+                  h('p', { className: 'ar-ev-section-intro', style: { color: T.muted } }, EV_OVERVIEW.bigPicture)
+                ),
+                h('span', { className: 'ar-ev-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, 'Service landscape')
+              ),
+              h('div', { role: 'list', className: 'ar-ev-fact-grid ar-ev-overview-grid' },
                 [
-                  { label: __alloT('stem.autorepair.industry_credential', '🏅 Industry credential'), val: EV_OVERVIEW.aseCert },
-                  { label: __alloT('stem.autorepair.tool_investment_2', '🧰 Tool investment'), val: EV_OVERVIEW.tooling },
-                  { label: __alloT('stem.autorepair.pay_differential', '💵 Pay differential'), val: EV_OVERVIEW.salaryDelta },
-                  { label: __alloT('stem.autorepair.where_to_train_maine', '🌲 Where to train (Maine)'), val: EV_OVERVIEW.where }
-                ].map(function(r) {
-                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                    h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
-                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, r.val)
+                  { icon: '🏅', label: __alloT('stem.autorepair.industry_credential', 'Industry credential'), val: EV_OVERVIEW.aseCert },
+                  { icon: '🧰', label: __alloT('stem.autorepair.tool_investment_2', 'Tool investment'), val: EV_OVERVIEW.tooling },
+                  { icon: '💵', label: __alloT('stem.autorepair.pay_differential', 'Pay differential'), val: EV_OVERVIEW.salaryDelta },
+                  { icon: '🌲', label: __alloT('stem.autorepair.where_to_train_maine', 'Where to train (Maine)'), val: EV_OVERVIEW.where }
+                ].map(function(r, index) {
+                  return h('article', { key: r.label, role: 'listitem', className: 'ar-ev-fact-card', 'data-ar-ev-stat': index + 1, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { className: 'ar-ev-fact-head' },
+                      h('span', { className: 'ar-ev-fact-icon', 'aria-hidden': 'true', style: { background: T.card, border: '1px solid ' + T.border } }, r.icon),
+                      h('span', { className: 'ar-ev-fact-label', style: { color: T.text } }, r.label)
+                    ),
+                    h('p', { className: 'ar-ev-fact-value', style: { color: T.muted } }, r.val)
                   );
                 })
               )
             ),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
-              h('strong', { style: { color: T.warn } }, __alloT('stem.autorepair.critical', '⚠️ Critical: ')),
-              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.ev_high_voltage_work_is_regulated_spec', 'EV high-voltage work is regulated specialty work. Without proper training, insulated PPE, and the manufacturer\'s service procedure, '),
-                h('strong', null, __alloT('stem.autorepair.do_not_service_hv_components', 'do not service HV components. ')),
-                __alloT('stem.autorepair.a_400v_battery_system_can_kill_you_fas', 'A 400V battery system can kill you faster than you can let go. This module is overview-level for awareness, not a substitute for training.'))
+            h('aside', { role: 'note', className: 'ar-ev-critical', 'aria-labelledby': 'autorepair-ev-critical-title', style: { background: T.card, border: '2px solid ' + T.warn } },
+              h('span', { className: 'ar-ev-critical-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.warn } }, '⚠️'),
+              h('div', null,
+                h('h2', { id: 'autorepair-ev-critical-title', style: { color: T.warn } }, __alloT('stem.autorepair.critical', 'Critical boundary')),
+                h('p', { style: { color: T.text } },
+                  __alloT('stem.autorepair.ev_high_voltage_work_is_regulated_spec', 'EV high-voltage work is regulated specialty work. Without proper training, insulated PPE, and the manufacturer\'s service procedure, '),
+                  h('strong', null, __alloT('stem.autorepair.do_not_service_hv_components', 'do not service HV components. ')),
+                  __alloT('stem.autorepair.a_400v_battery_system_can_kill_you_fas', 'A 400V battery system can kill you faster than you can let go. This module is overview-level for awareness, not a substitute for training.'))
+              )
             )
           );
         }
 
         function evSafetyTab() {
-          var picked = d.evSafetyPicked || null;
-          var pickedItem = picked ? EV_SAFETY.find(function(s) { return s.id === picked; }) : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.ev_specific_safety', '⚠️ EV-specific safety')),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.six_rules_that_override_your_general_t', 'Six rules that override your general-tech instinct on a hybrid or EV.'))
+          var requestedSafety = typeof d.evSafetyPicked === 'string' ? d.evSafetyPicked : null;
+          var pickedItem = requestedSafety ? EV_SAFETY.find(function(s) { return s.id === requestedSafety; }) : null;
+          var picked = pickedItem ? pickedItem.id : null;
+          return h('div', { className: 'ar-ev-safety', 'data-ar-ev-safety': true },
+            h('section', { className: 'ar-ev-section', 'aria-labelledby': 'autorepair-ev-safety-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { className: 'ar-ev-section-head' },
+                h('div', { className: 'ar-ev-section-head-copy' },
+                  h('h2', { id: 'autorepair-ev-safety-title', style: { color: T.text } }, __alloT('stem.autorepair.ev_specific_safety', '⚠️ EV-specific safety')),
+                  h('p', { className: 'ar-ev-section-intro', style: { color: T.muted } }, __alloT('stem.autorepair.six_rules_that_override_your_general_t', 'Six rules that override your general-tech instinct on a hybrid or EV.'))
+                ),
+                h('span', { className: 'ar-ev-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, EV_SAFETY.length + ' awareness rules')
+              )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
-              EV_SAFETY.map(function(s) {
-                var sel = picked === s.id;
-                return h('button', { key: s.id, 'data-ar-focusable': true,
-                  'aria-label': s.name,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('evSafetyPicked', sel ? null : s.id); awardBadge('ev-safety-aware', 'EV Safety Aware'); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontWeight: sel ? 800 : 600,
-                    display: 'flex', alignItems: 'flex-start', gap: 8
-                  }) },
-                  h('span', { style: { fontSize: 22 } }, s.icon),
-                  h('span', null, s.name)
-                );
-              })
-            ),
-            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.bad } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.bad } }, pickedItem.icon + ' ' + pickedItem.name),
-              h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-                h('strong', { style: { color: '#fed7aa' } }, __alloT('stem.autorepair.rule', '⚠️ Rule: ')),
-                h('span', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedItem.rule)
+            h('div', { className: 'ar-ev-master-detail ar-ev-safety-layout' },
+              h('section', { className: 'ar-ev-picker', 'aria-label': 'Choose an EV high-voltage safety rule' },
+                h('ul', { role: 'list', className: 'ar-ev-option-list ar-ev-safety-list ar-ev-safety-grid' },
+                  EV_SAFETY.map(function(s) {
+                    var sel = picked === s.id;
+                    return h('li', { key: s.id, className: 'ar-ev-option-wrap' },
+                      h('button', { type: 'button', id: 'autorepair-ev-safety-' + s.id, 'data-ar-focusable': true,
+                        className: 'ar-ev-option ar-ev-choice',
+                        'data-ar-ev-safety-id': s.id,
+                        'data-ar-option-state': sel ? 'active' : 'inactive',
+                        'aria-label': s.name + (sel ? ', viewing' : ', open rule'),
+                        'aria-controls': 'autorepair-ev-safety-detail',
+                        'aria-expanded': sel ? 'true' : 'false',
+                        'aria-pressed': sel ? 'true' : 'false',
+                        onClick: function() { upd('evSafetyPicked', sel ? null : s.id); awardBadge('ev-safety-aware', 'EV Safety Aware'); },
+                        style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : T.border), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+                      },
+                        h('span', { className: 'ar-ev-option-icon', 'aria-hidden': 'true', style: { background: sel ? T.card : T.card, color: T.text, border: '1px solid ' + T.border } }, s.icon),
+                        h('span', { className: 'ar-ev-option-copy' },
+                          h('span', { className: 'ar-ev-option-label' }, s.name),
+                          h('span', { className: 'ar-ev-option-state' }, sel ? 'Viewing' : 'Open rule')
+                        )
+                      )
+                    );
+                  })
+                )
               ),
-              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.detail', '🔬 Detail: ')), pickedItem.detail),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.what_to_do', '🎯 What to do: ')), pickedItem.action)
+              h('article', { id: 'autorepair-ev-safety-detail', role: 'region', className: 'ar-ev-detail', 'data-ar-ev-safety-detail': true, 'data-ar-ev-safety-detail-state': pickedItem ? 'active' : 'empty', 'aria-live': 'polite', 'aria-labelledby': 'autorepair-ev-safety-detail-title', style: { background: T.card, border: '1px solid ' + (pickedItem ? T.bad : T.border) } },
+                pickedItem ? h('div', null,
+                  h('div', { className: 'ar-ev-detail-head' },
+                    h('span', { className: 'ar-ev-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, pickedItem.icon),
+                    h('div', null, h('span', { className: 'ar-ev-detail-kicker', style: { color: T.accentHi } }, 'High-voltage awareness'), h('h3', { id: 'autorepair-ev-safety-detail-title', style: { color: T.text } }, pickedItem.name))
+                  ),
+                  h('div', { className: 'ar-ev-rule', style: { background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.bad } },
+                    h('strong', null, __alloT('stem.autorepair.rule', 'Safety rule')),
+                    h('p', { style: { color: T.text } }, pickedItem.rule)
+                  ),
+                  h('div', { className: 'ar-ev-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.detail', 'Why it matters')),
+                    h('p', { style: { color: T.text } }, pickedItem.detail)
+                  ),
+                  h('div', { className: 'ar-ev-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.what_to_do', 'What to do')),
+                    h('p', { style: { color: T.muted } }, pickedItem.action)
+                  )
+                ) : h('div', { className: 'ar-ev-detail-empty' },
+                  h('span', { className: 'ar-ev-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🛡️'),
+                  h('h3', { id: 'autorepair-ev-safety-detail-title', style: { color: T.text } }, 'Choose a safety rule'),
+                  h('p', { style: { color: T.muted } }, 'Open any rule to review its boundary, why it matters, and the awareness action to take.')
+                )
+              )
             )
           );
         }
 
         function evDiffsTab() {
-          var picked = d.evDiffPicked || null;
-          var pickedItem = picked ? EV_KEY_DIFFERENCES[picked] : null;
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.what_changes_vs_ice_service', '🔄 What changes vs ICE service')),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-                __alloT('stem.autorepair.7_places_where_hybrid_ev_maintenance_d', '7 places where hybrid/EV maintenance diverges from gasoline service. Half are about what NOT to do.'))
+          var picked = typeof d.evDiffPicked === 'number' && d.evDiffPicked >= 0 && d.evDiffPicked < EV_KEY_DIFFERENCES.length && Math.floor(d.evDiffPicked) === d.evDiffPicked ? d.evDiffPicked : null;
+          var pickedItem = picked == null ? null : EV_KEY_DIFFERENCES[picked];
+          return h('div', { className: 'ar-ev-diffs', 'data-ar-ev-diffs': true },
+            h('section', { className: 'ar-ev-section', 'aria-labelledby': 'autorepair-ev-diffs-title', style: { background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { className: 'ar-ev-section-head' },
+                h('div', { className: 'ar-ev-section-head-copy' },
+                  h('h2', { id: 'autorepair-ev-diffs-title', style: { color: T.text } }, __alloT('stem.autorepair.what_changes_vs_ice_service', '🔄 What changes vs ICE service')),
+                  h('p', { className: 'ar-ev-section-intro', style: { color: T.muted } }, __alloT('stem.autorepair.7_places_where_hybrid_ev_maintenance_d', '7 places where hybrid/EV maintenance diverges from gasoline service. Half are about what NOT to do.'))
+                ),
+                h('span', { className: 'ar-ev-section-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, EV_KEY_DIFFERENCES.length + ' service shifts')
+              )
             ),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
-              EV_KEY_DIFFERENCES.map(function(d2, i) {
-                var sel = picked === i;
-                return h('button', { key: i, 'data-ar-focusable': true,
-                  'aria-label': d2.topic,
-                  'aria-pressed': sel ? 'true' : 'false',
-                  onClick: function() { upd('evDiffPicked', sel ? null : i); },
-                  style: Object.assign({}, btnSecondary(), {
-                    background: sel ? T.accent : T.cardAlt,
-                    color: sel ? '#0f172a' : T.text,
-                    textAlign: 'left',
-                    fontWeight: sel ? 800 : 600
-                  }) }, d2.topic);
-              })
-            ),
-            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
-              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.topic),
-              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', null, __alloT('stem.autorepair.what_it_is_2', '🔍 What it is: ')), pickedItem.what),
-              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maintenance_shift', '🔧 Maintenance shift: ')), pickedItem.maintenanceShift)
+            h('div', { className: 'ar-ev-master-detail ar-ev-diff-layout' },
+              h('section', { className: 'ar-ev-picker', 'aria-label': 'Choose a difference from gasoline service' },
+                h('ol', { className: 'ar-ev-option-list ar-ev-diff-list' },
+                  EV_KEY_DIFFERENCES.map(function(d2, i) {
+                    var sel = picked === i;
+                    return h('li', { key: i, className: 'ar-ev-option-wrap' },
+                      h('button', { type: 'button', id: 'autorepair-ev-diff-' + i, 'data-ar-focusable': true,
+                        className: 'ar-ev-option ar-ev-choice',
+                        'data-ar-ev-diff-index': i,
+                        'data-ar-option-state': sel ? 'active' : 'inactive',
+                        'aria-label': d2.topic + (sel ? ', viewing' : ', open service shift'),
+                        'aria-controls': 'autorepair-ev-diff-detail',
+                        'aria-expanded': sel ? 'true' : 'false',
+                        'aria-pressed': sel ? 'true' : 'false',
+                        onClick: function() { upd('evDiffPicked', sel ? null : i); },
+                        style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : T.border), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,0.10)' : 'none' })
+                      },
+                        h('span', { className: 'ar-ev-option-index', 'aria-hidden': 'true', style: { background: sel ? T.card : T.card, color: T.text, border: '1px solid ' + T.border } }, String(i + 1).padStart(2, '0')),
+                        h('span', { className: 'ar-ev-option-copy' },
+                          h('span', { className: 'ar-ev-option-label' }, d2.topic),
+                          h('span', { className: 'ar-ev-option-state' }, sel ? 'Viewing' : 'Open service shift')
+                        )
+                      )
+                    );
+                  })
+                )
+              ),
+              h('article', { id: 'autorepair-ev-diff-detail', role: 'region', className: 'ar-ev-detail', 'data-ar-ev-diff-detail': true, 'data-ar-ev-diff-detail-state': pickedItem ? 'active' : 'empty', 'aria-live': 'polite', 'aria-labelledby': 'autorepair-ev-diff-detail-title', style: { background: T.card, border: '1px solid ' + (pickedItem ? T.accent : T.border) } },
+                pickedItem ? h('div', null,
+                  h('div', { className: 'ar-ev-detail-head' },
+                    h('span', { className: 'ar-ev-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🔄'),
+                    h('div', null, h('span', { className: 'ar-ev-detail-kicker', style: { color: T.accentHi } }, 'Service shift ' + (picked + 1)), h('h3', { id: 'autorepair-ev-diff-detail-title', style: { color: T.text } }, pickedItem.topic))
+                  ),
+                  h('div', { className: 'ar-ev-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.what_it_is_2', 'What changes')),
+                    h('p', { style: { color: T.text } }, pickedItem.what)
+                  ),
+                  h('div', { className: 'ar-ev-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.maintenance_shift', 'Maintenance shift')),
+                    h('p', { style: { color: T.muted } }, pickedItem.maintenanceShift)
+                  )
+                ) : h('div', { className: 'ar-ev-detail-empty' },
+                  h('span', { className: 'ar-ev-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🔄'),
+                  h('h3', { id: 'autorepair-ev-diff-detail-title', style: { color: T.text } }, 'Choose a service shift'),
+                  h('p', { style: { color: T.muted } }, 'Compare one maintenance area at a time to see what changes and what stays familiar.')
+                )
+              )
             )
           );
         }
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('⚡ EV / Hybrid'),
-          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.ev_sections', 'EV sections'),
-            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-            tabBtn('overview', 'Overview'),
-            tabBtn('safety', '⚠️ HV safety'),
-            tabBtn('diffs', '🔄 vs ICE')
+        function evPanel(id, content) {
+          var active = evView === id;
+          return h('section', { role: 'tabpanel', id: 'autorepair-ev-panel-' + id, 'aria-labelledby': 'autorepair-ev-tab-' + id, tabIndex: active ? 0 : -1, hidden: active ? undefined : true, className: 'ar-ev-panel', 'data-ar-ev-panel': id, 'data-ar-panel-state': active ? 'active' : 'inactive' }, content);
+        }
+
+        return h('main', { role: 'main', className: 'ar-ev-shell', 'data-ar-ev-shell': true, 'data-ar-ev-view': evView, style: { color: T.text } },
+          backBar('⚡ EV / Hybrid', 'EV navigation'),
+          h('section', { className: 'ar-ev-hero', 'data-ar-ev-hero': true, 'aria-labelledby': 'autorepair-ev-title', style: { background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')', border: '1px solid ' + T.border, boxShadow: '0 14px 34px rgba(15,23,42,0.12)' } },
+            h('div', { className: 'ar-ev-hero-copy' },
+              h('span', { className: 'ar-ev-eyebrow', style: { color: T.accentHi } }, h('span', { 'aria-hidden': 'true' }, '⚡'), 'EV / hybrid awareness'),
+              h('h1', { id: 'autorepair-ev-title', className: 'ar-ev-title', style: { color: T.text } }, 'Learn what changes before you touch high voltage'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.6 } }, 'Map the EV service landscape, review high-voltage boundaries, and compare maintenance with gasoline vehicles.')
+            ),
+            h('div', { className: 'ar-ev-hero-stats', 'aria-label': 'EV guide summary' },
+              h('div', { className: 'ar-ev-hero-stat', 'data-ar-ev-hero-stat': 'views', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.accentHi } }, EV_TAB_IDS.length), h('span', { style: { color: T.muted } }, 'Guide views')),
+              h('div', { className: 'ar-ev-hero-stat', 'data-ar-ev-hero-stat': 'safety', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.bad } }, EV_SAFETY.length), h('span', { style: { color: T.muted } }, 'HV safety rules')),
+              h('div', { className: 'ar-ev-hero-stat', 'data-ar-ev-hero-stat': 'diffs', style: { background: T.card, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.good } }, EV_KEY_DIFFERENCES.length), h('span', { style: { color: T.muted } }, 'Service shifts'))
+            )
           ),
-          h('div', { role: 'tabpanel',
-            id: 'autorepair-ev-panel-' + evView,
-            'aria-labelledby': 'autorepair-ev-tab-' + evView,
-            tabIndex: 0
-          },
-            evView === 'overview' && evOverview(),
-            evView === 'safety' && evSafetyTab(),
-            evView === 'diffs' && evDiffsTab(),
-            disclaimerFooter()
-          )
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.ev_sections', 'EV sections'), 'aria-orientation': 'horizontal', className: 'ar-ev-tabs', 'data-ar-ev-tabs': true, style: { background: T.card, border: '1px solid ' + T.border } }, tabBtn('overview'), tabBtn('safety'), tabBtn('diffs')),
+          evPanel('overview', evOverview()),
+          evPanel('safety', evSafetyTab()),
+          evPanel('diffs', evDiffsTab()),
+          disclaimerFooter()
         );
       }
 
@@ -6707,42 +10755,176 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // COLD-WEATHER PREP view — Maine winter checklist
       // ─────────────────────────────────────────
       function renderColdPrep() {
-        var checked = d.coldChecked || {};
-        var done = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+        var COLD_FILTER_IDS = ['all', 'oct-nov', 'nov-dec', 'mar-apr'];
+        var requestedFilter = typeof d.coldSeason === 'string' ? d.coldSeason : 'all';
+        var coldSeason = COLD_FILTER_IDS.indexOf(requestedFilter) >= 0 ? requestedFilter : 'all';
+        var checkedSource = d.coldChecked && typeof d.coldChecked === 'object' && !Array.isArray(d.coldChecked)
+          ? d.coldChecked
+          : {};
+        var checked = {};
+        COLD_WEATHER_CHECKLIST.forEach(function(item) {
+          if (checkedSource[item.id] === true) checked[item.id] = true;
+        });
         var total = COLD_WEATHER_CHECKLIST.length;
+        var done = COLD_WEATHER_CHECKLIST.filter(function(item) { return checked[item.id] === true; }).length;
         var pct = Math.round((done / total) * 100);
-        if (done === total) awardBadge('winter-prep', 'Maine Winter Prepped');
+        var isComplete = done === total;
+        var urgencyByFilter = { 'oct-nov': 'Oct–Nov', 'nov-dec': 'Nov–Dec', 'mar-apr': 'Mar–Apr' };
+        var visibleItems = coldSeason === 'all'
+          ? COLD_WEATHER_CHECKLIST
+          : COLD_WEATHER_CHECKLIST.filter(function(item) { return item.urgency === urgencyByFilter[coldSeason]; });
+        var urgencyCounts = COLD_WEATHER_CHECKLIST.reduce(function(counts, item) {
+          counts[item.urgency] = (counts[item.urgency] || 0) + 1;
+          return counts;
+        }, {});
+        var FILTERS = [
+          { id: 'all', icon: '📋', label: 'All tasks', count: total },
+          { id: 'oct-nov', icon: '🍂', label: 'Oct–Nov', count: urgencyCounts['Oct–Nov'] || 0 },
+          { id: 'nov-dec', icon: '❄️', label: 'Nov–Dec', count: urgencyCounts['Nov–Dec'] || 0 },
+          { id: 'mar-apr', icon: '🌱', label: 'Mar–Apr', count: urgencyCounts['Mar–Apr'] || 0 }
+        ];
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🌨️ Cold-weather prep'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.maine_winter_prep_october_through_apri', '🌨️ Maine winter prep — October through April')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.doing_this_in_october_november_means_f', 'Doing this in October–November means February doesn\'t strand you. Most items are 5–30 minute jobs. '),
-              h('strong', { style: { color: T.accentHi } }, 'Progress: '), done + ' / ' + total + ' (' + pct + '%)')
+        function filterButton(filter) {
+          var active = coldSeason === filter.id;
+          return h('button', { type: 'button', key: filter.id, 'data-ar-focusable': true,
+            className: 'ar-cold-filter',
+            'data-ar-cold-filter-id': filter.id,
+            'data-ar-filter-state': active ? 'active' : 'inactive',
+            'aria-pressed': active ? 'true' : 'false',
+            onClick: function() {
+              upd('coldSeason', filter.id);
+              arAnnounce(filter.label + ' winter-prep filter selected. ' + filter.count + ' tasks.');
+            },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? onStrongFill : T.text, border: '2px solid ' + (active ? T.accent : T.border), fontWeight: active ? 850 : 700, boxShadow: active ? '0 6px 14px rgba(15,23,42,.10)' : 'none' })
+          },
+            h('span', { className: 'ar-cold-filter-icon', 'aria-hidden': 'true' }, filter.icon),
+            h('span', { className: 'ar-cold-filter-copy' },
+              h('span', { className: 'ar-cold-filter-label' }, filter.label),
+              h('span', { className: 'ar-cold-filter-count' }, filter.count + ' tasks')
+            )
+          );
+        }
+
+        return h('main', { className: 'ar-cold-shell',
+          'data-ar-cold-shell': true,
+          'data-ar-cold-filter': coldSeason,
+          'data-ar-cold-progress': isComplete ? 'complete' : (done ? 'in-progress' : 'empty'),
+          style: { color: T.text }
+        },
+          backBar('🌨️ Cold-weather prep', 'Cold-weather prep navigation'),
+          h('header', { className: 'ar-cold-hero', 'data-ar-cold-hero': true, 'aria-labelledby': 'autorepair-cold-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-cold-hero-copy' },
+              h('span', { className: 'ar-cold-eyebrow', style: { color: T.accentHi } }, '🌨️ Maine seasonal readiness'),
+              h('h1', { id: 'autorepair-cold-title', className: 'ar-cold-title', style: { color: T.text } }, __alloT('stem.autorepair.maine_winter_prep_october_through_apri', 'Maine winter prep — October through April')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+                __alloT('stem.autorepair.doing_this_in_october_november_means_f', 'Doing this in October–November means February doesn\'t strand you. Most items are 5–30 minute jobs.')
+              )
+            ),
+            h('div', { className: 'ar-cold-hero-stats', 'aria-label': 'Winter-prep summary' },
+              [
+                { value: total, label: 'prep tasks' },
+                { value: done, label: 'completed' },
+                { value: total - done, label: 'remaining' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-cold-stat', 'data-ar-cold-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
+            )
           ),
-          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            COLD_WEATHER_CHECKLIST.map(function(item) {
-              var isChecked = !!checked[item.id];
-              return h('div', { key: item.id, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
-                'aria-label': item.task + (isChecked ? ' (done)' : ''),
-                'aria-pressed': isChecked ? 'true' : 'false',
-                onClick: function() {
-                  var nv = Object.assign({}, checked); nv[item.id] = !nv[item.id];
-                  upd('coldChecked', nv);
-                },
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isChecked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isChecked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
-                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, item.icon),
-                  h('strong', { style: { fontSize: 14, color: isChecked ? '#d1fae5' : T.accentHi, flex: 1 } }, item.task),
-                  h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 8px', borderRadius: 12, background: T.bg, border: '1px solid ' + T.border } }, item.urgency),
-                  isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
-                ),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, __alloT('stem.autorepair.' + (item.id) + '_detail', item.detail)),
-                h('div', { style: { fontSize: 12, color: isChecked ? '#a7f3d0' : T.text, lineHeight: 1.5 } },
-                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.action', '🎯 Action: ')), item.action)
-              ));
-            })
+          h('section', { className: 'ar-cold-progress-card', 'data-ar-cold-progress-card': true, 'aria-labelledby': 'autorepair-cold-progress-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-cold-progress-head' },
+              h('div', { className: 'ar-cold-progress-copy' },
+                h('strong', { id: 'autorepair-cold-progress-title', style: { color: T.text } }, 'Winter readiness progress'),
+                h('span', { style: { color: T.muted } }, isComplete ? 'All twelve seasonal tasks are marked complete.' : 'Work through each timing window before conditions change.')
+              ),
+              h('span', { className: 'ar-cold-progress-value', style: { color: T.accentHi } }, done + ' / ' + total + ' · ' + pct + '%')
+            ),
+            h('div', { role: 'progressbar', className: 'ar-cold-progress-track',
+              'data-ar-cold-progressbar': true,
+              'aria-valuemin': '0',
+              'aria-valuemax': String(total),
+              'aria-valuenow': String(done),
+              'aria-valuetext': done + ' of ' + total + ' winter-prep tasks complete',
+              style: { background: T.cardAlt, border: '1px solid ' + T.border }
+            },
+              h('div', { className: 'ar-cold-progress-fill', style: { width: pct + '%', background: T.good } })
+            )
+          ),
+          h('section', { className: 'ar-cold-filter-card', 'data-ar-cold-filter-card': true, 'aria-labelledby': 'autorepair-cold-filter-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-cold-filter-head' },
+              h('strong', { id: 'autorepair-cold-filter-title', style: { color: T.text } }, 'Filter by timing window'),
+              h('span', { style: { color: T.muted } }, visibleItems.length + ' of ' + total + ' tasks shown')
+            ),
+            h('div', { role: 'group', 'aria-label': 'Winter-prep timing filters', className: 'ar-cold-filters' }, FILTERS.map(filterButton))
+          ),
+          h('section', { className: 'ar-cold-catalog', 'data-ar-cold-catalog': true, 'aria-labelledby': 'autorepair-cold-catalog-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-cold-catalog-head' },
+              h('div', null,
+                h('h2', { id: 'autorepair-cold-catalog-title', style: { color: T.text } }, 'Seasonal preparation checklist'),
+                h('p', { style: { color: T.muted } }, 'Mark a task only after you complete the action for your vehicle.')
+              ),
+              h('span', { className: 'ar-cold-count-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, visibleItems.length + ' shown')
+            ),
+            h('ul', { role: 'list', className: 'ar-cold-grid' },
+              visibleItems.map(function(item) {
+                var isChecked = checked[item.id] === true;
+                return h('li', { key: item.id, className: 'ar-cold-item-wrap' },
+                  h('button', { type: 'button', 'data-ar-focusable': true,
+                    className: 'ar-cold-item',
+                    'data-ar-cold-item-id': item.id,
+                    'data-ar-cold-urgency': item.urgency,
+                    'data-ar-cold-item-state': isChecked ? 'checked' : 'todo',
+                    'aria-label': item.task + ', ' + item.urgency + (isChecked ? ', complete' : ', not complete'),
+                    'aria-pressed': isChecked ? 'true' : 'false',
+                    onClick: function() {
+                      var nextValue = !isChecked;
+                      var nextChecked = {};
+                      COLD_WEATHER_CHECKLIST.forEach(function(candidate) {
+                        if (checked[candidate.id] === true) nextChecked[candidate.id] = true;
+                      });
+                      if (nextValue) nextChecked[item.id] = true;
+                      else delete nextChecked[item.id];
+                      var nextDone = COLD_WEATHER_CHECKLIST.filter(function(candidate) { return nextChecked[candidate.id] === true; }).length;
+                      upd('coldChecked', nextChecked);
+                      arAnnounce(item.task + (nextValue ? ' marked complete.' : ' marked incomplete.'));
+                      if (nextValue && nextDone === total) awardBadge('winter-prep', 'Maine Winter Prepped');
+                    },
+                    style: Object.assign({}, btnSecondary(), { background: isChecked ? T.card : T.cardAlt, color: T.text, border: '2px solid ' + (isChecked ? T.good : T.border), boxShadow: isChecked ? '0 6px 14px rgba(15,23,42,.08)' : 'none' })
+                  },
+                    h('span', { className: 'ar-cold-item-top' },
+                      h('span', { className: 'ar-cold-item-icon', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, item.icon),
+                      h('span', { className: 'ar-cold-item-heading' },
+                        h('span', { className: 'ar-cold-item-name' }, item.task),
+                        h('span', { className: 'ar-cold-urgency', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, item.urgency)
+                      ),
+                      h('span', { className: 'ar-cold-check', 'data-ar-check-state': isChecked ? 'checked' : 'todo', 'aria-hidden': 'true', style: { background: T.cardAlt, color: isChecked ? T.good : T.muted, border: '1px solid ' + (isChecked ? T.good : T.border) } }, isChecked ? '✓' : '○')
+                    ),
+                    h('p', { className: 'ar-cold-item-detail', style: { color: T.muted } }, __alloT('stem.autorepair.' + item.id + '_detail', item.detail)),
+                    h('p', { className: 'ar-cold-item-action', style: { color: T.text, borderColor: T.border } },
+                      h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.action', '🎯 Action: ')), item.action
+                    )
+                  )
+                );
+              })
+            )
+          ),
+          isComplete && h('div', { role: 'status', 'aria-live': 'polite', className: 'ar-cold-complete', 'data-ar-cold-complete': true, style: { background: T.cardAlt, border: '2px solid ' + T.good } },
+            h('strong', { style: { color: T.good } }, '✓ Maine winter-prep checklist complete'),
+            h('span', { style: { color: T.muted } }, 'All twelve seasonal tasks are marked complete. Revisit the list as weather and vehicle conditions change.')
+          ),
+          h('section', { className: 'ar-cold-print-guide', 'data-ar-cold-print-guide': true, 'aria-labelledby': 'autorepair-cold-print-title' },
+            h('h2', { id: 'autorepair-cold-print-title' }, 'Complete Maine winter-prep checklist'),
+            h('ol', { className: 'ar-cold-print-grid' },
+              COLD_WEATHER_CHECKLIST.map(function(item) {
+                return h('li', { key: 'print-' + item.id, className: 'ar-cold-print-item', 'data-ar-cold-print-item': item.id },
+                  h('h3', null, '☐ ' + item.icon + ' ' + item.task + ' — ' + item.urgency),
+                  h('p', null, item.detail),
+                  h('p', null, h('strong', null, 'Action: '), item.action)
+                );
+              })
+            )
           ),
           disclaimerFooter()
         );
@@ -6789,7 +10971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', { style: { color: T.accentHi } }, 'Kit'), ' tab to prepare, the ',
               h('strong', { style: { color: T.accentHi } }, 'Protocol'), ' tab for the general order, and ',
               h('strong', { style: { color: T.accentHi } }, 'Practice'), ' for emergencies where the first move changes with the hazard.'),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 13, color: '#fed7aa', lineHeight: 1.55 } },
+            h('div', { style: { padding: 10, borderRadius: 8, background: isContrast ? T.cardAlt : (isDark ? '#431407' : '#fff7ed'), border: '2px solid ' + T.warn, fontSize: 13, color: T.text, lineHeight: 1.55 } },
               h('strong', null, '\u26A0\uFE0F Critical winter rule: '),
               'If stranded in snow, stay with the vehicle. Clear snow from the exhaust pipe before running the engine. Then run it about 10 minutes each hour with a downwind window cracked slightly; never idle continuously.')
           );
@@ -6817,7 +10999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     var nv = Object.assign({}, packed); nv[it.id] = !nv[it.id];
                     upd('kitPacked', nv);
                   },
-                  style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isPacked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isPacked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                  style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isPacked ? (isContrast ? T.cardAlt : (isDark ? '#123228' : '#ecfdf5')) : T.cardAlt, border: '2px solid ' + (isPacked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
                     h('span', { style: { fontSize: 20 } }, it.icon),
                     h('strong', { style: { fontSize: 13, color: isPacked ? '#d1fae5' : T.text, flex: 1 } }, it.name),
@@ -6871,6 +11053,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var savedScore = parseInt(d.rsDecisionScore, 10);
           var score = isNaN(savedScore) ? 0 : Math.max(0, Math.min(total, savedScore));
           var complete = index >= total;
+          var activeCaseDef = complete ? null : ROADSIDE_DECISION_CASES[index];
+          var activePickedId = activeCaseDef && d.rsDecisionFor === activeCaseDef.id ? d.rsDecisionPicked : null;
+          var activeEvaluation = activeCaseDef && activePickedId ? arEvaluateRoadsideDecision(activeCaseDef, activePickedId) : null;
+          var activeAnswered = !!(activeEvaluation && activeEvaluation.valid);
+          var answeredCount = Math.min(total, index + (activeAnswered ? 1 : 0));
+          var hazardLabels = {
+            'highway-shoulder': 'High-speed traffic',
+            'vehicle-fire': 'Vehicle fire',
+            'winter-stranded': 'Winter / CO risk',
+            'power-line': 'Electrical hazard'
+          };
+          var roadsideStages = ROADSIDE_DECISION_CASES.map(function(item, stageIndex) {
+            var stageState = complete || stageIndex < index
+              ? 'complete'
+              : stageIndex === index
+                ? (activeAnswered ? (activeEvaluation.correct ? 'resolved-correct' : 'resolved-incorrect') : 'current')
+                : 'upcoming';
+            return {
+              id: item.id,
+              label: 'Case ' + (stageIndex + 1),
+              meta: hazardLabels[item.id] || item.title,
+              state: stageState
+            };
+          });
+          var roadsideProgressStatus = complete
+            ? 'Practice complete — ' + score + ' of ' + total + ' safest first moves identified.'
+            : activeAnswered
+              ? 'Case ' + (index + 1) + ' resolved — ' + score + ' correct so far.'
+              : 'Case ' + (index + 1) + ' of ' + total + ' — choose the safest first move.';
 
           function resetRoadsideDecisions() {
             updMulti({
@@ -6885,30 +11096,63 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
           if (complete) {
             var passed = score >= passScore;
-            return h('div', { 'data-ar-roadside-summary': passed ? 'passed' : 'review',
-              style: { padding: 16, borderRadius: 10, background: T.card, border: '2px solid ' + (passed ? T.good : T.warn) } },
-              h('h3', { style: { margin: '0 0 8px', color: T.text, fontSize: 17 } }, '\uD83D\uDEA8 Practice complete'),
-              h('div', { style: { fontSize: 30, fontWeight: 900, color: passed ? T.good : T.warn, marginBottom: 8 } }, score + ' / ' + total),
-              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                passed
-                  ? 'Roadside Decision Ready earned. You recognized at least three of the four safest first moves.'
-                  : 'Review the missed cases and try again. In a roadside emergency, choosing the hazard-specific first move matters more than speed.'),
-              h('h4', { style: { margin: '0 0 6px', color: T.accentHi, fontSize: 13 } }, 'Official guidance used'),
-              h('ul', { style: { margin: '0 0 14px', paddingLeft: 20, color: T.muted, fontSize: 12, lineHeight: 1.7 } },
-                ROADSIDE_DECISION_CASES.map(function(caseDef) {
-                  return h('li', { key: caseDef.id },
-                    h('a', { href: caseDef.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
-                      style: { color: T.link, textDecoration: 'underline' } }, caseDef.sourceLabel + ': ' + caseDef.title));
-                })
+            var scorePercent = Math.round((score / total) * 100);
+            return h('div', { 'data-ar-roadside-practice': 'complete' },
+              workflowRail(
+                'roadside-practice',
+                __alloT('stem.autorepair.incident_decision_drill', 'Incident decision drill'),
+                roadsideStages,
+                total,
+                roadsideProgressStatus
               ),
-              h('button', { 'data-ar-focusable': true, onClick: resetRoadsideDecisions, style: btnPrimary() }, '\u21BA Run the four cases again')
+              h('section', {
+                'data-ar-roadside-summary': passed ? 'passed' : 'review',
+                className: 'ar-workflow-panel',
+                style: { padding: 16, background: T.card, border: '2px solid ' + (passed ? T.good : T.warn) }
+              },
+                h('div', { className: 'ar-score-summary' },
+                  h('div', {
+                    'aria-label': 'Score ' + score + ' out of ' + total,
+                    className: 'ar-score-ring',
+                    style: {
+                      background: isContrast
+                        ? T.card
+                        : 'conic-gradient(' + (passed ? T.good : T.warn) + ' ' + scorePercent + '%, ' + T.borderSoft + ' ' + scorePercent + '%)'
+                    }
+                  },
+                    h('div', { className: 'ar-score-ring-inner', style: { background: T.card, color: passed ? T.good : T.warn, fontSize: 18 } },
+                      h('span', null, score + ' / ' + total, h('span', { style: { display: 'block', marginTop: 4, fontSize: 10, color: T.muted, textTransform: 'uppercase', letterSpacing: '.05em' } }, 'score'))
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('h3', {
+                      tabIndex: -1,
+                      'data-ar-roadside-focus-target': 'true',
+                      style: { margin: '0 0 8px', color: T.text, fontSize: 18 }
+                    }, '🚨 Practice complete'),
+                    h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                      passed
+                        ? 'Roadside Decision Ready earned. You recognized at least three of the four safest first moves.'
+                        : 'Review the missed cases and try again. In a roadside emergency, choosing the hazard-specific first move matters more than speed.')
+                  )
+                ),
+                h('h4', { style: { margin: '14px 0 6px', color: T.accentHi, fontSize: 13 } }, 'Official guidance used'),
+                h('ul', { style: { margin: '0 0 14px', paddingLeft: 20, color: T.muted, fontSize: 12, lineHeight: 1.7 } },
+                  ROADSIDE_DECISION_CASES.map(function(caseItem) {
+                    return h('li', { key: caseItem.id },
+                      h('a', { href: caseItem.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
+                        style: { color: T.link, textDecoration: 'underline' } }, caseItem.sourceLabel + ': ' + caseItem.title));
+                  })
+                ),
+                h('button', { 'data-ar-focusable': true, onClick: resetRoadsideDecisions, style: btnPrimary() }, '↺ Run the four cases again')
+              )
             );
           }
 
-          var caseDef = ROADSIDE_DECISION_CASES[index];
-          var pickedId = d.rsDecisionFor === caseDef.id ? d.rsDecisionPicked : null;
-          var evaluation = pickedId ? arEvaluateRoadsideDecision(caseDef, pickedId) : null;
-          var answered = !!(evaluation && evaluation.valid);
+          var caseDef = activeCaseDef;
+          var pickedId = activePickedId;
+          var evaluation = activeEvaluation;
+          var answered = activeAnswered;
 
           function chooseRoadsideDecision(choiceId) {
             if (answered) {
@@ -6945,22 +11189,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               rsDecisionFor: null,
               rsDecisionPicked: null
             });
+            setTimeout(function() {
+              if (typeof document === 'undefined') return;
+              var focusTarget = document.querySelector('[data-ar-roadside-focus-target="true"]');
+              if (focusTarget && typeof focusTarget.focus === 'function') focusTarget.focus();
+            }, 60);
             arAnnounce(index === total - 1 ? 'Roadside practice complete.' : 'Next roadside case.');
           }
 
-          return h('div', null,
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
-                h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, caseDef.icon),
+          return h('div', { 'data-ar-roadside-practice': caseDef.id },
+            workflowRail(
+              'roadside-practice',
+              __alloT('stem.autorepair.incident_decision_drill', 'Incident decision drill'),
+              roadsideStages,
+              answeredCount,
+              roadsideProgressStatus
+            ),
+            h('section', {
+              'data-ar-roadside-scenario': caseDef.id,
+              className: 'ar-workflow-panel',
+              style: { padding: 14, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
+                h('span', {
+                  'aria-hidden': 'true',
+                  className: 'ar-menu-icon-well',
+                  style: { fontSize: 25, background: T.cardAlt, border: '1px solid ' + T.warn }
+                }, caseDef.icon),
                 h('div', { style: { flex: 1, minWidth: 190 } },
                   h('div', { style: { color: T.dim, fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.4 } }, 'Case ' + (index + 1) + ' of ' + total),
-                  h('h3', { style: { margin: '2px 0 0', color: T.text, fontSize: 16 } }, caseDef.title)
+                  h('h3', {
+                    id: 'autorepair-roadside-case-title',
+                    tabIndex: -1,
+                    'data-ar-roadside-focus-target': 'true',
+                    style: { margin: '2px 0 0', color: T.text, fontSize: 17 }
+                  }, caseDef.title)
                 ),
-                h('span', { 'aria-label': 'Current score ' + score + ' out of ' + index,
-                  style: { padding: '4px 9px', borderRadius: 999, border: '1px solid ' + T.border, color: T.accentHi, fontSize: 11, fontWeight: 800 } },
-                  'Score ' + score + ' / ' + index)
+                h('span', {
+                  'data-ar-roadside-hazard': caseDef.id,
+                  style: { padding: '4px 9px', borderRadius: 999, border: '1px solid ' + T.warn, color: T.text, background: T.cardAlt, fontSize: 11, fontWeight: 900 }
+                }, hazardLabels[caseDef.id] || 'Roadside hazard'),
+                h('span', {
+                  'aria-label': 'Current score ' + score + ' correct',
+                  style: { padding: '4px 9px', borderRadius: 999, border: '1px solid ' + T.border, color: T.accentHi, fontSize: 11, fontWeight: 800 }
+                }, score + ' correct')
               ),
-              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, caseDef.scene),
+              h('div', { style: { marginBottom: 9, padding: 10, borderRadius: 8, background: T.cardAlt, borderLeft: '4px solid ' + T.warn } },
+                h('span', { style: { display: 'block', marginBottom: 3, color: T.dim, fontSize: 10, fontWeight: 900, letterSpacing: '.06em', textTransform: 'uppercase' } }, 'Situation'),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, caseDef.scene)
+              ),
               h('strong', { id: 'autorepair-roadside-question-' + caseDef.id, style: { color: T.accentHi, fontSize: 13 } }, caseDef.prompt)
             ),
             h('div', { role: 'group', 'aria-labelledby': 'autorepair-roadside-question-' + caseDef.id,
@@ -6970,7 +11247,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 var correctAnswer = answered && choice.correct === true;
                 var selectedWrong = answered && selected && !choice.correct;
                 var state = !answered ? 'available' : correctAnswer ? 'correct-answer' : selectedWrong ? 'selected-incorrect' : 'locked';
-                var resultLabel = correctAnswer ? ' Correct answer.' : selectedWrong ? ' Your choice; not the safest first move.' : '';
+                var stateText = correctAnswer ? 'Safest move' : selectedWrong ? 'Your choice' : (answered ? 'Not selected' : 'Available');
+                var resultLabel = ' ' + stateText + '.';
+                var stateTone = correctAnswer ? T.good : (selectedWrong ? T.bad : (selected ? T.accent : T.border));
+                var stateBackground = correctAnswer
+                  ? (isContrast ? T.cardAlt : (isDark ? '#123228' : '#ecfdf5'))
+                  : selectedWrong
+                    ? (isContrast ? T.cardAlt : (isDark ? '#3a171b' : '#fef2f2'))
+                    : T.cardAlt;
                 return h('button', { key: choice.id, 'data-ar-focusable': true,
                   'data-ar-roadside-choice': choice.id,
                   'data-ar-choice-state': state,
@@ -6978,27 +11262,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                   'aria-disabled': answered ? 'true' : 'false',
                   'aria-label': 'Option ' + (choiceIndex + 1) + ': ' + choice.label + resultLabel,
                   onClick: function() { chooseRoadsideDecision(choice.id); },
-                  style: { width: '100%', minHeight: 52, textAlign: 'left', padding: 12, borderRadius: 8,
-                    background: T.cardAlt, color: T.text, cursor: answered ? 'default' : 'pointer',
-                    border: '2px solid ' + (correctAnswer ? T.good : selectedWrong ? T.bad : selected ? T.accent : T.border),
-                    opacity: answered && !correctAnswer && !selected ? 0.72 : 1,
-                    display: 'flex', alignItems: 'flex-start', gap: 10 } },
-                  h('span', { 'aria-hidden': 'true', style: { color: correctAnswer ? T.good : selectedWrong ? T.bad : T.accentHi, fontWeight: 900, minWidth: 22 } },
-                    correctAnswer ? '\u2713' : selectedWrong ? '!' : String(choiceIndex + 1)),
-                  h('span', { style: { fontSize: 13, lineHeight: 1.5, fontWeight: selected ? 800 : 600 } }, choice.label)
+                  className: 'ar-roadside-choice',
+                  style: {
+                    width: '100%', minHeight: 56, textAlign: 'left', padding: 12, borderRadius: 9,
+                    background: stateBackground, color: T.text, cursor: answered ? 'default' : 'pointer',
+                    border: '1px solid ' + stateTone, borderLeft: '4px solid ' + stateTone,
+                    display: 'flex', alignItems: 'flex-start', gap: 10
+                  } },
+                  h('span', {
+                    'aria-hidden': 'true',
+                    style: {
+                      width: 26, height: 26, flex: '0 0 26px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                      borderRadius: 999, border: '1px solid ' + stateTone,
+                      background: correctAnswer || selectedWrong ? stateTone : T.card,
+                      color: correctAnswer || selectedWrong ? (isDark || isContrast ? '#0f172a' : '#ffffff') : T.text,
+                      fontWeight: 900
+                    }
+                  }, correctAnswer ? '✓' : selectedWrong ? '!' : String(choiceIndex + 1)),
+                  h('span', { style: { flex: 1, minWidth: 0 } },
+                    h('span', { style: { display: 'block', fontSize: 13, lineHeight: 1.5, fontWeight: selected ? 800 : 600 } }, choice.label),
+                    h('span', {
+                      'data-ar-roadside-state-label': state,
+                      className: 'ar-workflow-state-label',
+                      style: { color: T.text, background: T.card, border: '1px solid ' + stateTone }
+                    }, stateText)
+                  )
                 );
               })
             ),
             answered && h('div', { role: 'status', 'aria-live': 'polite',
               'data-ar-roadside-feedback': evaluation.correct ? 'correct' : 'incorrect',
-              style: { marginTop: 12, padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + (evaluation.correct ? T.good : T.warn) } },
+              'data-ar-workflow-feedback': evaluation.correct ? 'correct' : 'review',
+              className: 'ar-workflow-panel',
+              style: { marginTop: 12, padding: 12, background: T.card, border: '2px solid ' + (evaluation.correct ? T.good : T.warn) } },
               h('strong', { style: { display: 'block', color: evaluation.correct ? T.good : T.warn, marginBottom: 5, fontSize: 13 } },
                 evaluation.correct ? 'Correct first move.' : 'Safer move:'),
               h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.55, marginBottom: 6 } }, evaluation.feedback),
               h('div', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.accentHi } }, 'Remember: '), caseDef.takeaway)
             ),
-            answered && h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', marginTop: 10 } },
+            answered && h('div', { 'data-ar-roadside-actions': 'true', className: 'ar-roadside-actions' },
               h('a', { 'data-ar-roadside-source': caseDef.id, href: caseDef.sourceUrl, target: '_blank', rel: 'noopener noreferrer',
                 style: { color: T.link, fontSize: 12, textDecoration: 'underline' } }, 'Read official guidance: ' + caseDef.sourceLabel),
               h('button', { 'data-ar-focusable': true, onClick: advanceRoadsideDecision, style: btnPrimary() },
@@ -7010,6 +11313,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
           backBar('\uD83D\uDEA8 Roadside emergency'),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.autorepair.roadside_sub_modes', 'Roadside sub-modes'),
+            className: 'ar-workflow-tabs',
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
             tabBtn('overview', 'Overview'),
             tabBtn('kit', '\uD83C\uDF92 Trunk kit'),
@@ -7246,57 +11550,215 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       // LAB SIMULATOR view — graded diagnostic scenarios
       // ─────────────────────────────────────────
-      function renderLab() {
-        var labId = d.labId || null;
-        var lab = labId ? LAB_SCENARIOS.find(function(s) { return s.id === labId; }) : null;
-        var stepIdx = d.labStep || 0;
-        var answers = d.labAnswers || {};
 
+      function renderLab() {
+        var requestedLabId = d.labId || null;
+        var lab = requestedLabId ? LAB_SCENARIOS.find(function(s) { return s.id === requestedLabId; }) : null;
+        var parsedStep = parseInt(d.labStep, 10);
+        var stepIdx = isNaN(parsedStep) ? 0 : Math.max(0, parsedStep);
+        var answers = d.labAnswers && typeof d.labAnswers === 'object' ? d.labAnswers : {};
+        var completedIds = Array.isArray(d.labsCompleted) ? d.labsCompleted : [];
+        var knownCompleted = LAB_SCENARIOS.filter(function(s) { return completedIds.indexOf(s.id) >= 0; }).map(function(s) { return s.id; });
+        if (lab) {
+          var validAnswerPrefix = 0;
+          while (validAnswerPrefix < lab.steps.length) {
+            var prefixStep = lab.steps[validAnswerPrefix];
+            var prefixChoiceId = answers[prefixStep.id];
+            var prefixChoiceIsValid = prefixStep.choices.some(function(choice) { return choice.id === prefixChoiceId; });
+            if (!prefixChoiceIsValid) break;
+            validAnswerPrefix += 1;
+          }
+          stepIdx = Math.min(stepIdx, validAnswerPrefix);
+        }
+
+        function labFocusSoon(selector, delay) {
+          if (typeof document === 'undefined') return;
+          setTimeout(function() {
+            var target = document.querySelector(selector);
+            if (target && typeof target.focus === 'function') target.focus();
+          }, delay || 0);
+        }
         function pickLab(id) {
           updMulti({ labId: id, labStep: 0, labAnswers: {} });
-          // findById is null-safe (window.StemLab.findById); falls back to
-          // the raw id if the scenario was renamed or stripped, instead of
-          // crashing on `.find(...).name` against undefined.
           var picked = window.StemLab && window.StemLab.findById ? window.StemLab.findById(LAB_SCENARIOS, id) : null;
           arAnnounce('Starting scenario: ' + (picked ? picked.name : id));
+          labFocusSoon('[data-ar-lab-question]');
         }
         function reset() {
           updMulti({ labId: null, labStep: 0, labAnswers: {} });
+          arAnnounce('Returned to the Repair Lab case list. Current attempt reset.');
+          labFocusSoon('[data-ar-lab-title]');
         }
         function selectChoice(stepId, choice) {
-          var nv = Object.assign({}, answers); nv[stepId] = choice.id;
+          var nv = Object.assign({}, answers);
+          nv[stepId] = choice.id;
           var newStep = stepIdx + 1;
           updMulti({ labAnswers: nv, labStep: newStep });
-          arAnnounce('Choice locked. ' + (choice.score >= 10 ? 'Excellent move.' : choice.score >= 5 ? 'Acceptable move.' : 'Costly move.'));
+          var completing = newStep >= lab.steps.length;
+          arAnnounce(completing ? 'Final choice locked. Opening the diagnostic debrief.' :
+            'Choice locked. ' + (choice.score >= 10 ? 'Excellent move.' : choice.score >= 5 ? 'Acceptable move.' : 'Costly move.'));
+          labFocusSoon(completing ? '[data-ar-lab-results]' : '[data-ar-lab-question]', completing ? 120 : 0);
+        }
+        function diffStars(value) {
+          return '★'.repeat(value) + '☆'.repeat(4 - value);
+        }
+        function difficultyName(value) {
+          return ['', 'Introductory', 'Developing', 'Advanced', 'Expert'][value] || 'Practice';
+        }
+        function labHero(stateLabel, title, description, icon) {
+          return h('header', {
+            className: 'ar-lab-hero',
+            'data-ar-lab-hero': true,
+            'aria-labelledby': 'autorepair-lab-title',
+            style: { background: T.panel, border: '1px solid ' + T.border }
+          },
+            h('div', { className: 'ar-lab-hero-copy' },
+              h('span', { className: 'ar-lab-eyebrow', style: { color: T.accentHi } },
+                h('span', { 'aria-hidden': 'true' }, icon || '🧪'), 'Diagnostic practice'),
+              h('h1', {
+                id: 'autorepair-lab-title',
+                tabIndex: -1,
+                className: 'ar-lab-title',
+                'data-ar-lab-title': true,
+                style: { color: T.text }
+              }, title),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, description)
+            ),
+            h('span', {
+              className: 'ar-lab-state-chip',
+              'data-ar-lab-state-chip': stateLabel.toLowerCase().replace(/\s+/g, '-'),
+              style: { background: T.accent, color: onStrongFill, border: '1px solid ' + T.accent }
+            }, stateLabel)
+          );
+        }
+        function labListNav(label, detail) {
+          return h('nav', {
+            className: 'ar-lab-nav',
+            'data-ar-lab-print-hide': true,
+            'aria-label': 'Repair Lab navigation',
+            style: { color: T.border }
+          },
+            h('button', {
+              type: 'button',
+              'data-ar-focusable': true,
+              onClick: reset,
+              style: btnGhost(),
+              'aria-label': label + (detail ? '. ' + detail : '')
+            }, label),
+            detail && h('span', { className: 'ar-lab-nav-note', style: { color: T.muted } }, detail)
+          );
         }
 
-        var diffStars = function(d2) { return '★'.repeat(d2) + '☆'.repeat(4 - d2); };
-
         if (!lab) {
-          var labsCompleted = (d.labsCompleted || []).length;
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-            backBar('🧪 Hands-on lab simulator'),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.diagnostic_decision_making_scored', '🧪 Diagnostic decision-making, scored')),
-              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-                __alloT('stem.autorepair.a_customer_car_arrives_with_symptoms_y', 'A "customer car" arrives with symptoms. You walk through diagnostic decision points. Each choice is scored on diagnostic efficiency: '),
-                h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.10_best_move', '+10 = best move')), ', ',
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.5_ok', '+5 = OK')), ', ',
-                h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.5_to_10_parts_cannon_or_harmful', '−5 to −10 = parts-cannon or harmful')), __alloT('stem.autorepair.final_letter_grade_per_choice_feedback', '. Final letter grade + per-choice feedback.')),
-              h('div', { style: { fontSize: 12, color: T.muted } },
-                h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.scenarios_completed', 'Scenarios completed: ')), labsCompleted + ' / ' + LAB_SCENARIOS.length)
+          var labsCompleted = knownCompleted.length;
+          var completionPct = Math.round((labsCompleted / LAB_SCENARIOS.length) * 100);
+          return h('main', {
+            role: 'main',
+            className: 'ar-lab-shell',
+            'data-ar-lab-shell': true,
+            'data-ar-lab-state': 'picker',
+            'data-ar-lab-view': 'catalog',
+            style: { color: T.text }
+          },
+            backBar('🧪 Hands-on lab simulator', 'Repair Lab navigation'),
+            labHero('Choose a case', 'Repair Lab: diagnose before you repair',
+              'Work six scored customer cases. Follow the evidence, make one decision at a time, and earn mastery by reaching 70 percent.', '🧪'),
+            h('section', {
+              className: 'ar-lab-progress-card',
+              'aria-labelledby': 'autorepair-lab-picker-title',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', { className: 'ar-lab-progress-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-lab-picker-title', 'data-ar-lab-picker-title': true, style: { color: T.text } }, 'Diagnostic case board'),
+                  h('p', { style: { margin: '4px 0 0', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                    'Completed cases stay available for practice. Each new attempt starts with a clean answer sheet.')
+                ),
+                h('strong', { style: { color: T.accentHi, fontSize: 13 } }, labsCompleted + ' of ' + LAB_SCENARIOS.length + ' complete')
+              ),
+              h('div', {
+                role: 'progressbar',
+                className: 'ar-lab-progress-track',
+                'data-ar-lab-completion': labsCompleted,
+                'aria-label': 'Repair Lab completion',
+                'aria-valuemin': 0,
+                'aria-valuemax': LAB_SCENARIOS.length,
+                'aria-valuenow': labsCompleted,
+                'aria-valuetext': labsCompleted + ' of ' + LAB_SCENARIOS.length + ' cases complete',
+                style: { background: T.cardAlt, border: '1px solid ' + T.border }
+              },
+                h('div', { className: 'ar-lab-progress-fill', style: { width: completionPct + '%', background: T.good } })
+              ),
+              h('div', { className: 'ar-lab-scoring-legend', 'aria-label': 'Decision scoring guide' },
+                h('span', { style: { background: T.cardAlt, color: T.good, border: '1px solid ' + T.good } }, '+10 · best move'),
+                h('span', { style: { background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent } }, '+5 · acceptable'),
+                h('span', { style: { background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad } }, '0 or below · costly')
+              )
             ),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+            h('div', {
+              className: 'ar-lab-picker-grid',
+              'data-ar-lab-picker': true,
+              'aria-labelledby': 'autorepair-lab-picker-title'
+            },
               LAB_SCENARIOS.map(function(s) {
-                var done = (d.labsCompleted || []).indexOf(s.id) >= 0;
-                return h('button', { key: s.id, 'data-ar-focusable': true,
-                  'aria-label': 'Start scenario: ' + s.name + (done ? ' (completed)' : ''),
+                var done = knownCompleted.indexOf(s.id) >= 0;
+                var diffName = difficultyName(s.difficulty);
+                return h('button', {
+                  type: 'button',
+                  key: s.id,
+                  'data-ar-focusable': true,
+                  'data-ar-lab-scenario': s.id,
+                  'data-ar-scenario-state': done ? 'completed' : 'available',
                   onClick: function() { pickLab(s.id); },
-                  style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (done ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
-                  h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
-                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, __alloT('stem.autorepair.decision_points', ' decision points')),
-                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, __alloT('stem.autorepair.' + (s.id) + '_intro', s.intro))
+                  className: 'ar-lab-scenario',
+                  style: {
+                    background: T.card,
+                    border: '2px solid ' + (done ? T.good : T.border),
+                    color: T.text,
+                    cursor: 'pointer'
+                  }
+                },
+                  h('span', { className: 'ar-lab-scenario-top' },
+                    h('span', {
+                      className: 'ar-lab-scenario-icon',
+                      'aria-hidden': 'true',
+                      style: { background: T.cardAlt, border: '1px solid ' + T.border }
+                    }, s.icon),
+                    h('span', {
+                      className: 'ar-lab-card-state',
+                      style: {
+                        background: done ? T.good : T.cardAlt,
+                        color: done ? onStrongFill : T.text,
+                        border: '1px solid ' + (done ? T.good : T.border)
+                      }
+                    }, done ? '✓ Completed' : 'Ready')
+                  ),
+                  h('span', { className: 'ar-lab-scenario-name', style: { color: T.text } }, s.name),
+                  h('span', { className: 'ar-lab-scenario-meta' },
+                    h('span', {
+                      className: 'ar-lab-difficulty',
+                      'data-ar-lab-difficulty': s.difficulty,
+                      'aria-label': 'Difficulty ' + s.difficulty + ' of 4, ' + diffName,
+                      style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border }
+                    },
+                      h('span', { 'aria-hidden': 'true' }, diffStars(s.difficulty)),
+                      h('span', null, diffName)
+                    ),
+                    h('span', {
+                      className: 'ar-lab-decision-count',
+                      'data-ar-lab-decision-count': s.steps.length,
+                      style: { background: T.cardAlt, color: T.muted, border: '1px solid ' + T.border }
+                    }, s.steps.length + ' decisions')
+                  ),
+                  h('span', { className: 'ar-lab-scenario-intro', style: { color: T.muted } }, s.intro),
+                  h('span', {
+                    className: 'ar-lab-card-action',
+                    'data-ar-lab-card-action': done ? 'practice-again' : 'start-case',
+                    style: { borderTop: '1px solid ' + T.border, color: T.link }
+                  },
+                    h('span', null, done ? 'Practice again' : 'Start case'),
+                    h('span', { 'aria-hidden': 'true' }, '→')
+                  )
                 );
               })
             ),
@@ -7305,7 +11767,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
 
         var totalSteps = lab.steps.length;
-        // Quiz complete screen
         if (stepIdx >= totalSteps) {
           var totalScore = 0;
           var maxScore = 0;
@@ -7319,105 +11780,375 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             }
           });
           var pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+          var visualPct = Math.max(0, Math.min(100, pct));
           var grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
           var gradeColor = pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad;
-          var completed = d.labsCompleted || [];
+          var masteryState = pct >= 70 ? 'passed' : 'review';
+          var masteryLabel = pct >= 70 ? 'Passed · mastery threshold met' : 'Practice recommended';
+          var completed = completedIds;
           if (completed.indexOf(lab.id) === -1 && pct >= 70) {
             upd('labsCompleted', completed.concat([lab.id]));
             awardBadge('lab-' + lab.id, 'Solved: ' + lab.name);
-            if (completed.length + 1 === LAB_SCENARIOS.length) {
+            if (knownCompleted.length + 1 === LAB_SCENARIOS.length) {
               awardBadge('lab-master', 'Lab Master (all scenarios)');
             }
           }
 
-          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.lab_list', '← Lab list')),
-              h('span', { style: { fontSize: 24 } }, lab.icon),
-              h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, lab.name + ' — Results')
+          return h('main', {
+            role: 'main',
+            className: 'ar-lab-shell',
+            'data-ar-lab-shell': true,
+            'data-ar-lab-state': 'results',
+            'data-ar-lab-view': 'results',
+            style: { color: T.text }
+          },
+            labListNav('← Lab list', 'Return to the case board and reset this attempt.'),
+            labHero('Results', lab.name + ' debrief',
+              pct >= 70 ? 'You met the completion threshold. Review the decision trail and the verified repair below.' :
+                'This attempt needs another pass. Use the decision trail to spot where evidence was skipped.', lab.icon),
+            h('section', {
+              role: 'region',
+              tabIndex: -1,
+              className: 'ar-lab-results-summary',
+              'data-ar-lab-results': lab.id,
+              'data-ar-lab-mastery': masteryState,
+              'aria-labelledby': 'autorepair-lab-results-heading',
+              style: { background: T.card, border: '2px solid ' + gradeColor }
+            },
+              h('div', { className: 'ar-lab-grade-panel' },
+                h('div', {
+                  className: 'ar-lab-grade',
+                  'data-ar-lab-grade': grade,
+                  'aria-label': 'Grade ' + grade,
+                  style: { background: gradeColor, color: onStrongFill, border: '2px solid ' + gradeColor }
+                }, grade),
+                h('span', { style: { color: T.muted, fontSize: 11, fontWeight: 800 } }, 'Final grade')
+              ),
+              h('div', { className: 'ar-lab-results-copy' },
+                h('span', {
+                  className: 'ar-lab-state-chip',
+                  style: { background: gradeColor, color: onStrongFill, border: '1px solid ' + gradeColor }
+                }, masteryLabel),
+                h('h2', { id: 'autorepair-lab-results-heading', style: { color: T.text } }, 'Diagnostic debrief'),
+                h('p', {
+                  'data-ar-lab-result-case': lab.id,
+                  style: { margin: '0 0 7px', color: T.text, fontSize: 12, fontWeight: 750, lineHeight: 1.5 }
+                }, lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model + ' · ' + lab.car.engine + ' · ' + lab.car.mileage.toLocaleString() + ' miles'),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                  pct >= 90 ? 'Master diagnostician: test first, verify first, and repair only what failed.' :
+                  pct >= 80 ? 'Solid technician thinking with a few opportunities to tighten the decision path.' :
+                  pct >= 70 ? 'Apprentice-level pass. Review the alternatives before taking the next case.' :
+                  pct >= 60 ? 'Close to the threshold. Revisit the evidence and retry this case.' :
+                  'Return to the fundamentals: confirm symptoms, test the likely cause, then verify the repair.')
+                ,
+                h('strong', {
+                  className: 'ar-lab-score',
+                  'data-ar-lab-score': true,
+                  style: { color: T.text }
+                }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
+                h('div', { className: 'ar-lab-results-progress' },
+                  h('div', { className: 'ar-lab-results-progress-label', style: { color: T.muted } },
+                    h('span', null, 'Attempt score'),
+                    h('span', null, '70% required to complete')
+                  ),
+                  h('div', {
+                    role: 'progressbar',
+                    className: 'ar-lab-progress-track',
+                    'aria-label': 'Lab attempt score',
+                    'aria-valuemin': 0,
+                    'aria-valuemax': 100,
+                    'aria-valuenow': visualPct,
+                    'aria-valuetext': (pct < 0 ? '0 percent toward completion; raw diagnostic score ' + Math.abs(pct) + ' percent below zero' : pct + ' percent toward completion') + '; ' + masteryLabel,
+                    style: { background: T.cardAlt, border: '1px solid ' + T.border }
+                  },
+                    h('div', { className: 'ar-lab-progress-fill', style: { width: visualPct + '%', background: gradeColor } })
+                  )
+                )
+              )
             ),
-            h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + gradeColor, marginBottom: 14, textAlign: 'center' } },
-              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, __alloT('stem.autorepair.final_score', 'Final score')),
-              h('div', { style: { fontSize: 56, fontWeight: 900, color: gradeColor, lineHeight: 1, marginBottom: 6 } }, grade),
-              h('div', { style: { fontSize: 18, color: T.text, fontWeight: 700 } }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
-              h('p', { style: { margin: '10px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-                pct >= 90 ? '🏆 Master diagnostician. Test-first, verify-first, repair-only-what-broke.' :
-                pct >= 80 ? '🎓 Solid technician thinking. Minor optimizations in your decision path.' :
-                pct >= 70 ? '🚧 Apprentice level. Re-read the per-choice feedback below.' :
-                pct >= 60 ? '🛠️ Hands need work. Practice the Decision Tree module before retrying.' :
-                '📚 Back to the books. Cost-cutters and parts-cannons leave customers angry.')
-            ),
-            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, __alloT('stem.autorepair.step_by_step_feedback', '🔍 Step-by-step feedback')),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
-              lab.steps.map(function(step, i) {
+            h('h2', { className: 'ar-lab-review-heading', style: { color: T.text } }, 'Decision-by-decision review'),
+            h('ol', { className: 'ar-lab-review-list', 'data-ar-lab-review': lab.id },
+              lab.steps.map(function(step, index) {
                 var picked = answers[step.id];
                 var pickedChoice = step.choices.find(function(c) { return c.id === picked; });
-                var bestChoice = step.choices.reduce(function(best, c) { return c.score > best.score ? c : best; }, step.choices[0]);
-                var scoreColor = pickedChoice ? (pickedChoice.score >= 10 ? T.good : pickedChoice.score >= 5 ? T.accentHi : T.bad) : T.muted;
-                return h('div', { key: step.id, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + scoreColor } },
-                  h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 4 } }, 'Step ' + (i + 1)),
-                  h('div', { style: { fontSize: 13, color: T.text, fontWeight: 700, marginBottom: 8 } }, step.prompt),
-                  pickedChoice && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, marginBottom: 6 } },
-                    h('div', { style: { fontSize: 11, color: scoreColor, fontWeight: 700, marginBottom: 4 } },
-                      'Your choice (' + (pickedChoice.score >= 0 ? '+' : '') + pickedChoice.score + ' pts): '),
-                    h('div', { style: { fontSize: 12, color: T.text, marginBottom: 4 } }, pickedChoice.label),
-                    h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, pickedChoice.fb)
+                var bestChoice = step.choices.reduce(function(best, choice) { return choice.score > best.score ? choice : best; }, step.choices[0]);
+                var feedbackState = !pickedChoice ? 'unanswered' : pickedChoice.score >= 10 ? 'best' : pickedChoice.score >= 5 ? 'acceptable' : 'costly';
+                var feedbackLabel = feedbackState === 'best' ? 'Best move' : feedbackState === 'acceptable' ? 'Acceptable move' : feedbackState === 'costly' ? 'Costly move' : 'Unanswered';
+                var scoreColor = feedbackState === 'best' ? T.good : feedbackState === 'acceptable' ? T.accentHi : feedbackState === 'costly' ? T.bad : T.muted;
+                return h('li', {
+                  key: step.id,
+                  className: 'ar-lab-feedback',
+                  'data-ar-lab-feedback': step.id,
+                  'data-ar-feedback-state': feedbackState,
+                  style: { background: T.card, border: '1px solid ' + scoreColor }
+                },
+                  h('div', { className: 'ar-lab-feedback-head' },
+                    h('span', { className: 'ar-lab-feedback-step', style: { color: T.muted } }, 'Decision ' + (index + 1) + ' of ' + totalSteps),
+                    h('span', {
+                      className: 'ar-lab-feedback-state',
+                      style: { background: scoreColor, color: onStrongFill, border: '1px solid ' + scoreColor }
+                    }, feedbackLabel)
                   ),
-                  pickedChoice && pickedChoice.id !== bestChoice.id && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.good } },
-                    h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, 'Best choice (+' + bestChoice.score + ' pts):'),
-                    h('div', { style: { fontSize: 12, color: T.text } }, bestChoice.label)
-                  )
+                  h('h3', { style: { color: T.text } }, step.prompt),
+                  h('div', {
+                    className: 'ar-lab-choice-panel',
+                    'data-ar-lab-picked-choice': pickedChoice ? pickedChoice.id : 'unanswered',
+                    style: { background: T.cardAlt, border: '1px solid ' + T.border }
+                  },
+                    h('span', { className: 'ar-lab-panel-label', style: { color: scoreColor } },
+                      pickedChoice ? 'Your choice (' + (pickedChoice.score >= 0 ? '+' : '') + pickedChoice.score + ' pts)' : 'Your choice'),
+                    pickedChoice ?
+                      h('div', null,
+                        h('p', { style: { color: T.text, fontWeight: 750, marginBottom: 5 } }, pickedChoice.label),
+                        h('p', { style: { color: T.muted, fontStyle: 'italic' } }, pickedChoice.fb)
+                      ) :
+                      h('p', { style: { color: T.muted } }, 'No answer was recorded for this decision.')
+                  ),
+                  pickedChoice && pickedChoice.id === bestChoice.id ?
+                    h('div', {
+                      className: 'ar-lab-best-panel',
+                      'data-ar-lab-best-confirmation': bestChoice.id,
+                      style: { background: T.bg, border: '1px solid ' + T.good }
+                    },
+                      h('span', { className: 'ar-lab-panel-label', style: { color: T.good } }, '✓ You chose the best move'),
+                      h('p', { style: { color: T.text } }, bestChoice.label)
+                    ) :
+                    h('div', {
+                      className: 'ar-lab-best-panel',
+                      'data-ar-lab-best-choice': bestChoice.id,
+                      style: { background: T.bg, border: '1px solid ' + T.good }
+                    },
+                      h('span', { className: 'ar-lab-panel-label', style: { color: T.good } }, 'Best move (+' + bestChoice.score + ' pts)'),
+                      h('p', { style: { color: T.text } }, bestChoice.label)
+                    )
                 );
               })
             ),
-            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_was_actually_wrong', '✅ What was actually wrong: ')),
-              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, lab.truth)
+            h('section', {
+              className: 'ar-lab-truth',
+              'data-ar-lab-truth': lab.id,
+              'aria-labelledby': 'autorepair-lab-truth-title',
+              style: { background: T.card, border: '2px solid ' + T.accent }
+            },
+              h('h2', { id: 'autorepair-lab-truth-title', style: { color: T.accentHi } }, '✓ Verified repair'),
+              h('p', { style: { color: T.text } }, lab.truth)
             ),
-            h('div', { style: { display: 'flex', gap: 8 } },
-              h('button', { 'data-ar-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, __alloT('stem.autorepair.retry_scenario', '🔁 Retry scenario')),
-              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, __alloT('stem.autorepair.pick_another', '🧪 Pick another'))
+            h('div', { className: 'ar-lab-actions', 'data-ar-lab-print-hide': true },
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, '🔁 Retry scenario'),
+              h('button', { type: 'button', 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, '🧪 Pick another')
             ),
             disclaimerFooter()
           );
         }
 
         var step = lab.steps[stepIdx];
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
-            h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, __alloT('stem.autorepair.quit_scenario', '← Quit scenario')),
-            h('span', { style: { fontSize: 24 } }, lab.icon),
-            h('h2', { style: { margin: 0, fontSize: 17, color: T.text, flex: 1 } }, lab.name),
-            h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, 'Step ' + (stepIdx + 1) + ' / ' + totalSteps)
-          ),
-          stepIdx === 0 && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.customer_car', '🚗 Customer car')),
-            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
-              h('div', null, h('strong', { style: { color: T.text } }, 'Vehicle: '), lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model + ' · ' + lab.car.engine),
-              h('div', null, h('strong', { style: { color: T.text } }, 'Mileage: '), lab.car.mileage.toLocaleString()),
-              h('div', null, h('strong', { style: { color: T.text } }, 'History: '), lab.car.history),
-              h('div', { style: { marginTop: 6 } }, h('strong', { style: { color: T.text } }, 'Symptoms: ')),
-              h('ul', { style: { margin: 0, paddingLeft: 18 } },
-                lab.symptoms.map(function(sy, i) { return h('li', { key: i, style: { color: T.text } }, sy); })
+        var questionId = 'autorepair-lab-question-' + lab.id + '-' + step.id;
+        var progressPct = Math.round((stepIdx / totalSteps) * 100);
+        var lastStep = stepIdx > 0 ? lab.steps[stepIdx - 1] : null;
+        var lastChoice = lastStep ? lastStep.choices.find(function(choice) { return choice.id === answers[lastStep.id]; }) : null;
+        var lastState = lastChoice ? (lastChoice.score >= 10 ? 'excellent' : lastChoice.score >= 5 ? 'acceptable' : 'costly') : null;
+        var lastLabel = lastState === 'excellent' ? 'Excellent move' : lastState === 'acceptable' ? 'Acceptable move' : 'Costly move';
+        var lastColor = lastState === 'excellent' ? T.good : lastState === 'acceptable' ? T.accentHi : T.bad;
+
+        return h('main', {
+          role: 'main',
+          className: 'ar-lab-shell',
+          'data-ar-lab-shell': true,
+          'data-ar-lab-state': 'working',
+          'data-ar-lab-view': 'decision',
+          style: { color: T.text }
+        },
+          labListNav('← Quit to lab list', 'This resets the current attempt.'),
+          labHero('Case in progress', lab.name,
+            'Decision ' + (stepIdx + 1) + ' of ' + totalSteps + ' · ' + difficultyName(lab.difficulty) + ' case', lab.icon),
+          h('div', { className: 'ar-lab-workbench', 'data-ar-lab-run': lab.id },
+            h('section', {
+              id: 'autorepair-lab-case-file',
+              role: 'region',
+              tabIndex: -1,
+              className: 'ar-lab-dossier',
+              'data-ar-lab-case': lab.id,
+              'aria-labelledby': 'autorepair-lab-case-file-title',
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('span', { className: 'ar-lab-eyebrow', style: { color: T.accentHi } },
+                h('span', { 'aria-hidden': 'true' }, '📋'), 'Persistent evidence'),
+              h('h2', { id: 'autorepair-lab-case-file-title', style: { color: T.text, marginTop: 7 } }, 'Customer case file'),
+              h('a', {
+                href: '#autorepair-lab-decision',
+                className: 'ar-lab-case-link',
+                'data-ar-focusable': true,
+                'data-ar-lab-decision-jump': true,
+                onClick: function() { labFocusSoon('[data-ar-lab-question]'); },
+                style: { background: T.cardAlt, color: T.link, border: '1px solid ' + T.border, marginBottom: 10 }
+              }, 'Go to current decision'),
+              h('div', { className: 'ar-lab-vehicle-grid' },
+                h('div', { className: 'ar-lab-case-fact', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Vehicle'),
+                  h('p', { style: { color: T.text } }, lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model)
+                ),
+                h('div', { className: 'ar-lab-case-fact', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Powertrain'),
+                  h('p', { style: { color: T.text } }, lab.car.engine)
+                ),
+                h('div', { className: 'ar-lab-case-fact', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Mileage'),
+                  h('p', { style: { color: T.text } }, lab.car.mileage.toLocaleString() + ' miles')
+                ),
+                h('div', { className: 'ar-lab-case-fact', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Difficulty'),
+                  h('p', { style: { color: T.text } }, difficultyName(lab.difficulty) + ' · ' + lab.difficulty + ' of 4')
+                ),
+                h('div', { className: 'ar-lab-case-fact ar-lab-case-fact-wide', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Service history'),
+                  h('p', { style: { color: T.text } }, lab.car.history)
+                ),
+                h('div', { className: 'ar-lab-case-fact ar-lab-case-fact-wide', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('span', { className: 'ar-lab-case-label', style: { color: T.muted } }, 'Reported symptoms'),
+                  h('ul', { className: 'ar-lab-symptoms' },
+                    lab.symptoms.map(function(symptom, index) {
+                      return h('li', { key: index, style: { color: T.text } }, symptom);
+                    })
+                  )
+                )
+              )
+            ),
+            h('section', {
+              id: 'autorepair-lab-decision',
+              className: 'ar-lab-decision',
+              'data-ar-lab-decision': step.id,
+              style: { background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', {
+                className: 'ar-lab-case-strip',
+                'data-ar-lab-vehicle': lab.id,
+                style: { background: T.cardAlt, border: '1px solid ' + T.border }
+              },
+                h('div', { className: 'ar-lab-case-strip-copy', style: { color: T.text } },
+                  h('strong', null, lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model),
+                  h('span', { style: { color: T.muted } }, ' · ' + lab.car.engine + ' · ' + lab.car.mileage.toLocaleString() + ' miles'),
+                  h('span', {
+                    className: 'ar-lab-evidence-summary',
+                    'data-ar-lab-evidence-summary': lab.id,
+                    style: { color: T.muted }
+                  }, 'History: ' + lab.car.history + ' · Key symptoms: ' + lab.symptoms.join('; '))
+                ),
+                h('a', {
+                  href: '#autorepair-lab-case-file',
+                  className: 'ar-lab-case-link',
+                  'data-ar-focusable': true,
+                  onClick: function() { labFocusSoon('#autorepair-lab-case-file'); },
+                  style: { background: T.card, color: T.link, border: '1px solid ' + T.border }
+                }, 'Review case file')
+              ),
+              h('div', { className: 'ar-lab-run-head' },
+                h('div', null,
+                  h('span', { className: 'ar-lab-eyebrow', style: { color: T.accentHi } }, 'Decision station'),
+                  h('h2', { style: { color: T.text } }, 'Decision ' + (stepIdx + 1) + ' of ' + totalSteps)
+                ),
+                h('strong', { style: { color: T.muted, fontSize: 12 } }, stepIdx + ' complete')
+              ),
+              h('div', {
+                role: 'progressbar',
+                className: 'ar-lab-progress-track',
+                'data-ar-lab-progress': stepIdx,
+                'aria-label': 'Case decision progress',
+                'aria-valuemin': 0,
+                'aria-valuemax': totalSteps,
+                'aria-valuenow': stepIdx,
+                'aria-valuetext': stepIdx + ' of ' + totalSteps + ' decisions complete; decision ' + (stepIdx + 1) + ' active',
+                style: { background: T.cardAlt, border: '1px solid ' + T.border }
+              },
+                h('div', { className: 'ar-lab-progress-fill', style: { width: progressPct + '%', background: T.accent } })
+              ),
+              h('ol', {
+                className: 'ar-lab-stage-list',
+                'aria-label': 'Case decision stages',
+                style: { gridTemplateColumns: 'repeat(' + totalSteps + ', minmax(88px, 1fr))' }
+              },
+                lab.steps.map(function(stage, index) {
+                  var stageState = index < stepIdx ? 'complete' : index === stepIdx ? 'current' : 'upcoming';
+                  var stageLabel = stageState === 'complete' ? 'Complete' : stageState === 'current' ? 'Current' : 'Upcoming';
+                  return h('li', {
+                    key: stage.id,
+                    className: 'ar-lab-stage',
+                    'data-ar-lab-stage': stage.id,
+                    'data-ar-stage-state': stageState,
+                    'aria-current': stageState === 'current' ? 'step' : undefined,
+                    style: {
+                      background: stageState === 'current' ? T.card : T.cardAlt,
+                      border: '1px solid ' + (stageState === 'current' ? T.accent : T.border),
+                      color: T.text
+                    }
+                  },
+                    h('span', {
+                      className: 'ar-lab-stage-marker',
+                      'aria-hidden': 'true',
+                      style: {
+                        background: stageState === 'complete' ? T.good : stageState === 'current' ? T.accent : T.bg,
+                        color: stageState === 'complete' || stageState === 'current' ? onStrongFill : T.muted,
+                        border: '1px solid ' + (stageState === 'complete' ? T.good : stageState === 'current' ? T.accent : T.border)
+                      }
+                    }, stageState === 'complete' ? '✓' : String(index + 1)),
+                    h('span', { className: 'ar-lab-stage-label', style: { color: stageState === 'current' ? T.accentHi : T.muted } }, stageLabel)
+                  );
+                })
+              ),
+              lastChoice && h('div', {
+                className: 'ar-lab-last-move',
+                'data-ar-lab-last-move': lastState,
+                style: { background: T.cardAlt, color: lastColor, borderColor: lastColor }
+              },
+                h('strong', null, 'Last move: ' + lastLabel),
+                h('span', { style: { color: T.text } }, lastChoice.label)
+              ),
+              h('section', {
+                tabIndex: -1,
+                className: 'ar-lab-question',
+                'data-ar-lab-question': step.id,
+                'aria-labelledby': questionId,
+                style: { background: T.cardAlt, border: '2px solid ' + T.accent }
+              },
+                h('span', { className: 'ar-lab-eyebrow', style: { color: T.accentHi } },
+                  h('span', { 'aria-hidden': 'true' }, '🔧'), 'Choose the next move'),
+                h('h2', { id: questionId, style: { color: T.text, marginTop: 7 } }, step.prompt)
+              ),
+              h('div', {
+                role: 'group',
+                className: 'ar-lab-choices',
+                'data-ar-lab-choices': step.id,
+                'aria-labelledby': questionId
+              },
+                step.choices.map(function(choice, index) {
+                  return h('button', {
+                    type: 'button',
+                    key: choice.id,
+                    'data-ar-focusable': true,
+                    'data-ar-lab-choice': choice.id,
+                    onClick: function() { selectChoice(step.id, choice); },
+                    className: 'ar-lab-choice',
+                    style: {
+                      background: T.cardAlt,
+                      color: T.text,
+                      border: '1px solid ' + T.border,
+                      cursor: 'pointer'
+                    }
+                  },
+                    h('span', {
+                      className: 'ar-lab-choice-marker',
+                      'aria-hidden': 'true',
+                      style: { background: T.bg, color: T.accentHi, border: '1px solid ' + T.border }
+                    }, String.fromCharCode(65 + index)),
+                    h('span', { className: 'ar-lab-choice-copy' }, choice.label)
+                  );
+                })
               )
             )
-          ),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 12px', fontSize: 15, color: T.text } }, step.prompt)
-          ),
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-            step.choices.map(function(c) {
-              return h('button', { key: c.id, 'data-ar-focusable': true,
-                'aria-label': c.label,
-                onClick: function() { selectChoice(step.id, c); },
-                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 13, lineHeight: 1.5 } },
-                c.label
-              );
-            })
           ),
           disclaimerFooter()
         );
       }
+
 
       // ─────────────────────────────────────────
       // VIN DECODER view
@@ -7578,50 +12309,156 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // SCAMS view — common shop scams + how to push back
       // ─────────────────────────────────────────
       function renderScams() {
-        var picked = d.scamPicked || null;
-        var pickedScam = picked ? SCAMS.find(function(s) { return s.id === picked; }) : null;
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🚩 Common scams'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.12_shop_scams_to_recognize', '🚩 12 shop scams to recognize')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.most_shops_are_honest_a_few_aren_t_kno', 'Most shops are honest. A few aren\'t. Knowing the most common pitches makes you a savvier customer — and you can push back politely.')),
-            h('p', { style: { margin: 0, color: T.dim, fontSize: 11, lineHeight: 1.5 } },
-              h('strong', null, __alloT('stem.autorepair.maine_consumer_rights', '🛡️ Maine consumer rights: ')),
-              __alloT('stem.autorepair.written_estimate_before_work_old_parts', 'written estimate before work, old parts on request, itemized invoice, can\'t exceed estimate by 10% without re-authorization. Maine AG: '),
-              h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'maine.gov/ag/consumer'))
-          ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
-            SCAMS.map(function(s) {
-              var sel = picked === s.id;
-              return h('button', { key: s.id, 'data-ar-focusable': true,
-                'aria-label': s.name,
-                'aria-pressed': sel ? 'true' : 'false',
-                onClick: function() { upd('scamPicked', sel ? null : s.id); awardBadge('scam-aware', 'Scam Aware'); },
-                style: Object.assign({}, btnSecondary(), {
-                  background: sel ? T.accent : T.cardAlt,
-                  color: sel ? '#0f172a' : T.text,
-                  textAlign: 'left',
-                  fontWeight: sel ? 800 : 600,
-                  display: 'flex', alignItems: 'flex-start', gap: 8
-                }) },
-                h('span', { style: { fontSize: 22 } }, s.icon),
-                h('span', null, s.name)
-              );
-            })
-          ),
-          pickedScam && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.bad } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.bad } }, pickedScam.icon + ' ' + pickedScam.name),
-            h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
-              h('strong', { style: { color: '#fed7aa' } }, __alloT('stem.autorepair.the_pitch', '🎤 The pitch: ')),
-              h('em', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedScam.pitch)
+        var requestedPicked = typeof d.scamPicked === 'string' ? d.scamPicked : null;
+        var pickedScam = requestedPicked ? SCAMS.find(function(s) { return s.id === requestedPicked; }) : null;
+        var picked = pickedScam ? pickedScam.id : null;
+
+        function scamDetail() {
+          return h('article', { id: 'autorepair-scams-detail', role: 'region', className: 'ar-scams-detail',
+            'data-ar-scams-detail': true,
+            'data-ar-scams-detail-state': pickedScam ? 'active' : 'empty',
+            'aria-live': 'polite',
+            'aria-labelledby': 'autorepair-scams-detail-title',
+            style: { background: T.card, border: '2px solid ' + (pickedScam ? T.bad : T.border) }
+          },
+            pickedScam ? h('div', null,
+              h('div', { className: 'ar-scams-detail-head' },
+                h('span', { className: 'ar-scams-detail-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, pickedScam.icon),
+                h('div', { className: 'ar-scams-detail-heading' },
+                  h('span', { className: 'ar-scams-detail-kicker', style: { color: T.bad } }, 'Shop pitch pattern · Viewing'),
+                  h('h2', { id: 'autorepair-scams-detail-title', style: { color: T.text } }, pickedScam.name),
+                  h('span', { className: 'ar-scams-detail-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.bad } }, 'Four-part push-back guide')
+                )
+              ),
+              h('div', { className: 'ar-scams-detail-grid' },
+                h('div', { className: 'ar-scams-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.bad } },
+                  h('strong', { style: { color: T.bad } }, __alloT('stem.autorepair.the_pitch', '🎤 The pitch')),
+                  h('blockquote', { style: { color: T.text } }, pickedScam.pitch)
+                ),
+                h('div', { className: 'ar-scams-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.the_truth', '✅ The truth')),
+                  h('p', { style: { color: T.text } }, pickedScam.truth)
+                ),
+                h('div', { className: 'ar-scams-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.good } },
+                  h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.what_to_ask', '💬 What to ask')),
+                  h('p', { style: { color: T.muted } }, pickedScam.askFor)
+                ),
+                h('div', { className: 'ar-scams-detail-block', style: { background: T.cardAlt, border: '1px solid ' + T.accent } },
+                  h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_to_do_now', '🎯 What to do now')),
+                  h('p', { style: { color: T.muted } }, pickedScam.doNow)
+                )
+              )
+            ) : h('div', { className: 'ar-scams-detail-empty' },
+              h('span', { className: 'ar-scams-detail-empty-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, '🛡️'),
+              h('h2', { id: 'autorepair-scams-detail-title', style: { color: T.text } }, 'Choose a shop pitch'),
+              h('p', { style: { color: T.muted } }, 'Open any pattern to compare the pitch with the underlying truth, a question to ask, and an immediate next step.')
+            )
+          );
+        }
+
+        return h('main', { className: 'ar-scams-shell', 'data-ar-scams-shell': true, 'data-ar-scams-selection': pickedScam ? 'active' : 'empty', style: { color: T.text } },
+          backBar('🚩 Common scams', 'Scam Spotter navigation'),
+          h('header', { className: 'ar-scams-hero', 'data-ar-scams-hero': true, 'aria-labelledby': 'autorepair-scams-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-scams-hero-copy' },
+              h('span', { className: 'ar-scams-eyebrow', style: { color: T.bad } }, '🚩 Repair quote defense guide'),
+              h('h1', { id: 'autorepair-scams-title', className: 'ar-scams-title', style: { color: T.text } }, __alloT('stem.autorepair.12_shop_scams_to_recognize', '12 shop scams to recognize')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+                __alloT('stem.autorepair.most_shops_are_honest_a_few_aren_t_kno', 'Most shops are honest. A few aren\'t. Knowing the most common pitches makes you a savvier customer — and you can push back politely.')
+              )
             ),
-            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.the_truth', '✅ The truth: ')), pickedScam.truth),
-            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.good } }, __alloT('stem.autorepair.what_to_ask', '💬 What to ask: ')), pickedScam.askFor),
-            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.what_to_do_now', '🎯 What to do now: ')), pickedScam.doNow)
+            h('div', { className: 'ar-scams-hero-stats', 'aria-label': 'Scam Spotter contents' },
+              [
+                { value: SCAMS.length, label: 'shop patterns' },
+                { value: 4, label: 'response moves' },
+                { value: 1, label: 'rights guide' }
+              ].map(function(stat) {
+                return h('div', { key: stat.label, className: 'ar-scams-stat', 'data-ar-scams-stat': stat.label, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.text } }, stat.value),
+                  h('span', { style: { color: T.muted } }, stat.label)
+                );
+              })
+            )
+          ),
+          h('section', { className: 'ar-scams-playbook', 'data-ar-scams-playbook': true, 'aria-labelledby': 'autorepair-scams-playbook-title', style: { background: T.card, border: '1px solid ' + T.border } },
+            h('div', { className: 'ar-scams-playbook-head' },
+              h('strong', { id: 'autorepair-scams-playbook-title', style: { color: T.text } }, 'Use the same four-part response every time'),
+              h('span', { style: { color: T.muted } }, 'Select a pattern below to practice the sequence.')
+            ),
+            h('div', { className: 'ar-scams-playbook-grid' },
+              [
+                { number: 1, label: 'Hear the pitch' },
+                { number: 2, label: 'Check the truth' },
+                { number: 3, label: 'Ask for proof' },
+                { number: 4, label: 'Choose the next step' }
+              ].map(function(step) {
+                return h('div', { key: step.number, className: 'ar-scams-playbook-step', 'data-ar-scams-playbook-step': step.number, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { background: T.accent, color: onStrongFill } }, step.number),
+                  h('span', { style: { color: T.text } }, step.label)
+                );
+              })
+            )
+          ),
+          h('div', { className: 'ar-scams-layout' },
+            h('section', { className: 'ar-scams-catalog', 'data-ar-scams-catalog': true, 'aria-labelledby': 'autorepair-scams-catalog-title', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-scams-catalog-head' },
+                h('div', null,
+                  h('h2', { id: 'autorepair-scams-catalog-title', style: { color: T.text } }, 'Common shop pitches'),
+                  h('p', { style: { color: T.muted } }, 'Choose one to open its complete push-back guide.')
+                ),
+                h('span', { className: 'ar-scams-count-chip', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border } }, SCAMS.length + ' patterns')
+              ),
+              h('ul', { role: 'list', className: 'ar-scams-grid' },
+                SCAMS.map(function(s) {
+                  var sel = picked === s.id;
+                  return h('li', { key: s.id, className: 'ar-scams-item-wrap' },
+                    h('button', { type: 'button', id: 'autorepair-scams-item-' + s.id, 'data-ar-focusable': true,
+                      className: 'ar-scams-item',
+                      'data-ar-scams-item-id': s.id,
+                      'data-ar-option-state': sel ? 'active' : 'inactive',
+                      'aria-label': s.name + (sel ? ', viewing' : ', open guide'),
+                      'aria-controls': 'autorepair-scams-detail',
+                      'aria-expanded': sel ? 'true' : 'false',
+                      'aria-pressed': sel ? 'true' : 'false',
+                      onClick: function() {
+                        upd('scamPicked', sel ? null : s.id);
+                        arAnnounce(s.name + (sel ? ' closed.' : ' push-back guide opened.'));
+                        if (!sel) awardBadge('scam-aware', 'Scam Aware');
+                      },
+                      style: Object.assign({}, btnSecondary(), { background: sel ? T.accent : T.cardAlt, color: sel ? onStrongFill : T.text, border: '2px solid ' + (sel ? T.accent : T.border), fontWeight: sel ? 850 : 700, boxShadow: sel ? '0 7px 16px rgba(15,23,42,.10)' : 'none' })
+                    },
+                      h('span', { className: 'ar-scams-item-top' },
+                        h('span', { className: 'ar-scams-item-icon', 'aria-hidden': 'true', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, s.icon),
+                        h('span', { className: 'ar-scams-item-chip', style: { background: T.card, color: T.text, border: '1px solid ' + T.border } }, 'Push-back guide')
+                      ),
+                      h('span', { className: 'ar-scams-item-name' }, s.name),
+                      h('span', { className: 'ar-scams-item-action' }, sel ? 'Viewing guide' : 'Open guide')
+                    )
+                  );
+                })
+              )
+            ),
+            scamDetail()
+          ),
+          h('aside', { className: 'ar-scams-rights', 'data-ar-scams-rights': true, 'aria-labelledby': 'autorepair-scams-rights-title', style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('h2', { id: 'autorepair-scams-rights-title', style: { color: T.accentHi } }, __alloT('stem.autorepair.maine_consumer_rights', '🛡️ Maine consumer rights')),
+            h('p', { style: { color: T.muted } },
+              __alloT('stem.autorepair.written_estimate_before_work_old_parts', 'written estimate before work, old parts on request, itemized invoice, can\'t exceed estimate by 10% without re-authorization. Maine AG: '),
+              h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/ag/consumer')
+            )
+          ),
+          h('section', { className: 'ar-scams-print-guide', 'data-ar-scams-print-guide': true, 'aria-labelledby': 'autorepair-scams-print-title' },
+            h('h2', { id: 'autorepair-scams-print-title' }, 'Complete Scam Spotter guide'),
+            h('ol', { className: 'ar-scams-print-grid' },
+              SCAMS.map(function(s) {
+                return h('li', { key: 'print-' + s.id, className: 'ar-scams-print-item', 'data-ar-scams-print-item': s.id },
+                  h('h3', null, s.icon + ' ' + s.name),
+                  h('p', null, h('strong', null, 'The pitch: '), s.pitch),
+                  h('p', null, h('strong', null, 'The truth: '), s.truth),
+                  h('p', null, h('strong', null, 'What to ask: '), s.askFor),
+                  h('p', null, h('strong', null, 'What to do now: '), s.doNow)
+                );
+              })
+            )
           ),
           disclaimerFooter()
         );
@@ -7859,141 +12696,431 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // SERVICE LOG view — user records their own maintenance history
       // ─────────────────────────────────────────
       function renderLog() {
-        var entries = d.serviceLog || [];
-        var draft = d.logDraft || { date: '', odo: '', service: '', cost: '', notes: '' };
+        var emptyDraft = { date: '', odo: '', service: '', cost: '', notes: '' };
+        var entries = arNormalizeServiceEntries(d.serviceLog);
+        var draft = Object.assign({}, emptyDraft, d.logDraft || {});
+        var formErrors = d.logFormErrors && typeof d.logFormErrors === 'object' ? d.logFormErrors : {};
+        var pendingDelete = d.logPendingDelete || null;
+        var undoEntry = d.logUndoEntry && typeof d.logUndoEntry === 'object'
+          ? arNormalizeServiceEntries([d.logUndoEntry])[0] || null
+          : null;
+        var todayIso = new Date().toISOString().slice(0, 10);
 
         function updateDraft(key, val) {
-          var newDraft = Object.assign({}, draft); newDraft[key] = val;
-          upd('logDraft', newDraft);
+          var newDraft = Object.assign({}, draft);
+          newDraft[key] = val;
+          var nextErrors = Object.assign({}, formErrors);
+          delete nextErrors[key];
+          delete nextErrors.duplicate;
+          updMulti({ logDraft: newDraft, logFormErrors: nextErrors });
         }
+
         function saveEntry() {
-          if (!draft.date || !draft.service) {
-            arAnnounce('Please enter at least date and service.');
+          var checked = arValidateServiceEntry(draft, entries, todayIso);
+          if (!checked.valid) {
+            upd('logFormErrors', checked.errors);
+            var errorOrder = ['date', 'service', 'odo', 'cost', 'notes', 'duplicate'];
+            var firstKey = errorOrder.find(function(key) { return checked.errors[key]; });
+            arAnnounce(checked.errors[firstKey] || 'Check the service entry and try again.');
             return;
           }
-          var entry = {
-            id: 'log_' + Date.now(),
-            date: draft.date,
-            odo: parseInt(draft.odo, 10) || 0,
-            service: draft.service,
-            cost: parseFloat(draft.cost) || 0,
-            notes: draft.notes || ''
-          };
+          var entry = Object.assign({
+            id: arNextServiceEntryId(entries, Date.now())
+          }, checked.value);
           var newEntries = [entry].concat(entries);
-          updMulti({ serviceLog: newEntries, logDraft: { date: '', odo: '', service: '', cost: '', notes: '' } });
+          updMulti({
+            serviceLog: newEntries,
+            logDraft: Object.assign({}, emptyDraft),
+            logFormErrors: {},
+            logPendingDelete: null
+          });
           arAnnounce('Service entry saved.');
           if (newEntries.length === 1) awardBadge('first-log', 'First Log Entry');
-          if (newEntries.length === 10) awardBadge('log-keeper', 'Log Keeper (10 entries)');
+          if (newEntries.length >= 10) awardBadge('log-keeper', 'Log Keeper (10 entries)');
         }
-        function deleteEntry(id) {
-          var newEntries = entries.filter(function(e) { return e.id !== id; });
-          upd('serviceLog', newEntries);
-          arAnnounce('Entry removed.');
+
+        function requestDelete(entry) {
+          upd('logPendingDelete', entry.id);
+          arAnnounce('Confirm deletion of ' + entry.service + '.');
         }
-        function exportCSV() {
-          var lines = ['date,odometer,service,cost,notes'];
-          entries.forEach(function(e) {
-            lines.push([e.date, e.odo, '"' + (e.service || '').replace(/"/g, '""') + '"', e.cost, '"' + (e.notes || '').replace(/"/g, '""') + '"'].join(','));
+
+        function cancelDelete() {
+          upd('logPendingDelete', null);
+          arAnnounce('Deletion cancelled.');
+        }
+
+        function confirmDelete(id) {
+          var index = entries.findIndex(function(entry) { return entry.id === id; });
+          if (index < 0) {
+            upd('logPendingDelete', null);
+            arAnnounce('That service entry is no longer available.');
+            return;
+          }
+          var removed = entries[index];
+          var newEntries = entries.filter(function(entry) { return entry.id !== id; });
+          updMulti({
+            serviceLog: newEntries,
+            logPendingDelete: null,
+            logUndoEntry: removed,
+            logUndoIndex: index
           });
-          var csv = lines.join('\n');
-          if (typeof navigator !== 'undefined' && navigator.clipboard) {
-            navigator.clipboard.writeText(csv);
-            addToast('CSV copied to clipboard');
-          } else {
-            console.log(csv);
-            addToast('CSV in console (clipboard unavailable)');
+          arAnnounce('Service entry removed. Undo is available.');
+        }
+
+        function undoDelete() {
+          if (!undoEntry) return;
+          var restored = Object.assign({}, undoEntry);
+          if (entries.some(function(entry) { return entry.id === restored.id; })) {
+            restored.id = arNextServiceEntryId(entries, Date.now());
+          }
+          var insertAt = parseInt(d.logUndoIndex, 10);
+          if (isNaN(insertAt)) insertAt = 0;
+          insertAt = Math.max(0, Math.min(entries.length, insertAt));
+          var restoredEntries = entries.slice();
+          restoredEntries.splice(insertAt, 0, restored);
+          updMulti({
+            serviceLog: restoredEntries,
+            logUndoEntry: null,
+            logUndoIndex: null
+          });
+          arAnnounce('Service entry restored.');
+        }
+
+        function dismissUndo() {
+          updMulti({ logUndoEntry: null, logUndoIndex: null });
+          arAnnounce('Undo dismissed.');
+        }
+
+        function copyCSV(csvText) {
+          var csv = csvText || arBuildServiceCSV(entries);
+          if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+            addToast('Clipboard unavailable in this environment');
+            arAnnounce('Clipboard unavailable. Use Download CSV instead.');
+            return;
+          }
+          try {
+            var writeResult = navigator.clipboard.writeText(csv);
+            if (writeResult && typeof writeResult.then === 'function') {
+              writeResult.then(function() {
+                addToast('CSV copied to clipboard');
+                arAnnounce('Service log CSV copied to clipboard.');
+              }, function() {
+                addToast('Could not copy CSV');
+                arAnnounce('Could not copy the CSV. Use Download CSV instead.');
+              });
+            } else {
+              addToast('CSV copied to clipboard');
+              arAnnounce('Service log CSV copied to clipboard.');
+            }
+          } catch (err) {
+            addToast('Could not copy CSV');
+            arAnnounce('Could not copy the CSV. Use Download CSV instead.');
           }
         }
-        var totalSpent = entries.reduce(function(acc, e) { return acc + (e.cost || 0); }, 0);
+
+        function downloadCSV() {
+          if (entries.length === 0) {
+            arAnnounce('Add a service entry before exporting.');
+            return;
+          }
+          var csv = arBuildServiceCSV(entries);
+          var canDownload = typeof document !== 'undefined' && document.body &&
+            typeof Blob !== 'undefined' && typeof URL !== 'undefined' &&
+            typeof URL.createObjectURL === 'function';
+          if (!canDownload) {
+            copyCSV(csv);
+            return;
+          }
+          try {
+            var blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8' });
+            var objectUrl = URL.createObjectURL(blob);
+            var link = document.createElement('a');
+            link.href = objectUrl;
+            link.download = 'vehicle-service-log-' + todayIso + '.csv';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(function() { URL.revokeObjectURL(objectUrl); }, 0);
+            addToast('Service log downloaded');
+            arAnnounce('Service log CSV downloaded.');
+          } catch (err) {
+            copyCSV(csv);
+          }
+        }
+
+        function fieldError(key) {
+          return formErrors[key] ? h('span', {
+            id: 'autorepair-log-error-' + key,
+            style: { color: T.bad, fontSize: 11, lineHeight: 1.4 }
+          }, formErrors[key]) : null;
+        }
+
+        var totalSpent = entries.reduce(function(acc, entry) { return acc + entry.cost; }, 0);
+        var latestOdometer = entries.reduce(function(max, entry) { return Math.max(max, entry.odo || 0); }, 0);
+        var latestServiceDate = entries.reduce(function(latest, entry) {
+          var date = String(entry.date || '');
+          return /^\d{4}-\d{2}-\d{2}$/.test(date) && date > latest ? date : latest;
+        }, '');
+        var errorKeys = Object.keys(formErrors).filter(function(key) { return formErrors[key]; });
+        var duplicateOnly = errorKeys.length === 1 && errorKeys[0] === 'duplicate';
+        var formState = errorKeys.length ? (duplicateOnly ? 'duplicate' : 'invalid') : 'ready';
+        var formErrorTone = duplicateOnly ? T.warn : T.bad;
         var quickServices = ['Oil + filter change', 'Tire rotation', 'Brake pads (front)', 'Brake fluid flush', 'Coolant flush', 'Air filter', 'Cabin air filter', 'Wiper blades', 'Battery replacement', 'Spark plugs', 'Maine state inspection', 'Tire replacement (set)', 'Alignment'];
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('📓 Service log'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.your_maintenance_history', '📓 Your maintenance history')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.record_every_service_you_do_diy_or_sho', 'Record every service you do (DIY or shop) so future you (or the next buyer) has documentation. Saved automatically. '),
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.total_tracked', 'Total tracked: ')), entries.length + ' entries · $' + totalSpent.toFixed(2))
-          ),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.add_service', '➕ Add service')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 8 } },
-              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.date', '📅 Date')),
-                h('input', { type: 'date', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_date', 'Service date'),
-                  value: draft.date,
-                  onChange: function(e) { updateDraft('date', e.target.value); },
-                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+        return h('div', {
+          className: 'ar-log-shell',
+          'data-ar-service-log': true,
+          'data-ar-log-shell': true,
+          style: { color: T.text }
+        },
+          backBar('\uD83D\uDCD3 Service log'),
+          h('section', {
+            className: 'ar-log-hero',
+            'data-ar-service-hero': true,
+            'aria-labelledby': 'autorepair-log-summary-title',
+            style: {
+              background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')',
+              border: '1px solid ' + T.border,
+              boxShadow: '0 14px 36px rgba(15,23,42,0.13)'
+            }
+          },
+            h('div', { className: 'ar-log-hero-top' },
+              h('div', { className: 'ar-log-hero-copy' },
+                h('span', { className: 'ar-log-eyebrow', style: { color: T.accentHi } },
+                  h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD27'),
+                  'Vehicle care record'
+                ),
+                h('h2', {
+                  id: 'autorepair-log-summary-title',
+                  className: 'ar-log-hero-title',
+                  style: { color: T.text }
+                }, 'Your maintenance history'),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+                  'Record DIY and shop service in one clear ledger for future repairs, ownership decisions, and resale documentation.')
               ),
-              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.odometer', '🛣️ Odometer')),
-                h('input', { type: 'number', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.odometer_mileage', 'Odometer mileage'),
-                  placeholder: '85432',
-                  value: draft.odo,
-                  onChange: function(e) { updateDraft('odo', e.target.value); },
-                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
-              ),
-              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.cost', '💵 Cost')),
-                h('input', { type: 'number', step: '0.01', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.cost_in_dollars', 'Cost in dollars'),
-                  placeholder: '45.00',
-                  value: draft.cost,
-                  onChange: function(e) { updateDraft('cost', e.target.value); },
-                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
-              )
+              h('span', {
+                className: 'ar-log-hero-icon',
+                'aria-hidden': 'true',
+                style: { background: T.cardAlt, border: '1px solid ' + T.border }
+              }, '\uD83D\uDCD3')
             ),
-            h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
-              h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.service', '🔧 Service')),
-              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_description', 'Service description'), list: 'log-quick-services',
-                placeholder: __alloT('stem.autorepair.oil_filter_change', 'Oil + filter change'),
-                value: draft.service,
-                onChange: function(e) { updateDraft('service', e.target.value); },
-                style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } }),
-              h('datalist', { id: 'log-quick-services' },
-                quickServices.map(function(s, i) { return h('option', { key: i, value: s }); }))
-            ),
-            h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
-              h('span', { style: { fontWeight: 700 } }, __alloT('stem.autorepair.notes_oil_grade_parts_brand_shop_name_', '📝 Notes (oil grade, parts brand, shop name, etc.)')),
-              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': __alloT('stem.autorepair.service_notes', 'Service notes'),
-                placeholder: __alloT('stem.autorepair.synthetic_0w_20_oem_filter_mike_s_auto', 'Synthetic 0W-20, OEM filter, Mike\'s Auto on Main St'),
-                value: draft.notes,
-                onChange: function(e) { updateDraft('notes', e.target.value); },
-                style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
-            ),
-            h('button', { 'data-ar-focusable': true,
-              'aria-label': __alloT('stem.autorepair.save_service_log_entry', 'Save service log entry'),
-              onClick: saveEntry,
-              style: btnPrimary() }, __alloT('stem.autorepair.save_entry', '💾 Save entry'))
-          ),
-          entries.length > 0 && h('div', null,
-            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
-              h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, __alloT('stem.autorepair.entries_newest_first', '📋 Entries (newest first)')),
-              h('button', { 'data-ar-focusable': true,
-                'aria-label': __alloT('stem.autorepair.export_log_as_csv', 'Export log as CSV'), onClick: exportCSV, style: btnGhost() }, __alloT('stem.autorepair.export_csv', '📤 Export CSV'))
-            ),
-            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              entries.map(function(e) {
-                return h('div', { key: e.id, role: 'listitem',
-                  style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
-                    h('strong', { style: { fontSize: 13, color: T.accentHi } }, e.service),
-                    h('span', { style: { fontSize: 11, color: T.muted } }, '📅 ' + e.date),
-                    h('span', { style: { fontSize: 11, color: T.muted } }, '🛣️ ' + (e.odo || '—').toLocaleString()),
-                    h('span', { style: { fontSize: 11, color: T.good, fontWeight: 700 } }, '💵 $' + e.cost.toFixed(2)),
-                    h('button', { 'data-ar-focusable': true,
-                      'aria-label': __alloT('stem.autorepair.delete_this_entry', 'Delete this entry'),
-                      onClick: function() { deleteEntry(e.id); },
-                      style: Object.assign({}, btnGhost(), { marginLeft: 'auto', color: T.bad, fontSize: 10 }) }, __alloT('stem.autorepair.delete', '🗑️ Delete'))
-                  ),
-                  e.notes && h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 2 } }, e.notes)
+            h('div', {
+              className: 'ar-log-stats',
+              role: 'list',
+              'aria-label': 'Service log summary',
+              'data-ar-service-summary': true,
+              'data-ar-log-dashboard': true
+            },
+              [
+                { id: 'entries', label: 'Entries: ', value: String(entries.length), meta: entries.length === 1 ? 'service record' : 'service records' },
+                { id: 'cost', label: 'Total cost: ', value: entries.length ? '$' + totalSpent.toFixed(2) : '\u2014', meta: 'documented spend' },
+                { id: 'latest', label: 'Latest service: ', value: latestServiceDate || '\u2014', meta: latestServiceDate ? 'most recent date' : 'no date recorded' },
+                { id: 'odometer', label: 'Latest odometer: ', value: latestOdometer > 0 ? latestOdometer.toLocaleString() : '\u2014', meta: latestOdometer > 0 ? 'highest recorded mileage' : 'no mileage recorded' }
+              ].map(function(stat) {
+                return h('div', {
+                  key: stat.id, role: 'listitem', className: 'ar-log-stat',
+                  'data-ar-service-stat': stat.id, 'data-ar-log-stat': stat.id,
+                  style: { background: T.card, border: '1px solid ' + T.border }
+                },
+                  h('span', { className: 'ar-log-stat-label', style: { color: T.muted } },
+                    h('strong', { style: { color: T.accentHi } }, stat.label), stat.value),
+                  h('span', { className: 'ar-log-stat-value', style: { color: T.text } }, stat.value),
+                  h('span', { className: 'ar-log-stat-meta', style: { color: T.dim } }, stat.meta)
                 );
               })
             )
           ),
-          entries.length === 0 && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13, marginTop: 14 } },
-            __alloT('stem.autorepair.no_entries_yet_add_your_first_one_abov', 'No entries yet. Add your first one above.')),
+          h('div', { className: 'ar-log-layout', 'data-ar-service-layout': true },
+            h('form', {
+              noValidate: true,
+              onSubmit: function(event) { event.preventDefault(); saveEntry(); },
+              className: 'ar-log-form-card',
+              'data-ar-service-form-card': true,
+              'data-ar-log-form': true,
+              'data-ar-log-form-state': formState,
+              'data-ar-print-hide': 'true',
+              'aria-labelledby': 'autorepair-log-form-title',
+              style: { background: T.card, border: '1px solid ' + (errorKeys.length ? formErrorTone : T.accent), boxShadow: '0 10px 26px rgba(15,23,42,0.09)' }
+            },
+              h('div', { className: 'ar-log-form-head' },
+                h('h2', { id: 'autorepair-log-form-title', style: { margin: '0 0 5px', fontSize: 17, color: T.accentHi } }, '\u2795 Add service record'),
+                h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                  'Date and service are required. Add mileage, cost, and receipt details when available.')
+              ),
+              errorKeys.length > 0 && h('div', {
+                role: 'alert', 'aria-live': 'assertive',
+                'data-ar-log-errors': String(errorKeys.length),
+                'data-ar-service-error-summary': duplicateOnly ? 'duplicate' : 'invalid',
+                style: { padding: 11, borderRadius: 8, background: T.cardAlt, border: '2px solid ' + formErrorTone, color: T.text, fontSize: 12, marginBottom: 11, overflowWrap: 'anywhere' }
+              },
+                h('strong', { style: { color: formErrorTone } }, duplicateOnly ? 'Possible duplicate:' : 'Check this entry:'),
+                h('ul', { style: { margin: '5px 0 0', paddingLeft: 18, lineHeight: 1.55 } },
+                  errorKeys.map(function(key) { return h('li', { key: key }, formErrors[key]); }))
+              ),
+              h('div', { className: 'ar-log-form-grid', 'data-ar-service-form-grid': true },
+                h('label', { className: 'ar-log-field', style: { fontSize: 11, color: T.text } },
+                  h('span', { style: { fontWeight: 800 } }, '\uD83D\uDCC5 Date (required)'),
+                  h('input', { type: 'date', 'data-ar-focusable': true, required: true, max: todayIso,
+                    'aria-label': 'Service date', 'aria-invalid': formErrors.date ? 'true' : 'false',
+                    'aria-describedby': formErrors.date ? 'autorepair-log-error-date' : undefined,
+                    value: draft.date, onChange: function(event) { updateDraft('date', event.target.value); },
+                    style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.date ? T.bad : T.border), fontSize: 13 } }),
+                  fieldError('date')
+                ),
+                h('label', { className: 'ar-log-field', style: { fontSize: 11, color: T.text } },
+                  h('span', { style: { fontWeight: 800 } }, '\uD83D\uDEE3\uFE0F Odometer'),
+                  h('input', { type: 'number', 'data-ar-focusable': true, min: 0, max: 1500000, step: 1,
+                    'aria-label': 'Odometer mileage', 'aria-invalid': formErrors.odo ? 'true' : 'false',
+                    'aria-describedby': formErrors.odo ? 'autorepair-log-error-odo' : undefined,
+                    placeholder: '85432', value: draft.odo, onChange: function(event) { updateDraft('odo', event.target.value); },
+                    style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.odo ? T.bad : T.border), fontSize: 13 } }),
+                  fieldError('odo')
+                ),
+                h('label', { className: 'ar-log-field ar-log-field-wide', style: { fontSize: 11, color: T.text } },
+                  h('span', { style: { fontWeight: 800 } }, '\uD83D\uDD27 Service (required)'),
+                  h('input', { type: 'text', 'data-ar-focusable': true, required: true, maxLength: 120, list: 'log-quick-services',
+                    'aria-label': 'Service description', 'aria-invalid': formErrors.service ? 'true' : 'false',
+                    'aria-describedby': formErrors.service ? 'autorepair-log-error-service' : undefined,
+                    placeholder: 'Oil + filter change', value: draft.service,
+                    onChange: function(event) { updateDraft('service', event.target.value); },
+                    style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.service ? T.bad : T.border), fontSize: 13 } }),
+                  h('datalist', { id: 'log-quick-services' }, quickServices.map(function(service, index) { return h('option', { key: index, value: service }); })),
+                  fieldError('service')
+                ),
+                h('label', { className: 'ar-log-field', style: { fontSize: 11, color: T.text } },
+                  h('span', { style: { fontWeight: 800 } }, '\uD83D\uDCB5 Cost'),
+                  h('input', { type: 'number', step: '0.01', 'data-ar-focusable': true, min: 0, max: 1000000,
+                    'aria-label': 'Cost in dollars', 'aria-invalid': formErrors.cost ? 'true' : 'false',
+                    'aria-describedby': formErrors.cost ? 'autorepair-log-error-cost' : undefined,
+                    placeholder: '45.00', value: draft.cost, onChange: function(event) { updateDraft('cost', event.target.value); },
+                    style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.cost ? T.bad : T.border), fontSize: 13 } }),
+                  fieldError('cost')
+                ),
+                h('label', { className: 'ar-log-field ar-log-field-wide', style: { fontSize: 11, color: T.text } },
+                  h('span', { style: { fontWeight: 800 } }, '\uD83D\uDCDD Notes (oil grade, parts brand, shop name, warranty, etc.)'),
+                  h('textarea', { 'data-ar-focusable': true, rows: 4, maxLength: 500,
+                    'aria-label': 'Service notes', 'aria-invalid': formErrors.notes ? 'true' : 'false',
+                    'aria-describedby': formErrors.notes ? 'autorepair-log-error-notes' : undefined,
+                    placeholder: 'Synthetic 0W-20, OEM filter, receipt saved', value: draft.notes,
+                    onChange: function(event) { updateDraft('notes', event.target.value); },
+                    style: { padding: 9, borderRadius: 7, background: T.bg, color: T.text, border: '1px solid ' + (formErrors.notes ? T.bad : T.border), fontSize: 13, resize: 'vertical' } }),
+                  fieldError('notes')
+                )
+              ),
+              formErrors.duplicate && h('div', {
+                id: 'autorepair-log-error-duplicate', 'data-ar-log-duplicate': true,
+                style: { color: T.warn, fontSize: 11, fontWeight: 750, lineHeight: 1.45, marginTop: 9, padding: '8px 9px', borderLeft: '4px solid ' + T.warn, background: T.cardAlt, overflowWrap: 'anywhere' }
+              }, formErrors.duplicate),
+              h('div', { className: 'ar-log-form-footer', style: { borderTop: '1px solid ' + T.border } },
+                h('span', { style: { color: T.dim, fontSize: 11, lineHeight: 1.4 } }, 'Records stay with this tool until you remove them.'),
+                h('button', { type: 'submit', 'data-ar-focusable': true, 'aria-label': 'Save service log entry', style: btnPrimary() }, '\uD83D\uDCBE Save entry')
+              )
+            ),
+            h('section', {
+              className: 'ar-log-ledger',
+              'data-ar-service-ledger': true,
+              'aria-labelledby': 'autorepair-log-timeline-title',
+              style: { background: T.card, border: '1px solid ' + T.border, boxShadow: '0 10px 26px rgba(15,23,42,0.08)' }
+            },
+              h('div', { className: 'ar-log-toolbar', 'data-ar-service-records-toolbar': true },
+                h('div', null,
+                  h('h2', { id: 'autorepair-log-timeline-title', style: { margin: '0 0 4px', fontSize: 17, color: T.accentHi } }, '\uD83D\uDCCB Service history'),
+                  h('p', { style: { margin: 0, color: T.muted, fontSize: 11, lineHeight: 1.45 } },
+                    entries.length ? entries.length + (entries.length === 1 ? ' record, newest first' : ' records, newest first') : 'Your saved records will appear here.')
+                ),
+                entries.length > 0 && h('div', { className: 'ar-log-export-actions', 'data-ar-print-hide': 'true' },
+                  h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-log-export': 'download', 'data-ar-service-export-action': 'download',
+                    'aria-label': 'Download service log as CSV', onClick: downloadCSV, style: btnSecondary() }, '\u2B07\uFE0F Download CSV'),
+                  h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-log-export': 'copy', 'data-ar-service-export-action': 'copy',
+                    'aria-label': 'Copy service log CSV', onClick: function() { copyCSV(); }, style: btnGhost() }, '\uD83D\uDCCB Copy CSV')
+                )
+              ),
+              undoEntry && h('div', {
+                role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+                className: 'ar-log-undo', 'data-ar-log-undo': undoEntry.id,
+                'data-ar-service-undo-toast': undoEntry.id, 'data-ar-print-hide': 'true',
+                style: { padding: 11, borderRadius: 9, background: T.cardAlt, border: '2px solid ' + T.warn }
+              },
+                h('span', { style: { flex: 1, minWidth: 180, color: T.text, fontSize: 12 } }, 'Removed ', h('strong', null, undoEntry.service), '.'),
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: undoDelete, style: btnSecondary() }, '\u21A9 Undo'),
+                h('button', { type: 'button', 'data-ar-focusable': true, onClick: dismissUndo, style: btnGhost() }, 'Dismiss')
+              ),
+              entries.length > 0 && h('ol', {
+                role: 'list', className: 'ar-log-timeline',
+                'data-ar-service-list': true, 'data-ar-log-timeline': true
+              },
+                entries.map(function(entry) {
+                  var confirming = pendingDelete === entry.id;
+                  return h('li', {
+                    key: entry.id, role: 'listitem', className: 'ar-log-entry-wrap',
+                    'data-ar-log-entry': entry.id,
+                    'data-ar-log-entry-state': confirming ? 'confirming' : 'normal'
+                  },
+                    h('span', {
+                      className: 'ar-log-marker', 'data-ar-log-marker': true, 'aria-hidden': 'true',
+                      style: { color: confirming ? T.bad : T.accent, background: T.card }
+                    }),
+                    h('article', {
+                      className: 'ar-log-entry', 'data-ar-service-entry': entry.id,
+                      'data-ar-log-entry-state': confirming ? 'confirming' : 'normal',
+                      style: { background: T.cardAlt, border: '1px solid ' + (confirming ? T.bad : T.border) }
+                    },
+                      h('div', { className: 'ar-log-entry-head' },
+                        h('h3', { className: 'ar-log-entry-title', style: { color: T.accentHi } }, entry.service),
+                        !confirming && h('button', {
+                          type: 'button', 'data-ar-focusable': true, 'data-ar-print-hide': 'true',
+                          'aria-label': 'Delete ' + entry.service + ' from ' + (entry.date || 'unknown date'),
+                          onClick: function() { requestDelete(entry); },
+                          style: Object.assign({}, btnGhost(), { color: T.bad, fontSize: 11 })
+                        }, '\uD83D\uDDD1\uFE0F Delete')
+                      ),
+                      h('dl', { className: 'ar-log-meta' },
+                        h('div', { style: { background: T.card, border: '1px solid ' + T.border } },
+                          h('dt', { style: { color: T.dim } }, 'Service date'),
+                          h('dd', { style: { color: T.text } }, entry.date || 'Date not recorded')
+                        ),
+                        h('div', { style: { background: T.card, border: '1px solid ' + T.border } },
+                          h('dt', { style: { color: T.dim } }, 'Odometer'),
+                          h('dd', { style: { color: T.text } }, entry.odo ? entry.odo.toLocaleString() : '\u2014')
+                        ),
+                        h('div', { style: { background: T.card, border: '1px solid ' + T.border } },
+                          h('dt', { style: { color: T.dim } }, 'Documented cost'),
+                          h('dd', { style: { color: T.good } }, '$' + entry.cost.toFixed(2))
+                        )
+                      ),
+                      entry.notes && h('p', { className: 'ar-log-notes', style: { color: T.muted, borderTop: '1px solid ' + T.border } }, entry.notes),
+                      confirming && h('div', {
+                        role: 'group', 'aria-label': 'Confirm deletion of ' + entry.service,
+                        'data-ar-log-delete-confirm': entry.id, 'data-ar-print-hide': 'true',
+                        className: 'ar-log-confirm',
+                        style: { padding: 10, borderRadius: 8, background: T.card, border: '2px solid ' + T.bad, display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }
+                      },
+                        h('strong', { style: { flex: 1, minWidth: 190, color: T.bad, fontSize: 12 } }, 'Delete this record? You can undo immediately afterward.'),
+                        h('button', { type: 'button', 'data-ar-focusable': true, onClick: cancelDelete, style: btnSecondary() }, 'Cancel'),
+                        h('button', { type: 'button', 'data-ar-focusable': true, onClick: function() { confirmDelete(entry.id); },
+                          style: btnPrimary({ background: T.bad, borderColor: T.bad, color: '#ffffff' }) }, 'Delete record')
+                      )
+                    )
+                  );
+                })
+              ),
+              entries.length === 0 && h('div', {
+                role: 'status', className: 'ar-log-empty',
+                'data-ar-service-empty': true, 'data-ar-log-empty': true,
+                'aria-labelledby': 'autorepair-log-empty-title',
+                style: { background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim }
+              },
+                h('span', { className: 'ar-log-empty-icon', 'aria-hidden': 'true', style: { background: T.card, border: '1px solid ' + T.border } }, '\uD83E\uDDFE'),
+                h('h3', { id: 'autorepair-log-empty-title', style: { margin: '0 0 6px', color: T.text, fontSize: 16 } }, 'No service records yet'),
+                h('p', { style: { maxWidth: 360, margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                  'Add your first service record in the form. Dates, mileage, costs, and notes will build a clear ownership history here.')
+              )
+            )
+          ),
           disclaimerFooter()
         );
+
       }
 
       // ─────────────────────────────────────────
@@ -8745,72 +13872,132 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // LEARNING PATH view — 4-week curated walkthrough
       // ─────────────────────────────────────────
       function renderPath() {
-        var done = d.pathDone || {};
-        var totalMods = LEARNING_PATH.reduce(function(acc, w) { return acc + w.modules.length; }, 0);
-        var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
+        var rawDone = d.pathDone;
+        var done = rawDone && typeof rawDone === 'object' && !Array.isArray(rawDone) ? rawDone : {};
+        var pathKeys = [];
+        var totalMods = 0;
+        LEARNING_PATH.forEach(function(w) {
+          w.modules.forEach(function(m) {
+            pathKeys.push('w' + w.week + '-' + m.id);
+            totalMods++;
+          });
+        });
+        var doneCount = pathKeys.filter(function(k) { return done[k] === true; }).length;
         var pct = totalMods > 0 ? Math.round((doneCount / totalMods) * 100) : 0;
-        if (doneCount === totalMods) awardBadge('path-graduate', 'Curriculum Path Graduate');
+        var pathState = doneCount === 0 ? 'empty' : (doneCount === totalMods ? 'complete' : 'in-progress');
 
-        // Map module ids to readable labels (same as menu)
         var MOD_LABELS = {
-          firstcar: 'First car? Start here', vin: 'VIN decoder', maint: 'Maintenance schedule',
+          firstcar: 'First car? Start here', underhood: 'Under-hood tour (3D)', vin: 'VIN decoder', maint: 'Maintenance schedule',
           glossary: 'Glossary', diagnose: 'Diagnose', tree: 'Decision tree', damage: 'Damage ID game',
-          lab: 'Hands-on lab simulator', safety: 'Safety modules', tools: 'Tool selection',
-          repair: 'Repair scenarios', log: 'Service log', estimate: 'Estimate decoder',
+          lab: 'Hands-on lab simulator', repairbay: 'Repair Bay (3D)', safety: 'Safety modules', tools: 'Tool selection',
+          repair: 'Repair scenarios', tyre: 'Change a tyre (3D)', log: 'Service log', estimate: 'Estimate decoder',
           scams: 'Common scams', roi: 'Repair ROI calculator', usedcar: 'Buying a used car',
           career: 'Career path', race: 'Race mechanic'
         };
+        var weekCounts = {};
+        var firstIncompleteWeek = null;
+        var nextTarget = null;
+        LEARNING_PATH.forEach(function(w) {
+          var count = w.modules.filter(function(m) { return done['w' + w.week + '-' + m.id] === true; }).length;
+          weekCounts[w.week] = count;
+          if (firstIncompleteWeek == null && count < w.modules.length) firstIncompleteWeek = w.week;
+          if (!nextTarget) {
+            w.modules.some(function(m) {
+              var key = 'w' + w.week + '-' + m.id;
+              if (done[key] !== true) {
+                nextTarget = { week: w.week, id: m.id, key: key, label: MOD_LABELS[m.id] || m.id };
+                return true;
+              }
+              return false;
+            });
+          }
+        });
 
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-          backBar('🛤️ Recommended learning path'),
-          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, __alloT('stem.autorepair.a_4_week_curated_walkthrough', '🛤️ A 4-week curated walkthrough')),
-            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
-              __alloT('stem.autorepair.new_here_this_is_the_most_valuable_4_w', 'New here? This is the most valuable 4 weeks you can spend in this tool. '),
-              h('strong', { style: { color: T.accentHi } }, __alloT('stem.autorepair.each_week', 'Each week: ')), __alloT('stem.autorepair.theme_3_6_target_modules_measurable_ou', 'theme + 3-6 target modules + measurable outcome. '),
-              h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalMods + ' modules (' + pct + '%)')
+        return h('main', { role: 'main', className: 'ar-path-shell', 'data-ar-path-shell': true, 'data-ar-path-state': pathState, 'data-ar-path-progress-value': pct, style: { color: T.text } },
+          backBar('🛤️ Recommended learning path', 'Learning Path navigation'),
+          h('header', { className: 'ar-path-hero', 'data-ar-path-hero': true, 'aria-labelledby': 'autorepair-path-title', style: { background: 'linear-gradient(135deg, ' + T.card + ', ' + T.cardAlt + ')', border: '1px solid ' + T.border, boxShadow: '0 14px 34px rgba(15,23,42,0.12)' } },
+            h('div', { className: 'ar-path-hero-copy' },
+              h('span', { className: 'ar-path-eyebrow', style: { color: T.accentHi } }, h('span', { 'aria-hidden': 'true' }, '🛤️'), 'Recommended sequence'),
+              h('h1', { id: 'autorepair-path-title', className: 'ar-path-title', style: { color: T.text } }, __alloT('stem.autorepair.a_4_week_curated_walkthrough', 'A 4-week curated walkthrough')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 14, lineHeight: 1.62 } },
+                __alloT('stem.autorepair.new_here_this_is_the_most_valuable_4_w', 'New here? This is the most valuable 4 weeks you can spend in this tool. '),
+                h('strong', { style: { color: T.text } }, __alloT('stem.autorepair.each_week', 'Each week: ')), __alloT('stem.autorepair.theme_3_6_target_modules_measurable_ou', 'theme + 3-6 target modules + measurable outcome.'))
+            ),
+            h('div', { className: 'ar-path-dashboard', style: { background: T.card, border: '1px solid ' + T.border } },
+              h('div', { className: 'ar-path-stats', 'aria-label': 'Learning Path summary' },
+                h('div', { className: 'ar-path-stat', 'data-ar-path-stat': 'weeks', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.accentHi } }, LEARNING_PATH.length), h('span', { style: { color: T.muted } }, 'Curated weeks')),
+                h('div', { className: 'ar-path-stat', 'data-ar-path-stat': 'modules', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: T.text } }, totalMods), h('span', { style: { color: T.muted } }, 'Target modules')),
+                h('div', { className: 'ar-path-stat', 'data-ar-path-stat': 'visited', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('strong', { style: { color: doneCount === totalMods ? T.good : T.accentHi } }, doneCount), h('span', { style: { color: T.muted } }, 'Modules visited'))
+              ),
+              h('div', { role: 'progressbar', className: 'ar-path-progress', 'data-ar-path-progress': true, 'aria-label': 'Learning Path progress', 'aria-valuemin': 0, 'aria-valuemax': totalMods, 'aria-valuenow': doneCount, 'aria-valuetext': doneCount + ' of ' + totalMods + ' modules visited' },
+                h('div', { className: 'ar-path-progress-head' }, h('span', { className: 'ar-path-progress-label', style: { color: T.text } }, 'Roadmap progress'), h('span', { className: 'ar-path-progress-value', style: { color: T.muted } }, pct + '%')),
+                h('div', { className: 'ar-path-progress-track', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('div', { className: 'ar-path-progress-fill', style: { width: pct + '%', background: doneCount === totalMods ? T.good : T.accent } }))
+              ),
+              nextTarget ? h('button', { type: 'button', className: 'ar-path-next', 'data-ar-path-next': nextTarget.key, 'data-ar-focusable': true, onClick: function() { setView(nextTarget.id); }, style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer' } },
+                h('span', { className: 'ar-path-next-copy' }, h('span', { className: 'ar-path-next-kicker', style: { color: T.accentHi } }, 'Next suggested · Week ' + nextTarget.week), h('span', { className: 'ar-path-next-label' }, nextTarget.label)), h('span', { 'aria-hidden': 'true' }, '→')
+              ) : h('div', { className: 'ar-path-next', 'data-ar-path-next-state': 'complete', style: { background: T.cardAlt, color: T.text, border: '1px solid ' + T.good } }, h('span', { className: 'ar-path-next-copy' }, h('span', { className: 'ar-path-next-kicker', style: { color: T.good } }, 'Roadmap complete'), h('span', { className: 'ar-path-next-label' }, 'All ' + totalMods + ' modules are marked visited.')), h('span', { 'aria-hidden': 'true' }, '✓')),
+              h('span', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'ar-path-status', 'data-ar-path-status': true, style: { color: T.muted } }, doneCount + ' of ' + totalMods + ' modules visited')
+            )
           ),
-          LEARNING_PATH.map(function(w) {
-            var weekDoneCount = w.modules.filter(function(m) { return done[m.id]; }).length;
-            return h('div', { key: w.week, style: { marginBottom: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (weekDoneCount === w.modules.length ? T.good : T.accent) } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
-                h('span', { style: { fontSize: 28 } }, w.icon),
-                h('div', { style: { flex: 1 } },
-                  h('h4', { style: { margin: 0, fontSize: 16, color: T.accentHi } }, w.title),
-                  h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, weekDoneCount + ' / ' + w.modules.length + ' modules touched')
-                ),
-                weekDoneCount === w.modules.length && h('span', { style: { fontSize: 22, color: T.good } }, '✓')
-              ),
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.text, lineHeight: 1.55, fontStyle: 'italic' } }, w.theme),
-              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
-                w.modules.map(function(m, i) {
-                  var key = 'w' + w.week + '-' + m.id;
-                  var isDone = !!done[key];
-                  var label = MOD_LABELS[m.id] || m.id;
-                  return h('div', { key: key, role: 'listitem' }, h('button', { 'data-ar-focusable': true,
-                    'aria-label': label + (isDone ? ' (done)' : ''),
-                    onClick: function() {
-                      var nv = Object.assign({}, done); nv[key] = !nv[key];
-                      upd('pathDone', nv);
-                    },
-                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
-                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
-                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
-                      h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.accentHi, flex: 1 } }, '→ ' + label)
+          h('ol', { className: 'ar-path-week-list', 'data-ar-path-timeline': true, style: { color: T.accentHi } },
+            LEARNING_PATH.map(function(w) {
+              var weekDoneCount = weekCounts[w.week];
+              var weekPct = Math.round((weekDoneCount / w.modules.length) * 100);
+              var weekState = weekDoneCount === w.modules.length ? 'complete' : (w.week === firstIncompleteWeek ? 'current' : 'upcoming');
+              var stateLabel = weekState === 'complete' ? 'Complete' : (weekState === 'current' ? 'Current week' : 'Upcoming');
+              return h('li', { key: w.week, className: 'ar-path-week-wrap' },
+                h('span', { className: 'ar-path-week-marker', 'aria-hidden': 'true', style: { background: weekState === 'complete' ? T.good : T.accent, color: onStrongFill, border: '3px solid ' + T.card } }, weekState === 'complete' ? '✓' : w.week),
+                h('section', { id: 'autorepair-path-week-' + w.week, className: 'ar-path-week', 'data-ar-path-week': w.week, 'data-ar-path-week-state': weekState, 'aria-current': weekState === 'current' ? 'step' : undefined, 'aria-labelledby': 'autorepair-path-week-title-' + w.week, style: { background: T.card, border: '2px solid ' + (weekState === 'complete' ? T.good : (weekState === 'current' ? T.accent : T.border)) } },
+                  h('div', { className: 'ar-path-week-head' },
+                    h('div', { className: 'ar-path-week-title-wrap' },
+                      h('span', { className: 'ar-path-week-icon', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, w.icon),
+                      h('div', { style: { minWidth: 0, flex: 1 } },
+                        h('h2', { id: 'autorepair-path-week-title-' + w.week, style: { color: T.text } }, w.title),
+                        h('span', { className: 'ar-path-week-count', style: { color: T.muted } }, weekDoneCount + ' of ' + w.modules.length + ' modules visited'),
+                        h('div', { role: 'progressbar', className: 'ar-path-week-progress', 'data-ar-path-week-progress': w.week, 'aria-label': 'Week ' + w.week + ' progress', 'aria-valuemin': 0, 'aria-valuemax': w.modules.length, 'aria-valuenow': weekDoneCount, 'aria-valuetext': weekDoneCount + ' of ' + w.modules.length + ' modules visited' },
+                          h('div', { className: 'ar-path-week-track', 'aria-hidden': 'true', style: { background: T.cardAlt, border: '1px solid ' + T.border } }, h('div', { className: 'ar-path-week-fill', style: { width: weekPct + '%', background: weekState === 'complete' ? T.good : T.accent } }))
+                        )
+                      )
                     ),
-                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
-                      h('strong', { style: { color: T.dim } }, 'Why: '), m.why),
-                    h('div', { style: { marginTop: 6, marginLeft: 22 } },
-                      h('a', { href: '#', onClick: function(e) { e.preventDefault(); e.stopPropagation(); setView(m.id); },
-                        style: { fontSize: 11, color: T.link, textDecoration: 'underline' } },
-                        '🔗 Open ' + label + ' →'))
-                  ));
-                })
-              ),
-              h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-                h('strong', { style: { color: T.accentHi } }, '🎯 Outcome by end of week ' + w.week + ': '), w.outcome)
-            );
-          }),
+                    h('span', { className: 'ar-path-week-state', style: { background: weekState === 'complete' ? T.good : (weekState === 'current' ? T.accent : T.cardAlt), color: weekState === 'complete' || weekState === 'current' ? onStrongFill : T.text, border: '1px solid ' + (weekState === 'complete' ? T.good : (weekState === 'current' ? T.accent : T.border)) } }, stateLabel)
+                  ),
+                  h('p', { className: 'ar-path-theme', style: { background: T.cardAlt, color: T.text, borderColor: weekState === 'complete' ? T.good : T.accent } }, w.theme),
+                  h('ul', { role: 'list', className: 'ar-path-module-list' },
+                    w.modules.map(function(m, i) {
+                      var key = 'w' + w.week + '-' + m.id;
+                      var isDone = done[key] === true;
+                      var label = MOD_LABELS[m.id] || m.id;
+                      return h('li', { key: key, className: 'ar-path-module-wrap' },
+                        h('article', { id: 'autorepair-path-module-' + key, className: 'ar-path-module', 'data-ar-path-module': m.id, 'data-ar-path-key': key, 'data-ar-path-module-state': isDone ? 'visited' : 'ready', style: { background: T.cardAlt, border: '2px solid ' + (isDone ? T.good : T.border) } },
+                          h('div', { className: 'ar-path-module-head' },
+                            h('span', { className: 'ar-path-module-index', 'aria-hidden': 'true', style: { background: isDone ? T.good : T.card, color: isDone ? onStrongFill : T.text, border: '1px solid ' + (isDone ? T.good : T.border) } }, w.week + '.' + (i + 1)),
+                            h('div', { className: 'ar-path-module-title' }, h('h3', { style: { color: T.text } }, label), h('span', { className: 'ar-path-module-state', style: { background: isDone ? T.good : T.card, color: isDone ? onStrongFill : T.text, border: '1px solid ' + (isDone ? T.good : T.border) } }, isDone ? '✓ Visited' : 'Not visited'))
+                          ),
+                          h('p', { className: 'ar-path-module-why', style: { color: T.muted } }, h('strong', { style: { display: 'block', marginBottom: 4, color: T.text } }, 'Why this module'), m.why),
+                          h('div', { className: 'ar-path-module-actions', 'data-ar-path-print-hide': 'true' },
+                            h('button', { type: 'button', className: 'ar-path-toggle', 'data-ar-path-toggle': key, 'data-ar-focusable': true, 'aria-pressed': isDone ? 'true' : 'false', 'aria-label': (isDone ? 'Undo visited: ' : 'Mark visited: ') + label, onClick: function() {
+                              var nv = Object.assign({}, done);
+                              var nextValue = !isDone;
+                              nv[key] = nextValue;
+                              var nextDoneCount = pathKeys.filter(function(pathKey) { return nv[pathKey] === true; }).length;
+                              upd('pathDone', nv);
+                              arAnnounce(label + (nextValue ? ' marked visited.' : ' marked not visited.'));
+                              if (nextValue && nextDoneCount === totalMods) awardBadge('path-graduate', 'Curriculum Path Graduate');
+                            }, style: Object.assign({}, btnSecondary(), { background: T.card, color: T.text, border: '1px solid ' + (isDone ? T.good : T.border) }) }, isDone ? '↩ Undo visited' : '✓ Mark visited'),
+                            h('button', { type: 'button', className: 'ar-path-open', 'data-ar-path-open': m.id, 'data-ar-focusable': true, 'aria-label': 'Open ' + label, onClick: function() { setView(m.id); }, style: Object.assign({}, btnSecondary(), { background: T.card, color: T.link, border: '1px solid ' + T.accent }) }, 'Open module →')
+                          )
+                        )
+                      );
+                    })
+                  ),
+                  h('aside', { className: 'ar-path-outcome', 'data-ar-path-outcome': w.week, 'aria-labelledby': 'autorepair-path-outcome-title-' + w.week, style: { background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('h3', { id: 'autorepair-path-outcome-title-' + w.week, style: { color: T.accentHi } }, '🎯 Outcome by end of week ' + w.week),
+                    h('p', { style: { color: T.muted } }, w.outcome)
+                  )
+                )
+              );
+            })
+          ),
           disclaimerFooter()
         );
       }
@@ -9061,6 +14248,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         return h('div', {
           ref: V.attach,
+          className: 'ar-bay-viewport',
+          'data-ar-bay-state': cfg.engineState || 'inspection',
           tabIndex: 0,
           role: 'group',
           'data-ar-focusable': true,
@@ -9072,7 +14261,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             background: isContrast ? '#000' : (isDark ? '#0b1220' : '#e2e8f0'),
             border: '1px solid ' + T.border
           }
-        }, note && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: T.muted, lineHeight: 1.55 } }, note));
+        },
+          h('div', { className: 'ar-bay-viewport-hud', 'aria-hidden': 'true' },
+            h('span', { className: 'ar-bay-viewport-hud-dot' }),
+            h('b', null, '3D')),
+          note && h('div', { style: { position: 'absolute', zIndex: 4, inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: T.muted, lineHeight: 1.55 } }, note));
       }
 
       function bayControls(cfg) {
@@ -9084,7 +14277,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             disabled: !live, onClick: fn,
             style: btnGhost({ opacity: live ? 1 : 0.45, cursor: live ? 'pointer' : 'not-allowed', minWidth: 34 }) }, glyph);
         }
-        return h('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' } },
+        return h('div', { className: 'ar-bay-controls' },
           ctl('Rotate view left', '⟲', function () { V.nudge(-0.28, 0); }),
           ctl('Rotate view right', '⟳', function () { V.nudge(0.28, 0); }),
           ctl('Tilt view up', '▲', function () { V.nudge(0, 0.16); }),
@@ -9178,15 +14371,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
 
             // ── 3D viewport (enhancement; the list below is the content path) ──
-            h('div', null,
+            h('div', { className: 'ar-bay-viewer-frame', 'data-ar-bay-frame': 'underhood' },
               bayViewport({
                 label: __alloT('stem.autorepair.uh_viewer_label', 'Engine bay, 3D'),
                 height: 340,
+                engineState: 'inspection',
                 failText: viewerNote,
                 loadText: viewerNote
               }),
               // Orientation legend — the 3D scene carries no text of its own.
-              h('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 10.5, color: T.dim, fontWeight: 700, letterSpacing: '.03em' } },
+              h('div', { className: 'ar-bay-orientation', 'aria-hidden': 'true' },
                 h('span', null, '◀ PASSENGER SIDE'),
                 h('span', null, 'GRILLE / FRONT'),
                 h('span', null, 'DRIVER SIDE ▶')
@@ -9406,6 +14600,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         UH3D.sync({
           selected: sel, marks: marks, dark: isDark, contrast: isContrast,
+          sceneKey: 'repair-bay-' + engine,
+          sceneProps: { engineRunning: engine === 'running' },
           onPick: inspect,
           onStatus: function (n) { upd('uh3dStatus', n); }
         });
@@ -9440,7 +14636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           ),
 
           // Engine state — the mechanic that makes evidence and safety real
-          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (engine === 'running' ? T.warn : T.border), marginBottom: 12 } },
+          h('div', { className: 'ar-repair-engine-state', 'data-ar-engine-state': engine, style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (engine === 'running' ? T.warn : T.border), marginBottom: 12 } },
             h('span', { style: { fontSize: 12, fontWeight: 800, color: T.text } },
               h('span', { 'aria-hidden': 'true' }, engine === 'running' ? '🔊 ' : '🔇 '),
               __alloT('stem.autorepair.rb_engine', 'Engine: '), engine === 'running' ? __alloT('stem.autorepair.rb_running', 'RUNNING') : __alloT('stem.autorepair.rb_off', 'OFF')),
@@ -9466,15 +14662,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
             // 3D bay
-            h('div', null,
+            h('div', { className: 'ar-bay-viewer-frame', 'data-ar-bay-frame': 'repair' },
               bayViewport({
                 label: __alloT('stem.autorepair.rb_viewer_label', 'Engine bay for this case, 3D'),
                 height: 300,
+                engineState: engine,
                 failText: __alloT('stem.autorepair.rb_3d_failed', '3D bay unavailable — inspect using the buttons below. Nothing in this case needs the 3D view.'),
                 loadText: __alloT('stem.autorepair.rb_3d_loading', 'Loading the bay…')
               }),
               bayControls(null),
-              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+              h('div', { className: 'ar-bay-hint', style: { fontSize: 10.5, lineHeight: 1.5 } },
                 __alloT('stem.autorepair.rb_3d_hint', 'Click a part in the bay to inspect it, or use the buttons — they do the same thing. Green = already inspected.')),
               selFinding && h('div', { style: { marginTop: 8, padding: 11, borderRadius: 8, background: T.card, border: '1px solid ' + (selFinding.key ? T.good : T.border) } },
                 h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
@@ -9651,7 +14848,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // requires the canvas.
       // ─────────────────────────────────────────
       function renderTireChange() {
-        var doneIds = d.tcDone || [];
+        var doneIds = Array.isArray(d.tcDone) ? d.tcDone : (typeof d.tcDone === 'number' && isFinite(d.tcDone) ? TIRE_STEPS.slice(0, Math.max(0, Math.min(TIRE_STEPS.length, Math.floor(d.tcDone)))).map(function(step) { return step.id; }) : []);
         var wrong = d.tcWrong || 0;
         var violations = d.tcViolations || [];
         var last = d.tcLast || null;
@@ -9845,16 +15042,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             __alloT('stem.autorepair.tc_rule', 'a jack lifts a car, it does not hold one. Nothing of you goes under a car supported only by a jack — not an arm, not your head, ever. A roadside wheel change never needs you under there.')),
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
-            h('div', null,
+            h('div', { className: 'ar-bay-viewer-frame', 'data-ar-bay-frame': 'wheel' },
               bayViewport({
                 viewer: TIRE3D,
                 label: __alloT('stem.autorepair.tc_viewer_label', 'Car corner and wheel, 3D'),
                 height: 300,
+                engineState: 'procedure',
                 failText: __alloT('stem.autorepair.tc_3d_failed', '3D view unavailable — the full procedure is in the buttons below and nothing here needs the picture.'),
                 loadText: __alloT('stem.autorepair.tc_3d_loading', 'Loading the car…')
               }),
               bayControls({ viewer: TIRE3D }),
-              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+              h('div', { className: 'ar-bay-hint', style: { fontSize: 10.5, lineHeight: 1.5 } },
                 __alloT('stem.autorepair.tc_3d_hint', 'The car changes as you work: the chock appears, the jack goes under, the corner lifts, the wheel comes off. Click any part to read what it is. Every action is also a button below.')),
               selPart && h('div', { style: { marginTop: 8, padding: 11, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
                 h('div', { style: { fontSize: 12.5, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },

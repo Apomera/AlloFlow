@@ -9,22 +9,31 @@ import { resolve } from 'node:path';
 // mis-grading cell-manipulative problems — followed by unreachable dup wave/cell
 // else-ifs. Fixed by deleting the duplicate; these pins keep it from recurring.
 const vm = readFileSync(resolve(process.cwd(), 'view_math_source.jsx'), 'utf8');
+const graderModule = readFileSync(resolve(process.cwd(), 'math_manipulative_grader_module.js'), 'utf8');
 
-describe('math<->manipulative bridge: manipulativeResponse grading has no duplicate branches', () => {
-  it('has exactly ONE grading branch each for calculus / wave / cell', () => {
+describe('math<->manipulative bridge: grading delegates to one defensive implementation', () => {
+  it('delegates the check action to MathManipulativeGrader', () => {
     const count = (tool) => (vm.match(new RegExp("manipulativeResponse\\.tool === '" + tool + "'", 'g')) || []).length;
-    expect(count('calculus')).toBe(1);
-    expect(count('wave')).toBe(1);
-    expect(count('cell')).toBe(1);
+    expect(count('calculus')).toBe(0);
+    expect(count('wave')).toBe(0);
+    expect(count('cell')).toBe(0);
+    expect(vm).toContain('gradeMathViewManipulativeResponse(');
   });
   it('the cell branch grades CELL state, never overwrites isCorrect with calculus (the mis-grade bug)', () => {
     // the exact removed defect: cell sets selectedOrganelle, then `const lcl = labToolData.calculus` overwrites it
     expect(vm).not.toMatch(/selectedOrganelle[\s\S]{0,120}?const lcl = labToolData\.calculus/);
   });
-  it('still grades the standard manipulative tools (sanity — the fix only removed the dup)', () => {
+  it('keeps the standard manipulative tools in the pure grader registry', () => {
     for (const tool of ['coordinate', 'base10', 'numberline', 'fractions', 'volume', 'protractor', 'funcGrapher', 'calculus', 'wave', 'cell']) {
-      expect(vm).toMatch(new RegExp("manipulativeResponse\\.tool === '" + tool + "'"));
+      expect(graderModule).toContain('\n  ' + tool + '(');
     }
+  });
+});
+
+describe('pure manipulative grader registry', () => {
+  it('covers every tool exposed by the MathView bridge', () => {
+    const tools = ['coordinate', 'base10', 'numberline', 'fractions', 'volume', 'protractor', 'funcGrapher', 'physics', 'chemBalance', 'punnett', 'circuit', 'dataPlot', 'inequality', 'molecule', 'calculus', 'wave', 'cell'];
+    for (const tool of tools) expect(graderModule).toContain('\n  ' + tool + '(');
   });
 });
 
@@ -45,11 +54,19 @@ describe('math<->manipulative bridge step 1b: toggle control + tool-list parity 
     }
   });
   it('scaffold (support) seeds richer state; answer (response) stays NEUTRAL so it never hands the answer', () => {
-    // support path now seeds these from state (was only coordinate+base10)
-    expect(vm).toMatch(/manipulativeSupport\.tool === 'numberline'[\s\S]{0,160}setNumberLineRange/);
-    expect(vm).toMatch(/manipulativeSupport\.tool === 'fractions'[\s\S]{0,220}setFractionPieces\(\{ numerator: problem\.manipulativeSupport/);
-    expect(vm).toMatch(/manipulativeSupport\.tool === 'volume'[\s\S]{0,260}dims\.l \|\| 1/);
-    // response path UNCHANGED — neutral seed (numerator 0, volume 1/1/1)
+    const supportStart = vm.indexOf('var openMathManipulativeSupport');
+    const supportBlock = vm.slice(supportStart, vm.indexOf('var openMathManipulativeResponse', supportStart));
+    expect(supportStart).toBeGreaterThan(-1);
+    expect(supportBlock).toContain("tool === 'numberline'");
+    expect(supportBlock).toContain('setNumberLineMarkers(');
+    expect(supportBlock).toContain('setNumberLineRange(');
+    expect(supportBlock).toContain("tool === 'fractions'");
+    expect(supportBlock).toContain('setFractionPieces(supportFraction)');
+    expect(supportBlock).toContain("tool === 'volume'");
+    expect(supportBlock).toContain('setCubeDims(normalizedSupportDims)');
+    expect(supportBlock).toContain("tool === 'protractor'");
+    expect(supportBlock).toContain("tool === 'circuit'");
+    // Response path remains neutral (numerator 0, volume 1/1/1).
     expect(vm).toMatch(/manipulativeResponse\.tool === 'fractions'[\s\S]{0,200}numerator: 0,/);
     expect(vm).toMatch(/manipulativeResponse\.tool === 'volume'[\s\S]{0,200}\{ l: 1, w: 1, h: 1 \}/);
   });
@@ -83,6 +100,10 @@ describe('step 2/3: inline parametric diagram renderer (_renderDiagramSvg, canon
     expect(svg).toContain('&lt;x&gt;');
     expect(svg).not.toContain('<x>'); // never injected raw
   });
+  it('validates graphAlt before exposing it', () => {
+    expect(vm).toContain('var mathGraphAlt = _mathScalarText(generatedContent.data.graphAlt, 4000)');
+    expect(vm).toContain("aria-label={mathGraphAlt || 'Visual diagram for this problem'}");
+  });
   it('returns null for unsupported tools / missing state (caller falls back to the button)', () => {
     expect(render('volume', { dims: { l: 2, w: 2, h: 2 } })).toBeNull();
     expect(render('numberline', null)).toBeNull();
@@ -93,9 +114,9 @@ describe('step 2/3: inline parametric diagram renderer (_renderDiagramSvg, canon
     expect(vm).toMatch(/window\.AlloModules && window\.AlloModules\.UtilsPure/);
     expect(vm).toMatch(/_U\._renderDiagramSvg\(tool, state, titleText\)/);
   });
-  it('is wired inline in the math view + graphData has a text alternative', () => {
+  it('is wired inline in the math view and validates graphAlt', () => {
     expect(vm).toMatch(/_renderDiagramSvg\(problem\.manipulativeSupport\.tool, problem\.manipulativeSupport\.state/);
-    expect(vm).toMatch(/role="img"[\s\S]{0,80}aria-label=\{\(generatedContent\?\.data\?\.graphAlt\)/);
+    expect(vm).toContain('var mathGraphAlt = _mathScalarText(generatedContent.data.graphAlt, 4000)');
   });
   it('fractions → divided bar with N/D label + accessible desc', () => {
     const svg = render('fractions', { numerator: 3, denominator: 4 }, '');
@@ -106,6 +127,13 @@ describe('step 2/3: inline parametric diagram renderer (_renderDiagramSvg, canon
   it('fractions clamps numerator to denominator (no out-of-range shading)', () => {
     const svg = render('fractions', { numerator: 9, denominator: 4 }, '');
     expect(svg).toMatch(/<desc>[^<]*4 of 4 equal parts shaded/);
+  });
+  it('renders hostile fraction denominators in bounded compact form', () => {
+    const svg = render('fractions', { numerator: 500000000, denominator: 1000000000 }, '');
+    expect(svg).toMatch(/<desc>[^<]*500000000 of 1000000000 equal parts shaded/);
+    expect(svg).toContain('>500000000/1000000000<');
+    expect((svg.match(/<rect /g) || []).length).toBeLessThanOrEqual(2);
+    expect(svg.length).toBeLessThan(2000);
   });
   it('base10 → blocks with the correct total in <desc>', () => {
     const svg = render('base10', { hundreds: 2, tens: 3, ones: 5 }, '');

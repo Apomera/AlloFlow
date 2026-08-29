@@ -86,6 +86,16 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
     }
   ];
 
+  var PRACTICE_HINTS = {
+    describe: 'What happened? Stick to observable facts.',
+    express: 'I feel ___ because ___.',
+    assert: 'I am asking for ___.',
+    reinforce: 'If you agree, it will help by ___.',
+    mindful: 'Return calmly to your main ask.',
+    appear: 'Use a steady voice and a posture that feels comfortable.',
+    negotiate: 'Offer one alternative you can accept.'
+  };
+
   function defaultState() {
     return {
       view: 'home',
@@ -95,6 +105,9 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       script: '',         // assembled script (auto-built from responses)
       buildMode: 'guided',
       activeStep: 0,
+      practiceStep: 0,
+      practiceSupport: 'full',
+      practiceReveal: false,
       practiceCount: 0,
       lastUpdated: null
     };
@@ -147,6 +160,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
       var view = d.view || 'home';
       var buildMode = d.buildMode === 'all' ? 'all' : 'guided';
       var activeStep = Math.min(LETTERS.length - 1, Math.max(0, Number(d.activeStep) || 0));
+      var practiceSupport = ['full', 'starter', 'memory'].indexOf(d.practiceSupport) >= 0 ? d.practiceSupport : 'full';
       var draftedSteps = LETTERS.filter(function(L) {
         var response = (d.responses || {})[L.id];
         return response && response.trim();
@@ -190,6 +204,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
         var tabs = [
           { id: 'home', label: 'Build a script', icon: '🗣️' },
           { id: 'script', label: 'My script', icon: '📜' },
+          { id: 'practice', label: 'Rehearse', icon: '🎙️' },
           { id: 'print', label: 'Print', icon: '🖨' },
           { id: 'about', label: 'About', icon: 'ℹ' }
         ];
@@ -350,7 +365,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             );
           }),
 
-          buildMode === 'guided' ? h('div', { className: 'no-print', 'data-dearman-guided-controls': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(110px, 1fr) auto minmax(110px, 1fr)', alignItems: 'center', gap: 8, marginTop: 4, marginBottom: 12 } },
+          buildMode === 'guided' ? h('div', { className: 'no-print', 'data-dearman-guided-controls': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', alignItems: 'center', gap: 8, marginTop: 4, marginBottom: 12 } },
             h('button', {
               type: 'button',
               disabled: activeStep === 0,
@@ -361,7 +376,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
             h('button', {
               type: 'button',
               onClick: function() { activeStep === LETTERS.length - 1 ? goto('script') : goToBuildStep(activeStep + 1); },
-              style: { justifySelf: 'end', padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+              style: { justifySelf: 'end', maxWidth: '100%', overflowWrap: 'anywhere', padding: '8px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 }
             }, activeStep === LETTERS.length - 1 ? 'Review my script \u2192' : 'Next: ' + LETTERS[activeStep + 1].label + ' \u2192')
           ) : null,
 
@@ -486,6 +501,8 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
           // Practice prompts
           h('div', { style: { padding: 14, borderRadius: 10, background: 'rgba(59,130,246,0.10)', borderTop: '1px solid rgba(59,130,246,0.3)', borderRight: '1px solid rgba(59,130,246,0.3)', borderBottom: '1px solid rgba(59,130,246,0.3)', borderLeft: '3px solid #3b82f6', marginTop: 12, marginBottom: 8 } },
             h('div', { style: { fontSize: 13, fontWeight: 800, color: _deFg('#bfdbfe'), marginBottom: 6 } }, '🪞 Practice before you do it for real'),
+            h('button', { type: 'button', 'data-dearman-start-practice': 'true', onClick: function() { setDM({ view: 'practice', practiceStep: 0, practiceSupport: 'full', practiceReveal: false }); }, 'aria-label': 'Start guided rehearsal',
+              style: { width: '100%', marginBottom: 10, padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start guided rehearsal'),
             h('div', { style: { fontSize: 12.5, color: _deFg('#dbeafe'), lineHeight: 1.7 } },
               h('div', null, '• Read your script out loud in private. Hear yourself say it.'),
               h('div', null, '• Practice with a friend, sibling, or stuffed animal playing the other person.'),
@@ -504,6 +521,141 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
               style: { padding: '8px 18px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontWeight: 700, fontSize: 13 } }, '🖨 Print')
           ),
 
+          softPointer()
+        );
+      }
+
+      function renderPractice() {
+        var practiceParts = LETTERS.map(function(L, index) {
+          var response = (d.responses || {})[L.id];
+          return response && response.trim() ? { letter: L, response: response.trim(), sourceIndex: index } : null;
+        }).filter(Boolean);
+
+        if (!practiceParts.length) {
+          return h('div', { style: { padding: 20, borderRadius: 12, background: _deBg('#0f172a'), border: '1px solid #1e293b', textAlign: 'center' } },
+            h('div', { style: { color: _deFg('#cbd5e1'), fontSize: 14, fontWeight: 800, marginBottom: 4 } }, 'Add one idea before rehearsing'),
+            h('div', { style: { color: _deFg('#94a3b8'), fontSize: 12, lineHeight: 1.55 } }, 'Draft any DEAR MAN step, then come back to practice it out loud.'),
+            h('button', { type: 'button', onClick: function() { setDM({ view: 'home', buildMode: 'guided', activeStep: 0 }); },
+              style: { marginTop: 12, padding: '8px 14px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 12, fontWeight: 800 } }, 'Start with Describe')
+          );
+        }
+
+        var practiceIndex = Math.min(practiceParts.length - 1, Math.max(0, Number(d.practiceStep) || 0));
+        var currentPart = practiceParts[practiceIndex];
+        var practiceHint = PRACTICE_HINTS[currentPart.letter.id] || currentPart.letter.prompt;
+        var cueRevealed = practiceSupport === 'full' || !!d.practiceReveal;
+        var displayedCue = cueRevealed
+          ? currentPart.response
+          : (practiceSupport === 'starter' ? practiceHint : 'Your drafted words are hidden for this try.');
+        function focusPracticeCard(attempt) {
+          window.setTimeout(function() {
+            var card = document.getElementById('dearman-practice-card');
+            if (card) card.focus();
+            else if ((attempt || 0) < 2) focusPracticeCard((attempt || 0) + 1);
+          }, 0);
+        }
+        function movePractice(nextIndex) {
+          var clamped = Math.min(practiceParts.length - 1, Math.max(0, nextIndex));
+          setDM({ practiceStep: clamped, practiceReveal: false });
+          focusPracticeCard();
+          if (announceToSR) announceToSR('Rehearsal step ' + (clamped + 1) + ' of ' + practiceParts.length + ': ' + practiceParts[clamped].letter.label + '.');
+        }
+        function changePracticeSupport(mode) {
+          setDM({ practiceSupport: mode, practiceReveal: false });
+          if (announceToSR) announceToSR(mode === 'full'
+            ? 'Cue level changed to Full text. The full cue is visible.'
+            : (mode === 'starter'
+              ? 'Cue level changed to Short prompt. Your drafted words are hidden.'
+              : 'Cue level changed to From memory. Your drafted words are hidden until you reveal them.'));
+        }
+        function togglePracticeReveal() {
+          var nextReveal = !d.practiceReveal;
+          setDM({ practiceReveal: nextReveal });
+          if (announceToSR) announceToSR(nextReveal ? 'Your drafted words are revealed.' : 'Your drafted words are hidden.');
+        }
+        function finishPractice() {
+          setDM({ view: 'script', practiceStep: 0, practiceReveal: false, practiceCount: (d.practiceCount || 0) + 1 });
+          if (addToast) addToast('Rehearsal complete. Your practice has been logged.', 'success');
+          if (announceToSR) announceToSR('Rehearsal complete. Returning to your script.');
+        }
+
+        return h('div', { 'data-dearman-practice-view': 'true' },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+            h('div', null,
+              h('h3', { style: { margin: 0, color: _deFg('#e2e8f0'), fontSize: 18, fontWeight: 900 } }, 'Rehearse your ask'),
+              h('div', { style: { color: _deFg('#94a3b8'), fontSize: 11.5, lineHeight: 1.55, marginTop: 3 } }, 'Say one part at a time. Aim for natural, not memorized.'),
+              h('div', { style: { color: _deFg('#fcd34d'), fontSize: 10.5, lineHeight: 1.5, marginTop: 4 } }, 'Safety first: if speaking up could put you at risk, pause and ask a trusted adult for help.')
+            ),
+            h('button', { type: 'button', onClick: function() { goto('script'); },
+              style: { padding: '7px 10px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, 'Back to script')
+          ),
+
+          h('div', { role: 'navigation', 'aria-label': 'Rehearsal steps', style: { display: 'grid', gridTemplateColumns: 'repeat(' + practiceParts.length + ', minmax(30px, 1fr))', gap: 5, marginBottom: 12 } },
+            practiceParts.map(function(part, index) {
+              var current = index === practiceIndex;
+              return h('button', { key: part.letter.id, type: 'button', 'data-dearman-practice-step': index, 'data-dearman-practice-step-state': current ? 'current' : (index < practiceIndex ? 'complete' : 'upcoming'), 'aria-current': current ? 'step' : undefined,
+                'aria-label': 'Practice ' + part.letter.label + ', step ' + (index + 1) + ' of ' + practiceParts.length,
+                onClick: function() { movePractice(index); },
+                style: { minHeight: 44, minWidth: 0, padding: '5px 3px', borderRadius: 8, border: '1px solid ' + (current ? part.letter.color : (index < practiceIndex ? '#22c55e' : '#334155')), cursor: 'pointer', background: current ? 'rgba(59,130,246,0.16)' : _deBg('#1e293b'), color: current ? _deFg(part.letter.color) : _deFg('#cbd5e1'), display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 1 } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 13, fontWeight: 900, lineHeight: 1 } }, index < practiceIndex && !current ? '✓' : part.letter.letter),
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 8.5, fontWeight: 800, lineHeight: 1.2 } }, 'Step ' + (index + 1))
+              );
+            })
+          ),
+
+          h('fieldset', { style: { padding: 10, borderRadius: 10, background: _deBg('#0f172a'), border: '1px solid #1e293b', margin: '0 0 12px' } },
+            h('legend', { style: { color: _deFg('#e2e8f0'), fontSize: 11, fontWeight: 800, padding: '0 4px' } }, 'Choose your cue level'),
+            h('div', { style: { color: _deFg('#94a3b8'), fontSize: 10.5, lineHeight: 1.5, marginBottom: 8 } }, 'Use as much support as you want. This is practice, not a test.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 5 } },
+              [
+                { id: 'full', label: 'Full text' },
+                { id: 'starter', label: 'Short prompt' },
+                { id: 'memory', label: 'From memory' }
+              ].map(function(option) {
+                var selected = practiceSupport === option.id;
+                return h('label', { key: option.id, style: { minHeight: 44, padding: '7px 6px', borderRadius: 8, border: '1px solid ' + (selected ? '#3b82f6' : '#334155'), background: selected ? 'rgba(59,130,246,0.18)' : _deBg('#1e293b'), color: selected ? _deFg('#bfdbfe') : _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 10.5, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, textAlign: 'center' } },
+                  h('input', { type: 'radio', name: 'dearman-practice-support', value: option.id, checked: selected, 'data-dearman-practice-support': option.id, onChange: function() { changePracticeSupport(option.id); }, style: { accentColor: '#2563eb', flex: '0 0 auto' } }),
+                  h('span', null, option.label)
+                );
+              })
+            ),
+            h('div', { 'data-dearman-support-description': practiceSupport, style: { color: _deFg('#94a3b8'), fontSize: 10.5, lineHeight: 1.5, marginTop: 7 } }, practiceSupport === 'full'
+              ? 'Show the words I drafted.'
+              : (practiceSupport === 'starter'
+                ? 'Show a brief reminder, not my drafted words.'
+                : 'Hide my words; I can reveal them anytime.'))
+          ),
+
+          h('div', { id: 'dearman-practice-card', tabIndex: -1, 'aria-labelledby': 'dearman-practice-heading', 'aria-describedby': 'dearman-practice-cue', style: { padding: '22px 20px', borderRadius: 14, outline: 'none', background: 'linear-gradient(145deg, rgba(59,130,246,0.13) 0%, rgba(15,23,42,0.62) 72%)', borderTop: '1px solid rgba(59,130,246,0.38)', borderRight: '1px solid rgba(59,130,246,0.38)', borderBottom: '1px solid rgba(59,130,246,0.38)', borderLeft: '5px solid ' + currentPart.letter.color, boxShadow: '0 12px 28px rgba(2,6,23,0.18)', marginBottom: 12 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 11, marginBottom: 14 } },
+              h('span', { 'aria-hidden': 'true', style: { width: 42, height: 42, borderRadius: 12, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)', color: _deFg(currentPart.letter.color), fontSize: 24, fontWeight: 900, fontFamily: 'ui-monospace, monospace' } }, currentPart.letter.letter),
+              h('div', null,
+                h('div', { style: { color: _deFg('#94a3b8'), fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.7 } }, 'Say this part out loud'),
+                h('h4', { id: 'dearman-practice-heading', style: { margin: '2px 0 0', color: _deFg(currentPart.letter.color), fontSize: 16, fontWeight: 900 } }, currentPart.letter.label)
+              )
+            ),
+            h('p', { id: 'dearman-practice-cue', 'data-dearman-practice-text': currentPart.letter.id, 'data-dearman-practice-cue-state': cueRevealed ? 'revealed' : practiceSupport, 'aria-live': 'polite', style: { margin: 0, color: cueRevealed || practiceSupport === 'starter' ? _deFg('#e2e8f0') : _deFg('#94a3b8'), fontSize: cueRevealed ? 19 : 16, lineHeight: 1.75, fontWeight: cueRevealed ? 600 : 500, fontStyle: cueRevealed ? 'normal' : 'italic', whiteSpace: 'pre-wrap' } }, displayedCue),
+            practiceSupport !== 'full' ? h('button', { type: 'button', 'data-dearman-practice-reveal': 'true', 'aria-expanded': !!d.practiceReveal, 'aria-controls': 'dearman-practice-cue', onClick: togglePracticeReveal,
+              style: { marginTop: 12, padding: '7px 10px', borderRadius: 7, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: 'pointer', fontSize: 10.5, fontWeight: 800 } }, d.practiceReveal ? 'Hide my words' : 'Reveal my words') : null
+          ),
+
+          h('div', { style: { padding: '9px 11px', borderRadius: 8, background: 'rgba(20,184,166,0.08)', border: '1px solid rgba(20,184,166,0.24)', color: _deFg('#cbd5e1'), fontSize: 11.5, lineHeight: 1.55, marginBottom: 12 } },
+            h('strong', { style: { color: _deFg('#e2e8f0') } }, 'Pause and notice: '),
+            'Can you say this clearly without rushing? Change the wording later if it does not sound like you.'
+          ),
+
+          h('div', { 'data-dearman-practice-controls': 'true', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)', alignItems: 'center', gap: 8 } },
+            h('button', { type: 'button', disabled: practiceIndex === 0, onClick: function() { movePractice(practiceIndex - 1); },
+              style: { justifySelf: 'start', padding: '9px 12px', borderRadius: 8, border: '1px solid #475569', background: _deBg('#1e293b'), color: _deFg('#cbd5e1'), cursor: practiceIndex === 0 ? 'not-allowed' : 'pointer', opacity: practiceIndex === 0 ? 0.45 : 1, fontSize: 11, fontWeight: 800 } }, 'Previous'),
+            h('span', { role: 'status', 'aria-live': 'polite', style: { color: _deFg('#94a3b8'), fontSize: 10.5, fontWeight: 800, whiteSpace: 'nowrap' } }, 'Step ' + (practiceIndex + 1) + ' of ' + practiceParts.length),
+            h('button', { type: 'button', 'data-dearman-practice-next': 'true', onClick: function() { practiceIndex === practiceParts.length - 1 ? finishPractice() : movePractice(practiceIndex + 1); },
+              style: { justifySelf: 'end', maxWidth: '100%', overflowWrap: 'anywhere', padding: '9px 12px', borderRadius: 8, border: '1px solid #3b82f6', background: 'rgba(59,130,246,0.18)', color: _deFg('#bfdbfe'), cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, practiceIndex === practiceParts.length - 1 ? 'Finish rehearsal' : 'Next: ' + practiceParts[practiceIndex + 1].letter.label)
+          ),
+
+          practiceSupport !== 'memory' ? h('details', { style: { marginTop: 14, padding: 10, borderRadius: 8, background: _deBg('#0f172a'), border: '1px solid #1e293b' } },
+            h('summary', { style: { cursor: 'pointer', color: _deFg('#94a3b8'), fontSize: 11, fontWeight: 800 } }, 'Show the full script for reference'),
+            h('p', { style: { margin: '9px 0 0', color: _deFg('#cbd5e1'), fontSize: 12.5, lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, buildScript())
+          ) : null,
           softPointer()
         );
       }
@@ -663,6 +815,7 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('dearMan'))) {
 
       var body;
       if (view === 'script') body = renderScript();
+      else if (view === 'practice') body = renderPractice();
       else if (view === 'print') body = renderPrintView();
       else if (view === 'about') body = renderAbout();
       else body = renderHome();

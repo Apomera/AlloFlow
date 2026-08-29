@@ -289,19 +289,153 @@ test.describe('Nuclear Lab — knowing where you are', () => {
     expect(total, 'scrolling triggered chart redraws — the spy is re-rendering').toBeLessThanOrEqual(1);
   });
 
+  test('manual route reading persists after a dwell without repainting charts', async ({ page }) => {
+    await page.goto(harness.url + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.nuclearLab);
+    await instrumentCanvases(page);
+    await page.evaluate(() => (window as any).__mount({
+      _nuclearLab: { nkPath: 'know', nkOpen: true },
+    }));
+    await layout(page);
+    await page.evaluate(() => { (window as any).__clears = {}; });
+
+    await page.evaluate(() => document.getElementById('nksec-chain')!.scrollIntoView());
+    await page.waitForTimeout(1150);
+
+    const result = await page.evaluate(() => ({
+      seen: (window as any).__toolData?._nuclearLab?.nkRouteSeen?.know || [],
+      clears: (window as any).__clears || {},
+    }));
+    const totalClears = Object.values(result.clears)
+      .reduce((total: number, count: any) => total + count, 0);
+    expect(result.seen, 'the route forgot a section read by ordinary scrolling').toContain('chain');
+    expect(totalClears, 'saving route progress repainted an unchanged chart').toBeLessThanOrEqual(1);
+  });
+
   test('a route can be walked from the sections themselves', async ({ page }) => {
-    await mount2d(page, { _nuclearLab: { nkPath: 'know', nkOpen: false } });
+    await mount2d(page, {
+      _nuclearLab: {
+        nkPath: 'know',
+        nkOpen: false,
+        nkRouteSeen: { know: ['detect'] },
+        evidenceMastered: [
+          'reactor-bomb',
+          'inverse-square',
+          'low-dose-zero',
+          'neutron-layers',
+          'short-count',
+        ],
+      },
+    });
+    const sectionOrder = await page.locator('#wrap [data-nk-sec]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-nk-sec')),
+    );
+    expect(sectionOrder, 'route controls and DOM reading order diverged').toEqual([
+      'detect', 'dating', 'chain', 'evidence',
+    ]);
     const foot = page.locator('#nksec-detect').getByText(/STEP 1 OF 4/);
     await expect(foot).toBeVisible();
     // Follow the route forward without touching the index.
     await page.locator('#nksec-detect').getByRole('button', { name: /On to step 2/ }).click();
     await page.waitForTimeout(600);
-    await expect(page.locator('#nksec-dating').getByText(/STEP 2 OF 4/)).toBeVisible();
-    await page.locator('#nksec-dating').getByRole('button', { name: /On to step 3/ }).click();
+    const dating = page.locator('#nksec-dating');
+    await expect(dating.getByText(/STEP 2 OF 4/)).toBeVisible();
+    await expect(dating).toBeFocused();
+    await expect(dating).toHaveAccessibleName(/Read a date out of the decay/);
+    await dating.getByRole('button', { name: /On to step 3/ }).click();
     await page.waitForTimeout(600);
     await expect(page.locator('#nksec-chain').getByText(/STEP 3 OF 4/)).toBeVisible();
     await page.locator('#nksec-chain').getByRole('button', { name: /On to step 4/ }).click();
     await page.waitForTimeout(600);
-    await expect(page.locator('#nksec-evidence').getByText(/End of this route/)).toBeVisible();
+    await expect(page.locator('#nksec-evidence').getByText(/Route complete/)).toBeVisible();
+  });
+});
+
+test.describe('Nuclear Lab - chart data on a phone', () => {
+  test('wide tables scroll locally without widening the page', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount2d(page);
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+
+    await page.getByRole('button', { name: 'Display numerical data tables beneath charts' }).click();
+    await expect(page.locator('[data-nk-chart-table]')).toHaveCount(6);
+
+    const metrics = await page.evaluate(() => {
+      const regions = [...document.querySelectorAll('[data-nk-chart-table]')] as HTMLElement[];
+      const badRowHeaders = regions.reduce((total, region) => total +
+        [...region.querySelectorAll('tbody tr')].filter((row) => {
+          const first = row.firstElementChild;
+          return !first || first.tagName !== 'TH' || first.getAttribute('scope') !== 'row';
+        }).length, 0);
+      return {
+        pageOverflow: Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.documentElement.clientWidth,
+        ),
+        locallyScrollable: regions.filter((region) => region.scrollWidth > region.clientWidth + 1).length,
+        badRowHeaders,
+      };
+    });
+
+    expect(metrics.pageOverflow, 'chart tables widened the whole phone page').toBeLessThanOrEqual(1);
+    expect(metrics.locallyScrollable, 'wide tables lost their local horizontal scroll').toBeGreaterThan(0);
+    expect(metrics.badRowHeaders, 'table row headers lost their semantics in the real DOM').toBe(0);
+  });
+});
+
+test.describe('Nuclear Lab - route reflection on a phone', () => {
+  test('stays contained, keeps touch targets, and saves with real browser events', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount2d(page, {
+      _nuclearLab: {
+        nkPath: 'know',
+        evidenceMastered: [
+          'reactor-bomb',
+          'inverse-square',
+          'low-dose-zero',
+          'neutron-layers',
+          'short-count',
+        ],
+      },
+    });
+    await page.evaluate(() => {
+      const wrap = document.getElementById('wrap')!;
+      wrap.style.width = '390px';
+      wrap.style.maxWidth = '100%';
+    });
+
+    const reflection = page.locator('[data-nk-reflection=know]');
+    await expect(reflection).toBeVisible();
+    await reflection.getByLabel('More confident').check();
+    await reflection.getByLabel('One idea I can explain now')
+      .fill('A measurement needs uncertainty before it can support a claim.');
+    await reflection.getByLabel('One question I still have (optional)')
+      .fill('How long should a weak source be counted?');
+    await reflection.getByRole('button', { name: 'Save reflection' }).click();
+    await expect(reflection.getByRole('status'))
+      .toHaveText('Reflection saved with your lab progress.');
+
+    const metrics = await reflection.evaluate((node) => {
+      const targets = [...node.querySelectorAll('button, fieldset label')] as HTMLElement[];
+      const box = node.getBoundingClientRect();
+      return {
+        pageOverflow: Math.max(
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          document.body.scrollWidth - document.documentElement.clientWidth,
+        ),
+        localOverflow: node.scrollWidth - node.clientWidth,
+        outsideViewport: box.left < -1 || box.right > document.documentElement.clientWidth + 1,
+        minTargetHeight: Math.min(...targets.map((target) => target.getBoundingClientRect().height)),
+      };
+    });
+
+    expect(metrics.pageOverflow, 'reflection widened the whole phone page').toBeLessThanOrEqual(1);
+    expect(metrics.localOverflow, 'reflection content overflows its own card').toBeLessThanOrEqual(1);
+    expect(metrics.outsideViewport, 'reflection card sits outside the phone viewport').toBe(false);
+    expect(metrics.minTargetHeight, 'reflection has a touch target below 44 px').toBeGreaterThanOrEqual(43.5);
   });
 });

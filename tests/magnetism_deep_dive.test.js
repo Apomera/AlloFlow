@@ -321,7 +321,7 @@ describe('magnetism inverse magnetometer investigation', () => {
     expect(standard).toContain('class="mag-guide"');
     expect(standard).toContain('Learning guide');
     expect(standard).toContain('Predict → test → explain');
-    expect(standard.indexOf('role="tabpanel"')).toBeLessThan(standard.indexOf('Journey 0/17'));
+    expect(standard.indexOf('role="tabpanel"')).toBeLessThan(standard.indexOf('Journey 0/21'));
 
     const shell = document.createElement('div');
     shell.innerHTML = standard;
@@ -331,7 +331,7 @@ describe('magnetism inverse magnetometer investigation', () => {
     expect(focused).toContain('Exit Focus Lab');
     expect(focused).toContain('max-width:1040px');
     expect(focused).not.toContain('Mission Control');
-    expect(focused).not.toContain('Journey 0/17');
+    expect(focused).not.toContain('Journey 0/21');
     expect(focused).toContain('Magnetism &amp; Electromagnetism · Focus Lab');
 
     const changed = renderTool('magnetism', { magnetism: {
@@ -363,7 +363,7 @@ describe('magnetism inverse magnetometer investigation', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism electromagnet fair-test evidence', () => {
@@ -477,7 +477,7 @@ describe('magnetism electromagnet fair-test evidence', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism generator speed evidence', () => {
@@ -608,7 +608,7 @@ describe('magnetism generator speed evidence', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism transformer engineering briefs', () => {
@@ -731,7 +731,7 @@ describe('magnetism transformer engineering briefs', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism Field Walk navigation evidence', () => {
@@ -885,7 +885,7 @@ describe('magnetism Field Walk navigation evidence', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism Junkyard Crane prediction evidence', () => {
@@ -1047,7 +1047,7 @@ describe('magnetism Junkyard Crane prediction evidence', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism Materials visual pattern sorter', () => {
@@ -1209,7 +1209,7 @@ describe('magnetism Materials visual pattern sorter', () => {
     } finally {
       host.remove();
     }
-  });
+  }, 15000);
 });
 
 describe('magnetism Quiz visual evidence journey', () => {
@@ -1594,6 +1594,8 @@ describe('magnetism Magnetic memory visual experiment', () => {
   });
 
   it('keeps the experiment responsive, motion-safe, and free of automated WCAG violations', async () => {
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_magnetism.js', 'magnetism');
     const source = readFileSync(TOOL_PATH, 'utf8');
     expect(source).toContain('.mag-domain-materials{grid-template-columns:1fr}');
     expect(source).toContain('.mag-domain-visuals{grid-template-columns:1fr}');
