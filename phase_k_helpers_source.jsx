@@ -2607,18 +2607,21 @@ const autoConfigureSettings = async (text, grade, standards, language, customInp
             ? window.getToolIdsCsv()
             : "analysis, simplified, glossary, outline, image, quiz, sentence-frames, brainstorm, timeline, concept-sort, adventure, faq, persona, dbq, note-taking, anchor-chart, math, lesson-plan, gemini-bridge, alignment-report";
         let countConstraint = "";
+        const PLANNER_TOOLS_LIST = VALID_TOOLS_LIST.includes('applied-challenge')
+            ? VALID_TOOLS_LIST
+            : VALID_TOOLS_LIST + ', applied-challenge';
         let allowDuplicates = false;
         if (targetCount === 'All') {
-            countConstraint = `CONSTRAINT: You MUST include ALL available resource types from this list: [${VALID_TOOLS_LIST}].`;
+            countConstraint = `CONSTRAINT: You MUST include ALL available resource types from this list: [${PLANNER_TOOLS_LIST}].`;
         } else if (targetCount !== 'Auto') {
             const count = parseInt(targetCount);
-            countConstraint = `CONSTRAINT: You MUST generate a plan with exactly ${count} distinct steps/resources. Choose from: [${VALID_TOOLS_LIST}].`;
+            countConstraint = `CONSTRAINT: You MUST generate a plan with exactly ${count} distinct steps/resources. Choose from: [${PLANNER_TOOLS_LIST}].`;
             if (count > 10) {
                 allowDuplicates = true;
                 countConstraint += " You are encouraged to use the same TOOL multiple times for different purposes (e.g., one 'outline' for a Flow Chart, another for a Venn Diagram).";
             }
         } else {
-            countConstraint = `CONSTRAINT: Generate a robust lesson plan. Aim for 6-9 resources unless the text is very short. Choose from: [${VALID_TOOLS_LIST}].`;
+            countConstraint = `CONSTRAINT: Generate a robust lesson plan. Aim for 6-9 resources unless the text is very short. Choose from: [${PLANNER_TOOLS_LIST}].`;
         }
         const prompt = `
             Act as a Lead Curriculum Designer. Analyze this source text to build a lesson resource pack.
@@ -2650,6 +2653,7 @@ ${(typeof window !== 'undefined' && typeof window.formatToolCatalogForPrompt ===
             - **dbq**: Document-Based Question activity with primary sources. Use for social studies, history, civics.
             - **note-taking**: Scaffolded note-taking templates (Cornell / Lab Report / Reading Response). Persists across lessons.
             - **anchor-chart**: EL-style class anchor chart (Reference / Process / Concept Map / Comparison).
+            - **applied-challenge**: Persistent transfer workspace. Auto Match or choose Investigate, Design, Decide, Propose, or Explore; students frame, weigh evidence and tradeoffs, test, revise, and receive coaching without AI replacing their work.
             - **math**: Opens the STEAM Lab (interactive math/science exploration).
             - **lesson-plan**: Teacher-facing synthesis. ALWAYS place LAST.
             - **gemini-bridge**: Interactive sim/app generator.

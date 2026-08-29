@@ -8,6 +8,7 @@ const GENERATION_STAGE_BY_TYPE = Object.freeze({
   faq: 'analyze', 'concept-sort': 'analyze', dbq: 'analyze', 'alignment-report': 'analyze',
   simplified: 'build', translation: 'build', quiz: 'build', outline: 'build',
   'lesson-plan': 'build', 'note-taking': 'build', 'anchor-chart': 'build',
+  'applied-challenge': 'build',
   'sentence-frames': 'build', brainstorm: 'build', adventure: 'build', persona: 'build',
   timeline: 'build', 'word-sounds': 'build',
 });
@@ -2706,7 +2707,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         // N identical copies. New resource types default to safe (no duplicate spend).
         const MULTILINGUAL_FANOUT_TYPES = ['simplified', 'outline', 'image', 'quiz', 'faq',
             'sentence-frames', 'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
-            'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona'];
+            'gemini-bridge', 'math', 'note-taking', 'anchor-chart',
+            'applied-challenge', 'persona'];
         if (!MULTILINGUAL_FANOUT_TYPES.includes(type)) {
             return await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
         }
@@ -6886,6 +6888,224 @@ Return ONLY JSON:
               content = { templateType: 'cornell-notes', title: sourceTopic || 'Notes', cues: [], notes: [], summary: '', lessonRef };
           }
           metaInfo = `${effectiveGrade} - ${templateType}${usesLocalTextBackend ? ' - Local' : ''}`;
+      } else if (type === 'applied-challenge') {
+          // Applied Challenge Studio: lesson-grounded transfer with a persistent
+          // student workspace. AI may frame or coach, but never authors the
+          // student's response fields.
+          setIsProcessing(true);
+          if (switchView || !generatedContent) setActiveView('applied-challenge');
+          const supportedFamilies = ['investigate', 'design', 'decide', 'propose', 'explore'];
+          const requestedSelection = (configOverride && configOverride.appliedChallengeSelectionMode) || 'auto';
+          const selectionMode = requestedSelection === 'manual' ? 'manual' : 'auto';
+          const requestedFamily = String((configOverride && configOverride.appliedChallengeFamily) || 'decide');
+          const manualFamily = supportedFamilies.includes(requestedFamily) ? requestedFamily : 'decide';
+          const requestedAgency = String((configOverride && configOverride.appliedChallengeAgencyMode) || 'progressive');
+          const agencyMode = ['progressive', 'ai-framed', 'co-framed', 'student-framed'].includes(requestedAgency)
+              ? requestedAgency : 'progressive';
+          const requestedScope = String((configOverride && configOverride.appliedChallengeScope) || 'standard');
+          const scope = ['compact', 'standard', 'extended'].includes(requestedScope) ? requestedScope : 'standard';
+          const challengeSourceText = usesLocalTextBackend
+              ? localExcerpt(textToProcess, 5200)
+              : (textToProcess || '').substring(0, 5000);
+          const familyGuide = {
+              investigate: 'Frame a researchable question and a feasible, ethical evidence plan. Do not invent findings or citations.',
+              design: 'Create and test a solution, model, process, or prototype against criteria and real constraints.',
+              decide: 'Compare defensible options and make an evidence-based recommendation with explicit tradeoffs.',
+              propose: 'Build a feasible plan, pitch, civic proposal, or business case. Label budgets, forecasts, prices, and adoption claims as assumptions unless the source verifies them.',
+              explore: 'Examine a philosophical, ethical, or conceptual question through reasons, alternatives, counterexamples, and implications. Never grade a worldview.',
+          };
+          const selectionDirection = selectionMode === 'manual'
+              ? 'Use the challenge family id ' + manualFamily + '. ' + familyGuide[manualFamily]
+              : 'Choose exactly one family id from investigate, design, decide, propose, or explore. Choose the family that produces the strongest authentic transfer from this lesson, not merely the most entertaining task. Explain the fit in fitReason.';
+          const agencyDirection = {
+              progressive: 'Use progressive release: give a parallel example from a DIFFERENT context, a partial frame starter, and coaching questions. The example must demonstrate a reasoning move without answering this challenge.',
+              'ai-framed': 'Write a complete driving question and challenge brief. A parallel example may model a reasoning move in a different context. Leave all student workspace fields unanswered.',
+              'co-framed': 'Provide a revisable driving question, a partial frame starter, and 2-4 meaningful frame choices. Leave decisions for the student.',
+              'student-framed': 'Do not write the driving question. Supply only a lesson-grounded seedDirection plus coaching prompts that help the student frame a question.',
+          }[agencyMode];
+          const scopeDirection = {
+              compact: 'Keep the challenge focused enough for one lesson or a short response.',
+              standard: 'Create a complete application with evidence, alternatives, tradeoffs, testing, revision, and transfer reflection.',
+              extended: 'Create a deeper inquiry or project that supports iteration, explicit assumptions, and a substantial deliverable.',
+          }[scope];
+          const challengeSchemaExample = JSON.stringify({
+              title: 'short challenge title',
+              instructions: 'student-facing directions',
+              family: 'decide',
+              fitReason: 'why this family fits the lesson',
+              brief: {
+                  context: 'authentic but bounded situation',
+                  role: 'student role',
+                  audience: 'realistic audience',
+                  drivingQuestion: 'question, except blank in student-framed mode',
+                  seedDirection: 'lesson-grounded starting direction',
+                  lockedLessonFacts: ['source-grounded fact'],
+                  openQuestions: ['unknown or evidence gap'],
+                  stakeholders: ['person or system affected'],
+                  criteria: ['success criterion'],
+                  constraints: ['constraint'],
+                  deliverable: 'specific student-created product',
+                  evidenceBoundary: 'what is established versus hypothetical',
+              },
+              supports: {
+                  parallelExample: { context: 'different context', move: 'reasoning move only', whyItHelps: 'what to notice' },
+                  frameStarter: 'partial starter',
+                  frameChoices: ['meaningful choice'],
+                  coachPrompts: ['question that does not give the answer'],
+                  phasePrompts: {
+                      workingQuestion: 'prompt', stakeholders: 'prompt', possibilities: 'prompt',
+                      evidence: 'prompt', assumptions: 'prompt', tradeoffs: 'prompt',
+                      response: 'prompt', testReflection: 'prompt', revision: 'prompt',
+                      transferReflection: 'prompt',
+                  },
+              },
+          });
+          const prompt = [
+              'Design one APPLIED CHALLENGE STUDIO resource for a ' + effectiveGrade + ' student.',
+              'Topic: ' + (sourceTopic || 'lesson application') + '.',
+              selectionDirection,
+              agencyDirection,
+              scopeDirection,
+              'The challenge must require students to USE central lesson ideas in a new situation. It is not a list of activity ideas, a quiz, a generic discussion prompt, or a completed answer.',
+              'Brief rules:',
+              '- lockedLessonFacts must contain 2-6 concise claims grounded only in the supplied lesson source.',
+              '- Separate known lesson facts from openQuestions, hypotheses, estimates, assumptions, and value judgments.',
+              '- Include at least two plausible possibilities, options, interpretations, or design directions in the workflow so the task is genuinely open.',
+              '- Give criteria, constraints, stakeholders, an audience, and a concrete deliverable appropriate to the chosen family and scope.',
+              '- Keep the context realistic but do not assert unsupplied local conditions, market data, prices, budgets, survey results, experiments, laws, or research findings.',
+              '- For investigate, create a question and evidence plan, not a fake research conclusion or fabricated citation.',
+              '- For propose, label financial and adoption claims as assumptions to verify.',
+              '- For explore, make multiple positions defensible and assess reasons rather than beliefs or identities.',
+              'Agency and student-ownership rules:',
+              '- Never put a completed response, recommendation, proposal, research finding, design, or philosophical conclusion in supports.',
+              '- A parallelExample must use a different subject/context and model only a transferable reasoning move.',
+              '- phasePrompts should guide frame, evidence, assumptions, tradeoffs, response, testing, revision, and transfer without giving the answer.',
+              'Lesson source:',
+              challengeSourceText,
+              languageDirective,
+              standardsDirective,
+              interestsDirective,
+              dokDirective,
+              effCustomInstructions ? 'TEACHER INSTRUCTIONS: ' + effCustomInstructions : '',
+              'Keep family ids and object keys in English. Write learner-facing fields in the requested language.',
+              'Return ONLY one JSON object matching this shape:',
+              challengeSchemaExample,
+          ].filter(Boolean).join('\n\n');
+          let scaffolded = {};
+          try {
+              if (usesLocalTextBackend) setGenerationTaskProgress(0, 1, 'Designing applied challenge');
+              const result = await callGemini(prompt, true);
+              if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Designing applied challenge');
+              scaffolded = usesLocalTextBackend ? parseJsonLenient(result, {}) : JSON.parse(cleanJson(result));
+          } catch (parseErr) {
+              warnLog('Applied challenge scaffold parse failed:', parseErr);
+          }
+          const proposedFamily = String((scaffolded && scaffolded.family) || '');
+          const family = selectionMode === 'manual'
+              ? manualFamily
+              : (supportedFamilies.includes(proposedFamily) ? proposedFamily : 'decide');
+          const rawBrief = scaffolded && scaffolded.brief && typeof scaffolded.brief === 'object'
+              ? scaffolded.brief : {};
+          const rawSupports = scaffolded && scaffolded.supports && typeof scaffolded.supports === 'object'
+              ? scaffolded.supports : {};
+          const boundedList = (value, max, itemMax) => (Array.isArray(value) ? value : [])
+              .slice(0, max)
+              .map((item) => String(item || '').slice(0, itemMax).trim())
+              .filter(Boolean);
+          const lockedLessonFacts = boundedList(rawBrief.lockedLessonFacts, 12, 800);
+          const seedDirection = String(rawBrief.seedDirection || rawBrief.startingPoint || '').slice(0, 2000);
+          const rawQuestion = String(rawBrief.drivingQuestion || rawBrief.question || '').slice(0, 2000);
+          if (lockedLessonFacts.length === 0 || (!seedDirection && !rawQuestion)) {
+              throw new Error('Applied challenge generation returned no usable lesson-grounded brief.');
+          }
+          const defaultPrompts = {
+              workingQuestion: 'Write the exact question or challenge you will answer.',
+              stakeholders: 'Who is affected, and which needs, systems, criteria, and constraints matter?',
+              possibilities: 'Generate more than one plausible direction before choosing.',
+              evidence: 'Connect lesson evidence and mark what information is still needed.',
+              assumptions: 'Name estimates, hypotheses, uncertainties, and value judgments.',
+              tradeoffs: 'Compare benefits, risks, costs, exclusions, and unresolved tensions.',
+              response: 'Build the requested deliverable and make the reasoning visible.',
+              testReflection: 'Test the draft against criteria, constraints, evidence, and a strong alternative.',
+              revision: 'Revise one meaningful part after testing or feedback.',
+              transferReflection: 'Explain which lesson idea transferred and where else it could help.',
+          };
+          const rawPhasePrompts = rawSupports.phasePrompts && typeof rawSupports.phasePrompts === 'object'
+              ? rawSupports.phasePrompts : {};
+          const phasePrompts = Object.keys(defaultPrompts).reduce((result, key) => {
+              result[key] = String(rawPhasePrompts[key] || defaultPrompts[key]).slice(0, 1200);
+              return result;
+          }, {});
+          const rawExample = rawSupports.parallelExample && typeof rawSupports.parallelExample === 'object'
+              ? rawSupports.parallelExample : {};
+          const canShowExample = agencyMode === 'progressive' || agencyMode === 'ai-framed';
+          const supports = {
+              parallelExample: canShowExample ? {
+                  context: String(rawExample.context || '').slice(0, 1800),
+                  move: String(rawExample.move || rawExample.reasoningMove || '').slice(0, 2500),
+                  whyItHelps: String(rawExample.whyItHelps || '').slice(0, 1800),
+              } : { context: '', move: '', whyItHelps: '' },
+              frameStarter: agencyMode === 'progressive' || agencyMode === 'co-framed'
+                  ? String(rawSupports.frameStarter || '').slice(0, 2200) : '',
+              frameChoices: agencyMode === 'progressive' || agencyMode === 'co-framed'
+                  ? boundedList(rawSupports.frameChoices, 8, 700) : [],
+              coachPrompts: agencyMode === 'ai-framed'
+                  ? []
+                  : boundedList(rawSupports.coachPrompts, 10, 700),
+              phasePrompts,
+          };
+          const drivingQuestion = agencyMode === 'student-framed' ? '' : rawQuestion;
+          const workspace = {
+              workingQuestion: agencyMode === 'student-framed' ? '' : drivingQuestion,
+              stakeholders: '',
+              possibilities: '',
+              evidence: '',
+              assumptions: '',
+              tradeoffs: '',
+              response: '',
+              testReflection: '',
+              revision: '',
+              transferReflection: '',
+          };
+          content = {
+              schemaVersion: 2,
+              title: String((scaffolded && scaffolded.title) || sourceTopic || 'Applied Challenge Studio').slice(0, 300),
+              instructions: String((scaffolded && scaffolded.instructions) || 'Use lesson ideas to frame, investigate, build, test, revise, and explain a response of your own.').slice(0, 3000),
+              selectionMode,
+              family,
+              fitReason: String((scaffolded && scaffolded.fitReason) || familyGuide[family]).slice(0, 1600),
+              agencyMode,
+              scope,
+              brief: {
+                  family,
+                  context: String(rawBrief.context || '').slice(0, 4000),
+                  role: String(rawBrief.role || '').slice(0, 500),
+                  audience: String(rawBrief.audience || '').slice(0, 500),
+                  drivingQuestion,
+                  seedDirection,
+                  lockedLessonFacts,
+                  openQuestions: boundedList(rawBrief.openQuestions || rawBrief.unknowns, 10, 800),
+                  stakeholders: boundedList(rawBrief.stakeholders, 12, 500),
+                  criteria: boundedList(rawBrief.criteria || rawBrief.successCriteria, 12, 700),
+                  constraints: boundedList(rawBrief.constraints, 12, 700),
+                  deliverable: String(rawBrief.deliverable || '').slice(0, 1200),
+                  evidenceBoundary: String(rawBrief.evidenceBoundary || 'Treat lesson-grounded facts as evidence. Label outside claims as questions, hypotheses, estimates, or assumptions until verified.').slice(0, 2000),
+                  factLocked: true,
+                  factVerified: false,
+              },
+              supports,
+              workspace,
+              coachHint: '',
+              feedback: null,
+              sourceExcerpt: challengeSourceText,
+              lessonRef: {
+                  sourceTextSnippet: (textToProcess || '').substring(0, 200),
+                  generatedAt: new Date().toISOString(),
+                  gradeLevel: effectiveGrade,
+                  language: effectiveLanguage,
+              },
+          };
+          metaInfo = effectiveGrade + ' - ' + family + ' - ' + agencyMode + ' - ' + scope + (usesLocalTextBackend ? ' - Local' : '');
       } else if (type === 'anchor-chart') {
           // Anchor Charts — classroom visual reference.
           // Hand-drawn aesthetic. Rendering lives in anchor_charts_module.js.

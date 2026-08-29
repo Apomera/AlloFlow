@@ -99,7 +99,7 @@
       "prompts": 1,
       "axes": {
         "grade": "absent",
-        "lang": "absent",
+        "lang": "reaches",
         "uiLang": "absent",
         "standards": "absent",
         "interests": "absent",
@@ -314,6 +314,22 @@
         "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "applied-challenge",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "uiLang": "absent",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "reaches",
+        "custom": "absent",
+        "emoji": "absent"
       }
     },
     {
@@ -403,8 +419,8 @@
       "prompts": 1,
       "axes": {
         "grade": "absent",
-        "lang": "absent",
-        "uiLang": "reaches",
+        "lang": "reaches",
+        "uiLang": "absent",
         "standards": "absent",
         "interests": "absent",
         "dok": "absent",
@@ -618,6 +634,22 @@
         "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "applied-challenge",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "uiLang": "absent",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "reaches",
+        "custom": "absent",
+        "emoji": "absent"
       }
     }
   ]

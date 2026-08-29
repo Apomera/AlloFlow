@@ -1,7 +1,7 @@
 (function() {
 'use strict';
 if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[CDN] GuidedModeConfig already loaded, skipping'); return; }
-  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
+  const GUIDED_STEP_IDS = ['source-input', 'analysis', 'glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'anchor-chart', 'image', 'faq', 'sentence-frames', 'note-taking', 'applied-challenge', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'dbq', 'math', 'adventure', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver', '_final'];
   const GUIDED_DELIVERY_EVIDENCE_KEYS = ['directionsSaved', 'exportCreated', 'shareCreated', 'liveStarted', 'studentPreviewed'];
   const normalizeGuidedPlanBrief = (raw) => {
     if (!raw || typeof raw !== 'object') return null;
@@ -75,6 +75,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
     { id: 'faq', phase: 'access', label: 'FAQ Generator', action: 'Generate an FAQ that answers the questions students actually ask.', success: 'FAQ ready.' },
     { id: 'sentence-frames', phase: 'access', label: 'Writing Scaffolds', action: 'Create writing scaffolds and sentence frames to lower the writing bar.', success: 'Scaffolds ready. They free up working memory for ideas.' },
     { id: 'note-taking', phase: 'participate', label: 'Note-Taking Templates', action: 'Build a note-taking template students fill in as they read.', success: 'Template ready.' },
+    { id: 'applied-challenge', phase: 'participate', label: 'Applied Challenge Studio', action: 'Create a sustained transfer challenge with a student-owned problem-solving workspace.', success: 'Applied challenge ready.' },
     { id: 'brainstorm', phase: 'participate', label: 'Brainstorm Activity Ideas', action: 'Brainstorm activity ideas tuned to this content.', success: 'Ideas generated. Pick what fits your class.' },
     { id: 'persona', phase: 'participate', label: 'Interview Mode', action: 'Set up Interview Mode so students can question a historical or expert persona.', success: 'Interview ready. Great for perspective-taking.' },
     { id: 'timeline', phase: 'participate', label: 'Sequence Builder', action: 'Build a sequence so students can order events or steps.', success: 'Sequence ready.' },
@@ -93,7 +94,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
     { id: 'core-lesson', label: 'Build a core lesson', description: 'A balanced path from analysis through directions and delivery.', stepIds: ['analysis', 'glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions'] },
     { id: 'reading-access', label: 'Adapt a reading', description: 'Analyze, simplify, add vocabulary and writing support, then assign it.', stepIds: ['analysis', 'glossary', 'simplified', 'outline', 'image', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
     { id: 'assessment', label: 'Build an assessment', description: 'Create questions, evidence tasks, alignment, directions, and a delivery-ready package.', stepIds: ['analysis', 'faq', 'dbq', 'quiz', 'alignment', 'lesson-plan', 'directions'] },
-    { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
+    { id: 'engagement', label: 'Boost engagement', description: 'Add visual, discussion, applied, interactive, and game-based options, then assign and deliver.', stepIds: ['image', 'brainstorm', 'applied-challenge', 'persona', 'timeline', 'concept-sort', 'math', 'adventure', 'quiz', 'directions'] },
     { id: 'take-home', label: 'Create take-home work', description: 'Build accessible independent work with directions, assessment, and a shareable delivery path.', stepIds: ['analysis', 'glossary', 'simplified', 'sentence-frames', 'quiz', 'lesson-plan', 'directions'] },
     { id: 'complete', label: 'Complete lesson pack', description: 'Use every Guided Mode step, including assignment directions and delivery.', stepIds: null },
   ];
@@ -110,6 +111,7 @@ if (window.AlloModules && window.AlloModules.GuidedModeConfig) { console.log('[C
     'faq': 'tour-tool-faq',
     'sentence-frames': 'tour-tool-scaffolds',
     'note-taking': 'tour-tool-note-taking',
+    'applied-challenge': 'tour-tool-applied-challenge',
     'brainstorm': 'tour-tool-brainstorm',
     'persona': 'tour-tool-persona',
     'timeline': 'tour-tool-timeline',

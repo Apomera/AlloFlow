@@ -56,11 +56,13 @@ describe('Generation Matrix module contract', () => {
     expect(Matrix.DIFFERENTIABLE_TYPES).toEqual([
       'simplified', 'glossary', 'quiz', 'faq', 'outline', 'sentence-frames',
       'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+      'applied-challenge',
     ]);
     expect(Matrix.MULTILINGUAL_FANOUT_TYPES).toEqual([
       'simplified', 'outline', 'image', 'quiz', 'faq', 'sentence-frames',
       'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
-      'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona',
+      'gemini-bridge', 'math', 'note-taking', 'anchor-chart',
+      'applied-challenge', 'persona',
     ]);
     expect(Matrix.getResourcePolicy('analysis')).toMatchObject({
       cardinality: 'source-global-singleton', scope: 'source', allowVariants: false,

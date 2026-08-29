@@ -90,17 +90,17 @@ function AiSetupNotice({ t }) {
   );
 }
 const UNIVERSAL_SETTING_COVERAGE = {
-  measuredTypes: 19,
-  grade: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"],
-  language: ["simplified", "glossary", "outline", "image", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"],
-  standards: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart"],
-  interests: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "lesson-plan", "adventure"],
-  dok: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart"],
+  measuredTypes: 20,
+  grade: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "applied-challenge"],
+  language: ["simplified", "glossary", "outline", "image", "quiz", "analysis", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "applied-challenge"],
+  standards: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart", "applied-challenge"],
+  interests: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "lesson-plan", "adventure", "applied-challenge"],
+  dok: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart", "applied-challenge"],
   emoji: ["simplified", "glossary", "outline", "image", "quiz", "faq", "sentence-frames", "timeline", "math", "concept-sort", "adventure", "note-taking", "anchor-chart"],
   // N6 (2026-08-16): every measured type, so a control can name what it does NOT
   // reach and not only what it does. Same source as the lists above
   // (docs/resource_setting_coverage.json, backend 'local'), same drift test.
-  allTypes: ["simplified", "glossary", "outline", "image", "quiz", "analysis", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"]
+  allTypes: ["simplified", "glossary", "outline", "image", "quiz", "analysis", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart", "applied-challenge"]
 };
 const UNIVERSAL_GRADE_CHOICES = [
   "Kindergarten",
@@ -165,7 +165,8 @@ const UNIVERSAL_DIFFERENTIABLE_TYPES = [
   "concept-sort",
   "dbq",
   "note-taking",
-  "anchor-chart"
+  "anchor-chart",
+  "applied-challenge"
 ];
 function universalToolLabel(id, t) {
   const catalog = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ToolCatalog || null;

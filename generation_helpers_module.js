@@ -8,6 +8,7 @@ const FULL_PACK_FALLBACK_TYPES = new Set([
   'analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames',
   'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz',
   'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart',
+  'applied-challenge',
   'alignment-report', 'math', 'gemini-bridge'
 ]);
 const getFullPackKnownTypes = () => {
@@ -93,10 +94,10 @@ const _fingerprintFullPackGenerationContextValue = (value) => {
 };
 const _FULL_PACK_DIFFERENTIATION_CONTEXT_TYPES = Object.freeze([
   'glossary', 'simplified', 'image', 'quiz', 'brainstorm',
-  'sentence-frames', 'alignment-report', 'timeline',
+  'sentence-frames', 'alignment-report', 'timeline', 'applied-challenge',
 ]);
 const _FULL_PACK_LESSON_DNA_CONTEXT_TYPES = Object.freeze([
-  'quiz', 'sentence-frames', 'adventure',
+  'quiz', 'sentence-frames', 'adventure', 'applied-challenge',
 ]);
 const _buildFullPackScopedGenerationContext = (
   baseFingerprint, differentiationContext, lessonDNA, batchConfig
@@ -173,6 +174,8 @@ const _FULL_PACK_TOOL_OPTION_FIELDS = Object.freeze([
   'quizMode', 'quizCount', 'quizMcqCount', 'quizReflectionCount',
   'passAnalysisToQuiz', 'cellGameDifficulty', 'faqCount',
   'noteTakingTemplateType', 'anchorChartType',
+  'appliedChallengeSelectionMode', 'appliedChallengeFamily',
+  'appliedChallengeAgencyMode', 'appliedChallengeScope',
   'frameType', 'fillInTheBlank', 'vocabularyType', 'isAdventureStoryMode',
   'isSocialStoryMode', 'isImmersiveMode', 'adventureChanceMode',
   'adventureConsistentCharacters', 'adventureFreeResponseEnabled',

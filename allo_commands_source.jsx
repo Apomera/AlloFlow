@@ -434,6 +434,7 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ['enabled'],
     reason: 'Changes an Adventure response-support setting.'
   },
+  generate_applied_challenge: { requires: ['source'], produces: ['applied-challenge'] },
   generate_note_taking: { requires: ["source"], produces: ["note-taking"] },
   generate_anchor_chart: { requires: ["source"], produces: ["anchor-chart"] },
   generate_concept_sort: { requires: ["source"], produces: ["concept-sort"] },
@@ -1722,6 +1723,43 @@ function listMainVoiceEditableFields(context = {}) {
       });
       addConnections();
     }
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === 'applied-challenge') {
+    const challengeData = generatedContent.data && typeof generatedContent.data === 'object' ? generatedContent.data : {};
+    const workspace = challengeData.workspace && typeof challengeData.workspace === 'object' ? challengeData.workspace : {};
+    const compactIds = new Set(['workingQuestion', 'possibilities', 'evidence', 'tradeoffs', 'response', 'transferReflection']);
+    const phaseFields = [
+      { id: 'workingQuestion', label: 'Frame the challenge', aliases: ['challenge question', 'working question'] },
+      { id: 'stakeholders', label: 'People, systems, and constraints', aliases: ['stakeholders', 'people and systems'] },
+      { id: 'possibilities', label: 'Possibilities', aliases: ['options', 'possible approaches'] },
+      { id: 'evidence', label: 'Evidence and lesson connections', aliases: ['evidence', 'lesson connections'] },
+      { id: 'assumptions', label: 'Assumptions and uncertainties', aliases: ['assumptions', 'uncertainties'] },
+      { id: 'tradeoffs', label: 'Tradeoffs and alternatives', aliases: ['tradeoffs', 'alternatives'] },
+      { id: 'response', label: 'Draft deliverable', aliases: ['draft response', 'deliverable'], maxLength: 12000 },
+      { id: 'testReflection', label: 'Test or challenge the draft', aliases: ['test reflection', 'challenge the draft'] },
+      { id: 'revision', label: 'Revision', aliases: ['revised response', 'revision note'], maxLength: 12000 },
+      { id: 'transferReflection', label: 'Transfer reflection', aliases: ['transfer', 'where else this applies'] },
+    ];
+    const visibleFields = challengeData.scope === 'compact'
+      ? phaseFields.filter((phase) => compactIds.has(phase.id))
+      : phaseFields;
+    const setWorkspaceValue = (key, next, maxLength) => {
+      const bounded = String(next == null ? '' : next).slice(0, maxLength || 8000);
+      handleNoteUpdate('workspace', (current) => ({
+        ...((current && typeof current === 'object') ? current : workspace),
+        [key]: bounded,
+      }));
+      handleNoteUpdate('coachHint', '');
+      handleNoteUpdate('feedback', null);
+    };
+    visibleFields.forEach((phase) => fields.push({
+      id: 'applied-challenge-' + phase.id,
+      label: phase.label,
+      aliases: phase.aliases,
+      value: typeof workspace[phase.id] === 'string' ? workspace[phase.id] : '',
+      maxLength: phase.maxLength || 8000,
+      setValue: (next) => setWorkspaceValue(phase.id, next, phase.maxLength || 8000),
+    }));
   }
   return fields;
 }
@@ -5244,7 +5282,7 @@ const CMD_GROUP = {
   cycle_color_overlay:'display', toggle_presentation_mode:'display', toggle_side_by_side:'display',
   download_voice_models:'voice', set_model_download_policy:'voice', toggle_voice_replies:'voice', toggle_wake_word:'voice', voice_speed_up:'voice', voice_speed_down:'voice',
   read_page_aloud:'accessibility', open_adventure_reading_practice:'accessibility', set_adventure_reading_practice:'accessibility', set_adventure_typing_pace:'accessibility',
-  filter_glossary:'create', generate_anchor_chart:'create', generate_brainstorm:'create', generate_concept_sort:'create', generate_faq:'create', generate_note_taking:'create', generate_source_text:'create', surprise_me_contextually:'create', suggest_contextual_next_steps:'create', use_contextual_suggestion:'create',
+  filter_glossary:'create', generate_anchor_chart:'create', generate_applied_challenge:'create', generate_brainstorm:'create', generate_concept_sort:'create', generate_faq:'create', generate_note_taking:'create', generate_source_text:'create', surprise_me_contextually:'create', suggest_contextual_next_steps:'create', use_contextual_suggestion:'create',
   // X6 2026-08-17: doors for the surfaces that joined the coverage baseline 08-16.
   use_gemini_canvas:'navigate', open_brainstorm_modes:'create', open_discussion_builder:'create', open_jigsaw_builder:'create', jump_to_lesson_plan:'navigate', open_block_suggestions:'create',
   open_leadership_hub:'navigate',

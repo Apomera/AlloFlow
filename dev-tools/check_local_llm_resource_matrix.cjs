@@ -73,6 +73,7 @@ const CASES = [
   { type: 'persona', expect: (item) => Array.isArray(item.data) && item.data.length >= 1 && item.data[0].name },
   { type: 'note-taking', config: { templateType: 'cornell-notes' }, expect: (item) => item.data && item.data.templateType === 'cornell-notes' && Array.isArray(item.data.cues) && item.data.cues.length > 0 },
   { type: 'anchor-chart', expect: (item) => item.data && Array.isArray(item.data.sections) && item.data.sections.length >= 2 },
+  { type: 'applied-challenge', config: { appliedChallengeSelectionMode: 'auto', appliedChallengeAgencyMode: 'progressive', appliedChallengeScope: 'standard' }, expect: (item) => item.data && item.data.family === 'decide' && item.data.brief && item.data.brief.lockedLessonFacts.length >= 2 && item.data.workspace && item.data.workspace.response === '' },
 ].filter((item) => !ONLY_TYPES || ONLY_TYPES.has(item.type));
 
 function cleanJson(raw) {
@@ -255,6 +256,39 @@ function cannedResponse(type, prompt, jsonMode) {
         { label: 'Claim', bullets: ['State your idea', 'Keep it clear'], iconPrompt: 'simple speech bubble' },
         { label: 'Evidence', bullets: ['Quote the source', 'Explain why'], iconPrompt: 'simple magnifying glass' },
       ],
+    });
+  }
+  if (type === 'applied-challenge') {
+    return json({
+      title: 'Rights in a Changing Community',
+      instructions: 'Use lesson evidence to compare options, make a recommendation, test it, and revise.',
+      family: 'decide',
+      fitReason: 'The lesson presents competing civic goals, so a constrained decision makes the tradeoffs visible.',
+      brief: {
+        context: 'A community group is revising a public-participation process after a period of rapid change.',
+        role: 'Community evidence advisor',
+        audience: 'A community planning committee',
+        drivingQuestion: 'Which participation approach best protects rights while responding to change?',
+        seedDirection: 'Apply the lesson ideas about rights, evidence, citizen input, conflict, and uncertainty.',
+        lockedLessonFacts: ['Government should protect rights.', 'Leaders should listen to citizens.', 'Sudden change can create conflict.'],
+        openQuestions: ['Which groups currently participate?', 'What resources are available?'],
+        stakeholders: ['Residents', 'Community leaders', 'People often excluded from decisions'],
+        criteria: ['Protects rights', 'Uses evidence', 'Includes meaningful citizen input'],
+        constraints: ['No invented survey results', 'The recommendation must acknowledge uncertainty'],
+        deliverable: 'A recommendation memo that compares at least two options.',
+        evidenceBoundary: 'Lesson facts are established here; local conditions and participation rates remain unknown.',
+      },
+      supports: {
+        parallelExample: {
+          context: 'A library choosing how to extend weekend access',
+          move: 'The decision maker compared two schedules against access, staffing, and cost criteria before recommending a limited pilot.',
+          whyItHelps: 'The example models criteria and tradeoffs without answering the civic challenge.',
+        },
+        frameStarter: 'We need to decide among ___ because the lesson shows ___.',
+        frameChoices: ['Focus on representation', 'Focus on conflict prevention'],
+        coachPrompts: ['Which criterion matters most, and why?', 'What would the strongest alternative argue?'],
+        phasePrompts: {},
+      },
     });
   }
   return json({ ok: true });
@@ -598,6 +632,7 @@ function makeDeps(caseState, currentTypeRef) {
       persona: 'Persona Chat',
       'note-taking': 'Note Taking',
       'anchor-chart': 'Anchor Chart',
+      'applied-challenge': 'Applied Challenge Studio',
     }[type] || type),
     performDeepVerification: async () => ({ text: '', sources: [] }),
     repairGeneratedText: async () => null,

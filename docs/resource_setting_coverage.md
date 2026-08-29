@@ -21,7 +21,7 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `analysis` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -35,7 +35,8 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **reaching / 19** | **17** | **18** | **0** | **15** | **12** | **15** | **17** | **13** |
+| `applied-challenge` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **reaching / 20** | **18** | **20** | **0** | **16** | **13** | **16** | **17** | **13** |
 
 ## cloud backend
 
@@ -46,7 +47,7 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `analysis` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `analysis` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -60,7 +61,8 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **reaching / 19** | **16** | **17** | **1** | **14** | **11** | **14** | **16** | **13** |
+| `applied-challenge` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **reaching / 20** | **17** | **19** | **0** | **15** | **12** | **15** | **16** | **13** |
 
 ## Local/cloud prompt divergence
 
@@ -68,7 +70,7 @@ Many branches ship two prompts behind `if (usesLocalTextBackend)`. A source-text
 cannot tell them apart because both live in the same branch body. Divergence here means
 the offline no-egress path silently behaves differently from the cloud path.
 
-- `analysis` — **uiLang**: cloud ✅ / local ❌
+- none
 
 _Excluded as unmeasurable (cloud prompt builders are stubbed in this harness): `lesson-plan`._
 

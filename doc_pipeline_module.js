@@ -460,6 +460,7 @@ var ALLO_INTERACTIVE_OBJECT_PROFILES = {
   dbq: { label: 'Document-Based Question', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'document-packet', notes: 'Exports sources, prompts, and rubric; essay capture is handled by worksheet/submission flows.' },
   'note-taking': { label: 'Note Taking', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'student-work-snapshot', notes: 'Exports the current note snapshot and feedback state.' },
   'anchor-chart': { label: 'Anchor Chart', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'poster-snapshot', notes: 'Exports as a poster-style reference chart.' },
+  'applied-challenge': { label: 'Applied Challenge Studio', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'applied-challenge-workshop', notes: 'Exports the challenge brief, lesson-fact review status, supports, persistent student workspace, revision, transfer reflection, and saved feedback without the private source excerpt.' },
   math: { label: 'STEAM Lab', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'static-launch-summary', notes: 'Main export can include the generated math/STEM summary; full simulations need a dedicated adapter.' },
   'lesson-plan': { label: 'Lesson Plan', status: 'ready', html: 'static', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'teacher-plan', notes: 'Exports as a teacher-facing plan.' },
   'gemini-bridge': { label: 'Generated Interactive Artifact', status: 'partial', html: 'snapshot', canExportHtml: true, canExportIms: true, interactiveHtml: false, tracking: 'none', fallback: 'code-snapshot', notes: 'Exports the generated artifact/code text. Running apps need packaged assets and sandboxing.' },
@@ -40624,6 +40625,74 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${renderRows()}
                   ${connectionsBlock}
                   ${feedbackBadge}
+              </div>
+          `;
+      } else if (item.type === 'applied-challenge') {
+          const d = item.data || {};
+          const brief = d.brief && typeof d.brief === 'object' ? d.brief : {};
+          const supports = d.supports && typeof d.supports === 'object' ? d.supports : {};
+          const workspace = d.workspace && typeof d.workspace === 'object' ? d.workspace : {};
+          const escapeHtml = (value) => String(value == null ? '' : value)
+              .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/'/g, '&#39;');
+          const listHtml = (values) => (Array.isArray(values) ? values : []).filter(Boolean)
+              .map((value) => '<li style=\'margin-bottom:4px;\'>' + escapeHtml(value) + '</li>').join('');
+          const familyLabels = { investigate: 'Investigate', design: 'Design', decide: 'Decide', propose: 'Propose', explore: 'Explore' };
+          const factList = listHtml(brief.lockedLessonFacts);
+          const factHeading = brief.factVerified === true ? 'Teacher-verified lesson facts' : 'Lesson facts awaiting teacher review';
+          const unknownList = listHtml(brief.openQuestions);
+          const criteriaList = listHtml(brief.criteria);
+          const constraintList = listHtml(brief.constraints);
+          const fieldLabels = {
+              workingQuestion: 'Frame the challenge', stakeholders: 'People, systems, and constraints',
+              possibilities: 'Possibilities', evidence: 'Evidence and lesson connections',
+              assumptions: 'Assumptions and uncertainties', tradeoffs: 'Tradeoffs and alternatives',
+              response: 'Draft deliverable', testReflection: 'Test or challenge the draft',
+              revision: 'Revision', transferReflection: 'Transfer reflection'
+          };
+          const workspaceHtml = Object.keys(fieldLabels).map((key) => {
+              const value = String(workspace[key] || '').trim();
+              return '<section style=\'margin-top:10px;padding:12px;border:1px solid #cbd5e1;border-radius:8px;break-inside:avoid;\'>'
+                  + '<h4 style=\'margin:0 0 6px;color:#9a3412;\'>' + escapeHtml(fieldLabels[key]) + '</h4>'
+                  + '<div style=\'min-height:48px;white-space:pre-wrap;color:#1e293b;\'>' + (value ? escapeHtml(value) : '&nbsp;') + '</div></section>';
+          }).join('');
+          const example = supports.parallelExample && typeof supports.parallelExample === 'object' ? supports.parallelExample : {};
+          const supportHtml = (example.context || example.move || supports.frameStarter)
+              ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #c7d2fe;border-radius:8px;background:#eef2ff;\'><h3 style=\'margin:0 0 6px;color:#3730a3;\'>Support that fades</h3>'
+                + (example.context ? '<p><strong>Parallel context:</strong> ' + escapeHtml(example.context) + '</p>' : '')
+                + (example.move ? '<p style=\'white-space:pre-wrap;\'>' + escapeHtml(example.move) + '</p>' : '')
+                + (supports.frameStarter ? '<p><strong>Frame starter:</strong> ' + escapeHtml(supports.frameStarter) + '</p>' : '') + '</section>'
+              : '';
+          const feedback = d.feedback && typeof d.feedback === 'object' ? d.feedback : null;
+          const feedbackStatusLabel = feedback && feedback.status === 'grounded'
+              ? 'Grounded in verified facts'
+              : feedback && feedback.status === 'needs-check' ? 'Fact check needed' : 'Developing';
+          const feedbackHtml = feedback ? '<section style=\'margin-top:12px;padding:12px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;\'><h3 style=\'margin:0 0 6px;color:#065f46;\'>Feedback for the next revision</h3>'
+              + '<p><strong>Review status:</strong> ' + escapeHtml(feedbackStatusLabel) + '</p>'
+              + '<p><strong>A strength:</strong> ' + escapeHtml(feedback.strength) + '</p>'
+              + '<p><strong>Lesson connection:</strong> ' + escapeHtml(feedback.lessonConnectionCheck) + '</p>'
+              + '<p><strong>Evidence, assumptions, or constraints:</strong> ' + escapeHtml(feedback.evidenceOrConstraintCheck) + '</p>'
+              + '<p><strong>One next step:</strong> ' + escapeHtml(feedback.nextStep) + '</p></section>' : '';
+          return `
+              <div class='section applied-challenge-export' id='${escapeHtml(item.id)}' style='background:#fffaf5;border:1px solid #fed7aa;border-radius:10px;padding:8px 14px 14px;'>
+                  <h2 class='resource-header' role='heading' aria-level='2' style='border-left:4px solid #c2410c;color:#7c2d12;'>&#127919; ${title} <span style='font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;'>(Applied Challenge Studio - ${escapeHtml(familyLabels[d.family] || d.family || 'Challenge')})</span></h2>
+                  ${d.instructions ? '<p style=\'color:#334155;\'>' + escapeHtml(d.instructions) + '</p>' : ''}
+                  ${d.fitReason ? '<p style=\'padding:8px;background:#ffedd5;border-radius:6px;\'><strong>Why this challenge fits:</strong> ' + escapeHtml(d.fitReason) + '</p>' : ''}
+                  <section style='padding:12px;border:1px solid #fed7aa;border-radius:8px;background:#fff7ed;'>
+                    <h3 style='margin:0 0 8px;color:#9a3412;'>Challenge brief</h3>
+                    ${brief.context ? '<p>' + escapeHtml(brief.context) + '</p>' : ''}
+                    ${brief.drivingQuestion ? '<p><strong>Driving question:</strong> ' + escapeHtml(brief.drivingQuestion) + '</p>' : ''}
+                    ${brief.seedDirection ? '<p><strong>Lesson-grounded direction:</strong> ' + escapeHtml(brief.seedDirection) + '</p>' : ''}
+                    ${factList ? '<h4>' + factHeading + '</h4><ul>' + factList + '</ul>' : ''}
+                    ${unknownList ? '<h4>Open questions</h4><ul>' + unknownList + '</ul>' : ''}
+                    ${criteriaList ? '<h4>Success criteria</h4><ul>' + criteriaList + '</ul>' : ''}
+                    ${constraintList ? '<h4>Constraints</h4><ul>' + constraintList + '</ul>' : ''}
+                    ${brief.deliverable ? '<p><strong>Deliverable:</strong> ' + escapeHtml(brief.deliverable) + '</p>' : ''}
+                    ${brief.evidenceBoundary ? '<p><strong>Evidence boundary:</strong> ' + escapeHtml(brief.evidenceBoundary) + '</p>' : ''}
+                  </section>
+                  ${supportHtml}
+                  <h3 style='margin:16px 0 6px;color:#7c2d12;'>Student problem-solving workspace</h3>
+                  ${workspaceHtml}
+                  ${feedbackHtml}
               </div>
           `;
       } else if (item.type === 'anchor-chart') {

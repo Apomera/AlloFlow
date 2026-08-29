@@ -192,6 +192,41 @@ describe('main editable-field registry', () => {
     noteFields.find((field) => field.id === 'notes-qanda-answer-0').setValue('Study answer');
     expect(handleNoteUpdate).toHaveBeenCalledWith('pairs', [{ question: '', answer: 'Study answer' }]);
   });
+  it('publishes visible Applied Challenge phases and invalidates coaching after voice edits', () => {
+    const handleNoteUpdate = vi.fn();
+    const fields = AC.listMainVoiceEditableFields({
+      generatedContent: {
+        id: 'challenge-1',
+        type: 'applied-challenge',
+        data: {
+          scope: 'standard',
+          workspace: { workingQuestion: 'Which option is strongest?', response: 'First draft' },
+        },
+      },
+      handleNoteUpdate,
+      studentResponses: {},
+    });
+    expect(fields).toHaveLength(10);
+    expect(fields.map((field) => field.id)).toContain('applied-challenge-response');
+    fields.find((field) => field.id === 'applied-challenge-response').setValue('Revised by voice');
+    expect(handleNoteUpdate).toHaveBeenNthCalledWith(1, 'workspace', expect.any(Function));
+    const updated = handleNoteUpdate.mock.calls[0][1]({ workingQuestion: 'Which option is strongest?', response: 'First draft' });
+    expect(updated.response).toBe('Revised by voice');
+    expect(handleNoteUpdate).toHaveBeenNthCalledWith(2, 'coachHint', '');
+    expect(handleNoteUpdate).toHaveBeenNthCalledWith(3, 'feedback', null);
+
+    const compactFields = AC.listMainVoiceEditableFields({
+      generatedContent: {
+        id: 'challenge-compact',
+        type: 'applied-challenge',
+        data: { scope: 'compact', workspace: {} },
+      },
+      handleNoteUpdate: vi.fn(),
+      studentResponses: {},
+    });
+    expect(compactFields).toHaveLength(6);
+    expect(compactFields.map((field) => field.id)).not.toContain('applied-challenge-stakeholders');
+  });
 });
 
 describe('main host registration contract', () => {

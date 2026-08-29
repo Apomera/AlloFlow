@@ -417,6 +417,7 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ["enabled"],
     reason: "Changes an Adventure response-support setting."
   },
+  generate_applied_challenge: { requires: ["source"], produces: ["applied-challenge"] },
   generate_note_taking: { requires: ["source"], produces: ["note-taking"] },
   generate_anchor_chart: { requires: ["source"], produces: ["anchor-chart"] },
   generate_concept_sort: { requires: ["source"], produces: ["concept-sort"] },
@@ -2185,6 +2186,41 @@ function listMainVoiceEditableFields(context = {}) {
       });
       addConnections();
     }
+  }
+  if (generatedContent && generatedContent.id && generatedContent.type === "applied-challenge") {
+    const challengeData = generatedContent.data && typeof generatedContent.data === "object" ? generatedContent.data : {};
+    const workspace = challengeData.workspace && typeof challengeData.workspace === "object" ? challengeData.workspace : {};
+    const compactIds = /* @__PURE__ */ new Set(["workingQuestion", "possibilities", "evidence", "tradeoffs", "response", "transferReflection"]);
+    const phaseFields = [
+      { id: "workingQuestion", label: "Frame the challenge", aliases: ["challenge question", "working question"] },
+      { id: "stakeholders", label: "People, systems, and constraints", aliases: ["stakeholders", "people and systems"] },
+      { id: "possibilities", label: "Possibilities", aliases: ["options", "possible approaches"] },
+      { id: "evidence", label: "Evidence and lesson connections", aliases: ["evidence", "lesson connections"] },
+      { id: "assumptions", label: "Assumptions and uncertainties", aliases: ["assumptions", "uncertainties"] },
+      { id: "tradeoffs", label: "Tradeoffs and alternatives", aliases: ["tradeoffs", "alternatives"] },
+      { id: "response", label: "Draft deliverable", aliases: ["draft response", "deliverable"], maxLength: 12e3 },
+      { id: "testReflection", label: "Test or challenge the draft", aliases: ["test reflection", "challenge the draft"] },
+      { id: "revision", label: "Revision", aliases: ["revised response", "revision note"], maxLength: 12e3 },
+      { id: "transferReflection", label: "Transfer reflection", aliases: ["transfer", "where else this applies"] }
+    ];
+    const visibleFields = challengeData.scope === "compact" ? phaseFields.filter((phase) => compactIds.has(phase.id)) : phaseFields;
+    const setWorkspaceValue = (key, next, maxLength) => {
+      const bounded = String(next == null ? "" : next).slice(0, maxLength || 8e3);
+      handleNoteUpdate("workspace", (current) => ({
+        ...current && typeof current === "object" ? current : workspace,
+        [key]: bounded
+      }));
+      handleNoteUpdate("coachHint", "");
+      handleNoteUpdate("feedback", null);
+    };
+    visibleFields.forEach((phase) => fields.push({
+      id: "applied-challenge-" + phase.id,
+      label: phase.label,
+      aliases: phase.aliases,
+      value: typeof workspace[phase.id] === "string" ? workspace[phase.id] : "",
+      maxLength: phase.maxLength || 8e3,
+      setValue: (next) => setWorkspaceValue(phase.id, next, phase.maxLength || 8e3)
+    }));
   }
   return fields;
 }
@@ -5962,6 +5998,7 @@ const CMD_GROUP = {
   set_adventure_typing_pace: "accessibility",
   filter_glossary: "create",
   generate_anchor_chart: "create",
+  generate_applied_challenge: "create",
   generate_brainstorm: "create",
   generate_concept_sort: "create",
   generate_faq: "create",

@@ -22,7 +22,8 @@
   // view_sidebar_panels_source.jsx.
   var DIFFERENTIABLE_TYPES = Object.freeze([
     'simplified', 'glossary', 'quiz', 'faq', 'outline', 'sentence-frames',
-    'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart'
+    'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+    'applied-challenge'
   ]);
 
   // Must stay aligned with MULTILINGUAL_FANOUT_TYPES in
@@ -31,7 +32,8 @@
   var MULTILINGUAL_FANOUT_TYPES = Object.freeze([
     'simplified', 'outline', 'image', 'quiz', 'faq', 'sentence-frames',
     'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
-    'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona'
+    'gemini-bridge', 'math', 'note-taking', 'anchor-chart',
+    'applied-challenge', 'persona'
   ]);
 
   var SOURCE_GLOBAL_SINGLETON_TYPES = Object.freeze(['analysis']);
@@ -41,7 +43,7 @@
   var REPEATABLE_RESOURCE_TYPES = Object.freeze([
     'image', 'outline', 'quiz', 'faq', 'sentence-frames', 'timeline',
     'persona', 'concept-sort', 'brainstorm', 'adventure', 'dbq',
-    'note-taking', 'anchor-chart', 'math', 'gemini-bridge'
+    'note-taking', 'anchor-chart', 'applied-challenge', 'math', 'gemini-bridge'
   ]);
   var IMAGE_MODEL_RESOURCE_TYPES = Object.freeze([
     'image', 'glossary', 'quiz', 'timeline', 'concept-sort', 'anchor-chart'
@@ -81,6 +83,8 @@
       math: ['mathSubject', 'mathMode', 'mathInput', 'isMathGraphEnabled'],
       'note-taking': ['templateType'],
       'anchor-chart': ['chartType', 'sourceTopic'],
+      'applied-challenge': ['appliedChallengeSelectionMode', 'appliedChallengeFamily',
+        'appliedChallengeAgencyMode', 'appliedChallengeScope'],
       brainstorm: ['isIndependentMode'],
       persona: ['personaMode', 'sourceTopic'],
       'alignment-report': ['alignmentMode']
@@ -93,7 +97,9 @@
     'glossaryImageStyle', 'quizCount', 'quizMcqCount', 'quizReflectionCount',
     'faqCount', 'timelineMode', 'timelineCount', 'timelineItemCount', 'timelineTopic',
     'conceptItemCount', 'bridgeSimType', 'bridgeStepCount', 'noteTakingTemplateType',
-    'anchorChartType', 'imageGenerationStyle', 'imageAspectRatio'
+    'anchorChartType', 'appliedChallengeSelectionMode', 'appliedChallengeFamily',
+    'appliedChallengeAgencyMode', 'appliedChallengeScope',
+    'imageGenerationStyle', 'imageAspectRatio'
   ]);
 
   var DEFAULT_POLICY = Object.freeze({

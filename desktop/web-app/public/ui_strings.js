@@ -3382,6 +3382,7 @@
     "my_resources": "My Resources",
     "tool_note_taking": "Note-Taking Templates",
     "tool_anchor_chart": "Anchor Chart",
+    "tool_applied_challenge": "Applied Challenge Studio",
     "tool_wordsounds": "Word Sounds",
     "open_storyforge_aria": "Open StoryForge",
     "storyforge_label": "StoryForge",
