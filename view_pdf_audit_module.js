@@ -3379,6 +3379,7 @@ function PdfDiagnosticsLog(props) {
       try {
         if (typeof document !== "undefined" && document.execCommand) {
           const ta = document.createElement("textarea");
+          ta.setAttribute("aria-label", "Temporary field for copying PDF diagnostics");
           ta.value = text;
           ta.style.position = "fixed";
           ta.style.opacity = "0";
@@ -3476,6 +3477,7 @@ function PdfDiagnosticsLog(props) {
       try {
         const ta = document.createElement("textarea");
         ta.value = text;
+        ta.setAttribute("aria-label", "Temporary field for copying PDF diagnostics");
         ta.style.position = "fixed";
         ta.style.opacity = "0";
         document.body.appendChild(ta);
@@ -13730,6 +13732,7 @@ Return ONLY JSON:
         try {
           const ta = document.createElement("textarea");
           ta.value = text;
+          ta.setAttribute("aria-label", "Temporary field for copying the agent activity log");
           ta.style.position = "fixed";
           ta.style.opacity = "0";
           document.body.appendChild(ta);

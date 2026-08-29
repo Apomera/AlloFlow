@@ -21,6 +21,33 @@ const REPORT_PATH = WRITE_IDX >= 0 && process.argv[WRITE_IDX + 1]
   ? path.resolve(ROOT, process.argv[WRITE_IDX + 1])
   : path.join(ROOT, 'a11y-audit', 'sel_tool_ui_a11y_audit.json');
 
+function replaceFile(file, text) {
+  const temporary = `${file}.sel-a11y-${process.pid}.tmp`;
+  const transientCodes = new Set(['EPERM', 'EACCES', 'EBUSY', 'UNKNOWN']);
+  let lastError;
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      fs.writeFileSync(temporary, text, 'utf8');
+      try {
+        fs.renameSync(temporary, file);
+      } catch (error) {
+        if (!transientCodes.has(error.code)) throw error;
+        fs.copyFileSync(temporary, file);
+      }
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!transientCodes.has(error.code) || attempt === 7) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 350);
+    } finally {
+      if (fs.existsSync(temporary)) {
+        try { fs.unlinkSync(temporary); } catch (error) { lastError = error; }
+      }
+    }
+  }
+  throw lastError;
+}
+
 let JSDOM, React, RDS;
 try {
   JSDOM = require(path.join(MODULES, 'jsdom')).JSDOM;
@@ -498,7 +525,7 @@ const report = {
 };
 
 fs.mkdirSync(path.dirname(REPORT_PATH), { recursive: true });
-fs.writeFileSync(REPORT_PATH, JSON.stringify(report, null, 2) + '\n');
+replaceFile(REPORT_PATH, JSON.stringify(report, null, 2) + String.fromCharCode(10));
 
 if (!QUIET) {
   console.log('[check_sel_a11y] audited ' + ids.length + ' SEL tools');
@@ -533,10 +560,10 @@ const BASELINE_PATH = path.join(ROOT, 'dev-tools', 'sel_contrast_baseline.json')
 let ratchetFailed = false;
 try {
   if (process.argv.includes('--update-baseline')) {
-    fs.writeFileSync(BASELINE_PATH, JSON.stringify({
+    replaceFile(BASELINE_PATH, JSON.stringify({
       note: 'Max allowed contrast warnings from check_sel_a11y. Must only ever go DOWN. Refresh with: node dev-tools/check_sel_a11y.cjs --update-baseline',
       maxWarnings: report.summary.warningCount
-    }, null, 2) + '\n');
+    }, null, 2) + String.fromCharCode(10));
     console.log('[check_sel_a11y] baseline updated to ' + report.summary.warningCount + ' warning(s).');
   } else if (fs.existsSync(BASELINE_PATH)) {
     const baseline = JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8'));

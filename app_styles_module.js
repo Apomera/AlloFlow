@@ -342,11 +342,6 @@ const AppStyles = ({
           box-shadow: 0 0 0 5px rgba(255,255,255,0.85) !important;
           border-radius: 6px;
         }
-        /* Tree Lab season-label contrast override: season hues remain decorative. */
-        .allo-tree-lab .allo-tree-season-kicker,
-        .allo-tree-lab .allo-tree-season-note strong {
-          color: var(--tree-ink);
-        }
         /* ── WCAG 1.4.10 Reflow — let multi-panel STEM tools reflow at 320px / 400% zoom ── */
         /* Any wide horizontal panel layout opts in to vertical-stacking via .allo-reflow.
            At ≤640px (Tailwind sm breakpoint) panels stack and inner overflow becomes scrollable
