@@ -628,6 +628,10 @@ window.StemLab = window.StemLab || {
               var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true, powerPreference: 'high-performance' });
               renderer.setSize(W, H, false);
               renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+              // Track CSS dimensions separately from the backing-store pixel size.
+              // With a high-DPI pixel ratio, canvas.width is intentionally larger.
+              renderer._alloLogicalWidth = W;
+              renderer._alloLogicalHeight = H;
               if (THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
               if (THREE.ACESFilmicToneMapping) {
                 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -742,12 +746,6 @@ window.StemLab = window.StemLab || {
               
               var controls = threeControlsRef.current;
               var resources = threeResourcesRef.current;
-              if (resources && resources.atomGroup) {
-                if (controls && controls.state === -1) {
-                  resources.atomGroup.rotation.y += 0.005;
-                }
-              }
-              
               if (controls) {
                 controls.update();
               }
@@ -757,11 +755,14 @@ window.StemLab = window.StemLab || {
                 if (canvas) {
                   var W = canvas.clientWidth || 400;
                   var H = canvas.clientHeight || 300;
-                  if (canvas.width !== W || canvas.height !== H) {
-                    threeRendererRef.current.setSize(W, H, false);
-                    try{ if(threeRendererRef.current._alloComposer){ threeRendererRef.current._alloComposer.setSize(W, H); } }catch(e){}
+                  var renderer = threeRendererRef.current;
+                  if (renderer._alloLogicalWidth !== W || renderer._alloLogicalHeight !== H) {
+                    renderer.setSize(W, H, false);
+                    try{ if(renderer._alloComposer){ renderer._alloComposer.setSize(W, H); } }catch(e){}
                     threeCameraRef.current.aspect = W / H;
                     threeCameraRef.current.updateProjectionMatrix();
+                    renderer._alloLogicalWidth = W;
+                    renderer._alloLogicalHeight = H;
                   }
                 }
                 var _ac=threeRendererRef.current._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ threeRendererRef.current._alloComposer=null; threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current); } } else { threeRendererRef.current.render(threeSceneRef.current, threeCameraRef.current); }
@@ -1061,7 +1062,7 @@ window.StemLab = window.StemLab || {
 
             { n: 55, s: 'Cs', name: t('stem.periodic.cesium'), cat: 'alkali', c: '#f87171' }, { n: 56, s: 'Ba', name: t('stem.periodic.barium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 57, s: 'La', name: t('stem.periodic.lanthanide'), cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: t('stem.periodic.cerium'), cat: 'lanthanide', c: '#a78bfa' },
+            { n: 57, s: 'La', name: t('stem.periodic.lanthanum'), cat: 'lanthanide', c: '#a78bfa' }, { n: 58, s: 'Ce', name: t('stem.periodic.cerium'), cat: 'lanthanide', c: '#a78bfa' },
 
             { n: 59, s: 'Pr', name: t('stem.periodic.praseodymium'), cat: 'lanthanide', c: '#a78bfa' }, { n: 60, s: 'Nd', name: t('stem.periodic.neodymium'), cat: 'lanthanide', c: '#a78bfa' },
 
@@ -1095,7 +1096,7 @@ window.StemLab = window.StemLab || {
 
             { n: 87, s: 'Fr', name: t('stem.periodic.francium'), cat: 'alkali', c: '#f87171' }, { n: 88, s: 'Ra', name: t('stem.periodic.radium'), cat: 'alkaline', c: '#fbbf24' },
 
-            { n: 89, s: 'Ac', name: t('stem.periodic.actinide'), cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: t('stem.periodic.thorium'), cat: 'actinide', c: '#f472b6' },
+            { n: 89, s: 'Ac', name: t('stem.periodic.actinium'), cat: 'actinide', c: '#f472b6' }, { n: 90, s: 'Th', name: t('stem.periodic.thorium'), cat: 'actinide', c: '#f472b6' },
 
             { n: 91, s: 'Pa', name: t('stem.periodic.protactinium'), cat: 'actinide', c: '#f472b6' }, { n: 92, s: 'U', name: t('stem.periodic.uranium'), cat: 'actinide', c: '#f472b6' },
 
@@ -1210,6 +1211,107 @@ window.StemLab = window.StemLab || {
             W: { desc: t('stem.periodic.has_the_highest_melting_point'), uses: ['Light bulb filaments', 'Drill bits & cutting tools', 'Military armor'], compounds: ['WO₃ (Tungsten Trioxide)', 'WC (Tungsten Carbide)'] },
 
           };
+
+          // Complete the table's detail-card contract for elements that do not
+          // have a localized long-form record yet.
+          const ELEMENT_DETAIL_EXTRAS = {
+            Sc: ['A light transition metal that strengthens aluminum alloys.', ['Aerospace alloys', 'Bicycle frames', 'High-intensity lamps'], ['Sc2O3 (scandium oxide)', 'ScCl3 (scandium chloride)']],
+            V: ['A hard transition metal that improves the strength and heat resistance of steel.', ['Tool steel', 'Redox batteries', 'Chemical catalysts'], ['V2O5 (vanadium pentoxide)', 'VO2 (vanadium dioxide)']],
+            Co: ['A hard blue-white metal used in magnets, alloys, and vitamin B12.', ['Rechargeable batteries', 'Superalloys', 'Permanent magnets'], ['CoO (cobalt oxide)', 'CoCl2 (cobalt chloride)']],
+            Ga: ['A soft metal that melts near body temperature and forms useful semiconductor compounds.', ['LEDs and laser diodes', 'Semiconductor chips', 'Low-melting alloys'], ['GaAs (gallium arsenide)', 'GaN (gallium nitride)']],
+            Ge: ['A brittle metalloid with useful semiconductor and infrared properties.', ['Fiber-optic systems', 'Infrared lenses', 'Semiconductors'], ['GeO2 (germanium dioxide)', 'GeH4 (germane)']],
+            As: ['A toxic metalloid used in specialized semiconductors and materials research.', ['Semiconductor alloys', 'Materials research', 'Specialty glass'], ['As2O3 (arsenic trioxide)', 'GaAs (gallium arsenide)']],
+            Se: ['A nonmetal used in electronics and glass because its electrical response changes with light.', ['Photovoltaic cells', 'Glass coloring', 'Trace-nutrient supplements'], ['SeO2 (selenium dioxide)', 'CdSe (cadmium selenide)']],
+            Kr: ['A chemically quiet noble gas used for stable light and inert atmospheres.', ['Specialty lighting', 'Lasers', 'Insulated windows'], ['KrF2 (krypton difluoride)']],
+            Rb: ['A very reactive alkali metal valued for precise atomic transitions.', ['Atomic clocks', 'Physics research', 'Photoelectric cells'], ['RbCl (rubidium chloride)', 'RbOH (rubidium hydroxide)']],
+            Sr: ['An alkaline-earth metal whose salts produce vivid red flames.', ['Red fireworks', 'Glow pigments', 'Ferrite magnets'], ['SrCO3 (strontium carbonate)', 'SrTiO3 (strontium titanate)']],
+            Y: ['A transition metal used in phosphors, lasers, superconductors, and ceramics.', ['LED phosphors', 'Lasers', 'Superconducting ceramics'], ['Y2O3 (yttrium oxide)', 'YBCO (yttrium barium copper oxide)']],
+            Zr: ['A corrosion-resistant metal that stays stable in hot water and harsh environments.', ['Nuclear fuel cladding', 'Ceramics', 'Dental crowns'], ['ZrO2 (zirconium dioxide)', 'ZrSiO4 (zircon)']],
+            Nb: ['A transition metal that becomes superconducting at low temperature and strengthens steels.', ['MRI magnets', 'Superalloys', 'Electronic capacitors'], ['Nb2O5 (niobium pentoxide)', 'NbTi (niobium-titanium)']],
+            Mo: ['A refractory metal that keeps its strength at very high temperatures.', ['High-strength steel', 'Lubricants', 'Industrial catalysts'], ['MoS2 (molybdenum disulfide)', 'MoO3 (molybdenum trioxide)']],
+            Tc: ['A radioactive metal with no stable isotopes; technetium-99m is used for medical imaging.', ['Medical imaging', 'Corrosion studies', 'Nuclear medicine research'], ['TcO2 (technetium dioxide)', 'Pertechnetate salts']],
+            Ru: ['A platinum-group metal that resists corrosion and works well in catalysts.', ['Chemical catalysts', 'Chip resistors', 'Solar-cell dyes'], ['RuO4 (ruthenium tetroxide)', 'RuCl3 (ruthenium chloride)']],
+            Rh: ['A rare reflective platinum-group metal especially valuable for cleaning vehicle exhaust.', ['Catalytic converters', 'Reflective plating', 'Laboratory catalysts'], ['RhCl3 (rhodium chloride)', 'Rh2O3 (rhodium oxide)']],
+            Pd: ['A platinum-group metal that absorbs hydrogen and is an excellent catalyst.', ['Catalytic converters', 'Hydrogen purification', 'Electronics'], ['PdCl2 (palladium chloride)', 'PdHx (palladium hydride)']],
+            Cd: ['A soft toxic metal whose compounds have bright colors and semiconductor properties.', ['Specialty batteries', 'Pigments', 'Thin-film solar cells'], ['CdS (cadmium sulfide)', 'CdTe (cadmium telluride)']],
+            In: ['A soft metal used for transparent electrical coatings and low-melting solders.', ['Touchscreens', 'Semiconductors', 'Specialty solders'], ['In2O3 (indium oxide)', 'InP (indium phosphide)']],
+            Sb: ['A brittle metalloid used in flame-resistant materials and alloys.', ['Flame retardants', 'Lead-acid batteries', 'Semiconductors'], ['Sb2S3 (antimony trisulfide)', 'Sb2O3 (antimony trioxide)']],
+            Te: ['A brittle metalloid with semiconductor and thermoelectric properties.', ['Solar cells', 'Thermoelectric devices', 'Metal alloys'], ['CdTe (cadmium telluride)', 'Bi2Te3 (bismuth telluride)']],
+            Xe: ['A heavy noble gas that forms unusual fluorides and produces intense white light.', ['Arc lamps', 'Ion propulsion', 'Research anesthesia'], ['XeF2 (xenon difluoride)', 'XeF4 (xenon tetrafluoride)']],
+            Cs: ['An extremely reactive alkali metal whose atomic transition defines the SI second.', ['Atomic clocks', 'Photoelectric cells', 'Drilling fluids'], ['CsCl (cesium chloride)', 'CsOH (cesium hydroxide)']],
+            Ba: ['A reactive alkaline-earth metal whose salts can make green flames; soluble salts are toxic.', ['Green fireworks', 'X-ray contrast', 'Specialty glass'], ['BaSO4 (barium sulfate)', 'BaO (barium oxide)']],
+            La: ['The first lanthanide, a soft metal used in optical glass and battery materials.', ['Camera lenses', 'Catalytic converters', 'Nickel-metal hydride batteries'], ['La2O3 (lanthanum oxide)', 'LaNi5 (lanthanum nickel)']],
+            Ce: ['The most abundant lanthanide, valued for switching between oxidation states.', ['Glass polishing', 'Catalytic converters', 'Lighter flints'], ['CeO2 (cerium dioxide)', 'Cerium ammonium nitrate']],
+            Pr: ['A lanthanide that colors glass and helps make strong magnets.', ['Permanent magnets', 'Colored glass', 'Aircraft alloys'], ['Pr6O11 (praseodymium oxide)', 'PrCl3 (praseodymium chloride)']],
+            Nd: ['A lanthanide that forms some of the strongest permanent magnets known.', ['Speakers and motors', 'Hard drives', 'Lasers'], ['Nd2O3 (neodymium oxide)', 'NdFeB (neodymium-iron-boron)']],
+            Pm: ['A radioactive lanthanide with no stable isotopes, made in reactors for research.', ['Nuclear batteries', 'Thickness gauges', 'Research'], ['Promethium oxide', 'Promethium chloride']],
+            Sm: ['A lanthanide that makes high-temperature magnets and absorbs neutrons.', ['SmCo magnets', 'Reactor control', 'Lasers'], ['Sm2O3 (samarium oxide)', 'SmCo5 (samarium-cobalt)']],
+            Eu: ['A lanthanide whose compounds give strong red color in displays and security markings.', ['Red phosphors', 'Security ink', 'LED displays'], ['Eu2O3 (europium oxide)', 'EuS (europium sulfide)']],
+            Gd: ['A lanthanide with unusual magnetic behavior used in imaging and neutron research.', ['MRI contrast research', 'Magnetic refrigeration', 'Neutron shielding'], ['Gd2O3 (gadolinium oxide)', 'Gd-DTPA (MRI contrast compound)']],
+            Tb: ['A lanthanide that produces green phosphors and changes shape in a magnetic field.', ['Green phosphors', 'Magnetostrictive devices', 'Solid-state electronics'], ['Tb4O7 (terbium oxide)', 'TbCl3 (terbium chloride)']],
+            Dy: ['A lanthanide that helps permanent magnets keep working at high temperatures.', ['Electric-vehicle motors', 'Wind-turbine generators', 'Lasers'], ['Dy2O3 (dysprosium oxide)', 'DyCl3 (dysprosium chloride)']],
+            Ho: ['A lanthanide with the strongest magnetic moment of any element.', ['Specialty magnets', 'Lasers', 'Magnetic calibration'], ['Ho2O3 (holmium oxide)', 'Ho:YAG (holmium laser crystal)']],
+            Er: ['A lanthanide whose ions amplify light in fiber-optic cables.', ['Fiber-optic amplifiers', 'Pink glass', 'Medical lasers'], ['Er2O3 (erbium oxide)', 'Er:YAG (erbium laser crystal)']],
+            Tm: ['A rare lanthanide used in compact X-ray sources and near-infrared lasers.', ['Portable X-ray sources', 'Lasers', 'Materials research'], ['Tm2O3 (thulium oxide)', 'Tm:YAG (thulium laser crystal)']],
+            Yb: ['A soft lanthanide with useful laser and atomic-clock transitions.', ['Atomic clocks', 'Fiber lasers', 'Specialty steel'], ['Yb2O3 (ytterbium oxide)', 'Yb-doped fiber materials']],
+            Lu: ['The densest lanthanide, used in scintillators and targeted medical research.', ['PET scanner crystals', 'Radiation therapy research', 'Catalysts'], ['Lu2O3 (lutetium oxide)', 'Lu-177 radiopharmaceuticals']],
+            Hf: ['A corrosion-resistant metal used in nuclear control and microelectronics.', ['Control rods', 'CPU gate dielectrics', 'High-temperature alloys'], ['HfO2 (hafnium dioxide)', 'HfC (hafnium carbide)']],
+            Ta: ['A highly corrosion-resistant metal used in electronics and medical implants.', ['Tantalum capacitors', 'Surgical implants', 'Chemical equipment'], ['Ta2O5 (tantalum pentoxide)', 'TaC (tantalum carbide)']],
+            Re: ['A rare metal that keeps its strength at jet-engine temperatures.', ['Jet-engine alloys', 'Catalysts', 'Thermocouples'], ['Re2O7 (rhenium heptoxide)', 'Ammonium perrhenate']],
+            Os: ['The densest naturally occurring element; its compounds require careful handling.', ['Specialty alloys', 'Catalysts', 'Electrical contacts'], ['OsO4 (osmium tetroxide)', 'OsCl3 (osmium chloride)']],
+            Ir: ['A corrosion-resistant platinum-group metal that survives extreme heat and chemicals.', ['Spark plugs', 'High-temperature crucibles', 'Catalysts'], ['IrO2 (iridium dioxide)', 'IrCl3 (iridium chloride)']],
+            Tl: ['A soft, highly toxic metal used only in specialized technical research.', ['Optical materials', 'Electronics research', 'Medical imaging research'], ['Tl2O3 (thallium oxide)', 'TlCl (thallium chloride)']],
+            Bi: ['A heavy metal that is relatively low in toxicity compared with its neighbors.', ['Medicines', 'Low-melting alloys', 'Pigments'], ['Bi2O3 (bismuth oxide)', 'Bismuth subsalicylate']],
+            Po: ['A rare, intensely radioactive element discovered by Marie Curie.', ['Radiation research', 'Anti-static devices', 'Research heat sources'], ['PoO2 (polonium dioxide)', 'Polonium sulfides']],
+            At: ['The rarest naturally occurring halogen; every isotope is radioactive and short-lived.', ['Radiopharmaceutical research', 'Nuclear chemistry', 'Astatine-211 therapy research'], ['Astatine-211 compounds', 'AtCl (astatine chloride)']],
+            Rn: ['A radioactive noble gas that can collect indoors and is a lung-cancer hazard.', ['Geological tracing', 'Radiation research'], ['Radon fluorides (rare)', 'No common stable compounds']],
+            Fr: ['An extremely rare radioactive alkali metal known almost entirely from experiments.', ['Nuclear-structure research'], ['No common stable compounds; research-only element']],
+            Ra: ['A radioactive alkaline-earth metal studied for targeted radiation therapy.', ['Targeted alpha therapy research', 'Nuclear science'], ['RaCl2 (radium chloride)', 'RaSO4 (radium sulfate)']],
+            Ac: ['A radioactive actinide whose alpha-emitting isotopes support targeted cancer-therapy research.', ['Targeted alpha therapy', 'Nuclear research'], ['Ac2O3 (actinium oxide)', 'Actinium-225 complexes']],
+            Th: ['A naturally radioactive actinide with a possible future role as nuclear fuel.', ['Nuclear-fuel research', 'High-temperature ceramics', 'Gas mantles (historical)'], ['ThO2 (thorium dioxide)', 'Thorium nitrate']],
+            Pa: ['A rare radioactive actinide studied mainly through nuclear structure and decay.', ['Nuclear research', 'Actinide chemistry'], ['Pa2O5 (protactinium pentoxide)', 'PaCl5 (protactinium pentachloride)']],
+            Np: ['A radioactive actinide produced in reactors for specialized nuclear research.', ['Nuclear materials research', 'Actinide chemistry'], ['NpO2 (neptunium dioxide)', 'NpF6 (neptunium hexafluoride)']],
+            Pu: ['A synthetic radioactive actinide used as reactor fuel and a space power source.', ['Reactor fuel', 'Radioisotope power systems', 'Nuclear research'], ['PuO2 (plutonium dioxide)', 'PuF4 (plutonium tetrafluoride)']],
+            Am: ['A synthetic actinide whose americium-241 isotope is an alpha source.', ['Smoke detectors', 'Neutron sources', 'Nuclear research'], ['AmO2 (americium dioxide)', 'Americium nitrate']],
+            Cm: ['A synthetic, strongly radioactive actinide named for the Curies.', ['Alpha sources', 'Space-power research', 'Nuclear research'], ['Cm2O3 (curium oxide)', 'CmCl3 (curium chloride)']],
+            Bk: ['A synthetic actinide made in tiny quantities for heavy-element research.', ['Superheavy-element research', 'Actinide chemistry'], ['Bk2O3 (berkelium oxide)', 'BkCl3 (berkelium chloride)']],
+            Cf: ['A synthetic actinide whose isotopes can provide intense neutron sources.', ['Neutron sources', 'Reactor start-up research', 'Nuclear research'], ['Cf2O3 (californium oxide)', 'CfCl3 (californium chloride)']],
+            Es: ['A synthetic actinide made atom by atom with no use outside research.', ['Actinide research', 'Nuclear-structure research'], ['Es2O3 (einsteinium oxide)', 'Research-only compounds']],
+            Fm: ['A synthetic actinide produced in extremely small amounts for research.', ['Nuclear-structure research'], ['Predicted Fm2O3 (fermium oxide)', 'Research-only compounds']],
+            Md: ['A synthetic actinide known only from short-lived laboratory atoms.', ['Superheavy-element research'], ['Predicted Md2O3 (mendelevium oxide)', 'Research-only compounds']],
+            No: ['A synthetic actinide produced one atom at a time and studied through decay.', ['Nuclear-structure research'], ['Predicted NoCl3 (nobelium chloride)', 'Research-only compounds']],
+            Lr: ['A synthetic actinide at the edge of the periodic table, known from experiments.', ['Superheavy-element research'], ['Predicted LrCl3 (lawrencium chloride)', 'Research-only compounds']],
+            Rf: ['A synthetic superheavy transition element that exists briefly after it is made.', ['Superheavy-element research'], ['Predicted RfCl4 (rutherfordium chloride)', 'Research-only compounds']],
+            Db: ['A synthetic superheavy element studied through radioactive decay chains.', ['Superheavy-element research'], ['Predicted DbCl5 (dubnium chloride)', 'Research-only compounds']],
+            Sg: ['A synthetic superheavy element named for Glenn Seaborg.', ['Superheavy-element research'], ['Predicted SgCl6 (seaborgium chloride)', 'Research-only compounds']],
+            Bh: ['A synthetic superheavy element produced in tiny amounts for nuclear experiments.', ['Superheavy-element research'], ['Predicted BhCl5 (bohrium chloride)', 'Research-only compounds']],
+            Hs: ['A synthetic superheavy element whose chemistry is known mainly from predictions.', ['Superheavy-element research'], ['Predicted HsO4 (hassium tetroxide)', 'Research-only compounds']],
+            Mt: ['A synthetic superheavy element made one atom at a time for nuclear research.', ['Superheavy-element research'], ['No common compounds; research-only element']],
+            Ds: ['A synthetic superheavy element named for Darmstadt, Germany.', ['Superheavy-element research'], ['No common compounds; research-only element']],
+            Rg: ['A synthetic superheavy element expected to resemble a heavy coinage metal.', ['Superheavy-element research'], ['Predicted RgCl (roentgenium chloride)', 'Research-only compounds']],
+            Cn: ['A synthetic superheavy element expected to behave like a volatile group-12 metal.', ['Superheavy-element research'], ['Predicted CnCl2 (copernicium chloride)', 'Research-only compounds']],
+            Nh: ['A synthetic superheavy group-13 element known from decay experiments.', ['Superheavy-element research'], ['Predicted NhCl (nihonium chloride)', 'Research-only compounds']],
+            Fl: ['A synthetic superheavy group-14 element known from only a few atoms.', ['Superheavy-element research'], ['Predicted FlF2 (flerovium fluoride)', 'Research-only compounds']],
+            Mc: ['A synthetic superheavy group-15 element made in particle-accelerator experiments.', ['Superheavy-element research'], ['Predicted McCl3 (moscovium chloride)', 'Research-only compounds']],
+            Lv: ['A synthetic superheavy group-16 element with no practical use outside research.', ['Superheavy-element research'], ['Predicted LvO (livermorium oxide)', 'Research-only compounds']],
+            Ts: ['A synthetic superheavy halogen whose chemistry is inferred from short-lived atoms.', ['Superheavy-element research'], ['Predicted TsH (tennessine hydride)', 'Research-only compounds']],
+            Og: ['A synthetic superheavy noble-gas element; only a few atoms have been detected.', ['Superheavy-element research', 'Nuclear-structure research'], ['No common compounds; research-only element']]
+          };
+
+          Object.keys(ELEMENT_DETAIL_EXTRAS).forEach(function (sym) {
+            var extra = ELEMENT_DETAIL_EXTRAS[sym];
+            ELEMENT_DETAILS[sym] = { desc: extra[0], uses: extra[1], compounds: extra[2] };
+          });
+
+          ELEMENTS.forEach(function (el) {
+            if (!ELEMENT_DETAILS[el.s]) {
+              ELEMENT_DETAILS[el.s] = {
+                desc: el.name + ' (' + el.s + ') is a ' + el.cat + ' element in the periodic table.',
+                uses: ['Chemistry and materials research'],
+                compounds: ['No common compound in the starter reference set']
+              };
+            }
+          });
 
           const getElementDetail = (sym) => ELEMENT_DETAILS[sym] || null;
 
@@ -1592,6 +1694,12 @@ window.StemLab = window.StemLab || {
             Mc:290,Lv:293,Ts:294,Og:294
           };
 
+          // Keep the periodic-table records aligned with the complete mass table.
+          // The Bohr diagram uses this value when choosing a representative isotope.
+          ELEMENTS.forEach(function (el) {
+            el.mass = ATOMIC_MASS[el.s] || Math.round(el.n * 2.15);
+          });
+
           // ═══ Molar Mass Calculator ═══
           const calcMolarMass = (atomCounts) => {
             let total = 0;
@@ -1946,7 +2054,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             mode === 'viewer' && React.createElement("div", null,
 
-              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => { upd('atoms', p.atoms.map(a => ({ ...a }))); upd('bonds', [...p.bonds]); upd('formula', p.formula); }, className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
+              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => updMulti({ atoms: p.atoms.map(a => ({ ...a })), bonds: [...p.bonds], formula: p.formula }), className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
 
               threeLoaded
                 ? React.createElement(React.Fragment, null,
@@ -2001,7 +2109,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     }, control.text))
                   )
                 )
-                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { maxHeight: "300px" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
+                : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { height: "320px", maxHeight: "320px", display: "block" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
                     (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
                     (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
                       // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
@@ -2945,10 +3053,10 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                           ref: function(canvas) {
 
-                            if (!canvas) {
-                              if (typeof window !== 'undefined' && window._moleculeBohrCleanup) window._moleculeBohrCleanup();
-                              return;
-                            }
+                            // Inline callback refs are recreated on parent renders. React
+                            // briefly calls the old ref with null; keep its animation alive
+                            // so ordinary state updates do not restart or visibly jump it.
+                            if (!canvas) return;
 
                             if (canvas._bohrInit) {
                               if (canvas._bohrSchedule) canvas._bohrSchedule();
