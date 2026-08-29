@@ -18737,6 +18737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     // ─── SIM tab
     function simTab() {
       var mission = getCoreSimProfile(region);
+      var modeProfile = getCoreVoyageMode(voyageMode);
       var trapActionLabel = getCoreTrapActionLabel(region);
       var buoyageCheck = getCoreVoyageBuoyageCheck(region);
       var practiceTargetSpecies = practiceTargetSpeciesId ? getSpeciesForRegion(region).find(function(item) { return item.id === practiceTargetSpeciesId; }) : null;
