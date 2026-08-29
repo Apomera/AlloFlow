@@ -1058,6 +1058,7 @@ function SimplifiedView(props) {
   var _fallbackCopyTtsDiag = function (text) {
     try {
       var scratch = document.createElement('textarea');
+      scratch.setAttribute('aria-label', 'Temporary field for copying read-aloud diagnostics');
       scratch.value = text;
       scratch.setAttribute('readonly', '');
       scratch.style.position = 'fixed';

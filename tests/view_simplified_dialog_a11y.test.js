@@ -50,7 +50,8 @@ describe('Simplified View layered accessibility', () => {
   });
   it('announces cloze completion without moving focus', () => {
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"><ConfettiExplosion');
-    expect(source).toContain('Activity Complete!');
+    expect(source).toContain("var simplifiedActivityCompleteLabel = t('word_sounds.session_complete')");
+    expect(source).toContain('{simplifiedActivityCompleteLabel}');
     expect(source).toContain('motion-reduce:animate-none motion-reduce:transition-none');
   });
 
