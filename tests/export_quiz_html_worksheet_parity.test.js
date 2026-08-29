@@ -505,4 +505,70 @@ describe('quiz parity across HTML and printable worksheet exports', () => {
     expect(html).toContain('10 ± 0.5 cm / centimeters');
     expect(html).toContain('correct partner: <em>2</em>');
   });
+  it('exports Applied Challenge Studio as a persistent workspace without leaking its source excerpt', () => {
+    const challenge = {
+      id: 'applied-challenge-export-test',
+      type: 'applied-challenge',
+      title: 'Water Access Decision',
+      data: {
+        family: 'decide',
+        instructions: 'Use lesson evidence, name assumptions, and revise after testing.',
+        fitReason: 'The lesson presents a consequential choice with competing constraints.',
+        sourceExcerpt: 'PRIVATE APPLIED CHALLENGE SOURCE SHOULD NOT APPEAR',
+        brief: {
+          context: 'A town must improve reliable access to clean water.',
+          drivingQuestion: 'Which option best balances access, cost, and environmental impact?',
+          lockedLessonFacts: ['Gravity moves water <script>alert(1)</script> downhill.'],
+          openQuestions: ['What maintenance capacity is available?'],
+          criteria: ['Uses lesson evidence', 'Addresses a meaningful tradeoff'],
+          constraints: ['Do not invent prices or local findings.'],
+          deliverable: 'A recommendation with evidence and a revision note.',
+          evidenceBoundary: 'Treat costs and adoption rates as assumptions unless sourced.',
+          factVerified: false,
+        },
+        supports: {
+          parallelExample: { context: 'Choosing a school garden location', move: 'Compare access and upkeep.' },
+          frameStarter: 'Option ___ is stronger because ___; however, ___.',
+        },
+        workspace: {
+          workingQuestion: 'How can the town improve access without overstating certainty?',
+          stakeholders: 'Residents, maintenance staff, and nearby ecosystems.',
+          possibilities: 'Gravity-fed storage or a pumped distribution extension.',
+          evidence: 'Gravity can reduce pumping needs where elevation permits.',
+          assumptions: 'The terrain and maintenance capacity require verification.',
+          tradeoffs: 'Lower energy use may require a less convenient location.',
+          response: 'Start with a terrain and maintenance feasibility study.',
+          testReflection: 'The first draft treated available land as certain.',
+          revision: 'Label the land assumption and add a site-verification step.',
+          transferReflection: 'The same evidence-versus-assumption check applies to transit plans.',
+        },
+        feedback: {
+          strength: 'The recommendation clearly separates evidence from assumptions.',
+          lessonConnectionCheck: 'The gravity claim stays connected to the lesson.',
+          evidenceOrConstraintCheck: 'Local terrain remains appropriately unresolved.',
+          nextStep: 'Define what evidence would confirm maintenance feasibility.',
+          status: 'needs-check',
+        },
+      },
+    };
+    const html = pipeline.generateFullPackHTML([challenge], 'Applied challenge export', true, {}, {
+      includeTeacherKey: false,
+      annotations: [],
+    });
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const section = doc.querySelector('.applied-challenge-export');
+    expect(section).not.toBeNull();
+    expect(section.textContent).toContain('Gravity moves water');
+    expect(section.textContent).toContain('Lesson facts awaiting teacher review');
+    expect(section.textContent).toContain('Label the land assumption');
+    expect(section.textContent).toContain('The same evidence-versus-assumption check');
+    expect(section.textContent).toContain('clearly separates evidence from assumptions');
+    expect(section.textContent).toContain('Fact check needed');
+    expect(html).toContain('Gravity moves water &lt;script&gt;alert(1)&lt;/script&gt; downhill.');
+    expect(html).not.toContain('<script>alert(1)</script>');
+    expect(html).not.toContain('PRIVATE APPLIED CHALLENGE SOURCE SHOULD NOT APPEAR');
+    const manifestEntry = pipeline.interactiveObjectManifestItem(challenge, { renderedInIms: true });
+    expect(manifestEntry).not.toHaveProperty('data');
+    expect(JSON.stringify(manifestEntry)).not.toContain('PRIVATE APPLIED CHALLENGE SOURCE SHOULD NOT APPEAR');
+  });
 });

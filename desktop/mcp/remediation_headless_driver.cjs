@@ -677,7 +677,12 @@ async function withTransportGate(state, signal, operation) {
 }
 
 async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transportState }) {
-  const url = geminiBase() + '/' + model + ':generateContent?key=' + encodeURIComponent(apiKey);
+  // Key travels in the x-goog-api-key header, never the URL (2026-08-28): AI Studio now
+  // issues AQ.-prefixed Authentication Keys that Google rejects on the legacy ?key= query
+  // path (400 "API key not valid" / 401 ACCESS_TOKEN_TYPE_UNSUPPORTED), and headers also
+  // keep the credential out of proxy logs and copied diagnostics. Matches gemini_api_module
+  // and the remediation_verify_key probe, which already authenticated this way.
+  const url = geminiBase() + '/' + model + ':generateContent';
   const state = transportState || null;
   if (signal && signal.aborted) return { ok: false, error: abortEnvelope() };
   if (state && state.throttled) {
@@ -705,7 +710,7 @@ async function geminiGenerateLocked({ apiKey, model, parts, log, signal, transpo
   try {
     res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
       body: JSON.stringify({ contents: [{ parts }] }),
       signal,
     });
@@ -1036,18 +1041,15 @@ function createDriver(options) {
       const w = window;
       // Host-state slot the OCR path reads (language picker parity).
       w.__docPipelineState = { pdfOcrLanguage: cfg.ocrLanguage || '', pdfDocumentEpoch: cfg.documentEpoch };
-      if (cfg.agentBridge) {
+      if (cfg.hostTransportProfile) {
         // Declare the transport's latency character to the pipeline (supported host knob, not a
-        // fork): the "model" is a conversational client that reads a 15–20KB prompt and composes
-        // its reply over a tool-call round trip, so per-call deadlines tuned for an HTTP socket
-        // (180s text / 120s vision) misread healthy calls as failures, and there is no Gemini
-        // quota for pacing or calm probes to protect.
-        w.__alloHostTransportProfile = {
-          kind: 'agent-bridge',
-          textInitialMs: 600000, textRetryMs: 600000,
-          visionInitialMs: 600000, visionRetryMs: 600000,
-          pacingExempt: true, probeExempt: true,
-        };
+        // fork). Agent bridge: the "model" is a conversational client that reads a 15–20KB
+        // prompt and composes its reply over a tool-call round trip, so per-call deadlines tuned
+        // for an HTTP socket (180s text / 120s vision) misread healthy calls as failures, and
+        // there is no Gemini quota for pacing or calm probes to protect. Selftest: the scripted
+        // loopback answers instantly and has no quota either, so waiting out the rolling start
+        // budget (~3 minutes observed) proves nothing about whether the install can remediate.
+        w.__alloHostTransportProfile = cfg.hostTransportProfile;
       }
       // ── Document ownership stamp (required since the pipeline's ownership-epoch gate) ──
       // fixAndVerifyPdf refuses to start an "unstamped" run: an unowned document means a
@@ -1101,7 +1103,18 @@ function createDriver(options) {
       });
       w.__mcpRunAbortController = new AbortController();
       w.__alloPdfAbortSignal = w.__mcpRunAbortController.signal;
-    }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '', documentEpoch: ++documentEpochSeq, agentBridge: !!modelBridge });
+    }, {
+      ocrLanguage: runOpts.ocrLanguage || '',
+      fileName: runOpts.fileName || '',
+      documentEpoch: ++documentEpochSeq,
+      hostTransportProfile: runOpts.hostTransportProfile
+        || (modelBridge ? {
+          kind: 'agent-bridge',
+          textInitialMs: 600000, textRetryMs: 600000,
+          visionInitialMs: 600000, visionRetryMs: 600000,
+          pacingExempt: true, probeExempt: true,
+        } : null),
+    });
 
     return { page, context };
   }
@@ -2114,14 +2127,21 @@ function createDriver(options) {
   // the MCPB bundle carries server/ and assets/ only, never tests/, so a file dependency would
   // make the self-test work in the repo and not in the thing users install.
   function buildSelfTestPdf() {
-    const body = 'BT /F1 16 Tf 72 700 Td (' + SELFTEST_MARKER + ') Tj ET\n';
+    // Tagged on purpose (2026-08-24): the structure tree exercises the Document Safety
+    // scanner's ref -> StructElem dict -> K array -> MCID number walk, the exact path where
+    // minified-pdf-lib type detection silently failed and blocked every tagged-PDF export
+    // with active_content_scan_unavailable. A selftest that only shipped an untagged page
+    // could never catch that class of regression.
+    const body = '/P <</MCID 0>> BDC\nBT /F1 16 Tf 72 700 Td (' + SELFTEST_MARKER + ') Tj ET\nEMC\n';
     const objs = [
       null,
-      '<</Type/Catalog/Pages 2 0 R>>',
+      '<</Type/Catalog/Pages 2 0 R/MarkInfo<</Marked true>>/StructTreeRoot 6 0 R>>',
       '<</Type/Pages/Kids[3 0 R]/Count 1>>',
-      '<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>',
+      '<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R/StructParents 0>>',
       '<</Length ' + Buffer.byteLength(body, 'latin1') + '>>\nstream\n' + body + 'endstream',
       '<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>',
+      '<</Type/StructTreeRoot/K 7 0 R/ParentTree<</Nums[0 [7 0 R]]>>>>',
+      '<</Type/StructElem/S/P/P 6 0 R/Pg 3 0 R/K[0]>>',
     ];
     let out = '%PDF-1.4\n';
     const offsets = [];
@@ -2224,6 +2244,10 @@ function createDriver(options) {
       const out = await remediate({
         filePath: pdfPath, onLog: o.onLog,
         targetScore: 100, fixPasses: 0, polishPasses: 0, taggedPdf: true, autoContinue: false,
+        // The loopback model is instant and quota-free: exempt the run from quota pacing so the
+        // selftest verifies the INSTALL (its advertised 20-60s), not the rate limiter. Deadlines
+        // and probes stay at Gemini-lane defaults to keep the transport path representative.
+        hostTransportProfile: { kind: 'selftest-loopback', pacingExempt: true },
       });
       const producedHtml = !!(out && typeof out.accessibleHtml === 'string' && out.accessibleHtml.trim());
       const carriedContent = producedHtml && out.accessibleHtml.indexOf(SELFTEST_MARKER) !== -1;

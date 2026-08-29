@@ -1603,26 +1603,11 @@
       document.body.classList.remove('app-focus-controls-visible');
     }
 
-    if (options.syncWindow === false) return;
-
-    try {
-      if (window.alloflowDesktop?.setFullScreen) {
-        await window.alloflowDesktop.setFullScreen(next);
-        return;
-      }
-    } catch (_) {
-      // Fall through to the browser fullscreen API or CSS-only focus mode.
-    }
-
-    try {
-      if (next && document.documentElement.requestFullscreen) {
-        await document.documentElement.requestFullscreen();
-      } else if (!next && document.fullscreenElement && document.exitFullscreen) {
-        await document.exitFullscreen();
-      }
-    } catch (_) {
-      // CSS focus mode still provides an app-only layout.
-    }
+    // CSS-only by design (2026-08-24, user testing): "Full Screen" fills the
+    // WINDOW with the app; it never drives OS fullscreen. Real fullscreen stays
+    // the user's own gesture (green button / View menu), decoupled from this
+    // layout mode. options.syncWindow is retained for caller compatibility.
+    void options;
   }
 
   async function saveProviderSettings(id, baseUrl, apiKey) {
@@ -2367,24 +2352,20 @@
     document.addEventListener('pointerdown', showAppFocusControls, { passive: true });
 
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape' && state.appFocusMode) {
+      const guidedEdition = document.body.classList.contains('edition-desktop')
+        || document.body.classList.contains('edition-remediation');
+      if (event.key === 'Escape' && state.appFocusMode && !guidedEdition) {
+        // Admin/unflavored: Escape leaves the app view. Guided editions: the app
+        // IS the product, and the console is reachable only via the Settings gear.
         setAppFocusMode(false);
       } else {
         showAppFocusControls();
       }
     });
 
-    document.addEventListener('fullscreenchange', () => {
-      if (!document.fullscreenElement && state.appFocusMode) {
-        setAppFocusMode(false, { syncWindow: false });
-      }
-    });
-
-    if (window.alloflowDesktop?.onFullScreenChange) {
-      window.alloflowDesktop.onFullScreenChange((enabled) => {
-        setAppFocusMode(enabled, { syncWindow: false });
-      });
-    }
+    // OS fullscreen and the app-focus layout are deliberately independent now:
+    // entering or leaving real fullscreen must not yank a teacher out of the
+    // app view into the console (2026-08-24).
 
     if (window.alloflowDesktop?.onUpdateStatus) {
       window.alloflowDesktop.onUpdateStatus((update) => {
