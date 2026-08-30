@@ -85,9 +85,12 @@ describe('a probe knows whose record it belongs in', () => {
     expect(resource).toContain('sessionConfig: { ..._persistedSessionConfig, resourceId }');
     expect(src).toContain('learnerId: _sessionLearnerId');
 
-    const reopenStart = src.indexOf("if (item.type === 'word-sounds') {");
-    const reopenEnd = src.indexOf("if (item.type === 'adventure'", reopenStart);
-    expect(src.slice(reopenStart, reopenEnd)).toContain('setProbeTargetStudent(null)');
+    // The resource-reopen branch moved into misc_handlers during the
+    // 2026-08-22 modularization; the sync hydrator below stayed in the host.
+    const handlers = read('misc_handlers_source.jsx');
+    const reopenStart = handlers.indexOf("if (item.type === 'word-sounds') {");
+    const reopenEnd = handlers.indexOf("if (item.type === 'adventure'", reopenStart);
+    expect(handlers.slice(reopenStart, reopenEnd)).toContain('setProbeTargetStudent(null)');
     const syncStart = src.indexOf('const hydrateWordSoundsFromSync =');
     const syncEnd = src.indexOf('// Hydration safety net.', syncStart);
     expect(src.slice(syncStart, syncEnd)).toContain('setProbeTargetStudent(null)');

@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 
 let Hub;
 let pack;
@@ -9,7 +10,7 @@ let pack;
 beforeAll(() => {
   window.React = window.React || { useState: (value) => [typeof value === 'function' ? value() : value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' };
   loadAlloModule('test_prep_hub_module.js');
-  Hub = window.AlloModules.TestPrepHub;
+  Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub);
   pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-plt-k6-5622');
 });
 
@@ -58,7 +59,10 @@ describe('Praxis PLT K–6 5622 diagnostic bank', () => {
   });
 
   it('is candid that guided activities are not independent, expert-validated exam questions', () => {
-    expect(pack.bankDisclosure).toContain('not 500 independent exam questions');
+    // The disclosure was reworded in the 2026-08 content sweep; the candor
+    // contract stands: it must state the true composition and the shortfall.
+    expect(pack.bankDisclosure).toContain('300 source-derived guided-review activities');
+    expect(pack.bankDisclosure).toMatch(/\d+ newly authored independent questions remain/);
     expect(pack.assistantReview).toMatchObject({ sourceItems: 200, guidedReviewItems: 300, verdict: 'reviewed-target-not-met' });
     // No guided-tier item may launder into the reviewed tier.
     expect(pack.items.filter((item) => item.qaStatus === 'qa-passed')).toHaveLength(200);

@@ -2,12 +2,13 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 const read = (file) => fs.readFileSync(resolve(process.cwd(), file), 'utf8');
 const library = JSON.parse(read('test_prep/teaching_reading_5205_learning_library.json'));
 const qa = JSON.parse(read('test_prep/teaching_reading_5205_native_qa.json'));
 const libraryQa = JSON.parse(read('test_prep/teaching_reading_5205_learning_library_qa.json'));
 let Hub; let pack;
-beforeAll(() => { window.React = window.React || { useState: (value) => [value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' }; loadAlloModule('test_prep_hub_module.js'); Hub = window.AlloModules.TestPrepHub; pack = Hub.listPacks().find((entry) => entry.id === 'praxis-teaching-reading-5205'); });
+beforeAll(() => { window.React = window.React || { useState: (value) => [value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' }; loadAlloModule('test_prep_hub_module.js'); Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub); pack = Hub.listPacks().find((entry) => entry.id === 'praxis-teaching-reading-5205'); });
 describe('Praxis Teaching Reading Elementary 5205 suite', () => {
   it('registers five balanced diagnostics and exact official metadata', () => { expect(pack).toMatchObject({ status: 'ready', batchSize: 100, simulationItemCount: 90, simulationTimeMinutes: 120, officialSelectedResponseCount: 90, officialConstructedResponseCount: 3, officialTotalTimeMinutes: 150 }); expect(pack.items).toHaveLength(500); for (let index = 0; index < 5; index += 1) expect(pack.items.slice(index * 100, index * 100 + 100).reduce((counts, item) => { counts[item.answerIndex] += 1; return counts; }, [0,0,0,0])).toEqual([25,25,25,25]); });
   it('reproduces the five official selected-response counts', () => { expect(pack.items.slice(0, 90).reduce((counts, item) => ({ ...counts, [item.domainId]: (counts[item.domainId] || 0) + 1 }), {})).toEqual({ 'phonological-emergent': 14, 'phonics-decoding': 18, 'vocabulary-fluency': 21, comprehension: 21, 'written-expression': 16 }); expect(pack.simulationNote).toContain('three separate 10-minute workshop tasks'); });

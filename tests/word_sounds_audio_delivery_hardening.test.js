@@ -88,11 +88,14 @@ describe('Word Sounds live audio delivery hardening', () => {
   });
 
   it('gates teacher launch and every live push boundary when audio is incomplete', () => {
+    // The live-push pack sanitizer (including safePortableTtsAssets) moved from
+    // the host monolith into live_aac during the 2026-08-22 modularization.
+    const liveAac = readFileSync('live_aac_source.jsx', 'utf8');
+    expect(liveAac).toContain('const safePortableTtsAssets = (value) => {');
+    expect(liveAac).toContain('if (safeAssets) packedWord._ttsAssets = safeAssets;');
+    expect(liveAac).toContain('if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;');
     for (const source of [anti, app]) {
       expect(source).toContain("title: t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready'");
-      expect(source).toContain('const safePortableTtsAssets = (value) => {');
-      expect(source).toContain('if (safeAssets) packedWord._ttsAssets = safeAssets;');
-      expect(source).toContain('if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;');
       expect(source).toContain("t('word_sounds.audio_preflight_message_send'");
       expect(source).toContain("t('word_sounds.audio_preflight_detail_more'");
       expect(source).toContain("t('word_sounds.audio_preflight_send_anyway')");

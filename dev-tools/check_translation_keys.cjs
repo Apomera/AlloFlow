@@ -393,4 +393,7 @@ if (JSON_OUTPUT) {
   }, null, 2) + '\n');
 }
 
-process.exit(totalErrors > 0 ? 1 : 0);
+// process.exit() discards buffered stdout on a pipe — once the --json payload
+// grew past the 64KB pipe buffer, consumers (audit_runtime_pack_coverage)
+// received exactly 65536 bytes of truncated JSON. exitCode lets stdout drain.
+process.exitCode = totalErrors > 0 ? 1 : 0;

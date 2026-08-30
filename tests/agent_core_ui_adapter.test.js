@@ -49,8 +49,11 @@ describe('Agent Core UI adapter parity', () => {
     });
     const revised = await adapter.reviseLegacy(legacy, 'add a timeline', context);
     expect(revised.blueprint.review.state).toBe('draft');
+    // 'simplified' appears via the draft text-access defaults (adaptedTextPolicy
+    // 'include' adds a supplemental Adapted Text row) — the same normalization
+    // createDraft applies, per the parity contract above.
     expect(revised.legacyConfig.recommendedResources).toEqual([
-      'analysis', 'glossary', 'quiz', 'image', 'timeline', 'lesson-plan',
+      'analysis', 'simplified', 'glossary', 'quiz', 'image', 'timeline', 'lesson-plan',
     ]);
     expect(revised.legacyConfig.schemaVersion).toBeUndefined();
   });

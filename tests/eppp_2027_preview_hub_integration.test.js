@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule, registerEpppPartOne } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 
 let Hub;
 
@@ -14,7 +15,7 @@ beforeAll(() => {
     Fragment: 'fragment',
   };
   loadAlloModule('test_prep_hub_module.js');
-  Hub = window.AlloModules.TestPrepHub;
+  Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub);
   if (!Hub) throw new Error('TestPrepHub did not register');
   registerEpppPartOne(Hub);
 });
@@ -77,14 +78,17 @@ describe('Integrated EPPP 2027 preview Hub integration', () => {
     }
   });
 
-  it('keeps both production builders wired to the preview pack', () => {
-    const canonicalBuilder = fs.readFileSync(resolve(process.cwd(), '_build_test_prep_hub_module.js'), 'utf8');
+  it('keeps the production build wired to the preview pack', () => {
+    // Since the 2026-08-23 hub split, _build_test_prep_hub_module.js compiles
+    // the module from test_prep_hub_source.jsx instead of embedding the export
+    // map itself — the wiring to assert now lives in the BUILT module, and the
+    // pack/QA references live in the release builder.
+    const builtModule = fs.readFileSync(resolve(process.cwd(), 'test_prep_hub_module.js'), 'utf8');
     const releaseBuilder = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_test_prep_hub_release.cjs'), 'utf8');
-    expect(canonicalBuilder).toContain('buildTargetedSet: testPrepBuildTargetedSet');
-    for (const builder of [canonicalBuilder, releaseBuilder]) {
-      expect(builder).toContain('eppp_2027_preview_pack.json');
-      expect(builder).toContain('EPPP_INTEGRATED_2027_PREVIEW_PACK');
-      expect(builder).toContain('qa_eppp_2027_preview.cjs');
-    }
+    expect(builtModule).toContain('buildTargetedSet: testPrepBuildTargetedSet');
+    expect(builtModule).toContain('EPPP_INTEGRATED_2027_PREVIEW_PACK');
+    expect(releaseBuilder).toContain('eppp_2027_preview_pack.json');
+    expect(releaseBuilder).toContain('EPPP_INTEGRATED_2027_PREVIEW_PACK');
+    expect(releaseBuilder).toContain('qa_eppp_2027_preview.cjs');
   });
 });

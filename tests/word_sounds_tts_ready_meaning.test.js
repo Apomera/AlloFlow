@@ -23,7 +23,9 @@ import { resolve } from 'node:path';
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const MODULE = read('word_sounds_module.js');
 const MISC = read('misc_components_source.jsx');
-const ANTI = read('AlloFlowANTI.txt');
+// The restore branch lived in AlloFlowANTI.txt until the 2026-08-22 modularization
+// moved the resource-open handlers into misc_handlers; the recompute went with it.
+const HANDLERS = read('misc_handlers_source.jsx');
 
 describe('the pack owns ttsReady; the player does not', () => {
   it('the runtime prefetch writes a runtime flag', () => {
@@ -77,9 +79,9 @@ describe('what the teacher sees stays accurate', () => {
 
 describe('opening a saved pack repairs the claim', () => {
   it('the host recomputes ttsReady from the assets it actually holds', () => {
-    const idx = ANTI.indexOf('const _portableKeys = new Set();');
+    const idx = HANDLERS.indexOf('const _portableKeys = new Set();');
     expect(idx, 'restore should not trust the saved flag').toBeGreaterThan(0);
-    const block = ANTI.slice(idx - 600, idx + 900);
+    const block = HANDLERS.slice(idx - 600, idx + 900);
     expect(block).toMatch(/ttsReady: _portableKeys\.has\(/);
     expect(block).toMatch(/_runtimeAudioReady: false/);
   });
@@ -87,8 +89,8 @@ describe('opening a saved pack repairs the claim', () => {
   it('the recomputation normalises keys the same way the pack does', () => {
     // _ttsAssets keys are normalised text; comparing raw would report every
     // word missing.
-    const idx = ANTI.indexOf('const _portableKeys = new Set();');
-    const block = ANTI.slice(idx, idx + 900);
+    const idx = HANDLERS.indexOf('const _portableKeys = new Set();');
+    const block = HANDLERS.slice(idx, idx + 900);
     expect((block.match(/\.trim\(\)\.toLowerCase\(\)\.replace\(\/\\s\+\/g, ' '\)/g) || []).length).toBe(2);
   });
 });

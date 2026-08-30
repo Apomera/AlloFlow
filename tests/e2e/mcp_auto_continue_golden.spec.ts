@@ -14,6 +14,7 @@
 //
 // No Gemini quota is spent; network is used only for the pipeline's CDN libraries.
 import { test, expect } from '@playwright/test';
+import * as fs from 'fs';
 import * as http from 'http';
 import * as path from 'path';
 
@@ -123,6 +124,35 @@ test.describe('MCP auto-continue loop — scripted model, real pipeline, real re
   });
 
   const SRC_PDF = path.resolve(__dirname, 'artifacts/remediation-e2e.source.pdf');
+
+  // The artifacts/ dir is gitignored; remediation_corpus_golden.spec.ts writes this fixture
+  // but runs AFTER this spec in the Tagged-PDF goldens job, so a fresh CI checkout hit ENOENT
+  // here. Generate a minimal valid source PDF on demand — the scripted loopback model supplies
+  // every audit, so the loop only needs real parseable PDF bytes, not any particular content.
+  test.beforeAll(() => {
+    if (fs.existsSync(SRC_PDF)) return;
+    const body = 'BT /F1 16 Tf 72 700 Td (Auto-continue golden source document) Tj ET\n';
+    const objs = [
+      null,
+      '<</Type/Catalog/Pages 2 0 R>>',
+      '<</Type/Pages/Kids[3 0 R]/Count 1>>',
+      '<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>',
+      '<</Length ' + Buffer.byteLength(body, 'latin1') + '>>\nstream\n' + body + 'endstream',
+      '<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>',
+    ];
+    let out = '%PDF-1.4\n';
+    const offsets: number[] = [];
+    for (let i = 1; i < objs.length; i++) {
+      offsets[i] = Buffer.byteLength(out, 'latin1');
+      out += i + ' 0 obj\n' + objs[i] + '\nendobj\n';
+    }
+    const xrefStart = Buffer.byteLength(out, 'latin1');
+    out += 'xref\n0 ' + objs.length + '\n0000000000 65535 f \n';
+    for (let i = 1; i < objs.length; i++) out += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+    out += 'trailer\n<</Size ' + objs.length + '/Root 1 0 R>>\nstartxref\n' + xrefStart + '\n%%EOF\n';
+    fs.mkdirSync(path.dirname(SRC_PDF), { recursive: true });
+    fs.writeFileSync(SRC_PDF, Buffer.from(out, 'latin1'));
+  });
 
   test('A: an improving round is ACCEPTED through the canonical reducer and lands in the final output', async () => {
     scenario = 'accept';

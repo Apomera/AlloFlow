@@ -39,6 +39,14 @@ const rootMirrorFiles = [
 const checkOnly = process.argv.includes('--check');
 const mismatches = [];
 
+// desktop/app-build/ is a gitignored local build output: a fresh CI checkout
+// never has it, so demanding its mirrors there would fail the gate on every
+// run. In --check mode, verify the app-build mirror only where a desktop build
+// actually exists; the tracked web-app/public mirror is always checked.
+const appBuildRoot = path.join(root, 'desktop', 'app-build');
+const skipDestination = (destination) =>
+  checkOnly && destination.startsWith(appBuildRoot) && !fs.existsSync(appBuildRoot);
+
 for (const file of files) {
   const source = path.join(sourceDir, file);
   if (!fs.existsSync(source)) {
@@ -47,6 +55,7 @@ for (const file of files) {
   }
   for (const destinationDir of destinationDirs) {
     const destination = path.join(destinationDir, file);
+    if (skipDestination(destination)) continue;
     const sourceBytes = fs.readFileSync(source);
     const destinationBytes = fs.existsSync(destination) ? fs.readFileSync(destination) : null;
     if (destinationBytes && sourceBytes.equals(destinationBytes)) continue;
@@ -65,6 +74,7 @@ for (const file of rootMirrorFiles) {
   const sourceBytes = fs.readFileSync(source);
   for (const destinationRoot of destinationDirs.map((dir) => path.dirname(dir))) {
     const destination = path.join(destinationRoot, file);
+    if (skipDestination(destination)) continue;
     const destinationBytes = fs.existsSync(destination) ? fs.readFileSync(destination) : null;
     if (destinationBytes && sourceBytes.equals(destinationBytes)) continue;
     if (checkOnly) {

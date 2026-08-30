@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import { loadAlloModule } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 
 const nodeRequire = createRequire(import.meta.url);
 const { findResponseFormIssue } = nodeRequire('../dev-tools/speech_language_pathology_5331/semantic_response_form_gate.cjs');
@@ -12,7 +13,7 @@ let pack;
 beforeAll(() => {
   window.React = window.React || { useState: (value) => [typeof value === 'function' ? value() : value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' };
   loadAlloModule('test_prep_hub_module.js');
-  Hub = window.AlloModules.TestPrepHub;
+  Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub);
   pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-speech-language-pathology-5331');
 });
 

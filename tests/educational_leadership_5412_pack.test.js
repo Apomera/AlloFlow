@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 
 let Hub;
 let pack;
@@ -9,7 +10,7 @@ let pack;
 beforeAll(() => {
   window.React = window.React || { useState: (value) => [typeof value === 'function' ? value() : value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' };
   loadAlloModule('test_prep_hub_module.js');
-  Hub = window.AlloModules.TestPrepHub;
+  Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub);
   pack = Hub.listPacks().find((candidate) => candidate.id === 'praxis-educational-leadership-5412');
 });
 

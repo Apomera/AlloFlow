@@ -59,7 +59,9 @@ describe('the player cannot open without its words', () => {
     // Three live-session push sites plus the resource card. The safety net is
     // a backstop, not a replacement.
     expect((ANTI.match(/hydrateWordSoundsFromSync\(target\)/g) || []).length).toBe(3);
-    expect(ANTI).toMatch(/Restoring preloaded words from saved wsPreloadedWords/);
+    // The resource-card restore branch moved into misc_handlers (2026-08-22
+    // modularization); the three live-push sites above stayed in the host.
+    expect(read('misc_handlers_source.jsx')).toMatch(/Restoring preloaded words from saved wsPreloadedWords/);
   });
 });
 

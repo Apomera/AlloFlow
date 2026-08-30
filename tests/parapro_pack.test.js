@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
+import { registerLocalTestPrepPacks } from './helpers/register_local_test_prep_packs.js';
 
 let Hub;
 let pack;
@@ -15,7 +16,7 @@ beforeAll(() => {
     Fragment: 'fragment',
   };
   loadAlloModule('test_prep_hub_module.js');
-  Hub = window.AlloModules.TestPrepHub;
+  Hub = window.AlloModules.TestPrepHub; registerLocalTestPrepPacks(Hub);
   pack = Hub.listPacks().find((candidate) => candidate.id === 'parapro-1755-practice-1');
 });
 
@@ -176,8 +177,12 @@ describe('ParaPro 1755 diagnostic bank', () => {
     expect(builder).toContain('build_parapro_batch_2.cjs');
     expect(builder).toContain('buildBatchDiagnostic: testPrepBuildBatchDiagnostic');
     expect(builder).toContain('recordBatchAttempt: recordTestPrepBatchAttempt');
+    // Since the consolidated release builder (2026-08-23 hub split), EPPP
+    // refresh runs in the same script but behind an explicit skip flag —
+    // isolation is the gate, not the absence of the reference.
+    expect(builder).toContain("--skip-eppp-preview-rebuild");
+    expect(builder).toContain('if (!skipEpppPreviewRebuild)');
     expect(builder).not.toContain("qa_eppp_native_pack.cjs");
-    expect(builder).not.toContain("build_eppp_learning_library.cjs");
   });
 });
 
