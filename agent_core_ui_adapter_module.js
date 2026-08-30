@@ -72,6 +72,10 @@
     function toBlueprint(legacyConfig, context) {
       var ctx = normalizeContext(context);
       var draft = C.fromLegacyConfig(legacyConfig, ctx);
+      var svc = service();
+      if (typeof svc.applyTextAccessDefaults === 'function') {
+        draft = svc.applyTextAccessDefaults(draft, { ensureAnalysis: true, ensureAdapted: true });
+      }
       var matrix = d.generationMatrix || (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenerationMatrix);
       if (!matrix) {
         draft.plan = draft.plan.map(function (row) {

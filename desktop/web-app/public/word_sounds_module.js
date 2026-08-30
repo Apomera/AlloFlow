@@ -14842,7 +14842,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     : handleAudio(currentWordSoundsWord),
                 disabled: isPlayingAudio,
                 className: `p-3 rounded-full transition-colors shadow-sm mt-1 ${isPlayingAudio ? "bg-slate-100 text-slate-600 cursor-wait" : "bg-violet-100 text-violet-700 hover:bg-violet-200"}`,
-                "aria-label": t("common.play_word"),
+                "aria-label": t("word_sounds.play_word") || "Play word",
               },
               isPlayingAudio
                 ? /*#__PURE__*/ React.createElement("div", {
@@ -14860,7 +14860,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ? playBlending()
                   : handleAudio(currentWordSoundsWord),
               disabled: isPlayingAudio,
-              "aria-label": t("common.play_word"),
+              "aria-label": t("word_sounds.play_word") || "Play word",
               className: `flex flex-col items-center justify-center gap-2 mx-auto p-4 rounded-2xl transition-all ${isPlayingAudio ? "bg-violet-100 scale-105" : "bg-white/60 hover:bg-violet-50 hover:scale-105"}`,
             },
             (getEffectiveTextMode() === "alwaysOn" || showWordText) &&
@@ -16088,7 +16088,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 {
                   // Was t("common.volume") ("Volume") — wrong identity for a
                   // control that plays the target word.
-                  "aria-label": t("common.play_word") || "Play word",
+                  "aria-label": t("word_sounds.play_word") || "Play word",
                   onClick: () => handleAudio(currentWordSoundsWord),
                   className:
                     "flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 rounded-full text-violet-700 font-medium transition-all",

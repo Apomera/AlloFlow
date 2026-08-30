@@ -703,7 +703,12 @@
       checkCapabilities: checkCapabilities,
       dryRun: dryRun,
       approve: approve,
-      planExecution: planExecution
+      planExecution: planExecution,
+      // Exposed so the UI adapter's toBlueprint applies the SAME text-access
+      // plan defaults as createDraft — the UI/service parity contract
+      // (tests/agent_core_ui_adapter.test.js) requires both construction paths
+      // to normalize identically, and the injection is idempotent.
+      applyTextAccessDefaults: applyDraftTextAccessDefaults
     };
   }
 
