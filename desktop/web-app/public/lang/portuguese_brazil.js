@@ -17901,7 +17901,9 @@
       "cou2082": "CO\\u2082",
       "chu2084": "CH\\u2084",
       "nacl": "NaCl",
-      "nhu2083": "NH\\u2083"
+      "nhu2083": "NH\\u2083",
+      "lanthanum": "Lanthanum",
+      "actinium": "Actinium"
     },
     "dissection": {
       "title": "Laboratório Virtual de Dissecção",

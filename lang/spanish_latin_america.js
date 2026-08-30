@@ -17313,7 +17313,9 @@
       "cou2082": "CO₂",
       "chu2084": "CH₄",
       "nacl": "NaCl",
-      "nhu2083": "NH₃"
+      "nhu2083": "NH₃",
+      "lanthanum": "Lanthanum",
+      "actinium": "Actinium"
     },
     "planet_quiz": {
       "u2705_correct": "✅ ¡Correcto! ",
