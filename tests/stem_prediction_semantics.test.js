@@ -174,7 +174,9 @@ describe('STEM prediction semantics', () => {
     expect(cell).toContain('data-cell-concept-feedback');
     expect(cell).toContain('This is a concept check, not an experiment prediction.');
     expect(cell).toContain('Check your reasoning before reveal');
-    expect(cell).not.toContain('data-cell-prediction-check');
+    // Negative lookahead: data-cell-prediction-checkPOINT is the tutorial's
+    // legitimate predict-before-play experiment lane, not the retired marker.
+    expect(cell).not.toMatch(/data-cell-prediction-check(?!point)/);
 
     const throwlab = source('stem_tool_throwlab.js');
     expect(throwlab).toContain('ungraded hypothesis · optional');

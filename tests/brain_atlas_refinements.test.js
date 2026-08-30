@@ -190,7 +190,9 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).not.toContain('fontSize: 8');
     expect(src).not.toMatch(/var (?:subtitlePx|bodyPx|textPx|titlePx|fontPx) = Math\.max\((?:7|8),/u);
     expect(src).toContain("Math.max(9, Math.round(6.2 * fontScale)) + 'px Inter");
-    expect(src).toContain('var clueChipY = H * 0.160;');
+    // clueChipY now derives from the banner-relative cwChipY (legibility
+    // refactor) instead of a fixed H-proportion.
+    expect(src).toContain('var clueChipY = cwChipY;');
     expect(src).toContain('var disorderChipY = H * 0.165;');
     expect(src).toContain('var limbicChipY = H * 0.165;');
     expect(src).toContain('var safePulseLabelMargin = Math.max(70, W * 0.085);');

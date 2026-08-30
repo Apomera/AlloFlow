@@ -252,7 +252,10 @@ describe('brain atlas canvas loops', () => {
     BRAIN_ATLAS_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('brainAtlasDrawDecoderChip(x, y, w, H * 0.045, title, sub, color);');
+      // Chip height became a clamped responsive var (min 34px) in the
+      // legibility refactor; the shared-layout routing is what this pins.
+      expect(source).toContain('brainAtlasDrawDecoderChip(x, y, w, cwChipH, title, sub, color);');
+      expect(source).toContain('var cwChipH = Math.max(34,');
       expect(source).toContain("brainAtlasDrawBoundedNodeLabel(x + w / 2, y + H * 0.024, w, H * 0.048, label, '',");
       expect(source).toContain('brainAtlasDrawBoundedNodeLabel(x, y, w * 0.82, h * 0.72, title, cn,');
       expect(source).toContain("brainAtlasDrawBoundedNodeLabel(x + W * 0.0725, y + H * 0.024, W * 0.135, H * 0.040, title, '',");
