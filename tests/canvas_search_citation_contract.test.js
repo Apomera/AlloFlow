@@ -175,6 +175,13 @@ function createAnalysisDeps({ deepResult, analysisResult }) {
     warnLog: noop,
     debugLog: noop,
     addToast: noop,
+    // The dispatcher now resolves a translation policy up front; the Proxy's
+    // generic noop returned undefined and crashed on `.target`, so supply the
+    // module's own defensive-fallback shape.
+    resolveTranslationPolicy: () => ({ enabled: false, target: 'English', mode: 'auto' }),
+    glossaryImageStyle: '',
+    universalImageStyle: '',
+    imageGenerationStyle: '',
   };
 
   // The dispatcher has a broad dependency surface because it serves every

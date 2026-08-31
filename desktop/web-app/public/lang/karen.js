@@ -45790,7 +45790,7 @@
       "help_faq_2": "Help & FAQ",
       "hewlett_packard_releases_the_first_han": "Hewlett-Packard releases the first handheld scientific calculator. Slide rule sales collapse within 5 years.",
       "hexagon": "Hexagon",
-      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 6 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).",
+      "hexagon_trapezoid_rhombus_triangle_squ": "Hexagon, trapezoid, rhombus, triangle, square, narrow rhombus. 2 trapezoids = 1 hexagon (so 1 trapezoid = 1/2 hex). 3 rhombi = 1 hex (so 1 rhombus = 1/3). 6 triangles = 1 hex (so 1 triangle = 1/6).",
       "hidden_sequence": "Hidden Sequence",
       "high_error_tolerance_means_more_room_t": "High error tolerance means more room to be wrong. When is that helpful and when is it cruel?",
       "hilaire_belloc_pattern_blocks": "Hilaire Belloc & Pattern Blocks",
