@@ -140,8 +140,10 @@ test.describe('remediation fault injection — scheduled model failures, honest 
     expect(out.aiIncomplete).toBe(true);                 // honesty flag SET — no fake verified score
     // H2: explicit per-day quota is PERMANENT — no retries, no breaker cooldowns, no circle-back
     // waiting. The bounds exist to catch multi-minute retry grinds / a spent 10-minute wait budget,
-    // not to time the happy path (measured ~66s incl. real pdf.js extraction; headroom for CI):
-    expect(out.elapsedMs).toBeLessThan(150000);
+    // not to time the happy path (measured ~66s incl. real pdf.js extraction; a loaded CI windows
+    // runner was observed at 186s, so the wall bound sits at half the 10-minute wait budget —
+    // totalCalls is the precise grind detector):
+    expect(out.elapsedMs).toBeLessThan(300000);
     expect(out.totalCalls).toBeLessThan(40);
   });
 
@@ -152,8 +154,9 @@ test.describe('remediation fault injection — scheduled model failures, honest 
     expect(out.htmlHasSourceText).toBe(true);
     expect(out.aiIncomplete).toBe(true);                 // a parse-failed audit must not masquerade as verified
     // Genuine content failure with a CALM gate: the circle-back's stop-improving guard must end it —
-    // the run may retry within each audit's self-heal but must not spiral.
-    expect(out.elapsedMs).toBeLessThan(120000);
+    // the run may retry within each audit's self-heal but must not spiral. Same CI headroom
+    // rationale as scenario A (loaded windows runners run ~2.5-3x local wall time).
+    expect(out.elapsedMs).toBeLessThan(300000);
     expect(out.totalCalls).toBeLessThan(60);
   });
 

@@ -27,7 +27,7 @@ AlloFlow is an **open-source, privacy-first AI classroom assistant and instructi
 
 **Search identity:** AlloFlow is a free open-source AI classroom assistant for differentiated instruction, UDL, accessibility, AAC communication, STEM/SEL tools, RTI, and local-first school deployments.
 
-**Current inventory (verified August 22, 2026):** the repository registry check reports 145 STEM tool registrations and 71 SEL tool registrations; the STEM directory contains 144 plugin files because one file registers an additional tool. The broader July 3 codebase review remains the dated source for architecture and size estimates. AlloFlow Desktop is the everyday local-first path, while the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
+**Current inventory (verified August 31, 2026):** the repository registry check reports 147 STEM tool registrations and 71 SEL tool registrations; the STEM directory contains 147 plugin files. The broader July 3 codebase review remains the dated source for architecture and size estimates. AlloFlow Desktop is the everyday local-first path, while the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
 
 🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**
 
@@ -126,7 +126,7 @@ An agent can author the same portable resource-pack structure without opening th
 
 ## STEM Lab (147 Plugin Files / 147 Registered Tool IDs)
 
-The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As verified by `node dev-tools/check_tool_registry.cjs` on August 22, 2026, the workspace contains **144 `stem_tool_*.js` files** and **145 registered STEM tool IDs** because one plugin file registers an additional tool.
+The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As verified by `node dev-tools/check_tool_registry.cjs` on August 31, 2026, the workspace contains **147 `stem_tool_*.js` files** and **147 registered STEM tool IDs**.
 
 | Domain | Tools |
 |--------|-------|

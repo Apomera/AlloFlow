@@ -29,7 +29,13 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
-const acorn = require(path.join(ROOT, 'desktop/web-app/node_modules/acorn'));
+// Resolve acorn from whichever install exists — CI's static-gate job installs
+// only the ROOT node_modules (same fallback as check_sel_dead_content).
+let acorn;
+for (const p of [path.join(ROOT, 'node_modules', 'acorn'), path.join(ROOT, 'desktop/web-app', 'node_modules', 'acorn'), 'acorn']) {
+  try { acorn = require(p); break; } catch (e) { /* try next */ }
+}
+if (!acorn) { console.error('[scan_window_key_listeners] acorn not found; cannot scan.'); process.exit(2); }
 
 const args = process.argv.slice(2);
 const quiet = args.includes('--quiet');
