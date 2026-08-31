@@ -46,7 +46,9 @@ describe('DB-P0.4: contrast auto-fixer only claims a fix it actually reached', (
 describe('anti-drift: DB-P0.1 authored-export badge no longer overclaims', () => {
   it('drops the unconditional "WCAG 2.1 AA compliance features" conformance verb', () => {
     expect(dp).not.toMatch(/generated with WCAG 2\.1 AA compliance features/);
-    expect(dp).toMatch(/built with accessibility in mind/);
+    // The soft claim evolved into an enumerated description with an explicit
+    // non-conformance disclaimer — stronger than the wording this pinned.
+    expect(dp).toMatch(/This is not an independently validated WCAG or PDF\/UA conformance claim/);
     expect(dp).toMatch(/not an independently validated WCAG or PDF\/UA conformance claim/);
   });
 });

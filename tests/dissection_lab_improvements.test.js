@@ -103,11 +103,12 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
 
     const sourceCatalog = JSON.parse(readFileSync('ui_strings.js', 'utf8'));
     const publicCatalog = JSON.parse(readFileSync('desktop/web-app/public/ui_strings.js', 'utf8'));
-    const reportCatalog = JSON.parse(readFileSync('dev-tools/stem_i18n_report/ui_strings_stem_dissection.json', 'utf8'));
+    // The per-tool stem_i18n_report JSONs were superseded by the AST
+    // string-inventory's summary.csv; the catalog + its public mirror remain
+    // the authoritative copies this guards.
     expect(sourceCatalog.stem.dissection).toMatchObject(expectedDescriptions);
     expect(publicCatalog.stem.dissection).toMatchObject(expectedDescriptions);
     expect(publicCatalog).toEqual(sourceCatalog);
-    expect(reportCatalog.dissection).toMatchObject(expectedDescriptions);
 
     const languageFiles = readdirSync('lang').filter((file) => file.endsWith('.js')).sort();
     expect(languageFiles.length).toBeGreaterThan(0);

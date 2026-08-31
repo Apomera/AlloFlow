@@ -505,7 +505,13 @@ function AlignmentFindingSources(item, onConfirmAttribution) {
     }, /*#__PURE__*/React.createElement("strong", null, "Finding source: "), artifact.label || artifact.artifactId, artifact.artifactType ? ' · ' + artifact.artifactType : '', attributionReviewButton(link, artifact, onConfirmAttribution));
   })));
 }
-function AlignmentMapScopeDetails(meta, fallbackScope) {
+function AlignmentMapScopeDetails({
+  meta,
+  fallbackScope
+}) {
+  // React component: props arrive as ONE object. The positional (meta,
+  // fallbackScope) signature received the props object as `meta` and
+  // undefined as `fallbackScope`, so the scope details always rendered null.
   var scope = meta && meta.auditScope ? meta.auditScope : fallbackScope;
   if (!scope || typeof scope !== 'object') return null;
   var items = Array.isArray(scope.includedArtifacts) ? scope.includedArtifacts.slice(0, 100) : [];

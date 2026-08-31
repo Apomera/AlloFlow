@@ -30,7 +30,10 @@ describe('Bridge Lab governing-member buckling', () => {
     const html = renderTool('bridgeLab', bridge({ trussStyle: 'pratt' }));
 
     expect(html).toContain('Governing member');
-    expect(html).toContain('Governing compression member');
+    // Copy tightened to 'Governing member <id>: P_cr …' — still names the
+    // individually-evaluated governing compression member.
+    expect(html).toContain('Governing member');
+    expect(html).toContain('P_cr');
     expect(html).toContain('pinned ends K=1');
     expect(html).not.toContain('top chord (approx.)');
     expect(html).not.toContain('NaN');

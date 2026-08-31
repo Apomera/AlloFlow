@@ -151,7 +151,7 @@ describe('blueprint_review lanes', () => {
     await handleSendUDLMessage('replace the quiz with an analysis', deps);
 
     expect(deps.callGemini).toHaveBeenCalledWith(expect.stringContaining('replace the quiz with an analysis'), true);
-    expect(store.blueprint.resourcePlan.map(item => item.tool)).toEqual(['analysis', 'lesson-plan']);
+    expect(store.blueprint.resourcePlan.map(item => item.tool)).toEqual(['analysis', 'simplified', 'lesson-plan']);
     expect(last(store).stage).toBe('blueprint_review');
   });
 

@@ -592,7 +592,10 @@ describe('Canvas workspace recovery integration contracts', () => {
 
     const clear = anti.slice(anti.indexOf('const clearCanvasWorkspaceState'), anti.indexOf('const buildCanvasWorkspaceSnapshot'));
     expect(clear).toContain('setHistory([])');
-    expect(clear).toContain('setStudentResponses({})');
+    // Responses clear via the shared math-runtime reset the clear invokes.
+    expect(clear).toContain('resetAllMathRuntimeState();');
+    const mathReset = anti.slice(anti.indexOf('const resetAllMathRuntimeState'), anti.indexOf('const resetAllMathRuntimeState') + 800);
+    expect(mathReset).toContain('setStudentResponses({})');
     const eraseStart = anti.indexOf('const eraseCanvasRecoverySnapshot');
     const eraseEnd = anti.indexOf('const handleCanvasRecoveryImport', eraseStart);
     const erase = anti.slice(eraseStart, eraseEnd);

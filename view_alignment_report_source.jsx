@@ -286,7 +286,10 @@ var _lazyIcon = function (name) {
       <ul className="mt-1 list-disc ml-5 text-amber-950" aria-label="Finding source artifacts">{artifacts.map(function (artifact, index) { var link = links.filter(function (candidate) { return candidate && candidate.artifactId === artifact.artifactId; })[0]; return <li key={String(artifact.artifactId || index)}><strong>Finding source: </strong>{artifact.label || artifact.artifactId}{artifact.artifactType ? ' · ' + artifact.artifactType : ''}{attributionReviewButton(link, artifact, onConfirmAttribution)}</li>; })}</ul>
     </details>;
   }
-  function AlignmentMapScopeDetails(meta, fallbackScope) {
+  function AlignmentMapScopeDetails({ meta, fallbackScope }) {
+    // React component: props arrive as ONE object. The positional (meta,
+    // fallbackScope) signature received the props object as `meta` and
+    // undefined as `fallbackScope`, so the scope details always rendered null.
     var scope = meta && meta.auditScope ? meta.auditScope : fallbackScope;
     if (!scope || typeof scope !== 'object') return null;
     var items = Array.isArray(scope.includedArtifacts) ? scope.includedArtifacts.slice(0, 100) : [];

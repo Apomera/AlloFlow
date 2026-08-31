@@ -42,6 +42,6 @@ describe('leveled-text definition source presentation', () => {
 
   it('keeps the linked dictionary-source presentation', () => {
     expect(simplifiedView).toContain("href: sourceUrl");
-    expect(simplifiedView).toContain("'Source: ' + (dict.source || 'Wiktionary')");
+    expect(simplifiedView).toContain("t('common.resource') + ': ' + (dict.source || '')");
   });
 });
