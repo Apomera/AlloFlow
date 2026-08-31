@@ -42,22 +42,27 @@ describe('finding 1 — audit cache finalization', () => {
   });
   it('BEHAVIORAL: the read guard rejects legacy unfinalized entries and serves finalized ones', async () => {
     const start = dp.indexOf('const _readAuditCache = async (key) => {');
-    const end = dp.indexOf('};', dp.indexOf('return cached.audit;', start)) + 2;
+    // The reader now returns { audit, savedAt } (caller stamps provenance) and
+    // may consult _withTimeout for the IDB read bound.
+    const end = dp.indexOf('catch (_) { return null; }\n  };', dp.indexOf('return { audit: cached.audit, savedAt: cached.savedAt };', start));
+    const sliceEnd = end + 'catch (_) { return null; }\n  };'.length;
     const store = new Map();
-    const mk = new Function('storageDB', 'window', '_AUDIT_CACHE_TTL_MS', '_remediationRetentionMs',
-      dp.slice(start, end) + '\nreturn _readAuditCache;');
+    const mk = new Function('storageDB', 'window', '_AUDIT_CACHE_TTL_MS', '_remediationRetentionMs', '_withTimeout',
+      dp.slice(start, sliceEnd) + '\nreturn _readAuditCache;');
     const read = mk(
       { get: async (k) => store.get(k) },
       { idbKeyval: {} },
       7 * 24 * 3600 * 1000,
       (requestedMs) => requestedMs,
+      (p) => p,
     );
     store.set('k-legacy', { audit: { score: 92, summary: 'AI-only snapshot' }, savedAt: Date.now() });
     store.set('k-final', { audit: { score: 70, _auditFinalized: true, _baselineAxeAudit: { score: 70 } }, savedAt: Date.now() });
     expect(await read('k-legacy')).toBeNull();       // pre-fix bad snapshot: rejected
     const good = await read('k-final');
-    expect(good && good.score).toBe(70);             // finalized entry: served with its evidence
-    expect(good._baselineAxeAudit).toBeTruthy();
+    expect(good && good.audit && good.audit.score).toBe(70); // finalized entry: served with its evidence
+    expect(good.audit._baselineAxeAudit).toBeTruthy();
+    expect(good.savedAt).toBeTruthy();               // caller stamps provenance from savedAt
   });
 });
 

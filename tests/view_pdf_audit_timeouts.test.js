@@ -61,8 +61,11 @@ describe('anti-drift: every remote fetch in view_pdf_audit is timeout-bounded', 
     expect(proxySlice).toContain('maxWebsiteBytes');
   });
   it('keeps the TTS and image fetches promise-timeout wrapped', () => {
-    const wrapped = audit.split('_withTimeout(fetch(').slice(1);
-    expect(wrapped.length).toBeGreaterThanOrEqual(4); // TTS ×3 + image
+    // TTS moved to the shared callTTS ladder (own timeouts/fallbacks) and
+    // remote fetches route through the AbortController-bounded helper; the
+    // remaining raw-adjacent fetch is the image one, still promise-wrapped.
+    expect(audit).toContain('const timer = setTimeout(() => { timedOut = true; try { controller.abort(); } catch (_) {} }, timeoutMs);');
+    expect(audit.split('_withTimeout(fetch(').slice(1).length).toBeGreaterThanOrEqual(1);
     expect(audit).toContain("_withTimeout(fetch(img.src), 20000, 'image fetch')");
   });
 });

@@ -212,7 +212,9 @@ describe('source-level anti-drift wiring', () => {
   it('bounds final AI tail work and defers post-mutation re-audit under throttle', () => {
     expect(src).toContain('const _finalAiAuditHardStop = Math.min(');
     expect(src).toContain('const _deferHardStop = _finalAiAuditHardStop;');
-    expect(src).toContain('const _deferPostMutationAi = _finalAuditThrottled');
+    // The defer gate now leads with the run-level pause flag (2026-08 telemetry).
+    expect(src).toContain('const _deferPostMutationAi = _remediationThrottlePaused');
+    expect(src).toContain('|| _finalAuditThrottled');
     expect(src).toContain("post-audit-reaudit-throttled");
     expect(src).toContain("_finalAuditThrottleDeferred: !!_finalAuditThrottleDeferred");
     expect(src).toContain('AI verification remains pending for a later retry');

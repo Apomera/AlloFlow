@@ -346,7 +346,9 @@ describe('H15 — the drain does not spend its budget on nothing', () => {
   it('the calm wait inside the drain reserves the DRAIN reserve', () => {
     // The guard trips at deadline-60s while the wait was clamped to deadline-30s, so the drain
     // could pause for its whole clamped budget and then revisit ZERO chunks.
-    expect(dp).toContain('_alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs, _DRAIN_RESERVE_MS)');
+    // 2026-08: budget widened to 120s, deadline read from loopCtx, reserve
+    // folded into _alloCalmBudgetMs itself.
+    expect(dp).toContain('_alloCalmBudgetMs(120000, loopCtx.perFileDeadlineTs)');
   });
 
   it('probe telemetry actually reaches the snapshots', () => {
