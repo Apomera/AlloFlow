@@ -304,7 +304,11 @@ describe('Project Settings progressive disclosure', () => {
 
     expect(textOf(tree)).toContain('District portal connected');
     expect(textOf(tree)).toContain('Open district portal');
-    const form = find(tree, (node) => node.type === 'form');
+    // A rewards-portal form now precedes this one — pick the form whose
+    // submit handler routes to the evaluation portal.
+    const form = find(tree, (node) => node.type === 'form'
+      && String(node.props?.onSubmit || '').includes('EvaluationPortal'));
+    expect(form).toBeTruthy();
     form.props.onSubmit({ preventDefault: vi.fn() });
     expect(savePortal).toHaveBeenCalledWith(url);
     const disconnect = find(tree, (node) => node.type === 'button' && textOf(node).includes('Disconnect'));

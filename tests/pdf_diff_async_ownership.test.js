@@ -117,7 +117,8 @@ describe('PdfDiff asynchronous document ownership', () => {
     expect(handlers.match(/commitRemarkupOperation\(_remarkupOwner/g)).toHaveLength(3);
     expect(miscView).toContain('if (resolve) resolve(false);');
     expect(host).toContain('isPdfHtmlCommitTokenCurrent');
-    expect(host).toContain('pdfDocumentEpoch: pdfDocumentSelectionEpochRef.current');
+    // The epoch travels as the live snapshot value now.
+    expect(host).toContain('pdfDocumentEpoch: pdfDocumentEpochLive,');
     expect(auditView).toContain('mediaDigesting || applyingRemarkup || !!webJobBusy');
   });
 });

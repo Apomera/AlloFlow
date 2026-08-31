@@ -29,7 +29,7 @@ describe('#4A — OCR render recovers a slow/hung page via a bounded lower-scale
 
   it('normalizes word boxes + page dims by the ACTUAL render scale (not a hard-coded 2.0)', () => {
     expect(src).toContain('const words = _collectOcrWords(data, renderScale);');
-    expect(src).toContain('pageW: canvas.width / renderScale, pageH: canvas.height / renderScale');
+    expect(src).toContain('pageW: (canvas ? canvas.width : _workerDims.width) / renderScale, pageH: (canvas ? canvas.height : _workerDims.height) / renderScale');
     // the old hard-coded-2.0 OCR normalization must be gone (the image-extraction path is separate)
     expect(src).not.toContain('const words = _collectOcrWords(data, 2.0)');
     expect(src).not.toContain('pageW: viewport.width / 2.0, pageH: viewport.height / 2.0');

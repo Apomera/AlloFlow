@@ -409,7 +409,14 @@ describe('Cloudflare student shell build wiring', () => {
     expect(serviceWorker).toMatch(/\.\/static\/js\/main\.[a-f0-9]+\.js/);
     expect(serviceWorker).toMatch(/\.\/static\/css\/main\.[a-f0-9]+\.css/);
     expect(serviceWorker).toContain("const SHELL_URL = scopedUrl('./index.html')");
-    expect(serviceWorker).not.toContain('self.skipWaiting()');
+    // The SW gained a deterministic "Refresh now": skipWaiting only ever runs
+    // behind the explicit ALLOFLOW_ACTIVATE_UPDATE message — never at install,
+    // so an active classroom tab is still never interrupted.
+    expect(serviceWorker).toContain('Do not call skipWaiting(): never interrupt an active classroom tab.');
+    const installBlock = serviceWorker.slice(serviceWorker.indexOf("addEventListener('install'"), serviceWorker.indexOf("addEventListener('message'"));
+    expect(installBlock).not.toContain('self.skipWaiting()');
+    const messageBlock = serviceWorker.slice(serviceWorker.indexOf("addEventListener('message'"));
+    expect(messageBlock).toMatch(/ALLOFLOW_ACTIVATE_UPDATE[\s\S]{0,120}self\.skipWaiting\(\)/);
     expect(files.length).toBeGreaterThanOrEqual(7);
     expect(files.some((file) => statSync(file).size >= 25 * 1024 * 1024)).toBe(false);
     expect(files.some((file) => /alloflow_intro_(teacher|family)\.mp4$/.test(file))).toBe(false);

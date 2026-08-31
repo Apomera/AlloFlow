@@ -166,7 +166,9 @@ describe('OpenBIM Companion', () => {
     expect(python).toContain('optional approximate proxy geometry');
     expect(python).not.toContain('eval(');
     expect(python).not.toContain('exec(');
-    const syntaxCheck = spawnSync('python', ['-c', 'import sys; compile(sys.stdin.read(), "generated_openbim.py", "exec")'], {
+    // macOS ships python3 only; fall back for environments with just `python`.
+    const pythonBin = spawnSync('python3', ['--version']).status === 0 ? 'python3' : 'python';
+    const syntaxCheck = spawnSync(pythonBin, ['-c', 'import sys; compile(sys.stdin.read(), "generated_openbim.py", "exec")'], {
       input: python,
       encoding: 'utf8',
     });

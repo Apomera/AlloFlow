@@ -291,7 +291,7 @@ describe('shell integration reuses canonical handlers', () => {
     expect(anti).toContain('onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id)');
     expect(anti).toContain('onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id)');
     expect(anti).toContain('onReleaseStudentResources: handleReleaseStudentResources');
-    expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId) =>');
+    expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId, options = {}) =>');
     expect(anti).toContain('const handleReleaseStudentResources = async (uids) =>');
     expect(anti).toContain('entry.viewingResourceId !== entry.resourceId');
     expect(anti).toContain('const buildStudentResourcePatchBatches =');

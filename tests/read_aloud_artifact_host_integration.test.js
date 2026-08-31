@@ -8,17 +8,15 @@ describe('read-aloud artifact host integration', () => {
   it('loads the contract, shared audio preparer, and private Persona runtime in both hosts', () => {
     const root = read('AlloFlowANTI.txt');
     const deploy = read('desktop/web-app/src/AlloFlowANTI.txt');
-    // Root source carries deployable content-hash pins; the desktop build
-    // intentionally rewrites the same loaders to same-origin relative URLs.
+    // Since the mirror unification both shells are byte-identical CDN-pinned
+    // copies; build-desktop-web rewrites URLs for the desktop bundle at build
+    // time instead of in the committed source.
     const cdnLoaderPin = (file) => new RegExp(
       "loadModule\\('[A-Za-z]+Module', 'https://alloflow-cdn\\.pages\\.dev/" + file + "(\\?v=[A-Za-z0-9]+)?'\\)"
     );
-    const localLoaderPin = (file) => new RegExp(
-      "loadModule\\('[A-Za-z]+Module', '\\./" + file + "'\\)"
-    );
     for (const file of ['read_aloud_artifact_contract_module\\.js', 'read_aloud_artifact_audio_module\\.js', 'persona_session_artifact_module\\.js']) {
       expect(root).toMatch(cdnLoaderPin(file));
-      expect(deploy).toMatch(localLoaderPin(file));
+      expect(deploy).toMatch(cdnLoaderPin(file));
     }
   });
 

@@ -35,7 +35,7 @@ describe('Make Accessible — fix runs even when audit state has not propagated'
     expect(viewSrc).toMatch(/_audit = await runPdfAccessibilityAudit\(pendingPdfBase64, \{ fileName: pendingPdfFile\?\.name[^}]*\}\);/);
     expect(viewSrc).toContain('auditResult: _audit });');
     expect(viewSrc).toContain('const _auditChooserSnapshot = pdfAuditResult;');
-    expect(viewSrc).toContain('setPdfAuditResult(_viewAuditFallbackResult(_auditChooserSnapshot, pendingPdfFile));');
+    expect(viewSrc).toContain('setPdfAuditResult(_viewAuditFallbackResult(snapshot, pendingPdfFile));');
     expect(viewSrc).toContain('if (!_viewAuditCanStartRemediation(_audit))');
     expect(viewSrc).not.toContain('auditResult: _audit || undefined');
     expect(viewSrc).not.toContain('attempting remediation anyway');

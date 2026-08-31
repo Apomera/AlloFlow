@@ -253,7 +253,7 @@ describe('retry-layer routing', () => {
   });
 
   it('keeps retry budgets at least as large as the first cloud attempt', () => {
-    expect(src).toContain('_localTextCall ? 420000 : 180000, _localTextCall ? 300000 : 180000');
+    expect(src).toContain('_localTextCall ? 420000 : ((_htpText && _htpText.textInitialMs) || 180000), _localTextCall ? 300000 : 180000');
     expect(src).toContain("}, 120000, 120000, 'callGeminiVision'" );
     expect(src).toContain('textRetryMs: 180000');
     expect(src).toContain('visionRetryMs: 120000');

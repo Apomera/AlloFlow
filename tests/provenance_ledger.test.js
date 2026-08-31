@@ -432,13 +432,16 @@ describe('constraints in the module text itself', () => {
       const app = readFileSync(f, 'utf-8');
       expect(app, f).toContain('workStoryEnabled: false,');                       // default OFF
       expect(app, f).toContain('workStoryEnabled: source.workStoryEnabled === true,'); // survives normalize
-      // Teacher writes it into all three assignment share transports.
-      expect((app.match(/workStory: studentProjectSettings\.workStoryEnabled === true/g) || []).length, f).toBe(3);
+      // Teacher writes it into all three assignment share transports — the
+      // packet builder's copy moved into shared_activity (2026-08), where the
+      // flag arrives as the threaded workStoryEnabled prop.
+      expect((app.match(/workStory: studentProjectSettings\.workStoryEnabled === true/g) || []).length, f).toBe(2);
       // Student reads it on all three matching load paths.
       expect((app.match(/workStory: packet && packet\.workStory === true/g) || []).length, f).toBe(3);
       // And collection is gated on it: no teacher opt-in, no ledger at all.
       expect(app, f).toContain("if (!(window.__alloQrStudentMode && window.__alloQrStudentMode.workStory === true)) return null;");
     }
+    expect(readFileSync('shared_activity_source.jsx', 'utf-8')).toContain('workStory: workStoryEnabled === true,');
     // ★ A WRITER must exist. The earlier version of this test pinned only the
     // default and the readers, so it passed happily while the flag had no UI
     // and the whole feature was unreachable — a test that proved nothing.
