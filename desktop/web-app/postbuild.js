@@ -15,6 +15,7 @@ const buildDir = process.env.BUILD_PATH
     : path.join(__dirname, 'build');
 const htmlPath = path.join(buildDir, 'index.html');
 const swPath = path.join(buildDir, 'sw.js');
+const swTemplatePath = path.join(__dirname, 'public', 'sw.js');
 
 let html = fs.readFileSync(htmlPath, 'utf8');
 // Relative asset URLs work at both / and the published /app/ scope.
@@ -36,7 +37,14 @@ const htmlBytes = Buffer.byteLength(html, 'utf8');
 console.log('✓ Split shell HTML:', (htmlBytes / 1024).toFixed(1) + ' KB');
 console.log('✓ Preserved hashed assets:', assetPaths.join(', '));
 
-if (!fs.existsSync(swPath)) throw new Error('build/sw.js is missing');
+if (!fs.existsSync(swPath)) {
+    // OneDrive/CRA can occasionally omit the service-worker template from an
+    // otherwise complete isolated output. Restore the tracked template before
+    // stamping it so desktop packaging remains deterministic.
+    if (!fs.existsSync(swTemplatePath)) throw new Error('public/sw.js template is missing');
+    console.warn('⚠ build/sw.js is missing — restoring the template from public/sw.js');
+    fs.copyFileSync(swTemplatePath, swPath);
+}
 const desktopBridgePath = path.join(buildDir, 'alloflow_desktop_bridge.js');
 if (!fs.existsSync(desktopBridgePath)) {
     throw new Error('build/alloflow_desktop_bridge.js is missing');
@@ -50,7 +58,7 @@ if (!swContent.includes('__BUILD_TS__')) {
     // step and this script. Re-copy the template from public/ and only fail
     // if the TEMPLATE itself lost its placeholders.
     console.warn('⚠ build/sw.js has no build-timestamp placeholder (stale stamped copy?) — re-copying the template from public/sw.js');
-    swContent = fs.readFileSync(path.join(__dirname, 'public', 'sw.js'), 'utf8');
+    swContent = fs.readFileSync(swTemplatePath, 'utf8');
 }
 if (!swContent.includes('__BUILD_TS__')) throw new Error('Service-worker build timestamp placeholder is missing');
 if (!swContent.includes('__PRECACHE_PATHS__')) throw new Error('Service-worker precache placeholder is missing');

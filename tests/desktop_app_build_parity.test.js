@@ -3,6 +3,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
 
 const require = createRequire(import.meta.url);
 const {
@@ -111,6 +112,31 @@ describe('desktop app-build deployment guard', () => {
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'src', 'App.jsx'))).toBe(true);
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'public', 'doc_pipeline_module.js'))).toBe(true);
     expect(shouldFingerprintPath(join(process.cwd(), 'desktop', 'web-app', 'public', 'app', 'index.html'))).toBe(false);
+  });
+
+  it('restores a missing service worker before stamping an isolated build', () => {
+    const buildRoot = mkdtempSync(join(tmpdir(), 'alloflow-postbuild-missing-sw-'));
+    temporaryRoots.push(buildRoot);
+    write(buildRoot, 'index.html', [
+      '<!doctype html><html><head>',
+      '<link href="./static/css/main.5678cdef.css" rel="stylesheet">',
+      '<script defer src="./static/js/main.1234abcd.js"></script>',
+      '</head><body><div id="root"></div></body></html>',
+    ].join(''));
+    write(buildRoot, 'static/js/main.1234abcd.js', 'window.__desktopBuild = true;\n');
+    write(buildRoot, 'static/css/main.5678cdef.css', 'body { color: #111; }\n');
+    write(buildRoot, 'alloflow_desktop_bridge.js', 'window.__desktopBridge = true;\n');
+
+    execFileSync(process.execPath, [join(process.cwd(), 'desktop', 'web-app', 'postbuild.js')], {
+      cwd: process.cwd(),
+      env: { ...process.env, BUILD_PATH: buildRoot },
+      stdio: 'pipe',
+    });
+
+    const stampedWorker = readFileSync(join(buildRoot, 'sw.js'), 'utf8');
+    expect(stampedWorker).toMatch(/alloflow-v\d+/);
+    expect(stampedWorker).toContain('./static/js/main.1234abcd.js');
+    expect(stampedWorker).toContain('./static/css/main.5678cdef.css');
   });
 
   it('accepts source/module mirrors and a self-consistent hashed offline shell', () => {
