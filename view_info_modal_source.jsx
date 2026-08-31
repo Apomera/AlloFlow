@@ -473,7 +473,7 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEAM Lab registry",
-    "total": 140,
+    "total": 142,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -577,7 +577,7 @@ const ATLAS_HUBS = [
           "Weather Systems & Forecasting",
           "Plate Tectonics",
           "Geology Explorer",
-          "Geography Quiz",
+          "Geography Explorer",
           "GIS Studio",
           "Night Sky & Astronomy",
           "Solar System",
@@ -612,8 +612,10 @@ const ATLAS_HUBS = [
           "Circuit Builder",
           "Semiconductor Lab",
           "Bridge Engineering Lab",
+          "3D Print Lab",
           "PrintingPress",
           "Architecture Studio",
+          "OpenBIM Companion",
           "City Planning Lab"
         ]
       },
@@ -842,7 +844,7 @@ const ATLAS_HUBS = [
   {
     "hub": "Studios & Surfaces",
     "icon": "🎬",
-    "total": 46,
+    "total": 47,
     "sourceKind": "mixed",
     "sourceLabel": "Command palette plus curated top-level launchers",
     "categories": [
@@ -880,6 +882,7 @@ const ATLAS_HUBS = [
           "Reading Library",
           "Report Writer",
           "Research Hub",
+          "Research Suite",
           "SEL Hub",
           "STEAM Lab",
           "Screen Coach",

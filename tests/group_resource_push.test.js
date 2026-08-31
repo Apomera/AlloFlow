@@ -20,7 +20,8 @@ describe('group resource push is consume-once in student-paced mode', () => {
   it('teacher push writes a resourceAt nonce alongside resourceId', () => {
     const handlerIdx = src.indexOf('const handleSetGroupResource');
     expect(handlerIdx).toBeGreaterThan(-1);
-    const handler = src.slice(handlerIdx, handlerIdx + 900);
+    // Widened: the handler grew shared-activity + telemetry lines above the write.
+    const handler = src.slice(handlerIdx, handlerIdx + 2200);
     expect(handler).toContain('groups.${groupId}.resourceId');
     expect(handler).toContain('groups.${groupId}.resourceAt');
   });

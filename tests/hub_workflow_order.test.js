@@ -17,9 +17,13 @@ describe('hub workflow ordering', () => {
     expect(idsInOrder(source('view_educator_hub_modal_source.jsx'))).toEqual([
       'lesson', 'lumen', 'document', 'whiteboard', 'throughline',
       'page-designer', 'video-studio', 'symbol-studio', 'allosheet',
-      'polls-signups', 'dynamic-assessment', 'behavior-lens', 'report-writer',
+      'polls-signups',
+      // Assessment Center joined the assess band (2026-08).
+      'assessment-center', 'dynamic-assessment', 'behavior-lens', 'report-writer',
       'pdf-accessibility', 'accessibility-lab',
-      'community-catalog', 'professional-development', 'leadership-hub'
+      'community-catalog',
+      // Research Suite standalone tool (2026-08-25 sweep).
+      'research-suite', 'professional-development', 'leadership-hub'
     ]);
   });
 

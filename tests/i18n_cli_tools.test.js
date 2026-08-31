@@ -29,7 +29,7 @@ function runNode(script, args) {
     const stdout = execFileSync(process.execPath, [script, ...args], { cwd: ROOT, encoding: 'utf8' });
     return { stdout, status: 0 };
   } catch (e) {
-    return { stdout: (e.stdout || '').toString(), status: e.status ?? 1 };
+    return { stdout: ((e.stdout || '') + (e.stderr || '')).toString(), status: e.status ?? 1 };
   }
 }
 
@@ -125,11 +125,20 @@ describe('record_pack_translation_review.cjs - per-pack stale review ledger', ()
       '--lang=spanish_latin_america',
       '--key=tour.actions_text',
       '--key=tour.brainstorm_text',
-      '--key=tour.note_taking_text',
     ]);
     expect(status).toBe(0);
-    expect(stdout).toContain('0 to record, 3 already recorded');
+    expect(stdout).toContain('0 to record, 2 already recorded');
     expect(stdout).toContain('DRY RUN');
+
+    // tour.note_taking_text graduated: the 2026-08 hand-translation refreshed
+    // it against the English baseline, so the tool now refuses a review record
+    // for it — the honest signal that the ledger entry is obsolete.
+    const graduated = runNode(PACK_REVIEW, [
+      '--lang=spanish_latin_america',
+      '--key=tour.note_taking_text',
+    ]);
+    expect(graduated.status).not.toBe(0);
+    expect(graduated.stdout).toContain('not currently stale against the global English baseline');
   }, 120000);
 });
 

@@ -1,6 +1,6 @@
 /* forge_contract_core.js — the PLUGIN CONTRACT, as one portable module.
  *
- * Single source of truth for "what is a conformant STEM Lab / SEL Hub tool":
+ * Single source of truth for "what is a conformant STEAM Lab / SEL Hub tool":
  *   - CONTRACT: the manifest (required fields, theme colors, categories, the ctx
  *     surface the host actually injects, the quest-key rule).
  *   - validateSource(src, acornParse): a BROWSER-PORTABLE structural validator

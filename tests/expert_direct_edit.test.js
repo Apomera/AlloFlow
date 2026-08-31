@@ -58,7 +58,7 @@ describe('anti-drift: the mini-audit is shared (no drift between Workbench + dir
     // superseded cannot publish its score over the newer one's.
     expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity, operationTicket\) => \{/);
     expect(src).toContain('const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);');
-    expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal })),');
+    expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml, { signal: _reauditSignal, trigger:');
     expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml, { signal: _reauditSignal })),');
     expect(src).toContain("? _safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal })) : Promise.resolve(null),");
     expect(src).toContain('const _wscore = _computeHeadline(_wvOk ? _wv.score : null, _wdet);');

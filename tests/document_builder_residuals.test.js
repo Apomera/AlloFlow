@@ -50,7 +50,7 @@ describe('DB-P0.3: export header text is contrast-safe (via _accessibleHeaderCol
     const oldInlinePath = /color:\$\{\(_accessibleHeaderColors\(theme\.headerBg\) \|\| \{\}\)\.fg \|\| theme\.headerText\}/.test(dp);
     const localHeaderPath = /const _headerColors = _accessibleHeaderColors\(theme\.headerBg\) \|\| \{ bg: theme\.headerBg, fg: theme\.headerText \|\| '#ffffff' \};/.test(dp)
       && /style="background:\$\{_headerColors\.bg\};color:\$\{_headerColors\.fg\};/.test(dp)
-      && /<h1 style="color:\$\{_headerColors\.fg\};/.test(dp);
+      && /<h1 class="export-title" style="color:\$\{_headerColors\.fg\};/.test(dp);
     expect(oldInlinePath || localHeaderPath).toBe(true);
   });
 });
