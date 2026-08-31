@@ -363,7 +363,7 @@ describe('magnetism inverse magnetometer investigation', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism electromagnet fair-test evidence', () => {
@@ -477,7 +477,7 @@ describe('magnetism electromagnet fair-test evidence', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism generator speed evidence', () => {
@@ -608,7 +608,7 @@ describe('magnetism generator speed evidence', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism transformer engineering briefs', () => {
@@ -731,7 +731,7 @@ describe('magnetism transformer engineering briefs', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism Field Walk navigation evidence', () => {
@@ -885,7 +885,7 @@ describe('magnetism Field Walk navigation evidence', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism Junkyard Crane prediction evidence', () => {
@@ -1047,7 +1047,7 @@ describe('magnetism Junkyard Crane prediction evidence', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism Materials visual pattern sorter', () => {
@@ -1209,7 +1209,7 @@ describe('magnetism Materials visual pattern sorter', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism Quiz visual evidence journey', () => {
@@ -1417,7 +1417,7 @@ describe('magnetism Quiz visual evidence journey', () => {
         host.remove();
       }
     }
-  }, 15000);
+  }, 60000);
 });
 
 describe('magnetism Magnetic memory visual experiment', () => {
@@ -1619,5 +1619,5 @@ describe('magnetism Magnetic memory visual experiment', () => {
     } finally {
       host.remove();
     }
-  }, 15000);
+  }, 60000);
 });

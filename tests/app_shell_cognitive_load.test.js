@@ -15,7 +15,8 @@ describe('AlloFlow focused workspace shell', () => {
   });
 
   it('offers a touch-sized Create, Preview, and History switch on narrow screens', () => {
-    expect(app).toContain('aria-label="Choose a workspace view"');
+    // i18n'd in the 2026-08 workspace sweep; the English fallback keeps the pin honest.
+    expect(app).toContain("aria-label={t('a11y.choose_workspace_view') || 'Choose a workspace view'}");
     for (const id of ['workspace-tab-create', 'workspace-tab-preview', 'workspace-tab-history']) {
       expect(app).toContain(`id="${id}"`);
     }
@@ -27,10 +28,10 @@ describe('AlloFlow focused workspace shell', () => {
 
   it('keeps Guided Mode bound to the real authoring controls', () => {
     expect(app).toContain("if (guidedMode) {\n      // A new Guided step always starts beside its real authoring control.");
-    expect(app).toContain("if (!isWide && workspacePane !== 'create')");
+    expect(app).toContain("const needsPaneSwitch = !isWide && workspacePane !== 'create';");
     expect(app).toContain("window.requestAnimationFrame(() => window.requestAnimationFrame(focusTarget))");
     expect(app).toContain("disabled={guidedMode}");
-    expect(app).toContain("const hiddenToolCatalogSelector = (guidedMode || !hasToolCatalogControls) ? ''");
+    expect(app).toContain("const hiddenToolCatalogSelector = (guidedMode || runTour || !hasToolCatalogControls) ? ''");
   });
 
   it('reduces catalog noise without removing tools or Guided targets', () => {
@@ -46,7 +47,7 @@ describe('AlloFlow focused workspace shell', () => {
 
   it('makes the desktop splitter keyboard operable and keeps generated output current', () => {
     expect(app).toContain('role="separator"');
-    expect(app).toContain('aria-label="Resize Create and Preview panes"');
+    expect(app).toContain("aria-label={t('a11y.resize_panes') || 'Resize Create and Preview panes'}");
     expect(app).toContain("['ArrowLeft', 'ArrowRight', 'Home', 'End']");
     expect(app).toContain("setLeftWidth(width => Math.max(20, Math.min(70");
     expect(generatedApp).toContain('id="workspace-preview-pane"');
@@ -61,7 +62,10 @@ describe('AlloFlow focused workspace shell', () => {
     expect(app).toContain('return next.slice(-3)');
     expect(app).toContain('onPointerEnter={() => pauseToastDismiss(toast.id)}');
     expect(app).toContain('onFocus={() => pauseToastDismiss(toast.id)}');
-    expect(app).toContain("bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)'");
+    // Toasts moved to the top band in the 2026-08 sweep (bottom placements
+    // collide with the launcher/DA pills; see the in-source rationale) and sit
+    // below the measured header height.
+    expect(app).toContain("top: `calc(${Math.max(0, mainTopOffset)}px + 0.75rem)`");
     expect(app).toContain('z-[170]');
     expect(app).toContain("onClick={() => dismissToast(toast.id)}");
     expect(app).toContain("'Dismiss notification'");
@@ -89,7 +93,7 @@ describe('AlloFlow focused workspace shell', () => {
   it('keeps the generated application synchronized with finishing-pass shell changes', () => {
     for (const marker of [
       'const toastTimersRef = useRef(new Map())',
-      "bottom: 'calc(env(safe-area-inset-bottom, 0px) + 5rem)'",
+      "top: `calc(${Math.max(0, mainTopOffset)}px + 0.75rem)`",
       "t('tools.source') || 'Source Material'",
       "].filter(a => a.key !== 'write').map((a) => {",
     ]) {

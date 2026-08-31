@@ -158,11 +158,20 @@ const M9_DIVERGENT_KEYS = ['_estimatedMinimumScore', '_estimatedScoreBasis', '_f
 // has to match the frozen reference exactly.
 const H6_DIVERGENT_KEYS = ['needsExpertReview', 'expertReviewReason'];
 
+// ADDITIVE DIVERGENCE (2026-08 throttle-telemetry work). The reducer now emits
+// three throttle/final-audit telemetry fields the frozen pre-refactor reference
+// predates entirely — additions, not behaviour changes to any frozen field.
+// Their real values are asserted by the throttle suites
+// (remediation_pipeline_audit_fixes / remediation_evidence_invariants_20260723 /
+// doc_pipeline_deep_regression_fixes), which drive the live reducer.
+const THROTTLE_TELEMETRY_KEYS = ['_finalAuditIncompleteReason', '_finalAuditThrottleDeferred', '_remediationThrottlePaused'];
+
 function normalized(result) {
   const c = JSON.parse(JSON.stringify(Object.assign({}, result, { verificationHtmlBinding: undefined })));
   c._bindingPresent = !!result.verificationHtmlBinding;
   for (const k of M9_DIVERGENT_KEYS) delete c[k];
   for (const k of H6_DIVERGENT_KEYS) delete c[k];
+  for (const k of THROTTLE_TELEMETRY_KEYS) delete c[k];
   return c;
 }
 

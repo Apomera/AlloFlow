@@ -23,7 +23,7 @@ describe('Glossary focused UI and UX contract', () => {
   });
 
   it('exposes filter state and a recoverable filtered-empty state', () => {
-    expect(source).toContain('role="group" aria-label="Vocabulary type"');
+    expect(source).toContain("role=\"group\" aria-label={t('glossary.title')}");
     expect(source).toContain("aria-pressed={glossaryFilter === 'all'}");
     expect(source).toContain("aria-pressed={glossaryFilter === 'academic'}");
     expect(source).toContain("aria-pressed={glossaryFilter === 'domain'}");
@@ -45,9 +45,9 @@ describe('Glossary focused UI and UX contract', () => {
   it('uses learner-readable tier labels and contextual select names', () => {
     expect(source).toContain('Academic vocabulary');
     expect(source).toContain('Subject vocabulary');
-    expect(source).toContain('aria-label="Word search language"');
-    expect(source).toContain('aria-label="Standard flashcard language"');
-    expect(source).toContain('aria-label="Language flashcard deck"');
+    expect(source).toContain("aria-label={t('common.target_language_selector')} data-help-key=\"glossary_puzzle_lang\" value={wordSearchLang}");
+    expect(source).toContain("aria-label={t('flashcards.deck_standard')} value={standardDeckLang}");
+    expect(source).toContain("aria-label={t('flashcards.deck_language')} value={flashcardLang}");
   });
 
   it('uses stable entry identities for rows and flashcard review state', () => {
@@ -81,9 +81,9 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("var preparedLanguages = glossaryAudioScope === 'all'");
     expect(source).toContain("typeof prepare !== 'function'");
     expect(source).toContain("doneOrProgress && typeof doneOrProgress === 'object'");
-    expect(source).toContain('Terms + definitions (recommended)');
-    expect(source).toContain('Terms only');
-    expect(source).toContain('Terms + definitions + translations');
+    expect(source).toContain('<option value="core">{flashcardTermLabel} + {flashcardDefinitionLabel}');
+    expect(source).toContain('<option value="terms">{flashcardTermLabel}');
+    expect(source).toContain('<option value="all">{flashcardTermLabel} + {flashcardDefinitionLabel}');
     expect(source).toContain("var ready = Number(result && (result.ready ?? result.prepared ?? result.total))");
     expect(source).toContain('Saved with this resource/project.');
     expect(source).toContain('id="glossary-audio-prep-status" role="status" aria-live="polite"');
@@ -96,7 +96,7 @@ describe('Glossary focused UI and UX contract', () => {
     expect(source).toContain("handleGlossarySpeak(item, 'term', item.term");
     expect(source).toContain("handleGlossarySpeak(item, 'definition', item.def");
     expect(source).toContain("handleGlossarySpeak(item, 'translation', item.translations[lang]");
-    expect(source).toContain('aria-label="Audio content to prepare"');
+    expect(source).toContain("aria-label={t('common.download_audio')} value={glossaryAudioScope}");
     expect(source).toContain("includeDefinitions: includeDefinitions, languages: preparedLanguages");
     expect(source).toContain('window.__alloEnsureGlossaryEntryIds');
   });
@@ -109,7 +109,7 @@ describe('Glossary focused UI and UX contract', () => {
     expect(uiStrings).not.toContain('Nano Banana');
     expect(deployedUiStrings).toBe(uiStrings);
     expect(source).toContain('id="glossary-edit-audio-review"');
-    expect(source).toContain('Review glossary audio');
+    expect(source).toContain("role=\"group\" aria-label={audioReviewLabel + ': ' + fieldLabel");
     expect(source).toContain("renderGlossaryEditAudioTools(item, 'term'");
     expect(source).toContain("renderGlossaryEditAudioTools(item, 'definition'");
     expect(source).toContain("renderGlossaryEditAudioTools(item, 'translation'");

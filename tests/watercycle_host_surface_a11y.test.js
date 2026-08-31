@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const WATER_CYCLE_PATHS = [
   'stem_lab/stem_tool_watercycle.js',
   'desktop/web-app/public/stem_lab/stem_tool_watercycle.js',
+  // desktop/app-build/ is a gitignored local build output: absent in a fresh
+  // CI checkout, so only audit it where a desktop build actually exists.
   'desktop/app-build/stem_lab/stem_tool_watercycle.js',
-];
+].filter((path) => !path.includes('app-build') || existsSync(path));
 
 describe.each(WATER_CYCLE_PATHS)('Water Cycle host-surface accessibility in %s', (filePath) => {
   const source = readFileSync(filePath, 'utf8');
