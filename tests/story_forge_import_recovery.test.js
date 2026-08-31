@@ -19,7 +19,7 @@ describe('Story Forge import recovery', () => {
     expect(source).toContain('if (hasMeaningfulDraft())');
     expect(source).toContain('const requestImportConfirmation = (candidate)');
     expect(source).toContain('id="sf-import-confirm-title"');
-    expect(source).toContain('Replace and import');
+    expect(source).toContain("ta('a11y.storyforge_ui_replace_and_import')");
     expect(source).toContain("finishImportConfirmation('checkpoint')");
     expect(source).toContain("saveRevisionCheckpoint('Before import')");
     expect(source).toContain('_storyForgeUseFocusTrap(importConfirmationDialogRef, !!importConfirmation');

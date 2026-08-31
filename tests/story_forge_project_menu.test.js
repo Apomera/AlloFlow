@@ -71,7 +71,8 @@ describe('StoryForge persistent Project menu', () => {
     expect(source).toContain('data-sf-draft-save-live');
     expect(source).toContain('aria-live="polite" data-sf-draft-save-live');
     expect(snippet(projectMenu)).toContain("storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`");
-    expect(snippet(projectMenu)).toContain("{artifactType === 'comic' ? 'Comic' : 'Story'}");
+    // The badge text now flows through the artifactLabel binding (i18n wave).
+    expect(snippet(projectMenu)).toContain("ta(artifactType === 'comic' ? 'a11y.storyforge_ui_comic' : 'a11y.storyforge_ui_story')");
     expect(snippet(projectMenu)).toContain('{draftSaveLabel}');
 
     const firstPhaseWorkspace = source.indexOf("{phase === 'configure' && (");
@@ -86,17 +87,18 @@ describe('StoryForge persistent Project menu', () => {
 
     expect(hasAttribute(summary, 'data-sf-project-menu-trigger')).toBe(true);
     expect(hasAttribute(summary, 'data-sf-focusable')).toBe(true);
-    expect(getStringAttribute(summary, 'aria-label')).toBe('Open project menu');
+    // The label is i18n'd (2026-08 wave); assert the expression on the summary instead.
+    expect(snippet(summary)).toContain("ta('a11y.storyforge_attr_open_project_menu')");
     expect(collectElements(summary, []).filter(element => jsxName(element) === 'button')).toEqual([]);
-    expect(compactText(summary)).toContain('Project');
+    expect(snippet(summary)).toContain("ta('a11y.storyforge_ui_project')");
   });
 
   it('exposes labeled Save, Export, Import, and Checkpoint actions with stable hooks', () => {
     const contracts = [
-      ['data-sf-project-menu-save', 'Save project now', 'persistDraftToStorage({ announce: true })'],
-      ['data-sf-project-menu-export', 'Export backup', 'exportStoryForgeProject()'],
-      ['data-sf-project-menu-import', 'Import project', 'onClick={importDraftJSON}'],
-      ['data-sf-project-menu-checkpoint', 'Save checkpoint', 'saveRevisionCheckpoint()'],
+      ['data-sf-project-menu-save', "ta('a11y.storyforge_ui_save_project_now')", 'persistDraftToStorage({ announce: true })'],
+      ['data-sf-project-menu-export', "ta('a11y.storyforge_ui_export_backup')", 'exportStoryForgeProject()'],
+      ['data-sf-project-menu-import', "ta('a11y.storyforge_ui_import_project')", 'onClick={importDraftJSON}'],
+      ['data-sf-project-menu-checkpoint', "ta('a11y.storyforge_ui_save_checkpoint')", 'saveRevisionCheckpoint()'],
     ];
 
     contracts.forEach(([hook, label, handler]) => {
@@ -104,7 +106,7 @@ describe('StoryForge persistent Project menu', () => {
       expect(button, `missing ${hook}`).toBeTruthy();
       expect(jsxName(button)).toBe('button');
       expect(getStringAttribute(button, 'type')).toBe('button');
-      expect(compactText(button)).toContain(label);
+      expect(snippet(button)).toContain(label);
       expect(snippet(button)).toContain(handler);
     });
   });
@@ -138,9 +140,9 @@ describe('StoryForge persistent Project menu', () => {
 
     const restore = menuButton('data-sf-project-menu-restore');
     const options = menuButton('data-sf-project-menu-recovery-options');
-    expect(compactText(restore)).toContain('Restore saved project');
+    expect(snippet(restore)).toContain("ta('a11y.storyforge_ui_restore_saved_project')");
     expect(snippet(restore)).toContain('onClick={restoreDraft}');
-    expect(compactText(options)).toContain('Review recovery options');
+    expect(snippet(options)).toContain("ta('a11y.storyforge_ui_review_recovery_options')");
     expect(snippet(options)).toContain('setShowRestorePrompt(true)');
   });
 });

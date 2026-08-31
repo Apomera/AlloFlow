@@ -18,7 +18,7 @@ describe('StoryForge Comic Design and Publish responsibilities', () => {
     expect(design).toContain('data-sf-comic-print-safety');
     expect(design).toContain('data-sf-comic-layout-studio');
     expect(design).toContain('data-sf-comic-design-preview');
-    expect(design).toContain('Interactive page preview');
+    expect(design).toContain("ta('a11y.storyforge_ui_interactive_page_preview')");
     expect(design).toContain('open={showComicProduction}');
     expect(design).toContain('onToggle={(event) => setShowComicProduction(event.currentTarget.open)}');
   });

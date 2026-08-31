@@ -345,7 +345,9 @@ describe('StoryForge mounted recovery and import flow', () => {
     expect(host.querySelector('[data-sf-recovery-artifact-label]').textContent).toBe('Story');
     expect(host.querySelector('[data-sf-recovery-phase-label]').textContent).toBe('Review');
     expect(host.querySelector('[data-sf-recovery-saved-at]').getAttribute('datetime')).toBe('2026-08-13T12:00:00.000Z');
-    expect(host.querySelector('[data-sf-restore-draft]').textContent).toContain('Review');
+    // The button label is i18n'd (harness ta() echoes the key); the resume
+    // phase itself is asserted via data-sf-recovery-phase-label above.
+    expect(host.querySelector('[data-sf-restore-draft]').textContent).toContain('a11y.storyforge_ui_restore_and_resume_at');
   }, 20_000);
 
   it('keeps recovery actionable after Escape and confirms before deleting saved work', async () => {

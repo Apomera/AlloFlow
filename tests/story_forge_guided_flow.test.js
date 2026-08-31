@@ -48,7 +48,7 @@ describe('StoryForge guided information architecture', () => {
     expect(source).not.toContain('Object.entries(LAYOUT_MODES).map');
     expect(source).not.toContain('onClick={() => setLayoutMode(key)}');
     expect(source).toContain('Comic · Change in Plan');
-    expect(source).toContain('Artifact: {ARTIFACT_TYPES[artifactType].label}');
+    expect(source).toContain("optLabel('artifact', artifactType, ARTIFACT_TYPES[artifactType].label");
   });
 
   it('keeps legacy projects compatible while persisting the new mode model', () => {
@@ -169,7 +169,7 @@ describe('StoryForge guided information architecture', () => {
     });
     expect(META.getStoryForgeRestoredPhase(currentReview)).toBe('export');
     expect(source).toContain('setPhase(restoredPhase);');
-    expect(source).toContain("return 'Required to continue: review the latest draft before moving forward.';");
+    expect(source).toContain("return ta('a11y.storyforge_phase_need_review_forward');");
     expect(source).toContain('return !nextPhase || canEnterPhase(nextPhase);');
   });
 
@@ -230,7 +230,9 @@ describe('StoryForge guided information architecture', () => {
       gradeLevel: '5th Grade',
     }));
     expect(html).toContain('data-sf-phase-requirements');
-    expect(html).toContain('Required to continue: add a title or starting idea.');
+    // Rendered through the harness ta(), which echoes the key; the English
+    // lives in ui_strings.js under this key.
+    expect(html).toContain('a11y.storyforge_phase_need_title');
     expect(html).toContain('data-sf-primary-cta');
     expect(html).toContain('Continue to Draft');
   });
@@ -245,7 +247,7 @@ describe('StoryForge guided information architecture', () => {
     ]) expect(source).toContain(label);
     expect(source).toContain('aria-describedby="sf-phase-requirements"');
     expect(source).toContain('data-sf-phase-step={p}');
-    expect(source).toContain('<span>{PHASE_LABELS[i]}</span>');
+    expect(source).toContain('<span>{phaseLabel(i)}</span>');
     expect(source).not.toContain('hidden sm:inline">{PHASE_LABELS[i]}</span>');
     expect(source).toContain('data-sf-step-summary');
     expect(source).not.toContain('Next <ArrowRight');
@@ -262,7 +264,7 @@ describe('StoryForge guided information architecture', () => {
 
     expect(source).toContain('aria-controls="sf-writing-tools-panel"');
     expect(source).toContain('id="sf-writing-tools-panel"');
-    expect(source).toContain('aria-label="Expanded writing tools"');
+    expect(source).toContain("aria-label={ta('a11y.storyforge_attr_expanded_writing_tools')}");
     expect(source).toContain('Writing setup');
     expect(source).toContain('Comic helpers');
     expect(source).toContain('Focus &amp; feedback');
@@ -271,8 +273,8 @@ describe('StoryForge guided information architecture', () => {
   it('separates Audio creation from settings and makes microphone failures recoverable', () => {
     expect(source).toContain('data-sf-narration-settings');
     expect(source).toContain('Narration settings');
-    expect(source).toContain('Create narration');
-    expect(source).toContain('Practice or record my voice');
+    expect(source).toContain("ta('a11y.storyforge_ui_create_narration')");
+    expect(source).toContain("ta('a11y.storyforge_ui_practice_or_record_my_voice')");
     expect(source).toContain('data-sf-microphone-error');
     expect(source).toContain('Retry microphone');
     expect(source).toContain('const result = await recorder.startRecording();');
@@ -308,7 +310,7 @@ describe('StoryForge publish readiness', () => {
 
   it('routes every final-output handler through the shared guard', () => {
     expect(source).toContain('const ensureReadyToPublish = () =>');
-    expect(source).toContain("if (!isCurrentDraftReviewed) {\n      const message = 'Review the latest draft before publishing.';");
+    expect(source).toContain("if (!isCurrentDraftReviewed) {\n      const message = ta('a11y.storyforge_review_before_publishing');");
     expect(source).toContain('const publishBlocked = !isCurrentDraftReviewed || projectReadiness.blockers.length > 0;');
     expect(source).toContain('const exportStorybook = async () => {\n    if (!ensureReadyToPublish()) return;');
     expect(source).toContain('const exportSlideshow = () => {\n    if (!ensureReadyToPublish()) return;');
