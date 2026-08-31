@@ -31,6 +31,8 @@ beforeAll(() => {
 afterEach(async () => {
   if (root) await act(async () => root.unmount());
   if (host) host.remove();
+  window.localStorage.clear();
+  window.sessionStorage.clear();
   root = null;
   host = null;
 });
@@ -355,9 +357,11 @@ describe('Memory Aid Studio schema', () => {
       ...card,
       practiceAttempts: overflow,
     }, 0, {});
-    expect(normalized.practiceAttempts).toHaveLength(6);
-    expect(normalized.practiceAttempts[0].response).toBe('Recall response 2');
-    expect(normalized.practiceAttempts[5].response).toBe('Recall response 7');
+    expect(normalized).not.toHaveProperty('practiceAttempts');
+    const normalizedAttempts = H.normalizeMemoryAidPracticeAttempts(overflow, card);
+    expect(normalizedAttempts).toHaveLength(6);
+    expect(normalizedAttempts[0].response).toBe('Recall response 2');
+    expect(normalizedAttempts[5].response).toBe('Recall response 7');
   });
 
   it('receives the shared image and TTS primitives from the main host', () => {
@@ -469,7 +473,7 @@ describe('Memory Aid Studio interaction integrity', () => {
     expect(forceRestart).toBe(true);
   });
 
-  it('hides answers during recall, uses cue-only TTS, and saves the learner self-check', async () => {
+  it('hides answers during recall, uses cue-only TTS, and saves the learner self-check privately', async () => {
     const handleNoteUpdate = vi.fn();
     const handleSpeak = vi.fn();
     await renderMemoryAid(baseData, { handleNoteUpdate, handleSpeak });
@@ -512,24 +516,30 @@ describe('Memory Aid Studio interaction integrity', () => {
 
     expect(host.textContent).toContain('Compare your recall with the accurate facts');
     expect(practiceContent.hidden).toBe(true);
-    const revealSave = handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards').at(-1);
-    const revealedCards = revealSave[1](baseData.cards);
-    expect(revealedCards[0].practiceAttempts).toHaveLength(1);
-    expect(revealedCards[0].practiceAttempts[0]).toMatchObject({
-      response: 'A solid keeps its shape.',
-      confidence: 'somewhat',
-      facts: ['Solids retain shape.'],
-      factChecks: ['unrated'],
-    });
+    expect(handleNoteUpdate.mock.calls.some(call => call[0] === 'cards')).toBe(false);
 
-    const recalled = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'I recalled this');
+    const recalled = host.querySelector('[aria-label^="I recalled fact 1:"]');
     expect(recalled).toBeTruthy();
     await act(async () => recalled.click());
     expect(host.textContent).toContain('Self-check complete: 1 of 1 facts recalled');
-    const checkSave = handleNoteUpdate.mock.calls.filter(call => call[0] === 'cards').at(-1);
-    const checkedCards = checkSave[1](baseData.cards);
-    expect(checkedCards[0].practiceAttempts[0].factChecks).toEqual(['recalled']);
-    expect(H.memoryAidPracticeSummary(checkedCards[0].practiceAttempts[0], checkedCards[0]).current).toBe(true);
+    expect(handleNoteUpdate.mock.calls.some(call => call[0] === 'cards')).toBe(false);
+    const privatePracticeKey = Array.from({ length: window.sessionStorage.length }, (_, index) => (
+      window.sessionStorage.key(index)
+    )).find(key => key && key.startsWith('alloflow_memory_practice_v1:session:'));
+    expect(privatePracticeKey).toBeTruthy();
+    const privatePractice = JSON.parse(window.sessionStorage.getItem(privatePracticeKey));
+    expect(privatePractice).toMatchObject({ schemaVersion: 1 });
+    expect(privatePractice.cards['matter-card']).toHaveLength(1);
+    expect(privatePractice.cards['matter-card'][0]).toMatchObject({
+      response: 'A solid keeps its shape.',
+      confidence: 'somewhat',
+      facts: ['Solids retain shape.'],
+      factChecks: ['recalled'],
+    });
+    expect(H.memoryAidPracticeSummary(
+      privatePractice.cards['matter-card'][0],
+      baseData.cards[0],
+    ).current).toBe(true);
 
     const repeat = Array.from(host.querySelectorAll('button')).find(item => item.textContent === 'Practice again');
     await act(async () => repeat.click());
