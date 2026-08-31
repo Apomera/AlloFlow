@@ -78,7 +78,8 @@ const deferred = () => {
 };
 
 function runStartupRestoreEffect({ epochRef, rehydrate, setPdfFixResult }) {
-  const needle = "const latestKey = safeGetItem('allo.lastPdfAudit.latest');";
+  // The pointer read routes through the remediation cache facade now.
+  const needle = 'const latestKey = ALLO_PDF_REMEDIATION_CACHE.latestStorageKey(localStorage);';
   const needleIndex = host.indexOf(needle);
   expect(needleIndex).toBeGreaterThan(-1);
   const start = host.lastIndexOf('  useEffect(() => {', needleIndex);
@@ -98,6 +99,13 @@ function runStartupRestoreEffect({ epochRef, rehydrate, setPdfFixResult }) {
     if (key === 'saved-audit-key') return payload;
     return null;
   };
+  // The effect gained cache-facade lookups, entry bookkeeping setters, and the
+  // audit-result ref in the 2026-08 cache work — inject light stands-ins.
+  const cacheFacade = {
+    latestStorageKey: () => 'saved-audit-key',
+    ENTRY_PREFIX: 'allo.lastPdfAudit.entry.',
+    listSummaries: () => [],
+  };
   const execute = new Function(
     'useEffect',
     'React',
@@ -105,6 +113,11 @@ function runStartupRestoreEffect({ epochRef, rehydrate, setPdfFixResult }) {
     'rehydrateVerificationHtmlBinding',
     'setPdfFixResult',
     'pdfDocumentSelectionEpochRef',
+    'ALLO_PDF_REMEDIATION_CACHE',
+    'localStorage',
+    'setPdfActiveRemediationStorageKey',
+    'setPdfRemediationCacheEntries',
+    'lastPdfAuditResultRef',
     effectSource,
   );
   execute(
@@ -114,6 +127,11 @@ function runStartupRestoreEffect({ epochRef, rehydrate, setPdfFixResult }) {
     rehydrate,
     setPdfFixResult,
     epochRef,
+    cacheFacade,
+    {},
+    () => {},
+    () => {},
+    { current: null },
   );
   return cleanup;
 }

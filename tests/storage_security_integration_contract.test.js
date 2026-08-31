@@ -45,7 +45,11 @@ describe('final storage-security integration contracts', () => {
     expect(handler.indexOf('deviceStorage.connectWithApproval()')).toBeLessThan(handler.indexOf('await approvalPromise'));
     expect(handler).toContain("typeof window.__alloRetryPrefsHydration === 'function'");
     expect(handler).toContain('{ replaceExisting: beforeWorkspaceEntry }');
-    expect(handler).toContain('window.location.reload()');
+    // 2026-08: the reload was removed by design — a Canvas document reload is
+    // destructive, so the handler re-hydrates preferences in place instead
+    // (the in-source "NEVER reload here" note documents it).
+    expect(handler).not.toContain('window.location.reload()');
+    expect(handler).toContain('NEVER reload here');
     expect(anti).toContain("canvasRecoveryErrorCode === 'allo/approval-required'");
   });
 
@@ -124,9 +128,11 @@ describe('final storage-security integration contracts', () => {
     ]) {
       expect(read(`desktop/web-app/public/${file}`)).toBe(read(file));
     }
-    expect(anti).toContain("allo_crypto_module.js?v=security-v2");
-    expect(anti).toContain("device_access_code_module.js?v=security-v2");
-    expect(anti).toContain("allo_device_vault_module.js?v=security-v2");
-    expect(anti).toContain("allo_recovery_vault_integration_module.js?v=security-v2");
+    // The static security-v2 tag was superseded by the per-deploy CDN hash
+    // stamp; the invariant is that every security module URL stays
+    // cache-busted with an explicit ?v= param.
+    for (const mod of ['allo_crypto_module', 'device_access_code_module', 'allo_device_vault_module', 'allo_recovery_vault_integration_module']) {
+      expect(anti).toMatch(new RegExp(`${mod}\\.js\\?v=[a-z0-9-]+`));
+    }
   });
 });

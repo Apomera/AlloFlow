@@ -2788,17 +2788,17 @@ const _ALLO_STEM_DEEP_LINK_MAP = {
   'nuclearlab': 'nuclearLab', 'numberline': 'numberline', 'nutritionlab': 'nutritionLab', 'openbim': 'openBim',
   'opticslab': 'opticsLab', 'oratory': 'oratory', 'organismid': 'organismId', 'papertrail': 'paperTrail',
   'parentinglab': 'parentingLab', 'particlelab3d': 'particleLab3d', 'petslab': 'petsLab', 'physics': 'physics',
-  'platetectonics': 'plateTectonics', 'playlab': 'playlab', 'printingpress': 'printingPress', 'probability': 'probability',
-  'protractor': 'protractor', 'punnett': 'punnett', 'raptorhunt': 'raptorHunt', 'ratiolab': 'ratioLab',
-  'renewableslab': 'renewablesLab', 'roadready': 'roadReady', 'rockcycle': 'rockCycle', 'rocks': 'rocks',
-  'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor', 'simshelf': 'simShelf', 'singing': 'singing',
-  'skatelab': 'skatelab', 'solarsystem': 'solarSystem', 'sourcebook': 'sourcebook', 'spacecolony': 'spaceColony',
-  'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation', 'statslab': 'statsLab', 'stewardshiphub': 'stewardshipHub',
-  'swimlab': 'swimLab', 'throwlab': 'throwlab', 'timeschedule': 'timeSchedule', 'timelinestudio': 'timelineStudio',
-  'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing', 'treelab': 'treeLab', 'typingpractice': 'typingPractice',
-  'unitconvert': 'unitConvert', 'universe': 'universe', 'volume': 'volume', 'watercycle': 'waterCycle',
-  'wave': 'wave', 'weathersystems': 'weatherSystems', 'weldlab': 'weldLab', 'wheelandfire': 'wheelAndFire',
-  'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
+  'platetectonics': 'plateTectonics', 'playlab': 'playlab', 'printlab': 'printLab', 'printingpress': 'printingPress',
+  'probability': 'probability', 'protractor': 'protractor', 'punnett': 'punnett', 'raptorhunt': 'raptorHunt',
+  'ratiolab': 'ratioLab', 'renewableslab': 'renewablesLab', 'roadready': 'roadReady', 'rockcycle': 'rockCycle',
+  'rocks': 'rocks', 'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor', 'simshelf': 'simShelf',
+  'singing': 'singing', 'skatelab': 'skatelab', 'solarsystem': 'solarSystem', 'sourcebook': 'sourcebook',
+  'spacecolony': 'spaceColony', 'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation', 'statslab': 'statsLab',
+  'stewardshiphub': 'stewardshipHub', 'swimlab': 'swimLab', 'throwlab': 'throwlab', 'timeschedule': 'timeSchedule',
+  'timelinestudio': 'timelineStudio', 'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing', 'treelab': 'treeLab',
+  'typingpractice': 'typingPractice', 'unitconvert': 'unitConvert', 'universe': 'universe', 'volume': 'volume',
+  'watercycle': 'waterCycle', 'wave': 'wave', 'weathersystems': 'weatherSystems', 'weldlab': 'weldLab',
+  'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
 };
 // __ALLO_STEM_DEEP_LINKS_END__
 // Cloudflare shell deep links (2026-08-15, generalized 2026-08-16): the static

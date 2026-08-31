@@ -105,6 +105,7 @@
 /physics /app/?tool=physics 302
 /plate-tectonics /app/?tool=plateTectonics 302
 /playlab /app/?tool=playlab 302
+/print-lab /app/?tool=printLab 302
 /printing-press /app/?tool=printingPress 302
 /probability /app/?tool=probability 302
 /protractor /app/?tool=protractor 302

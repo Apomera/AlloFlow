@@ -35,7 +35,6 @@ const LIGHT_BG = [248, 250, 252];  // #f8fafc
 // Text confirmed by reading the code to sit on something other than the canvas
 // backdrop. Each entry records what it actually sits on and what it measures.
 const RESOLVED = {
-  'platetectonics:1372': 'continental labels sit ON the plate (#a16207 light / #52525b-#27272a dark gradient), measured 4.75:1 and 6.27:1',
 };
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));

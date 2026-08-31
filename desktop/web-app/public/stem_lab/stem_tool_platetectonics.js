@@ -2396,7 +2396,7 @@ try { window.__alloPtOnScreen = ptOnScreen; } catch (e) {}
 
       // Plate labels. The type is named on the plate rather than left to the
       // colours, because the colours only mean something once you already know.
-      ctx.fillStyle = isDark ? '#e0e7ff' : '#fffbeb';
+      ctx.fillStyle = isDark ? '#e0e7ff' : '#a16207';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
       var leftMotionLabel = cur.mode === 'divergent' ? '<- PLATE A' : (cur.mode === 'transform' ? 'PLATE A ↑' : 'PLATE A ->');
