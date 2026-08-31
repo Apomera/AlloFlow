@@ -41,10 +41,15 @@ describe('boss battle: class-size-fair pacing', () => {
       expect(s).toMatch(/comboBonus = masteryStreak >= 3/);
       expect(s).toMatch(/bossPhaseName = remainingBossPercent <= 0\.33/);
       expect(s).toContain('handleBossPacingAdjustment');
-      expect(s).toContain('Rally class +10 HP');
+      // The rally control label is i18n'd (concept_quest.boss_rally_class_hp).
+      expect(s).toContain('boss_rally_class_hp');
       expect(s).toContain('generateBossGmDraft');
       expect(s).toContain('publishBossGmDraft');
-      expect(s).toContain('AI drafts only. Preview and edit before publishing.');
+      // The literal disclaimer was replaced by the draft->review->publish flow
+      // itself: generate produces a draft, publish is a separate explicit action,
+      // and discard is offered alongside it.
+      expect(s).toContain('boss_publish_event');
+      expect(s).toContain('concept_quest.discard');
     });
   }
 });

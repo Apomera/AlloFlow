@@ -132,21 +132,14 @@ describe('layer 4 — storage-id migration is wired (ship-blocker #2, 2026-06-02
     expect(src).toMatch(/\{\s*id:\s*uid\(\)\s*,\s*name:\s*selectedStudent/);
   });
 
-  it('legacy localStorage migration is registered with a one-time flag', () => {
+  it('durable data lives only in the version-4 workspace; the legacy migration is deliberately gone', () => {
     const src = H.BehaviorLens.toString();
-    expect(src).toMatch(/bl_studentkey_migrated_v1/);
-    // Every prefix the audit identified must appear in the migration table —
-    // otherwise that prefix's data silently fails to migrate.
-    [
-      'behaviorLens_abc_', 'behaviorLens_obs_', 'behaviorLens_homeLog_',
-      'behaviorLens_selfCheck_', 'behaviorLens_consent_',
-      'behaviorLens_tokenHistory_', 'behaviorLens_goals_',
-      'bl_contracts_', 'bl_escalation_', 'bl_reinforcer_',
-      'bl_reinforcer_snaps_', 'bl_crisis_', 'bl_fidelity_',
-      'bl_allobot_', 'prefassess_'
-    ].forEach(prefix => {
-      expect(src, `legacy migration must include prefix ${prefix}`).toContain(`'${prefix}'`);
-    });
+    // The one-time bl_studentkey migration was retired with an in-source
+    // rationale: durable student data now lives only in the canonical
+    // version-4 workspace, and no legacy user data ever shipped.
+    expect(src).toContain('Durable student data now lives only in the canonical version-4 workspace.');
+    expect(src).toContain('No legacy key migration is needed because Behavior Lens has not shipped user data yet.');
+    expect(src).not.toMatch(/bl_studentkey_migrated_v1/);
   });
 
   it('top-level auto-save schedules one canonical student-scoped workspace write', () => {
@@ -323,7 +316,9 @@ describe('layer 7 — pass-2 polish regressions (2026-06-03)', () => {
     // The "Add Contact" handler and the initial state both mint a uid()
     // so the contact .map's key prop is stable across add/remove.
     expect(MODULE_SRC).toMatch(/setContacts\(prev\s*=>\s*\[\.\.\.prev,\s*\{\s*id:\s*uid\(\),\s*name:\s*''/);
-    expect(MODULE_SRC).toMatch(/useState\(\[\{\s*id:\s*uid\(\),\s*name:\s*'',\s*role:\s*'',\s*phone:\s*''/);
+    // Initial state moved to durable tool state with a stable seed id; adds
+    // still mint uid()s (asserted above).
+    expect(MODULE_SRC).toContain("useDurableToolState('crisisContacts', [{ id: 'initial-contact', name: '', role: '', phone: '' }])");
   });
 
   it('IOA-Calculator mode-toggle label is reframed to "AI Coding Consistency (Experimental)"', () => {
