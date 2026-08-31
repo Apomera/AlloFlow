@@ -23,6 +23,8 @@ const requireCjs = createRequire(import.meta.url);
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
+// The packet builder moved into shared_activity during the 2026-08 modularization.
+const sharedActivity = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const assignmentCenterSource = fs.readFileSync(path.join(ROOT, 'view_assignment_center_source.jsx'), 'utf8');
 const sharedActivitySource = fs.readFileSync(path.join(ROOT, 'shared_activity_source.jsx'), 'utf8');
 const suiteSource = fs.readFileSync(path.join(ROOT, 'student_analytics_module.js'), 'utf8');
@@ -265,7 +267,7 @@ describe('host + Suite wiring pins', () => {
   });
 
   it('the packet builder honors full positional labels from a Suite import', () => {
-    expect(anti).toContain('if (fullLabels && fullLabels.length === steps && steps >= 2) {');
+    expect(sharedActivity).toContain('if (fullLabels && fullLabels.length === steps && steps >= 2) {');
   });
 
   it('the Suite offers the three population links and refreshes on import', () => {
@@ -282,8 +284,9 @@ describe('discoverability (Plan 3)', () => {
     // Before this, no command, label, or alias anywhere contained "survey",
     // "study", "research" (outside Research Hub), "Likert", or "IRB".
     expect(commandsSource).toContain("'research suite'");
-    expect(commandsSource).toContain("'irb'");
-    expect(commandsSource).toContain("'likert'");
+    // The palette vocabulary moved to phrase keywords in the Research Suite wave.
+    expect(commandsSource).toContain("'irb study'");
+    expect(commandsSource).toContain("'likert study'");
     expect(commandsSource).toContain("id: 'open_share_collect'");
     expect(commandsSource).toContain("'parent survey'");
   });
@@ -327,7 +330,7 @@ describe('discoverability (Plan 3)', () => {
 describe('study info sheet + consent attestation (Plan 4)', () => {
   it('the dialog authors the info sheet and the packet carries it', () => {
     expect(assignmentCenterSource).toContain('About this survey (optional, shown to respondents)');
-    expect(anti).toContain("info: sharedActivityType === 'survey' ?");
+    expect(sharedActivity).toContain("info: sharedActivityType === 'survey' ?");
   });
 
   it('respondents see the info sheet above the questions', () => {
