@@ -251,7 +251,7 @@ describe('#16 — audit-frame neutralization + pinned engines + fail-closed sani
   it('the Equal Access engine and its cache namespace are PINNED', () => {
     expect(dp).toContain('https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js');
     expect(dp).not.toContain('accessibility-checker-engine@3/ace.js');
-    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260723-1';"); // scores can shift → cache identity moved
+    expect(dp).toContain("const _PIPELINE_PROMPT_VERSION = '20260802-1';"); // scores can shift → cache identity moved
   });
   it('BEHAVIORAL: without DOMPurify, execution-shaped rawhtml is WITHHELD, benign rawhtml still sanitizes', () => {
     expect(_sanitize('<script>alert(1)</script><p>hi</p>')).toContain('data-allo-rawhtml-withheld');

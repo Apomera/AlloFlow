@@ -88,7 +88,9 @@ describe('finding 14 — WCAG Success-Criteria normalization', () => {
   it('the view prefers the normalized arrays and converts compact tags as the legacy fallback', () => {
     expect(view).toContain('const extractScList = (entry) => {');
     expect(view).toContain('if (entry && Array.isArray(entry.wcagCriteria) && entry.wcagCriteria.length) return entry.wcagCriteria;');
-    expect(view).toContain('extractScList(p).forEach(sc => addToSc(sc, \'passes\'));');
+    // The collector gained engine + verdict + provenance args (per-engine SC map).
+    expect(view).toContain("extractScList(p).forEach(sc => addToSc(sc, 'axe', 'pass', p));");
+    expect(view).toContain("extractScList(p).forEach(sc => addToSc(sc, 'ea', 'pass', p));");
     expect(view).not.toContain('const sc = extractSc(p.wcag);'); // the always-null parser is gone
   });
 });
