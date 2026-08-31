@@ -31,8 +31,14 @@ describe('device storage bridge security contract', () => {
   });
 
   it('requires visible consent for cross-origin/opaque clients and never wildcard-fallbacks', () => {
-    expect(bridgeSrc).toContain("if (connectionKind !== 'popup')");
-    expect(bridgeSrc).toContain("'allo/approval-required'");
+    // 2026-08: the flat popup-only rejection became partition-scoped remembered
+    // consent — a cross-origin/opaque client is authorized only by a human
+    // approval recorded in the bridge's OWN partitioned storage, and the
+    // consent record itself is fenced off the client op surface.
+    expect(bridgeSrc).toContain("'allo-bridge-consent-required'");
+    expect(bridgeSrc).toContain('RESERVED_NS_RE');
+    expect(bridgeSrc).toContain("'allo/reserved-namespace'");
+    expect(bridgeSrc).toContain('readConsent().then(');
     expect(bridgeSrc).toContain('id="btn-approve"');
     expect(bridgeSrc).toContain('event.source !== authorizedSource');
     expect(bridgeSrc).toContain('observedOrigin !== authorizedOrigin');
@@ -101,20 +107,26 @@ describe('device storage bridge security contract', () => {
       origin: 'null',
       source: client,
     }));
-    expect(client.postMessage).not.toHaveBeenCalled();
+    // The consent lookup is async; with no remembered grant the bridge shows
+    // its own dialog and tells the client consent is pending (so an embedder
+    // can reveal the frame) — but nothing is authorized yet.
+    await flush(dom.window);
+    expect(client.postMessage).toHaveBeenCalledTimes(1);
+    expect(client.postMessage).toHaveBeenLastCalledWith(expect.objectContaining({
+      allo: 'ds1', type: 'allo-bridge-consent-required', nonce,
+    }), '*');
     const approve = dom.window.document.getElementById('btn-approve');
     expect(approve.disabled).toBe(false);
     expect(dom.window.document.getElementById('approval-ui').hidden).toBe(false);
 
     approve.click();
     await flush(dom.window);
-    expect(client.postMessage).toHaveBeenCalledTimes(1);
     expect(client.postMessage).toHaveBeenLastCalledWith({
       allo: 'ds1', type: 'allo-bridge-ready', nonce,
     }, '*');
   });
 
-  it('rejects a hidden cross-origin iframe and auto-approves only exact same-origin clients', () => {
+  it('rejects a hidden cross-origin iframe and auto-approves only exact same-origin clients', async () => {
     const nonce = 'fedcba9876543210fedcba9876543210';
     const iframeClient = { postMessage: vi.fn() };
     dom = new JSDOM(bridgeSrc.replace(/<script>[\s\S]*<\/script>/, ''), {
@@ -128,10 +140,15 @@ describe('device storage bridge security contract', () => {
       origin: 'https://canvas.example',
       source: iframeClient,
     }));
+    // 2026-08: a cross-origin iframe is no longer flatly rejected — with no
+    // remembered grant the bridge renders its OWN approval dialog (which the
+    // embedder can size but neither read nor click) and reports
+    // consent-required; nothing is authorized until a human approves.
+    await flush(dom.window);
     expect(iframeClient.postMessage).toHaveBeenCalledWith(expect.objectContaining({
-      allo: 'ds1', type: 'allo-bridge-error', nonce,
-      error: expect.objectContaining({ code: 'allo/approval-required' }),
+      allo: 'ds1', type: 'allo-bridge-consent-required', nonce,
     }), 'https://canvas.example');
+    expect(dom.window.document.getElementById('approval-ui').hidden).toBe(false);
 
     dom.window.close();
     const sameOriginClient = { postMessage: vi.fn() };
