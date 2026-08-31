@@ -582,7 +582,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               {blueprintPrimaryAccess === 'required'
                   ? (t('blueprint.primary_text_required') || 'required primary text')
                   : (t('blueprint.primary_text_available') || 'available as the primary reference')}
-              {' Â· '}
+              {' · '}
               <span className="font-semibold">{t('blueprint.adapted_text') || 'Adapted Text'}:</span>{' '}
               {blueprintAdaptedPolicy === 'include'
                   ? (t('blueprint.adapted_included') || 'included as a supplemental companion')
@@ -601,11 +601,11 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
               <div className="mt-0.5" data-testid="bp-translation-impact">
                   <span className="font-semibold">{t('blueprint.translation_policy') || 'Translation policy'}:</span>{' '}
                   {String(blueprintSettings.translationMode)}
-                  {' Â· '}
+                  {' · '}
                   <span className="font-semibold">{t('blueprint.attached_translation') || 'Attached translation'}:</span>{' '}
                   {resolvedTranslationTarget || (t('blueprint.translation_off') || 'off / no target resolved')}
                   {embeddedGlossaryLanguages.length
-                      ? ` Â· ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}`
+                      ? ` · ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}`
                       : ''}
               </div>
           )}
@@ -1003,7 +1003,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                               <div data-testid="bp-variant-results" className="mt-2 rounded border border-slate-200 bg-white p-2">
                                   <div className="mb-1 text-[10px] font-bold text-slate-700">
                                       {_successfulRuntimeVariants.length} {t('blueprint.variant_successful') || 'successful'}
-                                      {' Â· '}{_failedRuntimeVariants.length} {t('blueprint.variant_unsuccessful') || 'failed or interrupted'}
+                                      {' · '}{_failedRuntimeVariants.length} {t('blueprint.variant_unsuccessful') || 'failed or interrupted'}
                                   </div>
                                   {_missingRuntimeVariants.length > 0 && (
                                       <div className="mb-1 text-[10px] font-semibold text-amber-800">
@@ -1019,7 +1019,7 @@ const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun
                                           if (!isSuccessful && variant && variant.reason && typeof summarizeFailureReason === 'function') {
                                               try { safeVariantReason = summarizeFailureReason(variant.reason); } catch (_) {}
                                           }
-                                          const audience = [variant && variant.grade, variant && variant.language].filter(Boolean).join(' Â· ')
+                                          const audience = [variant && variant.grade, variant && variant.language].filter(Boolean).join(' · ')
                                               || (t('blueprint.default_audience') || 'Default audience');
                                           return (
                                               <li

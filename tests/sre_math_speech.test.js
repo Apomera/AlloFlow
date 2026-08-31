@@ -213,13 +213,20 @@ describe('shared spoken-math TTS preprocessing', () => {
     expect(speak.mock.calls[0][0]).not.toContain('<math>');
   });
 
-  it('feeds the same converted sentence to provider-managed and browser voices', async () => {
+  it('feeds the converted sentence to a provider-managed voice, and browser policy exits early', async () => {
+    // V6 (tts fallback ladder): ttsProvider 'browser' is authoritative — callTTS
+    // returns null immediately (the caller speaks via speechSynthesis) and no
+    // math plugin or provider is consulted.
     window.AlloMathSpeech = { toSpeech: vi.fn(async () => 'a equals b') };
+    const browserTextToSpeech = vi.fn(async (text) => `provider:${text}`);
+    const { callTTS: browserCallTTS } = makeTTS({ config: { ttsProvider: 'browser' }, ai: { textToSpeech: browserTextToSpeech } });
+    await expect(browserCallTTS('Solve \\(a=b\\).', 'browser', 1, 0, 'English')).resolves.toBeNull();
+    expect(browserTextToSpeech).not.toHaveBeenCalled();
+
+    // A provider-managed route still receives the CONVERTED sentence.
     const textToSpeech = vi.fn(async (text) => `provider:${text}`);
-    const { callTTS } = makeTTS({ config: { ttsProvider: 'browser' }, ai: { textToSpeech } });
-
-    const result = await callTTS('Solve \\(a=b\\).', 'browser', 1, 0, 'English');
-
+    const { callTTS } = makeTTS({ config: { ttsProvider: 'local' }, ai: { textToSpeech } });
+    const result = await callTTS('Solve \\(a=b\\).', 'Kore', 1, 0, 'English');
     expect(result).toContain('a equals b');
     expect(textToSpeech.mock.calls[0][0]).not.toContain('\\(a=b\\)');
   });
@@ -227,11 +234,15 @@ describe('shared spoken-math TTS preprocessing', () => {
   it('keeps currency unchanged instead of treating paired dollar signs as math', async () => {
     const toSpeech = vi.fn(async () => 'wrong math');
     window.AlloMathSpeech = { toSpeech };
-    const textToSpeech = vi.fn(async (text) => text);
-    const { callTTS } = makeTTS({ config: { ttsProvider: 'browser' }, ai: { textToSpeech } });
+    // The browser-policy path now returns null before preprocessing, so the
+    // currency invariant is asserted on a path that DOES the math scan.
+    const fetchMock = stubGeminiAudio();
+    const { callTTS } = makeTTS({ canvas: true });
 
-    await expect(callTTS('It costs $5 and $10 today.', 'browser', 1, 0, 'English'))
-      .resolves.toBe('It costs $5 and $10 today.');
+    await expect(callTTS('It costs $5 and $10 today.', 'Kore', 1, 0, 'English'))
+      .resolves.toBe('blob:math-speech');
+    const body = JSON.parse(fetchMock.mock.calls[0][1].body);
+    expect(JSON.stringify(body)).toContain('It costs $5 and $10 today.');
     expect(toSpeech).not.toHaveBeenCalled();
   });
 

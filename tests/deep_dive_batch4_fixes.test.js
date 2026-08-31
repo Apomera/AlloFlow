@@ -38,7 +38,8 @@ describe('M5 — estimated-minimum provenance is partial-inflation-free', () => 
     expect(dp).toContain('const _initialAiUsable = _alloUsableCompleteAiAudit(verification);');
     expect(dp).toContain('let _lastFullCoverageAiScore = _initialAiUsable ? bestAiScore : null;');
     expect(dp).toContain('if (_reAiUsable) _lastFullCoverageAiScore = Math.round(newAiScore);');
-    expect(dp).toContain('lastFullCoverageAiScore: _lastFullCoverageAiScore };');
+    // The loop result gained throttlePaused alongside it (2026-08 telemetry).
+    expect(dp).toContain('lastFullCoverageAiScore: _lastFullCoverageAiScore, throttlePaused:');
   });
   it('_lastSuccessfulAiScore rejects partial scores in BOTH branches (primary + fallback)', () => {
     expect(dp).toContain('const _lastSuccessfulAiScore = _alloUsableCompleteAiAudit(verification)');
@@ -70,7 +71,9 @@ describe('M9 — a stale run never stomps the fresh run\'s UI', () => {
     expect(after).toContain('return null;');
   });
   it('host: runAutoFixLoop\'s finally guards the spinner/status and clears the running flag on OWNERSHIP', () => {
-    expect(anti).toContain("warnLog('[AutoContinue] Stale loop exiting (gen bump) — leaving the fresh run\\'s UI untouched.');");
+    // The loop body (and this log line) moved to misc_handlers (2026-08-22).
+    expect(readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8'))
+      .toContain("Stale loop exiting (gen bump)");
     expect(anti).toContain('const _ownsExit = pdfAutoContinueAbortCtrlRef.current === _abortCtrl;');
     expect(anti).toContain('if (!_staleAtExit && _ownsExit) {');
     expect(anti).toContain('if (_ownsExit) {');
@@ -83,20 +86,26 @@ describe('M9 — a stale run never stomps the fresh run\'s UI', () => {
 
 describe('M7 — the 12-min dead-man is heartbeat-aware', () => {
   it('re-arms on alloflow:pipeline-warn and fires only after 12 SILENT minutes', () => {
-    const at = anti.indexOf('pdfAutoContinueRunning stuck on');
+    // Anchor on the listener itself — the watchdog body was relocated in the file.
+    const at = anti.indexOf("window.addEventListener('alloflow:pipeline-warn', onActivity)");
     expect(at).toBeGreaterThan(-1);
     // Widened from +1600: onActivity grew a run-identity check, which pushed the
     // listener registration past the old window and made this read as "the
     // listener is gone" when it had only moved down.
-    const block = anti.slice(at - 2200, at + 3200);
+    const block = anti.slice(at - 2600, at + 600);
     expect(block).toContain("window.addEventListener('alloflow:pipeline-warn', onActivity);");
     // The heartbeat must belong to THIS run before it re-arms. Previously any
     // pipeline-warn re-armed the watchdog, so a superseded or unrelated run's
     // heartbeat kept a genuinely stuck run's dead-man switch from ever firing.
     expect(block).toMatch(/if \(!detail \|\| detail\.documentEpoch !== watchdogEpoch \|\| !detail\.runId\) return;/);
     expect(block).toMatch(/if \(detail\.runId !== watchdogRunId\) return;/);
-    expect(block).toContain('const arm = () => { if (id) clearTimeout(id); id = setTimeout(fire, 12 * 60 * 1000); };');
-    expect(block).toContain('no pipeline heartbeat');
+    // The arm gained hidden-tab deferral and wake-grace; the 12-minute idle
+    // limit lives in IDLE_LIMIT and the timer still routes through fire.
+    expect(block).toContain('const arm = (deferFromNow = false) => {');
+    expect(block).toContain('id = setTimeout(fire, delay);');
+    expect(anti).toContain('IDLE_LIMIT');
+    // The fire message lives with the (relocated) fire body, not the listener.
+    expect(anti).toContain('no pipeline heartbeat');
   });
 });
 

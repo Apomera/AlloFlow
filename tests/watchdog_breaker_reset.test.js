@@ -22,7 +22,9 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
     // when another run owns the host or the abort controller has been replaced)
     // which pushed the stop-ref set past the old window. Both the set and the
     // ordering below are intact -- the slice was simply cutting before them.
-    const fireBody = host.slice(fireStart, fireStart + 7000);
+    // Widened again (2026-08): the hidden-tab deferral + wake-grace comments
+    // pushed the stop-ref set to ~7.6k into fire(); set + ordering unchanged.
+    const fireBody = host.slice(fireStart, fireStart + 9000);
     expect(fireBody).toMatch(/pdfAutoContinueAbortRef\.current = true;/);
     // ordering: the ref-set appears before the controller.abort() inside fire()
     expect(fireBody.indexOf('pdfAutoContinueAbortRef.current = true'))
@@ -46,7 +48,9 @@ describe('CB-1: the Gemini breaker is reset at the start of each run', () => {
   it('defines _resetGeminiBreaker clearing cap/streaks/cooldown/announced', () => {
     const s = pipe.indexOf('var _resetGeminiBreaker = function() {');
     expect(s).toBeGreaterThan(0);
-    const body = pipe.slice(s, s + 600);
+    // Widened: the per-run telemetry-epoch reset (2026-08-16) now precedes the
+    // breaker fields inside the same function.
+    const body = pipe.slice(s, s + 1400);
     expect(body).toMatch(/_geminiCap = _GEMINI_MAX_CONCURRENT;/);
     expect(body).toMatch(/_geminiAuthStreak = 0;/);
     expect(body).toMatch(/_geminiTransientStreak = 0;/);

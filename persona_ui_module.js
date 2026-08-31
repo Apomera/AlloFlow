@@ -667,7 +667,7 @@ const InteractiveBlueprintCard = React.memo(({
     "data-testid": "bp-text-access-summary"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, t('blueprint.primary_text_access') || 'Source text', ":"), ' ', blueprintPrimaryAccess === 'required' ? t('blueprint.primary_text_required') || 'required primary text' : t('blueprint.primary_text_available') || 'available as the primary reference', ' Â· ', /*#__PURE__*/React.createElement("span", {
+  }, t('blueprint.primary_text_access') || 'Source text', ":"), ' ', blueprintPrimaryAccess === 'required' ? t('blueprint.primary_text_required') || 'required primary text' : t('blueprint.primary_text_available') || 'available as the primary reference', ' · ', /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
   }, t('blueprint.adapted_text') || 'Adapted Text', ":"), ' ', blueprintAdaptedPolicy === 'include' ? t('blueprint.adapted_included') || 'included as a supplemental companion' : blueprintAdaptedPolicy === 'prohibited' ? t('blueprint.adapted_prohibited') || 'not included because a sourced standard prohibits adaptation' : t('blueprint.adapted_omitted') || 'omitted by educator choice'), /*#__PURE__*/React.createElement("div", {
     className: "mt-0.5"
@@ -676,9 +676,9 @@ const InteractiveBlueprintCard = React.memo(({
     "data-testid": "bp-translation-impact"
   }, /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, t('blueprint.translation_policy') || 'Translation policy', ":"), ' ', String(blueprintSettings.translationMode), ' Â· ', /*#__PURE__*/React.createElement("span", {
+  }, t('blueprint.translation_policy') || 'Translation policy', ":"), ' ', String(blueprintSettings.translationMode), ' · ', /*#__PURE__*/React.createElement("span", {
     className: "font-semibold"
-  }, t('blueprint.attached_translation') || 'Attached translation', ":"), ' ', resolvedTranslationTarget || t('blueprint.translation_off') || 'off / no target resolved', embeddedGlossaryLanguages.length ? ` Â· ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}` : '')), run?.settingsStale && /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.attached_translation') || 'Attached translation', ":"), ' ', resolvedTranslationTarget || t('blueprint.translation_off') || 'off / no target resolved', embeddedGlossaryLanguages.length ? ` · ${t('blueprint.embedded_glossary_languages') || 'Embedded glossary languages'}: ${embeddedGlossaryLanguages.join(', ')}` : '')), run?.settingsStale && /*#__PURE__*/React.createElement("div", {
     "data-testid": "bp-settings-stale-notice",
     role: "status",
     className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-2 text-xs text-amber-950"
@@ -1046,7 +1046,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "mt-2 rounded border border-slate-200 bg-white p-2"
     }, /*#__PURE__*/React.createElement("div", {
       className: "mb-1 text-[10px] font-bold text-slate-700"
-    }, _successfulRuntimeVariants.length, " ", t('blueprint.variant_successful') || 'successful', ' Â· ', _failedRuntimeVariants.length, " ", t('blueprint.variant_unsuccessful') || 'failed or interrupted'), _missingRuntimeVariants.length > 0 && /*#__PURE__*/React.createElement("div", {
+    }, _successfulRuntimeVariants.length, " ", t('blueprint.variant_successful') || 'successful', ' · ', _failedRuntimeVariants.length, " ", t('blueprint.variant_unsuccessful') || 'failed or interrupted'), _missingRuntimeVariants.length > 0 && /*#__PURE__*/React.createElement("div", {
       className: "mb-1 text-[10px] font-semibold text-amber-800"
     }, _missingRuntimeVariants.length, " ", t('blueprint.variant_unavailable') || 'successful version unavailable in the workspace'), /*#__PURE__*/React.createElement("ul", {
       className: "space-y-1"
@@ -1060,7 +1060,7 @@ const InteractiveBlueprintCard = React.memo(({
           safeVariantReason = summarizeFailureReason(variant.reason);
         } catch (_) {}
       }
-      const audience = [variant && variant.grade, variant && variant.language].filter(Boolean).join(' Â· ') || t('blueprint.default_audience') || 'Default audience';
+      const audience = [variant && variant.grade, variant && variant.language].filter(Boolean).join(' · ') || t('blueprint.default_audience') || 'Default audience';
       return /*#__PURE__*/React.createElement("li", {
         key: variant && (variant.variantId || variant.generationIdentity) || `${item.id}-runtime-${variantIndex}`,
         "data-testid": "bp-variant-result",
