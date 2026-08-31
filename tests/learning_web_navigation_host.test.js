@@ -34,7 +34,8 @@ describe('Learning Web operational host contracts', () => {
     expect(bridge).toContain("provider: 'AlloFlow Unit Path'");
     // A hook dependency array is evaluated during render. This bridge is
     // declared before history state, so [history] here is a fatal TDZ read.
-    const historyDeclaration = source.indexOf('const [history, setHistory]');
+    // history's setter was underscored when direct writes were removed.
+    const historyDeclaration = source.indexOf('const [history, _setHistory]');
     const bridgeDeclaration = source.indexOf('const handleRegisterUnitPathGraph =');
     expect(bridgeDeclaration).toBeLessThan(historyDeclaration);
     expect(bridge).not.toMatch(/\},\s*\[[^\]]*\bhistory\b/);

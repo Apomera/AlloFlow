@@ -116,17 +116,20 @@ describe('the shell wiring', () => {
     const m = anti.match(/function getAudio\(category, key\) \{[\s\S]*?\n\}/);
     expect(m, 'getAudio not found in the shell').toBeTruthy();
     // eslint-disable-next-line no-new-func
-    const make = new Function('_AUDIO_BANK', '_AUDIO_BANK_KOKORO',
+    // getAudio now kicks a split-bank fetch on a category miss; inject a noop
+    // requester so the extracted function runs standalone.
+    const make = new Function('_AUDIO_BANK', '_AUDIO_BANK_KOKORO', '_requestAudioCategory',
       'return ' + m[0].replace('function getAudio', 'function'));
     const g = make(
       { phonemes: { collide: 'GEMINI' } },
       { phonemes: { collide: 'KOKORO', only: 'KOKORO-ONLY' } },
+      () => {},
     );
     expect(g('phonemes', 'collide')).toBe('GEMINI');
     expect(g('phonemes', 'only')).toBe('KOKORO-ONLY');
     expect(g('phonemes', 'nowhere')).toBe(null);
     // and with the Gemini bank failed to load entirely, the overlay still serves
-    const gNoMain = make(null, { phonemes: { only: 'KOKORO-ONLY' } });
+    const gNoMain = make(null, { phonemes: { only: 'KOKORO-ONLY' } }, () => {});
     expect(gNoMain('phonemes', 'only')).toBe('KOKORO-ONLY');
   });
 

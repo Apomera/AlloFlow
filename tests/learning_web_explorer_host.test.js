@@ -18,7 +18,8 @@ describe('Learning Web Explorer host integration', () => {
     const build = read('build.js');
     expect(build).toContain("name: 'LearningWebExplorer'");
     expect(build).toContain("filename: 'learning_web_explorer_module.js'");
-    expect(host).toContain("loadModule('LearningWebExplorer', 'https://alloflow-cdn.pages.dev/learning_web_explorer_module.js?v=87f85b53d')");
+    // Hash-agnostic: the post-deploy job rotates ?v= on every release.
+    expect(host).toMatch(/loadModule\('LearningWebExplorer', 'https:\/\/alloflow-cdn\.pages\.dev\/learning_web_explorer_module\.js\?v=[a-z0-9]+'\)/);
     expect(host).toContain('moduleKey="LearningWebExplorer"');
     expect(host).toContain('displayName="Learning Web: Explore"');
     expect(host).toContain('moduleKey="MindMap"');

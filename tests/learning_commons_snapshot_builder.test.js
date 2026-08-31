@@ -73,7 +73,9 @@ describe('Learning Commons snapshot builder', () => {
         const snapshot = await builder.buildSnapshot(options());
         const source = builder.registrationModule(snapshot);
         expect(source).toContain('provider.registerLocalSnapshot(snapshot)');
-        expect(source).toContain('__ALLO_LOCAL_STANDARDS_SNAPSHOT__');
+        // The single-slot global became a queue (plural) so multiple snapshots
+        // can register before the provider loads.
+        expect(source).toContain('__ALLO_LOCAL_STANDARDS_SNAPSHOTS__');
         expect(source).not.toContain('fetch(');
         expect(source).not.toContain('XMLHttpRequest');
     });

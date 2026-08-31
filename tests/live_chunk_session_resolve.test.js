@@ -12,7 +12,7 @@ const host = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
 
 // mirror of the onSessionComplete stream resolution
 const resolveOnComplete = (stream) => stream.map((c) => c.status === 'working'
-  ? { ...c, status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true, score: (typeof c.score === 'number' ? c.score : 0) }
+  ? { ...c, status: 'deferred', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true }
   : c);
 
 describe('Live Remediation Review — no card dangles on "Fixing…" after the session completes', () => {
@@ -27,13 +27,13 @@ describe('Live Remediation Review — no card dangles on "Fixing…" after the s
     expect(out.some((c) => c.status === 'working')).toBe(false);
     // the real fix is untouched
     expect(out[0]).toEqual(stream[0]);
-    // the dangling ones become honestly AI-skipped (shipped as original), not falsely verified
-    expect(out[1].status).toBe('complete');
+    // the dangling ones become honestly DEFERRED (shipped as original, resumable
+    // later), not falsely verified — the defer-and-revisit rework's terminal state.
+    expect(out[1].status).toBe('deferred');
     expect(out[1].usedOriginal).toBe(true);
     expect(out[1].aiVerified).toBe(false);
     expect(out[1].integrityPassed).toBe(false);
     expect(out[1].incomplete).toBe(true);
-    expect(out[1].score).toBe(0); // no real score → 0, not undefined (card renders /100 cleanly)
   });
 
   it('an already-complete stream is unchanged (idempotent)', () => {
@@ -41,11 +41,11 @@ describe('Live Remediation Review — no card dangles on "Fixing…" after the s
     expect(resolveOnComplete(stream)).toEqual(stream);
   });
 
-  it('the "complete" count now reaches total, so the panel reads N/N (not stuck at <N)', () => {
+  it('no card stays "working", so the panel settles (complete + deferred = total)', () => {
     const stream = [{ index: 0, status: 'complete', score: 80 }, { index: 1, status: 'working' }];
     const out = resolveOnComplete(stream);
-    const complete = out.filter((c) => c.status === 'complete').length;
-    expect(complete).toBe(out.length); // 2/2, not 1/2
+    const settled = out.filter((c) => c.status === 'complete' || c.status === 'deferred').length;
+    expect(settled).toBe(out.length); // 2/2 settled, none dangling
   });
 });
 
@@ -56,7 +56,7 @@ describe('anti-drift: onSessionComplete resolves dangling working cards (not jus
     // safety parameter.
     expect(host).toMatch(/const onSessionComplete = \([^)]*\) => \{[\s\S]*?setLiveChunkSessionActive\(false\);/);
     expect(host).toMatch(/setLiveChunkStream\(prev => prev\.map\(c => c\.status === 'working'/);
-    expect(host).toMatch(/status: 'complete', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true/);
+    expect(host).toMatch(/status: 'deferred', usedOriginal: true, aiVerified: false, integrityPassed: false, incomplete: true/);
   });
   it('the OLD one-liner (only active=false) is gone', () => {
     expect(host).not.toMatch(/const onSessionComplete = \(\) => \{ setLiveChunkSessionActive\(false\); \};/);

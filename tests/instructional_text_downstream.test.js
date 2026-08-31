@@ -98,7 +98,8 @@ describe('downstream export and history integration guards', () => {
   it('keeps role metadata through community staging and full-artifact project restoration', () => {
     expect(historySource).toContain('textAccessPreflight');
     expect(historySource).toContain('instructionalText: getInstructionalTextRecord(item)');
-    expect(historySource).toContain('config.instructionalText');
+    // Access hardened through safeField (null-tolerant) in the 2026-08 pass.
+    expect(historySource).toContain("safeField(config, 'instructionalText')");
     expect(projectSource).toContain('setGeneratedContent({ ...lastItem });');
   });
 });
