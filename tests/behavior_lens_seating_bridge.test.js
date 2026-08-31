@@ -19,7 +19,7 @@ describe('BehaviorLens seating bridge contract', () => {
   });
 
   it('ABCModal receives studentName + addToast and gates the button on studentName', () => {
-    expect(SRC).toContain('const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast })');
+    expect(SRC).toContain('const ABCModal = ({ entry, onSave, onClose, t, callGemini, studentName, addToast, targetBehaviors })');
     expect(SRC).toMatch(/studentName && h\('div', \{ className: 'flex flex-wrap items-center gap-2 mt-1\.5' \}/);
   });
 

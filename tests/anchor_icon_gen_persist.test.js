@@ -81,7 +81,7 @@ describe('AnchorChartView — generated icons persist for every section', () => 
 describe('monolith handleNoteUpdate — the source-side half of the fix', () => {
   it('allows anchor-chart through the type gate and supports a functional updater', () => {
     const mono = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(mono).toMatch(/prev\.type !== 'note-taking' && prev\.type !== 'anchor-chart'/);
+    expect(mono).toMatch(/!\['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'\]\.includes\(prev\.type\)/);
     expect(mono).toContain("typeof value === 'function' ? value(prev.data");
   });
 });

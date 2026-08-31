@@ -165,7 +165,7 @@ describe('authoring rules (the ones that bite)', () => {
   });
   it('the app history panel never renders object metas as [object Object] (source pin)', () => {
     const hp = readFileSync(resolve(process.cwd(), 'view_history_panel_source.jsx'), 'utf8');
-    expect(hp).toContain("const itemMeta = typeof item.meta === 'string' ? item.meta.trim() : '';");
+    expect(hp).toContain("const itemMeta = typeof rawMeta === 'string' ? rawMeta : '';");
     expect(hp).toContain('{itemMeta && <span>');
   });
   it('whole-pack translate repoints directions goal tethers and isolates per-item failures (source pins)', () => {

@@ -20,7 +20,7 @@
       "crosswalk": "hra-kidney-female-left-v1.3-crosswalk.csv",
       "sha256": {
         "model": "58f0227d45b14d7bcfd2ed05a7bcd76000051ea08d52f844feebd70d612f8084",
-        "crosswalk": "19fbe87b7df8cf6b840456c7477ae5aaada30a7d535751d59e20941214bee445"
+        "crosswalk": "2b87756270f4ffd826fb029c8ae5e6e4e411f9e63b2673db03671c2a8e0f186d"
       },
       "source": "https://cdn.humanatlas.io/digital-objects/ref-organ/kidney-female-left/v1.3/",
       "canonicalIdentifier": "https://lod.humanatlas.io/ref-organ/kidney-female-left/v1.3",
@@ -43,7 +43,7 @@
         "Heidi Schlehlein"
       ],
       "projectLeads": [
-        "Katy Börner"
+        "Katy B\u00f6rner"
       ],
       "reviewers": [
         "Shin Lin"
@@ -59,7 +59,7 @@
       "metadata": "hra-heart-female-v1.3-metadata.yaml",
       "sha256": {
         "model": "98f66e46b149bfc3836592d9404c50290e21d302ec55c98813435e2d9847b1d9",
-        "crosswalk": "a529992b6e444d40fa9e361542fd694d773de429f611276b292133aa30be1cb2",
+        "crosswalk": "b6cea0f1e2c2067e764108dd288798a8c6214c1985456ea91035721ada5529fc",
         "metadata": "f0af7fb376c854d0d90ac7309720fe44cf698605338e5570a63f9d2d01820b8a"
       },
       "source": "https://lod.humanatlas.io/ref-organ/heart-female/v1.3/",
@@ -86,7 +86,7 @@
         "Rachel Bajema"
       ],
       "projectLeads": [
-        "Katy Börner"
+        "Katy B\u00f6rner"
       ],
       "reviewers": [
         "Sanjay Jain",
@@ -107,7 +107,7 @@
       "metadata": "hra-kidney-renal-corpuscle-v1.4-metadata.yaml",
       "sha256": {
         "image": "9d59249795cb4890ea6181864500a07b27ec9fbe255df9c164e6938da3de65fd",
-        "crosswalk": "31d7cfe3004493dd9d274891dbbdda3b96b6efd9e98fd4b4051b5fe1ffadd4fa",
+        "crosswalk": "f680cd299510c87851631c94cee93bdc2019dce27cc2bc17266c790161660d94",
         "metadata": "c47939ee95792d12bf55314fbe6ef1436a5c2f91533a5b9fd1b2ca4b4c5121d2"
       },
       "source": "https://lod.humanatlas.io/2d-ftu/kidney-renal-corpuscle/v1.4/",

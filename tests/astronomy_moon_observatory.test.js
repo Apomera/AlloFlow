@@ -323,8 +323,8 @@ describe('Astronomy Moon Phase Observatory', () => {
     expect(panel).toBeTruthy();
     expect(panel.textContent).toContain('Total lunar eclipse');
     expect(panel.textContent).toContain("completely inside Earth's dark umbra");
-    expect(panel.textContent).toContain('P Â· faint outer shadow');
-    expect(panel.textContent).toContain('U Â· dark central shadow');
+    expect(panel.textContent).toContain('P · faint outer shadow');
+    expect(panel.textContent).toContain('U · dark central shadow');
     expect(contacts.querySelectorAll('button')).toHaveLength(7);
     expect(contacts.querySelectorAll('button[aria-pressed="true"]')).toHaveLength(1);
     expect(contacts.querySelector('button[aria-label="MAX, Greatest eclipse"]')).toBeTruthy();

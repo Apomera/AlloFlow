@@ -107,7 +107,8 @@ describe('A1 residual — history CSV carries the verification column', () => {
 describe('A2 residual — verdict bullet renders a sentence, not a machine token', () => {
   const fnStart = pipe.indexOf('function _alloDistributionVerdict');
   const fnEnd = pipe.indexOf('\n}', fnStart) + 2;
-  const distributionVerdict = new Function(pipe.slice(fnStart, fnEnd) + '\nreturn _alloDistributionVerdict;')();
+  // The verdict now reads the shared PIPELINE_DEFAULTS.targetScore.
+  const distributionVerdict = new Function('PIPELINE_DEFAULTS', pipe.slice(fnStart, fnEnd) + '\nreturn _alloDistributionVerdict;')({ targetScore: 95 });
   it('maps each expertReviewReason token to teacher-readable text', () => {
     const base = { afterScore: 97, needsExpertReview: true };
     const a = distributionVerdict({ ...base, expertReviewReason: 'accessibility' }, {});
