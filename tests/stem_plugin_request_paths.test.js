@@ -18,6 +18,7 @@ import fs from 'node:fs';
 import { describe, it, expect, beforeAll } from 'vitest';
 
 const ANTI = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
+const handlers = fs.readFileSync('misc_handlers_source.jsx', 'utf8');
 const MODULE = 'stem_lab/stem_lab_module.js';
 let sources;
 
@@ -43,7 +44,8 @@ describe('STEM tool entry points request their plugin', () => {
       expect(text, path + ' openLumen').toMatch(/openLumen: \(\) => \{ _alloRequestStemPlugin\('lumen'\);/);
       expect(text, path + ' openFreeForms').toMatch(/openFreeForms: \(\) => \{ _alloRequestStemPlugin\('freeForms'\);/);
       // generated-content handoff into a manipulative
-      expect(text, path + ' item handoff').toMatch(/_alloRequestStemPlugin\(item\.toolId\);\s*[\r\n]+\s*setStemLabTool\(item\.toolId\);/);
+      // The item-handoff open branch moved to misc_handlers (2026-08-22).
+      expect(handlers).toMatch(/_alloRequestStemPlugin\(item\.toolId\);\s*[\r\n]+\s*setStemLabTool\(item\.toolId\);/);
       // free-forms import handoff
       expect(text, path + ' freeForms import').toMatch(/_alloRequestStemPlugin\('freeForms'\);\s*[\r\n]+\s*setStemLabTool\('freeForms'\);/);
     }

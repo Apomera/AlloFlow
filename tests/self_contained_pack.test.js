@@ -123,7 +123,8 @@ describe('ANTI wiring pins', () => {
     it('teacher creator exists and the cloud homework path falls back to it', () => {
         expect(anti).toMatch(/const createSelfContainedHomeworkLink = useCallback/);
         expect(anti).toMatch(/Cloud homework link failed — making a self-contained link instead\./);
-        expect(anti).toMatch(/return createSelfContainedHomeworkLink\(\);/);
+        // The cloud-fallback path now threads the current selection through.
+        expect(anti).toMatch(/return createSelfContainedHomeworkLink\(selectedResourceIds\);/);
         // Creator must be defined BEFORE the cloud creator that references it (TDZ).
         expect(anti.indexOf('const createSelfContainedHomeworkLink = useCallback'))
             .toBeLessThan(anti.indexOf('const createHomeworkAssignmentLink = useCallback'));

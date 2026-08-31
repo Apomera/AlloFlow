@@ -94,6 +94,7 @@ describe('Cell Atlas Lab science and accessibility contract', () => {
       'atlas_reasoning',
       'atlas_scale_journey',
       'atlas_scale_record',
+      'atlas_export',
     ]);
     const state = {
       exploredTypes: { beta: true, alpha: true, ductal: true },
@@ -118,6 +119,7 @@ describe('Cell Atlas Lab science and accessibility contract', () => {
       cautionAnswer: 'cautious',
       alphaFoldHandoff: true,
       alphaFoldEvidenceRecord: { kind: 'cell-atlas-alphafold-evidence', complete: true },
+      exportedArtifacts: { evidencePacket: true },
     };
     for (const quest of cfg.questHooks) expect(quest.check(state), quest.id).toBe(true);
   });

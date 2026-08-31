@@ -19,7 +19,9 @@ const SRC = 'stem_lab/stem_tool_platetectonics.js';
 const MIRRORS = [
   'desktop/web-app/public/stem_lab/stem_tool_platetectonics.js',
   'desktop/app-build/stem_lab/stem_tool_platetectonics.js'
-];
+]
+  // desktop/app-build/ is a gitignored local build output — absent in CI.
+  .filter((rel) => !rel.includes('app-build') || fs.existsSync(rel));
 
 const read = (p) => fs.readFileSync(path.resolve(p), 'utf8');
 

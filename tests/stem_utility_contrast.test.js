@@ -66,7 +66,9 @@ describe('STEM utility-class contrast', () => {
     expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_datastudio.js'), 'utf8')).toContain("background: '#fee2e2', color: '#991b1b'");
     expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_echolocation.js'), 'utf8')).toContain("background: '#dbeafe', border: '2px solid #60a5fa', color: '#1e40af'");
     expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_probability.js'), 'utf8')).toContain("background: '#fee2e2', color: '#991b1b'");
-    expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_astronomy.js'), 'utf8')).toContain("fill: '#cbd5e1', fontSize: 8");
+    // Retoned in Aaron's dark-mode residue pass (8e7972f2a); #94a3b8 still
+    // reads at ~7:1 on the dark diagram ground.
+    expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_astronomy.js'), 'utf8')).toContain("fill: '#94a3b8', fontSize: 8");
     expect(readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_spacestation.js'), 'utf8')).toContain("fill: '#94a3b8', fontSize: 8.5");
   });
 });

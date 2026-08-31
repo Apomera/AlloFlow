@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync , existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 /**
@@ -23,7 +23,9 @@ const SOURCE = resolve(process.cwd(), 'stem_lab/stem_tool_platetectonics.js');
 const MIRRORS = [
   'desktop/web-app/public/stem_lab/stem_tool_platetectonics.js',
   'desktop/app-build/stem_lab/stem_tool_platetectonics.js'
-];
+]
+  // desktop/app-build/ is a gitignored local build output — absent in CI.
+  .filter((rel) => !rel.includes('app-build') || existsSync(rel));
 
 let cache = null;
 function src() {

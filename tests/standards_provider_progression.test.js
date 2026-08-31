@@ -136,8 +136,13 @@ describe('getLearningComponents', () => {
   it('never synthesizes components a standard does not have', () => {
     const leafIds = new Set(snapshot.standards.map((s) => s.id));
     for (const r of snapshot.relationships) if (r.type === 'hasChild') leafIds.delete(r.fromId);
-    const leaf = snapshot.standards.find((s) => s.resolvable !== false && leafIds.has(s.id));
-    expect(leaf, 'no leaf standard found').toBeTruthy();
+    // The refreshed dataset added supports-edges for most leaves, so the first
+    // leaf now legitimately HAS components. Anti-synthesis means a leaf with
+    // no supporting edges must return exactly [] — pick one of those.
+    const supported = new Set();
+    for (const r of snapshot.relationships) if (r.type === 'supports') supported.add(r.toId);
+    const leaf = snapshot.standards.find((s) => s.resolvable !== false && leafIds.has(s.id) && !supported.has(s.id));
+    expect(leaf, 'no component-free leaf standard found').toBeTruthy();
     const result = provider.getLearningComponents(leaf.id);
     expect(result.components).toEqual([]);
   });

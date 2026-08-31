@@ -176,7 +176,8 @@ describe('reading theme palette', () => {
     expect(ANTI).toContain("safeSetItem('allo_reading_theme', readingTheme)");
     expect(ANTI).toContain("window.addEventListener('storage', syncReadingTheme)");
     expect(ANTI).toContain("window.removeEventListener('storage', syncReadingTheme)");
-    expect(ANTI).toContain("event.key !== 'allo_reading_theme' && event.key !== null");
+    // The cross-tab listener flipped to positive-match form (favorites got its own).
+    expect(ANTI).toContain("if (event.key === 'allo_reading_theme' || event.key === null) {");
     expect(ANTI).toContain("READING_THEME_IDS.includes(event.newValue) ? event.newValue : 'default'");
   });
 

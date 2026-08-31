@@ -36,13 +36,15 @@ describe('Cell Atlas Lab snapshot dependency loading', () => {
   });
 
   it('orders only the snapshot dependency while leaving unrelated plugins parallel', () => {
+    // The one-off async toggle became the generalized stemModuleDependencies
+    // map: prerequisites resolve recursively and serially per tool, so opening
+    // one tile never races a consumer ahead of its data — and any tool WITHOUT
+    // an entry stays parallel.
     for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {
       const source = readFileSync(resolve(process.cwd(), file), 'utf8');
-      expect(source).toContain(
-        "var orderedCellAtlasDependency = mod === 'stem_lab/stem_data_cellatlas_muraro.js' || mod === 'stem_lab/stem_tool_cellatlas.js';",
-      );
-      expect(source).toContain('s.async = !orderedCellAtlasDependency;');
-      expect(source).toContain('every unrelated plugin remains parallel');
+      expect(source).toContain('var stemModuleDependencies = {');
+      expect(source).toContain("'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js'],");
+      expect(source).toContain('Dependencies\n          // are resolved recursively and serially');
     }
   });
 });
