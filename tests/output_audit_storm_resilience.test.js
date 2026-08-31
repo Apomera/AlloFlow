@@ -28,15 +28,19 @@ describe('source-pins: B — cooldown-aware deferred final re-audit', () => {
     // the gate's own time-bounded snapshot. The old expression was true for the WHOLE run once
     // anything tripped, so a malformed-JSON partial published a rate-limit attribution that was
     // simply false. Pin the fact, not the arithmetic.
-    expect(bBlock).toContain('_geminiThrottleInfo().recentlyThrottled');
+    // The 2026-08 throttle-telemetry work replaced the gate snapshot here with the
+    // breaker-derived flags (the gate snapshot survives as _finalAuditThrottleActive).
+    expect(bBlock).toContain('_finalAuditThrottled || _finalAuditThrottleActive()');
     expect(bBlock).not.toContain('authThrottles'); // the non-existent field the design first suggested
   });
   it('bounded LOOP (superseded the one-shot ≤45s wait, 2026-07-07 + M1/M2 2026-07-09): circles back until coverage completes, clamped to the budget', () => {
     // The one-shot design (Date.now() + 45000, re-audit ONCE) was replaced by the maintainer-asked
     // circle-back loop: wait-for-calm → re-audit, repeating until FULL AI coverage, a genuine
     // failure, or the bounded cap (~10 min single-file / the batch per-file wall − 30s).
-    expect(bBlock).toContain('Date.now() + 600000,');
-    expect(bBlock).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
+    // The literal 10-minute constant became the budget helper (same clamp, shared
+    // with the batch wall).
+    expect(bBlock).toContain('_finalAiAuditBudgetLeft()');
+    expect(bBlock).toContain('_perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity');
     expect(bBlock).toContain('await _withTimeout(waitForGeminiCalm({'); // M2: budget-clamped wait (pulses the watchdog internally)
     // Capture the exact bytes before the await so the adopted audit cannot silently
     // attest to a different HTML revision.
@@ -77,7 +81,8 @@ describe('source-pins: D — honest reframe of a residual throttled partial', ()
 
 describe('source-pins: minimal-A — storm-aware loop early-stop', () => {
   const aIdx = dp.indexOf('minimal-A (throttle resilience 2026-07-03): storm-aware early stop');
-  const aBlock = dp.slice(aIdx, aIdx + 1400);
+  // Widened: the block's in-source rationale grew through the 2026-07/08 waves.
+  const aBlock = dp.slice(aIdx, aIdx + 9000);
   it('breaks only under storm AND axe==0 AND partial re-audit', () => {
     expect(aIdx).toBeGreaterThan(-1);
     // L7 (2026-07-26): one time-bounded definition of "a throttle happened recently", on the gate
@@ -85,11 +90,14 @@ describe('source-pins: minimal-A — storm-aware loop early-stop', () => {
     expect(aBlock).toContain('_geminiThrottleInfo().recentlyThrottled');
     // `_reAxeUsable` was added after this pin was written — an unusable re-audit must not be read
     // as "axe clean".
-    expect(aBlock).toMatch(/if \(_stormActive && _reAxeUsable && newAxeViolations === 0 && _rePartial\)/);
-    expect(aBlock).toContain('Canvas rate-limit storm active + axe clean + AI audit partial');
+    // 2026-07-23: the early-stop dropped the axe clause by design (the in-source
+    // comment now forbids the axe-clause form) — a partial re-audit under storm
+    // stops semantic passes regardless of the axe count.
+    expect(aBlock).toMatch(/if \(_stormActive && _rePartial\)/);
+    expect(aBlock).toContain("Canvas rate-limit storm; stopping semantic passes and handing ");
   });
   it('lives after the target-score stop gate (ships the axe-clean best, does not lower the bar in the common case)', () => {
-    const excellentIdx = dp.indexOf('Excellent: axe clean + AI');
+    const excellentIdx = dp.indexOf('Excellent: AI ${newAiScore}/100 (target ${targetScore}) + axe clean');
     expect(excellentIdx).toBeGreaterThan(-1);
     expect(aIdx).toBeGreaterThan(excellentIdx); // A is AFTER the normal target stop
   });

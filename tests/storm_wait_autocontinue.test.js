@@ -45,7 +45,7 @@ describe('pipeline API — LIVE instance', () => {
 });
 
 describe('resolved empty-body recovery - LIVE instance', () => {
-  it('routes empty 200 responses through two bounded recovery attempts, then returns the original', async () => {
+  it('defers a single-chunk empty 200 immediately (no retry grind) and returns the original', async () => {
     let calls = 0;
     const emptyPipeline = window.AlloModules.createDocPipeline({
       callGemini: async () => { calls += 1; return ''; },
@@ -61,10 +61,15 @@ describe('resolved empty-body recovery - LIVE instance', () => {
     const original = "<!doctype html><html lang=\"en\"><body><main><p>Accessible source content stays intact.</p></main></body></html>";
     const result = await emptyPipeline.aiFixChunked(original, 'Add a descriptive landmark label.', 'empty-body-runtime');
 
+    // The 2026-08 defer-and-revisit work replaced the two in-place recovery
+    // attempts: a single-chunk empty body now defers on the FIRST failure
+    // ("single-chunk throttle deferred — keeping the verified input and pausing
+    // for a later resume") so retries never grind into an active throttle. One
+    // call, one transient mark, no storm declared from a single signature.
     expect(result).toBe(original);
-    expect(calls).toBe(3);
-    expect(emptyPipeline.geminiThrottleInfo()).toMatchObject({ transientStreak: 3, storming: true });
-    expect(emptyPipeline.getPipelineStats()).toMatchObject({ terminalFailures: 3, recoveredRetries: 0 });
+    expect(calls).toBe(1);
+    expect(emptyPipeline.geminiThrottleInfo()).toMatchObject({ transientStreak: 1, storming: false });
+    expect(emptyPipeline.getPipelineStats()).toMatchObject({ terminalFailures: 1, recoveredRetries: 0 });
   });
 
   it('propagates AbortError without counting user cancellation as a terminal service failure', async () => {
@@ -205,8 +210,10 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
     expect(dp).toContain('if (((verification && verification.chunksAudited) || 0) <= _prevAudited && !_stormNow) break;');
   });
   it('bounded: a single-file safety cap + the batch per-file wall (never an unbounded hang)', () => {
-    expect(dp).toContain('Date.now() + 600000,');
-    expect(dp).toContain('_perFileDeadlineTs ? _perFileDeadlineTs - 30000 : Infinity');
+    // The literal 10-minute cap became the shared budget helper, and the batch
+    // wall clamp moved to a Date.now()-relative form (2026-08 throttle work).
+    expect(dp).toContain('_finalAiAuditBudgetLeft()');
+    expect(dp).toContain('_perFileDeadlineTs ? (_perFileDeadlineTs - Date.now()) : Infinity');
   });
   it('the memo makes each re-audit cheap: only FAILED sections are re-called (successful parses memoized)', () => {
     // Strict-schema successes are memoized; thrown/invalid replies return null and retry.
@@ -215,17 +222,20 @@ describe('deferred final re-audit CIRCLES BACK to throttle-skipped sections unti
   });
 });
 
-describe('host auto-continue wiring (AlloFlowANTI)', () => {
+const handlers = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+
+describe('host auto-continue wiring (AlloFlowANTI + misc_handlers)', () => {
   it('the loop binds the export with an immediate-calm fallback (an older pipeline module changes nothing)', () => {
     expect(anti).toContain("const waitForGeminiCalm = (_docPipeline && _docPipeline.waitForGeminiCalm) ? _docPipeline.waitForGeminiCalm : async () => ({ calm: true, waitedMs: 0 });");
   });
   it('each round awaits calm BEFORE firing its calls, with a ticking status (disarms the dead-man switch)', () => {
     // H3 (2026-07-09): the wait also carries shouldAbort so a Stop press exits it within seconds.
-    const waitIdx = anti.indexOf('await waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort:');
+    // The loop body lives in misc_handlers since the 2026-08-22 modularization.
+    const waitIdx = handlers.indexOf('waitForGeminiCalm({ maxWaitMs: 240000, shouldAbort:');
     expect(waitIdx).toBeGreaterThan(-1);
-    const fireIdx = anti.indexOf("aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-'", waitIdx);
+    const fireIdx = handlers.indexOf("aiFixChunked(cur.accessibleHtml, _instr, 'auto-continue-ai-round-'", waitIdx);
     expect(fireIdx).toBeGreaterThan(waitIdx); // wait precedes the round's calls
-    expect(anti).toContain('nothing is skipped, the run just takes longer');
+    expect(handlers).toContain('Waiting is not\n        // abandoning the target: the round runs at full strength if the storm passes inside the bound');
   });
   it('the callback dep array carries waitForGeminiCalm', () => {
     expect(anti).toMatch(/aiFixChunked, waitForGeminiCalm, runAxeAudit/);

@@ -77,7 +77,9 @@ describe('anti-drift: the breaker recovers on evidence + fails fast', () => {
   });
   it('cooldown ladder capped at 25s, not 90s', () => {
     expect(pipe).not.toMatch(/Math\.min\(90000,/);
-    expect(pipe).toMatch(/Math\.min\(25000, _GEMINI_COOLDOWN_MS \* \(_geminiAuthStreak/);
+    // The ladder factor became a plain `count` parameter in the 2026-08 refactor;
+    // the 25s cap is the invariant.
+    expect(pipe).toMatch(/Math\.min\(25000, _GEMINI_COOLDOWN_MS \* count\)/);
   });
   it('the retry backoff is jittered', () => {
     expect(pipe).toMatch(/0\.7 \+ Math\.random\(\) \* 0\.6/);
@@ -89,15 +91,17 @@ describe('anti-drift: aiFixChunked records + revisits throttle-deferred chunks',
     expect(pipe).toMatch(/if \(_isThrottleErr\(e\)\) _deferredIdx\.push\(ci\)/);
     expect(pipe).toMatch(/var _isThrottleErr = function \(e\)/);
   });
-  it('the catch-up drain revisits them, including an all-deferred pass, and splices by index', () => {
+  it('deferred chunks checkpoint for an explicit resume instead of an in-run catch-up wave', () => {
+    // 2026-08: the in-run catch-up drain was REMOVED by design — it doubled the
+    // expensive calls into the same provider window and prolonged the storm
+    // (the in-source comment records the diagnostic run). A deferred chunk now
+    // stays byte-identical to its verified input, the paced wave stops
+    // launching further chunks, and the work is checkpointed once for the
+    // explicit resume path.
     expect(pipe).toMatch(/if \(_deferredIdx\.length\) \{/);
-    // The flat 90000 became _alloCalmBudgetMs(90000, perFileDeadlineTs,
-    // _DRAIN_RESERVE_MS): the drain may no longer wait out a calm window longer
-    // than the file's remaining wall, and it reserves time to actually drain
-    // afterwards. Waiting 90s for calm with 20s left on the deadline spent the
-    // whole budget waiting and then timed out with nothing fixed.
-    expect(pipe).toMatch(/await waitForGeminiCalm\(\{ maxWaitMs: _alloCalmBudgetMs\(90000, _control && _control\.perFileDeadlineTs, _DRAIN_RESERVE_MS\),[^}]*signal:[^}]*owner:/);
+    expect(pipe).toContain('for (let ri = ci + 1; ri < chunks.length; ri++) fixed[ri] = chunks[ri];');
+    expect(pipe).toContain('Do not immediately launch');
+    expect(pipe).toContain('_markThrottleDeferred(_todo.length);');
     expect(pipe).not.toMatch(/Promise\.all\(_todo\.map/);
-    expect(pipe).toMatch(/for \(const \{ ci, out \} of _again\) \{ if \(out != null\) fixed\[ci\] = out; \}/);
   });
 });

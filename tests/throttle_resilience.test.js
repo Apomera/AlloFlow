@@ -73,7 +73,9 @@ describe('anti-drift: the breaker + floor ship the fixes', () => {
     expect(pipeSrc).toMatch(/var _noteGeminiOutcome = function \(res, err\) \{/);
     expect(pipeSrc).toMatch(/if \(_canvasAuth\) _geminiNoteAuthFail\(_callStats, owner\);\s*\n\s*else _geminiNoteTransientFail\(_callStats, owner\);/);
     expect(pipeSrc).toMatch(/var _transientBackoff = Math\.round\(2500 \* \(0\.7 \+ Math\.random\(\) \* 0\.6\)\)/);
-expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)[\s\S]{0,160}_geminiNoteTransientFail\(_callStats, owner\)/);
+// F1 (2026-08-14): a repeat-offender check now precedes the transient mark so a
+// deterministic signature stops ratcheting the shared breaker.
+expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)[\s\S]{0,300}_geminiNoteTransientFail\(_callStats, owner\)/);
     // The if/else split; the empty-body-is-a-throttle half moved into
     // _noteGeminiOutcome so every path shares it, leaving a negated guard here.
     // The invariant is the same one: an empty 200 body is NOT a recovered retry.
@@ -98,9 +100,9 @@ describe('run-scoped cancellation and post-loop containment', () => {
   });
 
   it('threads the immutable signal through final/deferred/post-mutation AI audits', () => {
-    expect(pipeSrc).toContain('auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal })');
-    expect(pipeSrc).toContain('auditOutputAccessibility(_reFinalAuditHtml, { signal: _runAbortSignal })');
-    expect(pipeSrc).toContain('auditOutputAccessibility(accessibleHtml, { signal: _runAbortSignal })');
+    expect(pipeSrc).toContain("auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal, trigger: 'primary-final-audit' })");
+    expect(pipeSrc).toMatch(/auditOutputAccessibility\(_reFinalAuditHtml, \{ signal: _runAbortSignal, trigger: 'deferred-chunk-circle-back-reaudit/);
+    expect(pipeSrc).toMatch(/auditOutputAccessibility\(accessibleHtml, \{ signal: _runAbortSignal, trigger: 'post-mutation-reaudit/);
     expect(pipeSrc).toContain('const _genStale = _runGenStale;');
     expect(pipeSrc).toContain('signal: _runAbortSignal,');
     expect(pipeSrc).toContain('owner: _runTelemetry,');
@@ -109,7 +111,8 @@ describe('run-scoped cancellation and post-loop containment', () => {
   it('captures explicit signals at the gate and rechecks nested chunk calls after awaits', () => {
     expect(pipeSrc).toContain('owner, explicitSignal)');
     expect(pipeSrc).toContain('var _gateSignal = explicitSignal ||');
-    expect(pipeSrc).toContain('callGemini(prompt, false, false, null, null, _control && _control.signal)');
+    // The call gained an owner descriptor for the F1 repeat-offender ledger.
+    expect(pipeSrc).toContain('callGemini(prompt, false, false, null, null, _control && _control.signal, _callOwnerFor(');
     expect(pipeSrc).toContain('const _retryRaw = await callGemini(retryPrompt');
     expect(pipeSrc).toContain('var _capturedVisionSignal = _explicitSignal');
     expect(pipeSrc).toContain("args[3] = _capturedOptions;");
