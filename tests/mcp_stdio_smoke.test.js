@@ -273,7 +273,7 @@ describe('MCP stdio local connector', () => {
   });
   it('runs create, revise, preview, and job tools with redacted append-only audit records', async () => {
     const created = await callTool('blueprint_create', {
-      request: { blueprintId: 'bp-task-c', gradeLevel: '5th Grade', standards: 'NGSS 5-ESS2-1', plan: ['analysis', 'quiz', 'lesson-plan'] },
+      request: { blueprintId: 'bp-task-c', gradeLevel: '5th Grade', standards: 'NGSS 5-ESS2-1', plan: ['analysis', 'simplified', 'quiz', 'lesson-plan'] },
     });
     expect(created.isError).toBe(false);
     expect(created.structuredContent.job.status).toBe('completed');
@@ -286,13 +286,13 @@ describe('MCP stdio local connector', () => {
     const createResult = await callTool('job_get_result', { jobId: createJobId });
     expect(createResult.structuredContent.result.kind).toBe('blueprint');
     const blueprint = createResult.structuredContent.result.blueprint;
-    expect(blueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'quiz', 'lesson-plan']);
+    expect(blueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'simplified', 'quiz', 'lesson-plan']);
 
     const revised = await callTool('blueprint_revise', { blueprint, changes: { addTools: ['glossary'], setDirectives: { quiz: 'Use DOK 3' } } });
     const revisedResult = await callTool('job_get_result', { jobId: revised.structuredContent.job.jobId });
     const revisedBlueprint = revisedResult.structuredContent.result.blueprint;
     expect(revisedBlueprint.review.state).toBe('draft');
-    expect(revisedBlueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'quiz', 'glossary', 'lesson-plan']);
+    expect(revisedBlueprint.plan.map((step) => step.tool)).toEqual(['analysis', 'simplified', 'quiz', 'glossary', 'lesson-plan']);
     expect(revisedBlueprint.plan.find((step) => step.tool === 'quiz').directive).toBe('Use DOK 3');
 
     const previewed = await callTool('blueprint_preview', { blueprint: revisedBlueprint });

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
@@ -63,6 +63,9 @@ describe('MCP refinement study protocol', () => {
       ids.add(document.documentId);
       hashes.add(document.sha256);
       const sourcePath = resolve(root, document.path);
+      // The corpus PDFs are deliberately gitignored (local-only study
+      // documents); byte-pinning runs only where the local corpus exists.
+      if (!existsSync(sourcePath)) continue;
       expect(statSync(sourcePath).size).toBe(document.bytes);
       expect(sha256File(sourcePath)).toBe(document.sha256);
     }
