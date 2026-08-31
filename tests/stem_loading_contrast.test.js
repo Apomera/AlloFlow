@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 const MIRROR_ROOTS = [
   'stem_lab',
   'desktop/web-app/public/stem_lab',
+  // desktop/app-build/ is a gitignored local build output: absent in a fresh
+  // CI checkout, so only audit it where a desktop build actually exists.
   'desktop/app-build/stem_lab',
-];
+].filter((root) => !root.includes('app-build') || existsSync(root));
 
 const LOADING_STATES = [
   ['astronomy', 'stem.astronomy.initializing_night_sky_lab'],

@@ -2,11 +2,11 @@
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for appLab 1`] = `
 {
-  "buttons": 26,
-  "inputs": 5,
-  "lengthBucket": 68,
+  "buttons": 27,
+  "inputs": 6,
+  "lengthBucket": 79,
   "selects": 0,
-  "sha": "6e2097cae4265927",
+  "sha": "d506eef49009cc96",
   "svgs": 0,
 }
 `;
@@ -17,18 +17,18 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 30,
   "selects": 0,
-  "sha": "cb7f0729251badab",
+  "sha": "6d2aa43edf8cc526",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for beehive 1`] = `
 {
-  "buttons": 86,
-  "inputs": 7,
-  "lengthBucket": 633,
-  "selects": 0,
-  "sha": "416320b14a12c8d4",
+  "buttons": 111,
+  "inputs": 11,
+  "lengthBucket": 828,
+  "selects": 3,
+  "sha": "dbf09cd9421e3339",
   "svgs": 0,
 }
 `;
@@ -37,9 +37,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 127,
   "inputs": 1,
-  "lengthBucket": 732,
+  "lengthBucket": 726,
   "selects": 0,
-  "sha": "879acb777b9f2d9c",
+  "sha": "07d5f892f385a787",
   "svgs": 2,
 }
 `;
@@ -48,9 +48,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 17,
   "inputs": 1,
-  "lengthBucket": 83,
+  "lengthBucket": 80,
   "selects": 0,
-  "sha": "9a6a33e0624ba88f",
+  "sha": "c8bb0a804e5c4ec9",
   "svgs": 0,
 }
 `;
@@ -61,7 +61,7 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 89,
   "selects": 0,
-  "sha": "d1e6bb7a36d2e7a0",
+  "sha": "dd3bc57a7aba62a0",
   "svgs": 0,
 }
 `;
@@ -72,18 +72,18 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
   "inputs": 0,
   "lengthBucket": 165,
   "selects": 0,
-  "sha": "cb1ad1185e934e14",
+  "sha": "5b49d999ff6d19f3",
   "svgs": 0,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for plateTectonics 1`] = `
 {
-  "buttons": 27,
+  "buttons": 33,
   "inputs": 5,
-  "lengthBucket": 141,
+  "lengthBucket": 185,
   "selects": 0,
-  "sha": "f3c93325f1c36e28",
+  "sha": "24a6bc20913a68bd",
   "svgs": 0,
 }
 `;
@@ -92,31 +92,31 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 25,
   "inputs": 0,
-  "lengthBucket": 225,
+  "lengthBucket": 226,
   "selects": 0,
-  "sha": "ed17b4b56cf068aa",
+  "sha": "0f93ceb5af1c1403",
   "svgs": 2,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for raptorHunt 1`] = `
 {
-  "buttons": 48,
+  "buttons": 50,
   "inputs": 1,
-  "lengthBucket": 125,
+  "lengthBucket": 146,
   "selects": 0,
-  "sha": "330ffac59e220915",
+  "sha": "7afb452a85c6b86b",
   "svgs": 1,
 }
 `;
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for roadReady 1`] = `
 {
-  "buttons": 64,
-  "inputs": 3,
-  "lengthBucket": 203,
-  "selects": 0,
-  "sha": "af9f72500d801db6",
+  "buttons": 14,
+  "inputs": 5,
+  "lengthBucket": 99,
+  "selects": 2,
+  "sha": "658e98b0a147ed6d",
   "svgs": 0,
 }
 `;
@@ -125,9 +125,9 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 {
   "buttons": 34,
   "inputs": 1,
-  "lengthBucket": 181,
+  "lengthBucket": 194,
   "selects": 0,
-  "sha": "e7c342a293bc7532",
+  "sha": "05542df2e56025cf",
   "svgs": 0,
 }
 `;

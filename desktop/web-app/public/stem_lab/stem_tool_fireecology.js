@@ -6582,10 +6582,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ),
               h('div', { className: 'flex gap-2 items-center flex-wrap' },
                 h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ f: iq.fuel, i: iq.interval, d: iq.drought, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.fireecology.log_2', '📋 Log')),
-                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.fireecology.reset', '↺ Reset'))
+                h('button', { onClick: function() { setIQ({ fuel: 8, interval: 30, drought: 4, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, t('stem.fireecology.reset', '↺ Reset'))
               ),
               h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.fireecology.hypothesis_input', 'Fire regime hypothesis'), placeholder: t('stem.fireecology.hypothesis_how_does_drought_magnify_fu', 'Hypothesis: How does drought magnify fuel-load risk?'),
-                className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+                className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
               !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.fireecology.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
               iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed' },
                 h('ul', { className: 'list-disc pl-5 space-y-1' },

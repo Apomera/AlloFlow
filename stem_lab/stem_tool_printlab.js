@@ -1056,7 +1056,7 @@
         options = options || {};
         return h('label', { className: 'block text-[11px] font-bold text-slate-200' },
           h('span', { className: 'mb-1 block' }, label),
-          h('input', { type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-sm text-white' })
+          h('input', { type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white' })
         );
       }
 
@@ -1065,12 +1065,12 @@
         return h('fieldset', { key: 'part-' + index, className: 'rounded-xl border border-slate-700 bg-slate-950/70 p-3' },
           h('legend', { className: 'px-1 text-xs font-black text-cyan-200' }, 'Part ' + (index + 1)),
           h('div', { className: 'grid gap-2 md:grid-cols-4' },
-            h('label', { className: 'text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Shape'), h('select', { value: part.shape, onChange: function (event) { patchPart(index, { shape: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 px-2 text-white' }, SHAPES.map(function (shape) { return h('option', { key: shape, value: shape }, shape); }))),
+            h('label', { className: 'text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Shape'), h('select', { value: part.shape, onChange: function (event) { patchPart(index, { shape: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-2 text-white' }, SHAPES.map(function (shape) { return h('option', { key: shape, value: shape }, shape); }))),
             [0, 1, 2].map(function (axis) { return field('Size ' + ['X / radius', 'Y / height', 'Z / depth'][axis], part.size[axis], function (value) { var next = part.size.slice(); next[axis] = Number(value); patchPart(index, { size: next }); }, { type: 'number', min: 0.02, max: 4, step: 0.05 }); })
           ),
           h('div', { className: 'mt-2 grid gap-2 md:grid-cols-4' },
             [0, 1, 2].map(function (axis) { return field('Position ' + ['X', 'Y', 'Z'][axis], part.position[axis], function (value) { var next = part.position.slice(); next[axis] = Number(value); patchPart(index, { position: next }); }, { type: 'number', min: axis === 1 ? -4 : -4, max: axis === 1 ? 8 : 4, step: 0.05 }); }),
-            h('label', { className: 'text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Color'), h('input', { type: 'color', value: part.color, onChange: function (event) { patchPart(index, { color: event.target.value }); }, className: 'h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 p-1' }))
+            h('label', { className: 'text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Color'), h('input', { type: 'color', value: part.color, onChange: function (event) { patchPart(index, { color: event.target.value }); }, className: 'h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 p-1' }))
           ),
           h('div', { className: 'mt-2 flex flex-wrap gap-2' },
             h('button', { type: 'button', disabled: !P3D || recipe.parts.length >= P3D.MAX_PARTS, onClick: function () { updateRecipe(P3D.duplicatePart(recipe, index)); }, className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white disabled:opacity-50' }, 'Duplicate'),
@@ -1137,7 +1137,7 @@
               h('label', { className: 'mt-3 inline-flex min-h-[44px] cursor-pointer items-center rounded-xl bg-sky-700 px-4 text-xs font-black text-white focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-amber-200' }, 'Choose RECIPE / GLB / STL', h('input', { type: 'file', accept: '.json,.glb,.stl,application/json,model/gltf-binary,model/stl', className: 'sr-only', onChange: importFile })),
               sourceName && h('p', { className: 'mt-2 text-xs text-slate-300' }, 'Loaded locally: ', h('strong', { className: 'text-white' }, sourceName), '. The downloaded handoff substitutes a generic file name and a content hash.'),
               savedNames.length > 0 && h('div', { className: 'mt-3 flex flex-wrap items-end gap-2' },
-                h('label', { className: 'min-w-[220px] text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Saved Geometry Sandbox sculpture'), h('select', { value: selectedSaved, onChange: function (event) { setSelectedSaved(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 px-2 text-white' }, h('option', { value: '' }, 'Choose a saved sculpture'), savedNames.map(function (name) { return h('option', { key: name, value: name }, name); }))),
+                h('label', { className: 'min-w-[220px] text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Saved Geometry Sandbox sculpture'), h('select', { value: selectedSaved, onChange: function (event) { setSelectedSaved(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-2 text-white' }, h('option', { value: '' }, 'Choose a saved sculpture'), savedNames.map(function (name) { return h('option', { key: name, value: name }, name); }))),
                 h('button', { type: 'button', disabled: !selectedSaved, onClick: importSavedRecipe, className: 'min-h-[42px] rounded-xl border border-cyan-500 px-4 text-xs font-black text-cyan-100 disabled:opacity-50' }, 'Open in Print Lab')
               )
             )
@@ -1160,7 +1160,7 @@
                       type: 'button',
                       'aria-pressed': selected ? 'true' : 'false',
                       onClick: function () { applyUnitScale(preset.value, 'Changed Geometry World scale to ' + preset.value + ' millimeters per block. Run preflight again.'); },
-                      className: 'min-h-[48px] rounded-xl border px-2 text-center text-[10px] font-black ' + (selected ? 'border-cyan-300 bg-cyan-950 text-white' : 'border-slate-600 bg-slate-950 text-slate-200')
+                      className: 'min-h-[48px] rounded-xl border px-2 text-center text-[10px] font-black ' + (selected ? 'border-cyan-300 bg-cyan-950 text-white' : 'border-slate-500 bg-slate-950 text-slate-200')
                     }, h('span', { className: 'block' }, preset.label), h('span', { className: 'mt-1 block font-medium text-slate-400' }, preset.note + ' / block'));
                   })
                 )
@@ -1231,7 +1231,7 @@
                   type: 'button',
                   onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Reduced Geometry World scale to ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block to preserve a ' + geometryScaleRecommendation.clearanceMm + ' millimeter planning clearance. Run preflight again.'); },
                   'aria-label': 'Use suggested scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per Geometry World block',
-                  className: 'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-xs font-black text-white hover:bg-cyan-600'
+                  className: 'mt-3 min-h-[44px] w-full rounded-xl bg-cyan-700 px-4 text-xs font-black text-white hover:bg-cyan-700'
                 }, 'Use ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
               ),
               h('p', { className: 'mt-2 text-[11px] leading-5 text-amber-100' }, format === 'STL' ? 'STL does not store units. Confirm this value and orientation again in the school slicer.' : format === 'GLB' ? 'GLB scene units and node transforms vary by exporter. Minecraft and other sources still need a deliberate target size.' : 'Recipe units are design units, not automatic millimeters.'),
@@ -1283,7 +1283,7 @@
                 type: 'button',
                 onClick: function () { applyUnitScale(geometryScaleRecommendation.recommendedUnitMm, 'Applied the Geometry World safe-fit scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block. Run advisory preflight when ready.'); },
                 'aria-label': 'Apply suggested Geometry World scale of ' + geometryScaleRecommendation.recommendedUnitMm + ' millimeters per block',
-                className: 'mt-2 min-h-[42px] w-full rounded-lg bg-cyan-700 px-3 text-xs font-black text-white hover:bg-cyan-600'
+                className: 'mt-2 min-h-[42px] w-full rounded-lg bg-cyan-700 px-3 text-xs font-black text-white hover:bg-cyan-700'
               }, 'Apply ' + geometryScaleRecommendation.recommendedUnitMm + ' mm / block')
             ),
             h('button', { type: 'button', disabled: !runtimeReady || (format === 'RECIPE' ? !recipe : !fileBytes), onClick: runPreflight, className: 'mt-3 min-h-[44px] w-full rounded-xl bg-emerald-700 px-4 text-sm font-black text-white disabled:opacity-50' }, 'Run advisory preflight'),
@@ -1301,7 +1301,7 @@
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'preflight-report-title' },
             h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
               h('h2', { id: 'preflight-report-title', className: 'text-base font-black text-white' }, 'Preflight report'),
-              report && h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (report.status === 'FAIL' ? 'bg-rose-800 text-white' : report.status === 'WARN' ? 'bg-amber-400 text-slate-950' : 'bg-emerald-600 text-white') }, report.status)
+              report && h('span', { className: 'rounded-full px-3 py-1 text-xs font-black ' + (report.status === 'FAIL' ? 'bg-rose-800 text-white' : report.status === 'WARN' ? 'bg-amber-400 text-slate-950' : 'bg-emerald-700 text-white') }, report.status)
             ),
             !report && h('p', { className: 'mt-3 rounded-xl border border-dashed border-slate-600 p-4 text-sm text-slate-300' }, 'Run preflight after choosing the model and physical scale.'),
             report && h('div', { className: 'mt-3 space-y-3' },
@@ -1352,10 +1352,10 @@
             h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Describe the object, not the student. Do not enter a full name, email, student ID, or other personal information. The package is not a purchase and does not deduct points.'),
             h('div', { className: 'mt-3 space-y-3' },
               field('Model title', title, function (value) { setTitle(value); persist({ title: safeText(value, 100) }); }),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-600 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-600 bg-slate-950 p-3 text-sm text-white' })),
-              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-600 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
-              aiUse !== 'NONE' && h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { value: aiDisclosure, maxLength: 300, rows: 2, onChange: function (event) { setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-600 bg-slate-950 p-3 text-sm text-white' }))
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'What is it for?'), h('textarea', { value: description, maxLength: 500, rows: 3, onChange: function (event) { setDescription(event.target.value); persist({ description: safeText(event.target.value, 500) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Design note for the reviewer'), h('textarea', { value: studentNote, maxLength: 300, rows: 3, onChange: function (event) { setStudentNote(event.target.value); persist({ studentNote: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' })),
+              h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'AI participation'), h('select', { value: aiUse, onChange: function (event) { setAiUse(event.target.value); persist({ aiUse: event.target.value }); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-white' }, h('option', { value: 'NONE' }, 'No AI assistance'), h('option', { value: 'ASSISTED' }, 'AI assisted part of the design'), h('option', { value: 'MOSTLY_AI' }, 'AI created most of the starting geometry'))),
+              aiUse !== 'NONE' && h('label', { className: 'block text-[11px] font-bold text-slate-200' }, h('span', { className: 'mb-1 block' }, 'Explain the AI contribution'), h('textarea', { value: aiDisclosure, maxLength: 300, rows: 2, onChange: function (event) { setAiDisclosure(event.target.value); persist({ aiDisclosure: safeText(event.target.value, 300) }); }, className: 'w-full rounded-lg border border-slate-500 bg-slate-950 p-3 text-sm text-white' }))
             ),
             h('div', { className: 'mt-5 rounded-2xl border border-violet-700 bg-slate-950 p-4', 'aria-labelledby': 'job-ticket-title' },
               h('h3', { id: 'job-ticket-title', className: 'text-base font-black text-white' }, 'Job Ticket'),

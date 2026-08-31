@@ -3197,7 +3197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           h('select', {
                             value: compareIdx1,
                             onChange: function(e) { setCompareIdx1(parseInt(e.target.value, 10)); },
-                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
+                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-500') + ' border',
                             'aria-label': t('stem.oratory.select_first_recording_to_compare', 'Select first recording to compare')
                           },
                             savedRecordings.map(function(r, ri) {
@@ -3208,7 +3208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                           h('select', {
                             value: compareIdx2,
                             onChange: function(e) { setCompareIdx2(parseInt(e.target.value, 10)); },
-                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-300') + ' border',
+                            className: 'px-2 py-1 rounded text-xs ' + (isDark ? 'bg-slate-700 text-white border-slate-600' : 'bg-white text-slate-900 border-slate-500') + ' border',
                             'aria-label': t('stem.oratory.select_second_recording_to_compare', 'Select second recording to compare')
                           },
                             savedRecordings.map(function(r, ri) {
@@ -3725,7 +3725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   onChange: function(e) { setCustomLang(e.target.value); },
                   placeholder: t('stem.oratory.e_g_tagalog_amharic', 'e.g., Tagalog, Amharic...'),
                   className: 'flex-1 px-3 py-1.5 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
-                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'),
+                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900'),
                   'aria-label': t('stem.oratory.type_a_language_name', 'Type a language name')
                 }))),
 
@@ -3739,7 +3739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   onChange: function(e) { setMultiPhrase(e.target.value); },
                   placeholder: 'Type a phrase in ' + langName + ' or click Generate...',
                   className: 'flex-1 px-3 py-2 rounded-lg text-sm border focus:outline-none focus:ring-2 focus:ring-violet-400 ' +
-                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-300 text-slate-900'),
+                    (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'bg-white border-slate-500 text-slate-900'),
                   'aria-label': 'Phrase to practice in ' + langName
                 }),
                 h('button', {
@@ -4048,7 +4048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 fast: { label: t('stem.oratory.fast_urgent', '⚡ Fast / urgent'), color: '#92400e', bg: '#fffbeb', border: '#fcd34d', desc: t('stem.oratory.conveys_excitement_urgency_energy', 'Conveys excitement, urgency, energy.') },
                 sprint: { label: t('stem.oratory.sprint', '🚀 Sprint'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: t('stem.oratory.too_fast_comprehension_drops', 'Too fast — comprehension drops.') }
               }[tempo];
-              return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-300') + ' space-y-3' },
+              return h('div', { className: 'p-4 rounded-xl border ' + (isDark ? 'bg-slate-800 border-slate-700 text-slate-100' : 'bg-white border-slate-500') + ' space-y-3' },
                 h('h3', { className: 'text-sm font-black' }, t('stem.oratory.prosody_discovery', '⚙️ Prosody discovery')),
                 h('p', { className: 'text-[12px] leading-relaxed' }, t('stem.oratory.adjust_pitch_offset_pacing_volume_disc', 'Adjust pitch offset, pacing, volume. Discrete 4-tempo classification. No score, no reveal.')),
                 h('div', { className: 'p-3 rounded-lg text-center', style: { background: tm.bg, border: '2px solid ' + tm.border } },
@@ -4071,7 +4071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                   h('button', { onClick: function() { setIQ({ pitch: 100, pace: 1.0, volume: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border border-slate-300 ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, t('stem.oratory.reset_2', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.oratory.hypothesis_input', 'Oratory pace hypothesis'), placeholder: t('stem.oratory.hypothesis_how_does_pace_affect_audien', 'Hypothesis: How does pace affect audience comprehension?'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+                  className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.oratory.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },

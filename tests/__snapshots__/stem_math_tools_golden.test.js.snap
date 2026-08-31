@@ -5,9 +5,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 42,
   "circles": 0,
   "inputs": 3,
-  "lengthBucket": 103,
+  "lengthBucket": 104,
   "rects": 0,
-  "sha": "6f584a26103d8feb",
+  "sha": "652ede4ba93968ad",
   "svgs": 0,
 }
 `;
@@ -17,21 +17,21 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 52,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 100,
+  "lengthBucket": 101,
   "rects": 0,
-  "sha": "66cd142a2ef4d507",
+  "sha": "4069389ae281e927",
   "svgs": 0,
 }
 `;
 
 exports[`basic-math manipulatives render goldens (default state) > renders + pins a digest for coordinate 1`] = `
 {
-  "buttons": 14,
+  "buttons": 15,
   "circles": 0,
-  "inputs": 1,
-  "lengthBucket": 66,
+  "inputs": 3,
+  "lengthBucket": 74,
   "rects": 0,
-  "sha": "04e84c546b2aeb57",
+  "sha": "9814e7bf089d038e",
   "svgs": 1,
 }
 `;
@@ -41,9 +41,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 41,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 75,
+  "lengthBucket": 82,
   "rects": 0,
-  "sha": "6bfaeb70c2557f42",
+  "sha": "aa9677b47f619e37",
   "svgs": 1,
 }
 `;
@@ -53,9 +53,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 41,
   "circles": 1,
   "inputs": 2,
-  "lengthBucket": 75,
+  "lengthBucket": 82,
   "rects": 0,
-  "sha": "6bfaeb70c2557f42",
+  "sha": "aa9677b47f619e37",
   "svgs": 1,
 }
 `;
@@ -65,9 +65,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 29,
   "circles": 7,
   "inputs": 0,
-  "lengthBucket": 165,
+  "lengthBucket": 169,
   "rects": 9,
-  "sha": "09bf6f46e5463a8b",
+  "sha": "0f952b3f8fabe419",
   "svgs": 1,
 }
 `;
@@ -79,7 +79,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 4,
   "lengthBucket": 163,
   "rects": 0,
-  "sha": "5c789d54635bbf1b",
+  "sha": "ae583e80288c5e0a",
   "svgs": 0,
 }
 `;
@@ -115,7 +115,7 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "inputs": 6,
   "lengthBucket": 207,
   "rects": 0,
-  "sha": "209af69cdafa36fb",
+  "sha": "593119f064d2ab12",
   "svgs": 0,
 }
 `;

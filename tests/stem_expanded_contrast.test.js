@@ -480,10 +480,12 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_allobotsage.js', 'bg-red-600 text-white'],
       ['stem_tool_allobotsage.js', 'bg-amber-700 hover:bg-amber-800 text-white'],
       ['stem_tool_allobotsage.js', 'bg-slate-100 text-slate-600 cursor-not-allowed'],
-      ['stem_tool_behaviorlab.js', 'bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700'],
-      ['stem_tool_behaviorlab.js', 'bg-red-600 border-red-500 text-white scale-110'],
-      ['stem_tool_behaviorlab.js', 'bg-emerald-700 border-emerald-600 text-white'],
-      ['stem_tool_behaviorlab.js', 'bg-red-600 text-white hover:bg-red-700'],
+      // Behavior Lab was re-themed dark in the 2026-08-28 workspace sweep;
+      // these are its current conditional-state treatments.
+      ['stem_tool_behaviorlab.js', 'bg-amber-700 text-white'],
+      ['stem_tool_behaviorlab.js', 'bg-emerald-700 text-white'],
+      ['stem_tool_behaviorlab.js', 'bg-red-600 text-white font-bold text-sm hover:bg-red-700'],
+      ['stem_tool_behaviorlab.js', 'bg-emerald-900/30 text-emerald-200 border border-emerald-700/30'],
       ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
       ['stem_tool_unitconvert.js', 'bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800'],
       ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200'],
@@ -536,14 +538,17 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_volume.js', 'border-indigo-700 bg-indigo-600 text-white'],
       ['stem_tool_volume.js', 'border-sky-800 bg-sky-700 text-white'],
       ['stem_tool_volume.js', 'border-cyan-800 bg-cyan-700 text-white'],
-      ['stem_tool_universe.js', 'bg-emerald-100 text-emerald-700'],
+      // The emerald/teal chips moved to the dark-theme translucent treatment
+      // in the 2026-08-28 workspace sweep (emerald-100 text over /15 fills on
+      // the dark canvas); the light-theme pins below survived it.
+      ['stem_tool_universe.js', 'bg-emerald-300/15 px-1.5 py-0.5 text-[10px] font-black text-emerald-100'],
       ['stem_tool_universe.js', 'bg-violet-100 text-violet-700 hover:bg-violet-200'],
       ['stem_tool_universe.js', 'bg-slate-100 border-slate-400 text-slate-700'],
       ['stem_tool_universe.js', 'bg-green-100 text-green-700'],
       ['stem_tool_universe.js', 'bg-yellow-100 text-yellow-800'],
       ['stem_tool_universe.js', 'bg-red-100 text-red-700'],
       ['stem_tool_universe.js', 'bg-sky-100 text-sky-700'],
-      ['stem_tool_universe.js', 'bg-teal-100 text-teal-700']
+      ['stem_tool_universe.js', 'bg-emerald-400/10 text-emerald-100']
     ];
     const sources = new Map();
     for (const [fileName, treatment] of treatments) {
@@ -583,7 +588,9 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_dna.js', 'hover:bg-violet-700'],
       ['stem_tool_dna.js', 'bg-cyan-700 text-white cursor-wait'],
       ['stem_tool_dna.js', 'bg-purple-200 text-purple-800 cursor-wait'],
-      ['stem_tool_dna.js', 'bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100'],
+      // dna's control grew utility classes in the 2026-08 sweep; the contrast
+      // pair (blue-700 on blue-50, hover blue-100) is unchanged.
+      ['stem_tool_dna.js', 'bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-700 transition-all hover:bg-blue-100'],
       ['stem_tool_dna.js', 'bg-green-700 text-white border-green-800']
     ];
     const sources = new Map();
@@ -682,7 +689,9 @@ describe('STEM dynamic active-state contrast', () => {
       ['stem_tool_logiclab.js', 'bg-red-50 text-red-700 group-hover:bg-red-100'],
       ['stem_tool_logiclab.js', 'bg-violet-100 text-violet-700 hover:bg-violet-200'],
       ['stem_tool_logiclab.js', 'hover:bg-violet-300 text-violet-800'],
-      ['stem_tool_anatomy.js', 'text-amber-800 hover:bg-amber-200'],
+      // anatomy's hover fill lightened in the 2026-08 sweep (amber-950 on
+      // amber-100 ≈ 12:1 — stronger than the old pair).
+      ['stem_tool_anatomy.js', 'text-amber-950 hover:bg-amber-100'],
       ['stem_tool_anatomy.js', 'bg-pink-50 text-pink-700'],
       ['stem_tool_anatomy.js', 'hover:bg-violet-50 text-violet-700'],
       ['stem_tool_anatomy.js', 'bg-slate-100 text-slate-600'],

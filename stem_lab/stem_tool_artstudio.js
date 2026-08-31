@@ -3506,7 +3506,7 @@ const d = labToolData.artStudio || {};
             var surpriseTabs = ['watercolor', 'pixel', 'symmetry', 'spirograph', 'generative', 'sculpt3d'];
             return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fade-in duration-200", 'data-artstudio-home': 'true' },
               React.createElement("div", { className: "flex flex-wrap items-center gap-3 mb-4" },
-                React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
+                React.createElement("button", { type: "button", onClick: function () { closeArtStudio(null); }, className: "p-2 rounded-xl border border-slate-500 bg-white text-slate-700 hover:bg-slate-50", 'aria-label': __alloT('stem.artstudio.back_to_tools', 'Back to tools') }, React.createElement(ArrowLeft, { size: 18 })),
                 React.createElement("div", { className: "min-w-0 flex-1" },
                   React.createElement("p", { className: "text-[11px] font-black uppercase tracking-[0.18em] text-pink-700" }, 'Creative desk'),
                   React.createElement("p", { className: "truncate text-lg font-black text-slate-900" }, __alloT('stem.artstudio.art_design_studio', '\uD83C\uDFA8 Art & Design Studio'))
@@ -3630,9 +3630,9 @@ const d = labToolData.artStudio || {};
             ),
 
             React.createElement('nav', { className: 'mb-4 space-y-2', 'aria-label': __alloT('stem.artstudio.art_studio_sections', 'Art Studio sections'), 'data-artstudio-grouped-nav': 'true' },
-              React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-300 bg-white p-3 shadow-sm' },
+              React.createElement('div', { className: 'sm:hidden rounded-2xl border border-slate-500 bg-white p-3 shadow-sm' },
                 React.createElement('label', { htmlFor: 'artstudio-mobile-tool-picker', className: 'block text-[11px] font-black uppercase tracking-wider text-slate-600' }, 'Choose a studio tool'),
-                React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-400 bg-white px-3 text-sm font-bold text-slate-900' },
+                React.createElement('select', { id: 'artstudio-mobile-tool-picker', 'aria-controls': 'artstudio-panel-' + tab, value: tab, onChange: function (event) { var nextId = event.target.value; selectArtStudioTab(nextId, ART_STUDIO_TAB_LABELS[nextId] || nextId); }, className: 'mt-1 min-h-[44px] w-full rounded-xl border-2 border-slate-500 bg-white px-3 text-sm font-bold text-slate-900' },
                   ART_STUDIO_GROUPS.map(function (group) {
                     return React.createElement('optgroup', { key: group.id, label: group.label },
                       ART_STUDIO_TAB_ITEMS.filter(function (item) { return group.tabs.indexOf(item.id) !== -1; }).map(function (item) {
@@ -3824,19 +3824,19 @@ const d = labToolData.artStudio || {};
                     React.createElement('span', { className: 'rounded-full bg-rose-900 px-3 py-1 text-[11px] font-black text-white' }, ARTIST_EXPLORER_PROFILES.length + ' profiles')
                   )
                 ),
-                React.createElement('section', { className: 'rounded-xl border border-slate-300 bg-white p-3', 'aria-label': 'Filter artists and traditions' },
+                React.createElement('section', { className: 'rounded-xl border border-slate-500 bg-white p-3', 'aria-label': 'Filter artists and traditions' },
                   React.createElement('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' },
                     React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Search',
                       React.createElement('input', { type: 'search', value: filters.query, onChange: function (event) { upd('artistQuery', event.target.value.slice(0, 80)); }, placeholder: 'Artist, place, idea, medium…', className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 px-3 text-sm', 'aria-label': 'Search artist profiles' })
                     ),
                     React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Region',
-                      React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by region' }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                      React.createElement('select', { value: filters.region, onChange: function (event) { upd('artistRegion', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by region' }, regions.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
                     ),
                     React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Era',
-                      React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by era' }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                      React.createElement('select', { value: filters.era, onChange: function (event) { upd('artistEra', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by era' }, eras.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
                     ),
                     React.createElement('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Medium',
-                      React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-400 bg-white px-2 text-xs', 'aria-label': 'Filter artists by medium' }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
+                      React.createElement('select', { value: filters.medium, onChange: function (event) { upd('artistMedium', event.target.value); }, className: 'mt-1 min-h-[42px] w-full rounded-lg border border-slate-500 bg-white px-2 text-xs', 'aria-label': 'Filter artists by medium' }, media.map(function (value) { return React.createElement('option', { key: value, value: value }, value); }))
                     )
                   ),
                   React.createElement('div', { className: 'mt-2 flex flex-wrap items-center gap-2' },
@@ -3896,7 +3896,7 @@ const d = labToolData.artStudio || {};
                     return React.createElement('div', { key: profile.id, role: 'listitem' },
                       React.createElement('button', {
                         type: 'button', 'aria-pressed': active, onClick: function () { selectProfile(profile); },
-                        className: 'h-full w-full min-h-[150px] rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 focus:ring-rose-700 ' + (active ? 'border-rose-700 bg-rose-50 shadow-md' : 'border-slate-300 bg-white hover:border-rose-400 hover:shadow-sm')
+                        className: 'h-full w-full min-h-[150px] rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 focus:ring-rose-700 ' + (active ? 'border-rose-700 bg-rose-50 shadow-md' : 'border-slate-500 bg-white hover:border-rose-400 hover:shadow-sm')
                       },
                         palettePreview(profile, 42),
                         React.createElement('div', { className: 'mt-2 flex items-start justify-between gap-2' },
@@ -3912,7 +3912,7 @@ const d = labToolData.artStudio || {};
                         type: 'button',
                         'aria-pressed': comparison.profiles.some(function (item) { return item.id === profile.id; }),
                         onClick: function () { toggleComparison(profile); },
-                        className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[11px] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-400 bg-white text-slate-700')
+                        className: 'mt-2 min-h-[38px] w-full rounded-lg border px-3 text-[11px] font-black ' + (comparison.profiles.some(function (item) { return item.id === profile.id; }) ? 'border-indigo-700 bg-indigo-50 text-indigo-950' : 'border-slate-500 bg-white text-slate-700')
                       }, comparison.profiles.some(function (item) { return item.id === profile.id; }) ? '✓ In comparison' : '+ Add to compare')
                     );
                   })),
@@ -3953,7 +3953,7 @@ const d = labToolData.artStudio || {};
                       React.createElement('h5', { id: 'artist-sourcebook-title', className: 'mt-1 text-xs font-black text-emerald-950' }, 'Find reusable collection images'),
                       React.createElement('p', { className: 'mt-1 text-[10px] leading-relaxed text-emerald-950' }, 'Searches Sourcebook providers and fails closed: no result appears unless its item-level rights pass the selected allowlist.'),
                       React.createElement('label', { className: 'mt-2 block text-[10px] font-black text-emerald-950' }, 'Reuse rights',
-                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-500 bg-white px-2 text-[11px]', 'aria-label': 'Rights filter for artist collection search' },
+                        React.createElement('select', { value: artistRightsScope, onChange: function (event) { upd('artistRightsScope', event.target.value); setArtistWorksState({ profileId: '', status: 'idle', message: '', items: [] }); }, className: 'mt-1 min-h-[38px] w-full rounded-lg border border-emerald-600 bg-white px-2 text-[11px]', 'aria-label': 'Rights filter for artist collection search' },
                           React.createElement('option', { value: 'pd' }, 'Public domain only'),
                           React.createElement('option', { value: 'pd-cc0' }, 'Public domain + CC0'),
                           React.createElement('option', { value: 'all' }, 'Public domain + CC0 + CC BY')
@@ -4121,7 +4121,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("div", { className: "flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
                 React.createElement("label", { htmlFor: "artstudio-watercolor-color", className: "text-xs font-bold text-teal-800" }, __alloT('stem.artstudio.watercolor_color', "Pigment color")),
-                React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-300 bg-white" }),
+                React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   WATERCOLOR_PIGMENTS.map(function (swatch) {
                     return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': 'Choose ' + swatch.label + ' pigment preset, ' + swatch.description, 'aria-pressed': (d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + ((d.watercolorColor || '#2f6fb0').toLowerCase() === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
@@ -4187,13 +4187,13 @@ const d = labToolData.artStudio || {};
                   React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
                     React.createElement("label", { htmlFor: "artstudio-watercolor-mix-a", className: "text-[11px] font-bold text-amber-950" },
                       __alloT('stem.artstudio.mix_pigment_a', 'Pigment A'),
-                      React.createElement("select", { id: "artstudio-watercolor-mix-a", value: firstPigment.id, onChange: function (e) { upd('watercolorMixA', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-300 bg-white px-2 py-1.5 text-xs" },
+                      React.createElement("select", { id: "artstudio-watercolor-mix-a", value: firstPigment.id, onChange: function (e) { upd('watercolorMixA', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs" },
                         WATERCOLOR_PIGMENTS.map(function (pigment) { return React.createElement("option", { key: pigment.id, value: pigment.id }, pigment.label); })
                       )
                     ),
                     React.createElement("label", { htmlFor: "artstudio-watercolor-mix-b", className: "text-[11px] font-bold text-amber-950" },
                       __alloT('stem.artstudio.mix_pigment_b', 'Pigment B'),
-                      React.createElement("select", { id: "artstudio-watercolor-mix-b", value: secondPigment.id, onChange: function (e) { upd('watercolorMixB', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-300 bg-white px-2 py-1.5 text-xs" },
+                      React.createElement("select", { id: "artstudio-watercolor-mix-b", value: secondPigment.id, onChange: function (e) { upd('watercolorMixB', e.target.value); }, className: "block mt-1 w-full rounded-lg border border-amber-600 bg-white px-2 py-1.5 text-xs" },
                         WATERCOLOR_PIGMENTS.map(function (pigment) { return React.createElement("option", { key: pigment.id, value: pigment.id }, pigment.label); })
                       )
                     )
@@ -4285,14 +4285,14 @@ const d = labToolData.artStudio || {};
                 };
                 return React.createElement("div", { className: "space-y-2" },
                   React.createElement("div", { role: "group", 'aria-label': "Core watercolor controls", className: "grid grid-cols-2 lg:grid-cols-5 gap-2 bg-slate-50 rounded-xl p-3 border border-slate-200" }, basicControls.map(renderControl)),
-                  React.createElement("details", { id: "artstudio-watercolor-advanced-controls", open: !!d.watercolorAdvancedOpen, onToggle: function (event) { var nextOpen = !!event.currentTarget.open; if (nextOpen !== !!d.watercolorAdvancedOpen) upd('watercolorAdvancedOpen', nextOpen); }, className: "rounded-xl border border-slate-300 bg-white" },
+                  React.createElement("details", { id: "artstudio-watercolor-advanced-controls", open: !!d.watercolorAdvancedOpen, onToggle: function (event) { var nextOpen = !!event.currentTarget.open; if (nextOpen !== !!d.watercolorAdvancedOpen) upd('watercolorAdvancedOpen', nextOpen); }, className: "rounded-xl border border-slate-500 bg-white" },
                     React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-extrabold text-slate-700 hover:bg-slate-50 rounded-xl" }, __alloT('stem.artstudio.advanced_watercolor_controls', 'Advanced pigment, paper, flow, and climate controls')),
                     React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-4 gap-2 p-3 border-t border-slate-200" }, advancedControls.map(renderControl))
                   )
                 );
               })(),
 
-              React.createElement("details", { className: "rounded-xl border border-teal-300 bg-white" },
+              React.createElement("details", { className: "rounded-xl border border-teal-600 bg-white" },
                 React.createElement("summary", { className: "cursor-pointer select-none px-3 py-2 text-xs font-black text-teal-950" }, "Learn why watercolor behaves this way"),
                 React.createElement("div", { className: "space-y-2 border-t border-teal-200 p-3" },
               React.createElement("p", { role: "note", className: "text-[11px] text-violet-900 bg-violet-50 border border-violet-200 rounded-lg px-3 py-2" },
@@ -4364,7 +4364,7 @@ const d = labToolData.artStudio || {};
 
                    { id: 'neon', label: __alloT('stem.artstudio.neon', '\uD83D\uDCA5 Neon'), colors: [[330,100,55],[300,100,55],[280,100,60],[200,100,55],[170,100,50],[120,100,45],[60,100,50],[30,100,55],[0,100,50],[45,100,55]] }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -4472,7 +4472,7 @@ const d = labToolData.artStudio || {};
 
                   [{ id: 'retro', label: __alloT('stem.artstudio.retro_2', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_2', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_2', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_2', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_2', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-pink-50') }, pal.label);
+                    return React.createElement("button", { key: pal.id, "aria-pressed": (d.activePalette || 'retro') === pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-pink-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-pink-50') }, pal.label);
 
                   })
 
@@ -4561,7 +4561,7 @@ const d = labToolData.artStudio || {};
 
                   var colorText = 'HSL ' + group.h + ' degrees, ' + group.s + ' percent saturation, ' + group.l + ' percent lightness';
 
-                  return React.createElement("section", { key: group.prefix, role: "group", "aria-labelledby": headingId, className: "bg-white rounded-xl p-4 border border-slate-400" },
+                  return React.createElement("section", { key: group.prefix, role: "group", "aria-labelledby": headingId, className: "bg-white rounded-xl p-4 border border-slate-500" },
 
                     React.createElement("h4", { id: headingId, className: "text-xs font-bold text-slate-700 mb-3" }, group.title),
 
@@ -4975,7 +4975,7 @@ const d = labToolData.artStudio || {};
                 }
               };
               var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩' };
-              var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-300 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
+              var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
               var doAiSculpt = function() {
                 // busy flag lives on window, NOT in toolData — a persisted busy
                 // flag from an interrupted request would disable the button forever.
@@ -5138,7 +5138,7 @@ const d = labToolData.artStudio || {};
                       React.createElement("div", { className: "mt-2 space-y-2" },
                         React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                           React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Shape',
-                            React.createElement("select", { value: selectedPart.shape, className: "mt-1 w-full rounded border border-slate-300 bg-white p-1", onChange: function(event) { var nextShape = event.target.value; partOp(function(P, r) { var starter = P.newPart(nextShape, sel); return P.updatePart(r, sel, { shape: nextShape, size: starter.size }); }); } }, (P3D.SHAPES || []).map(function(shape) { return React.createElement("option", { key: shape, value: shape }, shape); }))
+                            React.createElement("select", { value: selectedPart.shape, className: "mt-1 w-full rounded border border-slate-500 bg-white p-1", onChange: function(event) { var nextShape = event.target.value; partOp(function(P, r) { var starter = P.newPart(nextShape, sel); return P.updatePart(r, sel, { shape: nextShape, size: starter.size }); }); } }, (P3D.SHAPES || []).map(function(shape) { return React.createElement("option", { key: shape, value: shape }, shape); }))
                           ),
                           React.createElement("label", { className: "text-[11px] font-bold text-slate-600" }, 'Color',
                             React.createElement("input", { type: "color", value: selectedPart.color, className: "mt-1 h-8 w-full", onChange: function(event) { partOp(function(P, r) { return P.updatePart(r, sel, { color: event.target.value }); }); } })
@@ -5292,7 +5292,7 @@ const d = labToolData.artStudio || {};
                   // Log + reset
                   React.createElement('div', { className: 'flex gap-2 items-center flex-wrap' },
                     React.createElement('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.artstudio.log', '📋 Log')),
-                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.artstudio.reset', '↺ Reset')),
+                    React.createElement('button', { onClick: function() { setIQ({ baseHue: 200, satBlend: 70, litVar: 50, rotation: 0, paletteSize: 6, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.artstudio.reset', '↺ Reset')),
                     (iq.log || []).length > 0 && React.createElement('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' logged')
                   ),
                   // Log table
@@ -5920,7 +5920,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { "aria-label": d.spinSplatter ? "Disable paint splatter" : "Enable paint splatter", "aria-pressed": !!d.spinSplatter, onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
 
-                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
+                React.createElement("button", { "aria-label": d.spinDark ? "Switch to light canvas background" : "Switch to dark canvas background", "aria-pressed": !!d.spinDark, onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-500') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
 
                 React.createElement("button", {
                   "aria-label": (d.spinPaused === undefined ? reducedMotion : !!d.spinPaused) ? "Resume spin art animation" : "Pause spin art animation",
@@ -5949,7 +5949,7 @@ const d = labToolData.artStudio || {};
 
                     [{ id: 'retro', label: __alloT('stem.artstudio.retro_3', '\uD83D\uDD79 Retro') }, { id: 'nature', label: __alloT('stem.artstudio.nature_3', '\uD83C\uDF3F Nature') }, { id: 'warm', label: __alloT('stem.artstudio.warm_3', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_3', '\u2744 Cool') }, { id: 'neon', label: __alloT('stem.artstudio.neon_3', '\uD83D\uDCA5 Neon') }].map(function (pal) {
 
-                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": (d.activePalette || 'retro') === pal.id, key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-orange-50') }, pal.label);
+                      return React.createElement("button", { "aria-label": "Use " + pal.label + " palette", "aria-pressed": (d.activePalette || 'retro') === pal.id, key: pal.id, onClick: function () { upd('activePalette', pal.id); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.activePalette || 'retro') === pal.id ? 'bg-orange-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-orange-50') }, pal.label);
 
                     })
 
@@ -6287,7 +6287,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'circle', label: __alloT('stem.artstudio.circle', '\u25CB Circle') }, { id: 'square', label: __alloT('stem.artstudio.square', '\u25A1 Square') }, { id: 'triangle', label: __alloT('stem.artstudio.triangle', '\u25B3 Triangle') }, { id: 'star', label: __alloT('stem.artstudio.star_2', '\u2606 Star') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.strShape || 'circle') === s.id, onClick: function () { upd('strShape', s.id); upd('strReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' string-art frame selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.strShape || 'circle') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -6545,7 +6545,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'concentric', label: __alloT('stem.artstudio.rings', '\u25CE Rings') }, { id: 'checkerboard', label: __alloT('stem.artstudio.checker', '\u2593 Checker') }, { id: 'moire', label: __alloT('stem.artstudio.moir', '\u2261 Moir\u00E9') }, { id: 'vibrating', label: __alloT('stem.artstudio.vibrate', '\u2248 Vibrate') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-fuchsia-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.opStyle || 'concentric') === s.id, onClick: function () { upd('opStyle', s.id); if (typeof announceToSR === 'function') announceToSR(s.label + ' Op Art style selected.'); }, className: "flex-1 min-w-[5rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-fuchsia-500 focus-visible:ring-offset-2 " + ((d.opStyle || 'concentric') === s.id ? 'bg-fuchsia-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-fuchsia-50') }, s.label);
 
                         })
 
@@ -6897,7 +6897,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'triangle', label: __alloT('stem.artstudio.triangle_2', '\u25B3 Triangle') }, { id: 'square', label: __alloT('stem.artstudio.square_2', '\u25A1 Square') }, { id: 'hexagon', label: __alloT('stem.artstudio.hexagon', '\u2B21 Hexagon') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessShape || 'hexagon') === s.id, key: s.id, onClick: function () { upd('tessShape', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessShape || 'hexagon') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -6931,7 +6931,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'rainbow', label: __alloT('stem.artstudio.rainbow_2', '\uD83C\uDF08 Rainbow') }, { id: 'warm', label: __alloT('stem.artstudio.warm_4', '\uD83D\uDD25 Warm') }, { id: 'cool', label: __alloT('stem.artstudio.cool_4', '\u2744 Cool') }, { id: 'mono', label: __alloT('stem.artstudio.mono', '\u25AB Mono') }, { id: 'custom', label: __alloT('stem.artstudio.custom', '\uD83C\uDFA8 Custom') }].map(function (s) {
 
-                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-teal-50') }, s.label);
+                          return React.createElement("button", { "aria-pressed": (d.tessScheme || 'rainbow') === s.id, key: s.id, onClick: function () { upd('tessScheme', s.id); upd('tessClickData', {}); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.tessScheme || 'rainbow') === s.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-teal-50') }, s.label);
 
                         })
 
@@ -7557,7 +7557,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'mandelbrot', label: __alloT('stem.artstudio.mandelbrot', '\uD83C\uDF00 Mandelbrot') }, { id: 'julia', label: __alloT('stem.artstudio.julia', '\u2728 Julia') }, { id: 'burningShip', label: __alloT('stem.artstudio.burning_ship', '\uD83D\uDD25 Burning Ship') }, { id: 'sierpinski', label: __alloT('stem.artstudio.sierpinski', '\u25B3 Sierpinski') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalType || 'mandelbrot') === s.id, onClick: function () { upd('fractalType', s.id); upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); if (typeof announceToSR === 'function') announceToSR(s.label + ' fractal selected; view reset.'); }, className: "flex-1 min-w-[6rem] px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalType || 'mandelbrot') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -7621,7 +7621,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'classic', label: __alloT('stem.artstudio.classic', '\uD83C\uDF08 Classic') }, { id: 'fire', label: __alloT('stem.artstudio.fire', '\uD83D\uDD25 Fire') }, { id: 'ocean', label: __alloT('stem.artstudio.ocean', '\uD83C\uDF0A Ocean') }, { id: 'psychedelic', label: __alloT('stem.artstudio.psychedelic', '\uD83D\uDC9C Psychedelic') }, { id: 'grayscale', label: __alloT('stem.artstudio.grayscale', '\u25AB Grayscale') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-violet-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.fractalColor || 'classic') === s.id, onClick: function () { upd('fractalColor', s.id); upd('fractalReset', Date.now()); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2 " + ((d.fractalColor || 'classic') === s.id ? 'bg-violet-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-violet-50') }, s.label);
 
                         })
 
@@ -8013,7 +8013,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'linear', label: __alloT('stem.artstudio.linear', '\u2194 Linear') }, { id: 'radial', label: __alloT('stem.artstudio.radial', '\u25CE Radial') }, { id: 'conic', label: __alloT('stem.artstudio.conic', '\uD83C\uDF00 Conic') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradType || 'linear') === s.id, onClick: function () { upd('gradType', s.id); }, className: "flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradType || 'linear') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -8037,7 +8037,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'smooth', label: __alloT('stem.artstudio.smooth', 'Smooth') }, { id: 'hard', label: __alloT('stem.artstudio.hard_edge', 'Hard Edge') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-400 hover:bg-rose-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.gradBlend || 'smooth') === s.id, onClick: function () { upd('gradBlend', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2 " + ((d.gradBlend || 'smooth') === s.id ? 'bg-rose-600 text-white' : 'bg-white text-slate-700 border border-slate-500 hover:bg-rose-50') }, s.label);
 
                         })
 
@@ -8530,7 +8530,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'near', label: __alloT('stem.artstudio.near', '\u2B1C Near') }, { id: 'mid', label: __alloT('stem.artstudio.mid', '\uD83D\uDD18 Mid') }, { id: 'far', label: __alloT('stem.artstudio.far', '\u2B1B Far') }, { id: 'erase', label: __alloT('stem.artstudio.erase', '\uD83E\uDDFD Erase') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoDepth || 'near') === s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoDepth || 'near') === s.id, onClick: function () { upd('stereoDepth', s.id); }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoDepth || 'near') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -8554,7 +8554,7 @@ const d = labToolData.artStudio || {};
 
                         [{ id: 'bw', label: __alloT('stem.artstudio.b_w', '\u26AB B&W') }, { id: 'color', label: __alloT('stem.artstudio.color', '\uD83C\uDFA8 Color') }, { id: 'noise', label: __alloT('stem.artstudio.noise', '\uD83D\uDCFA Noise') }, { id: 'ai', label: __alloT('stem.artstudio.ai', '\u2728 AI') }].map(function (s) {
 
-                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-cyan-50') }, s.label);
+                          return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function () { upd('stereoPattern', s.id); if(s.id === 'ai' && !d.stereoAiPatternImg) { if(typeof addToast === 'function') addToast('Please generate an AI Pattern first!', 'warning'); } }, className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-cyan-700 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-cyan-50') }, s.label);
 
                         })
 
@@ -9229,7 +9229,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoAnimSource || 'preset') === s.id, onClick: function() { upd('stereoAnimSource', s.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + ((d.stereoAnimSource || 'preset') === s.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
 
                         }, s.icon + ' ' + s.label);
 
@@ -9253,7 +9253,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: p.id, "aria-pressed": d.stereoAnimPreset === p.id, onClick: function() { upd('stereoAnimPreset', p.id); },
 
-                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50')
+                          className: "px-2 py-2 rounded-lg text-[11px] font-bold transition-all text-center " + (d.stereoAnimPreset === p.id ? 'bg-purple-600 text-white shadow-md' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50')
 
                         }, p.icon + ' ' + p.label);
 
@@ -9281,7 +9281,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s2.id, "aria-pressed": (d.stereoAnimDrawBrush || 'near') === s2.id, onClick: function() { upd('stereoAnimDrawBrush', s2.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, s2.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimDrawBrush || 'near') === s2.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s2.label);
 
                       })
 
@@ -9699,7 +9699,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { key: t.id, "aria-pressed": (d.stereoAnimTransform || 'zoom') === t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -9729,7 +9729,7 @@ const d = labToolData.artStudio || {};
 
                           return React.createElement("button", { key: t.id, "aria-pressed": (d.stereoAnimTransform || 'zoom') === t.id, onClick: function() { upd('stereoAnimTransform', t.id); },
 
-                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
+                            className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                         })
 
@@ -9870,7 +9870,7 @@ const d = labToolData.artStudio || {};
 
                             },
 
-                              className: "px-1 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, t.label);
+                              className: "px-1 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.stereoAnimTransform || 'zoom') === t.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, t.label);
 
                           })
 
@@ -9926,7 +9926,7 @@ const d = labToolData.artStudio || {};
 
                         return React.createElement("button", { key: s.id, "aria-pressed": (d.stereoPattern || 'bw') === s.id, onClick: function() { upd('stereoPattern', s.id); },
 
-                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-400 hover:bg-purple-50') }, s.label);
+                          className: "flex-1 px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + ((d.stereoPattern || 'bw') === s.id ? 'bg-purple-600 text-white' : 'bg-white text-slate-600 border border-slate-500 hover:bg-purple-50') }, s.label);
 
                       })
 

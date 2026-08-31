@@ -7333,7 +7333,7 @@ const d = labToolData.rocks || {};
                         "aria-current": current ? 'step' : undefined,
                         className: "rounded-xl border px-2.5 py-2.5 flex items-center gap-2 min-w-0 " + (complete ? "bg-emerald-50 border-emerald-300 text-emerald-900" : current ? "bg-amber-50 border-amber-400 text-amber-900 ring-2 ring-amber-100" : inProgress ? "bg-sky-50 border-sky-300 text-sky-900" : "bg-slate-50 border-slate-200 text-slate-600")
                       },
-                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 " + (complete ? "bg-emerald-600 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
+                        React.createElement("span", { className: "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 " + (complete ? "bg-emerald-700 text-white" : current ? "bg-amber-700 text-white" : inProgress ? "bg-sky-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, complete ? '✓' : step.icon),
                         React.createElement("span", { className: "text-[10.5px] sm:text-[12px] font-black leading-tight min-w-0" },
                           React.createElement("span", { className: "sm:hidden" }, step.short),
                           React.createElement("span", { className: "hidden sm:inline" }, step.title),

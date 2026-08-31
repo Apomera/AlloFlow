@@ -4802,7 +4802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('button', { onClick: function() { setIQ({ throat: 50, palate: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded text-[11px] font-semibold border ' + (isDark ? 'text-slate-300 border-slate-600' : 'text-slate-600 border-slate-300') }, t('stem.singing.reset', '↺ Reset'))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.singing.hypothesis_input', 'Resonance discovery hypothesis'), placeholder: t('stem.singing.hypothesis_what_anatomical_adjustments', 'Hypothesis: What anatomical adjustments produce rich tone?'),
-                  className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
+                  className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300' }, t('stem.singing.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] leading-relaxed' },
                   h('ul', { className: 'list-disc pl-5 space-y-1' },
@@ -4812,7 +4812,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                   h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   t('stem.singing.i_understand_explain_in_own_words', 'I understand — explain in own words')),
                 iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.singing.explanation_input', 'Resonance discovery explanation'), placeholder: t('stem.singing.explain_how_resonance_cavity_shape_con', 'Explain how resonance cavity shape controls vocal tone.'),
-                  className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2 bg-white text-slate-800', rows: 3 }),
+                  className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug mt-2 bg-white text-slate-800', rows: 3 }),
                 h('div', { className: 'text-[10px] italic ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, t('stem.singing.design_note_discrete_4_tone_marker_no_', 'Design note: discrete 4-tone marker; no acoustic score; no reveal — by design.'))
               );
             })()

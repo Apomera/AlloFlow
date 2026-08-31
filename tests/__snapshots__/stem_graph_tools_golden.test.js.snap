@@ -19,7 +19,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 9,
   "lengthBucket": 131,
   "paths": 0,
-  "sha": "106420b44dd5839a",
+  "sha": "2e57610449149ad2",
   "svgs": 2,
 }
 `;
@@ -29,9 +29,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 31,
   "circles": 0,
   "inputs": 9,
-  "lengthBucket": 58,
+  "lengthBucket": 59,
   "paths": 0,
-  "sha": "9b597522f61166cd",
+  "sha": "40290364d8ed6bd1",
   "svgs": 1,
 }
 `;
@@ -43,7 +43,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 21,
   "lengthBucket": 97,
   "paths": 0,
-  "sha": "d68e2275cf4e93fb",
+  "sha": "7384faa54a18888f",
   "svgs": 1,
 }
 `;
@@ -55,7 +55,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 8,
   "lengthBucket": 126,
   "paths": 0,
-  "sha": "b75b72defee8655b",
+  "sha": "86276975eb735dd9",
   "svgs": 1,
 }
 `;
@@ -77,9 +77,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 17,
   "circles": 0,
   "inputs": 0,
-  "lengthBucket": 39,
+  "lengthBucket": 42,
   "paths": 0,
-  "sha": "9333fc1bd1cafa7c",
+  "sha": "d015be39e256cc73",
   "svgs": 1,
 }
 `;
@@ -89,9 +89,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 26,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 73,
+  "lengthBucket": 74,
   "paths": 0,
-  "sha": "effebe28c060c3d9",
+  "sha": "29840a3b1901df61",
   "svgs": 0,
 }
 `;
@@ -115,7 +115,7 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "inputs": 1,
   "lengthBucket": 127,
   "paths": 1,
-  "sha": "fe0ca172f336d92a",
+  "sha": "ce75108324d7ffed",
   "svgs": 1,
 }
 `;
@@ -137,9 +137,9 @@ exports[`math/logic graph cluster render goldens (default state) > renders + pin
   "buttons": 22,
   "circles": 0,
   "inputs": 1,
-  "lengthBucket": 80,
+  "lengthBucket": 81,
   "paths": 0,
-  "sha": "2381e721af8057ee",
+  "sha": "63a69813ada02cc7",
   "svgs": 0,
 }
 `;

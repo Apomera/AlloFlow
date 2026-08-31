@@ -4973,7 +4973,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   return h('button', {
                     key: sid, type: 'button', 'aria-pressed': on ? 'true' : 'false',
                     onClick: function () { try { setExp({ phaseSub: sid, phasePick: null }); } catch (e) {} announce(SUBSTANCES[sid].name + ' phase diagram loaded.'); },
-                    className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-sky-600 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
+                    className: 'px-2.5 py-1 rounded-md text-[11px] font-bold border transition-colors ' + (on ? 'bg-sky-700 text-white border-sky-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50')
                   }, SUBSTANCES[sid].formula);
                 }))),
 

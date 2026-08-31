@@ -2884,7 +2884,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     'aria-label': __alloT('stem.music.time_signature', 'Time signature'),
                     value: timeSig,
                     onChange: function (e) { upd('timeSig', e.target.value); },
-                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold bg-white border border-teal-300"
+                    className: "px-1.5 py-0.5 rounded text-[11px] font-bold bg-white border border-teal-600"
                   }, Object.keys(TIME_SIGS).map(function (ts) { return React.createElement("option", { key: ts, value: ts }, ts); })),
                   React.createElement("span", { className: "text-[11px] text-slate-600 cursor-help", title: EFFECT_TIPS.timeSig.text }, "\u2753")
                 ),
@@ -2921,7 +2921,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     value: d.rhythmPatternId || RHYTHM_PATTERNS[0].id,
                     disabled: d.rhythmPhase === 'listen' || d.rhythmPhase === 'record',
                     onChange: function (e) { upd('rhythmPatternId', e.target.value); upd('rhythmResult', null); },
-                    className: "ml-auto px-1.5 py-0.5 rounded text-[11px] font-bold bg-white border border-rose-300"
+                    className: "ml-auto px-1.5 py-0.5 rounded text-[11px] font-bold bg-white border border-rose-500"
                   }, RHYTHM_PATTERNS.map(function (p) {
                     return React.createElement("option", { key: p.id, value: p.id },
                       __alloFmt('stem.music.rhythm_option', 'L{level} \u2014 {name}', { level: p.level, name: __alloT('stem.music.rhythm_' + p.id, p.name) }));

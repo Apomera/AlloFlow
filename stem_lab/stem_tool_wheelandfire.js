@@ -3205,7 +3205,7 @@
         return h('section', { className: 'rounded-xl border border-teal-300 bg-teal-50 p-3 space-y-2', 'aria-labelledby': 'wheel-fire-guidance-title' },
           h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
             h('h2', { id: 'wheel-fire-guidance-title', className: 'font-black text-teal-950' }, isNew ? 'Start here' : 'Next suggested step'),
-            h('span', { className: 'rounded-full border border-teal-300 bg-white px-2 py-1 text-[11px] font-bold text-teal-900' }, 'Phase ' + (stageIndex(vessel.stage) + 1) + ' of ' + STAGES.length)
+            h('span', { className: 'rounded-full border border-teal-600 bg-white px-2 py-1 text-[11px] font-bold text-teal-900' }, 'Phase ' + (stageIndex(vessel.stage) + 1) + ' of ' + STAGES.length)
           ),
           h('p', { className: 'text-xs text-teal-950' }, guideText),
           isNew ? h('ol', { className: 'list-decimal pl-5 text-xs text-teal-950 space-y-1' },
@@ -3628,13 +3628,13 @@
                 h('h3', { className: 'font-black text-amber-950 mb-2' }, 'Forming method'),
                 h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Forming method' },
                   [{ id: 'wheel', label: '🌀 Potter’s wheel' }, { id: 'coil', label: '〰 Handbuild coils' }].map(function (item) {
-                    return h('button', { type: 'button', key: item.id, 'aria-pressed': method === item.id, onClick: function () { patchData({ method: item.id, activeTool: item.id === 'coil' ? 'add-coil' : 'center', rpm: item.id === 'coil' ? 0 : finite(data.rpm, 58) }); }, className: 'rounded-lg border px-2 py-2 text-xs font-bold ' + (method === item.id ? 'bg-amber-700 text-white border-amber-800' : 'bg-white border-amber-300 text-amber-950') }, item.label);
+                    return h('button', { type: 'button', key: item.id, 'aria-pressed': method === item.id, onClick: function () { patchData({ method: item.id, activeTool: item.id === 'coil' ? 'add-coil' : 'center', rpm: item.id === 'coil' ? 0 : finite(data.rpm, 58) }); }, className: 'rounded-lg border px-2 py-2 text-xs font-bold ' + (method === item.id ? 'bg-amber-700 text-white border-amber-800' : 'bg-white border-amber-600 text-amber-950') }, item.label);
                   })
                 )
               ),
               h('div', { className: 'rounded-xl border border-slate-300 bg-white p-3 space-y-3' },
                 h('label', { htmlFor: 'wheel-fire-clay', className: 'block text-xs font-bold text-slate-700' }, 'Clay body',
-                  h('select', { id: 'wheel-fire-clay', value: vessel.clayBody, onChange: function (event) { resetClay(vessel.preset || 'lump', event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 px-2 py-2 bg-white' }, Object.keys(CLAY_BODIES).map(function (id) { return h('option', { key: id, value: id }, CLAY_BODIES[id].name); }))),
+                  h('select', { id: 'wheel-fire-clay', value: vessel.clayBody, onChange: function (event) { resetClay(vessel.preset || 'lump', event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-slate-500 px-2 py-2 bg-white' }, Object.keys(CLAY_BODIES).map(function (id) { return h('option', { key: id, value: id }, CLAY_BODIES[id].name); }))),
                 rangeControl('wheel-fire-pressure', 'Hand pressure', pressure, 5, 100, '%', function (value) { patchData({ pressure: value }); }),
                 rangeControl('wheel-fire-hand-support', selectedLowerZone ? 'Stabilizing support' : 'Inside-hand support', handSupport, 0, 100, '%', function (value) { patchData({ handSupport: value }); }, selectedGestureMode === 'single-global'),
                 rangeControl('wheel-fire-lubrication', 'Surface lubrication', lubrication, 0, 100, '%', function (value) { patchData({ lubrication: value }); }),
@@ -3667,7 +3667,7 @@
                 h('p', { className: 'text-[11px] text-teal-950 mb-2' }, toolStageNote),
                 h('p', { className: 'text-[11px] text-teal-950 mb-2' }, 'Active tool: ', h('strong', null, selectedTool.label), ' — ', selectedTool.help),
                 h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Clay shaping tools' }, tools.map(function (tool) {
-                  return h('button', { type: 'button', key: tool.id, 'data-tooltip': tool.help, disabled: !toolAllowed(tool), 'aria-label': tool.label + '. ' + tool.help, 'aria-pressed': activeTool === tool.id, onClick: function () { patchData({ activeTool: tool.id }); }, className: 'min-h-[42px] rounded-lg border px-2 py-2 text-xs font-bold disabled:opacity-40 ' + (activeTool === tool.id ? 'bg-teal-700 text-white border-teal-800' : 'bg-white text-teal-900 border-teal-300') }, tool.icon + ' ' + tool.label);
+                  return h('button', { type: 'button', key: tool.id, 'data-tooltip': tool.help, disabled: !toolAllowed(tool), 'aria-label': tool.label + '. ' + tool.help, 'aria-pressed': activeTool === tool.id, onClick: function () { patchData({ activeTool: tool.id }); }, className: 'min-h-[42px] rounded-lg border px-2 py-2 text-xs font-bold disabled:opacity-40 ' + (activeTool === tool.id ? 'bg-teal-700 text-white border-teal-800' : 'bg-white text-teal-900 border-teal-600') }, tool.icon + ' ' + tool.label);
                 })),
                 h('button', { type: 'button', disabled: !toolAllowed(selectedTool), onClick: function () { applyActive(selectedTargetRing); }, className: 'mt-2 w-full rounded-lg bg-teal-800 text-white px-3 py-2 font-black text-sm disabled:opacity-40' }, applyButtonLabel)
               ),
@@ -4133,11 +4133,11 @@
         }
         function trialSeriesControl() {
           function trialOptionLabel(row, index) { return 'Trial ' + (index + 1) + ' - ' + (row.method === 'coil' ? 'coil' : 'wheel') + ' - ' + (row.method === 'coil' ? 'hand-built' : Math.round(finite(row.rpm, 0)) + ' RPM') + ' - ' + (row.tool || 'tool not recorded') + ' - ring ' + (row.workRing === undefined ? 'not recorded' : (Number(row.workRing) + 1)); }
-          return h('div', { className: 'rounded-xl border border-teal-300 bg-white p-3 space-y-2' },
+          return h('div', { className: 'rounded-xl border border-teal-600 bg-white p-3 space-y-2' },
             h('div', { className: 'grid md:grid-cols-3 gap-2' },
-              h('label', { htmlFor: 'wheel-fire-trial-series', className: 'block text-xs font-bold text-slate-700' }, 'Experiment series', h('select', { id: 'wheel-fire-trial-series', value: activeSeriesId, onChange: function (event) { selectTrialSeries(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2' }, seriesCatalog.map(function (series) { return h('option', { key: series.id, value: series.id }, series.name); }))),
+              h('label', { htmlFor: 'wheel-fire-trial-series', className: 'block text-xs font-bold text-slate-700' }, 'Experiment series', h('select', { id: 'wheel-fire-trial-series', value: activeSeriesId, onChange: function (event) { selectTrialSeries(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-600 bg-white p-2' }, seriesCatalog.map(function (series) { return h('option', { key: series.id, value: series.id }, series.name); }))),
               h('label', { htmlFor: 'wheel-fire-trial-series-name', className: 'block text-xs font-bold text-slate-700' }, 'Series name (optional)', h('input', { id: 'wheel-fire-trial-series-name', maxLength: 60, value: data.trialSeriesName || '', onChange: function (event) { patchData({ trialSeriesName: event.target.value }); }, placeholder: 'e.g. speed and rim stability', className: 'block w-full mt-1 rounded-lg border border-teal-300 p-2 font-normal' })),
-              logs.length ? h('label', { htmlFor: 'wheel-fire-trial-baseline', className: 'block text-xs font-bold text-slate-700' }, 'Reference trial', h('select', { id: 'wheel-fire-trial-baseline', value: activeBaselineId, onChange: function (event) { selectTrialBaseline(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2' }, logs.map(function (row, index) { return h('option', { key: trialKey(row, index), value: trialKey(row, index) }, trialOptionLabel(row, index)); }))) : null
+              logs.length ? h('label', { htmlFor: 'wheel-fire-trial-baseline', className: 'block text-xs font-bold text-slate-700' }, 'Reference trial', h('select', { id: 'wheel-fire-trial-baseline', value: activeBaselineId, onChange: function (event) { selectTrialBaseline(event.target.value); }, className: 'block w-full mt-1 rounded-lg border border-teal-600 bg-white p-2' }, logs.map(function (row, index) { return h('option', { key: trialKey(row, index), value: trialKey(row, index) }, trialOptionLabel(row, index)); }))) : null
             ),
             h('div', { className: 'flex flex-wrap items-center gap-2' },
               h('button', { type: 'button', onClick: startTrialSeries, className: 'rounded-lg border border-teal-400 bg-white px-3 py-2 text-xs font-bold text-teal-900' }, 'Start a new series'),
@@ -4193,7 +4193,7 @@
               h('p', { className: 'text-[11px] font-bold text-amber-900 mt-1' }, 'Baseline: ' + namedBody.name + (activeRecipe ? ' · applied recipe: ' + (activeRecipe.label || 'unnamed study') : ' · named body active'))
             ),
             h('div', { className: 'grid md:grid-cols-2 gap-3' },
-              h('label', { htmlFor: 'wheel-fire-recipe-label', className: 'block text-xs font-bold text-slate-700' }, 'Study label', h('input', { id: 'wheel-fire-recipe-label', maxLength: 48, value: recipeDraft.label, onChange: function (event) { updateRecipe('label', event.target.value); }, placeholder: 'e.g. coarse temper trial', className: 'block w-full mt-1 rounded-lg border border-amber-300 p-2 bg-white font-normal' })),
+              h('label', { htmlFor: 'wheel-fire-recipe-label', className: 'block text-xs font-bold text-slate-700' }, 'Study label', h('input', { id: 'wheel-fire-recipe-label', maxLength: 48, value: recipeDraft.label, onChange: function (event) { updateRecipe('label', event.target.value); }, placeholder: 'e.g. coarse temper trial', className: 'block w-full mt-1 rounded-lg border border-amber-600 p-2 bg-white font-normal' })),
               rangeControl('wheel-fire-temper', 'Temper proxy', recipeDraft.temperPercent, 0, 35, '%', function (value) { updateRecipe('temperPercent', value); }),
               rangeControl('wheel-fire-plasticity-shift', 'Plasticity adjustment', recipeDraft.plasticityShift, -18, 18, ' pts', function (value) { updateRecipe('plasticityShift', value); }),
               rangeControl('wheel-fire-shrinkage-shift', 'Shrinkage adjustment', recipeDraft.shrinkageShift, -3, 3, ' pts', function (value) { updateRecipe('shrinkageShift', value); }),
@@ -4238,7 +4238,7 @@
                   );
                 }))
               )
-            ) : h('p', { className: 'rounded-lg border border-dashed border-indigo-300 bg-white p-4 text-center text-xs text-indigo-900' }, 'Save a recipe hypothesis to begin an A/B comparison shelf.')
+            ) : h('p', { className: 'rounded-lg border border-dashed border-indigo-500 bg-white p-4 text-center text-xs text-indigo-900' }, 'Save a recipe hypothesis to begin an A/B comparison shelf.')
           ),
           h('div', { className: 'grid md:grid-cols-2 gap-3' },
             h('div', { className: 'rounded-xl border border-slate-300 bg-white p-3 space-y-3' },
@@ -4273,7 +4273,7 @@
             )
           ) : null,
           h('div', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-3 grid md:grid-cols-3 gap-3' },
-            [['claim', 'Claim'], ['evidence', 'Evidence from trials'], ['reasoning', 'Scientific reasoning']].map(function (item) { return h('label', { key: item[0], className: 'text-xs font-bold text-indigo-950' }, item[1], h('textarea', { rows: 4, value: data[item[0]] || '', onChange: function (event) { var patch = {}; patch[item[0]] = event.target.value; patchData(patch); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 font-normal bg-white' })); })
+            [['claim', 'Claim'], ['evidence', 'Evidence from trials'], ['reasoning', 'Scientific reasoning']].map(function (item) { return h('label', { key: item[0], className: 'text-xs font-bold text-indigo-950' }, item[1], h('textarea', { rows: 4, value: data[item[0]] || '', onChange: function (event) { var patch = {}; patch[item[0]] = event.target.value; patchData(patch); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 font-normal bg-white' })); })
           )
         );
       }
@@ -4321,10 +4321,10 @@
               h('div', { className: 'flex items-start justify-between gap-2' }, h('h3', { className: 'font-black text-slate-900' }, study.name), visited[study.id] ? h('span', { className: 'text-[10px] rounded-full bg-emerald-100 text-emerald-900 px-2 py-1 font-bold' }, 'Studied') : null),
               h('p', { className: 'text-[11px] font-bold text-fuchsia-800 mt-1' }, study.place + ' · ' + study.period),
               h('p', { className: 'text-xs text-slate-700 mt-2' }, study.forming),
-              h('button', { type: 'button', onClick: function () { selectStudy(study); }, className: 'mt-3 rounded-lg border border-fuchsia-300 bg-white text-fuchsia-900 px-3 py-2 text-xs font-bold' }, 'Study this process')
+              h('button', { type: 'button', onClick: function () { selectStudy(study); }, className: 'mt-3 rounded-lg border border-fuchsia-500 bg-white text-fuchsia-900 px-3 py-2 text-xs font-bold' }, 'Study this process')
             );
           })),
-          h('article', { className: 'rounded-2xl border border-fuchsia-300 bg-white p-4' },
+          h('article', { className: 'rounded-2xl border border-fuchsia-500 bg-white p-4' },
             h('h2', { className: 'text-lg font-black text-slate-900' }, selected.name),
             h('p', { className: 'text-xs font-bold text-fuchsia-800' }, selected.place + ' · ' + selected.period),
             h('dl', { className: 'grid md:grid-cols-3 gap-3 mt-3 text-sm' },
@@ -4340,7 +4340,7 @@
           ),
           h('div', { className: 'rounded-xl border border-indigo-300 bg-indigo-50 p-3' },
             h('div', { className: 'flex flex-wrap gap-2 items-end mb-2' },
-              h('label', { className: 'text-xs font-bold text-indigo-950' }, 'Compare with', h('select', { value: compare.id, onChange: function (event) { patchData({ compareTradition: event.target.value }); }, className: 'block mt-1 rounded-lg border border-indigo-300 bg-white p-2' }, comparisonChoices.map(function (study) { return h('option', { key: study.id, value: study.id }, study.name); })))
+              h('label', { className: 'text-xs font-bold text-indigo-950' }, 'Compare with', h('select', { value: compare.id, onChange: function (event) { patchData({ compareTradition: event.target.value }); }, className: 'block mt-1 rounded-lg border border-indigo-500 bg-white p-2' }, comparisonChoices.map(function (study) { return h('option', { key: study.id, value: study.id }, study.name); })))
             ),
             h('div', { className: 'overflow-x-auto' }, h('table', { className: 'w-full text-xs border-collapse' },
               h('caption', { className: 'text-left font-black text-indigo-950 mb-2' }, 'Process comparison'),
@@ -4354,9 +4354,9 @@
               h('p', { className: 'text-xs text-teal-950 mt-1' }, 'Use the sources and process table to compare technological choices. Similar-looking vessels can come from different materials, purposes, histories, and knowledge systems; visual resemblance alone is not evidence of a shared tradition.')
             ),
             h('div', { className: 'grid md:grid-cols-3 gap-3' },
-              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Process similarity', h('textarea', { rows: 4, maxLength: 500, value: data.cultureSimilarity || '', onChange: function (event) { patchData({ cultureSimilarity: event.target.value }); }, placeholder: 'Both processes respond to…', className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2 font-normal' })),
-              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Contextual difference', h('textarea', { rows: 4, maxLength: 500, value: data.cultureDifference || '', onChange: function (event) { patchData({ cultureDifference: event.target.value }); }, placeholder: 'A material, purpose, or historical difference is…', className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2 font-normal' })),
-              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Evidence and uncertainty', h('textarea', { rows: 4, maxLength: 500, value: data.cultureEvidence || '', onChange: function (event) { patchData({ cultureEvidence: event.target.value }); }, placeholder: 'The named sources support… They do not establish…', className: 'block w-full mt-1 rounded-lg border border-teal-300 bg-white p-2 font-normal' }))
+              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Process similarity', h('textarea', { rows: 4, maxLength: 500, value: data.cultureSimilarity || '', onChange: function (event) { patchData({ cultureSimilarity: event.target.value }); }, placeholder: 'Both processes respond to…', className: 'block w-full mt-1 rounded-lg border border-teal-600 bg-white p-2 font-normal' })),
+              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Contextual difference', h('textarea', { rows: 4, maxLength: 500, value: data.cultureDifference || '', onChange: function (event) { patchData({ cultureDifference: event.target.value }); }, placeholder: 'A material, purpose, or historical difference is…', className: 'block w-full mt-1 rounded-lg border border-teal-600 bg-white p-2 font-normal' })),
+              h('label', { className: 'text-xs font-bold text-teal-950' }, 'Evidence and uncertainty', h('textarea', { rows: 4, maxLength: 500, value: data.cultureEvidence || '', onChange: function (event) { patchData({ cultureEvidence: event.target.value }); }, placeholder: 'The named sources support… They do not establish…', className: 'block w-full mt-1 rounded-lg border border-teal-600 bg-white p-2 font-normal' }))
             ),
             h('button', { type: 'button', onClick: saveCulturalComparison, className: 'rounded-lg bg-teal-800 text-white px-3 py-2 text-xs font-black' }, 'Save contextual comparison'),
             culturalComparisons.length ? h('div', { className: 'space-y-2' },
@@ -4804,7 +4804,7 @@
               h('button', { type: 'button', 'data-wheel-fire-jump-peak': 'true', onClick: function () { patchData({ kilnPreviewPhase: currentSchedule.thermalStress.peakSample.progressPct }); announce('Preview moved to cycle peak modeled transient stress: ' + Math.round(currentSchedule.thermalStress.peakStressPct) + '% during ' + currentSchedule.thermalStress.peakSample.phaseLabel.toLowerCase() + ' near ' + Math.round(currentSchedule.thermalStress.peakSample.temperatureC) + '°C.'); }, className: 'rounded-lg border border-orange-400 bg-white px-3 py-2 text-xs font-black text-orange-950' }, 'Jump to peak stress (' + Math.round(currentSchedule.thermalStress.peakStressPct) + '%)')
             ),
             h('div', { className: 'flex flex-wrap items-end gap-3' },
-              h('label', { htmlFor: 'wheel-fire-kiln-probe-zone', className: 'flex-1 min-w-[180px] text-xs font-bold text-orange-50' }, 'Inspect heatwork zone', h('select', { id: 'wheel-fire-kiln-probe-zone', value: kilnProbeZone, onChange: function (event) { patchData({ kilnProbeZone: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-orange-200 bg-white p-2 text-slate-900' }, probeZoneIds.map(function (id, index) { return h('option', { key: id, value: id }, probeZoneNames[index]); }))),
+              h('label', { htmlFor: 'wheel-fire-kiln-probe-zone', className: 'flex-1 min-w-[180px] text-xs font-bold text-orange-50' }, 'Inspect heatwork zone', h('select', { id: 'wheel-fire-kiln-probe-zone', value: kilnProbeZone, onChange: function (event) { patchData({ kilnProbeZone: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-orange-600 bg-white p-2 text-slate-900' }, probeZoneIds.map(function (id, index) { return h('option', { key: id, value: id }, probeZoneNames[index]); }))),
               h('label', { className: 'flex items-center gap-2 pb-2 text-xs font-bold text-orange-50' }, h('input', { type: 'checkbox', checked: showZones, onChange: function (event) { patchData({ showKilnHeatZones: event.target.checked }); } }), 'Show modeled heat zones')
             ),
             h('p', { className: 'text-[11px] text-orange-100' }, 'Stress halo arrows point outward for modeled surface tension during cooling and inward for modeled core tension during heating. This is a comparative teaching estimate, not a crack prediction. Load and air-access controls are not kiln capacity, stacking, clearance, or safe-loading guidance.' + (kilnType !== 'open' ? ' Kiln wall bands are schematic and do not indicate safe-touch temperatures, construction condition, or a kiln specification. Chamber-depth cues likewise do not show measured loading or clearance geometry.' : '')),
@@ -4926,10 +4926,10 @@
                 h('p', { className: 'text-xs text-fuchsia-950 mt-1' }, 'Enter a desired final dimension. The inverse budget estimates the current-stage target using the modeled retention ratio for this piece and schedule; it does not replace test throwing or later trimming.')
               ),
               h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetHeight'), onChange: function (event) { patchData({ dimensionTargetHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.heightCm.toFixed(1) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetDiameter'), onChange: function (event) { patchData({ dimensionTargetDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.diameterCm.toFixed(1) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionTargetCapacity'), onChange: function (event) { patchData({ dimensionTargetCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: Math.round(targetPlan.final.capacityMl) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final min wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionTargetMinWall'), onChange: function (event) { patchData({ dimensionTargetMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-300 p-2 bg-white', placeholder: targetPlan.final.minWallCm.toFixed(2) }))
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetHeight'), onChange: function (event) { patchData({ dimensionTargetHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-500 p-2 bg-white', placeholder: targetPlan.final.heightCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionTargetDiameter'), onChange: function (event) { patchData({ dimensionTargetDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-500 p-2 bg-white', placeholder: targetPlan.final.diameterCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionTargetCapacity'), onChange: function (event) { patchData({ dimensionTargetCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-500 p-2 bg-white', placeholder: Math.round(targetPlan.final.capacityMl) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Desired final min wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionTargetMinWall'), onChange: function (event) { patchData({ dimensionTargetMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-fuchsia-500 p-2 bg-white', placeholder: targetPlan.final.minWallCm.toFixed(2) }))
               ),
               targetPlan.results.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-fuchsia-200 bg-white' },
                 h('table', { className: 'w-full text-xs border-collapse' },
@@ -4939,24 +4939,24 @@
                 )
               ) : null,
               h('p', { className: 'text-[11px] text-fuchsia-950' }, targetPlan.summary),
-              h('button', { type: 'button', onClick: clearDimensionTargets, className: 'rounded-lg border border-fuchsia-300 bg-white px-3 py-2 text-xs font-black text-fuchsia-900' }, 'Clear target fields')
+              h('button', { type: 'button', onClick: clearDimensionTargets, className: 'rounded-lg border border-fuchsia-500 bg-white px-3 py-2 text-xs font-black text-fuchsia-900' }, 'Clear target fields')
             ),
-            h('div', { className: 'rounded-lg border border-indigo-300 bg-white p-3 space-y-3' },
+            h('div', { className: 'rounded-lg border border-indigo-500 bg-white p-3 space-y-3' },
               h('div', null,
                 h('h4', { className: 'font-black text-indigo-950' }, 'Calibrate with a real measurement'),
                 h('p', { className: 'text-xs text-indigo-950 mt-1' }, 'Choose the checkpoint you actually measured. Log caliper readings, a scale-based capacity estimate, or one dimension at a time; blank fields stay blank rather than becoming zero. The modeled values and controls are frozen in the record for a stable comparison.')
               ),
               h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-5 gap-2' },
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Checkpoint', h('select', { id: 'wheel-fire-dimension-checkpoint', value: String(checkpointIndex), onChange: function (event) { patchData({ dimensionMeasureCheckpoint: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, history.snapshots.map(function (snapshot, index) { return h('option', { key: snapshot.label, value: String(index) }, snapshot.label + ' · ' + stageLabel(snapshot.stage)); }))),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement method', h('select', { value: measurementMethod, onChange: function (event) { patchData({ dimensionMeasureMethod: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white' }, MEASUREMENT_METHODS.map(function (methodOption) { return h('option', { key: methodOption.id, value: methodOption.id }, methodOption.label); }))),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureHeight'), onChange: function (event) { patchData({ dimensionMeasureHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.heightCm.toFixed(1) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureDiameter'), onChange: function (event) { patchData({ dimensionMeasureDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.diameterCm.toFixed(1) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionMeasureCapacity'), onChange: function (event) { patchData({ dimensionMeasureCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: Math.round(checkpoint.capacityMl) }))
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Checkpoint', h('select', { id: 'wheel-fire-dimension-checkpoint', value: String(checkpointIndex), onChange: function (event) { patchData({ dimensionMeasureCheckpoint: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white' }, history.snapshots.map(function (snapshot, index) { return h('option', { key: snapshot.label, value: String(index) }, snapshot.label + ' · ' + stageLabel(snapshot.stage)); }))),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement method', h('select', { value: measurementMethod, onChange: function (event) { patchData({ dimensionMeasureMethod: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white' }, MEASUREMENT_METHODS.map(function (methodOption) { return h('option', { key: methodOption.id, value: methodOption.id }, methodOption.label); }))),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured height (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureHeight'), onChange: function (event) { patchData({ dimensionMeasureHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: checkpoint.heightCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured diameter (cm)', h('input', { type: 'number', min: '0.01', step: '0.1', value: inputValue('dimensionMeasureDiameter'), onChange: function (event) { patchData({ dimensionMeasureDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: checkpoint.diameterCm.toFixed(1) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured capacity (mL)', h('input', { type: 'number', min: '0.01', step: '1', value: inputValue('dimensionMeasureCapacity'), onChange: function (event) { patchData({ dimensionMeasureCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: Math.round(checkpoint.capacityMl) }))
               ),
               h('p', { className: 'text-[11px] text-indigo-950' }, 'Use the same method when repeating a checkpoint. If you combine methods, choose “Mixed methods” and describe the protocol in the note.'),
               h('div', { className: 'grid sm:grid-cols-2 gap-2' },
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured minimum wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionMeasureMinWall'), onChange: function (event) { patchData({ dimensionMeasureMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: checkpoint.minWallCm.toFixed(2) })),
-                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement note (optional)', h('input', { value: inputValue('dimensionMeasureNote'), maxLength: 240, onChange: function (event) { patchData({ dimensionMeasureNote: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. calipers after glaze firing' }))
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measured minimum wall (cm)', h('input', { type: 'number', min: '0.01', step: '0.01', value: inputValue('dimensionMeasureMinWall'), onChange: function (event) { patchData({ dimensionMeasureMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: checkpoint.minWallCm.toFixed(2) })),
+                h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Measurement note (optional)', h('input', { value: inputValue('dimensionMeasureNote'), maxLength: 240, onChange: function (event) { patchData({ dimensionMeasureNote: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: 'e.g. calipers after glaze firing' }))
               ),
               h('div', { className: 'rounded-lg border border-indigo-200 bg-indigo-50 p-2 space-y-2' },
                 h('div', null,
@@ -4964,10 +4964,10 @@
                   h('p', { className: 'text-[11px] text-indigo-950 mt-1' }, 'Enter a non-negative +/- range for each reading based on instrument resolution, technique, or repeatability. Leave blank when unknown.')
                 ),
                 h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-2' },
-                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Height +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyHeight'), onChange: function (event) { patchData({ dimensionUncertaintyHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.1' })),
-                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Diameter +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyDiameter'), onChange: function (event) { patchData({ dimensionUncertaintyDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.1' })),
-                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Capacity +/- (mL)', h('input', { type: 'number', min: '0', step: '1', value: inputValue('dimensionUncertaintyCapacity'), onChange: function (event) { patchData({ dimensionUncertaintyCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 5' })),
-                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Min wall +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyMinWall'), onChange: function (event) { patchData({ dimensionUncertaintyMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-300 p-2 bg-white', placeholder: 'e.g. 0.02' }))
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Height +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyHeight'), onChange: function (event) { patchData({ dimensionUncertaintyHeight: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: 'e.g. 0.1' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Diameter +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyDiameter'), onChange: function (event) { patchData({ dimensionUncertaintyDiameter: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: 'e.g. 0.1' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Capacity +/- (mL)', h('input', { type: 'number', min: '0', step: '1', value: inputValue('dimensionUncertaintyCapacity'), onChange: function (event) { patchData({ dimensionUncertaintyCapacity: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: 'e.g. 5' })),
+                  h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Min wall +/- (cm)', h('input', { type: 'number', min: '0', step: '0.01', value: inputValue('dimensionUncertaintyMinWall'), onChange: function (event) { patchData({ dimensionUncertaintyMinWall: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-indigo-500 p-2 bg-white', placeholder: 'e.g. 0.02' }))
                 )
               ),
               h('button', { type: 'button', onClick: saveDimensionMeasurement, className: 'rounded-lg bg-indigo-800 text-white px-3 py-2 text-xs font-black' }, 'Log measured checkpoint')
@@ -5014,7 +5014,7 @@
                   h('thead', null, h('tr', { className: 'bg-violet-100' }, ['Checkpoint', 'Logs', 'Method', 'Height spread', 'Diameter spread', 'Capacity spread', 'Min wall spread'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-violet-200' }, label); }))),
                   h('tbody', null, repeatedGroups.map(function (group) { return h('tr', { key: group.key }, h('th', { scope: 'row', className: 'text-left p-2 border-b align-top font-black' }, group.checkpoint), h('td', { className: 'p-2 border-b align-top' }, group.rowCount), h('td', { className: 'p-2 border-b align-top' }, repeatabilityMethodCell(group)), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'heightCm')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'diameterCm')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'capacityMl')), h('td', { className: 'p-2 border-b align-top' }, repeatabilityCell(group, 'minWallCm'))); }))
                 )
-              ) : h('p', { className: 'rounded-lg border border-dashed border-violet-300 bg-white p-2 text-xs text-violet-950' }, 'Repeated measurements become useful here when the same checkpoint is logged more than once. Keep the checkpoint, tool, and measuring technique consistent when you want to estimate repeatability.'),
+              ) : h('p', { className: 'rounded-lg border border-dashed border-violet-500 bg-white p-2 text-xs text-violet-950' }, 'Repeated measurements become useful here when the same checkpoint is logged more than once. Keep the checkpoint, tool, and measuring technique consistent when you want to estimate repeatability.'),
               h('p', { className: 'text-[11px] text-violet-950' }, 'Range is max minus min; sample SD describes spread among repeated readings. Neither is a pass/fail threshold or a substitute for calibrated instruments.')
             ),
             h('p', { className: 'text-[11px] text-slate-600' }, history.summary)
@@ -5022,7 +5022,7 @@
         }
         function thermalHistory() {
           var history = currentSchedule.thermalHistory;
-          return h('section', { className: 'rounded-xl border border-orange-200 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-thermal-history-title' },
+          return h('section', { className: 'rounded-xl border border-orange-600 bg-white p-3 space-y-3', 'aria-labelledby': 'wheel-fire-thermal-history-title' },
             h('div', null,
               h('h3', { id: 'wheel-fire-thermal-history-title', className: 'font-black text-orange-950' }, 'Modeled thermal history'),
               h('p', { className: 'text-xs text-orange-950 mt-1' }, 'An approximate time sequence from room temperature to the selected peak and back toward ' + Math.round(history.coolingReference) + '°C. The chamber schedule itself omits controller cycling and thermocouple behavior. The dashed ware-core trace adds only a comparative response to wall thickness, body sensitivity, load density, and air access; it is not a measurement or witness-cone model.')
@@ -5061,8 +5061,8 @@
             ),
             h('div', { className: 'rounded-xl border border-orange-300 bg-white p-3 space-y-3' },
               h('h3', { className: 'font-black text-orange-950' }, '2. Heatwork'),
-              h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Kiln or firing type', h('select', { value: kilnType, onChange: function (event) { var nextType = event.target.value; patchData({ kilnType: nextType, atmosphere: nextType === 'electric' ? 'oxidation' : atmosphere }); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 bg-white' }, ['electric', 'gas', 'wood', 'open'].map(function (id) { return h('option', { key: id, value: id }, id === 'open' ? 'Open firing study' : id + ' kiln'); }))),
-              h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Atmosphere', h('select', { value: atmosphere, disabled: kilnType === 'electric', onChange: function (event) { patchData({ atmosphere: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 bg-white disabled:opacity-50' }, h('option', { value: 'oxidation' }, 'Oxidation'), h('option', { value: 'reduction' }, 'Reduction'))),
+              h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Kiln or firing type', h('select', { value: kilnType, onChange: function (event) { var nextType = event.target.value; patchData({ kilnType: nextType, atmosphere: nextType === 'electric' ? 'oxidation' : atmosphere }); }, className: 'block w-full mt-1 rounded-lg border border-slate-500 p-2 bg-white' }, ['electric', 'gas', 'wood', 'open'].map(function (id) { return h('option', { key: id, value: id }, id === 'open' ? 'Open firing study' : id + ' kiln'); }))),
+              h('label', { className: 'block text-xs font-bold text-slate-700' }, 'Atmosphere', h('select', { value: atmosphere, disabled: kilnType === 'electric', onChange: function (event) { patchData({ atmosphere: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-slate-500 p-2 bg-white disabled:opacity-50' }, h('option', { value: 'oxidation' }, 'Oxidation'), h('option', { value: 'reduction' }, 'Reduction'))),
               rangeControl('wheel-fire-temperature', 'Target temperature', kilnTemp, 600, 1350, '°C', function (value) { patchData({ kilnTemp: value }); }),
               rangeControl('wheel-fire-ramp', 'Heating ramp', ramp, 30, 300, '°C/h', function (value) { patchData({ ramp: value }); }),
               rangeControl('wheel-fire-soak', 'Peak soak', soak, 0, 90, ' min', function (value) { patchData({ soak: value }); }),
@@ -5087,7 +5087,7 @@
               h('p', { className: 'text-xs text-orange-950 mt-1' }, 'Save alternate schedules as hypotheses. Loading a schedule changes controls only; firing still requires the explicit run button and the current lifecycle stage.'),
               h('p', { className: 'text-[11px] font-bold text-orange-900 mt-1' }, 'Current schedule: ' + currentSchedule.status + ' · ' + Math.round(currentSchedule.score) + '/100 · ' + currentSchedule.summary)
             ),
-            firingSchedules.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-orange-200 bg-white' },
+            firingSchedules.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-orange-600 bg-white' },
               h('table', { className: 'w-full text-xs border-collapse' },
                 h('caption', { className: 'text-left p-3 font-black text-orange-950' }, 'Saved firing hypotheses'),
                 h('thead', null, h('tr', { className: 'bg-orange-100' }, ['Schedule', 'Kiln', 'Loading', 'Target', 'Effective', 'Cone', 'Score', 'Porosity', 'Glaze surface', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-orange-200' }, label); }))),
@@ -5115,7 +5115,7 @@
           h('div', { className: 'rounded-xl border border-violet-300 bg-violet-50 p-3 grid md:grid-cols-2 gap-3' },
             h('div', null,
               h('h3', { className: 'font-black text-violet-950' }, '3. Glaze application'),
-              h('label', { className: 'block text-xs font-bold text-violet-950 mt-2' }, 'Glaze chemistry study', h('select', { value: glazeId, onChange: function (event) { patchData({ glazeId: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-violet-300 p-2 bg-white' }, Object.keys(GLAZES).map(function (id) { return h('option', { key: id, value: id }, GLAZES[id].name); }))),
+              h('label', { className: 'block text-xs font-bold text-violet-950 mt-2' }, 'Glaze chemistry study', h('select', { value: glazeId, onChange: function (event) { patchData({ glazeId: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-violet-500 p-2 bg-white' }, Object.keys(GLAZES).map(function (id) { return h('option', { key: id, value: id }, GLAZES[id].name); }))),
               rangeControl('wheel-fire-glaze-thickness', 'Application thickness', glazeThickness, 5, 100, '%', function (value) { patchData({ glazeThickness: value }); }),
               h('button', { type: 'button', disabled: vessel.stage !== 'bisque', onClick: applyGlaze, className: 'w-full mt-2 rounded-lg bg-violet-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, 'Apply glaze to bisque')
             ),
@@ -5393,7 +5393,7 @@
               h('p', { className: 'text-xs text-violet-950 mt-1' }, 'Name the current cycle settings to carry a hypothesis into another piece or a later journal review. Saved protocols do not change the vessel until you load one.')
             ),
             h('div', { className: 'flex flex-wrap gap-2 items-end' },
-              h('label', { className: 'block text-xs font-bold text-slate-700 flex-1 min-w-[190px]' }, 'Protocol label', h('input', { id: 'wheel-fire-cycle-protocol-label', value: cycleProtocolLabel, maxLength: 48, onChange: function (event) { patchData({ cycleProtocolLabel: event.target.value }); }, placeholder: 'e.g. slow studio rinse', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 bg-white' })),
+              h('label', { className: 'block text-xs font-bold text-slate-700 flex-1 min-w-[190px]' }, 'Protocol label', h('input', { id: 'wheel-fire-cycle-protocol-label', value: cycleProtocolLabel, maxLength: 48, onChange: function (event) { patchData({ cycleProtocolLabel: event.target.value }); }, placeholder: 'e.g. slow studio rinse', className: 'block w-full mt-1 rounded-lg border border-slate-500 p-2 bg-white' })),
               h('button', { type: 'button', onClick: saveCycleProtocol, className: 'rounded-lg bg-violet-800 text-white px-3 py-2 text-xs font-black' }, 'Save current protocol')
             ),
             savedCycleProtocols.length ? h('div', { className: 'overflow-x-auto rounded-lg border border-violet-200 bg-white' },
@@ -5402,7 +5402,7 @@
                 h('thead', null, h('tr', { className: 'bg-violet-100' }, ['Protocol', 'Cycles', 'Drying', 'Swing', 'Damage', 'Actions'].map(function (label) { return h('th', { key: label, scope: 'col', className: 'text-left p-2 border-b border-violet-200' }, label); }))),
                 h('tbody', null, evaluated.map(function (comparison) { return h('tr', { key: comparison.id }, h('td', { className: 'p-2 border-b font-bold' }, comparison.label), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.cycles, 0))), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.dryingRate, 0)) + '%'), h('td', { className: 'p-2 border-b' }, Math.round(finite(comparison.cycleTemperatureDelta, 0)) + ' C'), h('td', { className: 'p-2 border-b font-black' }, Math.round(finite(comparison.result.damagePct, 0)) + '%'), h('td', { className: 'p-2 border-b' }, h('div', { className: 'flex gap-2' }, h('button', { type: 'button', onClick: function () { loadCycleProtocol(comparison); }, className: 'rounded-lg border border-violet-300 px-2 py-1 font-bold text-violet-900' }, 'Load'), h('button', { type: 'button', onClick: function () { removeCycleProtocol(comparison.id); }, className: 'rounded-lg border border-red-300 px-2 py-1 font-bold text-red-800' }, 'Remove')))); }))
               )
-            ) : h('p', { className: 'rounded-lg border border-dashed border-violet-300 bg-white p-3 text-xs text-slate-600' }, 'No custom protocols saved yet.')
+            ) : h('p', { className: 'rounded-lg border border-dashed border-violet-500 bg-white p-3 text-xs text-slate-600' }, 'No custom protocols saved yet.')
           );
         }
         return h('section', { id: 'wheel-fire-panel-performance', role: 'tabpanel', 'aria-labelledby': 'wheel-fire-tab-performance', className: 'space-y-3' },
@@ -5418,7 +5418,7 @@
           ),
           h('div', { className: 'grid md:grid-cols-[minmax(240px,.72fr)_minmax(0,1.28fr)] gap-3' },
             h('div', { className: 'rounded-xl border border-slate-300 bg-white p-3 space-y-3' },
-              h('label', { htmlFor: 'wheel-fire-function-test', className: 'block text-xs font-bold text-slate-700' }, 'Simulated test', h('select', { id: 'wheel-fire-function-test', value: testType, onChange: function (event) { patchData({ performanceTest: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 bg-white' }, Object.keys(labels).map(function (id) { return h('option', { key: id, value: id }, labels[id]); }))),
+              h('label', { htmlFor: 'wheel-fire-function-test', className: 'block text-xs font-bold text-slate-700' }, 'Simulated test', h('select', { id: 'wheel-fire-function-test', value: testType, onChange: function (event) { patchData({ performanceTest: event.target.value }); }, className: 'block w-full mt-1 rounded-lg border border-slate-500 p-2 bg-white' }, Object.keys(labels).map(function (id) { return h('option', { key: id, value: id }, labels[id]); }))),
               testType === 'water' ? rangeControl('wheel-fire-test-duration', 'Test duration', durationHours, 1, 24, ' h', function (value) { patchData({ testDurationHours: value }); }) : null,
               testType === 'thermal' ? rangeControl('wheel-fire-test-delta', 'Temperature change', temperatureDelta, 10, 220, '°C', function (value) { patchData({ testTemperatureDelta: value }); }) : null,
               testType === 'load' ? rangeControl('wheel-fire-test-load', 'Applied static load', loadKg, 0.5, 30, ' kg', function (value) { patchData({ testLoadKg: value }); }) : null,
@@ -5427,7 +5427,7 @@
               testType === 'cycles' ? rangeControl('wheel-fire-test-drying', 'Drying severity', cycleDryingRate, 5, 100, ' %', function (value) { patchData({ testCycleDryingRate: value }); }) : null,
               testType === 'cycles' ? rangeControl('wheel-fire-test-cycle-temp', 'Cycle temperature swing', cycleTemperatureDelta, 10, 220, ' C', function (value) { patchData({ testCycleTemperatureDelta: value }); }) : null,
               testType === 'cycles' ? h('p', { className: 'text-xs text-slate-600' }, 'This compares repeated filling, drying, and thermal/environmental stress. Adjust the protocol to compare gentle and harsh reuse conditions. It does not simulate microbes, food chemistry, or real fracture mechanics.') : null,
-              h('label', { htmlFor: 'wheel-fire-test-observation', className: 'block text-xs font-bold text-slate-700' }, 'Observed note (optional)', h('textarea', { id: 'wheel-fire-test-observation', rows: 3, maxLength: 240, value: data.testObservation || '', onChange: function (event) { patchData({ testObservation: event.target.value }); }, placeholder: 'Record what you actually saw, measured, or noticed. Keep it separate from the model result.', className: 'block w-full mt-1 rounded-lg border border-slate-400 p-2 font-normal bg-white' })),
+              h('label', { htmlFor: 'wheel-fire-test-observation', className: 'block text-xs font-bold text-slate-700' }, 'Observed note (optional)', h('textarea', { id: 'wheel-fire-test-observation', rows: 3, maxLength: 240, value: data.testObservation || '', onChange: function (event) { patchData({ testObservation: event.target.value }); }, placeholder: 'Record what you actually saw, measured, or noticed. Keep it separate from the model result.', className: 'block w-full mt-1 rounded-lg border border-slate-500 p-2 font-normal bg-white' })),
               h('p', { className: 'text-[11px] text-slate-600' }, 'Field notes document an observation; they do not validate the model or establish safe use.'),
               h('button', { type: 'button', disabled: !preview.ready, onClick: runPerformanceTest, className: 'w-full rounded-lg bg-blue-800 text-white px-3 py-2 text-xs font-black disabled:opacity-40' }, 'Run and log ' + labels[testType].toLowerCase()),
               h('p', { className: 'text-[11px] text-slate-600' }, preview.ready ? 'Change one variable or load another fired piece, then repeat the same test.' : 'Complete at least a bisque firing before testing.')
@@ -5585,7 +5585,7 @@
           ),
           h('div', { className: 'mt-3' }, stageStrip())
         ),
-        h('nav', { role: 'tablist', 'aria-label': 'Wheel and Fire sections', 'aria-orientation': 'horizontal', className: 'flex flex-wrap gap-2 rounded-xl border border-amber-300 bg-white p-2' },
+        h('nav', { role: 'tablist', 'aria-label': 'Wheel and Fire sections', 'aria-orientation': 'horizontal', className: 'flex flex-wrap gap-2 rounded-xl border border-amber-600 bg-white p-2' },
           tabButton('shape', 'Shape', '🏺'),
           tabButton('science', 'Clay science', '⚖️'),
           tabButton('traditions', 'Ways of making', '🌍'),
@@ -5602,7 +5602,7 @@
         view === 'kiln' ? kilnPanel() : null,
         view === 'performance' ? performancePanel() : null,
         view === 'journal' ? journalPanel() : null,
-          h('div', { id: 'wheel-fire-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border border-amber-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700' },
+          h('div', { id: 'wheel-fire-live-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'rounded-xl border border-amber-600 bg-white px-3 py-2 text-xs font-semibold text-slate-700' },
           'Stage ' + stageLabel(vessel.stage) + '. ' + Math.round(stats.stability) + '% stability. ' + Math.round(stats.uniformity) + '% wall uniformity. ' + vessel.lastOutcome
         )
       );

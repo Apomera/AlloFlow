@@ -1242,7 +1242,7 @@ window.StemLab = window.StemLab || {
                 announceToSR('Speed Run paused');
               }
             },
-            className: 'px-3 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-600 transition-all'
+            className: 'px-3 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-700 transition-all'
           }, _mt.paused ? t('stem.multtable.resume', '▶ Resume') : t('stem.multtable.pause', '⏸ Pause')),
           h('button', { 'aria-label': t('stem.multtable.stop', 'Stop'),
             onClick: function() {

@@ -2339,7 +2339,7 @@ const d = labToolData.physics;
                 )
               ),
               React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[10px] font-black text-fuchsia-900" }, "What will you keep or change next time?"),
-              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-200 bg-white p-2 text-[11px] text-slate-800" }),
+              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[11px] text-slate-800" }),
               React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
                 if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
                 upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
@@ -3135,7 +3135,7 @@ const d = labToolData.physics;
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
                   h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
                   h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
+                    className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
                   (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + __alloT('stem.physics.iq_logged', ' logged'))
                 ),
                 (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
@@ -3158,7 +3158,7 @@ const d = labToolData.physics;
                   h('textarea', { id: 'gh-hypo', value: iq.hypothesis || '',
                     onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
                     placeholder: __alloT('stem.physics.iq_hypothesis_placeholder', 'Is the optimal angle the same on every planet? Does doubling velocity double range? Type your own theory.'),
-                    className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
+                    className: 'w-full text-[12px] border border-slate-500 rounded p-2 font-mono leading-snug bg-white text-slate-800', rows: 3 })
                 ),
                 h('div', { className: 'mb-3' },
                   !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },

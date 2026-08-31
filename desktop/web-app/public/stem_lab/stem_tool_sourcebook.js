@@ -6971,7 +6971,7 @@
                   h('select', {
                     value: activePrep.usageIntent,
                     onChange: function (event) { updatePrep(item.id, { usageIntent: event.target.value, usagePlan: '' }); },
-                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-300 bg-white px-3 text-xs font-bold text-[#30264f]',
+                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-500 bg-white px-3 text-xs font-bold text-[#30264f]',
                     'aria-label': 'Intended use for this visual asset'
                   }, USAGE_INTENT_ORDER.map(function (intentId) {
                     return h('option', { key: intentId, value: intentId }, USAGE_INTENTS[intentId].label);
@@ -7210,7 +7210,7 @@
               'aria-controls': 'sourcebook-detail-panel'
             },
               h('img', { src: item.imageUrl, alt: '', className: 'h-full w-full object-cover', onError: function (event) { event.currentTarget.style.display = 'none'; } }),
-              isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-500 text-[9px] font-black text-white' }, '✓')
+              isChecked && h('span', { 'aria-hidden': 'true', className: 'absolute right-0 top-0 grid h-4 w-4 place-items-center rounded-bl-md bg-amber-700 text-[9px] font-black text-white' }, '✓')
             );
           })),
           h('button', { type: 'button', onClick: function () { setShowingCollection(true); }, className: 'min-h-[44px] shrink-0 rounded-xl bg-[#183b32] px-4 text-xs font-black text-white' }, showingCollection ? 'Viewing palette' : 'View palette')
@@ -7679,7 +7679,7 @@
                   h('select', {
                     value: '',
                     onChange: function (event) { if (event.target.value) applyUsageIntentToPalette(event.target.value); },
-                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-300 bg-white px-3 text-xs font-bold text-[#30264f]',
+                    className: 'mt-1 block min-h-[42px] w-full rounded-xl border border-violet-500 bg-white px-3 text-xs font-bold text-[#30264f]',
                     'data-sourcebook-bulk-usage-intent': checkedPaletteItems.length || selectedItems.length,
                     'aria-label': checkedPaletteItems.length ? 'Set intended use for selected palette assets' : 'Set intended use for every palette asset'
                   },
@@ -7712,7 +7712,7 @@
                       key: planId,
                       type: 'button',
                       onClick: function () { applyUsagePlanToPalette(planId); },
-                      className: 'min-h-[40px] rounded-xl border border-violet-300 bg-white px-3 text-[11px] font-black text-violet-950 hover:bg-violet-100',
+                      className: 'min-h-[40px] rounded-xl border border-violet-500 bg-white px-3 text-[11px] font-black text-violet-950 hover:bg-violet-100',
                       title: usagePlan.description,
                       'data-sourcebook-usage-plan-action': planId
                     }, usagePlan.buttonLabel);

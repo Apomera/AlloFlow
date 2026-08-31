@@ -10972,7 +10972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }
                   if (e.key === 'Enter' && anatomySearchIndex >= 0) { e.preventDefault(); applyAnatomySearchResult(anatomyGlobalSearchResults[anatomySearchIndex]); }
                 },
-                className: 'w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
+                className: 'w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-500 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
               anatomyGlobalSearchResults.length ? h('div', { id: 'anatomy-global-search-results', className: 'anatomy-global-search-results', role: 'listbox', 'aria-label': 'Anatomy search results' },
                 anatomyGlobalSearchResults.map(function(result, resultIndex) {
@@ -10990,7 +10990,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             searchTerm ? h('button', {
               'aria-label': 'Clear anatomy search', title: 'Clear search',
               onClick: function() { updMulti({ search: '', selectedStructure: null }); },
-              className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 active:scale-[0.97]'
+              className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-500 hover:bg-slate-100 active:scale-[0.97]'
             }, '\u2715 Clear') : null,
             h('button', { onClick: function() { updMulti({ quizMode: !quizMode, quizIdx: 0, quizScore: 0, quizFeedback: null, _quizAttempts: 0 }); },
               'aria-pressed': quizMode,
@@ -11706,10 +11706,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('p', { className: 'mt-1 text-[11px] text-slate-500' }, searchTerm ? 'Try a broader term or clear the search.' : studyFilter !== 'all' ? 'Choose All, or update confidence after reviewing a structure.' : 'Switch the body view or choose a more advanced level.'),
                           searchTerm ? h('button', {
                             onClick: function() { upd('search', ''); },
-                            className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 active:scale-[0.97]'
+                            className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-500 hover:bg-slate-100 active:scale-[0.97]'
                           }, 'Clear search') : studyFilter !== 'all' ? h('button', {
                             onClick: function() { upd('_studyFilter', 'all'); },
-                            className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-400 hover:bg-slate-100 active:scale-[0.97]'
+                            className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-slate-700 border border-slate-500 hover:bg-slate-100 active:scale-[0.97]'
                           }, 'Show all structures') : h('button', {
                             onClick: function() { upd('complexity', 3); },
                             className: 'mt-3 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 active:scale-[0.97]'

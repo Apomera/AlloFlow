@@ -1871,7 +1871,7 @@ window.StemLab = window.StemLab || {
             }, reducedMotion ? 'Next day' : chartPlaybackActive ? '⏸ Pause' : '▶ Play'),
             !reducedMotion && h('label', { className: 'flex items-center gap-1' },
               h('span', null, 'Speed'),
-              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': 'Playback speed', className: 'px-1 py-1 rounded border border-slate-300 bg-white text-[11px]' },
+              h('select', { value: chartPlaybackSpeed, onChange: function(e) { upd('chartPlaybackSpeed', Number(e.target.value)); }, disabled: !activeData.length, 'aria-label': 'Playback speed', className: 'px-1 py-1 rounded border border-slate-500 bg-white text-[11px]' },
                 h('option', { value: 1 }, '1×'),
                 h('option', { value: 2 }, '2×'),
                 h('option', { value: 4 }, '4×')
@@ -3832,7 +3832,7 @@ window.StemLab = window.StemLab || {
                 var activePathogen = mapPathogen === profile.id;
                 return h('button', { key: profile.id, type: 'button', 'aria-pressed': activePathogen ? 'true' : 'false',
                   onClick: function() { updMulti({ mapPathogen: profile.id, mapGrid: null, mapBaselineGrid: null, mapStep: 0, mapSnapshots: [], mapViewStep: 0, mapHistory: [], mapBaselineHistory: [], mapRunning: false, mapPlacementMode: false, mapQuarantineZones: [], mapInterventions: {}, mapHospPct: 0, mapAnalysis: null, mapAnalysisLoading: false, mapAnalysisRequestId: null }); },
-                  className: 'rounded-lg px-2 py-2 text-left text-[11px] font-bold transition-all ' + (activePathogen ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-300')
+                  className: 'rounded-lg px-2 py-2 text-left text-[11px] font-bold transition-all ' + (activePathogen ? 'bg-indigo-600 text-white' : 'bg-white text-slate-600 border border-slate-500')
                 }, profile.icon + ' ' + profile.name);
               })
             ),
@@ -3871,12 +3871,12 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'block mb-1' }, 'Experiment seed'),
                   h('input', { type: 'number', min: 1, max: 4294967295, step: 1, value: mapSeed,
                     onChange: function(e) { resetMapExperiment(e.target.value); },
-                    className: 'w-full rounded-lg border border-indigo-300 bg-white px-2 py-1.5 font-mono text-xs text-slate-800',
+                    className: 'w-full rounded-lg border border-indigo-500 bg-white px-2 py-1.5 font-mono text-xs text-slate-800',
                     'aria-describedby': 'epidemic-map-seed-help'
                   })
                 ),
                 h('button', { type: 'button', onClick: function() { resetMapExperiment(mapSeed + 1); },
-                  className: 'rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-[11px] font-bold text-indigo-700'
+                  className: 'rounded-lg border border-indigo-500 bg-white px-3 py-1.5 text-[11px] font-bold text-indigo-700'
                 }, 'Next seed')
               ),
               h('p', { id: 'epidemic-map-seed-help', className: 'text-[11px] text-indigo-800' }, 'Reuse a seed to replay the same starting map and daily chance events. Your day-by-day actions can still change the outcome.')
@@ -4678,7 +4678,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
                 h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[11px] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.epidemic.log_observation', '📋 Log observation')),
                 h('button', { onClick: function() { setIQ({ contact: 50, intervention: 30, transmissibility: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
-                  className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.epidemic.reset', '↺ Reset')),
+                  className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[11px] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.epidemic.reset', '↺ Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[10px] text-slate-500 italic' }, (iq.log || []).length + ' observations logged')
               ),
               // Log table

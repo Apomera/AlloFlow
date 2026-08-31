@@ -4131,7 +4131,7 @@
                   id: 'chem-periodic-element-picker',
                   value: String(selectedZ),
                   onChange: function(e) { selectElement(parseInt(e.target.value, 10)); },
-                  className: 'min-h-[44px] w-full rounded-lg border-2 border-cyan-300 bg-white px-3 py-2 text-sm text-slate-800'
+                  className: 'min-h-[44px] w-full rounded-lg border-2 border-cyan-600 bg-white px-3 py-2 text-sm text-slate-800'
                 },
                   allElements.map(function(element) {
                     return h('option', { key: element.z, value: String(element.z) }, element.z + ' · ' + element.sym + ' — ' + element.name);
@@ -6651,7 +6651,7 @@
             }
 
             return h('section', {
-              className: 'rounded-2xl bg-white border border-cyan-300 p-4 shadow-sm',
+              className: 'rounded-2xl bg-white border border-cyan-600 p-4 shadow-sm',
               'aria-labelledby': 'chem-ph-discovery-title'
             },
               h('h3', { id: 'chem-ph-discovery-title', className: 'text-base font-black text-cyan-800 mb-1' },

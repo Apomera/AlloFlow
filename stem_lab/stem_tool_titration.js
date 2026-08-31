@@ -4852,7 +4852,7 @@ return React.createElement("div", {
       React.createElement("div", { id: "titration-burette-readings", tabIndex: -1, className: "rounded-xl p-3 border border-slate-600/40 bg-slate-900/40 space-y-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300" },
         React.createElement("div", { className: "flex items-center justify-between gap-2 flex-wrap" },
           React.createElement("div", { className: "text-xs font-bold text-slate-200" }, __alloT('stem.titration.read_the_burette', 'READ THE BURETTE')),
-          !gInitialLocked && React.createElement("button", { type: "button", onClick: function () { var initialRead = readBurette(gInitialTrue, gEyeCm); updMulti({ gInitialLocked: true, gInitialRecorded: initialRead, gInitialEyeCm: gEyeCm }); if (announceToSR) announceToSR('Initial burette reading recorded at ' + initialRead.toFixed(2) + ' millilitres.'); }, className: "min-h-[44px] px-4 py-2 rounded-lg text-xs font-black bg-emerald-700 text-white hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" }, 'Record initial burette reading')
+          !gInitialLocked && React.createElement("button", { type: "button", onClick: function () { var initialRead = readBurette(gInitialTrue, gEyeCm); updMulti({ gInitialLocked: true, gInitialRecorded: initialRead, gInitialEyeCm: gEyeCm }); if (announceToSR) announceToSR('Initial burette reading recorded at ' + initialRead.toFixed(2) + ' millilitres.'); }, className: "min-h-[44px] px-4 py-2 rounded-lg text-xs font-black bg-emerald-700 text-white hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300" }, 'Record initial burette reading')
         ),
         React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" },
           React.createElement("div", null,
@@ -5051,7 +5051,7 @@ return React.createElement("div", {
               disabled: !gInitialLocked || gVb <= 0 || !gReadingPairValid,
               className: "min-h-[44px] px-4 py-2 rounded-xl text-xs font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " +
                 (!gInitialLocked || gVb <= 0 || !gReadingPairValid ? "bg-slate-800/50 text-slate-500 cursor-not-allowed"
-                          : "bg-cyan-700 text-white hover:bg-cyan-600 active:scale-[0.98]")
+                          : "bg-cyan-700 text-white hover:bg-cyan-700 active:scale-[0.98]")
             }, __alloT('stem.titration.record_trial', '\uD83D\uDCCB Record trial ') + (gTrials.length + 1)),
             React.createElement("button", {
               type: "button",

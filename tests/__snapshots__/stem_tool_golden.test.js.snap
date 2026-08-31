@@ -35,7 +35,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 19,
   "inputs": 4,
   "lengthBucket": 57,
-  "sha": "7c2a44d916b7b6a7",
+  "sha": "4fa76e42b98b88af",
   "svgs": 0,
 }
 `;
@@ -45,7 +45,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 52,
   "inputs": 3,
   "lengthBucket": 131,
-  "sha": "a3383ae5ed78f336",
+  "sha": "6019ff100dd5881a",
   "svgs": 1,
 }
 `;
@@ -55,7 +55,7 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
   "buttons": 40,
   "inputs": 0,
   "lengthBucket": 171,
-  "sha": "19c5ef6021827be4",
+  "sha": "bccd1ceaad8280c8",
   "svgs": 0,
 }
 `;
@@ -64,8 +64,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 47,
   "inputs": 11,
-  "lengthBucket": 210,
-  "sha": "49ab34cc4aa2f005",
+  "lengthBucket": 220,
+  "sha": "61679b8daec2b564",
   "svgs": 0,
 }
 `;
@@ -82,10 +82,10 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for geologyExplorer 1`] = `
 {
-  "buttons": 49,
+  "buttons": 50,
   "inputs": 2,
-  "lengthBucket": 184,
-  "sha": "b122a4d12e7ffa21",
+  "lengthBucket": 189,
+  "sha": "e8140419eef208ff",
   "svgs": 1,
 }
 `;
@@ -104,18 +104,18 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 121,
   "inputs": 15,
-  "lengthBucket": 260,
-  "sha": "69e050ec5ed887fe",
+  "lengthBucket": 261,
+  "sha": "0a169e90531dd13b",
   "svgs": 1,
 }
 `;
 
 exports[`STEM tool render goldens (default state) > renders + pins a digest for opticsLab 1`] = `
 {
-  "buttons": 34,
+  "buttons": 35,
   "inputs": 0,
-  "lengthBucket": 108,
-  "sha": "6609c726cfda9dd5",
+  "lengthBucket": 113,
+  "sha": "86dc5aab1eb25ee0",
   "svgs": 0,
 }
 `;
@@ -134,8 +134,8 @@ exports[`STEM tool render goldens (default state) > renders + pins a digest for 
 {
   "buttons": 15,
   "inputs": 7,
-  "lengthBucket": 62,
-  "sha": "ee7695e3735821fe",
+  "lengthBucket": 63,
+  "sha": "8f1673852c4a7994",
   "svgs": 1,
 }
 `;

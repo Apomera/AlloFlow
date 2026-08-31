@@ -475,7 +475,7 @@ window.StemLab = window.StemLab || {
           key: key != null ? key : label,
           type: 'button',
           onClick: onClick,
-          className: 'semi-action px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-600')
+          className: 'semi-action px-3 py-1.5 text-xs font-bold rounded-lg transition-all shadow-sm hover:shadow-md ' + (extraClass || 'bg-cyan-700 text-white hover:bg-cyan-700')
         }, a11yClick ? a11yClick(onClick) : {}), label);
       }
 
@@ -2298,7 +2298,7 @@ window.StemLab = window.StemLab || {
             ),
             h('button', {
               type: 'button',
-              className: 'semi-action min-h-11 rounded-lg border border-cyan-300/60 bg-cyan-700 px-3 py-2 text-xs font-black text-white hover:bg-cyan-600',
+              className: 'semi-action min-h-11 rounded-lg border border-cyan-300/60 bg-cyan-700 px-3 py-2 text-xs font-black text-white hover:bg-cyan-700',
               onClick: function() {
               if (stage < FAB_STAGES.length - 1) {
                 var nextFabStage = stage + 1;
@@ -4237,7 +4237,7 @@ window.StemLab = window.StemLab || {
           addToast('\uD83D\uDCF8 Snapshot saved!', 'success');
           if (announceToSR) announceToSR('Snapshot saved');
         },
-        className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-600 hover:to-indigo-500 shadow-md hover:shadow-lg transition-all',
+        className: 'semi-snapshot mt-3 ml-auto px-5 py-2 text-xs font-black text-white bg-gradient-to-r from-cyan-700 to-indigo-600 rounded-full hover:from-cyan-700 hover:to-indigo-600 shadow-md hover:shadow-lg transition-all',
         'aria-label': snapshotLabel + '. Save the current Semiconductor Lab state to your notebook.',
         title: 'Save current state to notebook'
       }, snapshotLabel);
@@ -4466,7 +4466,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'mt-3 flex flex-wrap items-center gap-2' },
           h('button', {
             type: 'button', onClick: applyGuidedSetup,
-            className: 'semi-action min-h-11 rounded-lg border border-cyan-200/60 bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-300'
+            className: 'semi-action min-h-11 rounded-lg border border-cyan-200/60 bg-cyan-700 px-4 py-2 text-sm font-black text-white hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300'
           }, guidedReady ? t('stem.semiconductor.reload_baseline', 'Reload baseline') : t('stem.semiconductor.load_guided_setup', 'Load guided setup')),
           guidedReady && h('span', { className: 'text-sm font-semibold ' + (guidedSaved ? 'text-emerald-300' : guidedChanged ? 'text-amber-200' : 'text-cyan-100'), role: 'status' }, guidedSaved
             ? t('stem.semiconductor.experiment_complete', 'Observation saved — experiment complete.')

@@ -3172,12 +3172,12 @@ window.StemLab = window.StemLab || {
                   h("div", { className: "mt-3 grid grid-cols-[1fr_auto_1fr] items-end gap-2", "data-dna-mutation-step-change": true },
                     h("div", null,
                       h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-400" }, "Before"),
-                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (beforeGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-400" : "border-slate-200 bg-slate-100 text-slate-700"), "data-base-state": beforeGap ? "gap" : "base" }, entry.beforeBase)
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (beforeGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : "border-slate-200 bg-slate-100 text-slate-700"), "data-base-state": beforeGap ? "gap" : "base" }, entry.beforeBase)
                     ),
                     h("span", { className: "pb-2 text-sm font-black text-slate-300", "aria-hidden": "true" }, "\u2192"),
                     h("div", null,
                       h("div", { className: "text-[8px] font-black uppercase tracking-wide text-slate-500" }, "After"),
-                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (afterGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-400" : tone.border + " " + tone.soft + " " + tone.text), "data-base-state": afterGap ? "gap" : "base" }, entry.afterBase)
+                      h("div", { className: "mt-1 grid h-8 place-items-center rounded-md border font-mono text-[13px] font-black " + (afterGap ? "border-dashed border-slate-300 bg-slate-50 text-slate-500" : tone.border + " " + tone.soft + " " + tone.text), "data-base-state": afterGap ? "gap" : "base" }, entry.afterBase)
                     )
                   ),
                   h("div", { className: "mt-3 flex items-center justify-between gap-2" },
@@ -3259,7 +3259,7 @@ window.StemLab = window.StemLab || {
                   alignment.columns.map(function(column) {
                     return h("div", { key: 'marker-' + column.index, className: "flex h-5 w-9 shrink-0 items-end justify-center", "data-alignment-state": column.state, "data-edit-site": column.edit ? "true" : "false" },
                       column.edit
-                        ? h("span", { className: "rounded-t bg-rose-500 px-1 py-0.5 text-[7px] font-black uppercase tracking-wide text-white" }, "Edit")
+                        ? h("span", { className: "rounded-t bg-rose-600 px-1 py-0.5 text-[7px] font-black uppercase tracking-wide text-white" }, "Edit")
                         : column.downstream
                           ? h("span", { className: "h-1 w-full rounded-full bg-violet-500/60" })
                           : null
@@ -3277,7 +3277,7 @@ window.StemLab = window.StemLab || {
             h("span", { className: "hidden font-bold sm:inline" }, "Numbers show each row's original base position.")
           ),
           h("div", { id: "dna-mutation-frame-status", className: "mt-3 flex items-start gap-3 rounded-xl border px-3 py-2.5 " + (alignment.isFrameshift ? "border-violet-200 bg-violet-50" : "border-emerald-200 bg-emerald-50"), "data-frame-status": alignment.isFrameshift ? "shifted" : "preserved" },
-            h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black " + (alignment.isFrameshift ? "bg-violet-600 text-white" : "bg-emerald-600 text-white"), "aria-hidden": "true" }, alignment.isFrameshift ? "\u21af" : "\u2713"),
+            h("span", { className: "grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-black " + (alignment.isFrameshift ? "bg-violet-600 text-white" : "bg-emerald-700 text-white"), "aria-hidden": "true" }, alignment.isFrameshift ? "\u21af" : "\u2713"),
             h("div", null,
               h("div", { className: "text-[11px] font-black " + (alignment.isFrameshift ? "text-violet-900" : "text-emerald-900") }, frameStatusTitle),
               h("p", { className: "mt-0.5 mb-0 text-[10px] leading-relaxed text-slate-600" }, frameStatusDetail)
@@ -3440,11 +3440,11 @@ window.StemLab = window.StemLab || {
                 h("div", { className: "text-[8px] font-black uppercase tracking-wide text-sky-700" }, "mRNA codon"),
                 h("div", { className: "mt-1 font-mono text-[11px] font-black text-slate-800" }, selectedRow.beforeCodon + " \u2192 " + selectedRow.afterCodon)
               ),
-              h("div", { className: "rounded-lg border border-violet-200 bg-white p-2" },
+              h("div", { className: "rounded-lg border border-violet-500 bg-white p-2" },
                 h("div", { className: "text-[8px] font-black uppercase tracking-wide text-violet-700" }, "Amino acid"),
                 h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, selectedRow.beforeAA + " \u2192 " + selectedRow.afterAA)
               ),
-              h("div", { className: "rounded-lg border border-indigo-200 bg-white p-2" },
+              h("div", { className: "rounded-lg border border-indigo-500 bg-white p-2" },
                 h("div", { className: "text-[8px] font-black uppercase tracking-wide text-indigo-700" }, "Reading frame"),
                 h("div", { className: "mt-1 text-[11px] font-black text-slate-800" }, latestMutationEffect === "Frameshift" && firstChanged && selectedRow.index >= firstChanged.index ? "Shifted" : "Aligned")
               )
@@ -3567,7 +3567,7 @@ window.StemLab = window.StemLab || {
               h("div", { className: "mt-1 text-[12px] font-black text-slate-800" }, mutationSummary),
               h("div", { className: "mt-1 text-[11px] font-bold text-indigo-800" }, "Predicted coding effect: " + effectSummary)
             ),
-            h("div", { className: "rounded-lg border border-indigo-200 bg-white p-3" },
+            h("div", { className: "rounded-lg border border-indigo-500 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-700" }, "What carries forward"),
               h("p", { className: "mt-1 mb-0 text-[11px] leading-relaxed text-slate-700" }, "A sequence change can create a variant allele. Inheritance depends on the allele pair received from two parents, plus the inheritance pattern being modeled.")
             )
@@ -4051,7 +4051,7 @@ window.StemLab = window.StemLab || {
               var stepState = step.complete ? "complete" : step.current ? "current" : "upcoming";
               return h("li", { key: step.label, className: "rounded-lg border px-3 py-2 " + (stepState === "complete" ? "border-emerald-200 bg-emerald-50" : stepState === "current" ? "border-fuchsia-400 bg-white ring-2 ring-fuchsia-100" : "border-slate-200 bg-white/70"), "data-state": stepState, "aria-current": stepState === "current" ? "step" : undefined },
                 h("div", { className: "flex items-center gap-2" },
-                  h("span", { className: "grid h-6 w-6 place-items-center rounded-full text-[10px] font-black " + (stepState === "complete" ? "bg-emerald-600 text-white" : stepState === "current" ? "bg-fuchsia-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, stepState === "complete" ? "\u2713" : String(stepIndex + 1)),
+                  h("span", { className: "grid h-6 w-6 place-items-center rounded-full text-[10px] font-black " + (stepState === "complete" ? "bg-emerald-700 text-white" : stepState === "current" ? "bg-fuchsia-700 text-white" : "bg-slate-200 text-slate-600"), "aria-hidden": "true" }, stepState === "complete" ? "\u2713" : String(stepIndex + 1)),
                   h("div", null,
                     h("div", { className: "text-[10px] font-black uppercase tracking-wide text-slate-800" }, step.label),
                     h("div", { className: "mt-0.5 text-[9px] font-bold text-slate-500" }, stepState === "complete" ? "Complete" : stepState === "current" ? "Current \u00b7 " + step.hint : step.hint)
@@ -4063,17 +4063,17 @@ window.StemLab = window.StemLab || {
           h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
             h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-fuchsia-800" },
               "Scenario",
-              h("select", { value: dnaScenarioId, disabled: dnaScenarioRun, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Choose a DNA scenario" },
+              h("select", { value: dnaScenarioId, disabled: dnaScenarioRun, onChange: function(e) { selectDnaScenario(e.target.value); }, className: "mt-1 w-full rounded-md border border-fuchsia-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700 disabled:cursor-not-allowed disabled:bg-slate-100", "aria-label": "Choose a DNA scenario" },
                 DNA_SCENARIO_OPTIONS.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
               )
             ),
-            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
+            h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Planned change"),
               h("div", { className: "mt-1 inline-flex rounded-md bg-fuchsia-100 px-2 py-1 font-mono text-[11px] font-black text-fuchsia-950", "data-dna-scenario-plan": true }, dnaScenarioPlanSummary),
               h("p", { id: "dna-scenario-prompt", className: "mt-2 text-[11px] leading-relaxed text-slate-700" }, getDnaScenarioPrompt(dnaScenarioForDisplay, dnaScenarioPreviewPlan))
             )
           ),
-          h("fieldset", { disabled: dnaScenarioRun, className: "mt-3 rounded-lg border border-fuchsia-200 bg-white p-3", "aria-describedby": "dna-scenario-prompt" },
+          h("fieldset", { disabled: dnaScenarioRun, className: "mt-3 rounded-lg border border-fuchsia-500 bg-white p-3", "aria-describedby": "dna-scenario-prompt" },
             h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, dnaScenarioRun ? "Locked prediction" : "Your prediction"),
             h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioRun ? "This choice is frozen for the completed trial." : "Choose the description that best matches what you expect. The science term and its meaning are shown together."),
             h("div", { className: "mt-2 grid gap-2 md:grid-cols-2", role: "radiogroup", "aria-label": "Predict the mutation effect" },
@@ -4098,23 +4098,23 @@ window.StemLab = window.StemLab || {
             dnaScenarioFeedback && h("span", { className: "text-[11px] leading-relaxed text-slate-700", role: "status" }, dnaScenarioFeedback)
           ),
           dnaScenarioRun && h("div", { className: "mt-3 grid gap-2 sm:grid-cols-3", "data-dna-scenario-result": true },
-            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3", "data-dna-locked-prediction": true },
+            h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3", "data-dna-locked-prediction": true },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Your locked prediction"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.label : dnaScenarioCommittedPrediction),
               h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, dnaScenarioCommittedChoice ? dnaScenarioCommittedChoice.description : "Saved before the model ran.")
             ),
-            h("div", { className: "rounded-lg border border-fuchsia-200 bg-white p-3" },
+            h("div", { className: "rounded-lg border border-fuchsia-500 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-fuchsia-800" }, "Actual effect"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, latestMutationEffect || "Calculating"),
               h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "Use the mutation comparison below to inspect the changed codons and protein output.")
             ),
-            h("div", { className: "rounded-lg border border-violet-200 bg-white p-3" },
+            h("div", { className: "rounded-lg border border-violet-500 bg-white p-3" },
               h("div", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Evidence checkpoint"),
               h("div", { className: "mt-1 text-sm font-black text-slate-900" }, dnaEvidenceScore >= 3 ? "Explanation complete" : "Explanation pending"),
               h("p", { className: "mt-1 text-[10px] leading-relaxed text-slate-600" }, "A full Evidence & Reasoning check records the evidence point.")
             )
           ),
-          dnaScenarioRun && h("fieldset", { className: "mt-3 rounded-lg border border-violet-200 bg-white p-3", "data-dna-revision": true },
+          dnaScenarioRun && h("fieldset", { className: "mt-3 rounded-lg border border-violet-500 bg-white p-3", "data-dna-revision": true },
             h("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Revise from the evidence"),
             h("p", { className: "text-[10px] leading-relaxed text-slate-600" }, "Choose the honest reflection. None is graded as the correct option; explain what the codon or protein evidence did to your thinking."),
             h("div", { className: "mt-2 grid gap-2 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the DNA evidence affected your thinking" },
@@ -4131,7 +4131,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             h("label", { htmlFor: "dna-scenario-revision-reason", className: "mt-3 block text-[10px] font-black text-violet-900" }, "What evidence strengthened or changed your explanation?"),
-            h("textarea", { id: "dna-scenario-revision-reason", value: dnaScenarioRevisionReason, maxLength: 500, rows: 3, onChange: function(e) { updMulti({ dnaScenarioRevisionReason: e.target.value.slice(0, 500), dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, placeholder: gradeText("I noticed...", "The evidence shows... so now I think...", "The changed codon or protein evidence shows...", "The molecular evidence supports or changes my explanation because..."), className: "mt-1 w-full rounded-lg border border-violet-200 bg-white p-2 text-[11px] text-slate-800" }),
+            h("textarea", { id: "dna-scenario-revision-reason", value: dnaScenarioRevisionReason, maxLength: 500, rows: 3, onChange: function(e) { updMulti({ dnaScenarioRevisionReason: e.target.value.slice(0, 500), dnaScenarioComplete: false, dnaScenarioFeedback: '', dnaScenarioScore: Math.min(dnaScenarioScore, 2) }); }, placeholder: gradeText("I noticed...", "The evidence shows... so now I think...", "The changed codon or protein evidence shows...", "The molecular evidence supports or changes my explanation because..."), className: "mt-1 w-full rounded-lg border border-violet-500 bg-white p-2 text-[11px] text-slate-800" }),
             h("p", { className: "mt-1 text-[9px] font-bold " + (dnaScenarioRevisionReady ? "text-emerald-700" : "text-slate-500"), role: "status" }, dnaScenarioRevisionReady ? "Reflection ready to save." : "Choose a reflection and add a little evidence before saving.")
           )
         ),        h("details", { className: "rounded-xl border border-violet-200 bg-violet-50/60", open: guidedStarted && !guidedComplete, 'data-dna-guided': true },
@@ -4165,9 +4165,9 @@ window.StemLab = window.StemLab || {
                     ),
                     h("div", { className: "flex flex-wrap items-center gap-2" },
                       h("button", { type: 'button', onClick: function() { checkGuidedAnswer(guidedSelectedAnswer); }, disabled: !guidedSelectedAnswer, className: "rounded-lg bg-slate-800 px-3 py-2 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-50" }, '\u2713 Check answer'),
-                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action === 'confirmPairing' && h("button", { type: 'button', onClick: markGuidedAction, className: "rounded-lg bg-amber-500 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-600" }, guidedStep.actionText),
+                      guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action === 'confirmPairing' && h("button", { type: 'button', onClick: markGuidedAction, className: "rounded-lg bg-amber-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-amber-700" }, guidedStep.actionText),
                       guidedCurrentResult && guidedCurrentResult.correct && !guidedActionReady && guidedStep.action !== 'confirmPairing' && h("span", { className: "text-[11px] font-bold text-amber-800", role: 'status' }, guidedActionInstruction(guidedStep)),
-                      guidedCurrentResult && guidedCurrentResult.correct && guidedActionReady && h("button", { type: 'button', onClick: advanceGuidedInvestigation, className: "rounded-lg bg-emerald-600 px-3 py-2 text-[11px] font-bold text-white hover:bg-emerald-700" }, guidedStepIndex === DNA_GUIDED_STEPS.length - 1 ? 'Finish investigation' : 'Continue'),
+                      guidedCurrentResult && guidedCurrentResult.correct && guidedActionReady && h("button", { type: 'button', onClick: advanceGuidedInvestigation, className: "rounded-lg bg-emerald-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-emerald-700" }, guidedStepIndex === DNA_GUIDED_STEPS.length - 1 ? 'Finish investigation' : 'Continue'),
                       guidedFeedback && h("span", { className: "text-[11px] font-bold text-slate-700", role: 'status' }, guidedFeedback)
                     )
                   )
@@ -4213,14 +4213,14 @@ window.StemLab = window.StemLab || {
             h("div", { className: "mt-3 grid gap-3 md:grid-cols-2" },
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
                 "Claim",
-                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
+                h("select", { value: dnaEvidenceClaim, onChange: function(e) { updMulti({ dnaEvidenceClaim: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose an evidence-based claim" },
                   h("option", { value: "" }, "Choose a claim"),
                   dnaEvidenceRubric.claims.map(function(claim) { return h("option", { key: claim.id, value: claim.id }, claim.label); })
                 )
               ),
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-violet-800" },
                 "Evidence citation",
-                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
+                h("select", { value: dnaEvidenceCitation, onChange: function(e) { var nextCitation = e.target.value; var keepSnapshot = nextCitation === dnaEvidenceCitation && ['codon', 'frame'].indexOf(nextCitation) >= 0; updMulti({ dnaEvidenceCitation: nextCitation, dnaEvidenceCitationDetail: keepSnapshot ? dnaEvidenceCitationDetail : '', dnaEvidenceCitationSequenceKey: keepSnapshot ? dnaEvidenceCitationSequenceKey : '', dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, className: "mt-1 w-full rounded-md border border-violet-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose evidence to cite" },
                   h("option", { value: "" }, "Choose evidence"),
                   dnaEvidenceCitationOptions.map(function(option) { return h("option", { key: option.id, value: option.id }, option.label); })
                 )
@@ -4236,7 +4236,7 @@ window.StemLab = window.StemLab || {
               ),
               dnaEvidenceCitationStale && h("p", { className: "mt-2 mb-0 text-[10px] leading-relaxed text-amber-900" }, "The DNA changed after this " + dnaEvidenceSourceLabel + " was saved. Refresh it before checking your reasoning.")
             ),
-            h("label", { className: "mt-3 block rounded-lg border border-violet-200 bg-white p-3" },
+            h("label", { className: "mt-3 block rounded-lg border border-violet-500 bg-white p-3" },
               h("span", { className: "text-[10px] font-black uppercase tracking-wide text-violet-800" }, "Reasoning"),
               h("textarea", { value: dnaEvidenceReasoning, onChange: function(e) { updMulti({ dnaEvidenceReasoning: e.target.value, dnaEvidenceScore: 0, dnaEvidenceFeedback: '' }); }, rows: 3, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-violet-500", 'aria-label': "Explain how the evidence supports the claim", placeholder: "Use because, shows, so, or therefore to connect the evidence to your claim." })
             ),
@@ -4527,7 +4527,7 @@ window.StemLab = window.StemLab || {
                 h("h4", { id: "dna-reading-frame-title", className: "mt-1 text-sm font-black text-slate-900" }, "One mRNA, three possible groupings"),
                 h("p", { className: "mt-1 mb-0 max-w-3xl text-[11px] leading-relaxed text-slate-700" }, "Shift the starting base to compare forward reading frames. A modeled ORF begins at AUG and continues to the first in-frame stop codon.")
               ),
-              h("span", { className: "rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-black text-indigo-800" }, "Selected: +" + dnaSelectedReadingFrame.frame)
+              h("span", { className: "rounded-full border border-indigo-500 bg-white px-2 py-1 text-[10px] font-black text-indigo-800" }, "Selected: +" + dnaSelectedReadingFrame.frame)
             ),
             h("div", { className: "mt-3 flex snap-x snap-mandatory gap-2 overflow-x-auto pb-2 md:grid md:grid-cols-3 md:overflow-visible md:pb-0", role: "radiogroup", "aria-label": "Choose a forward mRNA reading frame" },
               dnaReadingFrames.map(function(frame) {
@@ -4585,7 +4585,7 @@ window.StemLab = window.StemLab || {
               ),
               h("p", { className: "mt-2 mb-0 text-[8px] leading-relaxed text-slate-400" }, "Swipe or use Shift + mouse wheel to inspect longer sequences.")
             ),
-            h("div", { className: "mt-3 rounded-xl border border-indigo-200 bg-white p-3", "data-dna-reading-frame-detail": true, "data-frame": dnaSelectedReadingFrame.frame, "data-frame-status": dnaSelectedReadingFrame.status },
+            h("div", { className: "mt-3 rounded-xl border border-indigo-500 bg-white p-3", "data-dna-reading-frame-detail": true, "data-frame": dnaSelectedReadingFrame.frame, "data-frame-status": dnaSelectedReadingFrame.status },
               h("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 h("div", null,
                   h("div", { className: "text-[9px] font-black uppercase tracking-wide text-indigo-700" }, "Frame +" + dnaSelectedReadingFrame.frame + " evidence"),
@@ -4738,7 +4738,7 @@ window.StemLab = window.StemLab || {
                           : latestMutation.type === 'Deletion'
                             ? view.side === 'before' && idx === mutationComparison.pos
                             : view.side === 'after' && idx === mutationComparison.pos;
-                        return h("span", { key: idx, className: "grid h-6 w-6 place-items-center rounded font-black " + (isChanged ? "bg-amber-500 text-white ring-2 ring-amber-800" : "bg-slate-100 text-slate-700"), title: isChanged ? "Changed position" : undefined }, base);
+                        return h("span", { key: idx, className: "grid h-6 w-6 place-items-center rounded font-black " + (isChanged ? "bg-amber-700 text-white ring-2 ring-amber-800" : "bg-slate-100 text-slate-700"), title: isChanged ? "Changed position" : undefined }, base);
                       })
                     ),
                     h("div", { className: "mt-2 break-all font-mono text-[10px] text-slate-600" }, "mRNA: " + view.mrna),
@@ -4868,8 +4868,8 @@ window.StemLab = window.StemLab || {
                 h("div", { className: "mt-0.5 text-[9px] leading-relaxed text-slate-600" }, compareLeft && compareRight ? (compareLeft.label || "Experiment A") + " \u2194 " + (compareRight.label || "Experiment B") : "Use the card buttons above or the selectors below.")
               ),
               h("div", { className: "flex items-center gap-1.5", "aria-label": "Comparison slots" },
-                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareLeft ? "bg-indigo-600 text-white" : "border border-dashed border-indigo-300 bg-white text-indigo-500") }, compareLeft ? "A \u00b7 " + (compareLeft.label || "Selected") : "A \u00b7 empty"),
-                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareRight ? "bg-fuchsia-600 text-white" : "border border-dashed border-fuchsia-300 bg-white text-fuchsia-500") }, compareRight ? "B \u00b7 " + (compareRight.label || "Selected") : "B \u00b7 empty")
+                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareLeft ? "bg-indigo-600 text-white" : "border border-dashed border-indigo-300 bg-white text-indigo-600") }, compareLeft ? "A \u00b7 " + (compareLeft.label || "Selected") : "A \u00b7 empty"),
+                h("span", { className: "rounded-full px-2 py-1 text-[8px] font-black " + (compareRight ? "bg-fuchsia-600 text-white" : "border border-dashed border-fuchsia-300 bg-white text-fuchsia-600") }, compareRight ? "B \u00b7 " + (compareRight.label || "Selected") : "B \u00b7 empty")
               )
             )
           ),
@@ -4884,14 +4884,14 @@ window.StemLab = window.StemLab || {
             h("div", { className: "mt-3 grid gap-2 sm:grid-cols-2" },
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
                 "Experiment A",
-                h("select", { value: dnaCompareLeftId, onChange: function(e) { upd('dnaCompareLeft', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose first saved experiment" },
+                h("select", { value: dnaCompareLeftId, onChange: function(e) { upd('dnaCompareLeft', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose first saved experiment" },
                   h("option", { value: "" }, "Choose experiment A"),
                   dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
                 )
               ),
               h("label", { className: "block text-[10px] font-black uppercase tracking-wide text-indigo-800" },
                 "Experiment B",
-                h("select", { value: dnaCompareRightId, onChange: function(e) { upd('dnaCompareRight', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-200 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose second saved experiment" },
+                h("select", { value: dnaCompareRightId, onChange: function(e) { upd('dnaCompareRight', e.target.value); }, className: "mt-1 w-full rounded-md border border-indigo-500 bg-white px-2 py-2 text-[11px] font-bold text-slate-700", 'aria-label': "Choose second saved experiment" },
                   h("option", { value: "" }, "Choose experiment B"),
                   dnaExperimentHistory.map(function(entry) { return h("option", { key: entry.id, value: entry.id }, entry.label || "Saved experiment"); })
                 )
@@ -4899,7 +4899,7 @@ window.StemLab = window.StemLab || {
             ),
             experimentComparison
               ? h("div", { className: "mt-3 space-y-3", "data-dna-experiment-comparison-result": true },
-                  h("div", { className: "rounded-lg border border-indigo-200 bg-white p-3 text-[11px] text-slate-700" },
+                  h("div", { className: "rounded-lg border border-indigo-500 bg-white p-3 text-[11px] text-slate-700" },
                     h("span", { className: "font-black" }, "Difference summary: "),
                     experimentComparison.baseDifferences + " aligned base difference" + (experimentComparison.baseDifferences === 1 ? "" : "s") + (experimentComparison.firstDifference ? " · first difference at base " + experimentComparison.firstDifference : "")
                   ),
@@ -4916,7 +4916,7 @@ window.StemLab = window.StemLab || {
                       );
                     })
                   ),
-                  h("div", { className: "overflow-x-auto rounded-lg border border-indigo-200 bg-white" },
+                  h("div", { className: "overflow-x-auto rounded-lg border border-indigo-500 bg-white" },
                     h("table", { className: "w-full min-w-[560px] text-left text-[10px]", "aria-label": "Saved experiment codon comparison" },
                       h("thead", null,
                         h("tr", { className: "border-b border-indigo-100 bg-indigo-50" },
@@ -4940,7 +4940,7 @@ window.StemLab = window.StemLab || {
                       )
                     )
                   ),
-                  h("label", { className: "block rounded-lg border border-indigo-200 bg-white p-3" },
+                  h("label", { className: "block rounded-lg border border-indigo-500 bg-white p-3" },
                     h("span", { className: "text-[10px] font-black uppercase tracking-wide text-indigo-800" }, "Comparison reflection"),
                     h("textarea", { value: dnaCompareReflection, onChange: function(e) { upd('dnaCompareReflection', e.target.value); }, rows: 2, className: "mt-2 w-full resize-y rounded-md border border-slate-300 px-2 py-2 text-[11px] text-slate-700 outline-none focus:border-indigo-500", 'aria-label': "Saved experiment comparison reflection", placeholder: "What changed between A and B, and which codon or protein evidence supports your conclusion?" })
                   )
@@ -5325,7 +5325,7 @@ window.StemLab = window.StemLab || {
                         h("span", null, t('stem.dna.streak', 'Streak '), h('strong', { className: "text-amber-700" }, msStreak)),
                         h("span", null, t('stem.dna.best', 'Best '), h('strong', { className: "text-fuchsia-700" }, msBest))
                       ),
-                      h("div", { className: "bg-white rounded-lg p-3 border border-violet-200 mb-2" },
+                      h("div", { className: "bg-white rounded-lg p-3 border border-violet-500 mb-2" },
                         h("div", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
                         h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
                           h('span', { className: "text-slate-500" }, 'Before:  '),

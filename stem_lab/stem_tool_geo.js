@@ -2888,7 +2888,7 @@ var d = labToolData || {};
                     onChange: function(e) { upd('geoGlobeSearch', e.target.value); },
                     placeholder: __alloT('stem.geo.jump_to_a_country', 'Jump to a country\u2026'),
                     'aria-label': __alloT('stem.geo.jump_to_a_country_on_the_globe', 'Jump to a country on the globe'),
-                    className: 'px-2 py-1 rounded bg-slate-800 border border-slate-600 text-white placeholder-slate-400 text-[11px] w-40 focus:outline-none focus:ring-2 focus:ring-teal-400'
+                    className: 'px-2 py-1 rounded bg-slate-800 border border-slate-500 text-white placeholder-slate-400 text-[11px] w-40 focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
                   React.createElement('datalist', { id: 'geo-globe-countries' },
                     countries.map(function(c) { return React.createElement('option', { key: c.iso, value: c.name }); })
@@ -2911,7 +2911,7 @@ var d = labToolData || {};
                   },
                   'aria-pressed': !!d.geoGlobeNight,
                   'aria-label': __alloT('stem.geo.toggle_day_night_view', 'Toggle day / night view'),
-                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-200 hover:border-slate-400')
+                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border transition-all ' + (d.geoGlobeNight ? 'bg-indigo-600 border-indigo-400 text-white' : 'bg-slate-800 border-slate-500 text-slate-200 hover:border-slate-400')
                 }, d.geoGlobeNight ? '\uD83C\uDF19 Night' : '\u2600\uFE0F Day')
               ),
 

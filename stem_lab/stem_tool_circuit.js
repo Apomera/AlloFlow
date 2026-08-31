@@ -3182,7 +3182,7 @@ window.StemLab = window.StemLab || {
               ),
               stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[11px] text-slate-700 leading-relaxed' },
                 h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation)),
-              stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-200 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
+              stg.revealed && h('fieldset', { className: 'mt-2 rounded-lg border border-violet-500 bg-white p-2', 'data-circuit-poe-revision': scenario.id },
                 h('legend', { className: 'px-1 text-[10px] font-black uppercase tracking-wide text-violet-800' }, 'Revise from the evidence'),
                 h('p', { className: 'text-[10px] leading-relaxed text-slate-600' }, 'Choose the honest reflection; no option is scored as correct.'),
                 h('div', { className: 'mt-1 grid gap-1 sm:grid-cols-3', role: 'radiogroup', 'aria-label': 'How the circuit evidence affected your thinking for scenario ' + (i + 1) },
@@ -3199,7 +3199,7 @@ window.StemLab = window.StemLab || {
                   })
                 ),
                 h('label', { htmlFor: 'circuit-poe-reason-' + scenario.id, className: 'mt-2 block text-[10px] font-black text-violet-900' }, 'What evidence supports your revision?'),
-                h('textarea', { id: 'circuit-poe-reason-' + scenario.id, rows: 2, maxLength: 400, value: stg.reason || '', onChange: function(e) { updatePoeStage(scenario.id, { reason: e.target.value.slice(0, 400), complete: false }); }, placeholder: 'The voltage, current, or power evidence shows...', className: 'mt-1 w-full rounded border border-violet-200 bg-white p-2 text-[10px] text-slate-800' }),
+                h('textarea', { id: 'circuit-poe-reason-' + scenario.id, rows: 2, maxLength: 400, value: stg.reason || '', onChange: function(e) { updatePoeStage(scenario.id, { reason: e.target.value.slice(0, 400), complete: false }); }, placeholder: 'The voltage, current, or power evidence shows...', className: 'mt-1 w-full rounded border border-violet-500 bg-white p-2 text-[10px] text-slate-800' }),
                 h('button', { type: 'button', disabled: !reflectionReady || stg.complete, 'aria-disabled': reflectionReady && !stg.complete ? 'false' : 'true', onClick: function() { if (!reflectionReady || stg.complete) return; updatePoeStage(scenario.id, { complete: true }); }, className: 'mt-1.5 rounded bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white disabled:cursor-not-allowed disabled:opacity-45' }, stg.complete ? 'Inquiry credit recorded' : 'Record comparison and revision')
               )
             );

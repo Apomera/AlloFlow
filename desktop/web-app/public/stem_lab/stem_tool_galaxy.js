@@ -8053,7 +8053,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (!isAvailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 opacity-75' : isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600')
+                    className: "flex items-center gap-1 min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold border transition-all " + (!isAvailable ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-600 opacity-75' : isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-600')
 
                   }, lt.icon + " " + lt.label + (isAvailable ? "" : " - " + __alloT('stem.galaxy.layer_minimal', 'minimal')));
 
@@ -8994,7 +8994,7 @@ if (!window._galaxyHasLoadedOnce) {
                       placeholder: __alloT('stem.galaxy.real_sky_search_placeholder', 'Name, catalog ID, or object type'),
                       "aria-controls": "galaxy-real-sky-target-list",
                       onChange: function (e) { patchGalaxy({ realSkyTargetQuery: e.target.value }); },
-                      className: "mt-1 min-h-[44px] w-full rounded-lg border border-slate-400 bg-white px-2.5 py-2 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-200"
+                      className: "mt-1 min-h-[44px] w-full rounded-lg border border-slate-500 bg-white px-2.5 py-2 text-xs text-slate-800 focus:border-cyan-600 focus:outline-none focus:ring-2 focus:ring-cyan-200"
                     }),
                     React.createElement("p", { id: "galaxy-real-sky-search-results", role: "status", "aria-live": "polite", className: "my-2 text-[11px] font-semibold text-slate-500" },
                       __alloT('stem.galaxy.real_sky_search_results', '{shown} of {total} targets')
@@ -9189,7 +9189,7 @@ if (!window._galaxyHasLoadedOnce) {
                           )
                         ) : React.createElement("p", { className: "mt-2 rounded-lg border border-dashed border-violet-200 bg-white px-2.5 py-3 text-xs leading-relaxed text-slate-600" }, __alloT('stem.galaxy.real_sky_compare_hint', 'Switch Survey Light to compare what each wavelength reveals.')),
                         React.createElement("label", { htmlFor: "galaxy-real-sky-evidence-note", className: "mt-3 block text-[11px] font-black text-slate-700" }, __alloT('stem.galaxy.evidence_note_label', 'Evidence note - what changed, and what does it suggest?')),
-                        React.createElement("textarea", { id: "galaxy-real-sky-evidence-note", rows: 3, maxLength: REAL_SKY_NOTE_MAX_LENGTH, value: realSkyEvidenceNote, onChange: function (e) { patchGalaxy({ realSkyEvidenceNote: e.target.value.slice(0, REAL_SKY_NOTE_MAX_LENGTH) }); }, placeholder: __alloT('stem.galaxy.evidence_note_placeholder', 'I notice... This suggests... because...'), "aria-describedby": realSkyNotebookFull ? "galaxy-real-sky-note-help galaxy-real-sky-notebook-full" : "galaxy-real-sky-note-help", className: "mt-1 w-full resize-y rounded-lg border border-slate-400 bg-white px-2.5 py-2 text-xs leading-relaxed text-slate-800 focus:border-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-200" }),
+                        React.createElement("textarea", { id: "galaxy-real-sky-evidence-note", rows: 3, maxLength: REAL_SKY_NOTE_MAX_LENGTH, value: realSkyEvidenceNote, onChange: function (e) { patchGalaxy({ realSkyEvidenceNote: e.target.value.slice(0, REAL_SKY_NOTE_MAX_LENGTH) }); }, placeholder: __alloT('stem.galaxy.evidence_note_placeholder', 'I notice... This suggests... because...'), "aria-describedby": realSkyNotebookFull ? "galaxy-real-sky-note-help galaxy-real-sky-notebook-full" : "galaxy-real-sky-note-help", className: "mt-1 w-full resize-y rounded-lg border border-slate-500 bg-white px-2.5 py-2 text-xs leading-relaxed text-slate-800 focus:border-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-200" }),
                         realSkyNotebookFull && React.createElement("p", { id: "galaxy-real-sky-notebook-full", "data-galaxy-real-sky-notebook-full": "true", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-2 text-[11px] font-semibold leading-relaxed text-amber-950" }, realSkyNotebookFullMessage),
                         React.createElement("div", { className: "mt-2 flex flex-wrap items-center gap-2" },
                           React.createElement("p", { id: "galaxy-real-sky-note-help", className: "min-w-[12rem] flex-1 text-[11px] leading-relaxed text-slate-500" },
@@ -9286,7 +9286,7 @@ if (!window._galaxyHasLoadedOnce) {
                                     cancelRealSkyObservationEdit();
                                   },
                                   "aria-describedby": "galaxy-real-sky-observation-editor-count galaxy-real-sky-note-help",
-                                  className: "mt-1 w-full resize-y rounded-lg border border-slate-400 bg-white px-2.5 py-2 text-xs leading-relaxed text-slate-800 focus:border-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-200"
+                                  className: "mt-1 w-full resize-y rounded-lg border border-slate-500 bg-white px-2.5 py-2 text-xs leading-relaxed text-slate-800 focus:border-violet-600 focus:outline-none focus:ring-2 focus:ring-violet-200"
                                 }),
                                 React.createElement("p", { id: "galaxy-real-sky-observation-editor-count", className: "mt-1 text-[11px] text-slate-500" },
                                   __alloT('stem.galaxy.real_sky_note_count', '{count}/600 characters').replace('{count}', String(realSkyObservationEditNote.length))
@@ -9365,7 +9365,7 @@ if (!window._galaxyHasLoadedOnce) {
 // ── Quiz mode ──
 
               d.quizMode && d.isGeneratingQuiz && React.createElement("div", { className: "flex flex-col items-center justify-center p-12 mt-6 max-w-2xl mx-auto rounded-2xl bg-indigo-50 border-2 border-indigo-300 motion-safe:animate-pulse motion-reduce:animate-none", role: "status", "aria-live": "polite", "aria-atomic": "true"}, React.createElement("h2", {className: "text-lg font-bold text-indigo-600 mb-2"}, "✨ " + __alloT('stem.galaxy.quiz_generating_title', 'Gemini is Generating Astrophysic Questions...')), React.createElement("p", {className: "text-sm text-indigo-400"}, __alloT('stem.galaxy.quiz_generating_sub', 'Parsing deep space databases...'))),
-              d.quizMode && !d.isGeneratingQuiz && !d.quizDone && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-400 p-8 animate-in fade-in slide-in-from-bottom-4" },
+              d.quizMode && !d.isGeneratingQuiz && !d.quizDone && quizQ && React.createElement("div", { className: "mt-6 max-w-2xl mx-auto bg-white shadow-xl rounded-2xl border border-slate-500 p-8 animate-in fade-in slide-in-from-bottom-4" },
 
                 React.createElement("div", { className: "flex items-center justify-between mb-2" },
 
@@ -10639,7 +10639,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── OBAFGKM Star Classification Reference ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-500 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 
@@ -10914,7 +10914,7 @@ if (!window._galaxyHasLoadedOnce) {
 
               // ── Size Comparison ──
 
-              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-400 p-4 shadow-sm" },
+              React.createElement("div", { className: "bg-white rounded-2xl border border-slate-500 p-4 shadow-sm" },
 
                 React.createElement("h4", { className: "text-sm font-bold text-slate-800 mb-3 flex items-center gap-2" },
 

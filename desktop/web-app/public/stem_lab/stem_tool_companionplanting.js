@@ -6719,7 +6719,7 @@ var d = (labToolData.companionPlanting) || {};
                 ),
                 cgShowProgressSummary && h('div', { className: 'p-3 sm:p-4' },
                   h('label', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-600', htmlFor: 'community-progress-summary' }, 'Accessible progress summary'),
-                  h('textarea', { id: 'community-progress-summary', value: cgProgressSummaryText, readOnly: true, rows: 5, onFocus: function(event) { if (event.target && event.target.select) event.target.select(); }, 'aria-label': 'Accessible Companion Planting progress summary', className: 'mt-1 w-full rounded-xl border border-slate-400 bg-white p-2.5 font-mono text-[10px] leading-relaxed text-slate-900 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200', 'data-community-progress-summary': true })
+                  h('textarea', { id: 'community-progress-summary', value: cgProgressSummaryText, readOnly: true, rows: 5, onFocus: function(event) { if (event.target && event.target.select) event.target.select(); }, 'aria-label': 'Accessible Companion Planting progress summary', className: 'mt-1 w-full rounded-xl border border-slate-500 bg-white p-2.5 font-mono text-[10px] leading-relaxed text-slate-900 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-200', 'data-community-progress-summary': true })
                 )
               ),
               h('nav', { id: 'community-journey-nav', tabIndex: -1, className: 'scroll-mt-4 overflow-visible rounded-2xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50 to-emerald-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'data-community-journey-nav': true, 'aria-label': 'Garden learning journey' },
@@ -6879,7 +6879,7 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-slate-100 p-3' },
                       h('a', { href: gardenJourneyCurrent.href, className: 'inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-violet-700 px-3 py-2 text-center text-[10px] font-black text-white hover:bg-violet-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700', 'data-crew-open-stage': gardenJourneyCurrent.id }, 'Open ' + gardenJourneyCurrent.label),
-                      h('button', { onClick: function() { cgUpd({ crewRole: nextCrewRole.id, lastFeedback: { icon: '\uD83D\uDD04', title: 'Crew role rotated', detail: nextCrewRole.label + ' now leads the huddle.', tone: 'success' } }); }, className: 'min-h-[44px] rounded-lg border border-slate-400 bg-white px-3 py-2 text-[10px] font-black text-slate-800 hover:bg-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700', 'data-crew-role-rotate': nextCrewRole.id }, 'Rotate role')
+                      h('button', { onClick: function() { cgUpd({ crewRole: nextCrewRole.id, lastFeedback: { icon: '\uD83D\uDD04', title: 'Crew role rotated', detail: nextCrewRole.label + ' now leads the huddle.', tone: 'success' } }); }, className: 'min-h-[44px] rounded-lg border border-slate-500 bg-white px-3 py-2 text-[10px] font-black text-slate-800 hover:bg-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700', 'data-crew-role-rotate': nextCrewRole.id }, 'Rotate role')
                     )
                   )
                 ),
@@ -10346,7 +10346,7 @@ var d = (labToolData.companionPlanting) || {};
                 if (guide.length === 0) return null;
                 var friends = guide.filter(function(g) { return g.comp.bonus > 0; });
                 var enemies = guide.filter(function(g) { return g.comp.bonus < 0; });
-                return h('div', { className: 'bg-white rounded-xl border border-slate-400 p-3' },
+                return h('div', { className: 'bg-white rounded-xl border border-slate-500 p-3' },
                   h('div', { className: 'text-xs font-bold text-slate-700 mb-2' }, __alloT('stem.companionplanting.companion_planting_guide', '📖 Companion Planting Guide')),
                   friends.length > 0 && h('div', { className: 'mb-2' },
                     h('div', { className: 'text-[11px] font-bold text-emerald-700 mb-1' }, '✅ Good Companions (' + friends.length + ')'),
@@ -11326,7 +11326,7 @@ var d = (labToolData.companionPlanting) || {};
 
               phase === 'plant' && React.createElement("div", { className: "flex items-center gap-3 flex-wrap" },
 
-                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-400 p-2" },
+                React.createElement("div", { className: "flex items-center gap-2 bg-white rounded-xl border border-slate-500 p-2" },
 
                   React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase px-1" }, "Plant:"),
 

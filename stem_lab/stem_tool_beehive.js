@@ -23888,7 +23888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               : decision.tone === 'success'
                 ? (dk ? 'text-emerald-200' : 'text-emerald-900')
                 : (dk ? 'text-cyan-200' : 'text-cyan-900');
-          var decisionBadgeClass = decision.tone === 'danger' ? 'bg-rose-600 text-white' : decision.tone === 'warning' ? 'bg-amber-500 text-slate-950' : decision.tone === 'success' ? 'bg-emerald-600 text-white' : 'bg-cyan-700 text-white';
+          var decisionBadgeClass = decision.tone === 'danger' ? 'bg-rose-600 text-white' : decision.tone === 'warning' ? 'bg-amber-500 text-slate-950' : decision.tone === 'success' ? 'bg-emerald-700 text-white' : 'bg-cyan-700 text-white';
           var pressureGain = queenDifficultyCfg.pressureGain + (queenPhase === 'defend' ? 3 : queenPhase === 'swarm' ? 5 : 0);
           var pressureCycles = queenRival.pressure >= 60 ? 1 : Math.max(1, Math.ceil((60 - (queenRival.pressure || 0)) / pressureGain));
           var cadenceCycles = 4 - (queenDay % 4);
