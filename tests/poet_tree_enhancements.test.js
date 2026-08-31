@@ -152,6 +152,10 @@ describe('Poet Tree enhancement wave', () => {
     const firstId = workspaces[0].id
 
     const previousConfirm = window.confirm
+    const previousUX = window.AlloFlowUX
+    // Poet Tree now confirms through the async AlloFlowUX dialog API (fail-closed
+    // when absent), not window.confirm.
+    window.AlloFlowUX = { ...(previousUX || {}), confirm: async () => true }
     window.confirm = () => true
     try {
       await act(async () => { host.querySelector('button[aria-label="Start a new draft workspace"]').dispatchEvent(new MouseEvent('click', { bubbles: true })) })
@@ -169,6 +173,7 @@ describe('Poet Tree enhancement wave', () => {
       expect(host.querySelector('#pt-editor').value).toBe('First workspace')
     } finally {
       window.confirm = previousConfirm
+      window.AlloFlowUX = previousUX
     }
   })
   it('does not create duplicate Library entries for the same revision', async () => {
@@ -204,10 +209,13 @@ describe('Poet Tree enhancement wave', () => {
     expect(host.textContent).toContain('Export JSON');
     expect(host.textContent).toContain('Clear history');
     const previousConfirm = window.confirm;
+    const previousUX = window.AlloFlowUX;
+    window.AlloFlowUX = { ...(previousUX || {}), confirm: async () => true };
     window.confirm = () => true;
     const clear = Array.from(host.querySelectorAll('button')).find((button) => button.textContent === 'Clear history');
     await act(async () => { clear.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     window.confirm = previousConfirm;
+    window.AlloFlowUX = typeof previousUX === 'undefined' ? window.AlloFlowUX : previousUX;
     expect(JSON.parse(localStorage.getItem('alloPoetTreeVersionsV1'))).toHaveLength(0);
   });
 
@@ -459,6 +467,8 @@ describe('Poet Tree enhancement wave', () => {
       activeWorkspaceId: 'restored-workspace'
     };
     const previousConfirm = window.confirm;
+    const previousUX = window.AlloFlowUX;
+    window.AlloFlowUX = { ...(previousUX || {}), confirm: async () => true };
     window.confirm = () => true;
     try {
       const valid = new File([JSON.stringify(backup)], 'poettree-local-backup.json', { type: 'application/json' });
@@ -504,6 +514,7 @@ describe('Poet Tree enhancement wave', () => {
       expect(host.querySelector('#pt-editor').value).toBe('workspace poem');
     } finally {
       window.confirm = previousConfirm;
+    window.AlloFlowUX = typeof previousUX === 'undefined' ? window.AlloFlowUX : previousUX;
     }
   });
   it('merges backup collections without replacing the current draft', async () => {
@@ -530,6 +541,7 @@ describe('Poet Tree enhancement wave', () => {
     const originalCreateObjectURL = urlApi.createObjectURL;
     const originalRevokeObjectURL = urlApi.revokeObjectURL;
     const originalAnchorClick = HTMLAnchorElement.prototype.click;
+    window.AlloFlowUX = { ...(window.AlloFlowUX || {}), confirm: async () => true };
     window.confirm = () => true;
     urlApi.createObjectURL = () => 'blob:merge-safety';
     urlApi.revokeObjectURL = () => {};
@@ -549,6 +561,7 @@ describe('Poet Tree enhancement wave', () => {
       expect(JSON.parse(localStorage.getItem('alloPoetTreePrefs'))).toEqual({ cloudFeaturesEnabled: false });
     } finally {
       window.confirm = previousConfirm;
+    window.AlloFlowUX = typeof previousUX === 'undefined' ? window.AlloFlowUX : previousUX;
       if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL; else delete urlApi.createObjectURL;
       if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL; else delete urlApi.revokeObjectURL;
       HTMLAnchorElement.prototype.click = originalAnchorClick;
@@ -578,6 +591,7 @@ describe('Poet Tree enhancement wave', () => {
     const originalRevokeObjectURL = urlApi.revokeObjectURL;
     const originalAnchorClick = HTMLAnchorElement.prototype.click;
     const safetyBlobs = [];
+    window.AlloFlowUX = { ...(window.AlloFlowUX || {}), confirm: async () => true };
     window.confirm = () => true;
     urlApi.createObjectURL = (blob) => { safetyBlobs.push(blob); return 'blob:undo-safety'; };
     urlApi.revokeObjectURL = () => {};
@@ -600,6 +614,7 @@ describe('Poet Tree enhancement wave', () => {
       expect(JSON.parse(localStorage.getItem('alloPoetTreePrefs'))).toEqual({ cloudFeaturesEnabled: false, largeText: true });
     } finally {
       window.confirm = previousConfirm;
+    window.AlloFlowUX = typeof previousUX === 'undefined' ? window.AlloFlowUX : previousUX;
       if (originalCreateObjectURL) urlApi.createObjectURL = originalCreateObjectURL; else delete urlApi.createObjectURL;
       if (originalRevokeObjectURL) urlApi.revokeObjectURL = originalRevokeObjectURL; else delete urlApi.revokeObjectURL;
       HTMLAnchorElement.prototype.click = originalAnchorClick;
@@ -618,11 +633,14 @@ describe('Poet Tree enhancement wave', () => {
     const erase = host.querySelector('button[aria-label="Erase all local Poet Tree data"]');
     expect(erase).toBeTruthy();
     const previousConfirm = window.confirm;
+    const previousUX = window.AlloFlowUX;
+    window.AlloFlowUX = { ...(previousUX || {}), confirm: async () => true };
     window.confirm = () => true;
     try {
       await act(async () => { erase.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
     } finally {
       window.confirm = previousConfirm;
+    window.AlloFlowUX = typeof previousUX === 'undefined' ? window.AlloFlowUX : previousUX;
     }
     ['alloPoetTreePoems', 'alloPoetTreeDraftV2', 'alloPoetTreeVersionsV1', 'alloPoetTreeWorkspacesV1', 'alloPoetTreeActiveWorkspaceV1'].forEach((key) => {
       expect(localStorage.getItem(key)).toBeNull();

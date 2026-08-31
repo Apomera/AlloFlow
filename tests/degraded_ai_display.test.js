@@ -107,11 +107,14 @@ describe('anti-drift: the view renders it honestly', () => {
     expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete \? \(<span className="text-slate-500">[\s\S]{0,20}<\/span>\) : \(<>\{\(pdfFixResult\.afterScore/);
   });
   it('the breakdown shows a structural-only label, and the summary line is reconciled (no "Score unavailable" contradiction)', () => {
-    expect(viewSrc).toMatch(/structural\/automated checks only; AI semantic audit incomplete/);
-    expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete[\s\S]{0,200}AI semantic verification incomplete/);
+    // The literal breakdown copy moved to i18n; the amber incomplete branch is the seam.
+    expect(viewSrc).toMatch(/pdf_audit\.score\.after_incomplete_title/);
+    expect(viewSrc).toMatch(/pdfFixResult\._aiVerificationIncomplete[\s\S]{0,260}pdf_audit\.verification\.ai_incomplete_summary/);
   });
   it('(2026-06-22) the "ready" headline is qualified while still-working / fidelity-limited (not an unconditional "ready")', () => {
-    expect(viewSrc).toMatch(/const _stillWorking = pdfAutoContinueRunning \|\| pdfFixLoading;/);
+    // 2026-08: derived through _remediationInFlight (busy || auto-continue).
+    expect(viewSrc).toMatch(/const _remediationInFlight = _remediationBusy \|\| pdfAutoContinueRunning;/);
+    expect(viewSrc).toMatch(/const _stillWorking = _remediationInFlight;/);
     expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_working/);
     expect(viewSrc).toMatch(/pdf_audit\.results\.ready_heading_verify/);
     // the still-working / fidelity branches must be chosen BEFORE the plain 'ready' fallback
@@ -120,7 +123,10 @@ describe('anti-drift: the view renders it honestly', () => {
   it('a section with no score renders neutral "not scored", not red 0; and the loop bails when AI-throttled + axe-clean', () => {
     expect(viewSrc).toMatch(/const _hasScore = typeof chunk\.score === 'number'/);
     expect(viewSrc).toMatch(/_hasScore \? chunk\.score \+ '\/100' : \(t\('pdf_audit\.live_chunk\.not_scored'\)/);
-    expect(viewSrc).toMatch(/const _aiThrottledClean = !!\(r && r\._aiVerificationIncomplete && r\.axeAudit && r\.axeAudit\.totalViolations === 0\)/);
+    // The axe-clean throttle bail was superseded by the pause-with-resumable-
+    // checkpoint design: the loop marks _remediationThrottlePaused and defers.
+    const handlers = readFileSync('misc_handlers_source.jsx', 'utf8');
+    expect(handlers).toContain("_remediationThrottlePaused: true, _finalAuditThrottleDeferred: true, _finalAuditRetryAvailable: true");
   });
   it('(2026-06-22) the review-card render site ALSO guards the score (no blank red /100) and flags 0-change sections', () => {
     // neutral slate branch added to the card's scoreColor ladder when the chunk has no numeric score

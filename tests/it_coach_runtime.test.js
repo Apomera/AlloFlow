@@ -364,9 +364,7 @@ describe('IT Coach posture session binding', () => {
   });
 
   it.each([
-    'https://alloflow-cdn.pages.dev',
-    'https://prismflow-911fe.web.app',
-    'https://prismflow-911fe.firebaseapp.com'
+    'https://alloflow-cdn.pages.dev'
   ])('accepts an educator posture from a session ping on trusted app origin %s', async (bridgeOrigin) => {
     const coach = bootCoach({ bridge: true, bridgeOrigin });
     await pingCoach(coach, 'educator');
@@ -377,6 +375,10 @@ describe('IT Coach posture session binding', () => {
 
   it.each([
     'https://attacker.pages.dev',
+    // Retired 2026-08-16: the Firebase hosting origins still answer with a
+    // frozen pre-migration bundle, so an opener there must stay learner.
+    'https://prismflow-911fe.web.app',
+    'https://prismflow-911fe.firebaseapp.com',
     'https://preview.alloflow-cdn.pages.dev',
     'https://student-project.run.app',
     'https://student-project.googleusercontent.com',
@@ -412,7 +414,7 @@ describe('IT Coach bridge destination consent', () => {
   it('keeps a late first-party token handoff seamless', async () => {
     const coach = bootCoach({
       bridge: true,
-      bridgeOrigin: 'https://prismflow-911fe.web.app',
+      bridgeOrigin: 'https://alloflow-cdn.pages.dev',
       query: '?posture=learner'
     });
     await pingCoach(coach, 'educator');
@@ -423,7 +425,7 @@ describe('IT Coach bridge destination consent', () => {
     expect(coach.confirm).not.toHaveBeenCalled();
     expect(coach.opener.postMessage).toHaveBeenCalledWith(
       expect.objectContaining({ type: 'allostudio-coach-request', imageBase64: 'RUNTIME_FRAME' }),
-      'https://prismflow-911fe.web.app'
+      'https://alloflow-cdn.pages.dev'
     );
   });
 
