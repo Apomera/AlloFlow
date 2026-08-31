@@ -102,7 +102,8 @@ describe('pipeline + UI wiring (source-pinned)', () => {
   it('#5 content-fidelity download gate — conservative <80% / refusal threshold, opt-in (never hard-block)', () => {
     const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), 'utf8');
     // gates the tagged-PDF download on a SEVERE shortfall or a refusal
-    expect(view).toContain('pdfFixResult.integrityCoverage < 80');
+    // The gate reads through the export-result binding now (same 80% threshold).
+    expect(view).toContain('_exportResult.integrityCoverage < 80');
     expect(view).toContain("n.kind === 'refusal'");
     expect(view).toContain('setFidelityGateIssue(_why)');
     // bytes wait in a ref; the panel offers Review-the-Diff + Download-anyway (opt-in, not a block)

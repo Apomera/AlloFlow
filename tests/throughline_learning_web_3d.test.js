@@ -68,12 +68,12 @@ describe('Throughline Learning Web spatial handoff', () => {
         history: [], alignmentGraphExport: sourceExport, onImportAlignmentGraph: noop,
       }));
     });
-    const fileInput = host.querySelector('input[aria-label="Open saved alignment graph export"]');
+    const fileInput = host.querySelector('input[aria-label="alignment_graph.open_input_aria"]');
     const oversized = new File(['x'], 'oversized.json', { type: 'application/json' });
     Object.defineProperty(oversized, 'size', { value: 2 * 1024 * 1024 + 1 });
     Object.defineProperty(fileInput, 'files', { value: [oversized], configurable: true });
     await act(async () => { fileInput.dispatchEvent(new Event('change', { bubbles: true })); });
-    expect(toasts).toContainEqual(expect.objectContaining({ type: 'error', message: expect.stringContaining('too large') }));
+    expect(toasts).toContainEqual(expect.objectContaining({ type: 'error', message: expect.stringContaining('too_large') }));
 
     const graphButton = findButton(host, 'throughline.alignment_graph');
     await act(async () => { graphButton.click(); });

@@ -102,9 +102,9 @@ describe('student-facing accessibility contracts', () => {
   });
 
   it('pins canonical student-module URLs by content while dev loaders stay local', () => {
-    // Root AlloFlowANTI is the production source and keeps content-hash CDN pins.
-    // build.js defaults to dev mode for App.jsx and its backup, where local URLs
-    // are intentional so edits hot-reload without a CDN round trip.
+    // Since the mirror unification all three shells are byte-identical copies
+    // of the root ANTI with content-hash CDN pins; build-desktop-web rewrites
+    // URLs for the desktop bundle at build time.
     const host = read('AlloFlowANTI.txt');
     const deployHost = read('desktop/web-app/src/AlloFlowANTI.txt');
     const deployApp = read('desktop/web-app/src/App.jsx');
@@ -116,8 +116,8 @@ describe('student-facing accessibility contracts', () => {
     ].forEach((file) => {
       const tag = `${file}?v=${hash8(file)}`;
       expect(host).toContain(tag);
-      expect(deployHost).toContain(`'./${file}'`);
-      expect(deployApp).toContain(`'./${file}'`);
+      expect(deployHost).toContain(tag);
+      expect(deployApp).toContain(tag);
     });
   });
 });

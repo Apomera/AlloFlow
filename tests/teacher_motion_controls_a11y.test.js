@@ -45,7 +45,12 @@ describe('Teacher interface control semantics', () => {
     expect(source).toContain('<svg role="img" aria-label={data.map');
     expect(source).toContain('<svg role="img" aria-label={(t(');
     expect(source).toContain('<svg aria-hidden="true" focusable="false"');
-    expect(source.match(/<th scope="col"/g)).toHaveLength(16);
+    // Table count grows with new features; the durable invariant is that EVERY
+    // header is scoped (col or row) — an unscoped <th> is what this guarded.
+    const allTh = (source.match(/<th[\s>]/g) || []).length;
+    const scopedTh = (source.match(/<th scope=/g) || []).length;
+    expect(scopedTh).toBe(allTh);
+    expect(scopedTh).toBeGreaterThanOrEqual(16);
   });
 });
 

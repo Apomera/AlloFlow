@@ -34,8 +34,9 @@ describe('Glossary layered dialog accessibility', () => {
   });
 
   it('announces interstitial progress and focus-manages completed screener results', () => {
-    expect(source).toContain('role="status" aria-live="polite" aria-atomic="true" aria-label="Screening subtest progress"');
-    expect(source).toContain('role="progressbar" aria-label="Completed screening subtests"');
+    expect(source).toContain(// The label is i18n'd through glossaryProgressLabel now.
+      'role="status" aria-live="polite" aria-atomic="true" aria-label={glossaryProgressLabel}');
+    expect(source).toContain('role="progressbar" aria-label={glossaryProgressLabel}');
     expect(source).toContain('ref={screenerDialogRef} role="dialog" aria-modal="true"');
     expect(source).toContain('aria-labelledby="glossary-screener-results-title"');
     expect(source).toContain('containModalFocus(e, screenerDialogRef.current, closeScreenerResults)');
