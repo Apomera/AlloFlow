@@ -332,9 +332,11 @@ describe('ANTI wiring pins', () => {
     // 6 call sites (reading set, reading book, manipulative, restore-view tail, navigation, confirmed saved-plan presentation)
     // all continue through the same helper.
     // — the raw currentResourceId write survives ONLY inside the helper.
-    const calls = anti.split('_alloFollowResourceLive(').length - 1;
-    // AAC Board History restore is the seventh class-follow surface; the
-    // eighth reference is the confirmed retry owned by the portable-audio guard.
+    // Five of the eight class-follow surfaces moved into misc_handlers with
+    // the resource-open handlers (2026-08-22); the total contract is unchanged.
+    const handlers = fs.readFileSync(path.resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
+    const calls = anti.split('_alloFollowResourceLive(').length - 1
+      + handlers.split('_alloFollowResourceLive(').length - 1;
     expect(calls).toBe(8);
     expect(anti.split('currentResourceId: item.id').length - 1).toBe(1);
     expect(anti).toContain('const _alloFollowResourceLive = (item, options = {}) => {');

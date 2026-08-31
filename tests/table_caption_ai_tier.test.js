@@ -122,7 +122,8 @@ describe('anti-drift: addAiTableCaptions is wired into the main flow before the 
     // document that is about to change. Uniqueness is asserted so a rename fails
     // loudly instead of an indexOf(-1) quietly satisfying "less than".
     const callHits = dp.split('await addAiTableCaptions(').length - 1;
-    const auditHits = dp.split('const finalAudit = await auditOutputAccessibility(').length - 1;
+    // The assignment split from the declaration when the trigger tag landed.
+    const auditHits = dp.split("finalAudit = await auditOutputAccessibility(_finalAuditHtml, { signal: _runAbortSignal, trigger: 'primary-final-audit' })").length - 1;
     expect(callHits, 'expected exactly one addAiTableCaptions call site').toBe(1);
     expect(auditHits, 'expected exactly one finalAudit assignment').toBe(1);
     const callIdx = dp.indexOf('await addAiTableCaptions(');

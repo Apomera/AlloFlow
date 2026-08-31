@@ -20,7 +20,10 @@ import { createRequire } from 'node:module';
 import { resolve, dirname } from 'node:path';
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-vi.setConfig({ testTimeout: 360000, hookTimeout: 60000 });
+// 2026-08: the pipeline's real per-section audits grew (the auto-continue
+// golden runs ~6 min/scenario); 360s starved the full e2e mid-run and the
+// timeout then poisoned the canary with 'run already active'.
+vi.setConfig({ testTimeout: 900000, hookTimeout: 60000 });
 
 const requireCjs = createRequire(import.meta.url);
 
@@ -138,7 +141,7 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     // verification, so the model-call count only pins the primary pass.
     expect(calls.htmlAudits).toBeGreaterThanOrEqual(2);
     expect(calls.total).toBeGreaterThanOrEqual(7); // vision audit + extraction + audits + fixes
-  }, 360000);
+  }, 900000);
 
   // The connector ships its own runtime canary (`remediation_selftest`), whose scripted replies
   // must satisfy the same strict-parse contract this file's fixtures do. Two hand-maintained

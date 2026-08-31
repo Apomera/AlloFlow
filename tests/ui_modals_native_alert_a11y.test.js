@@ -19,7 +19,8 @@ describe('Shared UI modal error announcements', () => {
 
   it('announces unsupported speech recognition through the existing mic status', () => {
     expect(source).toContain("setMicStatus('unsupported');");
-    expect(source).toContain("micStatus === 'unsupported' ? t('roles.voice_not_supported')");
+    // The copy routes through the shared roleCopy fallback helper now.
+    expect(source).toContain("micStatus === 'unsupported' ? roleCopy('roles.voice_not_supported',");
     expect(source).toContain('<p id="role-mic-status" className="sr-only" role="status" aria-live="polite" aria-atomic="true">');
     expect(source).not.toContain("else alert(t('roles.voice_not_supported'))");
   });

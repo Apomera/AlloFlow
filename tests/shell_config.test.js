@@ -113,7 +113,10 @@ describe('the shell role is the WEAKEST signal, and honors the password gate', (
   });
 
   it('routes through the teacher password gate exactly as a manual click does', () => {
-    expect(block).toContain('if (APP_CONFIG._cfg_validation_key) {');
+    // The configured-key check moved into the shared educator access-code
+    // requirement helper; the shell block still opens the same gate.
+    expect(anti).toContain("if (APP_CONFIG._cfg_validation_key) return 'configured';");
+    expect(anti).toContain('const _alloEducatorAccessCodeRequirement = () => {');
     expect(block).toContain('setPendingRole(cfg.forceRole);');
     expect(block).toContain('setIsGateOpen(true);');
   });

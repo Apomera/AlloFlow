@@ -67,7 +67,9 @@ describe('display + read-aloud settings persist across sessions', () => {
     expect(utils).toContain('window.__alloPrefsHydrated');       // mount gate holds first paint
     expect(utils).toContain("window.addEventListener('pagehide', _lsSnapshot)");
     // Hydration must never clobber a value written earlier this session.
-    expect(utils).toContain('localStorage.getItem(k) === null');
+    // The hydrator now reads currentValue once and honors replaceExisting.
+    expect(utils).toContain('const currentValue = localStorage.getItem(k);');
+    expect(utils).toContain('if (currentValue === null || replaceExisting) {');
     // And it must be active on Canvas hosts.
     expect(utils).toContain("host.includes('googleusercontent')");
   });

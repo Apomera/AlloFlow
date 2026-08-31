@@ -4678,20 +4678,6 @@
     // Host routing ("Open in Page Designer" next to the main app's slide
     // export): the prop arrives once; the ref guard makes it one-shot so
     // closing the deck and picking a template does not rebuild it.
-    var initialActionRef = React.useRef(false);
-    React.useEffect(function () {
-      if (initialActionRef.current) return;
-      if (props.initialAction === 'deck-from-resources') {
-        initialActionRef.current = true;
-        buildDeckFromResources();
-      } else if ((props.initialAction === 'insert-visual-asset' || props.initialAction === 'insert-artstudio-artwork') && props.initialArtwork) {
-        initialActionRef.current = true;
-        insertArtworkFromTool(props.initialArtwork);
-      } else if (props.initialAction === 'import-lesson-deck' && props.initialFile) {
-        initialActionRef.current = true;
-        onImportPptxFile({ target: { files: [props.initialFile], value: '' } });
-      }
-    }, [props.initialAction, props.initialFile, props.initialArtwork]);
 
     // ── object insertion ──
     var selectFromOp = function (op) { if (op && op.object && op.object.id) selectOnly(op.object.id); return op; };
@@ -5666,6 +5652,23 @@
         stAnnounce(TT('studio.a11y_pptx_imported', 'PowerPoint imported') + ': ' + s.slides + ' ' + TT('studio.pptx_slides', 'slides'));
       }).catch(function (err) { addToast(TT('studio.pptx_import_failed', 'Could not import: ') + ((err && err.message) || 'unknown'), 'error'); });
     };
+    // Moved below onImportPptxFile (var-use-before-assign scan): the effect
+    // fires post-render so this was runtime-safe, but the scan keeps calls
+    // lexically below their var assignments so real hazards stay loud.
+    var initialActionRef = React.useRef(false);
+    React.useEffect(function () {
+      if (initialActionRef.current) return;
+      if (props.initialAction === 'deck-from-resources') {
+        initialActionRef.current = true;
+        buildDeckFromResources();
+      } else if ((props.initialAction === 'insert-visual-asset' || props.initialAction === 'insert-artstudio-artwork') && props.initialArtwork) {
+        initialActionRef.current = true;
+        insertArtworkFromTool(props.initialArtwork);
+      } else if (props.initialAction === 'import-lesson-deck' && props.initialFile) {
+        initialActionRef.current = true;
+        onImportPptxFile({ target: { files: [props.initialFile], value: '' } });
+      }
+    }, [props.initialAction, props.initialFile, props.initialArtwork]);
 
     // ── styles ──
     var S = {

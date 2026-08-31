@@ -2313,7 +2313,8 @@ it('popup take deletion asks for confirmation (batch 2)', () => {
     expect(playerSource).toContain('function VideoRefPlayerOverlay({ item, onClose, addToast, t }) {');
     expect(anti).toContain('<VideoRefPlayerOverlay item={videoRefPlayerItem}');
     expect(anti).toContain("case 'video-ref': return <MonitorPlay size={16} />;");
-    expect(anti).toContain("if (item && item.type === 'video-ref') {");
+    // The resource-open branch moved to misc_handlers (2026-08-22 modularization).
+    expect(readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8')).toContain("if (item && item.type === 'video-ref') {");
     // Teacher-only + excluded from document export until those surfaces exist.
     expect(anti).toMatch(/TEACHER_ONLY_TYPES = \[[^\]]*'video-ref'/);
     expect(anti).toMatch(/NON_EXPORTABLE_TYPES = new Set\(\[[^\]]*'video-ref'/);
