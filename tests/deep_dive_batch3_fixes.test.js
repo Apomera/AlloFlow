@@ -89,8 +89,9 @@ describe('M17 — fresh-spawn OCR fallback keeps word boxes', () => {
 
 describe('M1/M2/M6 — circle-back covers null audits, respects the wall, and keeps the status honest', () => {
   it('M1: the re-audit gate fires for absent-under-throttle, not only partial', () => {
-    expect(dp).toContain('const _reAuditNeeded = (verification && verification._partialAudit)');
-    expect(dp).toContain('|| (_finalAuditThrottled && !_finalAuditHadUsableScore);');
+    // 2026-08 pause telemetry: a paused run defers instead of circling back.
+    expect(dp).toContain('const _reAuditNeeded = !_remediationThrottlePaused && ((verification && verification._partialAudit)');
+    expect(dp).toContain('|| (_finalAuditThrottled && !_finalAuditHadUsableScore));');
   });
   it('M2: wait + re-audit are individually budget-clamped (abandon, never let the wall discard)', () => {
     expect(dp).toContain("}), Math.max(1000, _deferHardStop - Date.now() + 5000), 'deferred re-audit wait');");
@@ -103,7 +104,9 @@ describe('M1/M2/M6 — circle-back covers null audits, respects the wall, and ke
     // a generation bump that a plain cancel never produces.
     expect(dp).toMatch(/const _runGenStale = \(\) => !!\(_runAbortSignal && _runAbortSignal\.aborted\)\s*\n\s*\|\| \(!_silentMode && typeof window !== 'undefined' && \(window\.__alloPdfRunGen \|\| 0\) !== _myRunGen\);/);
     expect(dp).toContain("onTick: (w) => { try { updateProgress(4, 'AI re-reading '");
-    expect(dp).toContain("if (Date.now() >= _deferHardStop || _genStale()) break;");
+    // The gen-stale exit moved to its own guarded warn+stop branch.
+    expect(dp).toContain("if (Date.now() >= _deferHardStop) break;");
+    expect(dp).toContain("Deferred re-audit: run superseded or cancelled");
   });
   it('M6 (view): the manual re-audit wait ticks a countdown instead of a static line', () => {
     expect(view).toContain('await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000, onTick:');

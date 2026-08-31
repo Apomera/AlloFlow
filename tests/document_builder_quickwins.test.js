@@ -75,11 +75,15 @@ describe('anti-drift: content_engine quick-wins shipped', () => {
 
 describe('anti-drift: generated-document accessibility fixes (doc_pipeline) + host', () => {
   it('the generated doc html lang follows the CONTENT language, not the UI language (WCAG 3.1.1)', () => {
-    expect(pipe).toMatch(/\}\)\[leveledTextLanguage \|\| currentUiLanguage\] \|\| 'en'\}" dir=/);
+    // The inline map became the named _documentLanguageMap; same content-first rule.
+    expect(pipe).toContain("_documentLanguageMap[leveledTextLanguage || currentUiLanguage] || 'en'");
+    expect(pipe).toMatch(/<html lang="\$\{_documentLanguage\}" dir="\$\{direction\}"/);
   });
   it('the generated quiz radio no longer ships a literal t() aria-label (the <label> names it)', () => {
     expect(pipe).not.toMatch(/<input aria-label=\{t\('common\.text_field'\)\} type="radio"/);
-    expect(pipe).toMatch(/: `<input type="radio" name="q_\$\{item\.id\}/);
+    // Quiz radios now key off the per-control id base (worksheets swap in a
+    // fillable circle); the <label> wrapper still provides the name.
+    expect(pipe).toMatch(/<input type="radio" name="\$\{controlIdBase\}_answer"/);
   });
   it('the host bibliography wrapper default is aligned to Referenced Sources', () => {
     expect(anti).toMatch(/title = 'Referenced Sources'\) => \{/);

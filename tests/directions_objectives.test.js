@@ -7,6 +7,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+// The resource-open handlers (soft gate, visited marking) moved to misc_handlers (2026-08-22).
+const handlers = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'utf8');
 const mirror = readFileSync(resolve(process.cwd(), 'desktop/web-app/src/AlloFlowANTI.txt'), 'utf8');
 const directionsViewSource = readFileSync(resolve(process.cwd(), 'view_directions_result_source.jsx'), 'utf8');
 const directionsViewModule = readFileSync(resolve(process.cwd(), 'view_directions_result_module.js'), 'utf8');
@@ -164,10 +166,10 @@ describe('wiring pins', () => {
     expect(anti).toContain('student-device reported — formative, not a grade');
   });
   it('P2: the soft gate NUDGES and never blocks — the open proceeds unconditionally', () => {
-    const idx = anti.indexOf('Phase 2 SOFT gate');
+    const idx = handlers.indexOf('Phase 2 SOFT gate');
     expect(idx).toBeGreaterThan(0);
-    const nextOpen = anti.indexOf('setGeneratedContent({ ...item,', idx);
-    const slice = anti.slice(idx, nextOpen + 40);
+    const nextOpen = handlers.indexOf('setGeneratedContent({ ...item,', idx);
+    const slice = handlers.slice(idx, nextOpen + 40);
     expect(nextOpen).toBeGreaterThan(idx);
     expect(slice).toContain('_softGateNudgedRef.current.add(item.id);'); // once per resource
     expect(slice).toContain('You can keep going!');
@@ -177,7 +179,7 @@ describe('wiring pins', () => {
   });
   it('QUEST MAP: the knowledge web renders from the SAME signals as the checklist, checklist stays primary', () => {
     // visited marking is device-local, reserved-key, set on resource OPEN
-    expect(anti).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
+    expect(handlers).toContain("const vis = (prev._visited && typeof prev._visited === 'object') ? prev._visited : {};");
     // the map is an accessible IMAGE with a spoken progress summary; the checklist remains the interactive primary
     expect(directionsViewSource).toMatch(/<svg\s+role="img"/);
     expect(directionsViewSource).toContain('mapSummary');

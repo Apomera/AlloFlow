@@ -58,23 +58,23 @@ describe('B3 — context reasons no longer make complete unreachable (live polic
 });
 
 describe('B7 — ANTI fallback derive matches the canonical policy', () => {
-  it('eaReviewCount uses max(aggregate, potential+manual) in both ANTI copies', () => {
+  // B7's concern was DRIFT between the host's re-implemented fallback and the
+  // canonical policy. The 2026-08 answer removed the duplicate outright: the
+  // host DELEGATES (pipeline export first, then the policy module) and, with
+  // neither loaded, returns an honest all-unavailable/review-required stub —
+  // it can no longer disagree with the policy about precedence.
+  it('the host delegates the derive instead of re-implementing the policy', () => {
     for (const src of [host, hostMirror]) {
-      expect(src).toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
-      expect(src).not.toContain('_eaReviewCount = _eaAggregate !== null ? _eaAggregate : ((_eaPotential || 0) + (_eaManual || 0));');
+      expect(src).toContain('return _docPipeline.deriveVerificationState(input || {});');
+      expect(src).toContain('return policy.deriveVerificationState(input || {});');
+      expect(src).not.toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
     }
   });
-  it('unavailable beats review evidence in both ANTI copies (policy precedence)', () => {
+  it('with no policy loaded the stub fails honest: unavailable + manual review', () => {
     for (const src of [host, hostMirror]) {
-      // The fallback was rewritten to mirror the canonical policy exactly,
-      // including the partial rung and the static-source scope narrowing, so
-      // the old one-line ternary no longer exists. B7's point is the PRECEDENCE
-      // — unavailable outranks everything, and review evidence outranks
-      // complete — so assert that ordering rather than a single spelling.
-      expect(src).toContain("_allUnavailable\n      ? 'unavailable'");
-      expect(src).toContain("? 'partial'");
-      expect(src).toMatch(/_hasKnownFailures \|\| _hasReviewEvidence\s*\n\s*\? 'review-required'/);
-      expect(src).toContain("_staticSourceScope ? 'complete-for-tested-scope' : 'complete'");
+      expect(src).toContain("verificationState: 'unavailable',");
+      expect(src).toContain('requiresManualReview: true,');
+      expect(src).toContain("reasons: ['verification-policy-module-unavailable'],");
     }
   });
   it('fallback extraReasons are context, not review findings (mirrors the policy)', () => {

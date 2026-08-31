@@ -14454,9 +14454,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     let cancelled = false;
     try {
       const mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
-      if (mc && typeof mc.hasKokoro === 'function') {
-        Promise.resolve(mc.hasKokoro()).then((has) => { if (!cancelled) cachedOnDevice = !!has; }).catch(() => {});
-      }
+      // Skew guard (model_cache_skew): every probe routes through _mcCall so an
+      // older voice-modules copy can never throw an unhandled rejection here.
+      _mcCall(mc, 'hasKokoro', false).then((has) => { if (!cancelled) cachedOnDevice = !!has; });
     } catch (_) {}
     let lastPct = -1;
     let lastMovedAt = Date.now();
